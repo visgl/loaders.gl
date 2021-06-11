@@ -33,6 +33,8 @@ const ES5_BABEL_CONFIG = {
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
+    // typescript supports class properties
+    '@babel/plugin-proposal-class-properties',
     // inject __VERSION__ from package.json
     'version-inline',
     ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
@@ -47,6 +49,8 @@ const ES6_BABEL_CONFIG = {
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
+    // typescript supports class properties
+    '@babel/plugin-proposal-class-properties',
     // inject __VERSION__ from package.json
     'version-inline'
   ]

@@ -3,6 +3,7 @@ import {isMobile} from '../env-utils/globals';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
 
+/** WorkerPool onDebug Callback Parameters */
 type OnDebugParameters = {
   message: string;
   worker: string;
@@ -12,6 +13,7 @@ type OnDebugParameters = {
   workerThread: WorkerThread;
 }
 
+/** WorkerPool Properties */
 export type WorkerPoolProps = {
   name?: string;
   source?: string; // | Function;
@@ -154,12 +156,14 @@ export default class WorkerPool {
   }
 
   /**
-   * 
+   * Returns a worker to the idle queue
+   * Destroys the worker if 
+   *  - pool is destroyed
+   *  - if this pool doesn't reuse workers
+   *  - if maxConcurrency has been lowered
    * @param worker 
    */
   returnWorkerToQueue(worker: WorkerThread) {
-    // Destroy the worker if pool is destroyed, or if we don't reuse workers, or
-    // if maxConcurrency has changed.
     const shouldDestroyWorker =
       this.isDestroyed || !this.reuseWorkers || this.count > this._getMaxConcurrency();
 

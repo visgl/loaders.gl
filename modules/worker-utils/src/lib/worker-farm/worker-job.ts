@@ -5,9 +5,6 @@ import {assert} from '../env-utils/assert';
 /**
  * Represents one Job handled by a WorkerPool or WorkerFarm
  */
-/**
- * Represents one Job handled by a WorkerPool or WorkerFarm
- */
 export default class WorkerJob {
   readonly name: string;
   readonly workerThread: WorkerThread;

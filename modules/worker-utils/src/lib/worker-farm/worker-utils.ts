@@ -2,7 +2,9 @@ import {assert} from '../env-utils/assert';
 
 const workerURLCache = new Map();
 
-// Creates a URL from worker source that can be used to create `Worker` instances
+/**
+ * Creates a URL from worker source that can be used to create `Worker` instances
+ */
 export function getWorkerURL(workerSource) {
   assert(typeof workerSource === 'string', 'worker source');
 

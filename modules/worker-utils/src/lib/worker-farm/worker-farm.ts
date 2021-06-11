@@ -1,4 +1,3 @@
-import {isMobile} from '../env-utils/globals';
 import WorkerPool from './worker-pool';
 import WorkerThread from './worker-thread';
 

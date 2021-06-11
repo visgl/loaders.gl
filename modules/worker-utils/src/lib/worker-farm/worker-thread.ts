@@ -14,7 +14,6 @@ export type WorkerThreadProps = {
  * Represents one worker thread
  */
 export default class WorkerThread {
-
   readonly name: string;
   readonly source: string | undefined;
   readonly url: string | undefined;
