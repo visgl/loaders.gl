@@ -80,7 +80,7 @@ test.skip('createLoaderWorker#nested', async (t) => {
     return;
   }
 
-  registerLoaders(NullWorkerLoader);
+  registerLoaders([NullWorkerLoader]);
 
   const TEST_CASES = [
     [{chunk: 0}, {chunk: 1}, {chunk: 2}],

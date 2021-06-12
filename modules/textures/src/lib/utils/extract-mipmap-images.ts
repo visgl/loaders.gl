@@ -1,4 +1,4 @@
-import {CompressedTextureExtractOptions, TextureLevel} from '../../types/texture';
+import {CompressedTextureExtractOptions, TextureLevel} from '../../types';
 
 /**
  * Extract mipmap images from compressed texture buffer
