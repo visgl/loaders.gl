@@ -1,7 +1,10 @@
+import type {LoaderObject} from '@loaders.gl/loader-utils';
+// import type {Schema} from '@loaders.gl/tables';
+type Schema = any;
+
 import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/tables';
 import Papa from './libs/papaparse';
 import AsyncIteratorStreamer from './lib/async-iterator-streamer';
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -34,8 +37,7 @@ const CSVLoaderOptions = {
   }
 };
 
-/** @type {LoaderObject} */
-export const CSVLoader = {
+export const CSVLoader: LoaderObject = {
   id: 'csv',
   name: 'CSV',
   version: VERSION,
@@ -63,7 +65,7 @@ async function parseCSV(csvText, options) {
   }
 
   const firstRow = readFirstRow(csvText);
-  const header =
+  const header: boolean =
     options.csv.header === 'auto' ? isHeaderRow(firstRow) : Boolean(options.csv.header);
 
   const parseWithHeader = rowFormat === ROW_FORMAT_OPTIONS.OBJECT && header;
@@ -115,10 +117,10 @@ function parseCSVInBatches(asyncIterator, options) {
 
   const convertToObject = rowFormat === ROW_FORMAT_OPTIONS.OBJECT;
 
-  let isFirstRow = true;
-  let headerRow = null;
-  let tableBatchBuilder = null;
-  let schema = null;
+  let isFirstRow: boolean = true;
+  let headerRow: string[] | null = null;
+  let tableBatchBuilder: TableBatchBuilder | null = null;
+  let schema: Schema | null = null;
 
   const config = {
     dynamicTyping: true, // Convert numbers and boolean values in rows from strings,
@@ -189,7 +191,7 @@ function parseCSVInBatches(asyncIterator, options) {
     complete(results, file) {
       const bytesUsed = results.meta.cursor;
       // Ensure any final (partial) batch gets emitted
-      const batch = tableBatchBuilder.getBatch({bytesUsed});
+      const batch = tableBatchBuilder && tableBatchBuilder.getBatch({bytesUsed});
       if (batch) {
         asyncQueue.enqueue(batch);
       }
@@ -206,19 +208,19 @@ function parseCSVInBatches(asyncIterator, options) {
 
 /**
  * Checks if a certain row is a header row
- * @param {unknown[]} row the row to check
+ * @param row the row to check
  * @returns true if the row looks like a header
  */
-function isHeaderRow(row) {
+function isHeaderRow(row: string[]): boolean {
   return row && row.every((value) => typeof value === 'string');
 }
 
 /**
  * Reads, parses, and returns the first row of a CSV text
- * @param {string} csvText the csv text to parse
+ * @param csvText the csv text to parse
  * @returns the first row
  */
-function readFirstRow(csvText) {
+function readFirstRow(csvText: string): any[] {
   const result = Papa.parse(csvText, {
     download: false,
     dynamicTyping: true,
@@ -229,7 +231,7 @@ function readFirstRow(csvText) {
 
 /**
  * Creates a transformer that renames duplicate columns. This is needed as Papaparse doesn't handle
- * duplicate header columns and would use the latest occurance by default.
+ * duplicate header columns and would use the latest occurrence by default.
  * See the header option in https://www.papaparse.com/docs#config
  * @returns a transform function that returns sanitized names for duplicate fields
  */
@@ -249,16 +251,16 @@ function duplicateColumnTransformer() {
 
 /**
  * Generates the header of a CSV given a prefix and a column count
- * @param {string} columnPrefix the columnPrefix to use
- * @param {number} count the count of column names to generate
+ * @param columnPrefix the columnPrefix to use
+ * @param count the count of column names to generate
  * @returns an array of column names
  */
-function generateHeader(columnPrefix, count) {
-  const header = [];
+function generateHeader(columnPrefix: string, count: number = 0): string[] {
+  const headers: string[] = [];
   for (let i = 0; i <= count; i++) {
-    header.push(`${columnPrefix}${i + 1}`);
+    headers.push(`${columnPrefix}${i + 1}`);
   }
-  return header;
+  return headers;
 }
 
 function deduceSchema(row, headerRow) {
