@@ -18,7 +18,7 @@ export default class JSONPath {
       return;
     }
 
-    if (path && Array.isArray(path)) {
+    if (Array.isArray(path)) {
       this.path.push(...path);
       return;
     }

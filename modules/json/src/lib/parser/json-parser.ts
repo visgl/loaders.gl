@@ -6,7 +6,7 @@ import JSONPath from '../jsonpath/jsonpath';
 // JSONParser builds a JSON object using the events emitted by the Clarinet parser
 
 export default class JSONParser {
-  jsonpath: JSONPath = new JSONPath();
+  jsonpath: JSONPath;
   _parser?: ClarinetParser;
 
   constructor() {

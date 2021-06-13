@@ -14,7 +14,8 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   let isFirstChunk: boolean = true;
 
   // TODO fix Schema deduction
-  const schema: Schema = new Schema([]);
+  const schema = null; // new Schema([]);
+  // @ts-ignore
   const tableBatchBuilder = new TableBatchBuilder(TableBatchType, schema, {batchSize});
 
   const parser = new StreamingJSONParser({jsonpaths});

@@ -9,7 +9,7 @@ export default class StreamingJSONParser extends JSONParser {
   private jsonPaths: JSONPath[];
   private streamingJsonPath: JSONPath | null = null;
   private streamingArray: any[] | null = null;
-  private topLevelObject: {} | null = null;
+  private topLevelObject: object | null = null;
 
   constructor(options: {[key: string]: any} = {}) {
     super();
@@ -87,8 +87,7 @@ export default class StreamingJSONParser extends JSONParser {
         if (this._matchJSONPath()) {
           // @ts-ignore
           this.streamingJsonPath = this.getJsonPath().clone();
-          const streamingArray = [];
-          this.streamingArray = streamingArray;
+          this.streamingArray = [];
           this._openArray(this.streamingArray as []);
           return;
         }
