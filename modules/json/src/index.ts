@@ -1,3 +1,4 @@
+export type {JSONLoaderOptions} from './json-loader';
 export {JSONLoader} from './json-loader';
 export {
   GeoJSONLoader as _GeoJSONLoader,

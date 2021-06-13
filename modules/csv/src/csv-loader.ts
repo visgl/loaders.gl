@@ -1,3 +1,4 @@
+import type {TableBatch} from '@loaders.gl/tables';
 import type {LoaderObject} from '@loaders.gl/loader-utils';
 // import type {Schema} from '@loaders.gl/tables';
 type Schema = any;
@@ -15,14 +16,34 @@ const ROW_FORMAT_OPTIONS = {
   ARRAY: 'array'
 };
 
-const CSVLoaderOptions = {
+export type CSVLoaderOptions = {
+  TableBatch?: any;
+  batchSize?: number | 'auto';
+  optimizeMemoryUsage?: boolean;
+  // CSV options
+  header?: 'auto';
+  rowFormat?: 'object' | 'array';
+  columnPrefix?: string;
+  // delimiter: auto
+  // newline: auto
+  quoteChar?: string;
+  escapeChar?: string;
+  dynamicTyping?: boolean;
+  comments?: boolean;
+  skipEmptyLines?: boolean;
+  // transform: null?
+  delimitersToGuess?: string[];
+  // fastMode: auto
+};
+
+const DEFAULT_CSV_LOADER_OPTIONS: {csv: CSVLoaderOptions} = {
   csv: {
     TableBatch: RowTableBatch,
     batchSize: 10,
     optimizeMemoryUsage: false,
     // CSV options
     header: 'auto',
-    rowFormat: ROW_FORMAT_OPTIONS.OBJECT,
+    rowFormat: 'object',
     columnPrefix: 'column',
     // delimiter: auto
     // newline: auto
@@ -49,13 +70,13 @@ export const CSVLoader: LoaderObject = {
   parseInBatches: parseCSVInBatches,
   // @ts-ignore
   testText: null,
-  options: CSVLoaderOptions
+  options: DEFAULT_CSV_LOADER_OPTIONS
 };
 
 async function parseCSV(csvText, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...CSVLoaderOptions, ...options};
-  options.csv = {...CSVLoaderOptions.csv, ...options.csv};
+  options = {...options};
+  options.csv = {...DEFAULT_CSV_LOADER_OPTIONS.csv, ...options.csv};
 
   const {rowFormat} = options.csv;
   if (!Object.values(ROW_FORMAT_OPTIONS).includes(rowFormat)) {
@@ -100,8 +121,8 @@ async function parseCSV(csvText, options) {
 // TODO - support batch size 0 = no batching/single batch?
 function parseCSVInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...CSVLoaderOptions, ...options};
-  options.csv = {...CSVLoaderOptions.csv, ...options.csv};
+  options = {...options};
+  options.csv = {...DEFAULT_CSV_LOADER_OPTIONS.csv, ...options.csv};
 
   const {batchSize, optimizeMemoryUsage} = options.csv;
   const TableBatchType = options.csv.TableBatch;

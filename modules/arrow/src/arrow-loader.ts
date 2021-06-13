@@ -1,5 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {LoaderObject, WorkerLoaderObject} from '@loaders.gl/loader-utils';
 import parseSync from './lib/parse-arrow-sync';
 import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 
@@ -7,8 +6,18 @@ import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerLoaderObject} */
-export const ArrowWorkerLoader = {
+export type ArrowLoaderOptions = {
+  rowFormat: 'auto' | 'array' | 'object';
+};
+
+const DEFAULT_ARROW_LOADER_OPTIONS: {arrow: ArrowLoaderOptions} = {
+  arrow: {
+    rowFormat: 'auto'
+  }
+};
+
+/** ArrowJS table loader */
+export const ArrowWorkerLoader: WorkerLoaderObject = {
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',
@@ -19,15 +28,11 @@ export const ArrowWorkerLoader = {
   mimeTypes: ['application/octet-stream'],
   binary: true,
   tests: ['ARROW'],
-  options: {
-    arrow: {
-      rowFormat: 'auto'
-    }
-  }
+  options: DEFAULT_ARROW_LOADER_OPTIONS
 };
 
-/** @type {LoaderObject} */
-export const ArrowLoader = {
+/** ArrowJS table loader */
+export const ArrowLoader: LoaderObject = {
   ...ArrowWorkerLoader,
   parse: async (arraybuffer, options) => parseSync(arraybuffer, options),
   parseSync,
