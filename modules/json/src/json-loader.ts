@@ -7,7 +7,23 @@ import parseJSONInBatches from './lib/parse-json-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const JSONLoaderOptions = {
+/**
+ * @param TableBatch - table batch type
+ * @param batchSize - size of batches
+ * @param table -
+ * @param jsonpaths -
+ * @param _rootObjectBatches
+ */
+export type JSONLoaderOptions = {
+  TableBatch: any;
+  batchSize?: number | 'auto';
+  table?: false;
+  jsonpaths?: [];
+  /** @deprecated - use options.metadata */
+  _rootObjectBatches?: false;
+};
+
+const DEFAULT_JSON_LOADER_OPTIONS: {json: JSONLoaderOptions} = {
   json: {
     TableBatch: RowTableBatch,
     batchSize: 'auto',
@@ -42,7 +58,7 @@ export const JSONLoader: LoaderObject = {
   parse,
   parseTextSync,
   parseInBatches,
-  options: JSONLoaderOptions,
+  options: DEFAULT_JSON_LOADER_OPTIONS,
   deprecatedOptions: {
     json: {
       _rootObjectBatches: 'metadata'
@@ -56,15 +72,15 @@ async function parse(arrayBuffer, options) {
 
 function parseTextSync(text, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...JSONLoaderOptions, ...options};
-  options.json = {...JSONLoaderOptions.json, ...options.json};
+  options = {...options};
+  options.json = {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options.json};
   return parseJSONSync(text, options);
 }
 
 async function parseInBatches(asyncIterator, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...JSONLoaderOptions, ...options};
-  options.json = {...JSONLoaderOptions.json, ...options.json};
+  options = {...options};
+  options.json = {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options.json};
   return parseJSONInBatches(asyncIterator, options);
 }
 
