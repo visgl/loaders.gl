@@ -173,7 +173,7 @@ test('JSONLoader#loadInBatches(geojson.json, {json: {_rootObjectBatches: true}})
   t.end();
 });
 
-test.only('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
+test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
   const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, JSONLoader, {
     json: {
       table: true,
