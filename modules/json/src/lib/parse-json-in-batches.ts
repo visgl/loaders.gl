@@ -1,5 +1,5 @@
+import {Schema, TableBatchBuilder} from '@loaders.gl/tables';
 import {makeTextDecoderIterator} from '@loaders.gl/loader-utils';
-import {TableBatchBuilder} from '@loaders.gl/tables';
 import StreamingJSONParser from './parser/streaming-json-parser';
 
 // TODO - support batch size 0 = no batching/single batch?
@@ -11,14 +11,13 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
   const {batchSize, _rootObjectBatches, jsonpaths} = options.json;
   const TableBatchType = options.json.TableBatch;
 
-  let isFirstChunk = true;
-  let tableBatchBuilder = null;
-  let schema = null;
+  let isFirstChunk: boolean = true;
+
+  // TODO fix Schema deduction
+  const schema: Schema = new Schema([]);
+  const tableBatchBuilder = new TableBatchBuilder(TableBatchType, schema, {batchSize});
 
   const parser = new StreamingJSONParser({jsonpaths});
-  tableBatchBuilder =
-    // @ts-ignore
-    tableBatchBuilder || new TableBatchBuilder(TableBatchType, schema, {batchSize});
 
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
@@ -48,7 +47,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
         yield initialBatch;
       }
       isFirstChunk = false;
-      schema = deduceSchema(rows);
+      // schema = deduceSchema(rows);
     }
 
     // Add the row

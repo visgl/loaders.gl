@@ -1,7 +1,7 @@
+import type {LoaderObject} from '@loaders.gl/loader-utils';
 import {RowTableBatch} from '@loaders.gl/tables';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -17,8 +17,7 @@ const JSONLoaderOptions = {
   }
 };
 
-/** @type {LoaderObject} */
-export const JSONLoader = {
+export const JSONLoader: LoaderObject = {
   name: 'JSON',
   id: 'json',
   module: 'json',
