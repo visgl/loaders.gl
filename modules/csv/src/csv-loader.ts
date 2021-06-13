@@ -1,4 +1,3 @@
-import type {TableBatch} from '@loaders.gl/tables';
 import type {LoaderObject} from '@loaders.gl/loader-utils';
 // import type {Schema} from '@loaders.gl/tables';
 type Schema = any;
