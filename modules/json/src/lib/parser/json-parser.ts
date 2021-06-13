@@ -6,29 +6,32 @@ import JSONPath from '../jsonpath/jsonpath';
 // JSONParser builds a JSON object using the events emitted by the Clarinet parser
 
 export default class JSONParser {
+  jsonpath: JSONPath;
+  _parser?: ClarinetParser;
+
   constructor() {
     this.reset();
     this._initializeParser();
   }
 
-  reset() {
+  reset(): void {
     this.result = undefined;
     this.previousStates = [];
     this.currentState = Object.freeze({container: [], key: null});
     this.jsonpath = new JSONPath();
   }
 
-  write(chunk) {
+  write(chunk): void {
     this.parser.write(chunk);
   }
 
-  close() {
+  close(): void {
     this.parser.close();
   }
 
   // PRIVATE METHODS
 
-  _pushOrSet(value) {
+  _pushOrSet(value): void {
     const {container, key} = this.currentState;
     if (key !== null) {
       container[key] = value;
@@ -38,32 +41,32 @@ export default class JSONParser {
     }
   }
 
-  _openArray(newContainer = []) {
+  _openArray(newContainer = []): void {
     this.jsonpath.push(null);
     this._pushOrSet(newContainer);
     this.previousStates.push(this.currentState);
     this.currentState = {container: newContainer, isArray: true, key: null};
   }
 
-  _closeArray() {
+  _closeArray(): void {
     this.jsonpath.pop();
     this.currentState = this.previousStates.pop();
   }
 
-  _openObject(newContainer = {}) {
+  _openObject(newContainer = {}): void {
     this.jsonpath.push(null);
     this._pushOrSet(newContainer);
     this.previousStates.push(this.currentState);
     this.currentState = {container: newContainer, isArray: false, key: null};
   }
 
-  _closeObject() {
+  _closeObject(): void {
     this.jsonpath.pop();
     this.currentState = this.previousStates.pop();
   }
 
-  _initializeParser() {
-    this.parser = new ClarinetParser({
+  _initializeParser(): void {
+    this._parser = new ClarinetParser({
       onready: () => {
         this.jsonpath = new JSONPath();
         this.previousStates.length = 0;
@@ -106,5 +109,9 @@ export default class JSONParser {
         this.result = this.currentState.container.pop();
       }
     });
+  }
+
+  protected get parser(): ClarinetParser {
+    return this._parser as ClarinetParser;
   }
 }

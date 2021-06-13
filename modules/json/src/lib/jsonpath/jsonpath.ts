@@ -7,7 +7,9 @@
  *   `$.component.component.component`
  */
 export default class JSONPath {
-  constructor(path = null) {
+  path: string[];
+
+  constructor(path: JSONPath | string[] | string | null = null) {
     this.path = ['$'];
 
     if (path instanceof JSONPath) {
@@ -30,15 +32,15 @@ export default class JSONPath {
     }
   }
 
-  clone() {
+  clone(): JSONPath {
     return new JSONPath(this);
   }
 
-  toString() {
+  toString(): string {
     return this.path.join('.');
   }
 
-  push(name) {
+  push(name: string): void {
     this.path.push(name);
   }
 
@@ -46,11 +48,11 @@ export default class JSONPath {
     return this.path.pop();
   }
 
-  set(name) {
+  set(name: string): void {
     this.path[this.path.length - 1] = name;
   }
 
-  equals(other) {
+  equals(other: JSONPath): boolean {
     if (!this || !other || this.path.length !== other.path.length) {
       return false;
     }
@@ -67,8 +69,8 @@ export default class JSONPath {
   /**
    * Sets the value pointed at by path
    * TODO - handle root path
-   * @param {*} object
-   * @param {*} value
+   * @param object
+   * @param value
    */
   setFieldAtPath(object, value) {
     const path = [...this.path];
@@ -77,13 +79,14 @@ export default class JSONPath {
     for (const component of path) {
       object = object[component];
     }
+    // @ts-ignore
     object[field] = value;
   }
 
   /**
    * Gets the value pointed at by path
    * TODO - handle root path
-   * @param {*} object
+   * @param object
    */
   getFieldAtPath(object) {
     const path = [...this.path];
@@ -92,6 +95,7 @@ export default class JSONPath {
     for (const component of path) {
       object = object[component];
     }
+    // @ts-ignore
     return object[field];
   }
 }

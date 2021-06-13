@@ -6,13 +6,15 @@ import JSONPath from '../jsonpath/jsonpath';
  * and emits an array of chunks
  */
 export default class StreamingJSONParser extends JSONParser {
-  constructor(options = {}) {
+  private jsonPaths: JSONPath[];
+  private streamingJsonPath: JSONPath | null = null;
+  private streamingArray: any[] | null = null;
+  private topLevelObject: object | null = null;
+
+  constructor(options: {[key: string]: any} = {}) {
     super();
     const jsonpaths = options.jsonpaths || [];
     this.jsonPaths = jsonpaths.map((jsonpath) => new JSONPath(jsonpath));
-    this.streamingJsonPath = null;
-    this.streamingArray = null;
-    this.topLevelObject = null;
     this._extendParser();
   }
 
@@ -25,7 +27,7 @@ export default class StreamingJSONParser extends JSONParser {
    */
   write(chunk) {
     super.write(chunk);
-    let array = [];
+    let array: any[] = [];
     if (this.streamingArray) {
       array = [...this.streamingArray];
       this.streamingArray.length = 0;
@@ -86,7 +88,7 @@ export default class StreamingJSONParser extends JSONParser {
           // @ts-ignore
           this.streamingJsonPath = this.getJsonPath().clone();
           this.streamingArray = [];
-          this._openArray(this.streamingArray);
+          this._openArray(this.streamingArray as []);
           return;
         }
       }
