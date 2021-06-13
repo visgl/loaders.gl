@@ -18,6 +18,7 @@ test('Creates correct ZarrPixelSource.', async (t) => {
     return;
   }
 
+  // @ts-ignore
   const {data} = await loadBioformatsZarr(store, await getMeta());
   t.equal(data.length, 2, 'Image should have two levels.');
   const [base] = data;
@@ -32,6 +33,7 @@ test('Get raster data.', async (t) => {
     return;
   }
 
+  // @ts-ignore
   const {data} = await loadBioformatsZarr(store, await getMeta());
   const [base] = data;
 
@@ -58,6 +60,7 @@ test('Correct OME-XML.', async (t) => {
     return;
   }
 
+  // @ts-ignore
   const {metadata} = await loadBioformatsZarr(store, await getMeta());
   const {Name, Pixels} = metadata;
   t.equal(Name, 'multi-channel.ome.tif', `Name should be 'multi-channel.ome.tif'.`);

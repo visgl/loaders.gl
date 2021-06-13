@@ -57,13 +57,21 @@ test('Correct OME-XML.', async (t) => {
   const {metadata} = await loadGeoTiff(tiff);
   const {Name, Pixels} = metadata;
   t.equal(Name, 'multi-channel.ome.tif', `Name should be 'multi-channel.ome.tif'.`);
+  // @ts-ignore
   t.equal(Pixels.SizeC, 3, 'Should have three channels.');
+  // @ts-ignore
   t.equal(Pixels.SizeT, 1, 'Should have one time index.');
+  // @ts-ignore
   t.equal(Pixels.SizeX, 439, 'Should have SizeX of 429.');
+  // @ts-ignore
   t.equal(Pixels.SizeY, 167, 'Should have SizeY of 167.');
+  // @ts-ignore
   t.equal(Pixels.SizeZ, 1, 'Should have one z index.');
+  // @ts-ignore
   t.equal(Pixels.Type, 'int8', 'Should be int8 pixel type.');
+  // @ts-ignore
   t.equal(Pixels.Channels.length, 3);
+  // @ts-ignore
   t.equal(Pixels.Channels[0].SamplesPerPixel, 1);
   t.end();
 });
