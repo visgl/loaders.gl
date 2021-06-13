@@ -1,18 +1,34 @@
-/** @typedef {import('./worker-thread').WorkerThreadProps} WorkerThreadProps */
 import {assert} from '../env-utils/assert';
 import {buildWorkerURL} from './build-worker-url';
 import {getTransferList} from './get-transfer-list';
 
 const NOOP = (_) => {};
+
+export type WorkerThreadProps = {
+  name: string;
+  source?: string;
+  url?: string;
+};
+
+/**
+ * Represents one worker thread
+ */
 export default class WorkerThread {
-  static isSupported() {
+  readonly name: string;
+  readonly source: string | undefined;
+  readonly url: string | undefined;
+  terminated: boolean = false;
+  worker: Worker;
+  onMessage: (message: any) => void;
+  onError: (error: Error) => void;
+
+  private _loadableURL: string = '';
+
+  static isSupported(): boolean {
     return typeof Worker !== 'undefined';
   }
 
-  /**
-   * @param {WorkerThreadProps} props
-   */
-  constructor(props) {
+  constructor(props: WorkerThreadProps) {
     const {name, source, url} = props;
     assert(source || url); // Either source or url must be defined
     this.name = name;
@@ -20,12 +36,15 @@ export default class WorkerThread {
     this.url = url;
     this.onMessage = NOOP;
     this.onError = (error) => console.log(error); // eslint-disable-line
-    this.terminated = false;
 
     this.worker = this._createBrowserWorker();
   }
 
-  destroy() {
+  /**
+   * Terminate this worker thread
+   * @note Can free up significant memory
+   */
+  destroy(): void {
     this.onMessage = NOOP;
     this.onError = NOOP;
     // @ts-ignore
@@ -37,7 +56,12 @@ export default class WorkerThread {
     return Boolean(this.onMessage);
   }
 
-  postMessage(data, transferList) {
+  /**
+   * Send a message to this worker thread
+   * @param data any data structure, ideally consisting mostly of transferrable objects
+   * @param transferList If not supplied, calculated automatically by traversing data
+   */
+  postMessage(data: any, transferList?: any[]): void {
     transferList = transferList || getTransferList(data);
     // @ts-ignore
     this.worker.postMessage(data, transferList);
@@ -53,7 +77,7 @@ export default class WorkerThread {
     // Note Error object does not have the expected fields if loading failed completely
     // https://developer.mozilla.org/en-US/docs/Web/API/Worker#Event_handlers
     // https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
-    let message = `Failed to load `;
+    let message = 'Failed to load ';
     message += `worker ${this.name}. `;
     if (event.message) {
       message += `${event.message} in `;
@@ -75,7 +99,7 @@ export default class WorkerThread {
 
     worker.onmessage = (event) => {
       if (!event.data) {
-        this.onError('No data received');
+        this.onError(new Error('No data received'));
       } else {
         this.onMessage(event.data);
       }

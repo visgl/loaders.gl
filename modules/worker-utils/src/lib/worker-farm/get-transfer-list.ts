@@ -1,9 +1,19 @@
 // NOTE - there is a copy of this function is both in core and loader-utils
 // core does not need all the utils in loader-utils, just this one.
 
-// Returns an array of Transferrable objects that can be used with postMessage
-// https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
-export function getTransferList(object, recursive = true, transfers) {
+/**
+ * Returns an array of Transferrable objects that can be used with postMessage
+ * https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
+ * @param object data to be sent via postMessage
+ * @param recursive - not for application use
+ * @param transfers - not for application use
+ * @returns a transfer list that can be passed to postMessage
+ */
+export function getTransferList(
+  object: any,
+  recursive: boolean = true,
+  transfers?: Set<any>
+): Transferable[] {
   // Make sure that items in the transfer list is unique
   const transfersSet = transfers || new Set();
 

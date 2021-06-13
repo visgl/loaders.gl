@@ -1,89 +1,120 @@
-/** @typedef {import('../worker-protocol/protocol').WorkerMessageType} WorkerMessageType  */
-/** @typedef {import('../worker-protocol/protocol').WorkerMessagePayload} WorkerMessagePayload */
+import type {WorkerMessageType, WorkerMessagePayload} from '../worker-protocol/protocol';
 import {isMobile} from '../env-utils/globals';
-import {assert} from '../env-utils/assert';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
 
+/** WorkerPool onDebug Callback Parameters */
+type OnDebugParameters = {
+  message: string;
+  worker: string;
+  name: string;
+  job: string;
+  backlog: number;
+  workerThread: WorkerThread;
+};
+
+/** WorkerPool Properties */
+export type WorkerPoolProps = {
+  name?: string;
+  source?: string; // | Function;
+  url?: string;
+  maxConcurrency?: number;
+  maxMobileConcurrency?: number;
+  onDebug?: (options: OnDebugParameters) => any;
+  reuseWorkers?: boolean;
+};
+
+/** Private helper types */
+type OnMessage = (job: WorkerJob, type: WorkerMessageType, payload: WorkerMessagePayload) => void;
+type OnError = (job: WorkerJob, error: Error) => void;
+
+type QueuedJob = {
+  name: string;
+  onMessage: OnMessage;
+  onError: OnError;
+  onStart: (value: any) => void; // Resolve job start promise
+};
+
 /**
- * @typedef {{
- *   name: string;
- *   onMessage: (job: WorkerJob, type: WorkerMessageType, payload: WorkerMessagePayload) => void,
- *   onError: (job: WorkerJob, error: Error) => void;
- *   onStart: (value: any) => void; // Resolve job start promise
- * }} QueuedJob
+ * Process multiple data messages with small pool of identical workers
  */
-
 export default class WorkerPool {
-  constructor(props) {
-    assert(props.source || props.url);
+  name: string = 'unnamed';
+  source?: string; // | Function;
+  url?: string;
+  maxConcurrency: number = 1;
+  maxMobileConcurrency: number = 1;
+  onDebug: (options: OnDebugParameters) => any = () => {};
+  reuseWorkers: boolean = true;
 
+  private props: WorkerPoolProps = {};
+  private jobQueue: QueuedJob[] = [];
+  private idleQueue: WorkerThread[] = [];
+  private count = 0;
+  private isDestroyed = false;
+
+  /**
+   * @param processor - worker function
+   * @param maxConcurrency - max count of workers
+   */
+  constructor(props: WorkerPoolProps) {
     this.source = props.source;
     this.url = props.url;
-
-    this.name = 'undefined';
-    this.maxConcurrency = 1;
-    this.maxMobileConcurrency = 1;
-    this.reuseWorkers = true;
-    this.onDebug = () => {};
-
-    /** @type {QueuedJob[]} */
-    this.jobQueue = [];
-    /** @type {WorkerThread[]} */
-    this.idleQueue = [];
-    this.count = 0;
-    this.isDestroyed = false;
-
-    this.props = {};
     this.setProps(props);
   }
 
-  destroy() {
+  /**
+   * Terminates all workers in the pool
+   * @note Can free up significant memory
+   */
+  destroy(): void {
     // Destroy idle workers, active Workers will be destroyed on completion
     this.idleQueue.forEach((worker) => worker.destroy());
     this.isDestroyed = true;
   }
 
-  setProps(props) {
-    this.props = {...this.props, props};
+  setProps(props: WorkerPoolProps) {
+    this.props = {...this.props, ...props};
 
-    if ('name' in props) {
+    if (props.name !== undefined) {
       this.name = props.name;
     }
-    if ('maxConcurrency' in props) {
+    if (props.maxConcurrency !== undefined) {
       this.maxConcurrency = props.maxConcurrency;
     }
-    if ('maxMobileConcurrency' in props) {
+    if (props.maxMobileConcurrency !== undefined) {
       this.maxMobileConcurrency = props.maxMobileConcurrency;
     }
-    if ('reuseWorkers' in props) {
+    if (props.reuseWorkers !== undefined) {
       this.reuseWorkers = props.reuseWorkers;
     }
-    if ('onDebug' in props) {
+    if (props.onDebug !== undefined) {
       this.onDebug = props.onDebug;
     }
   }
 
   async startJob(
-    name,
-    onMessage = (job, type, data) => job.done(data),
-    onError = (job, error) => job.error(error)
-  ) {
+    name: string,
+    onMessage: OnMessage = (job, type, data) => job.done(data),
+    onError: OnError = (job, error) => job.error(error)
+  ): Promise<WorkerJob> {
     // Promise resolves when thread starts working on this job
-    const startPromise = new Promise((onStart) => {
+    const startPromise = new Promise<WorkerJob>((onStart) => {
       // Promise resolves when thread completes or fails working on this job
       this.jobQueue.push({name, onMessage, onError, onStart});
+      return this;
     });
     this._startQueuedJob();
-    return startPromise;
+    return await startPromise;
   }
 
   // PRIVATE
 
   /**
-   * @returns {Promise<void>}
+   * Starts first queued job if worker is available or can be created
+   * Called when job is started and whenever a worker returns to the idleQueue
    */
-  async _startQueuedJob() {
+  async _startQueuedJob(): Promise<void> {
     if (!this.jobQueue.length) {
       return;
     }
@@ -100,7 +131,7 @@ export default class WorkerPool {
       // @ts-ignore
       this.onDebug({
         message: 'Starting job',
-        jobName: queuedJob.name,
+        name: queuedJob.name,
         workerThread,
         backlog: this.jobQueue.length
       });
@@ -124,9 +155,15 @@ export default class WorkerPool {
     }
   }
 
-  returnWorkerToQueue(worker) {
-    // Destroy the worker if pool is destroyed, or if we don't reuse workers, or
-    // if maxConcurrency has changed.
+  /**
+   * Returns a worker to the idle queue
+   * Destroys the worker if
+   *  - pool is destroyed
+   *  - if this pool doesn't reuse workers
+   *  - if maxConcurrency has been lowered
+   * @param worker
+   */
+  returnWorkerToQueue(worker: WorkerThread) {
     const shouldDestroyWorker =
       this.isDestroyed || !this.reuseWorkers || this.count > this._getMaxConcurrency();
 
@@ -143,9 +180,9 @@ export default class WorkerPool {
   }
 
   /**
-   * @returns {WorkerThread?}
+   * Returns idle worker or creates new worker if maxConcurrency has not been reached
    */
-  _getAvailableWorker() {
+  _getAvailableWorker(): WorkerThread | null {
     // If a worker has completed and returned to the queue, it can be used
     if (this.idleQueue.length > 0) {
       return this.idleQueue.shift() || null;

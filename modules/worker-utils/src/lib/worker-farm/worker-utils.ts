@@ -2,8 +2,9 @@ import {assert} from '../env-utils/assert';
 
 const workerURLCache = new Map();
 
-// Creates a URL from worker source that can be used to create `Worker` instances
-// Packages (and then caches) the result of `webworkify` as an "Object URL"
+/**
+ * Creates a URL from worker source that can be used to create `Worker` instances
+ */
 export function getWorkerURL(workerSource) {
   assert(typeof workerSource === 'string', 'worker source');
 

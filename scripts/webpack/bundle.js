@@ -33,6 +33,8 @@ const ES5_BABEL_CONFIG = {
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
+    // typescript supports class properties
+    '@babel/plugin-proposal-class-properties',
     // inject __VERSION__ from package.json
     'version-inline',
     ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
@@ -41,12 +43,14 @@ const ES5_BABEL_CONFIG = {
 
 const ES6_BABEL_CONFIG = {
   presets: [
-    '@babel/typescript'
+    '@babel/preset-typescript'
   ],
   plugins: [
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
+    // typescript supports class properties
+    '@babel/plugin-proposal-class-properties',
     // inject __VERSION__ from package.json
     'version-inline'
   ]
@@ -58,7 +62,7 @@ const config = {
 
   devtool: 'source-map',
 
-  stats: 'none',
+  stats: 'errors-only',
 
   entry: {
     main: resolve('./src/bundle.ts')
@@ -132,6 +136,6 @@ const es5Config = {
   }
 };
 
-console.error(config)
+// console.error(JSON.stringify(config, null, 2))
 
 module.exports = [config, es5Config];

@@ -11,8 +11,26 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
 
 const loadLibraryPromises = {}; // promises
 
-// Dynamically loads a library ("module")
-export async function loadLibrary(libraryUrl, moduleName = null, options = {}) {
+/**
+ * Dynamically loads a library ("module")
+ *
+ * - wasm library: Array buffer is returned
+ * - js library: Parse JS is returned
+ *
+ * Method depends on environment
+ * - browser - script element is created and installed on document
+ * - worker - eval is called on global context
+ * - node - file is required
+ *
+ * @param libraryUrl
+ * @param moduleName
+ * @param options
+ */
+export async function loadLibrary(
+  libraryUrl: string,
+  moduleName: string | null = null,
+  options: object = {}
+): Promise<any> {
   if (moduleName) {
     libraryUrl = getLibraryUrl(libraryUrl, moduleName, options);
   }
@@ -24,7 +42,7 @@ export async function loadLibrary(libraryUrl, moduleName = null, options = {}) {
 }
 
 // TODO - sort out how to resolve paths for main/worker and dev/prod
-export function getLibraryUrl(library, moduleName, options) {
+export function getLibraryUrl(library, moduleName?: string, options?): string {
   // Check if already a URL
   if (library.startsWith('http')) {
     return library;

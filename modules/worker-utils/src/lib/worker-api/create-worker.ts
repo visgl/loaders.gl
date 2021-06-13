@@ -1,34 +1,29 @@
-/* eslint-disable no-restricted-globals */
-/** @typedef {import('../worker-protocol/protocol').WorkerMessageType} WorkerMessageType  */
-/** @typedef {import('../worker-protocol/protocol').WorkerMessagePayload} WorkerMessagePayload */
-// /** @typedef {import('../worker-protocol/protocol').WorkerMessageData} WorkerMessageData */
-// /** @typedef {import('../worker-protocol/protocol').WorkerMessage} WorkerMessage  */
-
+import type {WorkerMessageType, WorkerMessagePayload} from '../worker-protocol/protocol';
 import AsyncQueue from '../async-queue/async-queue';
 import WorkerBody from '../worker-farm/worker-body';
 
 let inputBatches;
 let options;
 
-export function createWorker(process, processInBatches) {
+export type ProcessFunction = (data: any, options: {[key: string]: any}) => Promise<any>;
+
+/**
+ * Set up a WebWorkerGlobalScope to talk with the main thread
+ */
+export function createWorker(process: ProcessFunction, processInBatches?: Function): void {
   // Check that we are actually in a worker thread
   if (typeof self === 'undefined') {
     return;
   }
 
-  /**
-   *
-   * @param {WorkerMessageType} type
-   * @param {WorkerMessagePayload} payload
-   */
-  WorkerBody.onmessage = async (type, payload) => {
+  WorkerBody.onmessage = async (type: WorkerMessageType, payload: WorkerMessagePayload) => {
     try {
       switch (type) {
         case 'process':
           if (!process) {
             throw new Error('Worker does not support atomic processing');
           }
-          const result = await process(payload.input, payload.options || {}, payload);
+          const result = await process(payload.input, payload.options || {});
           WorkerBody.postMessage('done', {result});
           break;
 

@@ -35,8 +35,8 @@
   "scripts": {
     "pre-build": "npm run build-workers",
     "pre-build-disabled": "npm run build-bundle && npm run build-workers",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-workers": "webpack --entry ./src/workers/null-worker.js --output ./dist/null-worker.js --env.dev --config ../../scripts/webpack/worker.js"
+    "build-bundle": "webpack --config ../../scripts/webpack/bundle.ts",
+    "build-workers": "webpack --entry ./src/workers/null-worker.ts --output ./dist/null-worker.js --env.dev --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1"
