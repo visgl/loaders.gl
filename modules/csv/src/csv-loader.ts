@@ -1,8 +1,8 @@
 import type {LoaderObject} from '@loaders.gl/loader-utils';
-// import type {Schema} from '@loaders.gl/tables';
+// import type {Schema} from '@loaders.gl/schema';
 type Schema = any;
 
-import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/tables';
+import {AsyncQueue, TableBatchBuilder, RowTableBatch} from '@loaders.gl/schema';
 import Papa from './libs/papaparse';
 import AsyncIteratorStreamer from './lib/async-iterator-streamer';
 

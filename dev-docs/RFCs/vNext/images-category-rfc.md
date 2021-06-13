@@ -22,7 +22,7 @@ This RFC discusses how an images category should be defined.
 
 Other examples of category modules
 
-- `@loaders.gl/tables` Tabular loaders: already have a category module with support for table batches and Arrow compatible table access API.
+- `@loaders.gl/schema` Tabular loaders: already have a category module with support for table batches and Arrow compatible table access API.
 - `@loaders.gl/tiles` 3D tile loaders have a category module: `Tileset3D` class is exported from , which is confusing to users since the intention is that this class supports all 3d tile formats `i3s`, `potree` etc.
 
 Scenegraph, pointcloud/mesh and GIS loaders do not yet have category modules but there are strong reasons to believe that this will happen, see the separate RFC on category modules linked at the top.

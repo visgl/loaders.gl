@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.0.0-alpha.21",
-    "@loaders.gl/tables": "3.0.0-alpha.21",
+    "@loaders.gl/schema": "3.0.0-alpha.21",
     "xlsx": "^0.16.9"
   }
 }

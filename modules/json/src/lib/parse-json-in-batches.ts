@@ -1,4 +1,4 @@
-import {Schema, TableBatchBuilder} from '@loaders.gl/tables';
+import {Schema, TableBatchBuilder} from '@loaders.gl/schema';
 import {makeTextDecoderIterator} from '@loaders.gl/loader-utils';
 import StreamingJSONParser from './parser/streaming-json-parser';
 

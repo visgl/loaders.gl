@@ -1,4 +1,4 @@
-# @loaders.gl/tables
+# @loaders.gl/schema
 
 This module contains:
 

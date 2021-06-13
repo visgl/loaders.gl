@@ -1,5 +1,5 @@
 import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
-import {RowTableBatch} from '@loaders.gl/tables';
+import {RowTableBatch} from '@loaders.gl/schema';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';

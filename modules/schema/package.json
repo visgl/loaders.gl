@@ -1,5 +1,5 @@
 {
-  "name": "@loaders.gl/tables",
+  "name": "@loaders.gl/schema",
   "version": "3.0.0-alpha.21",
   "description": "Table format APIs for JSON, CSV, etc...",
   "license": "MIT",
