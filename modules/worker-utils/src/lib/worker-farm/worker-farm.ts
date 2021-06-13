@@ -23,7 +23,8 @@ const DEFAULT_PROPS: WorkerFarmProps = {
  */
 export default class WorkerFarm {
   private props: WorkerFarmProps;
-  private workerPools: Map<string, WorkerPool>;
+  private workerPools = new Map<string, WorkerPool>();
+  // singleton
   private static _workerFarm?: WorkerFarm;
 
   /** Check if Workers are supported */
@@ -38,7 +39,8 @@ export default class WorkerFarm {
     return WorkerFarm._workerFarm;
   }
 
-  constructor(props: WorkerFarmProps) {
+  /** get global instance with WorkerFarm.getWorkerFarm() */
+  private constructor(props: WorkerFarmProps) {
     this.props = {...DEFAULT_PROPS};
     this.setProps(props);
     /** @type Map<string, WorkerPool>} */

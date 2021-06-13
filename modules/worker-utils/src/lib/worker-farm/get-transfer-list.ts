@@ -12,7 +12,7 @@
 export function getTransferList(
   object: any,
   recursive: boolean = true,
-  transfers: Set<any> = new Set<any>()
+  transfers?: Set<any>
 ): Transferable[] {
   // Make sure that items in the transfer list is unique
   const transfersSet = transfers || new Set();
