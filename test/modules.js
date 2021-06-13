@@ -83,7 +83,7 @@ if (TEST_GEOSPATIAL) {
 
 // Table Formats
 if (TEST_TABLES) {
-  require('@loaders.gl/tables/test');
+  require('@loaders.gl/schema/test');
   require('@loaders.gl/arrow/test');
   require('@loaders.gl/csv/test');
   require('@loaders.gl/json/test');

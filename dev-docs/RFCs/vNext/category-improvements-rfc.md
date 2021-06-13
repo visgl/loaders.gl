@@ -23,12 +23,12 @@ Some loaders have output that can be "converted" to a specific category with som
 
 There are already category modles for tables and tiles:
 
-- `@loaders.gl/tables` Tabular loaders: already have a category module with support for table batches and Arrow compatible table access API.
+- `@loaders.gl/schema` Tabular loaders: already have a category module with support for table batches and Arrow compatible table access API.
 - `@loaders.gl/tiles` 3D tile loaders have a category module: `Tileset3D` class is exported from , which is confusing to users since the intention is that this class supports all 3d tile formats `i3s`, `potree` etc.
 
 There are strong reasons for creating category modules for other categories
 
-- Tabular loaders: already have an `@loaders.gl/tables` module with support for table batches and Arrow compatible table access API.
+- Tabular loaders: already have an `@loaders.gl/schema` module with support for table batches and Arrow compatible table access API.
 - Image loaders: `@loaders.gl/images` already exposes a set of utility functions to work on images. These are not necessary to just use the loader and are a cause for bundle size concerns due to the central role of the `ImageLoader`.
 - 3D tile loaders: `Tileset3D` class is exported from `@loaders.gl/3d-tiles`, which is confusing to users since the intention is that this class supports all 3d tile formats `i3s`, `potree` etc.
 - Scenegraph Loaders: the GLTFLoader comes with a bunch of helper classes but these are not necessarily generalized enough to justify being moved to a category module. However this is essentially a "category of one loader".

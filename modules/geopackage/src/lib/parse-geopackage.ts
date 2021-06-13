@@ -13,7 +13,7 @@ import {
   Int16,
   Float32,
   Binary
-} from '@loaders.gl/tables';
+} from '@loaders.gl/schema';
 import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import {

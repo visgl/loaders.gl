@@ -1,4 +1,4 @@
-# @loaders.gl/tables
+# @loaders.gl/schema
 
 > Table
 
@@ -8,9 +8,9 @@ The table API is modelled after a subset of the Apache Arrow API:
 
 | Class                                                              | Arrow Counterpart | Description  |
 | ------------------------------------------------------------------ | ----------------- | ------------ |
-| [`Table`](modules/tables/docs/api-reference/table.md)              | Table             | Table        |
-| [`TableSchema`](modules/tables/docs/api-reference/table-schema.md) | `Schema`          | Table schema |
-| [`TableBatch`](modules/tables/docs/api-reference/table-batch.md)   | `RecordBatch`     | Table batch  |
+| [`Table`](modules/schema/docs/api-reference/table.md)              | Table             | Table        |
+| [`TableSchema`](modules/schema/docs/api-reference/table-schema.md) | `Schema`          | Table schema |
+| [`TableBatch`](modules/schema/docs/api-reference/table-batch.md)   | `RecordBatch`     | Table batch  |
 
 ## Micro-Loaders
 

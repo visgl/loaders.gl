@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load, loadInBatches, fetchFile, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {ColumnarTableBatch} from '@loaders.gl/tables';
+import {ColumnarTableBatch} from '@loaders.gl/schema';
 import {CSVLoader} from '@loaders.gl/csv';
 
 // Small CSV Sample Files

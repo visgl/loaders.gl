@@ -37,7 +37,7 @@
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.21",
     "@loaders.gl/loader-utils": "3.0.0-alpha.21",
-    "@loaders.gl/tables": "3.0.0-alpha.21",
+    "@loaders.gl/schema": "3.0.0-alpha.21",
     "apache-arrow": "^4.0.0"
   }
 }

@@ -33,7 +33,7 @@
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.21",
     "@loaders.gl/gis": "3.0.0-alpha.21",
-    "@loaders.gl/tables": "3.0.0-alpha.21",
+    "@loaders.gl/schema": "3.0.0-alpha.21",
     "@tmcw/togeojson": "^4.2.0"
   }
 }

@@ -50,7 +50,7 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/polyfills/test': path.resolve(basename, '../modules/polyfills/test'),
     '@loaders.gl/potree/test': path.resolve(basename, '../modules/potree/test'),
     '@loaders.gl/shapefile/test': path.resolve(basename, '../modules/shapefile/test'),
-    '@loaders.gl/tables/test': path.resolve(basename, '../modules/tables/test'),
+    '@loaders.gl/schema/test': path.resolve(basename, '../modules/schema/test'),
     '@loaders.gl/terrain/test': path.resolve(basename, '../modules/terrain/test'),
     '@loaders.gl/textures/test': path.resolve(basename, '../modules/textures/test'),
     '@loaders.gl/tile-converter/test': path.resolve(basename, '../modules/tile-converter/test'),
