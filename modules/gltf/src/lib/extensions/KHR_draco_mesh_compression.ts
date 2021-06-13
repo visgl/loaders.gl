@@ -3,6 +3,7 @@
 
 /* eslint-disable camelcase */
 
+import type {GLTFParseOptions} from '../parsers/parse-gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import GLTFScenegraph from '../api/gltf-scenegraph';
@@ -10,13 +11,13 @@ import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
 // Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
-export async function decode(gltfData, options, context) {
-  if (!options.gltf.decompressMeshes) {
+export async function decode(gltfData, options: GLTFParseOptions, context) {
+  if (!options.decompressMeshes) {
     return;
   }
 
   const scenegraph = new GLTFScenegraph(gltfData);
-  const promises = [];
+  const promises: Promise<void>[] = [];
   for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
     if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
       promises.push(decompressPrimitive(primitive, scenegraph, options, context));
@@ -35,6 +36,7 @@ export function encode(gltfData, options = {}) {
 
   for (const mesh of scenegraph.json.meshes || []) {
     // eslint-disable-next-line camelcase
+    // @ts-ignore
     compressMesh(mesh, options);
     // NOTE: Only add the extension if something was actually compressed
     scenegraph.addRequiredExtension(KHR_DRACO_MESH_COMPRESSION);
@@ -49,7 +51,7 @@ export function encode(gltfData, options = {}) {
 
 // TODO - Implement fallback behavior per KHR_DRACO_MESH_COMPRESSION spec
 
-async function decompressPrimitive(primitive, scenegraph, options, context) {
+async function decompressPrimitive(primitive, scenegraph, options, context): Promise<void> {
   const compressedPrimitive = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
 
   const buffer = scenegraph.getTypedArrayForBufferView(compressedPrimitive.bufferView);
@@ -78,7 +80,7 @@ async function decompressPrimitive(primitive, scenegraph, options, context) {
 
 // eslint-disable-next-line max-len
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
-function compressMesh(attributes, indices, mode = 4, options, context) {
+function compressMesh(attributes, indices, mode: number = 4, options, context) {
   if (!options.DracoWriter) {
     throw new Error('options.gltf.DracoWriter not provided');
   }

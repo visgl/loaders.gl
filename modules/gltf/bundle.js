@@ -25,24 +25,19 @@ const NODE = {
 };
 
 const ES5_BABEL_CONFIG = {
-  presets: [
-    '@babel/preset-typescript',
-    ['@babel/preset-env', {forceAllTransforms: true}]
-  ],
+  presets: ['@babel/preset-typescript', ['@babel/preset-env', {forceAllTransforms: true}]],
   plugins: [
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
     // inject __VERSION__ from package.json
     'version-inline',
-    ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
+    ['@babel/plugin-transform-modules-commonjs', {allowTopLevelThis: true}]
   ]
 };
 
 const ES6_BABEL_CONFIG = {
-  presets: [
-    '@babel/typescript'
-  ],
+  presets: ['@babel/typescript'],
   plugins: [
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
@@ -88,7 +83,7 @@ const config = {
       {
         test: /\.mjs$/,
         include: /node_modules/,
-        type: "javascript/auto"
+        type: 'javascript/auto'
       }
     ]
   },
@@ -122,13 +117,15 @@ const es5Config = {
     filename: 'dist.es5.min.js'
   },
   module: {
-    rules: [{
-      // Compile ES2015 using babel
-      test: /\.(js|ts)$/,
-      loader: 'babel-loader',
-      include: /src/,
-      options: ES5_BABEL_CONFIG
-    }]
+    rules: [
+      {
+        // Compile ES2015 using babel
+        test: /\.(js|ts)$/,
+        loader: 'babel-loader',
+        include: /src/,
+        options: ES5_BABEL_CONFIG
+      }
+    ]
   }
 };
 

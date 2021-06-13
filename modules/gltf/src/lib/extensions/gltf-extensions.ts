@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import type {GLTFParseOptions} from '../parsers/parse-gltf';
 
 // GLTF 1.0 extensions (read only)
 // import * as KHR_binary_gltf from './KHR_draco_mesh_compression';
@@ -26,10 +27,9 @@ export const EXTENSIONS = {
   KHR_techniques_webgl
 };
 
-export async function decodeExtensions(gltf, options = {}, context) {
-  options.gltf = options.gltf || {};
+export async function decodeExtensions(gltf, options: GLTFParseOptions = {}, context) {
   for (const extensionName in EXTENSIONS) {
-    const excludes = options.gltf.excludeExtensions || {};
+    const excludes = options.excludeExtensions || {};
     const exclude = extensionName in excludes && !excludes[extensionName];
     if (!exclude) {
       const extension = EXTENSIONS[extensionName];

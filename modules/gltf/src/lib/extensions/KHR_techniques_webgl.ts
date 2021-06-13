@@ -2,8 +2,9 @@
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_techniques_webgl
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_TECHNIQUES_WEBGL} from '../gltf-utils/gltf-constants';
+import {GLTFParseOptions} from '../parsers/parse-gltf';
 
-export function decode(gltfData, options) {
+export function decode(gltfData, options: GLTFParseOptions) {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 
@@ -33,7 +34,14 @@ export function encode(gltfData, options) {
   // TODO
 }
 
-function resolveTechniques({programs = [], shaders = [], techniques = []}, gltfScenegraph) {
+function resolveTechniques(
+  techniquesExtension: {[key: string]: any},
+  // programs: {[key: string]: any}[],
+  // shaders: {[key: string]: any}[],
+  // techniques: {[key: string]: any}[]
+  gltfScenegraph
+) {
+  const {programs = [], shaders = [], techniques = []} = techniquesExtension;
   const textDecoder = new TextDecoder();
 
   shaders.forEach((shader) => {
