@@ -19,7 +19,7 @@ export function getGLTFAccessors(attributes) {
 // Fix up a single accessor.
 // Input: typed array or a partial accessor object
 // Return: accessor object
-export function getGLTFAccessor(attribute, gltfAttributeName) {
+export function getGLTFAccessor(attribute, gltfAttributeName?: string) {
   const {buffer, size, count} = getAccessorData(attribute, gltfAttributeName);
 
   const glTFAccessor = {

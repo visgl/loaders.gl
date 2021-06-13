@@ -23,7 +23,7 @@ export const GLTFWriter = {
   }
 };
 
-function encodeSync(gltf, options = {}) {
+function encodeSync(gltf, options: {[key: string]: any} = {}) {
   const {byteOffset = 0} = options;
 
   // Calculate length, then create arraybuffer and encode

@@ -1,4 +1,6 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
+import type {LoaderContext} from '@loaders.gl/loader-utils/types';
+import type {GLB, GLBParseOptions} from './parse-glb';
 import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
@@ -9,19 +11,37 @@ import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
 import {postProcessGLTF} from '../api/post-process-gltf';
 import parseGLBSync, {isGLB} from './parse-glb';
 
-export function isGLTF(arrayBuffer, options = {}) {
-  const dataView = new DataView(arrayBuffer);
+export type GLTFParseOptions = {
+  excludeExtensions?: string[];
+  decompressMeshes?: boolean;
+  normalize?: boolean;
+  loadBuffers?: boolean;
+  loadImages?: boolean;
+  postProcess?: boolean;
+};
+
+export type GLTFOptions = {
+  gltf: GLTFParseOptions;
+  glb?: GLBParseOptions;
+};
+
+export function isGLTF(arrayBuffer, options = {}): boolean {
   const byteOffset = 0;
-  return isGLB(dataView, byteOffset);
+  return isGLB(arrayBuffer, byteOffset);
 }
 
-export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, options, context) {
+export async function parseGLTF(
+  gltf,
+  arrayBufferOrString,
+  byteOffset = 0,
+  options: GLTFOptions,
+  context: LoaderContext
+) {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   normalizeGLTFV1(gltf, {normalize: options.gltf.normalize});
 
-  /** @type {Promise[]} */
-  const promises = [];
+  const promises: Promise<any>[] = [];
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options.gltf.loadBuffers && gltf.json.buffers) {
@@ -33,7 +53,7 @@ export async function parseGLTF(gltf, arrayBufferOrString, byteOffset = 0, optio
     promises.push(promise);
   }
 
-  const promise = decodeExtensions(gltf, options, context);
+  const promise = decodeExtensions(gltf, options.gltf, context);
   promises.push(promise);
 
   // Parallelize image loading and buffer loading/extension decoding
@@ -61,15 +81,15 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
     gltf.json = parseJSON(data);
   } else if (data instanceof ArrayBuffer) {
     // If still ArrayBuffer, parse as GLB container
-    const glb = {};
-    byteOffset = parseGLBSync(glb, data, byteOffset, options);
+    const glb: GLB = {} as GLB;
+    byteOffset = parseGLBSync(glb, data, byteOffset, options.glb);
 
     assert(glb.type === 'glTF', `Invalid GLB magic string ${glb.type}`);
 
     gltf._glb = glb;
     gltf.json = glb.json;
   } else {
-    assert(false, `GLTF: must be ArrayBuffer or string`);
+    assert(false, 'GLTF: must be ArrayBuffer or string');
   }
 
   // Populate buffers
@@ -122,7 +142,7 @@ async function loadBuffers(gltf, options, context) {
 async function loadImages(gltf, options, context) {
   const images = gltf.json.images || [];
 
-  const promises = [];
+  const promises: Promise<any>[] = [];
   for (let i = 0; i < images.length; ++i) {
     promises.push(loadImage(gltf, images[i], i, options, context));
   }

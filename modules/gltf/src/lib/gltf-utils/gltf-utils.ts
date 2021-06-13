@@ -2,17 +2,19 @@ import {assert} from '../utils/assert';
 
 const TYPES = ['SCALAR', 'VEC2', 'VEC3', 'VEC4'];
 
-/** @typedef {
-  Int8ArrayConstructor | Uint8ArrayConstructor | Int16ArrayConstructor | Uint16ArrayConstructor |
-  Int32ArrayConstructor | Uint32ArrayConstructor |
-  Int32ArrayConstructor | Uint32ArrayConstructor |
-  Float32ArrayConstructor |
-  Float64ArrayConstructor
-} TypedArrayConstructor
-*/
+type TypedArrayConstructor =
+  | Int8ArrayConstructor
+  | Uint8ArrayConstructor
+  | Int16ArrayConstructor
+  | Uint16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;
 
-/** @type {[TypedArrayConstructor, number][]} */
-const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT = [
+const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT: [TypedArrayConstructor, number][] = [
   [Int8Array, 5120],
   [Uint8Array, 5121],
   [Int16Array, 5122],
@@ -21,7 +23,9 @@ const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT = [
   [Float32Array, 5126],
   [Float64Array, 5130]
 ];
-const ARRAY_TO_COMPONENT_TYPE = new Map(ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT);
+const ARRAY_TO_COMPONENT_TYPE = new Map<TypedArrayConstructor, number>(
+  ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT
+);
 
 const ATTRIBUTE_TYPE_TO_COMPONENTS = {
   SCALAR: 1,

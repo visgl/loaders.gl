@@ -1,13 +1,15 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderObject} from '@loaders.gl/loader-utils';
+import type {GLB, GLBParseOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
 import parseGLBSync from './lib/parsers/parse-glb';
+
+export type GLBLoaderOptions = GLBParseOptions;
 
 /**
  * GLB Loader -
  * GLB is the binary container format for GLTF
- * @type {LoaderObject}
  */
-export const GLBLoader = {
+export const GLBLoader: LoaderObject = {
   name: 'GLB',
   id: 'glb',
   module: 'gltf',
@@ -24,9 +26,9 @@ export const GLBLoader = {
   }
 };
 
-function parseSync(arrayBuffer, options) {
+function parseSync(arrayBuffer: ArrayBuffer, options): GLB {
   const {byteOffset = 0} = options;
-  const glb = {};
+  const glb: GLB = {} as GLB;
   parseGLBSync(glb, arrayBuffer, byteOffset, options);
   return glb;
 }
