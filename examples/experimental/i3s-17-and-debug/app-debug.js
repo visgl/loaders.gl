@@ -459,7 +459,11 @@ export default class App extends PureComponent {
         loadOptions,
         pickable,
         autoHighlight: true,
-        wireframe,
+        _subLayerProps: {
+          mesh: {
+            wireframe
+          }
+        },
         _getMeshColor: this.getMeshColor.bind(this)
       }),
       new LineLayer({
