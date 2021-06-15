@@ -1,13 +1,30 @@
+/* eslint-disable camelcase */
 // This code is inspired by example code in the DRACO repository
-/** @typedef {import('../types/draco-types')} Draco3D */
-/** @typedef {import('../types/draco-types').TypedArray} TypedArray */
-/** @typedef {import('../types/draco-types').DracoInt8Array} DracoInt8Array */
-/** @typedef {import('../types/draco-types').Encoder} Encoder */
-/** @typedef {import('../types/draco-types').Mesh} Mesh */
-/** @typedef {import('../types/draco-types').PointCloud} PointCloud */
-/** @typedef {import('../types/draco-types').Metadata} Metadata */
-/** @typedef {import('../types/draco-types').PointCloudBuilder} PointCloudBuilder */
-/** @typedef {import('../types/draco-types').MetadataBuilder} MetadataBuilder */
+import type {
+  Draco3D,
+  DracoInt8Array,
+  Encoder,
+  Mesh,
+  MeshBuilder,
+  PointCloud,
+  Metadata,
+  MetadataBuilder,
+  draco_GeometryAttribute_Type
+} from '../draco3d/draco3d-types';
+
+import type {TypedArray, DracoMeshData} from '../types';
+
+export type DracoBuildOptions = {
+  pointcloud?: boolean;
+  metadata?: {[key: string]: string};
+  attributesMetadata?: {};
+  log?: any;
+
+  // draco encoding options
+  speed?: [number, number];
+  method?: string;
+  quantization?: {[attributeName: string]: number};
+};
 
 // Native Draco attribute names to GLTF attribute names.
 const GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP = {
@@ -17,20 +34,24 @@ const GLTF_TO_DRACO_ATTRIBUTE_NAME_MAP = {
   TEXCOORD_0: 'TEX_COORD'
 };
 
-function noop() {}
+const noop = () => {};
 
 export default class DracoBuilder {
+  draco: Draco3D;
+  dracoEncoder: Encoder;
+  dracoMeshBuilder: MeshBuilder;
+  dracoMetadataBuilder: MetadataBuilder;
+  log: any;
+
   // draco - the draco decoder, either import `draco3d` or load dynamically
-  constructor(draco, options = {}) {
-    /** @type {Draco3D} */
+  constructor(draco: Draco3D) {
     this.draco = draco;
     this.dracoEncoder = new this.draco.Encoder();
     this.dracoMeshBuilder = new this.draco.MeshBuilder();
     this.dracoMetadataBuilder = new this.draco.MetadataBuilder();
-    this.log = options.log || noop;
   }
 
-  destroy() {
+  destroy(): void {
     this.destroyEncodedObject(this.dracoMeshBuilder);
     this.destroyEncodedObject(this.dracoEncoder);
     this.destroyEncodedObject(this.dracoMetadataBuilder);
@@ -43,14 +64,19 @@ export default class DracoBuilder {
   }
 
   // TBD - when does this need to be called?
-  destroyEncodedObject(object) {
+  destroyEncodedObject(object): void {
     if (object) {
       this.draco.destroy(object);
     }
   }
 
-  // Encode mesh=({})
-  encodeSync(mesh, options = {}) {
+  /**
+   * Encode mesh or point cloud
+   * @param mesh =({})
+   * @param options
+   */
+  encodeSync(mesh: DracoMeshData, options: DracoBuildOptions = {}): ArrayBuffer {
+    this.log = noop; // TODO
     this._setOptions(options);
 
     return options.pointcloud
@@ -60,7 +86,7 @@ export default class DracoBuilder {
 
   // PRIVATE
 
-  _getAttributesFromMesh(mesh) {
+  _getAttributesFromMesh(mesh: DracoMeshData) {
     // TODO - Change the encodePointCloud interface instead?
     const attributes = {...mesh, ...mesh.attributes};
     // Fold indices into the attributes
@@ -70,7 +96,7 @@ export default class DracoBuilder {
     return attributes;
   }
 
-  _encodePointCloud(pointcloud, options) {
+  _encodePointCloud(pointcloud: DracoMeshData, options: DracoBuildOptions): ArrayBuffer {
     const dracoPointCloud = new this.draco.PointCloud();
 
     if (options.metadata) {
@@ -105,7 +131,7 @@ export default class DracoBuilder {
     }
   }
 
-  _encodeMesh(mesh, options) {
+  _encodeMesh(mesh: DracoMeshData, options: DracoBuildOptions): ArrayBuffer {
     const dracoMesh = new this.draco.Mesh();
 
     if (options.metadata) {
@@ -114,7 +140,7 @@ export default class DracoBuilder {
 
     const attributes = this._getAttributesFromMesh(mesh);
 
-    // Build a `DracoMesh` from the input data
+    // Build a `DracoMeshData` from the input data
     this._createDracoMesh(dracoMesh, attributes, options);
 
     const dracoData = new this.draco.DracoInt8Array();
@@ -139,13 +165,13 @@ export default class DracoBuilder {
    * Set encoding options.
    * @param {{speed?: any; method?: any; quantization?: any;}} options
    */
-  _setOptions(options) {
+  _setOptions(options: DracoBuildOptions): void {
     if ('speed' in options) {
       // @ts-ignore
       this.dracoEncoder.SetSpeedOptions(...options.speed);
     }
     if ('method' in options) {
-      const dracoMethod = this.draco[options.method];
+      const dracoMethod = this.draco[options.method || 'MESH_SEQUENTIAL_ENCODING'];
       // assert(dracoMethod)
       this.dracoEncoder.SetEncodingMethod(dracoMethod);
     }
@@ -163,7 +189,7 @@ export default class DracoBuilder {
    * @param {object} attributes
    * @returns {Mesh}
    */
-  _createDracoMesh(dracoMesh, attributes, options) {
+  _createDracoMesh(dracoMesh: Mesh, attributes, options: DracoBuildOptions): Mesh {
     const optionalMetadata = options.attributesMetadata || {};
 
     try {
@@ -194,11 +220,14 @@ export default class DracoBuilder {
   }
 
   /**
-   * @param {PointCloud} dracoPointCloud
+   * @param {} dracoPointCloud
    * @param {object} attributes
-   * @returns {PointCloud}
    */
-  _createDracoPointCloud(dracoPointCloud, attributes, options) {
+  _createDracoPointCloud(
+    dracoPointCloud: PointCloud,
+    attributes: object,
+    options: DracoBuildOptions
+  ): PointCloud {
     const optionalMetadata = options.attributesMetadata || {};
 
     try {
@@ -233,12 +262,17 @@ export default class DracoBuilder {
   }
 
   /**
-   * @param {PointCloud} mesh
-   * @param {string} attributeName
-   * @param {TypedArray} attribute
-   * @param {number} vertexCount
+   * @param mesh
+   * @param attributeName
+   * @param attribute
+   * @param vertexCount
    */
-  _addAttributeToMesh(mesh, attributeName, attribute, vertexCount) {
+  _addAttributeToMesh(
+    mesh: PointCloud,
+    attributeName: string,
+    attribute: TypedArray,
+    vertexCount: number
+  ) {
     if (!ArrayBuffer.isView(attribute)) {
       return -1;
     }
@@ -290,9 +324,9 @@ export default class DracoBuilder {
   /**
    * DRACO can compress attributes of know type better
    * TODO - expose an attribute type map?
-   * @param {*} attributeName
+   * @param attributeName
    */
-  _getDracoAttributeType(attributeName) {
+  _getDracoAttributeType(attributeName: string): draco_GeometryAttribute_Type | 'indices' {
     switch (attributeName.toLowerCase()) {
       case 'indices':
         return 'indices';
@@ -327,10 +361,10 @@ export default class DracoBuilder {
 
   /**
    * Add metadata for the geometry.
-   * @param {PointCloud} dracoGeometry - WASM Draco Object
-   * @param {Map<string, string>|{[key: string]: string}} metadata
+   * @param dracoGeometry - WASM Draco Object
+   * @param metadata
    */
-  _addGeometryMetadata(dracoGeometry, metadata) {
+  _addGeometryMetadata(dracoGeometry: PointCloud, metadata: {[key: string]: string}) {
     const dracoMetadata = new this.draco.Metadata();
     this._populateDracoMetadata(dracoMetadata, metadata);
     this.dracoMeshBuilder.AddMetadata(dracoGeometry, dracoMetadata);
@@ -338,11 +372,15 @@ export default class DracoBuilder {
 
   /**
    * Add metadata for an attribute to geometry.
-   * @param {PointCloud} dracoGeometry - WASM Draco Object
-   * @param {number} uniqueAttributeId
-   * @param {Map<string, string>|{[key: string]: string}} metadata
+   * @param dracoGeometry - WASM Draco Object
+   * @param uniqueAttributeId
+   * @param metadata
    */
-  _addAttributeMetadata(dracoGeometry, uniqueAttributeId, metadata) {
+  _addAttributeMetadata(
+    dracoGeometry: PointCloud,
+    uniqueAttributeId: number,
+    metadata: Map<string, string> | {[key: string]: string}
+  ) {
     // Note: Draco JS IDL doesn't seem to expose draco.AttributeMetadata, however it seems to
     // create such objects automatically from draco.Metadata object.
     const dracoAttributeMetadata = new this.draco.Metadata();
@@ -358,10 +396,13 @@ export default class DracoBuilder {
 
   /**
    * Add contents of object or map to a WASM Draco Metadata Object
-   * @param {Metadata} dracoMetadata - WASM Draco Object
-   * @param {Map<string, string>|{[key: string]: string}} metadata
+   * @param dracoMetadata - WASM Draco Object
+   * @param metadata
    */
-  _populateDracoMetadata(dracoMetadata, metadata) {
+  _populateDracoMetadata(
+    dracoMetadata: Metadata,
+    metadata: Map<string, string> | {[key: string]: string}
+  ) {
     for (const [key, value] of getEntries(metadata)) {
       switch (typeof value) {
         case 'number':
@@ -388,9 +429,9 @@ export default class DracoBuilder {
 
 /**
  * Copy encoded data to buffer
- * @param {DracoInt8Array} dracoData
+ * @param dracoData
  */
-function dracoInt8ArrayToArrayBuffer(dracoData) {
+function dracoInt8ArrayToArrayBuffer(dracoData: DracoInt8Array) {
   const byteLength = dracoData.size();
   const outputBuffer = new ArrayBuffer(byteLength);
   const outputData = new Int8Array(outputBuffer);

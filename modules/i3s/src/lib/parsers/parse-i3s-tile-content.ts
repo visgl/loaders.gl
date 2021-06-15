@@ -82,7 +82,7 @@ async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}, o
 
   if (tile.isDracoGeometry) {
     const decompressedGeometry = await parse(arrayBuffer, DracoLoader, {
-      parseOptions: {
+      draco: {
         attributeNameEntry: I3S_ATTRIBUTE_TYPE
       }
     });
