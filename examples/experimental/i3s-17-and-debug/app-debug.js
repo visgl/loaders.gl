@@ -343,6 +343,7 @@ export default class App extends PureComponent {
       viewportTraversersMap,
       loadTiles
     });
+    tileset.update();
     this.setState({debugOptions});
   }
 

@@ -191,11 +191,11 @@ export default class Tileset3D {
   private _defaultGeometrySchema: any[];
   private _tiles: {[id: string]: Tile3D};
 
-  private _updateFrameNumber: any;
   // counter for tracking tiles requests
   private _pendingCount: any;
 
   // HOLD TRAVERSAL RESULTS
+  private lastUpdatedVieports: any[] | null;
   private _requestedTiles: any;
   private _emptyTiles: any;
   private frameStateData: any;
@@ -266,8 +266,6 @@ export default class Tileset3D {
     // increase in each update cycle
     this._frameNumber = 0;
 
-    // increase when tiles selected for rendering changed
-    this._updateFrameNumber = 0;
     // counter for tracking tiles requests
     this._pendingCount = 0;
 
@@ -277,6 +275,7 @@ export default class Tileset3D {
     this._emptyTiles = [];
     this._requestedTiles = [];
     this.frameStateData = {};
+    this.lastUpdatedVieports = null;
 
     this._queryParams = {};
     this._queryParamsString = '';
@@ -366,12 +365,18 @@ export default class Tileset3D {
    * Update visible tiles relying on a list of viewports
    * @param viewports - list of viewports
    */
+  // eslint-disable-next-line max-statements, complexity
   update(viewports: any[]): void {
     if ('loadTiles' in this.options && !this.options.loadTiles) {
       return;
     }
     if (this.traverseCounter > 0) {
       return;
+    }
+    if (!viewports && this.lastUpdatedVieports) {
+      viewports = this.lastUpdatedVieports;
+    } else {
+      this.lastUpdatedVieports = viewports;
     }
     if (!(viewports instanceof Array)) {
       viewports = [viewports];
