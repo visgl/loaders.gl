@@ -1,3 +1,5 @@
+import './meshopt/meshopt-decoder.spec';
+
 import './lib/glb/glb-encode-parse.spec';
 import './lib/glb/glb-encoder-decoder.spec';
 import './lib/glb/glb-custom-payload.spec';

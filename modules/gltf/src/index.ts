@@ -1,8 +1,5 @@
 // Constants
-export {
-  KHR_DRACO_MESH_COMPRESSION,
-  UBER_POINT_CLOUD_EXTENSION
-} from './lib/gltf-utils/gltf-constants';
+export {KHR_DRACO_MESH_COMPRESSION} from './lib/gltf-utils/gltf-constants';
 
 // glTF loader/writer definition objects
 export {GLTFLoader} from './gltf-loader';
