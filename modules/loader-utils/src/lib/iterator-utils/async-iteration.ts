@@ -1,5 +1,4 @@
 import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils';
-import {assert} from '../env-utils/assert';
 
 // GENERAL UTILITIES
 

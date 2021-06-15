@@ -1,6 +1,5 @@
 import ManagedArray from '../../utils/managed-array';
 import {TILE_REFINEMENT} from '../../constants';
-import {assert} from '@loaders.gl/loader-utils';
 
 export type TilesetTraverserProps = {
   loadSiblings?: boolean;
@@ -230,7 +229,7 @@ export default class TilesetTraverser {
 
   // tile to render in the browser
   selectTile(tile, frameState) {
-    if (this.shouldSelectTile(tile, frameState)) {
+    if (this.shouldSelectTile(tile)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
       this.selectedTiles[tile.id] = tile;
@@ -239,7 +238,7 @@ export default class TilesetTraverser {
 
   // tile to load from server
   loadTile(tile, frameState) {
-    if (this.shouldLoadTile(tile, frameState)) {
+    if (this.shouldLoadTile(tile)) {
       tile._requestedFrame = frameState.frameNumber;
       tile._priority = tile._getPriority();
       this.requestedTiles[tile.id] = tile;
@@ -274,13 +273,13 @@ export default class TilesetTraverser {
     return this.shouldRefine(tile, frameState, useParentMetric);
   }
 
-  shouldLoadTile(tile, frameState) {
+  shouldLoadTile(tile) {
     // if request tile is in current frame
     // and has unexpired render content
     return tile.hasUnloadedContent || tile.contentExpired;
   }
 
-  shouldSelectTile(tile, frameState) {
+  shouldSelectTile(tile) {
     // if select tile is in current frame
     // and content available
     return tile.contentAvailable && !this.options.skipLevelOfDetail;

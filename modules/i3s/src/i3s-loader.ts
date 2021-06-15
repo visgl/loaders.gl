@@ -36,7 +36,7 @@ export const I3SLoader = {
   }
 };
 
-async function parseI3S(data, options, context, loader) {
+async function parseI3S(data, options, context) {
   const url = context.url;
   options.i3s = options.i3s || {};
   const magicNumber = getMagicNumber(data);
@@ -70,13 +70,13 @@ async function parseI3S(data, options, context, loader) {
       await load(data.contentUrl, I3SLoader, options);
     }
   } else {
-    data = await parseTileContent(data, options, context);
+    data = await parseTileContent(data, options);
   }
 
   return data;
 }
 
-async function parseTileContent(arrayBuffer, options, context) {
+async function parseTileContent(arrayBuffer, options) {
   return await parse(arrayBuffer, I3SContentLoader, options);
 }
 

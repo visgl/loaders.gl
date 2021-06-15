@@ -24,6 +24,7 @@ export const JSONLoader: LoaderObject = {
 };
 
 // TODO - deprecated
+/* eslint-disable @typescript-eslint/no-unused-vars */
 function parseTextSync(text, options) {
   return JSON.parse(text);
 }

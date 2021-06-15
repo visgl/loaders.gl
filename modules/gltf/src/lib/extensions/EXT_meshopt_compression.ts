@@ -3,6 +3,7 @@ import GLTFScenegraph from '../api/gltf-scenegraph';
 import {EXT_MESHOPT_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {isMeshoptSupported, meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
+/* eslint-disable camelcase */
 type GLTF_EXT_meshopt_compression = {
   buffer: number;
   byteOffset?: number;
@@ -12,14 +13,14 @@ type GLTF_EXT_meshopt_compression = {
   mode: 'ATTRIBUTES' | 'TRIANGLES' | 'INDICES';
   filter?: 'NONE' | 'OCTAHEDRAL' | 'QUATERNION' | 'EXPONENTIAL';
 };
-
+// eslint-disable-next-line
 const DEFAULT_MESHOPT_OPTIONS = {
   byteOffset: 0,
   filter: 'NONE'
 };
 
 // Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
-export async function decode(gltfData, options: GLTFLoaderOptions, context) {
+export async function decode(gltfData, options: GLTFLoaderOptions) {
   if (!options?.gltf?.decompressMeshes || !isMeshoptSupported()) {
     return;
   }
@@ -37,6 +38,7 @@ export async function decode(gltfData, options: GLTFLoaderOptions, context) {
   scenegraph.removeExtension(EXT_MESHOPT_COMPRESSION);
 }
 
+// eslint-disable-next-line
 export function encode(gltfData, options = {}) {
   // const scenegraph = new GLTFScenegraph(gltfData);
 }

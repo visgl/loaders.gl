@@ -1,5 +1,4 @@
 import {assert} from '../env-utils/assert';
-import {sliceArrayBuffer} from './array-buffer-utils';
 
 /**
  * Calculate new size of an arrayBuffer to be aligned to an n-byte boundary

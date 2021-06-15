@@ -1,4 +1,4 @@
-import {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
+import {WorkerLoaderObject, LoaderObject} from './types';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -30,10 +30,10 @@ export const NullWorkerLoader: WorkerLoaderObject = {
  */
 export const NullLoader: LoaderObject = {
   ...NullWorkerLoader,
-  parse: async (arrayBuffer, options) => arrayBuffer,
-  parseSync: (arrayBuffer, options) => arrayBuffer,
+  parse: async (arrayBuffer) => arrayBuffer,
+  parseSync: (arrayBuffer) => arrayBuffer,
   // @ts-ignore
-  parseInBatches: async (asyncIterator, options) =>
+  parseInBatches: async (asyncIterator) =>
     (async function* parseInBatches() {
       // @ts-ignore
       yield* asyncIterator;

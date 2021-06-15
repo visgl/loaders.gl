@@ -18,7 +18,7 @@ export const ArrowWriter = {
   options: {}
 };
 
-function encodeSync(data, options = {}) {
-  const arrayBuffer = encodeArrowSync(data, options);
+function encodeSync(data) {
+  const arrayBuffer = encodeArrowSync(data);
   return arrayBuffer;
 }

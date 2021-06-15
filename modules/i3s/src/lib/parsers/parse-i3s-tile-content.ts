@@ -65,11 +65,11 @@ export async function parseI3STileContent(
     tile.content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, options);
+  return await parseI3SNodeGeometry(arrayBuffer, tile);
 }
 
 /* eslint-disable max-statements */
-async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}, options) {
+async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
   if (!tile.content) {
     return tile;
   }

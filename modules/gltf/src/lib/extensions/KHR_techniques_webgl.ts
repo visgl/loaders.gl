@@ -2,12 +2,11 @@
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_techniques_webgl
 
 import type {GLTF} from '../types/gltf-types';
-import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_TECHNIQUES_WEBGL} from '../gltf-utils/gltf-constants';
 
-export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
+export async function decode(gltfData: {json: GLTF}): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 
@@ -34,7 +33,7 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
     gltfScenegraph.removeExtension(KHR_TECHNIQUES_WEBGL);
   }
 }
-
+// eslint-disable-next-line
 export async function encode(gltfData, options): Promise<void> {
   // TODO
 }

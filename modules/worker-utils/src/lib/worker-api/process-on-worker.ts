@@ -15,7 +15,7 @@ export async function processOnWorker(
   data: any,
   options: object = {}
 ): Promise<any> {
-  const name = getWorkerObjectName(worker, options);
+  const name = getWorkerObjectName(worker);
   const url = getWorkerObjectURL(worker, options);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
