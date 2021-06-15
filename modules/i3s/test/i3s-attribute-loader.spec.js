@@ -6,6 +6,7 @@ const objectIdsUrl = '@loaders.gl/i3s/test/data/attributes/f_0/0/index.bin';
 const namesUrl = '@loaders.gl/i3s/test/data/attributes/f_1/0/index.bin';
 const heightRoofUrl = '@loaders.gl/i3s/test/data/attributes/f_2/0/index.bin';
 const wrongNamesUrl = '@loaders.gl/i3s/test/data/attributes/f_1/0/wrong.bin';
+const wrongBufferNamesUrl = '@loaders.gl/i3s/test/data/attributes/f_1/0/wrong-buffer.bin';
 
 const name602 = 'West End Building\0';
 const objecId0 = 979297;
@@ -47,6 +48,20 @@ const TILE_WITH_WRONG_NAME_ATTRIBUTE_URL = {
   },
   header: {
     attributeUrls: [objectIdsUrl, wrongNamesUrl, heightRoofUrl]
+  }
+};
+
+const TILE_WITH_WRONG_BUFFER_NAME_ATTRIBUTE = {
+  tileset: {
+    tileset: {
+      attributeStorageInfo: [
+        {key: 'f_0', name: 'OBJECTID', objectIds: []},
+        {key: 'f_1', name: 'NAME', attributeValues: {valueType: 'String'}}
+      ]
+    }
+  },
+  header: {
+    attributeUrls: [objectIdsUrl, wrongBufferNamesUrl, heightRoofUrl]
   }
 };
 
@@ -186,6 +201,16 @@ test('I3SAttributeLoader#loadFeatureAttributes should return attributes object',
 
 test('I3SAttributeLoader#loadFeatureAttributes if one of them are failed to fetch', async (t) => {
   const tile = TILE_WITH_WRONG_NAME_ATTRIBUTE_URL;
+  const featureId = objecId0;
+  const options = {};
+
+  const attributes = await loadFeatureAttributes(tile, featureId, options);
+  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ''});
+  t.end();
+});
+
+test('I3SAttributeLoader#loadFeatureAttributes string attribute should be empty if string attribute has multiple of 4 error from arrayBuffer', async (t) => {
+  const tile = TILE_WITH_WRONG_BUFFER_NAME_ATTRIBUTE;
   const featureId = objecId0;
   const options = {};
 
