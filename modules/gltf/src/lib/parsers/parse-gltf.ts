@@ -53,7 +53,7 @@ export async function parseGLTF(
     promises.push(promise);
   }
 
-  const promise = decodeExtensions(gltf, options.gltf, context);
+  const promise = decodeExtensions(gltf, options, context);
   promises.push(promise);
 
   // Parallelize image loading and buffer loading/extension decoding

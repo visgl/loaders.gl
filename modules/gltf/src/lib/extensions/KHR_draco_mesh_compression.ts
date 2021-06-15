@@ -11,8 +11,8 @@ import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
 // Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
-export async function decode(gltfData, options: GLTFParseOptions, context) {
-  if (!options.decompressMeshes) {
+export async function decode(gltfData, options, context) {
+  if (!options.gltf.decompressMeshes) {
     return;
   }
 
