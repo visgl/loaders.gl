@@ -19,7 +19,7 @@ const DEFAULT_DRACO_OPTIONS: DracoLoaderOptions = {
 /**
  * Worker loader for Draco3D compressed geometries
  */
-export const DracoWorkerLoader: WorkerLoaderObject = {
+export const DracoWorkerLoader = {
   name: 'Draco',
   id: 'draco',
   module: 'draco',
@@ -37,7 +37,7 @@ export const DracoWorkerLoader: WorkerLoaderObject = {
 /**
  * Loader for Draco3D compressed geometries
  */
-export const DracoLoader: LoaderObject = {
+export const DracoLoader = {
   ...DracoWorkerLoader,
   parse
 };
@@ -55,3 +55,7 @@ async function parse(
     dracoParser.destroy();
   }
 }
+
+// TYPE TESTS - TODO find a better way than exporting junk
+export const _TypecheckDracoWorkerLoader: WorkerLoaderObject = DracoWorkerLoader;
+export const _TypecheckDracoLoader: LoaderObject = DracoLoader;

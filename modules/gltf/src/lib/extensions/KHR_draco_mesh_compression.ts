@@ -63,7 +63,7 @@ async function decompressPrimitive(primitive, scenegraph, options, context): Pro
   const dracoOptions = {...options};
   // The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
-  const decodedData = await parse(bufferCopy, DracoLoader, dracoOptions, context);
+  const decodedData = await DracoLoader.parse(bufferCopy, dracoOptions, context);
 
   primitive.attributes = getGLTFAccessors(decodedData.attributes);
   if (decodedData.indices) {
