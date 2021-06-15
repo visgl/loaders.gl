@@ -178,6 +178,7 @@ export default class Tileset3D {
   // Tiles not in view are unloaded to enforce private
   // The total amount of GPU memory in bytes used by the tileset.
   gpuMemoryUsageInBytes: any;
+  dynamicScreenSpaceErrorComputedDensity: any;
 
   // TRAVERSAL
   _traverser: TilesetTraverser;
@@ -188,10 +189,8 @@ export default class Tileset3D {
   private _queryParamsString: string;
   private _queryParams: any;
   private _extensionsUsed: any;
-  private _defaultGeometrySchema: any[];
   private _tiles: {[id: string]: Tile3D};
 
-  private _updateFrameNumber: any;
   // counter for tracking tiles requests
   private _pendingCount: any;
 
@@ -201,14 +200,6 @@ export default class Tileset3D {
   private frameStateData: any;
 
   maximumMemoryUsage: number;
-
-  // TODO CESIUM specific
-  private _hasMixedContent: any;
-  private _maximumScreenSpaceError: any;
-  // EXTRACTED FROM TILESET
-  private _properties: any;
-  private _gltfUpAxis: any;
-  private _dynamicScreenSpaceErrorComputedDensity: any;
 
   /**
    * Create a new Tileset3D
@@ -266,8 +257,6 @@ export default class Tileset3D {
     // increase in each update cycle
     this._frameNumber = 0;
 
-    // increase when tiles selected for rendering changed
-    this._updateFrameNumber = 0;
     // counter for tracking tiles requests
     this._pendingCount = 0;
 
@@ -290,22 +279,14 @@ export default class Tileset3D {
     this.stats = new Stats({id: this.url});
     this._initializeStats();
 
-    // TODO CESIUM specific
-    this._hasMixedContent = false;
-    this._maximumScreenSpaceError = this.options.maximumScreenSpaceError;
     // EXTRACTED FROM TILESET
-    this._properties = undefined; // Metadata for per-model/point/etc properties
     this._extensionsUsed = undefined;
-    this._gltfUpAxis = undefined;
-    this._dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
+    this.dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
     // Metadata for the entire tileset
     this.extras = null;
     this.asset = {};
     this.credits = {};
     this.description = this.options.description || '';
-
-    // TODO I3S Specific
-    this._defaultGeometrySchema = [];
 
     this._initializeTileSet(json);
   }
@@ -766,8 +747,6 @@ export default class Tileset3D {
     if ('token' in this.options) {
       this._queryParams.token = this.options.token;
     }
-    // Initialize default Geometry schema
-    this._defaultGeometrySchema = tilesetJson.store.defaultGeometrySchema;
   }
 }
 
