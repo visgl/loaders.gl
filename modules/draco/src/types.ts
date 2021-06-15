@@ -95,7 +95,7 @@ export type DracoLoaderData = {
   // unique_ids?: {[attributeName: string]: number};
 };
 
-/** 
+/**
  * loaders.gl Mesh with Draco specific data
  */
 export type DracoMeshData = {
