@@ -11,11 +11,11 @@ const TEST_CORE = true;
 const TEST_IMAGES = true;
 const TEST_MESHES = true;
 const TEST_SCENEGRAPHS = true;
-const TEST_TILES = false;
-const TEST_GEOSPATIAL = false;
-const TEST_TABLES = false;
-const TEST_ARCHIVES = false;
-const TEST_CLI = false;
+const TEST_TILES = true;
+const TEST_GEOSPATIAL = true;
+const TEST_TABLES = true;
+const TEST_ARCHIVES = true;
+const TEST_CLI = true;
 
 export const isBrowser =
   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
