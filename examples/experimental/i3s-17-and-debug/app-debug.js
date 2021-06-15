@@ -13,6 +13,7 @@ import {
   COORDINATE_SYSTEM
 } from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
+import {Tile3DLayer} from '@deck.gl/geo-layers';
 
 import {load} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/i3s';
@@ -35,7 +36,6 @@ import {
 } from './constants';
 import {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './color-map';
 import {getFrustumBounds} from './frustum-utils';
-import TileLayer from './tile-layer/tile-layer';
 import BoundingVolumeLayer from './bounding-volume-layer';
 import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
@@ -343,6 +343,7 @@ export default class App extends PureComponent {
       viewportTraversersMap,
       loadTiles
     });
+    tileset.update();
     this.setState({debugOptions});
   }
 
@@ -450,7 +451,7 @@ export default class App extends PureComponent {
     const frustumBounds = getFrustumBounds(viewport);
 
     return [
-      new TileLayer({
+      new Tile3DLayer({
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
@@ -459,8 +460,12 @@ export default class App extends PureComponent {
         loadOptions,
         pickable,
         autoHighlight: true,
-        wireframe,
-        getMeshColor: this.getMeshColor.bind(this)
+        _subLayerProps: {
+          mesh: {
+            wireframe
+          }
+        },
+        _getMeshColor: this.getMeshColor.bind(this)
       }),
       new LineLayer({
         id: 'frustum',
