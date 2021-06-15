@@ -6,10 +6,10 @@ const ALIASES = require('./aliases');
 const {_addAliases} = require('@loaders.gl/loader-utils');
 _addAliases(ALIASES);
 
-const TEST_BASE = false;
-const TEST_CORE = false;
-const TEST_IMAGES = false;
-const TEST_MESHES = false;
+const TEST_BASE = true;
+const TEST_CORE = true;
+const TEST_IMAGES = true;
+const TEST_MESHES = true;
 const TEST_SCENEGRAPHS = true;
 const TEST_TILES = false;
 const TEST_GEOSPATIAL = false;
