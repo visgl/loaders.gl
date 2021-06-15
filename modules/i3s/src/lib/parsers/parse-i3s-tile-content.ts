@@ -38,8 +38,6 @@ export async function parseI3STileContent(
 ) {
   tile.content = tile.content || {};
   tile.content.featureIds = tile.content.featureIds || null;
-  // Remove segmentationData after i3s-content-worker will be published
-  tile.content.segmentationData = tile.content.segmentationData || null;
 
   // construct featureData from defaultGeometrySchema;
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
@@ -161,8 +159,6 @@ async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}, o
 
   if (attributes.id && attributes.id.value) {
     tile.content.featureIds = attributes.id.value;
-    // Remove segmentationData i3s-content-worker will be published
-    tile.content.segmentationData = attributes.id.value;
   }
 
   // Remove undefined attributes

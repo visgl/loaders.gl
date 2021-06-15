@@ -35,9 +35,7 @@ function getBaseUri(tileset) {
 async function parseTile(arrayBuffer, options, context) {
   const tile = {
     content: {
-      featureIds: null,
-      // Remove segmentationData after i3s-content-worker will be published
-      segmentationData: null
+      featureIds: null
     }
   };
   const byteOffset = 0;
