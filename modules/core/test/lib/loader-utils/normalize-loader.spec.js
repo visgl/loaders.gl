@@ -6,7 +6,7 @@ import * as threeDTiles from '@loaders.gl/3d-tiles';
 import * as arrow from '@loaders.gl/arrow';
 import * as csv from '@loaders.gl/csv';
 import * as draco from '@loaders.gl/draco';
-import * as tables from '@loaders.gl/tables';
+import * as tables from '@loaders.gl/schema';
 import * as gltf from '@loaders.gl/gltf';
 import * as images from '@loaders.gl/images';
 import * as kml from '@loaders.gl/kml';

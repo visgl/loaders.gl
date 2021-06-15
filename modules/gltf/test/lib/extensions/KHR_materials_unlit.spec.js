@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import test from 'tape-promise/tape';
 
-import {decodeExtensions} from '@loaders.gl/gltf/lib/extensions/gltf-extensions.js';
+import {decodeExtensions} from '@loaders.gl/gltf/lib/extensions/gltf-extensions';
 
 const TEST_CASES = [
   {

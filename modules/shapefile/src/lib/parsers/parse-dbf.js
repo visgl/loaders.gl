@@ -1,4 +1,4 @@
-import {Schema, Field, Bool, Utf8, Float64, TimestampMillisecond} from '@loaders.gl/tables';
+import {Schema, Field, Bool, Utf8, Float64, TimestampMillisecond} from '@loaders.gl/schema';
 
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 

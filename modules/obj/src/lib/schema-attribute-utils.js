@@ -1,4 +1,4 @@
-import {Schema, Field, Float32, Float64, Uint8, FixedSizeList} from '@loaders.gl/tables';
+import {Schema, Field, Float32, Float64, Uint8, FixedSizeList} from '@loaders.gl/schema';
 
 export function makeSchemaFromAttributes(attributes, metadata = {}) {
   let metadataMap;

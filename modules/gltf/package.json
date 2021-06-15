@@ -19,13 +19,10 @@
     "GLB",
     "glTF"
   ],
-  "types": "src/index.d.ts",
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
-  "bin": {
-    "glbdump": "./bin/glbdump.js"
-  },
   "files": [
     "src",
     "dist",
@@ -34,8 +31,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"
+    "build-bundle": "webpack --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.21",

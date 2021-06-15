@@ -59,6 +59,10 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 
 - Added `featureIds` attribute to i3s tile content. It is an array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.
 
+**@loaders.gl/tables**
+
+- The (undocumented) `@loaders.gl/tables` module has been renamed to `@loaders.gl/schema`.
+
 ## Upgrading to v2.3
 
 `@loaders.gl/core`:

@@ -823,7 +823,7 @@
 - Add georeference for 3d tiles (#512)
 - Add cesium point cloud 3D tile format support (#508)
 - upgrade rapidjson lib (#507)
-- tables: @loaders.gl/experimental => @loaders.gl/tables (#500)
+- tables: @loaders.gl/experimental => @loaders.gl/schema (#500)
 - basis: add docs (#497)
 - i3s test data using NYC 3-D Building Model from NYC DoITT (#495)
 - i3s server tests (#494)

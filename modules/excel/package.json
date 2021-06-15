@@ -20,7 +20,7 @@
     "Worksheets",
     "Spreadsheets"
   ],
-  "types": "dist/es5/index.d.ts",
+  "types": "src/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.0.0-alpha.21",
-    "@loaders.gl/tables": "3.0.0-alpha.21",
+    "@loaders.gl/schema": "3.0.0-alpha.21",
     "xlsx": "^0.16.9"
   }
 }

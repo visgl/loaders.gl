@@ -43,8 +43,5 @@
     "@babel/runtime": "^7.3.1",
     "@loaders.gl/worker-utils": "3.0.0-alpha.21",
     "@probe.gl/stats": "^3.3.0"
-  },
-  "devDependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.21"
   }
 }

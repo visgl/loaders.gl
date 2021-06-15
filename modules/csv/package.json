@@ -16,6 +16,7 @@
     "table",
     "CSV"
   ],
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -30,7 +31,7 @@
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.0.0-alpha.21",
-    "@loaders.gl/tables": "3.0.0-alpha.21"
+    "@loaders.gl/schema": "3.0.0-alpha.21"
   },
   "devDependencies": {
     "d3-dsv": "^1.2.0"
