@@ -1,15 +1,13 @@
 import {test} from 'tape-promise/tape';
 import {loadZarr} from '@loaders.gl/zarr';
-import {isBrowser} from '@loaders.gl/core';
+import {resolvePath} from '@loaders.gl/core';
 
-const FIXTURE = '@loaders.gl/zarr/test/data/multiscale.zarr';
+const CONTENT_BASE = resolvePath('@loaders.gl/zarr/test/data');
+const OME_FIXTURE= `${CONTENT_BASE}/ome.zarr`;
+const FIXTURE = `${CONTENT_BASE}/multiscale.zarr`;
 const LABELS = ['foo', 'bar', 'baz', 'y', 'x'];
 
 test('Creates correct ZarrPixelSource.', async (t) => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
   t.plan(3);
   try {
     const {data} = await loadZarr(FIXTURE, {labels: LABELS});
@@ -23,13 +21,9 @@ test('Creates correct ZarrPixelSource.', async (t) => {
 });
 
 test('Creates correct OME ZarrPixelSource.', async (t) => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
   t.plan(3);
   try {
-    const {data} = await loadZarr('@loaders.gl/zarr/test/data/ome.zarr');
+    const {data} = await loadZarr(OME_FIXTURE);
     t.equal(data.length, 2, 'Image should have two levels.');
     const [base] = data;
     t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');
@@ -40,10 +34,6 @@ test('Creates correct OME ZarrPixelSource.', async (t) => {
 });
 
 test('Get raster data.', async (t) => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
   t.plan(13);
   try {
     const {data} = await loadZarr(FIXTURE, {labels: LABELS});
@@ -69,10 +59,6 @@ test('Get raster data.', async (t) => {
 });
 
 test('Invalid labels.', async (t) => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
   t.plan(3);
   try {
     await loadZarr(FIXTURE, {labels: ['a', 'b', 'y', 'x']});
