@@ -1,4 +1,4 @@
-/** @typedef {import('./parse-crunch')} types */
+import type {TextureLevel} from '../../types/texture';
 import {loadCrunchModule} from './crunch-module-loader';
 import {GL} from '../gl-constants';
 import {assert} from '@loaders.gl/loader-utils';
@@ -33,10 +33,15 @@ DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT5] = {
 };
 
 let cachedDstSize = 0;
-let dst = null;
+let dst: number;
 
-/** @type {types['parseCrunch']} */
-export async function parseCrunch(data, options = {}) {
+/**
+ * Parse texture data as "CRN" format.
+ * Function is "async" as emscriptified decoder module is loaded asyncronously
+ * @param data - binary data of compressed texture
+ * @returns Promise of Array of the texture levels
+ */
+export async function parseCrunch(data, options: any): Promise<TextureLevel[]> {
   const crunchModule = await loadCrunchModule(options);
 
   // Copy the contents of the arrayBuffer into emscriptens heap.

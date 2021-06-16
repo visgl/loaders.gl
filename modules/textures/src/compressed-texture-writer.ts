@@ -1,10 +1,9 @@
-/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+import type {WriterObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeImageURLToCompressedTextureURL} from './lib/encoders/encode-texture';
 
 /**
  * DDS Texture Container Exporter
- * @type {WriterObject}
  */
 export const CompressedTextureWriter = {
   name: 'DDS Texture Container',
@@ -27,3 +26,6 @@ export const CompressedTextureWriter = {
 
   encodeURLtoURL: encodeImageURLToCompressedTextureURL
 };
+
+// TYPE TESTS - TODO find a better way than exporting junk
+export const _TypecheckCompressedTextureWriter: WriterObject = CompressedTextureWriter;

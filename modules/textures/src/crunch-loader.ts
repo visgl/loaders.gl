@@ -1,10 +1,8 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 
 /**
  * Worker loader for the Crunch compressed texture container format
- * @type {WorkerLoaderObject}
  */
 export const CrunchWorkerLoader = {
   id: 'crunch',
@@ -17,9 +15,12 @@ export const CrunchWorkerLoader = {
   binary: true,
   options: {
     crunch: {
-      libraryPath: `libs/`
+      libraryPath: 'libs/'
     }
   }
 };
 
-// We void bundling crunch - rare format, only offer worker loader
+// We avoid bundling crunch - rare format, only offer worker loader
+
+// TYPE TESTS - TODO find a better way than exporting junk
+export const _TypecheckCrunchWorkerLoader: WorkerLoaderObject = CrunchWorkerLoader;

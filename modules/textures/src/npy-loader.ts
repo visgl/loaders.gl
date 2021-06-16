@@ -1,5 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseNPY} from './lib/parsers/parse-npy';
 
@@ -8,7 +7,6 @@ const NPY_MAGIC_NUMBER = new Uint8Array([147, 78, 85, 77, 80, 89]);
 
 /**
  * Worker loader for numpy "tiles"
- * @type {WorkerLoaderObject}
  */
 export const NPYWorkerLoader = {
   name: 'NPY',
@@ -26,10 +24,13 @@ export const NPYWorkerLoader = {
 
 /**
  * Loader for numpy "tiles"
- * @type {LoaderObject}
  */
 export const NPYLoader = {
   ...NPYWorkerLoader,
   parseSync: parseNPY,
   parse: async (arrayBuffer, options) => parseNPY(arrayBuffer, options)
 };
+
+// TYPE TESTS - TODO find a better way than exporting junk
+export const _TypecheckNPYWorkerLoader: WorkerLoaderObject = NPYWorkerLoader;
+export const _TypecheckNPYLoader: LoaderObject = NPYLoader;
