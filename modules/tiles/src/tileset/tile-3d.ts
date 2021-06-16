@@ -365,14 +365,19 @@ export default class TileHeader {
       // The content can be a binary tile ot a JSON tileset
       const loader = this.tileset.loader;
       const options = {
-        fetch: this.tileset.fetchOptions,
         [loader.id]: {
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)
-        }
+        },
+        ...this.tileset.loadOptions
       };
 
       this.content = await load(contentUrl, loader, options);
+
+      if (this.tileset.options.contentLoader) {
+        await this.tileset.options.contentLoader(this);
+      }
+
       if (this._isTileset()) {
         // Add tile headers for the nested tilset's subtree
         // Async update of the tree should be fine since there would never be edits to the same node
@@ -420,12 +425,15 @@ export default class TileHeader {
     }
 
     const parent = this.parent;
-    const parentTransform = parent ? parent.computedTransform : this.tileset.modelMatrix;
     const parentVisibilityPlaneMask = parent
       ? parent._visibilityPlaneMask
       : CullingVolume.MASK_INDETERMINATE;
 
-    this._updateTransform(parentTransform);
+    if (this.tileset._traverser.options.updateTransforms) {
+      const parentTransform = parent ? parent.computedTransform : this.tileset.modelMatrix;
+      this._updateTransform(parentTransform);
+    }
+
     this._distanceToCamera = this.distanceToTile(frameState);
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
     this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
