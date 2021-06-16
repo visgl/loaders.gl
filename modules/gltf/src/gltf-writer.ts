@@ -2,6 +2,11 @@ import type {WriterObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encoders/encode-gltf';
 
+export type GLTFWriterOptions = {
+  gltf?: {};
+  byteOffset?: number;
+};
+
 /**
  * GLTF exporter
  */
@@ -22,7 +27,7 @@ export const GLTFWriter = {
   }
 };
 
-function encodeSync(gltf, options: {[key: string]: any} = {}) {
+function encodeSync(gltf, options: GLTFWriterOptions = {}) {
   const {byteOffset = 0} = options;
 
   // Calculate length, then create arraybuffer and encode

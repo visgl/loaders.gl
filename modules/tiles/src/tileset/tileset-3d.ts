@@ -52,26 +52,34 @@ import I3SetTraverser from './traversers/i3s-tileset-traverser';
 import {TILESET_TYPE} from '../constants';
 
 export type Tileset3DProps = {
+  // loading
+  token?: string;
+  headers?: any;
+  throttleRequests?: boolean;
+  maxRequests?: number;
+  loadOptions?: {[key: string]: any};
+  loadTiles?: boolean;
+  basePath?: string;
+  maximumMemoryUsage?: number;
+
+  // Metadata
   description?: string;
+  attributions?: string[];
+
+  // Transforms
   ellipsoid?: object;
   modelMatrix?: Matrix4;
-  throttleRequests?: boolean;
-  maximumMemoryUsage?: number;
+
+  // Traversal
+  maximumScreenSpaceError?: number;
+  viewportTraversersMap?: any;
+  updateTransforms?: boolean;
+  viewDistanceScale?: number;
+
+  // Callbacks
   onTileLoad?: (tile: Tile3D) => any;
   onTileUnload?: (tile: Tile3D) => any;
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
-  maximumScreenSpaceError?: number;
-  viewportTraversersMap?: any;
-  token?: string;
-  attributions?: string[];
-  headers?: any;
-  maxRequests?: number;
-  loadTiles?: boolean;
-  loadOptions?: {[key: string]: any};
-  updateTransforms?: boolean;
-  maxRequests?: number;
-  viewDistanceScale?: number;
-  basePath?: string;
   contentLoader?: (tile: Tile3D) => Promise<void>;
 };
 

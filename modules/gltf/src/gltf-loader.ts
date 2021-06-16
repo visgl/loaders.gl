@@ -8,7 +8,11 @@ import {GLBLoaderOptions} from './glb-loader';
 /**
  * GLTF loader options
  */
-export type GLTFLoaderOptions = GLTFParseOptions;
+export type GLTFLoaderOptions = GLBLoaderOptions & {
+  gltf?: GLTFParseOptions;
+  draco?: DracoLoaderOptions;
+  byteOffset?: number;
+};
 
 /**
  * GLTF loader
@@ -49,16 +53,7 @@ export const GLTFLoader: LoaderObject = {
   }
 };
 
-export async function parse(
-  arrayBuffer,
-  options: {
-    gltf?: GLTFLoaderOptions;
-    glb?: GLBLoaderOptions;
-    draco?: DracoLoaderOptions;
-    byteOffset?: number;
-  } = {},
-  context
-) {
+export async function parse(arrayBuffer, options: GLTFLoaderOptions = {}, context) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GLTFLoader.options, ...options};
   // @ts-ignore

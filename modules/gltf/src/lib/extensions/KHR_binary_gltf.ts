@@ -1,10 +1,13 @@
 // GLTF 1.0 EXTENSION: KHR_binary_glTF
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
 
+import type {GLTF} from '../types/gltf-types';
+import type {GLTFLoaderOptions} from '../../gltf-loader';
+
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_BINARY_GLTF} from '../gltf-utils/gltf-constants';
 
-export function decode(gltfData, options) {
+export function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): void {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 

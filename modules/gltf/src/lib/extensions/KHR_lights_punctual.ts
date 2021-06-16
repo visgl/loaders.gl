@@ -1,12 +1,14 @@
 // GLTF EXTENSION: KHR_lights_punctual
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual
 
-import type {GLTFParseOptions} from '../parsers/parse-gltf';
+import type {GLTF} from '../types/gltf-types';
+import type {GLTFLoaderOptions} from '../../gltf-loader';
+
 import {assert} from '../utils/assert';
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_LIGHTS_PUNCTUAL} from '../gltf-utils/gltf-constants';
 
-export function decode(gltfData, options: GLTFParseOptions) {
+export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 
@@ -31,26 +33,31 @@ export function decode(gltfData, options: GLTFParseOptions) {
 }
 
 // Move the light ar ray out of the extension and remove the extension
-export function encode(gltfData, options) {
+export async function encode(gltfData, options): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 
+  // @ts-ignore
   if (json.lights) {
     const extension = gltfScenegraph.addExtension(KHR_LIGHTS_PUNCTUAL);
     // @ts-ignore
     assert(!extension.lights);
     // @ts-ignore
     extension.lights = json.lights;
+    // @ts-ignore
     delete json.lights;
   }
 
   // Any nodes that have lights field pointing to light object
   // add the extension
+  // @ts-ignore
   if (gltfScenegraph.json.lights) {
+    // @ts-ignore
     for (const light of gltfScenegraph.json.lights) {
       const node = light.node;
       gltfScenegraph.addObjectExtension(node, KHR_LIGHTS_PUNCTUAL, light);
     }
+    // @ts-ignore
     delete gltfScenegraph.json.lights;
   }
 }

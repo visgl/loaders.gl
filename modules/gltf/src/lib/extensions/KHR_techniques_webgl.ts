@@ -1,10 +1,13 @@
 // GLTF EXTENSION: KHR_techniques_webgl
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_techniques_webgl
+
+import type {GLTF} from '../types/gltf-types';
+import type {GLTFLoaderOptions} from '../../gltf-loader';
+
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_TECHNIQUES_WEBGL} from '../gltf-utils/gltf-constants';
-import {GLTFParseOptions} from '../parsers/parse-gltf';
 
-export function decode(gltfData, options: GLTFParseOptions) {
+export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 
@@ -15,12 +18,14 @@ export function decode(gltfData, options: GLTFParseOptions) {
     for (const material of json.materials || []) {
       const materialExtension = gltfScenegraph.getObjectExtension(material, KHR_TECHNIQUES_WEBGL);
       if (materialExtension) {
+        // @ts-ignore TODO
         material.technique = Object.assign(
           {},
           materialExtension,
           // @ts-ignore
           techniques[materialExtension.technique]
         );
+        // @ts-ignore TODO
         material.technique.values = resolveValues(material.technique, gltfScenegraph);
       }
       gltfScenegraph.removeObjectExtension(material, KHR_TECHNIQUES_WEBGL);
@@ -30,7 +35,7 @@ export function decode(gltfData, options: GLTFParseOptions) {
   }
 }
 
-export function encode(gltfData, options) {
+export async function encode(gltfData, options): Promise<void> {
   // TODO
 }
 
