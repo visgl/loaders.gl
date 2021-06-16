@@ -92,7 +92,7 @@ export type LoaderObject = {
   supported?: boolean;
   testText?: (string) => boolean;
 
-  parse: (arrayBuffer, options, context?) => Promise<any>;
+  parse: (arrayBuffer, options: {[key: string]: any}, context?) => Promise<any>;
   parseSync?: (arrayBuffer, options, context?) => any;
   parseText?: (string, options) => Promise<any>;
   parseTextSync?: (string, options) => any;
@@ -121,7 +121,7 @@ export type WriterObject = {
   extensions?: string[];
   mimeTypes?: string[];
 
-  encode?: (data: any, options: object) => Promise<ArrayBuffer>;
+  encode?: (data: any, options: {[key: string]: any}) => Promise<ArrayBuffer>;
   encodeSync?: (data: any, options?: object) => ArrayBuffer;
   encodeURLtoURL?: (inputUrl: string, outputUrl: string, options?: object) => Promise<string>;
 };

@@ -50,7 +50,7 @@ export default class TileHeader {
   id: string;
   url: string;
   parent: TileHeader;
-  refine: string;
+  refine: number;
   type: string;
   contentUrl: string;
   lodMetricType: string;
@@ -86,7 +86,7 @@ export default class TileHeader {
   private _centerZDepth: number;
   private _screenSpaceError: number;
   private _visibilityPlaneMask: any;
-  private _visible: boolean;
+  private _visible?: boolean;
   private _inRequestVolume: boolean;
 
   private _stackLength: number;
@@ -178,7 +178,7 @@ export default class TileHeader {
     this._shouldRefine = false;
     this._distanceToCamera = 0;
     this._centerZDepth = 0;
-    this._visible = false;
+    this._visible = undefined;
     this._inRequestVolume = false;
     this._stackLength = 0;
     this._selectionDepth = 0;
@@ -289,6 +289,44 @@ export default class TileHeader {
     }
   }
 
+  /*
+   * If skipLevelOfDetail is off try to load child tiles as soon as possible so that their parent can refine sooner.
+   * Tiles are prioritized by screen space error.
+   */
+  _getPriority() {
+    const traverser = this.tileset._traverser;
+    const {skipLevelOfDetail} = traverser.options;
+
+    /*
+     * Tiles that are outside of the camera's frustum could be skipped if we are in 'ADD' mode
+     * or if we are using 'Skip Traversal' in 'REPLACE' mode.
+     * In 'REPLACE' and 'Base Traversal' mode, all child tiles have to be loaded and displayed,
+     * including ones outide of the camera frustum, so that we can hide the parent tile.
+     */
+    const maySkipTile = this.refine === TILE_REFINEMENT.ADD || skipLevelOfDetail;
+
+    // Check if any reason to abort
+    if (maySkipTile && !this.isVisible && this._visible !== undefined) {
+      return -1;
+    }
+    if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
+      return -1;
+    }
+
+    // Based on the priority function `getPriorityReverseScreenSpaceError` in CesiumJS. Scheduling priority is based on the parent's screen space error when possible.
+    const parent = this.parent;
+    const useParentScreenSpaceError =
+      parent && (!maySkipTile || this._screenSpaceError === 0.0 || parent.hasTilesetContent);
+    const screenSpaceError = useParentScreenSpaceError
+      ? parent._screenSpaceError
+      : this._screenSpaceError;
+
+    const rootScreenSpaceError = traverser.root ? traverser.root._screenSpaceError : 0.0;
+
+    // Map higher SSE to lower values (e.g. root tile is highest priority)
+    return Math.max(rootScreenSpaceError - screenSpaceError, 0);
+  }
+
   /**
    *  Requests the tile's content.
    * The request may not be made if the Request Scheduler can't prioritize it.
@@ -327,14 +365,19 @@ export default class TileHeader {
       // The content can be a binary tile ot a JSON tileset
       const loader = this.tileset.loader;
       const options = {
-        fetch: this.tileset.fetchOptions,
         [loader.id]: {
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)
-        }
+        },
+        ...this.tileset.loadOptions
       };
 
       this.content = await load(contentUrl, loader, options);
+
+      if (this.tileset.options.contentLoader) {
+        await this.tileset.options.contentLoader(this);
+      }
+
       if (this._isTileset()) {
         // Add tile headers for the nested tilset's subtree
         // Async update of the tree should be fine since there would never be edits to the same node
@@ -382,19 +425,21 @@ export default class TileHeader {
     }
 
     const parent = this.parent;
-    const parentTransform = parent ? parent.computedTransform : this.tileset.modelMatrix;
     const parentVisibilityPlaneMask = parent
       ? parent._visibilityPlaneMask
       : CullingVolume.MASK_INDETERMINATE;
 
-    this._updateTransform(parentTransform);
+    if (this.tileset._traverser.options.updateTransforms) {
+      const parentTransform = parent ? parent.computedTransform : this.tileset.modelMatrix;
+      this._updateTransform(parentTransform);
+    }
+
     this._distanceToCamera = this.distanceToTile(frameState);
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
     this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
     this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
     this._inRequestVolume = this.insideViewerRequestVolume(frameState);
 
-    this._priority = this.lodMetricValue;
     this._frameNumber = frameState.frameNumber;
     this.viewportIds = viewportIds;
   }
@@ -594,7 +639,7 @@ export default class TileHeader {
     this._centerZDepth = 0;
     this._screenSpaceError = 0;
     this._visibilityPlaneMask = CullingVolume.MASK_INDETERMINATE;
-    this._visible = false;
+    this._visible = undefined;
     this._inRequestVolume = false;
 
     this._stackLength = 0;
@@ -607,18 +652,6 @@ export default class TileHeader {
     this._requestedFrame = 0;
 
     this._priority = 0.0;
-  }
-
-  _getPriority() {
-    // Check if any reason to abort
-    if (!this.isVisible) {
-      return -1;
-    }
-    if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
-      return -1;
-    }
-
-    return Math.max(1e7 - this._priority, 0) || 0;
   }
 
   _getRefine(refine) {

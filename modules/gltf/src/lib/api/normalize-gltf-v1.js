@@ -99,9 +99,9 @@ class GLTFV1Normalizer {
 
   /**
    * Convert (normalize) glTF < 2.0 to glTF 2.0
-   * @param {*} gltf - object with json and binChunks
-   * @param {object} options
-   * @param {boolean} [options.normalize] Whether to actually normalize
+   * @param gltf - object with json and binChunks
+   * @param options
+   * @param options normalize Whether to actually normalize
    */
   normalize(gltf, options) {
     this.json = gltf.json;
@@ -139,6 +139,7 @@ class GLTFV1Normalizer {
 
     // Extract bufferView indices for images
     // (this extension needs to be invoked early in the normalization process)
+    // @ts-ignore
     KHR_binary_glTF.decode(gltf, options);
 
     // Convert object references from ids to indices

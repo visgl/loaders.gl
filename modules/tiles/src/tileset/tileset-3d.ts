@@ -52,22 +52,35 @@ import I3SetTraverser from './traversers/i3s-tileset-traverser';
 import {TILESET_TYPE} from '../constants';
 
 export type Tileset3DProps = {
+  // loading
+  token?: string;
+  headers?: any;
+  throttleRequests?: boolean;
+  maxRequests?: number;
+  loadOptions?: {[key: string]: any};
+  loadTiles?: boolean;
+  basePath?: string;
+  maximumMemoryUsage?: number;
+
+  // Metadata
   description?: string;
+  attributions?: string[];
+
+  // Transforms
   ellipsoid?: object;
   modelMatrix?: Matrix4;
-  throttleRequests?: boolean;
-  maximumMemoryUsage?: number;
+
+  // Traversal
+  maximumScreenSpaceError?: number;
+  viewportTraversersMap?: any;
+  updateTransforms?: boolean;
+  viewDistanceScale?: number;
+
+  // Callbacks
   onTileLoad?: (tile: Tile3D) => any;
   onTileUnload?: (tile: Tile3D) => any;
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
-  maximumScreenSpaceError?: number;
-  viewportTraversersMap?: any;
-  token?: string;
-  attributions?: string[];
-  headers?: any;
-  loadTiles?: boolean;
-  fetchOptions?: {[key: string]: any};
-  basePath?: string;
+  contentLoader?: (tile: Tile3D) => Promise<void>;
 };
 
 type Props = {
@@ -84,9 +97,13 @@ type Props = {
   token: string;
   attributions: string[];
   headers: any;
+  maxRequests: number;
   loadTiles: boolean;
-  fetchOptions: {[key: string]: any};
+  loadOptions: {[key: string]: any};
+  updateTransforms: boolean;
+  viewDistanceScale: number;
   basePath: string;
+  contentLoader?: (tile: Tile3D) => Promise<void>;
   i3s: {[key: string]: any};
 };
 
@@ -97,8 +114,11 @@ const DEFAULT_PROPS: Props = {
   // A 4x4 transformation matrix this transforms the entire tileset.
   modelMatrix: new Matrix4(),
 
-  // Set to true to enable experimental request throttling, for improved performance
-  throttleRequests: false,
+  // Set to false to disable network request throttling
+  throttleRequests: true,
+
+  // Number of simultaneous requsts, if throttleRequests is true
+  maxRequests: 64,
 
   maximumMemoryUsage: 32,
 
@@ -108,15 +128,22 @@ const DEFAULT_PROPS: Props = {
   onTileUnload: (tile) => {},
   onTileError: (tile, message, url) => {},
 
+  // Optional async tile content loader
+  contentLoader: undefined,
+
+  // View distance scale modifier
+  viewDistanceScale: 1.0,
+
   // TODO CESIUM
   // The maximum screen space error used to drive level of detail refinement.
   maximumScreenSpaceError: 8,
 
   loadTiles: true,
+  updateTransforms: true,
   viewportTraversersMap: null,
 
   headers: {},
-  fetchOptions: {},
+  loadOptions: {},
 
   token: '',
   attributions: [],
@@ -140,7 +167,7 @@ const TILES_GPU_MEMORY = 'Tile Memory Use';
 export default class Tileset3D {
   // props: Tileset3DProps;
   options: Props;
-  fetchOptions: {[key: string]: any};
+  loadOptions: {[key: string]: any};
 
   type: string;
   tileset: {[key: string]: any};
@@ -191,11 +218,11 @@ export default class Tileset3D {
   private _defaultGeometrySchema: any[];
   private _tiles: {[id: string]: Tile3D};
 
-  private _updateFrameNumber: any;
   // counter for tracking tiles requests
   private _pendingCount: any;
 
   // HOLD TRAVERSAL RESULTS
+  private lastUpdatedVieports: any[] | null;
   private _requestedTiles: any;
   private _emptyTiles: any;
   private frameStateData: any;
@@ -238,12 +265,18 @@ export default class Tileset3D {
     this.refine = json.root.refine;
 
     // TODO add to loader context?
-    this.fetchOptions = this.options.fetchOptions || {};
+    this.loadOptions = this.options.loadOptions || {};
     if (this.options.headers) {
-      this.fetchOptions.headers = this.options.headers;
+      this.loadOptions.fetch = {
+        ...this.loadOptions.fetch,
+        headers: this.options.headers
+      };
     }
     if (this.options.token) {
-      this.fetchOptions.token = this.options.token;
+      this.loadOptions.fetch = {
+        ...this.loadOptions.fetch,
+        token: this.options.token
+      };
     }
 
     this.root = null;
@@ -260,14 +293,13 @@ export default class Tileset3D {
     this._traverser = this._initializeTraverser();
     this._cache = new TilesetCache();
     this._requestScheduler = new RequestScheduler({
-      throttleRequests: this.options.throttleRequests
+      throttleRequests: this.options.throttleRequests,
+      maxRequests: this.options.maxRequests
     });
     // update tracker
     // increase in each update cycle
     this._frameNumber = 0;
 
-    // increase when tiles selected for rendering changed
-    this._updateFrameNumber = 0;
     // counter for tracking tiles requests
     this._pendingCount = 0;
 
@@ -277,6 +309,7 @@ export default class Tileset3D {
     this._emptyTiles = [];
     this._requestedTiles = [];
     this.frameStateData = {};
+    this.lastUpdatedVieports = null;
 
     this._queryParams = {};
     this._queryParamsString = '';
@@ -366,12 +399,18 @@ export default class Tileset3D {
    * Update visible tiles relying on a list of viewports
    * @param viewports - list of viewports
    */
+  // eslint-disable-next-line max-statements, complexity
   update(viewports: any[]): void {
     if ('loadTiles' in this.options && !this.options.loadTiles) {
       return;
     }
     if (this.traverseCounter > 0) {
       return;
+    }
+    if (!viewports && this.lastUpdatedVieports) {
+      viewports = this.lastUpdatedVieports;
+    } else {
+      this.lastUpdatedVieports = viewports;
     }
     if (!(viewports instanceof Array)) {
       viewports = [viewports];
@@ -501,7 +540,7 @@ export default class Tileset3D {
     let tilesRenderable = 0;
     let pointsRenderable = 0;
     for (const tile of this.selectedTiles) {
-      if (tile.contentAvailable) {
+      if (tile.contentAvailable && tile.content) {
         tilesRenderable++;
         if (tile.content.pointCount) {
           pointsRenderable += tile.content.pointCount;
@@ -680,7 +719,7 @@ export default class Tileset3D {
   }
 
   _unloadTile(tile) {
-    this.gpuMemoryUsageInBytes -= tile.content.byteLength || 0;
+    this.gpuMemoryUsageInBytes -= (tile.content && tile.content.byteLength) || 0;
 
     this.stats.get(TILES_IN_MEMORY).decrementCount();
     this.stats.get(TILES_UNLOADED).incrementCount();

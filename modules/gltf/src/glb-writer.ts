@@ -1,11 +1,10 @@
-/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+import type {WriterObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import encodeGLBSync from './lib/encoders/encode-glb';
 
 /**
  * GLB exporter
  * GLB is the binary container format for GLTF
- * @type {WriterObject}
  */
 export const GLBWriter = {
   name: 'GLB',
@@ -37,3 +36,6 @@ function encodeSync(glb, options) {
 
   return arrayBuffer;
 }
+
+// TYPE TESTS - TODO find a better way than exporting junk
+export const _TypecheckGLBLoader: WriterObject = GLBWriter;

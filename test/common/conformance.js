@@ -37,7 +37,7 @@ export function validateBuilder(t, builder, name = '') {
  *  /docs/developer-guide/category-pointcloud.md
  */
 export function validateMeshCategoryData(t, data) {
-  t.ok(data.loaderData && data.loaderData.header, 'data has original header');
+  // t.ok(data.loaderData && data.loaderData.header, 'data has original header');
 
   t.ok(data.header && Number.isFinite(data.header.vertexCount), 'data has normalized header');
   t.ok(data.header.boundingBox

@@ -1,3 +1,18 @@
+import type {
+  GLTF,
+  GLTFScene,
+  GLTFNode,
+  GLTFMesh,
+  GLTFSkin,
+  GLTFMaterial,
+  GLTFAccessor,
+  GLTFSampler,
+  GLTFTexture,
+  GLTFImage,
+  GLTFBuffer,
+  GLTFBufferView
+} from '../types/gltf-types';
+
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
@@ -7,26 +22,13 @@ import {
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
 
-type GLTFJSON = {[key: string]: any};
-type GLTFScene = {[key: string]: any};
-type GLTFNode = {[key: string]: any};
-type GLTFMesh = {[key: string]: any};
-type GLTFSkin = {[key: string]: any};
-type GLTFMaterial = {[key: string]: any};
-type GLTFAccessor = {[key: string]: any};
-type GLTFSampler = {[key: string]: any};
-type GLTFTexture = {[key: string]: any};
-type GLTFImage = {[key: string]: any};
-type GLTFBuffer = {[key: string]: any};
-type GLTFBufferView = {[key: string]: any};
-
 type GLTFWithBuffers = {
-  json: GLTFJSON;
+  json: GLTF;
   buffers: any[];
   binary?: ArrayBuffer;
 };
 
-const DEFAULT_GLTF_JSON: GLTFJSON = {
+const DEFAULT_GLTF_JSON: GLTF = {
   asset: {
     version: '2.0',
     generator: 'loaders.gl'
@@ -43,7 +45,8 @@ export default class GLTFScenegraph {
   sourceBuffers: any[];
   byteLength: number;
 
-  constructor(gltf?: GLTFWithBuffers) {
+  constructor(gltf?: {json: GLTF; buffers?: any[]}) {
+    // @ts-ignore
     this.gltf = gltf || {
       json: {...DEFAULT_GLTF_JSON},
       buffers: []
@@ -60,7 +63,7 @@ export default class GLTFScenegraph {
 
   // Accessors
 
-  get json(): GLTFJSON {
+  get json(): GLTF {
     return this.gltf.json;
   }
 
@@ -104,51 +107,51 @@ export default class GLTFScenegraph {
   }
 
   getScene(index: number): GLTFScene {
-    return this.getObject('scenes', index);
+    return this.getObject('scenes', index) as GLTFScene;
   }
 
   getNode(index: number): GLTFNode {
-    return this.getObject('nodes', index);
+    return this.getObject('nodes', index) as GLTFNode;
   }
 
   getSkin(index: number): GLTFSkin {
-    return this.getObject('skins', index);
+    return this.getObject('skins', index) as GLTFSkin;
   }
 
   getMesh(index: number): GLTFMesh {
-    return this.getObject('meshes', index);
+    return this.getObject('meshes', index) as GLTFMesh;
   }
 
   getMaterial(index: number): GLTFMaterial {
-    return this.getObject('materials', index);
+    return this.getObject('materials', index) as GLTFMaterial;
   }
 
   getAccessor(index: number): GLTFAccessor {
-    return this.getObject('accessors', index);
+    return this.getObject('accessors', index) as GLTFAccessor;
   }
 
   // getCamera(index: number): object | null {
-  //   return null; // TODO: fix this
+  //   return null; // TODO: fix thi: object  as null;
   // }
 
   getTexture(index: number): GLTFTexture {
-    return this.getObject('textures', index);
+    return this.getObject('textures', index) as GLTFTexture;
   }
 
   getSampler(index: number): GLTFSampler {
-    return this.getObject('samplers', index);
+    return this.getObject('samplers', index) as GLTFSampler;
   }
 
   getImage(index: number): GLTFImage {
-    return this.getObject('images', index);
+    return this.getObject('images', index) as GLTFImage;
   }
 
   getBufferView(index: number | object): GLTFBufferView {
-    return this.getObject('bufferViews', index);
+    return this.getObject('bufferViews', index) as GLTFBufferView;
   }
 
   getBuffer(index: number): GLTFBuffer {
-    return this.getObject('buffers', index);
+    return this.getObject('buffers', index) as GLTFBuffer;
   }
 
   getObject(array: string, index: number | object): object {
@@ -192,6 +195,7 @@ export default class GLTFScenegraph {
     // @ts-ignore
     const bufferView = this.getBufferView(accessor.bufferView);
     const buffer = this.getBuffer(bufferView.buffer);
+    // @ts-ignore
     const arrayBuffer = buffer.data;
 
     // Create a new typed array as a view into the combined buffer
@@ -210,6 +214,7 @@ export default class GLTFScenegraph {
     // @ts-ignore
     const bufferView = this.getBufferView(image.bufferView);
     const buffer = this.getBuffer(bufferView.buffer);
+    // @ts-ignore
     const arrayBuffer = buffer.data;
 
     const byteOffset = bufferView.byteOffset || 0;
@@ -551,6 +556,7 @@ export default class GLTFScenegraph {
     }
 
     // Update the glTF BIN CHUNK byte length
+    this.json.buffers = this.json.buffers || [];
     this.json.buffers[0] = this.json.buffers[0] || {};
     this.json.buffers[0].byteLength = totalByteLength;
 

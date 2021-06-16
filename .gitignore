@@ -1,5 +1,6 @@
 # tests
 test/data/test.png
+tmp
 
 # dists
 dist/*
