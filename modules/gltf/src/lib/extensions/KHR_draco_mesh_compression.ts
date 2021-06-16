@@ -83,45 +83,25 @@ async function decompressPrimitive(
   delete dracoOptions['3d-tiles'];
   const decodedData = await parse(bufferCopy, DracoLoader, dracoOptions, context);
 
-  // Save original accessors to later restore the min/max attributes
-  const originalAccessors: {[key: string]: GLTFAccessor} = {};
-
-  const primitiveAttributes: {[key: string]: number | undefined} = {
-    ...primitive.attributes,
-    indices: primitive.indices
-  };
-
-  for (const [attributeName, accessorIndex] of Object.entries(primitiveAttributes)) {
-    if (accessorIndex) {
-      originalAccessors[attributeName] = scenegraph.getAccessor(accessorIndex);
-    }
-  }
-
-  const decodedAttributes = getGLTFAccessors(decodedData.attributes);
-  const decodedIndices = decodedData.indices ? getGLTFAccessor(decodedData.indices) : undefined;
+  const decodedAttributes: {[key: string]: GLTFAccessor} = getGLTFAccessors(decodedData.attributes);
 
   // Restore min/max values
-  const decodedPrimitiveAttributes: {[key: string]: GLTFAccessor | undefined} = {
-    ...decodedAttributes,
-    indices: decodedIndices
-  };
-
-  for (const [attributeName, decodedAttribute] of Object.entries(decodedPrimitiveAttributes)) {
-    if (
-      decodedAttribute &&
-      originalAccessors?.[attributeName]?.min &&
-      originalAccessors?.[attributeName]?.max
-    ) {
-      decodedAttribute.min = originalAccessors[attributeName].min;
-      decodedAttribute.max = originalAccessors[attributeName].max;
+  for (const [attributeName, decodedAttribute] of Object.entries(decodedAttributes)) {
+    if (attributeName in primitive.attributes) {
+      const accessorIndex: number = primitive.attributes[attributeName];
+      const accessor = scenegraph.getAccessor(accessorIndex);
+      if (accessor?.min && accessor?.max) {
+        decodedAttribute.min = accessor.min;
+        decodedAttribute.max = accessor.max;
+      }
     }
   }
 
   // @ts-ignore
   primitive.attributes = decodedAttributes;
-  if (decodedIndices) {
+  if (decodedData.indices) {
     // @ts-ignore
-    primitive.indices = decodedIndices;
+    primitive.indices = getGLTFAccessor(decodedData.indices);
   }
 
   // Extension has been processed, delete it
