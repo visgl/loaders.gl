@@ -1,7 +1,12 @@
+import type {ImageLoaderOptions} from '../../image-loader';
 import {getBlobOrSVGDataUrl} from './svg-utils';
 
 // Parses html image from array buffer
-export default async function parseToImage(arrayBuffer, options, url) {
+export default async function parseToImage(
+  arrayBuffer: ArrayBuffer,
+  options: ImageLoaderOptions,
+  url?: string
+): Promise<HTMLImageElement> {
   // Note: image parsing requires conversion to Blob (for createObjectURL).
   // Potentially inefficient for not using `response.blob()` (and for File / Blob inputs)...
   // But presumably not worth adding 'blob' flag to loader objects?
@@ -18,7 +23,7 @@ export default async function parseToImage(arrayBuffer, options, url) {
   }
 }
 
-export async function loadToImage(url, options) {
+export async function loadToImage(url, options): Promise<HTMLImageElement> {
   const image = new Image();
   image.src = url;
 

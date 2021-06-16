@@ -1,4 +1,6 @@
+import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
+import type {ImageLoaderOptions} from '../../image-loader';
 import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
 import {getImageData} from '../category-api/parsed-image-api';
 import parseToImage from './parse-to-image';
@@ -7,7 +9,11 @@ import parseToNodeImage from './parse-to-node-image';
 
 // Parse to platform defined image type (data on node, ImageBitmap or HTMLImage on browser)
 // eslint-disable-next-line complexity
-export default async function parseImage(arrayBuffer, options, context) {
+export default async function parseImage(
+  arrayBuffer: ArrayBuffer,
+  options?: ImageLoaderOptions,
+  context?: LoaderContext
+) {
   options = options || {};
   const imageOptions = options.image || {};
 

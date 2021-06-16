@@ -1,5 +1,6 @@
 // Types
 export type {GPUTextureFormat} from './types';
+export type {TextureLoaderOptions} from './compressed-texture-loader';
 
 // Loaders
 export {BasisLoader, BasisWorkerLoader} from './basis-loader';

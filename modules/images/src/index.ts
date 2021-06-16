@@ -1,5 +1,6 @@
 // TYPES
 export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
+export type {ImageLoaderOptions} from './image-loader';
 
 // LOADERS AND WRITERS
 export {ImageLoader} from './image-loader';
@@ -9,6 +10,8 @@ export {ImageWriter} from './image-writer';
 
 // Binary Image API
 export {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
+
+export {isImageFormatSupported} from './lib/category-api/image-format';
 
 // Parsed Image API
 export {isImageTypeSupported, getDefaultImageType} from './lib/category-api/image-type';

@@ -1,10 +1,13 @@
 // GLTF EXTENSION: KHR_techniques_webgl
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_techniques_webgl
 
-import type {GLTF} from '../types/gltf-types';
+import type {GLTF} from '../../types/gltf-types';
 
-import GLTFScenegraph from '../api/gltf-scenegraph';
-import {KHR_TECHNIQUES_WEBGL} from '../gltf-utils/gltf-constants';
+import GLTFScenegraph from '../../api/gltf-scenegraph';
+
+const KHR_TECHNIQUES_WEBGL = 'KHR_techniques_webgl';
+
+export const name = KHR_TECHNIQUES_WEBGL;
 
 export async function decode(gltfData: {json: GLTF}): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);

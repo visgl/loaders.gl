@@ -1,10 +1,8 @@
 // Types forked from https://github.com/bwasty/gltf-loader-ts under MIT license
 // Generated from official JSON schema using `npm run generate-interface` on 2018-02-24
 
-// tslint:disable:quotemark
-// tslint:disable:max-line-length
-
 export type GLTFId = number;
+
 /**
  * Indices of those attributes that deviate from their initialization value.
  */
@@ -25,6 +23,7 @@ export interface AccessorSparseIndices {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Array of size `accessor.sparse.count` times number of components storing the displaced accessor attributes pointed by `accessor.sparse.indices`.
  */
@@ -41,6 +40,7 @@ export interface AccessorSparseValues {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Sparse storage of attributes that deviate from their initialization value.
  */
@@ -61,6 +61,7 @@ export interface AccessorSparse {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A typed view into a bufferView.  A bufferView contains raw binary data.  An accessor provides a typed view into a bufferView or a subset of a bufferView similar to how WebGL's `vertexAttribPointer()` defines an attribute in a buffer.
  */
@@ -106,6 +107,7 @@ export interface Accessor {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * The index of the node and TRS property that an animation channel targets.
  */
@@ -122,6 +124,7 @@ export interface AnimationChannelTarget {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Targets an animation's sampler at a node's property.
  */
@@ -138,6 +141,7 @@ export interface AnimationChannel {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
  */
@@ -158,6 +162,7 @@ export interface AnimationSampler {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A keyframe animation.
  */
@@ -175,6 +180,7 @@ export interface Animation {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Metadata about the glTF asset.
  */
@@ -199,6 +205,7 @@ export interface Asset {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A buffer points to binary geometry, animation, or skins.
  */
@@ -216,6 +223,7 @@ export interface Buffer {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A view into a buffer generally representing a subset of the buffer.
  */
@@ -245,6 +253,7 @@ export interface BufferView {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * An orthographic camera containing properties to create an orthographic projection matrix.
  */
@@ -269,6 +278,7 @@ export interface CameraOrthographic {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A perspective camera containing properties to create a perspective projection matrix.
  */
@@ -293,6 +303,7 @@ export interface CameraPerspective {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A camera's projection.  A node can reference a camera to apply a transform to place the camera in the scene.
  */
@@ -314,6 +325,7 @@ export interface Camera {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Image data used to create a texture. Image can be referenced by URI or `bufferView` index. `mimeType` is required in the latter case.
  */
@@ -335,6 +347,7 @@ export interface Image {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Reference to a texture.
  */
@@ -351,6 +364,7 @@ export interface TextureInfo {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
  */
@@ -401,6 +415,7 @@ export interface MaterialOcclusionTextureInfo {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * The material appearance of a primitive.
  */
@@ -442,6 +457,7 @@ export interface Material {
   doubleSided?: boolean;
   // [k: string]: any;
 }
+
 /**
  * Geometry to be rendered with the given material.
  */
@@ -474,6 +490,7 @@ export interface MeshPrimitive {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A set of primitives to be rendered.  A node can contain one mesh.  A node's transform places the mesh in the scene.
  */
@@ -493,6 +510,7 @@ export interface Mesh {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A node in the node hierarchy.  When the node contains `skin`, all `mesh.primitives` must contain `JOINTS_0` and `WEIGHTS_0` attributes.  A node can have either a `matrix` or any combination of `translation`/`rotation`/`scale` (TRS) properties. TRS properties are converted to matrices and postmultiplied in the `T * R * S` order to compose the transformation matrix; first the scale is applied to the vertices, then the rotation, and then the translation. If none are provided, the transform is the identity. When a node is targeted for animation (referenced by an animation.channel.target), only TRS properties may be present; `matrix` will not be present.
  */
@@ -538,6 +556,7 @@ export interface Node {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Texture sampler properties for filtering and wrapping modes.
  */
@@ -563,6 +582,7 @@ export interface Sampler {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * The root nodes of a scene.
  */
@@ -576,6 +596,7 @@ export interface Scene {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * Joints and matrices defining a skin.
  */
@@ -597,6 +618,7 @@ export interface Skin {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * A texture and its sampler.
  */
@@ -614,6 +636,7 @@ export interface Texture {
   extras?: any;
   // [k: string]: any;
 }
+
 /**
  * The root object for a glTF asset.
  */
@@ -690,3 +713,73 @@ export interface GLTF {
   extras?: any;
   // [k: string]: any;
 }
+
+// GLTF Extensions
+/* eslint-disable camelcase */
+
+/**
+ * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
+ * TODO - this can be used on both images and shaders
+ */
+export type GLTF_KHR_binary_glTF = {
+  bufferView: number;
+  // required for images but not shaders
+  mimeType?: string;
+  height?: number;
+  width?: number;
+  extras?: any;
+};
+
+/**
+ * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
+ */
+export type GLTF_KHR_draco_mesh_compression = {
+  bufferView: GLTFId;
+  attributes: {[name: string]: number};
+  extras?: any;
+};
+
+/**
+ * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu
+ */
+export type GLTF_KHR_texture_basisu = {
+  source: GLTFId;
+  extras?: any;
+};
+
+/**
+ * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_meshopt_compression
+ * buffer: number; //	The index of the buffer with compressed data.	✅ Required
+ * byteOffset	integer	The offset into the buffer in bytes.	Default: 0
+ * byteLength	integer	The length of the compressed data in bytes.	✅ Required
+ * byteStride	integer	The stride, in bytes.	✅ Required
+ * count	integer	The number of elements.	✅ Required
+ * mode	string	The compression mode.	✅ Required
+ * filter	string	The compression filter.	Default: "NONE"
+ */
+export type GLTF_EXT_meshopt_compression = {
+  buffer: number;
+  byteOffset?: number;
+  byteLength: number;
+  byteStride: number;
+  count: number;
+  mode: 'ATTRIBUTES' | 'TRIANGLES' | 'INDICES';
+  filter?: 'NONE' | 'OCTAHEDRAL' | 'QUATERNION' | 'EXPONENTIAL';
+  extras?: any;
+};
+
+/**
+ * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_texture_webp
+ */
+export type GLTF_EXT_texture_webp = {
+  source: GLTFId;
+  extras?: any;
+};
+
+/**
+ * @see https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_texture_dds
+ */
+export type GLTF_MSFT_texture_dds = {
+  source: GLTFId;
+  extras?: any;
+};
