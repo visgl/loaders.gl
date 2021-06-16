@@ -283,7 +283,14 @@ export default class App extends PureComponent {
       debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE}
     });
 
-    tileset.setOptions({loadTiles: true});
+    const {
+      debugOptions: {minimapViewport, loadTiles}
+    } = this.state;
+    const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
+    tileset.setOptions({
+      viewportTraversersMap,
+      loadTiles
+    });
     this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
@@ -421,25 +428,13 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {
-        boundingVolume,
-        boundingVolumeType,
-        pickable,
-        minimapViewport,
-        loadTiles,
-        wireframe
-      },
+      debugOptions: {boundingVolume, boundingVolumeType, pickable, wireframe},
       tileset,
       normalsDebugData,
       trianglesPercentage,
       normalsLength
     } = this.state;
-    const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
-    const loadOptions = {
-      throttleRequests: true,
-      viewportTraversersMap,
-      loadTiles
-    };
+    const loadOptions = {};
 
     if (token) {
       loadOptions.token = token;

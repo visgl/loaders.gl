@@ -990,7 +990,7 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@deck.gl/core@^8.5.0-alpha.9":
+"@deck.gl/core@^8.5.0-alpha.10":
   version "8.5.0-alpha.10"
   resolved "https://registry.yarnpkg.com/@deck.gl/core/-/core-8.5.0-alpha.10.tgz#75052fdfc62539ba3523d28901e855a29467f796"
   integrity sha512-mB16X3COBHBXqKMoN7DKFbITchD8mpcq0hSqxZ1PpD/zmy2EkgKcv+4FcQwa2utKdxoZshHqEldwnmt55kGXYg==
@@ -1004,14 +1004,14 @@
     mjolnir.js "^2.5.0"
     probe.gl "^3.3.1"
 
-"@deck.gl/extensions@^8.5.0-alpha.9":
+"@deck.gl/extensions@^8.5.0-alpha.10":
   version "8.5.0-alpha.10"
   resolved "https://registry.yarnpkg.com/@deck.gl/extensions/-/extensions-8.5.0-alpha.10.tgz#b35475c30e65f5bc2970fe2901c0cd1827e2b902"
   integrity sha512-pEyEBnS+TDtcMt6Ox8vYc0aP34NJ7K9/PoHeY5aJibgqF4aPaq2Ne6+htjTbyoY4CfbI/m6msWHnN3Od58s2GQ==
   dependencies:
     "@luma.gl/shadertools" "^8.5.0-alpha.1"
 
-"@deck.gl/geo-layers@^8.5.0-alpha.9":
+"@deck.gl/geo-layers@^8.5.0-alpha.10":
   version "8.5.0-alpha.10"
   resolved "https://registry.yarnpkg.com/@deck.gl/geo-layers/-/geo-layers-8.5.0-alpha.10.tgz#c3023d8493bd0dc176a989ac475d296b6f38b241"
   integrity sha512-sS5k8+otFj4wjPKZFIrXvBMHBarfI71eVjqX1OONiI76tSEF/MaT3/BNVaXzjIpzZp1R0hyJNdDASDD790vTZw==
@@ -1029,7 +1029,7 @@
     long "^3.2.0"
     math.gl "^3.4.2"
 
-"@deck.gl/layers@^8.5.0-alpha.9":
+"@deck.gl/layers@^8.5.0-alpha.10":
   version "8.5.0-alpha.10"
   resolved "https://registry.yarnpkg.com/@deck.gl/layers/-/layers-8.5.0-alpha.10.tgz#c294babfd5e58ec01a52cfb3bd3c7e65904ad294"
   integrity sha512-dpRDdGs7YSa3+loVOK11jPc5y26VErsJ4nWhpuA2Tx709kTnHT1MSIovS/SolSsHx5Gv+RSR/oT/gtqHeoacJw==
@@ -1039,7 +1039,7 @@
     "@math.gl/polygon" "^3.4.2"
     earcut "^2.0.6"
 
-"@deck.gl/mesh-layers@^8.5.0-alpha.9":
+"@deck.gl/mesh-layers@^8.5.0-alpha.10":
   version "8.5.0-alpha.10"
   resolved "https://registry.yarnpkg.com/@deck.gl/mesh-layers/-/mesh-layers-8.5.0-alpha.10.tgz#e34f947db83be25e346ff377257c4ae740ab9133"
   integrity sha512-irpE5Yb/3JxoxnaqxNLZRdDpdsj1vcUYCwdkKgUPuE/sWix87MHTQL+UlXw4K124w8LJu2M9yDoeNOvb1q30+Q==
@@ -1048,7 +1048,7 @@
     "@luma.gl/experimental" "^8.5.0-alpha.1"
     "@luma.gl/shadertools" "^8.5.0-alpha.1"
 
-"@deck.gl/react@^8.5.0-alpha.9":
+"@deck.gl/react@^8.5.0-alpha.10":
   version "8.5.0-alpha.10"
   resolved "https://registry.yarnpkg.com/@deck.gl/react/-/react-8.5.0-alpha.10.tgz#b3b28829729153a90ad3974a2543ff4ff17f6ce7"
   integrity sha512-t+mtn+2EFpoIbWtXjas2yfLmxTwoCWnA4+t80g1zllcCha07Rjq6ERObUXogB0SKi3cN7TDAfYfbEwaBih/lGw==
