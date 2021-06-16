@@ -1,3 +1,5 @@
+export type {GLB} from './lib/types/glb-types';
+
 // Constants
 export {KHR_DRACO_MESH_COMPRESSION} from './lib/gltf-utils/gltf-constants';
 
