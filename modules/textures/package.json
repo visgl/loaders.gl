@@ -38,7 +38,7 @@
     "build-worker": "npm run build-basis-worker && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker",
     "build-basis-worker": "webpack --entry ./src/workers/basis-worker.ts --output ./dist/basis-worker.js --config ../../scripts/webpack/worker.js",
     "build-npy-worker": "webpack --entry ./src/workers/npy-worker.ts --output ./dist/npy-worker.js --config ../../scripts/webpack/worker.js",
-    "build-compressed-texture-worker": "webpack --entry ./src/workers/compressed-texture-worker.js --output ./dist/compressed-texture-worker.js --config ../../scripts/webpack/worker.js",
+    "build-compressed-texture-worker": "webpack --entry ./src/workers/compressed-texture-worker.ts --output ./dist/compressed-texture-worker.js --config ../../scripts/webpack/worker.js",
     "build-crunch-worker": "webpack --entry ./src/workers/crunch-worker.ts --output ./dist/crunch-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
