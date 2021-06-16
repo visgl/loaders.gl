@@ -4,7 +4,10 @@ import type {GLBParseOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
 import parseGLBSync from './lib/parsers/parse-glb';
 
-export type GLBLoaderOptions = GLBParseOptions;
+export type GLBLoaderOptions = {
+  glb?: GLBParseOptions;
+  byteOffset?: number;
+};
 
 /**
  * GLB Loader -
@@ -27,17 +30,14 @@ export const GLBLoader: LoaderObject = {
   }
 };
 
-async function parse(arrayBuffer: ArrayBuffer, options: {glb?: GLBLoaderOptions}): Promise<GLB> {
+async function parse(arrayBuffer: ArrayBuffer, options: GLBLoaderOptions): Promise<GLB> {
   return parseSync(arrayBuffer, options);
 }
 
-function parseSync(
-  arrayBuffer: ArrayBuffer,
-  options: {glb?: GLBLoaderOptions; byteOffset?: number}
-): GLB {
+function parseSync(arrayBuffer: ArrayBuffer, options: GLBLoaderOptions = {}): GLB {
   const {byteOffset = 0} = options;
   const glb: GLB = {} as GLB;
-  parseGLBSync(glb, arrayBuffer, byteOffset, options.glb);
+  parseGLBSync(glb, arrayBuffer, byteOffset, options?.glb);
   return glb;
 }
 

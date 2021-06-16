@@ -1,6 +1,4 @@
-import type {GLTFParseOptions} from '../parsers/parse-gltf';
-import {DracoLoader} from '@loaders.gl/draco';
-import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
+import type {GLTFLoaderOptions} from '../../gltf-loader';
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {EXT_MESHOPT_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {isMeshoptSupported, meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
@@ -21,8 +19,8 @@ const DEFAULT_MESHOPT_OPTIONS = {
 };
 
 // Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
-export async function decode(gltfData, options: GLTFParseOptions, context) {
-  if (!options.decompressMeshes || !isMeshoptSupported()) {
+export async function decode(gltfData, options: GLTFLoaderOptions, context) {
+  if (!options?.gltf?.decompressMeshes || !isMeshoptSupported()) {
     return;
   }
 

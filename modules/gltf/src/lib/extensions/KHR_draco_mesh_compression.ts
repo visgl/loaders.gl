@@ -2,25 +2,30 @@
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
 
 /* eslint-disable camelcase */
+import type {GLTF, GLTFMeshPrimitive, GLTF_KHR_draco_mesh_compression} from '../types/gltf-types';
+import type {GLTFLoaderOptions} from '../../gltf-loader';
 
-import type {GLTFParseOptions} from '../parsers/parse-gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
-import GLTFScenegraph from '../api/gltf-scenegraph';
+import {default as Scenegraph} from '../api/gltf-scenegraph';
 import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
 // Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
-export async function decode(gltfData, options: GLTFParseOptions, context) {
-  if (!options.decompressMeshes) {
+export async function decode(
+  gltfData: {json: GLTF},
+  options: GLTFLoaderOptions,
+  context
+): Promise<void> {
+  if (!options?.gltf?.decompressMeshes) {
     return;
   }
 
-  const scenegraph = new GLTFScenegraph(gltfData);
+  const scenegraph = new Scenegraph(gltfData);
   const promises: Promise<void>[] = [];
   for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
     if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
-      promises.push(decompressPrimitive(primitive, scenegraph, options, context));
+      promises.push(decompressPrimitive(scenegraph, primitive, options, context));
     }
   }
 
@@ -31,8 +36,8 @@ export async function decode(gltfData, options: GLTFParseOptions, context) {
   scenegraph.removeExtension(KHR_DRACO_MESH_COMPRESSION);
 }
 
-export function encode(gltfData, options = {}) {
-  const scenegraph = new GLTFScenegraph(gltfData);
+export function encode(gltfData, options: GLTFLoaderOptions = {}): void {
+  const scenegraph = new Scenegraph(gltfData);
 
   for (const mesh of scenegraph.json.meshes || []) {
     // eslint-disable-next-line camelcase
@@ -51,22 +56,31 @@ export function encode(gltfData, options = {}) {
 
 // TODO - Implement fallback behavior per KHR_DRACO_MESH_COMPRESSION spec
 
-async function decompressPrimitive(primitive, scenegraph, options, context): Promise<void> {
-  const compressedPrimitive = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
+async function decompressPrimitive(
+  scenegraph: Scenegraph,
+  primitive: GLTFMeshPrimitive,
+  options: GLTFLoaderOptions,
+  context
+): Promise<void> {
+  const dracoExtension = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
+  if (!dracoExtension) {
+    return;
+  }
 
-  const buffer = scenegraph.getTypedArrayForBufferView(compressedPrimitive.bufferView);
+  const buffer = scenegraph.getTypedArrayForBufferView(dracoExtension.bufferView);
   // TODO - parse does not yet deal well with byte offsets embedded in typed arrays. Copy buffer
   // TODO - remove when `parse` is fixed to handle `byteOffset`s
   const bufferCopy = sliceArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
   const {parse} = context;
   const dracoOptions = {...options};
-  // The entire tileset might be included, too expensive to serialize
+  // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
   const decodedData = await DracoLoader.parse(bufferCopy, dracoOptions, context);
 
   primitive.attributes = getGLTFAccessors(decodedData.attributes);
   if (decodedData.indices) {
+    // @ts-ignore
     primitive.indices = getGLTFAccessor(decodedData.indices);
   }
 
@@ -119,9 +133,9 @@ function compressMesh(attributes, indices, mode: number = 4, options, context) {
 
 // UTILS
 
-function checkPrimitive(primitive) {
+function checkPrimitive(primitive: GLTFMeshPrimitive) {
   if (!primitive.attributes && Object.keys(primitive.attributes).length > 0) {
-    throw new Error('Empty glTF primitive detected: Draco decompression failure?');
+    throw new Error('glTF: Empty primitive detected: Draco decompression failure?');
   }
 }
 

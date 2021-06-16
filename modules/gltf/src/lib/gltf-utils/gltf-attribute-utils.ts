@@ -1,3 +1,5 @@
+// import type {TypedArray} from '../types/loader-utils';
+import type {GLTFAccessor} from '../types/gltf-types';
 // TODO - remove
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-utils';
 
@@ -22,14 +24,15 @@ export function getGLTFAccessors(attributes) {
 export function getGLTFAccessor(attribute, gltfAttributeName?: string) {
   const {buffer, size, count} = getAccessorData(attribute, gltfAttributeName);
 
-  const glTFAccessor = {
+  const glTFAccessor: GLTFAccessor = {
+    // glTF Accessor values
+    // TODO: Instead of a bufferView index we could have an actual buffer (typed array)
+    // bufferView: null,
     // TODO: Deprecate `value` in favor of bufferView?
+    // @ts-ignore
     value: buffer,
     size, // Decoded `type` (e.g. SCALAR)
 
-    // glTF Accessor values
-    // TODO: Instead of a bufferView index we could have an actual buffer (typed array)
-    bufferView: null,
     byteOffset: 0,
     count,
     type: getAccessorTypeFromSize(size),
@@ -39,9 +42,9 @@ export function getGLTFAccessor(attribute, gltfAttributeName?: string) {
   return glTFAccessor;
 }
 
-export function getGLTFAttribute(data, gltfAttributeName) {
-  return data.attributes[data.glTFAttributeMap[gltfAttributeName]];
-}
+// export function getGLTFAttribute(data, gltfAttributeName): GLTFAccessor {
+//   return data.attributes[data.glTFAttributeMap[gltfAttributeName]];
+// }
 
 function getAccessorData(attribute, attributeName) {
   let buffer = attribute;
