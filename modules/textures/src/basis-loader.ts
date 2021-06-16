@@ -1,11 +1,9 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import parseBasis from './lib/parsers/parse-basis';
 
 /**
  * Worker loader for Basis super compressed textures
- * @type {WorkerLoaderObject}
  */
 export const BasisWorkerLoader = {
   name: 'Basis',
@@ -20,16 +18,19 @@ export const BasisWorkerLoader = {
   options: {
     basis: {
       format: 'rgb565', // TODO: auto...
-      libraryPath: `libs/`
+      libraryPath: 'libs/'
     }
   }
 };
 
 /**
  * Loader for Basis super compressed textures
- * @type {LoaderObject}
  */
 export const BasisLoader = {
   ...BasisWorkerLoader,
   parse: parseBasis
 };
+
+// TYPE TESTS - TODO find a better way than exporting junk
+export const _TypecheckBasisWorkerLoader: WorkerLoaderObject = BasisWorkerLoader;
+export const _TypecheckBasisLoader: LoaderObject = BasisLoader;

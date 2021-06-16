@@ -28,7 +28,7 @@ async function loadBasis(options) {
 }
 
 function initializeBasisModule(BasisModule, wasmBinary) {
-  const options = {};
+  const options: {wasmBinary?} = {};
 
   if (wasmBinary) {
     options.wasmBinary = wasmBinary;

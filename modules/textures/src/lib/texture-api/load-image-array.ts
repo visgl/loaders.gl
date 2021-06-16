@@ -8,7 +8,7 @@ export async function loadImageTextureArray(count, getUrl, options = {}) {
 }
 
 export async function getImageArrayUrls(count, getUrl, options = {}) {
-  const promises = [];
+  const promises: Promise<any>[] = [];
   for (let index = 0; index < count; index++) {
     const promise = getImageUrls(getUrl, options, {index});
     promises.push(promise);

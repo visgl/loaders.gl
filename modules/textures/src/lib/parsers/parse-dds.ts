@@ -1,4 +1,4 @@
-/** @typedef {import('./parse-dds')} types */
+import type {TextureLevel} from '@loaders.gl/textures/types/texture';
 import {assert} from '@loaders.gl/loader-utils';
 import {GL} from '../gl-constants';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
@@ -37,16 +37,23 @@ const DDS_CONSTANTS = {
   }
 };
 
-/** @type {types['isDDS']} */
-export function isDDS(data) {
+/**
+ * Check if data is in "DDS" format by its magic number
+ * @param data - binary data of compressed texture
+ * @returns true - data in "DDS" format, else - false
+ */
+export function isDDS(data: ArrayBuffer): boolean {
   const header = new Uint32Array(data, 0, DDS_CONSTANTS.HEADER_LENGTH);
   const magic = header[DDS_CONSTANTS.MAGIC_NUMBER_INDEX];
-
   return magic === DDS_CONSTANTS.MAGIC_NUMBER;
 }
 
-/** @type {types['parseDDS']} */
-export function parseDDS(data) {
+/**
+ * Parse texture data as "DDS" format
+ * @param data - binary data of compressed texture
+ * @returns Array of the texture levels
+ */
+export function parseDDS(data: ArrayBuffer): TextureLevel[] {
   const header = new Int32Array(data, 0, DDS_CONSTANTS.HEADER_LENGTH);
   const pixelFormatNumber = header[DDS_CONSTANTS.HEADER_PF_FOURCC_INDEX];
   assert(
@@ -76,13 +83,23 @@ export function parseDDS(data) {
   });
 }
 
-/** @type {types['getDxt1LevelSize']} */
-export function getDxt1LevelSize(width, height) {
+/**
+ * DXT1 applicable function to calculate level size
+ * @param width - level width
+ * @param height - level height
+ * @returns level size in bytes
+ */
+export function getDxt1LevelSize(width: number, height: number): number {
   return ((width + 3) >> 2) * ((height + 3) >> 2) * 8;
 }
 
-/** @type {types['getDxtXLevelSize']} */
-export function getDxtXLevelSize(width, height) {
+/**
+ * DXT3 & DXT5 applicable function to calculate level size
+ * @param width - level width
+ * @param height - level height
+ * @returns level size in bytes
+ */
+export function getDxtXLevelSize(width: number, height: number): number {
   return ((width + 3) >> 2) * ((height + 3) >> 2) * 16;
 }
 

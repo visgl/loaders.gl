@@ -1,11 +1,9 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
- * @type {WorkerLoaderObject}
  */
 export const CompressedTextureWorkerLoader = {
   name: 'Texture Containers',
@@ -23,16 +21,20 @@ export const CompressedTextureWorkerLoader = {
   binary: true,
   options: {
     'compressed-texture': {
-      libraryPath: `libs/`
+      libraryPath: 'libs/'
     }
   }
 };
 
 /**
  * Loader for KTX, DDS, and PVR texture container formats
- * @type {LoaderObject}
  */
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
   parse: async (arrayBuffer, options) => parseCompressedTexture(arrayBuffer)
 };
+
+// TYPE TESTS - TODO find a better way than exporting junk
+export const _TypecheckCompressedTextureWorkerLoader: WorkerLoaderObject =
+  CompressedTextureWorkerLoader;
+export const _TypecheckCompressedTextureLoader: LoaderObject = CompressedTextureLoader;

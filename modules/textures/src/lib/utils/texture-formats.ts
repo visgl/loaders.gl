@@ -1,9 +1,20 @@
-/** @typedef {import('./texture-formats').GPUTextureFormat} GPUTextureFormat */
+/**
+ * These represent the main compressed texture formats
+ * Each format typically has a number of more specific subformats
+ */
+export type GPUTextureFormat =
+  | 'dxt'
+  | 'dxt-srgb'
+  | 'etc1'
+  | 'etc2'
+  | 'pvrtc'
+  | 'atc'
+  | 'astc'
+  | 'rgtc';
 
 const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
 
-/** @type {{[key: string]: GPUTextureFormat}} */
-const WEBGL_EXTENSIONS = {
+const WEBGL_EXTENSIONS: {[key: string]: GPUTextureFormat} = {
   /* eslint-disable camelcase */
   WEBGL_compressed_texture_s3tc: 'dxt',
   WEBGL_compressed_texture_s3tc_srgb: 'dxt-srgb',
@@ -16,14 +27,19 @@ const WEBGL_EXTENSIONS = {
   /* eslint-enable camelcase */
 };
 
-/** @type {Set<GPUTextureFormat>?} */
-let formats = null;
+let formats: Set<GPUTextureFormat> | null = null;
 
-export function getSupportedGPUTextureFormats(gl) {
+/**
+ * Returns a list of formats.
+ * Creates a temporary WebGLRenderingContext if none is provided.
+ *
+ * @param gl - Optional context.
+ */
+export function getSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Set<string> {
   if (!formats) {
-    gl = gl || getWebGLContext();
+    gl = gl || getWebGLContext() || undefined;
 
-    formats = new Set();
+    formats = new Set<GPUTextureFormat>();
 
     for (const prefix of BROWSER_PREFIXES) {
       for (const extension in WEBGL_EXTENSIONS) {

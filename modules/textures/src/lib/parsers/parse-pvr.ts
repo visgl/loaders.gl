@@ -1,4 +1,4 @@
-/** @typedef {import('./parse-pvr')} types */
+import {TextureLevel} from '@loaders.gl/textures/types/texture';
 /* eslint-disable camelcase */
 // Forked from PicoGL: https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
@@ -79,17 +79,25 @@ const PVR_SIZE_FUNCTIONS = {
   40: atc12x12Size
 };
 
-/** @type {types['isPVR']} */
-export function isPVR(data) {
+/**
+ * Check if data is in "PVR" format by its magic number
+ * @param data - binary data of compressed texture
+ * @returns true - data in "PVR" format, else - false
+ */
+export function isPVR(data: ArrayBuffer): boolean {
   const header = new Uint32Array(data, 0, PVR_CONSTANTS.HEADER_LENGTH);
   const version = header[PVR_CONSTANTS.MAGIC_NUMBER_INDEX];
 
   return version === PVR_CONSTANTS.MAGIC_NUMBER || version === PVR_CONSTANTS.MAGIC_NUMBER_EXTRA;
 }
 
-// http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
-/** @type {types['parsePVR']} */
-export function parsePVR(data) {
+/**
+ * Parse texture data as "PVR" format
+ * @param data - binary data of compressed texture
+ * @returns Array of the texture levels
+ * @see http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
+ */
+export function parsePVR(data: ArrayBuffer): TextureLevel[] {
   const header = new Uint32Array(data, 0, PVR_CONSTANTS.HEADER_LENGTH);
 
   const pvrFormat = header[PVR_CONSTANTS.PIXEL_FORMAT_INDEX];

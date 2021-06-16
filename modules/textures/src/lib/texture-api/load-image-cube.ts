@@ -24,13 +24,13 @@ const CUBE_FACES = [
 export async function getImageCubeUrls(getUrl, options) {
   // Calculate URLs
   const urls = {};
-  const promises = [];
+  const promises: Promise<any>[] = [];
 
   let index = 0;
-  for (const face in CUBE_FACES) {
-    const faceValues = CUBE_FACES[index];
-    const promise = getImageUrls(getUrl, options, {...faceValues, index: index++}).then((url) => {
-      urls[face] = url;
+  for (let i = 0; i < CUBE_FACES.length; ++i) {
+    const face = CUBE_FACES[index];
+    const promise = getImageUrls(getUrl, options, {...face, index: index++}).then((url) => {
+      urls[face.face] = url;
     });
     promises.push(promise);
   }
