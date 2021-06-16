@@ -3,7 +3,7 @@ import {loadZarr} from '@loaders.gl/zarr';
 import {resolvePath} from '@loaders.gl/core';
 
 const CONTENT_BASE = resolvePath('@loaders.gl/zarr/test/data');
-const OME_FIXTURE= `${CONTENT_BASE}/ome.zarr`;
+const OME_FIXTURE = `${CONTENT_BASE}/ome.zarr`;
 const FIXTURE = `${CONTENT_BASE}/multiscale.zarr`;
 const LABELS = ['foo', 'bar', 'baz', 'y', 'x'];
 
