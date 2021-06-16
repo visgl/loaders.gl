@@ -2,7 +2,12 @@
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
 
 /* eslint-disable camelcase */
-import type {GLTF, GLTFMeshPrimitive, GLTF_KHR_draco_mesh_compression} from '../types/gltf-types';
+import type {
+  GLTF,
+  GLTFAccessor,
+  GLTFMeshPrimitive,
+  GLTF_KHR_draco_mesh_compression
+} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import {DracoLoader} from '@loaders.gl/draco';
@@ -76,12 +81,47 @@ async function decompressPrimitive(
   const dracoOptions = {...options};
   // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
-  const decodedData = await DracoLoader.parse(bufferCopy, dracoOptions, context);
+  const decodedData = await parse(bufferCopy, DracoLoader, dracoOptions, context);
 
-  primitive.attributes = getGLTFAccessors(decodedData.attributes);
-  if (decodedData.indices) {
+  // Save original accessors to later restore the min/max attributes
+  const originalAccessors: {[key: string]: GLTFAccessor} = {};
+
+  const primitiveAttributes: {[key: string]: number | undefined} = {
+    ...primitive.attributes,
+    indices: primitive.indices
+  };
+
+  for (const [attributeName, accessorIndex] of Object.entries(primitiveAttributes)) {
+    if (accessorIndex) {
+      originalAccessors[attributeName] = scenegraph.getAccessor(accessorIndex);
+    }
+  }
+
+  const decodedAttributes = getGLTFAccessors(decodedData.attributes);
+  const decodedIndices = decodedData.indices ? getGLTFAccessor(decodedData.indices) : undefined;
+
+  // Restore min/max values
+  const decodedPrimitiveAttributes: {[key: string]: GLTFAccessor | undefined} = {
+    ...decodedAttributes,
+    indices: decodedIndices
+  };
+
+  for (const [attributeName, decodedAttribute] of Object.entries(decodedPrimitiveAttributes)) {
+    if (
+      decodedAttribute &&
+      originalAccessors?.[attributeName]?.min &&
+      originalAccessors?.[attributeName]?.max
+    ) {
+      decodedAttribute.min = originalAccessors[attributeName].min;
+      decodedAttribute.max = originalAccessors[attributeName].max;
+    }
+  }
+
+  // @ts-ignore
+  primitive.attributes = decodedAttributes;
+  if (decodedIndices) {
     // @ts-ignore
-    primitive.indices = getGLTFAccessor(decodedData.indices);
+    primitive.indices = decodedIndices;
   }
 
   // Extension has been processed, delete it

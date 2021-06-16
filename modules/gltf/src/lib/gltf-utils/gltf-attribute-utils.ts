@@ -6,7 +6,7 @@ import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-utils';
 // Returns a fresh attributes object with glTF-standardized attributes names
 // Attributes that cannot be identified will not be included
 // Removes `indices` if present, as it should be stored separately from the attributes
-export function getGLTFAccessors(attributes) {
+export function getGLTFAccessors(attributes): {[key: string]: GLTFAccessor} {
   const accessors = {};
   for (const name in attributes) {
     const attribute = attributes[name];
