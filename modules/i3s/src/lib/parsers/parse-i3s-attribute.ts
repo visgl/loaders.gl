@@ -65,12 +65,18 @@ function parseFloatAttribute(arrayBuffer) {
  * @returns list of strings
  */
 function parseStringsAttribute(arrayBuffer: ArrayBuffer): string[] {
+  const stringsCountOffset = 0;
   const dataOffset = 8;
   const bytesPerStringSize = 4;
   const stringsArray: string[] = [];
 
   try {
-    const stringsCount = new Uint32Array(arrayBuffer, 0, bytesPerStringSize)[0];
+    // Use DataView to avoid multiple of 4 error on Uint32Array constructor
+    const stringsCount = new DataView(
+      arrayBuffer,
+      stringsCountOffset,
+      bytesPerStringSize
+    ).getUint32(stringsCountOffset, true);
     const stringSizes = new Uint32Array(arrayBuffer, dataOffset, stringsCount);
     let stringOffset = dataOffset + stringsCount * bytesPerStringSize;
 
