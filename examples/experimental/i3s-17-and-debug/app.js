@@ -135,7 +135,7 @@ export default class App extends PureComponent {
   _renderLayers() {
     const {tilesetUrl, token, selectedFeatureIndex} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
-    const loadOptions = {throttleRequests: true};
+    const loadOptions = {};
     if (token) {
       loadOptions.token = token;
     }
