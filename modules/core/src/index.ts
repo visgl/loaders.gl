@@ -1,3 +1,4 @@
+import './lib/init';
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
 

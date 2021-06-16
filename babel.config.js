@@ -4,10 +4,6 @@ module.exports = (api) => {
   const defaultConfig = getBabelConfig(api, {react: true});
 
   const config = deepMerge(defaultConfig, {
-    plugins: [
-      // inject __VERSION__ from package.json
-      'version-inline'
-    ],
     ignore: [
       // Don't transpile workers, they are transpiled separately
       '**/*.worker.js',
