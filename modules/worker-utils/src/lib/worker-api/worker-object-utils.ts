@@ -82,7 +82,7 @@ export function validateWorkerVersion(
 
   return true;
 }
-// eslint-disable-next-line
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function parseVersion(version) {
   const parts = version.split('.').map(Number);
   return {major: parts[0], minor: parts[1]};

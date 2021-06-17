@@ -45,7 +45,7 @@ export type DracoParseOptions = {
   quantizedAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
   octahedronAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
 };
-// eslint-disable-next-line
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const GEOMETRY_TYPE = {
   TRIANGULAR_MESH: 0,
   POINT_CLOUD: 1

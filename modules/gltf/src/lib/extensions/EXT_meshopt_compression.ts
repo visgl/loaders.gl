@@ -3,8 +3,7 @@ import GLTFScenegraph from '../api/gltf-scenegraph';
 import {EXT_MESHOPT_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {isMeshoptSupported, meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
-/* eslint-disable camelcase */
-type GLTF_EXT_meshopt_compression = {
+type GLTF_EXT_MESHOPT_COMPRESSION = {
   buffer: number;
   byteOffset?: number;
   byteLength: number;
@@ -38,18 +37,13 @@ export async function decode(gltfData, options: GLTFLoaderOptions) {
   scenegraph.removeExtension(EXT_MESHOPT_COMPRESSION);
 }
 
-// eslint-disable-next-line
-export function encode(gltfData, options = {}) {
-  // const scenegraph = new GLTFScenegraph(gltfData);
-}
-
 /** Decode one meshopt buffer view */
 async function decodeMeshoptBufferView(json, index: number): Promise<ArrayBuffer | null> {
   const bufferView = json.bufferViews[index];
 
   const meshoptExtension =
     bufferView.extensions &&
-    (bufferView.extensions[EXT_MESHOPT_COMPRESSION] as GLTF_EXT_meshopt_compression);
+    (bufferView.extensions[EXT_MESHOPT_COMPRESSION] as GLTF_EXT_MESHOPT_COMPRESSION);
   if (meshoptExtension) {
     const buffer = json.buffers[meshoptExtension.buffer];
 
