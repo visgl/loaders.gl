@@ -1,0 +1,1 @@
+- pirate.{glb,obj} - MIT License, from https://github.com/zeux/meshoptimizer/tree/master/demo

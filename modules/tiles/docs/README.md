@@ -38,7 +38,7 @@
   - `options`: Options object, but not limited to
     Parameters:
     - `modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix that transforms the tileset's root tile.
-    - `maximumMemoryUsage`=`512`] (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
+    - `maximumMemoryUsage`=`512` (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
     - `ellipsoid`=`Ellipsoid.WGS84` ([`Ellipsoid`](https://math.gl/modules/geospatial/docs/api-reference/ellipsoid)) - The ellipsoid determining the size and shape of the globe.
       Callbacks:
     - `onTileLoad` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is fully loaded during the tileset traversal.

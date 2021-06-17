@@ -1,11 +1,13 @@
 // GLTF EXTENSION: KHR_materials_unlit
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit
 
-import type {GLTFParseOptions} from '../parsers/parse-gltf';
+import type {GLTF} from '../types/gltf-types';
+import type {GLTFLoaderOptions} from '../../gltf-loader';
+
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_MATERIALS_UNLIT} from '../gltf-utils/gltf-constants';
 
-export function decode(gltfData, options: GLTFParseOptions) {
+export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 
@@ -17,6 +19,7 @@ export function decode(gltfData, options: GLTFParseOptions) {
   for (const material of json.materials || []) {
     const extension = material.extensions && material.extensions.KHR_materials_unlit;
     if (extension) {
+      // @ts-ignore TODO
       material.unlit = true;
     }
     gltfScenegraph.removeObjectExtension(material, KHR_MATERIALS_UNLIT);
@@ -31,8 +34,10 @@ export function encode(gltfData, options) {
   // add the extension
   // @ts-ignore
   if (gltfScenegraph.materials) {
-    for (const material of json.materials) {
+    for (const material of json.materials || []) {
+      // @ts-ignore
       if (material.unlit) {
+        // @ts-ignore
         delete material.unlit;
         gltfScenegraph.addObjectExtension(material, KHR_MATERIALS_UNLIT, {});
         gltfScenegraph.addExtension(KHR_MATERIALS_UNLIT);

@@ -255,19 +255,19 @@ test('DracoWriter#geometry metadata', async (t) => {
   });
   validateMeshCategoryData(t, data2);
 
-  t.ok(data2.header.metadata);
-  t.ok(data2.header.metadata.author);
-  t.equal(data2.header.metadata.author.string, 'loaders.gl');
+  t.ok(data2.loaderData.metadata);
+  t.ok(data2.loaderData.metadata.author);
+  t.equal(data2.loaderData.metadata.author.string, 'loaders.gl');
 
-  t.ok(data2.header.metadata['optional-entry-int']);
-  t.ok(data2.header.metadata['optional-entry-int-negative']);
-  t.ok(data2.header.metadata['optional-entry-int-zero']);
-  t.ok(data2.header.metadata['optional-entry-double']);
+  t.ok(data2.loaderData.metadata['optional-entry-int']);
+  t.ok(data2.loaderData.metadata['optional-entry-int-negative']);
+  t.ok(data2.loaderData.metadata['optional-entry-int-zero']);
+  t.ok(data2.loaderData.metadata['optional-entry-double']);
 
-  t.equal(data2.header.metadata['optional-entry-int'].int, 1444);
-  t.equal(data2.header.metadata['optional-entry-int-negative'].int, -333333333);
-  t.equal(data2.header.metadata['optional-entry-int-zero'].int, 0);
-  t.equal(data2.header.metadata['optional-entry-double'].double, 1.00012323);
+  t.equal(data2.loaderData.metadata['optional-entry-int'].int, 1444);
+  t.equal(data2.loaderData.metadata['optional-entry-int-negative'].int, -333333333);
+  t.equal(data2.loaderData.metadata['optional-entry-int-zero'].int, 0);
+  t.equal(data2.loaderData.metadata['optional-entry-double'].double, 1.00012323);
 
   t.equal(
     data2.attributes.POSITION.value.length,
@@ -360,23 +360,33 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
 });
 
 function validatePositionMetadata(t, data) {
-  t.ok(data.attributes.POSITION.metadata);
-  t.ok(data.attributes.POSITION.metadata.name);
-  t.ok(data.attributes.POSITION.metadata['optional-entry']);
-  t.ok(data.attributes.POSITION.metadata['optional-entry-int']);
-  t.ok(data.attributes.POSITION.metadata['optional-entry-int-negative']);
-  t.ok(data.attributes.POSITION.metadata['optional-entry-int-zero']);
-  t.ok(data.attributes.POSITION.metadata['optional-entry-double']);
-  t.ok(data.attributes.POSITION.metadata['optional-entry-int-array']);
+  const POSITION = 0;
+  t.ok(data.loaderData.attributes[POSITION].metadata);
+  t.ok(data.loaderData.attributes[POSITION].metadata.name);
+  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry']);
+  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-int']);
+  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-int-negative']);
+  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-int-zero']);
+  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-double']);
+  t.ok(data.loaderData.attributes[POSITION].metadata['optional-entry-int-array']);
 
-  t.equal(data.attributes.POSITION.metadata.name.string, 'POSITION');
-  t.equal(data.attributes.POSITION.metadata['optional-entry'].string, 'optional-entry-value');
-  t.equal(data.attributes.POSITION.metadata['optional-entry-int'].int, 1444);
-  t.equal(data.attributes.POSITION.metadata['optional-entry-int-negative'].int, -333333333);
-  t.equal(data.attributes.POSITION.metadata['optional-entry-int-zero'].int, 0);
-  t.equal(data.attributes.POSITION.metadata['optional-entry-double'].double, 1.00012323);
+  t.equal(data.loaderData.attributes[POSITION].metadata.name.string, 'POSITION');
+  t.equal(
+    data.loaderData.attributes[POSITION].metadata['optional-entry'].string,
+    'optional-entry-value'
+  );
+  t.equal(data.loaderData.attributes[POSITION].metadata['optional-entry-int'].int, 1444);
+  t.equal(
+    data.loaderData.attributes[POSITION].metadata['optional-entry-int-negative'].int,
+    -333333333
+  );
+  t.equal(data.loaderData.attributes[POSITION].metadata['optional-entry-int-zero'].int, 0);
+  t.equal(
+    data.loaderData.attributes[POSITION].metadata['optional-entry-double'].double,
+    1.00012323
+  );
   t.deepEqual(
-    data.attributes.POSITION.metadata['optional-entry-int-array'].intArray,
+    data.loaderData.attributes[POSITION].metadata['optional-entry-int-array'].intArray,
     [0, 1, 2, -3000, 31987, 77]
   );
 }

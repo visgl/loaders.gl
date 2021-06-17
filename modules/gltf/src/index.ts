@@ -1,8 +1,22 @@
+export type {GLB} from './lib/types/glb-types';
+export type {
+  GLTF,
+  GLTFAccessor,
+  GLTFBuffer,
+  GLTFBufferView,
+  GLTFMeshPrimitive,
+  GLTFMesh,
+  GLTFNode,
+  GLTFMaterial,
+  GLTFSampler,
+  GLTFScene,
+  GLTFSkin,
+  GLTFTexture,
+  GLTFImage
+} from './lib/types/gltf-types';
+
 // Constants
-export {
-  KHR_DRACO_MESH_COMPRESSION,
-  UBER_POINT_CLOUD_EXTENSION
-} from './lib/gltf-utils/gltf-constants';
+export {KHR_DRACO_MESH_COMPRESSION} from './lib/gltf-utils/gltf-constants';
 
 // glTF loader/writer definition objects
 export {GLTFLoader} from './gltf-loader';

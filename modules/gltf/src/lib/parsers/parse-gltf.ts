@@ -1,6 +1,8 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils/types';
-import type {GLB, GLBParseOptions} from './parse-glb';
+import type {GLB} from '../types/glb-types';
+import type {GLBParseOptions} from './parse-glb';
+
 import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
@@ -20,12 +22,11 @@ export type GLTFParseOptions = {
   postProcess?: boolean;
 };
 
-export type GLTFOptions = {
-  gltf: GLTFParseOptions;
-  glb?: GLBParseOptions;
-};
+// export type GLTFOptions = {
+//   gltf?: GLTFParseOptions;
+// };
 
-export function isGLTF(arrayBuffer, options = {}): boolean {
+export function isGLTF(arrayBuffer, options?): boolean {
   const byteOffset = 0;
   return isGLB(arrayBuffer, byteOffset);
 }
@@ -34,21 +35,24 @@ export async function parseGLTF(
   gltf,
   arrayBufferOrString,
   byteOffset = 0,
-  options: GLTFOptions,
+  options: {
+    gltf?: GLTFParseOptions;
+    glb?: GLBParseOptions;
+  },
   context: LoaderContext
 ) {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
-  normalizeGLTFV1(gltf, {normalize: options.gltf.normalize});
+  normalizeGLTFV1(gltf, {normalize: options?.gltf?.normalize});
 
   const promises: Promise<any>[] = [];
 
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
-  if (options.gltf.loadBuffers && gltf.json.buffers) {
+  if (options?.gltf?.loadBuffers && gltf.json.buffers) {
     await loadBuffers(gltf, options, context);
   }
 
-  if (options.gltf.loadImages) {
+  if (options?.gltf?.loadImages) {
     const promise = loadImages(gltf, options, context);
     promises.push(promise);
   }
@@ -60,7 +64,7 @@ export async function parseGLTF(
   await Promise.all(promises);
 
   // Post processing resolves indices to objects, buffers
-  return options.gltf.postProcess ? postProcessGLTF(gltf, options) : gltf;
+  return options?.gltf?.postProcess ? postProcessGLTF(gltf, options) : gltf;
 }
 
 // `data` - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)

@@ -7,8 +7,8 @@ export const KHR_LIGHTS_PUNCTUAL = 'KHR_lights_punctual';
 export const KHR_MATERIALS_UNLIT = 'KHR_materials_unlit';
 export const KHR_TECHNIQUES_WEBGL = 'KHR_techniques_webgl';
 
-// Ideally we should just use KHR_draco_mesh_compression, but it does not support point clouds
-export const UBER_POINT_CLOUD_EXTENSION = 'UBER_draco_point_cloud_compression';
+// External extensions
+export const EXT_MESHOPT_COMPRESSION = 'EXT_meshopt_compression';
 
 const COMPONENTS = {
   SCALAR: 1,

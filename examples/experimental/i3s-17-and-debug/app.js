@@ -4,8 +4,8 @@ import {StaticMap} from 'react-map-gl';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
+import {Tile3DLayer} from '@deck.gl/geo-layers';
 
-import TileLayer from './tile-layer/tile-layer';
 import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -135,12 +135,12 @@ export default class App extends PureComponent {
   _renderLayers() {
     const {tilesetUrl, token, selectedFeatureIndex} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
-    const loadOptions = {throttleRequests: true};
+    const loadOptions = {};
     if (token) {
       loadOptions.token = token;
     }
     return [
-      new TileLayer({
+      new Tile3DLayer({
         data: tilesetUrl,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),

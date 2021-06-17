@@ -69,10 +69,14 @@ Parameters:
 - `json`: loaded tileset json object, should follow the format [tiles format](https://loaders.gl/docs/specifications/category-3d-tiles)
 - `options`:
   - `options.ellipsoid`=`Ellipsoid.WGS84` (`Ellipsoid`) - The ellipsoid determining the size and shape of the globe.
-  - `options.throttleRequests`=`true` (`Boolean`) - Determines whether or not to throttle tile fetching requests.
+  - `options.throttleRequests`=`true` (`Boolean`) - Determines whether or not to throttle tile fetching requests. Throttled requests are prioritized according to tile visibility.
+  - `options.maxRequests`=`64` (`Number`) - When throttling tile fetching, the maximum number of simultaneous requests.
   - `options.modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix this transforms the entire tileset.
-  - `options.maximumMemoryUsage`=`512`] (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
-  - `options.fetchOptions` - fetchOptions, i.e. headers, used to load tiles from tiling server
+  - `options.maximumMemoryUsage`=`512` (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
+  - `options.viewDistanceScale`=`1.0` (`Number`) - A scaling factor for tile refinement. A lower value would cause lower level tiles to load. Useful for debugging and for restricting resource usage.
+  - `options.updateTransforms`=`true` (`Boolean`) - Always check if the tileset `modelMatrix` was updated. Set to `false` to improve performance when the tileset remains stationary in the scene.
+  - `options.loadOptions` - _loaders.gl_ options used when loading tiles from the tiling server. Includes `fetch` options such as authentication `headers`, worker options such as `maxConcurrency`, and options to other loaders such as `3d-tiles`, `gltf`, and `draco`.
+  - `options.contentLoader` = `null` (`Promise`) - An optional external async content loader for the tile. Once the promise resolves, a tile is regarded as _READY_ to be displayed on the viewport.
   - `options.loadTiles`=`true` (`Boolean`) - Whether the tileset traverse and update tiles. Set this options to `false` during the run time to freeze the scene.
 
 Callbacks:

@@ -1,34 +1,12 @@
 /* eslint-disable camelcase, max-statements */
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
-
+import type {GLB} from '../types/glb-types';
 import {padToNBytes, assert} from '@loaders.gl/loader-utils';
 
 export type GLBParseOptions = {
   magic?: number;
   strict?: boolean;
-};
-
-type GLBBinChunk = {
-  byteOffset: number;
-  byteLength: number;
-  arrayBuffer: ArrayBuffer;
-};
-
-export type GLB = {
-  type: string;
-  version: number; // Version 2 of binary glTF container format
-
-  // Put less important stuff in a header, to avoid clutter
-  header: {
-    byteOffset: number; // Byte offset into the initial arrayBuffer
-    byteLength: number;
-    hasBinChunk: boolean;
-  };
-
-  // Per spec we must iterate over chunks, ignoring all except JSON and BIN
-  json: {};
-  binChunks: GLBBinChunk[];
 };
 
 const MAGIC_glTF = 0x676c5446; // glTF in Big-Endian ASCII

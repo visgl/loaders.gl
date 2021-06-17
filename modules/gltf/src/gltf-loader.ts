@@ -1,12 +1,18 @@
 import type {LoaderObject} from '@loaders.gl/loader-utils';
-import type {GLTFParseOptions, GLTFOptions} from './lib/parsers/parse-gltf';
+import type {DracoLoaderOptions} from '@loaders.gl/draco';
+import type {GLTFParseOptions} from './lib/parsers/parse-gltf';
 import {VERSION} from './lib/utils/version';
 import {parseGLTF} from './lib/parsers/parse-gltf';
+import {GLBLoaderOptions} from './glb-loader';
 
 /**
  * GLTF loader options
  */
-export type GLTFLoaderOptions = GLTFParseOptions;
+export type GLTFLoaderOptions = GLBLoaderOptions & {
+  gltf?: GLTFParseOptions;
+  draco?: DracoLoaderOptions;
+  byteOffset?: number;
+};
 
 /**
  * GLTF loader
@@ -47,7 +53,7 @@ export const GLTFLoader: LoaderObject = {
   }
 };
 
-export async function parse(arrayBuffer, options: {[key: string]: any} = {}, context) {
+export async function parse(arrayBuffer, options: GLTFLoaderOptions = {}, context) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GLTFLoader.options, ...options};
   // @ts-ignore
@@ -55,5 +61,5 @@ export async function parse(arrayBuffer, options: {[key: string]: any} = {}, con
 
   const {byteOffset = 0} = options;
   const gltf = {};
-  return await parseGLTF(gltf, arrayBuffer, byteOffset, options as GLTFOptions, context);
+  return await parseGLTF(gltf, arrayBuffer, byteOffset, options, context);
 }

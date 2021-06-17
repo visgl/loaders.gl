@@ -1,10 +1,14 @@
-/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+import type {WriterObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encoders/encode-gltf';
 
+export type GLTFWriterOptions = {
+  gltf?: {};
+  byteOffset?: number;
+};
+
 /**
  * GLTF exporter
- * @type {WriterObject}
  */
 export const GLTFWriter = {
   name: 'glTF',
@@ -23,7 +27,7 @@ export const GLTFWriter = {
   }
 };
 
-function encodeSync(gltf, options: {[key: string]: any} = {}) {
+function encodeSync(gltf, options: GLTFWriterOptions = {}) {
   const {byteOffset = 0} = options;
 
   // Calculate length, then create arraybuffer and encode
@@ -34,3 +38,6 @@ function encodeSync(gltf, options: {[key: string]: any} = {}) {
 
   return arrayBuffer;
 }
+
+// TYPE TESTS - TODO find a better way than exporting junk
+export const _TypecheckGLBLoader: WriterObject = GLTFWriter;
