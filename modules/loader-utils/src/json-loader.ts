@@ -18,13 +18,11 @@ export const JSONLoader: LoaderObject = {
   category: 'json',
   text: true,
   parseTextSync,
-  parse: async (arrayBuffer, options) =>
-    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
+  parse: async (arrayBuffer) => parseTextSync(new TextDecoder().decode(arrayBuffer)),
   options: {}
 };
 
 // TODO - deprecated
-/* eslint-disable @typescript-eslint/no-unused-vars */
-function parseTextSync(text, options) {
+function parseTextSync(text) {
   return JSON.parse(text);
 }

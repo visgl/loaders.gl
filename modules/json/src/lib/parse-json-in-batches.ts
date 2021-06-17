@@ -93,7 +93,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     yield finalBatch;
   }
 }
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function deduceSchema(rows) {
   const row = rows[0];
 
