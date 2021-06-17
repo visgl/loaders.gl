@@ -1,9 +1,10 @@
+/* eslint-disable camelcase */
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {EXT_MESHOPT_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {isMeshoptSupported, meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
-type GLTF_EXT_MESHOPT_COMPRESSION = {
+type GLTF_EXT_meshopt_compression = {
   buffer: number;
   byteOffset?: number;
   byteLength: number;
@@ -43,7 +44,7 @@ async function decodeMeshoptBufferView(json, index: number): Promise<ArrayBuffer
 
   const meshoptExtension =
     bufferView.extensions &&
-    (bufferView.extensions[EXT_MESHOPT_COMPRESSION] as GLTF_EXT_MESHOPT_COMPRESSION);
+    (bufferView.extensions[EXT_MESHOPT_COMPRESSION] as GLTF_EXT_meshopt_compression);
   if (meshoptExtension) {
     const buffer = json.buffers[meshoptExtension.buffer];
 
