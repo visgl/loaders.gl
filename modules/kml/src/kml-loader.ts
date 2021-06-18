@@ -1,5 +1,6 @@
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 import {geojsonToBinary} from '@loaders.gl/gis';
+import {LoaderObject} from '@loaders.gl/loader-utils/types';
 import {kml} from '@tmcw/togeojson';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -14,7 +15,7 @@ const KML_HEADER = `\
  * Loader for KML (Keyhole Markup Language)
  * @type {LoaderObject}
  */
-export const KMLLoader = {
+export const KMLLoader: LoaderObject = {
   name: 'KML (Keyhole Markup Language)',
   id: 'kml',
   module: 'kml',
@@ -32,7 +33,7 @@ export const KMLLoader = {
   }
 };
 
-function parseTextSync(text, options) {
+function parseTextSync(text: string, options: any = {}) {
   options = options || {};
   options.kml = options.kml || {};
   options.gis = options.gis || {};

@@ -1,4 +1,5 @@
 import {geojsonToBinary} from '@loaders.gl/gis';
+import {LoaderObject} from '@loaders.gl/loader-utils/types';
 import {gpx} from '@tmcw/togeojson';
 
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
@@ -15,7 +16,7 @@ const GPX_HEADER = `\
  * Loader for GPX (GPS exchange format)
  * @type {LoaderObject}
  */
-export const GPXLoader = {
+export const GPXLoader: LoaderObject = {
   name: 'GPX (GPS exchange format)',
   id: 'gpx',
   module: 'kml',
@@ -33,7 +34,7 @@ export const GPXLoader = {
   }
 };
 
-function parseTextSync(text, options) {
+function parseTextSync(text: string, options: any = {}) {
   options = options || {};
   options.gis = options.gis || {};
 

@@ -1876,10 +1876,26 @@
     "@loaders.gl/worker-utils" "3.0.0-alpha.18"
     "@probe.gl/stats" "^3.3.0"
 
+"@loaders.gl/loader-utils@3.0.0-alpha.19":
+  version "3.0.0-alpha.19"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.0-alpha.19.tgz#1ccb22f0cc4834b3ec99435192b8501aab91950e"
+  integrity sha512-vqRs1G2dZuzb/3d2q/VNZIe2Dn5GkCHFruftjEVBHwVOT+Rmqvzj4toMk6+LWFTYnLjl0KQWT5FB7NA3IVnm6g==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    "@loaders.gl/worker-utils" "3.0.0-alpha.19"
+    "@probe.gl/stats" "^3.3.0"
+
 "@loaders.gl/worker-utils@3.0.0-alpha.18":
   version "3.0.0-alpha.18"
   resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-alpha.18.tgz#1d02b1bd497c00edcbc8e60ccbe4e030811a5394"
   integrity sha512-w/kmwz091hLu9D2907UTelcl/JH1LxbFxKzCAk3XsNjsNkrGQcOucHq5bAJxiSdPm6yAv/BUdqG+mt39ZNpFnA==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+
+"@loaders.gl/worker-utils@3.0.0-alpha.19":
+  version "3.0.0-alpha.19"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-alpha.19.tgz#fc5af598c83b9da754973ea1efe73299783085d4"
+  integrity sha512-WCbxyuANedWGCTna97/aiRVXmfvwIRK7rTjylwbasOJIdY4N5iWaiKprKigyXUuFe4AfdwEj9bRtY6ANyRRaxA==
   dependencies:
     "@babel/runtime" "^7.3.1"
 

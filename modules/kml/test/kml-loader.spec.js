@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {fetchFile, load} from '@loaders.gl/core';
+import {fetchFile, load} from '@loaders.gl/core/';
 import {KMLLoader} from '@loaders.gl/kml';
 
 const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
@@ -24,13 +24,13 @@ test('KMLLoader#loader conformance', (t) => {
 test('KMLLoader#testText', async (t) => {
   const response = await fetchFile(KML_URL);
   const KML = await response.text();
-
-  let isKML = KML.startsWith(KMLLoader.tests[0]);
-  t.equal(isKML, true, 'Correctly accepted valid KML');
-
-  isKML = INVALID_KML.startsWith(KMLLoader.tests[0]);
-  t.equal(isKML, false, 'Correctly rejected invalid KML');
-
+  const a = (KMLLoader.tests && KMLLoader.tests[0]) || '';
+  if (typeof a === 'string') {
+    let isKML = KML.startsWith(a);
+    t.equal(isKML, true, 'Correctly accepted valid KML');
+    isKML = INVALID_KML.startsWith(a);
+    t.equal(isKML, false, 'Correctly rejected invalid KML');
+  }
   t.end();
 });
 
