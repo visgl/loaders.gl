@@ -14,6 +14,7 @@ const BABEL_CONFIG = {
     ['@babel/preset-env', {modules: false}]
   ],
   plugins: [
+    '@babel/plugin-transform-runtime',
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
