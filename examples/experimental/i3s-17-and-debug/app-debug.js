@@ -357,8 +357,6 @@ export default class App extends PureComponent {
   // Remove featureIds to enable instance picking mode.
   removeFeatureIdsFromTile(tile) {
     delete tile.content.featureIds;
-    // Remove segmentationData after i3s-content-worker will be published
-    delete tile.content.segmentationData;
   }
 
   validateTile(tile) {
