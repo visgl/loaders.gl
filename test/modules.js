@@ -6,16 +6,16 @@ const ALIASES = require('./aliases');
 const {_addAliases} = require('@loaders.gl/loader-utils');
 _addAliases(ALIASES);
 
-const TEST_BASE = true;
-const TEST_CORE = true;
-const TEST_IMAGES = true;
-const TEST_MESHES = true;
-const TEST_SCENEGRAPHS = true;
-const TEST_TILES = true;
-const TEST_GEOSPATIAL = true;
+const TEST_BASE = false;
+const TEST_CORE = false;
+const TEST_IMAGES = false;
+const TEST_MESHES = false;
+const TEST_SCENEGRAPHS = false;
+const TEST_TILES = false;
+const TEST_GEOSPATIAL = false;
 const TEST_TABLES = true;
-const TEST_ARCHIVES = true;
-const TEST_CLI = true;
+const TEST_ARCHIVES = false;
+const TEST_CLI = false;
 
 export const isBrowser =
   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
@@ -83,11 +83,12 @@ if (TEST_GEOSPATIAL) {
 
 // Table Formats
 if (TEST_TABLES) {
-  require('@loaders.gl/schema/test');
-  require('@loaders.gl/arrow/test');
-  require('@loaders.gl/csv/test');
-  require('@loaders.gl/json/test');
-  require('@loaders.gl/excel/test');
+  // require('@loaders.gl/schema/test');
+  // require('@loaders.gl/arrow/test');
+  // require('@loaders.gl/csv/test');
+  // require('@loaders.gl/json/test');
+  // require('@loaders.gl/excel/test');
+  require('@loaders.gl/parquet/test');
 }
 
 // Archive Formats

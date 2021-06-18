@@ -36,6 +36,7 @@ export {JSONLoader} from '@loaders.gl/loader-utils';
 // EXPERIMENTAL
 export {default as _fetchProgress} from './lib/progress/fetch-progress';
 export {default as _BrowserFileSystem} from './lib/filesystems/browser-filesystem';
+export {default as _NodeFileSystem} from './lib/filesystems/node-filesystem';
 
 // FOR TESTING
 export {_unregisterLoaders} from './lib/api/register-loaders';

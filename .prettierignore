@@ -7,6 +7,8 @@ node_modules/
 .cache
 public
 
+modules/parquet/test
+
 modules/potree/test/data/**/cloud.js
 examples/experimental/gltf-with-raw-webgl/
 modules/i3s/src/i3s-attribute-loader.ts
