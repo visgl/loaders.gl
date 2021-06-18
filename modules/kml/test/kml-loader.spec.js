@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {fetchFile, load} from '@loaders.gl/core/';
+import {fetchFile, load} from '@loaders.gl/core';
 import {KMLLoader} from '@loaders.gl/kml';
 
 const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
