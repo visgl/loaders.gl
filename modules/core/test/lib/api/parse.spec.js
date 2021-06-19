@@ -1,15 +1,15 @@
 import test from 'tape-promise/tape';
 
-import {isBrowser, parse} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/core';
 
-const JSON_DATA = [{col1: 22, col2: 'abc'}];
+// const JSON_DATA = [{col1: 22, col2: 'abc'}];
 
-const JSONLoader = {
-  name: 'JSON',
-  extensions: ['json'],
-  testText: null,
-  parseTextSync: JSON.parse
-};
+// const JSONLoader = {
+//   name: 'JSON',
+//   extensions: ['json'],
+//   testText: null,
+//   parseTextSync: JSON.parse
+// };
 
 test('parse#Blob (text)', async (t) => {
   if (!isBrowser) {
