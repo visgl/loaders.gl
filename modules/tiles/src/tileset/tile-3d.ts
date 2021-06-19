@@ -541,8 +541,7 @@ export default class TileHeader {
   insideViewerRequestVolume(frameState: FrameState) {
     const viewerRequestVolume = this._viewerRequestVolume;
     return (
-      !viewerRequestVolume ||
-      viewerRequestVolume.distanceToCamera(frameState.camera.position) === 0.0
+      !viewerRequestVolume || viewerRequestVolume.distanceSquaredTo(frameState.camera.position) <= 0
     );
   }
 
