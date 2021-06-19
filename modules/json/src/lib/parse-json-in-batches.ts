@@ -1,4 +1,4 @@
-import {Schema, TableBatchBuilder} from '@loaders.gl/schema';
+import {TableBatchBuilder} from '@loaders.gl/schema';
 import {makeTextDecoderIterator} from '@loaders.gl/loader-utils';
 import StreamingJSONParser from './parser/streaming-json-parser';
 
@@ -93,7 +93,7 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     yield finalBatch;
   }
 }
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function deduceSchema(rows) {
   const row = rows[0];
 

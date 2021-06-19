@@ -31,7 +31,7 @@ export const CompressedTextureWorkerLoader = {
  */
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
-  parse: async (arrayBuffer, options) => parseCompressedTexture(arrayBuffer)
+  parse: async (arrayBuffer) => parseCompressedTexture(arrayBuffer)
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk

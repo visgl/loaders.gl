@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
+import type {WorkerLoaderObject} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 
 /**

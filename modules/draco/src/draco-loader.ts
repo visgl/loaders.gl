@@ -44,8 +44,7 @@ export const DracoLoader = {
 
 async function parse(
   arrayBuffer: ArrayBuffer,
-  options: {draco?: DracoLoaderOptions},
-  context
+  options: {draco?: DracoLoaderOptions}
 ): Promise<DracoMeshData> {
   const {draco} = await loadDracoDecoderModule(options);
   const dracoParser = new DracoParser(draco);

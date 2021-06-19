@@ -14,10 +14,10 @@ export const NullLoader: LoaderObject = {
   version: VERSION,
   mimeTypes: ['application/x.empty'],
   extensions: ['null'],
-  parse: async (arrayBuffer, options) => arrayBuffer,
-  parseSync: (arrayBuffer, options) => arrayBuffer,
+  parse: async (arrayBuffer) => arrayBuffer,
+  parseSync: (arrayBuffer) => arrayBuffer,
   // @ts-ignore
-  parseInBatches: async (asyncIterator, options) =>
+  parseInBatches: async (asyncIterator) =>
     (async function* parseInBatches() {
       // @ts-ignore
       yield* asyncIterator;

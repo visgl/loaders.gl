@@ -1,5 +1,5 @@
 import type {FileDirectory} from 'geotiff';
-/* global Worker */
+
 // import Worker from 'web-worker:./decoder.worker.ts';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/NavigatorConcurrentHardware/hardwareConcurrency

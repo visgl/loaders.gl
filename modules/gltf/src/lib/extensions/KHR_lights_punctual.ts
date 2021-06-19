@@ -2,13 +2,12 @@
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual
 
 import type {GLTF} from '../types/gltf-types';
-import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import {assert} from '../utils/assert';
 import GLTFScenegraph from '../api/gltf-scenegraph';
 import {KHR_LIGHTS_PUNCTUAL} from '../gltf-utils/gltf-constants';
 
-export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
+export async function decode(gltfData: {json: GLTF}): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 
@@ -33,7 +32,7 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
 }
 
 // Move the light ar ray out of the extension and remove the extension
-export async function encode(gltfData, options): Promise<void> {
+export async function encode(gltfData): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 

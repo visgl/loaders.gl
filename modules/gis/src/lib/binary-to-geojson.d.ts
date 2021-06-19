@@ -1,4 +1,4 @@
-import {BinaryGeometryData, BinaryFeaturesData, BinaryGeometryType} from '../types';
+import {BinaryGeometryData, BinaryFeaturesData, BinaryGeometryType} from '../types.d.ts';
 
 /**
  * Convert binary geometry representation to GeoJSON

@@ -47,10 +47,8 @@ export function getWorkerObjectURL(worker: WorkerObject, options: object): strin
 
 /**
  * Gets worker object's name (for debugging in Chrome thread inspector window)
- * @param worker
- * @param options
  */
-export function getWorkerObjectName(worker: WorkerObject, options: object): string {
+export function getWorkerObjectName(worker: WorkerObject): string {
   const warning = worker.version !== VERSION ? ` (lib@${VERSION})` : '';
   return `${worker.name}-worker@${worker.version}${warning}`;
 }
@@ -72,10 +70,9 @@ export function validateWorkerVersion(
     return false;
   }
 
-  const coreVersions = parseVersion(coreVersion);
-  const workerVersions = parseVersion(workerVersion);
-
   // TODO enable when fix the __version__ injection
+  // const coreVersions = parseVersion(coreVersion);
+  // const workerVersions = parseVersion(workerVersion);
   // assert(
   //   coreVersion.major === workerVersion.major && coreVersion.minor <= workerVersion.minor,
   //   `worker: ${worker.name} is not compatible. ${coreVersion.major}.${
@@ -85,7 +82,7 @@ export function validateWorkerVersion(
 
   return true;
 }
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function parseVersion(version) {
   const parts = version.split('.').map(Number);
   return {major: parts[0], minor: parts[1]};

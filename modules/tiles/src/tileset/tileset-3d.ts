@@ -122,11 +122,17 @@ const DEFAULT_PROPS: Props = {
 
   maximumMemoryUsage: 32,
 
-  // Indicates this a tile's content was loaded
-  onTileLoad: (tile) => {},
-  // Indicates this a tile's content was unloaded
-  onTileUnload: (tile) => {},
-  onTileError: (tile, message, url) => {},
+  /**
+   * Callback. Indicates this a tile's content was loaded
+   * @param tile {TileHeader}
+   */
+  onTileLoad: () => {},
+  /**
+   * Callback. Indicates this a tile's content was unloaded
+   * @param tile {TileHeader}
+   */
+  onTileUnload: () => {},
+  onTileError: () => {},
 
   // Optional async tile content loader
   contentLoader: undefined,

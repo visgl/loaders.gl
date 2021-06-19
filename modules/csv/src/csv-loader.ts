@@ -159,7 +159,7 @@ function parseCSVInBatches(asyncIterator, options) {
     skipEmptyLines: false,
 
     // step is called on every row
-    step(results, parser) {
+    step(results) {
       const row = results.data;
 
       if (options.csv.skipEmptyLines) {
@@ -208,7 +208,7 @@ function parseCSVInBatches(asyncIterator, options) {
     },
 
     // complete is called when all rows have been read
-    complete(results, file) {
+    complete(results) {
       const bytesUsed = results.meta.cursor;
       // Ensure any final (partial) batch gets emitted
       const batch = tableBatchBuilder && tableBatchBuilder.getBatch({bytesUsed});

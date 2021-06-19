@@ -1,4 +1,4 @@
-import {BinaryFeaturesData} from '../types';
+import {BinaryFeaturesData} from '../types.d.ts';
 
 /**
  * Apply transformation to every coordinate of binary features
