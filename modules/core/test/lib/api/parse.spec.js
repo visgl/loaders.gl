@@ -24,6 +24,7 @@ test('parse#Blob (text)', async (t) => {
   // @ts-ignore (partial loader object)
   const data = await parse(blob, JSONLoader);
 
+  // TODO/ActionEngine - restore test
   t.deepEquals(data, JSON_DATA, 'parse(Blob) returned data');
 
   t.end();
