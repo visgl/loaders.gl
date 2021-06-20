@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/worker-utils').WorkerObject} WorkerObject */
+/** @typedef {import('@loaders.gl/worker-utils').Worker} Worker */
 
 export {default as CRC32HashTransform} from './lib/crc32/crc32-hash-transform';
 export {default as CRC32CHashTransform} from './lib/crc32c/crc32c-hash-transform';
@@ -11,7 +11,7 @@ export {hexToBase64 as _hexToBase64, toHex as _toHex} from './lib/utils/digest-u
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerObject} */
+/** @type {Worker} */
 export const CryptoWorker = {
   id: 'crypto',
   name: 'CRC32, CRC32c and MD5 Hashes',
@@ -22,7 +22,7 @@ export const CryptoWorker = {
   }
 };
 
-/** @type {WorkerObject} */
+/** @type {Worker} */
 export const CryptoJSWorker = {
   id: 'cryptojs',
   name: 'Cryptographic Hashes',

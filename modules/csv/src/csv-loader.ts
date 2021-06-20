@@ -1,4 +1,4 @@
-import type {LoaderObject} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 // import type {Schema} from '@loaders.gl/schema';
 type Schema = any;
 
@@ -57,7 +57,7 @@ const DEFAULT_CSV_LOADER_OPTIONS: {csv: CSVLoaderOptions} = {
   }
 };
 
-export const CSVLoader: LoaderObject = {
+export const CSVLoader: LoaderWithParser = {
   id: 'csv',
   name: 'CSV',
   version: VERSION,

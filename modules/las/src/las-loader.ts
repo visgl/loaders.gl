@@ -1,6 +1,5 @@
 // LASER (LAS) FILE FORMAT
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import parseLAS from './lib/parse-las';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -9,9 +8,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /**
  * Worker loader for the LAS (LASer) point cloud format
- * @type {WorkerLoaderObject}
  */
-export const LASWorkerLoader = {
+export const LASWorkerLoader: Loader = {
   name: 'LAS',
   id: 'las',
   module: 'las',
@@ -33,9 +31,8 @@ export const LASWorkerLoader = {
 
 /**
  * Loader for the LAS (LASer) point cloud format
- * @type {LoaderObject}
  */
-export const LASLoader = {
+export const LASLoader: LoaderWithParser = {
   ...LASWorkerLoader,
   parse: async (arrayBuffer, options) => parseLAS(arrayBuffer, options),
   parseSync: parseLAS

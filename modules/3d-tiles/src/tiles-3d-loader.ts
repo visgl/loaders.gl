@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {VERSION} from './lib/utils/version';
@@ -7,9 +7,8 @@ import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
 
 /**
  * Loader for 3D Tiles
- * @type {LoaderObject}
  */
-export const Tiles3DLoader = {
+export const Tiles3DLoader: LoaderWithParser = {
   id: '3d-tiles',
   name: '3D Tiles',
   module: '3d-tiles',
@@ -59,7 +58,7 @@ async function parseTileset(data, options, context) {
   return tilesetJson;
 }
 
-async function parse(data, options, context, loader) {
+async function parse(data, options, context) {
   // auto detect file type
   const loaderOptions = options['3d-tiles'] || {};
   let isTileset;

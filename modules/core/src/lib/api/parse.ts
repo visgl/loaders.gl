@@ -1,9 +1,4 @@
-import type {
-  DataType,
-  WorkerLoaderObject,
-  LoaderContext,
-  CoreLoaderOptions
-} from '@loaders.gl/loader-utils';
+import type {DataType, Loader, LoaderContext, CoreLoaderOptions} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -22,7 +17,7 @@ import {selectLoader} from './select-loader';
  */
 export async function parse(
   data: DataType | Promise<DataType>,
-  loaders?: WorkerLoaderObject | WorkerLoaderObject[] | CoreLoaderOptions,
+  loaders?: Loader | Loader[] | CoreLoaderOptions,
   options?: CoreLoaderOptions,
   context?: LoaderContext
 ): Promise<any> {

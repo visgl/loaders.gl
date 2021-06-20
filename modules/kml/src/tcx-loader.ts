@@ -1,44 +1,42 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {kml} from '@tmcw/togeojson';
+import {tcx} from '@tmcw/togeojson';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const KML_HEADER = `\
+const TCX_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">`;
+<TrainingCenterDatabase`;
 
 /**
- * Loader for KML (Keyhole Markup Language)
- * @type {LoaderObject}
+ * Loader for TCX (Training Center XML) - Garmin GPS track format
  */
-export const KMLLoader = {
-  name: 'KML (Keyhole Markup Language)',
-  id: 'kml',
+export const TCXLoader: LoaderWithParser = {
+  name: 'TCX (Training Center XML)',
+  id: 'tcx',
   module: 'kml',
   version: VERSION,
-  extensions: ['kml'],
-  mimeTypes: ['vnd.google-earth.kml+xml'],
+  extensions: ['tcx'],
+  mimeTypes: ['application/vnd.garmin.tcx+xml'],
   text: true,
-  tests: [KML_HEADER],
+  tests: [TCX_HEADER],
   parse: async (arrayBuffer, options) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    kml: {},
+    tcx: {},
     gis: {format: 'geojson'}
   }
 };
 
 function parseTextSync(text, options) {
   options = options || {};
-  options.kml = options.kml || {};
   options.gis = options.gis || {};
 
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = kml(doc);
+  const geojson = tcx(doc);
 
   switch (options.gis.format) {
     case 'geojson':

@@ -1,13 +1,11 @@
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import parseQuantizedMesh from './lib/parse-quantized-mesh';
 
 /**
  * Worker loader for quantized meshes
- * @type {WorkerLoaderObject}
  */
-export const QuantizedMeshWorkerLoader = {
+export const QuantizedMeshWorkerLoader: Loader = {
   name: 'Quantized Mesh',
   id: 'quantized-mesh',
   module: 'terrain',
@@ -24,9 +22,8 @@ export const QuantizedMeshWorkerLoader = {
 
 /**
  * Loader for quantized meshes
- * @type {LoaderObject}
  */
-export const QuantizedMeshLoader = {
+export const QuantizedMeshLoader: LoaderWithParser = {
   ...QuantizedMeshWorkerLoader,
   parseSync: parseQuantizedMesh,
   parse: async (arrayBuffer, options) => parseQuantizedMesh(arrayBuffer, options)

@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import parseGeoPackage from './lib/parse-geopackage';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -6,8 +6,8 @@ import parseGeoPackage from './lib/parse-geopackage';
 // const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const VERSION = 'latest';
 
-/** @type {LoaderObject} */
-export const GeoPackageLoader = {
+/** Geopackage loader */
+export const GeoPackageLoader: LoaderWithParser = {
   id: 'geopackage',
   name: 'GeoPackage',
   module: 'geopackage',

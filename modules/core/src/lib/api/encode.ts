@@ -1,4 +1,4 @@
-import type {WriterObject, CoreLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Writer, CoreLoaderOptions} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
 import {writeFile} from '../fetch/write-file';
@@ -9,7 +9,7 @@ import {fetchFile} from '../fetch/fetch-file';
  */
 export async function encode(
   data: any,
-  writer: WriterObject,
+  writer: Writer,
   options?: CoreLoaderOptions,
   url?: string
 ): Promise<ArrayBuffer> {
@@ -65,7 +65,7 @@ export async function encode(
  */
 export function encodeSync(
   data: any,
-  writer: WriterObject,
+  writer: Writer,
   options?: CoreLoaderOptions,
   url?: string
 ): ArrayBuffer {
@@ -83,7 +83,7 @@ export function encodeSync(
  */
 export async function encodeText(
   data: any,
-  writer: WriterObject,
+  writer: Writer,
   options?: CoreLoaderOptions,
   url?: string
 ): Promise<string> {
@@ -104,7 +104,7 @@ export async function encodeText(
  */
 export function encodeInBatches(
   data: any,
-  writer: WriterObject,
+  writer: Writer,
   options?: CoreLoaderOptions,
   url?: string
 ): AsyncIterable<ArrayBuffer> {
@@ -123,7 +123,7 @@ export function encodeInBatches(
 export async function encodeURLtoURL(
   inputUrl,
   outputUrl,
-  writer: WriterObject,
+  writer: Writer,
   options
 ): Promise<string> {
   inputUrl = resolvePath(inputUrl);

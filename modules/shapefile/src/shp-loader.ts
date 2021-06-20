@@ -1,5 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -9,8 +8,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 
 /**
- * @type {WorkerLoaderObject} */
-export const SHPWorkerLoader = {
+ * SHP file loader
+ */
+export const SHPWorkerLoader: Loader = {
   name: 'SHP',
   id: 'shp',
   module: 'shapefile',
@@ -28,8 +28,8 @@ export const SHPWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
-export const SHPLoader = {
+/** SHP file loader */
+export const SHPLoader: LoaderWithParser = {
   ...SHPWorkerLoader,
   parse: async (arrayBuffer, options) => parseSHP(arrayBuffer, options),
   parseSync: parseSHP,

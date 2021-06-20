@@ -1,6 +1,6 @@
 import type {
   BatchableDataType,
-  WorkerLoaderObject,
+  Loader,
   LoaderContext,
   CoreLoaderOptions
 } from '@loaders.gl/loader-utils/';
@@ -25,7 +25,7 @@ import {parse} from './parse';
  */
 export async function parseInBatches(
   data: BatchableDataType,
-  loaders?: WorkerLoaderObject | WorkerLoaderObject[] | CoreLoaderOptions,
+  loaders?: Loader | Loader[] | CoreLoaderOptions,
   options?: CoreLoaderOptions,
   context?: LoaderContext
 ): Promise<AsyncIterable<any>> {
@@ -46,7 +46,7 @@ export async function parseInBatches(
 
   // Chooses a loader and normalizes it
   // Note - only uses URL and contentType for streams and iterator inputs
-  const loader = await selectLoader(data as ArrayBuffer, loaders as WorkerLoaderObject[], options);
+  const loader = await selectLoader(data as ArrayBuffer, loaders as Loader[], options);
   // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     // @ts-ignore
@@ -59,7 +59,7 @@ export async function parseInBatches(
   // @ts-ignore
   context = getLoaderContext(
     // @ts-ignore
-    {url, parseInBatches, parse, loaders: loaders as WorkerLoaderObject[]},
+    {url, parseInBatches, parse, loaders: loaders as Loader[]},
     options,
     context
   );

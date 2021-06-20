@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+/** @typedef {import('@loaders.gl/loader-utils').Writer} Writer */
 import {VERSION} from './lib/utils/version';
 import {encodeImage} from './lib/encoders/encode-image';
 

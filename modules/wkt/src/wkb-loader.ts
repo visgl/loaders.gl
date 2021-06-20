@@ -1,13 +1,11 @@
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import parseWKB from './lib/parse-wkb';
 
 /**
  * Worker loader for WKB (Well-Known Binary)
- * @type {WorkerLoaderObject}
  */
-export const WKBWorkerLoader = {
+export const WKBWorkerLoader: Loader = {
   name: 'WKB',
   id: 'wkb',
   module: 'wkt',
@@ -23,9 +21,8 @@ export const WKBWorkerLoader = {
 
 /**
  * Loader for WKB (Well-Known Binary)
- * @type {LoaderObject}
  */
-export const WKBLoader = {
+export const WKBLoader: LoaderWithParser = {
   ...WKBWorkerLoader,
   parse: async (arrayBuffer, options) => parseWKB(arrayBuffer),
   parseSync: parseWKB

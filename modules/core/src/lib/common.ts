@@ -1,1 +1,1 @@
-export type {LoaderObject} from '@loaders.gl/loader-utils';
+export type {LoaderWithParser} from '@loaders.gl/loader-utils';

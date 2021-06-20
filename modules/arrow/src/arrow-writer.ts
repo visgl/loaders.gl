@@ -1,11 +1,11 @@
-/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+/** @typedef {import('@loaders.gl/loader-utils').Writer} Writer */
 import {encodeArrowSync} from './lib/encode-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WriterObject} */
+/** @type {Writer} */
 export const ArrowWriter = {
   name: 'Apache Arrow',
   id: 'arrow',

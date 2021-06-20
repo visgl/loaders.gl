@@ -1,13 +1,11 @@
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import loadTerrain from './lib/parse-terrain';
 
 /**
  * Worker loader for quantized meshes
- * @type {WorkerLoaderObject}
  */
-export const TerrainWorkerLoader = {
+export const TerrainWorkerLoader: Loader = {
   name: 'Terrain',
   id: 'terrain',
   module: 'terrain',
@@ -32,9 +30,8 @@ export const TerrainWorkerLoader = {
 
 /**
  * Loader for quantized meshes
- * @type {LoaderObject}
  */
-export const TerrainLoader = {
+export const TerrainLoader: LoaderWithParser = {
   ...TerrainWorkerLoader,
   parse: loadTerrain
 };

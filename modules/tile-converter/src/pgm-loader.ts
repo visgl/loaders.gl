@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -8,7 +8,7 @@ import {parsePgm} from './lib/pgm-parser';
 
 /**
  * Loader for PGM - Netpbm grayscale image format
- * @type {LoaderObject}
+ * @type {LoaderWithParser}
  */
 export const PGMLoader = {
   name: 'PGM - Netpbm grayscale image format',

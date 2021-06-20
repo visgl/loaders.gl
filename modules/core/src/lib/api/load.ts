@@ -1,7 +1,7 @@
 import type {
   DataType,
-  WorkerLoaderObject,
-  LoaderObject,
+  Loader,
+  LoaderWithParser,
   LoaderContext,
   CoreLoaderOptions
 } from '@loaders.gl/loader-utils';
@@ -23,7 +23,7 @@ import {parse} from './parse';
 // implementation signature
 export async function load(
   url: string | DataType,
-  loaders?: WorkerLoaderObject | WorkerLoaderObject[] | CoreLoaderOptions,
+  loaders?: Loader | Loader[] | CoreLoaderOptions,
   options?: CoreLoaderOptions,
   context?: LoaderContext
 ): Promise<any> {

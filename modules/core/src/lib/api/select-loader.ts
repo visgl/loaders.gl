@@ -1,8 +1,8 @@
 import type {
-  LoaderObject,
+  LoaderWithParser,
   LoaderContext,
   CoreLoaderOptions,
-  WorkerLoaderObject
+  Loader
 } from '@loaders.gl/loader-utils';
 import {compareArrayBuffers} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
@@ -28,10 +28,10 @@ const EXT_PATTERN = /\.([^.]+)$/;
  */
 export async function selectLoader(
   data: Response | Blob | ArrayBuffer | string,
-  loaders: WorkerLoaderObject[] | WorkerLoaderObject = [],
+  loaders: Loader[] | Loader = [],
   options?: CoreLoaderOptions,
   context?: LoaderContext
-): Promise<WorkerLoaderObject | null> {
+): Promise<Loader | null> {
   // First make a sync attempt, disabling exceptions
   let loader = selectLoaderSync(data, loaders, {...options, nothrow: true}, context);
   if (loader) {
@@ -64,10 +64,10 @@ export async function selectLoader(
  */
 export function selectLoaderSync(
   data: Response | Blob | ArrayBuffer | string,
-  loaders: WorkerLoaderObject[] | WorkerLoaderObject = [],
+  loaders: Loader[] | Loader = [],
   options?: CoreLoaderOptions,
   context?: LoaderContext
-): WorkerLoaderObject | null {
+): Loader | null {
   // eslint-disable-next-line complexity
   // if only a single loader was provided (not as array), force its use
   // TODO - Should this behavior be kept and documented?
@@ -108,7 +108,7 @@ function getNoValidLoaderMessage(data): string {
   return message;
 }
 
-function normalizeLoaders(loaders: WorkerLoaderObject[]): void {
+function normalizeLoaders(loaders: Loader[]): void {
   for (const loader of loaders) {
     normalizeLoader(loader);
   }
@@ -116,17 +116,14 @@ function normalizeLoaders(loaders: WorkerLoaderObject[]): void {
 
 // TODO - Would be nice to support http://example.com/file.glb?parameter=1
 // E.g: x = new URL('http://example.com/file.glb?load=1'; x.pathname
-function findLoaderByUrl(loaders: WorkerLoaderObject[], url?: string): WorkerLoaderObject | null {
+function findLoaderByUrl(loaders: Loader[], url?: string): Loader | null {
   // Get extension
   const match = url && EXT_PATTERN.exec(url);
   const extension = match && match[1];
   return extension ? findLoaderByExtension(loaders, extension) : null;
 }
 
-function findLoaderByExtension(
-  loaders: WorkerLoaderObject[],
-  extension: string
-): WorkerLoaderObject | null {
+function findLoaderByExtension(loaders: Loader[], extension: string): Loader | null {
   extension = extension.toLowerCase();
 
   for (const loader of loaders) {

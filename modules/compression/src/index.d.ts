@@ -1,4 +1,4 @@
-import {WorkerObject} from '@loaders.gl/worker-utils';
+import {Worker} from '@loaders.gl/worker-utils';
 
 // Zlib (via Pako)
 export {default as ZlibDeflateTransform} from './lib/zlib/zlib-deflate-transform';
@@ -15,18 +15,18 @@ export {default as LZ4InflateTransform} from './lib/lz4/lz4-inflate-transform';
 /**
  * Worker for Zlib real-time compression and decompression
  */
-export const ZlibWorker: WorkerObject;
+export const ZlibWorker: Worker;
 
 /**
  * Worker for LZ4 real-time compression and decompression
  */
-export const LZ4Worker: WorkerObject;
+export const LZ4Worker: Worker;
 
 /**
  * Worker for Zstandard real-time compression and decompression
  * @note this is a large worker due to big Zstd-codec library.
  */
-export declare const ZstdWorker: WorkerObject;
+export declare const ZstdWorker: Worker;
 
 /**
  * Overload parseOnWorker to provide type safety

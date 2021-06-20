@@ -1,34 +1,33 @@
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {tcx} from '@tmcw/togeojson';
+import {gpx} from '@tmcw/togeojson';
 
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const TCX_HEADER = `\
+const GPX_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
-<TrainingCenterDatabase`;
+<gpx`;
 
 /**
- * Loader for TCX (Training Center XML) - Garmin GPS track format
- * @type {LoaderObject}
+ * Loader for GPX (GPS exchange format)
  */
-export const TCXLoader = {
-  name: 'TCX (Training Center XML)',
-  id: 'tcx',
+export const GPXLoader: LoaderWithParser = {
+  name: 'GPX (GPS exchange format)',
+  id: 'gpx',
   module: 'kml',
   version: VERSION,
-  extensions: ['tcx'],
-  mimeTypes: ['application/vnd.garmin.tcx+xml'],
+  extensions: ['gpx'],
+  mimeTypes: ['application/gpx+xml'],
   text: true,
-  tests: [TCX_HEADER],
+  tests: [GPX_HEADER],
   parse: async (arrayBuffer, options) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    tcx: {},
+    gpx: {},
     gis: {format: 'geojson'}
   }
 };
@@ -38,7 +37,7 @@ function parseTextSync(text, options) {
   options.gis = options.gis || {};
 
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = tcx(doc);
+  const geojson = gpx(doc);
 
   switch (options.gis.format) {
     case 'geojson':

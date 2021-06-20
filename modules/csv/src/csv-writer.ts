@@ -1,6 +1,6 @@
-/* @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+/* @typedef {import('@loaders.gl/loader-utils').Writer} Writer */
 
 /*
  * CSV exporter
- * type {WriterObject}
+ * type {Writer}
  */

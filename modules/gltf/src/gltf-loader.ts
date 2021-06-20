@@ -1,4 +1,4 @@
-import type {LoaderObject} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {GLTFParseOptions} from './lib/parsers/parse-gltf';
 import {VERSION} from './lib/utils/version';
@@ -17,7 +17,7 @@ export type GLTFLoaderOptions = GLBLoaderOptions & {
 /**
  * GLTF loader
  */
-export const GLTFLoader: LoaderObject = {
+export const GLTFLoader: LoaderWithParser = {
   name: 'glTF',
   id: 'gltf',
   module: 'gltf',

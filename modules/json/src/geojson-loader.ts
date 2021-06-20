@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {RowTableBatch} from '@loaders.gl/schema';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import parseJSONSync from './lib/parse-json';
@@ -24,7 +24,7 @@ const GeoJSONLoaderOptions = {
 /**
  * GeoJSON loader
  */
-export const GeoJSONWorkerLoader: WorkerLoaderObject = {
+export const GeoJSONWorkerLoader: Loader = {
   name: 'GeoJSON',
   id: 'geojson',
   module: 'geojson',
@@ -50,7 +50,7 @@ export const GeoJSONWorkerLoader: WorkerLoaderObject = {
   options: GeoJSONLoaderOptions
 };
 
-export const GeoJSONLoader: LoaderObject = {
+export const GeoJSONLoader: LoaderWithParser = {
   ...GeoJSONWorkerLoader,
   parse,
   parseTextSync,

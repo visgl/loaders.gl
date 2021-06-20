@@ -1,12 +1,11 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {default as parsePotreeBin} from './parsers/parse-potree-bin';
 
 /**
  * Loader for potree Binary Point Attributes
- * @type {LoaderObject}
  * */
 // @ts-ignore
-export const PotreeBinLoader = {
+export const PotreeBinLoader: LoaderWithParser = {
   name: 'potree Binary Point Attributes',
   id: 'potree',
   extensions: ['bin'],
@@ -17,7 +16,7 @@ export const PotreeBinLoader = {
   binary: true
 };
 
-function parseSync(arrayBuffer, options, url, loader) {
+function parseSync(arrayBuffer, options) {
   const index = {};
   const byteOffset = 0;
   parsePotreeBin(arrayBuffer, byteOffset, options, index);

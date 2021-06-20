@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject, LoaderContext, CoreLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderContext, CoreLoaderOptions} from '@loaders.gl/loader-utils';
 import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
@@ -8,7 +8,7 @@ import {NullLog, ConsoleLog} from './loggers';
  * Global state for loaders.gl. Stored on `global.loaders._state`
  */
 type GlobalLoaderState = {
-  loaderRegistry: WorkerLoaderObject[];
+  loaderRegistry: Loader[];
   globalOptions: {[key: string]: any};
 };
 
@@ -97,8 +97,8 @@ export function setGlobalOptions(options: object): void {
  */
 export function normalizeOptions(
   options: object,
-  loader: WorkerLoaderObject,
-  loaders?: WorkerLoaderObject[],
+  loader: Loader,
+  loaders?: Loader[],
   url?: string
 ): object {
   loaders = loaders || [];

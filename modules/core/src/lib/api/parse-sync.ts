@@ -1,6 +1,6 @@
 import type {
   SyncDataType,
-  WorkerLoaderObject,
+  Loader,
   LoaderContext,
   CoreLoaderOptions
 } from '@loaders.gl/loader-utils';
@@ -21,7 +21,7 @@ import {getResourceUrlAndType} from '../utils/resource-utils';
  */
 export function parseSync(
   data: SyncDataType,
-  loaders?: WorkerLoaderObject | WorkerLoaderObject[] | CoreLoaderOptions,
+  loaders?: Loader | Loader[] | CoreLoaderOptions,
   options?: CoreLoaderOptions,
   context?: LoaderContext
 ): any {
@@ -52,7 +52,7 @@ export function parseSync(
   // Extract a url for auto detection
   const {url} = getResourceUrlAndType(data);
 
-  context = getLoaderContext({url, parseSync, loaders: loaders as WorkerLoaderObject[]}, options);
+  context = getLoaderContext({url, parseSync, loaders: loaders as Loader[]}, options);
 
   return parseWithLoaderSync(loader, data, options, context);
 }

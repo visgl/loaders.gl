@@ -1,10 +1,10 @@
 // TYPES
 export type {
-  WorkerLoaderObject,
-  LoaderObject,
+  Loader,
+  LoaderWithParser,
   LoaderContext,
   CoreLoaderOptions,
-  WriterObject,
+  Writer,
   CoreWriterOptions,
   DataType,
   SyncDataType,

@@ -18,6 +18,7 @@
     "point cloud",
     "OBJ"
   ],
+  "types": "src/index.ts",  
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,

@@ -1,7 +1,7 @@
-import type {WorkerObject} from './types';
+import type {Worker} from './types';
 
 // TYPES
-export type {WorkerObject} from './types';
+export type {Worker} from './types';
 export type {
   WorkerMessage,
   WorkerMessageData,
@@ -41,7 +41,7 @@ export {default as ChildProcessProxy} from './lib/process-utils/child-process-pr
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** A null worker to test that worker processing is functional */
-export const NullWorker: WorkerObject = {
+export const NullWorker: Worker = {
   id: 'null',
   name: 'null',
   module: 'worker-utils',

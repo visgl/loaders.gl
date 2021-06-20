@@ -1,5 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import loadOBJ from './lib/load-obj';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -8,9 +7,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /**
  * Worker loader for the OBJ geometry format
- * @type {WorkerLoaderObject}
  */
-export const OBJWorkerLoader = {
+export const OBJWorkerLoader: Loader = {
   name: 'OBJ',
   id: 'obj',
   module: 'obj',
@@ -26,7 +24,7 @@ export const OBJWorkerLoader = {
 
 /**
  * Loader for the OBJ geometry format
- * @type {LoaderObject}
+ * @type {LoaderWithParser}
  */
 export const OBJLoader = {
   ...OBJWorkerLoader,

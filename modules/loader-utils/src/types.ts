@@ -46,9 +46,9 @@ export type CoreWriterOptions = {
 };
 
 /**
-export {WorkerObject} from '@loaders.gl/worker-utils'
+export {Worker} from '@loaders.gl/worker-utils'
  * A worker description
-export type WorkerObject = {
+export type Worker = {
   name: string;
   id: string;
   module: string;
@@ -68,8 +68,8 @@ export type WorkerObject = {
 /**
  * A worker loader defintion that can be used with `@loaders.gl/core` functions
  */
-export type WorkerLoaderObject = {
-  // WorkerObject
+export type Loader = {
+  // Worker
   name: string;
   id: string;
   module: string;
@@ -77,7 +77,7 @@ export type WorkerLoaderObject = {
   worker: string | boolean;
   options: object;
   deprecatedOptions?: object;
-  // end WorkerObject
+  // end Worker
 
   category?: string;
   extensions: string[];
@@ -97,8 +97,8 @@ export type WorkerLoaderObject = {
  * A "bundled" loader defintion that can be used with `@loaders.gl/core` functions
  * If a worker loader is supported it will also be supported.
  */
-export type LoaderObject = {
-  // WorkerObject
+export type LoaderWithParser = {
+  // Worker
   name: string;
   id: string;
   module: string;
@@ -107,7 +107,7 @@ export type LoaderObject = {
 
   options: object;
   deprecatedOptions?: object;
-  // end WorkerObject
+  // end Worker
 
   category?: string;
   extensions: string[];
@@ -135,7 +135,7 @@ export type LoaderObject = {
 
 export type LoaderContext = {
   fetch?: typeof fetch;
-  loaders?: WorkerLoaderObject[] | null;
+  loaders?: Loader[] | null;
   url?: string;
 
   parse?: (data: ArrayBuffer, options?: CoreLoaderOptions, context?: LoaderContext) => Promise<any>;
@@ -150,7 +150,7 @@ export type LoaderContext = {
 /**
  * A writer defintion that can be used with `@loaders.gl/core` functions
  */
-export type WriterObject = {
+export type Writer = {
   name: string;
 
   id: string;

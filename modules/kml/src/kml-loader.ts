@@ -1,44 +1,43 @@
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {gpx} from '@tmcw/togeojson';
-
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import {kml} from '@tmcw/togeojson';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const GPX_HEADER = `\
+const KML_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
-<gpx`;
+<kml xmlns="http://www.opengis.net/kml/2.2">`;
 
 /**
- * Loader for GPX (GPS exchange format)
- * @type {LoaderObject}
+ * Loader for KML (Keyhole Markup Language)
  */
-export const GPXLoader = {
-  name: 'GPX (GPS exchange format)',
-  id: 'gpx',
+export const KMLLoader: LoaderWithParser = {
+  name: 'KML (Keyhole Markup Language)',
+  id: 'kml',
   module: 'kml',
   version: VERSION,
-  extensions: ['gpx'],
-  mimeTypes: ['application/gpx+xml'],
+  extensions: ['kml'],
+  mimeTypes: ['vnd.google-earth.kml+xml'],
   text: true,
-  tests: [GPX_HEADER],
+  tests: [KML_HEADER],
   parse: async (arrayBuffer, options) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    gpx: {},
+    kml: {},
     gis: {format: 'geojson'}
   }
 };
 
 function parseTextSync(text, options) {
   options = options || {};
+  options.kml = options.kml || {};
   options.gis = options.gis || {};
 
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = gpx(doc);
+  const geojson = kml(doc);
 
   switch (options.gis.format) {
     case 'geojson':

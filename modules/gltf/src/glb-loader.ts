@@ -1,4 +1,4 @@
-import type {LoaderObject} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
 import type {GLBParseOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
@@ -13,7 +13,7 @@ export type GLBLoaderOptions = {
  * GLB Loader -
  * GLB is the binary container format for GLTF
  */
-export const GLBLoader: LoaderObject = {
+export const GLBLoader: LoaderWithParser = {
   name: 'GLB',
   id: 'glb',
   module: 'gltf',
@@ -42,4 +42,4 @@ function parseSync(arrayBuffer: ArrayBuffer, options: GLBLoaderOptions = {}): GL
 }
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckGLBLoader: LoaderObject = GLBLoader;
+export const _TypecheckGLBLoader: LoaderWithParser = GLBLoader;

@@ -1,5 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -8,9 +7,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /**
  * DBFLoader - DBF files are used to contain non-geometry columns in Shapefiles
- * @type {WorkerLoaderObject}
  */
-export const DBFWorkerLoader = {
+export const DBFWorkerLoader: Loader = {
   name: 'DBF',
   id: 'dbf',
   module: 'shapefile',
@@ -26,8 +24,8 @@ export const DBFWorkerLoader = {
   }
 };
 
-/** @type {LoaderObject} */
-export const DBFLoader = {
+/** DBF file loader */
+export const DBFLoader: LoaderWithParser = {
   ...DBFWorkerLoader,
   parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
   parseSync: parseDBF,

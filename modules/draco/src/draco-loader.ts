@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {DracoMeshData} from './types';
 import type {DracoParseOptions} from './lib/draco-parser';
 import DracoParser from './lib/draco-parser';
@@ -56,5 +56,5 @@ async function parse(
 }
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckDracoWorkerLoader: WorkerLoaderObject = DracoWorkerLoader;
-export const _TypecheckDracoLoader: LoaderObject = DracoLoader;
+export const _TypecheckDracoWorkerLoader: Loader = DracoWorkerLoader;
+export const _TypecheckDracoLoader: LoaderWithParser = DracoLoader;

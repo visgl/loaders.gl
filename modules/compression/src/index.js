@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/worker-utils').WorkerObject} WorkerObject */
+/** @typedef {import('@loaders.gl/worker-utils').Worker} Worker */
 
 export {default as ZlibDeflateTransform} from './lib/zlib/zlib-deflate-transform';
 export {default as ZlibInflateTransform} from './lib/zlib/zlib-inflate-transform';
@@ -14,7 +14,7 @@ export {default as LZ4InflateTransform} from './lib/lz4/lz4-inflate-transform';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/** @type {WorkerObject} */
+/** @type {Worker} */
 export const ZlibWorker = {
   id: 'zlib',
   name: 'zlib',
@@ -27,7 +27,7 @@ export const ZlibWorker = {
   }
 };
 
-/** @type {WorkerObject} */
+/** @type {Worker} */
 export const LZ4Worker = {
   id: 'lz4',
   name: 'lz4',
@@ -40,7 +40,7 @@ export const LZ4Worker = {
   }
 };
 
-/** @type {WorkerObject} */
+/** @type {Worker} */
 export const ZstdWorker = {
   id: 'zstd',
   name: 'zstd',

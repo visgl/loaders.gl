@@ -1,4 +1,4 @@
-import type {WriterObject} from '@loaders.gl/loader-utils';
+import type {Writer} from '@loaders.gl/loader-utils';
 import type {DracoMeshData} from './types';
 import type {DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
@@ -21,7 +21,7 @@ const DEFAULT_DRACO_OPTIONS = {
 /**
  * Exporter for Draco3D compressed geometries
  */
-export const DracoWriter: WriterObject = {
+export const DracoWriter: Writer = {
   name: 'DRACO',
   id: 'draco',
   module: 'draco',

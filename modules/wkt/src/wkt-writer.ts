@@ -1,10 +1,10 @@
-/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+/** @typedef {import('@loaders.gl/loader-utils').Writer} Writer */
 import {VERSION} from './lib/utils/version';
 import encodeWKT from './lib/encode-wkt';
 
 /**
  * WKT exporter
- * @type {WriterObject}
+ * @type {Writer}
  */
 export const WKTWriter = {
   name: 'WKT (Well Known Text)',

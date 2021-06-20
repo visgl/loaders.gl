@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 
@@ -35,6 +35,5 @@ export const CompressedTextureLoader = {
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCompressedTextureWorkerLoader: WorkerLoaderObject =
-  CompressedTextureWorkerLoader;
-export const _TypecheckCompressedTextureLoader: LoaderObject = CompressedTextureLoader;
+export const _TypecheckCompressedTextureWorkerLoader: Loader = CompressedTextureWorkerLoader;
+export const _TypecheckCompressedTextureLoader: LoaderWithParser = CompressedTextureLoader;

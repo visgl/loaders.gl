@@ -1,9 +1,9 @@
-/** @typedef {import('@loaders.gl/loader-utils').WriterObject} WriterObject */
+/** @typedef {import('@loaders.gl/loader-utils').Writer} Writer */
 import JSZip from 'jszip';
 
 /**
  * Zip exporter
- * @type {WriterObject}
+ * @type {Writer}
  */
 export const ZipWriter = {
   name: 'Zip Archive',
