@@ -39,7 +39,7 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {RequestScheduler, assert, path, LoaderObject} from '@loaders.gl/loader-utils';
+import {RequestScheduler, assert, path, LoaderWithParser} from '@loaders.gl/loader-utils';
 
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
@@ -177,7 +177,7 @@ export default class Tileset3D {
 
   type: string;
   tileset: {[key: string]: any};
-  loader: LoaderObject;
+  loader: LoaderWithParser;
   url: string;
   basePath: string;
   modelMatrix: Matrix4;

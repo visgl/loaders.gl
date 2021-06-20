@@ -1,15 +1,4 @@
 /* eslint-disable camelcase */
-export interface GeoPackageLoaderOptions {
-  geopackage?: {
-    // Use null in Node
-    sqlJsCDN: string | null;
-  };
-  gis?: {
-    reproject?: boolean;
-    _targetCrs?: string;
-  };
-}
-
 export interface GeometryBitFlags {
   littleEndian: boolean;
   envelopeLength: number;

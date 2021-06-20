@@ -1,4 +1,4 @@
-import type {WriterObject} from '@loaders.gl/loader-utils';
+import type {Writer} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import encodeGLBSync from './lib/encoders/encode-glb';
 
@@ -38,4 +38,4 @@ function encodeSync(glb, options) {
 }
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckGLBLoader: WriterObject = GLBWriter;
+export const _TypecheckGLBLoader: Writer = GLBWriter;

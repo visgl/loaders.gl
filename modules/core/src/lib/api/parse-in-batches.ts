@@ -1,8 +1,8 @@
 import type {
   BatchableDataType,
-  WorkerLoaderObject,
+  Loader,
   LoaderContext,
-  CoreLoaderOptions
+  LoaderOptions
 } from '@loaders.gl/loader-utils/';
 import {assert} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync, makeTransformIterator} from '@loaders.gl/loader-utils';
@@ -25,8 +25,8 @@ import {parse} from './parse';
  */
 export async function parseInBatches(
   data: BatchableDataType,
-  loaders?: WorkerLoaderObject | WorkerLoaderObject[] | CoreLoaderOptions,
-  options?: CoreLoaderOptions,
+  loaders?: Loader | Loader[] | LoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<AsyncIterable<any>> {
   assert(!context || typeof context === 'object'); // parseInBatches no longer accepts final url
@@ -34,7 +34,7 @@ export async function parseInBatches(
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
-    options = loaders as CoreLoaderOptions;
+    options = loaders as LoaderOptions;
     loaders = undefined;
   }
 
@@ -46,7 +46,7 @@ export async function parseInBatches(
 
   // Chooses a loader and normalizes it
   // Note - only uses URL and contentType for streams and iterator inputs
-  const loader = await selectLoader(data as ArrayBuffer, loaders as WorkerLoaderObject[], options);
+  const loader = await selectLoader(data as ArrayBuffer, loaders as Loader[], options);
   // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     // @ts-ignore
@@ -59,7 +59,7 @@ export async function parseInBatches(
   // @ts-ignore
   context = getLoaderContext(
     // @ts-ignore
-    {url, parseInBatches, parse, loaders: loaders as WorkerLoaderObject[]},
+    {url, parseInBatches, parse, loaders: loaders as Loader[]},
     options,
     context
   );
@@ -73,7 +73,7 @@ export async function parseInBatches(
 async function parseWithLoaderInBatches(
   loader,
   data,
-  options: CoreLoaderOptions,
+  options: LoaderOptions,
   context: LoaderContext
 ) {
   const outputIterator = await parseToOutputIterator(loader, data, options, context);

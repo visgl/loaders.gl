@@ -1,9 +1,4 @@
-import type {
-  SyncDataType,
-  WorkerLoaderObject,
-  LoaderContext,
-  CoreLoaderOptions
-} from '@loaders.gl/loader-utils';
+import type {SyncDataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -21,8 +16,8 @@ import {getResourceUrlAndType} from '../utils/resource-utils';
  */
 export function parseSync(
   data: SyncDataType,
-  loaders?: WorkerLoaderObject | WorkerLoaderObject[] | CoreLoaderOptions,
-  options?: CoreLoaderOptions,
+  loaders?: Loader | Loader[] | LoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): any {
   assert(!context || typeof context === 'object'); // parseSync no longer accepts final url
@@ -31,7 +26,7 @@ export function parseSync(
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
-    options = loaders as CoreLoaderOptions;
+    options = loaders as LoaderOptions;
     loaders = undefined;
   }
 
@@ -52,7 +47,7 @@ export function parseSync(
   // Extract a url for auto detection
   const {url} = getResourceUrlAndType(data);
 
-  context = getLoaderContext({url, parseSync, loaders: loaders as WorkerLoaderObject[]}, options);
+  context = getLoaderContext({url, parseSync, loaders: loaders as Loader[]}, options);
 
   return parseWithLoaderSync(loader, data, options, context);
 }

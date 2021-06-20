@@ -1,4 +1,4 @@
-import {WorkerLoaderObject} from '@loaders.gl/loader-utils/types';
+import {Loader} from '@loaders.gl/loader-utils/types';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getGlobalLoaderState} from '../loader-utils/option-utils';
 
@@ -10,7 +10,7 @@ const getGlobalLoaderRegistry = () => {
   return state.loaderRegistry;
 };
 
-export function registerLoaders(loaders: WorkerLoaderObject[]) {
+export function registerLoaders(loaders: Loader[]) {
   const loaderRegistry = getGlobalLoaderRegistry();
 
   loaders = Array.isArray(loaders) ? loaders : [loaders];
@@ -24,7 +24,7 @@ export function registerLoaders(loaders: WorkerLoaderObject[]) {
   }
 }
 
-export function getRegisteredLoaders(): WorkerLoaderObject[] {
+export function getRegisteredLoaders(): Loader[] {
   return getGlobalLoaderRegistry();
 }
 

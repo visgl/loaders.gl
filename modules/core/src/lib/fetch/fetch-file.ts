@@ -1,4 +1,4 @@
-import type {CoreLoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';
 import {getErrorMessageFromResponse} from './fetch-error-message';

@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
 
 export function isLoaderObject(loader?: any): boolean {
@@ -24,7 +24,7 @@ export function isLoaderObject(loader?: any): boolean {
   return hasExtensions;
 }
 
-export function normalizeLoader(loader: WorkerLoaderObject): WorkerLoaderObject {
+export function normalizeLoader(loader: Loader): Loader {
   // This error is fairly easy to trigger by mixing up import statments etc
   // So we make an exception and add a developer error message for this case
   // To help new users from getting stuck here

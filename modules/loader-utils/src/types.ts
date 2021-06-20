@@ -18,7 +18,7 @@ export type TypedArray = TypedIntArray | TypedFloatArray;
 export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
 
 // Core Loader Options
-export type CoreLoaderOptions = {
+export type LoaderOptions = {
   fetch?: typeof fetch | RequestInit | null;
 
   // general
@@ -46,68 +46,18 @@ export type CoreWriterOptions = {
 };
 
 /**
-export {WorkerObject} from '@loaders.gl/worker-utils'
- * A worker description
-export type WorkerObject = {
-  name: string;
-  id: string;
-  module: string;
-  version: string;
-  worker?: string;
-  options: object;
-  deprecatedOptions?: object;
-
-  process?: (data: any, options?: object) => Promise<any>;
-  processInBatches?: (
-    iterator: AsyncIterator<any> | Iterator<any>, 
-    options: object
-  ) => Promise<AsyncIterator<any>>;
-};
+ * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
-
-/**
- * A worker loader defintion that can be used with `@loaders.gl/core` functions
- */
-export type WorkerLoaderObject = {
-  // WorkerObject
-  name: string;
-  id: string;
-  module: string;
-  version: string;
-  worker: string | boolean;
-  options: object;
-  deprecatedOptions?: object;
-  // end WorkerObject
-
-  category?: string;
-  extensions: string[];
-  mimeTypes: string[];
-
-  binary?: boolean;
-  text?: boolean;
-
-  tests?: (((ArrayBuffer) => boolean) | ArrayBuffer | string)[];
-
-  // TODO - deprecated
-  supported?: boolean;
-  testText?: (string) => boolean;
-};
-
-/**
- * A "bundled" loader defintion that can be used with `@loaders.gl/core` functions
- * If a worker loader is supported it will also be supported.
- */
-export type LoaderObject = {
-  // WorkerObject
+export type Loader = {
+  // Worker
   name: string;
   id: string;
   module: string;
   version: string;
   worker?: string | boolean;
-
   options: object;
   deprecatedOptions?: object;
-  // end WorkerObject
+  // end Worker
 
   category?: string;
   extensions: string[];
@@ -121,36 +71,27 @@ export type LoaderObject = {
   // TODO - deprecated
   supported?: boolean;
   testText?: (string) => boolean;
-
-  parse: (arrayBuffer, options: {[key: string]: any}, context?) => Promise<any>;
-  parseSync?: (arrayBuffer, options, context?) => any;
-  parseText?: (string, options) => Promise<any>;
-  parseTextSync?: (string, options) => any;
-  parseInBatches?: (
-    iterator: AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>,
-    options: object,
-    context?: object
-  ) => Promise<AsyncIterator<any>> | AsyncIterator<any>;
-};
-
-export type LoaderContext = {
-  fetch?: typeof fetch;
-  loaders?: WorkerLoaderObject[] | null;
-  url?: string;
-
-  parse?: (data: ArrayBuffer, options?: CoreLoaderOptions, context?: LoaderContext) => Promise<any>;
-  parseSync?: (data: ArrayBuffer, options?: CoreLoaderOptions, context?: LoaderContext) => any;
-  parseInBatches?: (
-    data: AsyncIterator<any>,
-    options?: CoreLoaderOptions,
-    context?: LoaderContext
-  ) => AsyncIterator<any>;
 };
 
 /**
- * A writer defintion that can be used with `@loaders.gl/core` functions
+ * A "bundled" loader definition that can be used with `@loaders.gl/core` functions
+ * If a worker loader is supported it will also be supported.
  */
-export type WriterObject = {
+export type LoaderWithParser = Loader & {
+  // TODO - deprecated
+  testText?: (string) => boolean;
+
+  parse: Parse;
+  parseSync?: ParseSync;
+  parseText?: ParseText;
+  parseTextSync?: ParseTextSync;
+  parseInBatches?: ParseInBatches;
+};
+
+/**
+ * A writer definition that can be used with `@loaders.gl/core` functions
+ */
+export type Writer = {
   name: string;
 
   id: string;
@@ -166,16 +107,51 @@ export type WriterObject = {
   mimeTypes?: string[];
   text?: boolean;
 
-  encode?: (data: any, options?: CoreWriterOptions) => Promise<ArrayBuffer>;
-  encodeSync?: (data: any, options?: CoreWriterOptions) => ArrayBuffer;
-  encodeInBatches?: Function;
-  encodeURLtoURL?: (
-    inputUrl: string,
-    outputUrl: string,
-    options?: CoreWriterOptions
-  ) => Promise<string>;
-  encodeText?: Function;
+  encode?: Encode;
+  encodeSync?: EncodeSync;
+  encodeInBatches?: EncodeInBatches;
+  encodeURLtoURL?: EncodeURLtoURL;
+  encodeText?: EncodeText;
 };
+
+export type LoaderContext = {
+  fetch?: typeof fetch;
+  loaders?: Loader[] | null;
+  url?: string;
+
+  parse?: Parse;
+  parseSync?: ParseSync;
+  parseInBatches?: ParseInBatches;
+};
+
+type Parse = (
+  arrayBuffer: ArrayBuffer,
+  options?: LoaderOptions,
+  context?: LoaderContext
+) => Promise<any>;
+type ParseSync = (
+  arrayBuffer: ArrayBuffer,
+  options?: LoaderOptions,
+  context?: LoaderContext
+) => any;
+type ParseText = (string, options?: LoaderOptions) => Promise<any>;
+type ParseTextSync = (string: string, options?: LoaderOptions) => any;
+type ParseInBatches = (
+  iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options?: LoaderOptions,
+  context?: LoaderContext
+) => AsyncIterable<any>;
+
+type Encode = (data: any, options?: CoreWriterOptions) => Promise<ArrayBuffer>;
+type EncodeSync = (data: any, options?: CoreWriterOptions) => ArrayBuffer;
+// TODO
+type EncodeText = Function;
+type EncodeInBatches = Function;
+type EncodeURLtoURL = (
+  inputUrl: string,
+  outputUrl: string,
+  options?: CoreWriterOptions
+) => Promise<string>;
 
 /** Types that can be synchronously parsed */
 export type SyncDataType = string | ArrayBuffer; // TODO File | Blob can be read synchronously...

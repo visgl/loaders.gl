@@ -1,4 +1,4 @@
-import type {LoaderObject, WorkerLoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {parseExcel} from './lib/parse-excel';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -18,7 +18,7 @@ const DEFAULT_EXCEL_LOADER_OPTIONS: {excel: ExcelLoaderOptions} = {
 /**
  * Worker Loader for Excel files
  */
-export const ExcelWorkerLoader: WorkerLoaderObject = {
+export const ExcelWorkerLoader: Loader = {
   name: 'Excel',
   id: 'excel',
   module: 'excel',
@@ -37,7 +37,7 @@ export const ExcelWorkerLoader: WorkerLoaderObject = {
 /**
  * Loader for Excel files
  */
-export const ExcelLoader: LoaderObject = {
+export const ExcelLoader: LoaderWithParser = {
   ...ExcelWorkerLoader,
   parse: (arrayBuffer, options, context) => parseExcel(arrayBuffer, options, context)
 };
