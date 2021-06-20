@@ -1,4 +1,4 @@
-import type {TextureLevel} from '../../types/texture';
+import type {TextureLevel} from '../../types';
 import {isKTX, parseKTX} from './parse-ktx';
 import {isDDS, parseDDS} from './parse-dds';
 import {isPVR, parsePVR} from './parse-pvr';

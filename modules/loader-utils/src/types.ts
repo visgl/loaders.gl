@@ -1,3 +1,5 @@
+// Typed arrays
+
 export type TypedIntArray =
   | Int8Array
   | Uint8Array
@@ -14,6 +16,34 @@ export type TypedFloatArray = Uint16Array | Float32Array | Float64Array;
 export type TypedArray = TypedIntArray | TypedFloatArray;
 
 export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
+
+// Core Loader Options
+export type CoreLoaderOptions = {
+  fetch?: typeof fetch | RequestInit | null;
+
+  // general
+  log?: any;
+  nothrow?: boolean;
+  throws?: boolean;
+
+  // batched parsing
+  metadata?: boolean;
+  transforms?: any[];
+
+  // workers
+  CDN?: string;
+  worker?: boolean;
+  maxConcurrency?: number;
+  maxMobileConcurrency?: number;
+  reuseWorkers?: boolean;
+  _workerType?: string;
+
+  // [loaderId: string]: any;
+};
+
+export type CoreWriterOptions = {
+  [key: string]: any;
+};
 
 /**
 export {WorkerObject} from '@loaders.gl/worker-utils'
@@ -103,6 +133,20 @@ export type LoaderObject = {
   ) => Promise<AsyncIterator<any>> | AsyncIterator<any>;
 };
 
+export type LoaderContext = {
+  fetch?: typeof fetch;
+  loaders?: WorkerLoaderObject[] | null;
+  url?: string;
+
+  parse?: (data: ArrayBuffer, options?: CoreLoaderOptions, context?: LoaderContext) => Promise<any>;
+  parseSync?: (data: ArrayBuffer, options?: CoreLoaderOptions, context?: LoaderContext) => any;
+  parseInBatches?: (
+    data: AsyncIterator<any>,
+    options?: CoreLoaderOptions,
+    context?: LoaderContext
+  ) => AsyncIterator<any>;
+};
+
 /**
  * A writer defintion that can be used with `@loaders.gl/core` functions
  */
@@ -120,27 +164,32 @@ export type WriterObject = {
   binary?: boolean;
   extensions?: string[];
   mimeTypes?: string[];
+  text?: boolean;
 
-  encode?: (data: any, options: {[key: string]: any}) => Promise<ArrayBuffer>;
-  encodeSync?: (data: any, options?: object) => ArrayBuffer;
-  encodeURLtoURL?: (inputUrl: string, outputUrl: string, options?: object) => Promise<string>;
-};
-
-export type LoaderContext = {
-  fetch?: any;
-  loaders?: LoaderObject[];
-  url?: string;
-
-  parse?: (data: ArrayBuffer, options?: object) => Promise<any>;
-  parseSync?: (data: ArrayBuffer, options?: object) => any;
-  parseInBatches?: (data: AsyncIterator<any>, options?: object) => AsyncIterator<any>;
+  encode?: (data: any, options?: CoreWriterOptions) => Promise<ArrayBuffer>;
+  encodeSync?: (data: any, options?: CoreWriterOptions) => ArrayBuffer;
+  encodeInBatches?: Function;
+  encodeURLtoURL?: (
+    inputUrl: string,
+    outputUrl: string,
+    options?: CoreWriterOptions
+  ) => Promise<string>;
+  encodeText?: Function;
 };
 
 /** Types that can be synchronously parsed */
 export type SyncDataType = string | ArrayBuffer; // TODO File | Blob can be read synchronously...
 
 /** Types that can be parsed async */
-export type DataType = string | ArrayBuffer | File | Blob | Response | ReadableStream;
+export type DataType =
+  | string
+  | ArrayBuffer
+  | File
+  | Blob
+  | Response
+  | ReadableStream
+  | Iterable<ArrayBuffer>
+  | AsyncIterable<ArrayBuffer>;
 
 /** Types that can be parsed in batches */
 export type BatchableDataType =

@@ -1,4 +1,4 @@
-import type {TextureLevel} from '../../types/texture';
+import type {TextureLevel} from '../../types';
 import {loadCrunchModule} from './crunch-module-loader';
 import {GL} from '../gl-constants';
 import {assert} from '@loaders.gl/loader-utils';
