@@ -1,14 +1,16 @@
+import {BinaryGeometryData} from '@loaders.gl/gis';
+
 const LITTLE_ENDIAN = true;
 
 /**
  * Parse individual record
  *
- * @param  {DataView} view Record data
- * @return {object} Binary Geometry Object
+ * @param view Record data
+ * @return Binary Geometry Object
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view, options) {
-  const {_maxDimensions} = (options && options.shp) || {};
+export function parseRecord(view: DataView, options?: {shp?}): BinaryGeometryData | null {
+  const {_maxDimensions} = options?.shp || {};
 
   let offset = 0;
   const type = view.getInt32(offset, LITTLE_ENDIAN);
@@ -133,15 +135,14 @@ function parseMultiPoint(view, offset, dim) {
 
 /**
  * Polygon and PolyLine parsing
- *
- * @param  {DataView} view Geometry data
- * @param  {number} offset Offset in view
- * @param  {number} dim Input dimension
- * @param  {string} type Either 'Polygon' or 'Polyline'
- * @return {object} Binary geometry object
+ * @param view Geometry data
+ * @param offset Offset in view
+ * @param dim Input dimension
+ * @param type Either 'Polygon' or 'Polyline'
+ * @return Binary geometry object
  */
 // eslint-disable-next-line max-statements
-function parsePoly(view, offset, dim, type) {
+function parsePoly(view: DataView, offset: number, dim: number, type: string) {
   // skip parsing bounding box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
 
@@ -191,10 +192,11 @@ function parsePoly(view, offset, dim, type) {
 
   // for every ring, determine sign of polygon
   // Use only 2D positions for ring calc
-  const polygonIndices = [];
+  const polygonIndices: number[] = [];
   for (let i = 1; i < ringIndices.length; i++) {
     const startRingIndex = ringIndices[i - 1];
     const endRingIndex = ringIndices[i];
+    // @ts-ignore
     const ring = xyPositions.subarray(startRingIndex * 2, endRingIndex * 2);
     const sign = getWindingDirection(ring);
 

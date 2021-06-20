@@ -3,7 +3,7 @@ import type {
   Loader,
   LoaderWithParser,
   LoaderContext,
-  CoreLoaderOptions
+  LoaderOptions
 } from '@loaders.gl/loader-utils';
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -23,14 +23,14 @@ import {parse} from './parse';
 // implementation signature
 export async function load(
   url: string | DataType,
-  loaders?: Loader | Loader[] | CoreLoaderOptions,
-  options?: CoreLoaderOptions,
+  loaders?: Loader | Loader[] | LoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<any> {
   // Signature: load(url, options)
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
-    options = loaders as CoreLoaderOptions;
+    options = loaders as LoaderOptions;
     loaders = undefined;
   }
 

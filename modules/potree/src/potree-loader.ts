@@ -14,7 +14,7 @@ export const PotreeLoader: LoaderWithParser = {
   extensions: ['json'],
   mimeTypes: ['application/json'],
   testText: (text) => text.indexOf('octreeDir') >= 0,
-  parseTextSync: JSON.parse,
+  parseTextSync: (text) => JSON.parse(text),
   options: {
     potree: {}
   }

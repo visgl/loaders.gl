@@ -11,7 +11,7 @@ test('Zip#TarBuilder conformance', (t) => {
   t.end();
 });
 
-test('Zip#TarBuilder addFile', (t) => {
+test('Zip#TarBuilder addFile', async (t) => {
   if (!isBrowser) {
     t.comment('TarBuilder is not usable in non-browser environments');
     t.end();
@@ -20,14 +20,7 @@ test('Zip#TarBuilder addFile', (t) => {
   const builder = new TarBuilder();
   builder.addFile('test.png', IMAGE_DATA_ARRAY.buffer);
   t.equal(builder.count, 1, 'File added to archive');
-  builder
-    .build()
-    .then((tarArrayBuffer) => {
-      t.equal(tarArrayBuffer.byteLength, 1536, 'Archive correct size');
-      t.end();
-    })
-    .catch((error) => {
-      t.fail(error.message);
-      t.end();
-    });
+  const tarArrayBuffer = await builder.build();
+  t.equal(tarArrayBuffer.byteLength, 2048, 'Archive correct size');
+  t.end();
 });

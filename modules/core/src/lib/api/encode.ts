@@ -1,4 +1,4 @@
-import type {Writer, CoreLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Writer, LoaderOptions} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
 import {writeFile} from '../fetch/write-file';
@@ -10,7 +10,7 @@ import {fetchFile} from '../fetch/fetch-file';
 export async function encode(
   data: any,
   writer: Writer,
-  options?: CoreLoaderOptions,
+  options?: LoaderOptions,
   url?: string
 ): Promise<ArrayBuffer> {
   if (writer.encode) {
@@ -66,7 +66,7 @@ export async function encode(
 export function encodeSync(
   data: any,
   writer: Writer,
-  options?: CoreLoaderOptions,
+  options?: LoaderOptions,
   url?: string
 ): ArrayBuffer {
   if (writer.encodeSync) {
@@ -84,7 +84,7 @@ export function encodeSync(
 export async function encodeText(
   data: any,
   writer: Writer,
-  options?: CoreLoaderOptions,
+  options?: LoaderOptions,
   url?: string
 ): Promise<string> {
   if (writer.text && writer.encodeText) {
@@ -105,7 +105,7 @@ export async function encodeText(
 export function encodeInBatches(
   data: any,
   writer: Writer,
-  options?: CoreLoaderOptions,
+  options?: LoaderOptions,
   url?: string
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {

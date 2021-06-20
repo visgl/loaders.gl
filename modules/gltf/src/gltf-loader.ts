@@ -1,5 +1,7 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
+// import type {ImageLoaderOptions} from '@loaders.gl/images';
+// import type {TextureLoaderOptions} from '@loaders.gl/textures';
 import type {GLTFParseOptions} from './lib/parsers/parse-gltf';
 import {VERSION} from './lib/utils/version';
 import {parseGLTF} from './lib/parsers/parse-gltf';
@@ -8,11 +10,11 @@ import {GLBLoaderOptions} from './glb-loader';
 /**
  * GLTF loader options
  */
-export type GLTFLoaderOptions = GLBLoaderOptions & {
-  gltf?: GLTFParseOptions;
-  draco?: DracoLoaderOptions;
-  byteOffset?: number;
-};
+export type GLTFLoaderOptions = LoaderOptions &
+  GLBLoaderOptions &
+  DracoLoaderOptions & {
+    gltf?: GLTFParseOptions;
+  };
 
 /**
  * GLTF loader

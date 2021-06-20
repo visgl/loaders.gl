@@ -1,3 +1,5 @@
+import type {BinaryFeaturesData} from '../types';
+
 /**
  * Apply transformation to every coordinate of binary features
  *
@@ -5,7 +7,10 @@
  * @param  fn       Function to call on each coordinate
  * @return          Transformed binary features
  */
-export function transformBinaryCoords(binaryFeatures, fn) {
+export function transformBinaryCoords(
+  binaryFeatures: BinaryFeaturesData,
+  fn: (coord: number[]) => number[]
+): BinaryFeaturesData {
   // Expect binaryFeatures to have points, lines, and polygons keys
   for (const binaryFeature of Object.values(binaryFeatures)) {
     const {positions} = binaryFeature;
@@ -25,8 +30,12 @@ export function transformBinaryCoords(binaryFeatures, fn) {
  * @param  fn       Function to call on each coordinate
  * @return          Transformed GeoJSON features
  */
-export function transformGeoJsonCoords(features, fn) {
+export function transformGeoJsonCoords(
+  features: object[],
+  fn: (coord: number[]) => number[]
+): object[] {
   for (const feature of features) {
+    // @ts-ignore
     feature.geometry.coordinates = coordMap(feature.geometry.coordinates, fn);
   }
   return features;

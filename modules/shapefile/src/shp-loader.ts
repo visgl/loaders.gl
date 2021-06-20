@@ -31,7 +31,7 @@ export const SHPWorkerLoader: Loader = {
 /** SHP file loader */
 export const SHPLoader: LoaderWithParser = {
   ...SHPWorkerLoader,
-  parse: async (arrayBuffer, options) => parseSHP(arrayBuffer, options),
+  parse: async (arrayBuffer, options?) => parseSHP(arrayBuffer, options),
   parseSync: parseSHP,
   parseInBatches: parseSHPInBatches
 };

@@ -1,4 +1,4 @@
-import type {DataType, Loader, LoaderContext, CoreLoaderOptions} from '@loaders.gl/loader-utils';
+import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -17,8 +17,8 @@ import {selectLoader} from './select-loader';
  */
 export async function parse(
   data: DataType | Promise<DataType>,
-  loaders?: Loader | Loader[] | CoreLoaderOptions,
-  options?: CoreLoaderOptions,
+  loaders?: Loader | Loader[] | LoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<any> {
   assert(!context || typeof context === 'object'); // parse no longer accepts final url
@@ -27,7 +27,7 @@ export async function parse(
   // Uses registered loaders
   if (loaders && !Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
-    options = loaders as CoreLoaderOptions;
+    options = loaders as LoaderOptions;
     loaders = undefined;
   }
 

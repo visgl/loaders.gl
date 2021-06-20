@@ -2,7 +2,7 @@ import type {
   BatchableDataType,
   Loader,
   LoaderContext,
-  CoreLoaderOptions
+  LoaderOptions
 } from '@loaders.gl/loader-utils/';
 import {assert} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync, makeTransformIterator} from '@loaders.gl/loader-utils';
@@ -25,8 +25,8 @@ import {parse} from './parse';
  */
 export async function parseInBatches(
   data: BatchableDataType,
-  loaders?: Loader | Loader[] | CoreLoaderOptions,
-  options?: CoreLoaderOptions,
+  loaders?: Loader | Loader[] | LoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<AsyncIterable<any>> {
   assert(!context || typeof context === 'object'); // parseInBatches no longer accepts final url
@@ -34,7 +34,7 @@ export async function parseInBatches(
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
-    options = loaders as CoreLoaderOptions;
+    options = loaders as LoaderOptions;
     loaders = undefined;
   }
 
@@ -73,7 +73,7 @@ export async function parseInBatches(
 async function parseWithLoaderInBatches(
   loader,
   data,
-  options: CoreLoaderOptions,
+  options: LoaderOptions,
   context: LoaderContext
 ) {
   const outputIterator = await parseToOutputIterator(loader, data, options, context);

@@ -1,3 +1,4 @@
+import {BinaryGeometryData} from '@loaders.gl/gis';
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 import {parseSHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
@@ -17,14 +18,22 @@ const STATE = {
   ERROR: 3
 };
 
+type SHPResult = {
+  geometries: [];
+  header?;
+  error?: string;
+};
+
 class SHPParser {
+  options;
+  binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
+  state = STATE.EXPECTING_HEADER;
+  result: SHPResult = {
+    geometries: []
+  };
+
   constructor(options) {
     this.options = options;
-    this.binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
-    this.state = STATE.EXPECTING_HEADER;
-    this.result = {
-      geometries: []
-    };
   }
 
   write(arrayBuffer) {
@@ -43,15 +52,19 @@ class SHPParser {
   }
 }
 
-export function parseSHP(arrayBuffer, options) {
+export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeometryData[] {
   const shpParser = new SHPParser(options);
   shpParser.write(arrayBuffer);
   shpParser.end();
 
+  // @ts-ignore
   return shpParser.result;
 }
 
-export async function* parseSHPInBatches(asyncIterator, options) {
+export async function* parseSHPInBatches(
+  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options?: object
+): AsyncIterable<BinaryGeometryData | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
@@ -170,7 +183,7 @@ function parseState(state, result, binaryReader, options) {
       }
     } catch (error) {
       state = STATE.ERROR;
-      result.error = `SHP parsing failed: ${error.message}`;
+      result.error = `SHP parsing failed: ${(error as Error)?.message}`;
       return state;
     }
   }

@@ -18,7 +18,7 @@ const MIME_TYPES = [
  * Loads a platform-specific image type
  * Note: This type can be used as input data to WebGL texture creation
  */
-export const ImageLoader: LoaderWithParser = {
+export const ImageLoader = {
   id: 'image',
   module: 'images',
   name: 'Images',
@@ -36,3 +36,5 @@ export const ImageLoader: LoaderWithParser = {
     // imagebitmap: {} - passes (platform dependent) parameters to ImageBitmap constructor
   }
 };
+
+export const _typecheckImageLoader: LoaderWithParser = ImageLoader;

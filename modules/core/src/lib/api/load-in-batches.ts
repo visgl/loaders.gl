@@ -1,4 +1,4 @@
-import type {LoaderWithParser, LoaderContext, CoreLoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/option-utils';
 
@@ -15,14 +15,14 @@ type FileType = string | File | Blob | Response | (string | File | Blob | Respon
  */
 export function loadInBatches(
   url: FileType,
-  loaders?: LoaderWithParser | LoaderWithParser[] | CoreLoaderOptions,
-  options?: CoreLoaderOptions,
+  loaders?: LoaderWithParser | LoaderWithParser[] | LoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<AsyncIterable<any>>;
 
 export function loadInBatches(
   files: FileType[] | FileList,
-  options?: CoreLoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext,
   empty?: null
 ): Promise<AsyncIterable<any>>;

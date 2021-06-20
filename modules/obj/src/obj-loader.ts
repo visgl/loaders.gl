@@ -8,7 +8,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /**
  * Worker loader for the OBJ geometry format
  */
-export const OBJWorkerLoader: Loader = {
+export const OBJWorkerLoader = {
   name: 'OBJ',
   id: 'obj',
   module: 'obj',
@@ -24,7 +24,6 @@ export const OBJWorkerLoader: Loader = {
 
 /**
  * Loader for the OBJ geometry format
- * @type {LoaderWithParser}
  */
 export const OBJLoader = {
   ...OBJWorkerLoader,
@@ -36,3 +35,6 @@ function testOBJFile(text) {
   // TODO - There could be comment line first
   return text[0] === 'v';
 }
+
+export const _typecheckOBJWorkerLoader: Loader = OBJWorkerLoader;
+export const _typecheckOBJLoader: LoaderWithParser = OBJLoader;

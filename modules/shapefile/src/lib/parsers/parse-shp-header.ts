@@ -1,13 +1,32 @@
+export interface SHPHeader {
+  /** SHP Magic number */
+  magic: number;
+
+  /** Number of bytes in file */
+  length: number;
+  version: number;
+  type: number;
+  bbox: {
+    minX: number;
+    minY: number;
+    minZ: number;
+    minM: number;
+    maxX: number;
+    maxY: number;
+    maxZ: number;
+    maxM: number;
+  };
+}
+
 const LITTLE_ENDIAN = true;
 const BIG_ENDIAN = false;
 const SHP_MAGIC_NUMBER = 0x0000270a;
 
 /**
  * Extract the binary header
- * @param {DataView} headerView
  * Note: Also used by SHX
  */
-export function parseSHPHeader(headerView) {
+export function parseSHPHeader(headerView: DataView): SHPHeader {
   // Note: The SHP format switches endianness between fields!
   // https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
   const header = {

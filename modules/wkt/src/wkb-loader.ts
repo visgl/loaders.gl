@@ -5,7 +5,7 @@ import parseWKB from './lib/parse-wkb';
 /**
  * Worker loader for WKB (Well-Known Binary)
  */
-export const WKBWorkerLoader: Loader = {
+export const WKBWorkerLoader = {
   name: 'WKB',
   id: 'wkb',
   module: 'wkt',
@@ -22,8 +22,11 @@ export const WKBWorkerLoader: Loader = {
 /**
  * Loader for WKB (Well-Known Binary)
  */
-export const WKBLoader: LoaderWithParser = {
+export const WKBLoader = {
   ...WKBWorkerLoader,
-  parse: async (arrayBuffer, options) => parseWKB(arrayBuffer),
+  parse: async (arrayBuffer, options?) => parseWKB(arrayBuffer),
   parseSync: parseWKB
 };
+
+export const _typecheckWKBWorkerLoader: Loader = WKBWorkerLoader;
+export const _typecheckWKBLoader: LoaderWithParser = WKBLoader;

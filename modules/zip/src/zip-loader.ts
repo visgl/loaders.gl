@@ -17,7 +17,7 @@ export const ZipLoader = {
 
 // TODO - Could return a map of promises, perhaps as an option...
 async function parseZipAsync(data, options) {
-  const promises = [];
+  const promises: Promise<any>[] = [];
   const fileMap = {};
 
   try {

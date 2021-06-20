@@ -1,27 +1,69 @@
 import {Schema, Field, Bool, Utf8, Float64, TimestampMillisecond} from '@loaders.gl/schema';
-
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
+
+type DBFRowsOutput = object[];
+
+interface DBFTableOutput {
+  schema;
+  rows: DBFRowsOutput;
+}
+
+type DBFHeader = {
+  // Last updated date
+  year: number;
+  month: number;
+  day: number;
+  // Number of records in data file
+  nRecords: number;
+  // Length of header in bytes
+  headerLength: number;
+  // Length of each record
+  recordLength: number;
+  // Not sure if this is usually set
+  languageDriver: number;
+};
+
+type DBFField = {
+  name: string;
+  dataType: string;
+  fieldLength: number;
+  decimal: number;
+};
+
+type DBFResult = {
+  data: {[key: string]: any}[];
+  schema?: Schema;
+  error?;
+  dbfHeader?: DBFHeader;
+  dbfFields?: DBFField[];
+  progress?: {
+    bytesUsed: number;
+    rowsTotal: number;
+    rows: number;
+  };
+};
 
 const LITTLE_ENDIAN = true;
 const DBF_HEADER_SIZE = 32;
 
-const STATE = {
-  START: 0, // Expecting header
-  FIELD_DESCRIPTORS: 1,
-  FIELD_PROPERTIES: 2,
-  END: 3,
-  ERROR: 4
-};
+enum STATE {
+  START = 0, // Expecting header
+  FIELD_DESCRIPTORS = 1,
+  FIELD_PROPERTIES = 2,
+  END = 3,
+  ERROR = 4
+}
 
 class DBFParser {
+  binaryReader = new BinaryChunkReader();
+  textDecoder: TextDecoder;
+  state = STATE.START;
+  result: DBFResult = {
+    data: []
+  };
+
   constructor({encoding}) {
-    this.binaryReader = new BinaryChunkReader();
     this.textDecoder = new TextDecoder(encoding);
-    this.state = STATE.START;
-    this.result = {
-      data: [],
-      schema: null
-    };
   }
 
   write(arrayBuffer) {
@@ -46,7 +88,7 @@ class DBFParser {
   }
 }
 
-export function parseDBF(arrayBuffer, options) {
+export function parseDBF(arrayBuffer: ArrayBuffer, options): DBFRowsOutput | DBFTableOutput {
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
@@ -66,7 +108,10 @@ export function parseDBF(arrayBuffer, options) {
   }
 }
 
-export async function* parseDBFInBatches(asyncIterator, options) {
+export async function* parseDBFInBatches(
+  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options
+): AsyncIterable<DBFHeader | DBFRowsOutput | DBFTableOutput> {
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
@@ -92,7 +137,7 @@ export async function* parseDBFInBatches(asyncIterator, options) {
 
 // https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
 /* eslint-disable complexity, max-depth */
-function parseState(state, result = {}, binaryReader, textDecoder) {
+function parseState(state, result: DBFResult, binaryReader, textDecoder) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -119,6 +164,7 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
         case STATE.FIELD_DESCRIPTORS:
           // Parse DBF field descriptors (schema)
           const fieldDescriptorView = binaryReader.getDataView(
+            // @ts-ignore
             result.dbfHeader.headerLength - DBF_HEADER_SIZE,
             'DBF field descriptors'
           );
@@ -137,8 +183,8 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
           break;
 
         case STATE.FIELD_PROPERTIES:
-          const {recordLength} = result.dbfHeader;
-          while (result.data.length < result.dbfHeader.nRecords) {
+          const {recordLength = 0, nRecords = 0} = result?.dbfHeader || {};
+          while (result.data.length < nRecords) {
             const recordView = binaryReader.getDataView(recordLength - 1);
             if (!recordView) {
               return state;
@@ -146,8 +192,10 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
             // Note: Avoid actually reading the last byte, which may not be present
             binaryReader.skip(1);
 
+            // @ts-ignore
             const row = parseRow(recordView, result.dbfFields, textDecoder);
             result.data.push(row);
+            // @ts-ignore
             result.progress.rows = result.data.length;
           }
           state = STATE.END;
@@ -160,16 +208,16 @@ function parseState(state, result = {}, binaryReader, textDecoder) {
       }
     } catch (error) {
       state = STATE.ERROR;
-      result.error = `DBF parsing failed: ${error.message}`;
+      result.error = `DBF parsing failed: ${(error as Error).message}`;
       return state;
     }
   }
 }
 
 /**
- * @param {DataView} headerView
+ * @param headerView
  */
-function parseDBFHeader(headerView) {
+function parseDBFHeader(headerView: DataView): DBFHeader {
   return {
     // Last updated date
     year: headerView.getUint8(1) + 1900,
@@ -189,11 +237,11 @@ function parseDBFHeader(headerView) {
 /**
  * @param {DataView} view
  */
-function parseFieldDescriptors(view, textDecoder) {
+function parseFieldDescriptors(view, textDecoder): DBFField[] {
   // NOTE: this might overestimate the number of fields if the "Database
   // Container" container exists and is included in the headerLength
   const nFields = (view.byteLength - 1) / 32;
-  const fields = [];
+  const fields: DBFField[] = [];
   let offset = 0;
   for (let i = 0; i < nFields; i++) {
     const name = textDecoder
@@ -227,9 +275,12 @@ function parseRows(binaryReader, fields, nRecords, recordLength, textDecoder) {
  */
 
 /**
- * @param {DataView} view
  */
-function parseRow(view, fields, textDecoder) {
+function parseRow(
+  view: DataView,
+  fields: DBFField[],
+  textDecoder: TextDecoder
+): {[key: string]: any} {
   const out = {};
   let offset = 0;
   for (const field of fields) {
@@ -265,26 +316,28 @@ function parseField(text, dataType) {
   }
 }
 
-// Parse YYYYMMDD to date in milliseconds
-function parseDate(str) {
+/** Parse YYYYMMDD to date in milliseconds */
+function parseDate(str): number {
   return Date.UTC(str.slice(0, 4), parseInt(str.slice(4, 6), 10) - 1, str.slice(6, 8));
 }
 
-// Read boolean value
-// any of Y, y, T, t coerce to true
-// any of N, n, F, f coerce to false
-// otherwise null
-function parseBoolean(value) {
+/**
+ * Read boolean value
+ * any of Y, y, T, t coerce to true
+ * any of N, n, F, f coerce to false
+ * otherwise null
+ */
+function parseBoolean(value): boolean | null {
   return /^[nf]$/i.test(value) ? false : /^[yt]$/i.test(value) ? true : null;
 }
 
 // Return null instead of NaN
-function parseNumber(text) {
+function parseNumber(text): number | null {
   const number = parseFloat(text);
   return isNaN(number) ? null : number;
 }
 
-function parseCharacter(text) {
+function parseCharacter(text): string | null {
   return text.trim() || null;
 }
 

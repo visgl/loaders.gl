@@ -1,12 +1,11 @@
-/** @typedef {import('@loaders.gl/loader-utils').Writer} Writer */
+import type {Writer} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import encodeWKT from './lib/encode-wkt';
 
 /**
  * WKT exporter
- * @type {Writer}
  */
-export const WKTWriter = {
+export const WKTWriter: Writer = {
   name: 'WKT (Well Known Text)',
   id: 'wkt',
   module: 'wkt',

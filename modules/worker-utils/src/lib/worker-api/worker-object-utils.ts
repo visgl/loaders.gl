@@ -1,4 +1,4 @@
-import type {Worker} from '../../types';
+import type {WorkerObject} from '../../types';
 import {assert} from '../env-utils/assert';
 
 const NPM_TAG = 'beta'; // Change to 'latest' on release-branch
@@ -13,7 +13,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
  * - a local test worker
  * - overridden by user
  */
-export function getWorkerObjectURL(worker: Worker, options: object): string {
+export function getWorkerObjectURL(worker: WorkerObject, options: object): string {
   const topOptions = options || {};
   const workerOptions = topOptions[worker.id] || {};
 
@@ -48,7 +48,7 @@ export function getWorkerObjectURL(worker: Worker, options: object): string {
 /**
  * Gets worker object's name (for debugging in Chrome thread inspector window)
  */
-export function getWorkerObjectName(worker: Worker): string {
+export function getWorkerObjectName(worker: WorkerObject): string {
   const warning = worker.version !== VERSION ? ` (lib@${VERSION})` : '';
   return `${worker.name}-worker@${worker.version}${warning}`;
 }
@@ -60,7 +60,7 @@ export function getWorkerObjectName(worker: Worker): string {
  * @returns `true` if the two versions are compatible
  */
 export function validateWorkerVersion(
-  worker: Worker,
+  worker: WorkerObject,
   coreVersion: string = VERSION
 ): boolean {
   assert(worker, 'no worker provided');

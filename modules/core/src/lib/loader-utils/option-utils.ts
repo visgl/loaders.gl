@@ -1,4 +1,4 @@
-import type {Loader, LoaderContext, CoreLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
@@ -12,7 +12,7 @@ type GlobalLoaderState = {
   globalOptions: {[key: string]: any};
 };
 
-const DEFAULT_LOADER_OPTIONS: CoreLoaderOptions = {
+const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   // baseUri
   fetch: null,
   CDN: 'https://unpkg.com/@loaders.gl',
@@ -23,7 +23,7 @@ const DEFAULT_LOADER_OPTIONS: CoreLoaderOptions = {
   metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
   transforms: [],
   reuseWorkers: true, // By default reuse workers,
-  // _workerType: '', // 'test' to use locally generated workers
+  _workerType: '', // 'test' to use locally generated workers
   // EPERIMENTAL
   // DEPRECATED
   // baseUri: undefined
@@ -113,7 +113,7 @@ export function normalizeOptions(
  * @param options
  * @param context
  */
-export function getFetchFunction(options?: CoreLoaderOptions, context?: LoaderContext) {
+export function getFetchFunction(options?: LoaderOptions, context?: LoaderContext) {
   const globalOptions = getGlobalLoaderOptions();
 
   const fetch = options?.fetch || globalOptions.fetch;
@@ -146,7 +146,7 @@ export function getFetchFunction(options?: CoreLoaderOptions, context?: LoaderCo
  * @param log
  */
 function validateOptions(
-  options: CoreLoaderOptions,
+  options: LoaderOptions,
   loaders,
   // eslint-disable-next-line
   log = console

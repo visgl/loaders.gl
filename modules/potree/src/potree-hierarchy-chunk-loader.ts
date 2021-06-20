@@ -1,10 +1,6 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {default as parsePotreeHierarchyChunk} from './parsers/parse-potree-hierarchy-chunk';
 
-function parseSync(arrayBuffer, options, context) {
-  return parsePotreeHierarchyChunk(arrayBuffer);
-}
-
 /** Potree hierarchy chunk loader */
 // @ts-ignore
 export const PotreeHierarchyChunkLoader: LoaderWithParser = {
@@ -18,3 +14,7 @@ export const PotreeHierarchyChunkLoader: LoaderWithParser = {
   parseSync,
   binary: true
 };
+
+function parseSync(arrayBuffer, options) {
+  return parsePotreeHierarchyChunk(arrayBuffer);
+}

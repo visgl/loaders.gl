@@ -1,12 +1,11 @@
-/** @typedef {import('@loaders.gl/loader-utils').Writer} Writer */
+import type {Writer} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import encode3DTile from './lib/encoders/encode-3d-tile';
 
 /**
  * Exporter for 3D Tiles
- * @type {Writer}
  */
-export const Tile3DWriter = {
+export const Tile3DWriter: Writer = {
   name: '3D Tile',
   id: '3d-tiles',
   module: '3d-tiles',

@@ -77,7 +77,7 @@ function parseTextSync(text, options) {
   return parseJSONSync(text, options);
 }
 
-async function parseInBatches(asyncIterator, options) {
+function parseInBatches(asyncIterator, options): AsyncIterable<any> {
   // Apps can call the parse method directly, we so apply default options here
   options = {...options};
   options.json = {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options.json};

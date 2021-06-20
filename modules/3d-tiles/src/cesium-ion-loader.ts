@@ -24,8 +24,10 @@ export const CesiumIonLoader: LoaderWithParser = {
   name: 'Cesium Ion',
   // @ts-ignore
   preload,
-  parse: async (data, options, context) => {
+  parse: async (data, options?, context?) => {
+    options = {...options};
     options['3d-tiles'] = options['cesium-ion'];
+    // @ts-ignore
     options.loader = CesiumIonLoader;
     return Tiles3DLoader.parse(data, options, context); // , loader);
   },

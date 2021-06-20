@@ -63,6 +63,8 @@ test('normalizeLoader', (t) => {
   ];
 
   for (const testCase of TESTS) {
+    // TODO
+    // @ts-ignore
     const loader = normalizeLoader(testCase.input);
     t.ok(Array.isArray(loader.extensions), `${testCase.title}: extensions is array`);
     t.ok(loader.text || loader.binary, `${testCase.title}: text or binary flag is set`);

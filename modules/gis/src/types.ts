@@ -12,6 +12,17 @@ type TypedArray =
 export type BinaryAttribute = {value: TypedArray; size: number};
 export type BinaryGeometryType = 'Point' | 'LineString' | 'Polygon';
 
+// GEOJSON GEOMETRY
+
+export type Feature = {
+  type: 'Feature';
+  geometry;
+  // properties can be undefined if dbfResponse above was empty
+  properties;
+};
+
+// BINARY GEOMETRY
+
 type NumericProps = {[key: string]: BinaryAttribute};
 type Properties = object[];
 

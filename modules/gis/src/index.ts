@@ -1,5 +1,5 @@
 // Types
-export {BinaryGeometryData, BinaryAttribute} from './types.d.ts';
+export type {BinaryGeometryData, BinaryAttribute} from './types';
 
 // Functions
 export {geojsonToBinary} from './lib/geojson-to-binary';

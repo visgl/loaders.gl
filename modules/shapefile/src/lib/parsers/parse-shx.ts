@@ -1,9 +1,14 @@
 import {parseSHPHeader} from './parse-shp-header';
 
+export interface SHXOutput {
+  offsets: Int32Array;
+  lengths: Int32Array;
+}
+
 const SHX_HEADER_SIZE = 100;
 const BIG_ENDIAN = false;
 
-export function parseShx(arrayBuffer) {
+export function parseShx(arrayBuffer: ArrayBuffer): SHXOutput {
   // SHX header is identical to SHP Header
   const headerView = new DataView(arrayBuffer, 0, SHX_HEADER_SIZE);
   const header = parseSHPHeader(headerView);

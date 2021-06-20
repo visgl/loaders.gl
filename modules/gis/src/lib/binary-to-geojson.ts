@@ -1,4 +1,19 @@
-export function binaryToGeoJson(data, type, format) {
+// @ts-nocheck
+import type {BinaryGeometryData, BinaryFeaturesData, BinaryGeometryType} from '../types';
+
+/**
+ * Convert binary geometry representation to GeoJSON
+ *
+ * @param data   geometry data in binary representation
+ * @param type   Input data type: Point, LineString, or Polygon
+ * @param format Output format, either geometry or feature
+ * @return GeoJSON objects
+ */
+export function binaryToGeoJson(
+  data: BinaryGeometryData | BinaryFeaturesData,
+  type?: BinaryGeometryType,
+  format: 'geometry' | 'feature' = 'feature'
+): object[] | null {
   if (format === 'geometry') {
     return parseGeometry(data);
   }
@@ -19,7 +34,7 @@ export function binaryToGeoJson(data, type, format) {
 
 // Normalize features
 // Return an array of data objects, each of which have a type key
-function normalizeInput(data, type) {
+function normalizeInput(data: BinaryFeaturesData, type) {
   const isHeterogeneousType = Boolean(data.points || data.lines || data.polygons);
 
   if (!isHeterogeneousType) {

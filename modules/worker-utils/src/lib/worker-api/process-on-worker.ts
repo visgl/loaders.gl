@@ -1,4 +1,4 @@
-import type {Worker} from '../../types';
+import type {WorkerObject} from '../../types';
 import WorkerFarm from '../worker-farm/worker-farm';
 import {
   getWorkerObjectURL,
@@ -11,7 +11,7 @@ import {
  * createWorker in @loaders.gl/worker-utils.
  */
 export async function processOnWorker(
-  worker: Worker,
+  worker: WorkerObject,
   data: any,
   options: object = {}
 ): Promise<any> {

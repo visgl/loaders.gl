@@ -1,5 +1,5 @@
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import parseVideo from './lib/parsers/parse-video';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -10,7 +10,15 @@ const MIME_TYPES = ['video/mp4'];
 
 // Loads a platform-specific image type that can be used as input data to WebGL textures
 
-const VideoLoader: LoaderWithParser = {
+export type VideoLoaderOptions = LoaderOptions & {
+  video: {};
+};
+
+const DEFAULT_LOADER_OPTIONS: VideoLoaderOptions = {
+  video: {}
+};
+
+export const VideoLoader = {
   name: 'Video',
   id: 'video',
   module: 'video',
@@ -26,4 +34,4 @@ const VideoLoader: LoaderWithParser = {
   }
 };
 
-export default VideoLoader;
+export const _typecheckVideoLoader: LoaderWithParser = VideoLoader;

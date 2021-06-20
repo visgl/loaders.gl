@@ -1,4 +1,5 @@
 /* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
+import type {GeoPackageLoaderOptions} from '../geopackage-loader';
 import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
 import {WKBLoader} from '@loaders.gl/wkt';
 import {
@@ -21,7 +22,6 @@ import {
   ContentsRow,
   SpatialRefSysRow,
   ProjectionMapping,
-  GeoPackageLoaderOptions,
   GeometryBitFlags,
   DataColumnsRow,
   DataColumnsMapping,
@@ -62,10 +62,10 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
 
 export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
-  options: GeoPackageLoaderOptions
+  options?: GeoPackageLoaderOptions
 ) {
-  const {sqlJsCDN = 'https://sql.js.org/dist/'} = (options && options.geopackage) || {};
-  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+  const {sqlJsCDN = 'https://sql.js.org/dist/'} = options?.geopackage || {};
+  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
 
   const db = await loadDatabase(arrayBuffer, sqlJsCDN);
   const tables = listVectorTables(db);

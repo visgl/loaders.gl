@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').Writer} Writer */
+import type {Writer} from '@loaders.gl/loader-utils';
 import {encodeArrowSync} from './lib/encode-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline

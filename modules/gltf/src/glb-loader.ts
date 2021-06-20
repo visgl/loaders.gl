@@ -1,10 +1,10 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
 import type {GLBParseOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
 import parseGLBSync from './lib/parsers/parse-glb';
 
-export type GLBLoaderOptions = {
+export type GLBLoaderOptions = LoaderOptions & {
   glb?: GLBParseOptions;
   byteOffset?: number;
 };
@@ -30,12 +30,12 @@ export const GLBLoader: LoaderWithParser = {
   }
 };
 
-async function parse(arrayBuffer: ArrayBuffer, options: GLBLoaderOptions): Promise<GLB> {
+async function parse(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): Promise<GLB> {
   return parseSync(arrayBuffer, options);
 }
 
-function parseSync(arrayBuffer: ArrayBuffer, options: GLBLoaderOptions = {}): GLB {
-  const {byteOffset = 0} = options;
+function parseSync(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): GLB {
+  const {byteOffset = 0} = options || {};
   const glb: GLB = {} as GLB;
   parseGLBSync(glb, arrayBuffer, byteOffset, options?.glb);
   return glb;

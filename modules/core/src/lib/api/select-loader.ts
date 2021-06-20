@@ -1,7 +1,7 @@
 import type {
   LoaderWithParser,
   LoaderContext,
-  CoreLoaderOptions,
+  LoaderOptions,
   Loader
 } from '@loaders.gl/loader-utils';
 import {compareArrayBuffers} from '@loaders.gl/loader-utils';
@@ -29,7 +29,7 @@ const EXT_PATTERN = /\.([^.]+)$/;
 export async function selectLoader(
   data: Response | Blob | ArrayBuffer | string,
   loaders: Loader[] | Loader = [],
-  options?: CoreLoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<Loader | null> {
   // First make a sync attempt, disabling exceptions
@@ -65,7 +65,7 @@ export async function selectLoader(
 export function selectLoaderSync(
   data: Response | Blob | ArrayBuffer | string,
   loaders: Loader[] | Loader = [],
-  options?: CoreLoaderOptions,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Loader | null {
   // eslint-disable-next-line complexity

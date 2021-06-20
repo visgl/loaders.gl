@@ -13,7 +13,7 @@ const KML_HEADER = `\
 /**
  * Loader for KML (Keyhole Markup Language)
  */
-export const KMLLoader: LoaderWithParser = {
+export const KMLLoader = {
   name: 'KML (Keyhole Markup Language)',
   id: 'kml',
   module: 'kml',
@@ -50,3 +50,5 @@ function parseTextSync(text, options) {
       throw new Error();
   }
 }
+
+export const _typecheckKMLLoader: LoaderWithParser = KMLLoader;

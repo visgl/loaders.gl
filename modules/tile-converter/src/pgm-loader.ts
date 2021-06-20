@@ -8,9 +8,8 @@ import {parsePgm} from './lib/pgm-parser';
 
 /**
  * Loader for PGM - Netpbm grayscale image format
- * @type {LoaderWithParser}
  */
-export const PGMLoader = {
+export const PGMLoader: LoaderWithParser = {
   name: 'PGM - Netpbm grayscale image format',
   id: 'pgm',
   module: 'tile-converter',
