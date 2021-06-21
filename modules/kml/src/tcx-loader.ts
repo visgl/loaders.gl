@@ -1,5 +1,5 @@
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {LoaderObject} from '@loaders.gl/loader-utils/types';
+import type {LoaderObject} from '@loaders.gl/loader-utils/types';
 import {tcx} from '@tmcw/togeojson';
 
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
@@ -14,7 +14,6 @@ const TCX_HEADER = `\
 
 /**
  * Loader for TCX (Training Center XML) - Garmin GPS track format
- * @type {LoaderObject}
  */
 export const TCXLoader: LoaderObject = {
   name: 'TCX (Training Center XML)',

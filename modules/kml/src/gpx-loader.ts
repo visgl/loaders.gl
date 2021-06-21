@@ -1,5 +1,5 @@
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {LoaderObject} from '@loaders.gl/loader-utils/types';
+import type {LoaderObject} from '@loaders.gl/loader-utils/types';
 import {gpx} from '@tmcw/togeojson';
 
 /** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
@@ -14,7 +14,6 @@ const GPX_HEADER = `\
 
 /**
  * Loader for GPX (GPS exchange format)
- * @type {LoaderObject}
  */
 export const GPXLoader: LoaderObject = {
   name: 'GPX (GPS exchange format)',

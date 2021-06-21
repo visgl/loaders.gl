@@ -24,11 +24,11 @@ test('KMLLoader#loader conformance', (t) => {
 test('KMLLoader#testText', async (t) => {
   const response = await fetchFile(KML_URL);
   const KML = await response.text();
-  const a = (KMLLoader.tests && KMLLoader.tests[0]) || '';
-  if (typeof a === 'string') {
-    let isKML = KML.startsWith(a);
+  const KMLTest = KMLLoader.tests && KMLLoader.tests[0];
+  if (typeof KMLTest === 'string') {
+    let isKML = KML.startsWith(KMLTest);
     t.equal(isKML, true, 'Correctly accepted valid KML');
-    isKML = INVALID_KML.startsWith(a);
+    isKML = INVALID_KML.startsWith(KMLTest);
     t.equal(isKML, false, 'Correctly rejected invalid KML');
   }
   t.end();
