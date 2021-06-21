@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "3.0.0-alpha.21",
+  "version": "3.0.0-beta.1",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "publishConfig": {
@@ -18,7 +18,7 @@
     "point cloud",
     "PLY"
   ],
-  "types": "src/index.ts",  
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -36,9 +36,9 @@
     "build-worker": "webpack --entry ./src/workers/arrow-worker.ts --output ./dist/arrow-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.21",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.21",
-    "@loaders.gl/schema": "3.0.0-alpha.21",
+    "@loaders.gl/core": "3.0.0-beta.1",
+    "@loaders.gl/loader-utils": "3.0.0-beta.1",
+    "@loaders.gl/schema": "3.0.0-beta.1",
     "apache-arrow": "^4.0.0"
   }
 }

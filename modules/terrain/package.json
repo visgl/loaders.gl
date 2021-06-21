@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/terrain",
-  "version": "3.0.0-alpha.21",
+  "version": "3.0.0-beta.1",
   "description": "Framework-independent loader for terrain raster formats",
   "license": "MIT",
   "publishConfig": {
@@ -18,7 +18,7 @@
     "point cloud",
     "OBJ"
   ],
-  "types": "src/index.ts",  
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.0.0-alpha.21",
+    "@loaders.gl/loader-utils": "3.0.0-beta.1",
     "@mapbox/martini": "^0.2.0"
   }
 }
