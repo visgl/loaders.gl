@@ -31,7 +31,7 @@ export const TCXLoader: LoaderWithParser = {
   }
 };
 
-function parseTextSync(text, options) {
+function parseTextSync(text: string, options: any = {}) {
   options = options || {};
   options.gis = options.gis || {};
 
