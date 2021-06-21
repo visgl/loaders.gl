@@ -7,21 +7,28 @@
 
 import {clean, pad, stringToUint8} from './utils';
 import {format} from './header';
-import type {Blocks, Options, Chunks, Chunk} from './types';
+import type {TarBlocks, TarOptions, TarChunks, TarChunk} from './types';
 
 let blockSize: number;
+let headerLength: number;
+let inputLength: number;
+
 const recordSize = 512;
 
 class Tar {
   written: number;
   out: Uint8Array;
-  blocks: Blocks;
+  blocks: TarBlocks = [];
   length: number;
 
-  constructor(recordsPerBlock: number) {
+  /**
+   * @param [recordsPerBlock]
+   */
+  constructor(recordsPerBlock: number | undefined) {
     this.written = 0;
     blockSize = (recordsPerBlock || 20) * recordSize;
     this.out = clean(blockSize);
+
     this.blocks = [];
     this.length = 0;
     this.save = this.save.bind(this);
@@ -29,14 +36,20 @@ class Tar {
     this.append = this.append.bind(this);
   }
 
-  // Append a file to the tar archive
+  /**
+   * Append a file to the tar archive
+   * @param filepath
+   * @param input
+   * @param [opts]
+   */
   // eslint-disable-next-line complexity
-  append(filepath: string, input: string | Uint8Array, opts?: Options | undefined) {
+  append(filepath: string, input: string | Uint8Array, opts?: TarOptions | undefined) {
     let checksum: string | any;
 
     if (typeof input === 'string') {
       input = stringToUint8(input);
     } else if (input.constructor && input.constructor !== Uint8Array.prototype.constructor) {
+      // @ts-ignore
       const errorInputMatch = /function\s*([$A-Za-z_][0-9A-Za-z_]*)\s*\(/.exec(
         input.constructor.toString()
       );
@@ -83,8 +96,8 @@ class Tar {
 
     const headerArr = format(data);
 
-    const headerLength = Math.ceil(headerArr.length / recordSize) * recordSize;
-    const inputLength = Math.ceil(input.length / recordSize) * recordSize;
+    headerLength = Math.ceil(headerArr.length / recordSize) * recordSize;
+    inputLength = Math.ceil(input.length / recordSize) * recordSize;
 
     this.blocks.push({
       header: headerArr,
@@ -93,14 +106,17 @@ class Tar {
       inputLength
     });
   }
-
-  save() {
+  /**
+   * Compiling data to a Blob object
+   * @returns {Blob}
+   */
+  save(): Blob {
     const buffers: any = [];
-    const chunks = new Array<Chunks>();
+    const chunks = new Array<TarChunks>();
     let length = 0;
     const max = Math.pow(2, 20);
 
-    let chunk = new Array<Chunk>();
+    let chunk = new Array<TarChunk>();
     this.blocks.forEach((b: any = []) => {
       if (length + b.headerLength + b.inputLength > max) {
         chunks.push({blocks: chunk, length});
@@ -115,7 +131,7 @@ class Tar {
     chunks.forEach((c: any = []) => {
       const buffer = new Uint8Array(c.length);
       let written = 0;
-      c.blocks.forEach((b) => {
+      c.blocks.forEach((b: any = []) => {
         buffer.set(b.header, written);
         written += b.headerLength;
         buffer.set(b.input, written);
@@ -128,7 +144,9 @@ class Tar {
 
     return new Blob(buffers, {type: 'octet/stream'});
   }
-
+  /**
+   * Clear the data by its blocksize
+   */
   clear() {
     this.written = 0;
     this.out = clean(blockSize);

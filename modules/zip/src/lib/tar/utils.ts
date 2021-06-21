@@ -4,8 +4,12 @@
  * tar-js
  * MIT (c) 2011 T. Jameson Little
  */
-
-export function clean(length: number) {
+/**
+ * Returns the memory area specified by length
+ * @param length
+ * @returns {Uint8Array}
+ */
+export function clean(length: number): Uint8Array {
   let i: number;
   const buffer = new Uint8Array(length);
   for (i = 0; i < length; i += 1) {
@@ -13,13 +17,25 @@ export function clean(length: number) {
   }
   return buffer;
 }
-
-export function pad(num: number, bytes: number, base?: number) {
+/**
+ * Converting data to a string
+ * @param num
+ * @param bytes
+ * @param base
+ * @returns string
+ */
+export function pad(num: number, bytes: number, base?: number): string {
   const numStr = num.toString(base || 8);
   return '000000000000'.substr(numStr.length + 12 - bytes) + numStr;
 }
-
-export function stringToUint8(input: string, out?: Uint8Array, offset?: number) {
+/**
+ * Converting input to binary data
+ * @param input
+ * @param out
+ * @param offset
+ * @returns {Uint8Array}
+ */
+export function stringToUint8(input: string, out?: Uint8Array, offset?: number): Uint8Array {
   let i: number;
   let length: number;
 

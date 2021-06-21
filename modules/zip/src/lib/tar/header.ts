@@ -6,7 +6,7 @@
  */
 
 import * as utils from './utils';
-import type {Structure, Data} from './types';
+import type {TarStructure, TarData} from './types';
 /*
 struct posix_header {             // byte offset
 	char name[100];               //   0
@@ -29,7 +29,7 @@ struct posix_header {             // byte offset
 };
 */
 
-const structure: Structure = {
+const structure: TarStructure = {
   fileName: 100,
   fileMode: 8,
   uid: 8,
@@ -47,8 +47,13 @@ const structure: Structure = {
   filenamePrefix: 155,
   padding: 12
 };
-
-export function format(data: Data, cb?: any): Uint8Array {
+/**
+ * Getting the header
+ * @param data
+ * @param [cb]
+ * @returns {Uint8Array} | Array
+ */
+export function format(data: TarData, cb?: any): [string, number][] | Uint8Array {
   const buffer = utils.clean(512);
   let offset = 0;
 

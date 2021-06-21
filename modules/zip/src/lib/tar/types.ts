@@ -1,17 +1,29 @@
-export type Structure = {
+/**
+ * Structure of data
+ */
+export type TarStructure = {
   [index: string]: number;
 };
-export type Data = {
+/**
+ * Image of input data
+ */
+export type TarData = {
   [index: string]: string | any;
 };
-export type Blocks = {
+/**
+ * Describes inner content of the blocks in the Tar's constructor
+ */
+export type TarBlocks = {
   [index: string]: any;
   header?: Uint8Array;
   input?: string | Uint8Array;
   headerLength?: number;
   inputLength?: number;
 };
-export type Options = {
+/**
+ * Describes additional options for Tar class
+ */
+export type TarOptions = {
   mode?: number;
   mtime?: number;
   uid?: number;
@@ -19,11 +31,17 @@ export type Options = {
   owner?: any;
   group?: any;
 };
-export type Chunk = {
+/**
+ * Array of numbers for TarChunks
+ */
+export type TarChunk = {
   [index: number]: any;
 };
-export type Chunks = {
-  [index: number]: Chunk;
+/**
+ * Sections of binary data inside the Tar class
+ */
+export type TarChunks = {
+  [index: number]: TarChunk;
   length?: number;
   blocks?: any;
 };
