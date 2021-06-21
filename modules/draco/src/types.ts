@@ -1,5 +1,7 @@
 /* eslint-disable camelcase */
 
+import {Schema} from '@loaders.gl/schema';
+
 // MESH CATEGORY DATA
 // TODO - should be imported from `@loaders.gl/schema`
 
@@ -72,6 +74,7 @@ export type DracoAttribute = {
   byte_offset: number;
   byte_stride: number;
   normalized: boolean;
+  name?: string;
 
   quantization_transform?: DracoQuantizationTransform;
   octahedron_transform?: DracoOctahedronTransform;
@@ -111,4 +114,5 @@ export type DracoMeshData = {
   mode: number;
   attributes: {[attributeName: string]: MeshAttribute};
   indices?: MeshAttribute;
+  schema: Schema;
 };
