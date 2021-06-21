@@ -13,7 +13,7 @@ export const ZipWriter: Writer = {
   encode: encodeZipAsync
 };
 
-function encodeZipAsync(fileMap, options) {
+async function encodeZipAsync(fileMap: any, options: any = {}) {
   const jsZip = new JSZip();
   // add files to the zip
   for (const subFileName in fileMap) {

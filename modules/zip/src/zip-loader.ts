@@ -16,7 +16,7 @@ export const ZipLoader = {
 };
 
 // TODO - Could return a map of promises, perhaps as an option...
-async function parseZipAsync(data, options) {
+async function parseZipAsync(data: any, options = {}) {
   const promises: Promise<any>[] = [];
   const fileMap = {};
 
@@ -40,12 +40,13 @@ async function parseZipAsync(data, options) {
     await Promise.all(promises);
     return fileMap;
   } catch (error) {
+    // @ts-ignore
     options.log.error(`Unable to read zip archive: ${error}`);
     throw error;
   }
 }
 
-async function loadZipEntry(jsZip, subFilename, options) {
+async function loadZipEntry(jsZip: any, subFilename: string, options: any = {}) {
   // jszip supports both arraybuffer and text, the main loaders.gl types
   // https://stuk.github.io/jszip/documentation/api_zipobject/async.html
   try {
