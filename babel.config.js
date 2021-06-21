@@ -3,7 +3,7 @@ const {getBabelConfig, deepMerge} = require('ocular-dev-tools');
 module.exports = (api) => {
   const defaultConfig = getBabelConfig(api, {react: true});
 
-  const config = deepMerge(defaultConfig, {
+  let config = deepMerge(defaultConfig, {
     plugins: [
       // webpack 4 cannot parse the most recent JS syntax
       '@babel/plugin-proposal-optional-chaining',
@@ -26,6 +26,29 @@ module.exports = (api) => {
     ]
   });
 
-  // console.debug(config);
+  // When building esm modules change the '>0.2%' target to 'last 2 versions' so that the regenerator runtime is not included
+  if (api.env() == 'esm') {
+    const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray;
+
+    // @ts-ignore
+    config = deepMerge(
+      config,
+      {
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: ['last 2 versions', 'maintained node versions', 'not ie 11', 'not dead'],
+              modules: false
+            }
+          ],
+          '@babel/preset-react',
+          '@babel/preset-typescript'
+        ]
+      },
+      {arrayMerge: overwriteMerge}
+    );
+  }
+
   return config;
 };

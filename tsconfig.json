@@ -104,6 +104,7 @@
     "coverage",
     "arrowjs",
     "website",
-    "test"
+    "test",
+    "babel.config.js"
   ]
 }
