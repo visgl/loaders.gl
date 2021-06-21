@@ -78,7 +78,8 @@ async function decompressPrimitive(
   const bufferCopy = sliceArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
   const {parse} = context;
-  const dracoOptions = {...options};
+import {DracoLoaderOptions, DracoMeshData} from `@loaders.gl/draco';
+  const dracoOptions: DracoLoaderOptions = {...options};
   // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
   const decodedData = await parse(bufferCopy, DracoLoader, dracoOptions, context);
