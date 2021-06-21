@@ -5,11 +5,8 @@
  * MIT (c) 2011 T. Jameson Little
  */
 
-/**
- * @param {number} length
- */
-export function clean(length) {
-  let i;
+export function clean(length: number) {
+  let i: number;
   const buffer = new Uint8Array(length);
   for (i = 0; i < length; i += 1) {
     buffer[i] = 0;
@@ -17,24 +14,14 @@ export function clean(length) {
   return buffer;
 }
 
-/**
- * @param {number} num
- * @param {number} bytes
- * @param {number} [base]
- */
-export function pad(num, bytes, base) {
+export function pad(num: number, bytes: number, base?: number) {
   const numStr = num.toString(base || 8);
   return '000000000000'.substr(numStr.length + 12 - bytes) + numStr;
 }
 
-/**
- * @param {string} input
- * @param {Uint8Array} [out]
- * @param {number} [offset]
- */
-export function stringToUint8(input, out, offset) {
-  let i;
-  let length;
+export function stringToUint8(input: string, out?: Uint8Array, offset?: number) {
+  let i: number;
+  let length: number;
 
   out = out || clean(input.length);
 

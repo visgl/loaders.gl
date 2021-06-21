@@ -6,6 +6,7 @@
  */
 
 import * as utils from './utils';
+import type {Structure, Data} from './types';
 /*
 struct posix_header {             // byte offset
 	char name[100];               //   0
@@ -28,8 +29,7 @@ struct posix_header {             // byte offset
 };
 */
 
-/** @type {{[field: string]: number}} */
-const structure = {
+const structure: Structure = {
   fileName: 100,
   fileMode: 8,
   uid: 8,
@@ -48,19 +48,14 @@ const structure = {
   padding: 12
 };
 
-/**
- * @param {{ [x: string]: string }} data
- * @param {(buffer: Uint8Array, offset: number) => any} [cb]
- * @returns {Uint8Array}
- */
-export function format(data, cb) {
+export function format(data: Data, cb?: any): Uint8Array {
   const buffer = utils.clean(512);
   let offset = 0;
 
   Object.entries(structure).forEach(([field, length]) => {
     const str = data[field] || '';
-    let i;
-    let fieldLength;
+    let i: number;
+    let fieldLength: number;
 
     for (i = 0, fieldLength = str.length; i < fieldLength; i += 1) {
       buffer[offset] = str.charCodeAt(i);
