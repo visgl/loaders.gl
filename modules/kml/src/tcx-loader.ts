@@ -1,8 +1,6 @@
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import type {LoaderObject} from '@loaders.gl/loader-utils/types';
 import {tcx} from '@tmcw/togeojson';
-
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -15,7 +13,7 @@ const TCX_HEADER = `\
 /**
  * Loader for TCX (Training Center XML) - Garmin GPS track format
  */
-export const TCXLoader: LoaderObject = {
+export const TCXLoader: LoaderWithParser = {
   name: 'TCX (Training Center XML)',
   id: 'tcx',
   module: 'kml',

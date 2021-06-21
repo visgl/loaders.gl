@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseNPY} from './lib/parsers/parse-npy';
 
@@ -32,5 +32,5 @@ export const NPYLoader = {
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckNPYWorkerLoader: WorkerLoaderObject = NPYWorkerLoader;
-export const _TypecheckNPYLoader: LoaderObject = NPYLoader;
+export const _TypecheckNPYWorkerLoader: Loader = NPYWorkerLoader;
+export const _TypecheckNPYLoader: LoaderWithParser = NPYLoader;

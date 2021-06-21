@@ -39,7 +39,7 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {RequestScheduler, assert, path, LoaderObject} from '@loaders.gl/loader-utils';
+import {RequestScheduler, assert, path, LoaderWithParser} from '@loaders.gl/loader-utils';
 
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
@@ -122,11 +122,17 @@ const DEFAULT_PROPS: Props = {
 
   maximumMemoryUsage: 32,
 
-  // Indicates this a tile's content was loaded
-  onTileLoad: (tile) => {},
-  // Indicates this a tile's content was unloaded
-  onTileUnload: (tile) => {},
-  onTileError: (tile, message, url) => {},
+  /**
+   * Callback. Indicates this a tile's content was loaded
+   * @param tile {TileHeader}
+   */
+  onTileLoad: () => {},
+  /**
+   * Callback. Indicates this a tile's content was unloaded
+   * @param tile {TileHeader}
+   */
+  onTileUnload: () => {},
+  onTileError: () => {},
 
   // Optional async tile content loader
   contentLoader: undefined,
@@ -171,7 +177,7 @@ export default class Tileset3D {
 
   type: string;
   tileset: {[key: string]: any};
-  loader: LoaderObject;
+  loader: LoaderWithParser;
   url: string;
   basePath: string;
   modelMatrix: Matrix4;

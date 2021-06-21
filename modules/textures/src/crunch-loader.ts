@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 
 /**
@@ -23,4 +23,4 @@ export const CrunchWorkerLoader = {
 // We avoid bundling crunch - rare format, only offer worker loader
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCrunchWorkerLoader: WorkerLoaderObject = CrunchWorkerLoader;
+export const _TypecheckCrunchWorkerLoader: Loader = CrunchWorkerLoader;

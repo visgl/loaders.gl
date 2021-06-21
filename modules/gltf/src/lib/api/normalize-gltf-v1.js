@@ -139,8 +139,7 @@ class GLTFV1Normalizer {
 
     // Extract bufferView indices for images
     // (this extension needs to be invoked early in the normalization process)
-    // @ts-ignore
-    KHR_binary_glTF.decode(gltf, options);
+    KHR_binary_glTF.decode(gltf);
 
     // Convert object references from ids to indices
     this._convertObjectIdsToArrayIndices(json);

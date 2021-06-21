@@ -14,7 +14,7 @@ export function deleteImage(image: ImageType): void {
   }
 }
 
-export function getImageType(image: ImageType, throwOnError?: boolean): ImageTypeEnum {
+export function getImageType(image: ImageType): ImageTypeEnum {
   const format = getImageTypeOrNull(image);
   if (!format) {
     throw new Error('Not an image');

@@ -3,13 +3,12 @@ import {RecordBatchReader} from 'apache-arrow';
 // import {isIterable} from '@loaders.gl/core';
 
 /**
- * @param {AsyncIterator<ArrayBuffer> | Iterator<ArrayBuffer>} asyncIterator
- * @param {object} options
  */
-export async function parseArrowInBatches(asyncIterator, options) {
+export function parseArrowInBatches(
+  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+): AsyncIterable<any> {
   // Creates the appropriate RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
-  const readers = await RecordBatchReader.readAll(asyncIterator);
 
   // As an optimization, return a non-async iterator
   /*
@@ -27,9 +26,10 @@ export async function parseArrowInBatches(asyncIterator, options) {
   */
 
   async function* makeArrowAsyncIterator() {
+    const readers = await RecordBatchReader.readAll(asyncIterator);
     for await (const reader of readers) {
       for await (const batch of reader) {
-        yield processBatch(batch, reader);
+        yield processBatch(batch);
       }
       break; // only processing one stream of batches
     }
@@ -37,7 +37,7 @@ export async function parseArrowInBatches(asyncIterator, options) {
   return makeArrowAsyncIterator();
 }
 
-function processBatch(batch, on) {
+function processBatch(batch) {
   const values = {
     metadata: batch.schema.metadata,
     length: batch.length

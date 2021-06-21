@@ -19,8 +19,7 @@ export async function* makeTextDecoderIterator(
 // If iterator does not yield strings, assume arrayBuffer and return unencoded
 
 export async function* makeTextEncoderIterator(
-  textIterator: AsyncIterable<string>,
-  options?: object
+  textIterator: AsyncIterable<string>
 ): AsyncIterable<ArrayBuffer> {
   const textEncoder = new TextEncoder();
   for await (const text of textIterator) {

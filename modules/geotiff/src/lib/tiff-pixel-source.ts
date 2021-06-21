@@ -9,7 +9,8 @@ import type {
   Labels,
   RasterSelection,
   TileSelection,
-  PixelData
+  PixelData,
+  TypedArray
 } from '../types';
 
 class TiffPixelSource<S extends string[]> implements PixelSource<S> {
@@ -80,7 +81,7 @@ class TiffPixelSource<S extends string[]> implements PixelSource<S> {
   }
 
   onTileError(err: Error) {
-    console.error(err);
+    console.error(err); // eslint-disable-line no-console
   }
 }
 

@@ -7,7 +7,6 @@ type ColumnarTableBatchOptions = {
 export default class ColumnarTableBatch implements TableBatch {
   schema: Schema;
   batchSize: number | string;
-
   length: number;
   allocated: number | string;
   columns: Array<any>;
@@ -16,7 +15,6 @@ export default class ColumnarTableBatch implements TableBatch {
   constructor(schema: Schema, options: ColumnarTableBatchOptions = {}) {
     this.schema = schema;
     this.batchSize = options.batchSize || 'auto';
-
     this.length = 0;
     this.allocated = 0;
     this.columns = [];
@@ -46,7 +44,7 @@ export default class ColumnarTableBatch implements TableBatch {
     return this.length >= this.allocated;
   }
 
-  getBatch(options = {}): Batch | null {
+  getBatch(): Batch | null {
     this._pruneColumns();
     const columns = Array.isArray(this.schema) ? this.columns : {};
 

@@ -4,7 +4,7 @@ import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/culling';
 
 import {load} from '@loaders.gl/core';
-import {assert, path} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/loader-utils';
 import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
 import {FrameState} from './helpers/frame-state';
@@ -473,7 +473,7 @@ export default class TileHeader {
   // whether the tile's content's bounding volume intersects the culling volume.
   // @param {FrameState} frameState The frame state.
   // @returns {Intersect} The result of the intersection: the tile's content is completely outside, completely inside, or intersecting the culling volume.
-  contentVisibility(frameState) {
+  contentVisibility() {
     return true;
 
     // TODO restore
@@ -541,8 +541,7 @@ export default class TileHeader {
   insideViewerRequestVolume(frameState: FrameState) {
     const viewerRequestVolume = this._viewerRequestVolume;
     return (
-      !viewerRequestVolume ||
-      viewerRequestVolume.distanceToCamera(frameState.camera.position) === 0.0
+      !viewerRequestVolume || viewerRequestVolume.distanceSquaredTo(frameState.camera.position) <= 0
     );
   }
 

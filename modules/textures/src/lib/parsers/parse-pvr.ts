@@ -1,4 +1,4 @@
-import {TextureLevel} from '@loaders.gl/textures/types/texture';
+import {TextureLevel} from '../../types';
 /* eslint-disable camelcase */
 // Forked from PicoGL: https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)

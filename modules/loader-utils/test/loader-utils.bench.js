@@ -1,4 +1,4 @@
-import {concatenateChunksAsync, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 
 export default async function loaderUtilsBench(suite) {
   const hundredMegabytes = new Array(100).fill(new ArrayBuffer(1e6));
@@ -11,9 +11,9 @@ export default async function loaderUtilsBench(suite) {
     concatenateArrayBuffers(...hundredMegabytes);
   });
 
-  suite.addAsync('concatenateChunksAsync(100x1MB chunks)', options, async () => {
+  suite.addAsync('concatenateArrayBuffersAsync(100x1MB chunks)', options, async () => {
     // @ts-ignore
-    await concatenateChunksAsync(hundredMegabytes);
+    await concatenateArrayBuffersAsync(hundredMegabytes);
   });
 
   if (typeof File !== 'undefined') {

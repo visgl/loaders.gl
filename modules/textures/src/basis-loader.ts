@@ -1,4 +1,4 @@
-import type {WorkerLoaderObject, LoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import parseBasis from './lib/parsers/parse-basis';
 
@@ -32,5 +32,5 @@ export const BasisLoader = {
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckBasisWorkerLoader: WorkerLoaderObject = BasisWorkerLoader;
-export const _TypecheckBasisLoader: LoaderObject = BasisLoader;
+export const _TypecheckBasisWorkerLoader: Loader = BasisWorkerLoader;
+export const _TypecheckBasisLoader: LoaderWithParser = BasisLoader;

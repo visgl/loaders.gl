@@ -1,4 +1,4 @@
-import type {WriterObject} from '@loaders.gl/loader-utils';
+import type {Writer} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeImageURLToCompressedTextureURL} from './lib/encoders/encode-texture';
 
@@ -28,4 +28,4 @@ export const CompressedTextureWriter = {
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCompressedTextureWriter: WriterObject = CompressedTextureWriter;
+export const _TypecheckCompressedTextureWriter: Writer = CompressedTextureWriter;

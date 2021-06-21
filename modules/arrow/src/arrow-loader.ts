@@ -1,4 +1,4 @@
-import type {LoaderObject, WorkerLoaderObject} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import parseSync from './lib/parse-arrow-sync';
 import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 
@@ -17,7 +17,7 @@ const DEFAULT_ARROW_LOADER_OPTIONS: {arrow: ArrowLoaderOptions} = {
 };
 
 /** ArrowJS table loader */
-export const ArrowWorkerLoader: WorkerLoaderObject = {
+export const ArrowWorkerLoader: Loader = {
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',
@@ -32,7 +32,7 @@ export const ArrowWorkerLoader: WorkerLoaderObject = {
 };
 
 /** ArrowJS table loader */
-export const ArrowLoader: LoaderObject = {
+export const ArrowLoader: LoaderWithParser = {
   ...ArrowWorkerLoader,
   parse: async (arraybuffer, options) => parseSync(arraybuffer, options),
   parseSync,

@@ -42,6 +42,7 @@ export function isInterleaved(shape: number[]) {
  * > imgMeta.Pixels.DimensionOrder === 'XYCZT'
  * > getLabels(imgMeta.Pixels) === ['t', 'z', 'c', 'y', 'x']
  */
+// eslint-disable-next-line
 type Sel<Dim extends string> = Dim extends `${infer Z}${infer X}${infer A}${infer B}${infer C}`
   ? [C, B, A]
   : 'error';

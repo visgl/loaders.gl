@@ -5,7 +5,7 @@ const MODULE_ROOT = `${__dirname}/../../..`;
 /*
  * @see https://github.com/TimvanScherpenzeel/texture-compressor
  */
-export async function encodeImageURLToCompressedTextureURL(inputUrl, outputUrl, options) {
+export async function encodeImageURLToCompressedTextureURL(inputUrl, outputUrl) {
   // prettier-ignore
   const args = [
     // Note: our actual executable is `npx`, so `texture-compressor` is an argument

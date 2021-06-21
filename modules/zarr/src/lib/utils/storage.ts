@@ -26,7 +26,7 @@ class ReadOnlyStore {
   }
 
   async setItem() {
-    console.warn('Cannot write to read-only store.');
+    console.warn('Cannot write to read-only store.'); // eslint-disable-line no-console
     return false;
   }
 }

@@ -14,7 +14,7 @@ type ColumnarTable = {
  * @param options - the writer options
  * @returns - encoded ArrayBuffer
  */
-export function encodeArrowSync(data: ColumnarTable, options): ArrayBuffer {
+export function encodeArrowSync(data: ColumnarTable): ArrayBuffer {
   const vectors: any[] = [];
   const arrayNames: string[] = [];
   for (const arrayData of data) {

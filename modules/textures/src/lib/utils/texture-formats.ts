@@ -1,16 +1,4 @@
-/**
- * These represent the main compressed texture formats
- * Each format typically has a number of more specific subformats
- */
-export type GPUTextureFormat =
-  | 'dxt'
-  | 'dxt-srgb'
-  | 'etc1'
-  | 'etc2'
-  | 'pvrtc'
-  | 'atc'
-  | 'astc'
-  | 'rgtc';
+import type {GPUTextureFormat} from '../../types';
 
 const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
 

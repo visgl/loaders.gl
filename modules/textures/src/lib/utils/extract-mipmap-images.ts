@@ -1,4 +1,4 @@
-import {CompressedTextureExtractOptions, TextureLevel} from '@loaders.gl/textures/types/texture';
+import {CompressedTextureExtractOptions, TextureLevel} from '../../types';
 
 /**
  * Extract mipmap images from compressed texture buffer

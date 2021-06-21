@@ -78,20 +78,16 @@ export default function parseGLBSync(
   switch (glb.version) {
     case 1:
       // eslint-disable-next-line
-      return parseGLBV1(glb, dataView, byteOffset, (options = {}));
+      return parseGLBV1(glb, dataView, byteOffset);
     case 2:
+      // eslint-disable-next-line
       return parseGLBV2(glb, dataView, byteOffset, (options = {}));
     default:
       throw new Error(`Invalid GLB version ${glb.version}. Only supports v1 and v2.`);
   }
 }
 
-function parseGLBV1(
-  glb: GLB,
-  dataView: DataView,
-  byteOffset: number,
-  options: GLBParseOptions
-): number {
+function parseGLBV1(glb: GLB, dataView: DataView, byteOffset: number): number {
   // Sanity: ensure file is big enough to hold at least the headers
   assert(glb.header.byteLength > GLB_FILE_HEADER_SIZE + GLB_CHUNK_HEADER_SIZE);
 
@@ -104,10 +100,10 @@ function parseGLBV1(
   // GLB v1 only supports a single chunk type
   assert(contentFormat === GLB_V1_CONTENT_FORMAT_JSON);
 
-  parseJSONChunk(glb, dataView, byteOffset, contentLength, options);
+  parseJSONChunk(glb, dataView, byteOffset, contentLength);
   // No need to call the function padTo4Bytes() from parseJSONChunk()
   byteOffset += contentLength;
-  byteOffset += parseBINChunk(glb, dataView, byteOffset, glb.header.byteLength, options);
+  byteOffset += parseBINChunk(glb, dataView, byteOffset, glb.header.byteLength);
 
   return byteOffset;
 }
@@ -132,21 +128,21 @@ function parseGLBChunksSync(glb: GLB, dataView, byteOffset, options: GLBParseOpt
     // Per spec we must iterate over chunks, ignoring all except JSON and BIN
     switch (chunkFormat) {
       case GLB_CHUNK_TYPE_JSON:
-        parseJSONChunk(glb, dataView, byteOffset, chunkLength, options);
+        parseJSONChunk(glb, dataView, byteOffset, chunkLength);
         break;
       case GLB_CHUNK_TYPE_BIN:
-        parseBINChunk(glb, dataView, byteOffset, chunkLength, options);
+        parseBINChunk(glb, dataView, byteOffset, chunkLength);
         break;
 
       // Backward compatibility for very old xviz files
       case GLB_CHUNK_TYPE_JSON_XVIZ_DEPRECATED:
         if (!options.strict) {
-          parseJSONChunk(glb, dataView, byteOffset, chunkLength, options);
+          parseJSONChunk(glb, dataView, byteOffset, chunkLength);
         }
         break;
       case GLB_CHUNK_TYPE_BIX_XVIZ_DEPRECATED:
         if (!options.strict) {
-          parseBINChunk(glb, dataView, byteOffset, chunkLength, options);
+          parseBINChunk(glb, dataView, byteOffset, chunkLength);
         }
         break;
 
@@ -163,13 +159,7 @@ function parseGLBChunksSync(glb: GLB, dataView, byteOffset, options: GLBParseOpt
 }
 
 // Parse a GLB JSON chunk
-function parseJSONChunk(
-  glb: GLB,
-  dataView: DataView,
-  byteOffset: number,
-  chunkLength: number,
-  options: GLBParseOptions
-) {
+function parseJSONChunk(glb: GLB, dataView: DataView, byteOffset: number, chunkLength: number) {
   // 1. Create a "view" of the binary encoded JSON data inside the GLB
   const jsonChunk = new Uint8Array(dataView.buffer, byteOffset, chunkLength);
 
@@ -184,7 +174,7 @@ function parseJSONChunk(
 }
 
 // Parse a GLB BIN chunk
-function parseBINChunk(glb: GLB, dataView, byteOffset, chunkLength, options: GLBParseOptions) {
+function parseBINChunk(glb: GLB, dataView, byteOffset, chunkLength) {
   // Note: BIN chunk can be optional
   glb.header.hasBinChunk = true;
   glb.binChunks.push({

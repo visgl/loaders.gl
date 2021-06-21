@@ -1,5 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
-/** @typedef {import('@loaders.gl/loader-utils').WorkerLoaderObject} WorkerLoaderObject */
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import parsePCDSync from './lib/parse-pcd';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -8,9 +7,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /**
  * Worker loader for PCD - Point Cloud Data
- * @type {WorkerLoaderObject}
  */
-export const PCDWorkerLoader = {
+export const PCDWorkerLoader: Loader = {
   name: 'PCD (Point Cloud Data)',
   id: 'pcd',
   module: 'pcd',
@@ -25,9 +23,8 @@ export const PCDWorkerLoader = {
 
 /**
  * Loader for PCD - Point Cloud Data
- * @type {LoaderObject}
  */
-export const PCDLoader = {
+export const PCDLoader: LoaderWithParser = {
   ...PCDWorkerLoader,
   parse: async (arrayBuffer) => await parsePCDSync(arrayBuffer),
   parseSync: parsePCDSync

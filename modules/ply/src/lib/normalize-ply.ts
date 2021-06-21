@@ -1,6 +1,6 @@
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 
-export default function normalizePLY(header, attributes, options) {
+export default function normalizePLY(header, attributes) {
   const normalizedAttributes = normalizeAttributes(attributes);
 
   const result = {

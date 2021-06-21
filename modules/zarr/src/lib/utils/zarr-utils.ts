@@ -77,7 +77,7 @@ export async function loadMultiscales(store: ZarrArray['store'], path = '') {
     paths = datasets.map((d) => d.path);
   }
 
-  const data = paths.map((path) => grp.getItem(path));
+  const data = paths.map(() => grp.getItem(path));
   return {
     data: (await Promise.all(data)) as ZarrArray[],
     rootAttrs

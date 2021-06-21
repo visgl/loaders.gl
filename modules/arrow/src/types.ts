@@ -12,7 +12,7 @@ type TypedFloatArray = Float32Array | Float64Array;
 
 type TypedArray = TypedIntArray | TypedFloatArray;
 
-export type AnyArrayType = Array<any> | TypedIntArray | TypedFloatArray;
+export type AnyArrayType = Array<any> | TypedArray;
 
 export enum VECTOR_TYPES {
   FLOAT,

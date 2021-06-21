@@ -65,19 +65,29 @@ function parseFloatAttribute(arrayBuffer) {
  * @returns list of strings
  */
 function parseStringsAttribute(arrayBuffer: ArrayBuffer): string[] {
+  const stringsCountOffset = 0;
   const dataOffset = 8;
   const bytesPerStringSize = 4;
-  const stringsCount = new Uint32Array(arrayBuffer, 0, bytesPerStringSize)[0];
-  const stringSizes = new Uint32Array(arrayBuffer, dataOffset, stringsCount);
-
   const stringsArray: string[] = [];
-  let stringOffset = dataOffset + stringsCount * bytesPerStringSize;
 
-  for (const stringByteSize of stringSizes) {
-    const textDecoder = new TextDecoder('utf-8');
-    const stringAttribute = new Uint8Array(arrayBuffer, stringOffset, stringByteSize);
-    stringsArray.push(textDecoder.decode(stringAttribute));
-    stringOffset += stringByteSize;
+  try {
+    // Use DataView to avoid multiple of 4 error on Uint32Array constructor
+    const stringsCount = new DataView(
+      arrayBuffer,
+      stringsCountOffset,
+      bytesPerStringSize
+    ).getUint32(stringsCountOffset, true);
+    const stringSizes = new Uint32Array(arrayBuffer, dataOffset, stringsCount);
+    let stringOffset = dataOffset + stringsCount * bytesPerStringSize;
+
+    for (const stringByteSize of stringSizes) {
+      const textDecoder = new TextDecoder('utf-8');
+      const stringAttribute = new Uint8Array(arrayBuffer, stringOffset, stringByteSize);
+      stringsArray.push(textDecoder.decode(stringAttribute));
+      stringOffset += stringByteSize;
+    }
+  } catch (error) {
+    console.error('Parse string attribute error: ', error.message); // eslint-disable-line
   }
 
   return stringsArray;

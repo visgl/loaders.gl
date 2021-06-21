@@ -1,5 +1,4 @@
 import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils';
-import {assert} from '../env-utils/assert';
 
 // GENERAL UTILITIES
 
@@ -37,8 +36,8 @@ export async function forEach(iterator, visitor) {
  * This function can e.g. be used to enable atomic parsers to work on (async) iterator inputs
  */
 
-export async function concatenateChunksAsync(
-  asyncIterator: AsyncIterable<ArrayBuffer>
+export async function concatenateArrayBuffersAsync(
+  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
 ): Promise<ArrayBuffer> {
   const arrayBuffers: ArrayBuffer[] = [];
   for await (const chunk of asyncIterator) {
@@ -48,7 +47,7 @@ export async function concatenateChunksAsync(
 }
 
 export async function concatenateStringsAsync(
-  asyncIterator: AsyncIterable<string>
+  asyncIterator: AsyncIterable<string> | Iterable<string>
 ): Promise<string> {
   const strings: string[] = [];
   for await (const chunk of asyncIterator) {

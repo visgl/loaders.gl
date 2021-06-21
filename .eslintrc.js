@@ -45,8 +45,7 @@ const config = deepMerge(defaultConfig, {
         '@typescript-eslint/no-floating-promises': ['warn'],
         '@typescript-eslint/await-thenable': ['warn'],
         '@typescript-eslint/no-misused-promises': ['warn'],
-        '@typescript-eslint/restrict-plus-operands': ['warn'],
-        '@typescript-eslint/no-empty-function': ['warn'],
+        '@typescript-eslint/no-empty-function': ['warn', {allow: ['arrowFunctions']}],
         // We use function hoisting
         '@typescript-eslint/no-use-before-define': 0,
         // We always want explicit typing, e.g `field: string = ''`
@@ -56,7 +55,8 @@ const config = deepMerge(defaultConfig, {
         '@typescript-eslint/require-await': 0,
         '@typescript-eslint/no-unsafe-return': 0,
         '@typescript-eslint/no-unsafe-call': 0,
-        '@typescript-eslint/no-empty-interface': 0
+        '@typescript-eslint/no-empty-interface': 0,
+        '@typescript-eslint/restrict-plus-operands': 0
       }
     },
     {

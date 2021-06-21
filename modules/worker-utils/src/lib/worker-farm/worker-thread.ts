@@ -2,7 +2,7 @@ import {assert} from '../env-utils/assert';
 import {buildWorkerURL} from './build-worker-url';
 import {getTransferList} from './get-transfer-list';
 
-const NOOP = (_) => {};
+const NOOP = () => {};
 
 export type WorkerThreadProps = {
   name: string;

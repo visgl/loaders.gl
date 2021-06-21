@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {load, parse} from '@loaders.gl/core';
 import {I3SContentLoader} from './i3s-content-loader';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
@@ -13,9 +13,8 @@ const SLPK_HEX = '504b0304';
 
 /**
  * Loader for I3S - Indexed 3D Scene Layer
- * @type {LoaderObject}
  */
-export const I3SLoader = {
+export const I3SLoader: LoaderWithParser = {
   name: 'I3S (Indexed Scene Layers)',
   id: 'i3s',
   module: 'i3s',
@@ -36,7 +35,7 @@ export const I3SLoader = {
   }
 };
 
-async function parseI3S(data, options, context, loader) {
+async function parseI3S(data, options, context) {
   const url = context.url;
   options.i3s = options.i3s || {};
   const magicNumber = getMagicNumber(data);
@@ -70,13 +69,13 @@ async function parseI3S(data, options, context, loader) {
       await load(data.contentUrl, I3SLoader, options);
     }
   } else {
-    data = await parseTileContent(data, options, context);
+    data = await parseTileContent(data, options);
   }
 
   return data;
 }
 
-async function parseTileContent(arrayBuffer, options, context) {
+async function parseTileContent(arrayBuffer, options) {
   return await parse(arrayBuffer, I3SContentLoader, options);
 }
 
