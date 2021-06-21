@@ -82,7 +82,7 @@ import {DracoLoaderOptions, DracoMeshData} from `@loaders.gl/draco';
   const dracoOptions: DracoLoaderOptions = {...options};
   // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
-  const decodedData = await parse(bufferCopy, DracoLoader, dracoOptions, context);
+  const decodedData = await parse(bufferCopy, DracoLoader, dracoOptions, context) as DracoMeshData;
 
   const decodedAttributes: {[key: string]: GLTFAccessor} = getGLTFAccessors(decodedData.attributes);
 
