@@ -2,17 +2,22 @@
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
 
 /* eslint-disable camelcase */
-import type {GLTF, GLTFMeshPrimitive} from '../types/gltf-types';
+import type {GLTF, GLTFAccessor, GLTFMeshPrimitive} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoaderOptions, DracoMeshData} from '@loaders.gl/draco';
 import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {default as Scenegraph} from '../api/gltf-scenegraph';
 import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
 // Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
-export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
+export async function decode(
+  gltfData: {json: GLTF},
+  options: GLTFLoaderOptions,
+  context
+): Promise<void> {
   if (!options?.gltf?.decompressMeshes) {
     return;
   }
@@ -21,7 +26,7 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
   const promises: Promise<void>[] = [];
   for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
     if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
-      promises.push(decompressPrimitive(scenegraph, primitive, options));
+      promises.push(decompressPrimitive(scenegraph, primitive, options, context));
     }
   }
 
@@ -55,7 +60,8 @@ export function encode(gltfData, options: GLTFLoaderOptions = {}): void {
 async function decompressPrimitive(
   scenegraph: Scenegraph,
   primitive: GLTFMeshPrimitive,
-  options: GLTFLoaderOptions
+  options: GLTFLoaderOptions,
+  context
 ): Promise<void> {
   const dracoExtension = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
   if (!dracoExtension) {
@@ -67,12 +73,34 @@ async function decompressPrimitive(
   // TODO - remove when `parse` is fixed to handle `byteOffset`s
   const bufferCopy = sliceArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
-  const dracoOptions = {...options};
+  const {parse} = context;
+  const dracoOptions: DracoLoaderOptions = {...options};
+
   // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
-  const decodedData = await DracoLoader.parse(bufferCopy, dracoOptions);
+  const decodedData = (await parse(
+    bufferCopy,
+    DracoLoader,
+    dracoOptions,
+    context
+  )) as DracoMeshData;
 
-  primitive.attributes = getGLTFAccessors(decodedData.attributes);
+  const decodedAttributes: {[key: string]: GLTFAccessor} = getGLTFAccessors(decodedData.attributes);
+
+  // Restore min/max values
+  for (const [attributeName, decodedAttribute] of Object.entries(decodedAttributes)) {
+    if (attributeName in primitive.attributes) {
+      const accessorIndex: number = primitive.attributes[attributeName];
+      const accessor = scenegraph.getAccessor(accessorIndex);
+      if (accessor?.min && accessor?.max) {
+        decodedAttribute.min = accessor.min;
+        decodedAttribute.max = accessor.max;
+      }
+    }
+  }
+
+  // @ts-ignore
+  primitive.attributes = decodedAttributes;
   if (decodedData.indices) {
     // @ts-ignore
     primitive.indices = getGLTFAccessor(decodedData.indices);
