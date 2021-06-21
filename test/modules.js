@@ -99,6 +99,5 @@ if (TEST_ARCHIVES) {
 
 // Cli
 if (!isBrowser && TEST_CLI) {
-  // TODO/ActionEngine - restore and fix this test
-  // require('@loaders.gl/tile-converter/test');
+  require('@loaders.gl/tile-converter/test');
 }
