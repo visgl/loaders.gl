@@ -125,6 +125,8 @@ async function loadWasmModule(): Promise<WebAssembly.Instance> {
   let wasm = wasm_base;
   if (WebAssembly.validate(detector)) {
     wasm = wasm_simd;
+
+    // eslint-disable-next-line no-console
     console.log('Warning: meshopt_decoder is using experimental SIMD support');
   }
 

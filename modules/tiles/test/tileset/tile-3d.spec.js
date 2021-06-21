@@ -154,6 +154,126 @@ test('Tile3D#geometric error is undefined', (t) => {
   t.end();
 });
 
+test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume', (t) => {
+  const tileset = {
+    ...MOCK_TILESET,
+    type: 'TILES3D',
+    _traverser: {options: {}},
+    options: {viewDistanceScale: 1}
+  };
+  const tileHeaderWithViewerRequestVolume = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    viewerRequestVolume: {
+      sphere: [0, 0, 0, 1]
+    },
+    content: {}
+  };
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, undefined);
+  tile.updateVisibility(
+    {
+      frameNumber: 100,
+      camera: {position: [0, 0, 0]},
+      cullingVolume: {
+        computeVisibilityWithPlaneMask: () => false
+      }
+    },
+    ['test']
+  );
+  t.ok(tile.header.viewerRequestVolume);
+  t.equal(tile._inRequestVolume, true);
+  t.end();
+});
+
+test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume', (t) => {
+  const tileset = {
+    ...MOCK_TILESET,
+    type: 'TILES3D',
+    _traverser: {options: {}},
+    options: {viewDistanceScale: 1}
+  };
+  const tileHeaderWithViewerRequestVolume = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    viewerRequestVolume: {
+      sphere: [0, 0, 0, 1]
+    },
+    content: {}
+  };
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, undefined);
+  tile.updateVisibility(
+    {
+      frameNumber: 100,
+      camera: {position: [1, 1, 0]},
+      cullingVolume: {
+        computeVisibilityWithPlaneMask: () => false
+      }
+    },
+    ['test']
+  );
+  t.ok(tile.header.viewerRequestVolume);
+  t.equal(tile._inRequestVolume, false);
+  t.end();
+});
+
+test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume', (t) => {
+  const tileset = {
+    ...MOCK_TILESET,
+    type: 'TILES3D',
+    _traverser: {options: {}},
+    options: {viewDistanceScale: 1}
+  };
+  const tileHeaderWithViewerRequestVolume = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    viewerRequestVolume: {
+      box: [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 2.0]
+    },
+    content: {}
+  };
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, undefined);
+  tile.updateVisibility(
+    {
+      frameNumber: 100,
+      camera: {position: [1, 1, 0]},
+      cullingVolume: {
+        computeVisibilityWithPlaneMask: () => false
+      }
+    },
+    ['test']
+  );
+  t.ok(tile.header.viewerRequestVolume);
+  t.equal(tile._inRequestVolume, true);
+  t.end();
+});
+
+test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume', (t) => {
+  const tileset = {
+    ...MOCK_TILESET,
+    type: 'TILES3D',
+    _traverser: {options: {}},
+    options: {viewDistanceScale: 1}
+  };
+  const tileHeaderWithViewerRequestVolume = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    viewerRequestVolume: {
+      box: [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 2.0]
+    },
+    content: {}
+  };
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, undefined);
+  tile.updateVisibility(
+    {
+      frameNumber: 100,
+      camera: {position: [2, 2, 0]},
+      cullingVolume: {
+        computeVisibilityWithPlaneMask: () => false
+      }
+    },
+    ['test']
+  );
+  t.ok(tile.header.viewerRequestVolume);
+  t.equal(tile._inRequestVolume, false);
+  t.end();
+});
+
 /*
 test('Tile3D#bounding volumes', tt => {
   test('Tile3D#returns the tile bounding volume if the content bounding volume is undefined', t => {

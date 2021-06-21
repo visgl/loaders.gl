@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {getUrlWithToken} from './lib/utils/url-utils';
@@ -10,9 +10,8 @@ const EMPTY_VALUE = '';
 const REJECTED_STATUS = 'rejected';
 /**
  * Loader for I3S attributes
- * @type {LoaderObject}
  */
-export const I3SAttributeLoader = {
+export const I3SAttributeLoader: LoaderWithParser = {
   name: 'I3S Attribute',
   id: 'i3s-attribute',
   module: 'i3s',

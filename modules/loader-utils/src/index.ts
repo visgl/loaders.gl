@@ -1,16 +1,19 @@
 // TYPES
-export type WorkerLoaderObject = import('./types').WorkerLoaderObject;
-export type LoaderObject = import('./types').LoaderObject;
-export type WriterObject = import('./types').WriterObject;
-export type LoaderContext = import('./types').LoaderContext;
-export type DataType = import('./types').DataType;
-export type SyncDataType = import('./types').SyncDataType;
-export type BatchableDataType = import('./types').BatchableDataType;
-export type IFileSystem = import('./types').IFileSystem;
-export type IRandomAccessReadFileSystem = import('./types').IRandomAccessReadFileSystem;
+export type {
+  Loader,
+  LoaderWithParser,
+  LoaderContext,
+  LoaderOptions,
+  Writer,
+  CoreWriterOptions,
+  DataType,
+  SyncDataType,
+  BatchableDataType,
+  IFileSystem,
+  IRandomAccessReadFileSystem
+} from './types';
 
-export type IncrementalTransform =
-  import('./lib/iterator-utils/incremental-transform').IncrementalTransform;
+export type {IncrementalTransform} from './lib/iterator-utils/incremental-transform';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
@@ -66,7 +69,7 @@ export {
   makeLineIterator,
   makeNumberedLineIterator
 } from './lib/iterator-utils/text-iterators';
-export {forEach, concatenateChunksAsync} from './lib/iterator-utils/async-iteration';
+export {forEach, concatenateArrayBuffersAsync} from './lib/iterator-utils/async-iteration';
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';

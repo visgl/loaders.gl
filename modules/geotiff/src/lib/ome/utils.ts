@@ -6,6 +6,7 @@ import type {Labels} from '../../types';
  * > imgMeta.Pixels.DimensionOrder === 'XYCZT'
  * > getLabels(imgMeta.Pixels) === ['t', 'z', 'c', 'y', 'x']
  */
+
 type Sel<Dim extends string> = Dim extends `${infer Z}${infer X}${infer A}${infer B}${infer C}`
   ? [C, B, A]
   : 'error';

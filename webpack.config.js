@@ -4,6 +4,8 @@ const {getWebpackConfig} = require('ocular-dev-tools');
 module.exports = (env = {}) => {
   let config = getWebpackConfig(env);
 
+  config.devtool = 'source-map';
+
   config = addBabelSettings(config);
   config.module.rules.push({
     // Load worker tests
@@ -31,8 +33,14 @@ module.exports = (env = {}) => {
     });
   }
 
+  // Log regex
+  // eslint-disable-next-line
+  Object.defineProperty(RegExp.prototype, 'toJSON', {
+    value: RegExp.prototype.toString
+  });
+
   // Uncomment to debug config
-  console.log(JSON.stringify(config, null, 2));
+  // console.warn(JSON.stringify(config, null, 2));
 
   return [config];
 };
@@ -45,7 +53,16 @@ function makeBabelRule() {
     include: [/modules\/.*\/src/, /modules\/.*\/test/],
     exclude: [/node_modules/],
     options: {
-      presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
+      presets: [
+        '@babel/preset-react',
+        '@babel/preset-typescript',
+        [
+          '@babel/preset-env',
+          {
+            exclude: [/transform-async-to-generator/, /transform-regenerator/]
+          }
+        ]
+      ],
       plugins: ['@babel/plugin-proposal-class-properties']
     }
   };

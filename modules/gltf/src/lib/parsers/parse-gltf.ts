@@ -1,5 +1,5 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
-import type {LoaderContext} from '@loaders.gl/loader-utils/types';
+import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {GLB} from '../types/glb-types';
 import type {GLBParseOptions} from './parse-glb';
 
@@ -28,7 +28,7 @@ export type GLTFParseOptions = {
 
 export function isGLTF(arrayBuffer, options?): boolean {
   const byteOffset = 0;
-  return isGLB(arrayBuffer, byteOffset);
+  return isGLB(arrayBuffer, byteOffset, options);
 }
 
 export async function parseGLTF(

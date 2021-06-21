@@ -21,7 +21,7 @@
     "ETC",
     "basis"
   ],
-  "types": "src/index.d.ts",
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -36,10 +36,10 @@
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-worker": "npm run build-basis-worker && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker",
-    "build-basis-worker": "webpack --entry ./src/workers/basis-worker.js --output ./dist/basis-worker.js --config ../../scripts/webpack/worker.js",
-    "build-npy-worker": "webpack --entry ./src/workers/npy-worker.js --output ./dist/npy-worker.js --config ../../scripts/webpack/worker.js",
-    "build-compressed-texture-worker": "webpack --entry ./src/workers/compressed-texture-worker.js --output ./dist/compressed-texture-worker.js --config ../../scripts/webpack/worker.js",
-    "build-crunch-worker": "webpack --entry ./src/workers/crunch-worker.js --output ./dist/crunch-worker.js --config ../../scripts/webpack/worker.js"
+    "build-basis-worker": "webpack --entry ./src/workers/basis-worker.ts --output ./dist/basis-worker.js --config ../../scripts/webpack/worker.js",
+    "build-npy-worker": "webpack --entry ./src/workers/npy-worker.ts --output ./dist/npy-worker.js --config ../../scripts/webpack/worker.js",
+    "build-compressed-texture-worker": "webpack --entry ./src/workers/compressed-texture-worker.ts --output ./dist/compressed-texture-worker.js --config ../../scripts/webpack/worker.js",
+    "build-crunch-worker": "webpack --entry ./src/workers/crunch-worker.ts --output ./dist/crunch-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@loaders.gl/core": "3.0.0-alpha.18",

@@ -104,7 +104,7 @@ export class Null extends DataType {
     return 'Null';
   }
   toString(): string {
-    return `Null`;
+    return 'Null';
   }
 }
 
@@ -121,7 +121,7 @@ export class Bool extends DataType {
     return 'Bool';
   }
   toString(): string {
-    return `Bool`;
+    return 'Bool';
   }
 }
 
@@ -282,7 +282,7 @@ export class Utf8 extends DataType {
     return 'Utf8';
   }
   toString(): string {
-    return `Utf8`;
+    return 'Utf8';
   }
 }
 

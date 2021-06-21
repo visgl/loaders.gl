@@ -45,7 +45,7 @@ export {_unregisterLoaders} from './lib/api/register-loaders';
 
 export {isBrowser, isWorker, self, window, global, document} from '@loaders.gl/loader-utils';
 export {assert} from '@loaders.gl/loader-utils';
-export {forEach, concatenateChunksAsync} from '@loaders.gl/loader-utils';
+export {forEach, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 
 export {
   makeTextDecoderIterator,
@@ -56,6 +56,7 @@ export {
 
 // "JAVASCRIPT" UTILS - move to loader-utils?
 export {
+  isPureObject,
   isPromise,
   isIterable,
   isAsyncIterable,

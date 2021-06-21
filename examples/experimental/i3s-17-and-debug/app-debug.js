@@ -283,7 +283,14 @@ export default class App extends PureComponent {
       debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE}
     });
 
-    tileset.setOptions({loadTiles: true});
+    const {
+      debugOptions: {minimapViewport, loadTiles}
+    } = this.state;
+    const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
+    tileset.setOptions({
+      viewportTraversersMap,
+      loadTiles
+    });
     this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
@@ -350,8 +357,6 @@ export default class App extends PureComponent {
   // Remove featureIds to enable instance picking mode.
   removeFeatureIdsFromTile(tile) {
     delete tile.content.featureIds;
-    // Remove segmentationData after i3s-content-worker will be published
-    delete tile.content.segmentationData;
   }
 
   validateTile(tile) {
@@ -421,25 +426,13 @@ export default class App extends PureComponent {
       tilesetUrl,
       token,
       viewState,
-      debugOptions: {
-        boundingVolume,
-        boundingVolumeType,
-        pickable,
-        minimapViewport,
-        loadTiles,
-        wireframe
-      },
+      debugOptions: {boundingVolume, boundingVolumeType, pickable, wireframe},
       tileset,
       normalsDebugData,
       trianglesPercentage,
       normalsLength
     } = this.state;
-    const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
-    const loadOptions = {
-      throttleRequests: true,
-      viewportTraversersMap,
-      loadTiles
-    };
+    const loadOptions = {};
 
     if (token) {
       loadOptions.token = token;

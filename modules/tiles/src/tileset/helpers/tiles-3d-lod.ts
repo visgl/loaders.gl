@@ -109,8 +109,8 @@ export function fog(distanceToCamera, density) {
 }
 
 export function getDynamicScreenSpaceError(tileset, distanceToCamera) {
-  if (tileset.dynamicScreenSpaceError && tileset._dynamicScreenSpaceErrorComputedDensity) {
-    const density = tileset._dynamicScreenSpaceErrorComputedDensity;
+  if (tileset.dynamicScreenSpaceError && tileset.dynamicScreenSpaceErrorComputedDensity) {
+    const density = tileset.dynamicScreenSpaceErrorComputedDensity;
     const factor = tileset.dynamicScreenSpaceErrorFactor;
     // TODO: Refined screen space error that minimizes tiles in non-first-person
     const dynamicError = fog(distanceToCamera, density) * factor;

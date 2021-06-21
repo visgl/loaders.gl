@@ -225,7 +225,7 @@ export default class I3SNodePagesTiles {
    * Returns the array of supported texture format
    * @returns list of format strings
    */
-  _getSupportedTextureFormats(options = {}): string[] {
+  _getSupportedTextureFormats(): string[] {
     const formats: string[] = [];
     if (!this.options.i3s || this.options.i3s.useCompressedTextures) {
       const supportedCompressedFormats = getSupportedGPUTextureFormats();

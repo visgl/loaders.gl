@@ -26,8 +26,6 @@ export function createLoaderWorker(loader: any) {
           const result = await parseData({
             loader,
             arrayBuffer: input,
-            byteOffset: 0,
-            byteLength: 0,
             options,
             context: {
               parse: parseOnMainThread
@@ -83,7 +81,7 @@ function parseOnMainThread(arrayBuffer, options = {}) {
 // TODO - Why not support async loader.parse* funcs here?
 // TODO - Why not reuse a common function instead of reimplementing loader.parse* selection logic? Keeping loader small?
 // TODO - Lack of appropriate parser functions can be detected when we create worker, no need to wait until parse
-async function parseData({loader, arrayBuffer, byteOffset, byteLength, options, context}) {
+async function parseData({loader, arrayBuffer, options, context}) {
   let data;
   let parser;
   if (loader.parseSync || loader.parse) {

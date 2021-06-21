@@ -1,4 +1,4 @@
-import type {LoaderObject} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {RowTableBatch} from '@loaders.gl/schema';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
@@ -33,7 +33,7 @@ const DEFAULT_JSON_LOADER_OPTIONS: {json: JSONLoaderOptions} = {
   }
 };
 
-export const JSONLoader: LoaderObject = {
+export const JSONLoader: LoaderWithParser = {
   name: 'JSON',
   id: 'json',
   module: 'json',
@@ -77,7 +77,7 @@ function parseTextSync(text, options) {
   return parseJSONSync(text, options);
 }
 
-async function parseInBatches(asyncIterator, options) {
+function parseInBatches(asyncIterator, options): AsyncIterable<any> {
   // Apps can call the parse method directly, we so apply default options here
   options = {...options};
   options.json = {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options.json};

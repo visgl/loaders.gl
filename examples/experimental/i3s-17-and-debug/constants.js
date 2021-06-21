@@ -1,7 +1,6 @@
 import {COLORED_BY} from './color-map';
 
 export const MAP_STYLES = {
-  'Base Map: Satellite': 'https://basemaps.cartocdn.com/gl/voyager-nolabels-gl-style/style.json',
   'Base Map: Light': 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json',
   'Base Map: Dark': 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json'
 };

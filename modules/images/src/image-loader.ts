@@ -1,4 +1,4 @@
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import parseImage from './lib/parsers/parse-image';
 import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
@@ -17,7 +17,6 @@ const MIME_TYPES = [
 /**
  * Loads a platform-specific image type
  * Note: This type can be used as input data to WebGL texture creation
- * @type {LoaderObject}
  */
 export const ImageLoader = {
   id: 'image',
@@ -37,3 +36,5 @@ export const ImageLoader = {
     // imagebitmap: {} - passes (platform dependent) parameters to ImageBitmap constructor
   }
 };
+
+export const _typecheckImageLoader: LoaderWithParser = ImageLoader;

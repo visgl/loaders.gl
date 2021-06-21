@@ -1,5 +1,4 @@
-/* global */
-/** @typedef {import('@loaders.gl/loader-utils').LoaderObject} LoaderObject */
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -8,9 +7,8 @@ import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
 /**
  * Loader for I3S - Indexed 3D Scene Layer
- * @type {LoaderObject}
  */
-export const I3SContentLoader = {
+export const I3SContentLoader: LoaderWithParser = {
   name: 'I3S Content (Indexed Scene Layers)',
   id: 'i3s-content',
   module: 'i3s',

@@ -39,7 +39,7 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {RequestScheduler, assert, path, LoaderObject} from '@loaders.gl/loader-utils';
+import {RequestScheduler, assert, path, LoaderWithParser} from '@loaders.gl/loader-utils';
 
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
@@ -122,11 +122,17 @@ const DEFAULT_PROPS: Props = {
 
   maximumMemoryUsage: 32,
 
-  // Indicates this a tile's content was loaded
-  onTileLoad: (tile) => {},
-  // Indicates this a tile's content was unloaded
-  onTileUnload: (tile) => {},
-  onTileError: (tile, message, url) => {},
+  /**
+   * Callback. Indicates this a tile's content was loaded
+   * @param tile {TileHeader}
+   */
+  onTileLoad: () => {},
+  /**
+   * Callback. Indicates this a tile's content was unloaded
+   * @param tile {TileHeader}
+   */
+  onTileUnload: () => {},
+  onTileError: () => {},
 
   // Optional async tile content loader
   contentLoader: undefined,
@@ -171,7 +177,7 @@ export default class Tileset3D {
 
   type: string;
   tileset: {[key: string]: any};
-  loader: LoaderObject;
+  loader: LoaderWithParser;
   url: string;
   basePath: string;
   modelMatrix: Matrix4;
@@ -205,6 +211,7 @@ export default class Tileset3D {
   // Tiles not in view are unloaded to enforce private
   // The total amount of GPU memory in bytes used by the tileset.
   gpuMemoryUsageInBytes: any;
+  dynamicScreenSpaceErrorComputedDensity: any;
 
   // TRAVERSAL
   _traverser: TilesetTraverser;
@@ -215,7 +222,6 @@ export default class Tileset3D {
   private _queryParamsString: string;
   private _queryParams: any;
   private _extensionsUsed: any;
-  private _defaultGeometrySchema: any[];
   private _tiles: {[id: string]: Tile3D};
 
   // counter for tracking tiles requests
@@ -228,14 +234,6 @@ export default class Tileset3D {
   private frameStateData: any;
 
   maximumMemoryUsage: number;
-
-  // TODO CESIUM specific
-  private _hasMixedContent: any;
-  private _maximumScreenSpaceError: any;
-  // EXTRACTED FROM TILESET
-  private _properties: any;
-  private _gltfUpAxis: any;
-  private _dynamicScreenSpaceErrorComputedDensity: any;
 
   /**
    * Create a new Tileset3D
@@ -323,22 +321,14 @@ export default class Tileset3D {
     this.stats = new Stats({id: this.url});
     this._initializeStats();
 
-    // TODO CESIUM specific
-    this._hasMixedContent = false;
-    this._maximumScreenSpaceError = this.options.maximumScreenSpaceError;
     // EXTRACTED FROM TILESET
-    this._properties = undefined; // Metadata for per-model/point/etc properties
     this._extensionsUsed = undefined;
-    this._gltfUpAxis = undefined;
-    this._dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
+    this.dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
     // Metadata for the entire tileset
     this.extras = null;
     this.asset = {};
     this.credits = {};
     this.description = this.options.description || '';
-
-    // TODO I3S Specific
-    this._defaultGeometrySchema = [];
 
     this._initializeTileSet(json);
   }
@@ -805,8 +795,6 @@ export default class Tileset3D {
     if ('token' in this.options) {
       this._queryParams.token = this.options.token;
     }
-    // Initialize default Geometry schema
-    this._defaultGeometrySchema = tilesetJson.store.defaultGeometrySchema;
   }
 }
 

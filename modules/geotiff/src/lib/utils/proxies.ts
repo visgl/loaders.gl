@@ -11,11 +11,11 @@ const POOL_PROXY_KEY = `${VIV_PROXY_KEY}-decoder-pool` as const;
  */
 export function checkProxies(tiff: GeoTIFF) {
   if (!isProxy(tiff, OFFSETS_PROXY_KEY)) {
-    console.warn('GeoTIFF source is missing offsets proxy.');
+    console.warn('GeoTIFF source is missing offsets proxy.'); // eslint-disable-line no-console
   }
 
   if (!isProxy(tiff, POOL_PROXY_KEY)) {
-    console.warn('GeoTIFF source is missing decoder-pool proxy.');
+    console.warn('GeoTIFF source is missing decoder-pool proxy.'); // eslint-disable-line no-console
   }
 }
 

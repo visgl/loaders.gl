@@ -46,7 +46,7 @@ export type GLTFObject =
   | GLTFImage;
 
 // Extensions
-
+/* eslint-disable camelcase */
 export type GLTF_KHR_draco_mesh_compression = {
   bufferView: number;
   attributes: {[name: string]: number};

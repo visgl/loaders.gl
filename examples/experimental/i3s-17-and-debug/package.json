@@ -11,12 +11,12 @@
     "generate": "node ./generate-index/index.js"
   },
   "dependencies": {
-    "@deck.gl/core": "8.5.0-alpha.9",
-    "@deck.gl/extensions": "8.5.0-alpha.9",
-    "@deck.gl/geo-layers": "8.5.0-alpha.9",
-    "@deck.gl/layers": "8.5.0-alpha.9",
-    "@deck.gl/mesh-layers": "8.5.0-alpha.9",
-    "@deck.gl/react": "8.5.0-alpha.9",
+    "@deck.gl/core": "8.5.0-alpha.10",
+    "@deck.gl/extensions": "8.5.0-alpha.10",
+    "@deck.gl/geo-layers": "8.5.0-alpha.10",
+    "@deck.gl/layers": "8.5.0-alpha.10",
+    "@deck.gl/mesh-layers": "8.5.0-alpha.10",
+    "@deck.gl/react": "8.5.0-alpha.10",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
