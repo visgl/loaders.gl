@@ -14,6 +14,7 @@ const BABEL_CONFIG = {
     ['@babel/preset-env', {modules: false}]
   ],
   plugins: [
+    '@babel/plugin-transform-runtime',
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
     '@babel/plugin-proposal-nullish-coalescing-operator',
@@ -113,7 +114,7 @@ function addESNextSettings(config) {
 
 module.exports = (env = {}) => {
   let config = CONFIG;
-  env.dev = true;
+
   if (env.dev) {
     config.mode = 'development';
     config = addESNextSettings(config);
