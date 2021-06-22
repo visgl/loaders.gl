@@ -2,7 +2,7 @@
 
 ## Upgrading to v3.0
 
-**Supported Platform**
+**Platform Support Updates**
 
 - Node.js 10 is no longer supported (LTS maintenance of Node.js 10 ended in May 2021).
 - The `module` entry point in the published module is no longer transpiled to ES5 as modern JavaScript is supported now support recent evergreen browsers resulting bundle size reduction and better performance. The `main` entry point is still fully transpiled to `es5`, you can select this entry point using e.g. the `mainField` option in webpack.
@@ -10,6 +10,10 @@
 **Worker Concurrency**
 
 Default number of worker threads for each loader has been reduced from `5` to `3` on non-mobile devices and to `1` on mobile devices to reduce memory use. Generally, increasing the number of workers has diminishing returns.
+
+**@loaders.gl/core**
+
+- Passing `fetch` options (such as `headers`) to `load()` and `parse()` etc. should now be done via the `options.fetch` options object (e.g. `options.fetch.headers`). Specifying `fetch` options on the root options object was deprecated in v2.3 and is no longer supported in v3.0.
 
 **@loaders.gl/gltf**
 
