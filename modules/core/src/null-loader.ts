@@ -18,6 +18,7 @@ export const NullLoader: LoaderWithParser = {
   parseSync: (arrayBuffer) => arrayBuffer,
   // @ts-ignore
   parseInBatches: async (asyncIterator) =>
+    // @ts-ignore
     (async function* parseInBatches() {
       // @ts-ignore
       yield* asyncIterator;
