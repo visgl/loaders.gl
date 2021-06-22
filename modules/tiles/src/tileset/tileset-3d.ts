@@ -613,7 +613,7 @@ export default class Tileset3D {
         this.stats.get(TILES_TOTAL).incrementCount();
         const children = tile.header.children || [];
         for (const childHeader of children) {
-          const childTile = new Tile3D(this, childHeader, tile, basePath);
+          const childTile = new Tile3D(this, childHeader, basePath, tile);
           tile.children.push(childTile);
           childTile.depth = tile.depth + 1;
           stack.push(childTile);

@@ -118,8 +118,8 @@ export default class TileHeader {
   constructor(
     tileset: Tileset3D,
     header: {[key: string]: any},
-    parentHeader: TileHeader,
     basePath: string,
+    parentHeader?: TileHeader,
     extendedId = ''
   ) {
     // PUBLIC MEMBERS
@@ -132,6 +132,7 @@ export default class TileHeader {
     this.url = header.url;
 
     // This tile's parent or `undefined` if this tile is the root.
+    // @ts-ignore
     this.parent = parentHeader;
     this.refine = this._getRefine(header.refine);
     this.type = header.type;
