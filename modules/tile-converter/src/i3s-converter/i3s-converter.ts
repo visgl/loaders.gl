@@ -28,6 +28,9 @@ import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
 import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
+import type {SceneLayer3D} from '../types';
+import type {GLTFMaterial} from '@loaders.gl/gltf';
+import {GeoidHeightModel} from '../lib/geoid-height-model';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -43,6 +46,26 @@ const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
 
 export default class I3SConverter {
+  nodePages: NodePages;
+  fileMap: {[key: string]: string};
+  options: any;
+  layers0Path: string;
+  materialMap: Map<any, any>;
+  materialDefinitions: GLTFMaterial[];
+  vertexCounter: number;
+  layers0: SceneLayer3D;
+  featuresHashArray: string[];
+  refinementCounter: {
+    tilesCount: number;
+    tilesWithAddRefineCount: number;
+  };
+  validate: boolean;
+  boundingVolumeWarnings?: string[];
+  conversionStartTime: [number, number];
+  refreshTokenTime: [number, number];
+  sourceTileset: Tileset3D | null;
+  geoidHeightModel: GeoidHeightModel | null;
+
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
     this.fileMap = {};
@@ -60,7 +83,6 @@ export default class I3SConverter {
     this.validate = false;
     this.boundingVolumeWarnings = null;
   }
-
   // Convert a 3d tileset
   async convert({
     inputUrl,
@@ -544,7 +566,8 @@ export default class I3SConverter {
     const nodeInPage = {
       lodThreshold: maxScreenThresholdSQ.maxError,
       obb: coordinates.obb,
-      children: []
+      children: [],
+      mesh: null
     };
     if (sourceTile.content && sourceTile.content.type === 'b3dm') {
       nodeInPage.mesh = {
