@@ -11,19 +11,24 @@ import {getErrorMessageFromResponse} from './fetch-error-message';
  * - File/Blob objects
  */
 export async function fetchFile(
-  url: string /* | Blob */,
-  options?: {fetch?: RequestInit; throws?: boolean}
+  url: string | Blob,
+  options?: RequestInit & {fetch?: RequestInit | Function; throws?: boolean}
 ): Promise<Response> {
-  if (typeof url !== 'string') {
-    return await makeResponse(url);
+  if (typeof url === 'string') {
+    url = resolvePath(url);
+
+    let fetchOptions: RequestInit = options as RequestInit;
+    if (options?.fetch && typeof options?.fetch !== `function`) {
+      fetchOptions = options.fetch;
+    }
+
+    const response = await fetch(url as string, fetchOptions);
+    if (!response.ok && options?.throws) {
+      throw new Error(await getErrorMessageFromResponse(response));
+    }
+  
+    return response;
   }
 
-  url = resolvePath(url);
-
-  const response = await fetch(url, options?.fetch);
-  if (!response.ok && options?.throws) {
-    throw new Error(await getErrorMessageFromResponse(response));
-  }
-
-  return response;
+  return await makeResponse(url);
 }
