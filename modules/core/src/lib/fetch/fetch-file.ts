@@ -1,14 +1,15 @@
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';
 import {getErrorMessageFromResponse} from './fetch-error-message';
 
 /**
- * As fetch but respects pathPrefix and file aliases
+ * fetch compatible function
  * Reads file data from:
- * - data urls
  * - http/http urls
+ * - data urls
  * - File/Blob objects
+ * Leverages `@loaders.gl/polyfills` for Node.js support
+ * Respects pathPrefix and file aliases
  */
 export async function fetchFile(
   url: string | Blob,
