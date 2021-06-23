@@ -1066,12 +1066,13 @@ export default class I3SConverter {
 
     const options = await this._fetchPreloadOptions();
     this.sourceTileset.options = {...this.sourceTileset.options, ...options};
+
     if (options.headers) {
-      this.sourceTileset.fetchOptions.headers = options.headers;
+      this.sourceTileset.loadOptions.fetch.headers = options.headers;
       console.log('Authorization Bearer token has been updated'); // eslint-disable-line no-undef, no-console
     }
     if (options.token) {
-      this.sourceTileset.fetchOptions.token = options.token;
+      this.sourceTileset.loadOptions.fetch.token = options.token;
     }
   }
 
