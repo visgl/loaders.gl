@@ -19,7 +19,7 @@ export async function fetchFile(
     url = resolvePath(url);
 
     let fetchOptions: RequestInit = options as RequestInit;
-    if (options?.fetch && typeof options?.fetch !== `function`) {
+    if (options?.fetch && typeof options?.fetch !== 'function') {
       fetchOptions = options.fetch;
     }
 
@@ -27,7 +27,7 @@ export async function fetchFile(
     if (!response.ok && options?.throws) {
       throw new Error(await getErrorMessageFromResponse(response));
     }
-  
+
     return response;
   }
 
