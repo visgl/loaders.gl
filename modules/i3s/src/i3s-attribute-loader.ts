@@ -51,7 +51,17 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
     const url = getUrlWithToken(attributeUrls[index], options.token);
     const attributeName = attributeStorageInfo[index].name;
     const attributeType = getAttributeValueType(attributeStorageInfo[index]);
-    const promise = load(url, I3SAttributeLoader, {attributeName, attributeType});
+    let loadOptions = {attributeName, attributeType};
+    // @ts-ignore
+    if (options.fetch) {
+      loadOptions = {
+        ...loadOptions,
+        // @ts-ignore
+        fetch: {fetch: options.fetch}
+      }
+    }
+
+    const promise = load(url, I3SAttributeLoader, loadOptions);
     attributeLoadPromises.push(promise);
   }
   try {

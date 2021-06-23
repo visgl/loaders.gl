@@ -218,3 +218,17 @@ test('I3SAttributeLoader#loadFeatureAttributes string attribute should be empty 
   t.deepEqual(attributes, {OBJECTID: '979297', NAME: ''});
   t.end();
 });
+
+test('I3SAttributeLoader#loadFeatureAttributes should work with fetch options', async (t) => {
+  const tile = TILE_WITH_WRONG_BUFFER_NAME_ATTRIBUTE;
+  const featureId = objecId0;
+  const options = {
+    attributeName: 'HEIGHTROOF',
+    attributeType: 'Float64',
+    fetch: {headers: {Authorization: '123456'}}
+  };
+
+  const attributes = await loadFeatureAttributes(tile, featureId, options);
+  t.deepEqual(attributes, {OBJECTID: '979297', NAME: ''});
+  t.end();
+});
