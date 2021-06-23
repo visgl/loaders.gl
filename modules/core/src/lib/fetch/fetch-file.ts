@@ -1,29 +1,35 @@
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';
 import {getErrorMessageFromResponse} from './fetch-error-message';
 
 /**
- * As fetch but respects pathPrefix and file aliases
+ * fetch compatible function
  * Reads file data from:
- * - data urls
  * - http/http urls
+ * - data urls
  * - File/Blob objects
+ * Leverages `@loaders.gl/polyfills` for Node.js support
+ * Respects pathPrefix and file aliases
  */
 export async function fetchFile(
-  url: string /* | Blob */,
-  options?: {fetch?: RequestInit; throws?: boolean}
+  url: string | Blob,
+  options?: RequestInit & {fetch?: RequestInit | Function; throws?: boolean}
 ): Promise<Response> {
-  if (typeof url !== 'string') {
-    return await makeResponse(url);
+  if (typeof url === 'string') {
+    url = resolvePath(url);
+
+    let fetchOptions: RequestInit = options as RequestInit;
+    if (options?.fetch && typeof options?.fetch !== 'function') {
+      fetchOptions = options.fetch;
+    }
+
+    const response = await fetch(url as string, fetchOptions);
+    if (!response.ok && options?.throws) {
+      throw new Error(await getErrorMessageFromResponse(response));
+    }
+
+    return response;
   }
 
-  url = resolvePath(url);
-
-  const response = await fetch(url, options?.fetch);
-  if (!response.ok && options?.throws) {
-    throw new Error(await getErrorMessageFromResponse(response));
-  }
-
-  return response;
+  return await makeResponse(url);
 }
