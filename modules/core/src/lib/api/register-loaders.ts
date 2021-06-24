@@ -1,4 +1,4 @@
-import {Loader} from '@loaders.gl/loader-utils/types';
+import {Loader} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getGlobalLoaderState} from '../loader-utils/option-utils';
 
