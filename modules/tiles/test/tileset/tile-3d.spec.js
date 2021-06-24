@@ -1,11 +1,14 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+// @ts-ignore
 import test from 'tape-promise/tape';
 import {Matrix4} from '@math.gl/core';
 import {Tile3D} from '@loaders.gl/tiles';
+// @ts-ignore
 import {LOD_METRIC_TYPE} from '../../src';
 
+// @ts-ignore
 const clone = (object, flag) => JSON.parse(JSON.stringify(object));
 
 const TILE_HEADER_WITH_BOUNDING_SPHERE = {
@@ -114,7 +117,8 @@ const MOCK_TILESET = {
 // }
 
 test('Tile3D#destroys', (t) => {
-  const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
+  // @ts-ignore
+  const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, '');
   t.equals(tile.isDestroyed(), false);
   tile.destroy();
   t.equals(tile.isDestroyed(), true);
@@ -123,15 +127,19 @@ test('Tile3D#destroys', (t) => {
 
 test('Tile3D#throws if boundingVolume is undefined', (t) => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
+
   delete tileWithoutBoundingVolume.boundingVolume;
-  t.throws(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume, undefined));
+  // @ts-ignore
+  t.throws(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume, ''));
   t.end();
 });
 
 test('Tile3D#throws if boundingVolume does not contain a sphere, region, or box', (t) => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
+
   delete tileWithoutBoundingVolume.boundingVolume.sphere;
-  t.throws(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume, undefined));
+  // @ts-ignore
+  t.throws(() => new Tile3D(MOCK_TILESET, tileWithoutBoundingVolume, ''));
   t.end();
 });
 
@@ -141,13 +149,16 @@ test('Tile3D#geometric error is undefined', (t) => {
   const lodMetricValueMissing = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
   delete lodMetricValueMissing.lodMetricValue;
 
-  const parent = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, undefined);
-  const child = new Tile3D(MOCK_TILESET, lodMetricValueMissing, parent);
+  // @ts-ignore
+  const parent = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE, '');
+  // @ts-ignore
+  const child = new Tile3D(MOCK_TILESET, lodMetricValueMissing, '', parent);
   t.equals(child.lodMetricType, parent.lodMetricType);
   t.equals(child.lodMetricValue, parent.lodMetricValue);
   t.equals(child.lodMetricValue, 1);
 
-  const tile = new Tile3D(MOCK_TILESET, lodMetricValueMissing, undefined);
+  // @ts-ignore
+  const tile = new Tile3D(MOCK_TILESET, lodMetricValueMissing, '');
   t.equals(tile.lodMetricValue, MOCK_TILESET.lodMetricValue);
   t.equals(tile.lodMetricValue, 2);
 
@@ -168,7 +179,9 @@ test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume'
     },
     content: {}
   };
-  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, undefined);
+
+  // @ts-ignore
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, '');
   tile.updateVisibility(
     {
       frameNumber: 100,
@@ -180,6 +193,7 @@ test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume'
     ['test']
   );
   t.ok(tile.header.viewerRequestVolume);
+  // @ts-ignore
   t.equal(tile._inRequestVolume, true);
   t.end();
 });
@@ -198,7 +212,9 @@ test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume
     },
     content: {}
   };
-  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, undefined);
+
+  // @ts-ignore
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, '');
   tile.updateVisibility(
     {
       frameNumber: 100,
@@ -210,6 +226,7 @@ test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume
     ['test']
   );
   t.ok(tile.header.viewerRequestVolume);
+  // @ts-ignore
   t.equal(tile._inRequestVolume, false);
   t.end();
 });
@@ -228,7 +245,9 @@ test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume'
     },
     content: {}
   };
-  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, undefined);
+
+  // @ts-ignore
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, '');
   tile.updateVisibility(
     {
       frameNumber: 100,
@@ -240,6 +259,7 @@ test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume'
     ['test']
   );
   t.ok(tile.header.viewerRequestVolume);
+  // @ts-ignore
   t.equal(tile._inRequestVolume, true);
   t.end();
 });
@@ -258,7 +278,9 @@ test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume
     },
     content: {}
   };
-  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, undefined);
+
+  // @ts-ignore
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume, '');
   tile.updateVisibility(
     {
       frameNumber: 100,
@@ -270,6 +292,7 @@ test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume
     ['test']
   );
   t.ok(tile.header.viewerRequestVolume);
+  // @ts-ignore
   t.equal(tile._inRequestVolume, false);
   t.end();
 });
