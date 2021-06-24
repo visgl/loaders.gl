@@ -110,7 +110,8 @@ export default class I3SConverter {
 
     const fetchOptions = await this._fetchPreloadOptions();
     const sourceTilesetJson = await load(inputUrl, CesiumIonLoader, {
-      fetch: {fetch: {headers: fetchOptions.headers}, throws: true}
+      fetch: {headers: fetchOptions.headers},
+      throws: true
     });
     // console.log(tilesetJson); // eslint-disable-line
     this.sourceTileset = new Tileset3D(sourceTilesetJson, fetchOptions);

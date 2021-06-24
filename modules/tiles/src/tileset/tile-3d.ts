@@ -362,7 +362,6 @@ export default class TileHeader {
 
     try {
       const contentUrl = this.tileset.getTileUrl(this.contentUrl);
-      const tilesetLoadOptions = this.tileset.loadOptions;
       // The content can be a binary tile ot a JSON tileset
       const loader = this.tileset.loader;
       const options = {
@@ -370,7 +369,7 @@ export default class TileHeader {
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)
         },
-        fetch: tilesetLoadOptions
+        ...this.tileset.loadOptions
       };
 
       this.content = await load(contentUrl, loader, options);
