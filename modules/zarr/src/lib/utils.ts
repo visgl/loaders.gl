@@ -22,11 +22,10 @@ export async function loadMultiscales(store: Store, path = '') {
   }
 
   const {datasets} = rootAttrs.multiscales[0];
-  const paths = datasets.map((d) => d.path);
-  const data = await Promise.all(paths.map((path) => grp.getItem(path)));
+  const promises = datasets.map((d) => grp.getItem(d.path)) as Promise<ZarrArray>[];
 
   return {
-    data: data as ZarrArray[],
+    data: await Promise.all(promises),
     rootAttrs
   };
 }
