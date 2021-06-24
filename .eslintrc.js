@@ -50,7 +50,8 @@ const config = deepMerge(defaultConfig, {
         '@typescript-eslint/no-unsafe-return': 0,
         '@typescript-eslint/no-unsafe-call': 0,
         '@typescript-eslint/no-empty-interface': 0,
-        '@typescript-eslint/restrict-plus-operands': 0
+        '@typescript-eslint/restrict-plus-operands': 0,
+        '@typescript-eslint/no-unnecessary-type-assertion': 0
       }
     },
     {

@@ -76,7 +76,7 @@ export function selectLoaderSync(
   }
 
   // Add registered loaders
-  loaders = [...(loaders || []), ...getRegisteredLoaders()];
+  loaders = [...((loaders as Loader[]) || []), ...getRegisteredLoaders()];
   normalizeLoaders(loaders);
 
   const {url, type} = getResourceUrlAndType(data);
