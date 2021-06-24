@@ -24,12 +24,6 @@ const config = deepMerge(defaultConfig, {
     {
       files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
       rules: {
-        // TODO - Enable these warnings when we have reduced the total amount of warnings
-        // '@typescript-eslint/ban-ts-comment': ['warn'],
-        // '@typescript-eslint/ban-types': ['warn'],
-        // '@typescript-eslint/no-unsafe-member-access': ['warn'],
-        // '@typescript-eslint/no-unsafe-assignment': ['warn'],
-        // '@typescript-eslint/no-var-requires': ['warn']
         '@typescript-eslint/ban-ts-comment': 0,
         '@typescript-eslint/ban-types': 0,
         '@typescript-eslint/no-unsafe-member-access': 0,
@@ -39,13 +33,13 @@ const config = deepMerge(defaultConfig, {
         'import/named': 0,
         'import/no-extraneous-dependencies': ['warn'],
         // Warn instead of error
-        'max-params': ['warn'],
-        'no-undef': ['warn'],
-        camelcase: ['warn'],
-        '@typescript-eslint/no-floating-promises': ['warn'],
-        '@typescript-eslint/await-thenable': ['warn'],
-        '@typescript-eslint/no-misused-promises': ['warn'],
-        '@typescript-eslint/no-empty-function': ['warn', {allow: ['arrowFunctions']}],
+        // 'max-params': ['warn'],
+        // 'no-undef': ['warn'],
+        // camelcase: ['warn'],
+        // '@typescript-eslint/no-floating-promises': ['warn'],
+        // '@typescript-eslint/await-thenable': ['warn'],
+        // '@typescript-eslint/no-misused-promises': ['warn'],
+        // '@typescript-eslint/no-empty-function': ['warn', {allow: ['arrowFunctions']}],
         // We use function hoisting
         '@typescript-eslint/no-use-before-define': 0,
         // We always want explicit typing, e.g `field: string = ''`

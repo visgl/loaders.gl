@@ -41,6 +41,10 @@ export type LoaderOptions = {
   // [loaderId: string]: any;
 };
 
+type PreloadOptions = {
+  [key: string]: any;
+};
+
 export type CoreWriterOptions = {
   [key: string]: any;
 };
@@ -82,6 +86,7 @@ export type LoaderWithParser = Loader & {
   testText?: (string) => boolean;
 
   parse: Parse;
+  preload?: Preload;
   parseSync?: ParseSync;
   parseText?: ParseText;
   parseTextSync?: ParseTextSync;
@@ -152,6 +157,7 @@ type EncodeURLtoURL = (
   outputUrl: string,
   options?: CoreWriterOptions
 ) => Promise<string>;
+type Preload = (url: string, options?: PreloadOptions) => any;
 
 /** Types that can be synchronously parsed */
 export type SyncDataType = string | ArrayBuffer; // TODO File | Blob can be read synchronously...
