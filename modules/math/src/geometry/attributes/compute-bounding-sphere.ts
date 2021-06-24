@@ -1,9 +1,9 @@
 /* eslint-disable */
-// @ts-nocheck
-
+/**
+import { coordinates } from '../types';
 import {getPositions} from './get-attribute-from-geometry';
 
-export function computeBoundingSphere(geometry, boundingBox) {
+export function computeBoundingSphere(geometry: any, boundingBox: object, vector: coordinates ) {
   const positions = getPositions(geometry);
 
   const center = getBoundingBox(center);
@@ -15,7 +15,7 @@ export function computeBoundingSphere(geometry, boundingBox) {
 
   var maxRadiusSq = 0;
 
-  for (const position of makeAttributeIterator(positions)) {
+  for (const position of (positions)) {
     vector.x = position[0];
     vector.y = position[1];
     vector.z = position[2];
@@ -27,3 +27,4 @@ export function computeBoundingSphere(geometry, boundingBox) {
 
   return {center, radius};
 }
+*/

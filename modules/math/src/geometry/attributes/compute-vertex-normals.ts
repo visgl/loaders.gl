@@ -1,4 +1,3 @@
-/** @typedef {import('./compute-vertex-normals')} types */
 import {Vector3} from '@math.gl/core';
 import {GL} from '../constants';
 import {assert} from '../utils/assert';
@@ -6,9 +5,13 @@ import {makePrimitiveIterator} from '../iterators/primitive-iterator';
 import {getPrimitiveModeType} from '../primitives/modes';
 import {getPositions} from './get-attribute-from-geometry';
 
-/** @type {types['computeVertexNormals']} */
+/**
+ * Computes vertex normals for a geometry
+ * @param param0
+ * @returns
+ */
 // eslint-disable-next-line max-statements
-export function computeVertexNormals({mode, indices, attributes}) {
+export function computeVertexNormals(mode: any, indices?: number, attributes?: {}): Float32Array {
   // Only support GL.TRIANGLES, GL.TRIANGLE_STRIP, GL.TRIANGLE_FAN
   assert(getPrimitiveModeType(mode) === GL.TRIANGLES, 'TRIANGLES required');
 
@@ -32,7 +35,6 @@ export function computeVertexNormals({mode, indices, attributes}) {
     vectorAB.subVectors(vectorA, vectorB);
     const normal = vectorCB.cross(vectorAB);
     normal.normalize();
-
     // @ts-ignore
     const {primitiveIndex} = primitive;
 

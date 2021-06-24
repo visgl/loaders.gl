@@ -18,7 +18,18 @@ export const GL_PRIMITIVE_MODE = {
   // Each vertex connects to the previous and the first vertex in the fan.
 };
 
-export const GL_TYPE = {
+type glType = {
+  BYTE: number;
+  UNSIGNED_BYTE: number;
+  SHORT: number;
+  UNSIGNED_SHORT: number;
+  INT: number;
+  UNSIGNED_INT: number;
+  FLOAT: number;
+  DOUBLE: number;
+};
+
+export const GL_TYPE: glType = {
   BYTE: 5120,
   UNSIGNED_BYTE: 5121,
   SHORT: 5122,

@@ -1,7 +1,12 @@
 import isGeometry from '../is-geometry';
 import {assert} from '../utils/assert';
 
-export function getPositions(geometry) {
+/**
+ * Get positions of geometry
+ * @param geometry
+ * @returns Positions| New geometry |assert
+ */
+export function getPositions(geometry: any) {
   // If geometry, extract positions
   if (isGeometry(geometry)) {
     const {attributes} = geometry;

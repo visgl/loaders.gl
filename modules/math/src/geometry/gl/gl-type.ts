@@ -1,5 +1,6 @@
 import {GL_TYPE as GL} from '../constants';
 
+
 const GL_TYPE_TO_ARRAY_TYPE = {
   [GL.DOUBLE]: Float64Array,
   [GL.FLOAT]: Float32Array,
@@ -29,7 +30,12 @@ const ERR_TYPE_CONVERSION = 'Failed to convert GL type';
 export default class GLType {
   // Signature: fromTypedArray(new Uint8Array())
   // Signature: fromTypedArray(Uint8Array)
-  static fromTypedArray(arrayOrType) {
+  /**
+   * Returns the size, in bytes, of the corresponding datatype
+   * @param arrayOrType
+   * @returns 'The size in bytes'
+   */
+  static fromTypedArray(arrayOrType: TypedArray | Function) {
     // If typed array, look up constructor
     arrayOrType = ArrayBuffer.isView(arrayOrType) ? arrayOrType.constructor : arrayOrType;
     for (const glType in GL_TYPE_TO_ARRAY_TYPE) {
@@ -40,8 +46,12 @@ export default class GLType {
     }
     throw new Error(ERR_TYPE_CONVERSION);
   }
-
-  static fromName(name) {
+  /**
+   *
+   * @param name
+   * @returns glType
+   */
+  static fromName(name: string) {
     const glType = NAME_TO_GL_TYPE[name];
     if (!glType) {
       throw new Error(ERR_TYPE_CONVERSION);
@@ -49,15 +59,24 @@ export default class GLType {
     return glType;
   }
 
-  // Converts GL constant to corresponding typed array type
   // eslint-disable-next-line complexity
-  static getArrayType(glType, clamped = false) {
+  /**
+   * Converts GL constant to corresponding typed array type
+   * @param glType The component datatype to get the size of
+   * @param clamped
+   * @returns the constructor of the array
+   */
+  static getArrayType(glType: number, clamped?: boolean): Function | any {
     switch (glType) {
+      /* eslint-disable */
+      // @ts-ignore
       case GL.UNSIGNED_SHORT_5_6_5:
+      // @ts-ignore
       case GL.UNSIGNED_SHORT_4_4_4_4:
+      // @ts-ignore
       case GL.UNSIGNED_SHORT_5_5_5_1:
         return Uint16Array;
-
+      /* eslint-enable */
       default:
         const ArrayType = GL_TYPE_TO_ARRAY_TYPE[glType];
         if (!ArrayType) {
@@ -66,17 +85,37 @@ export default class GLType {
         return ArrayType;
     }
   }
-
-  static getByteSize(glType) {
+  /**
+   * Equivalent to `GLType.getArrayType(glType).BYTES_PER_ELEMENT`
+   * @param glType
+   * @returns the size in bytes of one element of the provided WebGL type.
+   */
+  static getByteSize(glType: number): number {
     const ArrayType = GLType.getArrayType(glType);
     return ArrayType.BYTES_PER_ELEMENT;
   }
-
-  static validate(glType) {
+  /**
+   * @param glType
+   * @returns `true` if `glType` is a valid WebGL data type
+   */
+  static validate(glType: number): boolean {
     return Boolean(GLType.getArrayType(glType));
   }
-
-  static createTypedArray(glType, buffer, byteOffset = 0, length) {
+  /**
+   * Creates a typed view of an array of bytes
+   * @param glType The type of typed array (ArrayBuffer view) to create
+   * @param buffer The buffer storage to use for the view
+   * @param byteOffset The offset, in bytes, to the first element in the view
+   * @param length The number of elements in the view. Defaults to buffer length
+   * @returns A typed array view of the buffer
+   */
+  static createTypedArray(
+    glType: number,
+    buffer: ArrayBuffer,
+    byteOffset?: number,
+    length?: number
+  ): TypedArray {
+    byteOffset = 0;
     if (length === undefined) {
       length = (buffer.byteLength - byteOffset) / GLType.getByteSize(glType);
     }

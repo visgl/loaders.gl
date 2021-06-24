@@ -7,6 +7,7 @@ Helper functions to work with WebGL data type constants.
 | `GL.FLOAT`          | `Float32Array`         |                                       |
 | `GL.DOUBLE`         | `Float64Array`         | Not yet directly usable in WebGL/GLSL |
 | `GL.UNSIGNED_SHORT` | `Uint16Array`          |                                       |
+| `GL.UNSIGNED_SHORT` | `Uint16Array`          |                                       |
 | `GL.UNSIGNED_INT`   | `Uint32Array`          |                                       |
 | `GL.UNSIGNED_BYTE`  | `Uint8Array`           |                                       |
 | `GL.UNSIGNED_BYTE`  | `Uint8ClampedArray`    |                                       |
@@ -24,7 +25,7 @@ var size = GLType.getSizeInBytes(GL.BYTE);
 
 ## Static Methods
 
-### GLType.fromTypedArray(typedArray: Typed Array | Function) : Number
+### GLType.fromTypedArray(typedArray: Typed Array | Function) : String
 
 Returns the size, in bytes, of the corresponding datatype.
 
