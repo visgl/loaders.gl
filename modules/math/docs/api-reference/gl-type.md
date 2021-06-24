@@ -7,7 +7,6 @@ Helper functions to work with WebGL data type constants.
 | `GL.FLOAT`          | `Float32Array`         |                                       |
 | `GL.DOUBLE`         | `Float64Array`         | Not yet directly usable in WebGL/GLSL |
 | `GL.UNSIGNED_SHORT` | `Uint16Array`          |                                       |
-| `GL.UNSIGNED_SHORT` | `Uint16Array`          |                                       |
 | `GL.UNSIGNED_INT`   | `Uint32Array`          |                                       |
 | `GL.UNSIGNED_BYTE`  | `Uint8Array`           |                                       |
 | `GL.UNSIGNED_BYTE`  | `Uint8ClampedArray`    |                                       |
@@ -47,9 +46,13 @@ Returns
 
 The ComponentDatatype for the provided array, or undefined if the array is not a TypedArray.
 
+### GLType.fromName(name: String): Number
+
+Extracts name for glType from array NAME_TO_GL_TYPE
+
 ### GLType.getArrayType(glType: Number) : Function
 
-returns the constructor of the array
+Returns the constructor of the array
 
 ### static GLType.getByteSize(glType: Number) : Number
 

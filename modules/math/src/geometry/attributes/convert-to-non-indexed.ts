@@ -6,7 +6,7 @@
  * @param param0
  * @returns no indexed geometry
  */
-export function convertBuffersToNonIndexed({indices, attributes}) {
+export function convertBuffersToNonIndexed({indices, attributes}): any {
   const geometry2 = new BufferGeometry();
 
   for (const name in attributes) {

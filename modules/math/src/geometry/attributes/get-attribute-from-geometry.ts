@@ -2,10 +2,12 @@ import isGeometry from '../is-geometry';
 import {assert} from '../utils/assert';
 
 /**
- * Get positions of geometry
+ * analyze positions of geometry
+ *
  * @param geometry
- * @returns Positions| New geometry |assert
+ * @returns Position| New geometry |assert
  */
+
 export function getPositions(geometry: any) {
   // If geometry, extract positions
   if (isGeometry(geometry)) {

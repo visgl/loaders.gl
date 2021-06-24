@@ -1,6 +1,9 @@
 import {GL} from '../constants';
 import {assert} from '../utils/assert';
-
+/**
+ * @param mode
+ * @returns draw points | lines | triangles
+ */
 export function getPrimitiveModeType(mode?: number): number | void {
   switch (mode) {
     case GL.POINTS: // draw single points.
@@ -17,7 +20,10 @@ export function getPrimitiveModeType(mode?: number): number | void {
       return assert(false);
   }
 }
-
+/**
+ * @param mode
+ * @returns true | false
+ */
 export function isPrimitiveModeExpandable(mode: number): boolean {
   switch (mode) {
     case GL.LINE_STRIP: // draw lines. Each vertex connects to the one after it.
@@ -29,7 +35,12 @@ export function isPrimitiveModeExpandable(mode: number): boolean {
       return false;
   }
 }
-
+/**
+ * Returns new length depends on glType
+ * @param mode
+ * @param length
+ * @returns new length
+ */
 export function getPrimitiveModeExpandedLength(mode: number, length: number): number | void {
   switch (mode) {
     case GL.POINTS: // draw single points.

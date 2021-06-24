@@ -5,7 +5,10 @@ export type Geometry = {
   min: number[];
   max: number[];
 };
-
+/**
+ * Different methods of working with geometries depending on glType
+ * @param mode
+ */
 export declare function getPrimitiveModeType(mode: number): number;
 export declare function isPrimitiveModeExpandable(mode: number): boolean;
 export declare function getPrimitiveModeExpandedLength(mode: number, length: number): number;
@@ -29,3 +32,26 @@ export type Vector4 = {
   z: number;
   w: number;
 };
+/**
+ * For computing geometries
+ */
+export type GeometryOptions = {
+  attributes: {positions: {[index: string]: number}; POSITION: number};
+  values: GeometryOptions & ArrayBufferView;
+};
+// Typed arrays
+
+export type TypedIntArray =
+  | Int8Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Int32Array
+  | Uint32Array;
+
+export type TypedFloatArray = Uint16Array | Float32Array | Float64Array;
+
+export type TypedArray = TypedIntArray | TypedFloatArray;
