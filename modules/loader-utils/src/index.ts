@@ -79,5 +79,5 @@ export {default as RequestScheduler} from './lib/request-utils/request-scheduler
 export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
 export type _Attributes = import('./categories/mesh/mesh-utils').Attributes;
 
-export {NullWorkerLoader, NullLoader} from './null-loader';
+export {NullWorkerLoader, NullLoader} from '@loaders.gl/core';
 export {JSONLoader} from './json-loader';
