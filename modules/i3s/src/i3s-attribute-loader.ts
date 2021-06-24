@@ -57,7 +57,7 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
       loadOptions = {
         ...loadOptions,
         // @ts-ignore
-        fetch: {fetch: options.fetch}
+        fetch: options.fetch
       }
     }
 
