@@ -4,7 +4,7 @@ import type {
   WorkerMessageType,
   WorkerMessagePayload
 } from '../worker-protocol/protocol';
-import {getTransferList} from '../worker-farm/get-transfer-list';
+import {getTransferList} from '../worker-utils/get-transfer-list';
 
 const onMessageWrapperMap = new Map();
 

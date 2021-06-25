@@ -1,12 +1,20 @@
 /**
- * A worker description
+ * Worker Options
+ */
+export type WorkerOptions = {
+  _workerType?: string;
+  [key: string]: any;
+};
+
+/**
+ * A worker description object
  */
 export type WorkerObject = {
   name: string;
   id: string;
   module: string;
   version: string;
-  worker?: string;
+  worker?: string | boolean;
   options: object;
   deprecatedOptions?: object;
 

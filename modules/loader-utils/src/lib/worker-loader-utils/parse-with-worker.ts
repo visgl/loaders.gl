@@ -1,7 +1,6 @@
-/** @typedef {import('@loaders.gl/worker-utils').WorkerJob} WorkerJob */
-/** @typedef {import('@loaders.gl/worker-utils/lib/worker-protocol/protocol').WorkerMessageType} WorkerMessageType */
-/** @typedef {import('@loaders.gl/worker-utils/').WorkerMessagePayload} WorkerMessagePayload */
-import {WorkerFarm, getWorkerObjectURL} from '@loaders.gl/worker-utils';
+import type {WorkerJob, WorkerMessageType, WorkerMessagePayload} from '@loaders.gl/worker-utils';
+import type {Loader, LoaderOptions, LoaderContext} from '../../types';
+import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
 
 /**
  * Determines if a loader can parse with worker
@@ -10,12 +9,18 @@ import {WorkerFarm, getWorkerObjectURL} from '@loaders.gl/worker-utils';
  * @param options
  * @param context
  */
-export function canParseWithWorker(loader, data, options, context?) {
+export function canParseWithWorker(
+  loader: Loader,
+  data,
+  options?: LoaderOptions,
+  context?: LoaderContext
+) {
   if (!WorkerFarm.isSupported()) {
     return false;
   }
 
-  if (loader.worker && options.worker) {
+  if (loader.worker && options?.worker) {
+    // @ts-ignore
     return loader.useWorker ? loader.useWorker(options) : true;
   }
   return false;
@@ -26,14 +31,14 @@ export function canParseWithWorker(loader, data, options, context?) {
  * this can be automated if the worker is wrapper by a call to createLoaderWorker in @loaders.gl/loader-utils.
  */
 export async function parseWithWorker(
-  loader,
+  loader: Loader,
   data,
-  options,
-  context?,
+  options?: LoaderOptions,
+  context?: LoaderContext,
   parseOnMainThread?: Function
 ) {
   const name = loader.id; // TODO
-  const url = getWorkerObjectURL(loader, options);
+  const url = getWorkerURL(loader, options);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
   const workerPool = workerFarm.getWorkerPool({name, url});
@@ -59,11 +64,16 @@ export async function parseWithWorker(
 
 /**
  * Handle worker's responses to the main thread
- * @param {WorkerJob} job
- * @param {WorkerMessageType} type
- * @param {WorkerMessagePayload} payload
+ * @param job
+ * @param type
+ * @param payload
  */
-async function onMessage(parseOnMainThread, job, type, payload) {
+async function onMessage(
+  parseOnMainThread,
+  job: WorkerJob,
+  type: WorkerMessageType,
+  payload: WorkerMessagePayload
+) {
   switch (type) {
     case 'done':
       job.done(payload);

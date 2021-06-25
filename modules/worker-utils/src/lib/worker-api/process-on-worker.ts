@@ -1,10 +1,8 @@
 import type {WorkerObject} from '../../types';
 import WorkerFarm from '../worker-farm/worker-farm';
-import {
-  getWorkerObjectURL,
-  getWorkerObjectName,
-  removeNontransferableOptions
-} from './worker-object-utils';
+import {removeNontransferableOptions} from '../worker-utils/remove-nontransferable-options';
+import {getWorkerURL, getWorkerName} from './get-worker-url';
+
 /**
  * This function expects that the worker thread sends certain messages,
  * Creating such a worker can be automated if the worker is wrapper by a call to
@@ -15,8 +13,8 @@ export async function processOnWorker(
   data: any,
   options: object = {}
 ): Promise<any> {
-  const name = getWorkerObjectName(worker);
-  const url = getWorkerObjectURL(worker, options);
+  const name = getWorkerName(worker);
+  const url = getWorkerURL(worker, options);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
   const workerPool = workerFarm.getWorkerPool({name, url});
