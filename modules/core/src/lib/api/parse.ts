@@ -70,7 +70,7 @@ async function parseWithLoader(loader, data, options, context) {
   }
 
   // If we have a workerUrl and the loader can parse the given options efficiently in a worker
-  if (canParseWithWorker(loader, data, options, context)) {
+  if (canParseWithWorker(loader, options)) {
     return await parseWithWorker(loader, data, options, context, parse);
   }
 
