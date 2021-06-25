@@ -106,6 +106,14 @@ async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
       indices
     };
 
+    for (const key in decompressedGeometry.loaderData.attributes) {
+      const dracoAttribute = decompressedGeometry.loaderData.attributes[key];
+      if (dracoAttribute.name === 'POSITION') {
+        attributes.position.metadata = dracoAttribute.metadata;
+        break;
+      }
+    }
+
     const featureIds = getFeatureIdsFromFeatureIndexMetadata(featureIndex);
 
     if (featureIds) {
