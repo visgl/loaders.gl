@@ -1,4 +1,4 @@
-import {Schema, Field, Float32, Float64, Uint8, FixedSizeList} from '@loaders.gl/schema';
+import {Schema, Field, FixedSizeList, getArrowTypeFromTypedArray} from '@loaders.gl/schema';
 
 export function makeSchemaFromAttributes(attributes, metadata = {}) {
   let metadataMap;
@@ -36,19 +36,4 @@ function getArrowFieldFromAttribute(attributeName, attribute) {
         false,
         metadataMap
       );
-}
-
-// TODO - there is probably already a util like this
-function getArrowTypeFromTypedArray(array) {
-  switch (array.constructor) {
-    case Float32Array:
-      return new Float32();
-    case Float64Array:
-      return new Float64();
-    case Uint8Array:
-      return new Uint8();
-    // TODO - add more types
-    default:
-      throw new Error('array type not supported');
-  }
 }

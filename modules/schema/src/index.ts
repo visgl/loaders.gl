@@ -46,5 +46,8 @@ export {
   FixedSizeList
 } from './lib/schema/classes/type';
 
+// TYPE UTILS
+export {getArrowTypeFromTypedArray} from './lib/utils/type-utils';
+
 // EXPERIMENTAL APIs
 export {default as AsyncQueue} from './lib/utils/async-queue';
