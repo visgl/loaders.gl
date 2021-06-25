@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "publishConfig": {
