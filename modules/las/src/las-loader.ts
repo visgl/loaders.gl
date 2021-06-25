@@ -1,15 +1,30 @@
 // LASER (LAS) FILE FORMAT
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import parseLAS from './lib/parse-las';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+export type LASLoaderOptions = LoaderOptions & {
+  las?: {
+    fp64?: boolean;
+    skip?: number;
+    colorDepth?: number;
+  };
+};
+
+const DEFAULT_LAS_OPTIONS: LASLoaderOptions = {
+  las: {
+    fp64: false,
+    skip: 1,
+    colorDepth: 8
+  }
+};
+
 /**
- * Worker loader for the LAS (LASer) point cloud format
+ * Loader for the LAS (LASer) point cloud format
  */
-export const LASWorkerLoader: Loader = {
+export const LASLoader = {
   name: 'LAS',
   id: 'las',
   module: 'las',
@@ -20,20 +35,7 @@ export const LASWorkerLoader: Loader = {
   text: true,
   binary: true,
   tests: ['LAS'],
-  options: {
-    las: {
-      fp64: false,
-      skip: 1,
-      colorDepth: 8
-    }
-  }
+  options: DEFAULT_LAS_OPTIONS
 };
 
-/**
- * Loader for the LAS (LASer) point cloud format
- */
-export const LASLoader: LoaderWithParser = {
-  ...LASWorkerLoader,
-  parse: async (arrayBuffer, options) => parseLAS(arrayBuffer, options),
-  parseSync: parseLAS
-};
+export const _typecheckLoader: Loader = LASLoader;

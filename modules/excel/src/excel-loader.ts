@@ -1,15 +1,16 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {parseExcel} from './lib/parse-excel';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type ExcelLoaderOptions = {
-  sheet?: string; // Load default Sheet
+export type ExcelLoaderOptions = LoaderOptions & {
+  excel?: {
+    sheet?: string; // Load default Sheet
+  };
 };
 
-const DEFAULT_EXCEL_LOADER_OPTIONS: {excel: ExcelLoaderOptions} = {
+const DEFAULT_EXCEL_LOADER_OPTIONS: ExcelLoaderOptions = {
   excel: {
     sheet: undefined // Load default Sheet
   }
@@ -18,7 +19,7 @@ const DEFAULT_EXCEL_LOADER_OPTIONS: {excel: ExcelLoaderOptions} = {
 /**
  * Worker Loader for Excel files
  */
-export const ExcelWorkerLoader: Loader = {
+export const ExcelLoader = {
   name: 'Excel',
   id: 'excel',
   module: 'excel',
@@ -34,10 +35,4 @@ export const ExcelWorkerLoader: Loader = {
   options: DEFAULT_EXCEL_LOADER_OPTIONS
 };
 
-/**
- * Loader for Excel files
- */
-export const ExcelLoader: LoaderWithParser = {
-  ...ExcelWorkerLoader,
-  parse: (arrayBuffer, options, context) => parseExcel(arrayBuffer, options, context)
-};
+export const _typecheckLoader: Loader = ExcelLoader;
