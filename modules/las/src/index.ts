@@ -15,7 +15,8 @@ export const LASLoader = {
   ...LASWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
     parseLAS(arrayBuffer, options),
-  parseSync: parseLAS
+  parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
+    parseLAS(arrayBuffer, options)
 };
 
-export const _typecheckLASLoader: LoaderWithParser = LASLoader;
+export const _typecheckLoader: LoaderWithParser = LASLoader;

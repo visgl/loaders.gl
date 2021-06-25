@@ -16,4 +16,4 @@ export const ExcelLoader = {
     parseExcel(arrayBuffer, options)
 };
 
-export const _typecheckLASLoader: LoaderWithParser = ExcelLoader;
+export const _typecheckLoader: LoaderWithParser = ExcelLoader;

@@ -35,4 +35,4 @@ export const ExcelLoader = {
   options: DEFAULT_EXCEL_LOADER_OPTIONS
 };
 
-export const _typecheckLASLoader: Loader = ExcelLoader;
+export const _typecheckLoader: Loader = ExcelLoader;

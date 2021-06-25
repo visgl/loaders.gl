@@ -38,4 +38,4 @@ export const LASLoader = {
   options: DEFAULT_LAS_OPTIONS
 };
 
-export const _typecheckLASLoader: Loader = LASLoader;
+export const _typecheckLoader: Loader = LASLoader;
