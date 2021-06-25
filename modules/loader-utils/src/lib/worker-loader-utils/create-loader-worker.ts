@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-
+import {createWorker} from '@loaders.gl/worker-utils'
 import {WorkerBody} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
 
@@ -10,79 +10,33 @@ let requestId = 0;
  * @param loader
  */
 export function createLoaderWorker(loader: any) {
-  // Check that we are actually in a worker thread
-  if (typeof self === 'undefined') {
-    return;
+  createWorker(parseOnWorker)
+  async function parseOnWorker(input: any, options: {[key: string]: any}, processOnMainThread): Promise<any> {
+    // validateLoaderVersion(loader, data.source.split('@')[1]);
+
+    const result = await parseData({
+      loader,
+      arrayBuffer: input,
+      options,
+      context: {
+        parse: processOnMainThread
+      }
+    });
+
+    return result;
   }
-
-  WorkerBody.onmessage = async (type, payload) => {
-    switch (type) {
-      case 'process':
-        try {
-          // validateLoaderVersion(loader, data.source.split('@')[1]);
-
-          const {input, options = {}} = payload;
-
-          const result = await parseData({
-            loader,
-            arrayBuffer: input,
-            options,
-            context: {
-              parse: parseOnMainThread
-            }
-          });
-          WorkerBody.postMessage('done', {result});
-        } catch (error) {
-          const message = error instanceof Error ? error.message : '';
-          WorkerBody.postMessage('error', {error: message});
-        }
-        break;
-      default:
-    }
-  };
-}
-
-function parseOnMainThread(arrayBuffer, options = {}) {
-  return new Promise((resolve, reject) => {
-    const id = requestId++;
-
-    /**
-     */
-    const onMessage = (type, payload) => {
-      if (payload.id !== id) {
-        // not ours
-        return;
-      }
-
-      switch (type) {
-        case 'done':
-          WorkerBody.removeEventListener(onMessage);
-          resolve(payload.result);
-          break;
-
-        case 'error':
-          WorkerBody.removeEventListener(onMessage);
-          reject(payload.error);
-          break;
-
-        default:
-        // ignore
-      }
-    };
-
-    WorkerBody.addEventListener(onMessage);
-
-    // Ask the main thread to decode data
-    const payload = {id, input: arrayBuffer, options};
-    WorkerBody.postMessage('process', payload);
-  });
 }
 
 // TODO - Support byteOffset and byteLength (enabling parsing of embedded binaries without copies)
 // TODO - Why not support async loader.parse* funcs here?
 // TODO - Why not reuse a common function instead of reimplementing loader.parse* selection logic? Keeping loader small?
 // TODO - Lack of appropriate parser functions can be detected when we create worker, no need to wait until parse
-async function parseData({loader, arrayBuffer, options, context}) {
+async function parseData({
+  loader,
+  arrayBuffer,
+  options,
+  context
+}) {
   let data;
   let parser;
   if (loader.parseSync || loader.parse) {
