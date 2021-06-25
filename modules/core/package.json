@@ -38,8 +38,9 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+    "pre-build": "npm run build-bundle && npm run build-worker",
+    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
+    "build-worker": "webpack --entry ./src/workers/null-worker.ts --output ./dist/null-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
