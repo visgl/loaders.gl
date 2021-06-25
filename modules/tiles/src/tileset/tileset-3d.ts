@@ -424,7 +424,7 @@ export default class Tileset3D {
     for (const viewport of viewports) {
       const id = viewport.id as string;
       if (!this.roots[id]) {
-        this.roots[id] = this._initializeTileHeaders(this.tileset, null, this.basePath);
+        this.roots[id] = this._initializeTileHeaders(this.tileset, null);
       }
 
       if (!viewportsToTraverse.includes(id)) {
@@ -544,7 +544,7 @@ export default class Tileset3D {
   }
 
   _initializeTileSet(tilesetJson) {
-    this.root = this._initializeTileHeaders(tilesetJson, null, this.basePath);
+    this.root = this._initializeTileHeaders(tilesetJson, null);
 
     // TODO CESIUM Specific
     if (this.type === TILESET_TYPE.TILES3D) {
@@ -591,10 +591,10 @@ export default class Tileset3D {
 
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
   // eslint-disable-next-line max-statements
-  _initializeTileHeaders(tilesetJson, parentTileHeader, basePath) {
+  _initializeTileHeaders(tilesetJson, parentTileHeader) {
     // A tileset JSON file referenced from a tile may exist in a different directory than the root tileset.
     // Get the basePath relative to the external tileset.
-    const rootTile = new Tile3D(this, tilesetJson.root, parentTileHeader, basePath); // resource
+    const rootTile = new Tile3D(this, tilesetJson.root, parentTileHeader); // resource
 
     // If there is a parentTileHeader, add the root of the currently loading tileset
     // to parentTileHeader's children, and update its depth.
@@ -613,7 +613,7 @@ export default class Tileset3D {
         this.stats.get(TILES_TOTAL).incrementCount();
         const children = tile.header.children || [];
         for (const childHeader of children) {
-          const childTile = new Tile3D(this, childHeader, basePath, tile);
+          const childTile = new Tile3D(this, childHeader, tile);
           tile.children.push(childTile);
           childTile.depth = tile.depth + 1;
           stack.push(childTile);
