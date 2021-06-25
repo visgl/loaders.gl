@@ -87,5 +87,5 @@ async function parseWithLoader(loader, data, options, context) {
   assert(!loader.parseSync);
 
   // TBD - If asynchronous parser not available, return null
-  return assert(false);
+  throw new Error(`${loader.id} loader - no parser found and worker is disabled`);
 }
