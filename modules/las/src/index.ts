@@ -1,17 +1,11 @@
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LASLoaderOptions} from './las-loader';
 import {LASLoader as LASWorkerLoader} from './las-loader';
 import parseLAS from './lib/parse-las';
 
 // LASLoader
 
-export type LASLoaderOptions = LoaderOptions & {
-  las?: {
-    fp64?: boolean;
-    skip?: number;
-    colorDepth?: number;
-  };
-};
-
+export type {LASLoaderOptions};
 export {LASWorkerLoader};
 
 /**
@@ -24,5 +18,4 @@ export const LASLoader = {
   parseSync: parseLAS
 };
 
-export const _typecheckLASWorkerLoader: Loader = LASWorkerLoader;
 export const _typecheckLASLoader: LoaderWithParser = LASLoader;

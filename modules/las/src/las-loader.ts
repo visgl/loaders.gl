@@ -1,10 +1,19 @@
 // LASER (LAS) FILE FORMAT
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const DEFAULT_LAS_OPTIONS = {
+export type LASLoaderOptions = LoaderOptions & {
+  las?: {
+    fp64?: boolean;
+    skip?: number;
+    colorDepth?: number;
+  };
+};
+
+const DEFAULT_LAS_OPTIONS: LASLoaderOptions = {
   las: {
     fp64: false,
     skip: 1,
@@ -28,3 +37,5 @@ export const LASLoader = {
   tests: ['LAS'],
   options: DEFAULT_LAS_OPTIONS
 };
+
+export const _typecheckLASLoader: Loader = LASLoader;

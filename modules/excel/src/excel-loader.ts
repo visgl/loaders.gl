@@ -1,12 +1,16 @@
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type ExcelLoaderOptions = {
-  sheet?: string; // Load default Sheet
+export type ExcelLoaderOptions = LoaderOptions & {
+  excel?: {
+    sheet?: string; // Load default Sheet
+  };
 };
 
-const DEFAULT_EXCEL_LOADER_OPTIONS: {excel: ExcelLoaderOptions} = {
+const DEFAULT_EXCEL_LOADER_OPTIONS: ExcelLoaderOptions = {
   excel: {
     sheet: undefined // Load default Sheet
   }
@@ -30,3 +34,5 @@ export const ExcelLoader = {
   binary: true,
   options: DEFAULT_EXCEL_LOADER_OPTIONS
 };
+
+export const _typecheckLASLoader: Loader = ExcelLoader;

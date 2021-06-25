@@ -1,11 +1,10 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {ExcelLoader as ExcelWorkerLoader} from './excel-loader';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {ExcelLoader as ExcelWorkerLoader, ExcelLoaderOptions} from './excel-loader';
 import {parseExcel} from './lib/parse-excel';
 
 // Excel Loader
 
-export type {ExcelLoaderOptions} from './excel-loader';
-
+export type {ExcelLoaderOptions};
 export {ExcelWorkerLoader};
 
 /**
@@ -13,5 +12,8 @@ export {ExcelWorkerLoader};
  */
 export const ExcelLoader = {
   ...ExcelWorkerLoader,
-  parse: (arrayBuffer, options, context) => parseExcel(arrayBuffer, options, context)
+  parse: (arrayBuffer: ArrayBuffer, options?: ExcelLoaderOptions) =>
+    parseExcel(arrayBuffer, options)
 };
+
+export const _typecheckLASLoader: LoaderWithParser = ExcelLoader;
