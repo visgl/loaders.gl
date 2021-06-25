@@ -2,13 +2,15 @@ import type {WorkerObject} from './types';
 import {VERSION} from './lib/env-utils/version';
 
 // TYPES
-export type {WorkerObject} from './types';
 export type {
+  WorkerObject,
+  WorkerOptions,
+  // Protocol
   WorkerMessage,
   WorkerMessageType,
   WorkerMessageData,
   WorkerMessagePayload
-} from './lib/worker-protocol/protocol';
+} from './types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';

@@ -9,8 +9,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
  * Gets worker object's name (for debugging in Chrome thread inspector window)
  */
 export function getWorkerName(worker: WorkerObject): string {
-  const warning = worker.version !== VERSION ? ` (lib@${VERSION})` : '';
-  return `${worker.name}-worker@${worker.version}${warning}`;
+  const warning = worker.version !== VERSION ? ` (worker-utils@${VERSION})` : '';
+  return `${worker.name}@${worker.version}${warning}`;
 }
 
 /**

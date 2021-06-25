@@ -1,4 +1,4 @@
-import type {WorkerMessageType, WorkerMessagePayload} from '../worker-protocol/protocol';
+import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
 import AsyncQueue from '../async-queue/async-queue';
 import WorkerBody from '../worker-farm/worker-body';
 
@@ -16,6 +16,7 @@ export function createWorker(process: ProcessFunction, processInBatches?: Functi
     return;
   }
 
+  // eslint-disable-next-line complexity
   WorkerBody.onmessage = async (type: WorkerMessageType, payload: WorkerMessagePayload) => {
     try {
       switch (type) {
@@ -51,7 +52,8 @@ export function createWorker(process: ProcessFunction, processInBatches?: Functi
         default:
       }
     } catch (error) {
-      WorkerBody.postMessage('error', {error: error.message});
+      const message = error instanceof Error ? error.message : '';
+      WorkerBody.postMessage('error', {error: message});
     }
   };
 }

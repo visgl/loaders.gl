@@ -5,25 +5,14 @@ import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
 /**
  * Determines if a loader can parse with worker
  * @param loader
- * @param data
  * @param options
- * @param context
  */
-export function canParseWithWorker(
-  loader: Loader,
-  data,
-  options?: LoaderOptions,
-  context?: LoaderContext
-) {
+export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
   if (!WorkerFarm.isSupported()) {
     return false;
   }
 
-  if (loader.worker && options?.worker) {
-    // @ts-ignore
-    return loader.useWorker ? loader.useWorker(options) : true;
-  }
-  return false;
+  return loader.worker && options?.worker;
 }
 
 /**
@@ -90,7 +79,8 @@ async function onMessage(
         const result = await parseOnMainThread(input, options);
         job.postMessage('done', {id, result});
       } catch (error) {
-        job.postMessage('error', {id, error: error.message});
+        const message = error instanceof Error ? error.message : 'unknown error';
+        job.postMessage('error', {id, error: message});
       }
       break;
 

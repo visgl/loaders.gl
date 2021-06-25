@@ -1,4 +1,4 @@
-import type {WorkerMessageType, WorkerMessagePayload} from '../worker-protocol/protocol';
+import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
 import {isMobile} from '../env-utils/globals';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
