@@ -27,7 +27,6 @@ function defined(x) {
  * @param tileset - Tileset3D instance
  * @param header - tile header - JSON loaded from a dataset
  * @param parentHeader - parent TileHeader instance
- * @param basePath - base path / url of the tile
  * @param extendedId - optional ID to separate copies of a tile for different viewports.
  *                              const extendedId = `${tile.id}-${frameState.viewport.id}`;
  */
@@ -35,7 +34,6 @@ export type TileHeaderProps = {
   tileset: Tileset3D;
   header: Object;
   parentHeader: TileHeader;
-  basePath: string;
   extendedId: string;
 };
 
@@ -110,7 +108,6 @@ export default class TileHeader {
    * @param tileset - Tileset3D instance
    * @param header - tile header - JSON loaded from a dataset
    * @param parentHeader - parent TileHeader instance
-   * @param basePath - base path / url of the tile
    * @param extendedId - optional ID to separate copies of a tile for different viewports.
    *    const extendedId = `${tile.id}-${frameState.viewport.id}`;
    */
@@ -118,7 +115,6 @@ export default class TileHeader {
   constructor(
     tileset: Tileset3D,
     header: {[key: string]: any},
-    basePath: string,
     parentHeader?: TileHeader,
     extendedId = ''
   ) {
@@ -383,7 +379,7 @@ export default class TileHeader {
         // Add tile headers for the nested tilset's subtree
         // Async update of the tree should be fine since there would never be edits to the same node
         // TODO - we need to capture the child tileset's URL
-        this.tileset._initializeTileHeaders(this.content, this, path.dirname(this.contentUrl));
+        this.tileset._initializeTileHeaders(this.content, this);
       }
 
       this.contentState = TILE_CONTENT_STATE.READY;

@@ -79,9 +79,8 @@ export default class I3STilesetTraverser extends TilesetTraverser {
    * @return {void}
    */
   _onTileLoad(header, tile, extendedId) {
-    const basePath = this.options.basePath;
     // after child tile is fetched
-    const childTile = new TileHeader(tile.tileset, header, basePath, tile, extendedId);
+    const childTile = new TileHeader(tile.tileset, header, tile, extendedId);
     tile.children.push(childTile);
     const frameState = this._tileManager.find(childTile.id).frameState;
     this.updateTile(childTile, frameState);
