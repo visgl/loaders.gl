@@ -86,7 +86,12 @@ const LOCAL_DEVELOPMENT_CONFIG = {
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
-          presets: ['@babel/preset-typescript', '@babel/preset-env', '@babel/preset-react']
+          presets: ['@babel/preset-typescript', [
+            '@babel/preset-env',
+            {
+              exclude: [/transform-async-to-generator/, /transform-regenerator/]
+            }
+          ], '@babel/preset-react']
         }
       },
       {
@@ -94,7 +99,13 @@ const LOCAL_DEVELOPMENT_CONFIG = {
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
-          presets: ['@babel/preset-env', '@babel/preset-react']
+          presets: [
+            [
+              '@babel/preset-env',
+              {
+                exclude: [/transform-async-to-generator/, /transform-regenerator/] 
+              }
+            ], '@babel/preset-react']
         }
       },
       {
@@ -154,17 +165,6 @@ function addLocalDependency(config, dependency) {
   });
 
   return config;
-}
-
-function getConfigBabelPresets(configRules) {
-  const babelRule = configRules.find((rule) => rule.loader === 'babel-loader');
-  const configPresets = babelRule && babelRule.options && babelRule.options.presets;
-
-  if (configPresets) {
-    return babelRule.options.presets;
-  }
-
-  return [];
 }
 
 function addLocalDevSettings(config, opts) {
