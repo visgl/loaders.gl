@@ -5,11 +5,6 @@ module.exports = (api) => {
 
   const config = deepMerge(defaultConfig, {
     plugins: [
-      // webpack 4 cannot parse the most recent JS syntax
-      '@babel/plugin-proposal-optional-chaining',
-      '@babel/plugin-proposal-nullish-coalescing-operator',
-      // typescript supports class properties
-      '@babel/plugin-proposal-class-properties',
       // inject __VERSION__ from package.json
       'version-inline'
     ],

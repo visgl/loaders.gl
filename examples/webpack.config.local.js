@@ -82,12 +82,19 @@ const LOCAL_DEVELOPMENT_CONFIG = {
   module: {
     rules: [
       {
-        // Transpile ES6 to ES5 with babel
-        test: /\.js|ts$/,
+        test: /\.ts$/,
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
-          presets: ['@babel/preset-typescript']
+          presets: ['@babel/preset-typescript', '@babel/preset-env', '@babel/preset-react']
+        }
+      },
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: [/node_modules/],
+        options: {
+          presets: ['@babel/preset-env', '@babel/preset-react']
         }
       },
       {
@@ -160,36 +167,7 @@ function getConfigBabelPresets(configRules) {
   return [];
 }
 
-function mergeConfigRules(config) {
-  // Use local module rules as base module rules
-  let rules = LOCAL_DEVELOPMENT_CONFIG.module.rules;
-  // Get config module rules
-  const configRules = config.module && config.module.rules || [];
-  // Find config babel presets in babel-module.
-  let configBabelPresets = getConfigBabelPresets(configRules);
-  // Get babel-rule in local config
-  const localConfigBabelRule = rules.find((rule) => rule.loader === 'babel-loader');
-  // Add local config babel-loader presets to module config babel loader presets if not exists.
-  for (let index = 0; index < localConfigBabelRule.options.presets.length; index++) {
-    const localPreset = localConfigBabelRule.options.presets[index];
-
-    if (!configBabelPresets.includes(localPreset)) {
-      configBabelPresets.push(localPreset);
-    }
-  }
-  // Rewrite babel loader presets
-  localConfigBabelRule.options.presets = configBabelPresets;
-  // Filter config module rules to exclude babel-loader.
-  const configRulesWithoutBabelRule = configRules.filter(rule => rule.loader !== 'babel-loader');
-  // Concatenate module config rules to existing local rules.
-  rules = rules.concat(configRulesWithoutBabelRule);
-
-  return rules;
-}
-
 function addLocalDevSettings(config, opts) {
-  // Save module config to the separate variable.
-  let moduleConfig = config;
   // Merge local config with module config
   config = Object.assign({}, LOCAL_DEVELOPMENT_CONFIG, config);
   // Generate initial resolve object.
@@ -202,10 +180,12 @@ function addLocalDevSettings(config, opts) {
   config.resolve.extensions = LOCAL_DEVELOPMENT_CONFIG.resolve.extensions;
   // Generate initial config mudule
   config.module = config.module || {};
-  // Generate config mudule rules as local rules.
-  config.module.rules = mergeConfigRules(moduleConfig);
+  // Get module config rules
+  const configRules = config.module.rules || [];
+  // Merge local rules with module config rules
+  config.module.rules = LOCAL_DEVELOPMENT_CONFIG.module.rules.concat(configRules);
   // Use initial config plugins
-  config.plugins = moduleConfig.plugins || [];
+  config.plugins = config.plugins || [];
   // Do concatenation of local and module config plugins
   config.plugins = config.plugins.concat(LOCAL_DEVELOPMENT_CONFIG.plugins);
   // Uncomment to validate generated config

@@ -6,6 +6,7 @@
  */
 
 import * as utils from './utils';
+import type {TarStructure, TarData} from './types';
 /*
 struct posix_header {             // byte offset
 	char name[100];               //   0
@@ -28,8 +29,7 @@ struct posix_header {             // byte offset
 };
 */
 
-/** @type {{[field: string]: number}} */
-const structure = {
+const structure: TarStructure = {
   fileName: 100,
   fileMode: 8,
   uid: 8,
@@ -47,20 +47,20 @@ const structure = {
   filenamePrefix: 155,
   padding: 12
 };
-
 /**
- * @param {{ [x: string]: string }} data
- * @param {(buffer: Uint8Array, offset: number) => any} [cb]
- * @returns {Uint8Array}
+ * Getting the header
+ * @param data
+ * @param [cb]
+ * @returns {Uint8Array} | Array
  */
-export function format(data, cb) {
+export function format(data: TarData, cb?: any): [string, number][] | Uint8Array {
   const buffer = utils.clean(512);
   let offset = 0;
 
   Object.entries(structure).forEach(([field, length]) => {
     const str = data[field] || '';
-    let i;
-    let fieldLength;
+    let i: number;
+    let fieldLength: number;
 
     for (i = 0, fieldLength = str.length; i < fieldLength; i += 1) {
       buffer[offset] = str.charCodeAt(i);

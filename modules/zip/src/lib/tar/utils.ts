@@ -4,37 +4,40 @@
  * tar-js
  * MIT (c) 2011 T. Jameson Little
  */
-
 /**
- * @param {number} length
+ * Returns the memory area specified by length
+ * @param length
+ * @returns {Uint8Array}
  */
-export function clean(length) {
-  let i;
+export function clean(length: number): Uint8Array {
+  let i: number;
   const buffer = new Uint8Array(length);
   for (i = 0; i < length; i += 1) {
     buffer[i] = 0;
   }
   return buffer;
 }
-
 /**
- * @param {number} num
- * @param {number} bytes
- * @param {number} [base]
+ * Converting data to a string
+ * @param num
+ * @param bytes
+ * @param base
+ * @returns string
  */
-export function pad(num, bytes, base) {
+export function pad(num: number, bytes: number, base?: number): string {
   const numStr = num.toString(base || 8);
   return '000000000000'.substr(numStr.length + 12 - bytes) + numStr;
 }
-
 /**
- * @param {string} input
- * @param {Uint8Array} [out]
- * @param {number} [offset]
+ * Converting input to binary data
+ * @param input
+ * @param out
+ * @param offset
+ * @returns {Uint8Array}
  */
-export function stringToUint8(input, out, offset) {
-  let i;
-  let length;
+export function stringToUint8(input: string, out?: Uint8Array, offset?: number): Uint8Array {
+  let i: number;
+  let length: number;
 
   out = out || clean(input.length);
 

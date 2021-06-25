@@ -16,12 +16,11 @@ export const NullLoader: LoaderWithParser = {
   extensions: ['null'],
   parse: async (arrayBuffer) => arrayBuffer,
   parseSync: (arrayBuffer) => arrayBuffer,
-  // @ts-ignore
-  parseInBatches: async (asyncIterator) =>
-    (async function* parseInBatches() {
-      // @ts-ignore
-      yield* asyncIterator;
-    })(),
+  parseInBatches: async function* generator(asyncIterator) {
+    for await (const batch of asyncIterator) {
+      yield batch;
+    }
+  },
   tests: [() => false],
   options: {
     null: {}

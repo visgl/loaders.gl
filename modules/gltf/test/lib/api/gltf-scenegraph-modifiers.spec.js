@@ -61,6 +61,10 @@ test('GLTFScenegraph#Should calculate min and max arrays for accessor', async (t
   const inputData = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: true}});
   const gltfBuilder = new GLTFScenegraph();
 
+  // addMesh does not yet support adding additional accessor attributes, and does not auto calculate them
+  delete inputData.meshes[0].primitives[0].attributes.POSITION.min;
+  delete inputData.meshes[0].primitives[0].attributes.POSITION.max;
+
   gltfBuilder.addMesh({
     attributes: {
       POSITION: inputData.meshes[0].primitives[0].attributes.POSITION

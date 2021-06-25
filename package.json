@@ -41,27 +41,23 @@
     "pre-push": "ocular-test fast"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.14.2",
-    "@babel/plugin-proposal-optional-chaining": "^7.14.2",
-    "@babel/register": "^7.13.16",
+    "@babel/plugin-transform-runtime": "^7.14.5",
     "@luma.gl/core": "^8.3.0",
     "@luma.gl/debug": "^8.3.0",
     "@luma.gl/test-utils": "^8.3.0",
     "@probe.gl/bench": "^3.3.0",
     "@probe.gl/test-utils": "^3.3.1",
-    "core-js": "^3.2.1",
     "coveralls": "^3.0.3",
-    "ocular-dev-tools": "1.0.0-alpha.5",
+    "ocular-dev-tools": "1.0.0-alpha.6",
     "pre-commit": "^1.2.2",
-    "pre-push": "^0.1.1",
-    "source-map-support": "^0.5.12",
-    "typescript": "^4.2.2"
+    "pre-push": "^0.1.1"
   },
   "pre-commit": "pre-commit",
   "pre-push": "pre-push",
   "dependencies": {},
   "resolutions_notes": [
-    "Note: tape 4.12 and higher no longer compares 0 and -0 equally..."
+    "Note: tape 4.12 and higher no longer compares 0 and -0 equally...",
+    "Note: newer prettier breaks on typescript import type"
   ],
   "resolutions": {
     "tape": "4.11.0",
