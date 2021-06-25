@@ -36,7 +36,7 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
   // If url override is not provided, generate a URL to published version on npm CDN unpkg.com
   if (!url) {
     // GENERATE
-    const version = worker.version;
+    let version = worker.version;
     // On master we need to load npm alpha releases published with the `beta` tag
     if (version === 'latest') {
       // throw new Error('latest worker version specified');
