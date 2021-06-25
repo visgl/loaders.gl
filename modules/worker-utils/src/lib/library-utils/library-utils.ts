@@ -1,13 +1,7 @@
 import {global, isBrowser, isWorker} from '../env-utils/globals';
 import * as node from '../node/require-utils.node';
 import {assert} from '../env-utils/assert';
-
-// TODO - unpkg.com doesn't seem to have a `latest` specifier for alpha releases...
-const LATEST = 'beta';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
+import {VERSION} from '../env-utils/version';
 
 const loadLibraryPromises = {}; // promises
 

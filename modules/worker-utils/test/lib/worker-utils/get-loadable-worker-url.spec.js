@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/worker-utils';
-import {buildWorkerURL} from '@loaders.gl/worker-utils/lib/worker-farm/build-worker-url';
+import {getLoadableWorkerURL} from '@loaders.gl/worker-utils/lib/worker-utils/get-loadable-worker-url';
 
 const WORKER_SOURCE = `
   self.onmessage = function(event) {
@@ -17,27 +17,27 @@ const LOCAL_WORKER_URL = 'modules/worker-utils/dist/null-worker.js';
 
 const REMOTE_WORKER_URL = 'https://unpkg.com/loaders.gl/worker-utils/dist/null-worker.js';
 
-test('buildWorkerURL', (t) => {
+test('getLoadableWorkerURL', (t) => {
   if (!isBrowser) {
     t.end();
   }
 
   let workerURL;
-  workerURL = buildWorkerURL({source: WORKER_SOURCE});
+  workerURL = getLoadableWorkerURL({source: WORKER_SOURCE});
   t.ok(workerURL.startsWith('blob:'), 'Worker source generates Object URL');
 
-  workerURL = buildWorkerURL({url: LOCAL_WORKER_URL});
+  workerURL = getLoadableWorkerURL({url: LOCAL_WORKER_URL});
   t.equal(workerURL, LOCAL_WORKER_URL, 'Local worker URL is returned unchanged');
 
-  workerURL = buildWorkerURL({url: REMOTE_WORKER_URL});
+  workerURL = getLoadableWorkerURL({url: REMOTE_WORKER_URL});
   t.ok(workerURL.startsWith('blob:'), 'Remote worker URL generates Object URL');
 
   t.throws(
-    () => buildWorkerURL({source: WORKER_SOURCE, url: REMOTE_WORKER_URL}),
+    () => getLoadableWorkerURL({source: WORKER_SOURCE, url: REMOTE_WORKER_URL}),
     'Throws when supplying both source and url'
   );
   t.throws(
-    () => buildWorkerURL({source: WORKER_SOURCE, url: LOCAL_WORKER_URL}),
+    () => getLoadableWorkerURL({source: WORKER_SOURCE, url: LOCAL_WORKER_URL}),
     'Throws when supplying both source and url'
   );
 
