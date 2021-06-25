@@ -1,6 +1,9 @@
 import type {WorkerObject, WorkerOptions} from '../../types';
 import {assert} from '../env-utils/assert';
-import {VERSION} from '../env-utils/version';
+import {VERSION as __VERSION__} from '../env-utils/version';
+
+const NPM_TAG = 'beta'; // Change to 'latest' on release-branch
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
 
 /**
  * Gets worker object's name (for debugging in Chrome thread inspector window)
@@ -12,9 +15,10 @@ export function getWorkerName(worker: WorkerObject): string {
 
 /**
  * Generate a worker URL based on worker object and options
+ * @returns A URL to one of the following:
  * - a published worker on unpkg CDN
  * - a local test worker
- * - overridden by user
+ * - a URL provided by the user in options
  */
 export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
   const workerOptions = options[worker.id] || {};
@@ -35,8 +39,8 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
     const version = worker.version;
     // On master we need to load npm alpha releases published with the `beta` tag
     if (version === 'latest') {
-      throw new Error('latest worker version specified');
-      // version = NPM_TAG;
+      // throw new Error('latest worker version specified');
+      version = NPM_TAG;
     }
     const versionTag = version ? `@${version}` : '';
     url = `https://unpkg.com/@loaders.gl/${worker.module}${versionTag}/dist/${workerFile}`;
