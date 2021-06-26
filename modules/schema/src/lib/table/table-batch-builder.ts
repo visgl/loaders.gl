@@ -12,6 +12,7 @@ const DEFAULT_OPTIONS = {
   batchSize: DEFAULT_BATCH_SIZE
 };
 
+/** Incrementally builds batches from a stream of rows */
 export default class TableBatchBuilder {
   TableBatchType: TableBatchConstructor;
   schema: Schema;
