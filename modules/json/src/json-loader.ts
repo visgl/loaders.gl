@@ -1,5 +1,5 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {RowTableBatch} from '@loaders.gl/schema';
+import type {Batch} from '@loaders.gl/schema';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
 
@@ -8,28 +8,24 @@ import parseJSONInBatches from './lib/parse-json-in-batches';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /**
- * @param TableBatch - table batch type
- * @param batchSize - size of batches
  * @param table -
  * @param jsonpaths -
- * @param _rootObjectBatches
  */
-export type JSONLoaderOptions = {
-  TableBatch: any;
-  batchSize?: number | 'auto';
-  table?: false;
-  jsonpaths?: [];
-  /** @deprecated - use options.metadata */
-  _rootObjectBatches?: false;
+export type JSONLoaderOptions = LoaderOptions & {
+  json?: {
+    type?: 'row-table';
+    table?: false;
+    jsonpaths?: [];
+    // batchSize?: number | 'auto';
+  };
 };
 
-const DEFAULT_JSON_LOADER_OPTIONS: {json: JSONLoaderOptions} = {
+const DEFAULT_JSON_LOADER_OPTIONS = {
   json: {
-    TableBatch: RowTableBatch,
-    batchSize: 'auto',
-    _rootObjectBatches: false,
+    type: 'row-table',
     table: false,
     jsonpaths: []
+    // batchSize: 'auto'
   }
 };
 
@@ -58,55 +54,22 @@ export const JSONLoader: LoaderWithParser = {
   parse,
   parseTextSync,
   parseInBatches,
-  options: DEFAULT_JSON_LOADER_OPTIONS,
-  deprecatedOptions: {
-    json: {
-      _rootObjectBatches: 'metadata'
-    }
-  }
+  options: DEFAULT_JSON_LOADER_OPTIONS
 };
 
-async function parse(arrayBuffer, options) {
+async function parse(arrayBuffer: ArrayBuffer, options?: JSONLoaderOptions) {
   return parseTextSync(new TextDecoder().decode(arrayBuffer), options);
 }
 
-function parseTextSync(text, options) {
-  // Apps can call the parse method directly, we so apply default options here
-  options = {...options};
-  options.json = {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options.json};
-  return parseJSONSync(text, options);
+function parseTextSync(text: string, options?: JSONLoaderOptions) {
+  const jsonOptions = {...options, json: {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options?.json}};
+  return parseJSONSync(text, jsonOptions as JSONLoaderOptions);
 }
 
-function parseInBatches(asyncIterator, options): AsyncIterable<any> {
-  // Apps can call the parse method directly, we so apply default options here
-  options = {...options};
-  options.json = {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options.json};
-  return parseJSONInBatches(asyncIterator, options);
+function parseInBatches(
+  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options?: JSONLoaderOptions
+): AsyncIterable<Batch> {
+  const jsonOptions = {...options, json: {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options?.json}};
+  return parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions);
 }
-
-/* TODO JSONL loader
-{
-  name: 'TEST-JSONL_LOADER',
-  extensions: ['jsonl'],
-  parse: async (arrayBuffer, options, context) => {
-    const characters = new Uint8Array(arrayBuffer);
-    const result = [];
-
-    const len = characters.length;
-    let startIndex = 0;
-    for (let i = 0; i <= len; i++) {
-      if (characters[i] === 10 || i === len) {
-        // Note: we need to make a copy of the buffer here because we cannot
-        // handover the ownership of arrayBuffer to the child process
-        const json = characters.slice(startIndex, i);
-        if (json.length > 1) {
-          result.push(await context.parse(json.buffer, {}, 'line.json'));
-        }
-        startIndex = i + 1;
-      }
-    }
-
-    return result;
-  }
-};
-*/

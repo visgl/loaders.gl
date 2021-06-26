@@ -1,4 +1,6 @@
-import * as xlsx from 'xlsx';
+import type {ExcelLoaderOptions} from '../excel-loader';
+import {utils, read} from 'xlsx';
+import {convertToArrayRow} from '@loaders.gl/schema';
 
 // local table names cache with dataUrl/tableNames array key/values
 const dataTableNamesMap = {};
@@ -8,14 +10,12 @@ const dataTableNamesMap = {};
  * @param arrayBuffer Loaded data
  * @param options Data parse options.
  */
-export async function parseExcel(arrayBuffer, options) {
-  const excelOptions = options.excel || {};
-
+export async function parseExcel(arrayBuffer: ArrayBuffer, options?: ExcelLoaderOptions) {
   const dataUrl = 'dummy';
   // const dataFileType: string = dataUrl.substr(dataUrl.lastIndexOf('.')); // file extension
 
   // create Excel 'workbook'
-  const workbook = xlsx.read(arrayBuffer, {
+  const workbook = read(arrayBuffer, {
     type: 'array'
     // cellDates: true
   });
@@ -33,14 +33,19 @@ export async function parseExcel(arrayBuffer, options) {
 
     // determine spreadsheet to load
     let sheetName = workbook.SheetNames[0];
-    if (excelOptions.sheet && workbook.SheetNames.indexOf(excelOptions.sheet) >= 0) {
+    if (options?.excel?.sheet && workbook.SheetNames.indexOf(options?.excel?.sheet) >= 0) {
       // reset to requested table name
-      sheetName = excelOptions.sheet;
+      sheetName = options?.excel?.sheet;
     }
 
     // get worksheet data row objects array
     const worksheet = workbook.Sheets[sheetName];
-    dataRows = xlsx.utils.sheet_to_json(worksheet);
+    dataRows = utils.sheet_to_json(worksheet);
+
+    // const headers = dataRows.length ? Object.keys(dataRows[0]) : [];
+    // if (options?.excel?.type === 'array-row-table') {
+    //   dataRows = dataRows.map(row => convertToArrayRow(row, headers))
+    // }
   }
 
   return dataRows;

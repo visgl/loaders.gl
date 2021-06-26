@@ -27,12 +27,10 @@ export type LoaderOptions = {
   throws?: boolean;
 
   // batched parsing
+  batchType?: 'row' | 'columnar' | 'arrow';
+  batchSize?: number | 'auto';
   metadata?: boolean;
   transforms?: any[];
-  // core?: {
-  //   batchType?: 'row' | 'columnar' | 'arrow';
-  //   batchSize?: number | 'auto';
-  // };
 
   // workers
   CDN?: string;

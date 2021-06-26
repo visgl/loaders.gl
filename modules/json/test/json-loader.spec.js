@@ -1,6 +1,5 @@
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-// import {ColumnarTableBatch} from '@loaders.gl/schema';
 import {JSONLoader} from '@loaders.gl/json';
 
 const GEOJSON_PATH = `@loaders.gl/json/test/data/geojson-big.json`;
@@ -36,7 +35,7 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async (t)
 
 test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async (t) => {
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
-    json: {batchSize: 10}
+    batchSize: 10
   });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
@@ -67,7 +66,9 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async (t) =
 });
 
 test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
-  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {json: {jsonpaths: ['$.features']}});
+  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    json: {jsonpaths: ['$.features']}
+  });
 
   let batchCount = 0;
   let rowCount = 0;
@@ -125,12 +126,10 @@ async function testContainerBatches(t, iterator, expectedCount) {
   for await (const batch of iterator) {
     switch (batch.batchType) {
       case 'partial-result':
-      case 'root-object-batch-partial':
         t.ok(batch.container.type, 'batch.container should be set on partial-result');
         opencontainerBatchCount++;
         break;
       case 'final-result':
-      case 'root-object-batch-complete':
         t.ok(batch.container.type, 'batch.container should be set on final-result');
         closecontainerBatchCount++;
         break;
@@ -159,20 +158,6 @@ test('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async (t) => {
   t.end();
 });
 
-test('JSONLoader#loadInBatches(geojson.json, {json: {_rootObjectBatches: true}}) DEPRECATED', async (t) => {
-  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
-    json: {table: true, _rootObjectBatches: true}
-  });
-  await testContainerBatches(t, iterator, 1);
-
-  iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
-    json: {table: true, _rootObjectBatches: false}
-  });
-  await testContainerBatches(t, iterator, 0);
-
-  t.end();
-});
-
 test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
   const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, JSONLoader, {
     json: {
@@ -184,7 +169,7 @@ test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
   let rowCount = 0;
   for await (const batch of iterator) {
     rowCount += batch.data.length;
-    t.equal(batch.data[0].length, 10);
+    t.equal(Object.values(batch.data[0]).length, 10);
   }
   t.equal(rowCount, 247);
 

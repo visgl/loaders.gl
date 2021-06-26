@@ -25,6 +25,6 @@ export const WKTWorkerLoader: Loader = {
  */
 export const WKTLoader: LoaderWithParser = {
   ...WKTWorkerLoader,
-  parse: async (arrayBuffer, options?) => parseWKT(new TextDecoder().decode(arrayBuffer)),
+  parse: async (arrayBuffer) => parseWKT(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseWKT
 };

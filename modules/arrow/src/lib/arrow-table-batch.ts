@@ -1,7 +1,8 @@
+import type {ArrowTableBatch} from '@loaders.gl/schema';
 import {Schema, Field, RecordBatch, Float32Vector, Float32} from 'apache-arrow';
-import {ColumnarTableBatch} from '@loaders.gl/schema';
+import {ColumnarTableBatchAggregator, TableBatchBuilder} from '@loaders.gl/schema';
 
-export default class ArrowTableBatch extends ColumnarTableBatch {
+export default class ArrowTableBatchAggregator extends ColumnarTableBatchAggregator {
   arrowSchema: Schema | null;
 
   constructor(schema, options) {
@@ -9,7 +10,7 @@ export default class ArrowTableBatch extends ColumnarTableBatch {
     this.arrowSchema = null;
   }
 
-  getBatch() {
+  getBatch(): ArrowTableBatch | null {
     const batch = super.getBatch();
     if (batch) {
       // Get the arrow schema
@@ -18,7 +19,13 @@ export default class ArrowTableBatch extends ColumnarTableBatch {
       const arrowVectors = getArrowVectors(this.arrowSchema, batch.data);
       // Create the record batch
       // new RecordBatch(schema, numRows, vectors, ...);
-      return new RecordBatch(this.arrowSchema, batch.length, arrowVectors);
+      const recordBatch = new RecordBatch(this.arrowSchema, batch.length, arrowVectors);
+      return {
+        type: 'arrow-table',
+        batchType: 'data',
+        data: recordBatch,
+        length: batch.length
+      };
     }
 
     return null;

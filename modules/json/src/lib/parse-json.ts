@@ -1,7 +1,9 @@
-export default function parseJSONSync(jsonText, options) {
+import type {JSONLoaderOptions} from '../json-loader';
+
+export default function parseJSONSync(jsonText: string, options: JSONLoaderOptions) {
   try {
     const json = JSON.parse(jsonText);
-    if (options.json.table) {
+    if (options.json?.table) {
       return getFirstArray(json) || json;
     }
     return json;

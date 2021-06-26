@@ -12,7 +12,7 @@ class ArrayQueue<T> extends Array<T> {
   }
 }
 
-export default class AsyncQueue<T = any> {
+export default class AsyncQueue<T> {
   private _values: ArrayQueue<T>;
   private _settlers: ArrayQueue<{resolve; reject}>;
   private _closed: boolean;

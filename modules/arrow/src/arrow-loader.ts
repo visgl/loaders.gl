@@ -1,4 +1,4 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import parseSync from './lib/parse-arrow-sync';
 import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 
@@ -6,13 +6,15 @@ import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type ArrowLoaderOptions = {
-  rowFormat: 'auto' | 'array' | 'object';
+export type ArrowLoaderOptions = LoaderOptions & {
+  arrow?: {
+    type: 'arrow-table' | 'columnar-table' | 'row-table' | 'array-row-table' | 'object-row-table';
+  };
 };
 
-const DEFAULT_ARROW_LOADER_OPTIONS: {arrow: ArrowLoaderOptions} = {
+const DEFAULT_ARROW_LOADER_OPTIONS = {
   arrow: {
-    rowFormat: 'auto'
+    type: 'columnar-table'
   }
 };
 

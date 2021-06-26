@@ -1,22 +1,30 @@
+import type {Batch} from '@loaders.gl/schema';
+import type {JSONLoaderOptions} from '../json-loader';
 import {TableBatchBuilder} from '@loaders.gl/schema';
 import {makeTextDecoderIterator} from '@loaders.gl/loader-utils';
 import StreamingJSONParser from './parser/streaming-json-parser';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity
-export default async function* parseJSONInBatches(asyncIterator, options) {
-  asyncIterator = makeTextDecoderIterator(asyncIterator);
+export default async function* parseJSONInBatches(
+  binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options: JSONLoaderOptions
+): AsyncIterable<Batch> {
+  const asyncIterator = makeTextDecoderIterator(binaryAsyncIterator);
 
   const {metadata} = options;
-  const {batchSize, _rootObjectBatches, jsonpaths} = options.json;
-  const TableBatchType = options.json.TableBatch;
+  const {jsonpaths} = options.json || {};
 
   let isFirstChunk: boolean = true;
 
   // TODO fix Schema deduction
   const schema = null; // new Schema([]);
+  const type = options?.json?.type || 'row-table';
   // @ts-ignore
-  const tableBatchBuilder = new TableBatchBuilder(TableBatchType, schema, {batchSize});
+  const tableBatchBuilder = new TableBatchBuilder(schema, {
+    ...options,
+    type
+  });
 
   const parser = new StreamingJSONParser({jsonpaths});
 
@@ -27,23 +35,16 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
 
     if (rows.length > 0 && isFirstChunk) {
       if (metadata) {
-        const initialBatch = {
+        const initialBatch: Batch = {
+          // Common fields
+          type,
           batchType: 'partial-result',
-          container: parser.getPartialResult(),
           data: [],
+          length: 0,
           bytesUsed: 0,
-          schema: null,
-          jsonpath
-        };
-        yield initialBatch;
-      }
-      // Backwards compabitility
-      if (_rootObjectBatches) {
-        const initialBatch = {
-          batchType: 'root-object-batch-partial',
+          // JSON additions
           container: parser.getPartialResult(),
-          data: [],
-          schema: null
+          jsonpath
         };
         yield initialBatch;
       }
@@ -55,70 +56,36 @@ export default async function* parseJSONInBatches(asyncIterator, options) {
     for (const row of rows) {
       tableBatchBuilder.addRow(row);
       // If a batch has been completed, emit it
-      if (tableBatchBuilder.isFull()) {
-        yield tableBatchBuilder.getBatch({jsonpath});
+      const batch = tableBatchBuilder.getFullBatch({jsonpath});
+      if (batch) {
+        yield batch;
       }
     }
 
     tableBatchBuilder.chunkComplete(chunk);
-    if (tableBatchBuilder.isFull()) {
-      yield tableBatchBuilder.getBatch({jsonpath});
+    const batch = tableBatchBuilder.getFullBatch({jsonpath});
+    if (batch) {
+      yield batch;
     }
   }
 
   // yield final batch
   const jsonpath = parser.getStreamingJsonPathAsString();
-  const batch = tableBatchBuilder.getBatch({jsonpath});
+  const batch = tableBatchBuilder.getFinalBatch({jsonpath});
   if (batch) {
     yield batch;
   }
 
   if (metadata) {
-    const finalBatch = {
+    const finalBatch: Batch = {
+      type,
       batchType: 'final-result',
       container: parser.getPartialResult(),
       jsonpath: parser.getStreamingJsonPathAsString(),
       data: [],
-      schema: null
+      length: 0
+      // schema: null
     };
     yield finalBatch;
   }
-  if (_rootObjectBatches) {
-    const finalBatch = {
-      batchType: 'root-object-batch-complete',
-      container: parser.getPartialResult(),
-      data: [],
-      schema: null
-    };
-    yield finalBatch;
-  }
-}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function deduceSchema(rows) {
-  const row = rows[0];
-
-  const schema = {};
-  let i = 0;
-  for (const columnName in row) {
-    const value = row[columnName];
-    switch (typeof value) {
-      case 'number':
-      case 'boolean':
-        // TODO - booleans could be handled differently...
-        schema[columnName] = {name: String(columnName), index: i, type: Float32Array};
-        break;
-
-      case 'object':
-        schema[columnName] = {name: String(columnName), index: i, type: Array};
-        break;
-
-      case 'string':
-      default:
-        schema[columnName] = {name: String(columnName), index: i, type: Array};
-      // We currently only handle numeric rows
-      // TODO we could offer a function to map strings to numbers?
-    }
-    i++;
-  }
-  return schema;
 }

@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import type {Store} from 'zarr/types/storage/types';
 import {loadMultiscales, guessTileSize, guessLabels, normalizeStore, validLabels} from './utils';
 import ZarrPixelSource from './zarr-pixel-source';

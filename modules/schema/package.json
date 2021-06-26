@@ -28,11 +28,10 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle",
+    "pre-build-disabled": "npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-beta.3",
     "d3-dsv": "^1.2.0"
   }
 }

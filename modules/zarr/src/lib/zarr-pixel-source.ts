@@ -1,8 +1,6 @@
-import {BoundsCheckError, slice} from 'zarr';
 import type {ZarrArray} from 'zarr';
+// eslint-disable-next-line import/no-unresolved
 import type {RawArray} from 'zarr/types/rawArray';
-
-import {getImageSize, isInterleaved, getIndexer} from './utils';
 import type {
   PixelSource,
   Labels,
@@ -11,6 +9,9 @@ import type {
   PixelData,
   TileSelection
 } from '../types';
+
+import {BoundsCheckError, slice} from 'zarr';
+import {getImageSize, isInterleaved, getIndexer} from './utils';
 
 export const DTYPE_LOOKUP = {
   u1: 'Uint8',

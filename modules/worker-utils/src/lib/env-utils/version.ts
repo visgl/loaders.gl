@@ -3,7 +3,8 @@
 declare let __VERSION__;
 export const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 if (typeof __VERSION__ === 'undefined') {
+  // eslint-disable-next-line
   console.error(
-    'loaders.gl: The __VERSION__ variable is not injected using babel-plugin-version-inline. Latest unstable workers would be fetched from the CDN.'
+    'loaders.gl: The __VERSION__ variable is not injected using babel plugin. Latest unstable workers would be fetched from the CDN.'
   );
 }

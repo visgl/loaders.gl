@@ -1,5 +1,4 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {RowTableBatch} from '@loaders.gl/schema';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
@@ -10,7 +9,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const GeoJSONLoaderOptions = {
   geojson: {
-    TableBatch: RowTableBatch,
+    type: 'object-row-table',
     batchSize: 'auto'
   },
   json: {
