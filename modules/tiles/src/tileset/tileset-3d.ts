@@ -55,7 +55,6 @@ export type Tileset3DProps = {
   // loading
   token?: string;
   headers?: any;
-  fetch?: any;
   throttleRequests?: boolean;
   maxRequests?: number;
   loadOptions?: {[key: string]: any};
@@ -98,7 +97,6 @@ type Props = {
   token: string;
   attributions: string[];
   headers: any;
-  fetch: any;
   maxRequests: number;
   loadTiles: boolean;
   loadOptions: {[key: string]: any};
@@ -151,8 +149,7 @@ const DEFAULT_PROPS: Props = {
   viewportTraversersMap: null,
 
   headers: null,
-  fetch: {},
-  loadOptions: {},
+  loadOptions: {fetch: {}},
 
   token: '',
   attributions: [],
@@ -265,23 +262,7 @@ export default class Tileset3D {
     this.lodMetricValue = json.lodMetricValue;
     this.refine = json.root.refine;
 
-    // TODO add to loader context?
     this.loadOptions = this.options.loadOptions || {};
-    if (this.options.fetch) {
-      this.loadOptions.fetch = this.options.fetch;
-    }
-    if (this.options.headers) {
-      this.loadOptions.fetch = {
-        ...this.loadOptions.fetch,
-        headers: this.options.headers
-      };
-    }
-    if (this.options.token) {
-      this.loadOptions.fetch = {
-        ...this.loadOptions.fetch,
-        token: this.options.token
-      };
-    }
 
     this.root = null;
     this.roots = {};
