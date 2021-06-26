@@ -556,9 +556,11 @@ export default class GLTFScenegraph {
     }
 
     // Update the glTF BIN CHUNK byte length
-    this.json.buffers = this.json.buffers || [];
-    this.json.buffers[0] = this.json.buffers[0] || {};
-    this.json.buffers[0].byteLength = totalByteLength;
+    if (this.json?.buffers?.[0]) {
+      this.json.buffers[0].byteLength = totalByteLength;
+    } else {
+      this.json.buffers = [{byteLength: totalByteLength}];
+    }
 
     // Save generated arrayBuffer
     this.gltf.binary = arrayBuffer;
