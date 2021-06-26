@@ -7,9 +7,8 @@ const dataTableNamesMap = {};
  * Gets local or remote Excel file data.
  * @param arrayBuffer Loaded data
  * @param options Data parse options.
- * @param context Load data callback.
  */
-export async function parseExcel(arrayBuffer, options, context) {
+export async function parseExcel(arrayBuffer, options) {
   const excelOptions = options.excel || {};
 
   const dataUrl = 'dummy';

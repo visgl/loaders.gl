@@ -1,4 +1,4 @@
-import type {WorkerMessageType, WorkerMessagePayload} from '../worker-protocol/protocol';
+import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
 import WorkerThread from './worker-thread';
 import {assert} from '../env-utils/assert';
 

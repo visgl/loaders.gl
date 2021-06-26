@@ -3194,6 +3194,11 @@ babel-plugin-dynamic-import-node@^2.3.3:
   dependencies:
     object.assign "^4.1.0"
 
+babel-plugin-global-define@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/babel-plugin-global-define/-/babel-plugin-global-define-1.0.3.tgz#262c528f0c26bf318f4ccc77cf21df43a0fa6308"
+  integrity sha512-M8Sby4wRLuLr+9UB8V31knVRf/rl0xkk51A7um6hUCvVPyOvLtI0u0k1OPiMgE2d7CwmeSa33NzGpaALHPQCPg==
+
 babel-plugin-inline-import@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-inline-import/-/babel-plugin-inline-import-3.0.0.tgz#220eb2a52f8e779d8fb89447f950275e1e3f5981"
@@ -12472,10 +12477,10 @@ yauzl@^2.10.0:
     buffer-crc32 "~0.2.3"
     fd-slicer "~1.1.0"
 
-zarr@^0.4.0:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/zarr/-/zarr-0.4.2.tgz#4b505ff99c4bc3a3d0738e57f6f6abb2a2353670"
-  integrity sha512-zyC1DaVURXqSEP6O0R8XOYa83RZkCpEHLUFOCsYn1a5n1j6ojwzwoUgeMOtHuNfuJwUnb8dGK0g3gTGGs87QiQ==
+zarr@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/zarr/-/zarr-0.5.0.tgz#a12f6286370e3c72da9b92d5dfabf9457792eac7"
+  integrity sha512-8A6nV4VR6Y927lUuTwtj6Qd4MwWGBxBVcS7mnZMkYJGPjXv48SOiGr5lC0xIWp6GtX+tQMCgzEloT5rwUsv0Dw==
   dependencies:
     numcodecs "^0.2.0"
     p-queue "6.2.0"

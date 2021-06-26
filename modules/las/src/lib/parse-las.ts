@@ -1,37 +1,11 @@
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 // ported and es6-ified from https://github.com/verma/plasio/
+
+// @ts-nocheck
+import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import {LASFile} from './laslaz-decoder';
 
-function detectTwoByteColors(colorDepth, decoder, batchSize) {
-  let twoByteColor;
-  switch (colorDepth) {
-    case 8:
-      twoByteColor = false;
-      break;
-    case 16:
-      twoByteColor = true;
-      break;
-    case 'auto':
-      if (decoder.getPoint(0).color) {
-        for (let i = 0; i < batchSize; i++) {
-          const {color} = decoder.getPoint(i);
-          // eslint-disable-next-line max-depth
-          if (color[0] > 255 || color[1] > 255 || color[2] > 255) {
-            twoByteColor = true;
-          }
-        }
-      }
-      break;
-    default:
-      // eslint-disable-next-line
-      console.warn('las: illegal value for options.las.colorDepth');
-      break;
-  }
-  return twoByteColor;
-}
-
 /* eslint-disable max-statements */
-export default function parseLAS(arraybuffer, options = {}) {
+export default function parseLAS(arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) {
   let pointIndex = 0;
 
   let positions;
@@ -44,7 +18,7 @@ export default function parseLAS(arraybuffer, options = {}) {
   const {onProgress} = options;
   const {skip, colorDepth, fp64} = options.las || {};
 
-  parseLASChunked(arraybuffer, skip, (decoder, header) => {
+  parseLASChunked(arrayBuffer, skip, (decoder, header) => {
     if (!originalHeader) {
       originalHeader = header;
       const total = header.totalToRead;
@@ -174,4 +148,32 @@ export function parseLASChunked(rawData, skip, onParseData) {
   } finally {
     dataHandler.close();
   }
+}
+
+function detectTwoByteColors(colorDepth, decoder, batchSize) {
+  let twoByteColor;
+  switch (colorDepth) {
+    case 8:
+      twoByteColor = false;
+      break;
+    case 16:
+      twoByteColor = true;
+      break;
+    case 'auto':
+      if (decoder.getPoint(0).color) {
+        for (let i = 0; i < batchSize; i++) {
+          const {color} = decoder.getPoint(i);
+          // eslint-disable-next-line max-depth
+          if (color[0] > 255 || color[1] > 255 || color[2] > 255) {
+            twoByteColor = true;
+          }
+        }
+      }
+      break;
+    default:
+      // eslint-disable-next-line
+      console.warn('las: illegal value for options.las.colorDepth');
+      break;
+  }
+  return twoByteColor;
 }

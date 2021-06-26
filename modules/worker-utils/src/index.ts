@@ -1,12 +1,16 @@
 import type {WorkerObject} from './types';
+import {VERSION} from './lib/env-utils/version';
 
 // TYPES
-export type {WorkerObject} from './types';
 export type {
+  WorkerObject,
+  WorkerOptions,
+  // Protocol
   WorkerMessage,
+  WorkerMessageType,
   WorkerMessageData,
   WorkerMessagePayload
-} from './lib/worker-protocol/protocol';
+} from './types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
@@ -16,14 +20,18 @@ export {isBrowser, isWorker} from './lib/env-utils/globals';
 export {default as WorkerJob} from './lib/worker-farm/worker-job';
 export {default as WorkerThread} from './lib/worker-farm/worker-thread';
 
-// WORKER UTILS - EXPORTS
-export {processOnWorker} from './lib/worker-api/process-on-worker';
-export {createWorker} from './lib/worker-api/create-worker';
-export {getWorkerObjectURL, validateWorkerVersion} from './lib/worker-api/worker-object-utils';
-
+// WORKER FARMS
 export {default as WorkerFarm} from './lib/worker-farm/worker-farm';
 export {default as WorkerPool} from './lib/worker-farm/worker-pool';
 export {default as WorkerBody} from './lib/worker-farm/worker-body';
+
+export {processOnWorker} from './lib/worker-api/process-on-worker';
+export {createWorker} from './lib/worker-api/create-worker';
+
+// WORKER UTILS - EXPORTS
+export {getWorkerURL} from './lib/worker-api/get-worker-url';
+export {validateWorkerVersion} from './lib/worker-api/validate-worker-version';
+export {getTransferList} from './lib/worker-utils/get-transfer-list';
 
 // LIBRARY UTILS
 export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
@@ -35,10 +43,6 @@ export {default as AsyncQueue} from './lib/async-queue/async-queue';
 export {default as ChildProcessProxy} from './lib/process-utils/child-process-proxy';
 
 // WORKER OBJECTS
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** A null worker to test that worker processing is functional */
 export const NullWorker: WorkerObject = {

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zarr",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "description": "Framework-independent loaders for Zarr",
   "license": "MIT",
   "publishConfig": {
@@ -15,7 +15,7 @@
     "loader",
     "zarr"
   ],
-  "types": "src/index.ts",
+  "types": "src/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -30,11 +30,8 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18",
     "@loaders.gl/worker-utils": "3.0.0-alpha.18",
-    "@luma.gl/constants": "^8.3.0",
-    "fast-xml-parser": "^3.16.0",
-    "zarr": "^0.4.0"
+    "zarr": "^0.5.0"
   },
   "devDependencies": {
     "@loaders.gl/core": "3.0.0-alpha.18"

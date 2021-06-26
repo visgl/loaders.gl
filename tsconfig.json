@@ -89,7 +89,6 @@
     }
   },
   "exclude":[
-    "modules/tiles/test/**/*",
     "modules/tile-converter/src/**/*",
     "modules/tile-converter/test/**/*",
     "modules/i3s/test/**/*",

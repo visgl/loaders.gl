@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/json",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-beta.2",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
   "publishConfig": {
@@ -35,8 +35,8 @@
     "build-worker": "webpack --entry ./src/workers/geojson-worker.ts --output ./dist/geojson-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@loaders.gl/gis": "3.0.0-beta.1",
-    "@loaders.gl/loader-utils": "3.0.0-beta.1",
-    "@loaders.gl/schema": "3.0.0-beta.1"
+    "@loaders.gl/gis": "3.0.0-beta.2",
+    "@loaders.gl/loader-utils": "3.0.0-beta.2",
+    "@loaders.gl/schema": "3.0.0-beta.2"
   }
 }

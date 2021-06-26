@@ -30,6 +30,7 @@ import type {
 } from '../types';
 
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {makeSchemaFromAttributes} from './utils/schema-attribute-utils';
 
 /**
  * @param topology - How triangle indices should be generated (mesh only)
@@ -135,6 +136,8 @@ export default class DracoParser {
 
       const boundingBox = getMeshBoundingBox(geometry.attributes);
 
+      const schema = makeSchemaFromAttributes(geometry.attributes, loaderData, geometry.indices);
+
       const data: DracoMeshData = {
         loader: 'draco',
         loaderData,
@@ -142,7 +145,8 @@ export default class DracoParser {
           vertexCount: dracoGeometry.num_points(),
           boundingBox
         },
-        ...geometry
+        ...geometry,
+        schema
       };
       return data;
     } finally {
@@ -289,6 +293,7 @@ export default class DracoParser {
 
     for (const loaderAttribute of Object.values(loaderData.attributes)) {
       const attributeName = this._deduceAttributeName(loaderAttribute, options);
+      loaderAttribute.name = attributeName;
       const {value, size} = this._getAttributeValues(dracoGeometry, loaderAttribute);
       attributes[attributeName] = {
         value,
