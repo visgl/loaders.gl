@@ -54,7 +54,6 @@ import {TILESET_TYPE} from '../constants';
 export type Tileset3DProps = {
   // loading
   token?: string;
-  headers?: any;
   throttleRequests?: boolean;
   maxRequests?: number;
   loadOptions?: {[key: string]: any};
@@ -96,7 +95,6 @@ type Props = {
   viewportTraversersMap: any;
   token: string;
   attributions: string[];
-  headers: any;
   maxRequests: number;
   loadTiles: boolean;
   loadOptions: {[key: string]: any};
@@ -148,7 +146,6 @@ const DEFAULT_PROPS: Props = {
   updateTransforms: true,
   viewportTraversersMap: null,
 
-  headers: {},
   loadOptions: {},
 
   token: '',
@@ -262,20 +259,7 @@ export default class Tileset3D {
     this.lodMetricValue = json.lodMetricValue;
     this.refine = json.root.refine;
 
-    // TODO add to loader context?
     this.loadOptions = this.options.loadOptions || {};
-    if (this.options.headers) {
-      this.loadOptions.fetch = {
-        ...this.loadOptions.fetch,
-        headers: this.options.headers
-      };
-    }
-    if (this.options.token) {
-      this.loadOptions.fetch = {
-        ...this.loadOptions.fetch,
-        token: this.options.token
-      };
-    }
 
     this.root = null;
     this.roots = {};
