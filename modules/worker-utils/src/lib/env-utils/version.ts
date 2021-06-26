@@ -1,8 +1,4 @@
-// import {assert} from './assert';
-
+// Version constant cannot be imported, it needs to correspond to the build version of **this** module.
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
-export const VERSION = __VERSION__;
-if (typeof VERSION !== 'undefined') {
-  console.error('VERSION not injected');
-}
+export const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
