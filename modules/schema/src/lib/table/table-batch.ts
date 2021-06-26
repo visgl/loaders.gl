@@ -20,7 +20,7 @@ export interface TableBatchConstructor {
 }
 
 /**
- * TableBatchBuilder builds batches conforming to this interface
+ * TableBatchBuilder delegates batch building to this interface
  */
 export interface TableBatch {
   addRow(row): void;

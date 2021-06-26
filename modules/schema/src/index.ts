@@ -4,7 +4,7 @@ export {deduceTableSchema} from './lib/schema/deduce-table-schema';
 export {getTypeInfo} from './lib/schema/get-type-info';
 
 // TABLE CATEGORY UTILS
-export type {TableBatch} from './lib/table/table-batch';
+export type {TableBatch, Batch} from './lib/table/table-batch';
 export {default as TableBatchBuilder} from './lib/table/table-batch-builder';
 export {default as RowTableBatch} from './lib/table/row-table-batch';
 export {default as ColumnarTableBatch} from './lib/table/columnar-table-batch';

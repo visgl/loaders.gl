@@ -29,6 +29,10 @@ export type LoaderOptions = {
   // batched parsing
   metadata?: boolean;
   transforms?: any[];
+  // core?: {
+  //   batchType?: 'row' | 'columnar' | 'arrow';
+  //   batchSize?: number | 'auto';
+  // };
 
   // workers
   CDN?: string;
@@ -139,8 +143,8 @@ type ParseSync = (
   options?: LoaderOptions,
   context?: LoaderContext
 ) => any;
-type ParseText = (string, options?: LoaderOptions) => Promise<any>;
-type ParseTextSync = (string: string, options?: LoaderOptions) => any;
+type ParseText = (text: string, options?: LoaderOptions) => Promise<any>;
+type ParseTextSync = (text: string, options?: LoaderOptions) => any;
 type ParseInBatches = (
   iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: LoaderOptions,
