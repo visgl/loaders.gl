@@ -39,8 +39,13 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {RequestScheduler, assert, path, LoaderWithParser} from '@loaders.gl/loader-utils';
-
+import {
+  RequestScheduler,
+  assert,
+  path,
+  LoaderWithParser,
+  LoaderOptions
+} from '@loaders.gl/loader-utils';
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
 import {FrameState, getFrameState} from './helpers/frame-state';
@@ -56,7 +61,7 @@ export type Tileset3DProps = {
   token?: string;
   throttleRequests?: boolean;
   maxRequests?: number;
-  loadOptions?: {[key: string]: any};
+  loadOptions?: LoaderOptions;
   loadTiles?: boolean;
   basePath?: string;
   maximumMemoryUsage?: number;
@@ -97,7 +102,7 @@ type Props = {
   attributions: string[];
   maxRequests: number;
   loadTiles: boolean;
-  loadOptions: {[key: string]: any};
+  loadOptions: LoaderOptions;
   updateTransforms: boolean;
   viewDistanceScale: number;
   basePath: string;
