@@ -14,7 +14,7 @@ const URL_WITH_QUERYSTRING =
   'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw.xy';
 const DRACO_URL_QUERYSTRING = '@loaders.gl/draco/test/data/bunny.drc?query.string';
 
-test('selectLoaderSync#urls', async (t) => {
+test.only('selectLoaderSync#urls', async (t) => {
   // @ts-ignore
   t.throws(() => selectLoaderSync(null), 'selectedLoader throws if no loader found');
 
@@ -57,6 +57,22 @@ test('selectLoaderSync#urls', async (t) => {
   t.throws(
     () => selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader]),
     'find no loaders by url extension'
+  );
+
+  t.is(
+    selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+      mimeType: 'image/png'
+    }),
+    ImageLoader,
+    'options.mimeType can resolve loader using provided mimeType'
+  );
+
+  t.is(
+    selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+      mimeType: 'application/x.image'
+    }),
+    ImageLoader,
+    'options.mimeType can resolve loader using provided `application/x.<loaderId>` mimeType'
   );
 });
 
