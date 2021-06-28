@@ -9,8 +9,21 @@ export type WorkerOptions = {
   maxMobileConcurrency?: number;
   reuseWorkers?: boolean;
   _workerType?: string;
-  [key: string]: any;
+  [key: string]: any; // TODO
 };
+
+export type WorkerContext = {
+  process?: Process;
+  processInBatches?;
+};
+
+export type Process = (data: any, options?: {[key: string]: any}, context?: WorkerContext) => any;
+
+export type ProcessInBatches = (
+  iterator: AsyncIterable<any> | Iterable<any>,
+  options?: {[key: string]: any},
+  context?: WorkerContext
+) => AsyncIterable<any>;
 
 /**
  * A worker description object
@@ -24,11 +37,8 @@ export type WorkerObject = {
   options: object;
   deprecatedOptions?: object;
 
-  process?: (data: any, options?: object) => Promise<any>;
-  processInBatches?: (
-    iterator: AsyncIterator<any> | Iterator<any>,
-    options: object
-  ) => Promise<AsyncIterator<any>>;
+  process?: Process;
+  processInBatches?: ProcessInBatches;
 };
 
 /*
@@ -59,7 +69,7 @@ export type WorkerMessageType =
 
 export type WorkerMessagePayload = {
   id?: number;
-  options?: object;
+  options?: {[key: string]: any};
   input?: any; // Transferable;
   result?: any; // Transferable
   error?: string;
