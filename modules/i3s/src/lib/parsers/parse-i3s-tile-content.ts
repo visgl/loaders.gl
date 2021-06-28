@@ -106,13 +106,7 @@ async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
       indices
     };
 
-    for (const key in decompressedGeometry.loaderData.attributes) {
-      const dracoAttribute = decompressedGeometry.loaderData.attributes[key];
-      if (dracoAttribute.name === 'POSITION') {
-        attributes.position.metadata = dracoAttribute.metadata;
-        break;
-      }
-    }
+    updateAttributesMetadata(attributes, decompressedGeometry);
 
     const featureIds = getFeatureIdsFromFeatureIndexMetadata(featureIndex);
 
@@ -183,6 +177,28 @@ async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
   content.byteLength = arrayBuffer.byteLength;
 
   return tile;
+}
+
+/**
+ * Update attributes with metadata from decompressed geometry.
+ * @param decompressedGeometry
+ * @param attributes
+ */
+function updateAttributesMetadata(attributes, decompressedGeometry) {
+  for (const key in decompressedGeometry.loaderData.attributes) {
+    const dracoAttribute = decompressedGeometry.loaderData.attributes[key];
+
+    switch (dracoAttribute.name) {
+      case 'POSITION':
+        attributes.position.metadata = dracoAttribute.metadata;
+        break;
+      case 'feature-index':
+        attributes.id.metadata = dracoAttribute.metadata;
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 /**
