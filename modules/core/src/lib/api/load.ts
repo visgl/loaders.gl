@@ -1,7 +1,6 @@
 import type {
   DataType,
   Loader,
-  LoaderWithParser,
   LoaderContext,
   LoaderOptions
 } from '@loaders.gl/loader-utils';

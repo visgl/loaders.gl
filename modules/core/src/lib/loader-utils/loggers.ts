@@ -3,16 +3,16 @@
 // Logs nothing
 export class NullLog {
   log() {
-    return (_) => {};
+    return () => {};
   }
   info() {
-    return (_) => {};
+    return () => {};
   }
   warn() {
-    return (_) => {};
+    return () => {};
   }
   error() {
-    return (_) => {};
+    return () => {};
   }
 }
 

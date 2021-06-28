@@ -1,6 +1,7 @@
 // ported and es6-ified from https://github.com/verma/plasio/
 
 // @ts-nocheck
+import type {LASLoaderOptions} from '../las-loader';
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import {LASFile} from './laslaz-decoder';
 

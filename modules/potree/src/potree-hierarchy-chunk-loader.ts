@@ -15,6 +15,6 @@ export const PotreeHierarchyChunkLoader: LoaderWithParser = {
   binary: true
 };
 
-function parseSync(arrayBuffer, options) {
+function parseSync(arrayBuffer) {
   return parsePotreeHierarchyChunk(arrayBuffer);
 }

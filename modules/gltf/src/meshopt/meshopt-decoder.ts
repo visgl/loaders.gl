@@ -148,6 +148,7 @@ function unpack(data) {
   return result.buffer.slice(0, write);
 }
 
+// eslint-disable-next-line max-params
 function decode(instance, fun, target, count, size, source, filter?) {
   const sbrk = instance.exports.sbrk;
   const count4 = (count + 3) & ~3; // pad for SIMD filter

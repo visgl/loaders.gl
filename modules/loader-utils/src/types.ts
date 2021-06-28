@@ -20,12 +20,10 @@ export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
 // Core Loader Options
 export type LoaderOptions = {
   fetch?: typeof fetch | RequestInit | null;
-  mimeType?: string;
 
   // general
   log?: any;
   nothrow?: boolean;
-  throws?: boolean;
 
   // batched parsing
   batchType?: 'row' | 'columnar' | 'arrow';
@@ -42,6 +40,8 @@ export type LoaderOptions = {
   reuseWorkers?: boolean;
   _workerType?: string;
 
+  /** @deprecated `options.throw removed`, Use `options.nothrow` instead */
+  throws?: boolean;
   /** @deprecated `options.dataType` no longer used */
   dataType?: any;
   /** @deprecated `options.uri` no longer used */
