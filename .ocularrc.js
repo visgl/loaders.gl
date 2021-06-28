@@ -7,6 +7,10 @@ const config = {
     test: resolve(__dirname, 'test')
   },
 
+  browserTest: {
+    server: {wait: 5000}
+  },
+
   babel: {
     // extensions: ['.js', '.jsx', '.mjs', '.ts', '.tsx']
   },
