@@ -1,5 +1,34 @@
 ## v3.0 Prerelease
 
+### v3.0.0-beta.3
+
+- fix(examples): disable regenerator babel transform for local examples (#1558)
+- Remove basePath option from TileHeader class (#1559)
+- chore(worker-utils): reorganize worker utils (#1561)
+- core(worker-utils): Additional cleanup (#1563)
+- Fix for " Property 'byteLength' is missing in type '{}' but required in type 'Buffer'" (#1566)
+- chore(csv): code cleanup (#1569)
+- tiles: pass through fetch options (#1550)
+- fix(worker-utils): Fix for runtime error: __VERSION__ is not defined (#1567)
+- use loadOptions in i3s-tileset-traverser (#1557)
+- i3s: pass through the token (#1571)
+- I3S-App - Fix picking functionality (#1572)
+
+
+### v3.0.0-beta.2
+
+- chore: Bump ocular-dev-tools@1.0.0-alpha.6  (#1543)
+- chore: Update upgrade guide (#1542)
+- Resolve typings in null-loader ParseInBatches (#1540)
+- fix(core): fetchFile option handling (#1549)
+- Convert i3s-tile-converter to typescript (#1545)
+- Enable ts checking for tests in tiles module (#1536)
+- chore(examples): Refactor webpack-local-config (#1485)
+- feat(zarr): Flatten zarr module, remove XML-parsing (#1462)
+- feat: unbundled loaders (#1553)
+- draco: arrow-like schema (#1529)
+- i3s: fix draco geometry loading (#1554)
+
 ### v3.0.0-beta.1
 
 - chore(zip): Convert zip module to typescript (#1530)

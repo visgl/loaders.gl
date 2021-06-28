@@ -70,7 +70,7 @@ async function parseWithLoader(loader, data, options, context) {
   }
 
   // If we have a workerUrl and the loader can parse the given options efficiently in a worker
-  if (canParseWithWorker(loader, data, options, context)) {
+  if (canParseWithWorker(loader, options)) {
     return await parseWithWorker(loader, data, options, context, parse);
   }
 
@@ -87,5 +87,5 @@ async function parseWithLoader(loader, data, options, context) {
   assert(!loader.parseSync);
 
   // TBD - If asynchronous parser not available, return null
-  return assert(false);
+  throw new Error(`${loader.id} loader - no parser found and worker is disabled`);
 }

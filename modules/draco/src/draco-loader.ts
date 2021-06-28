@@ -18,8 +18,8 @@ const DEFAULT_DRACO_OPTIONS: DracoLoaderOptions = {
   draco: {
     decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
     libraryPath: 'libs/',
-    extraAttributes: {}
-    // attributeNameEntry: undefined
+    extraAttributes: {},
+    attributeNameEntry: undefined
   }
 };
 

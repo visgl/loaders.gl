@@ -4,25 +4,26 @@ const workerURLCache = new Map();
 
 /**
  * Creates a loadable URL from worker source or URL
- * that can be used to create `Worker` instances
+ * that can be used to create `Worker` instances.
+ * Due to CORS issues it may be necessary to wrap a URL in a small importScripts
  * @param props
  * @param props.source Worker source
  * @param props.url Worker URL
  * @returns loadable url
  */
-export function buildWorkerURL(props: {source?: string; url?: string}) {
+export function getLoadableWorkerURL(props: {source?: string; url?: string}) {
   assert((props.source && !props.url) || (!props.source && props.url)); // Either source or url must be defined
 
   let workerURL = workerURLCache.get(props.source || props.url);
   if (!workerURL) {
     // Differentiate worker urls from worker source code
     if (props.url) {
-      workerURL = getWorkerURLFromURL(props.url);
+      workerURL = getLoadableWorkerURLFromURL(props.url);
       workerURLCache.set(props.url, workerURL);
     }
 
     if (props.source) {
-      workerURL = getWorkerURLFromSource(props.source);
+      workerURL = getLoadableWorkerURLFromSource(props.source);
       workerURLCache.set(props.source, workerURL);
     }
   }
@@ -36,7 +37,7 @@ export function buildWorkerURL(props: {source?: string; url?: string}) {
  * @param url
  * @returns loadable URL
  */
-function getWorkerURLFromURL(url: string): string {
+function getLoadableWorkerURLFromURL(url: string): string {
   // A local script url, we can use it to initialize a Worker directly
   if (!url.startsWith('http')) {
     return url;
@@ -44,7 +45,7 @@ function getWorkerURLFromURL(url: string): string {
 
   // A remote script, we need to use `importScripts` to load from different origin
   const workerSource = buildScriptSource(url);
-  return getWorkerURLFromSource(workerSource);
+  return getLoadableWorkerURLFromSource(workerSource);
 }
 
 /**
@@ -52,7 +53,7 @@ function getWorkerURLFromURL(url: string): string {
  * @param workerSource
  * @returns loadable url
  */
-function getWorkerURLFromSource(workerSource: string): string {
+function getLoadableWorkerURLFromSource(workerSource: string): string {
   // NOTE: webworkify was previously used
   // const blob = webworkify(workerSource, {bare: true});
   const blob = new Blob([workerSource], {type: 'application/javascript'});

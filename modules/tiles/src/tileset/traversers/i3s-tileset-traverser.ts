@@ -60,8 +60,9 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     const nodeUrl = tileset.getTileUrl(`${tileset.url}/nodes/${nodeId}`);
     // load metadata
     const options = {
+      ...tileset.loadOptions,
       i3s: {
-        ...tileset.fetchOptions,
+        ...tileset.loadOptions.i3s,
         isTileHeader: true,
         loadContent: false
       }
@@ -79,9 +80,8 @@ export default class I3STilesetTraverser extends TilesetTraverser {
    * @return {void}
    */
   _onTileLoad(header, tile, extendedId) {
-    const basePath = this.options.basePath;
     // after child tile is fetched
-    const childTile = new TileHeader(tile.tileset, header, tile, basePath, extendedId);
+    const childTile = new TileHeader(tile.tileset, header, tile, extendedId);
     tile.children.push(childTile);
     const frameState = this._tileManager.find(childTile.id).frameState;
     this.updateTile(childTile, frameState);

@@ -39,8 +39,13 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {RequestScheduler, assert, path, LoaderWithParser} from '@loaders.gl/loader-utils';
-
+import {
+  RequestScheduler,
+  assert,
+  path,
+  LoaderWithParser,
+  LoaderOptions
+} from '@loaders.gl/loader-utils';
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
 import {FrameState, getFrameState} from './helpers/frame-state';
@@ -53,11 +58,9 @@ import {TILESET_TYPE} from '../constants';
 
 export type Tileset3DProps = {
   // loading
-  token?: string;
-  headers?: any;
   throttleRequests?: boolean;
   maxRequests?: number;
-  loadOptions?: {[key: string]: any};
+  loadOptions?: LoaderOptions;
   loadTiles?: boolean;
   basePath?: string;
   maximumMemoryUsage?: number;
@@ -94,12 +97,10 @@ type Props = {
   onTileError: (tile: Tile3D, message: string, url: string) => any;
   maximumScreenSpaceError: number;
   viewportTraversersMap: any;
-  token: string;
   attributions: string[];
-  headers: any;
   maxRequests: number;
   loadTiles: boolean;
-  loadOptions: {[key: string]: any};
+  loadOptions: LoaderOptions;
   updateTransforms: boolean;
   viewDistanceScale: number;
   basePath: string;
@@ -148,10 +149,8 @@ const DEFAULT_PROPS: Props = {
   updateTransforms: true,
   viewportTraversersMap: null,
 
-  headers: {},
-  loadOptions: {},
+  loadOptions: {fetch: {}},
 
-  token: '',
   attributions: [],
   basePath: '',
 
@@ -262,20 +261,7 @@ export default class Tileset3D {
     this.lodMetricValue = json.lodMetricValue;
     this.refine = json.root.refine;
 
-    // TODO add to loader context?
     this.loadOptions = this.options.loadOptions || {};
-    if (this.options.headers) {
-      this.loadOptions.fetch = {
-        ...this.loadOptions.fetch,
-        headers: this.options.headers
-      };
-    }
-    if (this.options.token) {
-      this.loadOptions.fetch = {
-        ...this.loadOptions.fetch,
-        token: this.options.token
-      };
-    }
 
     this.root = null;
     this.roots = {};
@@ -424,7 +410,7 @@ export default class Tileset3D {
     for (const viewport of viewports) {
       const id = viewport.id as string;
       if (!this.roots[id]) {
-        this.roots[id] = this._initializeTileHeaders(this.tileset, null, this.basePath);
+        this.roots[id] = this._initializeTileHeaders(this.tileset, null);
       }
 
       if (!viewportsToTraverse.includes(id)) {
@@ -544,7 +530,7 @@ export default class Tileset3D {
   }
 
   _initializeTileSet(tilesetJson) {
-    this.root = this._initializeTileHeaders(tilesetJson, null, this.basePath);
+    this.root = this._initializeTileHeaders(tilesetJson, null);
 
     // TODO CESIUM Specific
     if (this.type === TILESET_TYPE.TILES3D) {
@@ -552,7 +538,7 @@ export default class Tileset3D {
     }
 
     if (this.type === TILESET_TYPE.I3S) {
-      this._initializeI3STileset(tilesetJson);
+      this._initializeI3STileset();
     }
     // Calculate cartographicCenter & zoom props to help apps center view on tileset
     this._calculateViewProps();
@@ -591,10 +577,10 @@ export default class Tileset3D {
 
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
   // eslint-disable-next-line max-statements
-  _initializeTileHeaders(tilesetJson, parentTileHeader, basePath) {
+  _initializeTileHeaders(tilesetJson, parentTileHeader) {
     // A tileset JSON file referenced from a tile may exist in a different directory than the root tileset.
     // Get the basePath relative to the external tileset.
-    const rootTile = new Tile3D(this, tilesetJson.root, parentTileHeader, basePath); // resource
+    const rootTile = new Tile3D(this, tilesetJson.root, parentTileHeader); // resource
 
     // If there is a parentTileHeader, add the root of the currently loading tileset
     // to parentTileHeader's children, and update its depth.
@@ -613,7 +599,7 @@ export default class Tileset3D {
         this.stats.get(TILES_TOTAL).incrementCount();
         const children = tile.header.children || [];
         for (const childHeader of children) {
-          const childTile = new Tile3D(this, childHeader, tile, basePath);
+          const childTile = new Tile3D(this, childHeader, tile);
           tile.children.push(childTile);
           childTile.depth = tile.depth + 1;
           stack.push(childTile);
@@ -791,9 +777,9 @@ export default class Tileset3D {
     this.extras = tilesetJson.extras;
   }
 
-  _initializeI3STileset(tilesetJson) {
-    if ('token' in this.options) {
-      this._queryParams.token = this.options.token;
+  _initializeI3STileset() {
+    if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
+      this._queryParams.token = this.loadOptions.i3s.token;
     }
   }
 }

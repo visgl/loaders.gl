@@ -1,6 +1,6 @@
 import {assert} from '../env-utils/assert';
-import {buildWorkerURL} from './build-worker-url';
-import {getTransferList} from './get-transfer-list';
+import {getLoadableWorkerURL} from '../worker-utils/get-loadable-worker-url';
+import {getTransferList} from '../worker-utils/get-transfer-list';
 
 const NOOP = () => {};
 
@@ -94,7 +94,7 @@ export default class WorkerThread {
    * Creates a worker thread on the browser
    */
   _createBrowserWorker() {
-    this._loadableURL = buildWorkerURL({source: this.source, url: this.url});
+    this._loadableURL = getLoadableWorkerURL({source: this.source, url: this.url});
     const worker = new Worker(this._loadableURL, {name: this.name});
 
     worker.onmessage = (event) => {

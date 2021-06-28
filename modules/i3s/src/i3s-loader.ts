@@ -25,6 +25,7 @@ export const I3SLoader: LoaderWithParser = {
   options: {
     i3s: {
       loadContent: true,
+      token: null,
       isTileset: 'auto',
       isTileHeader: 'auto',
       tile: null,

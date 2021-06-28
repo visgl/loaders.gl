@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {getTransferList} from '@loaders.gl/worker-utils/lib/worker-farm/get-transfer-list';
+import {getTransferList} from '@loaders.gl/worker-utils';
 
 const typedArray = new Uint8Array(4);
 const typedArray2 = new Float32Array(typedArray.buffer);

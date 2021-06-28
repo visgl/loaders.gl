@@ -1,10 +1,8 @@
 import {BoundsCheckError, slice} from 'zarr';
-import {getImageSize, isInterleaved} from './utils/utils';
-import {getIndexer} from './utils/indexer';
-
 import type {ZarrArray} from 'zarr';
 import type {RawArray} from 'zarr/types/rawArray';
 
+import {getImageSize, isInterleaved, getIndexer} from './utils';
 import type {
   PixelSource,
   Labels,
@@ -14,7 +12,7 @@ import type {
   TileSelection
 } from '../types';
 
-const DTYPE_LOOKUP = {
+export const DTYPE_LOOKUP = {
   u1: 'Uint8',
   u2: 'Uint16',
   u4: 'Uint32',

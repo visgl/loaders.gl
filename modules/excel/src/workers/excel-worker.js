@@ -1,4 +1,4 @@
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {ExcelLoader} from '../excel-loader';
+import {ExcelLoader} from '../index';
 
 createLoaderWorker(ExcelLoader);

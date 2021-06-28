@@ -154,6 +154,7 @@ const VIEWPORTS = [
 ];
 
 test('Tileset3D#throws with undefined url', (t) => {
+  // @ts-ignore
   t.throws(() => new Tileset3D());
   t.end();
 });
@@ -229,12 +230,15 @@ test('Tileset3D#loads and initializes with tileset JSON file', async (t) => {
 test('Tileset3D#loads tileset with extras', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
+  const extras = tileset.root?.extras;
 
   t.deepEquals(tileset.extras, {name: 'Sample Tileset'});
-  t.equals(tileset.root.extras, undefined);
+  t.equals(extras, undefined);
 
   let taggedChildren = 0;
-  for (const child of tileset.root.children) {
+  const children = tileset.root?.children || [];
+
+  for (const child of children) {
     if (child.extras) {
       t.deepEquals(child.extras, {id: 'Special Tile'});
       ++taggedChildren;
@@ -543,9 +547,13 @@ test('Tileset3D#handles failed tile processing', t => {
 test('Tileset3D#loads tiles in tileset', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
+  // @ts-ignore
   tileset.root._visible = true;
-  await tileset.root.loadContent();
-  t.ok(tileset.root.content);
+  await tileset.root?.loadContent();
+
+  const content = tileset.root?.content;
+
+  t.ok(content);
   t.end();
 });
 

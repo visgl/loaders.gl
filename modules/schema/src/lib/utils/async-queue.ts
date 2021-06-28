@@ -1,27 +1,27 @@
 // From https://github.com/rauschma/async-iter-demo/tree/master/src under MIT license
 // http://2ality.com/2016/10/asynchronous-iteration.html
 
-class ArrayQueue extends Array {
+class ArrayQueue<T> extends Array<T> {
   enqueue(value) {
     // Add at the end
     return this.push(value);
   }
-  dequeue() {
+  dequeue(): T {
     // Remove first element
-    return this.shift();
+    return this.shift() as T;
   }
 }
 
-export default class AsyncQueue {
-  private _values: ArrayQueue;
-  private _settlers: ArrayQueue;
+export default class AsyncQueue<T = any> {
+  private _values: ArrayQueue<T>;
+  private _settlers: ArrayQueue<{resolve; reject}>;
   private _closed: boolean;
 
   constructor() {
     // enqueues > dequeues
-    this._values = new ArrayQueue();
+    this._values = new ArrayQueue<T>();
     // dequeues > enqueues
-    this._settlers = new ArrayQueue();
+    this._settlers = new ArrayQueue<{resolve; reject}>();
     this._closed = false;
   }
 
@@ -32,11 +32,11 @@ export default class AsyncQueue {
     this._closed = true;
   }
 
-  [Symbol.asyncIterator](): AsyncIterator<any> {
+  [Symbol.asyncIterator](): AsyncIterator<T> {
     return this;
   }
 
-  enqueue(value: any): void {
+  enqueue(value: T | Error): void {
     if (this._closed) {
       throw new Error('Closed');
     }

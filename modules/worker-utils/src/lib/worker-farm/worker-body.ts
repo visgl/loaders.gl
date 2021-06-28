@@ -1,10 +1,5 @@
-/* eslint-disable no-restricted-globals */
-import type {
-  WorkerMessageData,
-  WorkerMessageType,
-  WorkerMessagePayload
-} from '../worker-protocol/protocol';
-import {getTransferList} from '../worker-farm/get-transfer-list';
+import type {WorkerMessageData, WorkerMessageType, WorkerMessagePayload} from '../../types';
+import {getTransferList} from '../worker-utils/get-transfer-list';
 
 const onMessageWrapperMap = new Map();
 
@@ -16,6 +11,7 @@ export default class WorkerBody {
    * (type: WorkerMessageType, payload: WorkerMessagePayload) => any
    */
   static set onmessage(onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any) {
+    // eslint-disable-next-line no-restricted-globals
     self.onmessage = (message) => {
       if (!isKnownMessage(message)) {
         return;
@@ -44,6 +40,7 @@ export default class WorkerBody {
       };
     }
 
+    // eslint-disable-next-line no-restricted-globals
     self.addEventListener('message', onMessageWrapper);
   }
 
@@ -52,6 +49,7 @@ export default class WorkerBody {
   ) {
     const onMessageWrapper = onMessageWrapperMap.get(onMessage);
     onMessageWrapperMap.delete(onMessage);
+    // eslint-disable-next-line no-restricted-globals
     self.removeEventListener('message', onMessageWrapper);
   }
 
@@ -64,7 +62,8 @@ export default class WorkerBody {
     if (self) {
       const data: WorkerMessageData = {source: 'loaders.gl', type, payload};
       const transferList = getTransferList(payload);
-      // @ts-ignore self is WorkerGlobalScope
+      // eslint-disable-next-line no-restricted-globals
+      // @ts-ignore
       self.postMessage(data, transferList);
     }
   }

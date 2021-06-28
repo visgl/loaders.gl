@@ -42,7 +42,7 @@ export default class I3SNodePagesTiles {
     if (!this.nodePages[pageIndex]) {
       const nodePageUrl = getUrlWithToken(
         `${this.tileset.url}/nodepages/${pageIndex}`,
-        this.options.token
+        this.options.i3s?.token
       );
       this.nodePages[pageIndex] = load(nodePageUrl, I3SNodePageLoader, this.options);
       this.nodePages[pageIndex] = await this.nodePages[pageIndex];

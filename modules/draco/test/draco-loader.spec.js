@@ -23,6 +23,7 @@ test('DracoLoader#parse(mainthread)', async (t) => {
   const data = await load(BUNNY_DRC_URL, DracoLoader, {worker: false});
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
+  t.ok(data.schema, 'Has arrow-like schema');
   t.end();
 });
 

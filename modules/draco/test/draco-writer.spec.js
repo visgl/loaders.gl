@@ -318,6 +318,7 @@ test('DracoWriter#attributes metadata', async (t) => {
   });
   validateMeshCategoryData(t, data2);
   validatePositionMetadata(t, data2);
+  t.equals(data2.schema.fields[0].metadata.size, 7, 'Schema: Attribute metadata size');
 
   t.equal(
     data2.attributes.POSITION.value.length,

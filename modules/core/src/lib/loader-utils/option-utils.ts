@@ -116,16 +116,16 @@ export function normalizeOptions(
 export function getFetchFunction(options?: LoaderOptions, context?: LoaderContext) {
   const globalOptions = getGlobalLoaderOptions();
 
-  const fetch = options?.fetch || globalOptions.fetch;
+  const fetchOptions = options || globalOptions;
 
   // options.fetch can be a function
-  if (typeof fetch === 'function') {
-    return fetch;
+  if (typeof fetchOptions.fetch === 'function') {
+    return fetchOptions.fetch;
   }
 
   // options.fetch can be an options object
-  if (isObject(fetch)) {
-    return (url) => fetchFile(url, fetch);
+  if (isObject(fetchOptions.fetch)) {
+    return (url) => fetchFile(url, fetchOptions);
   }
 
   // else refer to context (from parent loader) if available

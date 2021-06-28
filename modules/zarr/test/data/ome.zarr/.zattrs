@@ -1,0 +1,65 @@
+{
+    "multiscales": [
+        {
+            "datasets": [
+                {
+                    "path": "0"
+                },
+                {
+                    "path": "1"
+                }
+            ],
+            "version": "0.1"
+        }
+    ],
+    "omero": {
+        "channels": [
+            {
+                "active": true,
+                "color": "00FF00",
+                "family": "linear",
+                "inverted": false,
+                "label": "channel0",
+                "window": {
+                    "end": 100,
+                    "max": 127,
+                    "min": 0,
+                    "start": 0
+                }
+            },
+            {
+                "active": true,
+                "color": "FF0000",
+                "family": "linear",
+                "inverted": false,
+                "label": "channel1",
+                "window": {
+                    "end": 50,
+                    "max": 127,
+                    "min": 0,
+                    "start": 0
+                }
+            },
+            {
+                "active": true,
+                "color": "0000FF",
+                "family": "linear",
+                "inverted": false,
+                "label": "channel1",
+                "window": {
+                    "end": 25,
+                    "max": 127,
+                    "min": 0,
+                    "start": 0
+                }
+            }
+        ],
+        "name": "ome-zarr example",
+        "rdefs": {
+            "defaultT": 0,
+            "defaultZ": 0,
+            "model": "color"
+        },
+        "version": "0.1"
+    }
+}

@@ -33,7 +33,8 @@ export function createLoaderWorker(loader: any) {
           });
           WorkerBody.postMessage('done', {result});
         } catch (error) {
-          WorkerBody.postMessage('error', {error: error.message});
+          const message = error instanceof Error ? error.message : '';
+          WorkerBody.postMessage('error', {error: message});
         }
         break;
       default:
