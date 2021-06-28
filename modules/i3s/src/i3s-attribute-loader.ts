@@ -48,7 +48,7 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
     // @ts-ignore
-    const url = getUrlWithToken(attributeUrls[index], options.token);
+    const url = getUrlWithToken(attributeUrls[index], options.i3s?.token);
     const attributeName = attributeStorageInfo[index].name;
     const attributeType = getAttributeValueType(attributeStorageInfo[index]);
     const promise = load(url, I3SAttributeLoader, {attributeName, attributeType});

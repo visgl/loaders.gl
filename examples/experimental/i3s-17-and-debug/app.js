@@ -137,7 +137,7 @@ export default class App extends PureComponent {
     // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {};
     if (token) {
-      loadOptions.token = token;
+      loadOptions.i3s = {token};
     }
     return [
       new Tile3DLayer({
@@ -163,7 +163,7 @@ export default class App extends PureComponent {
     const options = {};
 
     if (token) {
-      options.token = token;
+      options.i3s = {token};
     }
 
     this.setState({isAttributesLoading: true});

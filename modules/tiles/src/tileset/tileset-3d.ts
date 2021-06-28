@@ -58,7 +58,6 @@ import {TILESET_TYPE} from '../constants';
 
 export type Tileset3DProps = {
   // loading
-  token?: string;
   throttleRequests?: boolean;
   maxRequests?: number;
   loadOptions?: LoaderOptions;
@@ -98,7 +97,6 @@ type Props = {
   onTileError: (tile: Tile3D, message: string, url: string) => any;
   maximumScreenSpaceError: number;
   viewportTraversersMap: any;
-  token: string;
   attributions: string[];
   maxRequests: number;
   loadTiles: boolean;
@@ -153,7 +151,6 @@ const DEFAULT_PROPS: Props = {
 
   loadOptions: {fetch: {}},
 
-  token: '',
   attributions: [],
   basePath: '',
 
@@ -541,7 +538,7 @@ export default class Tileset3D {
     }
 
     if (this.type === TILESET_TYPE.I3S) {
-      this._initializeI3STileset(tilesetJson);
+      this._initializeI3STileset();
     }
     // Calculate cartographicCenter & zoom props to help apps center view on tileset
     this._calculateViewProps();
@@ -780,9 +777,9 @@ export default class Tileset3D {
     this.extras = tilesetJson.extras;
   }
 
-  _initializeI3STileset(tilesetJson) {
-    if ('token' in this.options) {
-      this._queryParams.token = this.options.token;
+  _initializeI3STileset() {
+    if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
+      this._queryParams.token = this.loadOptions.i3s.token;
     }
   }
 }
