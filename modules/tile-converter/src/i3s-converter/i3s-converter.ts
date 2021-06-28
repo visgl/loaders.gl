@@ -1091,14 +1091,14 @@ export default class I3SConverter {
     }
     this.refreshTokenTime = process.hrtime();
 
-    const options = await this._fetchPreloadOptions();
-    this.sourceTileset.options = {...this.sourceTileset.options, ...options};
-    if (options.headers) {
-      this.sourceTileset.fetchOptions.headers = options.headers;
+    const preloadOptions = await this._fetchPreloadOptions();
+    this.sourceTileset.options = {...this.sourceTileset.options, ...preloadOptions};
+    if (preloadOptions.headers) {
+      this.sourceTileset.loadOptions.fetch = {
+        ...this.sourceTileset.loadOptions.fetch,
+        headers: preloadOptions.headers
+      };
       console.log('Authorization Bearer token has been updated'); // eslint-disable-line no-undef, no-console
-    }
-    if (options.token) {
-      this.sourceTileset.fetchOptions.token = options.token;
     }
   }
 
