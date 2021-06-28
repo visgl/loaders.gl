@@ -61,10 +61,10 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     // load metadata
     const options = {
       i3s: {
-        ...tileset.fetchOptions,
         isTileHeader: true,
         loadContent: false
-      }
+      },
+      ...tileset.loadOptions
     };
 
     return await load(nodeUrl, loader, options);
