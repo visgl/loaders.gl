@@ -1,4 +1,5 @@
-export {default as Tileset3D, Tileset3DProps} from './tileset/tileset-3d';
+export type {Tileset3DProps} from './tileset/tileset-3d';
+export {default as Tileset3D} from './tileset/tileset-3d';
 export {default as Tile3D} from './tileset/tile-3d';
 
 export {default as TilesetTraverser} from './tileset/traversers/tileset-traverser';
