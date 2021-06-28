@@ -24,7 +24,7 @@ export const WKBWorkerLoader = {
  */
 export const WKBLoader = {
   ...WKBWorkerLoader,
-  parse: async (arrayBuffer, options?) => parseWKB(arrayBuffer),
+  parse: async (arrayBuffer) => parseWKB(arrayBuffer),
   parseSync: parseWKB
 };
 

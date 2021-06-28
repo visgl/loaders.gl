@@ -8,8 +8,8 @@
 // Description: A loader for PCD ascii and binary files.
 // Limitations: Compressed binary files are not supported.
 
+import {Schema, Field, Float32, Uint8, FixedSizeList} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
-import {Field, Float32, Uint8, FixedSizeList, Schema} from '@loaders.gl/schema';
 
 const LITTLE_ENDIAN = true;
 

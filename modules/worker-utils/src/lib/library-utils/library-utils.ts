@@ -1,3 +1,4 @@
+/* global importScripts */
 import {global, isBrowser, isWorker} from '../env-utils/globals';
 import * as node from '../node/require-utils.node';
 import {assert} from '../env-utils/assert';

@@ -29,9 +29,7 @@ export const VideoLoader = {
   parse: parseVideo,
 
   // tests: arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer))),
-  options: {
-    video: {}
-  }
+  options: DEFAULT_LOADER_OPTIONS
 };
 
 export const _typecheckVideoLoader: LoaderWithParser = VideoLoader;

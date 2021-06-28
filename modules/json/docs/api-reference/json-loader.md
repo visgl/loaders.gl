@@ -40,9 +40,9 @@ for await (const batch of batches) {
 
 If no JSONPath is specified the loader will stream the first array it encounters in the JSON payload.
 
-When batch parsing an embedded JSON array as a table, it is possible to get access to the containing object using the `{json: {_rootObjectBatches: true}}` option.
+When batch parsing an embedded JSON array as a table, it is possible to get access to the containing object supplying the `{metadata: true}` option.
 
-The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `root-object-batch-partial` and `root-object-batch-complete` respectively.
+The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result` respectively.
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
@@ -52,18 +52,18 @@ const batches = await loadInBatches('geojson.json', JSONLoader);
 
 for await (const batch of batches) {
   switch (batch.batchType) {
-    case 'root-object-batch-partial': // contains fields seen so far
-    case 'root-object-batch-complete': // contains all fields except the streamed array
+    case 'partial-result': // contains fields seen so far
+    case 'final-result': // contains all fields except the streamed array
       console.log(batch.container);
       break;
-    default:
-    // batch.data will contain a number of rows
-    for (const feature of batch.data) {
-      switch (feature.geometry.type) {
-        case 'Polygon':
-        ...
+    case 'data:
+      // batch.data will contain a number of rows
+      for (const feature of batch.data) {
+        switch (feature.geometry.type) {
+          case 'Polygon':
+          ...
+        }
       }
-    }
   }
 }
 ```

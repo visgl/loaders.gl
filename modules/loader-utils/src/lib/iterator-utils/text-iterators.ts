@@ -2,8 +2,8 @@
 // TextDecoder will keep any partial undecoded bytes between calls to `decode`
 
 export async function* makeTextDecoderIterator(
-  arrayBufferIterator: AsyncIterable<ArrayBuffer>,
-  options: object = {}
+  arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options: TextDecoderOptions = {}
 ): AsyncIterable<string> {
   const textDecoder = new TextDecoder(undefined, options);
   for await (const arrayBuffer of arrayBufferIterator) {
@@ -19,7 +19,7 @@ export async function* makeTextDecoderIterator(
 // If iterator does not yield strings, assume arrayBuffer and return unencoded
 
 export async function* makeTextEncoderIterator(
-  textIterator: AsyncIterable<string>
+  textIterator: AsyncIterable<string> | Iterable<ArrayBuffer>
 ): AsyncIterable<ArrayBuffer> {
   const textEncoder = new TextEncoder();
   for await (const text of textIterator) {

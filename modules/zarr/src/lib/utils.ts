@@ -1,8 +1,9 @@
-import {openGroup, HTTPStore} from 'zarr';
 import type {ZarrArray} from 'zarr';
+// eslint-disable-next-line import/no-unresolved
 import type {Store} from 'zarr/types/storage/types';
-
 import type {PixelSource, RootAttrs, Labels} from '../types';
+
+import {openGroup, HTTPStore} from 'zarr';
 
 export function normalizeStore(source: string | Store): Store {
   if (typeof source === 'string') {

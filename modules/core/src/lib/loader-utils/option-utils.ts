@@ -15,15 +15,19 @@ type GlobalLoaderState = {
 const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   // baseUri
   fetch: null,
+  log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
+
   CDN: 'https://unpkg.com/@loaders.gl',
   worker: true, // By default, use worker if provided by loader.
   maxConcurrency: 3, // How many worker instances should be created for each loader.
   maxMobileConcurrency: 1, // How many worker instances should be created for each loader on mobile devices.
-  log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
-  metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
-  transforms: [],
   reuseWorkers: true, // By default reuse workers,
   _workerType: '', // 'test' to use locally generated workers
+
+  batchSize: 'auto',
+  metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
+  transforms: [],
+
   // EPERIMENTAL
   // DEPRECATED
   // baseUri: undefined

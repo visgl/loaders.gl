@@ -1,7 +1,8 @@
+import type {ArrowLoaderOptions} from '../arrow-loader';
 import {Table} from 'apache-arrow';
 
 // Parses arrow to a columnar table
-export default function parseArrowSync(arrayBuffer, options) {
+export default function parseArrowSync(arrayBuffer, options?: ArrowLoaderOptions) {
   const arrowTable = Table.from([new Uint8Array(arrayBuffer)]);
 
   // Extract columns
@@ -17,11 +18,12 @@ export default function parseArrowSync(arrayBuffer, options) {
     columnarTable[field.name] = values;
   });
 
-  switch (options.arrow.rowFormat) {
-    case 'auto':
-      return columnarTable;
-    case 'object':
+  switch (options?.arrow?.type) {
+    case 'arrow-table':
+      return arrowTable;
+    case 'object-row-table':
       return convertColumnarToRowFormatTable(columnarTable);
+    case 'columnar-table':
     default:
       return columnarTable;
   }
