@@ -1,5 +1,9 @@
 ## v3.0 Prerelease
 
+### v3.0.0-beta.5
+
+- fix(core): selectLoader type assertion (#1552)
+
 ### v3.0.0-beta.4
 
 - feat(schema): Support batch debouncing (#1582)
