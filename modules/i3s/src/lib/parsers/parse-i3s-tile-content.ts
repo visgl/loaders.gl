@@ -44,7 +44,7 @@ export async function parseI3STileContent(
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
-    const url = getUrlWithToken(tile.textureUrl, options.token);
+    const url = getUrlWithToken(tile.textureUrl, options.i3s?.token);
     const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
     tile.content.texture = await load(url, loader);
     if (loader === CompressedTextureLoader) {

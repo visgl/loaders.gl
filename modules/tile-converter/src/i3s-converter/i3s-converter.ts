@@ -31,6 +31,7 @@ import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import type {SceneLayer3D} from '../types';
 import type {GLTFMaterial} from '@loaders.gl/gltf';
 import {GeoidHeightModel} from '../lib/geoid-height-model';
+import {Tileset3DProps} from '@loaders.gl/tiles';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -108,12 +109,15 @@ export default class I3SConverter {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
 
-    const fetchOptions = await this._fetchPreloadOptions();
-    const sourceTilesetJson = await load(inputUrl, CesiumIonLoader, {
-      fetch: fetchOptions
-    });
+    const preloadOptions = await this._fetchPreloadOptions();
+    const tilesetOptions: Tileset3DProps = {loadOptions: {}};
+    if (preloadOptions.headers) {
+      tilesetOptions.loadOptions.fetch = {headers: preloadOptions.headers};
+    }
+    Object.assign(tilesetOptions, preloadOptions);
+    const sourceTilesetJson = await load(inputUrl, CesiumIonLoader, tilesetOptions.loadOptions);
     // console.log(tilesetJson); // eslint-disable-line
-    this.sourceTileset = new Tileset3D(sourceTilesetJson, fetchOptions);
+    this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
 
     await this._createAndSaveTileset(outputPath, tilesetName);
     await this._finishConversion({slpk, outputPath, tilesetName});
