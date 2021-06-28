@@ -1,3 +1,4 @@
+import type {Tileset3DProps} from '@loaders.gl/tiles';
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
@@ -31,7 +32,6 @@ import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import type {SceneLayer3D} from '../types';
 import type {GLTFMaterial} from '@loaders.gl/gltf';
 import {GeoidHeightModel} from '../lib/geoid-height-model';
-import {Tileset3DProps} from '@loaders.gl/tiles';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
