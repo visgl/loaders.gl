@@ -9,6 +9,7 @@ import ColumnarTableBatchAggregator from './columnar-table-batch-aggregator';
 type TableBatchBuilderOptions = {
   type: 'row-table' | 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
   batchSize?: number | 'auto';
+  batchDebounceMs?: number;
 };
 
 type GetBatchOptions = {
@@ -18,7 +19,8 @@ type GetBatchOptions = {
 
 const DEFAULT_OPTIONS: Required<TableBatchBuilderOptions> = {
   type: 'array-row-table',
-  batchSize: 'auto'
+  batchSize: 'auto',
+  batchDebounceMs: 0
 };
 
 const ERR_MESSAGE = 'TableBatchBuilder';
@@ -32,7 +34,7 @@ export default class TableBatchBuilder {
   batchCount: number = 0;
   bytesUsed: number = 0;
   isChunkComplete: boolean = false;
-  lastBatchEmittedMs = 0;
+  lastBatchEmittedMs: number = Date.now();
 
   static ArrowBatch?: TableBatchConstructor;
 
@@ -103,6 +105,11 @@ export default class TableBatchBuilder {
         return false;
       }
     } else if (this.options.batchSize > this.aggregator.rowCount()) {
+      return false;
+    }
+
+    // Debounce batches
+    if (this.options.batchDebounceMs > Date.now() - this.lastBatchEmittedMs) {
       return false;
     }
 

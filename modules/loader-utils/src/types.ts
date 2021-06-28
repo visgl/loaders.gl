@@ -29,6 +29,7 @@ export type LoaderOptions = {
   // batched parsing
   batchType?: 'row' | 'columnar' | 'arrow';
   batchSize?: number | 'auto';
+  batchDebounceMs?: number;
   metadata?: boolean;
   transforms?: any[];
 
@@ -40,7 +41,37 @@ export type LoaderOptions = {
   reuseWorkers?: boolean;
   _workerType?: string;
 
-  // [loaderId: string]: any;
+  /** @deprecated `options.dataType` no longer used */
+  dataType?: any;
+  /** @deprecated `options.uri` no longer used */
+  uri?: any;
+  /** @deprecated `options.method` removed. Use `options.fetch.method` */
+  method?: any;
+  /** @deprecated `options.headers` removed. Use `options.fetch.headers` */
+  headers?: any;
+  /** @deprecated `options.body` removed. Use `options.fetch.body` */
+  body?: any;
+  /** @deprecated `options.mode` removed. Use `options.fetch.mode` */
+  mode?: any;
+  /** @deprecated `options.credentials` removed. Use `options.fetch.credentials` */
+  credentials?: any;
+  /** @deprecated `options.cache` removed. Use `options.fetch.cache` */
+  cache?: any;
+  /** @deprecated `options.redirect` removed. Use `options.fetch.redirect` */
+  redirect?: any;
+  /** @deprecated `options.referrer` removed. Use `options.fetch.referrer` */
+  referrer?: any;
+  /** @deprecated `options.referrerPolicy` removed. Use `options.fetch.referrerPolicy` */
+  referrerPolicy?: any;
+  /** @deprecated `options.integrity` removed. Use `options.fetch.integrity` */
+  integrity?: any;
+  /** @deprecated `options.keepalive` removed. Use `options.fetch.keepalive` */
+  keepalive?: any;
+  /** @deprecated `options.signal` removed. Use `options.fetch.signal` */
+  signal?: any;
+
+  // accept loader options (e.g. `options.csv...`)
+  [loaderId: string]: any;
 };
 
 type PreloadOptions = {
