@@ -76,7 +76,8 @@ export function selectLoaderSync(
   }
 
   // Add registered loaders
-  loaders = [...(loaders || []), ...getRegisteredLoaders()];
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  loaders = [...((loaders as Loader[]) || []), ...getRegisteredLoaders()];
   normalizeLoaders(loaders);
 
   const {url, type} = getResourceUrlAndType(data);
