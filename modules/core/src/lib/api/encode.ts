@@ -62,11 +62,7 @@ export async function encode(
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSync(
-  data: any,
-  writer: Writer,
-  options?: LoaderOptions,
-): ArrayBuffer {
+export function encodeSync(data: any, writer: Writer, options?: LoaderOptions): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
   }
