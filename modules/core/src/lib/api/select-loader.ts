@@ -76,6 +76,7 @@ export function selectLoaderSync(
   }
 
   // Add registered loaders
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   loaders = [...((loaders as Loader[]) || []), ...getRegisteredLoaders()];
   normalizeLoaders(loaders);
 
