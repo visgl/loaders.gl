@@ -67,6 +67,7 @@ export async function parseI3STileContent(
 }
 
 /* eslint-disable max-statements */
+// eslint-disable-next-line complexity
 async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
   if (!tile.content) {
     return tile;
@@ -108,9 +109,19 @@ async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
 
     for (const key in decompressedGeometry.loaderData.attributes) {
       const dracoAttribute = decompressedGeometry.loaderData.attributes[key];
-      if (dracoAttribute.name === 'POSITION') {
-        attributes.position.metadata = dracoAttribute.metadata;
-        break;
+
+      switch (dracoAttribute.name) {
+        case 'POSITION': {
+          attributes.position.metadata = dracoAttribute.metadata;
+          break;
+        }
+        case 'feature-index': {
+          attributes.id.metadata = dracoAttribute.metadata;
+          break;
+        }
+        default: {
+          break;
+        }
       }
     }
 
