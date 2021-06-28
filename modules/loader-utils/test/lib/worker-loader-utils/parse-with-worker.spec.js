@@ -3,7 +3,7 @@ import {WorkerPool} from '@loaders.gl/worker-utils';
 import {toArrayBuffer} from '@loaders.gl/loader-utils';
 import {parseWithWorker} from '@loaders.gl/loader-utils';
 import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core/lib/api/register-loaders';
-import {NullWorkerLoader} from '@loaders.gl/loader-utils';
+import {NullWorkerLoader} from '@loaders.gl/core';
 
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
