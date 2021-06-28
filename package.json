@@ -47,6 +47,7 @@
     "@luma.gl/test-utils": "^8.3.0",
     "@probe.gl/bench": "^3.3.0",
     "@probe.gl/test-utils": "^3.3.1",
+    "babel-plugin-global-define": "^1.0.3",
     "coveralls": "^3.0.3",
     "ocular-dev-tools": "1.0.0-alpha.6",
     "pre-commit": "^1.2.2",

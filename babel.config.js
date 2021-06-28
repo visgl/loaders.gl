@@ -1,4 +1,5 @@
 const {getBabelConfig, deepMerge} = require('ocular-dev-tools');
+const __VERSION__ = require('./lerna.json').version;
 
 module.exports = (api) => {
   const defaultConfig = getBabelConfig(api, {react: true});
@@ -6,7 +7,7 @@ module.exports = (api) => {
   const config = deepMerge(defaultConfig, {
     plugins: [
       // inject __VERSION__ from package.json
-      'version-inline'
+      ['babel-plugin-global-define', {__VERSION__}]
     ],
     ignore: [
       // Don't transpile workers, they are transpiled separately
