@@ -1,20 +1,33 @@
-import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
+import type {
+  WorkerMessageType,
+  WorkerMessagePayload,
+  WorkerContext,
+  Process,
+  ProcessInBatches
+} from '../../types';
 import AsyncQueue from '../async-queue/async-queue';
 import WorkerBody from '../worker-farm/worker-body';
+// import {validateWorkerVersion} from './validate-worker-version';
 
+/** Counter for jobs */
+let requestId = 0;
 let inputBatches;
 let options;
 
-export type ProcessFunction = (data: any, options: {[key: string]: any}) => Promise<any>;
+export type ProcessOnMainThread = (data: any, options?: {[key: string]: any}, context?) => any;
 
 /**
  * Set up a WebWorkerGlobalScope to talk with the main thread
  */
-export function createWorker(process: ProcessFunction, processInBatches?: Function): void {
+export function createWorker(process: Process, processInBatches?: ProcessInBatches): void {
   // Check that we are actually in a worker thread
   if (typeof self === 'undefined') {
     return;
   }
+
+  const context: WorkerContext = {
+    process: processOnMainThread
+  };
 
   // eslint-disable-next-line complexity
   WorkerBody.onmessage = async (type: WorkerMessageType, payload: WorkerMessagePayload) => {
@@ -24,7 +37,7 @@ export function createWorker(process: ProcessFunction, processInBatches?: Functi
           if (!process) {
             throw new Error('Worker does not support atomic processing');
           }
-          const result = await process(payload.input, payload.options || {});
+          const result = await process(payload.input, payload.options || {}, context);
           WorkerBody.postMessage('done', {result});
           break;
 
@@ -34,7 +47,7 @@ export function createWorker(process: ProcessFunction, processInBatches?: Functi
           }
           inputBatches = new AsyncQueue();
           options = payload.options || {};
-          const resultIterator = processInBatches(inputBatches, options);
+          const resultIterator = processInBatches(inputBatches, options, context?.processInBatches);
           for await (const batch of resultIterator) {
             WorkerBody.postMessage('output-batch', {result: batch});
           }
@@ -56,4 +69,40 @@ export function createWorker(process: ProcessFunction, processInBatches?: Functi
       WorkerBody.postMessage('error', {error: message});
     }
   };
+}
+
+function processOnMainThread(arrayBuffer, options = {}) {
+  return new Promise((resolve, reject) => {
+    const id = requestId++;
+
+    /**
+     */
+    const onMessage = (type, payload) => {
+      if (payload.id !== id) {
+        // not ours
+        return;
+      }
+
+      switch (type) {
+        case 'done':
+          WorkerBody.removeEventListener(onMessage);
+          resolve(payload.result);
+          break;
+
+        case 'error':
+          WorkerBody.removeEventListener(onMessage);
+          reject(payload.error);
+          break;
+
+        default:
+        // ignore
+      }
+    };
+
+    WorkerBody.addEventListener(onMessage);
+
+    // Ask the main thread to decode data
+    const payload = {id, input: arrayBuffer, options};
+    WorkerBody.postMessage('process', payload);
+  });
 }

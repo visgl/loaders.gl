@@ -1,6 +1,7 @@
 import type {
   WorkerObject,
   WorkerOptions,
+  WorkerContext,
   WorkerMessageType,
   WorkerMessagePayload
 } from '../../types';
@@ -9,13 +10,18 @@ import WorkerFarm from '../worker-farm/worker-farm';
 import {removeNontransferableOptions} from '../worker-utils/remove-nontransferable-options';
 import {getWorkerURL, getWorkerName} from './get-worker-url';
 
+type ProcessOnWorkerOptions = WorkerOptions & {
+  jobName?: string;
+  [key: string]: any;
+};
+
 /**
  * Determines if we can parse with worker
  * @param loader
  * @param data
  * @param options
  */
-export function canProcessWithWorker(worker: WorkerObject, options?: WorkerOptions) {
+export function canProcessOnWorker(worker: WorkerObject, options?: WorkerOptions) {
   if (!WorkerFarm.isSupported()) {
     return false;
   }
@@ -31,8 +37,8 @@ export function canProcessWithWorker(worker: WorkerObject, options?: WorkerOptio
 export async function processOnWorker(
   worker: WorkerObject,
   data: any,
-  options: WorkerOptions = {},
-  processOnMainThread?: Function
+  options: ProcessOnWorkerOptions = {},
+  context: WorkerContext = {}
 ): Promise<any> {
   const name = getWorkerName(worker);
   const url = getWorkerURL(worker, options);
@@ -40,7 +46,8 @@ export async function processOnWorker(
   const workerFarm = WorkerFarm.getWorkerFarm(options);
   const workerPool = workerFarm.getWorkerPool({name, url});
 
-  const job = await workerPool.startJob(worker.name, onMessage.bind(null, processOnMainThread));
+  const jobName = options.jobName || worker.name;
+  const job = await workerPool.startJob(jobName, onMessage.bind(null, context));
 
   // Kick off the processing in the worker
   const transferableOptions = removeNontransferableOptions(options);
@@ -56,20 +63,40 @@ export async function processOnWorker(
  * @param message
  */
 async function onMessage(
-  processOnMainThread,
+  context: WorkerContext,
   job: WorkerJob,
   type: WorkerMessageType,
   payload: WorkerMessagePayload
 ) {
   switch (type) {
     case 'done':
+      // Worker is done
       job.done(payload);
       break;
+
     case 'error':
+      // Worker encountered an error
       job.error(payload.error);
       break;
-    default:
-      job.error(type);
+
+    case 'process':
+      // Worker is asking for us (main thread) to process something
+      const {id, input, options} = payload;
+      try {
+        if (!context.process) {
+          job.postMessage('error', {id, error: 'Worker not set up to process on main thread'});
+          return;
+        }
+        const result = await context.process(input, options);
+        job.postMessage('done', {id, result});
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'unknown error';
+        job.postMessage('error', {id, error: message});
+      }
       break;
+
+    default:
+      // eslint-disable-next-line
+      console.warn(`process-on-worker: unknown message ${type}`);
   }
 }
