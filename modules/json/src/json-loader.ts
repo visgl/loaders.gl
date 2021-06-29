@@ -13,7 +13,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  */
 export type JSONLoaderOptions = LoaderOptions & {
   json?: {
-    type?: 'row-table';
+    shape?: 'row-table';
     table?: false;
     jsonpaths?: [];
     // batchSize?: number | 'auto';
@@ -22,7 +22,7 @@ export type JSONLoaderOptions = LoaderOptions & {
 
 const DEFAULT_JSON_LOADER_OPTIONS = {
   json: {
-    type: 'row-table',
+    shape: 'row-table',
     table: false,
     jsonpaths: []
     // batchSize: 'auto'

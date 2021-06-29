@@ -61,7 +61,7 @@ export default class RowTableBatchAggregator implements TableBatchAggregator {
     this.rows = null;
 
     const batch: TableBatch = {
-      type: this.options.type,
+      shape: this.options.shape,
       batchType: 'data',
       data: rows,
       length: this.length,

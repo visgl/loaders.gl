@@ -26,17 +26,17 @@ test('CSVLoader#load(states.csv)', async (t) => {
 });
 
 test('CSVLoader#load', async (t) => {
-  const rows = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {type: 'object-row-table'}});
+  const rows = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'object-row-table'}});
   t.is(rows.length, 2, 'Got correct table size, correctly inferred no header');
   t.deepEqual(rows[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
 
   const rows1 = await load(CSV_SAMPLE_URL, CSVLoader, {
-    csv: {type: 'object-row-table', header: true}
+    csv: {shape: 'object-row-table', header: true}
   });
   t.is(rows1.length, 1, 'Got correct table size, forced first row as header');
   t.deepEqual(rows1[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
 
-  const rows2 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {type: 'array-row-table'}});
+  const rows2 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'array-row-table'}});
   t.is(rows2.length, 2, 'Got correct table size');
   t.deepEqual(
     rows2,
@@ -47,7 +47,7 @@ test('CSVLoader#load', async (t) => {
     'Got correct array content'
   );
 
-  const rows3 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {csv: {type: 'object-row-table'}});
+  const rows3 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {csv: {shape: 'object-row-table'}});
   t.is(rows3.length, 2000, 'Got correct table size');
   t.deepEqual(
     rows3[0],
@@ -59,7 +59,7 @@ test('CSVLoader#load', async (t) => {
     'Got correct first row'
   );
 
-  const rows4 = await load(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {csv: {type: 'object-row-table'}});
+  const rows4 = await load(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {csv: {shape: 'object-row-table'}});
   t.is(rows4.length, 499, 'Got correct table size (csv with quotes)');
   t.deepEqual(
     rows4[0],
@@ -82,7 +82,7 @@ test('CSVLoader#load', async (t) => {
 
 test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
   const rows = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
-    csv: {type: 'object-row-table'}
+    csv: {shape: 'object-row-table'}
   });
   t.is(rows.length, 3, 'Got correct table size');
   t.deepEqual(
@@ -96,7 +96,7 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
   );
 
   const rows2 = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
-    csv: {type: 'array-row-table', header: false}
+    csv: {shape: 'array-row-table', header: false}
   });
   t.is(rows2.length, 4, 'Got correct table size');
   t.deepEqual(
@@ -114,7 +114,7 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
 test('CSVLoader#loadInBatches(sample.csv, columns)', async (t) => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {
-      type: 'columnar-table'
+      shape: 'columnar-table'
     }
   });
   t.ok(isAsyncIterable(iterator), 'loadInBatches returned iterator');
@@ -138,7 +138,7 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     csv: {
-      type: 'columnar-table'
+      shape: 'columnar-table'
     },
     batchSize
   });
@@ -185,7 +185,7 @@ test('CSVLoader#loadInBatches(sample.csv, array-rows)', async (t) => {
 
 test('CSVLoader#loadInBatches(sample.csv, object-rows)', async (t) => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
-    csv: {type: 'object-row-table'}
+    csv: {shape: 'object-row-table'}
   });
 
   let batchCount = 0;
@@ -215,7 +215,7 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
   t.equal(batchCount, 1, 'Correct number of batches received');
 
   iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
-    csv: {header: false, type: 'object-row-table'}
+    csv: {header: false, shape: 'object-row-table'}
   });
 
   batchCount = 0;
@@ -234,7 +234,7 @@ test('CSVLoader#loadInBatches(no header, row format, prefix)', async (t) => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_NO_HEADER_URL, CSVLoader, {
     csv: {
-      type: 'object-row-table',
+      shape: 'object-row-table',
       columnPrefix: 'column_'
     },
     batchSize
@@ -253,7 +253,7 @@ test('CSVLoader#loadInBatches(no header, row format, prefix)', async (t) => {
 test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {
-      type: 'columnar-table',
+      shape: 'columnar-table',
       dynamicTyping: false,
       // We explicitly set the header, since without dynamicTyping the first
       // row might be detected as a header (all values would be string)
@@ -281,7 +281,7 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
 
 test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
-    csv: {type: 'object-row-table'}
+    csv: {shape: 'object-row-table'}
   });
 
   const rows = [];
@@ -302,7 +302,7 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
   );
 
   const iterator2 = await loadInBatches(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
-    csv: {type: 'array-row-table'}
+    csv: {shape: 'array-row-table'}
   });
 
   const rows2 = [];
@@ -325,7 +325,7 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
 
 test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL_EMPTY_LINES, CSVLoader, {
-    csv: {type: 'object-row-table', skipEmptyLines: true}
+    csv: {shape: 'object-row-table', skipEmptyLines: true}
   });
 
   const rows = [];
@@ -348,7 +348,7 @@ test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
 
 test('CSVLoader#loadInBatches(csv with quotes)', async (t) => {
   const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
-    csv: {type: 'object-row-table'}
+    csv: {shape: 'object-row-table'}
   });
 
   const rows = [];

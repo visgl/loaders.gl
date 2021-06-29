@@ -18,7 +18,7 @@ export default function parseArrowSync(arrayBuffer, options?: ArrowLoaderOptions
     columnarTable[field.name] = values;
   });
 
-  switch (options?.arrow?.type) {
+  switch (options?.arrow?.shape) {
     case 'arrow-table':
       return arrowTable;
     case 'object-row-table':
