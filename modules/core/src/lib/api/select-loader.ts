@@ -1,9 +1,4 @@
-import type {
-  LoaderWithParser,
-  LoaderContext,
-  LoaderOptions,
-  Loader
-} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import {compareArrayBuffers} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getResourceUrlAndType} from '../utils/resource-utils';
@@ -84,7 +79,7 @@ export function selectLoaderSync(
 
   const testUrl = url || context?.url;
   let loader = findLoaderByUrl(loaders, testUrl);
-  loader = loader || findLoaderByContentType(loaders, type);
+  loader = loader || findLoaderByContentType(loaders, type || options?.mimeType);
   // NOTE: Initial data is not always available (e.g. Response, stream, async iterator)
   loader = loader || findLoaderByExamingInitialData(loaders, data);
 

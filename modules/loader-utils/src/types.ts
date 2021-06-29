@@ -20,6 +20,8 @@ export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
 // Core Loader Options
 export type LoaderOptions = {
   fetch?: typeof fetch | RequestInit | null;
+  mimeType?: string;
+  nothrow?: boolean;
 
   // general
   log?: any;

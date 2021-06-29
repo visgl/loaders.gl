@@ -4,8 +4,9 @@ import {ConsoleLog} from './loggers';
 export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   // baseUri
   fetch: null,
-  log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
+  mimeType: undefined,
   nothrow: false,
+  log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
 
   CDN: 'https://unpkg.com/@loaders.gl',
   worker: true, // By default, use worker if provided by loader.
