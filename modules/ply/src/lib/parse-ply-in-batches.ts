@@ -21,22 +21,24 @@
 //   }
 // });
 
-// @ts-nocheck
-
 import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/core';
 import normalizePLY from './normalize-ply';
+import {ASCIIElement, PlyAttributes, PlyData, PlyHeader} from './types';
 
-// PARSER
+let currentElement: ASCIIElement;
 /**
- *
+ * PARSER
  * @param iterator
  * @param options
  */
-export default async function* parsePLYInBatches(iterator, options = {}) {
+export default async function* parsePLYInBatches(
+  iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options: any
+): AsyncGenerator<PlyData, void, unknown> {
   const lineIterator = makeLineIterator(makeTextDecoderIterator(iterator));
   const header = await parseHeader(lineIterator, options);
 
-  let attributes;
+  let attributes: PlyAttributes;
   switch (header.format) {
     case 'ascii':
       attributes = await parseASCII(lineIterator, header);
@@ -48,19 +50,25 @@ export default async function* parsePLYInBatches(iterator, options = {}) {
 
   yield normalizePLY(header, attributes, options);
 }
-
-async function parseHeader(lineIterator, options) {
-  const header = {
+/**
+ * Parses header
+ * @param lineIterator
+ * @param options
+ * @returns
+ */
+async function parseHeader(
+  lineIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options: {[key: string]: any}
+): Promise<PlyHeader> {
+  const header: PlyHeader = {
     comments: [],
     elements: []
     // headerLength
   };
 
-  let currentElement;
-
   // Note: forEach does not reset iterator if exiting loop prematurely
   // so that iteration can continue in a second loop
-  await forEach(lineIterator, (line) => {
+  await forEach(lineIterator, (line: string) => {
     line = line.trim();
 
     // End of header
@@ -124,8 +132,8 @@ async function parseHeader(lineIterator, options) {
   return header;
 }
 
-function makePLYElementProperty(propertValues, propertyNameMapping) {
-  const property = {
+function makePLYElementProperty(propertValues: string[], propertyNameMapping: []) {
+  const property: {[index: string]: string} = {
     type: propertValues[0]
   };
 
@@ -145,10 +153,14 @@ function makePLYElementProperty(propertValues, propertyNameMapping) {
 }
 
 // ASCII PARSING
-
-async function parseASCII(lineIterator, header) {
+/**
+ * @param lineIterator
+ * @param header
+ * @returns
+ */
+async function parseASCII(lineIterator: string, header: PlyHeader) {
   // PLY ascii format specification, as per http://en.wikipedia.org/wiki/PLY_(file_format)
-  const attributes = {
+  const attributes: PlyAttributes = {
     indices: [],
     vertices: [],
     normals: [],
@@ -176,9 +188,14 @@ async function parseASCII(lineIterator, header) {
 
   return attributes;
 }
-
+/**
+ * Parses ASCII number
+ * @param n
+ * @param type
+ * @returns ASCII number
+ */
 // eslint-disable-next-line complexity
-function parseASCIINumber(n, type) {
+function parseASCIINumber(n: string, type: string): number {
   switch (type) {
     case 'char':
     case 'uchar':
@@ -204,15 +221,20 @@ function parseASCIINumber(n, type) {
       throw new Error(type);
   }
 }
-
-function parseASCIIElement(properties, line) {
-  const values = line.split(/\s+/);
+/**
+ * Parses ASCII element
+ * @param properties
+ * @param line
+ * @returns element
+ */
+function parseASCIIElement(properties: any[], line: string) {
+  const values: any = line.split(/\s+/);
 
   const element = {};
 
   for (let i = 0; i < properties.length; i++) {
     if (properties[i].type === 'list') {
-      const list = [];
+      const list: any = [];
       const n = parseASCIINumber(values.shift(), properties[i].countType);
 
       for (let j = 0; j < n; j++) {
@@ -227,10 +249,18 @@ function parseASCIIElement(properties, line) {
 
   return element;
 }
-
+/**
+ * @param buffer
+ * @param elementName
+ * @param element
+ */
 // HELPER FUNCTIONS
 // eslint-disable-next-line complexity
-function handleElement(buffer, elementName, element) {
+function handleElement(
+  buffer: {[index: string]: number[]},
+  elementName: string,
+  element: any = {}
+) {
   switch (elementName) {
     case 'vertex':
       buffer.vertices.push(element.x, element.y, element.z);

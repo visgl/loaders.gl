@@ -20,14 +20,26 @@
 //     diffuse_blue: 'blue'
 //   }
 // });
-
-// @ts-nocheck
-
+import type {
+  TypedArray,
+  PlyAttributes,
+  PlyData,
+  PlyHeader,
+  NormalizeHeader,
+  ASCIIElement,
+  PlyProperty
+} from './types';
 import normalizePLY from './normalize-ply';
 
-export default function parsePLY(data, options = {}) {
-  let header;
-  let attributes;
+let currentElement: ASCIIElement;
+/**
+ * @param data
+ * @param options
+ * @returns
+ */
+export default function parsePLY(data: TypedArray | any, options = {}): PlyData {
+  let header: PlyHeader & NormalizeHeader;
+  let attributes: PlyAttributes;
 
   if (data instanceof ArrayBuffer) {
     const text = new TextDecoder().decode(data);
@@ -38,10 +50,14 @@ export default function parsePLY(data, options = {}) {
     attributes = parseASCII(data, header);
   }
 
-  return normalizePLY(header, attributes, options);
+  return normalizePLY(header, attributes);
 }
-
-function parseHeader(data, options) {
+/**
+ * @param data
+ * @param options
+ * @returns header
+ */
+function parseHeader(data: any, options: {[index: string]: any}): PlyHeader {
   const PLY_HEADER_PATTERN = /ply([\s\S]*)end_header\s/;
 
   let headerText = '';
@@ -54,19 +70,19 @@ function parseHeader(data, options) {
     headerLength = result[0].length;
   }
 
-  const header = {
+  const header: PlyHeader = {
     comments: [],
     elements: [],
     headerLength
   };
 
   const lines = headerText.split('\n');
-  let currentElement;
-  let lineType;
-  let lineValues;
+
+  let lineType: string | undefined;
+  let lineValues: string[];
 
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
+    let line: string = lines[i];
     line = line.trim();
 
     if (line === '') {
@@ -119,8 +135,13 @@ function parseHeader(data, options) {
   return header;
 }
 
-function makePLYElementProperty(propertValues, propertyNameMapping) {
-  const property = {
+/**
+ * @param propertValues
+ * @param propertyNameMapping
+ * @returns property of ply element
+ */
+function makePLYElementProperty(propertValues: string[], propertyNameMapping: []): PlyProperty {
+  const property: PlyProperty = {
     type: propertValues[0]
   };
 
@@ -138,9 +159,14 @@ function makePLYElementProperty(propertValues, propertyNameMapping) {
 
   return property;
 }
-
+/**
+ * Parses ASCII number
+ * @param n
+ * @param type
+ * @returns
+ */
 // eslint-disable-next-line complexity
-function parseASCIINumber(n, type) {
+function parseASCIINumber(n: string, type: string): number {
   switch (type) {
     case 'char':
     case 'uchar':
@@ -166,15 +192,19 @@ function parseASCIINumber(n, type) {
       throw new Error(type);
   }
 }
-
-function parseASCIIElement(properties, line) {
-  const values = line.split(/\s+/);
+/**
+ * @param properties
+ * @param line
+ * @returns ASCII element
+ */
+function parseASCIIElement(properties: any[], line: string) {
+  const values: any = line.split(/\s+/);
 
   const element = {};
 
   for (let i = 0; i < properties.length; i++) {
     if (properties[i].type === 'list') {
-      const list = [];
+      const list: any = [];
       const n = parseASCIINumber(values.shift(), properties[i].countType);
 
       for (let j = 0; j < n; j++) {
@@ -189,11 +219,15 @@ function parseASCIIElement(properties, line) {
 
   return element;
 }
-
-function parseASCII(data, header) {
+/**
+ * @param data
+ * @param header
+ * @returns [attributes]
+ */
+function parseASCII(data: any, header: PlyHeader): PlyAttributes {
   // PLY ascii format specification, as per http://en.wikipedia.org/wiki/PLY_(file_format)
 
-  const attributes = {
+  const attributes: PlyAttributes = {
     indices: [],
     vertices: [],
     normals: [],
@@ -201,7 +235,7 @@ function parseASCII(data, header) {
     colors: []
   };
 
-  let result;
+  let result: RegExpExecArray | null;
 
   const patternBody = /end_header\s([\s\S]*)$/;
   let body = '';
@@ -231,9 +265,17 @@ function parseASCII(data, header) {
 
   return attributes;
 }
-
+/**
+ * @param buffer
+ * @param elementName
+ * @param element
+ */
 // eslint-disable-next-line complexity
-function handleElement(buffer, elementName, element) {
+function handleElement(
+  buffer: {[index: string]: number[]},
+  elementName: string,
+  element: any = {}
+) {
   if (elementName === 'vertex') {
     buffer.vertices.push(element.x, element.y, element.z);
 
@@ -261,15 +303,15 @@ function handleElement(buffer, elementName, element) {
 }
 
 /**
- *
- * @param {DataView} dataview
- * @param {number} at
- * @param {any} type
- * @param {boolean} littleEndian
- * @returns {[number, number]}
+ * Reads binary data
+ * @param dataview
+ * @param at
+ * @param type
+ * @param littleEndian
+ * @returns [number, number]
  */
 // eslint-disable-next-line complexity
-function binaryRead(dataview, at, type, littleEndian) {
+function binaryRead(dataview: DataView, at: number, type: any, littleEndian: boolean): number[] {
   switch (type) {
     // corespondences for non-specific length types here match rply:
     case 'int8':
@@ -303,16 +345,21 @@ function binaryRead(dataview, at, type, littleEndian) {
 }
 
 /**
- *
- * @param {DataView} dataview
- * @param {number} at
- * @param {*} properties
- * @param {*} littleEndian
- * @returns {[object, number]}
+ * Reads binary data
+ * @param dataview
+ * @param at
+ * @param properties
+ * @param littleEndian
+ * @returns [object, number]
  */
-function binaryReadElement(dataview, at, properties, littleEndian) {
+function binaryReadElement(
+  dataview: DataView,
+  at: number,
+  properties: {[index: string]: any},
+  littleEndian: boolean
+): {}[] {
   const element = {};
-  let result;
+  let result: number[];
   let read = 0;
 
   for (let i = 0; i < properties.length; i++) {
@@ -325,6 +372,7 @@ function binaryReadElement(dataview, at, properties, littleEndian) {
 
       for (let j = 0; j < n; j++) {
         result = binaryRead(dataview, at + read, properties[i].itemType, littleEndian);
+        // @ts-ignore
         list.push(result[0]);
         read += result[1];
       }
@@ -340,8 +388,17 @@ function binaryReadElement(dataview, at, properties, littleEndian) {
   return [element, read];
 }
 
-function parseBinary(data, header) {
-  const attributes = {
+type BinaryAttributes = {
+  [index: string]: number[];
+};
+/**
+ * Parses binary data
+ * @param data
+ * @param header
+ * @returns [attributes] of data
+ */
+function parseBinary(data: ArrayBuffer, header: {[index: string]: any}): BinaryAttributes {
+  const attributes: BinaryAttributes = {
     indices: [],
     vertices: [],
     normals: [],
@@ -351,7 +408,7 @@ function parseBinary(data, header) {
 
   const littleEndian = header.format === 'binary_little_endian';
   const body = new DataView(data, header.headerLength);
-  let result;
+  let result: any[];
   let loc = 0;
 
   for (let currentElement = 0; currentElement < header.elements.length; currentElement++) {

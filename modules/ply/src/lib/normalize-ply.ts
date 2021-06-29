@@ -1,6 +1,16 @@
+import type {PlyAccessors, PlyData, PlyAttributes, NormalizeHeader, PlyHeader} from './types';
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 
-export default function normalizePLY(header, attributes) {
+/**
+ * @param header
+ * @param attributes
+ * @returns data and header
+ */
+export default function normalizePLY(
+  header: NormalizeHeader & PlyHeader,
+  attributes: PlyAttributes,
+  options?: {}
+): PlyData {
   const normalizedAttributes = normalizeAttributes(attributes);
 
   const result = {
@@ -11,7 +21,6 @@ export default function normalizePLY(header, attributes) {
     // TODO - For Meshes, PLY quadrangles must be split?
     header: {
       vertexCount: attributes.indices.length || attributes.vertices.length / 3,
-      // @ts-ignore Need to export Attributes type
       boundingBox: getMeshBoundingBox(normalizedAttributes)
     },
     mode: attributes.indices && attributes.indices.length > 0 ? 4 : 0, // TRIANGLES vs POINTS
@@ -26,8 +35,12 @@ export default function normalizePLY(header, attributes) {
   return result;
 }
 
-function normalizeAttributes(attributes) {
-  const accessors: any = {};
+/**
+ * @param attributes
+ * @returns accessors []
+ */
+function normalizeAttributes(attributes: PlyAttributes): PlyAccessors {
+  const accessors: PlyAccessors = {};
 
   accessors.POSITION = {value: new Float32Array(attributes.vertices), size: 3};
 
