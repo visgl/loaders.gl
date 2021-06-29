@@ -14,7 +14,7 @@ const URL_WITH_QUERYSTRING =
   'https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw.xy';
 const DRACO_URL_QUERYSTRING = '@loaders.gl/draco/test/data/bunny.drc?query.string';
 
-test.only('selectLoaderSync#urls', async (t) => {
+test('selectLoaderSync#urls', async (t) => {
   // @ts-ignore
   t.throws(() => selectLoaderSync(null), 'selectedLoader throws if no loader found');
 
