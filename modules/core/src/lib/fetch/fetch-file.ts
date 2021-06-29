@@ -13,7 +13,8 @@ import {getErrorMessageFromResponse} from './fetch-error-message';
  */
 export async function fetchFile(
   url: string | Blob,
-  options?: RequestInit & {fetch?: RequestInit | Function}): Promise<Response> {
+  options?: RequestInit & {fetch?: RequestInit | Function}
+): Promise<Response> {
   if (typeof url === 'string') {
     url = resolvePath(url);
 
