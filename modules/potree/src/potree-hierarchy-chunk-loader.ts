@@ -10,11 +10,11 @@ export const PotreeHierarchyChunkLoader: LoaderWithParser = {
   mimeTypes: ['application/octet-stream'],
   // binary potree files have no header bytes, no content test function possible
   // test: ['...'],
-  parse: async (arrayBuffer, options) => await parseSync(arrayBuffer, options),
+  parse: async (arrayBuffer, options) => await parseSync(arrayBuffer),
   parseSync,
   binary: true
 };
 
-function parseSync(arrayBuffer, options) {
+function parseSync(arrayBuffer) {
   return parsePotreeHierarchyChunk(arrayBuffer);
 }

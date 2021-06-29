@@ -1,10 +1,4 @@
-import type {
-  DataType,
-  Loader,
-  LoaderWithParser,
-  LoaderContext,
-  LoaderOptions
-} from '@loaders.gl/loader-utils';
+import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/option-utils';

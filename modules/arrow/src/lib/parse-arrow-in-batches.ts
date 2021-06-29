@@ -26,7 +26,7 @@ export function parseArrowInBatches(
   */
 
   async function* makeArrowAsyncIterator() {
-    const readers = await RecordBatchReader.readAll(asyncIterator);
+    const readers = RecordBatchReader.readAll(asyncIterator);
     for await (const reader of readers) {
       for await (const batch of reader) {
         yield processBatch(batch);

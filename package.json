@@ -38,7 +38,7 @@
     "metrics": "./scripts/metrics.sh && ocular-metrics",
     "version": "yarn build",
     "pre-commit": "yarn lint",
-    "pre-push": "ocular-test fast"
+    "pre-push": "yarn lint"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.14.5",

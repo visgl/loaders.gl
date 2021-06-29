@@ -10,8 +10,7 @@ import {fetchFile} from '../fetch/fetch-file';
 export async function encode(
   data: any,
   writer: Writer,
-  options?: LoaderOptions,
-  url?: string
+  options?: LoaderOptions
 ): Promise<ArrayBuffer> {
   if (writer.encode) {
     return await writer.encode(data, options);
@@ -36,7 +35,7 @@ export async function encode(
       chunks.push(batch);
     }
     // @ts-ignore
-    return await concatenateArrayBuffers(...chunks);
+    return concatenateArrayBuffers(...chunks);
   }
 
   if (!isBrowser && writer.encodeURLtoURL) {
@@ -63,12 +62,7 @@ export async function encode(
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSync(
-  data: any,
-  writer: Writer,
-  options?: LoaderOptions,
-  url?: string
-): ArrayBuffer {
+export function encodeSync(data: any, writer: Writer, options?: LoaderOptions): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
   }
@@ -84,8 +78,7 @@ export function encodeSync(
 export async function encodeText(
   data: any,
   writer: Writer,
-  options?: LoaderOptions,
-  url?: string
+  options?: LoaderOptions
 ): Promise<string> {
   if (writer.text && writer.encodeText) {
     return await writer.encodeText(data, options);
@@ -105,8 +98,7 @@ export async function encodeText(
 export function encodeInBatches(
   data: any,
   writer: Writer,
-  options?: LoaderOptions,
-  url?: string
+  options?: LoaderOptions
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);

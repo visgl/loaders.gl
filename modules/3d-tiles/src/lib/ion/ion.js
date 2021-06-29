@@ -34,7 +34,10 @@ export async function getIonAssets(accessToken) {
   assert(accessToken);
   const url = CESIUM_ION_URL;
   const headers = {Authorization: `Bearer ${accessToken}`};
-  const response = await fetchFile(url, {fetch: {headers, throws: true}});
+  const response = await fetchFile(url, {fetch: {headers}});
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
   return await response.json();
 }
 
@@ -46,12 +49,18 @@ export async function getIonAssetMetadata(accessToken, assetId) {
   const url = `${CESIUM_ION_URL}/${assetId}`;
   // https://cesium.com/docs/rest-api/#operation/getAsset
   // Retrieves metadata information about a specific asset.
-  let response = await fetchFile(`${url}`, {fetch: {headers, throws: true}});
+  let response = await fetchFile(`${url}`, {fetch: {headers}});
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
   let metadata = await response.json();
 
   // https://cesium.com/docs/rest-api/#operation/getAssetEndpoint
   // Retrieves information and credentials that allow you to access the tiled asset data for visualization and analysis.
-  response = await fetchFile(`${url}/endpoint`, {fetch: {headers, throws: true}});
+  response = await fetchFile(`${url}/endpoint`, {fetch: {headers}});
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
   const tilesetInfo = await response.json();
 
   // extract dataset description

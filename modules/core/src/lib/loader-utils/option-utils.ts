@@ -2,60 +2,14 @@ import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-util
 import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
-import {NullLog, ConsoleLog} from './loggers';
-
+import {NullLog} from './loggers';
+import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 /**
  * Global state for loaders.gl. Stored on `global.loaders._state`
  */
 type GlobalLoaderState = {
   loaderRegistry: Loader[];
   globalOptions: {[key: string]: any};
-};
-
-const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
-  // baseUri
-  fetch: null,
-  log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
-
-  CDN: 'https://unpkg.com/@loaders.gl',
-  worker: true, // By default, use worker if provided by loader.
-  maxConcurrency: 3, // How many worker instances should be created for each loader.
-  maxMobileConcurrency: 1, // How many worker instances should be created for each loader on mobile devices.
-  reuseWorkers: true, // By default reuse workers,
-  _workerType: '', // 'test' to use locally generated workers
-
-  batchSize: 'auto',
-  metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
-  transforms: [],
-
-  // EPERIMENTAL
-  // DEPRECATED
-  // baseUri: undefined
-
-  // TODO/ActionEngine - Move to i3s loader option defaults
-  // These are not common options for all loaders
-  // @ts-ignore
-  attributeName: null, // Used by i3s-attribute-loader to define attribute name.
-  // @ts-ignore
-  attributeType: null // Used by i3s-attribute-loader to define attribute type.
-};
-
-const REMOVED_LOADER_OPTIONS = {
-  dataType: '(no longer used)',
-  uri: 'baseUri',
-  // Warn if fetch options are used on top-level
-  method: 'fetch.method',
-  headers: 'fetch.headers',
-  body: 'fetch.body',
-  mode: 'fetch.mode',
-  credentials: 'fetch.credentials',
-  cache: 'fetch.cache',
-  redirect: 'fetch.redirect',
-  referrer: 'fetch.referrer',
-  referrerPolicy: 'fetch.referrerPolicy',
-  integrity: 'fetch.integrity',
-  keepalive: 'fetch.keepalive',
-  signal: 'fetch.signal'
 };
 
 /**

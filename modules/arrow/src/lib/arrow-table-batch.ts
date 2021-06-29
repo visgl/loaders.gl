@@ -1,6 +1,6 @@
 import type {ArrowTableBatch} from '@loaders.gl/schema';
 import {Schema, Field, RecordBatch, Float32Vector, Float32} from 'apache-arrow';
-import {ColumnarTableBatchAggregator, TableBatchBuilder} from '@loaders.gl/schema';
+import {ColumnarTableBatchAggregator} from '@loaders.gl/schema';
 
 export default class ArrowTableBatchAggregator extends ColumnarTableBatchAggregator {
   arrowSchema: Schema | null;
