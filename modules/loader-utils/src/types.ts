@@ -51,7 +51,7 @@ export type LoaderOptions = {
   maxConcurrency?: number;
   /** Number of concurrent workers (per loader) on mobile browsers */
   maxMobileConcurrency?: number;
-  /** Set to `false` to  */
+  /** Set to `false` to prevent reuse workers */
   reuseWorkers?: boolean;
   /** set to 'test' to run worker type */
   _workerType?: string;
