@@ -23,7 +23,6 @@ export type LoaderOptions = {
 
   // general
   log?: any;
-  nothrow?: boolean;
 
   // batched parsing
   batchType?: 'row' | 'columnar' | 'arrow';
