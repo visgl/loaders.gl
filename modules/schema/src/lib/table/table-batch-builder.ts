@@ -11,7 +11,7 @@ type TableBatchBuilderOptions = {
   batchSize?: number | 'auto';
   batchDebounceMs?: number;
   limit: number;
-  limitMB: number;
+  _limitMB: number;
 };
 
 type GetBatchOptions = {
@@ -24,7 +24,7 @@ const DEFAULT_OPTIONS: Required<TableBatchBuilderOptions> = {
   batchSize: 'auto',
   batchDebounceMs: 0,
   limit: 0,
-  limitMB: 0
+  _limitMB: 0
 };
 
 const ERR_MESSAGE = 'TableBatchBuilder';
@@ -54,7 +54,7 @@ export default class TableBatchBuilder {
     if (Boolean(this.options?.limit) && this.totalLength >= this.options.limit) {
       return true;
     }
-    if (Boolean(this.options?.limitMB) && this.totalBytes / 1e6 >= this.options.limitMB) {
+    if (Boolean(this.options?._limitMB) && this.totalBytes / 1e6 >= this.options._limitMB) {
       return true;
     }
     return false;
