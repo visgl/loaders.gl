@@ -5,7 +5,6 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   // baseUri
   fetch: null,
   log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
-  nothrow: false,
 
   CDN: 'https://unpkg.com/@loaders.gl',
   worker: true, // By default, use worker if provided by loader.
