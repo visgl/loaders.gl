@@ -11,10 +11,10 @@ const GL_TYPE_TO_ARRAY_TYPE = {
   [GL.SHORT]: Int16Array,
   [GL.INT]: Int32Array
 };
-type Names = {
+type GlTypeMap = {
   [index: string]: number;
 };
-const NAME_TO_GL_TYPE: Names = {
+const NAME_TO_GL_TYPE: GlTypeMap = {
   DOUBLE: GL.DOUBLE,
   FLOAT: GL.FLOAT,
   UNSIGNED_SHORT: GL.UNSIGNED_SHORT,
@@ -60,7 +60,7 @@ export default class GLType {
   }
   // Converts GL constant to corresponding typed array type
   // eslint-disable-next-line complexity
-  static getArrayType(glType: number, clamped = false) {
+  static getArrayType(glType: number) {
     switch (glType) {
       /*eslint-disable*/
       // @ts-ignore

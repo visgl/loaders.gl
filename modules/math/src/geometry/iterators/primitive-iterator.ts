@@ -1,8 +1,18 @@
 import {GL} from '../constants';
 import {getPrimitiveModeType} from '../primitives/modes';
 import {assert} from '@loaders.gl/loader-utils';
-import type {Information} from '../types';
 
+/**
+ * Iteration info for making primitive iterator
+ */
+type Information = {
+  attributes: object;
+  type: number | void;
+  i1: number;
+  i2: number;
+  i3: number;
+  primitiveIndex?: object;
+};
 /**
  * Will iterate over each primitive, expanding (dereferencing) indices
  * @param indices

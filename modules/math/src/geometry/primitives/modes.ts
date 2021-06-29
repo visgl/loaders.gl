@@ -1,10 +1,14 @@
 import {GL} from '../constants';
-import {assert} from '../utils/assert';
+
+/**
+ * Different methods of working with geometries depending on glType
+ /**
+
 /**
  * @param mode
  * @returns draw points | lines | triangles
  */
-export function getPrimitiveModeType(mode?: number): number | void {
+export function getPrimitiveModeType(mode?: number): number {
   switch (mode) {
     case GL.POINTS: // draw single points.
       return GL.POINTS;
@@ -17,7 +21,7 @@ export function getPrimitiveModeType(mode?: number): number | void {
     case GL.TRIANGLE_FAN: // draw a connected group of triangles.
       return GL.TRIANGLES;
     default:
-      return assert(false);
+      throw new Error('Unknown primitive mode');
   }
 }
 /**
@@ -41,7 +45,7 @@ export function isPrimitiveModeExpandable(mode: number): boolean {
  * @param length
  * @returns new length
  */
-export function getPrimitiveModeExpandedLength(mode: number, length: number): number | void {
+export function getPrimitiveModeExpandedLength(mode: number, length: number): number {
   switch (mode) {
     case GL.POINTS: // draw single points.
       return length;
@@ -57,6 +61,6 @@ export function getPrimitiveModeExpandedLength(mode: number, length: number): nu
     case GL.TRIANGLE_FAN: // draw a connected group of triangles.
       return (length - 2) * 3;
     default:
-      return assert(false);
+      throw new Error('Unknown length');
   }
 }

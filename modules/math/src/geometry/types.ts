@@ -1,29 +1,4 @@
 /**
- * Type for Bounding Box computing
- */
-export type Geometry = {
-  min: number[];
-  max: number[];
-};
-/**
- * Different methods of working with geometries depending on glType
- * @param mode
- */
-export declare function getPrimitiveModeType(mode: number): number;
-export declare function isPrimitiveModeExpandable(mode: number): boolean;
-export declare function getPrimitiveModeExpandedLength(mode: number, length: number): number;
-/**
- * Iteration info for making primitive iterator
- */
-export type Information = {
-  attributes: object;
-  type: number | void;
-  i1: number;
-  i2: number;
-  i3: number;
-  primitiveIndex?: object;
-};
-/**
  * Type for encoding to Vector4
  */
 export type Vector4 = {
@@ -32,15 +7,8 @@ export type Vector4 = {
   z: number;
   w: number;
 };
-/**
- * For computing geometries
- */
-export type GeometryOptions = {
-  attributes: {positions: {[index: string]: number}; POSITION: number};
-  values: GeometryOptions & ArrayBufferView;
-};
-// Typed arrays
 
+// Typed arrays
 export type TypedIntArray =
   | Int8Array
   | Uint8Array

@@ -5,17 +5,22 @@ import {makePrimitiveIterator} from '../iterators/primitive-iterator';
 import {getPrimitiveModeType} from '../primitives/modes';
 import {getPositions} from './get-attribute-from-geometry';
 
+type Geometry = {
+  mode: any;
+  indices?: {size: number; values: TypedArray};
+  attributes?: {};
+};
 /**
  * Computes vertex normals for a geometry
  * @param param0
  * @returns
  */
 // eslint-disable-next-line max-statements
-export function computeVertexNormals(mode: any, indices?: number, attributes?: {}): Float32Array {
+export function computeVertexNormals(geometry: Geometry): Float32Array {
   // Only support GL.TRIANGLES, GL.TRIANGLE_STRIP, GL.TRIANGLE_FAN
-  assert(getPrimitiveModeType(mode) === GL.TRIANGLES, 'TRIANGLES required');
+  assert(getPrimitiveModeType(geometry.mode) === GL.TRIANGLES, 'TRIANGLES required');
 
-  const {values: positions} = getPositions({mode, indices, attributes});
+  const {values: positions} = getPositions(geometry);
 
   const normals = new Float32Array(positions.length);
 
@@ -26,7 +31,7 @@ export function computeVertexNormals(mode: any, indices?: number, attributes?: {
   const vectorCB = new Vector3();
   const vectorAB = new Vector3();
 
-  for (const primitive of makePrimitiveIterator({mode, indices, attributes})) {
+  for (const primitive of makePrimitiveIterator(geometry)) {
     vectorA.fromArray(positions, primitive.i1 * 3);
     vectorB.fromArray(positions, primitive.i2 * 3 + 3);
     vectorC.fromArray(positions, primitive.i3 * 3 + 6);

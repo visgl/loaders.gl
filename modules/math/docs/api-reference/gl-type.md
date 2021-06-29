@@ -24,7 +24,7 @@ var size = GLType.getSizeInBytes(GL.BYTE);
 
 ## Static Methods
 
-### GLType.fromTypedArray(typedArray: Typed Array | Function) : String
+### GLType.fromTypedArray(typedArray: Typed Array | Function) : string
 
 Returns the size, in bytes, of the corresponding datatype.
 
@@ -46,25 +46,25 @@ Returns
 
 The ComponentDatatype for the provided array, or undefined if the array is not a TypedArray.
 
-### GLType.fromName(name: String): Number
+### GLType.fromName(name: String): number
 
 Extracts name for glType from array NAME_TO_GL_TYPE
 
-### GLType.getArrayType(glType: Number) : Function
+### GLType.getArrayType(glType: Number) : function
 
 Returns the constructor of the array
 
-### static GLType.getByteSize(glType: Number) : Number
+### static GLType.getByteSize(glType: Number) : number
 
 Returns the size in bytes of one element of the provided WebGL type.
 
 Equivalent to `GLType.getArrayType(glType).BYTES_PER_ELEMENT`.
 
-### static GLType.validate(glType) : Boolean
+### static GLType.validate(glType) : boolean
 
 Returns `true` if `glType` is a valid WebGL data type.
 
-### static GLType.createTypedArray(glType : Number, buffer : ArrayBuffer [, byteOffset : Number [, length : Number]]) : TypedArray
+### static GLType.createTypedArray(glType : number, buffer : ArrayBuffer [, byteOffset : number [, length : number]]) : TypedArray
 
 Creates a typed view of an array of bytes.
 

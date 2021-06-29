@@ -1,7 +1,13 @@
 import {makeAttributeIterator} from '../iterators/attribute-iterator';
 import {assert} from '../utils/assert';
-import type {Geometry} from '../types';
 
+/**
+ * Type for Bounding Box computing
+ */
+type BoundingBox = {
+  min: number[];
+  max: number[];
+};
 /**
  * Getting bounding box geometry according to positions parameters
  * @param positions
@@ -30,7 +36,7 @@ export function computeBoundingBox(positions: any = []) {
   return boundingBox;
 }
 
-function validateBoundingBox(boundingBox: Geometry) {
+function validateBoundingBox(boundingBox: BoundingBox) {
   assert(
     Number.isFinite(boundingBox.min[0]) &&
       Number.isFinite(boundingBox.min[1]) &&
