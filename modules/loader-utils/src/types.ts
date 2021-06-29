@@ -28,6 +28,8 @@ export type LoaderOptions = {
   batchType?: 'row' | 'columnar' | 'arrow';
   batchSize?: number | 'auto';
   batchDebounceMs?: number;
+  limit?: 0;
+  limitMB?: 0;
   metadata?: boolean;
   transforms?: any[];
 

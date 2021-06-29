@@ -348,15 +348,13 @@ test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
 
 test('CSVLoader#loadInBatches(csv with quotes)', async (t) => {
   const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
-    type: 'object-row-table'
+    csv: {type: 'object-row-table'}
   });
 
   const rows = [];
-
   for await (const batch of iterator) {
     rows.push(...batch.data);
   }
-
   t.is(rows.length, 499, 'Got the correct table size');
   t.deepEqual(
     rows[0],

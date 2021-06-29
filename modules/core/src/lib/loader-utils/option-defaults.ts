@@ -14,6 +14,8 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   reuseWorkers: true, // By default reuse workers,
   _workerType: '', // 'test' to use locally generated workers
 
+  limit: 0,
+  limitMB: 0,
   batchSize: 'auto',
   batchDebounceMs: 0,
   metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
