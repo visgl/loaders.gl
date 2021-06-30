@@ -154,7 +154,7 @@ export default class RequestScheduler {
     for (let i = 0; i < freeSlots; ++i) {
       const request = this.requestQueue.shift();
       if (request) {
-        this._issueRequest(request);
+        void this._issueRequest(request);
       }
     }
 

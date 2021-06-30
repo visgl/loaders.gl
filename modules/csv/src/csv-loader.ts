@@ -80,8 +80,6 @@ async function parseCSV(csvText: string, options?: CSVLoaderOptions) {
   // Apps can call the parse method directly, we so apply default options here
   const csvOptions = {...DEFAULT_CSV_LOADER_OPTIONS.csv, ...options?.csv};
 
-  const {type} = csvOptions;
-
   const firstRow = readFirstRow(csvText);
   const header: boolean =
     csvOptions.header === 'auto' ? isHeaderRow(firstRow) : Boolean(csvOptions.header);
@@ -138,8 +136,6 @@ function parseCSVInBatches(
   const csvOptions = {...DEFAULT_CSV_LOADER_OPTIONS.csv, ...options?.csv};
 
   const asyncQueue = new AsyncQueue<Batch>();
-
-  const {type} = csvOptions;
 
   let isFirstRow: boolean = true;
   let headerRow: string[] | null = null;

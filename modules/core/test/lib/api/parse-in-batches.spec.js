@@ -1,5 +1,4 @@
 import test from 'tape-promise/tape';
-
 import {parseInBatches} from '@loaders.gl/core';
 
 const NoOpLoader = {

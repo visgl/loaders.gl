@@ -1,9 +1,10 @@
+import type {Batch} from '@loaders.gl/schema';
 import type {
   BatchableDataType,
   Loader,
   LoaderContext,
   LoaderOptions
-} from '@loaders.gl/loader-utils/';
+} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync, makeTransformIterator} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -134,10 +135,18 @@ async function parseToOutputIterator(loader, data, options, context) {
     const inputIterator = await getAsyncIteratorFromData(data);
     const arrayBuffer = await concatenateArrayBuffersAsync(inputIterator);
     // yield a single batch, the output from loader.parse()
-    yield loader.parse(arrayBuffer, options, context, loader);
+    const parsedData = await loader.parse(arrayBuffer, options, context, loader);
+    // TODO - run through batch builder to apply options etc...
+    const batch: Batch = {
+      type: Array.isArray(parsedData) ? 'table' : 'unknown',
+      batchType: 'data',
+      data: parsedData,
+      length: Array.isArray(parsedData) ? parsedData.length : 1
+    };
+    yield batch;
   }
 
-  return await parseChunkInBatches();
+  return parseChunkInBatches();
 }
 
 /**

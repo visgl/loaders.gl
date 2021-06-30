@@ -1,3 +1,4 @@
+/** eslint-disable */
 import type {FileDirectory} from 'geotiff';
 
 // import Worker from 'web-worker:./decoder.worker.ts';

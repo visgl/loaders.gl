@@ -7,6 +7,7 @@ import type {Labels} from '../../types';
  * > getLabels(imgMeta.Pixels) === ['t', 'z', 'c', 'y', 'x']
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Sel<Dim extends string> = Dim extends `${infer Z}${infer X}${infer A}${infer B}${infer C}`
   ? [C, B, A]
   : 'error';
