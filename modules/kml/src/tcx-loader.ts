@@ -32,13 +32,16 @@ export const TCXLoader: LoaderWithParser = {
 };
 
 function parseTextSync(text: string, options: any = {}) {
-  options = options || {};
-  options.gis = options.gis || {};
-
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson = tcx(doc);
 
-  switch (options.gis.format) {
+  switch (options?.tcx?.type) {
+    case 'object-row-table':
+      return geojson.features;
+    default:
+  }
+
+  switch (options?.gis?.format) {
     case 'geojson':
       return geojson;
     case 'binary':
