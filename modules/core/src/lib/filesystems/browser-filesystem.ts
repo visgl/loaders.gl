@@ -60,7 +60,8 @@ export default class BrowserFileSystem implements FileSystem {
       // The trick when reading File objects is to read successive "slices" of the File
       // Per spec https://w3c.github.io/FileAPI/, slicing a File should only update the start and end fields
       // Actually reading from file should happen in `readAsArrayBuffer` (and as far we can tell it does)
-      const data = await file.slice(start, end).arrayBuffer();
+      // const data = await file.slice(start, end).arrayBuffer();
+      const data = await readFileSlice(file, start, end);
       const response = new Response(data);
       Object.defineProperty(response, 'url', {value: path});
       return response;
@@ -130,7 +131,11 @@ export default class BrowserFileSystem implements FileSystem {
   ): Promise<{bytesRead: number; buffer: ArrayBuffer}> {
     const file = fd as File;
     const startPosition = 0; // position
+<<<<<<< HEAD
     const arrayBuffer = await file.slice(startPosition, startPosition + length).arrayBuffer();
+=======
+    const arrayBuffer = await readFileSlice(file, startPosition, startPosition + length);
+>>>>>>> 2ce9138ae (feat(core): filesystem improvements)
     // copy into target buffer
     return {bytesRead: length, buffer: arrayBuffer};
   }
@@ -152,4 +157,17 @@ export default class BrowserFileSystem implements FileSystem {
     }
     return file;
   }
+}
+
+// The trick when reading File objects is to read successive "slices" of the File
+// Per spec https://w3c.github.io/FileAPI/, slicing a File should only update the start and end fields
+// Actually reading from file should happen in `readAsArrayBuffer` (and as far we can tell it does)
+async function readFileSlice(file: File, start: number, end: number) {
+  const slice = file.slice(start, end);
+  return await new Promise<ArrayBuffer>((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.onload = (event) => resolve(event.target?.result as ArrayBuffer);
+    fileReader.onerror = (error) => reject(new Error(error.type));
+    fileReader.readAsArrayBuffer(slice);
+  });
 }

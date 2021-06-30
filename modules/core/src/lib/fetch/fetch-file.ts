@@ -33,8 +33,8 @@ export async function fetchFile(
       return node.fetchFileNode(url, fetchOptions);
     }
 
-    // Call global fetch
-    return await fetch(url, fetchOptions);
+    const response = await fetch(url, fetchOptions);
+    return response;
   }
 
   // TODO - should we still call fetch on non-URL inputs?
