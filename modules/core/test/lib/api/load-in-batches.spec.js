@@ -15,7 +15,7 @@ test('loadInBatches#FileList', async (t) => {
     for await (const iterator of iteratorPromises) {
       for await (const batch of iterator) {
         // Just the one batch...
-        t.equal(batch.mode, 4, 'mode is TRIANGLES (4)');
+        t.equal(batch.data.mode, 4, 'mode is TRIANGLES (4)');
       }
     }
   }
