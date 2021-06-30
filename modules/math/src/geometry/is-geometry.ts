@@ -1,4 +1,8 @@
-export default function isGeometry(geometry) {
+/**
+ * Checking if it is geometry
+ * @param geometry
+ */
+export default function isGeometry(geometry: any): boolean {
   return (
     geometry &&
     typeof geometry === 'object' &&

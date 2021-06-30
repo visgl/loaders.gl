@@ -1,4 +1,9 @@
-export function concatTypedArrays(arrays) {
+/**
+ * Concats typed arrays
+ * @param arrays
+ * @returns new Uint8Array
+ */
+export function concatTypedArrays(arrays: any = []): Uint8Array {
   let byteLength = 0;
   for (let i = 0; i < arrays.length; ++i) {
     byteLength += arrays[i].byteLength;

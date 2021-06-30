@@ -1,9 +1,8 @@
 /* eslint-disable */
-// @ts-nocheck
-
+/**
 import {getPositions} from './get-attribute-from-geometry';
 
-export function computeBoundingSphere(geometry, boundingBox) {
+export function computeBoundingSphere(geometry: any, boundingBox: object, vector: Vector3 ) {
   const positions = getPositions(geometry);
 
   const center = getBoundingBox(center);
@@ -27,3 +26,4 @@ export function computeBoundingSphere(geometry, boundingBox) {
 
   return {center, radius};
 }
+*/

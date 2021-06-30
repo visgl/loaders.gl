@@ -1,9 +1,14 @@
-/** @typedef {import('./modes')} types */
 import {GL} from '../constants';
-import {assert} from '../utils/assert';
 
-/** @type {types['getPrimitiveModeType']} */
-export function getPrimitiveModeType(mode) {
+/**
+ * Different methods of working with geometries depending on glType
+ /**
+
+/**
+ * @param mode
+ * @returns draw points | lines | triangles
+ */
+export function getPrimitiveModeType(mode?: number): number {
   switch (mode) {
     case GL.POINTS: // draw single points.
       return GL.POINTS;
@@ -16,13 +21,14 @@ export function getPrimitiveModeType(mode) {
     case GL.TRIANGLE_FAN: // draw a connected group of triangles.
       return GL.TRIANGLES;
     default:
-      // @ts-ignore
-      return assert(false);
+      throw new Error('Unknown primitive mode');
   }
 }
-
-/** @type {types['isPrimitiveModeExpandable']} */
-export function isPrimitiveModeExpandable(mode) {
+/**
+ * @param mode
+ * @returns true | false
+ */
+export function isPrimitiveModeExpandable(mode: number): boolean {
   switch (mode) {
     case GL.LINE_STRIP: // draw lines. Each vertex connects to the one after it.
     case GL.LINE_LOOP: // draw a connected group of line segments from the first vertex to the last
@@ -33,9 +39,13 @@ export function isPrimitiveModeExpandable(mode) {
       return false;
   }
 }
-
-/** @type {types['getPrimitiveModeExpandedLength']} */
-export function getPrimitiveModeExpandedLength(mode, length) {
+/**
+ * Returns new length depends on glType
+ * @param mode
+ * @param length
+ * @returns new length
+ */
+export function getPrimitiveModeExpandedLength(mode: number, length: number): number {
   switch (mode) {
     case GL.POINTS: // draw single points.
       return length;
@@ -51,7 +61,6 @@ export function getPrimitiveModeExpandedLength(mode, length) {
     case GL.TRIANGLE_FAN: // draw a connected group of triangles.
       return (length - 2) * 3;
     default:
-      // @ts-ignore
-      return assert(false);
+      throw new Error('Unknown length');
   }
 }

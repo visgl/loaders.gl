@@ -1,7 +1,12 @@
 /* eslint-disable */
 // @ts-nocheck
-
-export function convertBuffersToNonIndexed({indices, attributes}) {
+/**
+ * Converts indices of geometry.
+ *
+ * @param param0
+ * @returns no indexed geometry
+ */
+export function convertBuffersToNonIndexed({indices, attributes}): any {
   const geometry2 = new BufferGeometry();
 
   for (const name in attributes) {

@@ -1,12 +1,34 @@
-/** @typedef {import('./primitive-iterator')} types */
 import {GL} from '../constants';
 import {getPrimitiveModeType} from '../primitives/modes';
 import {assert} from '@loaders.gl/loader-utils';
 
-// Will iterate over each primitive, expanding (dereferencing) indices
-/** @type {types['makePrimitiveIterator']} */
+/**
+ * Iteration info for making primitive iterator
+ */
+type Information = {
+  attributes: object;
+  type: number | void;
+  i1: number;
+  i2: number;
+  i3: number;
+  primitiveIndex?: object;
+};
+/**
+ * Will iterate over each primitive, expanding (dereferencing) indices
+ * @param indices
+ * @param attributes
+ * @param mode
+ * @param start
+ * @param end
+ */
 // eslint-disable-next-line complexity
-export function* makePrimitiveIterator({indices, attributes, mode, start = 0, end}) {
+export function* makePrimitiveIterator(
+  indices?: any,
+  attributes: object = {},
+  mode?: number,
+  start = 0,
+  end?: number
+): Iterable<{attributes: object; type: number; i1: number; i2: number; i3: number}> {
   // support indices being an object with a values array
   if (indices) {
     indices = indices.values || indices.value || indices;
@@ -18,7 +40,7 @@ export function* makePrimitiveIterator({indices, attributes, mode, start = 0, en
   }
 
   // iteration info
-  const info = {
+  const info: Information = {
     attributes,
     type: getPrimitiveModeType(mode),
     i1: 0,
@@ -79,7 +101,7 @@ export function* makePrimitiveIterator({indices, attributes, mode, start = 0, en
         info.i3 = indices[info.i3];
       }
     }
-
+    // @ts-ignore
     yield info;
   }
 }

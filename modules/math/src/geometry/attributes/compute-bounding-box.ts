@@ -1,10 +1,22 @@
 import {makeAttributeIterator} from '../iterators/attribute-iterator';
 import {assert} from '../utils/assert';
 
-export function computeBoundingBox(positions) {
+/**
+ * Type for Bounding Box computing
+ */
+type BoundingBox = {
+  min: number[];
+  max: number[];
+};
+/**
+ * Getting bounding box geometry according to positions parameters
+ * @param positions
+ * @returns Bounding Box
+ */
+export function computeBoundingBox(positions: any = []) {
   const min = [Number(Infinity), Number(Infinity), Number(Infinity)];
   const max = [-Infinity, -Infinity, -Infinity];
-
+  // @ts-ignore
   for (const position of makeAttributeIterator(positions)) {
     const x = position[0];
     const y = position[1];
@@ -24,7 +36,7 @@ export function computeBoundingBox(positions) {
   return boundingBox;
 }
 
-function validateBoundingBox(boundingBox) {
+function validateBoundingBox(boundingBox: BoundingBox) {
   assert(
     Number.isFinite(boundingBox.min[0]) &&
       Number.isFinite(boundingBox.min[1]) &&
