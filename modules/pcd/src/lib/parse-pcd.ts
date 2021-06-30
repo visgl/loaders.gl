@@ -10,15 +10,55 @@
 
 import {Schema, Field, Float32, Uint8, FixedSizeList} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {SchemaMetadata} from '@loaders.gl/schema/lib/schema/classes/schema';
 
-const LITTLE_ENDIAN = true;
+type IncomingHeader = {
+  data: any;
+  headerLen: number;
+  str: string;
+  version: RegExpExecArray | null | number;
+  fields: RegExpExecArray | null | string[];
+  size: RegExpExecArray | null | number[];
+  type: RegExpExecArray | null | string[];
+  count: RegExpExecArray | null | number[];
+  width: RegExpExecArray | number;
+  height: RegExpExecArray | number;
+  viewpoint: RegExpExecArray | null | string;
+  points: RegExpExecArray | number;
+  offset: {[index: string]: number};
+  rowSize: number;
+  boundingBox?: [];
+};
+type Normalized = {
+  POSITION: {
+    value: Float32Array;
+    size: number;
+  };
+  NORMAL?: {
+    value: Float32Array;
+    size: number;
+  };
+  COLOR_0?: {
+    value: Uint8Array;
+    size: number;
+  };
+};
+type HeaderAttributes = {
+  [index: string]: number[];
+};
+const LITTLE_ENDIAN: boolean = true;
 
-export default function parsePCD(data) {
+/**
+ *
+ * @param data
+ * @returns
+ */
+export default function parsePCD(data: ArrayBufferLike) {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
   const pcdHeader = parsePCDHeader(textData);
 
-  let attributes;
+  let attributes: any = {};
 
   // parse data
   switch (pcdHeader.data) {
@@ -36,6 +76,7 @@ export default function parsePCD(data) {
   }
 
   attributes = getNormalizedAttributes(attributes);
+
   const header = getNormalizedHeader(pcdHeader, attributes);
 
   const metadata = new Map([
@@ -58,16 +99,23 @@ export default function parsePCD(data) {
 }
 
 // Create a header that contains common data for PointCloud category loaders
-function getNormalizedHeader(PCDheader, attributes) {
-  const pointCount = PCDheader.width * PCDheader.height; // Supports "organized" point sets
-  return {
-    vertexCount: pointCount,
-    boundingBox: getMeshBoundingBox(attributes)
-  };
+function getNormalizedHeader(PCDheader: IncomingHeader, attributes: Normalized) {
+  if (typeof PCDheader.width === 'number' && typeof PCDheader.height === 'number') {
+    const pointCount = PCDheader.width * PCDheader.height; // Supports "organized" point sets
+    return {
+      vertexCount: pointCount,
+      boundingBox: getMeshBoundingBox(attributes)
+    };
+  }
+  return PCDheader;
 }
 
-function getNormalizedAttributes(attributes) {
-  const normalizedAttributes: any = {
+/**
+ * @param attributes
+ * @returns Normalized attributes
+ */
+function getNormalizedAttributes(attributes: HeaderAttributes): Normalized {
+  const normalizedAttributes: Normalized = {
     POSITION: {
       // Binary PCD is only 32 bit
       value: new Float32Array(attributes.position),
@@ -93,14 +141,21 @@ function getNormalizedAttributes(attributes) {
   return normalizedAttributes;
 }
 
+/**
+ * Incoming data parsing
+ * @param data
+ * @returns Header
+ */
 /* eslint-disable complexity, max-statements */
-function parsePCDHeader(data) {
+function parsePCDHeader(data: string): IncomingHeader {
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
   const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
   const PCDheader: any = {};
   PCDheader.data = result2 && result2[1];
-  PCDheader.headerLen = (result2 && result2[0].length) + result1;
+  if (result2 !== null) {
+    PCDheader.headerLen = (result2 && result2[0].length) + result1;
+  }
   PCDheader.str = data.substr(0, PCDheader.headerLen);
 
   // remove comments
@@ -149,7 +204,11 @@ function parsePCDHeader(data) {
     PCDheader.points = parseInt(PCDheader.points[1], 10);
   }
 
-  if (PCDheader.points === null) {
+  if (
+    PCDheader.points === null &&
+    typeof PCDheader.width === 'number' &&
+    typeof PCDheader.height === 'number'
+  ) {
     PCDheader.points = PCDheader.width * PCDheader.height;
   }
 
@@ -161,21 +220,24 @@ function parsePCDHeader(data) {
     PCDheader.count = PCDheader.count[1].split(' ').map((x) => parseInt(x, 10));
   } else {
     PCDheader.count = [];
-    for (let i = 0; i < PCDheader.fields.length; i++) {
-      PCDheader.count.push(1);
+    if (PCDheader.fields !== null) {
+      for (let i = 0; i < PCDheader.fields.length; i++) {
+        PCDheader.count.push(1);
+      }
     }
   }
 
   PCDheader.offset = {};
 
   let sizeSum = 0;
-
-  for (let i = 0; i < PCDheader.fields.length; i++) {
-    if (PCDheader.data === 'ascii') {
-      PCDheader.offset[PCDheader.fields[i]] = i;
-    } else {
-      PCDheader.offset[PCDheader.fields[i]] = sizeSum;
-      sizeSum += PCDheader.size[i];
+  if (PCDheader.fields !== null && PCDheader.size !== null) {
+    for (let i = 0; i < PCDheader.fields.length; i++) {
+      if (PCDheader.data === 'ascii') {
+        PCDheader.offset[PCDheader.fields[i]] = i;
+      } else {
+        PCDheader.offset[PCDheader.fields[i]] = sizeSum;
+        sizeSum += PCDheader.size[i];
+      }
     }
   }
 
@@ -184,9 +246,13 @@ function parsePCDHeader(data) {
 
   return PCDheader;
 }
+/**
+ * @param PCDheader
+ * @param textData
+ * @returns [attributes]
+ */
 /* eslint-enable complexity, max-statements */
-
-function parsePCDASCII(PCDheader, textData) {
+function parsePCDASCII(PCDheader: IncomingHeader, textData: string): HeaderAttributes {
   const position: number[] = [];
   const normal: number[] = [];
   const color: number[] = [];
@@ -226,7 +292,12 @@ function parsePCDASCII(PCDheader, textData) {
   return {position, normal, color};
 }
 
-function parsePCDBinary(PCDheader, data) {
+/**
+ * @param PCDheader
+ * @param data
+ * @returns [attributes]
+ */
+function parsePCDBinary(PCDheader: IncomingHeader, data: ArrayBufferLike): HeaderAttributes {
   const position: number[] = [];
   const normal: number[] = [];
   const color: number[] = [];
@@ -256,8 +327,13 @@ function parsePCDBinary(PCDheader, data) {
 
   return {position, normal, color};
 }
-
-function getSchemaFromPCDHeader(PCDheader, metadata) {
+/**
+ * Gets schema from PCD header
+ * @param PCDheader
+ * @param metadata
+ * @returns Schema
+ */
+function getSchemaFromPCDHeader(PCDheader: IncomingHeader, metadata: SchemaMetadata): Schema {
   const offset = PCDheader.offset;
 
   const fields: Field[] = [];
