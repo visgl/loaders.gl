@@ -8,7 +8,7 @@ export async function writeFile(
 ): Promise<void> {
   filePath = resolvePath(filePath);
   if (!isBrowser && node.writeFile) {
-    node.writeFile(filePath, arrayBufferOrString, options);
+    await node.writeFile(filePath, arrayBufferOrString, options);
   }
   assert(false);
 }

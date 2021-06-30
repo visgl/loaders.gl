@@ -29,6 +29,10 @@ const config = deepMerge(defaultConfig, {
         '@typescript-eslint/no-unsafe-member-access': 0,
         '@typescript-eslint/no-unsafe-assignment': 0,
         '@typescript-eslint/no-var-requires': 0,
+        '@typescript-eslint/no-unused-vars': [
+          'warn',
+          {vars: 'all', args: 'none', ignoreRestSiblings: false}
+        ],
         // We still have some issues with import resolution
         'import/named': 0,
         'import/no-extraneous-dependencies': ['warn'],

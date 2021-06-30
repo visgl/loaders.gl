@@ -31,9 +31,9 @@ export default async function fetchProgress(
 
   // Create a new stream that invisbly wraps original stream
   const progressStream = new ReadableStream({
-    start(controller) {
+    async start(controller) {
       const reader = body.getReader();
-      read(controller, reader, 0, totalBytes, onProgress, onDone, onError);
+      await read(controller, reader, 0, totalBytes, onProgress, onDone, onError);
     }
   });
 

@@ -146,7 +146,7 @@ async function parseToOutputIterator(loader, data, options, context) {
     yield batch;
   }
 
-  return await parseChunkInBatches();
+  return parseChunkInBatches();
 }
 
 /**

@@ -115,7 +115,7 @@ export async function meshoptDecodeGltfBuffer(
 let wasmPromise: Promise<WebAssembly.Instance>;
 
 async function loadWasmInstance(): Promise<WebAssembly.Instance> {
-  if (!wasmPromise) {
+  if (!wasmPromise as any) {
     wasmPromise = loadWasmModule();
   }
   return wasmPromise;
