@@ -39,6 +39,12 @@ function parseTextSync(text: string, options: any = {}) {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson = kml(doc);
 
+  switch (options.kml.type) {
+    case 'object-row-table':
+      return geojson.features;
+    default:
+  }
+
   switch (options.gis.format) {
     case 'geojson':
       return geojson;
