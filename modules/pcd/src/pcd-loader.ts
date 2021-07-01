@@ -26,6 +26,6 @@ export const PCDWorkerLoader: Loader = {
  */
 export const PCDLoader: LoaderWithParser = {
   ...PCDWorkerLoader,
-  parse: async (arrayBuffer) => await parsePCDSync(arrayBuffer),
+  parse: async (arrayBuffer) => parsePCDSync(arrayBuffer),
   parseSync: parsePCDSync
 };
