@@ -1,1 +1,1 @@
-export {MVTLoader} from './mvt-loader';
+export {MVTLoader, MVTWorkerLoader} from './mvt-loader';
