@@ -10,9 +10,12 @@
 
 import {Schema, Field, Float32, Uint8, FixedSizeList} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
-import {SchemaMetadata} from '@loaders.gl/schema/lib/schema/classes/schema';
 
-type IncomingHeader = {
+type BoundingBox = [[number, number, number], [number, number, number]];
+
+type SchemaMetadata = Map<string, any>;
+
+type PCDheader = {
   data: any;
   headerLen: number;
   str: string;
@@ -27,9 +30,11 @@ type IncomingHeader = {
   points: RegExpExecArray | number;
   offset: {[index: string]: number};
   rowSize: number;
-  boundingBox?: [];
+  vertexCount: number;
+  boundingBox: BoundingBox;
 };
-type Normalized = {
+
+type NormalizedAttributes = {
   POSITION: {
     value: Float32Array;
     size: number;
@@ -43,9 +48,11 @@ type Normalized = {
     size: number;
   };
 };
+
 type HeaderAttributes = {
-  [index: string]: number[];
+  [attributeName: string]: number[];
 };
+
 const LITTLE_ENDIAN: boolean = true;
 
 /**
@@ -99,7 +106,10 @@ export default function parsePCD(data: ArrayBufferLike) {
 }
 
 // Create a header that contains common data for PointCloud category loaders
-function getNormalizedHeader(PCDheader: IncomingHeader, attributes: Normalized) {
+function getNormalizedHeader(
+  PCDheader: PCDheader,
+  attributes: NormalizedAttributes
+): Partial<PCDheader> {
   if (typeof PCDheader.width === 'number' && typeof PCDheader.height === 'number') {
     const pointCount = PCDheader.width * PCDheader.height; // Supports "organized" point sets
     return {
@@ -114,8 +124,8 @@ function getNormalizedHeader(PCDheader: IncomingHeader, attributes: Normalized) 
  * @param attributes
  * @returns Normalized attributes
  */
-function getNormalizedAttributes(attributes: HeaderAttributes): Normalized {
-  const normalizedAttributes: Normalized = {
+function getNormalizedAttributes(attributes: HeaderAttributes): NormalizedAttributes {
+  const normalizedAttributes: NormalizedAttributes = {
     POSITION: {
       // Binary PCD is only 32 bit
       value: new Float32Array(attributes.position),
@@ -147,7 +157,7 @@ function getNormalizedAttributes(attributes: HeaderAttributes): Normalized {
  * @returns Header
  */
 /* eslint-disable complexity, max-statements */
-function parsePCDHeader(data: string): IncomingHeader {
+function parsePCDHeader(data: string): PCDheader {
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
   const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
@@ -252,7 +262,7 @@ function parsePCDHeader(data: string): IncomingHeader {
  * @returns [attributes]
  */
 /* eslint-enable complexity, max-statements */
-function parsePCDASCII(PCDheader: IncomingHeader, textData: string): HeaderAttributes {
+function parsePCDASCII(PCDheader: PCDheader, textData: string): HeaderAttributes {
   const position: number[] = [];
   const normal: number[] = [];
   const color: number[] = [];
@@ -297,7 +307,7 @@ function parsePCDASCII(PCDheader: IncomingHeader, textData: string): HeaderAttri
  * @param data
  * @returns [attributes]
  */
-function parsePCDBinary(PCDheader: IncomingHeader, data: ArrayBufferLike): HeaderAttributes {
+function parsePCDBinary(PCDheader: PCDheader, data: ArrayBufferLike): HeaderAttributes {
   const position: number[] = [];
   const normal: number[] = [];
   const color: number[] = [];
@@ -333,7 +343,7 @@ function parsePCDBinary(PCDheader: IncomingHeader, data: ArrayBufferLike): Heade
  * @param metadata
  * @returns Schema
  */
-function getSchemaFromPCDHeader(PCDheader: IncomingHeader, metadata: SchemaMetadata): Schema {
+function getSchemaFromPCDHeader(PCDheader: PCDheader, metadata: SchemaMetadata): Schema {
   const offset = PCDheader.offset;
 
   const fields: Field[] = [];
