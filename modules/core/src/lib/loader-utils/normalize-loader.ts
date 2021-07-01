@@ -47,9 +47,10 @@ export function normalizeLoader(loader: Loader): Loader {
   // NORMALIZE text and binary flags
   // Ensure at least one of text/binary flags are properly set
 
-  // if (loader.parseTextSync || loader.parseText) {
-  //   loader.text = true;
-  // }
+  // @ts-expect-error 
+  if (loader?.parseTextSync || loader?.parseText) {
+    loader.text = true;
+  }
 
   if (!loader.text) {
     loader.binary = true;
