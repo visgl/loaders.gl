@@ -266,7 +266,7 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
   t.end();
 });
 
-test.skip('Tileset3D#one viewport traversal', async (t) => {
+test('Tileset3D#one viewport traversal', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
@@ -289,7 +289,33 @@ test.skip('Tileset3D#one viewport traversal', async (t) => {
   }, 100);
 });
 
-test.skip('Tileset3D#two viewports traversal', async (t) => {
+test('Tileset3D#onTraversalComplete', async (t) => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewport = VIEWPORTS[1];
+  let tileLoadCounter = 0;
+  const tileset = new Tileset3D(tilesetJson, {
+    onTileLoad: () => {
+      tileset.update(viewport);
+      tileLoadCounter++;
+    },
+    onTraversalComplete: (selectedTiles) => {
+      return selectedTiles.filter((tile) => tile.depth === 1);
+    }
+  });
+  tileset.update(viewport);
+
+  t.timeoutAfter(1000);
+  const setIntervalId = setInterval(() => {
+    if (tileLoadCounter > 0) {
+      clearInterval(setIntervalId);
+      tileset.update(viewport);
+      t.equals(tileset.selectedTiles.length, 4);
+      t.end();
+    }
+  }, 100);
+});
+
+test('Tileset3D#two viewports traversal', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
@@ -320,7 +346,7 @@ test.skip('Tileset3D#two viewports traversal', async (t) => {
   }, 100);
 });
 
-test.skip('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async (t) => {
+test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
@@ -355,7 +381,7 @@ test.skip('Tileset3D#viewportTraversersMap (one viewport shows tiles selected fo
   }, 100);
 });
 
-test.skip('Tileset3D#loadTiles option', async (t) => {
+test('Tileset3D#loadTiles option', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
