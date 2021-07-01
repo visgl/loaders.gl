@@ -19,28 +19,47 @@ export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
 
 // Core Loader Options
 export type LoaderOptions = {
+  /** fetch options or a custom fetch function */
   fetch?: typeof fetch | RequestInit | null;
   mimeType?: string;
   nothrow?: boolean;
 
   // general
+  /** Experimental: Supply a logger to the parser */
   log?: any;
 
   // batched parsing
-  batchType?: 'row' | 'columnar' | 'arrow';
+
+  /** Size of each batch. `auto` matches batches to size of incoming chunks */
   batchSize?: number | 'auto';
+  /** Minimal amount of time between batches */
   batchDebounceMs?: number;
+  /** Stop loading after a given number of rows (compare SQL limit clause) */
+  limit?: 0;
+  /** Experimental: Stop loading after reaching */
+  _limitMB?: 0;
+  /** Generate metadata batches */
   metadata?: boolean;
+  /** Transforms to run on incoming batches */
   transforms?: any[];
 
   // workers
+
+  /** CDN load workers from */
   CDN?: string;
+  /** Set to `false` to disable workers */
   worker?: boolean;
+  /** Number of concurrent workers (per loader) on desktop browser */
   maxConcurrency?: number;
+  /** Number of concurrent workers (per loader) on mobile browsers */
   maxMobileConcurrency?: number;
+  /** Set to `false` to prevent reuse workers */
   reuseWorkers?: boolean;
+  /** set to 'test' to run worker type */
   _workerType?: string;
 
+  /** @deprecated `options.batchType` removed, Use `options.<loader>.type` instead */
+  batchType?: 'row' | 'columnar' | 'arrow';
   /** @deprecated `options.throw removed`, Use `options.nothrow` instead */
   throws?: boolean;
   /** @deprecated `options.dataType` no longer used */
@@ -72,7 +91,7 @@ export type LoaderOptions = {
   /** @deprecated `options.signal` removed. Use `options.fetch.signal` */
   signal?: any;
 
-  // accept loader options (e.g. `options.csv...`)
+  // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
   [loaderId: string]: any;
 };
 
