@@ -25,7 +25,7 @@ export function isLoaderObject(loader?: any): boolean {
 }
 
 export function normalizeLoader(loader: Loader): Loader {
-  // This error is fairly easy to trigger by mixing up import statments etc
+  // This error is fairly easy to trigger by mixing up import statements etc
   // So we make an exception and add a developer error message for this case
   // To help new users from getting stuck here
   assert(loader, 'null loader');
@@ -47,7 +47,7 @@ export function normalizeLoader(loader: Loader): Loader {
   // NORMALIZE text and binary flags
   // Ensure at least one of text/binary flags are properly set
 
-  // @ts-expect-error 
+  // @ts-expect-error
   if (loader?.parseTextSync || loader?.parseText) {
     loader.text = true;
   }
