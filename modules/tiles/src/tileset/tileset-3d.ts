@@ -84,6 +84,7 @@ export type Tileset3DProps = {
   onTileUnload?: (tile: Tile3D) => any;
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
   contentLoader?: (tile: Tile3D) => Promise<void>;
+  onTraversalComplete?: (selectedTiles: Tile3D[]) => Tile3D[];
 };
 
 type Props = {
@@ -95,6 +96,7 @@ type Props = {
   onTileLoad: (tile: Tile3D) => any;
   onTileUnload: (tile: Tile3D) => any;
   onTileError: (tile: Tile3D, message: string, url: string) => any;
+  onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
   maximumScreenSpaceError: number;
   viewportTraversersMap: any;
   attributions: string[];
@@ -134,6 +136,12 @@ const DEFAULT_PROPS: Props = {
    */
   onTileUnload: () => {},
   onTileError: () => {},
+  /**
+   * Callback. Allows post-process selectedTiles right after traversal.
+   * @param selectedTiles {TileHeader[]}
+   * @returns TileHeader[] - output array of tiles to return to deck.gl
+   */
+  onTraversalComplete: (selectedTiles: Tile3D[]) => selectedTiles,
 
   // Optional async tile content loader
   contentLoader: undefined,
@@ -475,6 +483,8 @@ export default class Tileset3D {
       this._requestedTiles = this._requestedTiles.concat(frameStateDataValue._requestedTiles);
       this._emptyTiles = this._emptyTiles.concat(frameStateDataValue._emptyTiles);
     }
+
+    this.selectedTiles = this.options.onTraversalComplete(this.selectedTiles);
 
     for (const tile of this.selectedTiles) {
       this._tiles[tile.id] = tile;

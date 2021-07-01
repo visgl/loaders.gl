@@ -54,7 +54,7 @@ The tile's content.This represents the actual tile's payload.
 
 One of `scenegraph`, `pointcloud`, `mesh`
 
-###### `parent` (Tile3DHeader)
+###### `parent` (Tile3D)
 
 Parent of this tile.
 
