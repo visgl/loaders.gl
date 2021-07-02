@@ -16,7 +16,7 @@ import type {
 class TiffPixelSource<S extends string[]> implements PixelSource<S> {
   private _indexer: (sel: PixelSourceSelection<S>) => Promise<GeoTIFFImage>;
 
-  // eslint-disable max-params
+  // eslint-disable-next-line max-params
   constructor(
     indexer: (sel: PixelSourceSelection<S>) => Promise<GeoTIFFImage>,
     public dtype: Dtype,

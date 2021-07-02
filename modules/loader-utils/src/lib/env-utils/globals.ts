@@ -17,13 +17,16 @@ const document_: obj = globals.document || {};
 
 export {self_ as self, window_ as window, global_ as global, document_ as document};
 
+/** true if running in a browser */
 export const isBrowser: boolean =
   // @ts-ignore process does not exist on browser
   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
 
+/** true if running in a worker thread */
 export const isWorker: boolean = typeof importScripts === 'function';
 
 // Extract node major version
 const matches =
   typeof process !== 'undefined' && process.version && /v([0-9]*)/.exec(process.version);
+/** Major Node version (as a number) */
 export const nodeVersion: number = (matches && parseFloat(matches[1])) || 0;

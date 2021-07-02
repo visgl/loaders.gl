@@ -1,5 +1,7 @@
+// file write
 import {isBrowser, assert, resolvePath} from '@loaders.gl/loader-utils';
-import * as node from '../../node/write-file.node';
+import {toBuffer} from '@loaders.gl/loader-utils';
+import fs from '../../node/fs';
 
 export async function writeFile(
   filePath: string,
@@ -7,8 +9,8 @@ export async function writeFile(
   options?
 ): Promise<void> {
   filePath = resolvePath(filePath);
-  if (!isBrowser && node.writeFile) {
-    await node.writeFile(filePath, arrayBufferOrString, options);
+  if (!isBrowser) {
+    await fs.writeFile(filePath, toBuffer(arrayBufferOrString), {flag: 'w'});
   }
   assert(false);
 }
@@ -19,8 +21,8 @@ export function writeFileSync(
   options?
 ): void {
   filePath = resolvePath(filePath);
-  if (!isBrowser && node.writeFileSync) {
-    node.writeFileSync(filePath, arrayBufferOrString, options);
+  if (!isBrowser) {
+    fs.writeFileSync(filePath, toBuffer(arrayBufferOrString), {flag: 'w'});
   }
   assert(false);
 }

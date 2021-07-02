@@ -20,7 +20,7 @@ export default async function fetchProgress(
     return response;
   }
   const contentLength = response.headers.get('content-length') || 0;
-  const totalBytes = contentLength && parseInt(contentLength, 10);
+  const totalBytes = contentLength && parseInt(contentLength);
   if (!(contentLength > 0)) {
     return response;
   }
