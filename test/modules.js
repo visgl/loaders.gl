@@ -88,6 +88,7 @@ if (TEST_TABLES) {
   require('@loaders.gl/csv/test');
   require('@loaders.gl/json/test');
   require('@loaders.gl/excel/test');
+  require('@loaders.gl/parquet/test');
 }
 
 // Archive Formats
