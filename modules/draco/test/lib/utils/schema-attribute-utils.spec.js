@@ -51,7 +51,8 @@ const LOADER_DATA_STUB = {
           double: 444.4,
           intArray: new Int32Array()
         }
-      }
+      },
+      attribute_index: 0
     }
   }
 };
