@@ -1,16 +1,19 @@
 // Simple file alias mechanisms for tests.
 
 let pathPrefix = '';
-const fileAliases = {};
+const fileAliases: {[aliasPath: string]: string} = {};
 
 /*
  * Set a relative path prefix
  */
-export function setPathPrefix(prefix) {
+export function setPathPrefix(prefix: string): void {
   pathPrefix = prefix;
 }
 
-export function getPathPrefix() {
+/*
+ * Get the relative path prefix
+ */
+export function getPathPrefix(): string {
   return pathPrefix;
 }
 
@@ -21,11 +24,14 @@ export function getPathPrefix() {
  * Note: addAliases are an experimental export, they are only for testing of loaders.gl loaders
  * not intended as a generic aliasing mechanism
  */
-export function addAliases(aliases) {
+export function addAliases(aliases: {[aliasPath: string]: string}): void {
   Object.assign(fileAliases, aliases);
 }
 
-export function resolvePath(filename) {
+/**
+ * Resolves aliases and adds path-prefix to paths
+ */
+export function resolvePath(filename: string): string {
   for (const alias in fileAliases) {
     if (filename.startsWith(alias)) {
       const replacement = fileAliases[alias];

@@ -1,7 +1,8 @@
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
 
-export {readFileSync} from './lib/fetch/read-file'; // TODO - deprecate?
+export {readArrayBuffer} from './lib/fetch/read-array-buffer';
+export {readFileSync} from './lib/fetch/read-file';
 export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // CONFIGURATION

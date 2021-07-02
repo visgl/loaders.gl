@@ -1,3 +1,4 @@
+import type {TypedArray} from '../types';
 import {Vector3} from '@math.gl/core';
 import {GL} from '../constants';
 import {assert} from '../utils/assert';

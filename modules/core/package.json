@@ -22,14 +22,10 @@
   "module": "dist/esm/index.js",
   "sideEffects": false,
   "browser": {
-    "./src/node/write-file.node.js": false,
-    "./src/node/read-file-sync.node.js": false,
-    "./dist/es5/node/write-file.node.js": false,
-    "./dist/esm/node/write-file.node.js": false,
-    "./dist/es6/node/write-file.node.js": false,
-    "./dist/es5/node/read-file-sync.node.js": false,
-    "./dist/esm/node/read-file-sync.node.js": false,
-    "./dist/es6/node/read-file-sync.node.js": false,
+    "./src/node/fs.ts": false,
+    "./src/node/fs.js": false,
+    "./dist/es5/node/fs.js": false,
+    "./dist/esm/node/fs.js": false,
     "fs": false
   },
   "files": [
