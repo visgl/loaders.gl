@@ -41,9 +41,11 @@ export const ParquetLoader: LoaderWithParser = {
   parse
 };
 
-async function parse(arraybuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-  const path = resolvePath(options?.parquet?.url);
-  const reader = await ParquetReader.openFile(path);
+async function parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+  const readFn = (start: number, length: number) => Buffer.from(arrayBuffer, start, length);
+  const closeFn = () => {};
+  const size = arrayBuffer.byteLength;
+  const reader = await ParquetReader.open(readFn, closeFn, size);
 
   const rows: any[][] = [];
   try {

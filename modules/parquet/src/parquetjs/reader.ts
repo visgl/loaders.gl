@@ -92,19 +92,8 @@ export class ParquetReader {
   schema;
 
   /**
-   * Open the parquet file pointed to by the specified path and return a new
-   * parquet reader
+   * return a new parquet reader initialized with a read function
    */
-  static async openFile(filePath): Promise<ParquetReader> {
-    const fileStat = await fstat(filePath);
-    const fileDescriptor = await fopen(filePath);
-
-    const readFn = fread.bind(undefined, fileDescriptor);
-    const closeFn = fclose.bind(undefined, fileDescriptor);
-
-    return ParquetReader.open(readFn, closeFn, fileStat.size);
-  }
-
   static async open(readFn, closeFn, size: number): Promise<ParquetReader> {
     const envelopeReader = new ParquetEnvelopeReader(readFn, closeFn, size);
     try {
