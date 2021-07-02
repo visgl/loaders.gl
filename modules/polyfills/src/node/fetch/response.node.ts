@@ -45,7 +45,7 @@ export default class Response {
     this.ok = status === 200;
     this.status = status; // TODO - handle errors and set status
     this.statusText = statusText;
-    this.headers = new Headers(options.headers);
+    this.headers = new Headers(options?.headers || {});
 
     // Check for content-encoding and create a decompression stream
     if (isReadableNodeStream(body)) {

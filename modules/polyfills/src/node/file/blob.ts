@@ -5,7 +5,8 @@ import {BlobStream} from './blob-stream';
  * Forked from @gozala's web-blob under MIT license
  * @see https://github.com/Gozala/web-blob
  */
-export class BlobPolyfill implements Blob {
+export class BlobPolyfill {
+  // implements Blob {
   /** The MIME type of the data contained in the Blob. If type is unknown, string is empty. */
   readonly type: string;
   /** The size, in bytes, of the data contained in the Blob object. */
