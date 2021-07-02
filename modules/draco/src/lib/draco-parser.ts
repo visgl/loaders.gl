@@ -212,6 +212,7 @@ export default class DracoParser {
         byte_offset: dracoAttribute.byte_offset(),
         byte_stride: dracoAttribute.byte_stride(),
         normalized: dracoAttribute.normalized(),
+        attribute_index: attributeId,
 
         metadata
       };
@@ -364,7 +365,7 @@ export default class DracoParser {
 
     const ptr = this.draco._malloc(byteLength);
     try {
-      const dracoAttribute = this.decoder.GetAttribute(dracoGeometry, attribute.unique_id);
+      const dracoAttribute = this.decoder.GetAttribute(dracoGeometry, attribute.attribute_index);
       this.decoder.GetAttributeDataArrayForAllPoints(
         dracoGeometry,
         dracoAttribute,
