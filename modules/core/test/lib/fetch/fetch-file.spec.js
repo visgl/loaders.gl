@@ -11,7 +11,6 @@ test('fetchFile#imports', (t) => {
   t.end();
 });
 
-
 test('fetchFile#dataUrl', async (t) => {
   const response = await fetchFile(DATA_URL);
   const data = await response.text();
