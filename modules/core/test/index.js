@@ -29,4 +29,3 @@ import './lib/init.spec';
 
 import './lib/progress/fetch-progress.spec';
 import './lib/filesystems/browser-filesystem.spec';
-import './lib/filesystems/node-filesystem.spec';
