@@ -1,20 +1,38 @@
-import {atob} from '../text-encoding/btoa.node';
+import {atob} from '../buffer/btoa.node';
 
-export class FileReaderPolyfill {
+export class FileReaderPolyfill implements FileReader {
+  // onload: ({result: any}) => void;
+  onload;
+  onabort;
+  onerror;
+  error;
+  onloadstart;
+  onloadend;
+  onprogress;
+
+  readyState;
+  result;
+  DONE;
+  EMPTY;
+  LOADING;
+  addEventListener;
+  removeEventListener;
+  dispatchEvent;
+
   constructor() {
     this.onload = null;
   }
 
-  abort() {}
+  abort(): void {}
 
-  async readAsArrayBuffer(blob) {
+  async readAsArrayBuffer(blob: Blob): Promise<void> {
     const arrayBuffer = await blob.arrayBuffer();
     if (this.onload) {
       this.onload({target: {result: arrayBuffer}});
     }
   }
 
-  readAsBinaryString(blob) {
+  async readAsBinaryString(blob) {
     throw Error('Not implemented');
   }
 

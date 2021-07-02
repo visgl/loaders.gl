@@ -3,21 +3,23 @@ import {DOMParser} from 'xmldom';
 import {isBrowser, global} from './utils/globals';
 
 import {TextDecoder, TextEncoder} from './libs/encoding';
-import * as base64 from './text-encoding/btoa.node';
-
-import HeadersNode from './fetch-node/headers.node';
-import ResponseNode from './fetch-node/response.node';
-import fetchNode from './fetch-node/fetch.node';
-
-import {encodeImageNode} from './images-node/encode-image.node';
-import {parseImageNode} from './images-node/parse-image.node';
 import {allSettled} from './promise/all-settled';
 
-export {ReadableStreamPolyfill} from './file/readable-stream-polyfill';
-export {BlobPolyfill} from './file/blob-polyfill';
-export {FileReaderPolyfill} from './file/file-reader-polyfill';
-export {FilePolyfill} from './file/file-polyfill';
-export {installFilePolyfills} from './file/polyfills';
+// Node specific
+import * as base64 from './node/buffer/btoa.node';
+
+import HeadersNode from './node/fetch/headers.node';
+import ResponseNode from './node/fetch/response.node';
+import fetchNode from './node/fetch/fetch.node';
+
+import {encodeImageNode} from './node/images/encode-image.node';
+import {parseImageNode} from './node/images/parse-image.node';
+
+export {ReadableStreamPolyfill} from './node/file/readable-stream';
+export {BlobPolyfill} from './node/file/blob';
+export {FileReaderPolyfill} from './node/file/file-reader';
+export {FilePolyfill} from './node/file/file';
+export {installFilePolyfills} from './node/file/install-file-polyfills';
 
 // POLYFILLS: TextEncoder, TextDecoder
 // - Recent Node versions have these classes but virtually no encodings unless special build.

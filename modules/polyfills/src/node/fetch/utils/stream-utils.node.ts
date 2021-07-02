@@ -70,9 +70,9 @@ export async function concatenateReadStream(readStream) {
 
 // HELPERS
 
-function getRequestOptions(url, options = {}) {
+function getRequestOptions(url, options?: {fetch?: typeof fetch; headers?}) {
   // Ensure header keys are lower case so that we can merge without duplicates
-  const originalHeaders = options.headers || {};
+  const originalHeaders = options?.headers || {};
   const headers = {};
   for (const key of Object.keys(originalHeaders)) {
     headers[key.toLowerCase()] = originalHeaders[key];
@@ -88,7 +88,7 @@ function getRequestOptions(url, options = {}) {
     method: 'GET',
     // Add options and user provided 'options.fetch' overrides if available
     ...options,
-    ...(options.fetch || {}),
+    ...options?.fetch,
     // Override with updated headers with accepted encodings:
     headers
   };

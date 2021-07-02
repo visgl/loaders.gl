@@ -22,7 +22,7 @@
 // micro modules like 'global' and 'is-browser';
 
 /* eslint-disable no-restricted-globals */
-const isBrowser =
+const isBrowser: boolean =
   // @ts-ignore process.browser
   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
 
@@ -32,6 +32,6 @@ const globals = {
   global: typeof global !== 'undefined' && global
 };
 
-const global_ = globals.global || globals.self || globals.window;
+const global_: object = (globals.global || globals.self || globals.window) as object;
 
 export {isBrowser, global_ as global};
