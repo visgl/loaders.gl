@@ -20,7 +20,8 @@ export default async function fetchNode(url, options) {
     if (isDataURL(url)) {
       const {arrayBuffer, mimeType} = decodeDataUri(url);
       const response = new Response(arrayBuffer, {
-        headers: {'content-type': mimeType, url}
+        headers: {'content-type': mimeType},
+        url
       });
       return response;
     }

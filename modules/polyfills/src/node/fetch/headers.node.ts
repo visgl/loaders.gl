@@ -3,6 +3,8 @@
  * Based on https://github.com/github/fetch under MIT license
  */
 export default class Headers {
+  map: {};
+
   constructor(headers) {
     this.map = {};
 
@@ -52,7 +54,7 @@ export default class Headers {
   }
 
   keys() {
-    const items = [];
+    const items: any[] = [];
     this.forEach(function (value, name) {
       items.push(name);
     });
@@ -60,7 +62,7 @@ export default class Headers {
   }
 
   values() {
-    const items = [];
+    const items: any[] = [];
     this.forEach(function (value) {
       items.push(value);
     });
@@ -68,7 +70,7 @@ export default class Headers {
   }
 
   entries() {
-    const items = [];
+    const items: any[] = [];
     this.forEach(function (value, name) {
       items.push([name, value]);
     });

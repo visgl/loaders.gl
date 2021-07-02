@@ -30,7 +30,6 @@
     "./src/lib/node/buffer-utils.node.js": false,
     "./dist/es5/lib/node/buffer-utils.node.js": false,
     "./dist/esm/lib/node/buffer-utils.node.js": false,
-    "./dist/es6/lib/node/buffer-utils.node.js": false,
     "fs": false
   },
   "scripts": {

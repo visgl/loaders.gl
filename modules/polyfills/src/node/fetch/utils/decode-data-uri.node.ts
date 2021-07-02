@@ -1,6 +1,6 @@
 // Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
-import {assert} from '../../utils/assert';
+import {assert} from '../../../utils/assert';
 
 const isArrayBuffer = (x) => x && x instanceof ArrayBuffer;
 const isBuffer = (x) => x && x instanceof Buffer;

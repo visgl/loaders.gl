@@ -1,4 +1,4 @@
-import {assert} from '../utils/assert';
+import {assert} from '../../utils/assert';
 import {decompressReadStream, concatenateReadStream} from './utils/stream-utils.node';
 import Headers from './headers.node';
 
@@ -21,16 +21,31 @@ const isReadableNodeStream = (x) =>
 import {Readable} from 'stream';
 
 export default class Response {
-  // TODO - handle ArrayBuffer, ArrayBufferView, Buffer
-  constructor(body, options = {}) {
-    const {headers, status = 200, statusText, url} = options;
+  readonly ok: boolean;
+  readonly status: number;
+  readonly statusText: string;
+  readonly headers: Headers;
+  readonly url: string;
+  bodyUsed: boolean = false;
+  private readonly _body;
 
-    this._url = url;
-    this._ok = status === 200;
-    this._status = status; // TODO - handle errors and set status
-    this._statusText = statusText;
-    this._headers = new Headers(headers);
-    this.bodyUsed = false;
+  // TODO - handle ArrayBuffer, ArrayBufferView, Buffer
+  constructor(
+    body,
+    options: {
+      headers?;
+      status?: number;
+      statusText?: string;
+      url: string;
+    }
+  ) {
+    const {headers, status = 200, statusText = 'OK', url} = options || {};
+
+    this.url = url;
+    this.ok = status === 200;
+    this.status = status; // TODO - handle errors and set status
+    this.statusText = statusText;
+    this.headers = new Headers(options?.headers || {});
 
     // Check for content-encoding and create a decompression stream
     if (isReadableNodeStream(body)) {
@@ -43,26 +58,6 @@ export default class Response {
   }
 
   // Subset of Properties
-
-  get ok() {
-    return this._ok;
-  }
-
-  get status() {
-    return this._status;
-  }
-
-  get statusText() {
-    return this._statusText;
-  }
-
-  get url() {
-    return this._url;
-  }
-
-  get headers() {
-    return this._headers;
-  }
 
   // Returns a readable stream to the "body" of the response (or file)
   get body() {
