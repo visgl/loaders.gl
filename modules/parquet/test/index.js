@@ -4,6 +4,7 @@ import './parquetjs/codec-rle.spec';
 import './parquetjs/schema.spec';
 import './parquetjs/shred.spec';
 import './parquetjs/thrift.spec';
+// import './parquetjs/reader.spec';
 
 // The integration spec runs tens of thousands of detailed tests.
 // Too slow for CI, uncomment to run.

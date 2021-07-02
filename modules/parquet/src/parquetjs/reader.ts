@@ -94,7 +94,10 @@ export class ParquetReader {
   /**
    * return a new parquet reader initialized with a read function
    */
-  static async open(readFn, closeFn, size: number): Promise<ParquetReader> {
+  static async open(arrayBuffer: ArrayBuffer): Promise<ParquetReader> {
+    const readFn = (start: number, length: number) => Buffer.from(arrayBuffer, start, length);
+    const closeFn = () => {};
+    const size = arrayBuffer.byteLength;
     const envelopeReader = new ParquetEnvelopeReader(readFn, closeFn, size);
     try {
       await envelopeReader.readHeader();

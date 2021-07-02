@@ -4,7 +4,9 @@ import {isBrowser} from '@loaders.gl/core';
 // import fs from 'fs';
 // import objectStream from 'object-stream';
 import {ParquetSchema, ParquetReader, ParquetWriter, ParquetTransformer} from '@loaders.gl/parquet';
+import {fetchFile} from '@loaders.gl/core/';
 
+const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const TEST_NUM_ROWS = 10000;
 const TEST_VTIME =  Date.now();
 
@@ -111,7 +113,9 @@ async function writeTestFile(opts) {
 
 // eslint-disable-next-line max-statements
 async function readTestFile(assert) {
-  const reader = await ParquetReader.openFile('fruits.parquet');
+  const response = await fetchFile(FRUITS_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const reader = await ParquetReader.open(arrayBuffer);
   assert.equal(reader.getRowCount(), TEST_NUM_ROWS * 4);
   assert.deepEqual(reader.getMetadata(), { "myuid": "420", "fnord": "dronf" })
 
