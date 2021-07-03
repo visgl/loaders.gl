@@ -62,6 +62,8 @@
       "@loaders.gl/mvt/test": ["modules/mvt/test"],
       "@loaders.gl/obj/*": ["modules/obj/src/*"],
       "@loaders.gl/obj/test": ["modules/obj/test"],
+      "@loaders.gl/parquet/*": ["modules/parquet/src/*"],
+      "@loaders.gl/parquet/test": ["modules/parquet/test"],
       "@loaders.gl/pcd/*": ["modules/pcd/src/*"],
       "@loaders.gl/pcd/test": ["modules/pcd/test"],
       "@loaders.gl/ply/*": ["modules/ply/src/*"],

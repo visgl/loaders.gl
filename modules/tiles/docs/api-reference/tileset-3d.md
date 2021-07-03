@@ -81,9 +81,10 @@ Parameters:
 
 Callbacks:
 
-- `onTileLoad` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is fully loaded during the tileset traversal.
-- `onTileUnload` (`(tileHeader : Tile3DHeader) : void`) - callback when a tile node is unloaded during the tileset traversal.
-- `onTileError` (`(tileHeader : Tile3DHeader, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
+- `onTileLoad` (`(tileHeader : Tile3D) : void`) - callback when a tile node is fully loaded during the tileset traversal.
+- `onTileUnload` (`(tileHeader : Tile3D) : void`) - callback when a tile node is unloaded during the tileset traversal.
+- `onTileError` (`(tileHeader : Tile3D, message : String) : void`) - callback when a tile faile to load during the tileset traversal.
+- `onTraversalComplete` (`(selectedTiles : Tile3D[]) : Tile3D[]`) - callback post-process selectedTiles right after traversal.
 
 The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
 
@@ -95,7 +96,7 @@ Cesium 3D tiles specific options:
 
 ###### `boundingVolume` (BoundingVolume)
 
-The root tile's bounding volume, which is also the bouding volume of the entire tileset. Check `Tile3DHeader#boundingVolume`
+The root tile's bounding volume, which is also the bouding volume of the entire tileset. Check `Tile3D#boundingVolume`
 
 ###### `cartesianCenter` (Number[3])
 
@@ -113,11 +114,11 @@ Gets an ellipsoid describing the shape of the globe.
 
 A [Matrix4](https://math.gl/modules/core/docs/api-reference/matrix4) instance (4x4 transformation matrix) that transforms the entire tileset.
 
-###### `root` (Tile3DHeader)
+###### `root` (Tile3D)
 
 The root tile header.
 
-###### `tiles` (Tile3DHeader[])
+###### `tiles` (Tile3D[])
 
 All the tiles that have been traversed.
 
@@ -200,7 +201,7 @@ these tiles go out of view, they will be unloaded.
 ^exception `maximumMemoryUsage` must be greater than or equal to zero.
 ^see Tileset3D#gpuMemoryUsageInBytes
 
-### root : Tile3DHeader
+### root : Tile3D
 
 The root tile header.
 

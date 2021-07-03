@@ -36,7 +36,8 @@ export const ArrowWorkerLoader: Loader = {
 /** ArrowJS table loader */
 export const ArrowLoader: LoaderWithParser = {
   ...ArrowWorkerLoader,
-  parse: async (arraybuffer, options) => parseSync(arraybuffer, options),
+  parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
+    parseSync(arraybuffer, options),
   parseSync,
   parseInBatches: parseArrowInBatches
 };

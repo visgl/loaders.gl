@@ -16,7 +16,8 @@ const config = deepMerge(defaultConfig, {
 
   rules: {
     'import/no-unresolved': 1,
-    'no-console': 1
+    'no-console': 1,
+    radix: 0
     // 'accessor-pairs': ['error', {getWithoutSet: false, setWithoutGet: false}]
   },
 

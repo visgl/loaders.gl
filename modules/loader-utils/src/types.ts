@@ -99,10 +99,6 @@ type PreloadOptions = {
   [key: string]: any;
 };
 
-export type CoreWriterOptions = {
-  [key: string]: any;
-};
-
 /**
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
@@ -146,6 +142,9 @@ export type LoaderWithParser = Loader & {
   parseTextSync?: ParseTextSync;
   parseInBatches?: ParseInBatches;
 };
+
+/** Options for writers */
+export type WriterOptions = {};
 
 /**
  * A writer definition that can be used with `@loaders.gl/core` functions
@@ -201,15 +200,15 @@ type ParseInBatches = (
   context?: LoaderContext
 ) => AsyncIterable<any>;
 
-type Encode = (data: any, options?: CoreWriterOptions) => Promise<ArrayBuffer>;
-type EncodeSync = (data: any, options?: CoreWriterOptions) => ArrayBuffer;
+type Encode = (data: any, options?: WriterOptions) => Promise<ArrayBuffer>;
+type EncodeSync = (data: any, options?: WriterOptions) => ArrayBuffer;
 // TODO
 type EncodeText = Function;
 type EncodeInBatches = Function;
 type EncodeURLtoURL = (
   inputUrl: string,
   outputUrl: string,
-  options?: CoreWriterOptions
+  options?: WriterOptions
 ) => Promise<string>;
 type Preload = (url: string, options?: PreloadOptions) => any;
 

@@ -170,17 +170,17 @@ class ParserState {
   }
 
   parseVertexIndex(value, len) {
-    const index = parseInt(value, 10);
+    const index = parseInt(value);
     return (index >= 0 ? index - 1 : index + len / 3) * 3;
   }
 
   parseNormalIndex(value, len) {
-    const index = parseInt(value, 10);
+    const index = parseInt(value);
     return (index >= 0 ? index - 1 : index + len / 3) * 3;
   }
 
   parseUVIndex(value, len) {
-    const index = parseInt(value, 10);
+    const index = parseInt(value);
     return (index >= 0 ? index - 1 : index + len / 2) * 2;
   }
 

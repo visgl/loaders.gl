@@ -21,7 +21,10 @@ const NODE = {
   http: 'empty',
   https: 'empty',
   path: 'empty',
-  crypto: 'empty'
+  crypto: 'empty',
+  tls: 'empty',
+  net: 'empty',
+  'child_process': 'empty'
 };
 
 const ES5_BABEL_CONFIG = {

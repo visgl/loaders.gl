@@ -49,11 +49,13 @@ export default class Pool {
     return new Promise((resolve, reject) => {
       currentWorker.onmessage = (event) => {
         // this.workers.push(currentWorker);
+        // eslint-disable-next-line
         this.finishTask(currentWorker);
         resolve(event.data[0]);
       };
       currentWorker.onerror = (error) => {
         // this.workers.push(currentWorker);
+        // eslint-disable-next-line
         this.finishTask(currentWorker);
         reject(error);
       };

@@ -80,6 +80,7 @@ export type DracoAttribute = {
   octahedron_transform?: DracoOctahedronTransform;
 
   metadata: {[key: string]: DracoMetadataEntry};
+  attribute_index: number;
 };
 
 /**

@@ -5,7 +5,7 @@ export type {
   LoaderContext,
   LoaderOptions,
   Writer,
-  CoreWriterOptions,
+  WriterOptions,
   DataType,
   SyncDataType,
   BatchableDataType,

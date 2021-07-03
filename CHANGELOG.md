@@ -1,5 +1,21 @@
 ## v3.0 Prerelease
 
+### v3.0.0-beta.6
+
+- fix(loader-utils): Fix normalization of text flag (#1597)
+- converter: fix yarn build-converter-bundle (#1595)
+- i3s: uncomment tests (#1594)
+- tiles: onTraversalComplete (#1596)
+- chore(pcd): Improving typings (#1591)
+- feat(core): add `limit` options (#1587)
+- Export MVTWorkerLoader (#1592)
+- chore: convert math module to typescript (#1555)
+- fix(core): Align batched parsing output from non-batched parsers (#1590)
+- chore(ply): Improve typings (#1588)
+- chore(loader-utils): Improve RequestScheduler typings (#1586)
+- feat(chore): Add `options.mimeType` to specify fallback loader (#1584)
+- chore(core): Separate file for loader option defaults (#1583)
+
 ### v3.0.0-beta.5
 
 - fix(core): selectLoader type assertion (#1552)
