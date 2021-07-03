@@ -1,6 +1,6 @@
 import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
 import {CubeGeometry} from '@luma.gl/engine';
-import {Vector3} from 'math.gl';
+import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 // TODO Unite Tile validation logic in i3s-17-and-debug with this code.

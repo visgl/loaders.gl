@@ -54,7 +54,7 @@ export default class RequestScheduler {
     this.props = {...DEFAULT_PROPS, ...props};
 
     // Returns the statistics used by the request scheduler.
-    this.stats = new Stats({id: props.id});
+    this.stats = new Stats({id: this.props.id});
     this.stats.get(STAT_QUEUED_REQUESTS);
     this.stats.get(STAT_ACTIVE_REQUESTS);
     this.stats.get(STAT_CANCELLED_REQUESTS);
