@@ -6,11 +6,29 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type LASLoaderOptions = LoaderOptions & {
-  las?: {
+  las: {
     fp64?: boolean;
-    skip?: number;
-    colorDepth?: number;
+    skip: number;
+    colorDepth?: number | string;
   };
+};
+
+/**
+ * Type for header of the .las file
+ */
+export type LASHeader = {
+  pointsOffset: number;
+  pointsFormatId: number;
+  pointsStructSize: number;
+  pointsCount: number;
+  scale: number | any;
+  offset?: number | any;
+  maxs?: number[];
+  mins?: number[];
+  totalToRead: number;
+  totalRead: number;
+  versionAsString?: string;
+  isCompressed?: boolean;
 };
 
 const DEFAULT_LAS_OPTIONS: LASLoaderOptions = {
