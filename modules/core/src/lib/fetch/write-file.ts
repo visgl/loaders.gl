@@ -1,7 +1,6 @@
 // file write
 import {isBrowser, assert, resolvePath} from '@loaders.gl/loader-utils';
-import {toBuffer} from '@loaders.gl/loader-utils';
-import fs from '../../node/fs';
+import {fs, toBuffer} from '@loaders.gl/loader-utils';
 
 export async function writeFile(
   filePath: string,

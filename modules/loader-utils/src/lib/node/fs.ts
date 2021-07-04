@@ -1,6 +1,6 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
-import {toArrayBuffer} from '@loaders.gl/loader-utils';
+import {toArrayBuffer} from './buffer-utils.node';
 import {promisify} from 'util';
 
 const error = (fsFunction) => {
@@ -26,16 +26,3 @@ export async function _readToArrayBuffer(fd: number, start: number, length: numb
   }
   return toArrayBuffer(buffer);
 }
-
-export default {
-  isSupported,
-  open,
-  close,
-  read,
-  readFile,
-  readFileSync,
-  writeFile,
-  writeFileSync,
-
-  _readToArrayBuffer
-};

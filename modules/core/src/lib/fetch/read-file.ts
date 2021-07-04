@@ -1,7 +1,6 @@
 // File read
-import {isBrowser, resolvePath, toArrayBuffer} from '@loaders.gl/loader-utils';
+import {isBrowser, resolvePath, fs, toArrayBuffer} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
-import fs from '../../node/fs';
 
 // TODO - this is not tested
 // const isDataURL = (url) => url.startsWith('data:');
