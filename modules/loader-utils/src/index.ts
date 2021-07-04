@@ -74,9 +74,4 @@ export {forEach, concatenateArrayBuffersAsync} from './lib/iterator-utils/async-
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 
-// MESH CATEGORY UTILS
-// Note: Should move to category specific module if code size increases
-export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './categories/mesh/mesh-utils';
-export type _Attributes = import('./categories/mesh/mesh-utils').Attributes;
-
 export {JSONLoader} from './json-loader';

@@ -1,4 +1,4 @@
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 import decode, {DECODING_STEPS} from './decode-quantized-mesh';
 
 function getMeshAttributes(vertexData, header, bounds) {

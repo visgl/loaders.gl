@@ -1,4 +1,4 @@
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 import parseOBJ from './parse-obj';
 import {makeSchemaFromAttributes} from './schema-attribute-utils';
 

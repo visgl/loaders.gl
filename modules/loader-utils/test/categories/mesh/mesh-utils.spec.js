@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 
 test('getMeshBoundingBox', (t) => {
   // @ts-ignore

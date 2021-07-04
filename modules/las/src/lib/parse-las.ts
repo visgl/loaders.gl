@@ -1,7 +1,7 @@
 // ported and es6-ified from https://github.com/verma/plasio/
 
 import type {LASHeader, LASLoaderOptions} from '../las-loader';
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 import {LASFile} from './laslaz-decoder';
 
 type LASChunk = {

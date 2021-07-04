@@ -3,7 +3,7 @@ import {validateWriter, validateMeshCategoryData} from 'test/common/conformance'
 
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
-import {_getMeshSize} from '@loaders.gl/loader-utils';
+import {_getMeshSize} from '@loaders.gl/schema';
 import draco3d from 'draco3d';
 
 const TEST_CASES = [

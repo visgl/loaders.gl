@@ -1,4 +1,4 @@
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 import Martini from '@mapbox/martini';
 import Delatin from './delatin';
 
