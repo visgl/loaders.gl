@@ -1,5 +1,14 @@
 ## v3.0 Prerelease
 
+### v3.0.0-beta.7
+
+- chore: bump math.gl and probe.gl to the latest beta (#1605)
+- fix(schema): Add arrow depenency (#1604)
+- feat(parquet): Experimental parquet loader (#1602)
+- chore(polyfills): Convert polyfills to typescript (#1598)
+- chore(core): node fs handling cleanup (#1601)
+- Fix draco parser (#1599)
+
 ### v3.0.0-beta.6
 
 - fix(loader-utils): Fix normalization of text flag (#1597)

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/schema",
-  "version": "3.0.0-beta.6",
+  "version": "3.0.0-beta.7",
   "description": "Table format APIs for JSON, CSV, etc...",
   "license": "MIT",
   "publishConfig": {
@@ -32,7 +32,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "d3-dsv": "^1.2.0",
-    "apache-arrow": "^4.0.0"
+    "apache-arrow": "^4.0.0",
+    "d3-dsv": "^1.2.0"
   }
 }
