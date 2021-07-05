@@ -32,7 +32,7 @@ export type CSVLoaderOptions = LoaderOptions & {
     // Convert numbers and boolean values in rows from strings
     dynamicTyping?: boolean;
     comments?: boolean;
-    skipEmptyLines?: boolean;
+    skipEmptyLines?: boolean | 'greedy';
     // transform: null?
     delimitersToGuess?: string[];
     // fastMode: auto
