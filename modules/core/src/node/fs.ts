@@ -1,5 +1,5 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
-import {toArrayBuffer} from '@loaders.gl/loader-utils/lib/node/buffer-utils.node';
+import {toArrayBuffer} from '@loaders.gl/loader-utils';
 import fs from 'fs';
 import {promisify} from 'util';
 
