@@ -1,6 +1,6 @@
-// fs wrapper (promisified fs + avoids bundling fs in browsers)
-import {toArrayBuffer} from '@loaders.gl/loader-utils/lib/node/buffer-utils.node';
+// @file fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
+import {toArrayBuffer} from '@loaders.gl/loader-utils';
 import {promisify} from 'util';
 
 const error = (fsFunction) => {

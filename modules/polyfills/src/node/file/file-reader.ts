@@ -23,7 +23,9 @@ export class FileReaderPolyfill implements FileReader {
     this.onload = null;
   }
 
-  abort(): void {}
+  abort(): void {
+    return;
+  }
 
   async readAsArrayBuffer(blob: Blob): Promise<void> {
     const arrayBuffer = await blob.arrayBuffer();

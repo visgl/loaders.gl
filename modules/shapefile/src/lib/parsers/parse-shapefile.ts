@@ -1,4 +1,4 @@
-import type {Feature} from '@loaders.gl/gis';
+// import type {Feature} from '@loaders.gl/gis';
 import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
 
@@ -9,6 +9,7 @@ import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
+type Feature = any;
 interface ShapefileOutput {
   encoding?: string;
   prj?: string;
@@ -59,7 +60,7 @@ export async function* parseShapefileInBatches(
 
   let iterator;
   if (propertyIterator) {
-    iterator = await zipBatchIterators(shapeIterator, propertyIterator);
+    iterator = zipBatchIterators(shapeIterator, propertyIterator);
   } else {
     iterator = shapeIterator;
   }

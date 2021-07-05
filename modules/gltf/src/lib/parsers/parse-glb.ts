@@ -101,14 +101,19 @@ function parseGLBV1(glb: GLB, dataView: DataView, byteOffset: number): number {
   assert(contentFormat === GLB_V1_CONTENT_FORMAT_JSON);
 
   parseJSONChunk(glb, dataView, byteOffset, contentLength);
-  // No need to call the function padTo4Bytes() from parseJSONChunk()
+  // No need to call the function padToBytes() from parseJSONChunk()
   byteOffset += contentLength;
   byteOffset += parseBINChunk(glb, dataView, byteOffset, glb.header.byteLength);
 
   return byteOffset;
 }
 
-function parseGLBV2(glb: GLB, dataView, byteOffset, options: GLBParseOptions): number {
+function parseGLBV2(
+  glb: GLB,
+  dataView: DataView,
+  byteOffset: number,
+  options: GLBParseOptions
+): number {
   // Sanity: ensure file is big enough to hold at least the first chunk header
   assert(glb.header.byteLength > GLB_FILE_HEADER_SIZE + GLB_CHUNK_HEADER_SIZE);
 
@@ -117,7 +122,12 @@ function parseGLBV2(glb: GLB, dataView, byteOffset, options: GLBParseOptions): n
   return byteOffset + glb.header.byteLength;
 }
 
-function parseGLBChunksSync(glb: GLB, dataView, byteOffset, options: GLBParseOptions) {
+function parseGLBChunksSync(
+  glb: GLB,
+  dataView: DataView,
+  byteOffset: number,
+  options: GLBParseOptions
+) {
   // Per spec we must iterate over chunks, ignoring all except JSON and BIN
   // Iterate as long as there is space left for another chunk header
   while (byteOffset + 8 <= glb.header.byteLength) {

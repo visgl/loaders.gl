@@ -117,6 +117,7 @@ test('polyfills#fetch() should follow redirect if `followRedirect` option is tru
     const defaultResponse = await fetchFile(REDIRECT_URL, {});
     t.equal(defaultResponse.status, 200);
 
+    // @ts-ignore - TODO/ActionEngine
     const successResponse = await fetchFile(REDIRECT_URL, {followRedirect: true});
     t.equal(successResponse.status, 200);
 
