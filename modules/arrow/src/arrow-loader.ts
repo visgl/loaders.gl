@@ -8,13 +8,13 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ArrowLoaderOptions = LoaderOptions & {
   arrow?: {
-    type: 'arrow-table' | 'columnar-table' | 'row-table' | 'array-row-table' | 'object-row-table';
+    shape: 'arrow-table' | 'columnar-table' | 'row-table' | 'array-row-table' | 'object-row-table';
   };
 };
 
 const DEFAULT_ARROW_LOADER_OPTIONS = {
   arrow: {
-    type: 'columnar-table'
+    shape: 'columnar-table'
   }
 };
 

@@ -21,7 +21,7 @@ export default class ArrowTableBatchAggregator extends ColumnarTableBatchAggrega
       // new RecordBatch(schema, numRows, vectors, ...);
       const recordBatch = new RecordBatch(this.arrowSchema, batch.length, arrowVectors);
       return {
-        type: 'arrow-table',
+        shape: 'arrow-table',
         batchType: 'data',
         data: recordBatch,
         length: batch.length

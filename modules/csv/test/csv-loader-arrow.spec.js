@@ -11,7 +11,7 @@ const CSV_NUMBERS_10000_URL = '@loaders.gl/csv/test/data/numbers-10000.csv';
 test('CSVLoader#loadInBatches(numbers-100.csv, arrow)', async (t) => {
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVLoader, {
     csv: {
-      type: 'arrow-table'
+      shape: 'arrow-table'
     },
     batchSize: 40
   });
@@ -32,7 +32,7 @@ test('CSVLoader#loadInBatches(numbers-100.csv, arrow)', async (t) => {
 test('CSVLoader#loadInBatches(numbers-10000.csv, arrow)', async (t) => {
   const iterator = await loadInBatches(CSV_NUMBERS_10000_URL, CSVLoader, {
     csv: {
-      type: 'arrow-table'
+      shape: 'arrow-table'
     },
     batchSize: 2000
   });

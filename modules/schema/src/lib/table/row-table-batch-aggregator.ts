@@ -40,7 +40,7 @@ export default class RowTableBatchAggregator implements TableBatchAggregator {
     }
 
     // eslint-disable-next-line default-case
-    switch (this.options.type) {
+    switch (this.options.shape) {
       case 'object-row-table':
         const rowObject = convertToObjectRow(row, this._headers);
         this.addObjectRow(rowObject, cursor);
@@ -59,7 +59,7 @@ export default class RowTableBatchAggregator implements TableBatchAggregator {
     }
 
     // eslint-disable-next-line default-case
-    switch (this.options.type) {
+    switch (this.options.shape) {
       case 'array-row-table':
         const rowArray = convertToArrayRow(row, this._headers);
         this.addArrayRow(rowArray, cursor);
@@ -83,7 +83,7 @@ export default class RowTableBatchAggregator implements TableBatchAggregator {
     this.objectRows = null;
 
     return {
-      type: this.options.type,
+      shape: this.options.shape,
       batchType: 'data',
       data: rows,
       length: this.length,

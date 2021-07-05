@@ -35,7 +35,7 @@ test('ArrowLoader#parseSync(simple.arrow) type="object-row-table"', async (t) =>
   const rowFormatTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
     worker: false,
     arrow: {
-      type: 'object-row-table'
+      shape: 'object-row-table'
     }
   });
   t.ok(rowFormatTable, 'Row based table loaded');

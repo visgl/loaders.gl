@@ -9,7 +9,7 @@ const ZIPCODES_CSV_PATH = `@loaders.gl/excel/test/data/zipcodes.csv`;
 
 test('ExcelLoader#load(ZIPCODES)', async (t) => {
   const csvData = await load(ZIPCODES_CSV_PATH, CSVLoader, {
-    csv: {type: 'object-row-table'}
+    csv: {shape: 'object-row-table'}
   });
   t.equal(csvData.length, 42049, 'CSV (reference): Correct number of row received');
 

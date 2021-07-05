@@ -5,38 +5,38 @@ import type {Batch} from './common';
 
 /** A general table */
 export interface Table {
-  type: 'row-table' | 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
+  shape: 'row-table' | 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
   schema?: Schema;
   schemaType?: 'explicit' | 'deduced';
 }
 
 /** A table organized as an array of rows */
 export interface RowTable extends Table {
-  type: 'row-table' | 'array-row-table' | 'object-row-table';
+  shape: 'row-table' | 'array-row-table' | 'object-row-table';
   data: any[];
 }
 
 /** A table organized as an array of rows, each row is an array of values */
 export interface ArrayRowTable extends RowTable {
-  type: 'array-row-table';
+  shape: 'array-row-table';
   data: any[][];
 }
 
 /** A table organized as an array of rows, each row is an object mapping columns to values */
 export interface ObjectRowTable extends RowTable {
-  type: 'object-row-table';
+  shape: 'object-row-table';
   data: {[columnName: string]: any}[];
 }
 
 /** A table organized as a map of columns, each column is an array of value */
 export interface ColumnarTable extends Table {
-  type: 'columnar-table';
+  shape: 'columnar-table';
   data: {[columnName: string]: AnyArray};
 }
 
 /** A table organized as an Apache Arrow table */
 export interface ArrowTable extends Table {
-  type: 'arrow-table';
+  shape: 'arrow-table';
   data: ApacheArrowTable;
 }
 
@@ -52,30 +52,30 @@ export type TableBatch = Batch & {
 
 /** Batch for a table organized as an array of rows */
 export type RowTableBatch = TableBatch & {
-  type: 'row-table';
+  shape: 'row-table';
   data: any[];
 };
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
 export type RowArrayTableBatch = RowTableBatch & {
-  type: 'array-row-table';
+  shape: 'array-row-table';
   data: any[][];
 };
 
 /** Batch for a table organized as an array of rows, each row is an object mapping columns to values */
 export type RowObjectTableBatch = RowTableBatch & {
-  type: 'object-row-table';
+  shape: 'object-row-table';
   data: {[columnName: string]: any}[];
 };
 
 /** Batch for a table organized as a map of columns, each column is an array of value */
 export type ColumnarTableBatch = TableBatch & {
-  type: 'columnar-table';
+  shape: 'columnar-table';
   data: {[columnName: string]: AnyArray};
 };
 
 /** Batch for a table organized as an Apache Arrow table */
 export type ArrowTableBatch = TableBatch & {
-  type: 'arrow-table';
+  shape: 'arrow-table';
   data: RecordBatch;
 };

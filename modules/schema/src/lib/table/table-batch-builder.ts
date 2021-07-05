@@ -7,7 +7,7 @@ import ColumnarTableBatchAggregator from './columnar-table-batch-aggregator';
 
 // TODO define interface instead
 type TableBatchBuilderOptions = {
-  type: 'row-table' | 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
+  shape: 'row-table' | 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
   batchSize?: number | 'auto';
   batchDebounceMs?: number;
   limit: number;
@@ -20,7 +20,7 @@ type GetBatchOptions = {
 };
 
 const DEFAULT_OPTIONS: Required<TableBatchBuilderOptions> = {
-  type: 'array-row-table',
+  shape: 'array-row-table',
   batchSize: 'auto',
   batchDebounceMs: 0,
   limit: 0,
@@ -168,7 +168,7 @@ export default class TableBatchBuilder {
   }
 
   private _getTableBatchType(): TableBatchConstructor {
-    switch (this.options.type) {
+    switch (this.options.shape) {
       case 'row-table':
         return BaseTableBatchAggregator;
       case 'array-row-table':
