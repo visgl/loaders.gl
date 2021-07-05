@@ -115,8 +115,8 @@ class LASLoader {
       pointsFormatId: 0,
       pointsStructSize: 0,
       pointsCount: 0,
-      scale: 0,
-      offset: 0,
+      scale: [0, 0, 0],
+      offset: [0, 0, 0],
       maxs: [0],
       mins: [0],
       totalToRead: 0,
@@ -150,7 +150,7 @@ class LASLoader {
    */
   readData(count: number, skip: number) {
     const {header, arraybuffer} = this;
-    if (!this.header) {
+    if (!header) {
       throw new Error('Cannot start reading data till a header request is issued');
     }
 
@@ -331,8 +331,8 @@ class LASDecoder {
   decoder: (dv: DataView) => {};
   pointsCount: number;
   pointSize: number;
-  scale: number;
-  offset?: number;
+  scale: [number, number, number];
+  offset?: [number, number, number];
   mins?: number[];
   maxs?: number[];
 

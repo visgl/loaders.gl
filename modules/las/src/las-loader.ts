@@ -21,8 +21,8 @@ export type LASHeader = {
   pointsFormatId: number;
   pointsStructSize: number;
   pointsCount: number;
-  scale: number | any;
-  offset?: number | any;
+  scale: [number, number, number];
+  offset: [number, number, number];
   maxs?: number[];
   mins?: number[];
   totalToRead: number;

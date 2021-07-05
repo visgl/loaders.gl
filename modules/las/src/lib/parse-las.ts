@@ -178,7 +178,7 @@ function detectTwoByteColors(
   batchSize: number,
   colorDepth?: number | string
 ): boolean {
-  let twoByteColor: any | boolean;
+  let twoByteColor = false;
   switch (colorDepth) {
     case 8:
       twoByteColor = false;
