@@ -1,5 +1,7 @@
 import type {Tileset3DProps} from '@loaders.gl/tiles';
 import type {GLTFMaterial} from '@loaders.gl/gltf';
+import type {TableJson, B3DMContent} from '@loaders.gl/3d-tiles';
+
 import type {
   AttributeStorageInfo,
   SceneLayer3D,
@@ -15,10 +17,8 @@ import type {
   Attribute,
   ESRIField,
   Field,
-  BatchTable,
-  PopupInfo,
-  B3DMContent
-} from '../types';
+  PopupInfo
+} from '@loaders.gl/i3s';
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
@@ -1052,7 +1052,7 @@ export default class I3SConverter {
    * Do conversion of 3DTiles batch table to I3s node attributes.
    * @param batchTable - Table with layer meta data.
    */
-  private _convertBatchTableInfoToNodeAttributes(batchTable: BatchTable): void {
+  private _convertBatchTableInfoToNodeAttributes(batchTable: TableJson): void {
     let attributeIndex = 0;
     const batchTableWithObjectId = {
       OBJECTID: [0],
@@ -1101,7 +1101,7 @@ export default class I3SConverter {
    * @param batchTable - Batch table data with OBJECTID.
    * @return data for correct rendering of popup.
    */
-  private _createPopupInfo(batchTable: BatchTable): PopupInfo {
+  private _createPopupInfo(batchTable: TableJson): PopupInfo {
     const title = '{OBJECTID}';
     const mediaInfos = [];
     const fieldInfos = [];
