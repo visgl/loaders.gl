@@ -3,6 +3,7 @@
  * @see https://github.com/Gozala/web-blob
  */
 import {ReadableStreamPolyfill} from './readable-stream';
+import {BlobStreamController} from './blob-stream-controller';
 
 /**
  * Blob stream is a `ReadableStream` extension optimized to have minimal

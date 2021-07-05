@@ -1,4 +1,4 @@
-import {BinaryGeometryData} from '@loaders.gl/gis';
+// import {BinaryGeometryData} from '@loaders.gl/gis';
 
 const LITTLE_ENDIAN = true;
 
@@ -9,7 +9,8 @@ const LITTLE_ENDIAN = true;
  * @return Binary Geometry Object
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view: DataView, options?: {shp?}): BinaryGeometryData | null {
+export function parseRecord(view: DataView, options?: {shp?}) {
+  // }: BinaryGeometryData | null {
   const {_maxDimensions} = options?.shp || {};
 
   let offset = 0;

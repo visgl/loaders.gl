@@ -1,8 +1,22 @@
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {OrientedBoundingBox} from '@math.gl/culling';
+import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
+import {GeoidHeightModel} from '../../lib/geoid-height-model';
+import {Tileset3D} from '@loaders.gl/tiles';
 
-export function convertCommonToI3SCoordinate(tile, geoidHeightModel) {
+import type {BoundingVolumes, Extent, Mbs, Obb} from '../../types';
+
+/**
+ * Create bounding volumes object from tile and geoid height model.
+ * @param tile
+ * @param geoidHeightModel
+ * @returns - Bounding volumes object
+ */
+export function createBoundingVolumes(
+  tile: TileHeader,
+  geoidHeightModel: GeoidHeightModel
+): BoundingVolumes {
   let radius;
   let halfSize;
   let quaternion;
@@ -37,7 +51,12 @@ export function convertCommonToI3SCoordinate(tile, geoidHeightModel) {
   };
 }
 
-export function convertCommonToI3SExtentCoordinate(tileset) {
+/**
+ * Convert common coordinate to extent coordinate
+ * @param tileset
+ * @returns - Extent
+ */
+export function convertCommonToI3SExtentCoordinate(tileset: Tileset3D): Extent {
   const cartesianCenter = tileset.cartesianCenter;
   const radius = tileset.lodMetricValue;
   const rightTop = Ellipsoid.WGS84.cartesianToCartographic(
@@ -61,10 +80,10 @@ export function convertCommonToI3SExtentCoordinate(tileset) {
 
 /**
  * Creates oriented boundinb box from mbs.
- * @param {Array} mbs
- * @returns {Object} - obb
+ * @param mbs - Minimum Bounding Sphere
+ * @returns - Oriented BOunding Box
  */
-export function createObbFromMbs(mbs) {
+export function createObbFromMbs(mbs: Mbs): Obb {
   const radius = mbs[3];
   const center = new Vector3(mbs[0], mbs[1], mbs[2]);
   const halfAxex = new Matrix3([radius, 0, 0, 0, radius, 0, 0, 0, radius]);

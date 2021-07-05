@@ -24,7 +24,7 @@ export async function parseWithWorker(
   data,
   options?: LoaderOptions,
   context?: LoaderContext,
-  parseOnMainThread?: Function
+  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<void>
 ) {
   const name = loader.id; // TODO
   const url = getWorkerURL(loader, options);
@@ -38,6 +38,7 @@ export async function parseWithWorker(
 
   const job = await workerPool.startJob(
     'process-on-worker',
+    // eslint-disable-next-line
     onMessage.bind(null, parseOnMainThread)
   );
 
