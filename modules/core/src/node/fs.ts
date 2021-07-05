@@ -1,4 +1,4 @@
-// @file fs wrapper (promisified fs + avoids bundling fs in browsers)
+// fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
 import {toArrayBuffer} from '@loaders.gl/loader-utils';
 import {promisify} from 'util';
