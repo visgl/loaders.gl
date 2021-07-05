@@ -60,8 +60,9 @@ const DEFAULT_CSV_LOADER_OPTIONS = {
   }
 };
 
-export const CSVLoader: LoaderWithParser = {
+export const CSVLoader = {
   id: 'csv',
+  module: 'csv',
   name: 'CSV',
   version: VERSION,
   extensions: ['csv'],
@@ -72,7 +73,7 @@ export const CSVLoader: LoaderWithParser = {
   parseText: (text: string, options?: CSVLoaderOptions) => parseCSV(text, options),
   parseInBatches: parseCSVInBatches,
   // @ts-ignore
-  testText: null,
+  // testText: null,
   options: DEFAULT_CSV_LOADER_OPTIONS as CSVLoaderOptions
 };
 
@@ -319,3 +320,5 @@ function deduceSchema(row, headerRow) {
   }
   return schema;
 }
+
+export const _typecheckCSVLoader: LoaderWithParser = CSVLoader;
