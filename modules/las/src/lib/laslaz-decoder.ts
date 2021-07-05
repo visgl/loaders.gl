@@ -457,7 +457,7 @@ export class LASFile {
       this.isOpen = false;
     }
   }
-  
+
   /**
    * @returns LASDecoder
    */
