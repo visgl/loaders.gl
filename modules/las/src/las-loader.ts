@@ -9,8 +9,26 @@ export type LASLoaderOptions = LoaderOptions & {
   las?: {
     fp64?: boolean;
     skip?: number;
-    colorDepth?: number;
+    colorDepth?: number | string;
   };
+};
+
+/**
+ * Type for header of the .las file
+ */
+export type LASHeader = {
+  pointsOffset: number;
+  pointsFormatId: number;
+  pointsStructSize: number;
+  pointsCount: number;
+  scale: [number, number, number];
+  offset: [number, number, number];
+  maxs?: number[];
+  mins?: number[];
+  totalToRead: number;
+  totalRead: number;
+  versionAsString?: string;
+  isCompressed?: boolean;
 };
 
 const DEFAULT_LAS_OPTIONS: LASLoaderOptions = {
