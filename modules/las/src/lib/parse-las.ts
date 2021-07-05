@@ -32,7 +32,7 @@ export default function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOpt
   const {onProgress} = options;
 
   const {skip, colorDepth, fp64} = options.las || {};
-
+  // @ts-ignore Possibly undefined
   parseLASChunked(arrayBuffer, skip, (decoder: any = {}, header: LASHeader) => {
     if (!originalHeader) {
       originalHeader = header;
@@ -76,7 +76,7 @@ export default function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOpt
       positions[pointIndex * 3 + 1] = position[1] * scaleY + offsetY;
       positions[pointIndex * 3 + 2] = position[2] * scaleZ + offsetZ;
 
-      if (color && colors !== null) {
+      if (color && colors) {
         if (twoByteColor) {
           colors[pointIndex * 4] = color[0] / 256;
           colors[pointIndex * 4 + 1] = color[1] / 256;

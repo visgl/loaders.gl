@@ -6,9 +6,9 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type LASLoaderOptions = LoaderOptions & {
-  las: {
+  las?: {
     fp64?: boolean;
-    skip: number;
+    skip?: number;
     colorDepth?: number | string;
   };
 };

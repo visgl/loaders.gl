@@ -9,10 +9,18 @@ import getModule from '../libs/laz-perf';
 
 let Module: any = null;
 
+type LASReader = (dv: DataView) => {
+  [LASAttribute: string]: number | number[];
+};
+
 type LASReaders = {
-  [key: number]: (dv: DataView) => {
-    [LASAttribute: string]: number | number[];
-  };
+  [key: number]: LASReader;
+};
+
+type LASData = {
+  buffer: ArrayBuffer;
+  count: number;
+  hasMoreData: boolean;
 };
 
 const POINT_FORMAT_READERS: LASReaders = {
@@ -72,6 +80,7 @@ function readAs(buf: ArrayBuffer, Type: any = {}, offset: number, count?: number
 
   return ret;
 }
+
 /**
  * Parsing of header's attributes
  * @param arraybuffer
@@ -104,33 +113,31 @@ function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
 //
 class LASLoader {
   arraybuffer: ArrayBuffer;
-  readOffset: number;
-  header: LASHeader;
+  readOffset: number = 0;
+  header: LASHeader = {
+    pointsOffset: 0,
+    pointsFormatId: 0,
+    pointsStructSize: 0,
+    pointsCount: 0,
+    scale: [0, 0, 0],
+    offset: [0, 0, 0],
+    maxs: [0],
+    mins: [0],
+    totalToRead: 0,
+    totalRead: 0,
+    versionAsString: '',
+    isCompressed: true
+  };
 
   constructor(arraybuffer: ArrayBuffer) {
     this.arraybuffer = arraybuffer;
-    this.readOffset = 0;
-    this.header = {
-      pointsOffset: 0,
-      pointsFormatId: 0,
-      pointsStructSize: 0,
-      pointsCount: 0,
-      scale: [0, 0, 0],
-      offset: [0, 0, 0],
-      maxs: [0],
-      mins: [0],
-      totalToRead: 0,
-      totalRead: 0,
-      versionAsString: '',
-      isCompressed: true
-    };
   }
+
   /**
-   * Nothing needs to be done to open this
    * @returns boolean
    */
   open() {
-    this.readOffset = 0;
+    // Nothing needs to be done to open this
     return true;
   }
   /**
@@ -211,13 +218,11 @@ class LASLoader {
  */
 class LAZLoader {
   arraybuffer: ArrayBuffer;
-  instance: any;
-  header: LASHeader | null;
+  instance: any = null; // LASZip instance
+  header: LASHeader | null = null;
 
   constructor(arraybuffer: ArrayBuffer) {
     this.arraybuffer = arraybuffer;
-    this.instance = null; // LASZip instance
-    this.header = null;
 
     if (!Module) {
       // Avoid executing laz-perf on import
@@ -226,10 +231,10 @@ class LAZLoader {
   }
 
   /**
-   * Opens the file using
+   * Opens the file
    * @returns boolean
    */
-  open() {
+  open(): boolean {
     try {
       const {arraybuffer} = this;
       this.instance = new Module.LASZip();
@@ -249,7 +254,7 @@ class LAZLoader {
     }
   }
 
-  getHeader() {
+  getHeader(): LASHeader {
     if (!this.instance) {
       throw new Error('You need to open the file before trying to read header');
     }
@@ -263,8 +268,13 @@ class LAZLoader {
       throw new Error(`Failed to get header: ${e.message}`);
     }
   }
-
-  readData(count: number, offset: number, skip: number) {
+  /**
+   * @param count
+   * @param offset
+   * @param skip
+   * @returns Data
+   */
+  readData(count: number, offset: number, skip: number): LASData {
     if (!this.instance) {
       throw new Error('You need to open the file before trying to read stuff');
     }
@@ -307,10 +317,10 @@ class LAZLoader {
   }
 
   /**
-   * Deletes the instance if it equals to null
+   * Deletes the instance
    * @returns boolean
    */
-  close() {
+  close(): boolean {
     try {
       if (this.instance !== null) {
         this.instance.delete();
@@ -350,9 +360,9 @@ class LASDecoder {
   /**
    * Decodes data depends on this point size
    * @param index
-   * @returns
+   * @returns New object
    */
-  getPoint(index: number) {
+  getPoint(index: number): {} {
     if (index < 0 || index >= this.pointsCount) {
       throw new Error('Point index out of range');
     }
@@ -367,20 +377,15 @@ class LASDecoder {
  */
 export class LASFile {
   arraybuffer: ArrayBuffer;
-  formatId: number;
+  formatId: number = 0;
   loader: LASLoader | LAZLoader;
-  isCompressed: boolean;
-  isOpen: boolean;
-  version: number;
-  versionAsString: string;
+  isCompressed: boolean = true;
+  isOpen: boolean = false;
+  version: number = 0;
+  versionAsString: string = '';
 
   constructor(arraybuffer: ArrayBuffer) {
     this.arraybuffer = arraybuffer;
-    this.formatId = 0;
-    this.isCompressed = true;
-    this.isOpen = false;
-    this.version = 0;
-    this.versionAsString = '';
 
     if (this.determineVersion() > 13) {
       throw new Error('Only file versions <= 1.3 are supported at this time');
@@ -399,7 +404,7 @@ export class LASFile {
   /**
    * Determines format in parameters of LASHeaer
    */
-  determineFormat() {
+  determineFormat(): void {
     const formatId = readAs(this.arraybuffer, Uint8Array, 32 * 3 + 8);
     const bit7 = (formatId & 0x80) >> 7;
     const bit6 = (formatId & 0x40) >> 6;
@@ -416,7 +421,7 @@ export class LASFile {
    * Determines version
    * @returns version
    */
-  determineVersion() {
+  determineVersion(): number {
     const ver = new Int8Array(this.arraybuffer, 24, 2);
     this.version = ver[0] * 10 + ver[1];
     this.versionAsString = `${ver[0]}.${ver[1]}`;
@@ -425,17 +430,18 @@ export class LASFile {
 
   /**
    * Reads if the file is open
+   * @returns boolean
    */
-  open() {
+  open(): void {
     if (this.loader.open()) {
       this.isOpen = true;
     }
   }
-
   /**
-   * @returns LASHeader
+   * Gets the header
+   * @returns Header
    */
-  getHeader() {
+  getHeader(): LASHeader {
     return this.loader.getHeader();
   }
 
@@ -445,23 +451,21 @@ export class LASFile {
    * @param skip
    * @returns Data
    */
-  readData(count: number, start: number, skip: number) {
+  readData(count: number, start: number, skip: number): LASData {
     return this.loader.readData(count, start, skip);
   }
 
   /**
    * Closes the file
    */
-  close() {
+  close(): void {
     if (this.loader.close()) {
       this.isOpen = false;
     }
   }
-
   /**
-   * @returns LASDecoder
    */
-  getUnpacker() {
+  getUnpacker(): typeof LASDecoder {
     return LASDecoder;
   }
 }
