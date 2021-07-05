@@ -1,6 +1,26 @@
+import {Quaternion} from '@math.gl/core';
 import type {GLTFMaterial} from '@loaders.gl/gltf';
+import {Matrix4, Vector3} from 'math.gl';
+import {Tileset3D} from '@loaders.gl/tiles';
+import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
+import {Asset, Buffer, BufferView, Mesh} from '@loaders.gl/gltf/src/lib/types/gltf-json-schema';
 
-// Types are based on I3S specification https://github.com/Esri/i3s-spec/tree/master/docs/1.7
+export type BoundingVolumes = {
+  mbs: Mbs;
+  obb: Obb;
+};
+
+export type Obb = {
+  center: number[] | Vector3;
+  halfSize: number[] | Vector3;
+  quaternion: Quaternion;
+};
+
+export type Mbs = [number, number, number, number];
+
+export type Extent = [number, number, number, number];
+
+// SceneLayer3D based on I3S specification https://github.com/Esri/i3s-spec/tree/master/docs/1.7
 // TODO Add description for each property
 
 export type SceneLayer3D = {
@@ -91,7 +111,7 @@ type GeometryBuffer = {
 
 type GeometryBufferItem = {type: string; component: number; encoding?: string; binding: string};
 
-type AttributeStorageInfo = {
+export type AttributeStorageInfo = {
   key: string;
   name: string;
   header: {property: string; valueType: string}[];
@@ -103,12 +123,23 @@ type AttributeStorageInfo = {
 
 type AttributeValue = {valueType: string; encoding?: string; valuesPerElement?: number};
 
-type Field = {
+export type Field = {
   name: string;
-  type: string;
+  type: ESRIField;
   alias?: string;
   domain?: Domain;
 };
+
+export type ESRIField =
+  | 'esriFieldTypeDate'
+  | 'esriFieldTypeSingle'
+  | 'esriFieldTypeDouble'
+  | 'esriFieldTypeGUID'
+  | 'esriFieldTypeGlobalID'
+  | 'esriFieldTypeInteger'
+  | 'esriFieldTypeOID'
+  | 'esriFieldTypeSmallInteger'
+  | 'esriFieldTypeString';
 
 type Domain = {
   type: string;
@@ -135,4 +166,182 @@ type FieldInfo = {
   visible: boolean;
   isEditable: boolean;
   label: string;
+};
+
+// Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
+export type Node3DIndexDocument = {
+  id: string;
+  version?: string;
+  path?: string;
+  level?: number;
+  mbs?: Mbs;
+  obb?: Obb;
+  lodSelection?: LodSelection;
+  children?: NodeReference[];
+  neighbors?: NodeReference[];
+  parentNode?: NodeReference;
+  sharedResource?: Resource;
+  featureData?: Resource[];
+  geometryData?: Resource[];
+  textureData?: Resource[];
+  attributeData?: Resource[];
+  created?: string;
+  expires?: string;
+};
+
+export type LodSelection = {
+  metricType?: string;
+  maxError: number;
+};
+
+export type NodeReference = {
+  id: string;
+  version?: string;
+  mbs?: Mbs;
+  obb?: Obb;
+  href?: string;
+};
+
+export type Resource = {
+  href: string;
+  layerContent?: string[];
+  featureRange?: number[];
+  multiTextureBundle?: string;
+  vertexElements?: number[];
+  faceElements?: number[];
+  nodePath?: string;
+};
+
+export type I3SGeometry = {
+  geometry: ArrayBuffer | null;
+  compressedGeometry?: ArrayBuffer | null;
+  texture: any | null;
+  sharedResources: SharedResources | null;
+  meshMaterial?: GLTFMaterial | null;
+  vertexCount: number | null;
+  attributes: any | null;
+  featureCount: number | null;
+  geometryBuffer?: ArrayBuffer;
+};
+
+export type MaxScreenThresholdSQ = {
+  maxError: number;
+};
+
+export type NodeInPage = {
+  index?: number;
+  lodThreshold: number;
+  obb: Obb;
+  children: any[];
+  mesh: Mesh;
+};
+
+export type SharedResources = {
+  materialDefinitions?: GLTFMaterial[];
+  textureDefinitions?: TextureDefinitionInfo[];
+  nodePath: string;
+};
+
+type TextureDefinitionInfo = {
+  encoding: string[];
+  wrap?: string[];
+  atlas?: boolean;
+  uvSet?: string;
+  channels?: 'rbg' | 'rgba' | string;
+  images: TextureImage[];
+};
+
+export type TextureImage = {
+  id: string;
+  size?: number;
+  pixelInWorldUnits?: number;
+  href?: string[];
+  byteOffset?: string[];
+  length?: number[];
+  mimeType?: string;
+  bufferView?: {
+    data: ArrayBuffer;
+  };
+  image?: {
+    height: number;
+    width: number;
+  };
+};
+
+export type Attribute = 'OBJECTID' | 'string' | 'double' | 'Int32' | string;
+
+export type BatchTable = {
+  [key: string]: any[];
+};
+
+export type TileContent = {
+  _tile: TileHeader;
+  _tileset: Tileset3D;
+};
+
+export type B3DMContent = {
+  batchTableJson?: {[key: string]: any[]};
+  byteLength: number;
+  byteOffset: number;
+  cartesianModelMatrix: Matrix4;
+  cartesianOrigin: Vector3;
+  cartographicModelMatrix: Matrix4;
+  cartographicOrigin: Vector3;
+  featureIds?: number[] | null;
+  featureTableBinary?: Uint8Array;
+  featuretableJson?: {[key: string]: any};
+  gltf?: GLTFObject;
+  gltfUpAxis: string;
+  header: GLTFHeader;
+  magic: number;
+  modelMatrix: Matrix4;
+  rotateYtoZ: boolean;
+  rtcCenter: [number, number, number];
+  type: string;
+  version: number;
+};
+
+type GLTFObject = {
+  accessors: Accessor[];
+  asset: Asset;
+  buffers: Buffer[];
+  bufferViews: BufferView[];
+  extensionRequired: any[];
+  extensionUsed: any[];
+  materials: GLTFMaterial[];
+  meshes: Mesh[];
+  nodes: Node[];
+  scene: Scene;
+  scenes: Scene[];
+};
+
+type Scene = {
+  id: string;
+  name: string;
+  nodes: Node[];
+};
+
+type Node = {
+  id: string;
+  mesh: Mesh;
+};
+
+type GLTFHeader = {
+  batchLength?: number;
+  batchTableBinaryByteLength: number;
+  batchTableJsonByteLength: number;
+  featureTableBinaryByteLength: number;
+  featureTableJsonByteLength: number;
+};
+
+type Accessor = {
+  bytesPerComponent: number;
+  bytesPerElement: number;
+  components: number;
+  componentsType: number;
+  count: number;
+  id: string;
+  max: number[];
+  min: number[];
+  type: string;
 };
