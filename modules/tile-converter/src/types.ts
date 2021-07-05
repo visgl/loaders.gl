@@ -3,7 +3,7 @@ import type {GLTFMaterial} from '@loaders.gl/gltf';
 import {Matrix4, Vector3} from 'math.gl';
 import {Tileset3D} from '@loaders.gl/tiles';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
-import {TypedArray} from '@loaders.gl/loader-utils/src/types';
+import {Asset, Buffer, BufferView, Mesh} from '@loaders.gl/gltf/src/lib/types/gltf-json-schema';
 
 export type BoundingVolumes = {
   mbs: Mbs;
@@ -139,8 +139,7 @@ export type ESRIField =
   | 'esriFieldTypeInteger'
   | 'esriFieldTypeOID'
   | 'esriFieldTypeSmallInteger'
-  | 'esriFieldTypeString'
-  | string;
+  | 'esriFieldTypeString';
 
 type Domain = {
   type: string;
@@ -237,13 +236,6 @@ export type NodeInPage = {
   mesh: Mesh;
 };
 
-type Mesh = {
-  geometry: {
-    definition: number;
-  };
-  attribute: any;
-};
-
 export type SharedResources = {
   materialDefinitions?: GLTFMaterial[];
   textureDefinitions?: TextureDefinitionInfo[];
@@ -293,25 +285,13 @@ export type B3DMContent = {
   byteOffset: number;
   cartesianModelMatrix: Matrix4;
   cartesianOrigin: Vector3;
+  cartographicModelMatrix: Matrix4;
   cartographicOrigin: Vector3;
   featureIds?: number[] | null;
   featureTableBinary?: Uint8Array;
   featuretableJson?: {[key: string]: any};
   gltf?: GLTFObject;
-};
-
-// TODO Add more properties here....
-type GLTFObject = {
-  asset: {version: string};
-  buffers: {name: string; byteLength: number}[];
-  accessors: Accessor[];
-  bufferViews: BufferView[];
-  extensionRequired: any[];
-  extensionUsed: any[];
-  materials: GLTFMaterial[];
-  meshes: {id: string; primitives: Primitive[]}[];
-  nodes: {id: string; mesh: {id: string; primitives: Primitive[]}};
-  gltfUpAxis: 'Y' | 'Z' | string;
+  gltfUpAxis: string;
   header: GLTFHeader;
   magic: number;
   modelMatrix: Matrix4;
@@ -319,6 +299,31 @@ type GLTFObject = {
   rtcCenter: [number, number, number];
   type: string;
   version: number;
+};
+
+type GLTFObject = {
+  accessors: Accessor[];
+  asset: Asset;
+  buffers: Buffer[];
+  bufferViews: BufferView[];
+  extensionRequired: any[];
+  extensionUsed: any[];
+  materials: GLTFMaterial[];
+  meshes: Mesh[];
+  nodes: Node[];
+  scene: Scene;
+  scenes: Scene[];
+};
+
+type Scene = {
+  id: string;
+  name: string;
+  nodes: Node[];
+};
+
+type Node = {
+  id: string;
+  mesh: Mesh;
 };
 
 type GLTFHeader = {
@@ -339,29 +344,4 @@ type Accessor = {
   max: number[];
   min: number[];
   type: string;
-};
-
-type BufferView = {
-  buffer: {
-    arrayBuffer: ArrayBuffer;
-    byteOffset: number;
-    byteLength: number;
-  };
-  byteLength: number;
-  byteOffset: number;
-  data: Uint8Array;
-  id: string;
-};
-
-type Primitive = {
-  attributes: {
-    [key: string]: {
-      byteOffset: number;
-      componentType: number;
-      count: number;
-      size: number;
-      type: string;
-      value: TypedArray;
-    };
-  };
 };
