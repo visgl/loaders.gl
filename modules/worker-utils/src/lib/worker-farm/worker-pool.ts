@@ -104,7 +104,7 @@ export default class WorkerPool {
       this.jobQueue.push({name, onMessage, onError, onStart});
       return this;
     });
-    this._startQueuedJob();
+    this._startQueuedJob(); // eslint-disable-line @typescript-eslint/no-floating-promises
     return await startPromise;
   }
 
@@ -175,7 +175,7 @@ export default class WorkerPool {
     }
 
     if (!this.isDestroyed) {
-      this._startQueuedJob();
+      this._startQueuedJob(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 

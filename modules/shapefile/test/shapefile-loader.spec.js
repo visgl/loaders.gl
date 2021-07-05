@@ -54,6 +54,7 @@ test('ShapefileLoader#load (from browser File objects)', async (t) => {
       const fileSystem = new BrowserFileSystem(fileList);
       const {fetch} = fileSystem;
       const filename = `${testFileName}.shp`;
+      // @ts-ignore
       const data = await load(filename, ShapefileLoader, {fetch});
       t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
@@ -150,6 +151,7 @@ test('ShapefileLoader#loadInBatches(File)', async (t) => {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const response = await fetchFile(filename);
     const file = new File([await response.blob()], filename);
+    // @ts-ignore
     const batches = await loadInBatches(file, ShapefileLoader, {fetch: fileSystem.fetch});
     let data;
     for await (const batch of batches) {

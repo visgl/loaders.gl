@@ -20,6 +20,7 @@
 //     diffuse_blue: 'blue'
 //   }
 // });
+// @ts-nocheck
 
 import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/core';
 import normalizePLY from './normalize-ply';

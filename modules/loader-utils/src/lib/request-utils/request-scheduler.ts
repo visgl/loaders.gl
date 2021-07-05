@@ -154,7 +154,7 @@ export default class RequestScheduler {
     for (let i = 0; i < freeSlots; ++i) {
       const request = this.requestQueue.shift();
       if (request) {
-        void this._issueRequest(request);
+        this._issueRequest(request); // eslint-disable-line @typescript-eslint/no-floating-promises
       }
     }
 

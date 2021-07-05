@@ -351,6 +351,7 @@ function parseGeometry(arrayBuffer: ArrayBuffer) {
   // `parseSync` option, so instead we call parseSync directly on WKBLoader
   const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
 
+  // @ts-expect-error
   return binaryToGeoJson(binaryGeometry);
 }
 

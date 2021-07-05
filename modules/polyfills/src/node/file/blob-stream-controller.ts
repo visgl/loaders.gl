@@ -2,7 +2,7 @@
  * Forked from @gozala's web-blob under MIT license
  * @see https://github.com/Gozala/web-blob
  */
-class BlobStreamController {
+export class BlobStreamController {
   private chunks: Iterator<Uint8Array>;
   private isWorking: boolean = false;
   private isCancelled: boolean = false;
@@ -18,7 +18,7 @@ class BlobStreamController {
    * @param controller
    */
   start(controller: ReadableStreamDefaultController) {
-    this.work(controller);
+    this.work(controller); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /**
@@ -56,7 +56,7 @@ class BlobStreamController {
    */
   pull(controller) {
     if (!this.isWorking) {
-      this.work(controller);
+      this.work(controller); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
   cancel() {
