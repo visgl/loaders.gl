@@ -20,5 +20,6 @@ export {
   SharedResources,
   TextureImage,
   Attribute,
-  Extent
+  Extent,
+  FeatureAttribute
 } from './types';
