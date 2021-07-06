@@ -15,9 +15,9 @@ Parses a [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles) tileset.
 | Decoder Type          | Asynchronous                                                                                                       |
 | Worker Thread Support | No                                                                                                                 |
 | Streaming Support     | No \*                                                                                                              |
-| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`)                                                           |
+| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageLoader` (.`.jpg`, `.png`), `TextureLoader` (`.ktx`)                                                           |
 
-\* Streaming is not supported for individual tiles, however tilesets are streamed by loading only the tiles needed for the
+\* Streaming is not supported for individual tiles, however tilesets are streamed by loading only the tiles needed for the specified viewports.
 
 ## Usage
 
@@ -76,8 +76,6 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 | `3d-tiles.headers`   | Object           | null    | Used to load data from server                                                                                                                                         |
 | `3d-tiles.tileset`   | `Object`         | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](#tileset-object). It is required when loading i3s geometry content |
 | `3d-tiles.tile`      | `Object`         | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                       |
-
-To enable parsing of DRACO compressed point clouds and glTF tiles, make sure to first register the [DracoLoader](/docs/api-reference/draco/draco-loader).
 
 Point cloud tie options
 
