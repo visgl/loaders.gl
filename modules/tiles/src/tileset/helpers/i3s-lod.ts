@@ -49,7 +49,6 @@ export function lodJudge(tile, frameState) {
   if (screenSize < 0.5) {
     return 'OUT';
   }
-  // Hack: 1000 is a Magic number to get the correct LoD
   if (!tile.header.children || screenSize <= tile.lodMetricValue) {
     return 'DRAW';
   } else if (tile.header.children) {
@@ -100,24 +99,14 @@ export function getI3ScreenSize(tile, frameState) {
   if (d <= 0.0) {
     return 0.5 * fltMax;
   }
-  let screenSizeFactor = calculateScreenSizeFactor(tile, frameState);
-  // viewport changed in deck.gl v8.0
-  screenSizeFactor *= mbsRNormalized / Math.sqrt(d) / viewport.scale;
+  // Hack: 300 is a Magic number to get the correct LoD
+  const screenSizeFactor =
+    ((getTanOfHalfVFAngle(frameState) * mbsRNormalized) / Math.sqrt(d)) * 300;
   return screenSizeFactor;
 }
 
-function calculateScreenSizeFactor(tile, frameState) {
-  const {width, height, pixelProjectionMatrix} = frameState.viewport;
-  const tanOfHalfVFAngle = Math.tan(
-    Math.atan(
-      Math.sqrt(
-        1.0 / (pixelProjectionMatrix[0] * pixelProjectionMatrix[0]) +
-          1.0 / (pixelProjectionMatrix[5] * pixelProjectionMatrix[5])
-      )
-    )
-  );
-
-  const screenCircleFactor = Math.sqrt(height * height + width * width) / tanOfHalfVFAngle;
-
-  return screenCircleFactor;
+function getTanOfHalfVFAngle(frameState) {
+  const {projectionMatrix} = frameState.viewport;
+  const t = projectionMatrix[5];
+  return t;
 }
