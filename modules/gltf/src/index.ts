@@ -30,4 +30,4 @@ export {GLBWriter} from './glb-writer';
 export {default as GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {Mesh} from './lib/types/gltf-json-schema';
-export {GLTFObject, GLTFHeader} from './lib/types/gltf-types';
+export type {GLTFObject} from './lib/types/gltf-types';

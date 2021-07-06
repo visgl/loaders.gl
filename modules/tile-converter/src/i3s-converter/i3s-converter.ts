@@ -1,6 +1,6 @@
 import type {Tileset3DProps} from '@loaders.gl/tiles';
 import type {GLTFMaterial} from '@loaders.gl/gltf';
-import type {TableJson, B3DMContent} from '@loaders.gl/3d-tiles';
+import type {BatchTableJson, B3DMContent} from '@loaders.gl/3d-tiles';
 
 import type {
   AttributeStorageInfo,
@@ -97,7 +97,7 @@ export default class I3SConverter {
     this.materialMap = new Map();
     this.materialDefinitions = [];
     this.vertexCounter = 0;
-    this.layers0 = {};
+    this.layers0 = null;
     this.featuresHashArray = [];
     this.refinementCounter = {
       tilesCount: 0,
@@ -1052,7 +1052,7 @@ export default class I3SConverter {
    * Do conversion of 3DTiles batch table to I3s node attributes.
    * @param batchTable - Table with layer meta data.
    */
-  private _convertBatchTableInfoToNodeAttributes(batchTable: TableJson): void {
+  private _convertBatchTableInfoToNodeAttributes(batchTable: BatchTableJson): void {
     let attributeIndex = 0;
     const batchTableWithObjectId = {
       OBJECTID: [0],
@@ -1101,7 +1101,7 @@ export default class I3SConverter {
    * @param batchTable - Batch table data with OBJECTID.
    * @return data for correct rendering of popup.
    */
-  private _createPopupInfo(batchTable: TableJson): PopupInfo {
+  private _createPopupInfo(batchTable: BatchTableJson): PopupInfo {
     const title = '{OBJECTID}';
     const mediaInfos = [];
     const fieldInfos = [];

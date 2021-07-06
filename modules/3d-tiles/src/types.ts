@@ -1,12 +1,12 @@
-import type {GLTFObject, GLTFHeader} from '@loaders.gl/gltf';
+import type {GLTFObject} from '@loaders.gl/gltf';
 import {Matrix4, Vector3} from '@math.gl/core';
 
-export type TableJson = {
+export type BatchTableJson = {
   [key: string]: any[];
 };
 
 export type B3DMContent = {
-  batchTableJson?: TableJson;
+  batchTableJson?: BatchTableJson;
   byteLength: number;
   byteOffset: number;
   cartesianModelMatrix: Matrix4;
@@ -15,7 +15,7 @@ export type B3DMContent = {
   cartographicOrigin: Vector3;
   featureIds?: number[] | null;
   featureTableBinary?: Uint8Array;
-  featureTableJson?: TableJson;
+  featureTableJson?: BatchTableJson;
   gltf?: GLTFObject;
   gltfUpAxis: string;
   header: GLTFHeader;
@@ -25,4 +25,12 @@ export type B3DMContent = {
   rtcCenter: [number, number, number];
   type: string;
   version: number;
+};
+
+export type GLTFHeader = {
+  batchLength?: number;
+  batchTableBinaryByteLength: number;
+  batchTableJsonByteLength: number;
+  featureTableBinaryByteLength: number;
+  featureTableJsonByteLength: number;
 };

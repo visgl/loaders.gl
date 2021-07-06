@@ -1,6 +1,6 @@
 import type {GLTFMaterial} from '@loaders.gl/gltf';
-import {Quaternion, Vector3} from '@math.gl/core';
-import {Mesh} from '@loaders.gl/gltf';
+import type {Quaternion, Vector3} from '@math.gl/core';
+import type {Mesh} from '@loaders.gl/gltf';
 
 export type Tileset = {[key: string]: any};
 export type NodePage = {[key: string]: any};

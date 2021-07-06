@@ -54,14 +54,6 @@ export type GLTF_KHR_draco_mesh_compression = {
   extras?: any;
 };
 
-export type GLTFHeader = {
-  batchLength?: number;
-  batchTableBinaryByteLength: number;
-  batchTableJsonByteLength: number;
-  featureTableBinaryByteLength: number;
-  featureTableJsonByteLength: number;
-};
-
 // export type GLTF = {
 //   json: GLTFRoot;
 //   buffers?: any[];
