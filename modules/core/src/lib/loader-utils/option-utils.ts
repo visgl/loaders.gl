@@ -1,4 +1,4 @@
-import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import {isWorker, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
@@ -133,8 +133,10 @@ function validateOptionsObject(
   for (const key in options) {
     // If top level option value is an object it could options for a loader, so ignore
     const isSubOptions = !id && isObject(options[key]);
+    const isBaseUriOption = key === 'baseUri' && !id;
+    const isWorkerUrlOption = key === 'workerUrl' && id;
     // <loader>.workerUrl requires special handling as it is now auto-generated and no longer specified as a default option.
-    if (!(key in defaultOptions) && !(key === 'baseUri' && !id) && key !== 'workerUrl' && id) {
+    if (!(key in defaultOptions) && !isBaseUriOption && !isWorkerUrlOption) {
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
         probeLog.warn(
