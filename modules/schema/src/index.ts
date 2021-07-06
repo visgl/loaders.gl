@@ -32,6 +32,11 @@ export {convertToObjectRow, convertToArrayRow} from './lib/utils/row-utils';
 // MESH CATEGORY
 export type {MeshTable, MeshArrowTable, Mesh, MeshAttribute} from './category/mesh';
 
+// MESH CATEGORY UTILS
+// Note: Should move to category specific module if code size increases
+export type {Attributes as _Attributes} from './category/mesh/mesh-utils';
+export {getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
+
 // TYPES
 export {
   DataType,

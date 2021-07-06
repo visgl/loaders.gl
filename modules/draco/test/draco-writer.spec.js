@@ -3,7 +3,7 @@ import {validateWriter, validateMeshCategoryData} from 'test/common/conformance'
 
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
-import {_getMeshSize} from '@loaders.gl/loader-utils';
+import {getMeshSize} from '@loaders.gl/schema';
 import draco3d from 'draco3d';
 
 const TEST_CASES = [
@@ -63,7 +63,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco.pointcloud ? POINTCLOUD : MESH;
-    const meshSize = _getMeshSize(mesh.attributes);
+    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
     const ratio = meshSize / compressedMesh.byteLength;
@@ -104,7 +104,7 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco.pointcloud ? POINTCLOUD : MESH;
-    const meshSize = _getMeshSize(mesh.attributes);
+    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, {
       ...tc.options,
@@ -151,7 +151,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const attributes = tc.options.draco.pointcloud ? pointCloudAttributes : meshAttributes;
-    const meshSize = _getMeshSize(attributes);
+    const meshSize = getMeshSize(attributes);
 
     const compressedMesh = await encode(attributes, DracoWriter, tc.options);
 

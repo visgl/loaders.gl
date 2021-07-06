@@ -1,5 +1,5 @@
 import type {PlyAccessors, PlyData, PlyAttributes, NormalizeHeader, PlyHeader} from './types';
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 
 /**
  * @param header
