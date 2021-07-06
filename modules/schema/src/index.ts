@@ -35,7 +35,7 @@ export type {MeshTable, MeshArrowTable, Mesh, MeshAttribute} from './category/me
 // MESH CATEGORY UTILS
 // Note: Should move to category specific module if code size increases
 export type {Attributes as _Attributes} from './category/mesh/mesh-utils';
-export {getMeshSize as _getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
+export {getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
 
 // TYPES
 export {
