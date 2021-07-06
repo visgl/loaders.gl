@@ -1,6 +1,8 @@
 import fs from 'fs';
 import util from 'util';
 import {IFileSystem, IRandomAccessReadFileSystem} from '@loaders.gl/loader-utils';
+// import {fetchFile} from "../fetch/fetch-file"
+// import {selectLoader} from "../api/select-loader";
 
 type Stat = {
   size: number;
@@ -15,8 +17,6 @@ type ReadOptions = {
   position?: number;
 };
 
-// import {fetchFile} from "../fetch/fetch-file"
-// import {selectLoader} from "../api/select-loader";
 /**
  * FileSystem pass-through for Node.js
  * - Provides promisified versions of Node `fs` API
@@ -26,10 +26,10 @@ type ReadOptions = {
 export default class NodeFileSystem implements IFileSystem, IRandomAccessReadFileSystem {
   // implements IFileSystem
   constructor(options: {[key: string]: any}) {
-    this.fetch = options.fetch;
+    this.fetch = options._fetch;
   }
-  // @ts-ignore
-  async readdir(dirname: string = '.', options?: {}) {
+
+  async readdir(dirname = '.', options?: {}): Promise<any[]> {
     const readdir = util.promisify(fs.readdir);
     return await readdir(dirname, options);
   }
@@ -42,8 +42,8 @@ export default class NodeFileSystem implements IFileSystem, IRandomAccessReadFil
 
   async fetch(path: string, options: {[key: string]: any}) {
     // Falls back to handle https:/http:/data: etc fetches
-    // @ts-ignore
-    const fallbackFetch = options.fetch || this._fetch;
+    // eslint-disable-next-line
+    const fallbackFetch = options.fetch || this.fetch;
     return fallbackFetch(path, options);
   }
 

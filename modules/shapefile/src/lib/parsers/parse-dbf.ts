@@ -4,7 +4,7 @@ import BinaryChunkReader from '../streaming/binary-chunk-reader';
 type DBFRowsOutput = object[];
 
 interface DBFTableOutput {
-  schema;
+  schema?: Schema;
   rows: DBFRowsOutput;
 }
 
@@ -33,7 +33,7 @@ type DBFField = {
 type DBFResult = {
   data: {[key: string]: any}[];
   schema?: Schema;
-  error?;
+  error?: string;
   dbfHeader?: DBFHeader;
   dbfFields?: DBFField[];
   progress?: {
@@ -65,8 +65,10 @@ class DBFParser {
   constructor({encoding}) {
     this.textDecoder = new TextDecoder(encoding);
   }
-
-  write(arrayBuffer) {
+  /**
+   * @param arrayBuffer
+   */
+  write(arrayBuffer: ArrayBuffer): void {
     this.binaryReader.write(arrayBuffer);
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
@@ -76,8 +78,10 @@ class DBFParser {
     // - first rows available
     // - all rows available
   }
-
-  end() {
+  /**
+   *
+   */
+  end(): void {
     this.binaryReader.end();
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
@@ -87,8 +91,15 @@ class DBFParser {
     }
   }
 }
-
-export function parseDBF(arrayBuffer: ArrayBuffer, options): DBFRowsOutput | DBFTableOutput {
+/**
+ * @param arrayBuffer
+ * @param options
+ * @returns DBFTable anf rows
+ */
+export function parseDBF(
+  arrayBuffer: ArrayBuffer,
+  options: any = {}
+): DBFRowsOutput | DBFTableOutput {
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
 
@@ -107,10 +118,13 @@ export function parseDBF(arrayBuffer: ArrayBuffer, options): DBFRowsOutput | DBF
       return data;
   }
 }
-
+/**
+ * @param asyncIterator
+ * @param options
+ */
 export async function* parseDBFInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options
+  options: any = {}
 ): AsyncIterable<DBFHeader | DBFRowsOutput | DBFTableOutput> {
   const loaderOptions = options.dbf || {};
   const {encoding} = loaderOptions;
@@ -134,10 +148,16 @@ export async function* parseDBFInBatches(
     yield parser.result.data;
   }
 }
-
-// https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
+/**
+ * https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
+ * @param state
+ * @param result
+ * @param binaryReader
+ * @param textDecoder
+ * @returns
+ */
 /* eslint-disable complexity, max-depth */
-function parseState(state, result: DBFResult, binaryReader, textDecoder) {
+function parseState(state: STATE, result: DBFResult, binaryReader, textDecoder): STATE {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -235,9 +255,9 @@ function parseDBFHeader(headerView: DataView): DBFHeader {
 }
 
 /**
- * @param {DataView} view
+ * @param view
  */
-function parseFieldDescriptors(view, textDecoder): DBFField[] {
+function parseFieldDescriptors(view: DataView, textDecoder): DBFField[] {
   // NOTE: this might overestimate the number of fields if the "Database
   // Container" container exists and is included in the headerLength
   const nFields = (view.byteLength - 1) / 32;
@@ -275,6 +295,11 @@ function parseRows(binaryReader, fields, nRecords, recordLength, textDecoder) {
  */
 
 /**
+ *
+ * @param view
+ * @param fields
+ * @param textDecoder
+ * @returns
  */
 function parseRow(
   view: DataView,
@@ -294,8 +319,13 @@ function parseRow(
   return out;
 }
 
-// Should NaN be coerced to null?
-function parseField(text, dataType) {
+/**
+ * Should NaN be coerced to null?
+ * @param text
+ * @param dataType
+ * @returns Field depends on a type of the data
+ */
+function parseField(text: string, dataType: string): string | number | boolean | null {
   switch (dataType) {
     case 'B':
       return parseNumber(text);
@@ -316,8 +346,12 @@ function parseField(text, dataType) {
   }
 }
 
-/** Parse YYYYMMDD to date in milliseconds */
-function parseDate(str): number {
+/**
+ * Parse YYYYMMDD to date in milliseconds
+ * @param str YYYYMMDD
+ * @returns new Date as a number
+ */
+function parseDate(str: any): number {
   return Date.UTC(str.slice(0, 4), parseInt(str.slice(4, 6), 10) - 1, str.slice(6, 8));
 }
 
@@ -326,26 +360,40 @@ function parseDate(str): number {
  * any of Y, y, T, t coerce to true
  * any of N, n, F, f coerce to false
  * otherwise null
+ * @param value
+ * @returns boolean | null
  */
-function parseBoolean(value): boolean | null {
+function parseBoolean(value: string): boolean | null {
   return /^[nf]$/i.test(value) ? false : /^[yt]$/i.test(value) ? true : null;
 }
 
-// Return null instead of NaN
-function parseNumber(text): number | null {
+/**
+ * Return null instead of NaN
+ * @param text
+ * @returns number | null
+ */
+function parseNumber(text: string): number | null {
   const number = parseFloat(text);
   return isNaN(number) ? null : number;
 }
 
-function parseCharacter(text): string | null {
+/**
+ *
+ * @param text
+ * @returns string | null
+ */
+function parseCharacter(text: string): string | null {
   return text.trim() || null;
 }
 
 /**
  * Create a standard Arrow-style `Field` from field descriptor.
  * TODO - use `fieldLength` and `decimal` to generate smaller types?
+ * @param param0
+ * @returns Field
  */
-function makeField({name, dataType, fieldLength, decimal}) {
+// eslint-disable
+function makeField({name, dataType, fieldLength, decimal}): Field {
   switch (dataType) {
     case 'B':
       return new Field(name, new Float64(), true);

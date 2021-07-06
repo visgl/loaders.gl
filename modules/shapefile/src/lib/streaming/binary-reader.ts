@@ -1,17 +1,28 @@
 export default class BinaryReader {
-  constructor(arrayBuffer) {
+  offset: number;
+  arrayBuffer: ArrayBuffer;
+
+  constructor(arrayBuffer: ArrayBuffer) {
     /** current global (stream) offset */
     this.offset = 0;
     /** current buffer from iterator */
     this.arrayBuffer = arrayBuffer;
   }
-
-  hasAvailableBytes(bytes) {
+  /**
+   * Checks if there are available bytes in data
+   * @param bytes
+   * @returns boolean
+   */
+  hasAvailableBytes(bytes: number): boolean {
     return this.arrayBuffer.byteLength - this.offset >= bytes;
   }
 
-  // Get the required number of bytes from the iterator
-  getDataView(bytes) {
+  /**
+   * Get the required number of bytes from the iterator
+   * @param bytes
+   * @returns Dataview
+   */
+  getDataView(bytes: number): DataView {
     if (bytes && !this.hasAvailableBytes(bytes)) {
       throw new Error('binary data exhausted');
     }
@@ -23,11 +34,19 @@ export default class BinaryReader {
     return dataView;
   }
 
-  skip(bytes) {
+  /**
+   * Skipping
+   * @param bytes
+   */
+  skip(bytes: number): void {
     this.offset += bytes;
   }
 
-  rewind(bytes) {
+  /**
+   * Rewinding
+   * @param bytes
+   */
+  rewind(bytes: number): void {
     this.offset -= bytes;
   }
 }
