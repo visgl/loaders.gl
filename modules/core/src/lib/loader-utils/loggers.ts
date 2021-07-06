@@ -1,4 +1,7 @@
 // probe.gl Log compatible loggers
+import {Log} from 'probe.gl';
+
+export const probeLog = new Log({id: 'loaders.gl'});
 
 // Logs nothing
 export class NullLog {
