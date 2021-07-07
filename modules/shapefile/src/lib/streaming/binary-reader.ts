@@ -10,7 +10,7 @@ export default class BinaryReader {
   }
   /**
    * Checks if there are available bytes in data
-   * 
+   *
    * @param bytes
    * @returns boolean
    */
@@ -20,7 +20,7 @@ export default class BinaryReader {
 
   /**
    * Get the required number of bytes from the iterator
-   * 
+   *
    * @param bytes
    * @returns Dataview
    */
@@ -38,7 +38,7 @@ export default class BinaryReader {
 
   /**
    * Skipping
-   * 
+   *
    * @param bytes
    */
   skip(bytes: number): void {
@@ -47,7 +47,7 @@ export default class BinaryReader {
 
   /**
    * Rewinding
-   * 
+   *
    * @param bytes
    */
   rewind(bytes: number): void {

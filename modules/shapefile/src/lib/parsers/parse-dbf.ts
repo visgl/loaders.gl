@@ -155,7 +155,12 @@ export async function* parseDBFInBatches(
  * @returns
  */
 /* eslint-disable complexity, max-depth */
-function parseState(state: STATE, result: DBFResult, binaryReader: {[key: string]: any}, textDecoder: TextDecoder): STATE {
+function parseState(
+  state: STATE,
+  result: DBFResult,
+  binaryReader: {[key: string]: any},
+  textDecoder: TextDecoder
+): STATE {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
