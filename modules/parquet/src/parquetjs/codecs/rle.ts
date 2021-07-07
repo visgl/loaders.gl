@@ -1,13 +1,24 @@
-// Forked from https://github.com/ironSource/parquetjs under MIT license
+// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 
+import type {PrimitiveType} from '../schema/declare';
+import type {CursorBuffer, ParquetCodecOptions} from './declare';
 import varint from 'varint';
 
-// eslint-disable-next-line complexity
-export function encodeValues(type, values, opts: {bitWidth: number; disableEnvelope: boolean}) {
+// eslint-disable-next-line max-statements, complexity
+export function encodeValues(
+  type: PrimitiveType,
+  values: any[],
+  opts: ParquetCodecOptions
+): Buffer {
+  if (!('bitWidth' in opts)) {
+    throw new Error('bitWidth is required');
+  }
+
   switch (type) {
     case 'BOOLEAN':
     case 'INT32':
     case 'INT64':
+      // tslint:disable-next-line:no-parameter-reassignment
       values = values.map((x) => parseInt(x, 10));
       break;
 
@@ -52,21 +63,18 @@ export function encodeValues(type, values, opts: {bitWidth: number; disableEnvel
   }
 
   const envelope = Buffer.alloc(buf.length + 4);
-  envelope.writeUInt32LE(buf.length);
+  envelope.writeUInt32LE(buf.length, undefined);
   buf.copy(envelope, 4);
 
   return envelope;
 }
 
 export function decodeValues(
-  type,
-  cursor,
-  count,
-  opts: {
-    disableEnvelope?: boolean;
-    bitWidth: number;
-  }
-) {
+  type: PrimitiveType,
+  cursor: CursorBuffer,
+  count: number,
+  opts: ParquetCodecOptions
+): number[] {
   if (!('bitWidth' in opts)) {
     throw new Error('bitWidth is required');
   }
@@ -75,7 +83,7 @@ export function decodeValues(
     cursor.offset += 4;
   }
 
-  let values: any[] = [];
+  let values: number[] = [];
   while (values.length < count) {
     const header = varint.decode(cursor.buffer, cursor.offset);
     cursor.offset += varint.encodingLength(header);
@@ -96,14 +104,60 @@ export function decodeValues(
   return values;
 }
 
-function encodeRunBitpacked(values, opts) {
+function decodeRunBitpacked(
+  cursor: CursorBuffer,
+  count: number,
+  opts: ParquetCodecOptions
+): number[] {
+  // @ts-ignore
+  const bitWidth: number = opts.bitWidth;
+
+  if (count % 8 !== 0) {
+    throw new Error('must be a multiple of 8');
+  }
+
+  // tslint:disable-next-line:prefer-array-literal
+  const values = new Array(count).fill(0);
+  for (let b = 0; b < bitWidth * count; b++) {
+    if (cursor.buffer[cursor.offset + Math.floor(b / 8)] & (1 << b % 8)) {
+      values[Math.floor(b / bitWidth)] |= 1 << b % bitWidth;
+    }
+  }
+
+  cursor.offset += bitWidth * (count / 8);
+  return values;
+}
+
+function decodeRunRepeated(
+  cursor: CursorBuffer,
+  count: number,
+  opts: ParquetCodecOptions
+): number[] {
+  // @ts-ignore
+  const bitWidth: number = opts.bitWidth;
+
+  let value = 0;
+  for (let i = 0; i < Math.ceil(bitWidth / 8); i++) {
+    value <<= 8;
+    value += cursor.buffer[cursor.offset];
+    cursor.offset += 1;
+  }
+
+  // tslint:disable-next-line:prefer-array-literal
+  return new Array(count).fill(value);
+}
+
+function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Buffer {
+  // @ts-ignore
+  const bitWidth: number = opts.bitWidth;
+
   for (let i = 0; i < values.length % 8; i++) {
     values.push(0);
   }
 
-  const buf = Buffer.alloc(Math.ceil(opts.bitWidth * (values.length / 8)));
-  for (let b = 0; b < opts.bitWidth * values.length; ++b) {
-    if ((values[Math.floor(b / opts.bitWidth)] & (1 << b % opts.bitWidth)) > 0) {
+  const buf = Buffer.alloc(Math.ceil(bitWidth * (values.length / 8)));
+  for (let b = 0; b < bitWidth * values.length; b++) {
+    if ((values[Math.floor(b / bitWidth)] & (1 << b % bitWidth)) > 0) {
       buf[Math.floor(b / 8)] |= 1 << b % 8;
     }
   }
@@ -111,40 +165,16 @@ function encodeRunBitpacked(values, opts) {
   return Buffer.concat([Buffer.from(varint.encode(((values.length / 8) << 1) | 1)), buf]);
 }
 
-function encodeRunRepeated(value, count, opts) {
-  const buf = Buffer.alloc(Math.ceil(opts.bitWidth / 8));
+function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptions): Buffer {
+  // @ts-ignore
+  const bitWidth: number = opts.bitWidth;
 
-  for (let i = 0; i < buf.length; ++i) {
+  const buf = Buffer.alloc(Math.ceil(bitWidth / 8));
+
+  for (let i = 0; i < buf.length; i++) {
     buf.writeUInt8(value & 0xff, i);
-    value = value >> 8;
+    value >>= 8;
   }
 
   return Buffer.concat([Buffer.from(varint.encode(count << 1)), buf]);
-}
-
-function decodeRunBitpacked(cursor, count: number, opts: {bitWidth: number}): any[] {
-  if (count % 8 !== 0) {
-    throw new Error('must be a multiple of 8');
-  }
-
-  const values = new Array(count).fill(0);
-  for (let b = 0; b < opts.bitWidth * count; ++b) {
-    if (cursor.buffer[cursor.offset + Math.floor(b / 8)] & (1 << b % 8)) {
-      values[Math.floor(b / opts.bitWidth)] |= 1 << b % opts.bitWidth;
-    }
-  }
-
-  cursor.offset += opts.bitWidth * (count / 8);
-  return values;
-}
-
-function decodeRunRepeated(cursor, count: number, opts: {bitWidth: number}): any[] {
-  let value = 0;
-  for (let i = 0; i < Math.ceil(opts.bitWidth / 8); ++i) {
-    value = value << 8;
-    value += cursor.buffer[cursor.offset];
-    cursor.offset += 1;
-  }
-
-  return new Array(count).fill(value);
 }

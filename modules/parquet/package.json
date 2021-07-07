@@ -28,7 +28,7 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle",
+    "pre-build-disabled": "npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-worker": "webpack --entry ./src/workers/parquet-worker.js --output ./dist/excel-worker.js --config ../../scripts/webpack/worker.js"
   },
@@ -48,7 +48,16 @@
     "node-int64": "^0.4.0",
     "object-stream": "0.0.1",
     "snappyjs": "^0.6.0",
+    "thrift": "^0.14.2",
     "varint": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/bson": "^4.0.0",
+    "@types/jest": "^24.0.17",
+    "@types/node": "^10.14.15",
+    "@types/node-int64": "^0.4.29",
+    "@types/thrift": "^0.10.8",
+    "@types/varint": "^5.0.0"
   },
   "optionalDependencies": {
     "lzo": "^0.4.0"

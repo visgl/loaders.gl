@@ -2,6 +2,8 @@
 import test from 'tape-promise/tape';
 import {ParquetSchema} from '@loaders.gl/parquet';
 
+// tslint:disable:ter-prefer-arrow-callback
+
 test('ParquetSchema#should assign correct defaults in a simple flat schema', assert => {
   const schema = new ParquetSchema({
     name: { type: 'UTF8' },
@@ -15,49 +17,51 @@ test('ParquetSchema#should assign correct defaults in a simple flat schema', ass
   assert.ok(schema.fields.price);
 
   {
-    const c = schema.fields.name;
-    assert.equal(c.name, 'name');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['name']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.name;
+    assert.equal(field?.name, 'name');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['name']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.quantity;
-    assert.equal(c.name, 'quantity');
-    assert.equal(c.primitiveType, 'INT64');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['quantity']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.quantity;
+    assert.equal(field?.name, 'quantity');
+    assert.equal(field?.primitiveType, 'INT64');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['quantity']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.price;
-    assert.equal(c.name, 'price');
-    assert.equal(c.primitiveType, 'DOUBLE');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['price']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.price;
+    assert.equal(field?.name, 'price');
+    assert.equal(field?.primitiveType, 'DOUBLE');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['price']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
+
+
   assert.end();
 });
 
@@ -74,49 +78,51 @@ test('ParquetSchema#should assign correct defaults in a flat schema with optiona
   assert.ok(schema.fields.price);
 
   {
-    const c = schema.fields.name;
-    assert.equal(c.name, 'name');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['name']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.name;
+    assert.equal(field?.name, 'name');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['name']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.quantity;
-    assert.equal(c.name, 'quantity');
-    assert.equal(c.primitiveType, 'INT64');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['quantity']);
-    assert.equal(c.repetitionType, 'OPTIONAL');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 1);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.quantity;
+    assert.equal(field?.name, 'quantity');
+    assert.equal(field?.primitiveType, 'INT64');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['quantity']);
+    assert.equal(field?.repetitionType, 'OPTIONAL');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 1);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.price;
-    assert.equal(c.name, 'price');
-    assert.equal(c.primitiveType, 'DOUBLE');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['price']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
-  assert.end();  }
+    const field = schema.fields.price;
+    assert.equal(field?.name, 'price');
+    assert.equal(field?.primitiveType, 'DOUBLE');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['price']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
+  }
+
+  assert.end();
 });
 
 test('ParquetSchema#should assign correct defaults in a flat schema with repeated fieldList', assert => {
@@ -132,48 +138,48 @@ test('ParquetSchema#should assign correct defaults in a flat schema with repeate
   assert.ok(schema.fields.price);
 
   {
-    const c = schema.fields.name;
-    assert.equal(c.name, 'name');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['name']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.name;
+    assert.equal(field?.name, 'name');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['name']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.quantity;
-    assert.equal(c.name, 'quantity');
-    assert.equal(c.primitiveType, 'INT64');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['quantity']);
-    assert.equal(c.repetitionType, 'REPEATED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 1);
-    assert.equal(c.dLevelMax, 1);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.quantity;
+    assert.equal(field?.name, 'quantity');
+    assert.equal(field?.primitiveType, 'INT64');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['quantity']);
+    assert.equal(field?.repetitionType, 'REPEATED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 1);
+    assert.equal(field?.dLevelMax, 1);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.price;
-    assert.equal(c.name, 'price');
-    assert.equal(c.primitiveType, 'DOUBLE');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['price']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.price;
+    assert.equal(field?.name, 'price');
+    assert.equal(field?.primitiveType, 'DOUBLE');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['price']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   assert.end();
@@ -194,84 +200,86 @@ test('ParquetSchema#should assign correct defaults in a nested schema without re
   assert.equal(schema.fieldList.length, 5);
   assert.ok(schema.fields.name);
   assert.ok(schema.fields.stock);
-  assert.ok(schema.fields.stock.fields.quantity);
-  assert.ok(schema.fields.stock.fields.warehouse);
+  assert.ok(schema.fields.stock.fields?.quantity);
+  assert.ok(schema.fields.stock.fields?.warehouse);
   assert.ok(schema.fields.price);
 
   {
-    const c = schema.fields.name;
-    assert.equal(c.name, 'name');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['name']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.name;
+    assert.equal(field?.name, 'name');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['name']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.stock;
-    assert.equal(c.name, 'stock');
-    assert.equal(c.primitiveType, undefined);
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['stock']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, undefined);
-    assert.equal(c.compression, undefined);
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), true);
-    assert.equal(c.fieldCount, 2);
+    const field = schema.fields.stock;
+    assert.equal(field?.name, 'stock');
+    assert.equal(field?.primitiveType, undefined);
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['stock']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, undefined);
+    assert.equal(field?.compression, undefined);
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), true);
+    assert.equal(field?.fieldCount, 2);
   }
 
   {
-    const c = schema.fields.stock.fields.quantity;
-    assert.equal(c.name, 'quantity');
-    assert.equal(c.primitiveType, 'INT64');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['stock', 'quantity']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.stock.fields?.quantity;
+    assert.equal(field?.name, 'quantity');
+    assert.equal(field?.primitiveType, 'INT64');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['stock', 'quantity']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.stock.fields.warehouse;
-    assert.equal(c.name, 'warehouse');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['stock', 'warehouse']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.stock.fields?.warehouse;
+    assert.equal(field?.name, 'warehouse');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['stock', 'warehouse']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.price;
-    assert.equal(c.name, 'price');
-    assert.equal(c.primitiveType, 'DOUBLE');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['price']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
-  assert.end();  }
+    const field = schema.fields.price;
+    assert.equal(field?.name, 'price');
+    assert.equal(field?.primitiveType, 'DOUBLE');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['price']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
+  }
+
+  assert.end();
 });
 
 test('ParquetSchema#should assign correct defaults in a nested schema with optional fields', assert => {
@@ -290,84 +298,86 @@ test('ParquetSchema#should assign correct defaults in a nested schema with optio
   assert.equal(schema.fieldList.length, 5);
   assert.ok(schema.fields.name);
   assert.ok(schema.fields.stock);
-  assert.ok(schema.fields.stock.fields.quantity);
-  assert.ok(schema.fields.stock.fields.warehouse);
+  assert.ok(schema.fields.stock.fields?.quantity);
+  assert.ok(schema.fields.stock.fields?.warehouse);
   assert.ok(schema.fields.price);
 
   {
-    const c = schema.fields.name;
-    assert.equal(c.name, 'name');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['name']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.name;
+    assert.equal(field?.name, 'name');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['name']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.stock;
-    assert.equal(c.name, 'stock');
-    assert.equal(c.primitiveType, undefined);
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['stock']);
-    assert.equal(c.repetitionType, 'OPTIONAL');
-    assert.equal(c.encoding, undefined);
-    assert.equal(c.compression, undefined);
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 1);
-    assert.equal(Boolean(c.isNested), true);
-    assert.equal(c.fieldCount, 2);
+    const field = schema.fields.stock;
+    assert.equal(field?.name, 'stock');
+    assert.equal(field?.primitiveType, undefined);
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['stock']);
+    assert.equal(field?.repetitionType, 'OPTIONAL');
+    assert.equal(field?.encoding, undefined);
+    assert.equal(field?.compression, undefined);
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 1);
+    assert.equal(Boolean(field?.isNested), true);
+    assert.equal(field?.fieldCount, 2);
   }
 
   {
-    const c = schema.fields.stock.fields.quantity;
-    assert.equal(c.name, 'quantity');
-    assert.equal(c.primitiveType, 'INT64');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['stock', 'quantity']);
-    assert.equal(c.repetitionType, 'OPTIONAL');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 2);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.stock.fields?.quantity;
+    assert.equal(field?.name, 'quantity');
+    assert.equal(field?.primitiveType, 'INT64');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['stock', 'quantity']);
+    assert.equal(field?.repetitionType, 'OPTIONAL');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 2);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.stock.fields.warehouse;
-    assert.equal(c.name, 'warehouse');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['stock', 'warehouse']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 1);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.stock.fields?.warehouse;
+    assert.equal(field?.name, 'warehouse');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['stock', 'warehouse']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 1);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.price;
-    assert.equal(c.name, 'price');
-    assert.equal(c.primitiveType, 'DOUBLE');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['price']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
-  assert.end();  }
+    const field = schema.fields.price;
+    assert.equal(field?.name, 'price');
+    assert.equal(field?.primitiveType, 'DOUBLE');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['price']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
+  }
+
+  assert.end();
 });
 
 test('ParquetSchema#should assign correct defaults in a nested schema with repeated fields', assert => {
@@ -386,83 +396,84 @@ test('ParquetSchema#should assign correct defaults in a nested schema with repea
   assert.equal(schema.fieldList.length, 5);
   assert.ok(schema.fields.name);
   assert.ok(schema.fields.stock);
-  assert.ok(schema.fields.stock.fields.quantity);
-  assert.ok(schema.fields.stock.fields.warehouse);
+  assert.ok(schema.fields.stock.fields?.quantity);
+  assert.ok(schema.fields.stock.fields?.warehouse);
   assert.ok(schema.fields.price);
 
   {
-    const c = schema.fields.name;
-    assert.equal(c.name, 'name');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['name']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.name;
+    assert.equal(field?.name, 'name');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['name']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.stock;
-    assert.equal(c.name, 'stock');
-    assert.equal(c.primitiveType, undefined);
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['stock']);
-    assert.equal(c.repetitionType, 'REPEATED');
-    assert.equal(c.encoding, undefined);
-    assert.equal(c.compression, undefined);
-    assert.equal(c.rLevelMax, 1);
-    assert.equal(c.dLevelMax, 1);
-    assert.equal(Boolean(c.isNested), true);
-    assert.equal(c.fieldCount, 2);
+    const field = schema.fields.stock;
+    assert.equal(field?.name, 'stock');
+    assert.equal(field?.primitiveType, undefined);
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['stock']);
+    assert.equal(field?.repetitionType, 'REPEATED');
+    assert.equal(field?.encoding, undefined);
+    assert.equal(field?.compression, undefined);
+    assert.equal(field?.rLevelMax, 1);
+    assert.equal(field?.dLevelMax, 1);
+    assert.equal(Boolean(field?.isNested), true);
+    assert.equal(field?.fieldCount, 2);
   }
 
   {
-    const c = schema.fields.stock.fields.quantity;
-    assert.equal(c.name, 'quantity');
-    assert.equal(c.primitiveType, 'INT64');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['stock', 'quantity']);
-    assert.equal(c.repetitionType, 'OPTIONAL');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 1);
-    assert.equal(c.dLevelMax, 2);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.stock.fields?.quantity;
+    assert.equal(field?.name, 'quantity');
+    assert.equal(field?.primitiveType, 'INT64');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['stock', 'quantity']);
+    assert.equal(field?.repetitionType, 'OPTIONAL');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 1);
+    assert.equal(field?.dLevelMax, 2);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.stock.fields.warehouse;
-    assert.equal(c.name, 'warehouse');
-    assert.equal(c.primitiveType, 'BYTE_ARRAY');
-    assert.equal(c.originalType, 'UTF8');
-    assert.deepEqual(c.path, ['stock', 'warehouse']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 1);
-    assert.equal(c.dLevelMax, 1);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.stock.fields?.warehouse;
+    assert.equal(field?.name, 'warehouse');
+    assert.equal(field?.primitiveType, 'BYTE_ARRAY');
+    assert.equal(field?.originalType, 'UTF8');
+    assert.deepEqual(field?.path, ['stock', 'warehouse']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 1);
+    assert.equal(field?.dLevelMax, 1);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
 
   {
-    const c = schema.fields.price;
-    assert.equal(c.name, 'price');
-    assert.equal(c.primitiveType, 'DOUBLE');
-    assert.equal(c.originalType, undefined);
-    assert.deepEqual(c.path, ['price']);
-    assert.equal(c.repetitionType, 'REQUIRED');
-    assert.equal(c.encoding, 'PLAIN');
-    assert.equal(c.compression, 'UNCOMPRESSED');
-    assert.equal(c.rLevelMax, 0);
-    assert.equal(c.dLevelMax, 0);
-    assert.equal(Boolean(c.isNested), false);
-    assert.equal(c.fieldCount, undefined);
+    const field = schema.fields.price;
+    assert.equal(field?.name, 'price');
+    assert.equal(field?.primitiveType, 'DOUBLE');
+    assert.equal(field?.originalType, undefined);
+    assert.deepEqual(field?.path, ['price']);
+    assert.equal(field?.repetitionType, 'REQUIRED');
+    assert.equal(field?.encoding, 'PLAIN');
+    assert.equal(field?.compression, 'UNCOMPRESSED');
+    assert.equal(field?.rLevelMax, 0);
+    assert.equal(field?.dLevelMax, 0);
+    assert.equal(Boolean(field?.isNested), false);
+    assert.equal(field?.fieldCount, undefined);
   }
+
   assert.end();
 });

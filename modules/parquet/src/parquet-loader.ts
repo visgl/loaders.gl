@@ -41,7 +41,7 @@ export const ParquetLoader: LoaderWithParser = {
 };
 
 async function parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-  const reader = await ParquetReader.open(arrayBuffer);
+  const reader = await ParquetReader.openArrayBuffer(arrayBuffer);
   const rows: any[][] = [];
   try {
     const cursor = reader.getCursor();
