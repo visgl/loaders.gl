@@ -178,6 +178,8 @@ export type Attribute = 'OBJECTID' | 'string' | 'double' | 'Int32' | string;
 
 export type Extent = [number, number, number, number];
 
+export type FeatureAttribute = {[key: string]: any};
+
 type TextureDefinitionInfo = {
   encoding: string[];
   wrap?: string[];

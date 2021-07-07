@@ -1,3 +1,6 @@
+import type {AttributeStorageInfo, FeatureAttribute, NodeReference} from '@loaders.gl/i3s';
+import type {Node3D} from '@loaders.gl/3d-tiles';
+
 import {join} from 'path';
 import process from 'process';
 import transform from 'json-map-transform';
@@ -13,16 +16,49 @@ import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import B3dmConverter from './helpers/b3dm-converter';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
+import {GeoidHeightModel} from '../lib/geoid-height-model';
 
 const I3S = 'I3S';
 
+/**
+ * Converter from i3s to 3d-tiles
+ */
 export default class Tiles3DConverter {
+  options: any;
+  tilesetPath: string;
+  vertexCounter: number;
+  conversionStartTime: [number, number];
+  geoidHeightModel: GeoidHeightModel;
+  sourceTileset: Tileset3D;
+  attributeStorageInfo: AttributeStorageInfo;
+
   constructor() {
     this.options = {};
     this.tilesetPath = '';
     this.vertexCounter = 0;
+    this.conversionStartTime = [0, 0];
+    this.geoidHeightModel = null;
+    this.sourceTileset = null;
+    this.attributeStorageInfo = null;
   }
-  async convert({inputUrl, outputPath, tilesetName, maxDepth, egmFilePath}) {
+
+  /**
+   * Convert i3s format data to 3dTiles
+   * @param options
+   * @param options.inputUrl the url to read the tileset from
+   * @param options.outputPath the output filename
+   * @param options.tilesetName the output name of the tileset
+   * @param options.egmFilePath location of *.pgm file to convert heights from ellipsoidal to gravity-related format
+   * @param options.maxDepth The max tree depth of conversion
+   */
+  private async convert(options: {
+    inputUrl: string;
+    outputPath: string;
+    tilesetName: string;
+    maxDepth: number;
+    egmFilePath: string;
+  }): Promise<any> {
+    const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath} = options;
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth};
 
@@ -46,7 +82,7 @@ export default class Tiles3DConverter {
       // do nothing
     }
 
-    const rootTile = {
+    const rootTile: Node3D = {
       boundingVolume: {
         box: i3sObbTo3dTilesObb(this.sourceTileset.root.header.obb, this.geoidHeightModel)
       },
@@ -62,7 +98,17 @@ export default class Tiles3DConverter {
     this._finishConversion({slpk: false, outputPath, tilesetName});
   }
 
-  async _addChildren(parentSourceNode, parentNode, level) {
+  /**
+   * The recursive function of traversal of a nodes tree
+   * @param parentSourceNode the parent node tile object (@loaders.gl/tiles/Tile3D)
+   * @param parentNode object in resulting tileset
+   * @param level a current level of a tree depth
+   */
+  private async _addChildren(
+    parentSourceNode: Tile3D,
+    parentNode: Node3D,
+    level: number
+  ): Promise<void> {
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
@@ -85,7 +131,7 @@ export default class Tiles3DConverter {
         const boundingVolume = {
           box: i3sObbTo3dTilesObb(sourceChild.header.obb, this.geoidHeightModel)
         };
-        const child = {
+        const child: Node3D = {
           boundingVolume,
           geometricError: convertScreenThresholdToGeometricError(sourceChild),
           children: []
@@ -107,7 +153,13 @@ export default class Tiles3DConverter {
     }
   }
 
-  async _loadChildNode(parentNode, childNodeInfo) {
+  /**
+   * Load a child node having information from the node header
+   * @param parentNode a parent node tile object (@loaders.gl/tiles/Tile3D)
+   * @param childNodeInfo child information from 3DNodeIndexDocument
+   *   (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodeReference.cmn.md)
+   */
+  private async _loadChildNode(parentNode: Tile3D, childNodeInfo: NodeReference): Promise<Tile3D> {
     let header;
     if (this.sourceTileset.tileset.nodePages) {
       console.log(`Node conversion: ${childNodeInfo.id}`); // eslint-disable-line no-console,no-undef
@@ -120,7 +172,7 @@ export default class Tiles3DConverter {
       // load metadata
       const options = {
         i3s: {
-          ...this.sourceTileset.fetchOptions,
+          ...this.sourceTileset.loadOptions,
           isTileHeader: true,
           loadContent: false
         }
@@ -132,7 +184,12 @@ export default class Tiles3DConverter {
     return new Tile3D(this.sourceTileset, header, parentNode);
   }
 
-  _relativeUrlToFullUrl(baseUrl, relativeUrl) {
+  /**
+   * Make an url of a resource from its relative url having the base url
+   * @param baseUrl the base url. A resulting url will be related from this url
+   * @param relativeUrl a realtive url of a resource
+   */
+  private _relativeUrlToFullUrl(baseUrl: string, relativeUrl: string): string {
     let resultArray = baseUrl.split('/');
     const relativeUrlArray = relativeUrl.split('/');
     for (const folder of relativeUrlArray) {
@@ -151,11 +208,14 @@ export default class Tiles3DConverter {
 
   /**
    * Do loading all attributes related to particular node.
-   * @param {Object} sourceChild
-   * @param {Object} attributeStorageInfo
-   * @returns {Promise<Object>} - Promise of attributes object.
+   * @param sourceChild
+   * @param attributeStorageInfo
+   * @returns Promise of attributes object.
    */
-  async _loadChildAttributes(sourceChild, attributeStorageInfo) {
+  private async _loadChildAttributes(
+    sourceChild: Tile3D,
+    attributeStorageInfo: AttributeStorageInfo
+  ): Promise<FeatureAttribute> {
     const promises = [];
     const {attributeUrls} = sourceChild.header;
 
@@ -176,12 +236,12 @@ export default class Tiles3DConverter {
 
   /**
    * Returns attribute type for loading attributes
-   * @param {Object} attribute
+   * @param attribute
    * Workaround for I3S v1.6. There is no attribute.attributeValues.valueType field in attribute.
    * There is an 'Oid32' type if attribute has objectIds property.
    * Doc: https://github.com/Esri/i3s-spec/blob/master/docs/1.6/attributeStorageInfo.cmn.md
    */
-  _getAttributeType(attribute) {
+  private _getAttributeType(attribute: AttributeStorageInfo): string {
     if (attribute.attributeValues) {
       return attribute.attributeValues.valueType;
     } else if (attribute.objectIds) {
@@ -192,10 +252,9 @@ export default class Tiles3DConverter {
 
   /**
    * Make simple arrays from attribute typed arrays.
-   * @param {Object} attributesList
-   * @returns {void}
+   * @param attributesList
    */
-  _replaceNestedArrays(attributesList) {
+  private _replaceNestedArrays(attributesList: FeatureAttribute[]): void {
     for (let index = 0; index < attributesList.length; index++) {
       const attributeObject = attributesList[index];
 
@@ -205,7 +264,15 @@ export default class Tiles3DConverter {
     }
   }
 
-  async _finishConversion(params) {
+  /**
+   * Print statistics in the end of conversion
+   * @param params - output files data
+   */
+  private async _finishConversion(params: {
+    slpk: boolean;
+    outputPath: string;
+    tilesetName: string;
+  }): Promise<void> {
     const filesSize = await calculateFilesSize(params);
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
