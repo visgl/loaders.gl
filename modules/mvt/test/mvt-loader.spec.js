@@ -253,7 +253,7 @@ for (const filename of TEST_FILES) {
     // As of 3.0, the output of geojsonToBinary has a "type" key, but the MVT output doesn't yet
     // We delete this key in this test suite to make things pass
     // TODO: fix the MVT output in the future
-    const expectedBinary = geojsonToBinary(geojson)
+    const expectedBinary = geojsonToBinary(geojson);
 
     // We need to ignore these deletions from TS because the TS type requires the "type" field
     // @ts-ignore
