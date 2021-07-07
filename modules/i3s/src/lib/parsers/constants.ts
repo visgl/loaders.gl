@@ -5,8 +5,7 @@ export const TYPE_ARRAY_MAP = {
   UInt16: Uint16Array,
   UInt32: Uint32Array,
   Float32: Float32Array,
-  // eslint-disable-next-line no-undef
-  UInt64: BigUint64Array
+  UInt64: Float64Array
 };
 
 export const GL_TYPE_MAP = {
