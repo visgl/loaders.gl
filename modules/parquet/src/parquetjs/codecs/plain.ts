@@ -1,10 +1,18 @@
 // Forked from https://github.com/ironSource/parquetjs under MIT license
-
 /* eslint-disable camelcase */
+import type {CodecCursor, CodecOptions} from './types';
 const INT53 = require('int53');
 // import parquet_thrift from '../../../libs/parquet-types';
 
-export function encodeValues(type, values, opts?) {
+/**
+ * Encoding of values depends on data type
+ *
+ * @param type
+ * @param values
+ * @param opts
+ * @returns
+ */
+export function encodeValues(type: string, values: any[], opts?: Partial<CodecOptions>) {
   switch (type) {
     case 'BOOLEAN':
       return encodeValuesBOOLEAN(values);
@@ -35,7 +43,21 @@ export function encodeValues(type, values, opts?) {
   }
 }
 
-export function decodeValues(type, cursor, count, opts) {
+/**
+ * Decoding of values depends on data type
+ *
+ * @param type
+ * @param cursor
+ * @param count
+ * @param opts
+ * @returns [values]
+ */
+export function decodeValues(
+  type: string,
+  cursor: CodecCursor,
+  count: number,
+  opts: Partial<CodecOptions>
+): any[] {
   switch (type) {
     case 'BOOLEAN':
       return decodeValuesBOOLEAN(cursor, count);
@@ -66,7 +88,11 @@ export function decodeValues(type, cursor, count, opts) {
   }
 }
 
-function encodeValuesBOOLEAN(values) {
+/**
+ * @param values
+ * @returns Buffer
+ */
+function encodeValuesBOOLEAN(values: number[]): Buffer {
   const buf = new Buffer(Math.ceil(values.length / 8));
   buf.fill(0);
 
@@ -79,7 +105,12 @@ function encodeValuesBOOLEAN(values) {
   return buf;
 }
 
-function decodeValuesBOOLEAN(cursor, count: number): any[] {
+/**
+ * @param cursor
+ * @param count
+ * @returns [values]
+ */
+function decodeValuesBOOLEAN(cursor: CodecCursor, count: number): any[] {
   const values: any[] = [];
 
   for (let i = 0; i < count; ++i) {
@@ -91,7 +122,11 @@ function decodeValuesBOOLEAN(cursor, count: number): any[] {
   return values;
 }
 
-function encodeValuesINT32(values) {
+/**
+ * @param values
+ * @returns Buffer
+ */
+function encodeValuesINT32(values: number[]): Buffer {
   const buf = new Buffer(4 * values.length);
   for (let i = 0; i < values.length; i++) {
     buf.writeInt32LE(values[i], i * 4);
@@ -100,7 +135,12 @@ function encodeValuesINT32(values) {
   return buf;
 }
 
-function decodeValuesINT32(cursor, count: number): number[] {
+/**
+ * @param cursor
+ * @param count
+ * @returns [number]
+ */
+function decodeValuesINT32(cursor: CodecCursor, count: number): number[] {
   const values: number[] = [];
 
   for (let i = 0; i < count; ++i) {
@@ -111,7 +151,11 @@ function decodeValuesINT32(cursor, count: number): number[] {
   return values;
 }
 
-function encodeValuesINT64(values) {
+/**
+ * @param values
+ * @returns Buffer
+ */
+function encodeValuesINT64(values: number[]): Buffer {
   const buf = new Buffer(8 * values.length);
   for (let i = 0; i < values.length; i++) {
     INT53.writeInt64LE(values[i], buf, i * 8);
@@ -120,7 +164,12 @@ function encodeValuesINT64(values) {
   return buf;
 }
 
-function decodeValuesINT64(cursor, count: number): number[] {
+/**
+ * @param cursor
+ * @param count
+ * @returns [number]
+ */
+function decodeValuesINT64(cursor: CodecCursor, count: number): number[] {
   const values: number[] = [];
 
   for (let i = 0; i < count; ++i) {
@@ -131,6 +180,10 @@ function decodeValuesINT64(cursor, count: number): number[] {
   return values;
 }
 
+/**
+ * @param values
+ * @returns Buffer
+ */
 function encodeValuesINT96(values: number[]): Buffer {
   const buf = new Buffer(12 * values.length);
 
@@ -146,8 +199,12 @@ function encodeValuesINT96(values: number[]): Buffer {
 
   return buf;
 }
-
-function decodeValuesINT96(cursor, count: number): number[] {
+/**
+ * @param cursor
+ * @param count
+ * @returns [number]
+ */
+function decodeValuesINT96(cursor: CodecCursor, count: number): number[] {
   const values: number[] = [];
 
   for (let i = 0; i < count; ++i) {
@@ -166,7 +223,11 @@ function decodeValuesINT96(cursor, count: number): number[] {
   return values;
 }
 
-function encodeValuesFLOAT(values) {
+/**
+ * @param values
+ * @returns Buffer
+ */
+function encodeValuesFLOAT(values: number[]): Buffer {
   const buf = new Buffer(4 * values.length);
   for (let i = 0; i < values.length; i++) {
     buf.writeFloatLE(values[i], i * 4);
@@ -175,7 +236,12 @@ function encodeValuesFLOAT(values) {
   return buf;
 }
 
-function decodeValuesFLOAT(cursor, count) {
+/**
+ * @param cursor
+ * @param count
+ * @returns [values]
+ */
+function decodeValuesFLOAT(cursor: CodecCursor, count: number): number[] {
   const values: number[] = [];
 
   for (let i = 0; i < count; ++i) {
@@ -186,7 +252,11 @@ function decodeValuesFLOAT(cursor, count) {
   return values;
 }
 
-function encodeValuesDOUBLE(values) {
+/**
+ * @param values
+ * @returns Buffer
+ */
+function encodeValuesDOUBLE(values: number[]): Buffer {
   const buf = new Buffer(8 * values.length);
   for (let i = 0; i < values.length; i++) {
     buf.writeDoubleLE(values[i], i * 8);
@@ -195,7 +265,12 @@ function encodeValuesDOUBLE(values) {
   return buf;
 }
 
-function decodeValuesDOUBLE(cursor, count: number): number[] {
+/**
+ * @param cursor
+ * @param count
+ * @returns [number]
+ */
+function decodeValuesDOUBLE(cursor: CodecCursor, count: number): number[] {
   const values: number[] = [];
 
   for (let i = 0; i < count; ++i) {
@@ -206,7 +281,11 @@ function decodeValuesDOUBLE(cursor, count: number): number[] {
   return values;
 }
 
-function encodeValuesBYTE_ARRAY(values) {
+/**
+ * @param values
+ * @returns Buffer
+ */
+function encodeValuesBYTE_ARRAY(values: any = []): Buffer {
   let bufferLength = 0;
   for (let i = 0; i < values.length; i++) {
     values[i] = Buffer.from(values[i]);
@@ -224,8 +303,13 @@ function encodeValuesBYTE_ARRAY(values) {
   return buf;
 }
 
-function decodeValuesBYTE_ARRAY(cursor, count): number[] {
-  const values: number[] = [];
+/**
+ * @param cursor
+ * @param count
+ * @returns [values]
+ */
+function decodeValuesBYTE_ARRAY(cursor: CodecCursor, count: number): any[] {
+  const values: any[] = [];
 
   for (let i = 0; i < count; ++i) {
     const len = cursor.buffer.readUInt32LE(cursor.offset);
@@ -237,15 +321,20 @@ function decodeValuesBYTE_ARRAY(cursor, count): number[] {
   return values;
 }
 
-function encodeValuesFIXED_LEN_BYTE_ARRAY(values, opts: {typeLength: number}): Buffer {
-  if (!opts.typeLength) {
+/**
+ * @param values
+ * @param opts
+ * @returns Buffer
+ */
+function encodeValuesFIXED_LEN_BYTE_ARRAY(values: any = [], opts?: Partial<CodecOptions>): Buffer {
+  if (opts && !opts.typeLength) {
     throw new Error('missing option: typeLength (required for FIXED_LEN_BYTE_ARRAY)');
   }
 
   for (let i = 0; i < values.length; i++) {
     values[i] = Buffer.from(values[i]);
 
-    if (values[i].length !== opts.typeLength) {
+    if (opts && values[i].length !== opts.typeLength) {
       throw new Error(`invalid value for FIXED_LEN_BYTE_ARRAY: ${values[i]}`);
     }
   }
@@ -253,12 +342,18 @@ function encodeValuesFIXED_LEN_BYTE_ARRAY(values, opts: {typeLength: number}): B
   return Buffer.concat(values);
 }
 
+/**
+ * @param cursor
+ * @param count
+ * @param opts
+ * @returns [number]
+ */
 function decodeValuesFIXED_LEN_BYTE_ARRAY(
-  cursor,
+  cursor: CodecCursor,
   count: number,
-  opts: {typeLength: number}
+  opts: Partial<CodecOptions>
 ): number[] {
-  const values: number[] = [];
+  const values: any = [];
 
   if (!opts.typeLength) {
     throw new Error('missing option: typeLength (required for FIXED_LEN_BYTE_ARRAY)');

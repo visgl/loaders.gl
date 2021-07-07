@@ -1,14 +1,27 @@
 // Forked from https://github.com/ironSource/parquetjs under MIT license
 
+import type {CodecCursor, CodecOptions} from './types';
 import varint from 'varint';
 
+/**
+ * Encoding of values depends on type of data
+ *
+ * @param type
+ * @param values
+ * @param opts
+ * @returns Buffer
+ */
 // eslint-disable-next-line complexity
-export function encodeValues(type, values, opts: {bitWidth: number; disableEnvelope: boolean}) {
+export function encodeValues(
+  type: string,
+  values: string[] | number[],
+  opts: CodecOptions
+): Buffer {
   switch (type) {
     case 'BOOLEAN':
     case 'INT32':
     case 'INT64':
-      values = values.map((x) => parseInt(x, 10));
+      values = values.map((x: any) => parseInt(x, 10));
       break;
 
     default:
@@ -58,15 +71,19 @@ export function encodeValues(type, values, opts: {bitWidth: number; disableEnvel
   return envelope;
 }
 
+/**
+ * @param type
+ * @param cursor
+ * @param count
+ * @param opts
+ * @returns array
+ */
 export function decodeValues(
-  type,
-  cursor,
-  count,
-  opts: {
-    disableEnvelope?: boolean;
-    bitWidth: number;
-  }
-) {
+  type: string,
+  cursor: CodecCursor,
+  count: number,
+  opts: CodecOptions
+): any[] {
   if (!('bitWidth' in opts)) {
     throw new Error('bitWidth is required');
   }
@@ -96,7 +113,12 @@ export function decodeValues(
   return values;
 }
 
-function encodeRunBitpacked(values, opts) {
+/**
+ * @param values
+ * @param opts
+ * @returns Buffer
+ */
+function encodeRunBitpacked(values: number[], opts: CodecOptions): Buffer {
   for (let i = 0; i < values.length % 8; i++) {
     values.push(0);
   }
@@ -111,7 +133,13 @@ function encodeRunBitpacked(values, opts) {
   return Buffer.concat([Buffer.from(varint.encode(((values.length / 8) << 1) | 1)), buf]);
 }
 
-function encodeRunRepeated(value, count, opts) {
+/**
+ * @param value
+ * @param count
+ * @param opts
+ * @returns
+ */
+function encodeRunRepeated(value: number, count: number, opts: CodecOptions): Buffer {
   const buf = Buffer.alloc(Math.ceil(opts.bitWidth / 8));
 
   for (let i = 0; i < buf.length; ++i) {
@@ -122,7 +150,13 @@ function encodeRunRepeated(value, count, opts) {
   return Buffer.concat([Buffer.from(varint.encode(count << 1)), buf]);
 }
 
-function decodeRunBitpacked(cursor, count: number, opts: {bitWidth: number}): any[] {
+/**
+ * @param cursor
+ * @param count
+ * @param opts
+ * @returns array
+ */
+function decodeRunBitpacked(cursor: CodecCursor, count: number, opts: CodecOptions): any[] {
   if (count % 8 !== 0) {
     throw new Error('must be a multiple of 8');
   }
@@ -138,7 +172,14 @@ function decodeRunBitpacked(cursor, count: number, opts: {bitWidth: number}): an
   return values;
 }
 
-function decodeRunRepeated(cursor, count: number, opts: {bitWidth: number}): any[] {
+/**
+ *
+ * @param cursor
+ * @param count
+ * @param opts
+ * @returns new array
+ */
+function decodeRunRepeated(cursor: CodecCursor, count: number, opts: CodecOptions): any[] {
   let value = 0;
   for (let i = 0; i < Math.ceil(opts.bitWidth / 8); ++i) {
     value = value << 8;
