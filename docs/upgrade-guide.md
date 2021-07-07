@@ -15,6 +15,11 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 
 - Passing `fetch` options (such as `headers`) to `load()` and `parse()` etc. should now be done via the `options.fetch` options object (e.g. `options.fetch.headers`). Specifying `fetch` options on the root options object was deprecated in v2.3 and is no longer supported in v3.0.
 
+**@loaders.gl/csv**
+
+- The format of parsed data (i.e. whether table rows are objects or arrays) is now controlled by `options.csv.shape` instead of being dynamically selected based on whether the CSV file has a header row. The default `shape` is now `object-row-table`. Default column names are generated if no header row is present. This is a breaking change when loading CSV files without header rows.
+- Duplicate column names will have a counter suffix added to ensure that they are unique. In rare cases this could be a breaking change.
+
 **@loaders.gl/gltf**
 
 - `GLTFScenegraph` is updated to provide modifying capabilities. Signatures of some methods have been changed to use named parameters (rather than positional parameters).

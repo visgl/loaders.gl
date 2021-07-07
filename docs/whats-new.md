@@ -48,9 +48,9 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
 **@loaders.gl/csv**
 
 - `options.csv.type` can be explicitly set to
-    + `'object-row-table'` transforms rows to JS objects with the header row as keys
+    + `'object-row-table'` (default) transforms rows to JS objects with the header row as keys.
     + `'array-row-table'` in which the row will be returned as an array of values.
-- Duplicate column names will have columns renamed with a counter suffix.
+- Duplicate column names will have a counter suffix added to ensure that they are unique.
 
 **@loaders.gl/draco**
 
