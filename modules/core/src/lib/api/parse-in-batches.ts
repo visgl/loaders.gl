@@ -138,7 +138,7 @@ async function parseToOutputIterator(loader, data, options, context) {
     const parsedData = await loader.parse(arrayBuffer, options, context, loader);
     // TODO - run through batch builder to apply options etc...
     const batch: Batch = {
-      type: Array.isArray(parsedData) ? 'table' : 'unknown',
+      shape: Array.isArray(parsedData) ? 'row-table' : 'unknown',
       batchType: 'data',
       data: parsedData,
       length: Array.isArray(parsedData) ? parsedData.length : 1

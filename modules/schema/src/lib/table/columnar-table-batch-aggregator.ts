@@ -58,7 +58,7 @@ export default class ColumnarTableBatchAggregator implements TableBatchAggregato
     this.columns = {};
 
     const batch: ColumnarTableBatch = {
-      type: 'columnar-table',
+      shape: 'columnar-table',
       batchType: 'data',
       data: columns,
       schema: this.schema,

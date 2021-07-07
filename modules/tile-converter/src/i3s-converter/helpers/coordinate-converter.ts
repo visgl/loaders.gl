@@ -1,11 +1,11 @@
+import type {BoundingVolumes, Extent, Mbs, Obb} from '@loaders.gl/i3s';
+
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {OrientedBoundingBox} from '@math.gl/culling';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {GeoidHeightModel} from '../../lib/geoid-height-model';
 import {Tileset3D} from '@loaders.gl/tiles';
-
-import type {BoundingVolumes, Extent, Mbs, Obb} from '../../types';
 
 /**
  * Create bounding volumes object from tile and geoid height model.

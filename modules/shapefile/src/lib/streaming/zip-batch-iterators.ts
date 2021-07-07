@@ -1,5 +1,6 @@
 /**
  * Zip two iterators together
+ * 
  * @param iterator1
  * @param iterator2
  */
@@ -40,6 +41,7 @@ export async function* zipBatchIterators(
 
 /**
  * Extract batch of same length from two batches
+ * 
  * @param batch1
  * @param batch2
  * @return array | null

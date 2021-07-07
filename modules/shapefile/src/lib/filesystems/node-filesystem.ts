@@ -11,7 +11,7 @@ type Stat = {
 };
 
 type ReadOptions = {
-  buffer?: DataView & Buffer;
+  buffer?: Buffer;
   offset?: number;
   length?: number;
   position?: number;

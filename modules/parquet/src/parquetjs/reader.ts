@@ -4,7 +4,6 @@ import {ParquetSchema} from './schema/schema';
 import {materializeRecords} from './schema/shred';
 import {PARQUET_CODECS} from './codecs';
 import {inflate} from './compression';
-import {fstat, fopen, fread, fclose} from './file';
 import {fieldIndexOf, getThriftEnum, decodeThrift, getBitWidth} from './util';
 
 /**

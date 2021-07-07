@@ -1,5 +1,3 @@
-import {BinaryGeometryData} from '@loaders.gl/gis';
-
 const LITTLE_ENDIAN = true;
 
 type SHPPoint = {
@@ -37,7 +35,7 @@ type SHPPoly = {
  * @return Binary Geometry Object
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view: DataView, options?: {shp?: any}): BinaryGeometryData | null {
+export function parseRecord(view: DataView, options?: {shp?: any}): SHPPoint | null {
   const {_maxDimensions} = options?.shp || {};
 
   let offset = 0;

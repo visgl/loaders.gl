@@ -6,14 +6,14 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ExcelLoaderOptions = LoaderOptions & {
   excel?: {
-    type: /* 'array-row-table' | */ 'object-row-table';
+    shape: /* 'array-row-table' | */ 'object-row-table';
     sheet?: string; // Load default Sheet
   };
 };
 
 const DEFAULT_EXCEL_LOADER_OPTIONS: ExcelLoaderOptions = {
   excel: {
-    type: 'object-row-table',
+    shape: 'object-row-table',
     sheet: undefined // Load default Sheet
   }
 };

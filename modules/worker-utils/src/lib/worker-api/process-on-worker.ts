@@ -47,7 +47,11 @@ export async function processOnWorker(
   const workerPool = workerFarm.getWorkerPool({name, url});
 
   const jobName = options.jobName || worker.name;
-  const job = await workerPool.startJob(jobName, onMessage.bind(null, context));
+  const job = await workerPool.startJob(
+    jobName,
+    // eslint-disable-next-line
+    onMessage.bind(null, context)
+  );
 
   // Kick off the processing in the worker
   const transferableOptions = removeNontransferableOptions(options);

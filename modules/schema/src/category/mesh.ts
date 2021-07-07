@@ -3,14 +3,14 @@ import type {ColumnarTable, ArrowTable} from './table';
 
 /** Mesh as columnar table */
 export interface MeshTable extends ColumnarTable {
-  // type: 'mesh-table';
+  // shape: 'mesh-table';
   topology: 'point-list' | 'triangle-list' | 'triangle-strip';
   indices?: MeshAttribute;
 }
 
 /** Mesh as arrow table */
 export interface MeshArrowTable extends ArrowTable {
-  // type: 'mesh-arrow-table';
+  // shape: 'mesh-arrow-table';
   topology: 'point-list' | 'triangle-list' | 'triangle-strip';
   indices?: MeshAttribute;
 }

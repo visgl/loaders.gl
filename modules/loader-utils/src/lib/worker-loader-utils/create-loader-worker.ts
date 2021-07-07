@@ -42,7 +42,7 @@ export function createLoaderWorker(loader: any) {
   };
 }
 
-function parseOnMainThread(arrayBuffer, options = {}) {
+function parseOnMainThread(arrayBuffer: ArrayBuffer, options: {[key: string]: any}): Promise<void> {
   return new Promise((resolve, reject) => {
     const id = requestId++;
 

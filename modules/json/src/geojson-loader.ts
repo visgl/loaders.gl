@@ -9,7 +9,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const GeoJSONLoaderOptions = {
   geojson: {
-    type: 'object-row-table',
+    shape: 'object-row-table',
     batchSize: 'auto'
   },
   json: {

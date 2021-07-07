@@ -78,9 +78,7 @@ class DBFParser {
     // - first rows available
     // - all rows available
   }
-  /**
-   *
-   */
+
   end(): void {
     this.binaryReader.end();
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
@@ -94,7 +92,7 @@ class DBFParser {
 /**
  * @param arrayBuffer
  * @param options
- * @returns DBFTable anf rows
+ * @returns DBFTable or rows
  */
 export function parseDBF(
   arrayBuffer: ArrayBuffer,
@@ -157,7 +155,7 @@ export async function* parseDBFInBatches(
  * @returns
  */
 /* eslint-disable complexity, max-depth */
-function parseState(state: STATE, result: DBFResult, binaryReader, textDecoder): STATE {
+function parseState(state: STATE, result: DBFResult, binaryReader: {[key: string]: any}, textDecoder: TextDecoder): STATE {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {

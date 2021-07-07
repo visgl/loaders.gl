@@ -1,25 +1,39 @@
 // ported and es6-ified from https://github.com/verma/plasio/
 
-// @ts-nocheck
-import type {LASLoaderOptions} from '../las-loader';
+import type {LASHeader, LASLoaderOptions} from '../las-loader';
 import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
 import {LASFile} from './laslaz-decoder';
 
+type LASChunk = {
+  count: number;
+  buffer: ArrayBuffer;
+  hasMoreData: boolean;
+  versionAsString?: string;
+  isCompressed?: boolean;
+};
+
+/**
+ * Parsing of .las file
+ * @param arrayBuffer
+ * @param options
+ * @returns LASHeader
+ */
 /* eslint-disable max-statements */
-export default function parseLAS(arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) {
-  let pointIndex = 0;
+export default function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOptions): LASHeader {
+  let pointIndex: number = 0;
 
-  let positions;
-  let colors;
-  let intensities;
-  let classifications;
-  let originalHeader;
+  let positions: Float32Array | Float64Array;
+  let colors: Uint8Array | null;
+  let intensities: Uint16Array;
+  let classifications: Uint8Array;
+  let originalHeader: any;
 
-  const result = {};
+  const result: any = {};
   const {onProgress} = options;
-  const {skip, colorDepth, fp64} = options.las || {};
 
-  parseLASChunked(arrayBuffer, skip, (decoder, header) => {
+  const {skip, colorDepth, fp64} = options.las || {};
+  // @ts-ignore Possibly undefined
+  parseLASChunked(arrayBuffer, skip, (decoder: any = {}, header: LASHeader) => {
     if (!originalHeader) {
       originalHeader = header;
       const total = header.totalToRead;
@@ -53,7 +67,7 @@ export default function parseLAS(arrayBuffer: ArrayBuffer, options?: LASLoaderOp
       offset: [offsetX, offsetY, offsetZ]
     } = header;
 
-    const twoByteColor = detectTwoByteColors(colorDepth, decoder, batchSize);
+    const twoByteColor = detectTwoByteColors(decoder, batchSize, colorDepth);
 
     for (let i = 0; i < batchSize; i++) {
       const {position, color, intensity, classification} = decoder.getPoint(i);
@@ -62,7 +76,7 @@ export default function parseLAS(arrayBuffer: ArrayBuffer, options?: LASLoaderOp
       positions[pointIndex * 3 + 1] = position[1] * scaleY + offsetY;
       positions[pointIndex * 3 + 2] = position[2] * scaleZ + offsetZ;
 
-      if (color) {
+      if (color && colors) {
         if (twoByteColor) {
           colors[pointIndex * 4] = color[0] / 256;
           colors[pointIndex * 4 + 1] = color[1] / 256;
@@ -97,19 +111,21 @@ export default function parseLAS(arrayBuffer: ArrayBuffer, options?: LASLoaderOp
   });
 
   result.header = {
-    // @ts-ignore Possibly undefined
     vertexCount: originalHeader.totalToRead,
     boundingBox: getMeshBoundingBox(result.attributes)
   };
-  return result;
+  return result as LASHeader;
 }
-/* eslint-enable max-statements */
 
 /**
  * parse laz data
- * @return {*} parsed point cloud
+ * @param rawData
+ * @param skip
+ * @param onParseData
+ * @return parsed point cloud
  */
-export function parseLASChunked(rawData, skip, onParseData) {
+/* eslint-enable max-statements */
+export function parseLASChunked(rawData: ArrayBuffer, skip: number, onParseData: any = {}): void {
   const dataHandler = new LASFile(rawData);
 
   try {
@@ -126,7 +142,7 @@ export function parseLASChunked(rawData, skip, onParseData) {
 
     /* eslint-disable no-constant-condition */
     while (true) {
-      const chunk = dataHandler.readData(1000 * 100, 0, skip);
+      const chunk: LASChunk = dataHandler.readData(1000 * 100, 0, skip);
 
       totalRead += chunk.count;
 
@@ -151,8 +167,18 @@ export function parseLASChunked(rawData, skip, onParseData) {
   }
 }
 
-function detectTwoByteColors(colorDepth, decoder, batchSize) {
-  let twoByteColor;
+/**
+ * @param decoder
+ * @param batchSize
+ * @param colorDepth
+ * @returns boolean
+ */
+function detectTwoByteColors(
+  decoder: any = {},
+  batchSize: number,
+  colorDepth?: number | string
+): boolean {
+  let twoByteColor = false;
   switch (colorDepth) {
     case 8:
       twoByteColor = false;

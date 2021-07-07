@@ -19,11 +19,11 @@ export default async function* parseJSONInBatches(
 
   // TODO fix Schema deduction
   const schema = null; // new Schema([]);
-  const type = options?.json?.type || 'row-table';
+  const shape = options?.json?.shape || 'row-table';
   // @ts-ignore
   const tableBatchBuilder = new TableBatchBuilder(schema, {
     ...options,
-    type
+    shape
   });
 
   const parser = new StreamingJSONParser({jsonpaths});
@@ -37,7 +37,7 @@ export default async function* parseJSONInBatches(
       if (metadata) {
         const initialBatch: Batch = {
           // Common fields
-          type,
+          shape,
           batchType: 'partial-result',
           data: [],
           length: 0,
@@ -78,7 +78,7 @@ export default async function* parseJSONInBatches(
 
   if (metadata) {
     const finalBatch: Batch = {
-      type,
+      shape,
       batchType: 'final-result',
       container: parser.getPartialResult(),
       jsonpath: parser.getStreamingJsonPathAsString(),

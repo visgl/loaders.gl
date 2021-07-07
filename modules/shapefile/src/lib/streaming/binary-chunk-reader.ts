@@ -30,6 +30,7 @@ export default class BinaryChunkReader {
 
   /**
    * Has enough bytes available in array buffers
+   * 
    * @param bytes Number of bytes
    * @return boolean
    */
@@ -46,6 +47,7 @@ export default class BinaryChunkReader {
 
   /**
    * Find offsets of byte ranges within this.arrayBuffers
+   * 
    * @param  bytes Byte length to read
    * @return Arrays with byte ranges pointing to this.arrayBuffers, Output type is nested array, e.g. [ [0, [1, 2]], ...]
    */
@@ -91,6 +93,7 @@ export default class BinaryChunkReader {
 
   /**
    * Get the required number of bytes from the iterator
+   * 
    * @param bytes Number of bytes
    * @return DataView with data
    */

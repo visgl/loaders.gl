@@ -1,5 +1,4 @@
 import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import {resolvePath} from '@loaders.gl/loader-utils';
 import {ParquetReader} from './parquetjs/reader';
 
 // __VERSION__ is injected by babel-plugin-version-inline

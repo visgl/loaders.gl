@@ -34,7 +34,7 @@ export const EXTENSIONS: {[extensionName: string]: GLTFExtensionPlugin} = {
   KHR_techniques_webgl
 };
 
-export async function decodeExtensions(gltf, options: GLTFLoaderOptions = {}, context) {
+export async function decodeExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
   for (const extensionName in EXTENSIONS) {
     const excludes = options?.gltf?.excludeExtensions || {};
     const exclude = extensionName in excludes && !excludes[extensionName];

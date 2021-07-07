@@ -3,11 +3,6 @@ import {isBrowser, resolvePath, toArrayBuffer} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
 import fs from '../../node/fs';
 
-const DEFAULT_OPTIONS = {
-  // TODO - this was mostly set to true to make test cases work
-  nothrow: true
-};
-
 // TODO - this is not tested
 // const isDataURL = (url) => url.startsWith('data:');
 

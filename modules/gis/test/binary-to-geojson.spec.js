@@ -37,6 +37,7 @@ test('binary-to-geojson geometries', (t) => {
 test('binary-to-geojson from empty binary object returns empty features array', (t) => {
   const geojson = binaryToGeoJson(EMPTY_BINARY_DATA);
   t.ok(Array.isArray(geojson));
+  // @ts-expect-error
   t.equal(geojson.length, 0);
 
   t.end();
