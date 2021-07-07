@@ -41,7 +41,7 @@ export type CSVLoaderOptions = LoaderOptions & {
 
 const DEFAULT_CSV_LOADER_OPTIONS = {
   csv: {
-    shape: 'array-row-table',
+    shape: 'object-row-table',
     optimizeMemoryUsage: false,
     // CSV options
     header: 'auto',
