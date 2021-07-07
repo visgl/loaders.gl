@@ -52,7 +52,7 @@ const DEFAULT_CSV_LOADER_OPTIONS = {
     escapeChar: '"',
     dynamicTyping: true,
     comments: false,
-    skipEmptyLines: false,
+    skipEmptyLines: true,
     // transform: null?
     delimitersToGuess: [',', '\t', '|', ';']
     // fastMode: auto
