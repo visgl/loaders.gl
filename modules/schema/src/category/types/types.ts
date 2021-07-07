@@ -8,9 +8,9 @@ export type TypedArray =
   | Uint32Array
   | Uint8ClampedArray
   | Float32Array
-  | Float64Array
-  | BigInt64Array
-  | BigUint64Array;
+  | Float64Array;
+
+export type BigTypedArray = TypedArray | BigInt64Array | BigUint64Array;
 
 /** Any numeric array: typed array or `number[]` */
 export type NumberArray = number[] | TypedArray;
