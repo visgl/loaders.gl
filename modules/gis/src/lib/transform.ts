@@ -1,4 +1,4 @@
-import type {BinaryFeaturesData} from '../types';
+import type {BinaryFeatures} from '@loaders.gl/schema';
 
 /**
  * Apply transformation to every coordinate of binary features
@@ -8,15 +8,17 @@ import type {BinaryFeaturesData} from '../types';
  * @return          Transformed binary features
  */
 export function transformBinaryCoords(
-  binaryFeatures: BinaryFeaturesData,
+  binaryFeatures: BinaryFeatures,
   fn: (coord: number[]) => number[]
-): BinaryFeaturesData {
+): BinaryFeatures {
   // Expect binaryFeatures to have points, lines, and polygons keys
   for (const binaryFeature of Object.values(binaryFeatures)) {
     const {positions} = binaryFeature;
     for (let i = 0; i < positions.value.length; i += positions.size) {
+      // @ts-ignore inclusion of bigint causes problems
       const coord = Array.from(positions.value.subarray(i, i + positions.size));
       const transformedCoord = fn(coord);
+      // @ts-ignore typescript typing for .set seems to require bigint?
       positions.value.set(transformedCoord, i);
     }
   }

@@ -1,4 +1,4 @@
-import {isWorker, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';

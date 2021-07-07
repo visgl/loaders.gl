@@ -1,4 +1,4 @@
-// import {BinaryGeometryData} from '@loaders.gl/gis';
+import type {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
 
 const LITTLE_ENDIAN = true;
 
@@ -9,8 +9,7 @@ const LITTLE_ENDIAN = true;
  * @return Binary Geometry Object
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view: DataView, options?: {shp?}) {
-  // }: BinaryGeometryData | null {
+export function parseRecord(view: DataView, options?: {shp?}): BinaryGeometry | null {
   const {_maxDimensions} = options?.shp || {};
 
   let offset = 0;
@@ -80,9 +79,8 @@ function parseNull() {
  * @param  {DataView} view Geometry data
  * @param  {number} offset Offset in view
  * @param  {number} dim Dimension size
- * @return {object} Binary geometry object
  */
-function parsePoint(view, offset, dim) {
+function parsePoint(view, offset, dim): BinaryGeometry {
   let positions;
   [positions, offset] = parsePositions(view, offset, 1, dim);
 
@@ -100,7 +98,7 @@ function parsePoint(view, offset, dim) {
  * @param  {number} dim Input dimension
  * @return {object} Binary geometry object
  */
-function parseMultiPoint(view, offset, dim) {
+function parseMultiPoint(view, offset, dim): BinaryGeometry {
   // skip parsing box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
 
@@ -143,7 +141,12 @@ function parseMultiPoint(view, offset, dim) {
  * @return Binary geometry object
  */
 // eslint-disable-next-line max-statements
-function parsePoly(view: DataView, offset: number, dim: number, type: string) {
+function parsePoly(
+  view: DataView,
+  offset: number,
+  dim: number,
+  type: BinaryGeometryType
+): BinaryGeometry {
   // skip parsing bounding box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
 
@@ -185,9 +188,9 @@ function parsePoly(view: DataView, offset: number, dim: number, type: string) {
   // parsePoly only accepts type = LineString or Polygon
   if (type === 'LineString') {
     return {
+      type,
       positions: {value: positions, size: dim},
-      pathIndices: {value: ringIndices, size: 1},
-      type
+      pathIndices: {value: ringIndices, size: 1}
     };
   }
 
@@ -211,14 +214,14 @@ function parsePoly(view: DataView, offset: number, dim: number, type: string) {
   polygonIndices.push(nPoints);
 
   return {
+    type,
     positions: {value: positions, size: dim},
     primitivePolygonIndices: {value: ringIndices, size: 1},
     // TODO: Dynamically choose Uint32Array over Uint16Array only when
     // necessary. I believe the implementation requires nPoints to be the
     // largest value in the array, so you should be able to use Uint32Array only
     // when nPoints > 65535.
-    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1},
-    type
+    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1}
   };
 }
 
