@@ -169,7 +169,7 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
 });
 
 test('CSVLoader#loadInBatches(sample.csv, array-rows)', async (t) => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader,  {shape: 'array-row-table'});
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {shape: 'array-row-table'});
 
   let batchCount = 0;
   for await (const batch of iterator) {
