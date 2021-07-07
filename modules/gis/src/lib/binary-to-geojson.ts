@@ -77,6 +77,15 @@ type BinaryFeaturesArray = BinaryFeature[];
 // Normalize features
 // Return an array of data objects, each of which have a type key
 function normalizeInput(data: BinaryFeatures, type?: BinaryGeometryType): BinaryFeaturesArray {
+  const isHeterogeneousType = Boolean(data.points || data.lines || data.polygons);
+
+  if (!isHeterogeneousType) {
+    // @ts-expect-error This is a legacy check which allowed `data` to be an instance of the values
+    // here. Aka the new data.points, data.lines, or data.polygons.
+    data.type = type || parseType(data);
+    return [data] as BinaryFeaturesArray;
+  }
+
   const features: BinaryFeaturesArray = [];
   if (data.points) {
     data.points.type = 'Point';
@@ -262,4 +271,17 @@ function ringToGeoJson(
     ringCoordinates.push(coord);
   }
   return ringCoordinates;
+}
+
+// Deduce geometry type of data object
+function parseType(data) {
+  if (data.pathIndices) {
+    return 'LineString';
+  }
+
+  if (data.polygonIndices) {
+    return 'Polygon';
+  }
+
+  return 'Point';
 }
