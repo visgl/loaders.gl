@@ -49,7 +49,6 @@ export function lodJudge(tile, frameState) {
   if (screenSize < 0.5) {
     return 'OUT';
   }
-  // Hack: 1000 is a Magic number to get the correct LoD
   if (!tile.header.children || screenSize <= tile.lodMetricValue) {
     return 'DRAW';
   } else if (tile.header.children) {
@@ -85,7 +84,6 @@ function getDistanceFromLatLon(observer: number[], center: number[]) {
 
 export function getI3ScreenSize(tile, frameState) {
   const viewport = frameState.viewport;
-  // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
   const mbsLat = tile.header.mbs[1];
   const mbsLon = tile.header.mbs[0];
   const mbsZ = tile.header.mbs[2];
@@ -100,24 +98,17 @@ export function getI3ScreenSize(tile, frameState) {
   if (d <= 0.0) {
     return 0.5 * fltMax;
   }
-  let screenSizeFactor = calculateScreenSizeFactor(tile, frameState);
-  // viewport changed in deck.gl v8.0
-  screenSizeFactor *= mbsRNormalized / Math.sqrt(d) / viewport.scale;
+  // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
+  // There is a formula there to calculate projected radius:
+  // return 1.0 / Math.tan(fov) * r / Math.sqrt(d * d - r * r); // Right
+  // Hack: 300 is a Magic number to get the correct LoD. Possibly, d and r are calculated in a wrong way.
+  const screenSizeFactor =
+    ((getTanOfHalfVFAngle(frameState) * mbsRNormalized) / Math.sqrt(d)) * 300;
   return screenSizeFactor;
 }
 
-function calculateScreenSizeFactor(tile, frameState) {
-  const {width, height, pixelProjectionMatrix} = frameState.viewport;
-  const tanOfHalfVFAngle = Math.tan(
-    Math.atan(
-      Math.sqrt(
-        1.0 / (pixelProjectionMatrix[0] * pixelProjectionMatrix[0]) +
-          1.0 / (pixelProjectionMatrix[5] * pixelProjectionMatrix[5])
-      )
-    )
-  );
-
-  const screenCircleFactor = Math.sqrt(height * height + width * width) / tanOfHalfVFAngle;
-
-  return screenCircleFactor;
+function getTanOfHalfVFAngle(frameState) {
+  const {projectionMatrix} = frameState.viewport;
+  const t = projectionMatrix[5];
+  return t;
 }
