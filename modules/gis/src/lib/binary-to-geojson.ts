@@ -42,6 +42,35 @@ export function binaryToGeoJson(
   }
 }
 
+export function getSingleFeature(data: BinaryFeatures, globalFeatureId: number) {
+  const dataArray = normalizeInput(data);
+  for (const data of dataArray) {
+    let lastIndex = 0;
+    let lastValue = data.featureIds.value[0];
+
+    // Scan through data until we find matching feature
+    for (let i = 0; i < data.featureIds.value.length; i++) {
+      const currValue = data.featureIds.value[i];
+      if (currValue === lastValue) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      console.log(globalFeatureId, data.globalFeatureIds.value[lastIndex]);
+      if (globalFeatureId === data.globalFeatureIds.value[lastIndex]) {
+        return parseFeature(data, lastIndex, i);
+      }
+      lastIndex = i;
+      lastValue = currValue;
+    }
+
+    if (globalFeatureId === data.globalFeatureIds.value[lastIndex]) {
+      return parseFeature(data, lastIndex, data.featureIds.value.length);
+    }
+  }
+
+  return null;
+}
+
 function parseFeatures(data, type): Geometry | Feature[] {
   const dataArray = normalizeInput(data, type);
   const returnType = deduceReturnType(dataArray);
