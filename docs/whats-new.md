@@ -52,6 +52,10 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
     + `'array-row-table'` in which the row will be returned as an array of values.
 - Duplicate column names will have a counter suffix added to ensure that they are unique.
 
+**@loaders.gl/gis**
+
+- Added `getSingleFeature()` function for extracting a single GeoJSON feature from a `BinaryGeometry`
+
 **@loaders.gl/draco**
 
 - Updated to `draco3d@1.4.1`

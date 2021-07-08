@@ -42,6 +42,11 @@ export function binaryToGeoJson(
   }
 }
 
+/**
+ * Return a single feature from a binary geometry representation as GeoJSON
+ * @param data   geometry data in binary representation
+ * @return GeoJSON feature
+ */
 export function getSingleFeature(data: BinaryFeatures, globalFeatureId: number) {
   const dataArray = normalizeInput(data);
   for (const data of dataArray) {
@@ -55,7 +60,6 @@ export function getSingleFeature(data: BinaryFeatures, globalFeatureId: number) 
         // eslint-disable-next-line no-continue
         continue;
       }
-      console.log(globalFeatureId, data.globalFeatureIds.value[lastIndex]);
       if (globalFeatureId === data.globalFeatureIds.value[lastIndex]) {
         return parseFeature(data, lastIndex, i);
       }
