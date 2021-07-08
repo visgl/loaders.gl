@@ -1,15 +1,9 @@
 import type {TypedArray} from '@loaders.gl/schema';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-
-import {load} from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
 import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
-import {CompressedTextureLoader} from '@loaders.gl/textures';
-
-import {Tileset, Tile} from '../../types';
-import {getUrlWithToken} from '../utils/url-utils';
+import type {Tileset, Tile} from '../../types';
 
 import {
   GL_TYPE_MAP,
@@ -22,47 +16,15 @@ import {
 
 const scratchVector = new Vector3([0, 0, 0]);
 
-const FORMAT_LOADER_MAP = {
-  jpeg: ImageLoader,
-  png: ImageLoader,
-  'ktx-etc2': CompressedTextureLoader,
-  dds: CompressedTextureLoader
-};
-
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
-export async function parseI3STileContent(
-  arrayBuffer: ArrayBuffer,
-  tile: Tile,
-  tileset: Tileset,
-  options
-) {
+export async function parseI3STileContent(arrayBuffer: ArrayBuffer, tile: Tile, tileset: Tileset) {
   tile.content = tile.content || {};
   tile.content.featureIds = tile.content.featureIds || null;
 
   // construct featureData from defaultGeometrySchema;
   tile.content.featureData = constructFeatureDataStruct(tile, tileset);
   tile.content.attributes = {};
-
-  if (tile.textureUrl) {
-    const url = getUrlWithToken(tile.textureUrl, options.i3s?.token);
-    const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
-    tile.content.texture = await load(url, loader);
-    if (loader === CompressedTextureLoader) {
-      tile.content.texture = {
-        compressed: true,
-        mipmaps: false,
-        width: tile.content.texture[0].width,
-        height: tile.content.texture[0].height,
-        data: tile.content.texture
-      };
-    }
-  }
-
-  tile.content.material = makePbrMaterial(tile.materialDefinition, tile.content.texture);
-  if (tile.content.material) {
-    tile.content.texture = null;
-  }
 
   return await parseI3SNodeGeometry(arrayBuffer, tile);
 }
@@ -412,101 +374,6 @@ function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
   }
 
   return positions;
-}
-
-/**
- * Makes a glTF-compatible PBR material from an I3S material definition
- * @param {object} materialDefinition - i3s material definition
- *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
- * @param {object} texture - texture image
- * @returns {object}
- */
-function makePbrMaterial(materialDefinition, texture) {
-  let pbrMaterial;
-  if (materialDefinition) {
-    pbrMaterial = {
-      ...materialDefinition,
-      pbrMetallicRoughness: materialDefinition.pbrMetallicRoughness
-        ? {...materialDefinition.pbrMetallicRoughness}
-        : {baseColorFactor: [255, 255, 255, 255]}
-    };
-  } else {
-    pbrMaterial = {
-      pbrMetallicRoughness: {}
-    };
-    if (texture) {
-      pbrMaterial.pbrMetallicRoughness.baseColorTexture = {texCoord: 0};
-    } else {
-      pbrMaterial.pbrMetallicRoughness.baseColorFactor = [255, 255, 255, 255];
-    }
-  }
-
-  // Set default 0.25 per spec https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
-  pbrMaterial.alphaCutoff = pbrMaterial.alphaCutoff || 0.25;
-
-  if (pbrMaterial.alphaMode) {
-    // I3S contain alphaMode in lowerCase
-    pbrMaterial.alphaMode = pbrMaterial.alphaMode.toUpperCase();
-  }
-
-  // Convert colors from [255,255,255,255] to [1,1,1,1]
-  if (pbrMaterial.emissiveFactor) {
-    pbrMaterial.emissiveFactor = convertColorFormat(pbrMaterial.emissiveFactor);
-  }
-  if (pbrMaterial.pbrMetallicRoughness && pbrMaterial.pbrMetallicRoughness.baseColorFactor) {
-    pbrMaterial.pbrMetallicRoughness.baseColorFactor = convertColorFormat(
-      pbrMaterial.pbrMetallicRoughness.baseColorFactor
-    );
-  }
-
-  setMaterialTexture(pbrMaterial, texture);
-
-  return pbrMaterial;
-}
-
-/**
- * Convert color from [255,255,255,255] to [1,1,1,1]
- * @param {Array} colorFactor - color array
- * @returns {Array} - new color array
- */
-function convertColorFormat(colorFactor) {
-  const normalizedColor = [...colorFactor];
-  for (let index = 0; index < colorFactor.length; index++) {
-    normalizedColor[index] = colorFactor[index] / 255;
-  }
-  return normalizedColor;
-}
-
-/**
- * Set texture in PBR material
- * @param {object} material - i3s material definition
- * @param {object} image - texture image
- * @returns {void}
- */
-function setMaterialTexture(material, image) {
-  const texture = {source: {image}};
-  // I3SLoader now support loading only one texture. This elseif sequence will assign this texture to one of
-  // properties defined in materialDefinition
-  if (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorTexture) {
-    material.pbrMetallicRoughness.baseColorTexture = {
-      ...material.pbrMetallicRoughness.baseColorTexture,
-      texture
-    };
-  } else if (material.emissiveTexture) {
-    material.emissiveTexture = {...material.emissiveTexture, texture};
-  } else if (
-    material.pbrMetallicRoughness &&
-    material.pbrMetallicRoughness.metallicRoughnessTexture
-  ) {
-    material.pbrMetallicRoughness.metallicRoughnessTexture = {
-      ...material.pbrMetallicRoughness.metallicRoughnessTexture,
-      texture
-    };
-  } else if (material.normalTexture) {
-    material.normalTexture = {...material.normalTexture, texture};
-  } else if (material.occlusionTexture) {
-    material.occlusionTexture = {...material.occlusionTexture, texture};
-  }
 }
 
 /**

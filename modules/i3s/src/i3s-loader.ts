@@ -2,6 +2,8 @@ import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {load, parse} from '@loaders.gl/core';
 import {I3SContentLoader} from './i3s-content-loader';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
+import {parseI3sTileTexture} from './lib/parsers/parse-i3s-texture';
+import {parseI3sTileMaterial} from './lib/parsers/parse-i3s-material';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -77,7 +79,15 @@ async function parseI3S(data, options, context) {
 }
 
 async function parseTileContent(arrayBuffer, options) {
-  return await parse(arrayBuffer, I3SContentLoader, options);
+  const tile = await parse(arrayBuffer, I3SContentLoader, options);
+  await parseI3sTileTexture(tile, options);
+  parseI3sTileMaterial(tile);
+
+  if (tile.content.material) {
+    tile.content.texture = null;
+  }
+
+  return tile.content;
 }
 
 async function parseTileset(data, options, context) {

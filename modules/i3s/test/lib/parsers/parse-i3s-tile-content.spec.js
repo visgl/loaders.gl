@@ -5,6 +5,8 @@ import I3SNodePagesTiles from '@loaders.gl/i3s/lib/helpers/i3s-nodepages-tiles';
 import {TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
 
 import {parseI3STileContent} from '@loaders.gl/i3s/lib/parsers/parse-i3s-tile-content';
+import {parseI3sTileTexture} from '@loaders.gl/i3s/lib/parsers/parse-i3s-texture';
+import {parseI3sTileMaterial} from '@loaders.gl/i3s/lib/parsers/parse-i3s-material';
 
 const I3S_TILE_CONTENT =
   '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0';
@@ -21,6 +23,7 @@ test('ParseI3sTileContent#should parse tile content', async (t) => {
     }
   });
   t.ok(result);
+  t.ok(result.content);
   t.end();
 });
 
@@ -35,6 +38,8 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
       useDracoGeometry: false
     }
   });
+  await parseI3sTileTexture(result, {});
+  parseI3sTileMaterial(tile);
   const texture =
     result.content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
   if (isBrowser) {
@@ -63,6 +68,8 @@ test('ParseI3sTileContent#should make PBR material', async (t) => {
       useDracoGeometry: false
     }
   });
+  await parseI3sTileTexture(result, {});
+  parseI3sTileMaterial(tile);
   const material = result.content.material;
   t.ok(material.doubleSided);
   t.deepEqual(material.emissiveFactor, [1, 1, 1]);
