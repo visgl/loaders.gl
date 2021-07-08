@@ -34,7 +34,7 @@ const POINTCLOUD_WITH_TRANSFORM_URL = '@loaders.gl/3d-tiles/test/data/PointCloud
 const POINTCLOUD_TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetPoints/tileset.json';
 */
 
-test('point cloud tile#throws with invalid version', t => {
+test('point cloud tile#throws with invalid version', (t) => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     version: 2
@@ -44,7 +44,7 @@ test('point cloud tile#throws with invalid version', t => {
   t.end();
 });
 
-test('point cloud tile#throws if featureTableJsonByteLength is 0', t => {
+test('point cloud tile#throws if featureTableJsonByteLength is 0', (t) => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJsonByteLength: 0
@@ -57,7 +57,7 @@ test('point cloud tile#throws if featureTableJsonByteLength is 0', t => {
   t.end();
 });
 
-test('point cloud tile#throws if the feature table does not contain POINTS_LENGTH', t => {
+test('point cloud tile#throws if the feature table does not contain POINTS_LENGTH', (t) => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
@@ -74,7 +74,7 @@ test('point cloud tile#throws if the feature table does not contain POINTS_LENGT
   t.end();
 });
 
-test('point cloud tile#throws if the feature table does not contain POSITION or POSITION_QUANTIZED', t => {
+test('point cloud tile#throws if the feature table does not contain POSITION or POSITION_QUANTIZED', (t) => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
@@ -89,7 +89,7 @@ test('point cloud tile#throws if the feature table does not contain POSITION or 
   t.end();
 });
 
-test('loadDraco# Pass options to draco loader properly', async t => {
+test('loadDraco# Pass options to draco loader properly', async (t) => {
   const resultObject = {
     draco: {
       decoderType: 'js',

@@ -15,7 +15,7 @@ const DEPRECATED_B3DM_1 =
 const DEPRECATED_B3DM_2 =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/batchedDeprecated2.b3dm';
 
-test('Tiles3DLoader#Tileset file', async t => {
+test('Tiles3DLoader#Tileset file', async (t) => {
   const response = await fetchFile(TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
   t.ok(tileset);
@@ -26,14 +26,10 @@ test('Tiles3DLoader#Tileset file', async t => {
   t.equals(tileset.loader, Tiles3DLoader);
 
   t.equals(tileset.root.refine, 1);
-  t.deepEqual(tileset.root.boundingVolume.region, [
-    -1.3197004795898053,
-    0.6988582109,
-    -1.3196595204101946,
-    0.6988897891,
-    0,
-    20
-  ]);
+  t.deepEqual(
+    tileset.root.boundingVolume.region,
+    [-1.3197004795898053, 0.6988582109, -1.3196595204101946, 0.6988897891, 0, 20]
+  );
 
   t.equals(tileset.root.geometricError, 0);
   t.equals(tileset.root.content.uri, 'batchedColors.b3dm');
@@ -44,7 +40,7 @@ test('Tiles3DLoader#Tileset file', async t => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async t => {
+test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async (t) => {
   const response = await fetchFile(TILE_B3DM_WITH_DRACO_URL);
   const tile = await parse(response, [Tiles3DLoader, DracoLoader]);
   t.ok(tile);
@@ -53,7 +49,7 @@ test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async t => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile with actual b3dm file', async t => {
+test('Tiles3DLoader#Tile with actual b3dm file', async (t) => {
   const response = await fetchFile(ACTUAL_B3DM);
   const tile = await parse(response, Tiles3DLoader);
   t.ok(tile);
@@ -63,7 +59,7 @@ test('Tiles3DLoader#Tile with actual b3dm file', async t => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile with deprecated 1 b3dm file', async t => {
+test('Tiles3DLoader#Tile with deprecated 1 b3dm file', async (t) => {
   const response = await fetchFile(DEPRECATED_B3DM_1);
   const tile = await parse(response, Tiles3DLoader);
   t.ok(tile);
@@ -73,7 +69,7 @@ test('Tiles3DLoader#Tile with deprecated 1 b3dm file', async t => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async t => {
+test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async (t) => {
   const response = await fetchFile(DEPRECATED_B3DM_2);
   const tile = await parse(response, Tiles3DLoader);
   t.ok(tile);

@@ -196,10 +196,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
     }
 
     if (hasCustomOrientation) {
-      instanceNormalForward
-        .copy(instanceNormalRight)
-        .cross(instanceNormalUp)
-        .normalize();
+      instanceNormalForward.copy(instanceNormalRight).cross(instanceNormalUp).normalize();
       instanceRotation.setColumn(0, instanceNormalRight);
       instanceRotation.setColumn(1, instanceNormalUp);
       instanceRotation.setColumn(2, instanceNormalForward);

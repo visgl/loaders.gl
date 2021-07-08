@@ -53,9 +53,7 @@ export class DeflateCompression extends Compression {
   compressSync(input: ArrayBuffer): ArrayBuffer {
     // On Node.js we can use built-in zlib
     if (!isBrowser && this.options.deflate?.useZlib) {
-      const buffer = this.options.deflate?.gzip
-        ? zlib.gzipSync(input)
-        : zlib.deflateSync(input);
+      const buffer = this.options.deflate?.gzip ? zlib.gzipSync(input) : zlib.deflateSync(input);
       return toArrayBuffer(buffer);
     }
     const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
@@ -66,9 +64,7 @@ export class DeflateCompression extends Compression {
   decompressSync(input: ArrayBuffer): ArrayBuffer {
     // On Node.js we can use built-in zlib
     if (!isBrowser && this.options.deflate?.useZlib) {
-      const buffer = this.options.deflate?.gzip
-        ? zlib.gunzipSync(input)
-        : zlib.inflateSync(input);
+      const buffer = this.options.deflate?.gzip ? zlib.gunzipSync(input) : zlib.inflateSync(input);
       return toArrayBuffer(buffer);
     }
     const pakoOptions: pako.InflateOptions = this.options?.deflate || {};

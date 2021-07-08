@@ -86,7 +86,7 @@ if (!isBrowser) {
   COMPRESSIONS.push();
 }
 
-test('compression#atomic', async t => {
+test('compression#atomic', async (t) => {
   for (const compression of COMPRESSIONS) {
     // brotli compress import issue
     if (!compression.isSupported || compression.name === 'brotli') {
@@ -117,7 +117,7 @@ test('compression#atomic', async t => {
 
 // BATCHED TESTS
 
-test('compression#batched', async t => {
+test('compression#batched', async (t) => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -159,7 +159,7 @@ test('compression#batched', async t => {
 
 // WORKER TESTS
 
-test.skip('gzip#worker', async t => {
+test.skip('gzip#worker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;
@@ -169,7 +169,7 @@ test.skip('gzip#worker', async t => {
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
 
-  const compressdData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
+  const compressedData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
     compression: 'gzip',
     operation: 'compress',
     _workerType: 'test',
@@ -178,9 +178,9 @@ test.skip('gzip#worker', async t => {
     }
   });
 
-  t.equal(compressdData.byteLength, 12825, 'Length correct');
+  t.equal(compressedData.byteLength, 12825, 'Length correct');
 
-  const decompressdData = await processOnWorker(CompressionWorker, compressdData, {
+  const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'gzip',
     operation: 'decompress',
     _workerType: 'test',
@@ -195,7 +195,7 @@ test.skip('gzip#worker', async t => {
   t.end();
 });
 
-test.skip('lz4#worker', async t => {
+test('lz4#worker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;
@@ -205,15 +205,15 @@ test.skip('lz4#worker', async t => {
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
 
-  const compressdData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
+  const compressedData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
     compression: 'lz4',
     operation: 'compress',
     _workerType: 'test'
   });
 
-  t.equal(compressdData.byteLength, 12331, 'Length correct');
+  t.equal(compressedData.byteLength, 12331, 'Length correct');
 
-  const decompressdData = await processOnWorker(CompressionWorker, compressdData, {
+  const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'lz4',
     operation: 'decompress',
     _workerType: 'test'
@@ -225,7 +225,7 @@ test.skip('lz4#worker', async t => {
   t.end();
 });
 
-test.skip('zstd#worker', async t => {
+test.skip('zstd#worker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;
@@ -235,16 +235,16 @@ test.skip('zstd#worker', async t => {
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
 
-  const compressdData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
-    compression: 'Zstandard',
+  const compressedData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
+    compression: 'zstandard',
     operation: 'compress',
     _workerType: 'test'
   });
 
-  t.equal(compressdData.byteLength, 11936, 'Length correct');
+  t.equal(compressedData.byteLength, 11936, 'Length correct');
 
-  const decompressdData = await processOnWorker(CompressionWorker, compressdData, {
-    compression: 'Zstandard',
+  const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
+    compression: 'zstandard',
     operation: 'decompress',
     _workerType: 'test'
   });

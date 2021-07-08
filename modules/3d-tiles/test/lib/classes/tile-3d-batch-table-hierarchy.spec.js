@@ -145,35 +145,35 @@ function checkBatchTableHierarchyNoParents(t, tileset) {
   checkHierarchyPropertiesNoParents(t, tileset);
 }
 
-test('Tile3DBatchTableParser#renders tileset with batch table hierarchy extension', async t => {
+test('Tile3DBatchTableParser#renders tileset with batch table hierarchy extension', async (t) => {
   const tileset = await loadTileset(t, BATCH_TABLE_HIERARCHY_URL);
 
   checkBatchTableHierarchy(t, tileset, false);
   t.end();
 });
 
-test('Tile3DBatchTableParser#renders tileset with batch table hierarchy using binary properties', async t => {
+test('Tile3DBatchTableParser#renders tileset with batch table hierarchy using binary properties', async (t) => {
   const tileset = await loadTileset(t, BATCH_TABLE_HIERARCHY_BINARY_URL);
 
   checkBatchTableHierarchy(t, tileset, true);
   t.end();
 });
 
-test('Tile3DBatchTableParser#renders tileset with batch table hierarchy with multiple parent classes', async t => {
+test('Tile3DBatchTableParser#renders tileset with batch table hierarchy with multiple parent classes', async (t) => {
   const tileset = await loadTileset(t, BATCH_TABLE_HIERARCHY_MULTIPLE_PARENTS_URL);
 
   checkBatchTableHierarchy(t, tileset, true);
   t.end();
 });
 
-test('Tile3DBatchTableParser#renders tileset with batch table hierarchy with no parents', async t => {
+test('Tile3DBatchTableParser#renders tileset with batch table hierarchy with no parents', async (t) => {
   const tileset = await loadTileset(t, BATCH_TABLE_HIERARCHY_NO_PARENTS_URL);
 
   checkBatchTableHierarchyNoParents(tileset);
   t.end();
 });
 
-test('Tile3DBatchTableParser#renders tileset with legacy batch table hierarchy (pre-version 1.0)', async t => {
+test('Tile3DBatchTableParser#renders tileset with legacy batch table hierarchy (pre-version 1.0)', async (t) => {
   const tileset = await loadTileset(t, BATCH_TABLE_HIERARCHY_LEGACY_URL);
 
   checkBatchTableHierarchy(t, tileset, false);
@@ -189,7 +189,7 @@ test('Tile3DBatchTableParser#warns about deprecated batch hierarchy (pre-version
 });
 */
 
-test('Tile3DBatchTableParser#validates hierarchy with multiple parents', t => {
+test('Tile3DBatchTableParser#validates hierarchy with multiple parents', (t) => {
   //     building0
   //     /      \
   //  door0    door1
@@ -234,7 +234,7 @@ test('Tile3DBatchTableParser#validates hierarchy with multiple parents', t => {
   ]);
 });
 
-test('Tile3DBatchTableParser#validates hierarchy with multiple parents (2)', t => {
+test('Tile3DBatchTableParser#validates hierarchy with multiple parents (2)', (t) => {
   //             zone
   //             / |  \
   //   building0   |   \
@@ -294,7 +294,7 @@ test('Tile3DBatchTableParser#validates hierarchy with multiple parents (2)', t =
 
 // >>includeStart('debug', pragmas.debug);
 // Circular dependencies are only caught in debug builds.
-test('Tile3DBatchTableParser#throws if hierarchy has a circular dependency', t => {
+test('Tile3DBatchTableParser#throws if hierarchy has a circular dependency', (t) => {
   // window0 -> door0 -> building0 -> window0
   const BATCH_TABLE_JSON = {
     HIERARCHY: {
@@ -333,7 +333,7 @@ test('Tile3DBatchTableParser#throws if hierarchy has a circular dependency', t =
   t.end();
 });
 
-test('Tile3DBatchTableParser#throws if hierarchy has a circular dependency (2)', t => {
+test('Tile3DBatchTableParser#throws if hierarchy has a circular dependency (2)', (t) => {
   // window0 -> door0 -> building0 -> window1 -> door0
   const BATCH_TABLE_JSON = {
     HIERARCHY: {
@@ -372,7 +372,7 @@ test('Tile3DBatchTableParser#throws if hierarchy has a circular dependency (2)',
   t.end();
 });
 
-test("Tile3DBatchTableParser#throws if an instance's parentId exceeds instancesLength", t => {
+test("Tile3DBatchTableParser#throws if an instance's parentId exceeds instancesLength", (t) => {
   const BATCH_TABLE_JSON = {
     HIERARCHY: {
       instancesLength: 2,

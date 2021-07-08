@@ -14,7 +14,7 @@ function MockFeature(value) {
   this._value = value;
 }
 
-MockFeature.prototype.getProperty = function() {
+MockFeature.prototype.getProperty = function () {
   return this._value;
 };
 
@@ -39,26 +39,26 @@ const jsonExpWithDefines = {
   ]
 };
 
-it('constructs', function() {
+it('constructs', function () {
   const expression = new ConditionsExpression(jsonExp);
   expect(expression.conditionsExpression).toEqual(jsonExp);
 });
 
-it('evaluates conditional', function() {
+it('evaluates conditional', function () {
   const expression = new ConditionsExpression(jsonExp);
   expect(expression.evaluateColor(new MockFeature(101))).toEqual(Color.BLUE);
   expect(expression.evaluateColor(new MockFeature(52))).toEqual(Color.RED);
   expect(expression.evaluateColor(new MockFeature(3))).toEqual(Color.LIME);
 });
 
-it('evaluates conditional with defines', function() {
+it('evaluates conditional with defines', function () {
   const expression = new ConditionsExpression(jsonExpWithDefines, defines);
   expect(expression.evaluateColor(new MockFeature(101))).toEqual(Color.BLUE);
   expect(expression.evaluateColor(new MockFeature(52))).toEqual(Color.LIME);
   expect(expression.evaluateColor(new MockFeature(3))).toEqual(Color.LIME);
 });
 
-it('evaluate takes result argument', function() {
+it('evaluate takes result argument', function () {
   var result = new Cartesian4();
   const expression = new ConditionsExpression(jsonExpWithDefines, defines, result);
   var value = expression.evaluate(new MockFeature(101), result);
@@ -66,7 +66,7 @@ it('evaluate takes result argument', function() {
   expect(value).toBe(result);
 });
 
-it('evaluate takes a color result argument', function() {
+it('evaluate takes a color result argument', function () {
   var result = new Color();
   const expression = new ConditionsExpression(jsonExpWithDefines, defines, result);
   var value = expression.evaluate(new MockFeature(101), result);
@@ -74,7 +74,7 @@ it('evaluate takes a color result argument', function() {
   expect(value).toBe(result);
 });
 
-it('constructs and evaluates empty conditional', function() {
+it('constructs and evaluates empty conditional', function () {
   const expression = new ConditionsExpression({
     conditions: []
   });
@@ -84,7 +84,7 @@ it('constructs and evaluates empty conditional', function() {
   expect(expression.evaluate(new MockFeature(3))).toEqual(undefined);
 });
 
-it('constructs and evaluates empty', function() {
+it('constructs and evaluates empty', function () {
   const expression = new ConditionsExpression([]);
   expect(expression._conditions).toEqual(undefined);
   expect(expression.evaluate(new MockFeature(101))).toEqual(undefined);
@@ -92,7 +92,7 @@ it('constructs and evaluates empty', function() {
   expect(expression.evaluate(new MockFeature(3))).toEqual(undefined);
 });
 
-it('gets shader function', function() {
+it('gets shader function', function () {
   const expression = new ConditionsExpression(jsonExp);
   var shaderFunction = expression.getShaderFunction('getColor', '', {}, 'vec4');
   var expected =
@@ -115,7 +115,7 @@ it('gets shader function', function() {
   expect(shaderFunction).toEqual(expected);
 });
 
-it('return undefined shader function when there are no conditions', function() {
+it('return undefined shader function when there are no conditions', function () {
   const expression = new ConditionsExpression([]);
   var shaderFunction = expression.getShaderFunction('getColor', '', {}, 'vec4');
   expect(shaderFunction).toBeUndefined();

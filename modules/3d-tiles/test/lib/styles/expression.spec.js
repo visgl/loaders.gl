@@ -21,40 +21,40 @@ function MockFeature() {
   };
 }
 
-MockFeature.prototype.addProperty = function(name, value) {
+MockFeature.prototype.addProperty = function (name, value) {
   this._properties[name] = value;
 };
 
-MockFeature.prototype.getProperty = function(name) {
+MockFeature.prototype.getProperty = function (name) {
   return this._properties[name];
 };
 
-MockFeature.prototype.setClass = function(className) {
+MockFeature.prototype.setClass = function (className) {
   this._className = className;
 };
 
-MockFeature.prototype.setInheritedClass = function(className) {
+MockFeature.prototype.setInheritedClass = function (className) {
   this._inheritedClassName = className;
 };
 
-MockFeature.prototype.isExactClass = function(className) {
+MockFeature.prototype.isExactClass = function (className) {
   return this._className === className;
 };
 
-MockFeature.prototype.isClass = function(className) {
+MockFeature.prototype.isClass = function (className) {
   return this._className === className || this._inheritedClassName === className;
 };
 
-MockFeature.prototype.getExactClassName = function() {
+MockFeature.prototype.getExactClassName = function () {
   return this._className;
 };
 
-it('parses backslashes', function() {
+it('parses backslashes', function () {
   var expression = new Expression('"\\he\\\\\\ll\\\\o"');
   expect(expression.evaluate(undefined)).toEqual('\\he\\\\\\ll\\\\o');
 });
 
-it('evaluates variable', function() {
+it('evaluates variable', function () {
   var feature = new MockFeature();
   feature.addProperty('height', 10);
   feature.addProperty('width', 5);
@@ -117,12 +117,12 @@ it('evaluates variable', function() {
   );
   expect(expression.evaluate(feature)).toEqual(22);
 
-  expect(function() {
+  expect(function () {
     return new Expression('${height');
   }).toThrowRuntimeError();
 });
 
-it('evaluates variable to undefined if feature is undefined', function() {
+it('evaluates variable to undefined if feature is undefined', function () {
   var expression = new Expression('${height}');
   expect(expression.evaluate(undefined)).toBeUndefined();
 
@@ -146,7 +146,7 @@ it('evaluates variable to undefined if feature is undefined', function() {
   expect(expression.evaluate(undefined)).toBe('');
 });
 
-it('evaluates with defines', function() {
+it('evaluates with defines', function () {
   var defines = {
     halfHeight: '${Height}/2'
   };
@@ -157,7 +157,7 @@ it('evaluates with defines', function() {
   expect(expression.evaluate(feature)).toEqual(5);
 });
 
-it('evaluates with defines, honoring order of operations', function() {
+it('evaluates with defines, honoring order of operations', function () {
   var defines = {
     value: '1 + 2'
   };
@@ -165,7 +165,7 @@ it('evaluates with defines, honoring order of operations', function() {
   expect(expression.evaluate(undefined)).toEqual(15);
 });
 
-it('evaluate takes result argument', function() {
+it('evaluate takes result argument', function () {
   var expression = new Expression('vec3(1.0)');
   var result = new Vector3();
   var value = expression.evaluate(undefined, result);
@@ -173,7 +173,7 @@ it('evaluate takes result argument', function() {
   expect(value).toBe(result);
 });
 
-it('evaluate takes a color result argument', function() {
+it('evaluate takes a color result argument', function () {
   var expression = new Expression('color("red")');
   var result = new Color();
   var value = expression.evaluate(undefined, result);
@@ -181,101 +181,101 @@ it('evaluate takes a color result argument', function() {
   expect(value).toBe(result);
 });
 
-it('gets expressions', function() {
+it('gets expressions', function () {
   var expressionString = "(regExp('^Chest').test(${County})) && (${YearBuilt} >= 1970)";
   var expression = new Expression(expressionString);
   expect(expression.expression).toEqual(expressionString);
 });
 
-it('throws on invalid expressions', function() {
-  expect(function() {
+it('throws on invalid expressions', function () {
+  expect(function () {
     return new Expression(false);
   }).toThrowDeveloperError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('this');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('2; 3;');
   }).toThrowRuntimeError();
 });
 
-it('throws on unknown characters', function() {
-  expect(function() {
+it('throws on unknown characters', function () {
+  expect(function () {
     return new Expression('#');
   }).toThrowRuntimeError();
 });
 
-it('throws on unmatched parenthesis', function() {
-  expect(function() {
+it('throws on unmatched parenthesis', function () {
+  expect(function () {
     return new Expression('((true)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('(true))');
   }).toThrowRuntimeError();
 });
 
-it('throws on unknown identifiers', function() {
-  expect(function() {
+it('throws on unknown identifiers', function () {
+  expect(function () {
     return new Expression('flse');
   }).toThrowRuntimeError();
 });
 
-it('throws on unknown function calls', function() {
-  expect(function() {
+it('throws on unknown function calls', function () {
+  expect(function () {
     return new Expression('unknown()');
   }).toThrowRuntimeError();
 });
 
-it('throws on unknown member function calls', function() {
-  expect(function() {
+it('throws on unknown member function calls', function () {
+  expect(function () {
     return new Expression('regExp().unknown()');
   }).toThrowRuntimeError();
 });
 
-it('throws with unsupported operators', function() {
-  expect(function() {
+it('throws with unsupported operators', function () {
+  expect(function () {
     return new Expression('~1');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('2 | 3');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('2 & 3');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('2 << 3');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('2 >> 3');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('2 >>> 3');
   }).toThrowRuntimeError();
 });
 
-it('evaluates literal null', function() {
+it('evaluates literal null', function () {
   var expression = new Expression('null');
   expect(expression.evaluate(undefined)).toEqual(null);
 });
 
-it('evaluates literal undefined', function() {
+it('evaluates literal undefined', function () {
   var expression = new Expression('undefined');
   expect(expression.evaluate(undefined)).toEqual(undefined);
 });
 
-it('evaluates literal boolean', function() {
+it('evaluates literal boolean', function () {
   var expression = new Expression('true');
   expect(expression.evaluate(undefined)).toEqual(true);
 
@@ -283,7 +283,7 @@ it('evaluates literal boolean', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('converts to literal boolean', function() {
+it('converts to literal boolean', function () {
   var expression = new Expression('Boolean()');
   expect(expression.evaluate(undefined)).toEqual(false);
 
@@ -294,7 +294,7 @@ it('converts to literal boolean', function() {
   expect(expression.evaluate(undefined)).toEqual(true);
 });
 
-it('evaluates literal number', function() {
+it('evaluates literal number', function () {
   var expression = new Expression('1');
   expect(expression.evaluate(undefined)).toEqual(1);
 
@@ -308,7 +308,7 @@ it('evaluates literal number', function() {
   expect(expression.evaluate(undefined)).toEqual(Infinity);
 });
 
-it('evaluates math constants', function() {
+it('evaluates math constants', function () {
   var expression = new Expression('Math.PI');
   expect(expression.evaluate(undefined)).toEqual(Math.PI);
 
@@ -316,12 +316,12 @@ it('evaluates math constants', function() {
   expect(expression.evaluate(undefined)).toEqual(Math.E);
 });
 
-it('evaluates number constants', function() {
+it('evaluates number constants', function () {
   var expression = new Expression('Number.POSITIVE_INFINITY');
   expect(expression.evaluate(undefined)).toEqual(Number.POSITIVE_INFINITY);
 });
 
-it('converts to literal number', function() {
+it('converts to literal number', function () {
   var expression = new Expression('Number()');
   expect(expression.evaluate(undefined)).toEqual(0);
 
@@ -332,7 +332,7 @@ it('converts to literal number', function() {
   expect(expression.evaluate(undefined)).toEqual(1);
 });
 
-it('evaluates literal string', function() {
+it('evaluates literal string', function () {
   var expression = new Expression("'hello'");
   expect(expression.evaluate(undefined)).toEqual('hello');
 
@@ -343,7 +343,7 @@ it('evaluates literal string', function() {
   expect(expression.evaluate(undefined)).toEqual('Cesium');
 });
 
-it('converts to literal string', function() {
+it('converts to literal string', function () {
   var expression = new Expression('String()');
   expect(expression.evaluate(undefined)).toEqual('');
 
@@ -354,7 +354,7 @@ it('converts to literal string', function() {
   expect(expression.evaluate(undefined)).toEqual('true');
 });
 
-it('evaluates literal color', function() {
+it('evaluates literal color', function () {
   var expression = new Expression("color('#ffffff')");
   expect(expression.evaluate(undefined)).toEqual(Vector4.fromColor(Color.WHITE));
 
@@ -412,7 +412,7 @@ it('evaluates literal color', function() {
   expect(expression.evaluate(undefined)).toEqual(Vector4.fromColor(Color.WHITE));
 });
 
-it('evaluates literal color with result parameter', function() {
+it('evaluates literal color with result parameter', function () {
   var color = new Color();
 
   var expression = new Expression("color('#0000ff')");
@@ -452,7 +452,7 @@ it('evaluates literal color with result parameter', function() {
   expect(color).toEqual(Color.WHITE);
 });
 
-it('evaluates color with expressions as arguments', function() {
+it('evaluates color with expressions as arguments', function () {
   var feature = new MockFeature();
   feature.addProperty('hex6', '#ffffff');
   feature.addProperty('hex3', '#fff');
@@ -475,7 +475,7 @@ it('evaluates color with expressions as arguments', function() {
   expect(expression.evaluate(feature).w).toEqual(0.8);
 });
 
-it('evaluates rgb with expressions as arguments', function() {
+it('evaluates rgb with expressions as arguments', function () {
   var feature = new MockFeature();
   feature.addProperty('red', 100);
   feature.addProperty('green', 200);
@@ -488,7 +488,7 @@ it('evaluates rgb with expressions as arguments', function() {
   expect(expression.evaluate(feature)).toEqual(Vector4.fromColor(Color.fromBytes(50, 100, 255)));
 });
 
-it('evaluates hsl with expressions as arguments', function() {
+it('evaluates hsl with expressions as arguments', function () {
   var feature = new MockFeature();
   feature.addProperty('h', 0.0);
   feature.addProperty('s', 0.0);
@@ -501,7 +501,7 @@ it('evaluates hsl with expressions as arguments', function() {
   expect(expression.evaluate(feature)).toEqual(Vector4.fromColor(Color.fromHsl(0.2, 1.0, 0.5)));
 });
 
-it('evaluates rgba with expressions as arguments', function() {
+it('evaluates rgba with expressions as arguments', function () {
   var feature = new MockFeature();
   feature.addProperty('red', 100);
   feature.addProperty('green', 200);
@@ -519,7 +519,7 @@ it('evaluates rgba with expressions as arguments', function() {
   );
 });
 
-it('evaluates hsla with expressions as arguments', function() {
+it('evaluates hsla with expressions as arguments', function () {
   var feature = new MockFeature();
   feature.addProperty('h', 0.0);
   feature.addProperty('s', 0.0);
@@ -535,7 +535,7 @@ it('evaluates hsla with expressions as arguments', function() {
   );
 });
 
-it('evaluates rgba with expressions as arguments', function() {
+it('evaluates rgba with expressions as arguments', function () {
   var feature = new MockFeature();
   feature.addProperty('red', 100);
   feature.addProperty('green', 200);
@@ -553,25 +553,25 @@ it('evaluates rgba with expressions as arguments', function() {
   );
 });
 
-it('color constructors throw with wrong number of arguments', function() {
-  expect(function() {
+it('color constructors throw with wrong number of arguments', function () {
+  expect(function () {
     return new Expression('rgb(255, 255)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('hsl(1, 1)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('rgba(255, 255, 255)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('hsla(1, 1, 1)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates color properties (r, g, b, a)', function() {
+it('evaluates color properties (r, g, b, a)', function () {
   var expression = new Expression("color('#ffffff').r");
   expect(expression.evaluate(undefined)).toEqual(1);
 
@@ -585,7 +585,7 @@ it('evaluates color properties (r, g, b, a)', function() {
   expect(expression.evaluate(undefined)).toEqual(0.5);
 });
 
-it('evaluates color properties (x, y, z, w)', function() {
+it('evaluates color properties (x, y, z, w)', function () {
   var expression = new Expression("color('#ffffff').x");
   expect(expression.evaluate(undefined)).toEqual(1);
 
@@ -599,7 +599,7 @@ it('evaluates color properties (x, y, z, w)', function() {
   expect(expression.evaluate(undefined)).toEqual(0.5);
 });
 
-it('evaluates color properties ([0], [1], [2]. [3])', function() {
+it('evaluates color properties ([0], [1], [2]. [3])', function () {
   var expression = new Expression("color('#ffffff')[0]");
   expect(expression.evaluate(undefined)).toEqual(1);
 
@@ -613,7 +613,7 @@ it('evaluates color properties ([0], [1], [2]. [3])', function() {
   expect(expression.evaluate(undefined)).toEqual(0.5);
 });
 
-it('evaluates color properties (["r"], ["g"], ["b"], ["a"])', function() {
+it('evaluates color properties (["r"], ["g"], ["b"], ["a"])', function () {
   var expression = new Expression('color(\'#ffffff\')["r"]');
   expect(expression.evaluate(undefined)).toEqual(1);
 
@@ -627,7 +627,7 @@ it('evaluates color properties (["r"], ["g"], ["b"], ["a"])', function() {
   expect(expression.evaluate(undefined)).toEqual(0.5);
 });
 
-it('evaluates color properties (["x"], ["y"], ["z"], ["w"])', function() {
+it('evaluates color properties (["x"], ["y"], ["z"], ["w"])', function () {
   var expression = new Expression('color(\'#ffffff\')["x"]');
   expect(expression.evaluate(undefined)).toEqual(1);
 
@@ -641,7 +641,7 @@ it('evaluates color properties (["x"], ["y"], ["z"], ["w"])', function() {
   expect(expression.evaluate(undefined)).toEqual(0.5);
 });
 
-it('evaluates vec2', function() {
+it('evaluates vec2', function () {
   var expression = new Expression('vec2(2.0)');
   expect(expression.evaluate(undefined)).toEqual(new Vector2(2.0, 2.0));
 
@@ -658,31 +658,31 @@ it('evaluates vec2', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector2(3.0, 4.0));
 });
 
-it('throws if vec2 has invalid number of arguments', function() {
+it('throws if vec2 has invalid number of arguments', function () {
   var expression = new Expression('vec2()');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec2(3.0, 4.0, 5.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec2(vec2(3.0, 4.0), 5.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('throws if vec2 has invalid argument', function() {
+it('throws if vec2 has invalid argument', function () {
   var expression = new Expression('vec2("1")');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates vec3', function() {
+it('evaluates vec3', function () {
   var expression = new Expression('vec3(2.0)');
   expect(expression.evaluate(undefined)).toEqual(new Vector3(2.0, 2.0, 2.0));
 
@@ -702,41 +702,41 @@ it('evaluates vec3', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector3(3.0, 4.0, 5.0));
 });
 
-it('throws if vec3 has invalid number of arguments', function() {
+it('throws if vec3 has invalid number of arguments', function () {
   var expression = new Expression('vec3()');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec3(3.0, 4.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec3(3.0, 4.0, 5.0, 6.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec3(vec2(3.0, 4.0), vec2(5.0, 6.0))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec3(vec4(3.0, 4.0, 5.0, 6.0), 1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('throws if vec3 has invalid argument', function() {
+it('throws if vec3 has invalid argument', function () {
   var expression = new Expression('vec3(1.0, "1.0", 2.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates vec4', function() {
+it('evaluates vec4', function () {
   var expression = new Expression('vec4(2.0)');
   expect(expression.evaluate(undefined)).toEqual(new Vector4(2.0, 2.0, 2.0, 2.0));
 
@@ -762,41 +762,41 @@ it('evaluates vec4', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(3.0, 4.0, 5.0, 6.0));
 });
 
-it('throws if vec4 has invalid number of arguments', function() {
+it('throws if vec4 has invalid number of arguments', function () {
   var expression = new Expression('vec4()');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec4(3.0, 4.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec4(3.0, 4.0, 5.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec4(3.0, 4.0, 5.0, 6.0, 7.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec4(vec3(3.0, 4.0, 5.0))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('throws if vec4 has invalid argument', function() {
+it('throws if vec4 has invalid argument', function () {
   var expression = new Expression('vec4(1.0, "2.0", 3.0, 4.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates vector with expressions as arguments', function() {
+it('evaluates vector with expressions as arguments', function () {
   var feature = new MockFeature();
   feature.addProperty('height', 2);
   feature.addProperty('width', 4);
@@ -807,12 +807,12 @@ it('evaluates vector with expressions as arguments', function() {
   expect(expression.evaluate(feature)).toEqual(new Vector4(2.0, 4.0, 3.0, 1.0));
 });
 
-it('evaluates expression with multiple nested vectors', function() {
+it('evaluates expression with multiple nested vectors', function () {
   var expression = new Expression('vec4(vec2(1, 2)[vec3(6, 1, 5).y], 2, vec4(1.0).w, 5)');
   expect(expression.evaluate(undefined)).toEqual(new Vector4(2.0, 2.0, 1.0, 5.0));
 });
 
-it('evaluates vector properties (x, y, z, w)', function() {
+it('evaluates vector properties (x, y, z, w)', function () {
   var expression = new Expression('vec4(1.0, 2.0, 3.0, 4.0).x');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -826,7 +826,7 @@ it('evaluates vector properties (x, y, z, w)', function() {
   expect(expression.evaluate(undefined)).toEqual(4.0);
 });
 
-it('evaluates vector properties (r, g, b, a)', function() {
+it('evaluates vector properties (r, g, b, a)', function () {
   var expression = new Expression('vec4(1.0, 2.0, 3.0, 4.0).r');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -840,7 +840,7 @@ it('evaluates vector properties (r, g, b, a)', function() {
   expect(expression.evaluate(undefined)).toEqual(4.0);
 });
 
-it('evaluates vector properties ([0], [1], [2], [3])', function() {
+it('evaluates vector properties ([0], [1], [2], [3])', function () {
   var expression = new Expression('vec4(1.0, 2.0, 3.0, 4.0)[0]');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -854,7 +854,7 @@ it('evaluates vector properties ([0], [1], [2], [3])', function() {
   expect(expression.evaluate(undefined)).toEqual(4.0);
 });
 
-it('evaluates vector properties (["x"], ["y"], ["z"]. ["w"])', function() {
+it('evaluates vector properties (["x"], ["y"], ["z"]. ["w"])', function () {
   var expression = new Expression('vec4(1.0, 2.0, 3.0, 4.0)["x"]');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -868,7 +868,7 @@ it('evaluates vector properties (["x"], ["y"], ["z"]. ["w"])', function() {
   expect(expression.evaluate(undefined)).toEqual(4.0);
 });
 
-it('evaluates vector properties (["r"], ["g"], ["b"]. ["a"])', function() {
+it('evaluates vector properties (["r"], ["g"], ["b"]. ["a"])', function () {
   var expression = new Expression('vec4(1.0, 2.0, 3.0, 4.0)["r"]');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -882,7 +882,7 @@ it('evaluates vector properties (["r"], ["g"], ["b"]. ["a"])', function() {
   expect(expression.evaluate(undefined)).toEqual(4.0);
 });
 
-it('evaluates unary not', function() {
+it('evaluates unary not', function () {
   var expression = new Expression('!true');
   expect(expression.evaluate(undefined)).toEqual(false);
 
@@ -890,14 +890,14 @@ it('evaluates unary not', function() {
   expect(expression.evaluate(undefined)).toEqual(true);
 });
 
-it('throws if unary not takes invalid argument', function() {
+it('throws if unary not takes invalid argument', function () {
   var expression = new Expression('!"true"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates unary negative', function() {
+it('evaluates unary negative', function () {
   var expression = new Expression('-5');
   expect(expression.evaluate(undefined)).toEqual(-5);
 
@@ -905,26 +905,26 @@ it('evaluates unary negative', function() {
   expect(expression.evaluate(undefined)).toEqual(5);
 });
 
-it('throws if unary negative takes invalid argument', function() {
+it('throws if unary negative takes invalid argument', function () {
   var expression = new Expression('-"56"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates unary positive', function() {
+it('evaluates unary positive', function () {
   var expression = new Expression('+5');
   expect(expression.evaluate(undefined)).toEqual(5);
 });
 
-it('throws if unary positive takes invalid argument', function() {
+it('throws if unary positive takes invalid argument', function () {
   var expression = new Expression('+"56"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary addition', function() {
+it('evaluates binary addition', function () {
   var expression = new Expression('1 + 2');
   expect(expression.evaluate(undefined)).toEqual(3);
 
@@ -932,7 +932,7 @@ it('evaluates binary addition', function() {
   expect(expression.evaluate(undefined)).toEqual(10);
 });
 
-it('evaluates binary addition with strings', function() {
+it('evaluates binary addition with strings', function () {
   var expression = new Expression('1 + "10"');
   expect(expression.evaluate(undefined)).toEqual('110');
 
@@ -964,19 +964,19 @@ it('evaluates binary addition with strings', function() {
   expect(expression.evaluate(undefined)).toEqual('name_/a/');
 });
 
-it('throws if binary addition takes invalid arguments', function() {
+it('throws if binary addition takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) + vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1.0 + vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary subtraction', function() {
+it('evaluates binary subtraction', function () {
   var expression = new Expression('2 - 1');
   expect(expression.evaluate(undefined)).toEqual(1);
 
@@ -984,24 +984,24 @@ it('evaluates binary subtraction', function() {
   expect(expression.evaluate(undefined)).toEqual(-2);
 });
 
-it('throws if binary subtraction takes invalid arguments', function() {
+it('throws if binary subtraction takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) - vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1.0 - vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('"name1" - "name2"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary multiplication', function() {
+it('evaluates binary multiplication', function () {
   var expression = new Expression('1 * 2');
   expect(expression.evaluate(undefined)).toEqual(2);
 
@@ -1009,19 +1009,19 @@ it('evaluates binary multiplication', function() {
   expect(expression.evaluate(undefined)).toEqual(24);
 });
 
-it('throws if binary multiplication takes invalid arguments', function() {
+it('throws if binary multiplication takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) * vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec2(1.0) * "name"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary division', function() {
+it('evaluates binary division', function () {
   var expression = new Expression('2 / 1');
   expect(expression.evaluate(undefined)).toEqual(2);
 
@@ -1032,24 +1032,24 @@ it('evaluates binary division', function() {
   expect(expression.evaluate(undefined)).toEqual(-3);
 });
 
-it('throws if binary division takes invalid arguments', function() {
+it('throws if binary division takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) / vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec2(1.0) / "2.0"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1.0 / vec4(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary modulus', function() {
+it('evaluates binary modulus', function () {
   var expression = new Expression('2 % 1');
   expect(expression.evaluate(undefined)).toEqual(0);
 
@@ -1057,24 +1057,24 @@ it('evaluates binary modulus', function() {
   expect(expression.evaluate(undefined)).toEqual(2);
 });
 
-it('throws if binary modulus takes invalid arguments', function() {
+it('throws if binary modulus takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) % vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('vec2(1.0) % "2.0"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1.0 % vec4(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary equals strict', function() {
+it('evaluates binary equals strict', function () {
   var expression = new Expression("'hello' === 'hello'");
   expect(expression.evaluate(undefined)).toEqual(true);
 
@@ -1088,7 +1088,7 @@ it('evaluates binary equals strict', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('evaluates binary not equals strict', function() {
+it('evaluates binary not equals strict', function () {
   var expression = new Expression("'hello' !== 'hello'");
   expect(expression.evaluate(undefined)).toEqual(false);
 
@@ -1102,7 +1102,7 @@ it('evaluates binary not equals strict', function() {
   expect(expression.evaluate(undefined)).toEqual(true);
 });
 
-it('evaluates binary less than', function() {
+it('evaluates binary less than', function () {
   var expression = new Expression('2 < 3');
   expect(expression.evaluate(undefined)).toEqual(true);
 
@@ -1113,29 +1113,29 @@ it('evaluates binary less than', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('throws if binary less than takes invalid arguments', function() {
+it('throws if binary less than takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) < vec2(2.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1 < vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('true < false');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression("color('blue') < 10");
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary less than or equals', function() {
+it('evaluates binary less than or equals', function () {
   var expression = new Expression('2 <= 3');
   expect(expression.evaluate(undefined)).toEqual(true);
 
@@ -1146,34 +1146,34 @@ it('evaluates binary less than or equals', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('throws if binary less than or equals takes invalid arguments', function() {
+it('throws if binary less than or equals takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) <= vec2(2.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1 <= vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1.0 <= "5"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('true <= false');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression("color('blue') <= 10");
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary greater than', function() {
+it('evaluates binary greater than', function () {
   var expression = new Expression('2 > 3');
   expect(expression.evaluate(undefined)).toEqual(false);
 
@@ -1184,34 +1184,34 @@ it('evaluates binary greater than', function() {
   expect(expression.evaluate(undefined)).toEqual(true);
 });
 
-it('throws if binary greater than takes invalid arguments', function() {
+it('throws if binary greater than takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) > vec2(2.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1 > vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1.0 > "5"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('true > false');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression("color('blue') > 10");
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates binary greater than or equals', function() {
+it('evaluates binary greater than or equals', function () {
   var expression = new Expression('2 >= 3');
   expect(expression.evaluate(undefined)).toEqual(false);
 
@@ -1222,34 +1222,34 @@ it('evaluates binary greater than or equals', function() {
   expect(expression.evaluate(undefined)).toEqual(true);
 });
 
-it('throws if binary greater than or equals takes invalid arguments', function() {
+it('throws if binary greater than or equals takes invalid arguments', function () {
   var expression = new Expression('vec2(1.0) >= vec2(2.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1 >= vec3(1.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1.0 >= "5"');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('true >= false');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression("color('blue') >= 10");
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates logical and', function() {
+it('evaluates logical and', function () {
   var expression = new Expression('false && false');
   expect(expression.evaluate(undefined)).toEqual(false);
 
@@ -1260,24 +1260,24 @@ it('evaluates logical and', function() {
   expect(expression.evaluate(undefined)).toEqual(true);
 
   expression = new Expression("2 && color('red')");
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('throws with invalid and operands', function() {
+it('throws with invalid and operands', function () {
   var expression = new Expression('2 && true');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression("true && color('red')");
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates logical or', function() {
+it('evaluates logical or', function () {
   var expression = new Expression('false || false');
   expect(expression.evaluate(undefined)).toEqual(false);
 
@@ -1288,19 +1288,19 @@ it('evaluates logical or', function() {
   expect(expression.evaluate(undefined)).toEqual(true);
 });
 
-it('throws with invalid or operands', function() {
+it('throws with invalid or operands', function () {
   var expression = new Expression('2 || false');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression("false || color('red')");
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates color operations', function() {
+it('evaluates color operations', function () {
   var expression = new Expression('+rgba(255, 0, 0, 1.0)');
   expect(expression.evaluate(undefined)).toEqual(Vector4.fromColor(Color.RED));
 
@@ -1335,7 +1335,7 @@ it('evaluates color operations', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('evaluates vector operations', function() {
+it('evaluates vector operations', function () {
   var expression = new Expression('+vec2(1, 2)');
   expect(expression.evaluate(undefined)).toEqual(new Vector2(1, 2));
 
@@ -1445,7 +1445,7 @@ it('evaluates vector operations', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('evaluates color toString function', function() {
+it('evaluates color toString function', function () {
   var expression = new Expression('color("red").toString()');
   expect(expression.evaluate(undefined)).toEqual('(1, 0, 0, 1)');
 
@@ -1453,7 +1453,7 @@ it('evaluates color toString function', function() {
   expect(expression.evaluate(undefined)).toEqual('(0, 0, 1, 0.5)');
 });
 
-it('evaluates vector toString function', function() {
+it('evaluates vector toString function', function () {
   var feature = new MockFeature();
   feature.addProperty('property', new Vector4(1, 2, 3, 4));
 
@@ -1470,7 +1470,7 @@ it('evaluates vector toString function', function() {
   expect(expression.evaluate(feature)).toEqual('(1, 2, 3, 4)');
 });
 
-it('evaluates isNaN function', function() {
+it('evaluates isNaN function', function () {
   var expression = new Expression('isNaN()');
   expect(expression.evaluate(undefined)).toEqual(true);
 
@@ -1496,7 +1496,7 @@ it('evaluates isNaN function', function() {
   expect(expression.evaluate(undefined)).toEqual(true);
 });
 
-it('evaluates isFinite function', function() {
+it('evaluates isFinite function', function () {
   var expression = new Expression('isFinite()');
   expect(expression.evaluate(undefined)).toEqual(false);
 
@@ -1522,7 +1522,7 @@ it('evaluates isFinite function', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('evaluates isExactClass function', function() {
+it('evaluates isExactClass function', function () {
   var feature = new MockFeature();
   feature.setClass('door');
 
@@ -1535,17 +1535,17 @@ it('evaluates isExactClass function', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('throws if isExactClass takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if isExactClass takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('isExactClass()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('isExactClass("door", "roof")');
   }).toThrowRuntimeError();
 });
 
-it('evaluates isClass function', function() {
+it('evaluates isClass function', function () {
   var feature = new MockFeature();
 
   feature.setClass('door');
@@ -1557,17 +1557,17 @@ it('evaluates isClass function', function() {
   expect(expression.evaluate(undefined)).toEqual(false);
 });
 
-it('throws if isClass takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if isClass takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('isClass()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('isClass("door", "building")');
   }).toThrowRuntimeError();
 });
 
-it('evaluates getExactClassName function', function() {
+it('evaluates getExactClassName function', function () {
   var feature = new MockFeature();
   feature.setClass('door');
   var expression = new Expression('getExactClassName()');
@@ -1575,21 +1575,21 @@ it('evaluates getExactClassName function', function() {
   expect(expression.evaluate(undefined)).toBeUndefined();
 });
 
-it('throws if getExactClassName takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if getExactClassName takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('getExactClassName("door")');
   }).toThrowRuntimeError();
 });
 
-it('throws if built-in unary function is given an invalid argument', function() {
+it('throws if built-in unary function is given an invalid argument', function () {
   // Argument must be a number or vector
   var expression = new Expression('abs("-1")');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates abs function', function() {
+it('evaluates abs function', function () {
   var expression = new Expression('abs(-1)');
   expect(expression.evaluate(undefined)).toEqual(1);
 
@@ -1606,17 +1606,17 @@ it('evaluates abs function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(1.0, 1.0, 0.0, 1.2));
 });
 
-it('throws if abs function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if abs function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('abs()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('abs(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates cos function', function() {
+it('evaluates cos function', function () {
   var expression = new Expression('cos(0)');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -1639,17 +1639,17 @@ it('evaluates cos function', function() {
   );
 });
 
-it('throws if cos function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if cos function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('cos()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('cos(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates sin function', function() {
+it('evaluates sin function', function () {
   var expression = new Expression('sin(0)');
   expect(expression.evaluate(undefined)).toEqual(0);
 
@@ -1669,17 +1669,17 @@ it('evaluates sin function', function() {
   );
 });
 
-it('throws if sin function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if sin function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('sin()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('sin(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates tan function', function() {
+it('evaluates tan function', function () {
   var expression = new Expression('tan(0)');
   expect(expression.evaluate(undefined)).toEqual(0);
 
@@ -1699,17 +1699,17 @@ it('evaluates tan function', function() {
   );
 });
 
-it('throws if tan function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if tan function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('tan()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('tan(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates acos function', function() {
+it('evaluates acos function', function () {
   var expression = new Expression('acos(1)');
   expect(expression.evaluate(undefined)).toEqual(0);
 
@@ -1732,17 +1732,17 @@ it('evaluates acos function', function() {
   );
 });
 
-it('throws if acos function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if acos function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('acos()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('acos(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates asin function', function() {
+it('evaluates asin function', function () {
   var expression = new Expression('asin(0)');
   expect(expression.evaluate(undefined)).toEqual(0);
 
@@ -1765,17 +1765,17 @@ it('evaluates asin function', function() {
   );
 });
 
-it('throws if asin function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if asin function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('asin()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('asin(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates atan function', function() {
+it('evaluates atan function', function () {
   var expression = new Expression('atan(0)');
   expect(expression.evaluate(undefined)).toEqual(0);
 
@@ -1798,17 +1798,17 @@ it('evaluates atan function', function() {
   );
 });
 
-it('throws if atan function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if atan function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('atan()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('atan(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates radians function', function() {
+it('evaluates radians function', function () {
   var expression = new Expression('radians(180)');
   expect(expression.evaluate(undefined)).toEqualEpsilon(Math.PI, CesiumMath.EPSILON10);
 
@@ -1831,17 +1831,17 @@ it('evaluates radians function', function() {
   );
 });
 
-it('throws if radians function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if radians function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('radians()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('radians(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates degrees function', function() {
+it('evaluates degrees function', function () {
   var expression = new Expression('degrees(2 * Math.PI)');
   expect(expression.evaluate(undefined)).toEqualEpsilon(360, CesiumMath.EPSILON10);
 
@@ -1861,17 +1861,17 @@ it('evaluates degrees function', function() {
   );
 });
 
-it('throws if degrees function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if degrees function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('degrees()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('degrees(1, 2)');
   });
 });
 
-it('evaluates sqrt function', function() {
+it('evaluates sqrt function', function () {
   var expression = new Expression('sqrt(1.0)');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -1891,17 +1891,17 @@ it('evaluates sqrt function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(1.0, 2.0, 3.0, 4.0));
 });
 
-it('throws if sqrt function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if sqrt function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('sqrt()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('sqrt(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates sign function', function() {
+it('evaluates sign function', function () {
   var expression = new Expression('sign(5.0)');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -1921,17 +1921,17 @@ it('evaluates sign function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(1.0, -1.0, 0.0, 1.0));
 });
 
-it('throws if sign function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if sign function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('sign()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('sign(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates floor function', function() {
+it('evaluates floor function', function () {
   var expression = new Expression('floor(5.5)');
   expect(expression.evaluate(undefined)).toEqual(5.0);
 
@@ -1951,17 +1951,17 @@ it('evaluates floor function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(5.0, -2.0, 0.0, -3.0));
 });
 
-it('throws if floor function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if floor function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('floor()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('floor(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates ceil function', function() {
+it('evaluates ceil function', function () {
   var expression = new Expression('ceil(5.5)');
   expect(expression.evaluate(undefined)).toEqual(6.0);
 
@@ -1981,17 +1981,17 @@ it('evaluates ceil function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(6.0, -1.0, 0.0, -2.0));
 });
 
-it('throws if ceil function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if ceil function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('ceil()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('ceil(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates round function', function() {
+it('evaluates round function', function () {
   var expression = new Expression('round(5.5)');
   expect(expression.evaluate(undefined)).toEqual(6);
 
@@ -2011,17 +2011,17 @@ it('evaluates round function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(6.0, -1.0, 0.0, -3.0));
 });
 
-it('throws if round function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if round function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('round()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('round(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates exp function', function() {
+it('evaluates exp function', function () {
   var expression = new Expression('exp(1.0)');
   expect(expression.evaluate(undefined)).toEqualEpsilon(Math.E, CesiumMath.EPSILON10);
 
@@ -2047,17 +2047,17 @@ it('evaluates exp function', function() {
   );
 });
 
-it('throws if exp function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if exp function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('exp()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('exp(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates exp2 function', function() {
+it('evaluates exp2 function', function () {
   var expression = new Expression('exp2(1.0)');
   expect(expression.evaluate(undefined)).toEqual(2.0);
 
@@ -2077,17 +2077,17 @@ it('evaluates exp2 function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(2.0, 1.0, 4.0, 8.0));
 });
 
-it('throws if exp2 function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if exp2 function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('exp2()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('exp2(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates log function', function() {
+it('evaluates log function', function () {
   var expression = new Expression('log(1.0)');
   expect(expression.evaluate(undefined)).toEqual(0.0);
 
@@ -2104,17 +2104,17 @@ it('evaluates log function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(0.0, 1.0, 0.0, 1.0));
 });
 
-it('throws if log function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if log function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('log()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('log(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates log2 function', function() {
+it('evaluates log2 function', function () {
   var expression = new Expression('log2(1.0)');
   expect(expression.evaluate(undefined)).toEqual(0.0);
 
@@ -2137,17 +2137,17 @@ it('evaluates log2 function', function() {
   );
 });
 
-it('throws if log2 function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if log2 function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('log2()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('log2(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates fract function', function() {
+it('evaluates fract function', function () {
   var expression = new Expression('fract(1.0)');
   expect(expression.evaluate(undefined)).toEqual(0.0);
 
@@ -2167,17 +2167,17 @@ it('evaluates fract function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(0.0, 0.25, 0.75, 0.0));
 });
 
-it('throws if fract function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if fract function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('fract()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('fract(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates length function', function() {
+it('evaluates length function', function () {
   var expression = new Expression('length(-3.0)');
   expect(expression.evaluate(undefined)).toEqual(3.0);
 
@@ -2191,17 +2191,17 @@ it('evaluates length function', function() {
   expect(expression.evaluate(undefined)).toEqual(13.0);
 });
 
-it('throws if length function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if length function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('length()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('length(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates normalize function', function() {
+it('evaluates normalize function', function () {
   var expression = new Expression('normalize(5.0)');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -2223,17 +2223,17 @@ it('evaluates normalize function', function() {
   );
 });
 
-it('throws if normalize function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if normalize function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('fract()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('fract(1, 2)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates clamp function', function() {
+it('evaluates clamp function', function () {
   var expression = new Expression('clamp(50.0, 0.0, 100.0)');
   expect(expression.evaluate(undefined)).toEqual(50.0);
 
@@ -2260,42 +2260,42 @@ it('evaluates clamp function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(50.0, 25.0, 75.0, 85.0));
 });
 
-it('throws if clamp function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if clamp function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('clamp()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('clamp(1)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('clamp(1, 2)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('clamp(1, 2, 3, 4)');
   }).toThrowRuntimeError();
 });
 
-it('throws if clamp function takes mismatching types', function() {
+it('throws if clamp function takes mismatching types', function () {
   var expression = new Expression('clamp(0.0,vec2(0,1),0.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('clamp(vec2(0,1),vec3(0,1,2),0.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('clamp(vec2(0,1),vec2(0,1), vec3(1,2,3))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates mix function', function() {
+it('evaluates mix function', function () {
   var expression = new Expression('mix(0.0, 2.0, 0.5)');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -2314,42 +2314,42 @@ it('evaluates mix function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(1.0, 9.0, 12.0, 5.0));
 });
 
-it('throws if mix function takes mismatching types', function() {
+it('throws if mix function takes mismatching types', function () {
   var expression = new Expression('mix(0.0,vec2(0,1),0.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('mix(vec2(0,1),vec3(0,1,2),0.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('mix(vec2(0,1),vec2(0,1), vec3(1,2,3))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('throws if mix function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if mix function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('mix()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('mix(1)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('mix(1, 2)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('mix(1, 2, 3, 4)');
   }).toThrowRuntimeError();
 });
 
-it('evaluates atan2 function', function() {
+it('evaluates atan2 function', function () {
   var expression = new Expression('atan2(0,1)');
   expect(expression.evaluate(undefined)).toEqualEpsilon(0.0, CesiumMath.EPSILON10);
 
@@ -2375,34 +2375,34 @@ it('evaluates atan2 function', function() {
   );
 });
 
-it('throws if atan2 function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if atan2 function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('atan2(0.0)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('atan2(1, 2, 0)');
   }).toThrowRuntimeError();
 });
 
-it('throws if atan2 function takes mismatching types', function() {
+it('throws if atan2 function takes mismatching types', function () {
   var expression = new Expression('atan2(0.0,vec2(0,1))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('atan2(vec2(0,1),0.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('atan2(vec2(0,1),vec3(0,1,2))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates pow function', function() {
+it('evaluates pow function', function () {
   var expression = new Expression('pow(5,0)');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -2419,34 +2419,34 @@ it('evaluates pow function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(1.0, 16.0, 27.0, 32.0));
 });
 
-it('throws if pow function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if pow function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('pow(0.0)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('pow(1, 2, 0)');
   }).toThrowRuntimeError();
 });
 
-it('throws if pow function takes mismatching types', function() {
+it('throws if pow function takes mismatching types', function () {
   var expression = new Expression('pow(0.0, vec2(0,1))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('pow(vec2(0,1),0.0)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('pow(vec2(0,1),vec3(0,1,2))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates min function', function() {
+it('evaluates min function', function () {
   var expression = new Expression('min(0,1)');
   expect(expression.evaluate(undefined)).toEqual(0.0);
 
@@ -2466,29 +2466,29 @@ it('evaluates min function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(-1.0, 1.0, 1.0, 3.0));
 });
 
-it('throws if min function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if min function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('min(0.0)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('min(1, 2, 0)');
   }).toThrowRuntimeError();
 });
 
-it('throws if min function takes mismatching types', function() {
+it('throws if min function takes mismatching types', function () {
   var expression = new Expression('min(0.0, vec2(0,1))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('min(vec2(0,1),vec3(0,1,2))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates max function', function() {
+it('evaluates max function', function () {
   var expression = new Expression('max(0,1)');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -2508,29 +2508,29 @@ it('evaluates max function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector4(0, 2.0, 2.0, 4.0));
 });
 
-it('throws if max function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if max function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('max(0.0)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('max(1, 2, 0)');
   }).toThrowRuntimeError();
 });
 
-it('throws if max function takes mismatching types', function() {
+it('throws if max function takes mismatching types', function () {
   var expression = new Expression('max(0.0, vec2(0,1))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('max(vec2(0,1),vec3(0,1,2))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates the distance function', function() {
+it('evaluates the distance function', function () {
   var expression = new Expression('distance(0, 1)');
   expect(expression.evaluate(undefined)).toEqual(1.0);
 
@@ -2544,29 +2544,29 @@ it('evaluates the distance function', function() {
   expect(expression.evaluate(undefined)).toEqual(10.0);
 });
 
-it('throws if distance function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if distance function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('distance(0.0)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('distance(1, 3, 0)');
   }).toThrowRuntimeError();
 });
 
-it('throws if distance function takes mismatching types of arguments', function() {
-  expect(function() {
+it('throws if distance function takes mismatching types of arguments', function () {
+  expect(function () {
     return new Expression('distance(1, vec2(3.0, 2.0)').evaluate(undefined);
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('distance(vec4(5.0, 2.0, 3.0, 1.0), vec3(4.0, 4.0, 4.0))').evaluate(
       undefined
     );
   }).toThrowRuntimeError();
 });
 
-it('evaluates the dot function', function() {
+it('evaluates the dot function', function () {
   var expression = new Expression('dot(1, 2)');
   expect(expression.evaluate(undefined)).toEqual(2.0);
 
@@ -2580,27 +2580,27 @@ it('evaluates the dot function', function() {
   expect(expression.evaluate(undefined)).toEqual(20.0);
 });
 
-it('throws if dot function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if dot function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('dot(0.0)');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('dot(1, 3, 0)');
   }).toThrowRuntimeError();
 });
 
-it('throws if dot function takes mismatching types of arguments', function() {
-  expect(function() {
+it('throws if dot function takes mismatching types of arguments', function () {
+  expect(function () {
     return new Expression('dot(1, vec2(3.0, 2.0)').evaluate(undefined);
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('dot(vec4(5.0, 2.0, 3.0, 1.0), vec3(4.0, 4.0, 4.0))').evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates the cross function', function() {
+it('evaluates the cross function', function () {
   var expression = new Expression('cross(vec3(1.0, 1.0, 1.0), vec3(2.0, 2.0, 2.0))');
   expect(expression.evaluate(undefined)).toEqual(new Vector3(0.0, 0.0, 0.0));
 
@@ -2611,29 +2611,29 @@ it('evaluates the cross function', function() {
   expect(expression.evaluate(undefined)).toEqual(new Vector3(22.0, 38.0, -34.0));
 });
 
-it('throws if cross function takes an invalid number of arguments', function() {
-  expect(function() {
+it('throws if cross function takes an invalid number of arguments', function () {
+  expect(function () {
     return new Expression('cross(vec3(0.0, 0.0, 0.0))');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('cross(vec3(0.0, 0.0, 0.0), vec3(1.0, 1.0, 1.0), vec3(2.0, 2.0, 2.0))');
   }).toThrowRuntimeError();
 });
 
-it('throws if cross function does not take vec3 arguments', function() {
-  expect(function() {
+it('throws if cross function does not take vec3 arguments', function () {
+  expect(function () {
     return new Expression('cross(vec2(1.0, 2.0), vec2(3.0, 2.0)').evaluate(undefined);
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('cross(vec4(5.0, 2.0, 3.0, 1.0), vec3(4.0, 4.0, 4.0))').evaluate(
       undefined
     );
   }).toThrowRuntimeError();
 });
 
-it('evaluates ternary conditional', function() {
+it('evaluates ternary conditional', function () {
   var expression = new Expression('true ? "first" : "second"');
   expect(expression.evaluate(undefined)).toEqual('first');
 
@@ -2644,7 +2644,7 @@ it('evaluates ternary conditional', function() {
   expect(expression.evaluate(undefined)).toEqual(2);
 });
 
-it('evaluates member expression with dot', function() {
+it('evaluates member expression with dot', function () {
   var feature = new MockFeature();
   feature.addProperty('height', 10);
   feature.addProperty('width', 5);
@@ -2696,7 +2696,7 @@ it('evaluates member expression with dot', function() {
   expect(expression.evaluate(feature)).toEqual('Example City');
 });
 
-it('evaluates member expression with brackets', function() {
+it('evaluates member expression with brackets', function () {
   var feature = new MockFeature();
   feature.addProperty('height', 10);
   feature.addProperty('width', 5);
@@ -2765,27 +2765,27 @@ it('evaluates member expression with brackets', function() {
   expect(expression.evaluate(feature)).toEqual('Example City');
 });
 
-it('member expressions throw without variable notation', function() {
-  expect(function() {
+it('member expressions throw without variable notation', function () {
+  expect(function () {
     return new Expression('color.r');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('color["r"]');
   }).toThrowRuntimeError();
 });
 
-it('member expression throws with variable property', function() {
+it('member expression throws with variable property', function () {
   var feature = new MockFeature();
   feature.addProperty('vector', Vector4.UNIT_X);
   feature.addProperty('vectorName', 'UNIT_X');
 
-  expect(function() {
+  expect(function () {
     return new Expression('${vector[${vectorName}]}');
   }).toThrowRuntimeError();
 });
 
-it('evaluates feature property', function() {
+it('evaluates feature property', function () {
   var feature = new MockFeature();
   feature.addProperty('feature', {
     vector: Vector4.UNIT_X
@@ -2800,7 +2800,7 @@ it('evaluates feature property', function() {
   expect(expression.evaluate(feature)).toEqual(true);
 });
 
-it('constructs regex', function() {
+it('constructs regex', function () {
   var feature = new MockFeature();
   feature.addProperty('pattern', '[abc]');
 
@@ -2829,7 +2829,7 @@ it('constructs regex', function() {
   expect(expression._runtimeAst._type).toEqual(ExpressionNodeType.REGEX);
 });
 
-it('constructs regex with flags', function() {
+it('constructs regex with flags', function () {
   var expression = new Expression('regExp("a", "i")');
   expect(expression.evaluate(undefined)).toEqual(/a/i);
   expect(expression._runtimeAst._type).toEqual(ExpressionNodeType.LITERAL_REGEX);
@@ -2839,29 +2839,29 @@ it('constructs regex with flags', function() {
   expect(expression._runtimeAst._type).toEqual(ExpressionNodeType.REGEX);
 });
 
-it('does not throw SyntaxError if regex constructor has invalid pattern', function() {
+it('does not throw SyntaxError if regex constructor has invalid pattern', function () {
   var expression = new Expression('regExp("(?<=\\s)" + ".")');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).not.toThrowSyntaxError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('regExp("(?<=\\s)")');
   }).not.toThrowSyntaxError();
 });
 
-it('throws if regex constructor has invalid flags', function() {
+it('throws if regex constructor has invalid flags', function () {
   var expression = new Expression('regExp("a" + "b", "q")');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('regExp("a", "q")');
   }).toThrowRuntimeError();
 });
 
-it('evaluates regex test function', function() {
+it('evaluates regex test function', function () {
   var feature = new MockFeature();
   feature.addProperty('property', 'abc');
 
@@ -2883,19 +2883,19 @@ it('evaluates regex test function', function() {
   expect(expression.evaluate(feature)).toEqual(true);
 });
 
-it('throws if regex test function has invalid arguments', function() {
+it('throws if regex test function has invalid arguments', function () {
   var expression = new Expression('regExp("1").test(1)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('regExp("a").test(regExp("b"))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates regex exec function', function() {
+it('evaluates regex exec function', function () {
   var feature = new MockFeature();
   feature.addProperty('property', 'abc');
   feature.addProperty('Name', 'Building 1');
@@ -2921,19 +2921,19 @@ it('evaluates regex exec function', function() {
   expect(expression.evaluate(feature)).toEqual('1');
 });
 
-it('throws if regex exec function has invalid arguments', function() {
+it('throws if regex exec function has invalid arguments', function () {
   var expression = new Expression('regExp("1").exec(1)');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('regExp("a").exec(regExp("b"))');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates regex match operator', function() {
+it('evaluates regex match operator', function () {
   var feature = new MockFeature();
   feature.addProperty('property', 'abc');
 
@@ -2958,27 +2958,27 @@ it('evaluates regex match operator', function() {
   expect(expression.evaluate(feature)).toEqual(true);
 });
 
-it('throws if regex match operator has invalid arguments', function() {
+it('throws if regex match operator has invalid arguments', function () {
   var feature = new MockFeature();
   feature.addProperty('property', 'abc');
 
   var expression = new Expression('regExp("a") =~ 1');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1 =~ regExp("a")');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1 =~ 1');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('evaluates regex not match operator', function() {
+it('evaluates regex not match operator', function () {
   var feature = new MockFeature();
   feature.addProperty('property', 'abc');
 
@@ -3003,34 +3003,34 @@ it('evaluates regex not match operator', function() {
   expect(expression.evaluate(feature)).toEqual(false);
 });
 
-it('throws if regex not match operator has invalid arguments', function() {
+it('throws if regex not match operator has invalid arguments', function () {
   var expression = new Expression('regExp("a") !~ 1');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1 !~ regExp("a")');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 
   expression = new Expression('1 !~ 1');
-  expect(function() {
+  expect(function () {
     expression.evaluate(undefined);
   }).toThrowRuntimeError();
 });
 
-it('throws if test is not called with a RegExp', function() {
-  expect(function() {
+it('throws if test is not called with a RegExp', function () {
+  expect(function () {
     return new Expression('color("blue").test()');
   }).toThrowRuntimeError();
 
-  expect(function() {
+  expect(function () {
     return new Expression('"blue".test()');
   }).toThrowRuntimeError();
 });
 
-it('evaluates regExp toString function', function() {
+it('evaluates regExp toString function', function () {
   var feature = new MockFeature();
   feature.addProperty('property', 'abc');
 
@@ -3044,17 +3044,17 @@ it('evaluates regExp toString function', function() {
   expect(expression.evaluate(feature)).toEqual('/abc/');
 });
 
-it('throws when using toString on other type', function() {
+it('throws when using toString on other type', function () {
   var feature = new MockFeature();
   feature.addProperty('property', 'abc');
 
   var expression = new Expression('${property}.toString()');
-  expect(function() {
+  expect(function () {
     return expression.evaluate(feature);
   }).toThrowRuntimeError();
 });
 
-it('evaluates array expression', function() {
+it('evaluates array expression', function () {
   var feature = new MockFeature();
   feature.addProperty('property', 'value');
   feature.addProperty('array', [Vector4.UNIT_X, Vector4.UNIT_Y, Vector4.UNIT_Z]);
@@ -3104,7 +3104,7 @@ it('evaluates array expression', function() {
   expect(expression.evaluate(feature)).toEqual(70);
 });
 
-it('evaluates tiles3d_tileset_time expression', function() {
+it('evaluates tiles3d_tileset_time expression', function () {
   var feature = new MockFeature();
   var expression = new Expression('${tiles3d_tileset_time}');
   expect(expression.evaluate(feature)).toEqual(0.0);
@@ -3113,154 +3113,154 @@ it('evaluates tiles3d_tileset_time expression', function() {
   expect(expression.evaluate(undefined)).toEqual(0.0);
 });
 
-it('gets shader function', function() {
+it('gets shader function', function () {
   var expression = new Expression('true');
   var shaderFunction = expression.getShaderFunction('getShow', '', {}, 'bool');
   var expected = 'bool getShow() \n' + '{ \n' + '    return true; \n' + '} \n';
   expect(shaderFunction).toEqual(expected);
 });
 
-it('gets shader expression for variable', function() {
+it('gets shader expression for variable', function () {
   var expression = new Expression('${property}');
   var shaderExpression = expression.getShaderExpression('prefix_', {});
   var expected = 'prefix_property';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for unary not', function() {
+it('gets shader expression for unary not', function () {
   var expression = new Expression('!true');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '!true';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for unary negative', function() {
+it('gets shader expression for unary negative', function () {
   var expression = new Expression('-5.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '-5.0';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for unary positive', function() {
+it('gets shader expression for unary positive', function () {
   var expression = new Expression('+5.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '+5.0';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for converting to literal boolean', function() {
+it('gets shader expression for converting to literal boolean', function () {
   var expression = new Expression('Boolean(1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'bool(1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for converting to literal number', function() {
+it('gets shader expression for converting to literal number', function () {
   var expression = new Expression('Number(true)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'float(true)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary addition', function() {
+it('gets shader expression for binary addition', function () {
   var expression = new Expression('1.0 + 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 + 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary subtraction', function() {
+it('gets shader expression for binary subtraction', function () {
   var expression = new Expression('1.0 - 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 - 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary multiplication', function() {
+it('gets shader expression for binary multiplication', function () {
   var expression = new Expression('1.0 * 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 * 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary division', function() {
+it('gets shader expression for binary division', function () {
   var expression = new Expression('1.0 / 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 / 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary modulus', function() {
+it('gets shader expression for binary modulus', function () {
   var expression = new Expression('1.0 % 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'mod(1.0, 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary equals strict', function() {
+it('gets shader expression for binary equals strict', function () {
   var expression = new Expression('1.0 === 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 == 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary not equals strict', function() {
+it('gets shader expression for binary not equals strict', function () {
   var expression = new Expression('1.0 !== 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 != 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary less than', function() {
+it('gets shader expression for binary less than', function () {
   var expression = new Expression('1.0 < 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 < 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary less than or equals', function() {
+it('gets shader expression for binary less than or equals', function () {
   var expression = new Expression('1.0 <= 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 <= 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary greater than', function() {
+it('gets shader expression for binary greater than', function () {
   var expression = new Expression('1.0 > 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 > 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for binary greater than or equals', function() {
+it('gets shader expression for binary greater than or equals', function () {
   var expression = new Expression('1.0 >= 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(1.0 >= 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for logical and', function() {
+it('gets shader expression for logical and', function () {
   var expression = new Expression('true && false');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(true && false)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for logical or', function() {
+it('gets shader expression for logical or', function () {
   var expression = new Expression('true || false');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(true || false)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for ternary conditional', function() {
+it('gets shader expression for ternary conditional', function () {
   var expression = new Expression('true ? 1.0 : 2.0');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(true ? 1.0 : 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for array indexing', function() {
+it('gets shader expression for array indexing', function () {
   var expression = new Expression('${property[0]}');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'property[0]';
@@ -3272,7 +3272,7 @@ it('gets shader expression for array indexing', function() {
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for array', function() {
+it('gets shader expression for array', function () {
   var expression = new Expression('[1.0, 2.0]');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'vec2(1.0, 2.0)';
@@ -3289,45 +3289,45 @@ it('gets shader expression for array', function() {
   expect(shaderExpression).toEqual(expected);
 });
 
-it('throws when getting shader expression for array of invalid length', function() {
+it('throws when getting shader expression for array of invalid length', function () {
   var expression = new Expression('[]');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 
   expression = new Expression('[1.0]');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 
   expression = new Expression('[1.0, 2.0, 3.0, 4.0, 5.0]');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('gets shader expression for boolean', function() {
+it('gets shader expression for boolean', function () {
   var expression = new Expression('true || false');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '(true || false)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for integer', function() {
+it('gets shader expression for integer', function () {
   var expression = new Expression('1');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '1.0';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for float', function() {
+it('gets shader expression for float', function () {
   var expression = new Expression('1.02');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = '1.02';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for color', function() {
+it('gets shader expression for color', function () {
   var shaderState = {translucent: false};
   var expression = new Expression('color()');
   var shaderExpression = expression.getShaderExpression('', shaderState);
@@ -3427,7 +3427,7 @@ it('gets shader expression for color', function() {
   expect(shaderState.translucent).toBe(true);
 });
 
-it('gets shader expression for color components', function() {
+it('gets shader expression for color components', function () {
   // .r, .g, .b, .a
   var expression = new Expression('color().r + color().g + color().b + color().a');
   var shaderExpression = expression.getShaderExpression('', {});
@@ -3445,7 +3445,7 @@ it('gets shader expression for color components', function() {
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for vector', function() {
+it('gets shader expression for vector', function () {
   var expression = new Expression('vec4(1, 2, 3, 4)');
   var shaderExpression = expression.getShaderExpression('', {});
   expect(shaderExpression).toEqual('vec4(1.0, 2.0, 3.0, 4.0)');
@@ -3463,7 +3463,7 @@ it('gets shader expression for vector', function() {
   expect(shaderExpression).toEqual('vec4(vec3(2.0), 1.0)');
 });
 
-it('gets shader expression for vector components', function() {
+it('gets shader expression for vector components', function () {
   // .x, .y, .z, .w
   var expression = new Expression('vec4(1).x + vec4(1).y + vec4(1).z + vec4(1).w');
   var shaderExpression = expression.getShaderExpression('', {});
@@ -3476,318 +3476,318 @@ it('gets shader expression for vector components', function() {
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for tiles3d_tileset_time', function() {
+it('gets shader expression for tiles3d_tileset_time', function () {
   var expression = new Expression('${tiles3d_tileset_time}');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'u_time';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for abs', function() {
+it('gets shader expression for abs', function () {
   var expression = new Expression('abs(-1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'abs(-1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for cos', function() {
+it('gets shader expression for cos', function () {
   var expression = new Expression('cos(0.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'cos(0.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for sin', function() {
+it('gets shader expression for sin', function () {
   var expression = new Expression('sin(0.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'sin(0.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for tan', function() {
+it('gets shader expression for tan', function () {
   var expression = new Expression('tan(0.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'tan(0.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for acos', function() {
+it('gets shader expression for acos', function () {
   var expression = new Expression('acos(0.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'acos(0.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for asin', function() {
+it('gets shader expression for asin', function () {
   var expression = new Expression('asin(0.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'asin(0.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for atan', function() {
+it('gets shader expression for atan', function () {
   var expression = new Expression('atan(0.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'atan(0.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for sqrt', function() {
+it('gets shader expression for sqrt', function () {
   var expression = new Expression('sqrt(1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'sqrt(1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for sign', function() {
+it('gets shader expression for sign', function () {
   var expression = new Expression('sign(1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'sign(1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for floor', function() {
+it('gets shader expression for floor', function () {
   var expression = new Expression('floor(1.5)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'floor(1.5)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for ceil', function() {
+it('gets shader expression for ceil', function () {
   var expression = new Expression('ceil(1.2)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'ceil(1.2)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for round', function() {
+it('gets shader expression for round', function () {
   var expression = new Expression('round(1.2)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'floor(1.2 + 0.5)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for exp', function() {
+it('gets shader expression for exp', function () {
   var expression = new Expression('exp(1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'exp(1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for exp2', function() {
+it('gets shader expression for exp2', function () {
   var expression = new Expression('exp2(1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'exp2(1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for log', function() {
+it('gets shader expression for log', function () {
   var expression = new Expression('log(1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'log(1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for log2', function() {
+it('gets shader expression for log2', function () {
   var expression = new Expression('log2(1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'log2(1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for fract', function() {
+it('gets shader expression for fract', function () {
   var expression = new Expression('fract(1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'fract(1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for clamp', function() {
+it('gets shader expression for clamp', function () {
   var expression = new Expression('clamp(50.0, 0.0, 100.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'clamp(50.0, 0.0, 100.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for mix', function() {
+it('gets shader expression for mix', function () {
   var expression = new Expression('mix(0.0, 2.0, 0.5)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'mix(0.0, 2.0, 0.5)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for atan2', function() {
+it('gets shader expression for atan2', function () {
   var expression = new Expression('atan2(0.0,1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'atan(0.0, 1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for pow', function() {
+it('gets shader expression for pow', function () {
   var expression = new Expression('pow(2.0,2.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'pow(2.0, 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for min', function() {
+it('gets shader expression for min', function () {
   var expression = new Expression('min(3.0,5.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'min(3.0, 5.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for max', function() {
+it('gets shader expression for max', function () {
   var expression = new Expression('max(3.0,5.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'max(3.0, 5.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for length', function() {
+it('gets shader expression for length', function () {
   var expression = new Expression('length(3.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'length(3.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for normalize', function() {
+it('gets shader expression for normalize', function () {
   var expression = new Expression('normalize(3.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'normalize(3.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for distance', function() {
+it('gets shader expression for distance', function () {
   var expression = new Expression('distance(0.0, 1.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'distance(0.0, 1.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for dot', function() {
+it('gets shader expression for dot', function () {
   var expression = new Expression('dot(1.0, 2.0)');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'dot(1.0, 2.0)';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('gets shader expression for cross', function() {
+it('gets shader expression for cross', function () {
   var expression = new Expression('cross(vec3(1.0, 1.0, 1.0), vec3(2.0, 2.0, 2.0))');
   var shaderExpression = expression.getShaderExpression('', {});
   var expected = 'cross(vec3(1.0, 1.0, 1.0), vec3(2.0, 2.0, 2.0))';
   expect(shaderExpression).toEqual(expected);
 });
 
-it('throws when getting shader expression for regex', function() {
+it('throws when getting shader expression for regex', function () {
   var expression = new Expression('regExp("a").test("abc")');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 
   expression = new Expression('regExp("a(.)", "i").exec("Abc")');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 
   expression = new Expression('regExp("a") =~ "abc"');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 
   expression = new Expression('regExp("a") !~ "abc"');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for member expression with dot', function() {
+it('throws when getting shader expression for member expression with dot', function () {
   var expression = new Expression('${property.name}');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for string member expression with brackets', function() {
+it('throws when getting shader expression for string member expression with brackets', function () {
   var expression = new Expression('${property["name"]}');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for String', function() {
+it('throws when getting shader expression for String', function () {
   var expression = new Expression('String(1.0)');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for toString', function() {
+it('throws when getting shader expression for toString', function () {
   var expression = new Expression('color("red").toString()');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for literal string', function() {
+it('throws when getting shader expression for literal string', function () {
   var expression = new Expression('"name"');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for variable in string', function() {
+it('throws when getting shader expression for variable in string', function () {
   var expression = new Expression('"${property}"');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for literal undefined', function() {
+it('throws when getting shader expression for literal undefined', function () {
   var expression = new Expression('undefined');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for literal null', function() {
+it('throws when getting shader expression for literal null', function () {
   var expression = new Expression('null');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for isNaN', function() {
+it('throws when getting shader expression for isNaN', function () {
   var expression = new Expression('isNaN(1.0)');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for isFinite', function() {
+it('throws when getting shader expression for isFinite', function () {
   var expression = new Expression('isFinite(1.0)');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for isExactClass', function() {
+it('throws when getting shader expression for isExactClass', function () {
   var expression = new Expression('isExactClass("door")');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for isClass', function() {
+it('throws when getting shader expression for isClass', function () {
   var expression = new Expression('isClass("door")');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });
 
-it('throws when getting shader expression for getExactClassName', function() {
+it('throws when getting shader expression for getExactClassName', function () {
   var expression = new Expression('getExactClassName()');
-  expect(function() {
+  expect(function () {
     return expression.getShaderExpression('', {});
   }).toThrowRuntimeError();
 });

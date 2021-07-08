@@ -10,39 +10,50 @@ import {LZOCompression} from '../lib/lzo-compression';
 import {SnappyCompression} from '../lib/snappy-compression';
 import {ZstdCompression} from '../lib/zstd-compression';
 
-// Compression libraries
-// import brotli from 'brotli';
+// Import big dependencies
+
+// import brotli from 'brotli'; - brotli has problems with decompress in browsers
+import brotliDecompress from 'brotli/decompress';
+import lz4js from 'lz4js';
+import lzo from 'lzo';
 import {ZstdCodec} from 'zstd-codec';
 
-// Bundle in the big Zstd-Codec in the worker
-// eslint-disable-next-line import/no-extraneous-dependencies
-
-const COMPRESSIONS = [
-  NoCompression,
-  BrotliCompression,
-  DeflateCompression,
-  GZipCompression,
-  LZ4Compression,
-  LZOCompression,
-  SnappyCompression,
-  ZstdCompression
-];
-
+// Inject large dependencies through Compression constructor options
 const modules = {
+  // brotli has problems with decompress in browsers
+  brotli: {
+    decompress: brotliDecompress,
+    compress: () => {
+      throw new Error('brotli compress');
+    }
+  },
+  lz4js,
+  lzo,
   'zstd-codec': ZstdCodec
-  // brotli
 };
+
+/** @type {Compression[]} */
+const COMPRESSIONS = [
+  new NoCompression({modules}),
+  new BrotliCompression({modules}),
+  new DeflateCompression({modules}),
+  new GZipCompression({modules}),
+  new LZOCompression({modules}),
+  new LZ4Compression({modules}),
+  new SnappyCompression({modules}),
+  new ZstdCompression({modules})
+];
 
 createWorker(async (data, options = {}) => {
   const operation = getOperation(String(options?.operation));
-  const Compression = getCompression(String(options?.compression));
+  const compression = getCompression(String(options?.compression));
 
   // @ts-ignore
   switch (operation) {
     case 'compress':
-      return await new Compression({modules}).compress(data);
+      return await compression.compress(data);
     case 'decompress':
-      return await new Compression({modules}).decompress(data);
+      return await compression.decompress(data);
     default:
       throw new Error('invalid option');
   }
@@ -64,7 +75,7 @@ function getOperation(operation: string): 'compress' | 'decompress' {
 }
 
 function getCompression(name: string) {
-  const Compression = COMPRESSIONS.find(compression_ => name === compression_.name);
+  const Compression = COMPRESSIONS.find((compression_) => name === compression_.name);
   if (!Compression) {
     throw new Error(`@loaders.gl/compression: Unsupported compression ${name}`);
   }

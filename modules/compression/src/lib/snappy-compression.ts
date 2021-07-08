@@ -18,18 +18,6 @@ export class SnappyCompression extends Compression {
     this.options = options || {};
   }
 
-  /*
-  async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // Accepts arrayBuffer - https://github.com/zhipeng-jia/snappyjs#usage
-    return await compress(input);
-  }
-
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // Accepts arrayBuffer - https://github.com/zhipeng-jia/snappyjs#usage
-    return await uncompress(input);
-  }
-  */
-
   compressSync(input: ArrayBuffer): ArrayBuffer {
     // Accepts arrayBuffer - https://github.com/zhipeng-jia/snappyjs#usage
     return compress(input);

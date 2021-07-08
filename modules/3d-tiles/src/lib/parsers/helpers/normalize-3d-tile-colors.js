@@ -15,7 +15,7 @@ export function normalize3DTileColorAttribute(tile, colors, batchTable) {
       const batchId = batchIds[i];
       // TODO figure out what is `dimensions` used for
       const dimensions = batchTable.getProperty(batchId, 'dimensions');
-      const color = dimensions.map(d => d * 255);
+      const color = dimensions.map((d) => d * 255);
       colorArray[i * 3] = color[0];
       colorArray[i * 3 + 1] = color[1];
       colorArray[i * 3 + 2] = color[2];

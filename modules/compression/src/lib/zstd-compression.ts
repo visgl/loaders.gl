@@ -24,14 +24,14 @@ export class ZstdCompression extends Compression {
     super(options);
     this.options = options;
 
-    const ZstdCodec = this.options?.modules?.['zstd-codec'];
+    ZstdCodec = this.options?.modules?.['zstd-codec'];
     if (!ZstdCodec) {
       throw new Error(this.name);
     }
   }
 
   async preload(): Promise<void> {
-    zstd = zstd || await new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd)));
+    zstd = zstd || (await new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd))));
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {

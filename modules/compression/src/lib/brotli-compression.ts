@@ -93,5 +93,4 @@ export class BrotliCompression extends Compression {
     // @ts-ignore brotli types state that only Buffers are accepted...
     return brotli.decompress(inputArray, brotliOptions);
   }
-
 }

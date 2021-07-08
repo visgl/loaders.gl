@@ -34,7 +34,7 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/worker.ts --output ./dist/worker.ts --env.dev --config ../../scripts/webpack/worker.js"
+    "build-worker": "webpack --entry ./src/workers/worker.ts --output ./dist/compression-worker.js --env.dev --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
