@@ -36,7 +36,7 @@ loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</
 </p>
 
 <p align="center">
-<i>If you find loaders.gl useful, please consider giving a github star. The project has almost 300K monthly downloads and only 300 stars.</i>
+<i>If you find loaders.gl useful, please consider giving a github star. The project has almost 300K monthly downloads but only 300 stars.</i>
 </p>
 
 ## Overview
