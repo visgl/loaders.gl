@@ -84,7 +84,6 @@ function getDistanceFromLatLon(observer: number[], center: number[]) {
 
 export function getI3ScreenSize(tile, frameState) {
   const viewport = frameState.viewport;
-  // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
   const mbsLat = tile.header.mbs[1];
   const mbsLon = tile.header.mbs[0];
   const mbsZ = tile.header.mbs[2];
@@ -99,7 +98,10 @@ export function getI3ScreenSize(tile, frameState) {
   if (d <= 0.0) {
     return 0.5 * fltMax;
   }
-  // Hack: 300 is a Magic number to get the correct LoD
+  // https://stackoverflow.com/questions/21648630/radius-of-projected-sphere-in-screen-space
+  // There is a formula there to calculate projected radius:
+  // return 1.0 / Math.tan(fov) * r / Math.sqrt(d * d - r * r); // Right
+  // Hack: 300 is a Magic number to get the correct LoD. Possibly, d and r are calculated in a wrong way.
   const screenSizeFactor =
     ((getTanOfHalfVFAngle(frameState) * mbsRNormalized) / Math.sqrt(d)) * 300;
   return screenSizeFactor;
