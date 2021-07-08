@@ -1,3 +1,4 @@
+import type {TypedArray} from '@loaders.gl/schema';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
