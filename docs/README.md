@@ -11,9 +11,9 @@
 </p>
 <br/>
 <p align="center">
+  <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />
   <img src="https://flat.badgen.net/badge/icon/Typed?icon=typescript&label&labelColor=blue&color=555555)" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" />
-  <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />
   <img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" />
   <!-- <img src="https://coveralls.io/repos/github/visgl/loaders.gl/badge.svg?" /> -->
   <br />
