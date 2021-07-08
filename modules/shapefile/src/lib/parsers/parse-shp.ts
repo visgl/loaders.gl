@@ -1,4 +1,4 @@
-import {BinaryGeometryData} from '@loaders.gl/gis';
+import type {BinaryGeometry} from '@loaders.gl/schema';
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 import {parseSHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
@@ -53,7 +53,7 @@ class SHPParser {
   }
 }
 
-export function parseSHP(arrayBuffer: ArrayBuffer, options): BinaryGeometryData[] {
+export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeometry[] {
   const shpParser = new SHPParser(options);
   shpParser.write(arrayBuffer);
   shpParser.end();
@@ -61,16 +61,16 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options): BinaryGeometryData[
   // @ts-ignore
   return shpParser.result;
 }
+
 /**
- *
  * @param asyncIterator
  * @param options
  * @returns
  */
 export async function* parseSHPInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: LoaderOptions
-): AsyncIterable<BinaryGeometryData | object> {
+  options?: object
+): AsyncIterable<BinaryGeometry | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
@@ -102,12 +102,17 @@ export async function* parseSHPInBatches(
  * BinaryChunkReader.
  *
  * @param  state Current state
- * @param  result  An object to hold result data
+ * @param  result An object to hold result data
  * @param  binaryReader
  * @return State at end of current parsing
  */
 /* eslint-disable complexity, max-depth */
-function parseState(state: number, result, binaryReader: BinaryChunkReader, options) {
+function parseState(
+  state: number,
+  result: {[key: string]: any},
+  binaryReader: BinaryChunkReader,
+  options: {shp?: any}
+): number {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {

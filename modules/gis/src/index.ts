@@ -1,5 +1,4 @@
-// Types
-export type {BinaryGeometryData, BinaryAttribute} from './types';
+// Types from `@loaders.gl/schema`
 
 // Functions
 export {geojsonToBinary} from './lib/geojson-to-binary';

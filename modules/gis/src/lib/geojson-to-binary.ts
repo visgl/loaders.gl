@@ -1,12 +1,20 @@
-// Convert GeoJSON features to flat binary arrays
-// @ts-nocheck
+import {Feature, GeoJsonProperties} from '@loaders.gl/schema';
+import type {BinaryFeatures} from '@loaders.gl/schema';
 
-import type {BinaryFeaturesData} from '../types';
+export type GeojsonToBinaryOptions = {
+  coordLength?: number;
+  numericPropKeys?: string[];
+  PositionDataType?: Function;
+};
 
-export function geojsonToBinary(features: object[], options: object = {}): BinaryFeaturesData {
+/** Convert GeoJSON features to flat binary arrays */
+export function geojsonToBinary(
+  features: Feature[],
+  options: GeojsonToBinaryOptions = {}
+): BinaryFeatures {
   const firstPassData = firstPass(features);
   return secondPass(features, firstPassData, {
-    coordLength: options.coordLength || firstPassData.coordLength || 2,
+    coordLength: options.coordLength || firstPassData.coordLength,
     numericPropKeys: options.numericPropKeys || firstPassData.numericPropKeys,
     PositionDataType: options.PositionDataType || Float32Array
   });
@@ -17,11 +25,28 @@ export const TEST_EXPORTS = {
   secondPass
 };
 
-// Initial scan over GeoJSON features
-// Counts number of coordinates of each geometry type and keeps track of the max coordinate
-// dimensions
+type FirstPassData = {
+  coordLength: number;
+  numericPropKeys: string[];
+
+  pointPositionsCount: number;
+  pointFeaturesCount: number;
+  linePositionsCount: number;
+  linePathsCount: number;
+  lineFeaturesCount: number;
+  polygonPositionsCount: number;
+  polygonObjectsCount: number;
+  polygonRingsCount: number;
+  polygonFeaturesCount: number;
+};
+
+/**
+ *  Initial scan over GeoJSON features
+ *  Counts number of coordinates of each geometry type and
+ *  keeps track of the max coordinate dimensions
+ */
 // eslint-disable-next-line complexity, max-statements
-function firstPass(features) {
+function firstPass(features: Feature[]): FirstPassData {
   // Counts the number of _positions_, so [x, y, z] counts as one
   let pointPositionsCount = 0;
   let pointFeaturesCount = 0;
@@ -32,7 +57,7 @@ function firstPass(features) {
   let polygonObjectsCount = 0;
   let polygonRingsCount = 0;
   let polygonFeaturesCount = 0;
-  const coordLengths = new Set();
+  const coordLengths = new Set<number>();
   const numericPropKeys = {};
 
   for (const feature of features) {
@@ -114,25 +139,33 @@ function firstPass(features) {
   }
 
   return {
+    coordLength: coordLengths.size > 0 ? Math.max(...coordLengths) : 2,
+
     pointPositionsCount,
     pointFeaturesCount,
     linePositionsCount,
     linePathsCount,
     lineFeaturesCount,
-    coordLength: coordLengths.size > 0 && Math.max(...coordLengths),
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
     polygonFeaturesCount,
+
     // Array of keys whose values are always numeric
     numericPropKeys: Object.keys(numericPropKeys).filter((k) => numericPropKeys[k])
   };
 }
 
-// Second scan over GeoJSON features
-// Fills coordinates into pre-allocated typed arrays
+/**
+ * Second scan over GeoJSON features
+ * Fills coordinates into pre-allocated typed arrays
+ */
 // eslint-disable-next-line complexity
-function secondPass(features, firstPassData = {}, options = {}) {
+function secondPass(
+  features,
+  firstPassData: FirstPassData,
+  options: Required<GeojsonToBinaryOptions>
+) {
   const {
     pointPositionsCount,
     pointFeaturesCount,
@@ -147,6 +180,7 @@ function secondPass(features, firstPassData = {}, options = {}) {
   const {coordLength, numericPropKeys, PositionDataType = Float32Array} = options;
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points = {
+    // @ts-ignore Typescript doesn't like dynamic constructors
     positions: new PositionDataType(pointPositionsCount * coordLength),
     globalFeatureIds: new GlobalFeatureIdsDataType(pointPositionsCount),
     featureIds:
@@ -154,23 +188,26 @@ function secondPass(features, firstPassData = {}, options = {}) {
         ? new Uint32Array(pointPositionsCount)
         : new Uint16Array(pointPositionsCount),
     numericProps: {},
-    properties: []
+    properties: Array<any>()
   };
   const lines = {
+    // @ts-ignore Typescript doesn't like dynamic constructors
+    positions: new PositionDataType(linePositionsCount * coordLength),
     pathIndices:
       linePositionsCount > 65535
         ? new Uint32Array(linePathsCount + 1)
         : new Uint16Array(linePathsCount + 1),
-    positions: new PositionDataType(linePositionsCount * coordLength),
     globalFeatureIds: new GlobalFeatureIdsDataType(linePositionsCount),
     featureIds:
       lineFeaturesCount > 65535
         ? new Uint32Array(linePositionsCount)
         : new Uint16Array(linePositionsCount),
     numericProps: {},
-    properties: []
+    properties: Array<any>()
   };
   const polygons = {
+    // @ts-ignore Typescript doesn't like dynamic constructors
+    positions: new PositionDataType(polygonPositionsCount * coordLength),
     polygonIndices:
       polygonPositionsCount > 65535
         ? new Uint32Array(polygonObjectsCount + 1)
@@ -179,19 +216,18 @@ function secondPass(features, firstPassData = {}, options = {}) {
       polygonPositionsCount > 65535
         ? new Uint32Array(polygonRingsCount + 1)
         : new Uint16Array(polygonRingsCount + 1),
-    positions: new PositionDataType(polygonPositionsCount * coordLength),
     globalFeatureIds: new GlobalFeatureIdsDataType(polygonPositionsCount),
     featureIds:
       polygonFeaturesCount > 65535
         ? new Uint32Array(polygonPositionsCount)
         : new Uint16Array(polygonPositionsCount),
     numericProps: {},
-    properties: []
+    properties: Array<any>()
   };
 
   // Instantiate numeric properties arrays; one value per vertex
   for (const object of [points, lines, polygons]) {
-    for (const propName of numericPropKeys) {
+    for (const propName of numericPropKeys || []) {
       // If property has been numeric in all previous features in which the property existed, check
       // if numeric in this feature
       object.numericProps[propName] = new Float32Array(object.positions.length / coordLength);
@@ -218,7 +254,7 @@ function secondPass(features, firstPassData = {}, options = {}) {
 
   for (const feature of features) {
     const geometry = feature.geometry;
-    const properties = feature.properties || {};
+    const properties: GeoJsonProperties = feature.properties || {};
 
     switch (geometry.type) {
       case 'Point':
@@ -262,7 +298,7 @@ function secondPass(features, firstPassData = {}, options = {}) {
   return makeAccessorObjects(points, lines, polygons, coordLength);
 }
 
-// Fills Point coordinates into points object of arrays
+/** Fills Point coordinates into points object of arrays */
 function handlePoint(coords, points, indexMap, coordLength, properties) {
   points.positions.set(coords, indexMap.pointPosition * coordLength);
   points.globalFeatureIds[indexMap.pointPosition] = indexMap.feature;
@@ -272,14 +308,14 @@ function handlePoint(coords, points, indexMap, coordLength, properties) {
   indexMap.pointPosition++;
 }
 
-// Fills MultiPoint coordinates into points object of arrays
+/** Fills MultiPoint coordinates into points object of arrays */
 function handleMultiPoint(coords, points, indexMap, coordLength, properties) {
   for (const point of coords) {
     handlePoint(point, points, indexMap, coordLength, properties);
   }
 }
 
-// Fills LineString coordinates into lines object of arrays
+/** Fills LineString coordinates into lines object of arrays */
 function handleLineString(coords, lines, indexMap, coordLength, properties) {
   lines.pathIndices[indexMap.linePath] = indexMap.linePosition;
   indexMap.linePath++;
@@ -300,14 +336,14 @@ function handleLineString(coords, lines, indexMap, coordLength, properties) {
   indexMap.linePosition += nPositions;
 }
 
-// Fills MultiLineString coordinates into lines object of arrays
+/** Fills MultiLineString coordinates into lines object of arrays */
 function handleMultiLineString(coords, lines, indexMap, coordLength, properties) {
   for (const line of coords) {
     handleLineString(line, lines, indexMap, coordLength, properties);
   }
 }
 
-// Fills Polygon coordinates into polygons object of arrays
+/** Fills Polygon coordinates into polygons object of arrays */
 function handlePolygon(coords, polygons, indexMap, coordLength, properties) {
   polygons.polygonIndices[indexMap.polygonObject] = indexMap.polygonPosition;
   indexMap.polygonObject++;
@@ -333,22 +369,23 @@ function handlePolygon(coords, polygons, indexMap, coordLength, properties) {
   }
 }
 
-// Fills MultiPolygon coordinates into polygons object of arrays
+/** Fills MultiPolygon coordinates into polygons object of arrays */
 function handleMultiPolygon(coords, polygons, indexMap, coordLength, properties) {
   for (const polygon of coords) {
     handlePolygon(polygon, polygons, indexMap, coordLength, properties);
   }
 }
 
-// Wrap each array in an accessor object with value and size keys
-function makeAccessorObjects(points, lines, polygons, coordLength) {
+/** Wrap each array in an accessor object with value and size keys */
+function makeAccessorObjects(points, lines, polygons, coordLength): BinaryFeatures {
   const returnObj = {
     points: {
       positions: {value: points.positions, size: coordLength},
       globalFeatureIds: {value: points.globalFeatureIds, size: 1},
       featureIds: {value: points.featureIds, size: 1},
       numericProps: points.numericProps,
-      properties: points.properties
+      properties: points.properties,
+      type: 'Point'
     },
     lines: {
       pathIndices: {value: lines.pathIndices, size: 1},
@@ -356,7 +393,8 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
       globalFeatureIds: {value: lines.globalFeatureIds, size: 1},
       featureIds: {value: lines.featureIds, size: 1},
       numericProps: lines.numericProps,
-      properties: lines.properties
+      properties: lines.properties,
+      type: 'LineString'
     },
     polygons: {
       polygonIndices: {value: polygons.polygonIndices, size: 1},
@@ -365,7 +403,8 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
       featureIds: {value: polygons.featureIds, size: 1},
       numericProps: polygons.numericProps,
-      properties: polygons.properties
+      properties: polygons.properties,
+      type: 'Polygon'
     }
   };
 
@@ -377,10 +416,11 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
       };
     }
   }
-  return returnObj;
+
+  return returnObj as unknown as BinaryFeatures;
 }
 
-// Add numeric properties to object
+/** Add numeric properties to object */
 function fillNumericProperties(object, properties, index, length) {
   for (const numericPropName in object.numericProps) {
     if (numericPropName in properties) {
@@ -392,8 +432,8 @@ function fillNumericProperties(object, properties, index, length) {
   }
 }
 
-// Keep string properties in object
-function keepStringProperties(properties, numericKeys) {
+/** Keep string properties in object */
+function keepStringProperties(properties, numericKeys: string[]): GeoJsonProperties {
   const props = {};
   for (const key in properties) {
     if (!numericKeys.includes(key)) {
@@ -403,8 +443,8 @@ function keepStringProperties(properties, numericKeys) {
   return props;
 }
 
-// coords is expected to be a list of arrays, each with length 2-3
-function fillCoords(array, coords, startVertex, coordLength) {
+/** @param coords is expected to be a list of arrays, each with length 2-3 */
+function fillCoords(array, coords, startVertex, coordLength): void {
   let index = startVertex * coordLength;
   for (const coord of coords) {
     array.set(coord, index);
@@ -412,10 +452,11 @@ function fillCoords(array, coords, startVertex, coordLength) {
   }
 }
 
-function flatten(arrays) {
+// TODO - how does this work? Different `coordinates` have different nesting
+function flatten(arrays): number[][] {
   return [].concat(...arrays);
 }
 
-function isNumeric(x) {
+function isNumeric(x: any): boolean {
   return Number.isFinite(x);
 }

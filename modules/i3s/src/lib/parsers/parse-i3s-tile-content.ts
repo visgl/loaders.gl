@@ -301,10 +301,15 @@ function normalizeAttributes(
       if (byteOffset + count * valuesPerElement > arrayBuffer.byteLength) {
         break;
       }
-
-      const TypedArrayType = TYPE_ARRAY_MAP[valueType];
       const buffer = arrayBuffer.slice(byteOffset);
-      const value = new TypedArrayType(buffer, 0, count * valuesPerElement);
+      let value: number[] | TypedArray = [];
+
+      if (valueType === 'UInt64') {
+        value = parseUint64Values(buffer, count * valuesPerElement, SIZEOF[valueType]);
+      } else {
+        const TypedArrayType = TYPE_ARRAY_MAP[valueType];
+        value = new TypedArrayType(buffer, 0, count * valuesPerElement);
+      }
 
       attributes[attribute] = {
         value,
@@ -328,6 +333,36 @@ function normalizeAttributes(
   }
 
   return {attributes, byteOffset};
+}
+
+/**
+ * Parse buffer to return array of uint64 values
+ *
+ * @param buffer
+ * @param elementsCount
+ * @returns 64-bit array of values until precision is lost after Number.MAX_SAFE_INTEGER
+ */
+function parseUint64Values(
+  buffer: ArrayBuffer,
+  elementsCount: number,
+  attributeSize: number
+): number[] {
+  const values: number[] = [];
+  const dataView = new DataView(buffer);
+  let offset = 0;
+
+  for (let index = 0; index < elementsCount; index++) {
+    // split 64-bit number into two 32-bit parts
+    const left = dataView.getUint32(offset, true);
+    const right = dataView.getUint32(offset + 4, true);
+    // combine the two 32-bit values
+    const value = left + 2 ** 32 * right;
+
+    values.push(value);
+    offset += attributeSize;
+  }
+
+  return values;
 }
 
 function parsePositions(attribute, tile) {

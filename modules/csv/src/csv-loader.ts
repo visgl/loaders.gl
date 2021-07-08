@@ -41,7 +41,7 @@ export type CSVLoaderOptions = LoaderOptions & {
 
 const DEFAULT_CSV_LOADER_OPTIONS = {
   csv: {
-    shape: 'array-row-table',
+    shape: 'object-row-table',
     optimizeMemoryUsage: false,
     // CSV options
     header: 'auto',
@@ -52,7 +52,7 @@ const DEFAULT_CSV_LOADER_OPTIONS = {
     escapeChar: '"',
     dynamicTyping: true,
     comments: false,
-    skipEmptyLines: false,
+    skipEmptyLines: true,
     // transform: null?
     delimitersToGuess: [',', '\t', '|', ';']
     // fastMode: auto

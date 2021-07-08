@@ -1,32 +1,6 @@
+import type {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
+
 const LITTLE_ENDIAN = true;
-
-type SHPPoint = {
-  positions: {
-    value: any;
-    size: number;
-  };
-  type: string;
-};
-
-type SHPPoly = {
-  positions: {
-    value: any;
-    size: number;
-  };
-  pathIndices?: {
-    value: Int32Array;
-    size: number;
-  };
-  type: string;
-  primitivePolygonIndices?: {
-    value: Int32Array;
-    size: number;
-  };
-  polygonIndices?: {
-    value: Uint32Array;
-    size: number;
-  };
-};
 
 /**
  * Parse individual record
@@ -35,7 +9,7 @@ type SHPPoly = {
  * @return Binary Geometry Object
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view: DataView, options?: {shp?: any}): SHPPoint | null {
+export function parseRecord(view: DataView, options?: {shp?: any}): BinaryGeometry | null {
   const {_maxDimensions} = options?.shp || {};
 
   let offset = 0;
@@ -95,7 +69,7 @@ export function parseRecord(view: DataView, options?: {shp?: any}): SHPPoint | n
  *
  * @return null
  */
-function parseNull() {
+function parseNull(): null {
   return null;
 }
 
@@ -105,9 +79,8 @@ function parseNull() {
  * @param view Geometry data
  * @param offset Offset in view
  * @param dim Dimension size
- * @return Binary geometry object
  */
-function parsePoint(view: DataView, offset: number, dim: number): SHPPoint {
+function parsePoint(view: DataView, offset: number, dim: number): BinaryGeometry {
   let positions: Float64Array;
   [positions, offset] = parsePositions(view, offset, 1, dim);
 
@@ -125,7 +98,7 @@ function parsePoint(view: DataView, offset: number, dim: number): SHPPoint {
  * @param dim Input dimension
  * @return Binary geometry object
  */
-function parseMultiPoint(view: DataView, offset: number, dim: number): SHPPoint {
+function parseMultiPoint(view: DataView, offset: number, dim: number): BinaryGeometry {
   // skip parsing box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
 
@@ -169,7 +142,12 @@ function parseMultiPoint(view: DataView, offset: number, dim: number): SHPPoint 
  * @return Binary geometry object
  */
 // eslint-disable-next-line max-statements
-function parsePoly(view: DataView, offset: number, dim: number, type: string): SHPPoly {
+function parsePoly(
+  view: DataView,
+  offset: number,
+  dim: number,
+  type: BinaryGeometryType
+): BinaryGeometry {
   // skip parsing bounding box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
 
@@ -211,9 +189,9 @@ function parsePoly(view: DataView, offset: number, dim: number, type: string): S
   // parsePoly only accepts type = LineString or Polygon
   if (type === 'LineString') {
     return {
+      type,
       positions: {value: positions, size: dim},
-      pathIndices: {value: ringIndices, size: 1},
-      type
+      pathIndices: {value: ringIndices, size: 1}
     };
   }
 
@@ -237,14 +215,14 @@ function parsePoly(view: DataView, offset: number, dim: number, type: string): S
   polygonIndices.push(nPoints);
 
   return {
+    type,
     positions: {value: positions, size: dim},
     primitivePolygonIndices: {value: ringIndices, size: 1},
     // TODO: Dynamically choose Uint32Array over Uint16Array only when
     // necessary. I believe the implementation requires nPoints to be the
     // largest value in the array, so you should be able to use Uint32Array only
     // when nPoints > 65535.
-    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1},
-    type
+    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1}
   };
 }
 

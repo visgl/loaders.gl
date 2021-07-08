@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/terrain",
-  "version": "3.0.0-beta.8",
+  "version": "3.0.0-beta.9",
   "description": "Framework-independent loader for terrain raster formats",
   "license": "MIT",
   "publishConfig": {
@@ -35,7 +35,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.0.0-beta.8",
+    "@loaders.gl/loader-utils": "3.0.0-beta.9",
+    "@loaders.gl/schema": "3.0.0-beta.9",
     "@mapbox/martini": "^0.2.0"
   }
 }

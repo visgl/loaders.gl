@@ -9,7 +9,7 @@
 // Limitations: Compressed binary files are not supported.
 
 import {Schema, Field, Float32, Uint8, FixedSizeList} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 
 type BoundingBox = [[number, number, number], [number, number, number]];
 

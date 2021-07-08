@@ -21,7 +21,7 @@ test('CSVLoader#loader conformance', (t) => {
 test('CSVLoader#load(states.csv)', async (t) => {
   const response = await fetchFile(CSV_STATES_URL);
   const rows = await load(response, CSVLoader);
-  t.equal(rows.length, 111);
+  t.equal(rows.length, 110);
   t.end();
 });
 
@@ -169,7 +169,7 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
 });
 
 test('CSVLoader#loadInBatches(sample.csv, array-rows)', async (t) => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader);
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {shape: 'array-row-table'});
 
   let batchCount = 0;
   for await (const batch of iterator) {
@@ -202,7 +202,10 @@ test('CSVLoader#loadInBatches(sample.csv, object-rows)', async (t) => {
 
 test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
   let iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
-    csv: {header: false}
+    csv: {
+      shape: 'array-row-table',
+      header: false
+    }
   });
 
   let batchCount = 0;

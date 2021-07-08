@@ -1,5 +1,7 @@
-export default {
+/** @type {import('@loaders.gl/schema').BinaryFeatures}  */
+const EMPTY_BINARY_DATA = {
   points: {
+    type: 'Point',
     positions: {value: new Float32Array(), size: -Infinity},
     globalFeatureIds: {value: new Uint16Array(), size: 1},
     featureIds: {value: new Uint16Array(), size: 1},
@@ -7,6 +9,7 @@ export default {
     properties: []
   },
   lines: {
+    type: 'LineString',
     pathIndices: {value: new Uint16Array(1), size: 1},
     positions: {value: new Float32Array(), size: -Infinity},
     globalFeatureIds: {value: new Uint16Array(), size: 1},
@@ -15,6 +18,7 @@ export default {
     properties: []
   },
   polygons: {
+    type: 'Polygon',
     polygonIndices: {value: new Uint16Array(1), size: 1},
     primitivePolygonIndices: {value: new Uint16Array(1), size: 1},
     positions: {value: new Float32Array(), size: -Infinity},
@@ -24,3 +28,5 @@ export default {
     properties: []
   }
 };
+
+export default EMPTY_BINARY_DATA;

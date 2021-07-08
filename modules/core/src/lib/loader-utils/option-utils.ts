@@ -2,7 +2,7 @@ import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-util
 import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
-import {NullLog} from './loggers';
+import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 /**
  * Global state for loaders.gl. Stored on `global.loaders._state`
@@ -101,53 +101,52 @@ export function getFetchFunction(options?: LoaderOptions, context?: LoaderContex
  * Warn for unsupported options
  * @param options
  * @param loaders
- * @param log
  */
-function validateOptions(
-  options: LoaderOptions,
-  loaders,
-  // eslint-disable-next-line
-  log = console
-) {
+function validateOptions(options: LoaderOptions, loaders: Loader[]) {
   // Check top level options
-  validateOptionsObject(
-    options,
-    null,
-    log,
-    DEFAULT_LOADER_OPTIONS,
-    REMOVED_LOADER_OPTIONS,
-    loaders
-  );
+  validateOptionsObject(options, null, DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS, loaders);
   for (const loader of loaders) {
     // Get the scoped, loader specific options from the user supplied options
     const idOptions = (options && options[loader.id]) || {};
 
     // Get scoped, loader specific default and deprecated options from the selected loader
     const loaderOptions = (loader.options && loader.options[loader.id]) || {};
-    const deprecatedOptions = (loader.defaultOptions && loader.defaultOptions[loader.id]) || {};
+    const deprecatedOptions =
+      (loader.deprecatedOptions && loader.deprecatedOptions[loader.id]) || {};
 
     // Validate loader specific options
-    validateOptionsObject(idOptions, loader.id, log, loaderOptions, deprecatedOptions, loaders);
+    validateOptionsObject(idOptions, loader.id, loaderOptions, deprecatedOptions, loaders);
   }
 }
 
-// eslint-disable-next-line max-params
-function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptions, loaders) {
+// eslint-disable-next-line max-params, complexity
+function validateOptionsObject(
+  options,
+  id: string | null,
+  defaultOptions,
+  deprecatedOptions,
+  loaders: Loader[]
+) {
   const loaderName = id || 'Top level';
   const prefix = id ? `${id}.` : '';
 
   for (const key in options) {
     // If top level option value is an object it could options for a loader, so ignore
     const isSubOptions = !id && isObject(options[key]);
-    if (!(key in defaultOptions) && !(key === 'baseUri' && !id)) {
+    const isBaseUriOption = key === 'baseUri' && !id;
+    const isWorkerUrlOption = key === 'workerUrl' && id;
+    // <loader>.workerUrl requires special handling as it is now auto-generated and no longer specified as a default option.
+    if (!(key in defaultOptions) && !isBaseUriOption && !isWorkerUrlOption) {
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
-        log.warn(
+        probeLog.warn(
           `${loaderName} loader option \'${prefix}${key}\' no longer supported, use \'${deprecatedOptions[key]}\'`
-        );
+        )();
       } else if (!isSubOptions) {
         const suggestion = findSimilarOption(key, loaders);
-        log.warn(`${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`);
+        probeLog.warn(
+          `${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`
+        )();
       }
     }
   }

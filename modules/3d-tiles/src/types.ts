@@ -34,3 +34,18 @@ export type GLTFHeader = {
   featureTableBinaryByteLength: number;
   featureTableJsonByteLength: number;
 };
+
+export type Node3D = {
+  boundingVolume: BoundingVolume;
+  children: any;
+  geometricError: number;
+  content?: {
+    uri: string;
+    boundingVolume: BoundingVolume;
+  };
+};
+
+type BoundingVolume = {
+  box?: number[];
+  sphere?: number[];
+};

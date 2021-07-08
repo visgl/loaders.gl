@@ -29,7 +29,7 @@ import type {
   DracoOctahedronTransform
 } from '../types';
 
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 import {makeSchemaFromAttributes} from './utils/schema-attribute-utils';
 
 /**

@@ -29,5 +29,5 @@ export {GLBWriter} from './glb-writer';
 // glTF Data Access Helper Class
 export {default as GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
-export {Mesh} from './lib/types/gltf-json-schema';
+export type {Mesh} from './lib/types/gltf-json-schema';
 export type {GLTFObject} from './lib/types/gltf-types';
