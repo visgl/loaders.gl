@@ -11,7 +11,6 @@
 </p>
 <br/>
 <p align="center">
-  <img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" />
   <img src="https://flat.badgen.net/badge/icon/Typed?icon=typescript&label&labelColor=blue&color=555555)" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" />
   <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />
@@ -25,12 +24,12 @@ loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</
 </p>
 
 <p align="center">
-  These docs are for loaders.gl v3.0. 
+  These docs are for <img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" />. 
   <br />
   Docs for older versions are available on github: 
   <a href="https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md">
     <b>v2.3</b>
-  </a>,
+  </a>
   <a href="https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md">
     <b>v1.3</b>
   </a>
