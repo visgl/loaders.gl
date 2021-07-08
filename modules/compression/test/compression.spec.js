@@ -236,7 +236,7 @@ test.skip('zstd#worker', async (t) => {
   t.equal(binaryData.byteLength, 100000, 'Length correct');
 
   const compressedData = await processOnWorker(CompressionWorker, binaryData.slice(0), {
-    compression: 'zstandard',
+    compression: 'zstd',
     operation: 'compress',
     _workerType: 'test'
   });
@@ -244,7 +244,7 @@ test.skip('zstd#worker', async (t) => {
   t.equal(compressedData.byteLength, 11936, 'Length correct');
 
   const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
-    compression: 'zstandard',
+    compression: 'zstd',
     operation: 'decompress',
     _workerType: 'test'
   });

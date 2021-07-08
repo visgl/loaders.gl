@@ -148,20 +148,26 @@
           "title": "@loaders.gl/compression",
           "entries": [
             {"entry": "modules/compression/docs"},
-            {"entry": "modules/compression/docs/api-reference/zlib-deflate-transform"},
-            {"entry": "modules/compression/docs/api-reference/zlib-inflate-transform"},
-            {"entry": "modules/compression/docs/api-reference/lz4-deflate-transform"},
-            {"entry": "modules/compression/docs/api-reference/lz4-inflate-transform"}
+            {"entry": "modules/compression/docs/api-reference/compression"},
+            {"entry": "modules/compression/docs/api-reference/brotli-compression"},
+            {"entry": "modules/compression/docs/api-reference/deflate-compression"},
+            {"entry": "modules/compression/docs/api-reference/gzip-compression"},
+            {"entry": "modules/compression/docs/api-reference/lz4-compression"},
+            {"entry": "modules/compression/docs/api-reference/lzo-compression"},
+            {"entry": "modules/compression/docs/api-reference/no-compression"},
+            {"entry": "modules/compression/docs/api-reference/snappy-compression"},
+            {"entry": "modules/compression/docs/api-reference/zstd-compression"}
           ]
         },
         {
           "title": "@loaders.gl/crypto",
           "entries": [
             {"entry": "modules/crypto/docs"},
-            {"entry": "modules/crypto/docs/api-reference/crc32-hash-transform"},
-            {"entry": "modules/crypto/docs/api-reference/crc32c-hash-transform"},
-            {"entry": "modules/crypto/docs/api-reference/crypto-hash-transform"},
-            {"entry": "modules/crypto/docs/api-reference/md5-hash-transform"}
+            {"entry": "modules/crypto/docs/api-reference/hash"},
+            {"entry": "modules/crypto/docs/api-reference/crc32-hash"},
+            {"entry": "modules/crypto/docs/api-reference/crc32c-hash"},
+            {"entry": "modules/crypto/docs/api-reference/md5-hash"},
+            {"entry": "modules/crypto/docs/api-reference/sha256-hash"}
           ]
         },
         {

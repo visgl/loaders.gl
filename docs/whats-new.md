@@ -39,11 +39,13 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
 
 **@loaders.gl/compression**
 
-- The new `ZlibWorker`, `LZ4Worker` and `ZstdWorker` exports enable compression and decompression of data to be done on worker threads using the new `processOnWorker()` function.
+- New compressions: `brotli`, `snappy`, `LZO` (limited).
+- New `CompressionWorker` exports enable compression and decompression on worker threads using the new `processOnWorker()` function.
+- Improved API (see upgrade guide)
 
 **@loaders.gl/crypto**
 
-- The new `CryptoWorker` export enables CRC32, CRC32c and MD5 hashing to be done on worker threads using the new `processOnWorker()` function.
+- New `CryptoWorker` export enables CRC32, CRC32c and MD5 hashing on worker threads using the new `processOnWorker()` function.
 
 **@loaders.gl/csv**
 

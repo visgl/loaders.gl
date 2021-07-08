@@ -1,15 +1,15 @@
 # MD5Hash
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-## Static Methods
+Calculates the MD5 hash.
 
-#### `MD5Hash.hash(data: ArrayBuffer, options?: object): Promise<string>`
+## Interface
 
-Calculates the MD5 hash of a byte array.
+Implements the [`Hash](./hash) API.
 
-## Remarks
+## Methods
 
-- This transform does not yet support streaming hashing. Only the static method is defined.
+### `constructor(options?: object)`

@@ -1,11 +1,15 @@
 # SnappyCompression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-## Static Methods
+Compresses / decompresses Snappy (Zippy) encoded data.
 
-#### `LZ4InflateTransform.run(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
+## Interface
 
-Decompresses (inflates) LZ4 encoded data.
+Implements the [`Compression](./compression) API.
+
+## Methods
+
+### `constructor(options?: object)`

@@ -1,17 +1,17 @@
-# ZlibTransform
+# GZipCompression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-## Static Methods
+Compresses / decompresses GZIP encoded data.
 
-#### `ZlibDeflateTransform.deflate(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
+## Interface
 
-#### `ZlibDeflateTransform.deflateSync(data: ArrayBuffer, options?: object): ArrayBuffer`
+Implements the [`Compression](./compression) API.
 
-Compresses (deflates) Zlib encoded data.
+## Methods
 
-## Remarks
+### `constructor(options?: object)`
 
-- options are passed through to the underlying `pako` library.
+- `options` are passed through to the underlying `zlib` or `pako` libraries.

@@ -1,7 +1,7 @@
 # Overview
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" /> 
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
 The `@loaders.gl/compression` module provides a selection of lossless,
@@ -68,21 +68,9 @@ Used in e.g. Apache Parquet files.
 targets very high compression (GB/s) speed at the cost of compressed size.
 Used in e.g. Apache Parquet files.
 
-## Decompression API
-
-The API offers "transforms" that can inflate/deflate data.
-
-| Transforms                                                                              | Sync | Description                 |
-| --------------------------------------------------------------------------------------- | ---- | --------------------------- |
-| [`ZlibDeflateTransform`](modules/compression/docs/api-reference/zlib-deflate-transform) | Y    | Compress using Zlib codec   |
-| [`ZlibInflateTransform`](modules/compression/docs/api-reference/zlib-inflate-transform) | Y    | Decompress using Zlib codec |
-| [`LZ4DeflateTransform`](modules/compression/docs/api-reference/lz4-deflate-transform)   | Y    | Compress using LZ4 codec    |
-| [`LZ4InflateTransform`](modules/compression/docs/api-reference/lz4-inflate-transform)   | Y    | Decompress using LZ4 codec  |
-
-
 ## Attributions
 
-All code is MIT licensed. This module does not fork any code. however it includes npm dependencies as follows:
+MIT licensed. This module does not fork any code. however it includes npm dependencies as follows:
 
 | --- | ---
 | [pako](https://zlib.net/)         | MIT |

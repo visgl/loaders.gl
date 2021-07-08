@@ -1,14 +1,18 @@
-# CRC32Hash
+# CRC32CHash
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-## Static Methods
+Calculates the CRC32C hash.
 
-#### `CRC32Hash.hash(data: ArrayBuffer, options?: object): Promise<string>`
+## Interface
 
-Calculates the CRC32 hash of a byte array.
+Implements the [`Hash](./hash) API.
+
+## Methods
+
+### `constructor(options?: object)`
 
 ## Remarks
 

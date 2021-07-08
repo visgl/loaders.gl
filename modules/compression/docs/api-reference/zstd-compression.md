@@ -1,11 +1,15 @@
-# ZstdDeflateTransform
+# ZstdCompression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-## Static Methods
+Compresses / decompresses Zstandard encoded data.
 
-#### `ZstdDeflateTransform.run(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
+## Interface
 
-Compresses (deflates) Zstandard encoded data.
+Implements the [`Compression](./compression) API.
+
+## Methods
+
+### `constructor(options?: object)`

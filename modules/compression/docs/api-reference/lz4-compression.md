@@ -1,21 +1,15 @@
-# LZ4DeflateTransform
+# LZ4Compression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
+
+Compresses / decompresses LZ4 encoded data.
+
+## Interface
+
+Implements the [`Compression](./compression) API.
 
 ## Methods
 
-#### `constructor(options?: object)`
-
-#### `LZ4DeflateTransform.run(data: ArrayBuffer): Promise<ArrayBuffer>`
-
-Compresses (deflates) LZ4 encoded data.
-
-#### `LZ4DeflateTransform.runSync(data: ArrayBuffer): Promise<ArrayBuffer>`
-
-Compresses (deflates) LZ4 encoded data.
-
-#### `LZ4DeflateTransform.runInBatches(data: ArrayBuffer): Promise<ArrayBuffer>`
-
-Compresses (deflates) LZ4 encoded data.
+### `constructor(options?: object)`

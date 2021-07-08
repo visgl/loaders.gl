@@ -1,19 +1,15 @@
-# ZstdTransform
+# NoCompression
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
+  <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-## Static Methods
+Performs no compression, returns unmodified data.
 
-#### `ZstdInflateTransform.preload(options?: object): Promise<void>`
+## Interface
 
-Preloads the Zstd library
+Implements the [`Compression](./compression) API.
 
 ## Methods
 
-#### `constructor(options?: object)`
-
-#### `ZstdInflateTransform.run(data: ArrayBuffer, options?: object): Promise<ArrayBuffer>`
-
-Compresses or decompresses Zstandard encoded data.
+### `constructor(options?: object)`
