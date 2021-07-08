@@ -24,12 +24,12 @@ loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</
 </p>
 
 <p align="center">
-  These docs are for <img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" style="margin-top: 4px" /> 
+  These docs are for <img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" style="margin-top: 10px" /> 
   <br />
   Docs for older versions are available on github: 
   <a href="https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md">
     <b>v2.3</b>
-  </a> -
+  </a>
   <a href="https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md">
     <b>v1.3</b>
   </a>
