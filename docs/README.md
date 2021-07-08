@@ -24,7 +24,7 @@ loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</
 </p>
 
 <p align="center">
-  These docs are for <img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" style="margin-top: 10px" /> 
+  These docs are for <span  style="margin-top: 5px"><img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" /> </span>
   <br />
   Docs for older versions are available on github: 
   <a href="https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md">
