@@ -29,7 +29,7 @@ loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</
   Docs for older versions are available on github: 
   <a href="https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md">
     <b>v2.3</b>
-  </a>
+  </a> -
   <a href="https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md">
     <b>v1.3</b>
   </a>
