@@ -35,6 +35,10 @@ loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</
   </a>
 </p>
 
+<p align="center">
+<i>If you like loaders.gl, please consider giving us a github star. We have almost 300K monthly downloads and only 300 stars.</i>
+</p>
+
 ## Overview
 
 loaders.gl is a is a collection of the best open source loaders and writers for file formats focused on visualization of big data, including tabular and geospatial data formats as well as images, point clouds and 3D geometries.
