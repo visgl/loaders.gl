@@ -139,14 +139,15 @@ function parseFeatureCollection(dataArray): Feature[] {
         // eslint-disable-next-line no-continue
         continue;
       }
-
-      features.push(parseFeature(data, lastIndex, i));
+      const globalFeatureId = data.globalFeatureIds.value[lastIndex];
+      features[globalFeatureId] = parseFeature(data, lastIndex, i);
       lastIndex = i;
       lastValue = currValue;
     }
 
     // Last feature
-    features.push(parseFeature(data, lastIndex, data.featureIds.value.length));
+    const globalFeatureId = data.globalFeatureIds.value[lastIndex];
+    features[globalFeatureId] = parseFeature(data, lastIndex, data.featureIds.value.length);
   }
   return features;
 }

@@ -257,57 +257,10 @@
       }
     }
   },
-  "combined": {
+  "mixed": {
     "geoJSON": {
       "type": "FeatureCollection",
       "features": [
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [100.0, 0.0]
-          },
-          "properties": {
-            "numeric1": 1,
-            "string1": "a"
-          }
-        },
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "MultiPoint",
-            "coordinates": [[100.0, 0.0], [101.0, 1.0]]
-          },
-          "properties": {
-            "numeric1": 2,
-            "string1": "b"
-          }
-        },
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "LineString",
-            "coordinates": [[100.0, 0.0], [101.0, 1.0]]
-          },
-          "properties": {
-            "numeric1": 3,
-            "string1": "c"
-          }
-        },
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "MultiLineString",
-            "coordinates": [
-              [[100.0, 0.0], [101.0, 1.0]],
-              [[102.0, 2.0], [103.0, 3.0]]
-            ]
-          },
-          "properties": {
-            "numeric1": 4,
-            "string1": "d"
-          }
-        },
         {
           "type": "Feature",
           "geometry": {
@@ -328,6 +281,39 @@
         {
           "type": "Feature",
           "geometry": {
+            "type": "Point",
+            "coordinates": [100.0, 0.0]
+          },
+          "properties": {
+            "numeric1": 1,
+            "string1": "a"
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [[100.0, 0.0], [101.0, 1.0]]
+          },
+          "properties": {
+            "numeric1": 3,
+            "string1": "c"
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "MultiPoint",
+            "coordinates": [[100.0, 0.0], [101.0, 1.0]]
+          },
+          "properties": {
+            "numeric1": 2,
+            "string1": "b"
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
             "type": "Polygon",
             "coordinates": [[[100, 0], [101, 0], [101, 10], [100, 10], [100, 0]]]
           },
@@ -343,6 +329,20 @@
             "coordinates": [
               [[100, 0], [110, 0], [110, 10], [100, 10], [100, 0]],
               [[108, 8], [108, 2], [102, 2], [102, 8], [108, 8]]
+            ]
+          },
+          "properties": {
+            "numeric1": 4,
+            "string1": "d"
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "MultiLineString",
+            "coordinates": [
+              [[100.0, 0.0], [101.0, 1.0]],
+              [[102.0, 2.0], [103.0, 3.0]]
             ]
           },
           "properties": {
