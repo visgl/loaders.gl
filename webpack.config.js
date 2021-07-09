@@ -7,10 +7,10 @@ module.exports = (env = {}) => {
   config.devtool = 'source-map';
 
   // Enable SharedArrayBuffer in wasm
-  config.devServer = config.devServer || {};
-  config.devServer.headers = config.devServer.headers || {};
-  config.devServer.headers['Cross-Origin-Embedder-Policy'] = 'require-corp';
-  config.devServer.headers['Cross-Origin-Opener-Policy'] = 'same-origin';
+  // config.devServer = config.devServer || {};
+  // config.devServer.headers = config.devServer.headers || {};
+  // config.devServer.headers['Cross-Origin-Embedder-Policy'] = 'require-corp';
+  // config.devServer.headers['Cross-Origin-Opener-Policy'] = 'same-origin';
 
   config = addBabelSettings(config);
   config.module.rules.push({
