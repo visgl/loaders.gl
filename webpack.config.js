@@ -18,11 +18,11 @@ module.exports = (env = {}) => {
     test: /\.worker\.js$/,
     loader: 'worker-loader'
   });
-  config.module.rules.push({
-    test: /\.wasm$/,
-    loaders: ['base64-loader'],
-    type: 'javascript/auto'
-  });
+  // config.module.rules.push({
+  //   test: /\.wasm$/,
+  //   loaders: ['base64-loader'],
+  //   type: 'javascript/auto'
+  // });
   // Look for babel plugin
   config.module = config.module || {};
   config.module.rules = config.module.rules || [];
