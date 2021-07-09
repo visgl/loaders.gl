@@ -14,7 +14,7 @@ test('binary-to-geojson feature collections', async (t) => {
   const json = await response.json();
 
   // `mixed` test case fails test, disable until we land fix
-  /* eslint-disable no-unused-vars */
+  // eslint-disable-next-line no-unused-vars
   const {mixed, ...TEST_CASES} = parseTestCases(json);
 
   for (const testCase of Object.values(TEST_CASES)) {
