@@ -20,7 +20,7 @@ test('I3SLoader#Load tile content', async (t) => {
   // ImageLoader returns different things on browser and Node
   const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
   if (isBrowser) {
-    t.ok(texture instanceof ImageBitmap || texture);
+    t.ok(texture);
   } else {
     t.equal(texture.data.byteLength, 131072);
   }
