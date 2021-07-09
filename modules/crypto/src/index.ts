@@ -1,9 +1,12 @@
-import type {WorkerObject} from '@loaders.gl/worker-utils';
+// import type {WorkerObject} from '@loaders.gl/worker-utils';
 
-export {default as CRC32HashTransform} from './lib/crc32/crc32-hash-transform';
-export {default as CRC32CHashTransform} from './lib/crc32c/crc32c-hash-transform';
-export {default as MD5HashTransform} from './lib/md5-wasm/md5-hash-transform';
-export {default as CryptoHashTransform} from './lib/crypto/crypto-hash-transform';
+export {CRC32Hash} from './lib/crc32-hash';
+export {CRC32CHash} from './lib/crc32c-hash';
+export {MD5Hash} from './lib/md5-hash';
+export {SHA256Hash} from './lib/sha256-hash';
+
+export {CryptoHash} from './lib/crypto-hash';
+export {NodeHash} from './lib/node-hash';
 
 export {hexToBase64 as _hexToBase64, toHex as _toHex} from './lib/utils/digest-utils';
 
@@ -14,7 +17,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /**
  * Small, fast worker for CRC32, CRC32c and MD5 Hashes
  */
-export const CryptoWorker: WorkerObject = {
+export const CryptoWorker = {
   id: 'crypto',
   name: 'CRC32, CRC32c and MD5 Hashes',
   module: 'crypto',
@@ -28,7 +31,7 @@ export const CryptoWorker: WorkerObject = {
  * Large worker for full complement of Cryptographic Hashes
  * bundles the full crypto.js library
  */
-export const CryptoJSWorker: WorkerObject = {
+export const CryptoJSWorker = {
   id: 'cryptojs',
   name: 'Cryptographic Hashes',
   module: 'crypto',

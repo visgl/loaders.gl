@@ -26,6 +26,7 @@ test('load#with fetch options', async (t) => {
 
   const fetch = (url) => new Response('{"abc": 1}');
   t.deepEqual(
+    // @ts-expect-error
     await load(JSON_URL, JSONLoader, {fetch}),
     {abc: 1},
     'load with fetch function works'

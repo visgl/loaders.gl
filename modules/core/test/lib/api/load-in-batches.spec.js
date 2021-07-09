@@ -61,6 +61,7 @@ test('loadInBatches#FileList', async (t) => {
 });
 
 test('loadInBatches(options.limit)', async (t) => {
+  // @ts-expect-error
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     limit: 100
   });

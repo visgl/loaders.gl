@@ -7,12 +7,18 @@ export {
 
 const SIZE = 100 * 1000;
 
-const data = {};
+let data;
 
-/** Generate binaryData and repeatedData */
+/**
+ * Generate binaryData and repeatedData
+ * @returns {{binaryData: ArrayBuffer, repeatedData: ArrayBuffer}}
+ */
 export function getBinaryData(size = SIZE) {
-  data.binaryData = data.binaryData || generateRandomArrayBuffer({size});
-  data.repeatedData =
-    data.repeatedData || generateRandomArrayBuffer({size: size / 10, repetitions: 10});
+  if (!data) {
+    data = {
+      binaryData: generateRandomArrayBuffer({size}),
+      repeatedData: generateRandomArrayBuffer({size: size / 10, repetitions: 10})
+    };
+  }
   return data;
 }

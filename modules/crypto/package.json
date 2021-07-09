@@ -17,7 +17,7 @@
     "mesh",
     "point cloud"
   ],
-  "types": "src/index.d.ts",
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -27,22 +27,21 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-workers && npm run build-bundle",
+    "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-workers": "npm run build-crypto-worker && npm run build-cryptojs-worker",
-    "build-crypto-worker": "webpack --entry ./src/workers/crypto-worker.js --output ./dist/crypto-worker.js --env.dev --config ../../scripts/webpack/worker.js",
-    "build-cryptojs-worker": "webpack --entry ./src/workers/cryptojs-worker.js --output ./dist/cryptojs-worker.js --env.dev --config ../../scripts/webpack/worker.js"
+    "build-worker": "webpack --entry ./src/workers/worker.ts --output ./dist/worker.js --env.dev --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
     "@loaders.gl/loader-utils": "3.0.0-beta.9",
     "@loaders.gl/worker-utils": "3.0.0-beta.9",
-    "@types/crypto-js": "*"
+    "@types/crypto-js": "^4.0.1"
   },
   "devDependencies": {
     "crypto-js": "^3.0.0 || ^4.0.0"
   },
   "browser": {
+    "crypto": false,
     "sse4_crc32": false
   }
 }

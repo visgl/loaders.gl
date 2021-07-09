@@ -17,7 +17,7 @@
     "mesh",
     "point cloud"
   ],
-  "types": "src/index.d.ts",
+  "types": "src/index.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -26,22 +26,36 @@
     "dist",
     "README.md"
   ],
+  "browser": {
+    "lzo": false,
+    "zlib": false,
+    "util": false
+  },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-workers",
+    "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-workers": "npm run build-zlib-worker && npm run build-lz4-worker && npm run build-zstd-worker",
-    "build-zlib-worker": "webpack --entry ./src/workers/zlib-worker.js --output ./dist/zlib-worker.js --env.dev --config ../../scripts/webpack/worker.js",
-    "build-lz4-worker": "webpack --entry ./src/workers/lz4-worker.js --output ./dist/lz4-worker.js --env.dev --config ../../scripts/webpack/worker.js",
-    "build-zstd-worker": "webpack --entry ./src/workers/zstd-worker.js --output ./dist/zstd-worker.js --env.dev --config ../../scripts/webpack/worker.js"
+    "build-worker": "webpack --entry ./src/workers/worker.ts --output ./dist/compression-worker.js --env.dev --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
     "@loaders.gl/loader-utils": "3.0.0-beta.9",
     "@loaders.gl/worker-utils": "3.0.0-beta.9",
+    "@types/brotli": "^1.3.0",
+    "@types/pako": "^1.0.1",
+    "lzo-wasm": "^0.0.4",
+    "pako": "1.0.11",
+    "snappyjs": "^0.6.1"
+  },
+  "optionalDependencies": {
+    "brotli": "^1.3.2",
     "lz4js": "^0.2.0",
-    "pako": "^1.0.11"
+    "lzo": "^0.4.11",
+    "zstd-codec": "^0.1"
   },
   "devDependencies": {
+    "brotli": "^1.3.2",
+    "lz4js": "^0.2.0",
+    "lzo": "^0.4.11",
     "zstd-codec": "^0.1"
   }
 }

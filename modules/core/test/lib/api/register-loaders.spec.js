@@ -6,6 +6,7 @@ test('registerLoaders', (t) => {
   const registeredLoadersCount = getRegisteredLoaders().length;
 
   registerLoaders({
+    // @ts-expect-error
     parseTextSync: (d) => d,
     extensions: ['ext1']
   });
@@ -14,9 +15,11 @@ test('registerLoaders', (t) => {
 
   registerLoaders([
     {
+      // @ts-expect-error
       parseTextSync: (d) => d,
       extensions: ['ext2']
     },
+    // @ts-expect-error
     [
       {
         parseTextSync: (d) => d,
@@ -36,6 +39,7 @@ test('registerLoaders', (t) => {
   };
 
   t.doesNotThrow(
+    // @ts-expect-error
     () => registerLoaders(TestLoader),
     'registerLoaders() does not require array of loaders'
   );

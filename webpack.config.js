@@ -6,13 +6,23 @@ module.exports = (env = {}) => {
 
   config.devtool = 'source-map';
 
+  // Enable SharedArrayBuffer in wasm
+  // config.devServer = config.devServer || {};
+  // config.devServer.headers = config.devServer.headers || {};
+  // config.devServer.headers['Cross-Origin-Embedder-Policy'] = 'require-corp';
+  // config.devServer.headers['Cross-Origin-Opener-Policy'] = 'same-origin';
+
   config = addBabelSettings(config);
   config.module.rules.push({
     // Load worker tests
     test: /\.worker\.js$/,
     loader: 'worker-loader'
   });
-
+  // config.module.rules.push({
+  //   test: /\.wasm$/,
+  //   loaders: ['base64-loader'],
+  //   type: 'javascript/auto'
+  // });
   // Look for babel plugin
   config.module = config.module || {};
   config.module.rules = config.module.rules || [];

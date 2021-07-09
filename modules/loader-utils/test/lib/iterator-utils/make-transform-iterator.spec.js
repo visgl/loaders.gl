@@ -1,28 +1,22 @@
 import test from 'tape-promise/tape';
-import {makeTransformIterator, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {CRC32CHashTransform} from '@loaders.gl/crypto';
+import {CRC32CHash} from '@loaders.gl/crypto';
 
 const SHAPEFILE_URL = '@loaders.gl/shapefile/test/data/shapefile-js/boolean-property.shp';
 
-class ByteLengthTransform {
-  constructor(options = {}) {
-    this.byteLength = 0;
-    this.options = options;
+async function* calculateByteLengthInBaches(asyncIterator, options) {
+  let byteLength = 0;
+
+  for await (const chunk of asyncIterator) {
+    byteLength += chunk.byteLength || 0;
+    yield chunk;
   }
-  write(chunk) {
-    this.byteLength += chunk.byteLength || 0;
-    return chunk;
-  }
-  end() {
-    if (this.options.onEnd) {
-      this.options.onEnd({byteLength: this.byteLength});
-    }
-  }
+  options?.onEnd({byteLength});
 }
 
-test('makeTransformIterator#ByteLengthTransform', async (t) => {
+test('byteLengthTransform', async (t) => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -33,7 +27,7 @@ test('makeTransformIterator#ByteLengthTransform', async (t) => {
   let callCount = 0;
 
   // @ts-ignore
-  const transformIterator = makeTransformIterator(inputChunks, ByteLengthTransform, {
+  const transformIterator = calculateByteLengthInBaches(inputChunks, {
     onEnd: (result) => {
       byteLength = result.byteLength;
       callCount++;
@@ -71,21 +65,22 @@ function compareArrayBuffers(a, b) {
 }
 
 // Tests that iterator input and non-streaming loader does not crash
-test('makeTransformIterator', async (t) => {
+test('byteLengthTransform#non-streaming', async (t) => {
   // Run a streaming digest on all test cases.
   let hash;
 
-  const response = await fetchFile(SHAPEFILE_URL);
-  let iterator = makeIterator(response);
-
   // @ts-ignore
-  iterator = makeTransformIterator(iterator, CRC32CHashTransform, {
+  const crc32 = new CRC32CHash({
     crypto: {
       onEnd: (result) => {
         hash = result.hash;
       }
     }
   });
+
+  const response = await fetchFile(SHAPEFILE_URL);
+  let iterator = makeIterator(response);
+  iterator = crc32.hashBatches(iterator);
 
   const batchIterator = await parseInBatches(iterator, ShapefileLoader);
   for await (const batch of batchIterator) {

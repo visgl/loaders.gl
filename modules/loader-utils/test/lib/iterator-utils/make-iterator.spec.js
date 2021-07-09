@@ -40,7 +40,7 @@ test('makeIterator#string', async (t) => {
 
   const iterator = makeIterator(bigString, {chunkSize: 2});
 
-  for (const chunk of iterator) {
+  for await (const chunk of iterator) {
     t.equal(new TextDecoder().decode(chunk), results.shift());
   }
 
@@ -52,7 +52,7 @@ test('makeIterator#arrayBuffer', async (t) => {
 
   const iterator = makeIterator(bigString, {chunkSize: 2});
 
-  for (const chunk of iterator) {
+  for await (const chunk of iterator) {
     t.ok(chunk instanceof ArrayBuffer);
     t.equal(chunk.byteLength, 2);
   }

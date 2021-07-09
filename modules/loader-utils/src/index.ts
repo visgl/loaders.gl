@@ -13,8 +13,6 @@ export type {
   IRandomAccessReadFileSystem
 } from './types';
 
-export type {IncrementalTransform} from './lib/iterator-utils/incremental-transform';
-
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
 export {
@@ -30,7 +28,6 @@ export {
 // LOADERS.GL-SPECIFIC WORKER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
 export {parseWithWorker, canParseWithWorker} from './lib/worker-loader-utils/parse-with-worker';
-export {makeTransformIterator} from './lib/iterator-utils/make-transform-iterator';
 
 // PARSER UTILS
 export {parseJSON} from './lib/parser-utils/parse-json';
