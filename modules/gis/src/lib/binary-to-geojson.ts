@@ -156,7 +156,7 @@ function deduceReturnType(dataArray): 'FeatureCollection' | 'Geometry' {
 
 /** Parse input binary data and return an array of GeoJSON Features */
 function parseFeatureCollection(dataArray): Feature[] {
-  const features: Feature[] = [];
+  const featuresById: Map<number, Feature> = new Map<number, Feature>();
   for (const data of dataArray) {
     if (data.featureIds.value.length === 0) {
       // eslint-disable-next-line no-continue
@@ -173,15 +173,32 @@ function parseFeatureCollection(dataArray): Feature[] {
         continue;
       }
       const globalFeatureId = data.globalFeatureIds.value[lastIndex];
-      features[globalFeatureId] = parseFeature(data, lastIndex, i);
+      featuresById.set(globalFeatureId, parseFeature(data, lastIndex, i));
       lastIndex = i;
       lastValue = currValue;
     }
 
     // Last feature
     const globalFeatureId = data.globalFeatureIds.value[lastIndex];
-    features[globalFeatureId] = parseFeature(data, lastIndex, data.featureIds.value.length);
+    featuresById.set(globalFeatureId, parseFeature(data, lastIndex, data.featureIds.value.length));
   }
+
+  if (featuresById.size === 0) {
+    return [];
+  }
+
+  // Check
+  if (
+    Math.min(...featuresById.keys()) !== 0 ||
+    Math.max(...featuresById.keys()) !== featuresById.size - 1
+  ) {
+    throw new Error('Invalid globalFeatureIds in BinaryGeometry');
+  }
+  const features: Feature[] = new Array<Feature>(featuresById.size);
+  for (const [featureId, feature] of featuresById) {
+    features[featureId] = feature;
+  }
+
   return features;
 }
 
