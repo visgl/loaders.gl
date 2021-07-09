@@ -157,6 +157,7 @@ function deduceReturnType(dataArray): 'FeatureCollection' | 'Geometry' {
 /** Parse input binary data and return an array of GeoJSON Features */
 function parseFeatureCollection(dataArray): Feature[] {
   const featuresById: Map<number, Feature> = new Map<number, Feature>();
+  let count = 0;
   for (const data of dataArray) {
     if (data.featureIds.value.length === 0) {
       // eslint-disable-next-line no-continue
@@ -176,30 +177,36 @@ function parseFeatureCollection(dataArray): Feature[] {
       featuresById.set(globalFeatureId, parseFeature(data, lastIndex, i));
       lastIndex = i;
       lastValue = currValue;
+      count++;
     }
 
     // Last feature
     const globalFeatureId = data.globalFeatureIds.value[lastIndex];
     featuresById.set(globalFeatureId, parseFeature(data, lastIndex, data.featureIds.value.length));
+    count++;
   }
 
-  if (featuresById.size === 0) {
-    return [];
-  }
-
-  // Check
-  if (
-    Math.min(...featuresById.keys()) !== 0 ||
-    Math.max(...featuresById.keys()) !== featuresById.size - 1
-  ) {
-    throw new Error('Invalid globalFeatureIds in BinaryGeometry');
-  }
+  // Global ids should be in range [0 - features.length - 1]
+  // as they are assigned sequentially
+  _checkIdRange(featuresById, count);
   const features: Feature[] = new Array<Feature>(featuresById.size);
   for (const [featureId, feature] of featuresById) {
     features[featureId] = feature;
   }
 
   return features;
+}
+
+function _checkIdRange(featuresById, expectedCount) {
+  if (featuresById.size === 0) {
+    return;
+  }
+
+  const minId = Math.min(...featuresById.keys());
+  const maxId = Math.max(...featuresById.keys());
+  if (expectedCount !== featuresById.size || minId !== 0 || maxId !== featuresById.size - 1) {
+    throw new Error('Invalid globalFeatureIds in BinaryGeometry');
+  }
 }
 
 /** Parse input binary data and return a single GeoJSON Feature */
