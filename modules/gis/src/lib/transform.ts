@@ -1,28 +1,39 @@
-import type {BinaryFeatures} from '@loaders.gl/schema';
+import type {BinaryFeatures, BinaryGeometry} from '@loaders.gl/schema';
+
+type TransformCoordinate = (coord: number[]) => number[];
 
 /**
  * Apply transformation to every coordinate of binary features
- *
  * @param  binaryFeatures binary features
- * @param  fn       Function to call on each coordinate
- * @return          Transformed binary features
+ * @param  transformCoordinate Function to call on each coordinate
+ * @return Transformed binary features
  */
 export function transformBinaryCoords(
   binaryFeatures: BinaryFeatures,
-  fn: (coord: number[]) => number[]
+  transformCoordinate: TransformCoordinate
 ): BinaryFeatures {
-  // Expect binaryFeatures to have points, lines, and polygons keys
-  for (const binaryFeature of Object.values(binaryFeatures)) {
-    const {positions} = binaryFeature;
-    for (let i = 0; i < positions.value.length; i += positions.size) {
-      // @ts-ignore inclusion of bigint causes problems
-      const coord = Array.from(positions.value.subarray(i, i + positions.size));
-      const transformedCoord = fn(coord);
-      // @ts-ignore typescript typing for .set seems to require bigint?
-      positions.value.set(transformedCoord, i);
-    }
+  if (binaryFeatures.points) {
+    transformBinaryGeometryPositions(binaryFeatures.points, transformCoordinate);
+  }
+  if (binaryFeatures.lines) {
+    transformBinaryGeometryPositions(binaryFeatures.lines, transformCoordinate);
+  }
+  if (binaryFeatures.polygons) {
+    transformBinaryGeometryPositions(binaryFeatures.polygons, transformCoordinate);
   }
   return binaryFeatures;
+}
+
+/** Transform one binary geometry */
+function transformBinaryGeometryPositions(binaryGeometry: BinaryGeometry, fn: TransformCoordinate) {
+  const {positions} = binaryGeometry;
+  for (let i = 0; i < positions.value.length; i += positions.size) {
+    // @ts-ignore inclusion of bigint causes problems
+    const coord: Array<number> = Array.from(positions.value.subarray(i, i + positions.size));
+    const transformedCoord = fn(coord);
+    // @ts-ignore typescript typing for .set seems to require bigint?
+    positions.value.set(transformedCoord, i);
+  }
 }
 
 /**
