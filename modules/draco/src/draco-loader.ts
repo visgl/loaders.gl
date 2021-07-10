@@ -1,8 +1,6 @@
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {DracoMeshData} from './types';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoParseOptions} from './lib/draco-parser';
-import DracoParser from './lib/draco-parser';
-import {loadDracoDecoderModule} from './lib/draco-module-loader';
+// import type {DracoMeshData} from './types';
 import {VERSION} from './lib/utils/version';
 
 export type DracoLoaderOptions = LoaderOptions & {
@@ -26,7 +24,7 @@ const DEFAULT_DRACO_OPTIONS: DracoLoaderOptions = {
 /**
  * Worker loader for Draco3D compressed geometries
  */
-export const DracoWorkerLoader = {
+export const DracoLoader = {
   name: 'Draco',
   id: 'draco',
   module: 'draco',
@@ -39,27 +37,4 @@ export const DracoWorkerLoader = {
   options: DEFAULT_DRACO_OPTIONS
 };
 
-/**
- * Loader for Draco3D compressed geometries
- */
-export const DracoLoader = {
-  ...DracoWorkerLoader,
-  parse
-};
-
-async function parse(
-  arrayBuffer: ArrayBuffer,
-  options?: DracoLoaderOptions
-): Promise<DracoMeshData> {
-  const {draco} = await loadDracoDecoderModule(options);
-  const dracoParser = new DracoParser(draco);
-  try {
-    return dracoParser.parseSync(arrayBuffer, options?.draco);
-  } finally {
-    dracoParser.destroy();
-  }
-}
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckDracoWorkerLoader: Loader = DracoWorkerLoader;
-export const _TypecheckDracoLoader: LoaderWithParser = DracoLoader;
+export const _TypecheckDracoLoader: Loader = DracoLoader;

@@ -12,7 +12,7 @@ import type {
   draco_GeometryAttribute_Type
 } from '../draco3d/draco3d-types';
 
-import type {TypedArray, DracoMeshData} from '../types';
+import type {TypedArray, DracoMeshData} from './draco-types';
 
 export type DracoBuildOptions = {
   pointcloud?: boolean;

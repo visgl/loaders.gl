@@ -1,6 +1,4 @@
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseSync from './lib/parse-arrow-sync';
-import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -19,7 +17,7 @@ const DEFAULT_ARROW_LOADER_OPTIONS = {
 };
 
 /** ArrowJS table loader */
-export const ArrowWorkerLoader: Loader = {
+export const ArrowLoader = {
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',
@@ -33,11 +31,4 @@ export const ArrowWorkerLoader: Loader = {
   options: DEFAULT_ARROW_LOADER_OPTIONS
 };
 
-/** ArrowJS table loader */
-export const ArrowLoader: LoaderWithParser = {
-  ...ArrowWorkerLoader,
-  parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
-    parseSync(arraybuffer, options),
-  parseSync,
-  parseInBatches: parseArrowInBatches
-};
+export const _typecheckArrowLoader: Loader = ArrowLoader;
