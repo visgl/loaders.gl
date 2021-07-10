@@ -1,8 +1,17 @@
-// Forked from https://github.com/ironSource/parquetjs under MIT license
+// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 /* eslint-disable camelcase */
 import BSON from 'bson';
+import {OriginalType, ParquetType, PrimitiveType} from './declare';
 
-export const PARQUET_LOGICAL_TYPES = {
+export interface ParquetTypeKit {
+  primitiveType: PrimitiveType;
+  originalType?: OriginalType;
+  typeLength?: number;
+  toPrimitive: Function;
+  fromPrimitive?: Function;
+}
+
+export const PARQUET_LOGICAL_TYPES: Record<ParquetType, ParquetTypeKit> = {
   BOOLEAN: {
     primitiveType: 'BOOLEAN',
     toPrimitive: toPrimitive_BOOLEAN,
@@ -135,7 +144,7 @@ export const PARQUET_LOGICAL_TYPES = {
  * Convert a value from it's native representation to the internal/underlying
  * primitive type
  */
-export function toPrimitive(type, value) {
+export function toPrimitive(type: ParquetType, value: any) {
   if (!(type in PARQUET_LOGICAL_TYPES)) {
     throw new Error(`invalid type: ${type}`);
   }
@@ -147,26 +156,27 @@ export function toPrimitive(type, value) {
  * Convert a value from it's internal/underlying primitive representation to
  * the native representation
  */
-export function fromPrimitive(type, value) {
+export function fromPrimitive(type: ParquetType, value: any) {
   if (!(type in PARQUET_LOGICAL_TYPES)) {
     throw new Error(`invalid type: ${type}`);
   }
 
   if ('fromPrimitive' in PARQUET_LOGICAL_TYPES[type]) {
-    return PARQUET_LOGICAL_TYPES[type].fromPrimitive(value);
+    return PARQUET_LOGICAL_TYPES[type].fromPrimitive?.(value);
+    // tslint:disable-next-line:no-else-after-return
   }
   return value;
 }
 
-function toPrimitive_BOOLEAN(value) {
+function toPrimitive_BOOLEAN(value: any) {
   return Boolean(value);
 }
 
-function fromPrimitive_BOOLEAN(value) {
+function fromPrimitive_BOOLEAN(value: any) {
   return Boolean(value);
 }
 
-function toPrimitive_FLOAT(value) {
+function toPrimitive_FLOAT(value: any) {
   const v = parseFloat(value);
   if (isNaN(v)) {
     throw new Error(`invalid value for FLOAT: ${value}`);
@@ -175,7 +185,7 @@ function toPrimitive_FLOAT(value) {
   return v;
 }
 
-function toPrimitive_DOUBLE(value) {
+function toPrimitive_DOUBLE(value: any) {
   const v = parseFloat(value);
   if (isNaN(v)) {
     throw new Error(`invalid value for DOUBLE: ${value}`);
@@ -184,7 +194,7 @@ function toPrimitive_DOUBLE(value) {
   return v;
 }
 
-function toPrimitive_INT8(value) {
+function toPrimitive_INT8(value: any) {
   const v = parseInt(value, 10);
   if (v < -0x80 || v > 0x7f || isNaN(v)) {
     throw new Error(`invalid value for INT8: ${value}`);
@@ -193,7 +203,7 @@ function toPrimitive_INT8(value) {
   return v;
 }
 
-function toPrimitive_UINT8(value) {
+function toPrimitive_UINT8(value: any) {
   const v = parseInt(value, 10);
   if (v < 0 || v > 0xff || isNaN(v)) {
     throw new Error(`invalid value for UINT8: ${value}`);
@@ -202,7 +212,7 @@ function toPrimitive_UINT8(value) {
   return v;
 }
 
-function toPrimitive_INT16(value) {
+function toPrimitive_INT16(value: any) {
   const v = parseInt(value, 10);
   if (v < -0x8000 || v > 0x7fff || isNaN(v)) {
     throw new Error(`invalid value for INT16: ${value}`);
@@ -211,7 +221,7 @@ function toPrimitive_INT16(value) {
   return v;
 }
 
-function toPrimitive_UINT16(value) {
+function toPrimitive_UINT16(value: any) {
   const v = parseInt(value, 10);
   if (v < 0 || v > 0xffff || isNaN(v)) {
     throw new Error(`invalid value for UINT16: ${value}`);
@@ -220,7 +230,7 @@ function toPrimitive_UINT16(value) {
   return v;
 }
 
-function toPrimitive_INT32(value) {
+function toPrimitive_INT32(value: any) {
   const v = parseInt(value, 10);
   if (v < -0x80000000 || v > 0x7fffffff || isNaN(v)) {
     throw new Error(`invalid value for INT32: ${value}`);
@@ -229,7 +239,7 @@ function toPrimitive_INT32(value) {
   return v;
 }
 
-function toPrimitive_UINT32(value) {
+function toPrimitive_UINT32(value: any) {
   const v = parseInt(value, 10);
   if (v < 0 || v > 0xffffffffffff || isNaN(v)) {
     throw new Error(`invalid value for UINT32: ${value}`);
@@ -238,7 +248,7 @@ function toPrimitive_UINT32(value) {
   return v;
 }
 
-function toPrimitive_INT64(value) {
+function toPrimitive_INT64(value: any) {
   const v = parseInt(value, 10);
   if (isNaN(v)) {
     throw new Error(`invalid value for INT64: ${value}`);
@@ -247,7 +257,7 @@ function toPrimitive_INT64(value) {
   return v;
 }
 
-function toPrimitive_UINT64(value) {
+function toPrimitive_UINT64(value: any) {
   const v = parseInt(value, 10);
   if (v < 0 || isNaN(v)) {
     throw new Error(`invalid value for UINT64: ${value}`);
@@ -256,7 +266,7 @@ function toPrimitive_UINT64(value) {
   return v;
 }
 
-function toPrimitive_INT96(value) {
+function toPrimitive_INT96(value: any) {
   const v = parseInt(value, 10);
   if (isNaN(v)) {
     throw new Error(`invalid value for INT96: ${value}`);
@@ -265,37 +275,35 @@ function toPrimitive_INT96(value) {
   return v;
 }
 
-function toPrimitive_BYTE_ARRAY(value) {
+function toPrimitive_BYTE_ARRAY(value: any) {
   return Buffer.from(value);
 }
 
-function toPrimitive_UTF8(value) {
+function toPrimitive_UTF8(value: any) {
   return Buffer.from(value, 'utf8');
 }
 
-function fromPrimitive_UTF8(value) {
+function fromPrimitive_UTF8(value: any) {
   return value.toString();
 }
 
-function toPrimitive_JSON(value) {
+function toPrimitive_JSON(value: any) {
   return Buffer.from(JSON.stringify(value));
 }
 
-function fromPrimitive_JSON(value) {
+function fromPrimitive_JSON(value: any) {
   return JSON.parse(value);
 }
 
-function toPrimitive_BSON(value) {
-  const encoder = new BSON();
-  return Buffer.from(encoder.serialize(value));
+function toPrimitive_BSON(value: any) {
+  return Buffer.from(BSON.serialize(value));
 }
 
-function fromPrimitive_BSON(value) {
-  const decoder = new BSON();
-  return decoder.deserialize(value);
+function fromPrimitive_BSON(value: any) {
+  return BSON.deserialize(value);
 }
 
-function toPrimitive_TIME_MILLIS(value) {
+function toPrimitive_TIME_MILLIS(value: any) {
   const v = parseInt(value, 10);
   if (v < 0 || v > 0xffffffffffffffff || isNaN(v)) {
     throw new Error(`invalid value for TIME_MILLIS: ${value}`);
@@ -304,7 +312,7 @@ function toPrimitive_TIME_MILLIS(value) {
   return v;
 }
 
-function toPrimitive_TIME_MICROS(value) {
+function toPrimitive_TIME_MICROS(value: any) {
   const v = parseInt(value, 10);
   if (v < 0 || isNaN(v)) {
     throw new Error(`invalid value for TIME_MICROS: ${value}`);
@@ -315,7 +323,7 @@ function toPrimitive_TIME_MICROS(value) {
 
 const kMillisPerDay = 86400000;
 
-function toPrimitive_DATE(value) {
+function toPrimitive_DATE(value: any) {
   /* convert from date */
   if (value instanceof Date) {
     return value.getTime() / kMillisPerDay;
@@ -332,11 +340,11 @@ function toPrimitive_DATE(value) {
   }
 }
 
-function fromPrimitive_DATE(value) {
+function fromPrimitive_DATE(value: any) {
   return new Date(value * kMillisPerDay);
 }
 
-function toPrimitive_TIMESTAMP_MILLIS(value) {
+function toPrimitive_TIMESTAMP_MILLIS(value: any) {
   /* convert from date */
   if (value instanceof Date) {
     return value.getTime();
@@ -353,11 +361,11 @@ function toPrimitive_TIMESTAMP_MILLIS(value) {
   }
 }
 
-function fromPrimitive_TIMESTAMP_MILLIS(value) {
+function fromPrimitive_TIMESTAMP_MILLIS(value: any) {
   return new Date(value);
 }
 
-function toPrimitive_TIMESTAMP_MICROS(value) {
+function toPrimitive_TIMESTAMP_MICROS(value: any) {
   /* convert from date */
   if (value instanceof Date) {
     return value.getTime() * 1000;
@@ -374,25 +382,26 @@ function toPrimitive_TIMESTAMP_MICROS(value) {
   }
 }
 
-function fromPrimitive_TIMESTAMP_MICROS(value) {
+function fromPrimitive_TIMESTAMP_MICROS(value: any) {
   return new Date(value / 1000);
 }
 
-function toPrimitive_INTERVAL(value) {
+function toPrimitive_INTERVAL(value: any) {
   if (!value.months || !value.days || !value.milliseconds) {
     throw new Error(
       'value for INTERVAL must be object { months: ..., days: ..., milliseconds: ... }'
     );
   }
 
-  const buf = new Buffer(12);
+  const buf = Buffer.alloc(12);
+
   buf.writeUInt32LE(value.months, 0);
   buf.writeUInt32LE(value.days, 4);
   buf.writeUInt32LE(value.milliseconds, 8);
   return buf;
 }
 
-function fromPrimitive_INTERVAL(value) {
+function fromPrimitive_INTERVAL(value: any) {
   const buf = Buffer.from(value);
   const months = buf.readUInt32LE(0);
   const days = buf.readUInt32LE(4);

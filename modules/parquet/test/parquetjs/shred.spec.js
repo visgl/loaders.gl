@@ -1,7 +1,8 @@
-// @ts-nocheck
-
+// @ts-nocheck Bizarre array indexing
+/* eslint-disable max-statements */
 import test from 'tape-promise/tape';
-import {ParquetSchema, shredRecord, materializeRecords} from '@loaders.gl/parquet';
+import {ParquetSchema} from '@loaders.gl/parquet';
+import {ParquetBuffer, shredRecord, materializeRecords} from '@loaders.gl/parquet/parquetjs/schema/shred';
 
 test('ParquetShredder#should shred a single simple record', assert => {
   const schema = new ParquetSchema({
@@ -10,9 +11,7 @@ test('ParquetShredder#should shred a single simple record', assert => {
     price: { type: 'DOUBLE' },
   });
 
-  const buf = {};
-
-  assert.comment(JSON.stringify(buf, null, 2));
+  const buf = new ParquetBuffer();
 
   {
     const rec = { name: "apple", quantity: 10, price: 23.5 };
@@ -42,7 +41,7 @@ test('ParquetShredder#should shred a list of simple records', assert => {
   });
 
 
-  const buf = {};
+  const buf = new ParquetBuffer();
 
   {
     const rec = { name: "apple", quantity: 10, price: 23.5 };
@@ -81,8 +80,10 @@ test('ParquetShredder#should shred a list of simple records with optional scalar
     price: { type: 'DOUBLE' },
   });
 
+  const buf = new ParquetBuffer();
+
   const rec1 = { name: "apple", quantity: 10, price: 23.5 };
-  const buf = shredRecord(schema, rec1);
+  shredRecord(schema, rec1, buf);
 
   const rec2 = { name: "orange", price: 17.1 };
   shredRecord(schema, rec2, buf);
@@ -115,7 +116,9 @@ test('ParquetShredder#should shred a list of simple records with repeated scalar
 
 
   const rec1 = { name: "apple", price: 23.5, colours: ["red", "green"] };
-  const buf = shredRecord(schema, rec1);
+  const buf = new ParquetBuffer();
+  
+  shredRecord(schema, rec1, buf);
 
   const rec2 = { name: "orange", price: 17.1, colours: ["orange"] };
   shredRecord(schema, rec2, buf);
@@ -153,9 +156,10 @@ test('ParquetShredder#should shred a nested record without repetition modifiers'
     price: { type: 'DOUBLE' },
   });
 
+  const buf = new ParquetBuffer();
 
   const rec1 = { name: "apple", stock: { quantity: 10, warehouse: "A" }, price: 23.5 };
-  const buf = shredRecord(schema, rec1);
+  shredRecord(schema, rec1, buf);
 
   const rec2 = { name: "banana", stock: { quantity: 20, warehouse: "B" }, price: 42.0 };
   shredRecord(schema, rec2, buf);
@@ -190,9 +194,10 @@ test('ParquetShredder#should shred a nested record with optional fields', assert
     price: { type: 'DOUBLE' },
   });
 
+  const buf = new ParquetBuffer();
 
   const rec1 = { name: "apple", stock: { quantity: 10, warehouse: "A" }, price: 23.5 };
-  const buf = shredRecord(schema, rec1);
+  shredRecord(schema, rec1, buf);
 
   const rec2 = { name: "banana", stock: { warehouse: "B" }, price: 42.0 };
   shredRecord(schema, rec2, buf);
@@ -224,9 +229,10 @@ test('ParquetShredder#should shred a nested record with nested optional fields',
     price: { type: 'DOUBLE' },
   });
 
+  const buf = new ParquetBuffer();
 
   const rec1 = { name: "apple", stock: { quantity: 10, warehouse: "A" }, price: 23.5 };
-  const buf = shredRecord(schema, rec1);
+  shredRecord(schema, rec1, buf);
 
   const rec2 = { name: "orange" , price: 17.0 };
   shredRecord(schema, rec2, buf);
@@ -263,9 +269,10 @@ test('ParquetShredder#should shred a nested record with repeated fields', assert
     price: { type: 'DOUBLE' },
   });
 
+  const buf = new ParquetBuffer();
 
   const rec1 = { name: "apple", stock: { quantity: 10, warehouse: "A" }, price: 23.5 };
-  const buf = shredRecord(schema, rec1);
+  shredRecord(schema, rec1, buf);
 
   const rec2 = { name: "orange", stock: { quantity: [50, 75], warehouse: "B" }, price: 17.0 };
   shredRecord(schema, rec2, buf);
@@ -302,8 +309,10 @@ test('ParquetShredder#should shred a nested record with nested repeated fields',
     price: { type: 'DOUBLE' },
   });
 
+  const buf = new ParquetBuffer();
+
   const rec1 = { name: "apple", stock: [{ quantity: 10, warehouse: "A" }, { quantity: 20, warehouse: "B" } ], price: 23.5 };
-  const buf = shredRecord(schema, rec1);
+  shredRecord(schema, rec1, buf);
 
   const rec2 = { name: "orange", stock: { quantity: [50, 75], warehouse: "X" }, price: 17.0 };
   shredRecord(schema, rec2, buf);
