@@ -334,10 +334,9 @@ export class ParquetTransformer<T> extends Transform {
   _transform(row: any, encoding: string, callback: (val?: any) => void): Promise<void> {
     if (row) {
       return this.writer.appendRow(row).then(callback);
-    } 
+    }
     callback();
     return Promise.resolve();
-    
   }
 
   // tslint:disable-next-line:function-name
