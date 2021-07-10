@@ -28,6 +28,10 @@ export type LoaderOptions = {
 
   /** loader selection, search first for supplied mimeType */
   mimeType?: string;
+  /** loader selection, provide fallback mimeType is server does not provide */
+  fallbackMimeType?: string;
+  /** loader selection, avoid searching registered loaders */
+  ignoreRegisteredLoaders?: boolean;
 
   // general
   /** Experimental: Supply a logger to the parser */
