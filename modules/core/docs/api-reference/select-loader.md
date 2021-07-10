@@ -4,17 +4,20 @@
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
 </p>
 
-A core feature of loaders.gl is the ability to automatically select an appropriate loader for a specific resource among a list of candidate loaders. This feature is built-in to the `parse` and `load` functions, but applications can also access this feature directly through the `selectLoader` API.
+The `selectLoader()` and `selectLoaderSync()` functions will automatically select
+an appropriate loader for a specific resource. `selectLoader()` is called by the
+`parse()` and `load()` functions, but can also be called directly from applications.
 
 Loader selection heuristics are based on:
 
 - Filename (or url) extensions
-- MIME types (extracted from `Response` `content-type` headers or `Blob.type`/`File.type` fields)
-- Initial data - for certain inputs, the intial bytes can be compared against known headers for the candidate loaders. (Does not work for `Response`/`Stream`/`AsyncIterator` data).
+- MIME types (from `Response` `content-type` headers or `Blob.type`/`File.type` fields)
+- Initial bytes - for certain inputs, the initial bytes in the supplied data can be compared against known "magic bytes" for various file formats.
 
-`selectLoader` is also aware of the [loader registry](docs/api-reference/core/register-loaders.md). If no loaders are provided (by passing in a falsy value such as `null`) `selectLoader` will search the list of pre-registered loaders.
-
-`selectLoaderSync` is also aware of the [loader registry](docs/api-reference/core/register-loaders.md). If no loaders are provided (by passing in a falsy value such as `null`) `selectLoader` will search the list of pre-registered loaders.
+**loader registry** - `selectLoader()` and `selectLoaderSync()` are also aware of the
+[loader registry](docs/api-reference/core/register-loaders.md).
+The list of pre-registered loaders will be included in the search for a compatible loader,
+unless `options.ignoreRegisteredLoaders` is `true`.
 
 ## Usage
 
@@ -47,7 +50,8 @@ const data = new Blob([string], {type: 'application/x.csv'});
 await selectLoader(blob); // => CSVLoader
 ```
 
-The async `selectLoader` function can identify loaders without extension and mimeType by content sniffing `Blob` and `File` objects (useful when user drags and drops files into your application).
+The async `selectLoader` function can identify loaders without extension and mimeType
+by content sniffing `Blob` and `File` objects (useful when user drags and drops files into your application).
 
 ```js
 const data = new Blob(['DRACO...'] /* Binary Draco files start with these characters */]);
@@ -64,6 +68,7 @@ Parameters:
 
 - `data` - data to perform autodetection against
 - `loaders` - can be a single loader or an array of loaders, or null.
+- `options` - See [`LoaderOptions`](./loader-options).
 - `options.nothrow`=`false` - Return null instead of throwing exception if no loader can be found
 
 Returns:

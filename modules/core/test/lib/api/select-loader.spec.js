@@ -59,21 +59,21 @@ test('selectLoaderSync#urls', async (t) => {
     'find no loaders by url extension'
   );
 
-  t.is(
-    selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      mimeType: 'image/png'
-    }),
-    ImageLoader,
-    'options.mimeType can resolve loader using provided mimeType'
-  );
+  // t.is(
+  //   selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+  //     mimeType: 'image/png'
+  //   }),
+  //   ImageLoader,
+  //   'options.mimeType can resolve loader using provided mimeType'
+  // );
 
-  t.is(
-    selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
-      mimeType: 'application/x.image'
-    }),
-    ImageLoader,
-    'options.mimeType can resolve loader using provided `application/x.<loaderId>` mimeType'
-  );
+  // t.is(
+  //   selectLoaderSync('data.obj', [ImageLoader, Tiles3DLoader, DracoLoader, LASLoader], {
+  //     mimeType: 'application/x.image'
+  //   }),
+  //   ImageLoader,
+  //   'options.mimeType can resolve loader using provided `application/x.<loaderId>` mimeType'
+  // );
 });
 
 test('selectLoader#urls', async (t) => {

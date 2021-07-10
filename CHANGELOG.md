@@ -1,5 +1,50 @@
 ## v3.0 Prerelease
 
+### v3.0.0-beta.11
+
+- fix: node imports (#1606)
+- feat(core): Avoid `selectLoader()` exception when a 204 is received (#1193)
+- examples: i3s move to website folder (#1650)
+- examples: TerrainLoader (#1649)
+- chore(shapefile): improve typings (#1620)
+- feat: independent worker loaders (#1646)
+- fix: improve typings (#1647)
+
+### v3.0.0-beta.10
+
+- fix(gis): Fix transform.js types (#1645)
+- chore(parquet): Convert module to typescript (#1644)
+- fix(i3s): Safari test error (#1643)
+- Add getSingleFeature utility function (#1640)
+- feat(compression/crypto): Composable API (#1622)
+- fix(i3s): import Ttype ypedArray (#1639)
+- tiles: fix i3s LOD selection (#1618)
+- fix(docs): Remove commented markup from readme.md (#1636)
+- Update deck.gl version for website (#1626)
+- chore(docs): Doc cleanup (#1617)
+
+### v3.0.0-beta.9
+- feat(csv): skipEmptyLines default to true (#1632)
+- fix(csv): Change default `shape` to `object-row-table` (#1631)
+- Fix featureIds parsing to avoid errors in Safari browser (#1629)
+- fix-typing-warnings (#1628)
+- feat: Move gis category types to `@loaders.gl/schema (#1458)
+- Refactor 3DTiles converter to typescript (#1619)
+- feat(core): probe.gl for options warnings, handle <loader>.workerUrl (#1621)
+- chore: Move mesh utils to @loaders.gl/schema (#1607)
+- Move types from i3s-converter to particular modules (#1609)
+- chore(docs): Update whats-new for 3.0 (#1616)
+- feat: specify data format with `options.<loader>.shape` (#1615)
+- fix(csv): fix typing of options.csv.skipEmptyLines (#1614)
+
+### v3.0.0-beta.8
+
+- fix(csv): avoid downcasting CSVLoader type (#1613)
+- chore(las): Improving typings (#1603)
+- fix(core): Fix import statement (#1610)
+- chore: Remove lint warnings (#1611)
+- I3S-Converter - Add types to functions (#1576)
+
 ### v3.0.0-beta.7
 
 - chore: bump math.gl and probe.gl to the latest beta (#1605)

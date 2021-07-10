@@ -42,7 +42,7 @@ export async function parse(
   const candidateLoaders = getLoaders(loaders, context);
   // todo hacky type cast
   const loader = await selectLoader(data as ArrayBuffer, candidateLoaders, options);
-  // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
+  // Note: if no loader was found, if so just return null
   if (!loader) {
     return null;
   }

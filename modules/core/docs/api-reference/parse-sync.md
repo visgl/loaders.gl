@@ -30,7 +30,7 @@ try {
 
 ## Functions
 
-### parseSync(data: ArrayBuffer | String, loaders: Object | Object\[], options?: Object, url?: String]]) : any
+### `parseSync(data: ArrayBuffer | String, loaders: Loader | Loader[], options?: LoaderOptions, url?: String]]) : any`
 
 Parses data synchronously using the provided loader, if possible. If not, returns `null`, in which case asynchronous parsing is required.
 
@@ -40,8 +40,8 @@ Parses data synchronously using the provided loader, if possible. If not, return
   - `String`: Parse from text data in a string. (Only works for loaders that support textual input).
   - `Iterator`: Iterator that yeilds binary (`ArrayBuffer`) chunks or string chunks (string chunks only work for loaders that support textual input).
     can also be supplied.
-- `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
-- `options`: optional, options for the loader (see documentation of the specific loader).
+- `loaders`: can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
+- `options`: See [`LoaderOptions`](./loader-options).
 - `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
 
 Returns:
