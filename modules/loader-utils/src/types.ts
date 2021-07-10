@@ -17,10 +17,12 @@ export type TypedArray = TypedIntArray | TypedFloatArray;
 
 export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
 
+type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
+
 // Core Loader Options
 export type LoaderOptions = {
   /** fetch options or a custom fetch function */
-  fetch?: typeof fetch | RequestInit | null;
+  fetch?: typeof fetch | FetchLike | RequestInit | null;
   mimeType?: string;
   nothrow?: boolean;
 
