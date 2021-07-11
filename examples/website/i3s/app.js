@@ -1,17 +1,20 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
-
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 
-import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
+import AttributesPanel from './components/attributes-panel';
+import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 
 import {INITIAL_MAP_STYLE} from './constants';
 
@@ -40,23 +43,6 @@ const STATS_WIDGET_STYLE = {
   color: '#fff'
 };
 
-function parseTilesetUrlFromUrl() {
-  const parsedUrl = new URL(window.location.href);
-  return parsedUrl.searchParams.get('url');
-}
-
-function parseTilesetUrlParams(url, options) {
-  const parsedUrl = new URL(url);
-  const index = url.lastIndexOf('/layers/0');
-  let metadataUrl = url.substring(0, index);
-  let token = options && options.token;
-  if (parsedUrl.search) {
-    token = parsedUrl.searchParams.get('token');
-    metadataUrl = `${metadataUrl}${parsedUrl.search}`;
-  }
-  return {...options, tilesetUrl: url, token, metadataUrl};
-}
-
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -66,9 +52,13 @@ export default class App extends PureComponent {
       token: null,
       name: INITIAL_EXAMPLE_NAME,
       viewState: INITIAL_VIEW_STATE,
-      selectedMapStyle: INITIAL_MAP_STYLE
+      selectedMapStyle: INITIAL_MAP_STYLE,
+      selectedFeatureAttributes: null,
+      selectedFeatureIndex: -1,
+      isAttributesLoading: false
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
+    this.handleClosePanel = this.handleClosePanel.bind(this);
   }
 
   componentDidMount() {
@@ -102,7 +92,7 @@ export default class App extends PureComponent {
     const {tilesetUrl, token, name, metadataUrl} = params;
     this.setState({tilesetUrl, name, token});
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    this.setState({metadata});
+    this.setState({metadata, selectedFeatureAttributes: null});
   }
 
   // Updates stats, called every frame
@@ -143,10 +133,11 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {tilesetUrl, token} = this.state;
+    const {tilesetUrl, token, selectedFeatureIndex} = this.state;
+    // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {};
     if (token) {
-      loadOptions.token = token;
+      loadOptions.i3s = {token};
     }
     return [
       new Tile3DLayer({
@@ -155,9 +146,30 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        loadOptions
+        pickable: true,
+        loadOptions,
+        highlightedObjectIndex: selectedFeatureIndex
       })
     ];
+  }
+
+  async handleClick(info) {
+    if (!info.object || info.index < 0 || !info.layer) {
+      this.handleClosePanel();
+      return;
+    }
+
+    const {token} = this.state;
+    const options = {};
+
+    if (token) {
+      options.i3s = {token};
+    }
+
+    this.setState({isAttributesLoading: true});
+    const selectedFeatureAttributes = await loadFeatureAttributes(info.object, info.index, options);
+    this.setState({isAttributesLoading: false});
+    this.setState({selectedFeatureAttributes, selectedFeatureIndex: info.index});
   }
 
   _renderStats() {
@@ -180,20 +192,52 @@ export default class App extends PureComponent {
     );
   }
 
+  getTooltip() {
+    const {isAttributesLoading} = this.state;
+
+    if (isAttributesLoading) {
+      // eslint-disable-next-line no-undef
+      const tooltip = document.createElement('div');
+      render(<FontAwesomeIcon icon={faSpinner} />, tooltip);
+      return {html: tooltip.innerHTML};
+    }
+
+    return null;
+  }
+
+  handleClosePanel() {
+    this.setState({selectedFeatureAttributes: null, selectedFeatureIndex: -1});
+  }
+
+  renderAttributesPanel() {
+    const {selectedFeatureAttributes} = this.state;
+    const title = selectedFeatureAttributes.NAME || selectedFeatureAttributes.OBJECTID;
+
+    return (
+      <AttributesPanel
+        title={title}
+        handleClosePanel={this.handleClosePanel}
+        attributesObject={selectedFeatureAttributes}
+      />
+    );
+  }
+
   render() {
     const layers = this._renderLayers();
-    const {viewState, selectedMapStyle} = this.state;
+    const {viewState, selectedMapStyle, selectedFeatureAttributes} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderStats()}
-        {this._renderControlPanel()}
+        {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
         <DeckGL
           layers={layers}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
+          getTooltip={(info) => this.getTooltip(info)}
+          onClick={(info) => this.handleClick(info)}
         >
           <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
