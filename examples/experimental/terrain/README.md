@@ -1,4 +1,4 @@
-This is a minimal standalone version of the TerrainLayer example
+This an example of using the `TerrainLoader`
 on [deck.gl](http://deck.gl) website.
 
 ### Usage
