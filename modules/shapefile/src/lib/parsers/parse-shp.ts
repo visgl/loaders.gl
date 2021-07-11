@@ -1,8 +1,8 @@
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {BinaryGeometry} from '@loaders.gl/schema';
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 import {parseSHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
-import {LoaderOptions} from '@loaders.gl/loader-utils/types';
 
 const LITTLE_ENDIAN = true;
 const BIG_ENDIAN = false;
