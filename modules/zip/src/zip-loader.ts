@@ -1,3 +1,5 @@
+// Zip loader
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import JSZip from 'jszip';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -6,12 +8,14 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export const ZipLoader = {
   id: 'zip',
+  module: 'zip',
   name: 'Zip Archive',
   version: VERSION,
   extensions: ['zip'],
   mimeTypes: ['application/zip'],
   category: 'archive',
   tests: ['PK'],
+  options: {},
   parse: parseZipAsync
 };
 
@@ -58,3 +62,5 @@ async function loadZipEntry(jsZip: any, subFilename: string, options: any = {}) 
     return error;
   }
 }
+
+export const _typecheckZipLoader: LoaderWithParser = ZipLoader;
