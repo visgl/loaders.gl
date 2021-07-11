@@ -1,4 +1,4 @@
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {TerrainLoader} from '../terrain-loader';
+import {TerrainLoader} from '../index';
 
 createLoaderWorker(TerrainLoader);
