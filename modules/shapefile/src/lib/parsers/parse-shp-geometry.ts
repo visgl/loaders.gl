@@ -9,11 +9,11 @@ const LITTLE_ENDIAN = true;
  * @return Binary Geometry Object
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view: DataView, options?: {shp?}): BinaryGeometry | null {
+export function parseRecord(view: DataView, options?: {shp?: any}): BinaryGeometry | null {
   const {_maxDimensions} = options?.shp || {};
 
   let offset = 0;
-  const type = view.getInt32(offset, LITTLE_ENDIAN);
+  const type: number = view.getInt32(offset, LITTLE_ENDIAN);
   offset += Int32Array.BYTES_PER_ELEMENT;
 
   switch (type) {
@@ -67,21 +67,21 @@ export function parseRecord(view: DataView, options?: {shp?}): BinaryGeometry | 
 /**
  * Parse Null geometry
  *
- * @return {null}
+ * @return null
  */
-function parseNull() {
+function parseNull(): null {
   return null;
 }
 
 /**
  * Parse point geometry
  *
- * @param  {DataView} view Geometry data
- * @param  {number} offset Offset in view
- * @param  {number} dim Dimension size
+ * @param view Geometry data
+ * @param offset Offset in view
+ * @param dim Dimension size
  */
-function parsePoint(view, offset, dim): BinaryGeometry {
-  let positions;
+function parsePoint(view: DataView, offset: number, dim: number): BinaryGeometry {
+  let positions: Float64Array;
   [positions, offset] = parsePositions(view, offset, 1, dim);
 
   return {
@@ -93,21 +93,21 @@ function parsePoint(view, offset, dim): BinaryGeometry {
 /**
  * Parse MultiPoint geometry
  *
- * @param  {DataView} view Geometry data
- * @param  {number} offset Offset in view
- * @param  {number} dim Input dimension
- * @return {object} Binary geometry object
+ * @param view Geometry data
+ * @param offset Offset in view
+ * @param dim Input dimension
+ * @return Binary geometry object
  */
-function parseMultiPoint(view, offset, dim): BinaryGeometry {
+function parseMultiPoint(view: DataView, offset: number, dim: number): BinaryGeometry {
   // skip parsing box
   offset += 4 * Float64Array.BYTES_PER_ELEMENT;
 
   const nPoints = view.getInt32(offset, LITTLE_ENDIAN);
   offset += Int32Array.BYTES_PER_ELEMENT;
 
-  let xyPositions = null;
-  let mPositions = null;
-  let zPositions = null;
+  let xyPositions: Float64Array | null = null;
+  let mPositions: Float64Array | null = null;
+  let zPositions: Float64Array | null = null;
   [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
 
   // Parse Z coordinates
@@ -134,6 +134,7 @@ function parseMultiPoint(view, offset, dim): BinaryGeometry {
 
 /**
  * Polygon and PolyLine parsing
+ *
  * @param view Geometry data
  * @param offset Offset in view
  * @param dim Input dimension
@@ -164,9 +165,9 @@ function parsePoly(
   ringIndices[nParts] = nPoints;
   offset += nParts * Int32Array.BYTES_PER_ELEMENT;
 
-  let xyPositions = null;
-  let mPositions = null;
-  let zPositions = null;
+  let xyPositions: Float64Array | null = null;
+  let mPositions: Float64Array | null = null;
+  let zPositions: Float64Array | null = null;
   [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
 
   // Parse Z coordinates
@@ -228,13 +229,18 @@ function parsePoly(
 /**
  * Parse a contiguous block of positions into a Float64Array
  *
- * @param  {DataView} view  Geometry data
- * @param  {number} offset  Offset in view
- * @param  {number} nPoints Number of points
- * @param  {number} dim     Input dimension
- * @return {[Float64Array, number]} Data and offset
+ * @param view  Geometry data
+ * @param offset  Offset in view
+ * @param nPoints Number of points
+ * @param dim     Input dimension
+ * @return Data and offset
  */
-function parsePositions(view, offset, nPoints, dim) {
+function parsePositions(
+  view: DataView,
+  offset: number,
+  nPoints: number,
+  dim: number
+): [Float64Array, number] {
   const bufferOffset = view.byteOffset + offset;
   const bufferLength = nPoints * dim * Float64Array.BYTES_PER_ELEMENT;
   return [
@@ -247,13 +253,17 @@ function parsePositions(view, offset, nPoints, dim) {
  * Concatenate and interleave positions arrays
  * xy positions are interleaved; mPositions, zPositions are their own arrays
  *
- * @param  {Float64Array} xyPositions 2d positions
- * @param  {Float64Array?} mPositions  M positions
- * @param  {Float64Array?} zPositions  Z positions
- * @return {Float64Array} Combined interleaved positions
+ * @param xyPositions 2d positions
+ * @param mPositions  M positions
+ * @param zPositions  Z positions
+ * @return Combined interleaved positions
  */
 // eslint-disable-next-line complexity
-function concatPositions(xyPositions, mPositions, zPositions) {
+function concatPositions(
+  xyPositions: Float64Array,
+  mPositions: Float64Array | null,
+  zPositions: Float64Array | null
+): Float64Array {
   if (!(mPositions || zPositions)) {
     return xyPositions;
   }
@@ -299,20 +309,20 @@ function concatPositions(xyPositions, mPositions, zPositions) {
  * A positive number is clockwise.
  * A negative number is counter clockwise.
  *
- * @param  {Float64Array} positions
- * @return {number} Sign of polygon ring
+ * @param positions
+ * @return Sign of polygon ring
  */
-function getWindingDirection(positions) {
+function getWindingDirection(positions: Float64Array): number {
   return Math.sign(getSignedArea(positions));
 }
 
 /**
  * Get signed area of flat typed array of 2d positions
  *
- * @param  {Float64Array} positions
- * @return {number} Signed area of polygon ring
+ * @param positions
+ * @return Signed area of polygon ring
  */
-function getSignedArea(positions) {
+function getSignedArea(positions: Float64Array): number {
   let area = 0;
 
   // Rings are closed according to shapefile spec

@@ -1,7 +1,8 @@
-import {BinaryGeometry} from '@loaders.gl/schema';
+import type {BinaryGeometry} from '@loaders.gl/schema';
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 import {parseSHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
+import {LoaderOptions} from '@loaders.gl/loader-utils/types';
 
 const LITTLE_ENDIAN = true;
 const BIG_ENDIAN = false;
@@ -20,23 +21,23 @@ const STATE = {
 
 type SHPResult = {
   geometries: [];
-  header?;
+  header?: {};
   error?: string;
 };
 
 class SHPParser {
-  options;
+  options?: any = {};
   binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
   state = STATE.EXPECTING_HEADER;
   result: SHPResult = {
     geometries: []
   };
 
-  constructor(options) {
+  constructor(options?: LoaderOptions) {
     this.options = options;
   }
 
-  write(arrayBuffer) {
+  write(arrayBuffer: ArrayBuffer) {
     this.binaryReader.write(arrayBuffer);
     this.state = parseState(this.state, this.result, this.binaryReader, this.options);
   }
@@ -61,6 +62,11 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeom
   return shpParser.result;
 }
 
+/**
+ * @param asyncIterator
+ * @param options
+ * @returns
+ */
 export async function* parseSHPInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: object
@@ -95,13 +101,18 @@ export async function* parseSHPInBatches(
  * `return` releases context so that more data can be written into the
  * BinaryChunkReader.
  *
- * @param  {Number} state Current state
- * @param  {Object} result  An object to hold result data
- * @param  {BinaryChunkReader} binaryReader
- * @return {Number} State at end of current parsing
+ * @param  state Current state
+ * @param  result An object to hold result data
+ * @param  binaryReader
+ * @return State at end of current parsing
  */
 /* eslint-disable complexity, max-depth */
-function parseState(state, result, binaryReader, options) {
+function parseState(
+  state: number,
+  result: {[key: string]: any},
+  binaryReader: BinaryChunkReader,
+  options: {shp?: any}
+): number {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {

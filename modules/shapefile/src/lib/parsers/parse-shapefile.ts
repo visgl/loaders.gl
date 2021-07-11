@@ -17,12 +17,18 @@ interface ShapefileOutput {
   header: SHPHeader;
   data: object[];
 }
-
+/**
+ * Parsing of file in batches
+ *
+ * @param asyncIterator
+ * @param options
+ * @param context
+ */
 // eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?,
-  context?
+  options?: any,
+  context?: any
 ): AsyncIterable<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {parseInBatches, fetch, url} = context;
@@ -32,7 +38,7 @@ export async function* parseShapefileInBatches(
   const shapeIterator = await parseInBatches(asyncIterator, SHPLoader, options);
 
   // parse properties
-  let propertyIterator;
+  let propertyIterator: any;
   const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
   if (dbfResponse.ok) {
     propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {
@@ -58,7 +64,7 @@ export async function* parseShapefileInBatches(
     }
   }
 
-  let iterator;
+  let iterator: any;
   if (propertyIterator) {
     iterator = zipBatchIterators(shapeIterator, propertyIterator);
   } else {
@@ -66,8 +72,8 @@ export async function* parseShapefileInBatches(
   }
 
   for await (const item of iterator) {
-    let geometries;
-    let properties;
+    let geometries: any;
+    let properties: any;
     if (!propertyIterator) {
       geometries = item;
     } else {
@@ -81,11 +87,8 @@ export async function* parseShapefileInBatches(
       features = reprojectFeatures(features, prj, _targetCrs);
     }
     yield {
-      // @ts-ignore
       encoding: cpg,
-      // @ts-ignore
       prj,
-      // @ts-ignore
       shx,
       header: shapeHeader,
       data: features
@@ -93,10 +96,18 @@ export async function* parseShapefileInBatches(
   }
 }
 
+/**
+ * Parse shapefile
+ *
+ * @param arrayBuffer
+ * @param options
+ * @param context
+ * @returns output of shapefile
+ */
 export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
-  options?,
-  context?
+  options?: {[key: string]: any},
+  context?: any
 ): Promise<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {parse} = context;
@@ -117,23 +128,25 @@ export async function parseShapefile(
 
   let features = joinProperties(geojsonGeometries, properties);
   if (reproject) {
-    // @ts-ignore
     features = reprojectFeatures(features, prj, _targetCrs);
   }
 
   return {
-    // @ts-ignore
     encoding: cpg,
-    // @ts-ignore
     prj,
-    // @ts-ignore
     shx,
     header,
     data: features
   };
 }
 
-function parseGeometries(geometries) {
+/**
+ * Parse geometries
+ *
+ * @param geometries
+ * @returns geometries as an array
+ */
+function parseGeometries(geometries: any[]): any[] {
   const geojsonGeometries: any[] = [];
   for (const geom of geometries) {
     // ts-ignore
@@ -145,11 +158,11 @@ function parseGeometries(geometries) {
 /**
  * Join properties and geometries into features
  *
- * @param  {object[]} geometries [description]
- * @param  {object[]?} properties [description]
- * @return {object[]}            [description]
+ * @param geometries [description]
+ * @param  properties [description]
+ * @return [description]
  */
-function joinProperties(geometries, properties): Feature[] {
+function joinProperties(geometries: object[], properties: object[]): Feature[] {
   const features: Feature[] = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];
@@ -173,15 +186,21 @@ function joinProperties(geometries, properties): Feature[] {
  * @param targetCrs †arget coordinate reference system
  * @return Reprojected Features
  */
-function reprojectFeatures(features: Feature[], sourceCrs: string, targetCrs: string): Feature[] {
+function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: string): Feature[] {
   const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
   return transformGeoJsonCoords(features, (coord) => projection.project(coord));
 }
 
+/**
+ *
+ * @param options
+ * @param context
+ * @returns Promise
+ */
 // eslint-disable-next-line max-statements
 export async function loadShapefileSidecarFiles(
-  options: object,
-  context
+  options?: object,
+  context?: any
 ): Promise<{
   shx?: SHXOutput;
   cpg?: string;
@@ -243,12 +262,25 @@ export function replaceExtension(url: string, newExtension: string): string {
 }
 
 // NOTE - this gives the entire path minus extension (i.e. NOT same as path.basename)
-function basename(url) {
+/**
+ * @param url
+ * @returns string
+ */
+function basename(url: string): string {
   const extIndex = url && url.lastIndexOf('.');
-  return extIndex >= 0 ? url.substr(0, extIndex) : '';
+  if (typeof extIndex === 'number') {
+    return extIndex >= 0 ? url.substr(0, extIndex) : '';
+  }
+  return extIndex;
 }
-
-function extname(url) {
+/**
+ * @param url
+ * @returns string
+ */
+function extname(url: string): string {
   const extIndex = url && url.lastIndexOf('.');
-  return extIndex >= 0 ? url.substr(extIndex + 1) : '';
+  if (typeof extIndex === 'number') {
+    return extIndex >= 0 ? url.substr(extIndex + 1) : '';
+  }
+  return extIndex;
 }
