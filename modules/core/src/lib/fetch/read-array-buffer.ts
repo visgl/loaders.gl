@@ -1,5 +1,5 @@
 //
-import fs from '../../node/fs';
+import {fs} from '@loaders.gl/loader-utils';
 
 /**
  * Reads a chunk from a random access file

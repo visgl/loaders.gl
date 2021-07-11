@@ -22,10 +22,6 @@
   "module": "dist/esm/index.js",
   "sideEffects": false,
   "browser": {
-    "./src/node/fs.ts": false,
-    "./src/node/fs.js": false,
-    "./dist/es5/node/fs.js": false,
-    "./dist/esm/node/fs.js": false,
     "fs": false
   },
   "files": [
