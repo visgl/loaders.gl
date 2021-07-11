@@ -27,6 +27,10 @@ export async function selectLoader(
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<Loader | null> {
+  if (!validHTTPResponse(data)) {
+    return null;
+  }
+
   // First make a sync attempt, disabling exceptions
   let loader = selectLoaderSync(data, loaders, {...options, nothrow: true}, context);
   if (loader) {
@@ -63,6 +67,10 @@ export function selectLoaderSync(
   options?: LoaderOptions,
   context?: LoaderContext
 ): Loader | null {
+  if (!validHTTPResponse(data)) {
+    return null;
+  }
+
   // eslint-disable-next-line complexity
   // if only a single loader was provided (not as array), force its use
   // TODO - Should this behavior be kept and documented?
@@ -89,6 +97,18 @@ export function selectLoaderSync(
   }
 
   return loader;
+}
+
+/** Check HTTP Response */
+function validHTTPResponse(data: any): boolean {
+  // HANDLE HTTP status
+  if (data instanceof Response) {
+    // 204 - NO CONTENT. This handles cases where e.g. a tile server responds with 204 for a missing tile
+    if (data.status === 204) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function getNoValidLoaderMessage(data): string {
