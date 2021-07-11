@@ -1,4 +1,4 @@
-import {ArrowLoader} from '../arrow-loader';
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
+import {ArrowLoader} from '../index';
 
 createLoaderWorker(ArrowLoader);

@@ -16,7 +16,6 @@ import type {
 // Parsed data types (output)
 import type {
   TypedArray,
-
   // standard mesh output data
   MeshData,
   MeshAttribute,
@@ -27,7 +26,7 @@ import type {
   DracoMetadataEntry,
   DracoQuantizationTransform,
   DracoOctahedronTransform
-} from '../types';
+} from './draco-types';
 
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import {makeSchemaFromAttributes} from './utils/schema-attribute-utils';

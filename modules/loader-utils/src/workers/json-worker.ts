@@ -1,10 +1,4 @@
 import {createLoaderWorker} from '../lib/worker-loader-utils/create-loader-worker';
+import {JSONLoader} from '../json-loader';
 
-createLoaderWorker({
-  name: 'TEST-JSON-LOADER',
-  extensions: ['json'],
-  parseTextSync: (str) => {
-    console.log('TEST-JSON-LOADER:processing'); // eslint-disable-line
-    return JSON.parse(str);
-  }
-});
+createLoaderWorker(JSONLoader);

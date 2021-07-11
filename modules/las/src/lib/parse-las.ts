@@ -1,6 +1,7 @@
 // ported and es6-ified from https://github.com/verma/plasio/
 
-import type {LASHeader, LASLoaderOptions} from '../las-loader';
+import type {LASLoaderOptions} from '../las-loader';
+import type {LASHeader} from './las-types';
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import {LASFile} from './laslaz-decoder';
 
@@ -19,7 +20,10 @@ type LASChunk = {
  * @returns LASHeader
  */
 /* eslint-disable max-statements */
-export default function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOptions): LASHeader {
+export default function parseLAS(
+  arrayBuffer: ArrayBuffer,
+  options: LASLoaderOptions = {}
+): LASHeader {
   let pointIndex: number = 0;
 
   let positions: Float32Array | Float64Array;
@@ -29,16 +33,14 @@ export default function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOpt
   let originalHeader: any;
 
   const result: any = {};
-  const {onProgress} = options;
 
-  const {skip, colorDepth, fp64} = options.las || {};
   // @ts-ignore Possibly undefined
-  parseLASChunked(arrayBuffer, skip, (decoder: any = {}, header: LASHeader) => {
+  parseLASChunked(arrayBuffer, options.las?.skip, (decoder: any = {}, header: LASHeader) => {
     if (!originalHeader) {
       originalHeader = header;
       const total = header.totalToRead;
 
-      const PositionsType = fp64 ? Float64Array : Float32Array;
+      const PositionsType = options.las?.fp64 ? Float64Array : Float32Array;
       positions = new PositionsType(total * 3);
       // laslaz-decoder.js `pointFormatReaders`
       colors = header.pointsFormatId >= 2 ? new Uint8Array(total * 4) : null;
@@ -67,7 +69,7 @@ export default function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOpt
       offset: [offsetX, offsetY, offsetZ]
     } = header;
 
-    const twoByteColor = detectTwoByteColors(decoder, batchSize, colorDepth);
+    const twoByteColor = detectTwoByteColors(decoder, batchSize, options.las?.colorDepth);
 
     for (let i = 0; i < batchSize; i++) {
       const {position, color, intensity, classification} = decoder.getPoint(i);
@@ -95,19 +97,17 @@ export default function parseLAS(arrayBuffer: ArrayBuffer, options: LASLoaderOpt
       pointIndex++;
     }
 
-    if (onProgress) {
-      onProgress(
-        Object.assign(
-          {
-            header: {
-              vertexCount: header.totalRead
-            },
-            progress: header.totalRead / header.totalToRead
+    options?.onProgress?.(
+      Object.assign(
+        {
+          header: {
+            vertexCount: header.totalRead
           },
-          result
-        )
-      );
-    }
+          progress: header.totalRead / header.totalToRead
+        },
+        result
+      )
+    );
   });
 
   result.header = {

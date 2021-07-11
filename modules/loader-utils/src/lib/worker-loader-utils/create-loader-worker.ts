@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-
+import type {LoaderWithParser} from '../../types';
 import {WorkerBody} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
 
@@ -9,7 +9,7 @@ let requestId = 0;
  * Set up a WebWorkerGlobalScope to talk with the main thread
  * @param loader
  */
-export function createLoaderWorker(loader: any) {
+export function createLoaderWorker(loader: LoaderWithParser) {
   // Check that we are actually in a worker thread
   if (typeof self === 'undefined') {
     return;

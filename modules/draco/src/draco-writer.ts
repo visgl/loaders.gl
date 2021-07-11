@@ -1,5 +1,5 @@
 import type {Writer} from '@loaders.gl/loader-utils';
-import type {DracoMeshData} from './types';
+import type {DracoMeshData} from './lib/draco-types';
 import type {DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
 import {loadDracoEncoderModule} from './lib/draco-module-loader';

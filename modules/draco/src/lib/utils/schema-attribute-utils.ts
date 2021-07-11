@@ -1,6 +1,6 @@
 import {Schema, Field, FixedSizeList, getArrowTypeFromTypedArray} from '@loaders.gl/schema';
 
-import {MeshAttribute, DracoAttribute, DracoLoaderData, DracoMetadataEntry} from '../../types';
+import {MeshAttribute, DracoAttribute, DracoLoaderData, DracoMetadataEntry} from '../draco-types';
 
 export function makeSchemaFromAttributes(
   attributes: {[attributeName: string]: MeshAttribute},

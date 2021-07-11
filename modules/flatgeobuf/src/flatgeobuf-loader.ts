@@ -4,20 +4,18 @@ import type {Loader} from '@loaders.gl/loader-utils';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-/**
- * Worker loader for PCD - Point Cloud Data
- */
-export const PCDLoader = {
-  name: 'PCD (Point Cloud Data)',
-  id: 'pcd',
-  module: 'pcd',
+export const FlatGeobufLoader = {
+  id: 'flatgeobuf',
+  name: 'FlatGeobuf',
+  module: 'flatgeobuf',
   version: VERSION,
   worker: true,
-  extensions: ['pcd'],
-  mimeTypes: ['text/plain'],
+  extensions: ['fgb'],
+  mimeTypes: ['application/octet-stream'],
+  category: 'geometry',
   options: {
-    pcd: {}
+    flatgeobuf: {}
   }
 };
 
-export const _typecheckPCDLoader: Loader = PCDLoader;
+export const _typecheckFlatGeobufLoader: Loader = FlatGeobufLoader;
