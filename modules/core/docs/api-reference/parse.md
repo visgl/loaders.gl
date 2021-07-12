@@ -61,7 +61,7 @@ Parses data asynchronously either using the provided loader or loaders, or using
 
 - `data`: loaded data or an object that allows data to be loaded. See table below for valid input types for this parameter.
 - `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of pre-registered loaders (see `registerLoaders`)
-- `options`: optional, options for the loader (see documentation of the specific loader).
+- `options`: See [`LoaderOptions`](./loader-options).
 - `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
 
 Returns:
@@ -86,20 +86,3 @@ Notes:
 
 Note that additional data types can be converted to `Response` objects and used with `parse`, e.g. with `new Response(new FormData(...))`. See browser documentation for the `Response` class for more details.
 
-## Options
-
-Top-level options
-
-| Option                           | Type               | Default    | Description                                                                                                                                                                                                       |
-| -------------------------------- | ------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.fetch`                  | object or function | `{}`       | Specifies either an object with options to pass to `fetchFile`, or a function that is called in place of `fetchFile` to fetch data in any subloaders.                                                             |
-| `options.mimeType`               | string            | N/A    | Provide a fallback `mimeType` in case not provided by server. A specific loader can be selected through `'application/x-<loader.id>'`                                                                                                                                    |
-| `options.metadata`               | boolean            | `false`    | Currently only implemented for `parseInBatches`, adds initial metadata batch                                                                                                                                      |
-| `options.log`                    | object             | `console`  | By default set to a `console` wrapper. Setting log to `null` will turn off logging.                                                                                                                               |
-| `options.worker`                 | boolean            | `true`     | If the selected loader is equipped with a worker url (and the runtime environment supports it) parse on a worker thread.                                                                                          |
-| `options.maxConcurrency`         | `number`           | `3`        | How many worker instances should be created for each loader. Note that setting this higher than roughly the number CPU cores on your current machine will not provide much benefit and may create extra overhead. |
-| `option.maxMobileConcurrency`    | `number`           | `1`        | How many worker instances should be created for each loader on mobile devices. Mobile devicee have fewer cores and less memory available.                                                                         |
-| `options.reuseWorkers`           | boolean            | `true`     | By default, worker threads are kept in memory and reused. But if `reuseWorkers` is `false` workers will be automatically terminated after job completion and reloaded for each job.                               |
-| `options.<loader-id>.workerUrl`  | string             | per-loader | If the corresponding loader can parse on a worker, the url to the worker script can be controller with this option.                                                                                               |
-| `options.modules` (experimental) | object             | -          | Supply bundled modules (like draco3d) instead of loading from CDN.                                                                                                                                                |
-| `options.CDN` (experimental)     | string             | -          | Controls certain script loading from CDN. `true` loads from `unpkg.com/@loaders.gl`. `false` load from local urls. `string` alternate CDN url.                                                                    |

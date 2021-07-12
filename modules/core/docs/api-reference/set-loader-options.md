@@ -18,10 +18,11 @@ setLoaderOptions({
 
 ## Functions
 
-### setLoaderOptions(options : Object) : void
+### setLoaderOptions(options: LoaderOptions) : void
 
 Merges the supplied options into the current global options
 
+- `options`: See [`LoaderOptions`](./loader-options).
 ## Options
 
 A loader object, that can contain a mix of options:

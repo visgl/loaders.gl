@@ -48,8 +48,8 @@ Loads data in batches from a stream, releasing each batch to the application whi
 Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
 
 - `files`: loaded data or an object that allows data to be loaded. Plese refer to the table below for valid types.
-- `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
-- `options`: optional, options for the loader (see documentation of the specific loader).
+- `loaders`: can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
+- `options`: see [`LoaderOptions`](./loader-options).
 
 Returns:
 

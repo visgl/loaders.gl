@@ -23,8 +23,11 @@ type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 export type LoaderOptions = {
   /** fetch options or a custom fetch function */
   fetch?: typeof fetch | FetchLike | RequestInit | null;
-  mimeType?: string;
+  /** Do not throw on errors */
   nothrow?: boolean;
+
+  /** loader selection, search first for supplied mimeType */
+  mimeType?: string;
 
   // general
   /** Experimental: Supply a logger to the parser */

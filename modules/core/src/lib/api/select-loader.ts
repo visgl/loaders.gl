@@ -79,22 +79,40 @@ export function selectLoaderSync(
   }
 
   // Add registered loaders
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  loaders = [...((loaders as Loader[]) || []), ...getRegisteredLoaders()];
+  loaders = loaders ? [...loaders] : [];
+  loaders.push(...getRegisteredLoaders());
+
   normalizeLoaders(loaders);
 
-  const {url, type} = getResourceUrlAndType(data);
-
-  const testUrl = url || context?.url;
-  let loader = findLoaderByUrl(loaders, testUrl);
-  loader = loader || findLoaderByContentType(loaders, type || options?.mimeType);
-  // NOTE: Initial data is not always available (e.g. Response, stream, async iterator)
-  loader = loader || findLoaderByExamingInitialData(loaders, data);
+  const loader = selectLoaderInternal(data, loaders, options, context);
 
   // no loader available
   if (!loader && !options?.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
+
+  return loader;
+}
+
+/** Implements loaders selection logic */
+function selectLoaderInternal(
+  data: Response | Blob | ArrayBuffer | string,
+  loaders: Loader[],
+  options?: LoaderOptions,
+  context?: LoaderContext
+) {
+  const {url, type} = getResourceUrlAndType(data);
+
+  const testUrl = url || context?.url;
+
+  let loader: Loader | null = null;
+
+  // Look up loader by url
+  loader = findLoaderByUrl(loaders, testUrl);
+  // Look up loader by mime type
+  loader = loader || findLoaderByContentType(loaders, type);
+  // Look for loader via initial bytes (Note: not always accessible (e.g. Response, stream, async iterator)
+  loader = loader || findLoaderByInitialBytes(loaders, data);
 
   return loader;
 }
@@ -167,7 +185,7 @@ function findLoaderByContentType(loaders, mimeType) {
   return null;
 }
 
-function findLoaderByExamingInitialData(loaders, data) {
+function findLoaderByInitialBytes(loaders, data) {
   if (!data) {
     return null;
   }

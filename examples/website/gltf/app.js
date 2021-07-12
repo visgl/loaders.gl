@@ -208,10 +208,14 @@ export default class AppAnimationLoop extends AnimationLoop {
 }
 
 if (typeof window !== 'undefined' && !window.website) {
-  const animationLoop = new AppAnimationLoop();
-  animationLoop.start();
+  try {
+    const animationLoop = new AppAnimationLoop();
+    animationLoop.start();
 
-  const infoDiv = document.createElement('div');
-  infoDiv.innerHTML = animationLoop.getInfo();
-  document.body.appendChild(infoDiv);
+    const infoDiv = document.createElement('div');
+    infoDiv.innerHTML = animationLoop.getInfo();
+    document.body.appendChild(infoDiv);
+  } catch (error) {
+    console.error(error);
+  }
 }

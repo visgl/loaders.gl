@@ -49,8 +49,8 @@ Parses data in batches from a stream, releasing each batch to the application wh
 Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
 
 - `data`: loaded data or an object that allows data to be loaded. Plese refer to the table below for valid types.
-- `loaders` - can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
-- `options`: optional, options for the loader (see documentation of the specific loader).
+- `loaders` can be a single loader or an array of loaders. If ommitted, will use the list of registered loaders (see `registerLoaders`)
+- `options`: See [`LoaderOptions`](./loader-options) for documentation of options.
 - `url`: optional, assists in the autoselection of a loader if multiple loaders are supplied to `loader`.
 
 Returns:
@@ -72,12 +72,3 @@ Notes:
 | `Promise`                                          | A promise that resolves to any of the other supported data types can also be supplied.        |
 
 Note that many other data sources can also be parsed by first converting them to `Response` objects, e.g. with `fetchResoure`: http urls, data urls, `ArrayBuffer`, `String`, `File`, `Blob`, `ReadableStream` etc.
-
-## Remarks
-
-| Option                       | Type          | Default                    | Description                                                                                               |
-| ---------------------------- | ------------- | -------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.metadata`           | `boolean`     | `false`                    | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded. |
-| `options.batches.chunkSize?` | `number`      | N/A                        | When set, "atomic" inputs (like `ArrayBuffer` or `string`) are chunked, enabling batched parsing.         | No effect if input is already an iterator or stream.                                                                                                  |
-| `options.fetch`              | `object       | (url: string) => Response` | `{}`                                                                                                      | Specifies either an object with options to pass to `fetchFile`, or a function that is called in place of `fetchFile` to fetch data in any subloaders. |
-| `options.transforms`         | `TransformBatches[]` | `[]`                       | An array with transform functions that can be applied to the input data before parsing.                            |

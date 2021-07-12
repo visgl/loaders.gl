@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, {Component} from 'react'; // eslint-disable-line
 import PropTypes from 'prop-types';
@@ -49,16 +50,20 @@ export default class AnimationLoopRunner extends Component {
   constructor(props) {
     super(props);
     const {AnimationLoop} = this.props;
-    this.animationLoop = new AnimationLoop();
+    try{
+      this.animationLoop = new AnimationLoop();
+    } catch (error) {
+      console.log(`Failed to start animation loop: ${error}`);
+    }
   }
 
   componentDidMount() {
     const {showStats} = this.props;
 
-    this.animationLoop._setDisplay(new VRDisplay());
+    this.animationLoop?._setDisplay?.(new VRDisplay());
 
     // Start the actual example
-    this.animationLoop.start(this.props);
+    this.animationLoop?.start?.(this.props);
 
     // animationLoop.stats.reset();
 
@@ -68,8 +73,8 @@ export default class AnimationLoopRunner extends Component {
   }
 
   componentWillUnmount() {
-    this.animationLoop.stop(this.props);
-    this.animationLoop.delete();
+    this.animationLoop?.stop?.(this.props);
+    this.animationLoop?.delete?.();
     this.animationLoop = null;
     // this._stopStats();
   }
@@ -130,10 +135,10 @@ export default class AnimationLoopRunner extends Component {
     const {pageContext, panel = true, stats, sourceLink} = this.props;
     const name = pageContext && pageContext.exampleConfig && pageContext.exampleConfig.title;
 
-    const notSupported = this.animationLoop.isSupported && !this.animationLoop.isSupported();
+    const notSupported = !this.animationLoop?.isSupported?.();
 
     if (notSupported) {
-      const altText = this.animationLoop.getAltText ? this.animationLoop.getAltText() : DEFAULT_ALT_TEXT;
+      const altText = this.animationLoop?.getAltText?.() || DEFAULT_ALT_TEXT;
       return (
         <div style={STYLES.EXAMPLE_NOT_SUPPPORTED}>
           <h2> {altText} </h2>
@@ -142,8 +147,7 @@ export default class AnimationLoopRunner extends Component {
     }
 
     // HTML is stored on the app
-    const controls = this.props.AnimationLoop.getInfo() ||
-      (this.animationLoop.getInfo && this.animationLoop.getInfo());
+    const controls = this.props.AnimationLoop.getInfo() || this.animationLoop?.getInfo?.();
 
     return (
       <div style={{width: '100%', height: '100%', position: 'relative'}}>
