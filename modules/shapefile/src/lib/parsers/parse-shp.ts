@@ -1,5 +1,6 @@
 import type {BinaryGeometry} from '@loaders.gl/schema';
 import type {LoaderOptions} from '@loaders.gl/loader-utils/';
+
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 import {parseSHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
