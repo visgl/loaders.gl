@@ -15,7 +15,7 @@ import {
   Float32,
   Binary
 } from '@loaders.gl/schema';
-import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {binaryToGeoJSON, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import {
   GeometryColumnsRow,
@@ -352,7 +352,7 @@ function parseGeometry(arrayBuffer: ArrayBuffer) {
   const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
 
   // @ts-expect-error
-  return binaryToGeoJson(binaryGeometry);
+  return binaryToGeoJSON(binaryGeometry);
 }
 
 /**

@@ -20,26 +20,28 @@ import type {
 // Note:L We do not handle GeometryCollection, define a limited Geometry type that always has coordinates.
 // type FeatureGeometry = Point | MultiPoint | LineString | MultiLineString | Polygon | MultiPolygon;
 
+type BinaryToGeoJsonOptions = {
+  type?: BinaryGeometryType;
+  globalFeatureId?: number;
+};
+
 /**
  * Convert binary geometry representation to GeoJSON
  * @param data   geometry data in binary representation
- * @param type   Input data type: Point, LineString, or Polygon
- * @param format Output format, either geometry or feature
+ * @param options
+ * @param options.type  Input data type: Point, LineString, or Polygon
+ * @param options.featureId  Global feature id. If specified, only a single feature is extracted
  * @return GeoJSON objects
  */
-export function binaryToGeoJson(
+export function binaryToGeoJSON(
   data: BinaryGeometry | BinaryFeatures,
-  type?: BinaryGeometryType,
-  format: 'feature' | 'geometry' = 'feature'
-): Geometry | Feature[] {
-  switch (format) {
-    case 'feature':
-      return parseFeatures(data, type);
-    case 'geometry':
-      return parseGeometry(data as BinaryGeometry);
-    default:
-      throw new Error(format);
+  options?: BinaryToGeoJsonOptions
+): Geometry | Feature[] | Feature {
+  const globalFeatureId = options?.globalFeatureId;
+  if (globalFeatureId !== undefined) {
+    return getSingleFeature(data as BinaryFeatures, globalFeatureId);
   }
+  return parseFeatures(data, options?.type);
 }
 
 /**
@@ -47,7 +49,7 @@ export function binaryToGeoJson(
  * @param data   geometry data in binary representation
  * @return GeoJSON feature
  */
-export function getSingleFeature(data: BinaryFeatures, globalFeatureId: number) {
+function getSingleFeature(data: BinaryFeatures, globalFeatureId: number) {
   const dataArray = normalizeInput(data);
   for (const data of dataArray) {
     let lastIndex = 0;
@@ -72,7 +74,7 @@ export function getSingleFeature(data: BinaryFeatures, globalFeatureId: number) 
     }
   }
 
-  return null;
+  throw new Error(`featureId:${globalFeatureId} not found`);
 }
 
 function parseFeatures(data, type): Geometry | Feature[] {
@@ -90,7 +92,11 @@ function parseFeatures(data, type): Geometry | Feature[] {
 }
 
 /** Parse input binary data and return a valid GeoJSON geometry object */
-function parseGeometry(data: BinaryGeometry, startIndex?: number, endIndex?: number): Geometry {
+export function parseGeometry(
+  data: BinaryGeometry,
+  startIndex?: number,
+  endIndex?: number
+): Geometry {
   switch (data.type) {
     case 'Point':
       return pointToGeoJson(data, startIndex, endIndex);

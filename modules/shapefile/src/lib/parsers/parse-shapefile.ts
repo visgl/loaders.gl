@@ -2,7 +2,7 @@
 import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
 
-import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
@@ -149,8 +149,7 @@ export async function parseShapefile(
 function parseGeometries(geometries: any[]): any[] {
   const geojsonGeometries: any[] = [];
   for (const geom of geometries) {
-    // ts-ignore
-    geojsonGeometries.push(binaryToGeoJson(geom, geom.type, 'geometry'));
+    geojsonGeometries.push(binaryToGeometry(geom));
   }
   return geojsonGeometries;
 }
