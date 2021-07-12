@@ -50,6 +50,6 @@ export class CRC32CHash extends Hash {
     const hashValue = this._hash.finalize();
     const hex = toHex(hashValue);
     const hash = hexToBase64(hex);
-    this.options.crypto?.onEnd({hash});
+    this.options.crypto?.onEnd?.({hash});
   }
 }
