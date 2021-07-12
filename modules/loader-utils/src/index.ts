@@ -3,6 +3,7 @@ export type {
   Loader,
   LoaderWithParser,
   LoaderContext,
+  LocalContext,
   LoaderOptions,
   Writer,
   WriterOptions,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import test from 'tape-promise/tape';
 import BinaryChunkReader from '@loaders.gl/shapefile/lib/streaming/binary-chunk-reader';
 

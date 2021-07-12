@@ -184,10 +184,17 @@ export type LoaderContext = {
   parseInBatches?: ParseInBatches;
 };
 
+export type LocalContext = {
+  fetch: NonNullable<LoaderContext['fetch']>;
+  url: NonNullable<LoaderContext['url']>;
+  parse: NonNullable<LoaderContext['parse']> | any;
+  parseInBatches: NonNullable<LoaderContext['parseInBatches']> | any;
+};
+
 type Parse = (
   arrayBuffer: ArrayBuffer,
   options?: LoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext & LocalContext
 ) => Promise<any>;
 type ParseSync = (
   arrayBuffer: ArrayBuffer,
@@ -196,6 +203,7 @@ type ParseSync = (
 ) => any;
 type ParseText = (text: string, options?: LoaderOptions) => Promise<any>;
 type ParseTextSync = (text: string, options?: LoaderOptions) => any;
+
 type ParseInBatches = (
   iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: LoaderOptions,

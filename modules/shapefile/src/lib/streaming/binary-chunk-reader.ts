@@ -19,11 +19,11 @@ export default class BinaryChunkReader {
   /**
    * @param arrayBuffer
    */
-  write(arrayBuffer: ArrayBuffer) {
+  write(arrayBuffer: ArrayBuffer): void {
     this.arrayBuffers.push(arrayBuffer);
   }
 
-  end() {
+  end(): void {
     this.arrayBuffers = [];
     this.ended = true;
   }
@@ -97,7 +97,7 @@ export default class BinaryChunkReader {
    * @param bytes Number of bytes
    * @return DataView with data
    */
-  getDataView(bytes: number): DataView {
+  getDataView(bytes: number): DataView | null {
     const bufferOffsets = this.findBufferOffsets(bytes);
     // return `null` if not enough data, except if end() already called, in
     // which case throw an error.
@@ -106,7 +106,6 @@ export default class BinaryChunkReader {
     }
 
     if (!bufferOffsets) {
-      // @ts-ignore
       return null;
     }
 
@@ -151,7 +150,7 @@ export default class BinaryChunkReader {
    * @param bufferOffsets List of internal array offsets
    * @return New contiguous ArrayBuffer
    */
-  _combineArrayBuffers(bufferOffsets: any[]) {
+  _combineArrayBuffers(bufferOffsets: any[]): ArrayBufferLike {
     let byteLength: number = 0;
     for (const bufferOffset of bufferOffsets) {
       const [start, end] = bufferOffset[1];
@@ -174,13 +173,13 @@ export default class BinaryChunkReader {
   /**
    * @param bytes
    */
-  skip(bytes: number) {
+  skip(bytes: number): void {
     this.offset += bytes;
   }
   /**
    * @param bytes
    */
-  rewind(bytes: number) {
+  rewind(bytes: number): void {
     // TODO - only works if offset is already set
     this.offset -= bytes;
   }
