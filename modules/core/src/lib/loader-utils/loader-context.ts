@@ -1,4 +1,4 @@
-import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {getFetchFunction} from './option-utils';
 
 /**
@@ -11,8 +11,8 @@ import {getFetchFunction} from './option-utils';
  * @param previousContext
  */
 export function getLoaderContext(
-  context: LoaderContext,
-  options?: object,
+  context: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>,
+  options?: LoaderOptions,
   previousContext: LoaderContext | null = null
 ): LoaderContext {
   // For recursive calls, we already have a context
@@ -21,21 +21,24 @@ export function getLoaderContext(
     return previousContext;
   }
 
-  context = {
+  const resolvedContext: LoaderContext = {
     fetch: getFetchFunction(options, context),
     ...context
   };
 
   // Recursive loading does not use single loader
-  if (!Array.isArray(context.loaders)) {
-    context.loaders = null;
+  if (!Array.isArray(resolvedContext.loaders)) {
+    resolvedContext.loaders = null;
   }
 
-  return context;
+  return resolvedContext;
 }
 
 // eslint-disable-next-line complexity
-export function getLoaders(loaders, context) {
+export function getLoadersFromContext(
+  loaders: Loader[] | Loader | undefined,
+  context?: LoaderContext
+) {
   // A single non-array loader is force selected, but only on top-level (context === null)
   if (!context && loaders && !Array.isArray(loaders)) {
     return loaders;

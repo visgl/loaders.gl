@@ -5,6 +5,7 @@
 import type {GLTF, GLTFAccessor, GLTFMeshPrimitive} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
+import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {DracoLoaderOptions, DracoMeshData} from '@loaders.gl/draco';
 import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
@@ -16,7 +17,7 @@ import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-ut
 export async function decode(
   gltfData: {json: GLTF},
   options: GLTFLoaderOptions,
-  context
+  context: LoaderContext
 ): Promise<void> {
   if (!options?.gltf?.decompressMeshes) {
     return;
@@ -61,7 +62,7 @@ async function decompressPrimitive(
   scenegraph: Scenegraph,
   primitive: GLTFMeshPrimitive,
   options: GLTFLoaderOptions,
-  context
+  context: LoaderContext
 ): Promise<void> {
   const dracoExtension = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
   if (!dracoExtension) {
@@ -116,7 +117,7 @@ async function decompressPrimitive(
 
 // eslint-disable-next-line max-len
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
-function compressMesh(attributes, indices, mode: number = 4, options, context) {
+function compressMesh(attributes, indices, mode: number = 4, options, context: LoaderContext) {
   if (!options.DracoWriter) {
     throw new Error('options.gltf.DracoWriter not provided');
   }
@@ -129,8 +130,8 @@ function compressMesh(attributes, indices, mode: number = 4, options, context) {
   // compressed and uncompressed data, generators should create uncompressed
   // attributes and indices using data that has been decompressed from the Draco buffer,
   // rather than the original source data.
-  const {parseSync} = context;
-  const decodedData = parseSync({attributes});
+  // @ts-ignore TODO this needs to be fixed
+  const decodedData = context?.parseSync?.({attributes});
   const fauxAccessors = options._addFauxAttributes(decodedData.attributes);
 
   const bufferViewIndex = options.addBufferView(compressedData);

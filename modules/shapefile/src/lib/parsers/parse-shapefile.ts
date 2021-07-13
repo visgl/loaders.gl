@@ -3,6 +3,7 @@ import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
 
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {Proj4Projection} from '@math.gl/proj4';
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
@@ -28,20 +29,22 @@ interface ShapefileOutput {
 export async function* parseShapefileInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: any,
-  context?: any
+  context?: LoaderContext
 ): AsyncIterable<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
-  const {parseInBatches, fetch, url} = context;
-  const {shx, cpg, prj} = await loadShapefileSidecarFiles(options || {}, context || {});
+  const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const shapeIterator = await parseInBatches(asyncIterator, SHPLoader, options);
+  // @ts-ignore context must be defined
+  const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, options);
 
   // parse properties
-  let propertyIterator: any;
-  const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
+  let propertyIterable: any;
+  // @ts-ignore context must be defined
+  const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
   if (dbfResponse.ok) {
-    propertyIterator = await parseInBatches(dbfResponse, DBFLoader, {
+    // @ts-ignore context must be defined
+    propertyIterable = await context.parseInBatches(dbfResponse, DBFLoader, {
       ...options,
       dbf: {encoding: cpg || 'latin1'}
     });
@@ -51,30 +54,30 @@ export async function* parseShapefileInBatches(
   // object before the iterator starts. zipBatchIterators expects to receive
   // batches of Array objects, and will fail with non-iterable batches, so it's
   // important to skip over the first batch.
-  let shapeHeader = (await shapeIterator.next()).value;
+  let shapeHeader = (await shapeIterable.next()).value;
   if (shapeHeader && shapeHeader.batchType === 'metadata') {
-    shapeHeader = (await shapeIterator.next()).value;
+    shapeHeader = (await shapeIterable.next()).value;
   }
 
   let dbfHeader: {batchType?: string} = {};
-  if (propertyIterator) {
-    dbfHeader = (await propertyIterator.next()).value;
+  if (propertyIterable) {
+    dbfHeader = (await propertyIterable.next()).value;
     if (dbfHeader && dbfHeader.batchType === 'metadata') {
-      dbfHeader = (await propertyIterator.next()).value;
+      dbfHeader = (await propertyIterable.next()).value;
     }
   }
 
   let iterator: any;
-  if (propertyIterator) {
-    iterator = zipBatchIterators(shapeIterator, propertyIterator);
+  if (propertyIterable) {
+    iterator = zipBatchIterators(shapeIterable, propertyIterable);
   } else {
-    iterator = shapeIterator;
+    iterator = shapeIterable;
   }
 
   for await (const item of iterator) {
     let geometries: any;
     let properties: any;
-    if (!propertyIterator) {
+    if (!propertyIterable) {
       geometries = item;
     } else {
       [geometries, properties] = item;
@@ -107,23 +110,25 @@ export async function* parseShapefileInBatches(
 export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
   options?: {[key: string]: any},
-  context?: any
+  context?: LoaderContext
 ): Promise<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
-  const {parse} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const {header, geometries} = await parse(arrayBuffer, SHPLoader, options); // {shp: shx}
+  // @ts-ignore context must be defined
+  const {header, geometries} = await context.parse(arrayBuffer, SHPLoader, options); // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
   let properties = [];
-  const {url, fetch} = context;
-  const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
+
+  // @ts-ignore context must be defined
+  const dbfResponse = await context.fetch(replaceExtension(context.url, 'dbf'));
   if (dbfResponse.ok) {
-    properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
+    // @ts-ignore context must be defined
+    properties = await context.parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
   }
 
   let features = joinProperties(geojsonGeometries, properties);
@@ -199,13 +204,14 @@ function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: 
 // eslint-disable-next-line max-statements
 export async function loadShapefileSidecarFiles(
   options?: object,
-  context?: any
+  context?: LoaderContext
 ): Promise<{
   shx?: SHXOutput;
   cpg?: string;
   prj?: string;
 }> {
   // Attempt a parallel load of the small sidecar files
+  // @ts-ignore context must be defined
   const {url, fetch} = context;
   const shxPromise = fetch(replaceExtension(url, 'shx'));
   const cpgPromise = fetch(replaceExtension(url, 'cpg'));

@@ -178,13 +178,28 @@ export type Writer = {
 };
 
 export type LoaderContext = {
-  fetch?: typeof fetch;
   loaders?: Loader[] | null;
   url?: string;
 
-  parse?: Parse;
-  parseSync?: ParseSync;
-  parseInBatches?: ParseInBatches;
+  fetch: typeof fetch;
+  parse: (
+    arrayBuffer: ArrayBuffer,
+    loaders?,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => Promise<any>;
+  parseSync?: (
+    arrayBuffer: ArrayBuffer,
+    loaders?,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => any;
+  parseInBatches?: (
+    iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    loaders?,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => AsyncIterable<any>;
 };
 
 type Parse = (

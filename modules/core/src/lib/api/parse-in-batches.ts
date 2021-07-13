@@ -8,7 +8,7 @@ import type {
 import {assert, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
-import {getLoaderContext} from '../loader-utils/context-utils';
+import {getLoaderContext} from '../loader-utils/loader-context';
 import {getAsyncIteratorFromData, getReadableStream} from '../loader-utils/get-data';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';

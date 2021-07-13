@@ -121,7 +121,7 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
 }
 
 // Asynchronously fetch and parse buffers, store in buffers array outside of json
-async function loadBuffers(gltf, options, context) {
+async function loadBuffers(gltf, options, context: LoaderContext) {
   for (let i = 0; i < gltf.json.buffers.length; ++i) {
     const buffer = gltf.json.buffers[i];
     if (buffer.uri) {
@@ -129,8 +129,8 @@ async function loadBuffers(gltf, options, context) {
       assert(fetch);
 
       const uri = resolveUrl(buffer.uri, options);
-      const response = await fetch(uri);
-      const arrayBuffer = await response.arrayBuffer();
+      const response = await context?.fetch?.(uri);
+      const arrayBuffer = await response?.arrayBuffer?.();
 
       gltf.buffers[i] = {
         arrayBuffer,
@@ -143,7 +143,7 @@ async function loadBuffers(gltf, options, context) {
   }
 }
 
-async function loadImages(gltf, options, context) {
+async function loadImages(gltf, options, context: LoaderContext) {
   const images = gltf.json.images || [];
 
   const promises: Promise<any>[] = [];
@@ -155,7 +155,7 @@ async function loadImages(gltf, options, context) {
 }
 
 // Asynchronously fetches and parses one image, store in images array outside of json
-async function loadImage(gltf, image, i, options, context) {
+async function loadImage(gltf, image, index: number, options, context: LoaderContext) {
   const {fetch, parse} = context;
 
   let arrayBuffer;
@@ -178,5 +178,5 @@ async function loadImage(gltf, image, i, options, context) {
   // TODO making sure ImageLoader is overridable by using array of loaders
   // const parsedImage = await parse(arrayBuffer, [ImageLoader]);
 
-  gltf.images[i] = parsedImage;
+  gltf.images[index] = parsedImage;
 }

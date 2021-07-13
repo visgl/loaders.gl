@@ -71,7 +71,10 @@ export function normalizeOptions(
  * @param options
  * @param context
  */
-export function getFetchFunction(options?: LoaderOptions, context?: LoaderContext) {
+export function getFetchFunction(
+  options?: LoaderOptions,
+  context?: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>
+) {
   const globalOptions = getGlobalLoaderOptions();
 
   const fetchOptions = options || globalOptions;
@@ -87,8 +90,8 @@ export function getFetchFunction(options?: LoaderOptions, context?: LoaderContex
   }
 
   // else refer to context (from parent loader) if available
-  if (context && context.fetch) {
-    return context.fetch;
+  if (context?.fetch) {
+    return context?.fetch;
   }
 
   // else return the default fetch function
