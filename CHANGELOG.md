@@ -1,7 +1,16 @@
-## v3.0 Prerelease
+# CHANGELOG for loaders.gl
 
-### v3.0.0-beta.11
+## v3.0
 
+### v3.0.0
+
+- feat(core): selectLoader(): options.mimeType, options.fallbackMimeType (#1658)
+- chore: Improve `LoaderContext` type handling (#1664)
+- [gis] new binaryToGeojson signature (#1656)
+- examples: terrain debug with start-local (#1661)
+- examples: terrain use TerrainLoader explicitly (#1652)
+- fix(crypto): Conditionally call crypto.onEnd() (#1660)
+- chore(docs): improve loader option documentation (#1659)
 - fix: node imports (#1606)
 - feat(core): Avoid `selectLoader()` exception when a 204 is received (#1193)
 - examples: i3s move to website folder (#1650)
@@ -9,6 +18,8 @@
 - chore(shapefile): improve typings (#1620)
 - feat: independent worker loaders (#1646)
 - fix: improve typings (#1647)
+
+## v3.0 Prerelease
 
 ### v3.0.0-beta.10
 
