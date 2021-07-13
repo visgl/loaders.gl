@@ -4,7 +4,7 @@ import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromDataSync} from '../loader-utils/get-data';
-import {getLoaders, getLoaderContext} from '../loader-utils/context-utils';
+import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 
 /**
@@ -34,7 +34,8 @@ export function parseSync(
 
   // Chooses a loader (and normalizes it)
   // Also use any loaders in the context, new loaders take priority
-  const candidateLoaders = getLoaders(loaders, context);
+  const typedLoaders = loaders as Loader | Loader[] | undefined;
+  const candidateLoaders = getLoadersFromContext(typedLoaders, context);
   const loader = selectLoaderSync(data, candidateLoaders, options);
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
@@ -47,7 +48,10 @@ export function parseSync(
   // Extract a url for auto detection
   const {url} = getResourceUrlAndType(data);
 
-  context = getLoaderContext({url, parseSync, loaders: loaders as Loader[]}, options);
+  const parse = () => {
+    throw new Error('parseSync called parse');
+  };
+  context = getLoaderContext({url, parseSync, parse, loaders: loaders as Loader[]}, options);
 
   return parseWithLoaderSync(loader, data, options, context);
 }

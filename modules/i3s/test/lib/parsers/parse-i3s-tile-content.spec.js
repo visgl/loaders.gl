@@ -115,7 +115,8 @@ test('ParseI3sTileContent#should generate mbs from obb', async (t) => {
   t.end();
 });
 
-test('ParseI3sTileContent#Safari should fail on imageLoader if it calls from I3SContentWorker', async (t) => {
+test.only('ParseI3sTileContent#Safari should fail on imageLoader if it calls from I3SContentWorker', async (t) => {
+  debugger;
   const options = {
     useUncompressedTexture: true
   };

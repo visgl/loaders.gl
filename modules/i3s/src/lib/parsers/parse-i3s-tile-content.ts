@@ -2,9 +2,9 @@ import type {TypedArray} from '@loaders.gl/schema';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
+import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
-import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import {CompressedTextureLoader} from '@loaders.gl/textures';
 
@@ -35,7 +35,8 @@ export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
   tile: Tile,
   tileset: Tileset,
-  options
+  options?: LoaderOptions,
+  context?: LoaderContext
 ) {
   tile.content = tile.content || {};
   tile.content.featureIds = tile.content.featureIds || null;
@@ -45,9 +46,14 @@ export async function parseI3STileContent(
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
-    const url = getUrlWithToken(tile.textureUrl, options.i3s?.token);
+    const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
     const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
-    tile.content.texture = await load(url, loader);
+    // @ts-ignore context must be defined
+    const response = await context.fetch(url, loader);
+    const arrayBuffer = await response.arrayBuffer;
+    debugger;
+    // @ts-ignore context must be defined
+    tile.content.texture = await context.parse(arrayBuffer, loader);
     if (loader === CompressedTextureLoader) {
       tile.content.texture = {
         compressed: true,
@@ -64,11 +70,15 @@ export async function parseI3STileContent(
     tile.content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, context);
 }
 
 /* eslint-disable max-statements */
-async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
+async function parseI3SNodeGeometry(
+  arrayBuffer: ArrayBuffer,
+  tile: Tile = {},
+  context?: LoaderContext
+) {
   if (!tile.content) {
     return tile;
   }
@@ -80,10 +90,11 @@ async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
   let featureCount = 0;
 
   if (tile.isDracoGeometry) {
-    const decompressedGeometry = await parse(arrayBuffer, DracoLoader, {
+    const decompressedGeometry = await context?.parse?.(arrayBuffer, DracoLoader, {
       draco: {
         attributeNameEntry: I3S_ATTRIBUTE_TYPE
-      }
+      },
+      context
     });
 
     vertexCount = decompressedGeometry.header.vertexCount;

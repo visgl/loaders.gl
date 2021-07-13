@@ -4,7 +4,7 @@ import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
-import {getLoaders, getLoaderContext} from '../loader-utils/context-utils';
+import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
@@ -39,7 +39,8 @@ export async function parse(
 
   // Chooses a loader (and normalizes it)
   // Also use any loaders in the context, new loaders take priority
-  const candidateLoaders = getLoaders(loaders, context);
+  const typedLoaders = loaders as Loader | Loader[] | undefined;
+  const candidateLoaders = getLoadersFromContext(typedLoaders, context);
   // todo hacky type cast
   const loader = await selectLoader(data as ArrayBuffer, candidateLoaders, options);
   // Note: if no loader was found, if so just return null
