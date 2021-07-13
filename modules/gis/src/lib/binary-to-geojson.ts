@@ -44,6 +44,22 @@ export function binaryToGeojson(
   return parseFeatures(data, options?.type);
 }
 
+/** @deprecated use `binaryToGeojson` or `binaryToGeometry` instead */
+export function binaryToGeoJson(
+  data: BinaryGeometry | BinaryFeatures,
+  type?: BinaryGeometryType,
+  format: 'feature' | 'geometry' = 'feature'
+): Geometry | Feature[] {
+  switch (format) {
+    case 'feature':
+      return parseFeatures(data as BinaryFeatures, type);
+    case 'geometry':
+      return binaryToGeometry(data as BinaryGeometry);
+    default:
+      throw new Error(format);
+  }
+}
+
 /**
  * Return a single feature from a binary geometry representation as GeoJSON
  * @param data   geometry data in binary representation

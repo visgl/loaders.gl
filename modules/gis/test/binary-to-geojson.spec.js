@@ -2,7 +2,7 @@
 /* eslint-disable max-depth */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {binaryToGeojson, binaryToGeometry} from '@loaders.gl/gis';
+import {binaryToGeojson, binaryToGeoJson, binaryToGeometry} from '@loaders.gl/gis';
 
 import GEOMETRY_TEST_CASES from '@loaders.gl/gis/test/data/geometry';
 import EMPTY_BINARY_DATA from '@loaders.gl/gis/test/data/empty_binary';
@@ -20,6 +20,7 @@ test('binary-to-geojson feature collections', async (t) => {
   for (const testCase of Object.values(TEST_CASES)) {
     if (testCase.geoJSON && testCase.binary) {
       t.deepEqual(binaryToGeojson(testCase.binary), testCase.geoJSON.features);
+      t.deepEqual(binaryToGeoJson(testCase.binary), testCase.geoJSON.features);
     }
   }
 
@@ -32,6 +33,7 @@ test('binary-to-geojson geometries', (t) => {
     // @ts-ignore
     const binaryData = testCase.binary;
     t.deepEqual(binaryToGeometry(binaryData), testCase.geoJSON);
+    t.deepEqual(binaryToGeoJson(binaryData, binaryData.type, 'geometry'), testCase.geoJSON);
   }
 
   t.end();
