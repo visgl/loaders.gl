@@ -34,12 +34,12 @@ type BinaryToGeoJsonOptions = {
  * @return GeoJSON objects
  */
 export function binaryToGeojson(
-  data: BinaryGeometry | BinaryFeatures,
+  data: BinaryFeatures,
   options?: BinaryToGeoJsonOptions
-): Geometry | Feature[] | Feature {
+): Feature[] | Feature {
   const globalFeatureId = options?.globalFeatureId;
   if (globalFeatureId !== undefined) {
-    return getSingleFeature(data as BinaryFeatures, globalFeatureId);
+    return getSingleFeature(data, globalFeatureId);
   }
   return parseFeatures(data, options?.type);
 }
@@ -49,7 +49,7 @@ export function binaryToGeojson(
  * @param data   geometry data in binary representation
  * @return GeoJSON feature
  */
-function getSingleFeature(data: BinaryFeatures, globalFeatureId: number) {
+function getSingleFeature(data: BinaryFeatures, globalFeatureId: number): Feature {
   const dataArray = normalizeInput(data);
   for (const data of dataArray) {
     let lastIndex = 0;
@@ -77,22 +77,13 @@ function getSingleFeature(data: BinaryFeatures, globalFeatureId: number) {
   throw new Error(`featureId:${globalFeatureId} not found`);
 }
 
-function parseFeatures(data, type): Geometry | Feature[] {
+function parseFeatures(data: BinaryFeatures, type?: BinaryGeometryType): Feature[] {
   const dataArray = normalizeInput(data, type);
-  const returnType = deduceReturnType(dataArray);
-  switch (returnType) {
-    case 'Geometry':
-      return parseGeometry(dataArray[0]);
-    case 'FeatureCollection':
-      return parseFeatureCollection(dataArray);
-    default:
-      const unexpectedInput: never = returnType;
-      throw new Error(unexpectedInput);
-  }
+  return parseFeatureCollection(dataArray);
 }
 
 /** Parse input binary data and return a valid GeoJSON geometry object */
-export function parseGeometry(
+export function binaryToGeometry(
   data: BinaryGeometry,
   startIndex?: number,
   endIndex?: number
@@ -142,24 +133,6 @@ function normalizeInput(data: BinaryFeatures, type?: BinaryGeometryType): Binary
   return features;
 }
 
-/**
- * Determine whether a geometry or feature collection should be returned
- * If the input data doesn't have property identifiers, returns a single geometry
- */
-function deduceReturnType(dataArray): 'FeatureCollection' | 'Geometry' {
-  // If more than one item in dataArray, multiple geometry types, must be a featurecollection
-  if (dataArray.length > 1) {
-    return 'FeatureCollection';
-  }
-
-  const data = dataArray[0];
-  if (!(data.featureIds || data.globalFeatureIds || data.numericProps || data.properties)) {
-    return 'Geometry';
-  }
-
-  return 'FeatureCollection';
-}
-
 /** Parse input binary data and return an array of GeoJSON Features */
 function parseFeatureCollection(dataArray): Feature[] {
   const features: Feature[] = [];
@@ -192,7 +165,7 @@ function parseFeatureCollection(dataArray): Feature[] {
 
 /** Parse input binary data and return a single GeoJSON Feature */
 function parseFeature(data, startIndex?: number, endIndex?: number): Feature {
-  const geometry = parseGeometry(data, startIndex, endIndex);
+  const geometry = binaryToGeometry(data, startIndex, endIndex);
   const properties = parseProperties(data, startIndex, endIndex);
   return {type: 'Feature', geometry, properties};
 }
