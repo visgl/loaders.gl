@@ -33,6 +33,7 @@ const data = await load(url, TerrainLoader, options);
 | `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
 | `terrain.tesselator`       | `string`        | `auto`    | See below                                                                                                                                     |
+| `terrain.skirtHeight`      | `number`        | `null`    | If set, create the skirt for the tile with particular height                                                                                  |
 
 ### elevationDecoder
 

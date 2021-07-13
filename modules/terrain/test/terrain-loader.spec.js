@@ -49,6 +49,28 @@ test('TerrainLoader#parse mapbox martini', async (t) => {
   t.end();
 });
 
+test('TerrainLoader#add skirt to mapbox martini', async (t) => {
+  const options = {
+    terrain: {
+      elevationDecoder: {
+        rScaler: 65536 * 0.1,
+        gScaler: 256 * 0.1,
+        bScaler: 0.1,
+        offset: -10000
+      },
+      meshMaxError: 5.0,
+      bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
+      tesselator: 'martini',
+      skirtHeight: 50
+    }
+  };
+  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, options);
+  t.equal(data.indices.value.length, 105434 * 3, 'indices was found');
+  t.equal(data.attributes.TEXCOORD_0.value.length, 53966 * 2, 'TEXCOORD_0 attribute was found');
+  t.equal(data.attributes.POSITION.value.length, 53966 * 3, 'POSITION attribute was found');
+  t.end();
+});
+
 test('TerrainLoader#parse terrarium martini', async (t) => {
   const options = {
     terrain: {
@@ -109,6 +131,28 @@ test('TerrainLoader#parse mapbox delatin', async (t) => {
   t.equal(data.attributes.POSITION.value.length, 45298 * 3, 'POSITION attribute was found');
   t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
 
+  t.end();
+});
+
+test('TerrainLoader#add skirt to mapbox delatin', async (t) => {
+  const options = {
+    terrain: {
+      elevationDecoder: {
+        rScaler: 65536 * 0.1,
+        gScaler: 256 * 0.1,
+        bScaler: 0.1,
+        offset: -10000
+      },
+      meshMaxError: 5.0,
+      bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
+      tesselator: 'delatin',
+      skirtHeight: 50
+    }
+  };
+  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, options);
+  t.equal(data.indices.value.length, 90943 * 3, 'indices was found');
+  t.equal(data.attributes.TEXCOORD_0.value.length, 45996 * 2, 'TEXCOORD_0 attribute was found');
+  t.equal(data.attributes.POSITION.value.length, 45996 * 3, 'POSITION attribute was found');
   t.end();
 });
 

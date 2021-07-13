@@ -1,5 +1,6 @@
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import decode, {DECODING_STEPS} from './decode-quantized-mesh';
+import {addSkirt} from './helpers/skirt';
 
 function getMeshAttributes(vertexData, header, bounds) {
   const {minHeight, maxHeight} = header;
@@ -43,9 +44,23 @@ function getTileMesh(arrayBuffer, options) {
   }
   const {bounds} = options;
   // Don't parse edge indices or format extensions
-  const {header, vertexData, triangleIndices} = decode(arrayBuffer, DECODING_STEPS.triangleIndices);
+  const {
+    header,
+    vertexData,
+    triangleIndices: originalTriangleIndices
+  } = decode(arrayBuffer, DECODING_STEPS.triangleIndices);
+  let triangleIndices = originalTriangleIndices;
   // TODO: use skirt information from file
-  const attributes = getMeshAttributes(vertexData, header, bounds);
+  let attributes = getMeshAttributes(vertexData, header, bounds);
+  if (options.skirtHeight) {
+    const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
+      attributes,
+      triangleIndices,
+      options.skirtHeight
+    );
+    attributes = newAttributes;
+    triangleIndices = newTriangles;
+  }
 
   return {
     // Data return by this loader implementation
