@@ -40,7 +40,8 @@ export async function* parseShapefileInBatches(
 
   // parse properties
   let propertyIterable: any;
-  const dbfResponse = await fetch(replaceExtension(context?.url || '', 'dbf'));
+  // @ts-ignore context must be defined
+  const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
   if (dbfResponse.ok) {
     // @ts-ignore context must be defined
     propertyIterable = await context.parseInBatches(dbfResponse, DBFLoader, {
