@@ -3,46 +3,48 @@
 <p align="center">
   <a href="https://vis.gl">
     <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/vis-logo.png" />
-    <span style="margin: 30px;" />
+    <span style="padding-left: 50px;" />
     <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/linux-foundation.svg" />
-    <span style="margin : 30px;" />
+    <span style="padding-left: 50px;" />
     <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/ucf-color-hztl.svg" />
   </a>
 </p>
 <br/>
 <p align="center">
-  <img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" />
+  <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />
   <img src="https://flat.badgen.net/badge/icon/Typed?icon=typescript&label&labelColor=blue&color=555555)" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" />
-  <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />
   <img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" />
   <br />
 </p>
 
-<p align="center">
+<p align="center" style="margin-left: 10%; margin-right: 10%">
 loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</b></a>, an open governance Linux Foundation project that is developed collaboratively by multiple organizations and individuals and the Urban Computing Foundation.
 </p>
 
 <p align="center">
-  Docs for older versions are available on github:
+  These docs are for <img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" />
   <br />
+  Docs for older versions are available on github: 
   <a href="https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md">
-    <img src="https://img.shields.io/badge/loaders.gl-v2.3-green.svg?style=flat-square" />
+    <b>v2.3</b>
   </a>
   <a href="https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md">
-    <img src="https://img.shields.io/badge/loaders.gl-v1.3-green.svg?style=flat-square" />
+    <b>v1.3</b>
   </a>
+</p>
+
+<p align="center">
+<i>If you find loaders.gl useful, please consider giving a github star. The project has almost 300K monthly downloads but only 300 stars.</i>
 </p>
 
 ## Overview
 
-loaders.gl is a is a collection of the best open source loaders and writers for file formats focused on visualization of big data, including point clouds, 3D geometries, images, geospatial formats as well as tabular data.
+loaders.gl is a is a collection of the best open source loaders and writers for file formats focused on visualization of big data, including tabular and geospatial data formats as well as images, point clouds and 3D geometries.
 
 loader.gl is packaged and published as a composable module suite with consistent APIs and features across the suite, and supports advanced features such as running loaders on workers and incremental loading (streaming) in a consistent way across the entire suite, and all loaders work in both the browser and in Node.js.
 
-loaders.gl is framework-agnostic, and all loaders and writers are designed to be usable with any JavaScript application or framework with a minimal amount of glue code.
-
-Naturally, other [vis.gl frameworks](https://vis.gl/frameworks) such as [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) are designed to integrate seamlessly with loaders.gl.
+[vis.gl frameworks](https://vis.gl/frameworks) such as [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) integrate seamlessly with loaders.gl, however the design is framework-agnostic, and all loaders and writers can be used with any JavaScript application or framework.
 
 ## Loaders
 
@@ -51,11 +53,11 @@ loaders.gl provides a wide selection of loaders organized into categories:
 | Category                                                         | Loaders                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [Table Loaders](docs/specifications/category-table)              | Streaming tabular loaders for [CSV](modules/csv/docs/api-reference/csv-loader), [JSON](modules/json/docs/api-reference/json-loader), [Arrow](modules/arrow/docs/api-reference/arrow-loader) etc                                                                                                                                                                                                                                                                                      |
+| [Geospatial Loaders](docs/specifications/category-gis)           | Loaders for geospatial formats such as [GeoJSON](<(modules/json/docs/api-reference/geojson-loader)>) [KML](modules/kml/docs/api-reference/kml-loader), [WKT/WKB](modules/wkt/docs/api-reference/wkt-loader), [Mapbox Vector Tiles](modules/mvt/docs/api-reference/mvt-loader) etc.                                                                                                                                                                                                   |
 | [Image Loaders](docs/specifications/category-image)              | Loaders for [images](modules/images/docs/api-reference/image-loader), [compressed textures](modules/textures/docs/api-reference/compressed-texture-loader), [supercompressed textures (Basis)](modules/textures/docs/api-reference/basis-loader). Utilities for [mipmapped arrays](modules/images/docs/api-reference/load-image-array), [cubemaps](modules/images/docs/api-reference/load-image-cube), [binary images](modules/images/docs/api-reference/binary-image-api) and more. |
 | [Pointcloud and Mesh Loaders](docs/specifications/category-mesh) | Loaders for point cloud and simple mesh formats such as [Draco](modules/draco/docs/api-reference/draco-loader), [LAS](modules/las/docs/api-reference/las-loader), [PCD](modules/pcd/docs/api-reference/pcd-loader), [PLY](modules/ply/docs/api-reference/ply-loader), [OBJ](modules/obj/docs/api-reference/obj-loader), and [Terrain](modules/terrain/docs/api-reference/terrain-loader).                                                                                            |
 | [Scenegraph Loaders](docs/specifications/category-scenegraph)    | [glTF](modules/gltf/docs/api-reference/gltf-loader) loader                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [3D Tile Loaders](docs/specifications/category-3d-tiles)         | Loaders for 3D tile formats such as [3D Tiles](modules/3d-tiles/docs/api-reference/tile-3d-loader), [I3S](modules/i3s/docs/api-reference/i3s) and potree                                                                                                                                                                                                                                                                                                                             |
-| [Geospatial Loaders](docs/specifications/category-gis)           | Loaders for geospatial formats such as [GeoJSON](<(modules/json/docs/api-reference/geojson-loader)>) [KML](modules/kml/docs/api-reference/kml-loader), [WKT/WKB](modules/wkt/docs/api-reference/wkt-loader), [Mapbox Vector Tiles](modules/mvt/docs/api-reference/mvt-loader) etc.                                                                                                                                                                                                   |
+| [Tiled Data Loaders](docs/specifications/category-3d-tiles)         | Loaders for 3D tile formats such as [3D Tiles](modules/3d-tiles/docs/api-reference/tile-3d-loader), [I3S](modules/i3s/docs/api-reference/i3s) and potree                                                                                                                                                                                                                                                                                                                             |
 
 ## Code Examples
 
