@@ -4,6 +4,7 @@ import {render} from 'react-dom';
 import DeckGL from '@deck.gl/react';
 
 import {TerrainLayer} from '@deck.gl/geo-layers';
+import {TerrainLoader} from '@loaders.gl/terrain';
 
 // Set your mapbox token here
 const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
@@ -43,7 +44,8 @@ export default function App({
     elevationData: TERRAIN_IMAGE,
     texture,
     wireframe,
-    color: [255, 255, 255]
+    color: [255, 255, 255],
+    loaders: [TerrainLoader]
   });
 
   return <DeckGL initialViewState={initialViewState} controller={true} layers={[layer]} />;
