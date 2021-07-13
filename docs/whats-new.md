@@ -33,7 +33,8 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
 
 **@loaders.gl/core**
 
-- New loader option: `options.mimeType` to control fallback loader selection.
+- New loader option: `options.mimeType` to override loader selection.
+- New loader option: `options.fallbackMimeType` to control fallback loader selection.
 - New loader option: `options.limit` to limit number of rows returned during batched parsing.
 - New `processOnWorker()` function allows applications to run certain non-loader tasks (such as compression and decompression) on workers.
 

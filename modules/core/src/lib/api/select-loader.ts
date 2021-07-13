@@ -80,7 +80,9 @@ export function selectLoaderSync(
 
   // Add registered loaders
   loaders = loaders ? [...loaders] : [];
-  loaders.push(...getRegisteredLoaders());
+  if (!options?.ignoreRegisteredLoaders) {
+    loaders.push(...getRegisteredLoaders());
+  }
 
   normalizeLoaders(loaders);
 
@@ -107,12 +109,18 @@ function selectLoaderInternal(
 
   let loader: Loader | null = null;
 
+  // if options.mimeType is supplied, it takes precedence
+  if (options?.mimeType) {
+    loader = findLoaderByMIMEType(loaders, options?.mimeType);
+  }
   // Look up loader by url
-  loader = findLoaderByUrl(loaders, testUrl);
+  loader = loader || findLoaderByUrl(loaders, testUrl);
   // Look up loader by mime type
-  loader = loader || findLoaderByContentType(loaders, type);
+  loader = loader || findLoaderByMIMEType(loaders, type);
   // Look for loader via initial bytes (Note: not always accessible (e.g. Response, stream, async iterator)
   loader = loader || findLoaderByInitialBytes(loaders, data);
+  // Look up loader by fallback mime type
+  loader = loader || findLoaderByMIMEType(loaders, options?.fallbackMimeType);
 
   return loader;
 }
@@ -170,7 +178,7 @@ function findLoaderByExtension(loaders: Loader[], extension: string): Loader | n
   return null;
 }
 
-function findLoaderByContentType(loaders, mimeType) {
+function findLoaderByMIMEType(loaders, mimeType) {
   for (const loader of loaders) {
     if (loader.mimeTypes && loader.mimeTypes.includes(mimeType)) {
       return loader;
