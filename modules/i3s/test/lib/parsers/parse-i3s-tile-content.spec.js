@@ -1,10 +1,11 @@
 import test from 'tape-promise/tape';
-import {fetchFile, isBrowser} from '@loaders.gl/core';
+import {fetchFile, isBrowser, load} from '@loaders.gl/core';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 import I3SNodePagesTiles from '@loaders.gl/i3s/lib/helpers/i3s-nodepages-tiles';
 import {TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
 
 import {parseI3STileContent} from '@loaders.gl/i3s/lib/parsers/parse-i3s-tile-content';
+import {I3SContentLoader} from '@loaders.gl/i3s';
 
 const I3S_TILE_CONTENT =
   '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0';
@@ -112,4 +113,30 @@ test('ParseI3sTileContent#should generate mbs from obb', async (t) => {
   t.equals(tile.mbs.length, 4);
   t.deepEquals(tile.mbs.slice(0, 3), tile.obb.center);
   t.end();
+});
+
+test.only('ParseI3sTileContent#Safari should fail on imageLoader if it calls from I3SContentWorker', async (t) => {
+  debugger;
+  const options = {
+    useUncompressedTexture: true
+  };
+  const i3sTilesetData = TILESET_STUB(options);
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, {});
+  const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
+  const response = await fetchFile(I3S_TILE_CONTENT);
+  const data = await response.arrayBuffer();
+  let content;
+  try {
+    content = await load(data, I3SContentLoader, {
+      i3s: {
+        tileset: i3sTilesetData,
+        tile
+      }
+    });
+    const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
+    t.ok(texture);
+    t.end();
+  } catch (error) {
+    t.fail(error);
+  }
 });
