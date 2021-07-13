@@ -1,3 +1,4 @@
+/** @typedef {import('@loaders.gl/schema').BinaryFeatures} BinaryFeatures */
 /** @typedef {import('@loaders.gl/schema').BinaryGeometry} BinaryGeometry */
 /* eslint-disable max-depth */
 import test from 'tape-promise/tape';
@@ -34,6 +35,20 @@ test('binary-to-geojson geometries', (t) => {
     const binaryData = testCase.binary;
     t.deepEqual(binaryToGeometry(binaryData), testCase.geoJSON);
     t.deepEqual(binaryToGeoJson(binaryData, binaryData.type, 'geometry'), testCase.geoJSON);
+  }
+
+  t.end();
+});
+
+test('binary-to-geojson !isHeterogeneousType', async (t) => {
+  const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
+  const json = await response.json();
+  // eslint-disable-next-line no-unused-vars
+  const {mixed, ...TEST_CASES} = parseTestCases(json);
+  for (const testCase of Object.values(TEST_CASES)) {
+    /** @type {BinaryFeatures} */
+    const binaryData = testCase.binary.points || testCase.binary.lines || testCase.binary.polygons;
+    t.deepEqual(binaryToGeojson(binaryData), testCase.geoJSON.features);
   }
 
   t.end();
