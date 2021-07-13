@@ -3,7 +3,6 @@ import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
-import {load} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {CompressedTextureLoader} from '@loaders.gl/textures';
@@ -50,8 +49,7 @@ export async function parseI3STileContent(
     const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
     // @ts-ignore context must be defined
     const response = await context.fetch(url, loader);
-    const arrayBuffer = await response.arrayBuffer;
-    debugger;
+    const arrayBuffer = await response.arrayBuffer();
     // @ts-ignore context must be defined
     tile.content.texture = await context.parse(arrayBuffer, loader);
     if (loader === CompressedTextureLoader) {
