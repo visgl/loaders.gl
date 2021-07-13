@@ -67,6 +67,18 @@ test('binary-to-geojson getSingleFeature', async (t) => {
   t.end();
 });
 
+test('binary-to-geojson getSingleFeature fail', async (t) => {
+  const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
+  const json = await response.json();
+  const testCase = parseTestCases(json).point;
+  t.throws(
+    () => binaryToGeojson(testCase.binary, {globalFeatureId: -1}),
+    'throws when globalFeatureId is not found'
+  );
+
+  t.end();
+});
+
 // Mutates input object
 function parseTestCases(testCases) {
   for (const value of Object.values(testCases)) {
