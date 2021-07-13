@@ -2,5 +2,5 @@
 
 // Functions
 export {geojsonToBinary} from './lib/geojson-to-binary';
-export {binaryToGeoJSON, parseGeometry as binaryToGeometry} from './lib/binary-to-geojson';
+export {binaryToGeojson, parseGeometry as binaryToGeometry} from './lib/binary-to-geojson';
 export {transformBinaryCoords, transformGeoJsonCoords} from './lib/transform';

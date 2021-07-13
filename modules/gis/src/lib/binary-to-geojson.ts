@@ -33,7 +33,7 @@ type BinaryToGeoJsonOptions = {
  * @param options.featureId  Global feature id. If specified, only a single feature is extracted
  * @return GeoJSON objects
  */
-export function binaryToGeoJSON(
+export function binaryToGeojson(
   data: BinaryGeometry | BinaryFeatures,
   options?: BinaryToGeoJsonOptions
 ): Geometry | Feature[] | Feature {

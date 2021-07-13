@@ -2,7 +2,7 @@
 /* eslint-disable max-depth */
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {binaryToGeoJSON, binaryToGeometry} from '@loaders.gl/gis';
+import {binaryToGeojson, binaryToGeometry} from '@loaders.gl/gis';
 
 import GEOMETRY_TEST_CASES from '@loaders.gl/gis/test/data/geometry';
 import EMPTY_BINARY_DATA from '@loaders.gl/gis/test/data/empty_binary';
@@ -19,7 +19,7 @@ test('binary-to-geojson feature collections', async (t) => {
 
   for (const testCase of Object.values(TEST_CASES)) {
     if (testCase.geoJSON && testCase.binary) {
-      t.deepEqual(binaryToGeoJSON(testCase.binary), testCase.geoJSON.features);
+      t.deepEqual(binaryToGeojson(testCase.binary), testCase.geoJSON.features);
     }
   }
 
@@ -38,9 +38,9 @@ test('binary-to-geojson geometries', (t) => {
 });
 
 test('binary-to-geojson from empty binary object returns empty features array', (t) => {
-  const geojson = binaryToGeoJSON(EMPTY_BINARY_DATA);
+  const geojson = binaryToGeojson(EMPTY_BINARY_DATA);
   t.ok(Array.isArray(geojson));
-  // @ts-ignore binaryToGeoJSON typings are too loose
+  // @ts-ignore binaryToGeojson typings are too loose
   t.equal(geojson?.length, 0);
 
   t.end();
@@ -55,7 +55,7 @@ test('binary-to-geojson getSingleFeature', async (t) => {
     if (testCase.geoJSON && testCase.binary) {
       for (let i = 0; i < testCase.geoJSON.features.length; ++i) {
         t.deepEqual(
-          binaryToGeoJSON(testCase.binary, {globalFeatureId: i}),
+          binaryToGeojson(testCase.binary, {globalFeatureId: i}),
           testCase.geoJSON.features[i]
         );
       }
