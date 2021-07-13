@@ -1,4 +1,4 @@
-# GeoJSON to TypedArrays
+# geojsonToBinary
 
 Helper function to transform an array of GeoJSON `Feature`s into binary typed
 arrays. This is designed to speed up geospatial loaders by removing the need for

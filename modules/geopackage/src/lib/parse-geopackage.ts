@@ -5,6 +5,7 @@ import {WKBLoader} from '@loaders.gl/wkt';
 import {
   Schema,
   Field,
+  Geometry,
   DataType,
   Bool,
   Utf8,
@@ -15,7 +16,7 @@ import {
   Float32,
   Binary
 } from '@loaders.gl/schema';
-import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import {
   GeometryColumnsRow,
@@ -328,7 +329,7 @@ function getFeatureIdName(db: Database, tableName: string): string | null {
  * @param arrayBuffer geometry buffer
  * @return {object} GeoJSON geometry (in original CRS)
  */
-function parseGeometry(arrayBuffer: ArrayBuffer) {
+function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
   const view = new DataView(arrayBuffer);
   const {envelopeLength, emptyGeometry} = parseGeometryBitFlags(view.getUint8(3));
 
@@ -352,7 +353,7 @@ function parseGeometry(arrayBuffer: ArrayBuffer) {
   const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
 
   // @ts-expect-error
-  return binaryToGeoJson(binaryGeometry);
+  return binaryToGeometry(binaryGeometry);
 }
 
 /**
