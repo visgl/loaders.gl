@@ -1,4 +1,5 @@
 import type {TypedArray} from '@loaders.gl/schema';
+import {load} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -48,17 +49,21 @@ export async function parseI3STileContent(
     const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
     const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
     // @ts-ignore context must be defined
-    const response = await context.fetch(url, loader);
+    const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
-    // @ts-ignore context must be defined
-    tile.content.texture = await context.parse(arrayBuffer, loader);
-    if (loader === CompressedTextureLoader) {
+
+    if (loader === ImageLoader) {
+      // @ts-ignore context must be defined
+      tile.content.texture = await context.parse(arrayBuffer, {image: {type: 'data'}});
+    } else if (loader === CompressedTextureLoader) {
+      // @ts-ignore context must be defined
+      const texture = await load(arrayBuffer, CompressedTextureLoader);
       tile.content.texture = {
         compressed: true,
         mipmaps: false,
-        width: tile.content.texture[0].width,
-        height: tile.content.texture[0].height,
-        data: tile.content.texture
+        width: texture[0].width,
+        height: texture[0].height,
+        data: texture
       };
     }
   }
