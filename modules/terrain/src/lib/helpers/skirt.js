@@ -5,6 +5,7 @@ import {concatenateTypedArrays} from '@loaders.gl/loader-utils';
  * @param {object} attributes - POSITION and TEXCOOD_0 attributes data
  * @param {any} triangles - indices array of the mesh geometry
  * @param {number} skirtHeight - height of the skirt geometry
+ * @param {object} outsideIndices - edge indices from quantized mesh data
  * @returns - geometry data with added skirt
  */
 export function addSkirt(attributes, triangles, skirtHeight, outsideIndices = null) {
