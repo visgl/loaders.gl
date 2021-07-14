@@ -1,7 +1,7 @@
 // import type {Feature} from '@loaders.gl/gis';
 import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
-import type {LoaderContext, LocalContext} from '@loaders.gl/loader-utils/';
+import type {LoaderContext} from '@loaders.gl/loader-utils/';
 
 import {binaryToGeoJson, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -31,10 +31,10 @@ interface ShapefileOutput {
 export async function* parseShapefileInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: any,
-  context?: LocalContext | LoaderContext
+  context?: any
 ): AsyncIterable<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
-  const {parseInBatches, fetch, url} = context as LocalContext;
+  const {parseInBatches, fetch, url} = context;
 
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options || {}, context || {});
 
@@ -87,7 +87,6 @@ export async function* parseShapefileInBatches(
     const geojsonGeometries = parseGeometries(geometries);
     let features = joinProperties(geojsonGeometries, properties);
     if (reproject) {
-      // @ts-ignore
       features = reprojectFeatures(features, prj, _targetCrs);
     }
     yield {
@@ -111,11 +110,11 @@ export async function* parseShapefileInBatches(
 export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
   options?: {[key: string]: any},
-  context?: LocalContext
+  context?: any
 ): Promise<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
 
-  const {parse} = context as LocalContext;
+  const {parse} = context;
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
@@ -126,7 +125,7 @@ export async function parseShapefile(
   // parse properties
   let properties = [];
 
-  const {url, fetch} = context as LocalContext;
+  const {url, fetch} = context;
   const dbfResponse = await fetch(replaceExtension(url, 'dbf'));
   if (dbfResponse.ok) {
     properties = await parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
@@ -205,18 +204,18 @@ function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: 
 // eslint-disable-next-line max-statements
 export async function loadShapefileSidecarFiles(
   options?: object,
-  context?: LocalContext | LoaderContext
+  context?: LoaderContext
 ): Promise<{
   shx?: SHXOutput;
   cpg?: string;
   prj?: string;
 }> {
   // Attempt a parallel load of the small sidecar files
-  const {url, fetch} = context as LocalContext;
+  const {url, fetch} = context as LoaderContext;
 
-  const shxPromise = fetch(replaceExtension(url, 'shx'));
-  const cpgPromise = fetch(replaceExtension(url, 'cpg'));
-  const prjPromise = fetch(replaceExtension(url, 'cpg'));
+  const shxPromise = fetch?.(replaceExtension(url as string, 'shx'));
+  const cpgPromise = fetch?.(replaceExtension(url as string, 'cpg'));
+  const prjPromise = fetch?.(replaceExtension(url as string, 'cpg'));
   await Promise.all([shxPromise, cpgPromise, prjPromise]);
 
   let shx: SHXOutput | undefined;
@@ -224,18 +223,18 @@ export async function loadShapefileSidecarFiles(
   let prj: string | undefined;
 
   const shxResponse = await shxPromise;
-  if (shxResponse.ok) {
+  if (shxResponse?.ok) {
     const arrayBuffer = await shxResponse.arrayBuffer();
     shx = parseShx(arrayBuffer);
   }
 
   const cpgResponse = await cpgPromise;
-  if (cpgResponse.ok) {
+  if (cpgResponse?.ok) {
     cpg = await cpgResponse.text();
   }
 
   const prjResponse = await prjPromise;
-  if (prjResponse.ok) {
+  if (prjResponse?.ok) {
     prj = await prjResponse.text();
   }
 
