@@ -1,6 +1,7 @@
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import Martini from '@mapbox/martini';
 import Delatin from './delatin';
+import {addSkirt} from './helpers/skirt';
 
 function getTerrain(imageData, width, height, elevationDecoder, tesselator) {
   const {rScaler, bScaler, gScaler, offset} = elevationDecoder;
@@ -103,8 +104,19 @@ function getMesh(terrainImage, terrainOptions) {
       break;
   }
 
-  const {vertices, triangles} = mesh;
-  const attributes = getMeshAttributes(vertices, terrain, width, height, bounds);
+  const {vertices} = mesh;
+  let {triangles} = mesh;
+  let attributes = getMeshAttributes(vertices, terrain, width, height, bounds);
+
+  if (terrainOptions.skirtHeight) {
+    const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
+      attributes,
+      triangles,
+      terrainOptions.skirtHeight
+    );
+    attributes = newAttributes;
+    triangles = newTriangles;
+  }
 
   return {
     // Data return by this loader implementation

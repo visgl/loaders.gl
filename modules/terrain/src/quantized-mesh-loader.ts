@@ -14,7 +14,8 @@ export const QuantizedMeshLoader = {
   mimeTypes: ['application/vnd.quantized-mesh'],
   options: {
     'quantized-mesh': {
-      bounds: [0, 0, 1, 1]
+      bounds: [0, 0, 1, 1],
+      skirtHeight: null
     }
   }
 };

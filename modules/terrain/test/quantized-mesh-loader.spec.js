@@ -36,6 +36,15 @@ test('QuantizedMeshLoader#parse tile-with-extensions', async (t) => {
   t.end();
 });
 
+test('QuantizedMeshLoader#add skirt to tile-with-extensions', async (t) => {
+  const options = {'quantized-mesh': {skirtHeight: 50}};
+  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, options);
+  t.equal(data.indices.value.length, 1329 * 3, 'indices was found');
+  t.equal(data.attributes.TEXCOORD_0.value.length, 781 * 2, 'TEXCOORD_0 attribute was found');
+  t.equal(data.attributes.POSITION.value.length, 781 * 3, 'POSITION attribute was found');
+  t.end();
+});
+
 test('QuantizedMeshWorkerLoader#tile-with-extensions', async (t) => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');

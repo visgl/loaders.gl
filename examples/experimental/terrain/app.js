@@ -45,6 +45,11 @@ export default function App({
     texture,
     wireframe,
     color: [255, 255, 255],
+    loadOptions: {
+      terrain: {
+        skirtHeight: 50
+      }
+    },
     loaders: [TerrainLoader]
   });
 

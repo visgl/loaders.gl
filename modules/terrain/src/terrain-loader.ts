@@ -22,7 +22,8 @@ export const TerrainLoader = {
         gScaler: 0,
         bScaler: 0,
         offset: 0
-      }
+      },
+      skirtHeight: null
     }
   }
 };
