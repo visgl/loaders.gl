@@ -53,8 +53,11 @@ export async function parseI3STileContent(
     const arrayBuffer = await response.arrayBuffer();
 
     if (loader === ImageLoader) {
+      const options = {image: {type: 'data'}};
       // @ts-ignore context must be defined
-      tile.content.texture = await context.parse(arrayBuffer, {image: {type: 'data'}});
+      // Image constructor is not supported in worker thread.
+      // Do parsing image data on the main thread by using context to avoid worker issues.
+      tile.content.texture = await context.parse(arrayBuffer, options);
     } else if (loader === CompressedTextureLoader) {
       // @ts-ignore context must be defined
       const texture = await load(arrayBuffer, CompressedTextureLoader);
