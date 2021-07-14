@@ -1,9 +1,9 @@
 // import type {Feature} from '@loaders.gl/gis';
 import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
+import type {LoaderContext} from '@loaders.gl/loader-utils';
 
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
-import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {Proj4Projection} from '@math.gl/proj4';
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
