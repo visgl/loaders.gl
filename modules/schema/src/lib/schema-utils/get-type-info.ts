@@ -1,4 +1,5 @@
-import {Type, AnyArrayType} from './classes/type';
+import {Type} from '../schema';
+import {AnyArray} from '../../types';
 
 /**
  * Gets type information from an Arrow type object or "mock" Arrow type object
@@ -6,7 +7,7 @@ import {Type, AnyArrayType} from './classes/type';
  */
 export function getTypeInfo(arrowTypeLike: any): {
   typeId: Type;
-  ArrayType: AnyArrayType;
+  ArrayType: AnyArray;
   typeName: string;
   typeEnumName?: string;
   precision?: number;

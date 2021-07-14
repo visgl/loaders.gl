@@ -1,5 +1,5 @@
+import type {Schema} from '../schema';
 import type {TableBatch} from '../../category/table';
-import type Schema from '../schema/classes/schema';
 // import type {ArrayRowTableBatch, ObjectRowTableBatch} from '../../category/table';
 import {convertToArrayRow, convertToObjectRow} from '../utils/row-utils';
 import {TableBatchAggregator, TableBatchOptions} from './table-batch-aggregator';

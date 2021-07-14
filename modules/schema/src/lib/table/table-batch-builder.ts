@@ -1,5 +1,5 @@
+import type {Schema} from '../schema';
 import type {TableBatch} from '../../category/table';
-import type Schema from '../schema/classes/schema';
 import type {TableBatchAggregator, TableBatchConstructor} from './table-batch-aggregator';
 import BaseTableBatchAggregator from './base-table-batch-aggregator';
 import RowTableBatchAggregator from './row-table-batch-aggregator';

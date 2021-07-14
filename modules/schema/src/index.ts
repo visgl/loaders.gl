@@ -1,5 +1,5 @@
 // COMMON CATEGORY
-export type {TypedArray, NumberArray, AnyArray} from './category/types/types';
+export type {TypedArray, NumberArray, AnyArray} from './types';
 
 export type {Batch} from './category/common';
 
@@ -57,11 +57,9 @@ export type {
 } from './category/gis';
 
 // SCHEMA
-export {default as Schema} from './lib/schema/classes/schema';
-export {default as Field} from './lib/schema/classes/field';
-export {deduceTableSchema} from './lib/schema/deduce-table-schema';
-export {getTypeInfo} from './lib/schema/get-type-info';
 export {
+  Schema,
+  Field,
   DataType,
   Null,
   Binary,
@@ -95,10 +93,12 @@ export {
   IntervalDayTime,
   IntervalYearMonth,
   FixedSizeList
-} from './lib/schema/classes/type';
+} from './lib/schema';
 
-// TYPE UTILS
-export {getArrowTypeFromTypedArray} from './lib/utils/type-utils';
+// SCHEMA UTILS
+export {deduceTableSchema} from './lib/schema-utils/deduce-table-schema';
+export {getTypeInfo} from './lib/schema-utils/get-type-info';
+export {getArrowTypeFromTypedArray} from './lib/schema-utils/type-utils';
 
 // EXPERIMENTAL APIs
 export {default as AsyncQueue} from './lib/utils/async-queue';

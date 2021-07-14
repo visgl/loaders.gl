@@ -1,5 +1,5 @@
+import type {Schema} from '../schema';
 import type {TableBatch} from '../../category/table';
-import type Schema from '../schema/classes/schema';
 import {TableBatchAggregator, TableBatchOptions} from './table-batch-aggregator';
 
 const DEFAULT_ROW_COUNT = 100;

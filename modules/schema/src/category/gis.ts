@@ -1,5 +1,5 @@
 // GIS
-import type {TypedArray} from './types/types';
+import type {TypedArray} from '../types';
 
 // GEOJSON FORMAT GEOMETRY
 
