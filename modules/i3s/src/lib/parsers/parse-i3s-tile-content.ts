@@ -1,5 +1,5 @@
 import type {TypedArray} from '@loaders.gl/schema';
-import {load} from '@loaders.gl/core';
+import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -93,11 +93,10 @@ async function parseI3SNodeGeometry(
   let featureCount = 0;
 
   if (tile.isDracoGeometry) {
-    const decompressedGeometry = await context?.parse?.(arrayBuffer, DracoLoader, {
+    const decompressedGeometry = await parse(arrayBuffer, DracoLoader, {
       draco: {
         attributeNameEntry: I3S_ATTRIBUTE_TYPE
-      },
-      context
+      }
     });
 
     vertexCount = decompressedGeometry.header.vertexCount;
