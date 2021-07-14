@@ -141,7 +141,7 @@ function parseState(
 
         case STATE.EXPECTING_RECORD:
           while (binaryReader.hasAvailableBytes(SHP_RECORD_HEADER_SIZE)) {
-            const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE);
+            const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE) as DataView;
             const recordHeader = {
               recordNumber: recordHeaderView.getInt32(0, BIG_ENDIAN),
               // 2 byte words; includes the four words of record header
@@ -172,7 +172,7 @@ function parseState(
               // rewind 4 bytes before reading record
               binaryReader.rewind(4);
 
-              const recordView = binaryReader.getDataView(recordHeader.byteLength);
+              const recordView = binaryReader.getDataView(recordHeader.byteLength) as DataView;
               const geometry = parseRecord(recordView, options);
               result.geometries.push(geometry);
 
