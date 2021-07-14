@@ -47,16 +47,25 @@ function getTileMesh(arrayBuffer, options) {
   const {
     header,
     vertexData,
-    triangleIndices: originalTriangleIndices
+    triangleIndices: originalTriangleIndices,
+    westIndices,
+    northIndices,
+    eastIndices,
+    southIndices
   } = decode(arrayBuffer, DECODING_STEPS.triangleIndices);
   let triangleIndices = originalTriangleIndices;
-  // TODO: use skirt information from file
   let attributes = getMeshAttributes(vertexData, header, bounds);
   if (options.skirtHeight) {
     const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
       attributes,
       triangleIndices,
-      options.skirtHeight
+      options.skirtHeight,
+      {
+        westIndices,
+        northIndices,
+        eastIndices,
+        southIndices
+      }
     );
     attributes = newAttributes;
     triangleIndices = newTriangles;

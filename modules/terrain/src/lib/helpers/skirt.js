@@ -7,8 +7,10 @@ import {concatenateTypedArrays} from '@loaders.gl/loader-utils';
  * @param {number} skirtHeight - height of the skirt geometry
  * @returns - geometry data with added skirt
  */
-export function addSkirt(attributes, triangles, skirtHeight) {
-  const outsideEdges = getOutsideEdges(triangles);
+export function addSkirt(attributes, triangles, skirtHeight, outsideIndices = null) {
+  const outsideEdges = outsideIndices
+    ? getOutsideEdgesFromIndices(outsideIndices, attributes.POSITION.value)
+    : getOutsideEdgesFromTriangles(triangles);
 
   // 2 new vertices for each outside edge
   const newPosition = new attributes.POSITION.value.constructor(outsideEdges.length * 6);
@@ -49,7 +51,7 @@ export function addSkirt(attributes, triangles, skirtHeight) {
  * @param {any} triangles - indices array of the mesh geometry
  * @returns {number[][]} - outside edges data
  */
-function getOutsideEdges(triangles) {
+function getOutsideEdgesFromTriangles(triangles) {
   const edges = [];
   for (let i = 0; i < triangles.length; i += 3) {
     edges.push([triangles[i], triangles[i + 1]]);
@@ -70,6 +72,31 @@ function getOutsideEdges(triangles) {
     }
   }
   return outsideEdges;
+}
+
+/**
+ * Get geometry edges that located on a border of the mesh
+ * @param {object} indices - edge indices from quantized mesh data
+ * @param {TypedArray} position - position attribute geometry data
+ * @returns {number[][]} - outside edges data
+ */
+function getOutsideEdgesFromIndices(indices, position) {
+  // Sort skirt indices to create adjacent triangles
+  indices.westIndices.sort((a, b) => position[3 * a + 1] - position[3 * b + 1]);
+  // Reverse (b - a) to match triangle winding
+  indices.eastIndices.sort((a, b) => position[3 * b + 1] - position[3 * a + 1]);
+  indices.southIndices.sort((a, b) => position[3 * b] - position[3 * a]);
+  // Reverse (b - a) to match triangle winding
+  indices.northIndices.sort((a, b) => position[3 * a] - position[3 * b]);
+
+  const edges = [];
+  for (const index in indices) {
+    const indexGroup = indices[index];
+    for (let i = 0; i < indexGroup.length - 1; i++) {
+      edges.push([indexGroup[i], indexGroup[i + 1]]);
+    }
+  }
+  return edges;
 }
 
 /**
