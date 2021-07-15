@@ -2,7 +2,18 @@
 
 ## v3.0
 
-### v3.0.0
+### v3.0.2
+
+- Load workers of `latest` versions (#1673)
+- terrain: skirting optimization for quantized (#1669)
+- Bump version in yarn.lock (#1671)
+- Bump math.gl to 3.5.1 (#1670)
+- chore(i3s): Add test case for ImageLoader issue for Safari browser (#1665)
+- Fix(shapefile): Typing fixes (#1667)
+- terrain: skirting (#1662)
+- chore(schema): Prepare schema module for switch to arrow (#1666)
+
+### v3.0.1
 
 - feat(core): selectLoader(): options.mimeType, options.fallbackMimeType (#1658)
 - chore: Improve `LoaderContext` type handling (#1664)
@@ -35,6 +46,7 @@
 - chore(docs): Doc cleanup (#1617)
 
 ### v3.0.0-beta.9
+
 - feat(csv): skipEmptyLines default to true (#1632)
 - fix(csv): Change default `shape` to `object-row-table` (#1631)
 - Fix featureIds parsing to avoid errors in Safari browser (#1629)
