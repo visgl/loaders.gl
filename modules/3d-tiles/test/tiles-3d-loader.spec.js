@@ -5,6 +5,7 @@ import test from 'tape-promise/tape';
 import {parse, fetchFile} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {DracoLoader} from '@loaders.gl/draco';
+import {isBrowser} from '@loaders.gl/core';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILE_B3DM_WITH_DRACO_URL = '@loaders.gl/3d-tiles/test/data/143.b3dm';
@@ -76,5 +77,31 @@ test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async (t) => {
   t.ok(tile.batchTableJson);
   t.deepEqual(tile.batchTableJson.id, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   t.ok(tile.gltf);
+  t.end();
+});
+
+test('Tileset3D#loads json from base64 URL', async (t) => {
+  // fetching base64 doesn't work in NodeJS
+  if (!isBrowser) {
+    t.end();
+  }
+  const tilesetJson = {
+    asset: {
+      version: 2.0
+    }
+  };
+
+  const uri = `data:text/plain;base64,${btoa(JSON.stringify(tilesetJson))}`;
+
+  const response = await fetchFile(uri);
+  const tilesetHeader = await parse(response, Tiles3DLoader, {'3d-tiles': {isTileset: true}});
+  t.ok(tilesetHeader.asset, 'should contain asset');
+  t.ok(tilesetHeader.asset.version, 'asset should contain version');
+  t.ok(tilesetHeader.loader, 'should contain loader the header loaded with');
+  t.equals(tilesetHeader.loader.id, '3d-tiles', 'loaded with supported tiles 3D format loader');
+  t.equals(typeof tilesetHeader.url, 'string', 'url should be string');
+  t.equals(typeof tilesetHeader.basePath, 'string', 'basePath should be string');
+  t.ok('root' in tilesetHeader, 'should contain root tile');
+  t.equals(tilesetHeader.type, 'TILES3D');
   t.end();
 });
