@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {fetchFile, isBrowser, load, parse} from '@loaders.gl/core';
+import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 import I3SNodePagesTiles from '@loaders.gl/i3s/lib/helpers/i3s-nodepages-tiles';
 import {TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
@@ -15,14 +15,14 @@ test('ParseI3sTileContent#should parse tile content', async (t) => {
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
-  const result = await parse(data, I3SContentLoader, {
+  const content = await parse(data, I3SContentLoader, {
     i3s: {
       tile,
       tileset,
       useDracoGeometry: false
     }
   });
-  t.ok(result);
+  t.ok(content);
   t.end();
 });
 
@@ -32,15 +32,14 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
-  const result = await parse(data, I3SContentLoader, {
+  const content = await parse(data, I3SContentLoader, {
     i3s: {
       tile,
       tileset,
       useDracoGeometry: false
     }
   });
-  const texture =
-    result.content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
+  const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
   if (isBrowser) {
     const supportedFormats = getSupportedGPUTextureFormats();
     if (supportedFormats.has('dxt')) {
@@ -62,14 +61,14 @@ test('ParseI3sTileContent#should make PBR material', async (t) => {
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
-  const result = await parse(data, I3SContentLoader, {
+  const content = await parse(data, I3SContentLoader, {
     i3s: {
       tile,
       tileset,
       useDracoGeometry: false
     }
   });
-  const material = result.content.material;
+  const material = content.material;
   t.ok(material.doubleSided);
   t.deepEqual(material.emissiveFactor, [1, 1, 1]);
   t.ok(material.pbrMetallicRoughness);
@@ -99,16 +98,16 @@ test('ParseI3sTileContent#should have featureIds', async (t) => {
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
-  const result = await parse(data, I3SContentLoader, {
+  const content = await parse(data, I3SContentLoader, {
     i3s: {
       tile,
       tileset,
       useDracoGeometry: false
     }
   });
-  t.ok(result);
-  t.ok(result.content.featureIds);
-  t.equal(result.content.featureIds.length, 25638);
+  t.ok(content);
+  t.ok(content.featureIds);
+  t.equal(content.featureIds.length, 25638);
   t.end();
 });
 
@@ -120,29 +119,4 @@ test('ParseI3sTileContent#should generate mbs from obb', async (t) => {
   t.equals(tile.mbs.length, 4);
   t.deepEquals(tile.mbs.slice(0, 3), tile.obb.center);
   t.end();
-});
-
-test('ParseI3sTileContent#Safari should fail on imageLoader if it calls from I3SContentWorker', async (t) => {
-  const options = {
-    useUncompressedTexture: true
-  };
-  const tileset = TILESET_STUB(options);
-  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
-  const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
-  const response = await fetchFile(I3S_TILE_CONTENT);
-  const data = await response.arrayBuffer();
-  let content;
-  try {
-    content = await load(data, I3SContentLoader, {
-      i3s: {
-        tileset,
-        tile
-      }
-    });
-    const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
-    t.ok(texture);
-    t.end();
-  } catch (error) {
-    t.fail(error);
-  }
 });

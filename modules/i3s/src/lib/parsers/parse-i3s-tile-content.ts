@@ -1,4 +1,5 @@
 import type {TypedArray} from '@loaders.gl/schema';
+import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -48,17 +49,24 @@ export async function parseI3STileContent(
     const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
     const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
     // @ts-ignore context must be defined
-    const response = await context.fetch(url, loader);
+    const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
-    // @ts-ignore context must be defined
-    tile.content.texture = await context.parse(arrayBuffer, loader);
-    if (loader === CompressedTextureLoader) {
+
+    if (loader === ImageLoader) {
+      const options = {image: {type: 'data'}};
+      // @ts-ignore context must be defined
+      // Image constructor is not supported in worker thread.
+      // Do parsing image data on the main thread by using context to avoid worker issues.
+      tile.content.texture = await context.parse(arrayBuffer, options);
+    } else if (loader === CompressedTextureLoader) {
+      // @ts-ignore context must be defined
+      const texture = await load(arrayBuffer, CompressedTextureLoader);
       tile.content.texture = {
         compressed: true,
         mipmaps: false,
-        width: tile.content.texture[0].width,
-        height: tile.content.texture[0].height,
-        data: tile.content.texture
+        width: texture[0].width,
+        height: texture[0].height,
+        data: texture
       };
     }
   }
@@ -88,11 +96,10 @@ async function parseI3SNodeGeometry(
   let featureCount = 0;
 
   if (tile.isDracoGeometry) {
-    const decompressedGeometry = await context?.parse?.(arrayBuffer, DracoLoader, {
+    const decompressedGeometry = await parse(arrayBuffer, DracoLoader, {
       draco: {
         attributeNameEntry: I3S_ATTRIBUTE_TYPE
-      },
-      context
+      }
     });
 
     vertexCount = decompressedGeometry.header.vertexCount;
