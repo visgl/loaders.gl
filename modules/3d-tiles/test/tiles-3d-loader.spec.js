@@ -80,7 +80,7 @@ test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async (t) => {
   t.end();
 });
 
-test('Tileset3D#loads json from base64 URL', async (t) => {
+test('Tiles3DLoader#loads json from base64 URL', async (t) => {
   // fetching base64 doesn't work in NodeJS
   if (!isBrowser) {
     t.end();
