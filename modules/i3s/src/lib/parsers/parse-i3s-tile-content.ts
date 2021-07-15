@@ -1,10 +1,10 @@
 import type {TypedArray} from '@loaders.gl/schema';
+import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
-import {load} from '@loaders.gl/core';
+import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
-import {parse} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 import {CompressedTextureLoader} from '@loaders.gl/textures';
 
@@ -35,7 +35,8 @@ export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
   tile: Tile,
   tileset: Tileset,
-  options
+  options?: LoaderOptions,
+  context?: LoaderContext
 ) {
   tile.content = tile.content || {};
   tile.content.featureIds = tile.content.featureIds || null;
@@ -45,16 +46,27 @@ export async function parseI3STileContent(
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
-    const url = getUrlWithToken(tile.textureUrl, options.i3s?.token);
+    const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
     const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
-    tile.content.texture = await load(url, loader);
-    if (loader === CompressedTextureLoader) {
+    // @ts-ignore context must be defined
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+
+    if (loader === ImageLoader) {
+      const options = {image: {type: 'data'}};
+      // @ts-ignore context must be defined
+      // Image constructor is not supported in worker thread.
+      // Do parsing image data on the main thread by using context to avoid worker issues.
+      tile.content.texture = await context.parse(arrayBuffer, options);
+    } else if (loader === CompressedTextureLoader) {
+      // @ts-ignore context must be defined
+      const texture = await load(arrayBuffer, CompressedTextureLoader);
       tile.content.texture = {
         compressed: true,
         mipmaps: false,
-        width: tile.content.texture[0].width,
-        height: tile.content.texture[0].height,
-        data: tile.content.texture
+        width: texture[0].width,
+        height: texture[0].height,
+        data: texture
       };
     }
   }
@@ -64,11 +76,15 @@ export async function parseI3STileContent(
     tile.content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, context);
 }
 
 /* eslint-disable max-statements */
-async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile = {}) {
+async function parseI3SNodeGeometry(
+  arrayBuffer: ArrayBuffer,
+  tile: Tile = {},
+  context?: LoaderContext
+) {
   if (!tile.content) {
     return tile;
   }
