@@ -15,8 +15,7 @@ export type JSONLoaderOptions = LoaderOptions & {
   json?: {
     shape?: 'row-table';
     table?: false;
-    jsonpaths?: [];
-    // batchSize?: number | 'auto';
+    jsonpaths?: string[];
   };
 };
 
