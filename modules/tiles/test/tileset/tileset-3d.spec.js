@@ -159,32 +159,6 @@ test('Tileset3D#throws with undefined url', (t) => {
   t.end();
 });
 
-test.skip('Tileset3D#loads json from base64 URL', async (t) => {
-  const tilesetJson = {
-    asset: {
-      version: 2.0
-    }
-  };
-
-  const uri = `data:text/plain;base64,${btoa(JSON.stringify(tilesetJson))}`;
-
-  const result = await load(uri, Tiles3DLoader);
-  t.deepEquals(result, tilesetJson);
-  t.end();
-});
-
-test.skip('Tileset3D#rejects invalid tileset version', async (t) => {
-  const tilesetJson = {
-    asset: {
-      version: 2.0
-    }
-  };
-  const uri = `data:text/plain;base64,${btoa(JSON.stringify(tilesetJson))}`;
-  const tileset = await load(uri, Tiles3DLoader, {tileset: true});
-  t.throws(() => new Tileset3D(tileset));
-  t.end();
-});
-
 test('Tileset3D#url set up correctly given tileset JSON filepath', async (t) => {
   const path = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset.json';
 
@@ -267,6 +241,7 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
 });
 
 test('Tileset3D#one viewport traversal', async (t) => {
+  t.plan(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
@@ -284,12 +259,12 @@ test('Tileset3D#one viewport traversal', async (t) => {
       clearInterval(setIntervalId);
       tileset.update(viewport);
       t.equals(tileset.selectedTiles.length, 1);
-      t.end();
     }
   }, 100);
 });
 
 test('Tileset3D#onTraversalComplete', async (t) => {
+  t.plan(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[1];
   let tileLoadCounter = 0;
@@ -310,12 +285,12 @@ test('Tileset3D#onTraversalComplete', async (t) => {
       clearInterval(setIntervalId);
       tileset.update(viewport);
       t.equals(tileset.selectedTiles.length, 4);
-      t.end();
     }
   }, 100);
 });
 
 test('Tileset3D#two viewports traversal', async (t) => {
+  t.plan(3);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
@@ -341,12 +316,12 @@ test('Tileset3D#two viewports traversal', async (t) => {
         tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
         5
       );
-      t.end();
     }
   }, 100);
 });
 
 test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async (t) => {
+  t.plan(3);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
@@ -376,12 +351,12 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
         tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
         5
       );
-      t.end();
     }
   }, 100);
 });
 
 test('Tileset3D#loadTiles option', async (t) => {
+  t.plan(2);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
@@ -403,11 +378,10 @@ test('Tileset3D#loadTiles option', async (t) => {
       tileLoadCounter = 0;
 
       viewport = VIEWPORTS[1];
-      tileset.setOptions({loadTiles: false});
+      tileset.setProps({loadTiles: false});
       tileset.update(viewport);
       setTimeout(() => {
         t.equals(tileLoadCounter, 0);
-        t.end();
       }, 300);
     }
   }, 100);

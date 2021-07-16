@@ -32,6 +32,9 @@ function getRefine(refine) {
 }
 
 export function normalizeTileData(tile, options) {
+  if (!tile) {
+    return null;
+  }
   if (tile.content) {
     const contentUri = tile.content.uri || tile.content.url;
     tile.contentUrl = `${options.basePath}/${contentUri}`;
@@ -54,7 +57,7 @@ export function normalizeTileHeaders(tileset) {
   stack.push(root);
 
   while (stack.length > 0) {
-    const tile = stack.pop();
+    const tile = stack.pop() || {};
     const children = tile.children || [];
     for (const childHeader of children) {
       normalizeTileData(childHeader, {basePath});

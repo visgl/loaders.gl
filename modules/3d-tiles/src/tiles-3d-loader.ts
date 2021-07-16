@@ -53,7 +53,7 @@ async function parseTileset(data, options, context) {
   tilesetJson.type = TILESET_TYPE.TILES3D;
 
   tilesetJson.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
-  tilesetJson.lodMetricValue = tilesetJson.root.lodMetricValue;
+  tilesetJson.lodMetricValue = tilesetJson.root?.lodMetricValue || 0;
 
   return tilesetJson;
 }
