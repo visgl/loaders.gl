@@ -19,9 +19,22 @@
   </tbody>
 </table>
 
-## v3.0 (In Development)
+## v3.1 (Planning/prototyping stage)
 
-Target Release Date: mid-July 2021. (Beta releases are available).
+Target Release Date: Q4 2021.
+
+Aspirational goals:
+
+- EcmaScript module support
+- Unbundled loaders.
+- More comprehensive support for `options.shape` to control output format of loaders.
+- Replace `Schema` class with arrow schema if arrowjs tree-shaking improvements are satisfactory.
+- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`
+- `ffmpeg` WASM integration for `@loaders.gl/video`
+
+## v3.0
+
+Target Release Date: July 13, 2021.
 
 loaders.gl v3.0 is a major release, that adds a range of new loaders and features and continues the transition of the loaders.gl code base to typescript. Some deprecated APIs have been removed, check the upgrade guide for breaking changes.
 
