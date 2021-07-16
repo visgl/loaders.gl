@@ -1,4 +1,5 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {JSONLoaderOptions} from './json-loader';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import parseJSONSync from './lib/parse-json';
 import parseJSONInBatches from './lib/parse-json-in-batches';
@@ -7,10 +8,18 @@ import parseJSONInBatches from './lib/parse-json-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const GeoJSONLoaderOptions = {
+export type GeoJSONLoaderOptions = JSONLoaderOptions & {
+  geojson?: {
+    shape?: 'object-row-table';
+  };
+  gis?: {
+    format: 'geojson';
+  };
+};
+
+const DEFAULT_GEOJSON_LOADER_OPTIONS = {
   geojson: {
-    shape: 'object-row-table',
-    batchSize: 'auto'
+    shape: 'object-row-table'
   },
   json: {
     jsonpaths: ['$', '$.features']
@@ -31,22 +40,9 @@ export const GeoJSONWorkerLoader: Loader = {
   worker: true,
   extensions: ['geojson'],
   mimeTypes: ['application/geo+json'],
-  // TODO - support various line based JSON formats
-  /*
-  extensions: {
-    json: null,
-    jsonl: {stream: true},
-    ndjson: {stream: true}
-  },
-  mimeTypes: {
-    'application/json': null,
-    'application/json-seq': {stream: true},
-    'application/x-ndjson': {stream: true}
-  },
-  */
   category: 'geometry',
   text: true,
-  options: GeoJSONLoaderOptions
+  options: DEFAULT_GEOJSON_LOADER_OPTIONS
 };
 
 export const GeoJSONLoader: LoaderWithParser = {
@@ -62,8 +58,8 @@ async function parse(arrayBuffer, options) {
 
 function parseTextSync(text, options) {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...GeoJSONLoaderOptions, ...options};
-  options.json = {...GeoJSONLoaderOptions.geojson, ...options.geojson};
+  options = {...DEFAULT_GEOJSON_LOADER_OPTIONS, ...options};
+  options.json = {...DEFAULT_GEOJSON_LOADER_OPTIONS.geojson, ...options.geojson};
   options.gis = options.gis || {};
   const json = parseJSONSync(text, options);
   switch (options.gis.format) {
@@ -76,8 +72,8 @@ function parseTextSync(text, options) {
 
 function parseInBatches(asyncIterator, options): AsyncIterable<any> {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...GeoJSONLoaderOptions, ...options};
-  options.json = {...GeoJSONLoaderOptions.geojson, ...options.geojson};
+  options = {...DEFAULT_GEOJSON_LOADER_OPTIONS, ...options};
+  options.json = {...DEFAULT_GEOJSON_LOADER_OPTIONS.geojson, ...options.geojson};
 
   const geojsonIterator = parseJSONInBatches(asyncIterator, options);
 
