@@ -132,6 +132,13 @@ function parseCSVInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: CSVLoaderOptions
 ): AsyncIterable<Batch> {
+  // Papaparse does not support standard batch size handling
+  // TODO - investigate papaparse chunks mode
+  options = {...options};
+  if (options.batchSize === 'auto') {
+    options.batchSize = 4000;
+  }
+
   // Apps can call the parse method directly, we so apply default options here
   const csvOptions = {...DEFAULT_CSV_LOADER_OPTIONS.csv, ...options?.csv};
 
