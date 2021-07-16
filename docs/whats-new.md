@@ -34,7 +34,7 @@ Aspirational goals:
 
 ## v3.0
 
-Target Release Date: July 13, 2021.
+Release Date: July 13, 2021.
 
 loaders.gl v3.0 is a major release, that adds a range of new loaders and features and continues the transition of the loaders.gl code base to typescript. Some deprecated APIs have been removed, check the upgrade guide for breaking changes.
 
