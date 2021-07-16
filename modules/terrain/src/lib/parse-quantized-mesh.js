@@ -55,6 +55,12 @@ function getTileMesh(arrayBuffer, options) {
   } = decode(arrayBuffer, DECODING_STEPS.triangleIndices);
   let triangleIndices = originalTriangleIndices;
   let attributes = getMeshAttributes(vertexData, header, bounds);
+
+  // Compute bounding box before adding skirt so that z values are not skewed
+  // TODO: Find bounding box from header, instead of doing extra pass over
+  // vertices.
+  const boundingBox = getMeshBoundingBox(attributes);
+
   if (options.skirtHeight) {
     const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
       attributes,
@@ -79,9 +85,7 @@ function getTileMesh(arrayBuffer, options) {
     header: {
       // @ts-ignore
       vertexCount: triangleIndices.length,
-      // TODO: Find bounding box from header, instead of doing extra pass over
-      // vertices.
-      boundingBox: getMeshBoundingBox(attributes)
+      boundingBox
     },
     mode: 4, // TRIANGLES
     indices: {value: triangleIndices, size: 1},

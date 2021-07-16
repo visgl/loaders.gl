@@ -108,6 +108,9 @@ function getMesh(terrainImage, terrainOptions) {
   let {triangles} = mesh;
   let attributes = getMeshAttributes(vertices, terrain, width, height, bounds);
 
+  // Compute bounding box before adding skirt so that z values are not skewed
+  const boundingBox = getMeshBoundingBox(attributes);
+
   if (terrainOptions.skirtHeight) {
     const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
       attributes,
@@ -125,7 +128,7 @@ function getMesh(terrainImage, terrainOptions) {
     },
     header: {
       vertexCount: triangles.length,
-      boundingBox: getMeshBoundingBox(attributes)
+      boundingBox
     },
     mode: 4, // TRIANGLES
     indices: {value: Uint32Array.from(triangles), size: 1},
