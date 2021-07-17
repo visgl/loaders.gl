@@ -1,4 +1,10 @@
-import type {SyncDataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {
+  SyncDataType,
+  Loader,
+  LoaderWithParser,
+  LoaderContext,
+  LoaderOptions
+} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -53,19 +59,24 @@ export function parseSync(
   };
   context = getLoaderContext({url, parseSync, parse, loaders: loaders as Loader[]}, options);
 
-  return parseWithLoaderSync(loader, data, options, context);
+  return parseWithLoaderSync(loader as LoaderWithParser, data, options, context);
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
-function parseWithLoaderSync(loader, data, options, context) {
-  data = getArrayBufferOrStringFromDataSync(data, loader);
+function parseWithLoaderSync(
+  loader: LoaderWithParser,
+  data: SyncDataType,
+  options: LoaderOptions,
+  context: LoaderContext
+) {
+  data = getArrayBufferOrStringFromDataSync(data, loader, options);
 
   if (loader.parseTextSync && typeof data === 'string') {
-    return loader.parseTextSync(data, options, context, loader);
+    return loader.parseTextSync(data, options); // , context, loader);
   }
 
-  if (loader.parseSync) {
-    return loader.parseSync(data, options, context, loader);
+  if (loader.parseSync && data instanceof ArrayBuffer) {
+    return loader.parseSync(data, options, context); // , loader);
   }
 
   // TBD - If synchronous parser not available, return null
