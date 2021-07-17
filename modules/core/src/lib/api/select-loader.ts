@@ -74,18 +74,25 @@ export function selectLoaderSync(
   // if only a single loader was provided (not as array), force its use
   // TODO - Should this behavior be kept and documented?
   if (loaders && !Array.isArray(loaders)) {
+    // TODO - remove support for legacy loaders
     return normalizeLoader(loaders);
   }
 
-  // Add registered loaders
-  loaders = loaders ? [...loaders] : [];
+  // Build list of candidate loaders that will be searched in order for a match
+  let candidateLoaders: Loader[] = [];
+  // First search supplied loaders
+  if (loaders) {
+    candidateLoaders = candidateLoaders.concat(loaders);
+  }
+  // Then fall back to registered loaders
   if (!options?.ignoreRegisteredLoaders) {
-    loaders.push(...getRegisteredLoaders());
+    candidateLoaders.push(...getRegisteredLoaders());
   }
 
-  normalizeLoaders(loaders);
+  // TODO - remove support for legacy loaders
+  normalizeLoaders(candidateLoaders);
 
-  const loader = selectLoaderInternal(data, loaders, options, context);
+  const loader = selectLoaderInternal(data, candidateLoaders, options, context);
 
   // no loader available
   if (!loader && !options?.nothrow) {
