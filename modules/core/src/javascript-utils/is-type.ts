@@ -1,3 +1,8 @@
+import type {Readable} from 'stream';
+
+/** A DOM or Node readable stream */
+export type ReadableStreamType = ReadableStream | Readable;
+
 const isBoolean: (x: any) => boolean = (x) => typeof x === 'boolean';
 const isFunction: (x: any) => boolean = (x) => typeof x === 'function';
 
@@ -26,7 +31,7 @@ export const isReadableDOMStream: (x: any) => boolean = (x) =>
   (isObject(x) && isFunction(x.tee) && isFunction(x.cancel) && isFunction(x.getReader));
 // Not implemented in Firefox: && isFunction(x.pipeTo)
 
-// Check for Node.js `Buffer` without triggering bundler to include polyfill
+/** Check for Node.js `Buffer` without triggering bundler to include buffer polyfill */
 export const isBuffer: (x: any) => boolean = (x) => x && typeof x === 'object' && x.isBuffer;
 
 export const isWritableNodeStream: (x: any) => boolean = (x) =>

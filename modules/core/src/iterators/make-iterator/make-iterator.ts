@@ -1,10 +1,10 @@
 import type {ReadStream} from 'fs';
 
-import {makeStringIterator} from './string-iterator';
-import {makeArrayBufferIterator} from './array-buffer-iterator';
-import {makeBlobIterator} from './blob-iterator';
-import type {StreamIteratorOptions} from './stream-iterator';
-import {makeStreamIterator} from './stream-iterator';
+import {makeStringIterator} from './make-string-iterator';
+import {makeArrayBufferIterator} from './make-array-buffer-iterator';
+import {makeBlobIterator} from './make-blob-iterator';
+import type {StreamIteratorOptions} from './make-stream-iterator';
+import {makeStreamIterator} from './make-stream-iterator';
 import {isBlob, isReadableStream, isResponse} from '../../javascript-utils/is-type';
 
 /**

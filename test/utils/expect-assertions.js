@@ -33,3 +33,7 @@ export function it(message, testfunc) {
 export function expect(value) {
   return new TestCase(currentTest, value);
 }
+
+export function describe(string, func) {
+  func();
+}
