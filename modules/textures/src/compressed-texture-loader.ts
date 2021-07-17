@@ -17,7 +17,13 @@ export const CompressedTextureWorkerLoader = {
     'dds', // WEBGL_compressed_texture_s3tc, WEBGL_compressed_texture_atc
     'pvr' // WEBGL_compressed_texture_pvrtc
   ],
-  mimeTypes: ['application/octet-stream', 'image/vnd-ms.dds', 'image/ktx', 'image/ktx2'],
+  mimeTypes: [
+    'image/ktx2',
+    'image/ktx',
+    'image/vnd-ms.dds',
+    'image/x-dds',
+    'application/octet-stream'
+  ],
   binary: true,
   options: {
     'compressed-texture': {
