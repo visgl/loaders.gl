@@ -2,6 +2,14 @@
 
 ## v3.0
 
+### v3.0.3
+
+- fix(core): selectLoader type issue (#1681)
+- chore: minor updates for v3 (#1674)
+- feat(core): Add makeStream(asyncIterable) (#1675)
+- feat(core): Add options._streamRedAhead (#1679)
+- fix(textures): compressed texture mime types (#1678)
+- fix(csv): options.batchSize (#1677)
 ### v3.0.2
 
 - Load workers of `latest` versions (#1673)
