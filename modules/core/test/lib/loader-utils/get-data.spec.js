@@ -1,25 +1,31 @@
 import test from 'tape-promise/tape';
 import {
   getArrayBufferOrStringFromDataSync,
-  getAsyncIteratorFromData
+  getAsyncIterableFromData
 } from '@loaders.gl/core/lib/loader-utils/get-data';
 
-import {isBrowser, isIterator} from '@loaders.gl/core';
+import {isBrowser, isIterator, JSONLoader} from '@loaders.gl/core';
+
+const BinaryLoader = {
+  ...JSONLoader,
+  text: false,
+  binary: true
+};
 
 test('parseWithLoader#getArrayBufferOrStringFromDataSync', (t) => {
   const string = 'line 1\nline 2';
   const buffer = new TextEncoder().encode(string);
 
-  let result = getArrayBufferOrStringFromDataSync(string, {text: true});
+  let result = getArrayBufferOrStringFromDataSync(string, JSONLoader, {});
   t.is(result, string, 'returns correct result');
 
-  result = getArrayBufferOrStringFromDataSync(buffer, {binary: true});
+  result = getArrayBufferOrStringFromDataSync(buffer, BinaryLoader, {});
   t.is(result, buffer.buffer, 'returns correct result');
 
-  result = getArrayBufferOrStringFromDataSync(buffer, {text: true});
+  result = getArrayBufferOrStringFromDataSync(buffer, JSONLoader, {});
   t.is(result, string, 'returns correct result');
 
-  t.throws(() => getArrayBufferOrStringFromDataSync(string, {binary: true}));
+  t.throws(() => getArrayBufferOrStringFromDataSync(string, BinaryLoader, {}));
 
   t.end();
 });
@@ -35,10 +41,10 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers
   let extractedString = new TextDecoder().decode(typedArrayWithOffset);
   t.equals(extractedString, string);
 
-  let result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: true});
+  let result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, JSONLoader, {});
   t.equals(result, string, 'typedArrayWithOffset to string returns correct result');
 
-  result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, {text: false});
+  result = getArrayBufferOrStringFromDataSync(typedArrayWithOffset, BinaryLoader, {});
   t.deepEquals(
     // @ts-ignore
     new Uint8Array(result),
@@ -53,10 +59,10 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers
     extractedString = nodeBufferWithOffset.toString();
     t.equals(extractedString, string);
 
-    result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: true});
+    result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, JSONLoader, {});
     t.equals(result, string, 'BufferWithOffset to string returns correct result');
 
-    result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, {text: false});
+    result = getArrayBufferOrStringFromDataSync(nodeBufferWithOffset, BinaryLoader, {});
     t.deepEquals(
       // @ts-ignore
       new Uint8Array(result),
@@ -68,7 +74,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays/buffers
   t.end();
 });
 
-test('parseWithLoader#getAsyncIteratorFromData', async (t) => {
+test('parseWithLoader#getAsyncIterableFromData', async (t) => {
   const TESTS = [
     new Float32Array([1, 2, 3]).buffer,
     (async function* generator() {
@@ -78,12 +84,12 @@ test('parseWithLoader#getAsyncIteratorFromData', async (t) => {
   ];
 
   for (const testCase of TESTS) {
-    const result = await getAsyncIteratorFromData(testCase);
+    const result = await getAsyncIterableFromData(testCase, {});
     t.ok(isIterator(result), 'returns iterator');
   }
 
   // @ts-ignore
-  t.rejects(async () => await getAsyncIteratorFromData({}), 'object conversion to iterator fails');
+  t.rejects(async () => await getAsyncIterableFromData({}), 'object conversion to iterator fails');
 
   t.end();
 });

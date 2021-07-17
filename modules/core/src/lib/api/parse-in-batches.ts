@@ -9,7 +9,7 @@ import {assert, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';
-import {getAsyncIteratorFromData, getReadableStream} from '../loader-utils/get-data';
+import {getAsyncIterableFromData, getReadableStream} from '../loader-utils/get-data';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
@@ -109,7 +109,7 @@ async function parseWithLoaderInBatches(
  */
 async function parseToOutputIterator(loader, data, options, context) {
   if (loader.parseInBatches) {
-    const inputIterator = await getAsyncIteratorFromData(data);
+    const inputIterator = await getAsyncIterableFromData(data, options);
 
     const iteratorChain = await applyInputTransforms(inputIterator, options);
 
@@ -131,7 +131,7 @@ async function parseToOutputIterator(loader, data, options, context) {
 
   // Fallback: load atomically using `parse` concatenating input iterator into single chunk
   async function* parseChunkInBatches() {
-    const inputIterator = await getAsyncIteratorFromData(data);
+    const inputIterator = await getAsyncIterableFromData(data, options);
     const arrayBuffer = await concatenateArrayBuffersAsync(inputIterator);
     // yield a single batch, the output from loader.parse()
     const parsedData = await loader.parse(arrayBuffer, options, context, loader);
