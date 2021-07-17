@@ -38,7 +38,7 @@ async function* makeBrowserStreamIterator(
   // In the browser, we first need to get a lock on the stream
   const reader = stream.getReader();
 
-  let nextBatchPromise: Promise<ReadableStreamDefaultReadResult<any>> | undefined;
+  let nextBatchPromise: Promise<{done?: boolean; value?: Uint8Array}> | undefined;
 
   try {
     // eslint-disable-next-line no-constant-condition
