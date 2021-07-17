@@ -3,13 +3,14 @@ import type {ReadStream} from 'fs';
 import {makeStringIterator} from './string-iterator';
 import {makeArrayBufferIterator} from './array-buffer-iterator';
 import {makeBlobIterator} from './blob-iterator';
+import type {StreamIteratorOptions} from './stream-iterator';
 import {makeStreamIterator} from './stream-iterator';
 import {isBlob, isReadableStream, isResponse} from '../../javascript-utils/is-type';
 
 /**
  * @param [options.chunkSize]
  */
-export type IteratorOptions = {
+export type IteratorOptions = StreamIteratorOptions & {
   chunkSize?: number;
 };
 
@@ -36,11 +37,11 @@ export function makeIterator(
     return makeBlobIterator(data as Blob, options);
   }
   if (isReadableStream(data)) {
-    return makeStreamIterator(data as ReadableStream);
+    return makeStreamIterator(data as ReadableStream, options);
   }
   if (isResponse(data)) {
     const response = data as Response;
-    return makeStreamIterator(response.body as ReadableStream);
+    return makeStreamIterator(response.body as ReadableStream, options);
   }
   throw new Error('makeIterator');
 }

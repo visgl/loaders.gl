@@ -1,4 +1,10 @@
-import type {DataType, SyncDataType, BatchableDataType} from '@loaders.gl/loader-utils';
+import type {
+  DataType,
+  SyncDataType,
+  BatchableDataType,
+  Loader,
+  LoaderOptions
+} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {
   isResponse,
@@ -17,7 +23,8 @@ const ERR_DATA = 'Cannot convert supplied data type';
 // eslint-disable-next-line complexity
 export function getArrayBufferOrStringFromDataSync(
   data: SyncDataType,
-  loader
+  loader: Loader,
+  options: LoaderOptions
 ): ArrayBuffer | string {
   if (loader.text && typeof data === 'string') {
     return data;
@@ -64,11 +71,12 @@ export function getArrayBufferOrStringFromDataSync(
 // Convert async iterator to a promise
 export async function getArrayBufferOrStringFromData(
   data: DataType,
-  loader
+  loader: Loader,
+  options: LoaderOptions
 ): Promise<ArrayBuffer | string> {
   const isArrayBuffer = data instanceof ArrayBuffer || ArrayBuffer.isView(data);
   if (typeof data === 'string' || isArrayBuffer) {
-    return getArrayBufferOrStringFromDataSync(data as string | ArrayBuffer, loader);
+    return getArrayBufferOrStringFromDataSync(data as string | ArrayBuffer, loader, options);
   }
 
   // Blobs and files are FileReader compatible
@@ -83,7 +91,8 @@ export async function getArrayBufferOrStringFromData(
   }
 
   if (isReadableStream(data)) {
-    data = makeIterator(data as ReadableStream);
+    // @ts-expect-error TS2559 options type
+    data = makeIterator(data as ReadableStream, options);
   }
 
   if (isIterable(data) || isAsyncIterable(data)) {
@@ -94,8 +103,9 @@ export async function getArrayBufferOrStringFromData(
   throw new Error(ERR_DATA);
 }
 
-export async function getAsyncIteratorFromData(
-  data: BatchableDataType
+export async function getAsyncIterableFromData(
+  data: BatchableDataType,
+  options: LoaderOptions
 ): Promise<AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>> {
   if (isIterator(data)) {
     return data as AsyncIterable<ArrayBuffer>;
@@ -106,19 +116,20 @@ export async function getAsyncIteratorFromData(
     // Note Since this function is not async, we currently can't load error message, just status
     await checkResponse(response);
     // TODO - bug in polyfill, body can be a Promise under Node.js
-    // @ts-ignore
-    return makeIterator(response.body);
+    const body = await response.body;
+    // TODO - body can be null?
+    return makeIterator(body as ReadableStream<Uint8Array>, options as any);
   }
 
   if (isBlob(data) || isReadableStream(data)) {
-    return makeIterator(data as Blob | ReadableStream);
+    return makeIterator(data as Blob | ReadableStream, options as any);
   }
 
   if (isAsyncIterable(data)) {
     return data[Symbol.asyncIterator]();
   }
 
-  return getIteratorFromData(data);
+  return getIterableFromData(data);
 }
 
 export async function getReadableStream(data: BatchableDataType): Promise<ReadableStream> {
@@ -136,7 +147,7 @@ export async function getReadableStream(data: BatchableDataType): Promise<Readab
 
 // HELPERS
 
-function getIteratorFromData(data) {
+function getIterableFromData(data) {
   // generate an iterator that emits a single chunk
   if (ArrayBuffer.isView(data)) {
     return (function* oneChunk() {

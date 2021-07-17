@@ -62,7 +62,7 @@ export async function parse(
 async function parseWithLoader(loader, data, options, context) {
   validateWorkerVersion(loader);
 
-  data = await getArrayBufferOrStringFromData(data, loader);
+  data = await getArrayBufferOrStringFromData(data, loader, options);
 
   // First check for synchronous text parser, wrap results in promises
   if (loader.parseTextSync && typeof data === 'string') {
