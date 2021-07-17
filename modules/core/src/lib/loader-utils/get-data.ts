@@ -15,7 +15,7 @@ import {
   isBlob,
   isBuffer
 } from '../../javascript-utils/is-type';
-import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
+import {makeIterator} from '../../iterators/make-iterator/make-iterator';
 import {checkResponse, makeResponse} from '../utils/response-utils';
 
 const ERR_DATA = 'Cannot convert supplied data type';
@@ -116,6 +116,7 @@ export async function getAsyncIterableFromData(
     // Note Since this function is not async, we currently can't load error message, just status
     await checkResponse(response);
     // TODO - bug in polyfill, body can be a Promise under Node.js
+    // eslint-disable-next-line @typescript-eslint/await-thenable
     const body = await response.body;
     // TODO - body can be null?
     return makeIterator(body as ReadableStream<Uint8Array>, options as any);

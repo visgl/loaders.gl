@@ -6,7 +6,7 @@ export type StreamIteratorOptions = {
 };
 
 /**
- * Returns an async iterator for a stream (works in both Node.js and browsers)
+ * Returns an async iterable that reads from a stream (works in both Node.js and browsers)
  * @param stream stream to iterator over
  */
 export function makeStreamIterator(
@@ -18,9 +18,11 @@ export function makeStreamIterator(
     : makeNodeStreamIterator(stream as Readable, options);
 }
 
-// BROWSER IMPLEMENTATION
-// See https://jakearchibald.com/2017/async-iterators-and-generators/#making-streams-iterate
-
+/**
+ * Returns an async iterable that reads from a DOM (browser) stream
+ * @param stream stream to iterate from
+ * @see https://jakearchibald.com/2017/async-iterators-and-generators/#making-streams-iterate
+ */
 async function* makeBrowserStreamIterator(
   stream: ReadableStream,
   options?: StreamIteratorOptions
@@ -64,9 +66,11 @@ async function* makeBrowserStreamIterator(
   }
 }
 
-// NODE <10 IMPLEMENTATION
-// See https://github.com/bustle/streaming-iterables, MIT license
-
+/**
+ * Returns an async iterable that reads from a DOM (browser) stream
+ * @param stream stream to iterate from
+ * @note Requires Node.js >= 10
+ */
 async function* makeNodeStreamIterator(
   stream: Readable,
   options?: StreamIteratorOptions
@@ -76,8 +80,10 @@ async function* makeNodeStreamIterator(
   for await (const chunk of stream) {
     yield toArrayBuffer(chunk); // Coerce each chunk to ArrayBuffer
   }
-
-  /*
+}
+/* TODO - remove NODE < 10
+ * @see https://github.com/bustle/streaming-iterables, MIT license
+ *
   if (typeof stream[Symbol.asyncIterator] === 'function') {
     return;
   }
@@ -91,17 +97,15 @@ async function* makeNodeStreamIterator(
       // eslint-disable-next-line no-continue
       continue;
     }
-    // @ts-expect-error
     if (stream._readableState?.ended) {
       return;
     }
     await onceReadable(stream);
   }
-  */
-}
 
-// async function onceReadable(stream: Readable): Promise<any> {
-//   return new Promise((resolve) => {
-//     stream.once('readable', resolve);
-//   });
-// }
+async function onceReadable(stream: Readable): Promise<any> {
+  return new Promise((resolve) => {
+    stream.once('readable', resolve);
+  });
+}
+  */
