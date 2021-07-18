@@ -150,6 +150,7 @@ export type LoaderWithParser = Loader & {
   parseText?: ParseText;
   parseTextSync?: ParseTextSync;
   parseInBatches?: ParseInBatches;
+  parseFileInBatches?: ParseFileInBatches;
 };
 
 /** Options for writers */
@@ -220,6 +221,11 @@ type ParseText = (text: string, options?: LoaderOptions) => Promise<any>;
 type ParseTextSync = (text: string, options?: LoaderOptions) => any;
 type ParseInBatches = (
   iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options?: LoaderOptions,
+  context?: LoaderContext
+) => AsyncIterable<any>;
+type ParseFileInBatches = (
+  file: Blob,
   options?: LoaderOptions,
   context?: LoaderContext
 ) => AsyncIterable<any>;
