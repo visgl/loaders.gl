@@ -69,4 +69,11 @@ export abstract class Compression {
   protected concatenate(asyncIterator): Promise<ArrayBuffer> {
     return concatenateArrayBuffersAsync(asyncIterator);
   }
+
+  protected improveError(error) {
+    if (!error.message.includes(this.name)) {
+      error.message = `${this.name} ${error.message}`;
+    }
+    return error;
+  }
 }

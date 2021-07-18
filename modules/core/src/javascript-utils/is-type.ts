@@ -23,6 +23,9 @@ export const isResponse: (x: any) => boolean = (x) =>
 export const isFile: (x: any) => boolean = (x) => typeof File !== 'undefined' && x instanceof File;
 export const isBlob: (x: any) => boolean = (x) => typeof Blob !== 'undefined' && x instanceof Blob;
 
+/** Check for Node.js `Buffer` without triggering bundler to include buffer polyfill */
+export const isBuffer: (x: any) => boolean = (x) => x && typeof x === 'object' && x.isBuffer;
+
 export const isWritableDOMStream: (x: any) => boolean = (x) =>
   isObject(x) && isFunction(x.abort) && isFunction(x.getWriter);
 
@@ -30,9 +33,6 @@ export const isReadableDOMStream: (x: any) => boolean = (x) =>
   (typeof ReadableStream !== 'undefined' && x instanceof ReadableStream) ||
   (isObject(x) && isFunction(x.tee) && isFunction(x.cancel) && isFunction(x.getReader));
 // Not implemented in Firefox: && isFunction(x.pipeTo)
-
-/** Check for Node.js `Buffer` without triggering bundler to include buffer polyfill */
-export const isBuffer: (x: any) => boolean = (x) => x && typeof x === 'object' && x.isBuffer;
 
 export const isWritableNodeStream: (x: any) => boolean = (x) =>
   isObject(x) && isFunction(x.end) && isFunction(x.write) && isBoolean(x.writable);

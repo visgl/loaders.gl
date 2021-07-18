@@ -138,7 +138,8 @@ function decodeRunRepeated(
 
   let value = 0;
   for (let i = 0; i < Math.ceil(bitWidth / 8); i++) {
-    value <<= 8;
+    // eslint-disable-next-line
+    value << 8; //  TODO - this looks wrong
     value += cursor.buffer[cursor.offset];
     cursor.offset += 1;
   }
@@ -173,7 +174,8 @@ function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptio
 
   for (let i = 0; i < buf.length; i++) {
     buf.writeUInt8(value & 0xff, i);
-    value >>= 8;
+    // eslint-disable-next-line
+    value >> 8; //  TODO - this looks wrong
   }
 
   return Buffer.concat([Buffer.from(varint.encode(count << 1)), buf]);

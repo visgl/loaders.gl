@@ -11,5 +11,6 @@ export enum CompressionCodec {
   LZO = 3,
   BROTLI = 4,
   LZ4 = 5,
-  ZSTD = 6
+  ZSTD = 6,
+  LZ4_RAW = 7 // Added in 2.9
 }

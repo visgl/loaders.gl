@@ -6,7 +6,7 @@ import {BrotliCompression} from '../lib/brotli-compression';
 import {DeflateCompression} from '../lib/deflate-compression';
 import {GZipCompression} from '../lib/gzip-compression';
 import {LZ4Compression} from '../lib/lz4-compression';
-import {LZOCompression} from '../lib/lzo-compression';
+// import {LZOCompression} from '../lib/lzo-compression';
 import {SnappyCompression} from '../lib/snappy-compression';
 import {ZstdCompression} from '../lib/zstd-compression';
 
@@ -15,7 +15,7 @@ import {ZstdCompression} from '../lib/zstd-compression';
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
-import lzo from 'lzo';
+// import lzo from 'lzo';
 import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
@@ -28,7 +28,7 @@ const modules = {
     }
   },
   lz4js,
-  lzo,
+  // lzo,
   'zstd-codec': ZstdCodec
 };
 
@@ -38,7 +38,7 @@ const COMPRESSIONS = [
   new BrotliCompression({modules}),
   new DeflateCompression({modules}),
   new GZipCompression({modules}),
-  new LZOCompression({modules}),
+  // new LZOCompression({modules}),
   new LZ4Compression({modules}),
   new SnappyCompression({modules}),
   new ZstdCompression({modules})

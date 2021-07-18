@@ -1,5 +1,5 @@
 // LZO
-import {loadLibrary} from '@loaders.gl/worker-utils';
+// import {loadLibrary} from '@loaders.gl/worker-utils';
 import {toBuffer} from '@loaders.gl/loader-utils';
 
 import type {CompressionOptions} from './compression';
@@ -9,8 +9,8 @@ import {Compression} from './compression';
 // import lzo from 'lzo'; // https://bundlephobia.com/package/lzo
 // import {decompress} from 'lzo-wasm';
 
-const LZO_WASM_JS_URL = './node_modules/lzo-wasm/lzo-wasm.js';
-const LZO_WASM_WASM_URL = './node_modules/lzo-wasm/lzo-wasm.wasm';
+// const LZO_WASM_JS_URL = './node_modules/lzo-wasm/lzo-wasm.js';
+// const LZO_WASM_WASM_URL = './node_modules/lzo-wasm/lzo-wasm.wasm';
 
 let lzo;
 
@@ -39,8 +39,8 @@ export class LZOCompression extends Compression {
   }
 
   async preload() {
-    await loadLibrary(LZO_WASM_JS_URL);
-    await loadLibrary(LZO_WASM_WASM_URL);
+    // await loadLibrary(LZO_WASM_JS_URL);
+    // await loadLibrary(LZO_WASM_WASM_URL);
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {

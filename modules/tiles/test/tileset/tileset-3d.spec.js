@@ -337,6 +337,7 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
   });
   tileset.update(viewports);
 
+  // TODO/ActionEngine - wait for onTraversalComplete or onTilesetLoad or similar
   t.timeoutAfter(1000);
   const setIntervalId = setInterval(() => {
     if (tileLoadCounter > 1) {

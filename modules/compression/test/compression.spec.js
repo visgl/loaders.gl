@@ -195,7 +195,7 @@ test.skip('gzip#worker', async (t) => {
   t.end();
 });
 
-test('lz4#worker', async (t) => {
+test.skip('lz4#worker', async (t) => {
   if (!isBrowser) {
     t.end();
     return;

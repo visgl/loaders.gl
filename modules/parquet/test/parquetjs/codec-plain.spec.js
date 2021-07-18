@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {PARQUET_CODECS} from '@loaders.gl/parquet/parquetjs/codecs';
-import {assertArrayEqualEpsilon} from '../util/assert-util';
+import {assertArrayEqualEpsilon} from '../test-utils/assertions';
 
 test('ParquetCodec::PLAIN#should encode BOOLEAN values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
