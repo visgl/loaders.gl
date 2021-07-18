@@ -150,7 +150,7 @@ export class ParquetReader<T> implements AsyncIterable<T> {
   static async openBlob<T>(blob: Blob): Promise<ParquetReader<T>> {
     const readFn = async (start: number, length: number) => {
       const arrayBuffer = await blob.slice(start, start + length).arrayBuffer();
-      return Buffer.from(arrayBuffer, start, length);
+      return Buffer.from(arrayBuffer);
     };
     const closeFn = async () => {};
     const size = blob.size;
