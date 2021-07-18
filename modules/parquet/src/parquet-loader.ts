@@ -1,5 +1,4 @@
-import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import {ParquetReader} from './parquetjs/reader';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -20,7 +19,7 @@ const DEFAULT_PARQUET_LOADER_OPTIONS: ParquetLoaderOptions = {
 };
 
 /** ParquetJS table loader */
-export const ParquetWorkerLoader: Loader = {
+export const ParquetLoader = {
   name: 'Apache Parquet',
   id: 'parquet',
   module: 'parquet',
@@ -34,23 +33,4 @@ export const ParquetWorkerLoader: Loader = {
   options: DEFAULT_PARQUET_LOADER_OPTIONS
 };
 
-/** ParquetJS table loader */
-export const ParquetLoader: LoaderWithParser = {
-  ...ParquetWorkerLoader,
-  parse
-};
-
-async function parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-  const reader = await ParquetReader.openArrayBuffer(arrayBuffer);
-  const rows: any[][] = [];
-  try {
-    const cursor = reader.getCursor();
-    let record: any[] | null;
-    while ((record = await cursor.next())) {
-      rows.push(record);
-    }
-  } finally {
-    await reader.close();
-  }
-  return rows;
-}
+export const _typecheckParquetLoader: Loader = ParquetLoader;

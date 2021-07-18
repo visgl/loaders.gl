@@ -145,6 +145,45 @@ export class ParquetCursor<T> implements AsyncIterable<T> {
  */
 export class ParquetReader<T> implements AsyncIterable<T> {
   /**
+   * return a new parquet reader initialized with a read function
+   */
+  static async openBlob<T>(blob: Blob): Promise<ParquetReader<T>> {
+    const readFn = async (start: number, length: number) => {
+      const arrayBuffer = await blob.slice(start, start + length).arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    };
+    const closeFn = async () => {};
+    const size = blob.size;
+    const envelopeReader = new ParquetEnvelopeReader(readFn, closeFn, size);
+    try {
+      await envelopeReader.readHeader();
+      const metadata = await envelopeReader.readFooter();
+      return new ParquetReader(metadata, envelopeReader);
+    } catch (err) {
+      await envelopeReader.close();
+      throw err;
+    }
+  }
+
+  /**
+   * return a new parquet reader initialized with a read function
+   */
+  static async openArrayBuffer<T>(arrayBuffer: ArrayBuffer): Promise<ParquetReader<T>> {
+    const readFn = async (start: number, length: number) => Buffer.from(arrayBuffer, start, length);
+    const closeFn = async () => {};
+    const size = arrayBuffer.byteLength;
+    const envelopeReader = new ParquetEnvelopeReader(readFn, closeFn, size);
+    try {
+      await envelopeReader.readHeader();
+      const metadata = await envelopeReader.readFooter();
+      return new ParquetReader(metadata, envelopeReader);
+    } catch (err) {
+      await envelopeReader.close();
+      throw err;
+    }
+  }
+
+  /**
    * Open the parquet file pointed to by the specified path and return a new
    * parquet reader
    */
@@ -166,24 +205,6 @@ export class ParquetReader<T> implements AsyncIterable<T> {
       await envelopeReader.readHeader();
       const metadata = await envelopeReader.readFooter();
       return new ParquetReader<T>(metadata, envelopeReader);
-    } catch (err) {
-      await envelopeReader.close();
-      throw err;
-    }
-  }
-
-  /**
-   * return a new parquet reader initialized with a read function
-   */
-  static async openArrayBuffer<T>(arrayBuffer: ArrayBuffer): Promise<ParquetReader<T>> {
-    const readFn = async (start: number, length: number) => Buffer.from(arrayBuffer, start, length);
-    const closeFn = async () => {};
-    const size = arrayBuffer.byteLength;
-    const envelopeReader = new ParquetEnvelopeReader(readFn, closeFn, size);
-    try {
-      await envelopeReader.readHeader();
-      const metadata = await envelopeReader.readFooter();
-      return new ParquetReader(metadata, envelopeReader);
     } catch (err) {
       await envelopeReader.close();
       throw err;
