@@ -2,6 +2,10 @@
 
 ## v3.0
 
+### v3.0.4
+
+- fix(core): ReadableStream type result (#1682)
+
 ### v3.0.3
 
 - fix(core): selectLoader type issue (#1681)

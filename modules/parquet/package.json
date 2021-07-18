@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/parquet",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Framework-independent loader for Apache Parquet files",
   "license": "MIT",
   "publishConfig": {
