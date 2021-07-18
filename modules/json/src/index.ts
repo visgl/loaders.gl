@@ -10,3 +10,5 @@ export {
 
 export {default as _JSONPath} from './lib/jsonpath/jsonpath';
 export {default as _ClarinetParser} from './lib/clarinet/clarinet';
+
+export {rebuildJsonObject as _rebuildJsonObject} from './lib/parse-json-in-batches';
