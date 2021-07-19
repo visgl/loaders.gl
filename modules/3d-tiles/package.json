@@ -40,7 +40,7 @@
     "@loaders.gl/loader-utils": "3.0.4",
     "@loaders.gl/math": "3.0.4",
     "@loaders.gl/tiles": "3.0.4",
-    "@math.gl/core": "3.5.1",
-    "@math.gl/geospatial": "3.5.1"
+    "@math.gl/core": "^3.5.1",
+    "@math.gl/geospatial": "^3.5.1"
   }
 }
