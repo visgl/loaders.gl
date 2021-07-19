@@ -1869,17 +1869,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/compression@3.0.0-beta.8":
-  version "3.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/compression/-/compression-3.0.0-beta.8.tgz#e414fbdf0aa3d3898457bc9179a6f12dea1517da"
-  integrity sha512-otbOmzmNjFYCnk9i44OvzGztlcf6BP84NajAS1SnAwAspZs/9nzF0lVTzlaWq7IBs+r5HbrMckj2n/YoLm/hgg==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.0.0-beta.8"
-    "@loaders.gl/worker-utils" "3.0.0-beta.8"
-    lz4js "^0.2.0"
-    pako "^1.0.11"
-
 "@loaders.gl/core@2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.2.0.tgz#2bd609132ca1d83b34ecc1a74272f7da2d50b018"
@@ -1921,34 +1910,10 @@
     "@loaders.gl/worker-utils" "3.0.0-alpha.18"
     "@probe.gl/stats" "^3.3.0"
 
-"@loaders.gl/loader-utils@3.0.0-beta.8":
-  version "3.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.0-beta.8.tgz#edcbf9288db1653098da14cd97352b7591b265a5"
-  integrity sha512-JwovqPSo6sYR3avjXBKAIjsZocerrRLPKkMkeI02eOiFpkIEMzRucZkfw+vATXWZnoGA/OaQUgMXONiZT3Dleg==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.0.0-beta.8"
-    "@probe.gl/stats" "^3.4.0-beta.2"
-
-"@loaders.gl/schema@3.0.0-beta.8":
-  version "3.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-3.0.0-beta.8.tgz#7efa6336fef07cd1b3810e3044c27f776db04e8a"
-  integrity sha512-mqzMbvGqLskXVwyvqux84H7ke2ESvOmUOrAmEBugz7bs0sRFgckvBBpTzHWMrfYDaTgaYbN1fEkGY0FbO75tEA==
-  dependencies:
-    apache-arrow "^4.0.0"
-    d3-dsv "^1.2.0"
-
 "@loaders.gl/worker-utils@3.0.0-alpha.18":
   version "3.0.0-alpha.18"
   resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-alpha.18.tgz#1d02b1bd497c00edcbc8e60ccbe4e030811a5394"
   integrity sha512-w/kmwz091hLu9D2907UTelcl/JH1LxbFxKzCAk3XsNjsNkrGQcOucHq5bAJxiSdPm6yAv/BUdqG+mt39ZNpFnA==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/worker-utils@3.0.0-beta.8":
-  version "3.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-beta.8.tgz#4c3909da1549e36d343ad7274a407c203d04565c"
-  integrity sha512-hhIPryrJET0KOvr/MPwSbakboT7q4Kc1ijsZrCljh6euRrXAQ/fzNDqJDEI2WHdQ1+ZTCXyy9Nn4Bb2ukz7j2w==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
@@ -2290,7 +2255,7 @@
     "@babel/runtime" "^7.0.0"
     probe.gl "3.4.0"
 
-"@probe.gl/stats@3.4.0", "@probe.gl/stats@^3.4.0", "@probe.gl/stats@^3.4.0-beta.2":
+"@probe.gl/stats@3.4.0", "@probe.gl/stats@^3.4.0":
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.4.0.tgz#9315c4726ea031661daa6a1771b8e978684a8b9b"
   integrity sha512-Gl37r9qGuiKadIvTZdSZvzCNOttJYw6RcY1oT0oDuB8r2uhuZAdSMQRQTy9FTinp6MY6O9wngGnV6EpQ8wSBAw==

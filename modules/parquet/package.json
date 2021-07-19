@@ -39,9 +39,9 @@
     "lzo": false
   },
   "dependencies": {
-    "@loaders.gl/compression": "3.0.0-beta.8",
-    "@loaders.gl/loader-utils": "3.0.0-beta.8",
-    "@loaders.gl/schema": "3.0.0-beta.8",
+    "@loaders.gl/compression": "3.0.1",
+    "@loaders.gl/loader-utils": "3.0.1",
+    "@loaders.gl/schema": "3.0.1",
     "async-mutex": "^0.2.2",
     "bson": "^1.0.4",
     "int53": "^0.2.4",
