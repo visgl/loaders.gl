@@ -36,13 +36,10 @@
     "@loaders.gl/core": "3.0.1",
     "@loaders.gl/loader-utils": "3.0.1",
     "@loaders.gl/math": "3.0.1",
-    "@math.gl/core": "3.5.1",
-    "@math.gl/culling": "3.5.1",
-    "@math.gl/geospatial": "3.5.1",
-    "@math.gl/web-mercator": "3.5.1",
+    "@math.gl/core": "^3.5.1",
+    "@math.gl/culling": "^3.5.1",
+    "@math.gl/geospatial": "^3.5.1",
+    "@math.gl/web-mercator": "^3.5.1",
     "@probe.gl/stats": "^3.4.0"
-  },
-  "devDependencies": {
-    "@deck.gl/core": "^8.5.0-beta.1"
   }
 }

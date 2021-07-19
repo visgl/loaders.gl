@@ -33,6 +33,6 @@
   "dependencies": {
     "@loaders.gl/images": "3.0.1",
     "@loaders.gl/loader-utils": "3.0.1",
-    "@math.gl/core": "3.5.1"
+    "@math.gl/core": "^3.5.1"
   }
 }
