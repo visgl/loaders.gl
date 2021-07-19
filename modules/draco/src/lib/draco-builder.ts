@@ -12,7 +12,8 @@ import type {
   draco_GeometryAttribute_Type
 } from '../draco3d/draco3d-types';
 
-import type {TypedArray, DracoMeshData} from './draco-types';
+import type {TypedArray} from '@loaders.gl/schema';
+import type {DracoMesh} from './draco-types';
 
 export type DracoBuildOptions = {
   pointcloud?: boolean;
@@ -75,7 +76,7 @@ export default class DracoBuilder {
    * @param mesh =({})
    * @param options
    */
-  encodeSync(mesh: DracoMeshData, options: DracoBuildOptions = {}): ArrayBuffer {
+  encodeSync(mesh: DracoMesh, options: DracoBuildOptions = {}): ArrayBuffer {
     this.log = noop; // TODO
     this._setOptions(options);
 
@@ -86,7 +87,7 @@ export default class DracoBuilder {
 
   // PRIVATE
 
-  _getAttributesFromMesh(mesh: DracoMeshData) {
+  _getAttributesFromMesh(mesh: DracoMesh) {
     // TODO - Change the encodePointCloud interface instead?
     const attributes = {...mesh, ...mesh.attributes};
     // Fold indices into the attributes
@@ -96,7 +97,7 @@ export default class DracoBuilder {
     return attributes;
   }
 
-  _encodePointCloud(pointcloud: DracoMeshData, options: DracoBuildOptions): ArrayBuffer {
+  _encodePointCloud(pointcloud: DracoMesh, options: DracoBuildOptions): ArrayBuffer {
     const dracoPointCloud = new this.draco.PointCloud();
 
     if (options.metadata) {
@@ -131,7 +132,7 @@ export default class DracoBuilder {
     }
   }
 
-  _encodeMesh(mesh: DracoMeshData, options: DracoBuildOptions): ArrayBuffer {
+  _encodeMesh(mesh: DracoMesh, options: DracoBuildOptions): ArrayBuffer {
     const dracoMesh = new this.draco.Mesh();
 
     if (options.metadata) {
@@ -140,7 +141,7 @@ export default class DracoBuilder {
 
     const attributes = this._getAttributesFromMesh(mesh);
 
-    // Build a `DracoMeshData` from the input data
+    // Build a `DracoMesh` from the input data
     this._createDracoMesh(dracoMesh, attributes, options);
 
     const dracoData = new this.draco.DracoInt8Array();

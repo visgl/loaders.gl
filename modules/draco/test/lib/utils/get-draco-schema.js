@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import test from 'tape-promise/tape';
-import {makeSchemaFromAttributes} from '../../../src/lib/utils/schema-attribute-utils';
+import {getDracoSchema} from '@loaders.gl/draco/lib/utils/get-draco-schema';
 
 const ATTRIBUTES_STUB = {
   POSITIONS: {
@@ -62,8 +62,8 @@ const INDICES_STUB = {
   size: 1
 };
 
-test('DracoLoader#makeSchemaFromAttributes', (t) => {
-  const schema = makeSchemaFromAttributes(ATTRIBUTES_STUB, LOADER_DATA_STUB, INDICES_STUB);
+test('DracoLoader#getDracoSchema', (t) => {
+  const schema = getDracoSchema(ATTRIBUTES_STUB, LOADER_DATA_STUB, INDICES_STUB);
   t.ok(schema, 'Makes schema from attributes');
   t.equals(schema.metadata.size, 2, 'Metadata size');
   t.equals(schema.fields.length, 2, 'Number of fields');
