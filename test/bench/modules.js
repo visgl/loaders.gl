@@ -38,17 +38,17 @@ _addAliases(ALIASES);
 
 export async function addModuleBenchmarksToSuite(suite) {
   // add tests
-  await mvtBench(suite);
-  await loaderUtilsBench(suite);
+  // await mvtBench(suite);
+  // await loaderUtilsBench(suite);
 
-  await imageBench(suite);
-  await cryptoBench(suite);
+  // await imageBench(suite);
+  // await cryptoBench(suite);
 
-  await dracoBench(suite);
-  await csvBench(suite);
+  // await dracoBench(suite);
+  // await csvBench(suite);
   await jsonBench(suite);
-  await excelBench(suite);
+  // await excelBench(suite);
 
-  await coreBench(suite);
-  await i3sLoaderBench(suite);
+  // await coreBench(suite);
+  // await i3sLoaderBench(suite);
 }

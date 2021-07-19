@@ -105,7 +105,7 @@ export default class StreamingJSONParser extends JSONParser {
         this._openObject({});
       }
       if (typeof name !== 'undefined') {
-        this.parser.onkey(name);
+        this.parser.onkey(name, 'onkey');
       }
     };
   }
