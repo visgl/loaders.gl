@@ -2,6 +2,10 @@
 
 ## v3.0
 
+### v3.0.5
+
+- Unlock math.gl minor/patch versions (#1689)
+
 ### v3.0.4
 
 - fix(core): ReadableStream type result (#1682)
