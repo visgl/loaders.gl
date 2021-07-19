@@ -1,0 +1,159 @@
+{
+  "duplicateIds": {
+    "binary": {
+      "points": {
+        "positions": {"value": [100.0, 0.0, 100.0, 0.0, 101.0, 1.0], "size": 2},
+        "globalFeatureIds": {"value": [0, 0, 0], "size": 1},
+        "featureIds": {"value": [0, 1, 1], "size": 1},
+        "numericProps": {
+          "numeric1": {"value": [1, 2, 2], "size": 1}
+        },
+        "properties": [{"string1": "a"}, {"string1": "b"}]
+      }
+    }
+  },
+  "lessThanZero": {
+    "binary": {
+      "lines": {
+        "positions": {
+          "value": [100.0, 0.0, 101.0, 1.0, 100.0, 0.0, 101.0, 1.0, 102.0, 2.0, 103.0, 3.0],
+          "size": 2
+        },
+        "pathIndices": {"value": [0, 2, 4, 6], "size": 1},
+        "globalFeatureIds": {"value": [-1, -1, 1, 1, 1, 1], "size": 1},
+        "featureIds": {"value": [0, 0, 1, 1, 1, 1], "size": 1},
+        "numericProps": {
+          "numeric1": {"value": [3, 3, 4, 4, 4, 4], "size": 1}
+        },
+        "properties": [{"string1": "c"}, {"string1": "d"}]
+      }
+    }
+  },
+  "greaterThanLength": {
+    "binary": {
+      "polygons": {
+        "positions": {
+          "value": [
+            100, 0, 101, 0, 101, 10, 100, 10, 100, 0,
+            100, 0, 110, 0, 110, 10, 100, 10, 100, 0,
+            108, 8, 108, 2, 102, 2, 102, 8, 108, 8,
+            102, 20, 103, 20, 103, 30, 102, 30, 102, 20,
+            100, 0, 110, 0, 110, 10, 100, 10, 100, 0,
+            108, 8, 108, 2, 102, 2, 102, 8, 108, 8
+          ],
+          "size": 2
+        },
+        "polygonIndices": {"value": [0, 5, 15, 20, 30], "size": 1},
+        "primitivePolygonIndices": {"value": [0, 5, 10, 15, 20, 25, 30], "size": 1},
+        "globalFeatureIds": {
+          "value": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "size": 1
+        },
+        "featureIds": {
+          "value": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "size": 1
+        },
+        "numericProps": {
+          "numeric1": {
+            "value": [
+              3,
+              3,
+              3,
+              3,
+              3,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              4,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5,
+              5
+            ],
+            "size": 1
+          }
+        },
+        "properties": [{"string1": "c"}, {"string1": "d"}, {"string1": "e"}]
+      }
+    }
+  }
+}
