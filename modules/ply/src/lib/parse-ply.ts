@@ -31,7 +31,6 @@ import type {
 } from './types';
 import normalizePLY from './normalize-ply';
 
-let currentElement: ASCIIElement;
 /**
  * @param data
  * @param options
@@ -52,6 +51,7 @@ export default function parsePLY(data: TypedArray | any, options = {}): PlyData 
 
   return normalizePLY(header, attributes);
 }
+
 /**
  * @param data
  * @param options
@@ -69,17 +69,32 @@ function parseHeader(data: any, options: {[index: string]: any}): PlyHeader {
     headerText = result[1];
     headerLength = result[0].length;
   }
+  const lines = headerText.split('\n');
+  const header = parseHeaderLines(lines, headerLength, options);
 
+  return header;
+}
+
+/**
+ * @param lines
+ * @param headerLength
+ * @param options
+ * @returns header
+ */
+function parseHeaderLines(
+  lines: string[],
+  headerLength: number,
+  options: {[index: string]: any}
+): PlyHeader {
   const header: PlyHeader = {
     comments: [],
     elements: [],
     headerLength
   };
 
-  const lines = headerText.split('\n');
-
   let lineType: string | undefined;
   let lineValues: string[];
+  let currentElement: ASCIIElement | null = null;
 
   for (let i = 0; i < lines.length; i++) {
     let line: string = lines[i];
@@ -105,7 +120,7 @@ function parseHeader(data: any, options: {[index: string]: any}): PlyHeader {
         break;
 
       case 'element':
-        if (currentElement !== undefined) {
+        if (currentElement) {
           header.elements.push(currentElement);
         }
 
@@ -117,6 +132,9 @@ function parseHeader(data: any, options: {[index: string]: any}): PlyHeader {
         break;
 
       case 'property':
+        if (!currentElement) {
+          break;
+        }
         currentElement.properties.push(
           makePLYElementProperty(lineValues, options.propertyNameMapping)
         );
@@ -159,6 +177,7 @@ function makePLYElementProperty(propertValues: string[], propertyNameMapping: []
 
   return property;
 }
+
 /**
  * Parses ASCII number
  * @param n
@@ -192,6 +211,7 @@ function parseASCIINumber(n: string, type: string): number {
       throw new Error(type);
   }
 }
+
 /**
  * @param properties
  * @param line
@@ -219,6 +239,7 @@ function parseASCIIElement(properties: any[], line: string) {
 
   return element;
 }
+
 /**
  * @param data
  * @param header
@@ -265,6 +286,7 @@ function parseASCII(data: any, header: PlyHeader): PlyAttributes {
 
   return attributes;
 }
+
 /**
  * @param buffer
  * @param elementName
@@ -391,6 +413,7 @@ function binaryReadElement(
 type BinaryAttributes = {
   [index: string]: number[];
 };
+
 /**
  * Parses binary data
  * @param data
