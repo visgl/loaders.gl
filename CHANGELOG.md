@@ -2,6 +2,13 @@
 
 ## v3.0
 
+### v3.0.6
+
+- ply: fix switching dataset error (#1692)
+- fix(terrain): Correct terrain bounding box (#1676)
+- Fix dependencies (#1685)
+- [parquet] Fix internal dependency versions (#1690)
+
 ### v3.0.5
 
 - Unlock math.gl minor/patch versions (#1689)
@@ -15,9 +22,10 @@
 - fix(core): selectLoader type issue (#1681)
 - chore: minor updates for v3 (#1674)
 - feat(core): Add makeStream(asyncIterable) (#1675)
-- feat(core): Add options._streamRedAhead (#1679)
+- feat(core): Add options.\_streamRedAhead (#1679)
 - fix(textures): compressed texture mime types (#1678)
 - fix(csv): options.batchSize (#1677)
+
 ### v3.0.2
 
 - Load workers of `latest` versions (#1673)
