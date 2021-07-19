@@ -51,6 +51,7 @@ export default function parsePLY(data: TypedArray | any, options = {}): PlyData 
 
   return normalizePLY(header, attributes);
 }
+
 /**
  * @param data
  * @param options
@@ -73,6 +74,7 @@ function parseHeader(data: any, options: {[index: string]: any}): PlyHeader {
 
   return header;
 }
+
 /**
  * @param lines
  * @param headerLength
@@ -175,6 +177,7 @@ function makePLYElementProperty(propertValues: string[], propertyNameMapping: []
 
   return property;
 }
+
 /**
  * Parses ASCII number
  * @param n
@@ -208,6 +211,7 @@ function parseASCIINumber(n: string, type: string): number {
       throw new Error(type);
   }
 }
+
 /**
  * @param properties
  * @param line
@@ -235,6 +239,7 @@ function parseASCIIElement(properties: any[], line: string) {
 
   return element;
 }
+
 /**
  * @param data
  * @param header
@@ -281,6 +286,7 @@ function parseASCII(data: any, header: PlyHeader): PlyAttributes {
 
   return attributes;
 }
+
 /**
  * @param buffer
  * @param elementName
@@ -407,6 +413,7 @@ function binaryReadElement(
 type BinaryAttributes = {
   [index: string]: number[];
 };
+
 /**
  * Parses binary data
  * @param data

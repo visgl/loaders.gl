@@ -123,7 +123,7 @@ export default class App extends PureComponent {
   _onLoad({header, loaderData, attributes, progress}) {
     // metadata from LAZ file header
     const {maxs, mins} =
-      loaderData.header && loaderData.header.mins && loaderData.header.maxs
+      loaderData.header?.mins && loaderData.header?.maxs
         ? loaderData.header
         : calculateBounds(attributes);
 
