@@ -1895,15 +1895,6 @@
     "@loaders.gl/loader-utils" "3.0.0-alpha.18"
     "@loaders.gl/worker-utils" "3.0.0-alpha.18"
 
-"@loaders.gl/core@3.0.0-beta.1":
-  version "3.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.0.0-beta.1.tgz#280923244cb2234f963eb7ac77f35da4465b85ed"
-  integrity sha512-5EWGZVSEIs6xBohKaZJGgR0WcDfgULggiyLFSzzSDWtUl/UWZ5dpdTzQ6sPcnStKRC2qs0bAhmZWB9/2xWBd0Q==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.0.0-beta.1"
-    "@loaders.gl/worker-utils" "3.0.0-beta.1"
-
 "@loaders.gl/images@^2.3.7":
   version "2.3.13"
   resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-2.3.13.tgz#3b827cf1e8d31c8f1adf85136c7fd53c08dbb0a8"
@@ -1928,34 +1919,10 @@
     "@loaders.gl/worker-utils" "3.0.0-alpha.18"
     "@probe.gl/stats" "^3.3.0"
 
-"@loaders.gl/loader-utils@3.0.0-beta.1":
-  version "3.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.0-beta.1.tgz#fd1d81377e2cb7dcb86e26bb4ca3b2b7af8d48b0"
-  integrity sha512-5zXWAb8XjSypJPds7MHC7Q2RTbSVqY5kwAPrHIcymUnrWSTCPu0edqbLBvZ0cypSXteh9dFDaE+7eW408zEuhg==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.0.0-beta.1"
-    "@probe.gl/stats" "^3.3.0"
-
-"@loaders.gl/schema@3.0.0-beta.1":
-  version "3.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-3.0.0-beta.1.tgz#57832564e91728772efec4868b01734d2dfedeff"
-  integrity sha512-4Dfv90lpHdi3PkgP2t3QkrVx1ir06REnJouaj5lF9naiSHfF4Cl88FWzlXW9TE1uBsv7OROXbesf9wEGUAcpBw==
-  dependencies:
-    "@loaders.gl/core" "3.0.0-beta.1"
-    d3-dsv "^1.2.0"
-
 "@loaders.gl/worker-utils@3.0.0-alpha.18":
   version "3.0.0-alpha.18"
   resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-alpha.18.tgz#1d02b1bd497c00edcbc8e60ccbe4e030811a5394"
   integrity sha512-w/kmwz091hLu9D2907UTelcl/JH1LxbFxKzCAk3XsNjsNkrGQcOucHq5bAJxiSdPm6yAv/BUdqG+mt39ZNpFnA==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/worker-utils@3.0.0-beta.1":
-  version "3.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-beta.1.tgz#7f779c96722e9ba42f21b8df9aba0b65054eb56f"
-  integrity sha512-qTasQR053593i16GECs4KJq/zmYMPf/JlVQV9gnbBd8k5Pb6G5+nqv0VD0pDpCqxaylrkx+FBD8Kf8OzSsMy5g==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
@@ -10148,15 +10115,6 @@ read@1, read@~1.0.1:
     inherits "~2.0.1"
     isarray "0.0.1"
     string_decoder "~0.10.x"
-
-readable-stream@^3.6.0:
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-3.6.0.tgz#337bbda3adc0706bd3e024426a286d4b4b2c9198"
-  integrity sha512-BViHy7LKeTz4oNnkcLJ+lVSL6vpiFeX6/d3oSH8zCW7UxP2onchk+vTGB143xuFjHS3deTgkKoXXymXqymiIdA==
-  dependencies:
-    inherits "^2.0.3"
-    string_decoder "^1.1.1"
-    util-deprecate "^1.0.1"
 
 readable-stream@~1.1.9:
   version "1.1.14"
