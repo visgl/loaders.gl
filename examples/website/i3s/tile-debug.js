@@ -6,7 +6,7 @@ import {
 } from '@math.gl/culling';
 import {CubeGeometry} from '@luma.gl/engine';
 import {BOUNDING_VOLUME_WARNING_TYPE, LOD_WARNING_TYPE, PARENT_LOD_WARNING_TYPE} from './constants';
-import {Vector3} from 'math.gl';
+import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 const NO_DATA = 'No Data';

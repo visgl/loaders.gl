@@ -43,6 +43,6 @@
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
-    "probe.gl": "^3.4.0-beta.2"
+    "probe.gl": "^3.4.0"
   }
 }
