@@ -1919,35 +1919,10 @@
     "@loaders.gl/worker-utils" "3.0.0-alpha.18"
     "@probe.gl/stats" "^3.3.0"
 
-"@loaders.gl/loader-utils@3.0.5":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.5.tgz#96df26fe8a5c5924743d5721fac6930528d615e1"
-  integrity sha512-LYcCSzsTMamImbF0rufAj/1fEYzr53u9DFvsSXUEPtacibkj4MUaJxDfIESF1aaDqTM4mqRtLMwPxkrC+/roXQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.0.5"
-    "@probe.gl/stats" "^3.4.0"
-
-"@loaders.gl/schema@3.0.5":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-3.0.5.tgz#335a0050e8d9313dabdb95d78d41772a0af9095b"
-  integrity sha512-1w3hsWHPZdQ0D0lQaLCzWNWEUVAK5BOpQBrhiXX9SO2Z4juMZEjdGjFqHtUMQWPIgST0AAuykZWZygYgwJ9wlg==
-  dependencies:
-    "@types/geojson" "^7946.0.7"
-    apache-arrow "^4.0.0"
-    d3-dsv "^1.2.0"
-
 "@loaders.gl/worker-utils@3.0.0-alpha.18":
   version "3.0.0-alpha.18"
   resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-alpha.18.tgz#1d02b1bd497c00edcbc8e60ccbe4e030811a5394"
   integrity sha512-w/kmwz091hLu9D2907UTelcl/JH1LxbFxKzCAk3XsNjsNkrGQcOucHq5bAJxiSdPm6yAv/BUdqG+mt39ZNpFnA==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/worker-utils@3.0.5":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.5.tgz#5b2eeefc237a142484bec96a17e8e426b4f5b53f"
-  integrity sha512-JH/qoFh6m+ZDPRXIzca8tSOapIZT+YgWnKS0QaBHgdsZgw63czyzmy5/iXo9tg7DDSIXI8RLrzmF1EhyM0Yoig==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
