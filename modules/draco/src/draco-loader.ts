@@ -28,6 +28,7 @@ export const DracoLoader = {
   name: 'Draco',
   id: 'draco',
   module: 'draco',
+  shapes: ['mesh'],
   version: VERSION,
   worker: true,
   extensions: ['drc'],

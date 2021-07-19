@@ -1,10 +1,12 @@
+import type {MeshAttributes} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import parseOBJ from './parse-obj';
-import {makeSchemaFromAttributes} from './schema-attribute-utils';
+import {getOBJSchema} from './get-obj-schema';
 
 export default function loadOBJ(text, options) {
   const {meshes} = parseOBJ(text);
 
+  // @ts-expect-error
   const vertexCount = meshes.reduce((s, mesh) => s + mesh.header.vertexCount, 0);
   // TODO - render objects separately
   const attributes = mergeAttributes(meshes, vertexCount);
@@ -15,7 +17,7 @@ export default function loadOBJ(text, options) {
     boundingBox: getMeshBoundingBox(attributes)
   };
 
-  const schema = makeSchemaFromAttributes(attributes, {
+  const schema = getOBJSchema(attributes, {
     mode: 4,
     boundingBox: header.boundingBox
   });
@@ -64,7 +66,7 @@ function mergeAttributes(meshes, vertexCount) {
     i += POSITION.value.length / 3;
   }
 
-  const attributes = {};
+  const attributes: MeshAttributes = {};
   attributes.POSITION = {value: positions, size: 3};
 
   if (normals) {

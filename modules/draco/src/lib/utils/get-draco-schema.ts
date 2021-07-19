@@ -1,8 +1,9 @@
+import type {MeshAttribute} from '@loaders.gl/schema';
 import {Schema, Field, FixedSizeList, getArrowTypeFromTypedArray} from '@loaders.gl/schema';
+import type {DracoAttribute, DracoLoaderData, DracoMetadataEntry} from '../draco-types';
 
-import {MeshAttribute, DracoAttribute, DracoLoaderData, DracoMetadataEntry} from '../draco-types';
-
-export function makeSchemaFromAttributes(
+/** Extract an arrow-like schema from a Draco mesh */
+export function getDracoSchema(
   attributes: {[attributeName: string]: MeshAttribute},
   loaderData: DracoLoaderData,
   indices?: MeshAttribute

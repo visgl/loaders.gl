@@ -1,46 +1,6 @@
 /* eslint-disable camelcase */
 
-import {Schema} from '@loaders.gl/schema';
-
-// MESH CATEGORY DATA
-// TODO - should be imported from `@loaders.gl/schema`
-
-export type TypedArray =
-  | Int8Array
-  | Uint8Array
-  | Int16Array
-  | Uint16Array
-  | Int32Array
-  | Uint32Array
-  | Uint8ClampedArray
-  | Float32Array
-  | Float64Array;
-
-/**
- * luma.gl compatible attribute descriptors
- * Can be mapped to any WebGL framework
- */
-export type MeshAttribute = {
-  value: TypedArray;
-  size: number;
-  byteOffset?: number;
-  byteStride?: number;
-  normalized?: boolean;
-};
-
-/** Standard mesh */
-export type MeshData = {
-  loader?: string;
-  loaderData?: any;
-  header?: {
-    vertexCount: number;
-    boundingBox?: [number[], number[]];
-  };
-  topology: 'point-list' | 'triangle-list' | 'triangle-strip';
-  mode: number;
-  attributes: {[attributeName: string]: MeshAttribute};
-  indices?: MeshAttribute;
-};
+import {Mesh} from '@loaders.gl/schema';
 
 // DRACO FORMAT SPECIFIC DATA
 
@@ -102,18 +62,7 @@ export type DracoLoaderData = {
 /**
  * loaders.gl Mesh with Draco specific data
  */
-export type DracoMeshData = {
-  loader: string; // 'draco';
-  // Draco specific data
-  loaderData: DracoLoaderData;
-  // Standard mesh
-  header?: {
-    vertexCount: number;
-    boundingBox?: [number[], number[]];
-  };
-  topology: 'point-list' | 'triangle-list' | 'triangle-strip';
-  mode: number;
-  attributes: {[attributeName: string]: MeshAttribute};
-  indices?: MeshAttribute;
-  schema: Schema;
+export type DracoMesh = Mesh & {
+  loader: 'draco';
+  loaderData: DracoLoaderData; // Draco specific data
 };

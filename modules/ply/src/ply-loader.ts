@@ -14,6 +14,7 @@ export const PLYLoader = {
   name: 'PLY',
   id: 'ply',
   module: 'ply',
+  shapes: ['mesh', 'gltf', 'columnar-table'],
   version: VERSION,
   worker: true,
   extensions: ['ply'],

@@ -1,16 +1,9 @@
 // Mesh category utilities
 // TODO - move to mesh category module, or to math.gl/geometry module
 import {TypedArray} from '../../types';
-
-type Attribute = {
-  size?: number;
-  type?: number;
-  normalized?: boolean;
-  value: TypedArray;
-};
+import {MeshAttributes} from '../mesh';
 
 type TypedArrays = {[key: string]: TypedArray};
-export type Attributes = {[key: string]: Attribute};
 
 /**
  * Holds an axis aligned bounding box
@@ -40,7 +33,7 @@ export function getMeshSize(attributes: TypedArrays): number {
  * @returns array of two vectors representing the axis aligned bounding box
  */
 // eslint-disable-next-line complexity
-export function getMeshBoundingBox(attributes: Attributes): BoundingBox {
+export function getMeshBoundingBox(attributes: MeshAttributes): BoundingBox {
   let minX = Infinity;
   let minY = Infinity;
   let minZ = Infinity;

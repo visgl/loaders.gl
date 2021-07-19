@@ -1,5 +1,5 @@
 import type {Writer} from '@loaders.gl/loader-utils';
-import type {DracoMeshData} from './lib/draco-types';
+import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
 import {loadDracoEncoderModule} from './lib/draco-module-loader';
@@ -34,7 +34,7 @@ export const DracoWriter: Writer = {
 };
 
 async function encode(
-  data: DracoMeshData,
+  data: DracoMesh,
   options: {draco?: DracoWriterOptions} = {}
 ): Promise<ArrayBuffer> {
   // Dynamically load draco
