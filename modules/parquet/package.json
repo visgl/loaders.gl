@@ -39,8 +39,8 @@
     "lzo": false
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.0-beta.1",
-    "@loaders.gl/schema": "3.0.0-beta.1",
+    "@loaders.gl/loader-utils": "3.0.5",
+    "@loaders.gl/schema": "3.0.5",
     "async-mutex": "^0.2.2",
     "brotli": "^1.3.0",
     "bson": "^1.0.4",
