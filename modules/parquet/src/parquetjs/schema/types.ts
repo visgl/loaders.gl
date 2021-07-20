@@ -2,6 +2,21 @@
 /* eslint-disable camelcase */
 import BSON from 'bson';
 import {OriginalType, ParquetType, PrimitiveType} from './declare';
+import {
+  DataType,
+  Bool,
+  Float64,
+  Int32,
+  Float32,
+  Binary,
+  Utf8,
+  Int64,
+  Uint16,
+  Uint32,
+  Uint64,
+  Int8,
+  Int16
+} from '@loaders.gl/schema';
 
 export interface ParquetTypeKit {
   primitiveType: PrimitiveType;
@@ -409,3 +424,32 @@ function fromPrimitive_INTERVAL(value: any) {
 
   return {months, days, milliseconds: millis};
 }
+
+export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: typeof DataType} = {
+  BOOLEAN: Bool,
+  INT32: Int32,
+  INT64: Float64,
+  INT96: Float64,
+  FLOAT: Float32,
+  DOUBLE: Float64,
+  BYTE_ARRAY: Binary,
+  FIXED_LEN_BYTE_ARRAY: Binary,
+  UTF8: Utf8,
+  DATE: Int32,
+  TIME_MILLIS: Int64,
+  TIME_MICROS: Int64,
+  TIMESTAMP_MILLIS: Int64,
+  TIMESTAMP_MICROS: Int64,
+  UINT_8: Int32,
+  UINT_16: Uint16,
+  UINT_32: Uint32,
+  UINT_64: Uint64,
+  INT_8: Int8,
+  INT_16: Int16,
+  INT_32: Int32,
+  INT_64: Int64,
+  JSON: Binary,
+  BSON: Binary,
+  // TODO check interal type
+  INTERVAL: Binary
+};
