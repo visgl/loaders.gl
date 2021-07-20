@@ -85,13 +85,13 @@ module.exports = {
         ],
 
         EXAMPLES: [
-          {
-            title: 'glTF Loader',
-            category: "Loaders",
-            image: 'images/example-gltf.jpg',
-            componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
-            path: 'examples/gltf'
-          },
+          // {
+          //   title: 'glTF Loader',
+          //   category: "Loaders",
+          //   image: 'images/example-gltf.jpg',
+          //   componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
+          //   path: 'examples/gltf'
+          // },
           {
             title: 'Texture Loaders',
             category: "Loaders",
