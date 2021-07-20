@@ -476,3 +476,22 @@ export class FixedSizeList extends DataType {
     return `FixedSizeList[${this.listSize}]<${this.valueType}>`;
   }
 }
+
+export class Struct extends DataType {
+  public readonly children: Field[];
+
+  constructor(children: Field[]) {
+    super();
+    this.children = children;
+  }
+
+  public get typeId() {
+    return Type.Struct;
+  }
+  public toString() {
+    return `Struct<{${this.children.map((f) => `${f.name}:${f.type}`).join(', ')}}>`;
+  }
+  get [Symbol.toStringTag](): string {
+    return 'Struct';
+  }
+}

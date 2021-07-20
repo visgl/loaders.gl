@@ -92,7 +92,8 @@ export {
   Interval,
   IntervalDayTime,
   IntervalYearMonth,
-  FixedSizeList
+  FixedSizeList,
+  Struct
 } from './lib/schema';
 
 // SCHEMA UTILS
