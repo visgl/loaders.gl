@@ -1,6 +1,6 @@
 /* eslint-disable max-statements */
 import test from 'tape-promise/tape';
-import {ParquetSchema} from '@loaders.gl/parquet';
+import {ParquetSchema, convertParquetToArrowSchema} from '@loaders.gl/parquet';
 
 // tslint:disable:ter-prefer-arrow-callback
 
@@ -474,6 +474,40 @@ test('ParquetSchema#should assign correct defaults in a nested schema with repea
     assert.equal(Boolean(field?.isNested), false);
     assert.equal(field?.fieldCount, undefined);
   }
+
+  assert.end();
+});
+
+test('ParquetSchema#should convet to arrow schema', assert => {
+  const schema = new ParquetSchema({
+    name: { type: 'UTF8' },
+    stock: {
+      repeated: true,
+      fields: {
+        quantity: { type: 'INT64', optional: true },
+        warehouse: { type: 'UTF8' },
+      }
+    },
+    price: { type: 'DOUBLE' }
+  });
+
+  const arrowSchema = convertParquetToArrowSchema(schema);
+
+  assert.ok(arrowSchema);
+  assert.ok(arrowSchema.fields);
+  assert.ok(arrowSchema.fields[0].name === 'name');
+  assert.ok(arrowSchema.fields[0].nullable === false);
+  assert.equal(arrowSchema.fields[0].metadata.get('encoding'), 'PLAIN');
+
+  assert.ok(arrowSchema.fields[1]);
+  // @ts-ignore
+  assert.ok(arrowSchema.fields[1].type.children);
+  // @ts-ignore
+  assert.equal(arrowSchema.fields[1].type.children.length, 2);
+  // @ts-ignore
+  assert.equal(arrowSchema.fields[1].type.children[0].name, 'quantity');
+  // @ts-ignore
+  assert.equal(arrowSchema.fields[1].type.children[1].name, 'warehouse');
 
   assert.end();
 });

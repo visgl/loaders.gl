@@ -77,5 +77,6 @@ export {
   Interval,
   IntervalDayTime,
   IntervalYearMonth,
-  FixedSizeList
+  FixedSizeList,
+  Struct
 } from './impl/type';
