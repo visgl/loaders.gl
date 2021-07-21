@@ -1,7 +1,6 @@
 /* eslint-disable max-statements */
 import test from 'tape-promise/tape';
-import {ParquetSchema} from '@loaders.gl/parquet';
-import {convertParquetToArrowSchema} from '@loaders.gl/parquet/parquetjs/utils/schema-converter-util';
+import {ParquetSchema, convertParquetToArrowSchema} from '@loaders.gl/parquet';
 
 // tslint:disable:ter-prefer-arrow-callback
 
