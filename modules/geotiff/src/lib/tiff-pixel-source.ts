@@ -26,6 +26,11 @@ class TiffPixelSource<S extends string[]> implements PixelSource<S> {
     public meta?: PixelSourceMeta
   ) {
     this._indexer = indexer;
+    this.dtype = dtype;
+    this.tileSize = tileSize;
+    this.shape = shape;
+    this.labels = labels;
+    this.meta = meta;
   }
 
   async getRaster({selection, signal}: RasterSelection<S>) {

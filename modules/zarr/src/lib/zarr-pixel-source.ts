@@ -45,6 +45,7 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
     const xChunkSize = data.chunks[this._xIndex];
     const yChunkSize = data.chunks[this._xIndex - 1];
     this._readChunks = tileSize === xChunkSize && tileSize === yChunkSize;
+    this.labels = labels;
   }
 
   get shape() {
