@@ -18,7 +18,7 @@ const Container = styled.div`
   font-size: 13px;
   line-height: 2;
   outline: none;
-  z-index: 100;
+  z-index: 1;
 `;
 
 const DropDown = styled.select`
