@@ -35,11 +35,12 @@ interface ZarrTileSelection {
 
 class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
   public labels: Labels<S>;
+  public tileSize: number;
   private _data: ZarrArray;
   private _indexer: ZarrIndexer<S>;
   private _readChunks: boolean;
 
-  constructor(data: ZarrArray, labels: Labels<S>, public tileSize: number) {
+  constructor(data: ZarrArray, labels: Labels<S>, tileSize: number) {
     this._indexer = getIndexer(labels);
     this._data = data;
 
@@ -47,6 +48,7 @@ class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
     const yChunkSize = data.chunks[this._xIndex - 1];
     this._readChunks = tileSize === xChunkSize && tileSize === yChunkSize;
     this.labels = labels;
+    this.tileSize = tileSize;
   }
 
   get shape() {
