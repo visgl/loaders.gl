@@ -34,11 +34,12 @@ interface ZarrTileSelection {
 }
 
 class ZarrPixelSource<S extends string[]> implements PixelSource<S> {
+  public labels: Labels<S>;
   private _data: ZarrArray;
   private _indexer: ZarrIndexer<S>;
   private _readChunks: boolean;
 
-  constructor(data: ZarrArray, public labels: Labels<S>, public tileSize: number) {
+  constructor(data: ZarrArray, labels: Labels<S>, public tileSize: number) {
     this._indexer = getIndexer(labels);
     this._data = data;
 
