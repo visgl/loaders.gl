@@ -3,7 +3,7 @@ import {FileMetaData} from '../parquet-thrift';
 import {ParquetEnvelopeReader} from './parquet-envelope-reader';
 import {ParquetSchema} from '../schema/schema';
 import {ParquetRecord} from '../schema/declare';
-import * as Shred from '../schema/shred';
+import {materializeRecords} from '../schema/shred';
 
 /**
  * A parquet cursor is used to retrieve rows from a parquet file in order
@@ -13,7 +13,7 @@ export class ParquetCursor<T> implements AsyncIterable<T> {
   public envelopeReader: ParquetEnvelopeReader;
   public schema: ParquetSchema;
   public columnList: string[][];
-  public rowGroup: ParquetRecord[];
+  public rowGroup: ParquetRecord[] = [];
   public rowGroupIndex: number;
 
   /**
@@ -32,7 +32,6 @@ export class ParquetCursor<T> implements AsyncIterable<T> {
     this.envelopeReader = envelopeReader;
     this.schema = schema;
     this.columnList = columnList;
-    this.rowGroup = [];
     this.rowGroupIndex = 0;
   }
 
@@ -51,7 +50,7 @@ export class ParquetCursor<T> implements AsyncIterable<T> {
         this.metadata.row_groups[this.rowGroupIndex],
         this.columnList
       );
-      this.rowGroup = Shred.materializeRecords(this.schema, rowBuffer);
+      this.rowGroup = materializeRecords(this.schema, rowBuffer);
       this.rowGroupIndex++;
     }
     return this.rowGroup.shift() as any;

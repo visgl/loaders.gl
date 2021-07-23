@@ -24,21 +24,12 @@ import {decodePageHeader, getThriftEnum, getBitWidth} from './read-utils';
 // import Fs = require('fs');
 
 /**
- * Decode a consecutive array of data using one of the parquet encodings
+ * Decode data pages
+ * @param buffer - input data
+ * @param column - parquet column
+ * @param compression - compression type
+ * @returns parquet data page data
  */
-function decodeValues(
-  type: PrimitiveType,
-  encoding: ParquetCodec,
-  cursor: CursorBuffer,
-  count: number,
-  opts: ParquetCodecOptions
-): any[] {
-  if (!(encoding in PARQUET_CODECS)) {
-    throw new Error(`invalid encoding: ${encoding}`);
-  }
-  return PARQUET_CODECS[encoding].decodeValues(type, cursor, count, opts);
-}
-
 export async function decodeDataPages(
   buffer: Buffer,
   column: ParquetField,
@@ -86,6 +77,92 @@ export async function decodeDataPages(
   }
 
   return data;
+}
+
+/**
+ * Decode parquet schema
+ * @param schemaElements input schema elements data
+ * @param offset offset to read from
+ * @param len length of data
+ * @returns result.offset
+ *   result.next - offset at the end of function
+ *   result.schema - schema read from the input data
+ * @todo output offset is the same as input - possibly excess output field
+ */
+export function decodeSchema(
+  schemaElements: SchemaElement[],
+  offset: number,
+  len: number
+): {
+  offset: number;
+  next: number;
+  schema: SchemaDefinition;
+} {
+  const schema: SchemaDefinition = {};
+  let next = offset;
+  for (let i = 0; i < len; i++) {
+    const schemaElement = schemaElements[next];
+
+    const repetitionType =
+      next > 0 ? getThriftEnum(FieldRepetitionType, schemaElement.repetition_type!) : 'ROOT';
+
+    let optional = false;
+    let repeated = false;
+    switch (repetitionType) {
+      case 'REQUIRED':
+        break;
+      case 'OPTIONAL':
+        optional = true;
+        break;
+      case 'REPEATED':
+        repeated = true;
+        break;
+      default:
+        throw new Error('parquet: unknown repetition type');
+    }
+
+    if (schemaElement.num_children! > 0) {
+      const res = decodeSchema(schemaElements, next + 1, schemaElement.num_children!);
+      next = res.next;
+      schema[schemaElement.name] = {
+        // type: undefined,
+        optional,
+        repeated,
+        fields: res.schema
+      };
+    } else {
+      let logicalType = getThriftEnum(Type, schemaElement.type!);
+
+      if (schemaElement.converted_type) {
+        logicalType = getThriftEnum(ConvertedType, schemaElement.converted_type);
+      }
+
+      schema[schemaElement.name] = {
+        type: logicalType as ParquetType,
+        typeLength: schemaElement.type_length,
+        optional,
+        repeated
+      };
+      next++;
+    }
+  }
+  return {schema, offset, next};
+}
+
+/**
+ * Decode a consecutive array of data using one of the parquet encodings
+ */
+function decodeValues(
+  type: PrimitiveType,
+  encoding: ParquetCodec,
+  cursor: CursorBuffer,
+  count: number,
+  opts: ParquetCodecOptions
+): any[] {
+  if (!(encoding in PARQUET_CODECS)) {
+    throw new Error(`invalid encoding: ${encoding}`);
+  }
+  return PARQUET_CODECS[encoding].decodeValues(type, cursor, count, opts);
 }
 
 function decodeDataPage(
@@ -264,64 +341,4 @@ function decodeDataPageV2(
     values,
     count: valueCount!
   };
-}
-
-export function decodeSchema(
-  schemaElements: SchemaElement[],
-  offset: number,
-  len: number
-): {
-  offset: number;
-  next: number;
-  schema: SchemaDefinition;
-} {
-  const schema: SchemaDefinition = {};
-  let next = offset;
-  for (let i = 0; i < len; i++) {
-    const schemaElement = schemaElements[next];
-
-    const repetitionType =
-      next > 0 ? getThriftEnum(FieldRepetitionType, schemaElement.repetition_type!) : 'ROOT';
-
-    let optional = false;
-    let repeated = false;
-    switch (repetitionType) {
-      case 'REQUIRED':
-        break;
-      case 'OPTIONAL':
-        optional = true;
-        break;
-      case 'REPEATED':
-        repeated = true;
-        break;
-      default:
-        throw new Error('parquet: unknown repetition type');
-    }
-
-    if (schemaElement.num_children! > 0) {
-      const res = decodeSchema(schemaElements, next + 1, schemaElement.num_children!);
-      next = res.next;
-      schema[schemaElement.name] = {
-        // type: undefined,
-        optional,
-        repeated,
-        fields: res.schema
-      };
-    } else {
-      let logicalType = getThriftEnum(Type, schemaElement.type!);
-
-      if (schemaElement.converted_type) {
-        logicalType = getThriftEnum(ConvertedType, schemaElement.converted_type);
-      }
-
-      schema[schemaElement.name] = {
-        type: logicalType as ParquetType,
-        typeLength: schemaElement.type_length,
-        optional,
-        repeated
-      };
-      next++;
-    }
-  }
-  return {schema, offset, next};
 }

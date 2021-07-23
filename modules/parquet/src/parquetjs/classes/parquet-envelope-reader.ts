@@ -3,7 +3,7 @@ import {ParquetSchema} from '../schema/schema';
 import {PARQUET_MAGIC, PARQUET_MAGIC_ENCRYPTED} from '../../constants';
 import {ColumnChunk, CompressionCodec, FileMetaData, RowGroup, Type} from '../parquet-thrift';
 import {ParquetBuffer, ParquetCompression, ParquetData, PrimitiveType} from '../schema/declare';
-import {decodeDataPages} from '../utils/decode-utils';
+import {decodeDataPages} from '../utils/decoders';
 import {fstat, fopen, fread, fclose} from '../utils/file-utils';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
 
