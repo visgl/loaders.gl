@@ -1,6 +1,8 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 
-export type ParquetCodec = 'PLAIN' | 'RLE';
+import type {PageHeader} from '../parquet-thrift';
+
+export type ParquetCodec = 'PLAIN' | 'RLE' | 'PLAIN_DICTIONARY';
 export type ParquetCompression =
   | 'UNCOMPRESSED'
   | 'GZIP'
@@ -85,6 +87,7 @@ export interface ParquetData {
   rlevels: number[];
   values: any[];
   count: number;
+  pageHeaders: PageHeader[];
 }
 
 export interface ParquetRecord {
