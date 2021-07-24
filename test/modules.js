@@ -45,6 +45,7 @@ if (TEST_IMAGES) {
   require('@loaders.gl/video/test');
   require('@loaders.gl/geotiff/test');
   require('@loaders.gl/zarr/test');
+  require('@loaders.gl/netcdf/test');
 }
 
 // Pointcloud/Mesh Formats
