@@ -25,7 +25,7 @@ export function readNetCDFHeader(buffer: IOBuffer, version: number): NetCDFHeade
   const dimList = readDimensionsList(buffer);
 
   // List of global attributes
-  const globalAttributes = readAttributesList(buffer);
+  const attributes = readAttributesList(buffer);
 
   // List of variables
   const variableList = readVariablesList(buffer, dimList.recordId, version);
@@ -40,7 +40,7 @@ export function readNetCDFHeader(buffer: IOBuffer, version: number): NetCDFHeade
     },
     dimensions: dimList.dimensions,
     variables: variableList.variables,
-    globalAttributes
+    attributes
   };
 
   return header;

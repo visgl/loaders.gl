@@ -1,21 +1,30 @@
 /**
- * Object with the fields:
+ * Header describing a NetDCF file
  * @param recordDimension: Number with the length of record dimension
  * @param dimensions: List of dimensions
- * @param globalAttributes: List of global attributes
+ * @param attributes: List of global attributes
  * @param variables: List of variables
  */
 export type NetCDFHeader = {
   version: number;
-  recordDimension: {
-    length: number;
-    id: number; // id of the unlimited dimension
-    name: string; // name of the unlimited dimension
-    recordStep: number;
-  };
+  recordDimension: NetCDFRecordDimension;
   dimensions: NetCDFDimension[];
-  globalAttributes: NetCDFAttribute[];
+  attributes: NetCDFAttribute[];
   variables: NetCDFVariable[];
+};
+
+/**
+ * Metadata for the record dimension
+ * @param length Number of elements in the record dimension
+ * @param id Id in the list of dimensions for the record dimension
+ * @param name  name of the record dimension
+ * @param recordStep the record variables step size
+ */
+export type NetCDFRecordDimension = {
+  length: number;
+  id: number; // id of the unlimited dimension
+  name: string; // name of the unlimited dimension
+  recordStep: number;
 };
 
 /**
@@ -60,5 +69,5 @@ export type NetCDFVariable = {
 export type NetCDFAttribute = {
   name: string;
   type: string;
-  value: number | string;
+  value: string;
 };

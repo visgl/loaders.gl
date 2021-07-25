@@ -50,12 +50,12 @@ describe('NetCDFReader', () => {
       {name: 'recNum', size: 0}
     ]);
 
-    expect(reader.globalAttributes[0]).toStrictEqual({
+    expect(reader.attributes[0]).toStrictEqual({
       name: 'cdlDate',
       type: 'char',
       value: '20010327'
     });
-    expect(reader.globalAttributes[3]).toStrictEqual({
+    expect(reader.attributes[3]).toStrictEqual({
       name: 'filePeriod',
       type: 'int',
       value: 3600
@@ -165,11 +165,12 @@ describe('NetCDFReader', () => {
     expect(reader.version).toBe('classic format');
 
     const variables = [];
+    const values = [];
     for (const variable of reader.variables) {
       variables.push(variable);
-      variable.value = reader.getDataVariable(variable);
+      values.push(reader.getDataVariable(variable));
     }
-    expect(variables[3].value).toStrictEqual([0.012000000104308128]);
+    expect(values[3]).toStrictEqual([0.012000000104308128]);
     expect(variables).toHaveLength(24);
     expect(reader.getDataVariable('ordinate_values')).toHaveLength(4651);
   });
