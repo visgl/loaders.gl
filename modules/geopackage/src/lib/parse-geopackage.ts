@@ -336,7 +336,7 @@ function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
   // A Feature object has a member with the name "geometry".  The value of the
   // geometry member SHALL be either a Geometry object as defined above or, in
   // the case that the Feature is unlocated, a JSON null value.
-  // https://tools.ietf.org/html/rfc7946#section-3.2
+  /** @see https://tools.ietf.org/html/rfc7946#section-3.2 */
   if (emptyGeometry) {
     return null;
   }
@@ -352,7 +352,6 @@ function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
   // `parseSync` option, so instead we call parseSync directly on WKBLoader
   const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
 
-  // @ts-expect-error
   return binaryToGeometry(binaryGeometry);
 }
 

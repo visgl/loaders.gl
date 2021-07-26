@@ -29,12 +29,13 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/wkt-worker.js --output ./dist/wkt-worker.js --config ../../scripts/webpack/worker.js"
+    "build-worker": "webpack --entry ./src/workers/wkt-worker.ts --output ./dist/wkt-worker.js --config ../../scripts/webpack/worker.js"
   },
   "devDependencies": {
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.6"
+    "@loaders.gl/loader-utils": "3.0.6",
+    "@loaders.gl/schema": "3.0.6"
   }
 }
