@@ -50,7 +50,7 @@ export default function parseWKB(buffer): BinaryGeometry {
       const multiPolygon = parseMultiPolygon(view, offset, dimension, littleEndian);
       multiPolygon.type = 'Polygon';
       return multiPolygon;
-    case 7:
+    // case 7:
     // TODO: handle GeometryCollections
     // return parseGeometryCollection(view, offset, dimension, littleEndian);
     default:
@@ -192,7 +192,6 @@ function parseMultiLineString(view, offset, dimension, littleEndian): BinaryLine
     offset += 4;
 
     const parsed = parseLineString(view, offset, dimension, littleEndianLine);
-    const {positions} = parsed.geometry;
     offset = parsed.offset;
     binaryLineGeometries.push(parsed.geometry);
   }
