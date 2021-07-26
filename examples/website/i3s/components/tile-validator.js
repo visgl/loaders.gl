@@ -11,18 +11,22 @@ const TileValidatorContainer = styled.div`
   display: flex;
   margin: 10px 0;
   flex-direction: column;
+  background: rgba( 36,39,48,0.7);
+  color: #f2e9e4;
+  text-transform: uppercase;
 `;
 
 const ValidateButton = styled.button`
   display: flex;
   padding: 6px 12px;
-  color: white;
-  background: green;
+  color: #adb5bd;
+  background: #2a9d8f;
   align-items: center;
   height: 20px;
   width: 100px;
   cursor: pointer;
   margin-bottom: 5px;
+  text-transform: uppercase;
 `;
 
 const NormalsValidator = styled.div`
@@ -35,6 +39,7 @@ const NormalsValidator = styled.div`
 const ValidatorInfoList = styled.div`
   display: flex;
   flex-direction: column;
+  background: gba( 0,0,0,.5);
 `;
 
 const GapInput = styled.input`
@@ -58,7 +63,7 @@ const NoNormalsInfo = styled.span`
   display: flex;
   align-self: flex-start;
   margin-bottom: 5px;
-  color: red;
+  color: #e76f51;
 `;
 
 const VALIDATE_TILE = 'Validate Tile';

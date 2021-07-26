@@ -1,7 +1,6 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
-import styled from 'styled-components';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
@@ -11,6 +10,7 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
+import {StatsWidgetWrapper, StatsWidgetContainer, MemoryButton} from './components/memory-stats';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
@@ -31,22 +31,6 @@ const INITIAL_VIEW_STATE = {
   maxZoom: 30,
   zoom: 14.5
 };
-
-const StatsWidgetWrapper = styled.div`
-  @media screen and (max-width: 768px) {
-    display: none;
-  }
-`;
-const StatsWidgetContainer = styled.div`
-  word-break: break-word;
-  position: absolute;
-  padding: 12px;
-  margin: 20px;
-  z-index: 100000;
-  max-width: 250px;
-  color: white;
-  background: rgba( 0, 0, 0, .4)
-`;
 
 export default class App extends PureComponent {
   constructor(props) {
@@ -229,11 +213,14 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {viewState, selectedMapStyle, selectedFeatureAttributes} = this.state;
+    const {viewState, selectedMapStyle, selectedFeatureAttributes, showMemory} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        <StatsWidgetWrapper>{this._renderStats()}</StatsWidgetWrapper>
+        <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>{showMemory ? `Hide ` : `Show `}Memory Usage</MemoryButton>
+        <StatsWidgetWrapper showMemory={showMemory}>
+          {this._renderStats()}
+        </StatsWidgetWrapper>
         {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
         <DeckGL
           layers={layers}

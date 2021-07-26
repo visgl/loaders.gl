@@ -1,9 +1,10 @@
 import styled from 'styled-components';
-import React, {PureComponent} from 'react';
+import React, {PureComponent}from 'react';
 import PropTypes from 'prop-types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg-icons';
 import DebugOptionGroup from './debug-option-group';
+import ToggleSwitch from './toggle-switch';
 
 import {TILE_COLOR_MODES, BOUNDING_VOLUME_COLOR_MODES, BOUNDING_VOLUME_TYPE} from '../constants';
 
@@ -11,78 +12,95 @@ const Container = styled.div`
   position: absolute;
   display: flex;
   flex-direction: row;
-  height: calc(100% - 20px);
   overflow-x: hidden;
-  margin: 20px 0 0 0;
+  z-index: 1;
+  @media screen and (max-width: 768px) {
+   top: 120px;
+  }
 `;
 
 const DebugOptions = styled.div`
-  width: 300px;
-  min-width: 300px;
-  height: calc(100% - 20px);
+  width: 270px;
+  min-width: 270px;
+  margin: 5px;
+  padding: 10px;
+  text-transform: uppercase;
+  font-size: 11px;
+  min-width: 270px;
+  height: 100%;
   overflow: auto;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  padding: 12px 18px;
-  margin: 0 0px 20px 20px;
-  line-height: 2;
+  background: rgba( 36, 39, 48, 0.7);
+  line-height: 1;
   outline: none;
   z-index: 1;
   box-sizing: border-box;
+  @media screen and (max-width: 768px) {
+   margin: 0;
+  };
 `;
 
 const Header = styled.h3`
   margin: 0;
+  padding: 5px;
+  color: #00ADE6;
+  text-shadow: 1px 1px 1px #212529;
+  text-align: center;
+  top: 0px;
+  position: -webkit-sticky;
+  position: sticky;
+  border-radius: 2px;
+  text-transform: uppercase;
+  @media screen and (max-width: 768px) {
+    padding: 3px;
+  }
 `;
 
 const DropDown = styled.select`
-  margin-bottom: 10px;
-  margin-left: 3px;
+  padding: 5px;
   display: flex;
-  width: 80%;
+  width: 96%;
+  margin: 5px;
   cursor: pointer;
+  background: rgba(36, 39, 48, 0.7);
+  border: none;
+  color: #ced4da;
+  font-size: 11px;
+  jusify-content: center;
 `;
 
 const Expander = styled.div`
   top: calc(50% - 54px);
   width: 14px;
   padding: 10px 0px 10px 1px;
-  background: #fff;
+  background: rgba( 36, 39, 48, 0.7);
+  color: #00ADE6;
   z-index: 1;
   align-self: center;
-  margin: 0 2px;
+  margin: 0px 2px;
   cursor: pointer;
 `;
 
 const CheckboxOption = styled.div`
   display: flex;
-  width: 100%;
-  align-items: center;
-`;
-
-const InputCheckbox = styled.input`
-  height: 18px;
-  cursor: pointer;
-`;
-
-const Shapes = styled.select`
-  position: relative;
-  margin: 5px;
-  width: 50px;
-  margin-left: 40px;
-  background-color: white;
+  line-height: 2;
+  &:hover {
+    transition: all 1s;
+    color: white;
+  }
 `;
 
 const ChildWrapper = styled.div`
   margin-top: 10px;
 `;
 
-const Label = styled.label`
+export const Label = styled.label`
   cursor: pointer;
 `;
 
 const DebugTextureContainer = styled.div`
   padding: 2px;
+  width: 50%;
+  margin-left: 60px;
 `;
 
 const propTypes = {
@@ -119,12 +137,12 @@ export default class DebugPanel extends PureComponent {
     const {expand} = this.state;
     if (expand) {
       return {
-        marginLeft: '20px',
+        marginLeft: '5px',
         transition: 'margin-left 800ms'
       };
     }
     return {
-      marginLeft: '-300px',
+      marginLeft: '-270px',
       transition: 'margin-left 800ms'
     };
   }
@@ -132,11 +150,15 @@ export default class DebugPanel extends PureComponent {
   _clearButtonStyles(isClearButtonDisabled) {
     return {
       display: 'flex',
-      color: 'white',
-      background: isClearButtonDisabled ? 'gray' : 'red',
+      background: isClearButtonDisabled ? '#212529' : '#00ADE6',
+      color: isClearButtonDisabled ? '#f2e9e4' : 'rgb(36,39,48)',
       alignItems: 'center',
       height: '20px',
-      marginLeft: '50%',
+      marginLeft: '150px',
+      width: '70px',
+      fontSize: '10px',
+      borderRadius: '2px',
+      textTransform: 'uppercase',
       cursor: isClearButtonDisabled ? 'auto' : 'pointer'
     };
   }
@@ -157,14 +179,13 @@ export default class DebugPanel extends PureComponent {
     return (
       <DebugOptionGroup title="Bounding volumes">
         <CheckboxOption>
-          <InputCheckbox
-            onChange={() => onDebugOptionsChange({boundingVolume: !boundingVolume})}
-            type="checkbox"
+          <Label htmlFor="boundingVolume">Show</Label>
+          <ToggleSwitch
             id="boundingVolume"
             value={boundingVolume}
             checked={boundingVolume}
+            onChange={() => onDebugOptionsChange({boundingVolume: !boundingVolume})}
           />
-          <Label htmlFor="boundingVolume">Show</Label>
           {boundingVolume ? this._renderBoundingTypes() : null}
         </CheckboxOption>
         <DropDown
@@ -192,7 +213,8 @@ export default class DebugPanel extends PureComponent {
     } = this.props;
 
     return (
-      <Shapes
+      <DropDown
+        style={{width: '60px', padding: '0', margin: '0 0 0 50px'}}
         value={boundingVolumeType}
         onChange={(evt) => onDebugOptionsChange({boundingVolumeType: evt.target.value})}
       >
@@ -204,14 +226,17 @@ export default class DebugPanel extends PureComponent {
             </option>
           );
         })}
-      </Shapes>
+      </DropDown>
     );
   }
 
   _renderDebugTextureImage() {
     return (
       <DebugTextureContainer>
-        <img src={this.props.debugTextureImage} alt="Debug Texture Image" width="100%" />
+        <img 
+        src={this.props.debugTextureImage} 
+        alt="Debug Texture Image" 
+        width="100%" />
       </DebugTextureContainer>
     );
   }
@@ -224,45 +249,41 @@ export default class DebugPanel extends PureComponent {
     return (
       <DebugOptionGroup title="Tiles">
         <CheckboxOption>
-          <InputCheckbox
-            onChange={() => onDebugOptionsChange({pickable: !pickable})}
-            type="checkbox"
+          <Label htmlFor="pickable">Pickable</Label>
+          <ToggleSwitch
             id="pickable"
             value={pickable}
             checked={pickable}
+            onChange={() => onDebugOptionsChange({pickable: !pickable})}
           />
-          <Label htmlFor="pickable">Pickable</Label>
         </CheckboxOption>
         <CheckboxOption>
-          <InputCheckbox
-            onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
-            type="checkbox"
+          <Label htmlFor="loadTiles">Load tiles</Label>
+          <ToggleSwitch
             id="loadTiles"
             value={loadTiles}
             checked={loadTiles}
+            onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
           />
-          <Label htmlFor="loadTiles">Load tiles</Label>
         </CheckboxOption>
         <CheckboxOption>
-          <InputCheckbox
-            onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
-            type="checkbox"
+          <Label htmlFor="uvDebugTexture">UV debug texture</Label>
+          <ToggleSwitch
             id="uvDebugTexture"
             value={showUVDebugTexture}
             checked={showUVDebugTexture}
+            onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
           />
-          <Label htmlFor="uvDebugTexture">UV debug texture</Label>
         </CheckboxOption>
         {showUVDebugTexture ? this._renderDebugTextureImage() : null}
         <CheckboxOption>
-          <InputCheckbox
-            onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
-            type="checkbox"
+          <Label htmlFor="wireframe">Wireframe mode</Label>
+          <ToggleSwitch
             id="wireframe"
             value={wireframe}
             checked={wireframe}
+            onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
           />
-          <Label htmlFor="wireframe">Wireframe mode</Label>
         </CheckboxOption>
         <DropDown
           value={tileColorMode}
@@ -288,24 +309,22 @@ export default class DebugPanel extends PureComponent {
     return (
       <DebugOptionGroup title="Frustum Culling">
         <CheckboxOption>
-          <InputCheckbox
-            onChange={() => onDebugOptionsChange({minimap: !minimap})}
-            type="checkbox"
+          <Label htmlFor="showFrustumCullingMinimap">Show</Label>
+          <ToggleSwitch
             id="showFrustumCullingMinimap"
             value={minimap}
             checked={minimap}
+            onChange={() => onDebugOptionsChange({minimap: !minimap})}
           />
-          <Label htmlFor="showFrustumCullingMinimap">Show</Label>
         </CheckboxOption>
         <CheckboxOption>
-          <InputCheckbox
-            onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
-            type="checkbox"
+          <Label htmlFor="showFrustumCullingMinimapViewport">Use different viewports</Label>
+          <ToggleSwitch
             id="showFrustumCullingMinimapViewport"
             value={minimapViewport}
             checked={minimapViewport}
+            onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
           />
-          <Label htmlFor="showFrustumCullingMinimapViewport">Use different viewports</Label>
         </CheckboxOption>
       </DebugOptionGroup>
     );
@@ -321,26 +340,36 @@ export default class DebugPanel extends PureComponent {
     return (
       <DebugOptionGroup title="Semantic Validator">
         <CheckboxOption>
-          <InputCheckbox
-            onChange={() => onDebugOptionsChange({semanticValidator: !semanticValidator})}
-            type="checkbox"
+          <Label htmlFor="showSemanticValidator">Show</Label>
+          <ToggleSwitch
             id="showSemanticValidator"
             value={semanticValidator}
             checked={semanticValidator}
+            onChange={() => onDebugOptionsChange({semanticValidator: !semanticValidator})}
           />
-          <Label htmlFor="showSemanticValidator">Show</Label>
-          <button
+        </CheckboxOption>
+        <button
             style={this._clearButtonStyles(isClearButtonDisabled)}
             disabled={isClearButtonDisabled}
             onClick={clearWarnings}
           >
             Clear All
           </button>
-        </CheckboxOption>
       </DebugOptionGroup>
     );
   }
-
+  _renderMemoryUsage() {
+    return (
+      <DebugOptionGroup title="Memory Usage">
+        <CheckboxOption>
+          <Label htmlFor="memoryUsage">Memory Usage</Label>
+          <ToggleSwitch
+            id="memoryUsage"
+          />
+        </CheckboxOption>
+      </DebugOptionGroup>
+    )
+  }
   render() {
     const {children} = this.props;
     return (

@@ -8,54 +8,113 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   position: absolute;
+  padding: 5px;
   top: 0;
   right: 0;
-  width: 300px;
-  background: #fff;
+  width: 270px;
+  background: rgba( 36, 39, 48, 0.7);
+  border: 2px solid #212529;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  padding: 12px 18px;
-  margin: 20px;
-  font-size: 13px;
-  line-height: 2;
+  margin: 5px;
   outline: none;
   z-index: 1;
+  cursor: pointer;
+  @media screen and (max-width: 768px) {
+   margin: 0;
+  };
 `;
 
 const DropDown = styled.select`
-  margin-bottom: 12px;
+  padding: 5px;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  color: #adb5bd;
+  background: rgba( 0, 0, 0, .3);
+  padding-right: 30px;
+  margin: 5px;
+  cursor: pointer;
+  &:hover {
+    background: #212529;
+  }
 `;
 
 const TilesetDropDown = styled.select`
-  margin-bottom: 12px;
   font-weight: 800;
-  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #00ADE6;
+  text-shadow: 1px 1px 1px #212529;
+  background: rgba( 0, 0, 0, .3);
+  background: transparent;
+  border: none;
+  z-index: 20px;
+  &:hover {
+    background: #212529;
+  }
 `;
 
 const FrameWrap = styled.div`
   height: fit-content;
-  padding: 0;
   overflow: hidden;
+  transition: all 1s;
 `;
 
 const FrameControl = styled.div`
-  margin: ${(props) => (props.showFullInfo ? '12px 0' : 0)};
   display: flex;
   flex-direction: row;
+  transition: all 1s;
+  margin-top: ${props => (props.showFullInfo ? "15px" : "10px")};
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  z-index: 20;
 `;
 
 const FrameButton = styled.div`
   display: flex;
-  padding: 6px 12px;
-  color: white;
-  background: rgb(52, 152, 219);
+  transition: all 1s;
+  width: 135px;
+  color: #f2e9e4;
+  font-size: 11px;
+  margitn-top: 10px;
+  line-height: 2;
+  text-transform: uppercase;
   align-items: center;
-  height: 20px;
+  justify-content: center;
+  border-right: 2px solid #212529;
+  -webkit-transition: all 1s ease;
+  -moz-transition: all 1s ease;
+  -o-transition: all 1s ease;
+  transition: all 1s ease;
   &:hover {
-    background: rgb(0, 152, 219);
-    cursor: pointer;
+    color: rgb(36,39,48);
+    background: #00ADE6;
+  }
+`;
+
+const LinkButton = styled.button`
+  display: flex;
+  width: 135px;
+  color: #f2e9e4;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  text-transform: uppercase;
+  text-decoration: none;
+  margint-top: 10px;
+  line-height: 2;
+  border-left: 2px solid #212529;
+  -webkit-transition: all 1s ease;
+  -moz-transition: all 1s ease;
+  -o-transition: all 1s ease;
+  transition: all 1s ease;
+  &:hover {
+    color: rgb(36,39,48);
+    background: #00ADE6;
   }
 `;
 
@@ -152,9 +211,9 @@ export default class ControlPanel extends PureComponent {
         <iframe
           id="tileset-info"
           title="tileset-info"
-          style={{
+          style={{                
             display: showFullInfo ? 'inherit' : 'none',
-            height: 500,
+            height: '500px',                                                                                                                     
             width: '99%',
             border: '1px solid rgba(200, 200, 200, 100)'
           }}
@@ -162,11 +221,9 @@ export default class ControlPanel extends PureComponent {
         />
         <FrameControl showFullInfo={showFullInfo}>
           <FrameButton onClick={() => this.setState({showFullInfo: !showFullInfo})}>
-            Show {showFullInfo ? `Less` : `More`}
+            Show {showFullInfo ? `Less Info` : `More Info`}
           </FrameButton>
-          <a target="_blank" rel="noopener noreferrer" href={url}>
-            Go to ArcGIS
-          </a>
+          <LinkButton as="a" target="_blank" rel="noopener noreferrer" href={url}>Go to ArcGIS</LinkButton>
         </FrameControl>
       </FrameWrap>
     );
