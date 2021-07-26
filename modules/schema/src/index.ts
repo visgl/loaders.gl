@@ -48,7 +48,14 @@ export type {
 } from './category/gis';
 
 // GIS CATEGORY - BINARY
-export type {BinaryGeometryType, BinaryGeometry, BinaryAttribute} from './category/gis';
+export type {
+  BinaryGeometryType,
+  BinaryGeometry,
+  BinaryPointGeometry,
+  BinaryLineGeometry,
+  BinaryPolygonGeometry,
+  BinaryAttribute
+} from './category/gis';
 export type {
   BinaryFeatures,
   BinaryPointFeatures,

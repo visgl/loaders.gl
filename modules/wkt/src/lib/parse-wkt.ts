@@ -1,5 +1,7 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
+
 /* eslint-disable */
+// @ts-nocheck
 
 const numberRegexp = /[-+]?([0-9]*\.[0-9]+|[0-9]+)([eE][-+]?[0-9]+)?/;
 // Matches sequences like '100 100' or '100 100 100'.
