@@ -1,3 +1,12 @@
+import {
+  WKTParsedLineString,
+  WktParsedMultiLineString,
+  WktParsedMultiPoint,
+  WktParsedMultiPolygon,
+  WktParsedPoint,
+  WktParsedPolygon
+} from './types';
+
 const NUM_DIMENSIONS = {
   0: 2, // 2D
   1: 3, // 3D (Z)
@@ -5,7 +14,12 @@ const NUM_DIMENSIONS = {
   3: 4 // 4D (ZM)
 };
 
-export default function parseWKB(buffer) {
+/**
+ * @param buffer
+ * @returns null
+ */
+
+export default function parseWKB(buffer: ArrayBufferLike) {
   const view = new DataView(buffer);
   let offset = 0;
 
@@ -59,7 +73,21 @@ export default function parseWKB(buffer) {
 }
 
 // Primitives; parse point and linear ring
-function parsePoint(view, offset, dimension, littleEndian) {
+
+/**
+ * @param view
+ * @param offset
+ * @param dimension
+ * @param littleEndian
+ * @returns parsed point
+ */
+
+function parsePoint(
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
+): WktParsedPoint {
   const positions = new Float64Array(dimension);
   for (let i = 0; i < dimension; i++) {
     positions[i] = view.getFloat64(offset, littleEndian);
@@ -69,7 +97,20 @@ function parsePoint(view, offset, dimension, littleEndian) {
   return {positions: {value: positions, size: dimension}, offset};
 }
 
-function parseLineString(view, offset, dimension, littleEndian) {
+/**
+ * @param view
+ * @param offset
+ * @param dimension
+ * @param littleEndian
+ * @returns parsed line string
+ */
+
+function parseLineString(
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
+): WKTParsedLineString {
   const nPoints = view.getUint32(offset, littleEndian);
   offset += 4;
 
@@ -93,17 +134,30 @@ function parseLineString(view, offset, dimension, littleEndian) {
 }
 
 // https://stackoverflow.com/a/55261098
-const cumulativeSum = (sum) => (value) => (sum += value);
+const cumulativeSum = (sum: number) => (value: any) => (sum += value);
 
-function parsePolygon(view, offset, dimension, littleEndian) {
+/**
+ * @param view
+ * @param offset
+ * @param dimension
+ * @param littleEndian
+ * @returns parsed polygon
+ */
+
+function parsePolygon(
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
+): WktParsedPolygon {
   const nRings = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  const rings = [];
+  const rings: Float64Array[] = [];
   for (let i = 0; i < nRings; i++) {
     const parsed = parseLineString(view, offset, dimension, littleEndian);
     const {positions} = parsed;
-    offset = parsed.offset;
+    if (parsed.offset) offset = parsed.offset;
     rings.push(positions.value);
   }
 
@@ -126,11 +180,24 @@ function parsePolygon(view, offset, dimension, littleEndian) {
   };
 }
 
-function parseMultiPoint(view, offset, dimension, littleEndian) {
+/**
+ * @param view
+ * @param offset
+ * @param dimension
+ * @param littleEndian
+ * @returns parsed multi-point
+ */
+
+function parseMultiPoint(
+  view: DataView,
+  offset: number,
+  dimension: any,
+  littleEndian: boolean
+): WktParsedMultiPoint {
   const nPoints = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  const points = [];
+  const points: Float64Array[] = [];
   for (let i = 0; i < nPoints; i++) {
     // Byte order for point
     const littleEndianPoint = view.getUint8(offset) === 1;
@@ -145,7 +212,7 @@ function parseMultiPoint(view, offset, dimension, littleEndian) {
 
     const parsed = parsePoint(view, offset, dimension, littleEndianPoint);
     const {positions} = parsed;
-    offset = parsed.offset;
+    if (parsed.offset) offset = parsed.offset;
     points.push(positions.value);
   }
 
@@ -156,11 +223,24 @@ function parseMultiPoint(view, offset, dimension, littleEndian) {
   };
 }
 
-function parseMultiLineString(view, offset, dimension, littleEndian) {
+/**
+ * @param view
+ * @param offset
+ * @param dimension
+ * @param littleEndian
+ * @returns parsed multi-line string
+ */
+
+function parseMultiLineString(
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
+): WktParsedMultiLineString {
   const nLines = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  const lines = [];
+  const lines: Float64Array[] = [];
   for (let i = 0; i < nLines; i++) {
     // Byte order for line
     const littleEndianLine = view.getUint8(offset) === 1;
@@ -175,7 +255,7 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
 
     const parsed = parseLineString(view, offset, dimension, littleEndianLine);
     const {positions} = parsed;
-    offset = parsed.offset;
+    if (parsed.offset) offset = parsed.offset;
     lines.push(positions.value);
   }
 
@@ -189,12 +269,25 @@ function parseMultiLineString(view, offset, dimension, littleEndian) {
   };
 }
 
-function parseMultiPolygon(view, offset, dimension, littleEndian) {
+/**
+ * @param view
+ * @param offset
+ * @param dimension
+ * @param littleEndian
+ * @returns parsed multi-polygon
+ */
+
+function parseMultiPolygon(
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
+): WktParsedMultiPolygon {
   const nPolygons = view.getUint32(offset, littleEndian);
   offset += 4;
 
-  const polygons = [];
-  const primitivePolygons = [];
+  const polygons: Float64Array[] = [];
+  const primitivePolygons: Uint16Array[] = [];
   for (let i = 0; i < nPolygons; i++) {
     // Byte order for polygon
     const littleEndianPolygon = view.getUint8(offset) === 1;
@@ -209,7 +302,7 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
 
     const parsed = parsePolygon(view, offset, dimension, littleEndianPolygon);
     const {positions, primitivePolygonIndices} = parsed;
-    offset = parsed.offset;
+    if (parsed.offset) offset = parsed.offset;
     polygons.push(positions.value);
     primitivePolygons.push(primitivePolygonIndices.value);
   }
@@ -223,8 +316,8 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
   for (const primitivePolygon of primitivePolygons) {
     primitivePolygonIndices.push(
       ...primitivePolygon
-        .filter((x) => x > 0)
-        .map((x) => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
+        .filter((x: number) => x > 0)
+        .map((x: number) => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
     );
   }
 
@@ -237,7 +330,7 @@ function parseMultiPolygon(view, offset, dimension, littleEndian) {
 
 // TODO: remove copy; import from typed-array-utils
 // modules/math/src/geometry/typed-arrays/typed-array-utils.js
-function concatTypedArrays(arrays) {
+function concatTypedArrays(arrays: string | any[]) {
   let byteLength = 0;
   for (let i = 0; i < arrays.length; ++i) {
     byteLength += arrays[i].byteLength;
@@ -255,7 +348,7 @@ function concatTypedArrays(arrays) {
   return buffer;
 }
 
-function assert(condition, message) {
+function assert(condition: boolean, message: string) {
   if (!condition) {
     throw new Error(`Error parsing Well-Known Binary. ${message}`);
   }

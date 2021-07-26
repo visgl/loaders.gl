@@ -4,28 +4,40 @@
 /**
  * Stringifies a GeoJSON object into WKT
  */
-export default function encodeWKT(gj) {
+
+/**
+ * @param gj
+ * @returns string
+ */
+
+export default function encodeWKT(gj: {
+  type: string;
+  properties?: {};
+  geometry?: any;
+  coordinates?: any;
+  geometries?: any;
+}) {
   if (gj.type === 'Feature') {
     gj = gj.geometry;
   }
 
-  function pairWKT(c) {
+  function pairWKT(c: any[]) {
     return c.join(' ');
   }
 
-  function ringWKT(r) {
+  function ringWKT(r: any[]) {
     return r.map(pairWKT).join(', ');
   }
 
-  function ringsWKT(r) {
+  function ringsWKT(r: any[]) {
     return r.map(ringWKT).map(wrapParens).join(', ');
   }
 
-  function multiRingsWKT(r) {
+  function multiRingsWKT(r: any[]) {
     return r.map(ringsWKT).map(wrapParens).join(', ');
   }
 
-  function wrapParens(s) {
+  function wrapParens(s: string) {
     return '(' + s + ')';
   }
 

@@ -5,12 +5,12 @@ const numberRegexp = /[-+]?([0-9]*\.[0-9]+|[0-9]+)([eE][-+]?[0-9]+)?/;
 // Matches sequences like '100 100' or '100 100 100'.
 const tuples = new RegExp('^' + numberRegexp.source + '(\\s' + numberRegexp.source + '){1,}');
 
-/*
+/**
  * Parse WKT and return GeoJSON.
  *
  * @param {string} _ A WKT geometry
  * @return {?Object} A GeoJSON geometry object
- */
+ **/
 export default function parseWKT(input) {
   var parts = input.split(';');
   var _ = parts.pop();
@@ -47,7 +47,7 @@ export default function parseWKT(input) {
   function multicoords() {
     white();
     var depth = 0;
-    var rings = [];
+    var rings = Array();
     var stack = [rings];
     var pointer = rings;
     var elem;
@@ -85,7 +85,7 @@ export default function parseWKT(input) {
   }
 
   function coords() {
-    var list = [];
+    var list = Array();
     var item;
     var pt;
     while ((pt = $(tuples) || $(/^(,)/))) {
@@ -183,7 +183,7 @@ export default function parseWKT(input) {
   }
 
   function geometrycollection() {
-    var geometries = [];
+    var geometries = Array();
     var geometry;
 
     if (!$(/^(geometrycollection)/i)) return null;
