@@ -1,11 +1,13 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from './codecs';
-import {decompress, inflate} from './compression';
+import {decompress} from './compression';
 import {
   ParquetBuffer,
   ParquetCodec,
   ParquetCompression,
   ParquetData,
+  ParquetOptions,
+  ParquetPageData,
   ParquetRecord,
   ParquetType,
   PrimitiveType,
@@ -35,6 +37,7 @@ import {
   fieldIndexOf
 } from './utils/read-utils';
 import {fstat, fopen, fread, fclose} from './utils/file-utils';
+import Int64 from 'node-int64';
 
 /**
  * Parquet File Magic String
@@ -52,6 +55,8 @@ const PARQUET_VERSION = 1;
  */
 const PARQUET_RDLVL_TYPE = 'INT32';
 const PARQUET_RDLVL_ENCODING = 'RLE';
+
+const DEFAULT_DICTIONARY_SIZE = 1e6;
 
 /**
  * A parquet cursor is used to retrieve rows from a parquet file in order
@@ -356,9 +361,12 @@ export class ParquetEnvelopeReader {
     this.read = read;
     this.close = close;
     this.fileSize = fileSize;
-    this.defaultDictionarySize = options?.defaultDictionarySize || 10000000;
+    this.defaultDictionarySize = options?.defaultDictionarySize || DEFAULT_DICTIONARY_SIZE;
   }
 
+  /**
+   * Reads header of parquet file and detect it's magic number
+   */
   async readHeader(): Promise<void> {
     const buffer = await this.read(0, PARQUET_MAGIC.length);
 
@@ -373,6 +381,12 @@ export class ParquetEnvelopeReader {
     }
   }
 
+  /**
+   * Reading row group from parquet file
+   * @param schema
+   * @param rowGroup
+   * @param columnList
+   */
   async readRowGroup(
     schema: ParquetSchema,
     rowGroup: RowGroup,
@@ -393,6 +407,11 @@ export class ParquetEnvelopeReader {
     return buffer;
   }
 
+  /**
+   * Do reading of parquet file's column chunk
+   * @param schema
+   * @param colChunk
+   */
   async readColumnChunk(schema: ParquetSchema, colChunk: ColumnChunk): Promise<ParquetData> {
     if (colChunk.file_path !== undefined && colChunk.file_path !== null) {
       throw new Error('external references are not supported');
@@ -400,7 +419,10 @@ export class ParquetEnvelopeReader {
 
     const field = schema.findField(colChunk.meta_data?.path_in_schema!);
     const type: PrimitiveType = getThriftEnum(Type, colChunk.meta_data?.type!) as any;
-    if (type !== field.primitiveType) throw new Error(`chunk type not matching schema: ${type}`);
+
+    if (type !== field.primitiveType) {
+      throw new Error(`chunk type not matching schema: ${type}`);
+    }
 
     const compression: ParquetCompression = getThriftEnum(
       CompressionCodec,
@@ -417,35 +439,49 @@ export class ParquetEnvelopeReader {
       );
     }
 
-    const opts = {
+    const options: ParquetOptions = {
       type,
       rLevelMax: field.rLevelMax,
       dLevelMax: field.dLevelMax,
       compression,
       column: field,
-      num_values: colChunk.meta_data?.num_values,
-      dictionary: null
+      numValues: colChunk.meta_data?.num_values,
+      dictionary: []
     };
 
     let dictionary;
 
-    if (colChunk?.meta_data?.dictionary_page_offset) {
-      const offset = Number(colChunk.meta_data.dictionary_page_offset);
-      const size = Math.min(this.fileSize - offset, this.defaultDictionarySize);
-      const pagesBuf = await this.read(offset, size);
-      const decodedPage = await decodePage(
-        {buffer: pagesBuf, offset: 0, size: pagesBuf.length},
-        opts
-      );
-      dictionary = decodedPage.dictionary;
+    const dictionaryPageOffset = colChunk?.meta_data?.dictionary_page_offset;
+
+    if (dictionaryPageOffset) {
+      // Getting dictionary from column chunk to iterate all over indexes to get dataPage values.
+      dictionary = await this.getDictionary(dictionaryPageOffset, options);
     }
 
-    opts.dictionary = opts.dictionary || dictionary;
+    dictionary = options.dictionary?.length ? options.dictionary : dictionary;
     return await this.read(pagesOffset, pagesSize).then((pagesBuf) =>
-      decodeDataPages(pagesBuf, opts)
+      decodeDataPages(pagesBuf, {...options, dictionary})
     );
   }
 
+  /**
+   * Getting dictionary for allows to flatten values by indices.
+   * @param dictionaryPageOffset
+   * @param options
+   */
+  async getDictionary(dictionaryPageOffset: Int64, options: ParquetOptions): Promise<string[]> {
+    const offset = Number(dictionaryPageOffset);
+    const size = Math.min(this.fileSize - offset, this.defaultDictionarySize);
+    const pagesBuf = await this.read(offset, size);
+    const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};
+    const decodedPage = decodePage(cursor, options);
+
+    return decodedPage.dictionary!;
+  }
+
+  /**
+   * Reads footer of parquet file
+   */
   async readFooter(): Promise<FileMetaData> {
     const trailerLen = PARQUET_MAGIC.length + 4;
     const trailerBuf = await this.read(this.fileSize - trailerLen, trailerLen);
@@ -485,7 +521,7 @@ function decodeValues(
   return PARQUET_CODECS[encoding].decodeValues(type, cursor, count, opts);
 }
 
-async function decodeDataPages(buffer: Buffer, opts: any): Promise<ParquetData> {
+async function decodeDataPages(buffer: Buffer, options: ParquetOptions): Promise<ParquetData> {
   const cursor: CursorBuffer = {
     buffer,
     offset: 0,
@@ -500,30 +536,31 @@ async function decodeDataPages(buffer: Buffer, opts: any): Promise<ParquetData> 
     count: 0
   };
 
+  let dictionary = options.dictionary || [];
+
   while (
     // @ts-ignore size can be undefined
     cursor.offset < cursor.size &&
-    (!opts.num_values || data.dlevels.length < opts.num_values)
+    (!options.numValues || data.dlevels.length < Number(options.numValues))
   ) {
-    // const pageHeader = new parquet_thrift.PageHeader();
-    // cursor.offset += parquet_util.decodeThrift(pageHeader, cursor.buffer);
-
-    const page = decodePage(cursor, opts);
+    const page = decodePage(cursor, options);
 
     if (page.dictionary) {
-      opts.dictionary = page.dictionary;
+      dictionary = page.dictionary;
       // eslint-disable-next-line no-continue
       continue;
     }
 
-    if (opts.dictionary) {
-      page.values = page.values.map((d) => opts.dictionary[d]);
+    if (dictionary) {
+      // eslint-disable-next-line no-loop-func
+      page.values = page.values.map((value) => dictionary[value]);
     }
 
-    for (let i = 0; i < page.rlevels.length; i++) {
-      data.rlevels.push(page.rlevels[i]);
-      data.dlevels.push(page.dlevels[i]);
-      const value = page.values[i];
+    for (let index = 0; index < page.rlevels.length; index++) {
+      data.rlevels.push(page.rlevels[index]);
+      data.dlevels.push(page.dlevels[index]);
+      const value = page.values[index];
+
       if (value !== undefined) {
         data.values.push(value);
       }
@@ -536,7 +573,12 @@ async function decodeDataPages(buffer: Buffer, opts: any): Promise<ParquetData> 
   return data;
 }
 
-function decodePage(cursor, opts) {
+/**
+ * Decode parquet page based on page type
+ * @param cursor
+ * @param options
+ */
+function decodePage(cursor: CursorBuffer, options: ParquetOptions): ParquetPageData {
   let page;
   const {pageHeader, length} = decodePageHeader(cursor.buffer);
   cursor.offset += length;
@@ -545,25 +587,35 @@ function decodePage(cursor, opts) {
 
   switch (pageType) {
     case 'DATA_PAGE':
-      page = decodeDataPage(cursor, pageHeader, opts);
+      page = decodeDataPage(cursor, pageHeader, options);
       break;
     case 'DATA_PAGE_V2':
-      page = decodeDataPageV2(cursor, pageHeader, opts);
+      page = decodeDataPageV2(cursor, pageHeader, options);
       break;
     case 'DICTIONARY_PAGE':
       page = {
-        dictionary: decodeDictionaryPage(cursor, pageHeader, opts)
+        dictionary: decodeDictionaryPage(cursor, pageHeader, options),
+        pageHeader
       };
       break;
     default:
       throw new Error(`invalid page type: ${pageType}`);
   }
 
-  page.pageHeader = pageHeader;
   return page;
 }
 
-function decodeDataPage(cursor: CursorBuffer, header: PageHeader, opts: any): ParquetData {
+/**
+ * Do decoding of parquet dataPage from column chunk
+ * @param cursor
+ * @param header
+ * @param options
+ */
+function decodeDataPage(
+  cursor: CursorBuffer,
+  header: PageHeader,
+  options: ParquetOptions
+): ParquetPageData {
   const cursorEnd = cursor.offset + header.compressed_page_size;
   const valueCount = header.data_page_header?.num_values;
 
@@ -586,9 +638,9 @@ function decodeDataPage(cursor: CursorBuffer, header: PageHeader, opts: any): Pa
   /* uncompress page */
   let dataCursor = cursor;
 
-  if (opts.compression !== 'UNCOMPRESSED') {
+  if (options.compression !== 'UNCOMPRESSED') {
     const valuesBuf = decompress(
-      opts.compression,
+      options.compression,
       cursor.buffer.slice(cursor.offset, cursorEnd),
       header.uncompressed_page_size
     );
@@ -607,9 +659,10 @@ function decodeDataPage(cursor: CursorBuffer, header: PageHeader, opts: any): Pa
   ) as ParquetCodec;
   // tslint:disable-next-line:prefer-array-literal
   let rLevels = new Array(valueCount);
-  if (opts.column.rLevelMax > 0) {
+
+  if (options.column.rLevelMax > 0) {
     rLevels = decodeValues(PARQUET_RDLVL_TYPE, rLevelEncoding, dataCursor, valueCount!, {
-      bitWidth: getBitWidth(opts.column.rLevelMax),
+      bitWidth: getBitWidth(options.column.rLevelMax),
       disableEnvelope: false
       // column: opts.column
     });
@@ -624,9 +677,9 @@ function decodeDataPage(cursor: CursorBuffer, header: PageHeader, opts: any): Pa
   ) as ParquetCodec;
   // tslint:disable-next-line:prefer-array-literal
   let dLevels = new Array(valueCount);
-  if (opts.column.dLevelMax > 0) {
+  if (options.column.dLevelMax > 0) {
     dLevels = decodeValues(PARQUET_RDLVL_TYPE, dLevelEncoding, dataCursor, valueCount!, {
-      bitWidth: getBitWidth(opts.column.dLevelMax),
+      bitWidth: getBitWidth(options.column.dLevelMax),
       disableEnvelope: false
       // column: opts.column
     });
@@ -635,22 +688,24 @@ function decodeDataPage(cursor: CursorBuffer, header: PageHeader, opts: any): Pa
   }
   let valueCountNonNull = 0;
   for (const dlvl of dLevels) {
-    if (dlvl === opts.column.dLevelMax) {
+    if (dlvl === options.column.dLevelMax) {
       valueCountNonNull++;
     }
   }
 
   /* read values */
   const valueEncoding = getThriftEnum(Encoding, header.data_page_header?.encoding!) as ParquetCodec;
+  const decodeOptions = {
+    typeLength: options.column.typeLength,
+    bitWidth: options.column.typeLength
+  };
+
   const values = decodeValues(
-    opts.column.primitiveType!,
+    options.column.primitiveType!,
     valueEncoding,
     dataCursor,
     valueCountNonNull,
-    {
-      typeLength: opts.column.typeLength,
-      bitWidth: opts.column.typeLength
-    }
+    decodeOptions
   );
 
   // info.valBuf = uncursor.buffer.toJSON();
@@ -662,11 +717,18 @@ function decodeDataPage(cursor: CursorBuffer, header: PageHeader, opts: any): Pa
     rlevels: rLevels,
     values,
     count: valueCount!,
-    pageHeaders: []
+    pageHeader: header
   };
 }
 
-function decodeDataPageV2(cursor: CursorBuffer, header: PageHeader, opts: any): ParquetData {
+/**
+ * Do decoding of parquet dataPage in version 2 from column chunk
+ * @param cursor
+ * @param header
+ * @param opts
+ * @returns
+ */
+function decodeDataPageV2(cursor: CursorBuffer, header: PageHeader, opts: any): ParquetPageData {
   const cursorEnd = cursor.offset + header.compressed_page_size;
 
   const valueCount = header.data_page_header_v2?.num_values;
@@ -720,15 +782,17 @@ function decodeDataPageV2(cursor: CursorBuffer, header: PageHeader, opts: any): 
     cursor.offset = cursorEnd;
   }
 
+  const decodeOptions = {
+    typeLength: opts.column.typeLength,
+    bitWidth: opts.column.typeLength
+  };
+
   const values = decodeValues(
     opts.column.primitiveType!,
     valueEncoding,
     valuesBufCursor,
     valueCountNonNull,
-    {
-      typeLength: opts.column.typeLength,
-      bitWidth: opts.column.typeLength
-    }
+    decodeOptions
   );
 
   return {
@@ -736,11 +800,20 @@ function decodeDataPageV2(cursor: CursorBuffer, header: PageHeader, opts: any): 
     rlevels: rLevels,
     values,
     count: valueCount!,
-    pageHeaders: []
+    pageHeader: header
   };
 }
-
-function decodeDictionaryPage(cursor: CursorBuffer, pageHeader: PageHeader, opts: any) {
+/**
+ * Do decoding of dictionary page which helps to iterate over all indexes and get dataPage values.
+ * @param cursor
+ * @param pageHeader
+ * @param options
+ */
+function decodeDictionaryPage(
+  cursor: CursorBuffer,
+  pageHeader: PageHeader,
+  options: ParquetOptions
+): string[] {
   const cursorEnd = cursor.offset + pageHeader.compressed_page_size;
 
   let dictCursor = {
@@ -751,10 +824,11 @@ function decodeDictionaryPage(cursor: CursorBuffer, pageHeader: PageHeader, opts
 
   cursor.offset = cursorEnd;
 
-  if (opts.compression && opts.compression !== 'UNCOMPRESSED') {
-    const valuesBuf = inflate(
-      opts.compression,
-      dictCursor.buffer.slice(dictCursor.offset, cursorEnd)
+  if (options.compression !== 'UNCOMPRESSED') {
+    const valuesBuf = decompress(
+      options.compression,
+      cursor.buffer.slice(cursor.offset, cursorEnd),
+      pageHeader.uncompressed_page_size
     );
 
     dictCursor = {
@@ -762,19 +836,27 @@ function decodeDictionaryPage(cursor: CursorBuffer, pageHeader: PageHeader, opts
       offset: 0,
       size: valuesBuf.length
     };
+
+    cursor.offset = cursorEnd;
   }
 
   const numValues = pageHeader?.dictionary_page_header?.num_values || 0;
 
   return decodeValues(
-    opts.column.primitiveType,
-    opts.column.encoding,
+    options.column.primitiveType!,
+    options.column.encoding!,
     dictCursor,
     numValues,
-    opts
+    options as ParquetCodecOptions
   ).map((d) => d.toString());
 }
 
+/**
+ * Decode parquet file schema
+ * @param schemaElements
+ * @param offset
+ * @param len
+ */
 function decodeSchema(
   schemaElements: SchemaElement[],
   offset: number,

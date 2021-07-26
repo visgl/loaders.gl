@@ -9,6 +9,7 @@ const PARQUET_FILES = [
   {supported: false, title: 'bloom_filter', path: 'good/bloom_filter.bin'},
   {supported: false, title: 'byte_array_decimal', path: 'good/byte_array_decimal.parquet'},
   {supported: false, title: 'datapage_v2', path: 'good/datapage_v2.snappy.parquet'},
+  // TODO fix regression of supporting dict-page-offset-zero.parquet file
   {supported: false, title: 'dict', path: 'good/dict-page-offset-zero.parquet'},
   {supported: false, title: 'fixed_length_decimal', path: 'good/fixed_length_decimal.parquet'},
   {supported: false, title: 'fixed_length_decimal_legacy', path: 'good/fixed_length_decimal_legacy.parquet'},

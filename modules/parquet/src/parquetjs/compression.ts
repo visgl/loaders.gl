@@ -89,12 +89,12 @@ export function decompress(method: ParquetCompression, value: Buffer, size: numb
 /*
  * Inflate a value using compression method `method`
  */
-export function inflate(method: ParquetCompression, value: Buffer): Buffer {
+export function inflate(method: ParquetCompression, value: Buffer, size: number): Buffer {
   if (!(method in PARQUET_COMPRESSION_METHODS)) {
     throw new Error(`invalid compression method: ${method}`);
   }
   // @ts-ignore
-  return PARQUET_COMPRESSION_METHODS[method].inflate(value);
+  return PARQUET_COMPRESSION_METHODS[method].inflate(value, size);
 }
 /*
 function deflate_identity(value: Buffer): Buffer {
