@@ -36,7 +36,7 @@ export async function* parseShapefileInBatches(
 
   // parse geometries
   // @ts-ignore context must be defined
-  const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, options);
+  const shapeIterable: any = context.parseInBatches(asyncIterator, SHPLoader, options);
 
   // parse properties
   let propertyIterable: any;
@@ -44,7 +44,7 @@ export async function* parseShapefileInBatches(
   const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
   if (dbfResponse.ok) {
     // @ts-ignore context must be defined
-    propertyIterable = await context.parseInBatches(dbfResponse, DBFLoader, {
+    propertyIterable = context.parseInBatches(dbfResponse, DBFLoader, {
       ...options,
       dbf: {encoding: cpg || 'latin1'}
     });

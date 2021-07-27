@@ -7,8 +7,9 @@ export type Schema = {
 };
 
 export type Batch = {
-  shape: string;
   batchType: 'data' | 'metadata' | 'partial-result' | 'final-result';
+  mimeType?: string;
+  shape: string;
   data: any;
   recordBatch?: RecordBatch;
   length: number;
