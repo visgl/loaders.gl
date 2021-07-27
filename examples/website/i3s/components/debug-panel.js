@@ -27,7 +27,7 @@ const DebugOptions = styled.div`
   margin: 0 0px 20px 20px;
   line-height: 2;
   outline: none;
-  z-index: 100;
+  z-index: 1;
   box-sizing: border-box;
 `;
 

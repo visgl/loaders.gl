@@ -60,6 +60,8 @@
       "@loaders.gl/las/test": ["modules/las/test"],
       "@loaders.gl/mvt/*": ["modules/mvt/src/*"],
       "@loaders.gl/mvt/test": ["modules/mvt/test"],
+      "@loaders.gl/netcdf/*": ["modules/netcdf/src/*"],
+      "@loaders.gl/netcdf/test": ["modules/netcdf/test"],
       "@loaders.gl/obj/*": ["modules/obj/src/*"],
       "@loaders.gl/obj/test": ["modules/obj/test"],
       "@loaders.gl/parquet/*": ["modules/parquet/src/*"],

@@ -14,18 +14,28 @@ import type {
 } from '../types';
 
 class TiffPixelSource<S extends string[]> implements PixelSource<S> {
+  public dtype: Dtype;
+  public tileSize: number;
+  public shape: number[];
+  public labels: Labels<S>;
+  public meta: PixelSourceMeta | undefined;
   private _indexer: (sel: PixelSourceSelection<S>) => Promise<GeoTIFFImage>;
 
   // eslint-disable-next-line max-params
   constructor(
     indexer: (sel: PixelSourceSelection<S>) => Promise<GeoTIFFImage>,
-    public dtype: Dtype,
-    public tileSize: number,
-    public shape: number[],
-    public labels: Labels<S>,
-    public meta?: PixelSourceMeta
+    dtype: Dtype,
+    tileSize: number,
+    shape: number[],
+    labels: Labels<S>,
+    meta?: PixelSourceMeta
   ) {
     this._indexer = indexer;
+    this.dtype = dtype;
+    this.tileSize = tileSize;
+    this.shape = shape;
+    this.labels = labels;
+    this.meta = meta;
   }
 
   async getRaster({selection, signal}: RasterSelection<S>) {
