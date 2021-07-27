@@ -27,7 +27,7 @@ test('ExcelLoader#load(ZIPCODES)', async (t) => {
 test('ExcelLoader#loadInBatches (on worker)', async (t) => {
   // Workers are not supported under Node at the moment.
   const loader = isBrowser ? ExcelWorkerLoader : ExcelLoader;
-  const batches = await loadInBatches(ZIPCODES_XLSX_PATH, );
+  const batches = await loadInBatches(ZIPCODES_XLSX_PATH, loader);
   for await (const batch of batches) {
     t.equal(batch.data.length, 42049, 'XLSX: Correct number of row received');
   }
