@@ -45,10 +45,10 @@ export default class I3SNodePagesTiles {
         this.options.i3s?.token
       );
       this.nodePages[pageIndex] = load(nodePageUrl, I3SNodePageLoader, this.options);
-      this.nodePages[pageIndex] = this.nodePages[pageIndex];
+      this.nodePages[pageIndex] = await this.nodePages[pageIndex];
     }
     if (this.nodePages[pageIndex] instanceof Promise) {
-      this.nodePages[pageIndex] = this.nodePages[pageIndex];
+      this.nodePages[pageIndex] = await this.nodePages[pageIndex];
     }
     const nodeIndex = id % this.nodesPerPage;
     return this.nodePages[pageIndex].nodes[nodeIndex];
