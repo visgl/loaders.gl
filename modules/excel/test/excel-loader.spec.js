@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
-import {load} from '@loaders.gl/core';
-import {ExcelLoader} from '@loaders.gl/excel';
+import {load, loadInBatches} from '@loaders.gl/core';
+import {ExcelLoader, ExcelWorkerLoader} from '@loaders.gl/excel';
 import {CSVLoader} from '@loaders.gl/csv';
 
 const ZIPCODES_XLSX_PATH = `@loaders.gl/excel/test/data/zipcodes.xlsx`;
@@ -21,5 +21,13 @@ test('ExcelLoader#load(ZIPCODES)', async (t) => {
   t.equal(data.length, 42049, 'XLSX: Correct number of row received');
   t.deepEqual(data[100], csvData[100], 'XLSX: Data corresponds to CSV');
 
+  t.end();
+});
+
+test('ExcelLoader#loadInBatches (on worker)', async (t) => {
+  const batches = await loadInBatches(ZIPCODES_XLSX_PATH, ExcelWorkerLoader);
+  for await (const batch of batches) {
+    t.equal(batch.data.length, 42049, 'XLSX: Correct number of row received');
+  }
   t.end();
 });
