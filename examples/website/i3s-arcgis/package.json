@@ -9,11 +9,11 @@
     "generate": "node ./generate-index/index.js"
   },
   "dependencies": {
-    "@deck.gl/arcgis": "^8.5.0-beta.1",
-    "@deck.gl/core": "^8.5.0-beta.1",
-    "@deck.gl/geo-layers": "^8.5.0-beta.1",
-    "@deck.gl/layers": "^8.5.0-beta.1",
-    "@deck.gl/mesh-layers": "^8.5.0-beta.1",
+    "@deck.gl/arcgis": "^8.5.0",
+    "@deck.gl/core": "^8.5.0",
+    "@deck.gl/geo-layers": "^8.5.0",
+    "@deck.gl/layers": "^8.5.0",
+    "@deck.gl/mesh-layers": "^8.5.0",
     "@loaders.gl/core": "2.2.0",
     "@loaders.gl/i3s": "2.2.0"
   },
