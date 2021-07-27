@@ -2,6 +2,7 @@ import type {Batch} from '@loaders.gl/schema';
 import type {
   BatchableDataType,
   Loader,
+  LoaderWithParser,
   LoaderContext,
   LoaderOptions
 } from '@loaders.gl/loader-utils';
@@ -9,7 +10,7 @@ import {assert, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';
-import {getAsyncIterableFromData, getReadableStream} from '../loader-utils/get-data';
+import {getAsyncIterableFromData} from '../loader-utils/get-data';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
@@ -64,18 +65,18 @@ export async function parseInBatches(
     context
   );
 
-  return await parseWithLoaderInBatches(loader, data, options, context);
+  return await parseWithLoaderInBatches(loader as LoaderWithParser, data, options, context);
 }
 
 /**
  * Loader has been selected and context has been prepared, see if we need to emit a metadata batch
  */
 async function parseWithLoaderInBatches(
-  loader,
-  data,
+  loader: LoaderWithParser,
+  data: BatchableDataType,
   options: LoaderOptions,
   context: LoaderContext
-) {
+): Promise<AsyncIterable<any>> {
   const outputIterator = await parseToOutputIterator(loader, data, options, context);
 
   // Generate metadata batch if requested
@@ -105,38 +106,33 @@ async function parseWithLoaderInBatches(
 /**
  * Prep work is done, now it is time to start parsing into an output operator
  * The approach depends on which parse function the loader exposes
- * `parseInBatches` (preferred), `parseStreamInBatches` (limited), `parse` (fallback)
+ * `parseInBatches` (preferred), `parse` (fallback)
  */
-async function parseToOutputIterator(loader, data, options, context) {
+async function parseToOutputIterator(
+  loader: LoaderWithParser,
+  data: BatchableDataType,
+  options: LoaderOptions,
+  context: LoaderContext
+): Promise<AsyncIterable<any>> {
+  // Get an iterator from the input
+  const inputIterator = await getAsyncIterableFromData(data, options);
+
+  // Apply any iterator transforms (options.transforms)
+  const transformedIterator = await applyInputTransforms(inputIterator, options?.transforms || []);
+
+  // If loader supports parseInBatches, we are done
   if (loader.parseInBatches) {
-    const inputIterator = await getAsyncIterableFromData(data, options);
-
-    const iteratorChain = await applyInputTransforms(inputIterator, options);
-
-    return await loader.parseInBatches(iteratorChain, options, context, loader);
-  }
-
-  if (loader.parseStreamInBatches) {
-    const stream = await getReadableStream(data);
-    if (stream) {
-      if (options.transforms) {
-        // eslint-disable-next-line
-        console.warn(
-          'options.transforms not implemented for loaders that use `parseStreamInBatches`'
-        );
-      }
-      return loader.parseStreamInBatches(stream, options, context);
-    }
+    return loader.parseInBatches(transformedIterator, options, context);
   }
 
   // Fallback: load atomically using `parse` concatenating input iterator into single chunk
   async function* parseChunkInBatches() {
-    const inputIterator = await getAsyncIterableFromData(data, options);
-    const arrayBuffer = await concatenateArrayBuffersAsync(inputIterator);
+    const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);
     // yield a single batch, the output from loader.parse()
-    const parsedData = await loader.parse(arrayBuffer, options, context, loader);
+    const parsedData = await loader.parse(arrayBuffer, options, context);
     // TODO - run through batch builder to apply options etc...
     const batch: Batch = {
+      mimeType: loader.mimeTypes[0],
       shape: Array.isArray(parsedData) ? 'row-table' : 'unknown',
       batchType: 'data',
       data: parsedData,
@@ -148,14 +144,21 @@ async function parseToOutputIterator(loader, data, options, context) {
   return parseChunkInBatches();
 }
 
+type TransformBatches = (
+  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+) => AsyncIterable<ArrayBuffer>;
+
 /**
  * Create an iterator chain with any transform iterators (crypto, decompression)
  * @param inputIterator
  * @param options
  */
-async function applyInputTransforms(inputIterator, options) {
+async function applyInputTransforms(
+  inputIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  transforms: TransformBatches[] = []
+): Promise<AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>> {
   let iteratorChain = inputIterator;
-  for await (const transformBatches of options.transforms || []) {
+  for await (const transformBatches of transforms) {
     iteratorChain = transformBatches(iteratorChain);
   }
   return iteratorChain;
