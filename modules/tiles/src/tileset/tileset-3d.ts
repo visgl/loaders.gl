@@ -490,6 +490,7 @@ export default class Tileset3D {
       this._tiles[tile.id] = tile;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this._loadTiles();
     this._unloadTiles();
     this._updateStats();
@@ -506,12 +507,13 @@ export default class Tileset3D {
     return changed;
   }
 
-  _loadTiles() {
+  async _loadTiles() {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of this._requestedTiles) {
       if (tile.contentUnloaded) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._loadTile(tile);
       }
     }
