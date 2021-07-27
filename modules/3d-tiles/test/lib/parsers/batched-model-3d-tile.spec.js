@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import test from 'tape-promise/tape';
-import {parse, encodeSync} from '@loaders.gl/core';
+import {parse, encodeSync, fetchFile} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {ImageLoader} from '@loaders.gl/images';
 import {loadRootTileFromTileset, loadRootTile} from '../utils/load-utils';
@@ -29,6 +29,7 @@ const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/til
 // const DEPRECATED1_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated1/tileset.json';
 // const DEPRECATED2_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/tileset.json';
 // const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithRtcCenter/tileset.json';
+const CESIUM_RTC_EXTENSION_URL = '@loaders.gl/3d-tiles/test/data/cesium-rtc-extension.b3dm';
 
 test('batched model tile#throws with invalid version', async (t) => {
   const TILE = {
@@ -184,6 +185,19 @@ test('batched model tile#with a tile transform and region bounding volume', asyn
   const tileData = await loadRootTileFromTileset(t, WITH_TRANSFORM_REGION_URL);
   const tile = await parse(tileData, Tiles3DLoader);
   t.ok(tile, 'loaded tile with a tile transform and region bounding volume');
+  t.end();
+});
+
+test('batched model tile#Tile with CESIUM_RTC extension', async (t) => {
+  const response = await fetchFile(CESIUM_RTC_EXTENSION_URL);
+  const tile = await parse(response, Tiles3DLoader);
+  t.ok(tile);
+  t.ok(tile.rtcCenter);
+  t.deepEqual(
+    tile.rtcCenter,
+    [-3958511.2845904976, 3351066.1484445883, 3699868.873688681],
+    'Should load rtcCenter from extension'
+  );
   t.end();
 });
 
