@@ -37,10 +37,10 @@ function initializeHierarchyValues(hierarchyJson, binaryBody) {
 
   const instancesLength = hierarchyJson.instancesLength;
   const classes = hierarchyJson.classes;
-  const classIds = hierarchyJson.classIds;
-  const parentCounts = hierarchyJson.parentCounts;
-  const parentIds = hierarchyJson.parentIds;
-  const parentIdsLength = instancesLength;
+  let classIds = hierarchyJson.classIds;
+  let parentCounts = hierarchyJson.parentCounts;
+  let parentIds = hierarchyJson.parentIds;
+  let parentIdsLength = instancesLength;
 
   if (defined(classIds.byteOffset)) {
     classIds.componentType = defaultValue(classIds.componentType, GL.UNSIGNED_SHORT);
