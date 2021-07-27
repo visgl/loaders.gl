@@ -12,7 +12,7 @@ const Container = styled.div`
   top: 0;
   right: 0;
   width: 270px;
-  background: rgba( 36, 39, 48, 0.7);
+  background: rgba(36, 39, 48, 0.7);
   border: 2px solid #212529;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   margin: 5px;
@@ -31,7 +31,7 @@ const DropDown = styled.select`
   border: none;
   font-size: 10px;
   color: #adb5bd;
-  background: rgba( 0, 0, 0, .3);
+  background: rgba(0, 0, 0, .3);
   padding-right: 30px;
   margin: 5px;
   cursor: pointer;
@@ -48,10 +48,8 @@ const TilesetDropDown = styled.select`
   text-transform: uppercase;
   color: #00ADE6;
   text-shadow: 1px 1px 1px #212529;
-  background: rgba( 0, 0, 0, .3);
   background: transparent;
   border: none;
-  z-index: 20px;
   &:hover {
     background: #212529;
   }
@@ -86,12 +84,9 @@ const FrameButton = styled.div`
   align-items: center;
   justify-content: center;
   border-right: 2px solid #212529;
-  -webkit-transition: all 1s ease;
-  -moz-transition: all 1s ease;
-  -o-transition: all 1s ease;
   transition: all 1s ease;
   &:hover {
-    color: rgb(36,39,48);
+    color: #242730;
     background: #00ADE6;
   }
 `;
@@ -108,12 +103,9 @@ const LinkButton = styled.button`
   margint-top: 10px;
   line-height: 2;
   border-left: 2px solid #212529;
-  -webkit-transition: all 1s ease;
-  -moz-transition: all 1s ease;
-  -o-transition: all 1s ease;
   transition: all 1s ease;
   &:hover {
-    color: rgb(36,39,48);
+    color: #242730;
     background: #00ADE6;
   }
 `;
@@ -211,12 +203,7 @@ export default class ControlPanel extends PureComponent {
         <iframe
           id="tileset-info"
           title="tileset-info"
-          style={{                
-            display: showFullInfo ? 'inherit' : 'none',
-            height: '500px',                                                                                                                     
-            width: '99%',
-            border: '1px solid rgba(200, 200, 200, 100)'
-          }}
+          style={{display: showFullInfo ? 'inherit' : 'none', height: '500px', width: '99%', border: '1px solid rgba(200, 200, 200, 100)'}}
           src={url}
         />
         <FrameControl showFullInfo={showFullInfo}>

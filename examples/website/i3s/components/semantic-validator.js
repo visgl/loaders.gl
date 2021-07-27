@@ -22,7 +22,7 @@ const SemanticValidatorContainer = styled.div`
   @media screen and (max-width: 768px) {
     bottom: 50px;
     border: none;
-    background: rgba(36, 39, 48);
+    background: #242730;
   }
 `;
 
@@ -32,7 +32,7 @@ const TableHeader = styled.th`
   background-color: rgba(0,0,0,.5);
   text-align: left;
   padding: 3px;
-  color: rgb(242, 233, 228);
+  color: #f2e9e4;
 `;
 
 const NoIssuesItem = styled.h2`

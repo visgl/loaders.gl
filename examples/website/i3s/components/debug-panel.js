@@ -29,7 +29,7 @@ const DebugOptions = styled.div`
   min-width: 270px;
   height: 100%;
   overflow: auto;
-  background: rgba( 36, 39, 48, 0.7);
+  background: rgba(36, 39, 48, 0.7);
   line-height: 1;
   outline: none;
   z-index: 1;
@@ -46,8 +46,7 @@ const Header = styled.h3`
   text-shadow: 1px 1px 1px #212529;
   text-align: center;
   top: 0px;
-  position: -webkit-sticky;
-  position: sticky;
+  position: relative;
   border-radius: 2px;
   text-transform: uppercase;
   @media screen and (max-width: 768px) {
@@ -93,7 +92,7 @@ const ChildWrapper = styled.div`
   margin-top: 10px;
 `;
 
-export const Label = styled.label`
+const Label = styled.label`
   cursor: pointer;
 `;
 
@@ -358,18 +357,7 @@ export default class DebugPanel extends PureComponent {
       </DebugOptionGroup>
     );
   }
-  _renderMemoryUsage() {
-    return (
-      <DebugOptionGroup title="Memory Usage">
-        <CheckboxOption>
-          <Label htmlFor="memoryUsage">Memory Usage</Label>
-          <ToggleSwitch
-            id="memoryUsage"
-          />
-        </CheckboxOption>
-      </DebugOptionGroup>
-    )
-  }
+
   render() {
     const {children} = this.props;
     return (

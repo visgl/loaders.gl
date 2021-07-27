@@ -11,7 +11,7 @@ const TileValidatorContainer = styled.div`
   display: flex;
   margin: 10px 0;
   flex-direction: column;
-  background: rgba( 36,39,48,0.7);
+  background: rgba(36, 39, 48, 0.7);
   color: #f2e9e4;
   text-transform: uppercase;
 `;

@@ -30,9 +30,8 @@ export const MemoryButton = styled.button`
   z-index: 1;
   margin: 5px;
   color: #adb5bd;
-  background: rgba( 0,0,0,.7);
+  background: rgba(0, 0, 0, .7);
   text-transform: uppercase;
-  border: 1px solid rgb(52, 152, 219);
   align-items: center;
   height: 28px;
   cursor: pointer;

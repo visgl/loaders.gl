@@ -102,15 +102,6 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Enable/Disable wireframe mode
   wireframe: false
 };
-const STATS_WIDGET_STYLE = {
-  wordBreak: 'break-word',
-  padding: 12,
-  zIndex: '10000',
-  maxWidth: 300,
-  background: '#000',
-  color: '#fff',
-  alignSelf: 'flex-start'
-};
 
 const MATERIAL_PICKER_STYLE = {
   default: {
@@ -160,6 +151,7 @@ export default class App extends PureComponent {
       token: null,
       tileset: null,
       frameNumber: 0,
+      showMemory: false,
       name: INITIAL_EXAMPLE_NAME,
       viewState: {
         main: INITIAL_VIEW_STATE,
@@ -727,7 +719,7 @@ export default class App extends PureComponent {
         {tileInfo ? this._renderAttributesPanel() : this._renderControlPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
         <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>
-          {showMemory ? `Hide ` : `Show `}Memory Usage
+          {showMemory ? `Hide` : `Show`} Memory Usage
         </MemoryButton>
         <StatsWidgetWrapper showMemory={showMemory}>
           {this._renderStats()}

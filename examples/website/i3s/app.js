@@ -44,7 +44,8 @@ export default class App extends PureComponent {
       selectedMapStyle: INITIAL_MAP_STYLE,
       selectedFeatureAttributes: null,
       selectedFeatureIndex: -1,
-      isAttributesLoading: false
+      isAttributesLoading: false,
+      showMemory: false
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
@@ -217,7 +218,7 @@ export default class App extends PureComponent {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>{showMemory ? `Hide ` : `Show `}Memory Usage</MemoryButton>
+        <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>{showMemory ? `Hide` : `Show`} Memory Usage</MemoryButton>
         <StatsWidgetWrapper showMemory={showMemory}>
           {this._renderStats()}
         </StatsWidgetWrapper>
