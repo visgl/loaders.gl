@@ -139,9 +139,9 @@ export class ParquetEnvelopeReader {
 
     let dictionary;
 
-    const dictionaryPageOffset = colChunk?.meta_data?.dictionary_page_offset;
+    const dictionaryPageOffset = Number(colChunk?.meta_data?.dictionary_page_offset);
 
-    if (dictionaryPageOffset) {
+    if (dictionaryPageOffset > 0) {
       // Getting dictionary from column chunk to iterate all over indexes to get dataPage values.
       dictionary = await this.getDictionary(dictionaryPageOffset, options);
     }
@@ -157,8 +157,7 @@ export class ParquetEnvelopeReader {
    * @param dictionaryPageOffset
    * @param options
    */
-  async getDictionary(dictionaryPageOffset: Int64, options: ParquetOptions): Promise<string[]> {
-    const offset = Number(dictionaryPageOffset);
+  async getDictionary(offset: number, options: ParquetOptions): Promise<string[]> {
     const size = Math.min(this.fileSize - offset, this.defaultDictionarySize);
     const pagesBuf = await this.read(offset, size);
     const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};

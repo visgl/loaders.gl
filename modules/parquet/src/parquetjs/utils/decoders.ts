@@ -63,7 +63,7 @@ export async function decodeDataPages(
       continue;
     }
 
-    if (dictionary) {
+    if (dictionary.length) {
       // eslint-disable-next-line no-loop-func
       page.values = page.values.map((value) => dictionary[value]);
     }
