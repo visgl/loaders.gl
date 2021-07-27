@@ -1,21 +1,20 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
+import styled from 'styled-components';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
-
 import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
-import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
-
+import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
 
 const TRANSITION_DURAITON = 4000;
@@ -33,15 +32,21 @@ const INITIAL_VIEW_STATE = {
   zoom: 14.5
 };
 
-const STATS_WIDGET_STYLE = {
-  wordBreak: 'break-word',
-  position: 'absolute',
-  padding: 12,
-  zIndex: '10000',
-  maxWidth: 300,
-  background: '#000',
-  color: '#fff'
-};
+const StatsWidgetWrapper = styled.div`
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
+`;
+const StatsWidgetContainer = styled.div`
+  word-break: break-word;
+  position: absolute;
+  padding: 12px;
+  margin: 20px;
+  z-index: 100000;
+  max-width: 250px;
+  color: white;
+  background: rgba( 0, 0, 0, .4)
+`;
 
 export default class App extends PureComponent {
   constructor(props) {
@@ -174,7 +179,7 @@ export default class App extends PureComponent {
 
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
-    return <div style={STATS_WIDGET_STYLE} ref={(_) => (this._statsWidgetContainer = _)} />;
+    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
   _renderControlPanel() {
@@ -228,7 +233,7 @@ export default class App extends PureComponent {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderStats()}
+        <StatsWidgetWrapper>{this._renderStats()}</StatsWidgetWrapper>
         {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
         <DeckGL
           layers={layers}
