@@ -29,11 +29,16 @@ export {default as ColumnarTableBatchAggregator} from './lib/table/columnar-tabl
 export {convertToObjectRow, convertToArrayRow} from './lib/utils/row-utils';
 
 // MESH CATEGORY
-export type {MeshTable, MeshArrowTable, Mesh, MeshAttribute} from './category/mesh';
+export type {
+  MeshTable,
+  MeshArrowTable,
+  Mesh,
+  MeshGeometry,
+  MeshAttribute,
+  MeshAttributes
+} from './category/mesh';
 
-// MESH CATEGORY UTILS
-export type {Attributes as _Attributes} from './category/mesh/mesh-utils';
-export {getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
+export {getMeshSize, getMeshBoundingBox} from './category/mesh-utils/mesh-utils';
 
 // TYPES
 // GIS CATEGORY - GEOJSON
