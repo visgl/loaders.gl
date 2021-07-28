@@ -18,7 +18,7 @@ export const StatsWidgetContainer = styled.div`
   border: 2px solid #212529;
   border-bottom: none;
   @media screen and (max-width: 768px) {
-   bottom: 48px;
+    bottom: 48px;
   }
 `;
 
@@ -38,6 +38,6 @@ export const MemoryButton = styled.button`
   border: 2px solid #212529;
   border-top: none;
   @media screen and (max-width: 768px) {
-   bottom: 20px;
+    bottom: 20px;
   }
 `;

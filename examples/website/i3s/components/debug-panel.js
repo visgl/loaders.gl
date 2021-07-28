@@ -46,8 +46,6 @@ const Header = styled.h3`
   text-shadow: 1px 1px 1px #212529;
   text-align: center;
   top: 0px;
-  position: relative;
-  border-radius: 2px;
   text-transform: uppercase;
   @media screen and (max-width: 768px) {
     padding: 3px;
@@ -150,7 +148,7 @@ export default class DebugPanel extends PureComponent {
     return {
       display: 'flex',
       background: isClearButtonDisabled ? '#212529' : '#00ADE6',
-      color: isClearButtonDisabled ? '#f2e9e4' : 'rgb(36,39,48)',
+      color: isClearButtonDisabled ? '#f2e9e4' : '#242730',
       alignItems: 'center',
       height: '20px',
       marginLeft: '150px',

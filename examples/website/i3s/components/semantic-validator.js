@@ -66,8 +66,8 @@ export default class SemanticValidator extends PureComponent {
   renderColumns(warnings) {
     return warnings.map((warning, index) => (
       <tr key={`${warning.title}-${index}`}>
-        <td style={{padding: '3px', color: 'rgb(0, 173, 230)'}}>{index + 1}</td>
-        <td style={{padding: '3px', color: 'rgb(242, 233, 228)'}}>{WARNING_TYPES[warning.type]}</td>
+        <td style={{padding: '3px', color: '#00ade6'}}>{index + 1}</td>
+        <td style={{padding: '3px', color: '#f2e9e4'}}>{WARNING_TYPES[warning.type]}</td>
         <td style={{color: '#e76f51', padding: '3px'}}>{warning.title}</td>
       </tr>
     ));

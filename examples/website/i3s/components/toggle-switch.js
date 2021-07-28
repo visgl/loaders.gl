@@ -10,7 +10,6 @@ const Input = styled.input`
 
 const Label = styled.label`
   position: absolute;
-  display: inline-block;
   margin-top: 2px;
   margin-left: 180px;
   font-size: 6px;
@@ -32,7 +31,6 @@ const Slider = styled.span`
   right: 0;
   bottom: 0;
   background-color: rgb(36, 39, 48);
-  -webkit-transition: 0.4s;
   transition: 0.4s;
   border-radius: 10%;
 
@@ -44,9 +42,7 @@ const Slider = styled.span`
     content: "";
     height: 1.5em;
     width: 2em;
-    box-shadow: rgb(0 0 0 / 40%) 0px 2px 4px 0px;
     background-color: #f2e9e4;
-    -webkit-transition: 0.4s;
     transition: 0.4s;
     border-radius: 10%;
   }

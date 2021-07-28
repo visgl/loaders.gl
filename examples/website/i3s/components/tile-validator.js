@@ -43,7 +43,7 @@ const NormalsValidator = styled.div`
 const ValidatorInfoList = styled.div`
   display: flex;
   flex-direction: column;
-  background: gba( 0,0,0,.5);
+  background: rgba( 0,0,0,.5);
 `;
 
 const GapInput = styled.input`
