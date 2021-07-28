@@ -10,7 +10,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * Shapefile loader
  * @note Shapefile is multifile format and requires providing additional files
  */
-export const ShapefileLoader: LoaderWithParser = {
+export const ShapefileLoader = {
   name: 'Shapefile',
   id: 'shapefile',
   module: 'shapefile',
@@ -28,3 +28,5 @@ export const ShapefileLoader: LoaderWithParser = {
   parse: parseShapefile,
   parseInBatches: parseShapefileInBatches
 };
+
+export const _typecheckShapefileLoader: LoaderWithParser = ShapefileLoader;

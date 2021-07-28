@@ -1,11 +1,14 @@
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {gpx} from '@tmcw/togeojson';
-
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type GPXLoaderOptions = LoaderOptions & {
+  gpx?: {};
+};
 
 const GPX_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -14,7 +17,7 @@ const GPX_HEADER = `\
 /**
  * Loader for GPX (GPS exchange format)
  */
-export const GPXLoader: LoaderWithParser = {
+export const GPXLoader = {
   name: 'GPX (GPS exchange format)',
   id: 'gpx',
   module: 'kml',
@@ -53,3 +56,5 @@ function parseTextSync(text: string, options: any) {
       throw new Error();
   }
 }
+
+export const _typecheckGPXLoader = GPXLoader;
