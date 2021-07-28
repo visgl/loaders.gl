@@ -11,7 +11,7 @@ import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils'
 export default class I3SNodePagesTiles {
   tileset: Tileset;
   nodePages: NodePage[] = [];
-  pendingNodePages: Array<{promise: Promise<NodePage>; status: 'Pending' | 'Done'}> = [];
+  pendingNodePages: {promise: Promise<NodePage>; status: 'Pending' | 'Done'}[] = [];
   nodesPerPage: number;
   options: {[key: string]: any};
   lodSelectionMetricType: any;
