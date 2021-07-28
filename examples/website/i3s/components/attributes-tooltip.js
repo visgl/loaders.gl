@@ -6,7 +6,9 @@ const TH_STYLE = {
 };
 
 const TOOLTIP_STYLE = {
-  color: '#fff'
+  color: '#adb5bd',
+  fontSize: '11px',
+  textTransform: 'uppercase',
 };
 const NO_DATA = 'No Data';
 
