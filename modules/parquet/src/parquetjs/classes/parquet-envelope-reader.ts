@@ -12,7 +12,6 @@ import {
 import {decodeDataPages, decodePage} from '../utils/decoders';
 import {fstat, fopen, fread, fclose} from '../utils/file-utils';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
-import Int64 from 'node-int64';
 
 const DEFAULT_DICTIONARY_SIZE = 1e6;
 
@@ -139,11 +138,12 @@ export class ParquetEnvelopeReader {
 
     let dictionary;
 
-    const dictionaryPageOffset = Number(colChunk?.meta_data?.dictionary_page_offset);
+    const dictionaryPageOffset = colChunk?.meta_data?.dictionary_page_offset;
 
-    if (dictionaryPageOffset > 0) {
+    if (dictionaryPageOffset) {
+      const dictionaryOffset = Number(dictionaryPageOffset);
       // Getting dictionary from column chunk to iterate all over indexes to get dataPage values.
-      dictionary = await this.getDictionary(dictionaryPageOffset, options);
+      dictionary = await this.getDictionary(dictionaryOffset, options, pagesOffset);
     }
 
     dictionary = options.dictionary?.length ? options.dictionary : dictionary;
@@ -156,10 +156,31 @@ export class ParquetEnvelopeReader {
    * Getting dictionary for allows to flatten values by indices.
    * @param dictionaryPageOffset
    * @param options
+   * @param pagesOffset
+   * @returns
    */
-  async getDictionary(offset: number, options: ParquetOptions): Promise<string[]> {
-    const size = Math.min(this.fileSize - offset, this.defaultDictionarySize);
-    const pagesBuf = await this.read(offset, size);
+  async getDictionary(
+    dictionaryPageOffset: number,
+    options: ParquetOptions,
+    pagesOffset: number
+  ): Promise<string[]> {
+    if (dictionaryPageOffset === 0) {
+      // dictionarySize = Math.min(this.fileSize - pagesOffset, this.defaultDictionarySize);
+      // pagesBuf = await this.read(pagesOffset, dictionarySize);
+
+      // In this case we are working with parquet-mr files format. Problem is described below:
+      // https://stackoverflow.com/questions/55225108/why-is-dictionary-page-offset-0-for-plain-dictionary-encoding
+      // We need to get dictionary page from column chunk if it exists.
+      // Now if we use code commented above we don't get DICTIONARY_PAGE we get DATA_PAGE instead.
+      return [];
+    }
+
+    const dictionarySize = Math.min(
+      this.fileSize - dictionaryPageOffset,
+      this.defaultDictionarySize
+    );
+    const pagesBuf = await this.read(dictionaryPageOffset, dictionarySize);
+
     const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};
     const decodedPage = decodePage(cursor, options);
 
