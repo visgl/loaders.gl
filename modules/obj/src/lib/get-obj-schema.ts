@@ -1,6 +1,6 @@
 import {Schema, Field, FixedSizeList, getArrowTypeFromTypedArray} from '@loaders.gl/schema';
 
-export function makeSchemaFromAttributes(attributes, metadata = {}) {
+export function getOBJSchema(attributes, metadata = {}) {
   let metadataMap;
   for (const key in metadata) {
     metadataMap = metadataMap || new Map();
@@ -9,7 +9,7 @@ export function makeSchemaFromAttributes(attributes, metadata = {}) {
     }
   }
 
-  const fields = [];
+  const fields: Field[] = [];
   for (const attributeName in attributes) {
     const attribute = attributes[attributeName];
     const field = getArrowFieldFromAttribute(attributeName, attribute);
@@ -31,9 +31,9 @@ function getArrowFieldFromAttribute(attributeName, attribute) {
   return isSingleValue
     ? new Field(attributeName, type, false, metadataMap)
     : new Field(
-        attributeName,
-        new FixedSizeList(attribute.size, new Field('value', type)),
-        false,
-        metadataMap
-      );
+      attributeName,
+      new FixedSizeList(attribute.size, new Field('value', type)),
+      false,
+      metadataMap
+    );
 }
