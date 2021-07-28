@@ -63,7 +63,7 @@ const DropDown = styled.select`
   background: rgba(36, 39, 48, 0.7);
   border: none;
   color: #ced4da;
-  font-size: 11px;
+  font-size: 12px;
   jusify-content: center;
 `;
 
@@ -158,6 +158,8 @@ export default class DebugPanel extends PureComponent {
       fontSize: '10px',
       borderRadius: '2px',
       textTransform: 'uppercase',
+      justifyContent: 'center',
+      border: 'none',
       cursor: isClearButtonDisabled ? 'auto' : 'pointer'
     };
   }

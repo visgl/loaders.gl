@@ -11,7 +11,9 @@ const TileValidatorContainer = styled.div`
   display: flex;
   margin: 10px 0;
   flex-direction: column;
-  background: rgba(36, 39, 48, 0.7);
+  font-size: 11px;
+  background: #adb5bd;
+  padding: 5px;
   color: #f2e9e4;
   text-transform: uppercase;
 `;
@@ -19,14 +21,16 @@ const TileValidatorContainer = styled.div`
 const ValidateButton = styled.button`
   display: flex;
   padding: 6px 12px;
-  color: #adb5bd;
   background: #2a9d8f;
   align-items: center;
   height: 20px;
-  width: 100px;
+  justify-content: center;
+  width: 150px;
+  border: none;
   cursor: pointer;
   margin-bottom: 5px;
   text-transform: uppercase;
+  border-radius: 2px;
 `;
 
 const NormalsValidator = styled.div`

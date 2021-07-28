@@ -25,11 +25,11 @@ const Container = styled.div`
 `;
 
 const DropDown = styled.select`
-  padding: 5px;
+  padding: 10px;
   text-transform: uppercase;
   background: transparent;
   border: none;
-  font-size: 10px;
+  font-size: 11px;
   color: #adb5bd;
   background: rgba(0, 0, 0, .3);
   padding-right: 30px;
