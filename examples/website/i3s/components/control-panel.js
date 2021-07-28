@@ -74,7 +74,6 @@ const FrameControl = styled.div`
 
 const FrameButton = styled.div`
   display: flex;
-  transition: all 1s;
   width: 135px;
   color: #f2e9e4;
   font-size: 11px;
