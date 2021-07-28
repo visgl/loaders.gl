@@ -96,7 +96,12 @@ export default class ColorMap {
    */
   _getRandomColor(id) {
     const {colorMap, randomColorMap} = this.state;
-    const randomColor = Array.from({length: 3}, (_) => Math.round(Math.random() * 255));
+
+    let r = Math.round(Math.random() * 255);
+    let g = 205;
+    let b = Math.round(Math.random() * 255);
+
+    const randomColor = [r, g, b];
 
     randomColorMap[id] = randomColorMap[id] || randomColor;
     colorMap[id] = randomColorMap[id];
@@ -127,3 +132,4 @@ export function makeRGBObjectFromColor(color) {
   }
   return {r: color[0], g: color[1], b: color[2]};
 }
+
