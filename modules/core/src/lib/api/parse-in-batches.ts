@@ -128,8 +128,15 @@ async function parseToOutputIterator(
   // Fallback: load atomically using `parse` concatenating input iterator into single chunk
   async function* parseChunkInBatches() {
     const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);
+    // Call `parse` instead of `loader.parse` to ensure we can call workers etc.
+    const parsedData = await parse(
+      arrayBuffer,
+      loader,
+      // TODO - Hack: supply loaders MIME type to ensure we match it
+      {...options, mimeType: loader.mimeTypes[0]},
+      context
+    );
     // yield a single batch, the output from loader.parse()
-    const parsedData = await loader.parse(arrayBuffer, options, context);
     // TODO - run through batch builder to apply options etc...
     const batch: Batch = {
       mimeType: loader.mimeTypes[0],
