@@ -2,6 +2,20 @@
 
 ## v3.0
 
+### v3.0.7
+
+- chore(I3S & I3SDebug): UI improvements (#1704)
+- chore(I3S-debug): change random color map (#1718)
+- fix: parseInBatches() can fall back to worker parser (#1717)
+- fix(core): `parseInBatches()` runs transform even when falling back to `parse()` (#1716)
+- bug fix: const -> let for reassignment (#1714)
+- chore(I3SDebug): change color map for depth (#1707)
+- fix(3d-tiles): cesium rtc parse (#1703)
+- chore(wkt): Convert module to typescript (#1705)
+- I3S Example: hide widget on mobile (#1695)
+- I3S debug: fix nav visibility on mobile (#1696)
+- website: disable GLTF (#1693)
+
 ### v3.0.6
 
 - ply: fix switching dataset error (#1692)
