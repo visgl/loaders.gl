@@ -3,16 +3,24 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
 const OptionGroup = styled.div`
-  margin-top: 12px;
-  padding-top: 12px;
-  border: solid 1px black;
+  margin-top: 15px;
+  padding: 12px;
+  border: 2px solid #212529;
+  border-radius: 2px;
+  background: rgba( 0, 0, 0, .5);
+  color: #adb5bd;
 `;
 
 const TitleLabel = styled.div`
-  margin-top: -24px;
+  margin-top: -20px;
   margin-left: 10px;
-  background: #fff;
   float: left;
+  background: #212529;
+  border-radius: 2px;
+  font-weight: bold;
+  text-transform: none;
+  padding: 2px 20px 2px 20px;
+  color: #f2e9e4;
 `;
 
 const propTypes = {
