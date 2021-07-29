@@ -20,5 +20,10 @@ export const PARQUET_CODECS: Record<ParquetCodec, ParquetCodecKit> = {
     // @ts-ignore
     encodeValues: PLAIN_DICTIONARY.encodeValues,
     decodeValues: PLAIN_DICTIONARY.decodeValues
+  },
+  RLE_DICTIONARY: {
+    // @ts-ignore
+    encodeValues: PLAIN_DICTIONARY.encodeValues,
+    decodeValues: PLAIN_DICTIONARY.decodeValues
   }
 };
