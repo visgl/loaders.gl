@@ -59,6 +59,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     polygonFeaturesCount
   } = firstPassData;
   const {numericPropKeys, PositionDataType = Float32Array} = options;
+  const hasGlobalId = features[0] && 'id' in features[0];
   const coordLength = 2;
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points = {
@@ -69,7 +70,8 @@ function fillArrays(features, firstPassData = {}, options = {}) {
         ? new Uint32Array(pointPositionsCount)
         : new Uint16Array(pointPositionsCount),
     numericProps: {},
-    properties: []
+    properties: [],
+    fields: []
   };
   const lines = {
     pathIndices:
@@ -83,7 +85,8 @@ function fillArrays(features, firstPassData = {}, options = {}) {
         ? new Uint32Array(linePositionsCount)
         : new Uint16Array(linePositionsCount),
     numericProps: {},
-    properties: []
+    properties: [],
+    fields: []
   };
   const polygons = {
     polygonIndices:
@@ -102,7 +105,8 @@ function fillArrays(features, firstPassData = {}, options = {}) {
         ? new Uint32Array(polygonPositionsCount)
         : new Uint16Array(polygonPositionsCount),
     numericProps: {},
-    properties: []
+    properties: [],
+    fields: []
   };
 
   // Instantiate numeric properties arrays; one value per vertex
@@ -141,18 +145,27 @@ function fillArrays(features, firstPassData = {}, options = {}) {
       case 'MultiPoint':
         handlePoint(geometry, points, indexMap, coordLength, properties);
         points.properties.push(keepStringProperties(properties, numericPropKeys));
+        if (hasGlobalId) {
+          points.fields.push({id: feature.id});
+        }
         indexMap.pointFeature++;
         break;
       case 'LineString':
       case 'MultiLineString':
         handleLineString(geometry, lines, indexMap, coordLength, properties);
         lines.properties.push(keepStringProperties(properties, numericPropKeys));
+        if (hasGlobalId) {
+          lines.fields.push({id: feature.id});
+        }
         indexMap.lineFeature++;
         break;
       case 'Polygon':
       case 'MultiPolygon':
         handlePolygon(geometry, polygons, indexMap, coordLength, properties);
         polygons.properties.push(keepStringProperties(properties, numericPropKeys));
+        if (hasGlobalId) {
+          polygons.fields.push({id: feature.id});
+        }
         indexMap.polygonFeature++;
         break;
       default:
@@ -291,29 +304,26 @@ function triangulatePolygon(polygons, areas, lines, {startPosition, endPosition,
 function makeAccessorObjects(points, lines, polygons, coordLength) {
   const returnObj = {
     points: {
+      ...points,
       positions: {value: points.positions, size: coordLength},
       globalFeatureIds: {value: points.globalFeatureIds, size: 1},
-      featureIds: {value: points.featureIds, size: 1},
-      numericProps: points.numericProps,
-      properties: points.properties
+      featureIds: {value: points.featureIds, size: 1}
     },
     lines: {
+      ...lines,
       pathIndices: {value: lines.pathIndices, size: 1},
       positions: {value: lines.positions, size: coordLength},
       globalFeatureIds: {value: lines.globalFeatureIds, size: 1},
-      featureIds: {value: lines.featureIds, size: 1},
-      numericProps: lines.numericProps,
-      properties: lines.properties
+      featureIds: {value: lines.featureIds, size: 1}
     },
     polygons: {
+      ...polygons,
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
       positions: {value: polygons.positions, size: coordLength},
       triangles: {value: new Uint32Array(polygons.triangles), size: 1},
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
-      featureIds: {value: polygons.featureIds, size: 1},
-      numericProps: polygons.numericProps,
-      properties: polygons.properties
+      featureIds: {value: polygons.featureIds, size: 1}
     }
   };
 

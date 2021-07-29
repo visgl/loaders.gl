@@ -60,7 +60,9 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
         numericProperty1: {value: Float32Array, size: 1}
     }
     // Array of objects with non-numeric properties from Point geometries
-    properties: [{PointFeatureProperties}]
+    properties: [{PointFeatureProperties}],
+    // Non-standard top-level fields
+    fields: [{PointFeatureExtraFields}]
   },
   lines: {
     // Array of x, y or x, y, z positions
@@ -77,7 +79,9 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
         numericProperty1: {value: Float32Array, size: 1}
     }
     // Array of objects with non-numeric properties from LineString geometries
-    properties: [{LineStringFeatureProperties}]
+    properties: [{LineStringFeatureProperties}],
+    // Non-standard top-level fields
+    fields: [{LineStringFeatureExtraFields}]
   },
   polygons: {
     // Array of x, y or x, y, z positions
@@ -98,7 +102,9 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
         numericProperty1: {value: Float32Array, size: 1}
     }
     // Array of objects with non-numeric properties from Polygon geometries
-    properties: [{PolygonFeatureProperties}]
+    properties: [{PolygonFeatureProperties}],
+    // Non-standard top-level fields
+    fields: [{PolygonFeatureExtraFields}]
   }
 }
 ```

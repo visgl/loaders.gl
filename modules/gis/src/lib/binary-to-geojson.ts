@@ -183,12 +183,18 @@ function parseFeatureCollection(dataArray): Feature[] {
 function parseFeature(data, startIndex?: number, endIndex?: number): Feature {
   const geometry = binaryToGeometry(data, startIndex, endIndex);
   const properties = parseProperties(data, startIndex, endIndex);
-  return {type: 'Feature', geometry, properties};
+  const fields = parseFields(data, startIndex, endIndex);
+  return {type: 'Feature', geometry, properties, ...fields};
+}
+
+/** Parse input binary data and return an object of fields */
+function parseFields(data, startIndex: number = 0, endIndex?: number): GeoJsonProperties {
+  return data.fields && data.fields[data.featureIds.value[startIndex]];
 }
 
 /** Parse input binary data and return an object of properties */
 function parseProperties(data, startIndex: number = 0, endIndex?: number): GeoJsonProperties {
-  const properties = Object.assign(data.properties[data.featureIds.value[startIndex]]);
+  const properties = Object.assign({}, data.properties[data.featureIds.value[startIndex]]);
   for (const key in data.numericProps) {
     properties[key] = data.numericProps[key].value[startIndex];
   }
