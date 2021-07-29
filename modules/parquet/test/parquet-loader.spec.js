@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {ParquetLoader, ParquetWorkerLoader} from '@loaders.gl/parquet';
-import {load, setLoaderOptions} from '@loaders.gl/core';
+import {isBrowser, load, setLoaderOptions} from '@loaders.gl/core';
 
 import {SUPPORTED_FILES, UNSUPPORTED_FILES, BAD_FILES} from './data/files';
 
@@ -24,6 +24,16 @@ test('ParquetLoader#load', async (t) => {
     const url = `${PARQUET_DIR}/${path}`;
     const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
     t.ok(data, `GOOD - ${title}`);
+  }
+
+  // Buffer is not defined issue in worker thread of browser.
+  if (!isBrowser) {
+    t.comment(`SUPPORTED FILES with worker`);
+    for (const {title, path} of SUPPORTED_FILES) {
+      const url = `${PARQUET_DIR}/${path}`;
+      const data = await load(url, ParquetLoader, {parquet: {url}, worker: true});
+      t.ok(data, `GOOD(${title})`);
+    }
   }
 
   t.comment(`UNSUPPORTED FILES`);
