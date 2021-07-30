@@ -6,8 +6,7 @@ const EMPTY_BINARY_DATA = {
     globalFeatureIds: {value: new Uint16Array(), size: 1},
     featureIds: {value: new Uint16Array(), size: 1},
     numericProps: {},
-    properties: [],
-    fields: []
+    properties: []
   },
   lines: {
     type: 'LineString',
@@ -16,8 +15,7 @@ const EMPTY_BINARY_DATA = {
     globalFeatureIds: {value: new Uint16Array(), size: 1},
     featureIds: {value: new Uint16Array(), size: 1},
     numericProps: {},
-    properties: [],
-    fields: []
+    properties: []
   },
   polygons: {
     type: 'Polygon',
@@ -27,8 +25,7 @@ const EMPTY_BINARY_DATA = {
     globalFeatureIds: {value: new Uint16Array(), size: 1},
     featureIds: {value: new Uint16Array(), size: 1},
     numericProps: {},
-    properties: [],
-    fields: []
+    properties: []
   }
 };
 

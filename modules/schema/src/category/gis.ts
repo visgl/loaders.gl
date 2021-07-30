@@ -44,7 +44,7 @@ export type BinaryProperties = {
   globalFeatureIds: BinaryAttribute;
   numericProps: NumericProps;
   properties: Properties;
-  fields: Properties;
+  fields?: Properties;
 };
 
 export type BinaryPointFeatures = BinaryPointGeometry & BinaryProperties;
