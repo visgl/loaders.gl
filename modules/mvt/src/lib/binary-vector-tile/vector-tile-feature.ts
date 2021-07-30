@@ -2,20 +2,31 @@
 /* eslint-disable */
 
 import {getPolygonSignedArea} from '@math.gl/polygon';
+import Protobuf from 'pbf';
+import {MvtBinaryCoordinates, MvtBinaryGeometry} from '../types';
 
 // Reduce GC by reusing variables
-let endPos, cmd, cmdLen, length, x, y, i;
+let endPos: number, cmd: number, cmdLen: number, length: number, x: number, y: number, i: number;
 
 export const TEST_EXPORTS = {
   classifyRings
 };
 
 export default class VectorTileFeature {
+  properties: object;
+  extent: any;
+  type: number;
+  id: number | null;
+  _pbf: Protobuf;
+  _geometry: number;
+  _keys: any;
+  _values: any;
+  _firstPassData: any;
   static get types() {
     return ['Unknown', 'Point', 'LineString', 'Polygon'];
   }
 
-  constructor(pbf, end, extent, keys, values, firstPassData) {
+  constructor(pbf: Protobuf, end: any, extent: any, keys: any, values: any, firstPassData: any) {
     // Public
     this.properties = {};
     this.extent = extent;
@@ -33,7 +44,7 @@ export default class VectorTileFeature {
   }
 
   // eslint-disable-next-line complexity, max-statements
-  loadGeometry() {
+  loadGeometry(): MvtBinaryGeometry {
     const pbf = this._pbf;
     pbf.pos = this._geometry;
 
@@ -49,8 +60,8 @@ export default class VectorTileFeature {
     // `set()` and direct index access. Also, we cannot
     // know how large the buffer should be, so it would
     // increase memory usage
-    const lines = []; // Indices where lines start
-    const data = []; // Flat array of coordinate data
+    const lines: number[] = []; // Indices where lines start
+    const data: number[] = []; // Flat array of coordinate data
 
     while (pbf.pos < endPos) {
       if (length <= 0) {
@@ -85,6 +96,12 @@ export default class VectorTileFeature {
 
     return {data, lines};
   }
+
+  /**
+   *
+   * @param transform
+   * @returns result
+   */
 
   _toBinaryCoordinates(transform) {
     // Expands the protobuf data to an intermediate `lines`
@@ -149,7 +166,7 @@ export default class VectorTileFeature {
       geom.type = `Multi${geom.type}`;
     }
 
-    const result = {
+    const result: MvtBinaryCoordinates = {
       type: 'Feature',
       geometry: geom,
       properties: this.properties
@@ -162,7 +179,9 @@ export default class VectorTileFeature {
     return result;
   }
 
-  toBinaryCoordinates(options) {
+  toBinaryCoordinates(
+    options: {x: number; y: number; z: number} | ((data: any[], feature: {extent: any}) => void)
+  ): MvtBinaryCoordinates {
     if (typeof options === 'function') {
       return this._toBinaryCoordinates(options);
     }
@@ -171,7 +190,7 @@ export default class VectorTileFeature {
     const x0 = this.extent * x;
     const y0 = this.extent * y;
 
-    function project(data) {
+    function project(data: any[]) {
       for (let j = 0, jl = data.length; j < jl; j += 2) {
         data[j] = ((data[j] + x0) * 360) / size - 180;
         const y2 = 180 - ((data[j + 1] + y0) * 360) / size;
@@ -188,7 +207,13 @@ export default class VectorTileFeature {
  * removes them. In doing so it modifies the input
  * `geom.data` array to remove the unneeded data
  */
-function classifyRings(geom) {
+/**
+ *
+ * @param geom
+ * @returns object
+ */
+
+function classifyRings(geom: MvtBinaryGeometry) {
   const len = geom.lines.length;
 
   if (len <= 1) {
@@ -199,14 +224,14 @@ function classifyRings(geom) {
     };
   }
 
-  const areas = [];
-  const polygons = [];
-  let ringAreas;
+  const areas: any[] = [];
+  const polygons: any[] = [];
+  let ringAreas: any[] = [];
   let polygon;
-  let ccw;
+  let ccw: boolean | undefined;
   let offset = 0;
 
-  for (let i = 0, startIndex, endIndex; i < len; i++) {
+  for (let i = 0, startIndex: number, endIndex: number; i < len; i++) {
     startIndex = geom.lines[i] - offset;
 
     endIndex = geom.lines[i + 1] - offset || geom.data.length;
@@ -238,9 +263,7 @@ function classifyRings(geom) {
       polygon = [startIndex];
       ringAreas = [area];
     } else {
-      // @ts-ignore
       ringAreas.push(area);
-      // @ts-ignore
       polygon.push(startIndex);
     }
   }
@@ -251,15 +274,30 @@ function classifyRings(geom) {
 }
 
 // All code below is unchanged from the original Mapbox implemenation
+/**
+ *
+ * @param tag
+ * @param feature
+ * @param pbf
+ * @returns {void}
+ */
 
-function readFeature(tag, feature, pbf) {
-  if (tag === 1) feature.id = pbf.readVarint();
-  else if (tag === 2) readTag(pbf, feature);
-  else if (tag === 3) feature.type = pbf.readVarint();
-  else if (tag === 4) feature._geometry = pbf.pos;
+function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf) {
+  if (feature && pbf) {
+    if (tag === 1) feature.id = pbf.readVarint();
+    else if (tag === 2) readTag(pbf, feature);
+    else if (tag === 3) feature.type = pbf.readVarint();
+    else if (tag === 4) feature._geometry = pbf.pos;
+  }
 }
 
-function readTag(pbf, feature) {
+/**
+ * @param pbf
+ * @param feature
+ * @returns {void}
+ */
+
+function readTag(pbf: Protobuf, feature: VectorTileFeature) {
   const end = pbf.readVarint() + pbf.pos;
 
   while (pbf.pos < end) {

@@ -1,12 +1,21 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
-import VectorTileFeature from './vector-tile-feature.js';
+import Protobuf from 'pbf';
+import VectorTileFeature from './vector-tile-feature';
 
 export default class VectorTileLayer {
-  constructor(pbf, end) {
+  version: number;
+  name: string;
+  extent: number;
+  length: number;
+  _pbf: Protobuf;
+  _keys: any[];
+  _values: any[];
+  _features: any[];
+  constructor(pbf: Protobuf, end: any) {
     // Public
     this.version = 1;
-    this.name = null;
+    this.name = '';
     this.extent = 4096;
     this.length = 0;
 
@@ -22,7 +31,7 @@ export default class VectorTileLayer {
   }
 
   // return feature `i` from this layer as a `VectorTileFeature`
-  feature(i, firstPassData) {
+  feature(i: number): VectorTileFeature {
     if (i < 0 || i >= this._features.length) {
       throw new Error('feature index out of bounds');
     }
@@ -30,28 +39,23 @@ export default class VectorTileLayer {
     this._pbf.pos = this._features[i];
 
     const end = this._pbf.readVarint() + this._pbf.pos;
-    return new VectorTileFeature(
-      this._pbf,
-      end,
-      this.extent,
-      this._keys,
-      this._values,
-      firstPassData
-    );
+    return new VectorTileFeature(this._pbf, end, this.extent, this._keys, this._values);
   }
 }
 
-function readLayer(tag, layer, pbf) {
-  if (tag === 15) layer.version = pbf.readVarint();
-  else if (tag === 1) layer.name = pbf.readString();
-  else if (tag === 5) layer.extent = pbf.readVarint();
-  else if (tag === 2) layer._features.push(pbf.pos);
-  else if (tag === 3) layer._keys.push(pbf.readString());
-  else if (tag === 4) layer._values.push(readValueMessage(pbf));
+function readLayer(tag: number, layer?: VectorTileLayer, pbf?: Protobuf) {
+  if (layer && pbf) {
+    if (tag === 15) layer.version = pbf.readVarint();
+    else if (tag === 1) layer.name = pbf.readString();
+    else if (tag === 5) layer.extent = pbf.readVarint();
+    else if (tag === 2) layer._features.push(pbf.pos);
+    else if (tag === 3) layer._keys.push(pbf.readString());
+    else if (tag === 4) layer._values.push(readValueMessage(pbf));
+  }
 }
 
-function readValueMessage(pbf) {
-  let value = null;
+function readValueMessage(pbf: Protobuf) {
+  let value: any = null;
   const end = pbf.readVarint() + pbf.pos;
 
   while (pbf.pos < end) {

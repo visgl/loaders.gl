@@ -1,5 +1,5 @@
-// @ts-nocheck
 import {earcut} from '@math.gl/polygon';
+import {MvtBinaryOptions, MvtFirstPassedData, MvtLines, MvtPoints, MvtPolygons} from '../types';
 
 /**
  * Convert binary features to flat binary arrays. Similar to
@@ -9,10 +9,22 @@ import {earcut} from '@math.gl/polygon';
  * geoJSON. See `binary-vector-tile/VectorTileFeature` for
  * data format detais
  */
-export function featuresToBinary(features, firstPassData, options = {}) {
+
+/**
+ *
+ * @param features
+ * @param firstPassData
+ * @param options
+ * @returns filled arrays
+ */
+export function featuresToBinary(
+  features: any[],
+  firstPassData: MvtFirstPassedData,
+  options?: MvtBinaryOptions
+) {
   return fillArrays(features, firstPassData, {
-    numericPropKeys: options.numericPropKeys || extractNumericPropKeys(features),
-    PositionDataType: options.PositionDataType || Float32Array
+    numericPropKeys: options ? options.numericPropKeys : extractNumericPropKeys(features),
+    PositionDataType: options ? options.PositionDataType : Float32Array
   });
 }
 
@@ -22,8 +34,14 @@ export const TEST_EXPORTS = {
 };
 
 // Extracts properties that are always numeric
+/**
+ *
+ * @param features
+ * @returns object with numeric keys
+ */
+
 // eslint-disable-next-line complexity, max-statements
-function extractNumericPropKeys(features) {
+function extractNumericPropKeys(features: any) {
   const numericPropKeys = {};
   for (const feature of features) {
     if (feature.properties) {
@@ -45,8 +63,20 @@ function extractNumericPropKeys(features) {
 }
 
 // Fills coordinates into pre-allocated typed arrays
+
+/**
+ *
+ * @param features
+ * @param firstPassData
+ * @param options
+ * @returns an accessor object with value and size keys
+ */
 // eslint-disable-next-line complexity
-function fillArrays(features, firstPassData = {}, options = {}) {
+function fillArrays(
+  features: string | any[],
+  firstPassData: MvtFirstPassedData,
+  options: MvtBinaryOptions
+) {
   const {
     pointPositionsCount,
     pointFeaturesCount,
@@ -61,7 +91,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
   const {numericPropKeys, PositionDataType = Float32Array} = options;
   const coordLength = 2;
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
-  const points = {
+  const points: MvtPoints = {
     positions: new PositionDataType(pointPositionsCount * coordLength),
     globalFeatureIds: new GlobalFeatureIdsDataType(pointPositionsCount),
     featureIds:
@@ -71,7 +101,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     numericProps: {},
     properties: []
   };
-  const lines = {
+  const lines: MvtLines = {
     pathIndices:
       linePositionsCount > 65535
         ? new Uint32Array(linePathsCount + 1)
@@ -85,7 +115,7 @@ function fillArrays(features, firstPassData = {}, options = {}) {
     numericProps: {},
     properties: []
   };
-  const polygons = {
+  const polygons: MvtPolygons = {
     polygonIndices:
       polygonPositionsCount > 65535
         ? new Uint32Array(polygonObjectsCount + 1)
@@ -167,7 +197,33 @@ function fillArrays(features, firstPassData = {}, options = {}) {
 }
 
 // Fills (Multi)Point coordinates into points object of arrays
-function handlePoint(geometry, points, indexMap, coordLength, properties) {
+/**
+ *
+ * @param geometry
+ * @param points
+ * @param indexMap
+ * @param coordLength
+ * @param properties
+ * @returns {void}
+ */
+function handlePoint(
+  geometry: {data: string | any[]},
+  points: MvtPoints,
+  indexMap: {
+    pointPosition: any;
+    pointFeature: any;
+    linePosition?: number;
+    linePath?: number;
+    lineFeature?: number;
+    polygonPosition?: number;
+    polygonObject?: number;
+    polygonRing?: number;
+    polygonFeature?: number;
+    feature: any;
+  },
+  coordLength: number,
+  properties: any
+) {
   points.positions.set(geometry.data, indexMap.pointPosition * coordLength);
 
   const nPositions = geometry.data.length / coordLength;
@@ -187,7 +243,33 @@ function handlePoint(geometry, points, indexMap, coordLength, properties) {
 }
 
 // Fills (Multi)LineString coordinates into lines object of arrays
-function handleLineString(geometry, lines, indexMap, coordLength, properties) {
+/**
+ *
+ * @param geometry
+ * @param lines
+ * @param indexMap
+ * @param coordLength
+ * @param properties
+ * @returns {void}
+ */
+function handleLineString(
+  geometry: {data: string | any[]; lines: string | any[]},
+  lines: MvtLines,
+  indexMap: {
+    pointPosition?: number;
+    pointFeature?: number;
+    linePosition: any;
+    linePath: any;
+    lineFeature: any;
+    polygonPosition?: number;
+    polygonObject?: number;
+    polygonRing?: number;
+    polygonFeature?: number;
+    feature: any;
+  },
+  coordLength: number,
+  properties: any
+) {
   lines.positions.set(geometry.data, indexMap.linePosition * coordLength);
 
   const nPositions = geometry.data.length / coordLength;
@@ -219,7 +301,33 @@ function handleLineString(geometry, lines, indexMap, coordLength, properties) {
 }
 
 // Fills (Multi)Polygon coordinates into polygons object of arrays
-function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
+/**
+ *
+ * @param geometry
+ * @param polygons
+ * @param indexMap
+ * @param coordLength
+ * @param properties
+ * @returns {void}
+ */
+function handlePolygon(
+  geometry: {data: string | any[]; lines: string | any[]; areas: any[]},
+  polygons: MvtPolygons,
+  indexMap: {
+    pointPosition?: number;
+    pointFeature?: number;
+    linePosition?: number;
+    linePath?: number;
+    lineFeature?: number;
+    polygonPosition: any;
+    polygonObject: any;
+    polygonRing: any;
+    polygonFeature: any;
+    feature: any;
+  },
+  coordLength: number,
+  properties: any
+) {
   polygons.positions.set(geometry.data, indexMap.polygonPosition * coordLength);
 
   const nPositions = geometry.data.length / coordLength;
@@ -266,7 +374,24 @@ function handlePolygon(geometry, polygons, indexMap, coordLength, properties) {
 /**
  * Triangulate polygon using earcut
  */
-function triangulatePolygon(polygons, areas, lines, {startPosition, endPosition, coordLength}) {
+/**
+ *
+ * @param polygons
+ * @param areas
+ * @param lines
+ * @param param3
+ * @returns {void}
+ */
+function triangulatePolygon(
+  polygons: {positions: {subarray: (arg0: number, arg1: number) => any}; triangles: any[]},
+  areas: any,
+  lines: any[],
+  {
+    startPosition,
+    endPosition,
+    coordLength
+  }: {startPosition: any; endPosition: any; coordLength: any}
+) {
   const start = startPosition * coordLength;
   const end = endPosition * coordLength;
 
@@ -275,7 +400,7 @@ function triangulatePolygon(polygons, areas, lines, {startPosition, endPosition,
 
   // Holes are referenced relative to outer polygon
   const offset = lines[0];
-  const holes = lines.slice(1).map((n) => (n - offset) / coordLength);
+  const holes = lines.slice(1).map((n: number) => (n - offset) / coordLength);
 
   // Compute triangulation
   const indices = earcut(polygonPositions, holes, coordLength, areas);
@@ -288,7 +413,42 @@ function triangulatePolygon(polygons, areas, lines, {startPosition, endPosition,
 }
 
 // Wrap each array in an accessor object with value and size keys
-function makeAccessorObjects(points, lines, polygons, coordLength) {
+/**
+ *
+ * @param points
+ * @param lines
+ * @param polygons
+ * @param coordLength
+ * @returns object
+ */
+function makeAccessorObjects(
+  points: {
+    positions: any;
+    globalFeatureIds: any;
+    featureIds: any;
+    numericProps: any;
+    properties: any;
+  },
+  lines: {
+    pathIndices: any;
+    positions: any;
+    globalFeatureIds: any;
+    featureIds: any;
+    numericProps: any;
+    properties: any;
+  },
+  polygons: {
+    polygonIndices: any;
+    primitivePolygonIndices: any;
+    positions: any;
+    triangles: any;
+    globalFeatureIds: any;
+    featureIds: any;
+    numericProps: any;
+    properties: any;
+  },
+  coordLength: number
+) {
   const returnObj = {
     points: {
       positions: {value: points.positions, size: coordLength},
@@ -329,7 +489,20 @@ function makeAccessorObjects(points, lines, polygons, coordLength) {
 }
 
 // Add numeric properties to object
-function fillNumericProperties(object, properties, index, length) {
+/**
+ *
+ * @param object
+ * @param properties
+ * @param index
+ * @param length
+ * @returns {void}
+ */
+function fillNumericProperties(
+  object: MvtPoints,
+  properties: {[x: string]: any},
+  index: any,
+  length: number
+) {
   for (const numericPropName in object.numericProps) {
     if (numericPropName in properties) {
       object.numericProps[numericPropName].fill(properties[numericPropName], index, index + length);
@@ -338,7 +511,13 @@ function fillNumericProperties(object, properties, index, length) {
 }
 
 // Keep string properties in object
-function keepStringProperties(properties, numericKeys) {
+/**
+ *
+ * @param properties
+ * @param numericKeys
+ * @returns object
+ */
+function keepStringProperties(properties: {[x: string]: any}, numericKeys: string | string[]) {
   const props = {};
   for (const key in properties) {
     if (!numericKeys.includes(key)) {
@@ -348,6 +527,6 @@ function keepStringProperties(properties, numericKeys) {
   return props;
 }
 
-function isNumeric(x) {
+function isNumeric(x: unknown) {
   return Number.isFinite(x);
 }
