@@ -168,7 +168,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, showMemory} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -177,8 +177,12 @@ export default class App extends PureComponent {
         token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        selectedMapStyle={selectedMapStyle}
-      />
+        selectedMapStyle={selectedMapStyle}>
+          <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>Memory Usage</MemoryButton>
+          <StatsWidgetWrapper showMemory={showMemory}>
+            {this._renderStats()}
+          </StatsWidgetWrapper>
+        </ControlPanel>
     );
   }
 
@@ -214,14 +218,11 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {viewState, selectedMapStyle, selectedFeatureAttributes, showMemory} = this.state;
+    const {viewState, selectedMapStyle, selectedFeatureAttributes} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>{showMemory ? `Hide` : `Show`} Memory Usage</MemoryButton>
-        <StatsWidgetWrapper showMemory={showMemory}>
-          {this._renderStats()}
-        </StatsWidgetWrapper>
+        
         {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
         <DeckGL
           layers={layers}

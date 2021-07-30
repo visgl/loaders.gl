@@ -5,39 +5,32 @@ export const StatsWidgetWrapper = styled.div`
 `;
 
 export const StatsWidgetContainer = styled.div`
+  position: relative;
+  width: 290px;
   word-break: break-word;
-  position: absolute;
-  bottom: 28px;
-  z-index: 1;
+  margin-top: 5px;
   padding: 10px;
-  margin: 5px;
-  width: 270px;
   color: #adb5bd;
-  background: rgba(36, 39, 48, 0.95);
-  z-index: 18;
-  border: 2px solid #212529;
-  border-bottom: none;
-  @media screen and (max-width: 768px) {
-    bottom: 48px;
-  }
+  background: #242730;
 `;
 
 export const MemoryButton = styled.button`
-  position: absolute;
-  width: 270px;
-  bottom: 0;
-  padding: 5px 10px;
-  z-index: 1;
-  margin: 5px;
-  color: #adb5bd;
-  background: rgba(0, 0, 0, .7);
+  grid-area: memory;
+  margin-top: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  height: 30px;
+  width: 100px;
+  color: #f2e9e4;
+  font-size: 9px;
+  border: none;
   text-transform: uppercase;
   align-items: center;
-  height: 28px;
+  justify-content: center;
   cursor: pointer;
-  border: 2px solid #212529;
-  border-top: none;
-  @media screen and (max-width: 768px) {
-    bottom: 20px;
+  border-radius: 2px;
+  transition: all 1s;
+  &:hover {
+    color: #242730;
+    background: #00ADE6;
   }
 `;

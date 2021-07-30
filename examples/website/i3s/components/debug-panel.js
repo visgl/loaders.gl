@@ -15,7 +15,7 @@ const Container = styled.div`
   overflow-x: hidden;
   z-index: 1;
   @media screen and (max-width: 768px) {
-   top: 120px;
+   top: 110px;
   }
 `;
 
@@ -23,10 +23,9 @@ const DebugOptions = styled.div`
   width: 270px;
   min-width: 270px;
   margin: 5px;
-  padding: 10px;
+  padding: 5px;
   text-transform: uppercase;
   font-size: 11px;
-  min-width: 270px;
   height: 100%;
   overflow: auto;
   background: rgba(36, 39, 48, 0.7);
@@ -40,7 +39,7 @@ const DebugOptions = styled.div`
 `;
 
 const Header = styled.h3`
-  margin: 0;
+  margin: 0 0 10px 0;
   padding: 5px;
   color: #00ADE6;
   text-shadow: 1px 1px 1px #212529;
@@ -55,14 +54,13 @@ const Header = styled.h3`
 const DropDown = styled.select`
   padding: 5px;
   display: flex;
-  width: 96%;
+  width: 200px;
   margin: 5px;
   cursor: pointer;
-  background: rgba(36, 39, 48, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   border: none;
   color: #ced4da;
   font-size: 12px;
-  jusify-content: center;
 `;
 
 const Expander = styled.div`
@@ -73,8 +71,9 @@ const Expander = styled.div`
   color: #00ADE6;
   z-index: 1;
   align-self: center;
-  margin: 0px 2px;
+  margin: 0px 5px;
   cursor: pointer;
+  border-rarius: 2px;
 `;
 
 const CheckboxOption = styled.div`
@@ -95,9 +94,8 @@ const Label = styled.label`
 `;
 
 const DebugTextureContainer = styled.div`
-  padding: 2px;
-  width: 50%;
-  margin-left: 60px;
+  padding: 5px;
+  width: 30%;
 `;
 
 const propTypes = {
@@ -151,8 +149,7 @@ export default class DebugPanel extends PureComponent {
       color: isClearButtonDisabled ? '#f2e9e4' : '#242730',
       alignItems: 'center',
       height: '20px',
-      marginLeft: '150px',
-      width: '70px',
+      margin: '5px 5px 5px 150px',
       fontSize: '10px',
       borderRadius: '2px',
       textTransform: 'uppercase',

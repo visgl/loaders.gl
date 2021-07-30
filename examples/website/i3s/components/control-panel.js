@@ -5,85 +5,78 @@ import {EXAMPLES} from '../examples';
 import {MAP_STYLES} from '../constants';
 
 const Container = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 100px 100px 100px;
+  grid-template-rows: 30px 25px 35px;
+  grid-template-areas: 
+    "tileset tileset tileset" 
+    "mapstyle mapstyle mapstyle"
+    "frame frame memory";
   position: absolute;
   padding: 5px;
   top: 0;
   right: 0;
-  width: 270px;
-  background: rgba(36, 39, 48, 0.7);
-  border: 2px solid #212529;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  margin: 5px;
-  outline: none;
   z-index: 1;
   cursor: pointer;
-  @media screen and (max-width: 768px) {
-   margin: 0;
-  };
 `;
 
-const DropDown = styled.select`
-  padding: 10px;
-  text-transform: uppercase;
-  background: transparent;
-  border: none;
-  font-size: 11px;
-  color: #adb5bd;
-  background: rgba(0, 0, 0, .3);
-  padding-right: 30px;
-  margin: 5px;
+const TilesetDropDown = styled.select`
+  grid-area: tileset;
+  background: rgba(36,39,48,0.7);
+  padding: 5px;
+  font-weight: 800;
   cursor: pointer;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #00ADE6;
+  text-shadow: 1px 1px 1px #212529;
+  border: none;
   &:hover {
     background: #212529;
   }
 `;
 
-const TilesetDropDown = styled.select`
-  font-weight: 800;
-  cursor: pointer;
-  margin: 5px;
-  font-size: 13px;
+const DropDown = styled.select`
+  grid-area: mapstyle;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 5px;
   text-transform: uppercase;
-  color: #00ADE6;
-  text-shadow: 1px 1px 1px #212529;
-  background: transparent;
   border: none;
+  font-size: 11px;
+  color: #adb5bd;
+  cursor: pointer;
+  padding-left: 15px;
   &:hover {
     background: #212529;
   }
 `;
 
 const FrameWrap = styled.div`
+  grid-area: frame;
   height: fit-content;
   overflow: hidden;
-  transition: all 1s;
 `;
 
 const FrameControl = styled.div`
-  display: flex;
-  flex-direction: row;
-  transition: all 1s;
-  margin-top: ${props => (props.showFullInfo ? "15px" : "10px")};
-  align-items: center;
-  justify-content: space-between;
   width: 100%;
   z-index: 20;
+  margin-top: 10px;
 `;
 
-const FrameButton = styled.div`
-  display: flex;
-  width: 135px;
+const FrameButton = styled.button`
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
   color: #f2e9e4;
-  font-size: 11px;
-  margitn-top: 10px;
-  line-height: 2;
+  font-size: 9px;
+  height: 30px;
+  width: 100px;
   text-transform: uppercase;
   align-items: center;
   justify-content: center;
-  border-right: 2px solid #212529;
-  transition: all 1s ease;
+  transition: all 1s;
+  border-radius: 2px;
+  cursor: pointer;
   &:hover {
     color: #242730;
     background: #00ADE6;
@@ -91,18 +84,20 @@ const FrameButton = styled.div`
 `;
 
 const LinkButton = styled.button`
-  display: flex;
-  width: 135px;
+  grid-area: link;
+  background: rgba(0, 0, 0, 0.5);
   color: #f2e9e4;
   align-items: center;
-  justify-content: center;
-  font-size: 11px;
+  margin-left: 10px;
+  font-size: 9px;
+  height: 30px;
+  width: 100px;
+  padding: 10px;
   text-transform: uppercase;
   text-decoration: none;
-  margint-top: 10px;
-  line-height: 2;
-  border-left: 2px solid #212529;
-  transition: all 1s ease;
+  transition: all 1s;
+  border-radius: 2px;
+  cursor: pointer;
   &:hover {
     color: #242730;
     background: #00ADE6;
@@ -186,6 +181,7 @@ export default class ControlPanel extends PureComponent {
       </DropDown>
     );
   }
+
   _renderInfo() {
     const {metadata, token} = this.props;
     const {showFullInfo} = this.state;
@@ -197,20 +193,23 @@ export default class ControlPanel extends PureComponent {
     if (token) {
       url = `${url}&token=${token}`;
     }
+
     return (
       <FrameWrap>
+        <FrameControl showFullInfo={showFullInfo}>
+          <FrameButton onClick={() => this.setState({showFullInfo: !showFullInfo})}>
+            {showFullInfo ? `Less Info` : `More Info`}
+          </FrameButton>
+          <LinkButton as="a" target="_blank" rel="noopener noreferrer" href={url}>
+            Go to ArcGIS
+          </LinkButton>
+        </FrameControl>
         <iframe
           id="tileset-info"
           title="tileset-info"
-          style={{display: showFullInfo ? 'inherit' : 'none', height: '500px', width: '99%', border: '1px solid rgba(200, 200, 200, 100)'}}
+          style={{display: showFullInfo ? 'inherit' : 'none', height: '400px', width: '99%', border: '1px solid rgba(200, 200, 200, 100)'}}
           src={url}
         />
-        <FrameControl showFullInfo={showFullInfo}>
-          <FrameButton onClick={() => this.setState({showFullInfo: !showFullInfo})}>
-            Show {showFullInfo ? `Less Info` : `More Info`}
-          </FrameButton>
-          <LinkButton as="a" target="_blank" rel="noopener noreferrer" href={url}>Go to ArcGIS</LinkButton>
-        </FrameControl>
       </FrameWrap>
     );
   }
