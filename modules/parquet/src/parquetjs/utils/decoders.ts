@@ -406,7 +406,7 @@ function decodeDictionaryPage(
   if (options.compression !== 'UNCOMPRESSED') {
     const valuesBuf = decompress(
       options.compression,
-      cursor.buffer.slice(cursor.offset, cursorEnd),
+      dictCursor.buffer.slice(dictCursor.offset, cursorEnd),
       pageHeader.uncompressed_page_size
     );
 
