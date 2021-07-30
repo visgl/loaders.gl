@@ -6,7 +6,7 @@
  */
 
 /**
- * @param gj
+ * @param geojson
  * @returns string
  */
 
@@ -14,26 +14,26 @@ export default function encodeWKT(gj: {
   type: string;
   properties?: {};
   geometry?: any;
-  coordinates?: any;
+  coordinates?: any[];
   geometries?: any;
-}) {
+}): string {
   if (gj.type === 'Feature') {
     gj = gj.geometry;
   }
 
-  function pairWKT(c: any[]) {
+  function pairWKT(c: number[]) {
     return c.join(' ');
   }
 
-  function ringWKT(r: any[]) {
+  function ringWKT(r: number[][]) {
     return r.map(pairWKT).join(', ');
   }
 
-  function ringsWKT(r: any[]) {
+  function ringsWKT(r: number[][][]) {
     return r.map(ringWKT).map(wrapParens).join(', ');
   }
 
-  function multiRingsWKT(r: any[]) {
+  function multiRingsWKT(r: number[][][][]) {
     return r.map(ringsWKT).map(wrapParens).join(', ');
   }
 
@@ -43,17 +43,17 @@ export default function encodeWKT(gj: {
 
   switch (gj.type) {
     case 'Point':
-      return 'POINT (' + pairWKT(gj.coordinates) + ')';
+      return 'POINT (' + pairWKT(gj.coordinates as any[]) + ')';
     case 'LineString':
-      return 'LINESTRING (' + ringWKT(gj.coordinates) + ')';
+      return 'LINESTRING (' + ringWKT(gj.coordinates as any[]) + ')';
     case 'Polygon':
-      return 'POLYGON (' + ringsWKT(gj.coordinates) + ')';
+      return 'POLYGON (' + ringsWKT(gj.coordinates as any[]) + ')';
     case 'MultiPoint':
-      return 'MULTIPOINT (' + ringWKT(gj.coordinates) + ')';
+      return 'MULTIPOINT (' + ringWKT(gj.coordinates as any[]) + ')';
     case 'MultiPolygon':
-      return 'MULTIPOLYGON (' + multiRingsWKT(gj.coordinates) + ')';
+      return 'MULTIPOLYGON (' + multiRingsWKT(gj.coordinates as any[]) + ')';
     case 'MultiLineString':
-      return 'MULTILINESTRING (' + ringsWKT(gj.coordinates) + ')';
+      return 'MULTILINESTRING (' + ringsWKT(gj.coordinates as any[]) + ')';
     case 'GeometryCollection':
       return 'GEOMETRYCOLLECTION (' + gj.geometries.map(encodeWKT).join(', ') + ')';
     default:
