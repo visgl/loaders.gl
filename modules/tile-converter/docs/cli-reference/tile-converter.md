@@ -2,17 +2,23 @@
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
+  <img src="https://badge.fury.io/js/%40loaders.gl%tile-converter.svg" />
+  <a href="https://hub.docker.com/r/visgl/tile-converter/tags">
+    <img src="https://img.shields.io/badge/dockerhub-visgl%tile-converter.svg?style=flat-square" alt="dockerhub" />
+  </a>
 </p>
 
 The `tile-converter` is a command line utility (CLI) for two-way batch conversion between the OGC 3D Tiles and the I3S formats. It can load the tileset to be converted directly from an URL.
 
 ## Installation
 
+The tile-converter is published as an npm module and as a docker image.
+
+Installing `@loaders.gl/tile-converter` from npm makes the `tile-converter` command line tool available. It can be run using `npx`.
+
 ```bash
 $ npm i @loaders.gl/tile-converter
 ```
-
-Installing `@loaders.gl/tile-converter` makes the `converter` command line tool available. It can be run using `npx`.
 
 ```bash
 $ npx tile-converter --install-dependencies
@@ -24,6 +30,12 @@ $ npx tile-converter --input-type <I3S | 3DTILES> --tileset <tileset> --name <ti
 
 ```bash
 $ npx tile-converter --help
+```
+
+Alternatively, to download the `tile-converter` docker image, run:
+
+```bash
+$ docker pull visgl/tile-converter
 ```
 
 ## Options
@@ -55,9 +67,9 @@ $ I3sLayerPath="./data/CairoLayer" DEBUG=i3s-server:* npx i3s-server
 
 ## Docker image
 
-Converter also available as docker image in the [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter) repo.
+The tile converter is available as a docker image in the [visgl/tile-converter](https://hub.docker.com/r/visgl/tile-converter/tags) dockerhub repo.
 
-To download tile-converter docker image, run:
+To download the tile-converter docker image, run:
 
 ```bash
 $ docker pull visgl/tile-converter
