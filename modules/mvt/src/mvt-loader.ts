@@ -27,8 +27,7 @@ export const MVTWorkerLoader: Loader = {
       coordinates: 'local',
       layerProperty: 'layerName',
       layers: null,
-      tileIndex: null,
-      _format: 'geojson'
+      tileIndex: null
     }
   }
 };

@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {MVTLoader} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
 import {TEST_EXPORTS} from '@loaders.gl/mvt/lib/binary-vector-tile/vector-tile-feature';
 
 const {classifyRings} = TEST_EXPORTS;
@@ -14,6 +14,7 @@ const MVT_POLYGON_ZERO_SIZE_HOLE_DATA_URL =
   '@loaders.gl/mvt/test/data/polygon_with_zero_size_hole.mvt';
 const MVT_MULTIPLE_LAYERS_DATA_URL =
   '@loaders.gl/mvt/test/data/lines_10-501-386_multiplelayers.mvt';
+const WITH_FEATURE_ID = '@loaders.gl/mvt/test/data/with_feature_id.mvt';
 
 // Geometry Array Results
 
@@ -267,6 +268,24 @@ for (const filename of TEST_FILES) {
     t.end();
   });
 }
+
+test('Features with top-level id', async (t) => {
+  const response = await fetchFile(WITH_FEATURE_ID);
+  const mvtArrayBuffer = await response.arrayBuffer();
+
+  const binary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
+  t.ok(binary.points.fields.length, 'feature.id fields are preserved');
+  t.ok(binary.lines.fields.length, 'feature.id fields are preserved');
+  t.ok(binary.polygons.fields.length, 'feature.id fields are preserved');
+
+  const feature = binaryToGeojson(binary, {
+    globalFeatureId: binary.points.globalFeatureIds.value[0]
+  });
+  // @ts-ignore
+  t.ok(feature.id, 'feature.id is restored');
+
+  t.end();
+});
 
 test('Empty MVT must return empty binary format', async (t) => {
   const emptyMVTArrayBuffer = new Uint8Array();
