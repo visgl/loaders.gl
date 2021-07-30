@@ -105,7 +105,6 @@ export function decodePage(cursor: CursorBuffer, options: ParquetOptions): Parqu
       page = decodeDataPageV2(cursor, pageHeader, options);
       break;
     case 'DICTIONARY_PAGE':
-    case 'RLE_DICTIONARY':
       page = {
         dictionary: decodeDictionaryPage(cursor, pageHeader, options),
         pageHeader
