@@ -8,7 +8,7 @@
   </a>
 </p>
 
-The `tile-converter` is a command line utility (CLI) for two-way batch conversion between the OGC 3D Tiles and the I3S formats. It can load the tileset to be converted directly from an URL.
+The `tile-converter` is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both an OGC community standard. It can load tilesets to be converted directly from an URL or file based formats.
 
 ## Installation
 
@@ -48,10 +48,10 @@ $ docker pull visgl/tile-converter
 | output               | \*                        | \*                        | Output folder. This folder will be created by converter if doesn't exist. It is relative to the converter path. Default: "data" folder                                                                                                               |
 | name                 | \*                        | \*                        | Tileset name. This option is used for naming in resulting json resouces and for resulting path/\*.slpk file naming                                                                                                                                   |
 | max-depth            | \*                        | \*                        | Maximal depth of the hierarchical tiles tree traversal, default: infinite                                                                                                                                                                            |
-| slpk                 | \*                        |                           | Whether the converter generate \*.slpk (Scene Layer Packages) I3S output file                                                                                                                                                                        |
+| slpk                 | \*                        |                           | Whether the converter generates \*.slpk (Scene Layer Package) I3S output file                                                                                                                                                                        |
 | 7zExe                | \*                        |                           | location of 7z.exe archiver to create slpk on Windows OS, default: "C:\\Program Files\\7-Zip\\7z.exe"                                                                                                                                                |
 | egm                  | \*                        | \*                        | location of the Earth Gravity Model (\*.pgm) file to convert heights from ellipsoidal to gravity-related format, default: "./deps/egm2008-5.pgm". A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html |
-| token                | \*                        |                           | Token for Cesium ION tilesets authentication                                                                                                                                                                                                         |
+| token                | \*                        |                           | Token for I3S or Cesium ION tileset authentication.                                                                                                                                                                                                         |
 | no-draco             | \*                        |                           | Disable draco compression for geometry. Default: not set                                                                                                                                                                                             |
 | help                 | \*                        | \*                        | Show the converter tool options list                                                                                                                                                                                                                 |
 
