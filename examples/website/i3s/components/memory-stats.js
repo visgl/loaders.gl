@@ -6,17 +6,18 @@ export const StatsWidgetWrapper = styled.div`
 
 export const StatsWidgetContainer = styled.div`
   position: relative;
-  width: 290px;
+  width: 300px;
   word-break: break-word;
   margin-top: 5px;
   padding: 10px;
   color: #adb5bd;
-  background: #242730;
+  background: #232323;
+  font-size: 11px;
 `;
 
 export const MemoryButton = styled.button`
   grid-area: memory;
-  margin-top: 10px;
+  margin-top: 5px;
   background: rgba(0, 0, 0, 0.5);
   height: 30px;
   width: 100px;

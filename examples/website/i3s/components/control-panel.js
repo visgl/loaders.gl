@@ -32,6 +32,15 @@ const TilesetDropDown = styled.select`
   color: #00ADE6;
   text-shadow: 1px 1px 1px #212529;
   border: none;
+    option {
+      color: black;
+      background: white;
+      font-weight: small;
+      display: flex;
+      white-space: pre;
+      min-height: 20px;
+      padding: 0px 2px 1px;
+    }
   &:hover {
     background: #212529;
   }
@@ -46,7 +55,14 @@ const DropDown = styled.select`
   font-size: 11px;
   color: #adb5bd;
   cursor: pointer;
-  padding-left: 15px;
+    option {
+      color: black;
+      background: white;
+      display: flex;
+      white-space: pre;
+      min-height: 20px;
+      padding: 0px 2px 1px;
+    }
   &:hover {
     background: #212529;
   }
@@ -61,7 +77,7 @@ const FrameWrap = styled.div`
 const FrameControl = styled.div`
   width: 100%;
   z-index: 20;
-  margin-top: 10px;
+  margin-top: 5px;
 `;
 
 const FrameButton = styled.button`
@@ -111,7 +127,6 @@ const propTypes = {
   metadata: PropTypes.object,
   token: PropTypes.string,
   onExampleChange: PropTypes.func,
-  children: PropTypes.node,
   selectedMapStyle: PropTypes.string,
   onMapStyleChange: PropTypes.func
 };
@@ -207,7 +222,7 @@ export default class ControlPanel extends PureComponent {
         <iframe
           id="tileset-info"
           title="tileset-info"
-          style={{display: showFullInfo ? 'inherit' : 'none', height: '400px', width: '99%', border: '1px solid rgba(200, 200, 200, 100)'}}
+          style={{display: showFullInfo ? 'inherit' : 'none', height: '400px', width: '99%', marginTop: '5px', border: '1px solid rgba(200, 200, 200, 100)'}}
           src={url}
         />
       </FrameWrap>
