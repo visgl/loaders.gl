@@ -43,7 +43,8 @@ test('gis#reproject binary', (t) => {
       numericProps: {
         numeric1: {value: new Uint16Array([1, 2, 2]), size: 1}
       },
-      properties: [{string1: 'a'}, {string1: 'b'}]
+      properties: [{string1: 'a'}, {string1: 'b'}],
+      fields: []
     }
   };
   /** @type {BinaryFeatures} */
@@ -56,7 +57,8 @@ test('gis#reproject binary', (t) => {
       numericProps: {
         numeric1: {value: new Uint16Array([1, 2, 2]), size: 1}
       },
-      properties: [{string1: 'a'}, {string1: 'b'}]
+      properties: [{string1: 'a'}, {string1: 'b'}],
+      fields: []
     }
   };
 

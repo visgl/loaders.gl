@@ -61,7 +61,7 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     }
     // Array of objects with non-numeric properties from Point geometries
     properties: [{PointFeatureProperties}],
-    // Non-standard top-level fields
+    // Non-standard top-level fields, not populated at the moment
     fields: [{PointFeatureExtraFields}]
   },
   lines: {
@@ -80,7 +80,7 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     }
     // Array of objects with non-numeric properties from LineString geometries
     properties: [{LineStringFeatureProperties}],
-    // Non-standard top-level fields
+    // Non-standard top-level fields, not populated at the moment
     fields: [{LineStringFeatureExtraFields}]
   },
   polygons: {
@@ -103,7 +103,7 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     }
     // Array of objects with non-numeric properties from Polygon geometries
     properties: [{PolygonFeatureProperties}],
-    // Non-standard top-level fields
+    // Non-standard top-level fields, not populated at the moment
     fields: [{PolygonFeatureExtraFields}]
   }
 }

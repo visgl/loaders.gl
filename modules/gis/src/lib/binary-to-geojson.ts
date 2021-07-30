@@ -189,7 +189,7 @@ function parseFeature(data, startIndex?: number, endIndex?: number): Feature {
 
 /** Parse input binary data and return an object of fields */
 function parseFields(data, startIndex: number = 0, endIndex?: number): GeoJsonProperties {
-  return data.fields && data.fields[data.featureIds.value[startIndex]];
+  return data.fields[data.featureIds.value[startIndex]];
 }
 
 /** Parse input binary data and return an object of properties */
