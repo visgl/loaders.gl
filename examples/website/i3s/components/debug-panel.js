@@ -103,6 +103,10 @@ const DebugTextureContainer = styled.div`
   padding: 5px;
   margin-left: 5px;
   width: 30%;
+  &:hover {
+    transition: all 1s;
+    width: 98%;
+  }
 `;
 
 const propTypes = {
