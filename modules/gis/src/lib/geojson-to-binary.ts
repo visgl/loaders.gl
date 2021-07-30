@@ -188,7 +188,8 @@ function secondPass(
         ? new Uint32Array(pointPositionsCount)
         : new Uint16Array(pointPositionsCount),
     numericProps: {},
-    properties: Array<any>()
+    properties: Array<any>(),
+    fields: Array<any>()
   };
   const lines = {
     // @ts-ignore Typescript doesn't like dynamic constructors
@@ -203,7 +204,8 @@ function secondPass(
         ? new Uint32Array(linePositionsCount)
         : new Uint16Array(linePositionsCount),
     numericProps: {},
-    properties: Array<any>()
+    properties: Array<any>(),
+    fields: Array<any>()
   };
   const polygons = {
     // @ts-ignore Typescript doesn't like dynamic constructors
@@ -222,7 +224,8 @@ function secondPass(
         ? new Uint32Array(polygonPositionsCount)
         : new Uint16Array(polygonPositionsCount),
     numericProps: {},
-    properties: Array<any>()
+    properties: Array<any>(),
+    fields: Array<any>()
   };
 
   // Instantiate numeric properties arrays; one value per vertex
@@ -380,30 +383,27 @@ function handleMultiPolygon(coords, polygons, indexMap, coordLength, properties)
 function makeAccessorObjects(points, lines, polygons, coordLength): BinaryFeatures {
   const returnObj = {
     points: {
+      ...points,
       positions: {value: points.positions, size: coordLength},
       globalFeatureIds: {value: points.globalFeatureIds, size: 1},
       featureIds: {value: points.featureIds, size: 1},
-      numericProps: points.numericProps,
-      properties: points.properties,
       type: 'Point'
     },
     lines: {
+      ...lines,
       pathIndices: {value: lines.pathIndices, size: 1},
       positions: {value: lines.positions, size: coordLength},
       globalFeatureIds: {value: lines.globalFeatureIds, size: 1},
       featureIds: {value: lines.featureIds, size: 1},
-      numericProps: lines.numericProps,
-      properties: lines.properties,
       type: 'LineString'
     },
     polygons: {
+      ...polygons,
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
       positions: {value: polygons.positions, size: coordLength},
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
       featureIds: {value: polygons.featureIds, size: 1},
-      numericProps: polygons.numericProps,
-      properties: polygons.properties,
       type: 'Polygon'
     }
   };
