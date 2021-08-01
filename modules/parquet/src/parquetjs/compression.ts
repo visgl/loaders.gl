@@ -86,17 +86,17 @@ export function decompress(method: ParquetCompression, value: Buffer, size: numb
   return toBuffer(compressedArrayBuffer);
 }
 
-/**
+/*
  * Inflate a value using compression method `method`
- *
+ */
 export function inflate(method: ParquetCompression, value: Buffer, size: number): Buffer {
   if (!(method in PARQUET_COMPRESSION_METHODS)) {
     throw new Error(`invalid compression method: ${method}`);
   }
-
+  // @ts-ignore
   return PARQUET_COMPRESSION_METHODS[method].inflate(value, size);
 }
-
+/*
 function deflate_identity(value: Buffer): Buffer {
   return value;
 }
@@ -174,4 +174,5 @@ function inflate_brotli(value: Buffer): Buffer {
     return Buffer.alloc(0);
   }
   return Buffer.from(brotli.decompress(value));
+}
 */

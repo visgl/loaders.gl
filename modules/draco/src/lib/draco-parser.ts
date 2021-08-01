@@ -1,5 +1,7 @@
 /* eslint-disable camelcase */
 
+import type {TypedArray, MeshAttribute, MeshGeometry} from '@loaders.gl/schema';
+
 // Draco types (input)
 import type {
   Draco3D,
@@ -15,12 +17,7 @@ import type {
 
 // Parsed data types (output)
 import type {
-  TypedArray,
-  // standard mesh output data
-  MeshData,
-  MeshAttribute,
-  // standard mesh with draco metadata
-  DracoMeshData,
+  DracoMesh,
   DracoLoaderData,
   DracoAttribute,
   DracoMetadataEntry,
@@ -29,7 +26,7 @@ import type {
 } from './draco-types';
 
 import {getMeshBoundingBox} from '@loaders.gl/schema';
-import {makeSchemaFromAttributes} from './utils/schema-attribute-utils';
+import {getDracoSchema} from './utils/get-draco-schema';
 
 /**
  * @param topology - How triangle indices should be generated (mesh only)
@@ -96,7 +93,7 @@ export default class DracoParser {
    * @param arrayBuffer
    * @param options
    */
-  parseSync(arrayBuffer: ArrayBuffer, options: DracoParseOptions = {}): DracoMeshData {
+  parseSync(arrayBuffer: ArrayBuffer, options: DracoParseOptions = {}): DracoMesh {
     const buffer = new this.draco.DecoderBuffer();
     buffer.Init(new Int8Array(arrayBuffer), arrayBuffer.byteLength);
 
@@ -135,9 +132,9 @@ export default class DracoParser {
 
       const boundingBox = getMeshBoundingBox(geometry.attributes);
 
-      const schema = makeSchemaFromAttributes(geometry.attributes, loaderData, geometry.indices);
+      const schema = getDracoSchema(geometry.attributes, loaderData, geometry.indices);
 
-      const data: DracoMeshData = {
+      const data: DracoMesh = {
         loader: 'draco',
         loaderData,
         header: {
@@ -241,7 +238,7 @@ export default class DracoParser {
     dracoGeometry: Mesh | PointCloud,
     loaderData: DracoLoaderData,
     options: DracoParseOptions
-  ): MeshData {
+  ): MeshGeometry {
     const attributes = this._getMeshAttributes(loaderData, dracoGeometry, options);
 
     const positionAttribute = attributes.POSITION;

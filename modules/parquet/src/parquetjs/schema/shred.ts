@@ -13,6 +13,7 @@ export function shredBuffer(schema: ParquetSchema): ParquetBuffer {
       dlevels: [],
       rlevels: [],
       values: [],
+      pageHeaders: [],
       count: 0
     };
   }

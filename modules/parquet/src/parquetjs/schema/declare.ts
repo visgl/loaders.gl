@@ -1,6 +1,8 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
+import Int64 from 'node-int64';
+import type {PageHeader} from '../parquet-thrift';
 
-export type ParquetCodec = 'PLAIN' | 'RLE';
+export type ParquetCodec = 'PLAIN' | 'RLE' | 'PLAIN_DICTIONARY';
 export type ParquetCompression =
   | 'UNCOMPRESSED'
   | 'GZIP'
@@ -49,6 +51,8 @@ export type OriginalType =
   | 'BSON' // 20
   | 'INTERVAL'; // 21
 
+export type ParquetDictionary = string[];
+
 export interface SchemaDefinition {
   [string: string]: FieldDefinition;
 }
@@ -80,11 +84,31 @@ export interface ParquetField {
   fields?: Record<string, ParquetField>;
 }
 
+export interface ParquetOptions {
+  type: ParquetType;
+  rLevelMax: number;
+  dLevelMax: number;
+  compression: ParquetCompression;
+  column: ParquetField;
+  numValues?: Int64;
+  dictionary?: ParquetDictionary;
+}
+
 export interface ParquetData {
   dlevels: number[];
   rlevels: number[];
   values: any[];
   count: number;
+  pageHeaders: PageHeader[];
+}
+
+export interface ParquetPageData {
+  dlevels: number[];
+  rlevels: number[];
+  values: any[];
+  count: number;
+  dictionary?: ParquetDictionary;
+  pageHeader: PageHeader;
 }
 
 export interface ParquetRecord {

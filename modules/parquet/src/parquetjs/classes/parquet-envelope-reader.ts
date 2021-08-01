@@ -2,10 +2,19 @@
 import {ParquetSchema} from '../schema/schema';
 import {PARQUET_MAGIC, PARQUET_MAGIC_ENCRYPTED} from '../../constants';
 import {ColumnChunk, CompressionCodec, FileMetaData, RowGroup, Type} from '../parquet-thrift';
-import {ParquetBuffer, ParquetCompression, ParquetData, PrimitiveType} from '../schema/declare';
-import {decodeDataPages} from '../utils/decoders';
+import {
+  ParquetBuffer,
+  ParquetCompression,
+  ParquetData,
+  PrimitiveType,
+  ParquetOptions
+} from '../schema/declare';
+import {decodeDataPages, decodePage} from '../utils/decoders';
 import {fstat, fopen, fread, fclose} from '../utils/file-utils';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
+import Int64 from 'node-int64';
+
+const DEFAULT_DICTIONARY_SIZE = 1e6;
 
 /**
  * The parquet envelope reader allows direct, unbuffered access to the individual
@@ -21,6 +30,7 @@ export class ParquetEnvelopeReader {
    */
   public close: () => Promise<void>;
   public fileSize: number;
+  public defaultDictionarySize: number;
 
   static async openFile(filePath: string): Promise<ParquetEnvelopeReader> {
     const fileStat = await fstat(filePath);
@@ -42,11 +52,13 @@ export class ParquetEnvelopeReader {
   constructor(
     read: (position: number, length: number) => Promise<Buffer>,
     close: () => Promise<void>,
-    fileSize: number
+    fileSize: number,
+    options?: any
   ) {
     this.read = read;
     this.close = close;
     this.fileSize = fileSize;
+    this.defaultDictionarySize = options?.defaultDictionarySize || DEFAULT_DICTIONARY_SIZE;
   }
 
   async readHeader(): Promise<void> {
@@ -83,6 +95,11 @@ export class ParquetEnvelopeReader {
     return buffer;
   }
 
+  /**
+   * Do reading of parquet file's column chunk
+   * @param schema
+   * @param colChunk
+   */
   async readColumnChunk(schema: ParquetSchema, colChunk: ColumnChunk): Promise<ParquetData> {
     if (colChunk.file_path !== undefined && colChunk.file_path !== null) {
       throw new Error('external references are not supported');
@@ -90,7 +107,10 @@ export class ParquetEnvelopeReader {
 
     const field = schema.findField(colChunk.meta_data?.path_in_schema!);
     const type: PrimitiveType = getThriftEnum(Type, colChunk.meta_data?.type!) as any;
-    if (type !== field.primitiveType) throw new Error(`chunk type not matching schema: ${type}`);
+
+    if (type !== field.primitiveType) {
+      throw new Error(`chunk type not matching schema: ${type}`);
+    }
 
     const compression: ParquetCompression = getThriftEnum(
       CompressionCodec,
@@ -98,10 +118,53 @@ export class ParquetEnvelopeReader {
     ) as any;
 
     const pagesOffset = Number(colChunk.meta_data?.data_page_offset!);
-    const pagesSize = Number(colChunk.meta_data?.total_compressed_size!);
-    const pagesBuf = await this.read(pagesOffset, pagesSize);
+    let pagesSize = Number(colChunk.meta_data?.total_compressed_size!);
 
-    return await decodeDataPages(pagesBuf, field, compression);
+    if (!colChunk.file_path) {
+      pagesSize = Math.min(
+        this.fileSize - pagesOffset,
+        Number(colChunk.meta_data?.total_compressed_size)
+      );
+    }
+
+    const options: ParquetOptions = {
+      type,
+      rLevelMax: field.rLevelMax,
+      dLevelMax: field.dLevelMax,
+      compression,
+      column: field,
+      numValues: colChunk.meta_data?.num_values,
+      dictionary: []
+    };
+
+    let dictionary;
+
+    const dictionaryPageOffset = colChunk?.meta_data?.dictionary_page_offset;
+
+    if (dictionaryPageOffset) {
+      // Getting dictionary from column chunk to iterate all over indexes to get dataPage values.
+      dictionary = await this.getDictionary(dictionaryPageOffset, options);
+    }
+
+    dictionary = options.dictionary?.length ? options.dictionary : dictionary;
+    return await this.read(pagesOffset, pagesSize).then((pagesBuf) =>
+      decodeDataPages(pagesBuf, {...options, dictionary})
+    );
+  }
+
+  /**
+   * Getting dictionary for allows to flatten values by indices.
+   * @param dictionaryPageOffset
+   * @param options
+   */
+  async getDictionary(dictionaryPageOffset: Int64, options: ParquetOptions): Promise<string[]> {
+    const offset = Number(dictionaryPageOffset);
+    const size = Math.min(this.fileSize - offset, this.defaultDictionarySize);
+    const pagesBuf = await this.read(offset, size);
+    const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};
+    const decodedPage = decodePage(cursor, options);
+
+    return decodedPage.dictionary!;
   }
 
   async readFooter(): Promise<FileMetaData> {

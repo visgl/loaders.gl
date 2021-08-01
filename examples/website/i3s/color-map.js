@@ -7,18 +7,18 @@ export const COLORED_BY = {
 };
 
 export const DEPTH_COLOR_MAP = {
-  1: [197, 78, 90],
-  2: [197, 108, 78],
-  3: [198, 139, 77],
-  4: [199, 170, 75],
-  5: [188, 195, 69],
-  6: [131, 202, 74],
-  7: [85, 194, 69],
-  8: [73, 188, 115],
-  9: [70, 174, 172],
-  10: [68, 118, 182],
-  11: [97, 74, 183],
-  12: [125, 58, 174]
+  1: [72, 149, 239],
+  2: [67, 97, 238],
+  3: [72, 12, 168],
+  4: [86, 11, 173],
+  5: [114, 9, 183],
+  6: [181, 23, 158],
+  7: [247, 37, 133],
+  8: [236, 125, 16],
+  9: [255, 188, 10],
+  10: [251, 86, 7],
+  11: [255, 190, 11],
+  12: [255, 255, 0]
 };
 
 const DEPTH_MAX_LEVEL = 12;
@@ -96,7 +96,12 @@ export default class ColorMap {
    */
   _getRandomColor(id) {
     const {colorMap, randomColorMap} = this.state;
-    const randomColor = Array.from({length: 3}, (_) => Math.round(Math.random() * 255));
+
+    let r = Math.round(Math.random() * 255);
+    let g = 205;
+    let b = Math.round(Math.random() * 255);
+
+    const randomColor = [r, g, b];
 
     randomColorMap[id] = randomColorMap[id] || randomColor;
     colorMap[id] = randomColorMap[id];
@@ -127,3 +132,4 @@ export function makeRGBObjectFromColor(color) {
   }
   return {r: color[0], g: color[1], b: color[2]};
 }
+

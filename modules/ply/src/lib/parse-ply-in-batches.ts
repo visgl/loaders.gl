@@ -24,9 +24,10 @@
 
 import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/core';
 import normalizePLY from './normalize-ply';
-import {ASCIIElement, PlyAttributes, PlyData, PlyHeader} from './types';
+import {PLYMesh, PLYHeader, ASCIIElement, PLYAttributes} from './ply-types';
 
 let currentElement: ASCIIElement;
+
 /**
  * PARSER
  * @param iterator
@@ -35,11 +36,11 @@ let currentElement: ASCIIElement;
 export default async function* parsePLYInBatches(
   iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options: any
-): AsyncGenerator<PlyData, void, unknown> {
+): AsyncIterable<PLYMesh> {
   const lineIterator = makeLineIterator(makeTextDecoderIterator(iterator));
-  const header = await parseHeader(lineIterator, options);
+  const header = await parsePLYHeader(lineIterator, options);
 
-  let attributes: PlyAttributes;
+  let attributes: PLYAttributes;
   switch (header.format) {
     case 'ascii':
       attributes = await parseASCII(lineIterator, header);
@@ -51,17 +52,18 @@ export default async function* parsePLYInBatches(
 
   yield normalizePLY(header, attributes, options);
 }
+
 /**
  * Parses header
  * @param lineIterator
  * @param options
  * @returns
  */
-async function parseHeader(
+async function parsePLYHeader(
   lineIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options: {[key: string]: any}
-): Promise<PlyHeader> {
-  const header: PlyHeader = {
+): Promise<PLYHeader> {
+  const header: PLYHeader = {
     comments: [],
     elements: []
     // headerLength
@@ -159,9 +161,9 @@ function makePLYElementProperty(propertValues: string[], propertyNameMapping: []
  * @param header
  * @returns
  */
-async function parseASCII(lineIterator: string, header: PlyHeader) {
+async function parseASCII(lineIterator: string, header: PLYHeader) {
   // PLY ascii format specification, as per http://en.wikipedia.org/wiki/PLY_(file_format)
-  const attributes: PlyAttributes = {
+  const attributes: PLYAttributes = {
     indices: [],
     vertices: [],
     normals: [],
