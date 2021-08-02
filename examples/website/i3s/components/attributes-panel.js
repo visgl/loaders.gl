@@ -6,12 +6,14 @@ import {faWindowClose} from '@fortawesome/free-solid-svg-icons';
 const CONTAINER_STYLE = {
   display: 'flex',
   position: 'absolute',
-  backgroundColor: 'white',
+  backgroundColor: 'rgba(36, 39, 48, 0.9)',
+  color: '#adb5bd',
   flexFlow: 'column',
-  top: 20,
-  right: 20,
+  lineHeight: '1',
+  right: 0,
+  margin: '5px',
   width: '350px',
-  padding: '12px 18px',
+  padding: '10px',
   maxHeight: '90%',
   marginBottom: '20px',
   zIndex: 1000,
@@ -22,6 +24,8 @@ const CONTAINER_STYLE = {
 const STYLED_TH = {
   width: '50%',
   textAlign: 'left',
+  fontSize: '11px',
+  textTransform: 'uppercase',
   borderRight: '3px solid rgba(0,0,0,.05)',
   padding: '.5em .7em'
 };
@@ -34,7 +38,9 @@ const STYLED_TD = {
 const CLOSE_BUTTON_STYLE = {
   height: '30px',
   border: 'none',
+  backgroundColor: 'transparent',
   cursor: 'pointer',
+  color: 'white',
   outline: 'none',
   fontSize: '19px'
 };
@@ -107,7 +113,7 @@ export default class AttributesPanel extends PureComponent {
     return (
       <div style={CONTAINER_STYLE}>
         <div style={this.getHeaderStyle(title)}>
-          {title && <h2>{title}</h2>}
+          {title && <h2 style={{marginLeft: '30px'}}>{title}</h2>}
           <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
             <FontAwesomeIcon icon={faWindowClose} />
           </button>

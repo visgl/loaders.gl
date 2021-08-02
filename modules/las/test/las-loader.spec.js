@@ -22,7 +22,7 @@ test('LASLoader#parse(binary)', async (t) => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {skip: 10}, worker: false});
   validateMeshCategoryData(t, data);
 
-  t.is(data.header.vertexCount, data.loaderData.header.totalRead, 'Original header was found');
+  t.is(data.header.vertexCount, data.loaderData.totalRead, 'Original header was found');
   t.equal(data.mode, 0, 'mode is POINTS (0)');
 
   t.notOk(data.indices, 'INDICES attribute was not preset');
@@ -60,7 +60,7 @@ test('LASWorker#parse(binary) extra bytes', async (t) => {
   });
   validateMeshCategoryData(t, data);
 
-  t.is(data.header.vertexCount, data.loaderData.header.totalRead, 'Original header was found');
+  t.is(data.header.vertexCount, data.loaderData.totalRead, 'Original header was found');
   t.equal(data.mode, 0, 'mode is POINTS (0)');
 
   t.notOk(data.indices, 'INDICES attribute was not preset');
@@ -80,5 +80,15 @@ test('LASWorkerLoader#load(worker)', async (t) => {
   validateMeshCategoryData(t, data);
 
   t.equal(data.attributes.POSITION.value.length, 80805 * 3, 'POSITION attribute was found');
+  t.end();
+});
+
+test('LASLoader#shapes', async (t) => {
+  let data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
+  validateMeshCategoryData(t, data);
+
+  data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'columnar-table'}});
+  validateMeshCategoryData(t, data);
+
   t.end();
 });

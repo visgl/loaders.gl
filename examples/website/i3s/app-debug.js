@@ -21,8 +21,8 @@ import {ImageLoader} from '@loaders.gl/images';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {buildMinimapData} from './helpers/build-minimap-data';
-import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import AttributesPanel from './components/attributes-panel';
+import {StatsWidgetWrapper, StatsWidgetContainer, MemoryButton} from './components/memory-stats';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 import SemanticValidator from './components/semantic-validator';
@@ -34,6 +34,7 @@ import {
   INITIAL_BOUNDING_VOLUME_COLOR_MODE,
   INITIAL_BOUNDING_VOLUME_TYPE
 } from './constants';
+import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './color-map';
 import {getFrustumBounds} from './frustum-utils';
 import BoundingVolumeLayer from './bounding-volume-layer';
@@ -101,15 +102,6 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Enable/Disable wireframe mode
   wireframe: false
 };
-const STATS_WIDGET_STYLE = {
-  wordBreak: 'break-word',
-  padding: 12,
-  zIndex: '10000',
-  maxWidth: 300,
-  background: '#000',
-  color: '#fff',
-  alignSelf: 'flex-start'
-};
 
 const MATERIAL_PICKER_STYLE = {
   default: {
@@ -159,6 +151,7 @@ export default class App extends PureComponent {
       token: null,
       tileset: null,
       frameNumber: 0,
+      showMemory: false,
       name: INITIAL_EXAMPLE_NAME,
       viewState: {
         main: INITIAL_VIEW_STATE,
@@ -504,14 +497,13 @@ export default class App extends PureComponent {
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
         debugOptions={debugOptions}
       >
-        {this._renderStats()}
       </DebugPanel>
     );
   }
 
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
-    return <div style={STATS_WIDGET_STYLE} ref={(_) => (this._statsWidgetContainer = _)} />;
+    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
   _renderControlPanel() {
@@ -719,13 +711,19 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle, tileInfo, debugOptions} = this.state;
+    const {selectedMapStyle, tileInfo, debugOptions, showMemory} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderDebugPanel()}
         {tileInfo ? this._renderAttributesPanel() : this._renderControlPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
+        <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>
+          {showMemory ? `Hide` : `Show`} Memory Usage
+        </MemoryButton>
+        <StatsWidgetWrapper showMemory={showMemory}>
+          {this._renderStats()}
+        </StatsWidgetWrapper>
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}

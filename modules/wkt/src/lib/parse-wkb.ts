@@ -276,8 +276,8 @@ function concatenateBinaryPolygonGeometries(
   for (const primitivePolygon of primitivePolygons) {
     primitivePolygonIndices.push(
       ...primitivePolygon
-        .filter((x) => x > 0)
-        .map((x) => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
+        .filter((x: number) => x > 0)
+        .map((x: number) => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
     );
   }
 

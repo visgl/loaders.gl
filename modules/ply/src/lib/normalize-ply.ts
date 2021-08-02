@@ -1,5 +1,7 @@
-import type {PlyAccessors, PlyData, PlyAttributes, NormalizeHeader, PlyHeader} from './types';
+import type {MeshAttributes} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/schema';
+import type {PLYMesh, PLYHeader, PLYAttributes, MeshHeader} from './ply-types';
+import {getPLYSchema} from './get-ply-schema';
 
 /**
  * @param header
@@ -7,40 +9,49 @@ import {getMeshBoundingBox} from '@loaders.gl/schema';
  * @returns data and header
  */
 export default function normalizePLY(
-  header: NormalizeHeader & PlyHeader,
-  attributes: PlyAttributes,
+  plyHeader: MeshHeader & PLYHeader,
+  plyAttributes: PLYAttributes,
   options?: {}
-): PlyData {
-  const normalizedAttributes = normalizeAttributes(attributes);
+): PLYMesh {
+  const attributes = getMeshAttributes(plyAttributes);
+  const boundingBox = getMeshBoundingBox(attributes);
+  const vertexCount = plyAttributes.indices.length || plyAttributes.vertices.length / 3;
 
-  const result = {
-    loaderData: {
-      header
-    },
-    // TODO - how to detect POINT CLOUDS vs MESHES?
-    // TODO - For Meshes, PLY quadrangles must be split?
+  // TODO - how to detect POINT CLOUDS vs MESHES?
+  // TODO - For Meshes, PLY quadrangles must be split?
+  const isTriangles = plyAttributes.indices && plyAttributes.indices.length > 0;
+  const mode = isTriangles ? 4 : 0; // TRIANGLES vs POINTS
+  const topology = isTriangles ? 'triangle-list' : 'point-list';
+
+  const schema = getPLYSchema(plyHeader, attributes);
+
+  const plyMesh: PLYMesh = {
+    loader: 'ply',
+    loaderData: plyHeader,
     header: {
-      vertexCount: attributes.indices.length || attributes.vertices.length / 3,
-      boundingBox: getMeshBoundingBox(normalizedAttributes)
+      vertexCount,
+      boundingBox
     },
-    mode: attributes.indices && attributes.indices.length > 0 ? 4 : 0, // TRIANGLES vs POINTS
-    attributes: normalizedAttributes,
-    indices: {value: new Uint32Array(0), size: 0}
+    schema,
+    attributes,
+    indices: {value: new Uint32Array(0), size: 0},
+    mode,
+    topology
   };
 
-  if (attributes.indices && attributes.indices.length > 0) {
-    result.indices = {value: new Uint32Array(attributes.indices), size: 1};
+  if (plyAttributes.indices.length > 0) {
+    plyMesh.indices = {value: new Uint32Array(plyAttributes.indices), size: 1};
   }
 
-  return result;
+  return plyMesh;
 }
 
 /**
  * @param attributes
  * @returns accessors []
  */
-function normalizeAttributes(attributes: PlyAttributes): PlyAccessors {
-  const accessors: PlyAccessors = {};
+function getMeshAttributes(attributes: PLYAttributes): MeshAttributes {
+  const accessors: MeshAttributes = {};
 
   accessors.POSITION = {value: new Float32Array(attributes.vertices), size: 3};
 

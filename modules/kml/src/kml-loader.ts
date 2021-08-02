@@ -1,10 +1,14 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {kml} from '@tmcw/togeojson';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type KMLLoaderOptions = LoaderOptions & {
+  kml?: {};
+};
 
 const KML_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -13,13 +17,13 @@ const KML_HEADER = `\
 /**
  * Loader for KML (Keyhole Markup Language)
  */
-export const KMLLoader: LoaderWithParser = {
+export const KMLLoader = {
   name: 'KML (Keyhole Markup Language)',
   id: 'kml',
   module: 'kml',
   version: VERSION,
   extensions: ['kml'],
-  mimeTypes: ['vnd.google-earth.kml+xml'],
+  mimeTypes: ['application/vnd.google-earth.kml+xml'],
   text: true,
   tests: [KML_HEADER],
   parse: async (arrayBuffer, options) =>
