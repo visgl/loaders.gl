@@ -4,7 +4,7 @@ import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
 /**
  * Loader for I3S - Indexed 3D Scene Layer
  */
