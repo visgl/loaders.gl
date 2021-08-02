@@ -10,6 +10,13 @@ export default class VectorTile {
   }
 }
 
+/**
+ *
+ * @param tag
+ * @param layers
+ * @param pbf
+ * @returns {void}
+ */
 function readTile(tag: number, layers?: {[x: string]: VectorTileLayer}, pbf?: Protobuf) {
   if (tag === 3) {
     if (pbf) {

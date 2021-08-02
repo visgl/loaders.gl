@@ -12,12 +12,13 @@ import {LoaderOptions} from '@loaders.gl/loader-utils/';
 /**
  * Parse MVT arrayBuffer and return GeoJSON.
  *
- * @param {arrayBuffer} _ A MVT arrayBuffer
- * @return {?Object} A GeoJSON geometry object or a binary representation
+ * @param arrayBuffer A MVT arrayBuffer
+ * @param options
+ * @returns A GeoJSON geometry object or a binary representation
  */
 export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptions) {
   options = normalizeOptions(options);
-  const features: any[] = [];
+  const features: (MvtBinaryCoordinates | MvtMapboxCoordinates)[] = [];
 
   if (options) {
     const binary = options.gis.format === 'binary';
@@ -63,7 +64,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
     }
 
     if (binary) {
-      const data = featuresToBinary(features, firstPassData);
+      const data = featuresToBinary(features as MvtBinaryCoordinates[], firstPassData);
       // Add the original byteLength (as a reasonable approximation of the size of the binary data)
       // TODO decide where to store extra fields like byteLength (header etc) and document
       // @ts-ignore
@@ -155,7 +156,7 @@ function getDecodedFeatureBinary(
  * @returns {void}
  */
 
-function transformToLocalCoordinates(line: any[], feature: {extent: any}): void {
+function transformToLocalCoordinates(line: number[], feature: {extent: any}): void {
   // This function transforms local coordinates in a
   // [0 - bufferSize, this.extent + bufferSize] range to a
   // [0 - (bufferSize / this.extent), 1 + (bufferSize / this.extent)] range.
@@ -168,7 +169,7 @@ function transformToLocalCoordinates(line: any[], feature: {extent: any}): void 
   }
 }
 
-function transformToLocalCoordinatesBinary(data: any[], feature: {extent: any}) {
+function transformToLocalCoordinatesBinary(data: number[], feature: {extent: any}) {
   // For the binary code path, the feature data is just
   // one big flat array, so we just divide each value
   const {extent} = feature;

@@ -2,21 +2,28 @@
 /* eslint-disable */
 import Protobuf from 'pbf';
 import {MvtMapboxCoordinates, MvtMapboxGeometry} from '../types';
+import {readFeature, classifyRings} from './helper';
 
 export default class VectorTileFeature {
-  properties: object;
+  properties: {[x: string]: string | number | boolean | null};
   extent: any;
   type: number;
   id: number | null;
   _pbf: Protobuf;
   _geometry: number;
-  _keys: any;
-  _values: any;
+  _keys: string[];
+  _values: (string | number | boolean | null)[];
   static get types() {
     return ['Unknown', 'Point', 'LineString', 'Polygon'];
   }
 
-  constructor(pbf: Protobuf, end: any, extent: any, keys: any, values: any) {
+  constructor(
+    pbf: Protobuf,
+    end: number,
+    extent: any,
+    keys: string[],
+    values: (string | number | boolean | null)[]
+  ) {
     // Public
     this.properties = {};
     this.extent = extent;
@@ -42,8 +49,8 @@ export default class VectorTileFeature {
     let length = 0;
     let x = 0;
     let y = 0;
-    const lines: any = [];
-    let line;
+    const lines: number[][][] = [];
+    let line: number[][] | undefined;
 
     while (pbf.pos < end) {
       if (length <= 0) {
@@ -63,8 +70,7 @@ export default class VectorTileFeature {
           if (line) lines.push(line);
           line = [];
         }
-        // @ts-ignore
-        line.push([x, y]);
+        if (line) line.push([x, y]);
       } else if (cmd === 7) {
         // Workaround for https://github.com/mapbox/mapnik-vector-tile/issues/90
         if (line) {
@@ -127,7 +133,7 @@ export default class VectorTileFeature {
 
     switch (this.type) {
       case 1:
-        var points: any = [];
+        const points: number[] = [];
         for (i = 0; i < coords.length; i++) {
           points[i] = coords[i][0];
         }
@@ -174,7 +180,7 @@ export default class VectorTileFeature {
   }
 
   toGeoJSON(
-    options: {x: number; y: number; z: number} | ((data: any[], feature: {extent: any}) => void)
+    options: {x: number; y: number; z: number} | ((data: number[], feature: {extent: any}) => void)
   ): MvtMapboxCoordinates {
     if (typeof options === 'function') {
       return this._toGeoJSON(options);
@@ -184,7 +190,7 @@ export default class VectorTileFeature {
     const x0 = this.extent * x;
     const y0 = this.extent * y;
 
-    function project(line: string | any[]) {
+    function project(line: number[]) {
       for (let j = 0; j < line.length; j++) {
         const p = line[j];
         p[0] = ((p[0] + x0) * 360) / size - 180;
@@ -193,66 +199,5 @@ export default class VectorTileFeature {
       }
     }
     return this._toGeoJSON(project);
-  }
-}
-
-/**
- * Classifies an array of rings into polygons with outer rings and holes
- */
-
-function classifyRings(rings: MvtMapboxGeometry) {
-  const len = rings.length;
-
-  if (len <= 1) return [rings];
-
-  const polygons: any = [];
-  let polygon: any[] | undefined;
-  let ccw: boolean | undefined;
-
-  for (let i = 0; i < len; i++) {
-    const area = signedArea(rings[i]);
-    if (area === 0) continue;
-
-    if (ccw === undefined) ccw = area < 0;
-
-    if (ccw === area < 0) {
-      if (polygon) polygons.push(polygon);
-      polygon = [rings[i]];
-    } else {
-      // @ts-ignore
-      polygon.push(rings[i]);
-    }
-  }
-  if (polygon) polygons.push(polygon);
-
-  return polygons;
-}
-
-function signedArea(ring: string | any[]) {
-  let sum = 0;
-  for (let i = 0, j = ring.length - 1, p1: any[], p2: any[]; i < ring.length; j = i++) {
-    p1 = ring[i];
-    p2 = ring[j];
-    sum += (p2[0] - p1[0]) * (p1[1] + p2[1]);
-  }
-  return sum;
-}
-
-function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf) {
-  if (feature && pbf) {
-    if (tag === 1) feature.id = pbf.readVarint();
-    else if (tag === 2) readTag(pbf, feature);
-    else if (tag === 3) feature.type = pbf.readVarint();
-    else if (tag === 4) feature._geometry = pbf.pos;
-  }
-}
-
-function readTag(pbf: Protobuf, feature: VectorTileFeature) {
-  const end = pbf.readVarint() + pbf.pos;
-
-  while (pbf.pos < end) {
-    const key = feature._keys[pbf.readVarint()];
-    const value = feature._values[pbf.readVarint()];
-    feature.properties[key] = value;
   }
 }

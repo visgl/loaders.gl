@@ -1,44 +1,44 @@
 export type MvtOptions = {
-  coordinates: string | any[];
+  coordinates: string | number[];
   tileIndex: {x: number; y: number; z: number};
   layerProperty: string | number;
-  layerName: any;
+  layerName: string;
 };
 
 export type MvtBinaryGeometry = {
   data: number[];
-  lines: number[];
+  lines: any[];
+  areas?: number[];
   type?: string;
-  id?: any;
+  id?: number;
 };
 
 export type MvtMapboxGeometry = {
   type?: string;
-  id?: any;
+  id?: number;
   length: number;
-  coordinates: any;
+  coordinates?: any[];
 };
 
 export type MvtBinaryCoordinates = {
   type: string;
   geometry: MvtBinaryGeometry;
-  properties: {};
-  id?: any;
+  properties: {[x: string]: string | number | boolean | null};
+  id?: number;
 };
 
 export type MvtMapboxCoordinates = {
   type: string;
   geometry: {
-    type?: string;
-    id?: any;
-    coordinates: any;
+    type: string;
+    coordinates: MvtMapboxGeometry;
   };
-  properties: {};
-  id?: any;
+  properties: {[x: string]: string | number | boolean | null};
+  id?: number;
 };
 
 export type MvtBinaryOptions = {
-  numericPropKeys: string | string[];
+  numericPropKeys: string[];
   PositionDataType: Float32ArrayConstructor;
 };
 
@@ -55,29 +55,29 @@ export type MvtFirstPassedData = {
 };
 
 export type MvtPoints = {
-  positions: any;
-  globalFeatureIds: any;
-  featureIds: Uint32Array | Uint16Array;
-  numericProps: {};
+  positions: Float32Array;
+  globalFeatureIds: Uint16Array | Uint32Array;
+  featureIds: Uint16Array | Uint32Array;
+  numericProps: object;
   properties: {}[];
 };
 
 export type MvtLines = {
-  pathIndices: Uint32Array | Uint16Array;
-  positions: any;
-  globalFeatureIds: any;
-  featureIds: Uint32Array | Uint16Array;
-  numericProps: {};
+  pathIndices: Uint16Array | Uint32Array;
+  positions: Float32Array;
+  globalFeatureIds: Uint16Array | Uint32Array;
+  featureIds: Uint16Array | Uint32Array;
+  numericProps: object;
   properties: {}[];
 };
 
 export type MvtPolygons = {
-  polygonIndices: Uint32Array | Uint16Array;
-  primitivePolygonIndices: Uint32Array | Uint16Array;
-  positions: any;
-  triangles: any;
-  globalFeatureIds: any;
-  featureIds: Uint32Array | Uint16Array;
-  numericProps: {[x: string]: Float32Array};
+  polygonIndices: Uint16Array | Uint32Array;
+  primitivePolygonIndices: Uint16Array | Uint32Array;
+  positions: Float32Array;
+  triangles: number[];
+  globalFeatureIds: Uint16Array | Uint32Array;
+  featureIds: Uint16Array | Uint32Array;
+  numericProps: object;
   properties: {}[];
 };

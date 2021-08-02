@@ -1,9 +1,9 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 /* eslint-disable */
 
-import {getPolygonSignedArea} from '@math.gl/polygon';
 import Protobuf from 'pbf';
-import {MvtBinaryCoordinates, MvtBinaryGeometry} from '../types';
+import {MvtBinaryCoordinates, MvtBinaryGeometry, MvtFirstPassedData} from '../types';
+import {classifyRings, project, readFeature} from './helper';
 
 // Reduce GC by reusing variables
 let endPos: number, cmd: number, cmdLen: number, length: number, x: number, y: number, i: number;
@@ -13,20 +13,27 @@ export const TEST_EXPORTS = {
 };
 
 export default class VectorTileFeature {
-  properties: object;
+  properties: {[x: string]: string | number | boolean | null};
   extent: any;
   type: number;
   id: number | null;
   _pbf: Protobuf;
   _geometry: number;
-  _keys: any;
-  _values: any;
-  _firstPassData: any;
+  _keys: string[];
+  _values: (string | number | boolean | null)[];
+  _firstPassData: MvtFirstPassedData;
   static get types() {
     return ['Unknown', 'Point', 'LineString', 'Polygon'];
   }
 
-  constructor(pbf: Protobuf, end: any, extent: any, keys: any, values: any, firstPassData: any) {
+  constructor(
+    pbf: Protobuf,
+    end: number,
+    extent: any,
+    keys: string[],
+    values: (string | number | boolean | null)[],
+    firstPassData: MvtFirstPassedData
+  ) {
     // Public
     this.properties = {};
     this.extent = extent;
@@ -156,7 +163,6 @@ export default class VectorTileFeature {
         }
         this._firstPassData.polygonPositionsCount += classified.data.length / coordLength;
 
-        // @ts-ignore
         geom = classified;
         break;
     }
@@ -180,7 +186,7 @@ export default class VectorTileFeature {
   }
 
   toBinaryCoordinates(
-    options: {x: number; y: number; z: number} | ((data: any[], feature: {extent: any}) => void)
+    options: {x: number; y: number; z: number} | ((data: number[], feature: {extent: any}) => void)
   ): MvtBinaryCoordinates {
     if (typeof options === 'function') {
       return this._toBinaryCoordinates(options);
@@ -190,119 +196,6 @@ export default class VectorTileFeature {
     const x0 = this.extent * x;
     const y0 = this.extent * y;
 
-    function project(data: any[]) {
-      for (let j = 0, jl = data.length; j < jl; j += 2) {
-        data[j] = ((data[j] + x0) * 360) / size - 180;
-        const y2 = 180 - ((data[j + 1] + y0) * 360) / size;
-        data[j + 1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;
-      }
-    }
     return this._toBinaryCoordinates(project);
-  }
-}
-
-/**
- * Classifies an array of rings into polygons with outer rings and holes
- * The function also detects holes which have zero area and
- * removes them. In doing so it modifies the input
- * `geom.data` array to remove the unneeded data
- */
-/**
- *
- * @param geom
- * @returns object
- */
-
-function classifyRings(geom: MvtBinaryGeometry) {
-  const len = geom.lines.length;
-
-  if (len <= 1) {
-    return {
-      data: geom.data,
-      areas: [[getPolygonSignedArea(geom.data)]],
-      lines: [geom.lines]
-    };
-  }
-
-  const areas: any[] = [];
-  const polygons: any[] = [];
-  let ringAreas: any[] = [];
-  let polygon;
-  let ccw: boolean | undefined;
-  let offset = 0;
-
-  for (let i = 0, startIndex: number, endIndex: number; i < len; i++) {
-    startIndex = geom.lines[i] - offset;
-
-    endIndex = geom.lines[i + 1] - offset || geom.data.length;
-    const shape = geom.data.slice(startIndex, endIndex);
-    const area = getPolygonSignedArea(shape);
-
-    if (area === 0) {
-      // This polygon has no area, so remove it from the shape
-      // Remove the section from the data array
-      const before = geom.data.slice(0, startIndex);
-      const after = geom.data.slice(endIndex);
-      geom.data = before.concat(after);
-
-      // Need to offset any remaining indices as we have
-      // modified the data buffer
-      offset += endIndex - startIndex;
-
-      // Do not add this index to the output and process next shape
-      continue;
-    }
-
-    if (ccw === undefined) ccw = area < 0;
-
-    if (ccw === area < 0) {
-      if (polygon) {
-        areas.push(ringAreas);
-        polygons.push(polygon);
-      }
-      polygon = [startIndex];
-      ringAreas = [area];
-    } else {
-      ringAreas.push(area);
-      polygon.push(startIndex);
-    }
-  }
-  if (ringAreas) areas.push(ringAreas);
-  if (polygon) polygons.push(polygon);
-
-  return {areas, lines: polygons, data: geom.data};
-}
-
-// All code below is unchanged from the original Mapbox implemenation
-/**
- *
- * @param tag
- * @param feature
- * @param pbf
- * @returns {void}
- */
-
-function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf) {
-  if (feature && pbf) {
-    if (tag === 1) feature.id = pbf.readVarint();
-    else if (tag === 2) readTag(pbf, feature);
-    else if (tag === 3) feature.type = pbf.readVarint();
-    else if (tag === 4) feature._geometry = pbf.pos;
-  }
-}
-
-/**
- * @param pbf
- * @param feature
- * @returns {void}
- */
-
-function readTag(pbf: Protobuf, feature: VectorTileFeature) {
-  const end = pbf.readVarint() + pbf.pos;
-
-  while (pbf.pos < end) {
-    const key = feature._keys[pbf.readVarint()];
-    const value = feature._values[pbf.readVarint()];
-    feature.properties[key] = value;
   }
 }

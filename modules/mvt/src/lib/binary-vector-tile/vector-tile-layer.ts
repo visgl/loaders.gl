@@ -2,6 +2,7 @@
 
 import VectorTileFeature from './vector-tile-feature';
 import Protobuf from 'pbf';
+import {MvtFirstPassedData} from '../types';
 
 export default class VectorTileLayer {
   version: number;
@@ -9,10 +10,10 @@ export default class VectorTileLayer {
   extent: number;
   length: number;
   _pbf: Protobuf;
-  _keys: any[];
-  _values: any[];
-  _features: any[];
-  constructor(pbf: Protobuf, end: any) {
+  _keys: string[];
+  _values: (string | number | boolean | null)[];
+  _features: number[];
+  constructor(pbf: Protobuf, end: number) {
     // Public
     this.version = 1;
     this.name = '';
@@ -33,11 +34,11 @@ export default class VectorTileLayer {
   // return feature `i` from this layer as a `VectorTileFeature`
   /**
    *
-   * @param i
+   * @param index
    * @param firstPassData
    * @returns {VectorTileFeature}
    */
-  feature(i: number, firstPassData: any): VectorTileFeature {
+  feature(i: number, firstPassData: MvtFirstPassedData): VectorTileFeature {
     if (i < 0 || i >= this._features.length) {
       throw new Error('feature index out of bounds');
     }
@@ -80,7 +81,7 @@ function readLayer(tag: number, layer?: VectorTileLayer, pbf?: Protobuf) {
  * @returns value
  */
 function readValueMessage(pbf: Protobuf) {
-  let value: any = null;
+  let value: string | number | boolean | null = null;
   const end = pbf.readVarint() + pbf.pos;
 
   while (pbf.pos < end) {

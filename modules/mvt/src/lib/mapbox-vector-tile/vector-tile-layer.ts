@@ -9,10 +9,10 @@ export default class VectorTileLayer {
   extent: number;
   length: number;
   _pbf: Protobuf;
-  _keys: any[];
-  _values: any[];
-  _features: any[];
-  constructor(pbf: Protobuf, end: any) {
+  _keys: string[];
+  _values: (string | number | boolean | null)[];
+  _features: number[];
+  constructor(pbf: Protobuf, end: number) {
     // Public
     this.version = 1;
     this.name = '';
@@ -43,6 +43,13 @@ export default class VectorTileLayer {
   }
 }
 
+/**
+ *
+ * @param tag
+ * @param layer
+ * @param pbf
+ * @returns {void}
+ */
 function readLayer(tag: number, layer?: VectorTileLayer, pbf?: Protobuf) {
   if (layer && pbf) {
     if (tag === 15) layer.version = pbf.readVarint();
@@ -54,8 +61,13 @@ function readLayer(tag: number, layer?: VectorTileLayer, pbf?: Protobuf) {
   }
 }
 
+/**
+ *
+ * @param pbf
+ * @returns value
+ */
 function readValueMessage(pbf: Protobuf) {
-  let value: any = null;
+  let value: string | number | boolean | null = null;
   const end = pbf.readVarint() + pbf.pos;
 
   while (pbf.pos < end) {
