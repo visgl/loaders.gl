@@ -31,8 +31,8 @@ export default class VectorTileLayer {
     this.length = this._features.length;
   }
 
-  // return feature `i` from this layer as a `VectorTileFeature`
   /**
+   * return feature `i` from this layer as a `VectorTileFeature`
    *
    * @param index
    * @param firstPassData
@@ -62,9 +62,8 @@ export default class VectorTileLayer {
  * @param tag
  * @param layer
  * @param pbf
- * @returns {void}
  */
-function readLayer(tag: number, layer?: VectorTileLayer, pbf?: Protobuf) {
+function readLayer(tag: number, layer?: VectorTileLayer, pbf?: Protobuf): void {
   if (layer && pbf) {
     if (tag === 15) layer.version = pbf.readVarint();
     else if (tag === 1) layer.name = pbf.readString();

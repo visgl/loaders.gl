@@ -1,13 +1,12 @@
 import Protobuf from 'pbf';
-import {MvtMapboxGeometry} from '../types';
-import VectorTileFeature from './vector-tile-feature';
+import {MvtMapboxGeometry} from '../lib/types';
+import VectorTileFeature from '../lib/mapbox-vector-tile/vector-tile-feature';
 
 /**
  * Classifies an array of rings into polygons with outer rings and holes
  * @param rings
  * @returns polygons
  */
-
 export function classifyRings(rings: MvtMapboxGeometry) {
   const len = rings.length;
 
@@ -53,9 +52,8 @@ export function signedArea(ring: number[][]) {
  * @param tag
  * @param feature
  * @param pbf
- * @returns {void}
  */
-export function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf) {
+export function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf): void {
   if (feature && pbf) {
     if (tag === 1) feature.id = pbf.readVarint();
     else if (tag === 2) readTag(pbf, feature);
@@ -68,9 +66,8 @@ export function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Prot
  *
  * @param pbf
  * @param feature
- * @returns {void}
  */
-export function readTag(pbf: Protobuf, feature: VectorTileFeature) {
+export function readTag(pbf: Protobuf, feature: VectorTileFeature): void {
   const end = pbf.readVarint() + pbf.pos;
 
   while (pbf.pos < end) {

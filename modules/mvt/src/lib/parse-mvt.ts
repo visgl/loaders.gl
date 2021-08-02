@@ -79,7 +79,6 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
  * @param options
  * @returns options
  */
-
 function normalizeOptions(options: LoaderOptions | undefined) {
   if (options) {
     options = {
@@ -111,7 +110,6 @@ function normalizeOptions(options: LoaderOptions | undefined) {
  * @param options
  * @returns decoded feature
  */
-
 function getDecodedFeature(
   feature: VectorTileFeatureMapBox,
   options: MvtOptions
@@ -133,7 +131,6 @@ function getDecodedFeature(
  * @param options
  * @returns decoded binary feature
  */
-
 function getDecodedFeatureBinary(
   feature: VectorTileFeatureBinary,
   options: MvtOptions
@@ -153,9 +150,7 @@ function getDecodedFeatureBinary(
 /**
  * @param line
  * @param feature
- * @returns {void}
  */
-
 function transformToLocalCoordinates(line: number[], feature: {extent: any}): void {
   // This function transforms local coordinates in a
   // [0 - bufferSize, this.extent + bufferSize] range to a

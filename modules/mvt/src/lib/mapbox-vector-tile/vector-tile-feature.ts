@@ -1,8 +1,7 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
-/* eslint-disable */
 import Protobuf from 'pbf';
 import {MvtMapboxCoordinates, MvtMapboxGeometry} from '../types';
-import {readFeature, classifyRings} from './helper';
+import {readFeature, classifyRings} from '../../helpers/mapbox-util-functions';
 
 export default class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
@@ -131,6 +130,7 @@ export default class VectorTileFeature {
     let i: number;
     let j: number;
 
+    // eslint-disable-next-line default-case
     switch (this.type) {
       case 1:
         const points: number[] = [];

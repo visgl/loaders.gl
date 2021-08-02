@@ -1,8 +1,7 @@
-/* eslint-disable max-statements */
 import Protobuf from 'pbf';
 import {getPolygonSignedArea} from '@math.gl/polygon';
-import {MvtBinaryGeometry} from '../types';
-import VectorTileFeature from './vector-tile-feature';
+import {MvtBinaryGeometry} from '../lib/types';
+import VectorTileFeature from '../lib/binary-vector-tile/vector-tile-feature';
 
 /**
  * Classifies an array of rings into polygons with outer rings and holes
@@ -13,7 +12,7 @@ import VectorTileFeature from './vector-tile-feature';
  * @param geometry
  * @returns object
  */
-
+// eslint-disable-next-line max-statements
 export function classifyRings(geom: MvtBinaryGeometry) {
   const len = geom.lines.length;
 
@@ -80,10 +79,8 @@ export function classifyRings(geom: MvtBinaryGeometry) {
  * @param x0
  * @param y0
  * @param size
- * @returns {void}
  */
-
-export function project(data: number[], x0: number, y0: number, size: number) {
+export function project(data: number[], x0: number, y0: number, size: number): void {
   for (let j = 0, jl = data.length; j < jl; j += 2) {
     data[j] = ((data[j] + x0) * 360) / size - 180;
     const y2 = 180 - ((data[j + 1] + y0) * 360) / size;
@@ -92,15 +89,13 @@ export function project(data: number[], x0: number, y0: number, size: number) {
 }
 
 /**
-   All code below is unchanged from the original Mapbox implemenation
-   *
-   * @param tag
-   * @param feature
-   * @param pbf
-   * @returns {void}
-   */
-
-export function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf) {
+ * All code below is unchanged from the original Mapbox implemenation
+ *
+ * @param tag
+ * @param feature
+ * @param pbf
+ */
+export function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf): void {
   if (feature && pbf) {
     if (tag === 1) feature.id = pbf.readVarint();
     else if (tag === 2) readTag(pbf, feature);
@@ -112,10 +107,8 @@ export function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Prot
 /**
  * @param pbf
  * @param feature
- * @returns {void}
  */
-
-export function readTag(pbf: Protobuf, feature: VectorTileFeature) {
+export function readTag(pbf: Protobuf, feature: VectorTileFeature): void {
   const end = pbf.readVarint() + pbf.pos;
 
   while (pbf.pos < end) {

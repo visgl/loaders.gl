@@ -15,9 +15,8 @@ export default class VectorTile {
  * @param tag
  * @param layers
  * @param pbf
- * @returns {void}
  */
-function readTile(tag: number, layers?: {[x: string]: VectorTileLayer}, pbf?: Protobuf) {
+function readTile(tag: number, layers?: {[x: string]: VectorTileLayer}, pbf?: Protobuf): void {
   if (tag === 3) {
     if (pbf) {
       const layer = new VectorTileLayer(pbf, pbf.readVarint() + pbf.pos);

@@ -1,12 +1,17 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
-/* eslint-disable */
 
 import Protobuf from 'pbf';
 import {MvtBinaryCoordinates, MvtBinaryGeometry, MvtFirstPassedData} from '../types';
-import {classifyRings, project, readFeature} from './helper';
+import {classifyRings, project, readFeature} from '../../helpers/binary-util-functions';
 
 // Reduce GC by reusing variables
-let endPos: number, cmd: number, cmdLen: number, length: number, x: number, y: number, i: number;
+let endPos: number;
+let cmd: number;
+let cmdLen: number;
+let length: number;
+let x: number;
+let y: number;
+let i: number;
 
 export const TEST_EXPORTS = {
   classifyRings
@@ -26,6 +31,7 @@ export default class VectorTileFeature {
     return ['Unknown', 'Point', 'LineString', 'Polygon'];
   }
 
+  // eslint-disable-next-line max-params
   constructor(
     pbf: Protobuf,
     end: number,
@@ -109,7 +115,6 @@ export default class VectorTileFeature {
    * @param transform
    * @returns result
    */
-
   _toBinaryCoordinates(transform) {
     // Expands the protobuf data to an intermediate `lines`
     // data format, which maps closely to the binary data buffers.
@@ -138,6 +143,7 @@ export default class VectorTileFeature {
 
     const coordLength = 2;
 
+    // eslint-disable-next-line default-case
     switch (this.type) {
       case 1: // Point
         this._firstPassData.pointFeaturesCount++;
@@ -191,11 +197,6 @@ export default class VectorTileFeature {
     if (typeof options === 'function') {
       return this._toBinaryCoordinates(options);
     }
-    const {x, y, z} = options;
-    const size = this.extent * Math.pow(2, z);
-    const x0 = this.extent * x;
-    const y0 = this.extent * y;
-
     return this._toBinaryCoordinates(project);
   }
 }
