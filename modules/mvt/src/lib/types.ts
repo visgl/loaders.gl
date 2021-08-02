@@ -60,6 +60,9 @@ export type MvtPoints = {
   featureIds: Uint16Array | Uint32Array;
   numericProps: object;
   properties: {}[];
+  fields: {
+    id?: number;
+  }[];
 };
 
 export type MvtLines = {
@@ -69,6 +72,9 @@ export type MvtLines = {
   featureIds: Uint16Array | Uint32Array;
   numericProps: object;
   properties: {}[];
+  fields: {
+    id?: number;
+  }[];
 };
 
 export type MvtPolygons = {
@@ -80,4 +86,7 @@ export type MvtPolygons = {
   featureIds: Uint16Array | Uint32Array;
   numericProps: object;
   properties: {}[];
+  fields: {
+    id?: number;
+  }[];
 };

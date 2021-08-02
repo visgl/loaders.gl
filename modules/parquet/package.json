@@ -28,9 +28,9 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build-disabled": "npm run build-bundle",
+    "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/parquet-worker.js --output ./dist/excel-worker.js --config ../../scripts/webpack/worker.js"
+    "build-worker": "webpack --entry ./src/workers/parquet-worker.ts --output ./dist/parquet-worker.js --config ../../scripts/webpack/worker.js"
   },
   "browser": {
     "child_process": false,

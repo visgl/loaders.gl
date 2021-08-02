@@ -63,7 +63,7 @@ export async function decodeDataPages(
       continue;
     }
 
-    if (dictionary) {
+    if (dictionary.length) {
       // eslint-disable-next-line no-loop-func
       page.values = page.values.map((value) => dictionary[value]);
     }
@@ -406,7 +406,7 @@ function decodeDictionaryPage(
   if (options.compression !== 'UNCOMPRESSED') {
     const valuesBuf = decompress(
       options.compression,
-      cursor.buffer.slice(cursor.offset, cursorEnd),
+      dictCursor.buffer.slice(dictCursor.offset, cursorEnd),
       pageHeader.uncompressed_page_size
     );
 

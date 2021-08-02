@@ -496,8 +496,7 @@ export default class App extends PureComponent {
         isClearButtonDisabled={isClearButtonDisabled}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
         debugOptions={debugOptions}
-      >
-      </DebugPanel>
+      />
     );
   }
 
@@ -507,7 +506,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, showMemory} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -516,8 +515,12 @@ export default class App extends PureComponent {
         token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        selectedMapStyle={selectedMapStyle}
-      />
+        selectedMapStyle={selectedMapStyle}>
+          <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>Memory Usage</MemoryButton>
+          <StatsWidgetWrapper showMemory={showMemory}>
+          {this._renderStats()}
+          </StatsWidgetWrapper>
+        </ControlPanel>
     );
   }
 
@@ -711,19 +714,13 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle, tileInfo, debugOptions, showMemory} = this.state;
+    const {selectedMapStyle, tileInfo, debugOptions} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderDebugPanel()}
         {tileInfo ? this._renderAttributesPanel() : this._renderControlPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
-        <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>
-          {showMemory ? `Hide` : `Show`} Memory Usage
-        </MemoryButton>
-        <StatsWidgetWrapper showMemory={showMemory}>
-          {this._renderStats()}
-        </StatsWidgetWrapper>
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}

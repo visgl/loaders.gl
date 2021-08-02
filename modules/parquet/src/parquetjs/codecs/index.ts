@@ -3,7 +3,7 @@ import type {ParquetCodec} from '../schema/declare';
 import type {ParquetCodecKit} from './declare';
 import * as PLAIN from './plain';
 import * as RLE from './rle';
-import * as PLAIN_DICTIONARY from './plain-dictionary';
+import * as DICTIONARY from './dictionary';
 
 export * from './declare';
 
@@ -16,9 +16,16 @@ export const PARQUET_CODECS: Record<ParquetCodec, ParquetCodecKit> = {
     encodeValues: RLE.encodeValues,
     decodeValues: RLE.decodeValues
   },
+  // Using the PLAIN_DICTIONARY enum value is deprecated in the Parquet 2.0 specification.
   PLAIN_DICTIONARY: {
     // @ts-ignore
-    encodeValues: PLAIN_DICTIONARY.encodeValues,
-    decodeValues: PLAIN_DICTIONARY.decodeValues
+    encodeValues: DICTIONARY.encodeValues,
+    decodeValues: DICTIONARY.decodeValues
+  },
+  // Prefer using RLE_DICTIONARY in a data page and PLAIN in a dictionary page for Parquet 2.0+ files.
+  RLE_DICTIONARY: {
+    // @ts-ignore
+    encodeValues: DICTIONARY.encodeValues,
+    decodeValues: DICTIONARY.decodeValues
   }
 };

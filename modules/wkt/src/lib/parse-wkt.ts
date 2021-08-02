@@ -7,21 +7,21 @@ const numberRegexp = /[-+]?([0-9]*\.[0-9]+|[0-9]+)([eE][-+]?[0-9]+)?/;
 // Matches sequences like '100 100' or '100 100 100'.
 const tuples = new RegExp('^' + numberRegexp.source + '(\\s' + numberRegexp.source + '){1,}');
 
-/*
+/**
  * Parse WKT and return GeoJSON.
  *
  * @param {string} _ A WKT geometry
  * @return {?Object} A GeoJSON geometry object
- */
+ **/
 export default function parseWKT(input) {
-  var parts = input.split(';');
-  var _ = parts.pop();
-  var srid = (parts.shift() || '').split('=').pop();
+  const parts = input.split(';');
+  let _ = parts.pop();
+  const srid = (parts.shift() || '').split('=').pop();
 
-  var i = 0;
+  let i = 0;
 
   function $(re) {
-    var match = _.substring(i).match(re);
+    const match = _.substring(i).match(re);
     if (!match) return null;
     else {
       i += match[0].length;
@@ -48,11 +48,11 @@ export default function parseWKT(input) {
 
   function multicoords() {
     white();
-    var depth = 0;
-    var rings = [];
-    var stack = [rings];
-    var pointer = rings;
-    var elem;
+    let depth = 0;
+    const rings = [];
+    const stack = [rings];
+    let pointer = rings;
+    let elem;
 
     while ((elem = $(/^(\()/) || $(/^(\))/) || $(/^(,)/) || $(tuples))) {
       if (elem === '(') {
@@ -87,9 +87,9 @@ export default function parseWKT(input) {
   }
 
   function coords() {
-    var list = [];
-    var item;
-    var pt;
+    const list = [];
+    let item;
+    let pt;
     while ((pt = $(tuples) || $(/^(,)/))) {
       if (pt === ',') {
         list.push(item);
@@ -111,7 +111,7 @@ export default function parseWKT(input) {
     if (!$(/^(point(\sz)?)/i)) return null;
     white();
     if (!$(/^(\()/)) return null;
-    var c = coords();
+    const c = coords();
     if (!c) return null;
     white();
     if (!$(/^(\))/)) return null;
@@ -124,11 +124,11 @@ export default function parseWKT(input) {
   function multipoint() {
     if (!$(/^(multipoint)/i)) return null;
     white();
-    var newCoordsFormat = _.substring(_.indexOf('(') + 1, _.length - 1)
+    const newCoordsFormat = _.substring(_.indexOf('(') + 1, _.length - 1)
       .replace(/\(/g, '')
       .replace(/\)/g, '');
     _ = 'MULTIPOINT (' + newCoordsFormat + ')';
-    var c = multicoords();
+    const c = multicoords();
     if (!c) return null;
     white();
     return {
@@ -140,7 +140,7 @@ export default function parseWKT(input) {
   function multilinestring() {
     if (!$(/^(multilinestring)/i)) return null;
     white();
-    var c = multicoords();
+    const c = multicoords();
     if (!c) return null;
     white();
     return {
@@ -153,7 +153,7 @@ export default function parseWKT(input) {
     if (!$(/^(linestring(\sz)?)/i)) return null;
     white();
     if (!$(/^(\()/)) return null;
-    var c = coords();
+    const c = coords();
     if (!c) return null;
     if (!$(/^(\))/)) return null;
     return {
@@ -165,7 +165,7 @@ export default function parseWKT(input) {
   function polygon() {
     if (!$(/^(polygon(\sz)?)/i)) return null;
     white();
-    var c = multicoords();
+    const c = multicoords();
     if (!c) return null;
     return {
       type: 'Polygon',
@@ -176,7 +176,7 @@ export default function parseWKT(input) {
   function multipolygon() {
     if (!$(/^(multipolygon)/i)) return null;
     white();
-    var c = multicoords();
+    const c = multicoords();
     if (!c) return null;
     return {
       type: 'MultiPolygon',
@@ -185,8 +185,8 @@ export default function parseWKT(input) {
   }
 
   function geometrycollection() {
-    var geometries = [];
-    var geometry;
+    const geometries = [];
+    let geometry;
 
     if (!$(/^(geometrycollection)/i)) return null;
     white();
