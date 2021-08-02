@@ -20,8 +20,9 @@ const SemanticValidatorContainer = styled.div`
   line-height: 1;
   border-bottom: none;
   @media screen and (max-width: 768px) {
-    bottom: 50px;
+    bottom: 20px;
     border: none;
+    min-width: 55%;
     background: #242730;
   }
 `;
