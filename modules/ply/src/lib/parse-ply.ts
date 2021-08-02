@@ -21,14 +21,13 @@
 //   }
 // });
 import type {
-  TypedArray,
-  PlyAttributes,
-  PlyData,
-  PlyHeader,
-  NormalizeHeader,
+  PLYMesh,
+  PLYHeader,
+  PLYAttributes,
+  MeshHeader,
   ASCIIElement,
-  PlyProperty
-} from './types';
+  PLYProperty
+} from './ply-types';
 import normalizePLY from './normalize-ply';
 
 /**
@@ -36,9 +35,9 @@ import normalizePLY from './normalize-ply';
  * @param options
  * @returns
  */
-export default function parsePLY(data: TypedArray | any, options = {}): PlyData {
-  let header: PlyHeader & NormalizeHeader;
-  let attributes: PlyAttributes;
+export default function parsePLY(data: ArrayBuffer | string, options = {}): PLYMesh {
+  let header: PLYHeader & MeshHeader;
+  let attributes: PLYAttributes;
 
   if (data instanceof ArrayBuffer) {
     const text = new TextDecoder().decode(data);
@@ -57,7 +56,7 @@ export default function parsePLY(data: TypedArray | any, options = {}): PlyData 
  * @param options
  * @returns header
  */
-function parseHeader(data: any, options: {[index: string]: any}): PlyHeader {
+function parseHeader(data: any, options: {[index: string]: any}): PLYHeader {
   const PLY_HEADER_PATTERN = /ply([\s\S]*)end_header\s/;
 
   let headerText = '';
@@ -85,8 +84,8 @@ function parseHeaderLines(
   lines: string[],
   headerLength: number,
   options: {[index: string]: any}
-): PlyHeader {
-  const header: PlyHeader = {
+): PLYHeader {
+  const header: PLYHeader = {
     comments: [],
     elements: [],
     headerLength
@@ -158,8 +157,8 @@ function parseHeaderLines(
  * @param propertyNameMapping
  * @returns property of ply element
  */
-function makePLYElementProperty(propertValues: string[], propertyNameMapping: []): PlyProperty {
-  const property: PlyProperty = {
+function makePLYElementProperty(propertValues: string[], propertyNameMapping: []): PLYProperty {
+  const property: PLYProperty = {
     type: propertValues[0]
   };
 
@@ -245,10 +244,10 @@ function parseASCIIElement(properties: any[], line: string) {
  * @param header
  * @returns [attributes]
  */
-function parseASCII(data: any, header: PlyHeader): PlyAttributes {
+function parseASCII(data: any, header: PLYHeader): PLYAttributes {
   // PLY ascii format specification, as per http://en.wikipedia.org/wiki/PLY_(file_format)
 
-  const attributes: PlyAttributes = {
+  const attributes: PLYAttributes = {
     indices: [],
     vertices: [],
     normals: [],

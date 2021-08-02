@@ -10,11 +10,12 @@ import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils'
  */
 export default class I3SNodePagesTiles {
   tileset: Tileset;
-  nodePages: NodePage[];
+  nodePages: NodePage[] = [];
+  pendingNodePages: {promise: Promise<NodePage>; status: 'Pending' | 'Done'}[] = [];
   nodesPerPage: number;
   options: {[key: string]: any};
   lodSelectionMetricType: any;
-  textureDefinitionsSelectedFormats: any[];
+  textureDefinitionsSelectedFormats: any[] = [];
 
   /**
    * @constructs
@@ -27,8 +28,6 @@ export default class I3SNodePagesTiles {
     this.nodesPerPage = tileset.nodePages.nodesPerPage;
     this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
     this.options = options;
-    this.nodePages = [];
-    this.textureDefinitionsSelectedFormats = [];
 
     this._initSelectedFormatsForTextureDefinitions(tileset);
   }
@@ -39,16 +38,20 @@ export default class I3SNodePagesTiles {
    */
   async getNodeById(id: number) {
     const pageIndex = Math.floor(id / this.nodesPerPage);
-    if (!this.nodePages[pageIndex]) {
+    if (!this.nodePages[pageIndex] && !this.pendingNodePages[pageIndex]) {
       const nodePageUrl = getUrlWithToken(
         `${this.tileset.url}/nodepages/${pageIndex}`,
         this.options.i3s?.token
       );
-      this.nodePages[pageIndex] = load(nodePageUrl, I3SNodePageLoader, this.options);
-      this.nodePages[pageIndex] = await this.nodePages[pageIndex];
+      this.pendingNodePages[pageIndex] = {
+        status: 'Pending',
+        promise: load(nodePageUrl, I3SNodePageLoader, this.options)
+      };
+      this.nodePages[pageIndex] = await this.pendingNodePages[pageIndex].promise;
+      this.pendingNodePages[pageIndex].status = 'Done';
     }
-    if (this.nodePages[pageIndex] instanceof Promise) {
-      this.nodePages[pageIndex] = await this.nodePages[pageIndex];
+    if (this.pendingNodePages[pageIndex].status === 'Pending') {
+      this.nodePages[pageIndex] = await this.pendingNodePages[pageIndex].promise;
     }
     const nodeIndex = id % this.nodesPerPage;
     return this.nodePages[pageIndex].nodes[nodeIndex];

@@ -7,5 +7,5 @@ export function decodeValues(type, cursor, count, opts) {
 }
 
 export function encodeValues(type, cursor, count, opts) {
-  throw new Error('Encode plain dictionary functionality is not supported');
+  throw new Error('Encode dictionary functionality is not supported');
 }
