@@ -1,6 +1,6 @@
 const PARQUET_FILES = [
-  {supported: false, title: 'lz4_raw_compressed', path: 'good/lz4_raw_compressed.parquet'},
-  {supported: false, title: 'lz4_raw_compressed_larger', path: 'good/lz4_raw_compressed_larger.parquet'},
+  {supported: false, title: 'lz4_raw_compressed', path: 'good/lz4_raw_compressed.parquet'}, // Doesn't work on parquet-tools
+  {supported: false, title: 'lz4_raw_compressed_larger', path: 'good/lz4_raw_compressed_larger.parquet'}, // Doesn't work on parquet-tools
   {supported: false, title: 'non_hadoop_lz4_compressed', path: 'good/non_hadoop_lz4_compressed.parquet'},
   {supported: true, title: 'alltypes_dictionary', path: 'good/alltypes_dictionary.parquet'},
   {supported: true, title: 'alltypes_plain', path: 'good/alltypes_plain.parquet'},
@@ -24,7 +24,7 @@ const PARQUET_FILES = [
   {supported: true, title: 'nonnullable', path: 'good/nonnullable.impala.parquet'},
   {supported: false, title: 'nullable', path: 'good/nullable.impala.parquet'},
   {supported: true, title: 'nulls', path: 'good/nulls.snappy.parquet'},
-  {supported: false, title: 'repeated_no_annotation', path: 'good/repeated_no_annotation.parquet'},
+  {supported: true, title: 'repeated_no_annotation', path: 'good/repeated_no_annotation.parquet'},
   {supported: false, title: 'single_nan', path: 'good/single_nan.parquet'},
 
   // Encrypted
