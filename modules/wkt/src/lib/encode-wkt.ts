@@ -13,12 +13,18 @@
 export default function encodeWKT(gj: {
   type: string;
   properties?: {};
-  geometry?: any;
+  geometry?: {
+    type: string;
+    coordinates: any[];
+  };
   coordinates?: any[];
-  geometries?: any;
+  geometries?: {
+    type: string;
+    coordinates: any[];
+  }[];
 }): string {
   if (gj.type === 'Feature') {
-    gj = gj.geometry;
+    gj = gj.geometry!;
   }
 
   function pairWKT(c: number[]) {
@@ -55,7 +61,7 @@ export default function encodeWKT(gj: {
     case 'MultiLineString':
       return 'MULTILINESTRING (' + ringsWKT(gj.coordinates as any[]) + ')';
     case 'GeometryCollection':
-      return 'GEOMETRYCOLLECTION (' + gj.geometries.map(encodeWKT).join(', ') + ')';
+      return 'GEOMETRYCOLLECTION (' + gj.geometries!.map(encodeWKT).join(', ') + ')';
     default:
       throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
   }
