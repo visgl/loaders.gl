@@ -15,7 +15,8 @@ const Container = styled.div`
   overflow-x: hidden;
   z-index: 1;
   @media screen and (max-width: 768px) {
-   top: 110px;
+    top: 120px;
+    max-height: 500px;
   }
 `;
 
@@ -35,6 +36,8 @@ const DebugOptions = styled.div`
   box-sizing: border-box;
   @media screen and (max-width: 768px) {
    margin: 0;
+   font-size: 13px;
+   line-height: 2;
   };
 `;
 
@@ -115,7 +118,6 @@ const propTypes = {
   clearWarnings: PropTypes.func,
   debugTextureImage: PropTypes.string,
   debugOptions: PropTypes.object,
-
 };
 
 const defaultProps = {
@@ -158,9 +160,10 @@ export default class DebugPanel extends PureComponent {
       display: 'flex',
       background: isClearButtonDisabled ? '#212529' : '#00ADE6',
       color: isClearButtonDisabled ? '#f2e9e4' : '#242730',
+      width: '100px',
       alignItems: 'center',
       height: '20px',
-      margin: '5px 5px 5px 145px',
+      margin: '5px 5px 5px 120px',
       fontSize: '10px',
       borderRadius: '2px',
       textTransform: 'uppercase',

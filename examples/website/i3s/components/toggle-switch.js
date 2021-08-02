@@ -16,6 +16,9 @@ const Label = styled.label`
   width: 4.8em;
   height: 1.8em;
   cursor: ${props => (props.disabled ? "not-allowed" : "pointer")};
+  @media screen and (max-width: 768px) {
+    height: 2em;
+  }
   ${Input} {
     opacity: 0;
     width: 0;
@@ -45,6 +48,9 @@ const Slider = styled.span`
     background-color: #f2e9e4;
     transition: 0.4s;
     border-radius: 10%;
+    @media screen and (max-width: 768px) {
+      height: 2em;
+    }
   }
 
   ${Input}:checked + & {

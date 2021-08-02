@@ -222,7 +222,6 @@ export default class App extends PureComponent {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        
         {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
         <DeckGL
           layers={layers}
