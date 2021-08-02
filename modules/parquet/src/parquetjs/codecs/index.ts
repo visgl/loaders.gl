@@ -3,7 +3,7 @@ import type {ParquetCodec} from '../schema/declare';
 import type {ParquetCodecKit} from './declare';
 import * as PLAIN from './plain';
 import * as RLE from './rle';
-import * as DICTIONARY from './plain-dictionary';
+import * as DICTIONARY from './dictionary';
 
 export * from './declare';
 
