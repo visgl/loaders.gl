@@ -105,7 +105,7 @@ const DebugTextureContainer = styled.div`
   width: 30%;
   &:hover {
     transition: all 1s;
-    width: 98%;
+    width: 85%;
   }
 `;
 
