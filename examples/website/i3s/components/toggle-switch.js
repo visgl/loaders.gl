@@ -10,12 +10,15 @@ const Input = styled.input`
 
 const Label = styled.label`
   position: absolute;
-  margin-top: 2px;
+  margin-top: 4px;
   margin-left: 180px;
   font-size: 6px;
   width: 4.8em;
-  height: 1.5em;
+  height: 1.8em;
   cursor: ${props => (props.disabled ? "not-allowed" : "pointer")};
+  @media screen and (max-width: 768px) {
+    height: 2em;
+  }
   ${Input} {
     opacity: 0;
     width: 0;
@@ -40,11 +43,14 @@ const Slider = styled.span`
   &::before {
     position: absolute;
     content: "";
-    height: 1.5em;
+    height: 1.8em;
     width: 2em;
     background-color: #f2e9e4;
     transition: 0.4s;
     border-radius: 10%;
+    @media screen and (max-width: 768px) {
+      height: 2em;
+    }
   }
 
   ${Input}:checked + & {
