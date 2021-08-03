@@ -1,25 +1,14 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
-
+// eslint-disable-next-line import/no-unresolved
+import type {Feature, Geometry} from 'geojson';
 /**
  * Stringifies a GeoJSON object into WKT
  * @param geojson
  * @returns string
  */
 
-export default function encodeWKT(gj: {
-  type: string;
-  properties?: {};
-  geometry?: {
-    type: string;
-    coordinates: any[];
-  };
-  coordinates?: any[];
-  geometries?: {
-    type: string;
-    coordinates: any[];
-  }[];
-}): string {
-  if (gj.type === 'Feature' && gj.geometry) {
+export default function encodeWKT(gj: Geometry | Feature): string {
+  if (gj.type === 'Feature') {
     gj = gj.geometry;
   }
 
@@ -45,20 +34,22 @@ export default function encodeWKT(gj: {
 
   switch (gj.type) {
     case 'Point':
-      return `POINT (${pairWKT(gj.coordinates as number[])})`;
+      return `POINT ${wrapParens(pairWKT(gj.coordinates as number[]))}`;
     case 'LineString':
-      return `LINESTRING (${ringWKT(gj.coordinates as number[][])})`;
+      return `LINESTRING ${wrapParens(ringWKT(gj.coordinates as number[][]))}`;
     case 'Polygon':
-      return `POLYGON (${ringsWKT(gj.coordinates as number[][][])})`;
+      return `POLYGON ${wrapParens(ringsWKT(gj.coordinates as number[][][]))}`;
     case 'MultiPoint':
-      return `MULTIPOINT (${ringWKT(gj.coordinates as number[][])})`;
+      return `MULTIPOINT ${wrapParens(ringWKT(gj.coordinates as number[][]))}`;
     case 'MultiPolygon':
-      return `MULTIPOLYGON (${multiRingsWKT(gj.coordinates as number[][][][])})`;
+      return `MULTIPOLYGON ${wrapParens(multiRingsWKT(gj.coordinates as number[][][][]))}`;
     case 'MultiLineString':
-      return `MULTILINESTRING (${ringsWKT(gj.coordinates as number[][][])})`;
+      return `MULTILINESTRING ${wrapParens(ringsWKT(gj.coordinates as number[][][]))}`;
     case 'GeometryCollection':
-      return `GEOMETRYCOLLECTION (${gj.geometries!.map(encodeWKT).join(', ')})`;
+      return `GEOMETRYCOLLECTION ${wrapParens(gj.geometries.map(encodeWKT).join(', '))}`;
     default:
-      throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
+      return ((_x: never): never => {
+        throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
+      })(gj);
   }
 }
