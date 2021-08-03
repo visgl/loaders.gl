@@ -34,17 +34,17 @@ export default function encodeWKT(gj: Geometry | Feature): string {
 
   switch (gj.type) {
     case 'Point':
-      return `POINT ${wrapParens(pairWKT(gj.coordinates as number[]))}`;
+      return `POINT ${wrapParens(pairWKT(gj.coordinates))}`;
     case 'LineString':
-      return `LINESTRING ${wrapParens(ringWKT(gj.coordinates as number[][]))}`;
+      return `LINESTRING ${wrapParens(ringWKT(gj.coordinates))}`;
     case 'Polygon':
-      return `POLYGON ${wrapParens(ringsWKT(gj.coordinates as number[][][]))}`;
+      return `POLYGON ${wrapParens(ringsWKT(gj.coordinates))}`;
     case 'MultiPoint':
-      return `MULTIPOINT ${wrapParens(ringWKT(gj.coordinates as number[][]))}`;
+      return `MULTIPOINT ${wrapParens(ringWKT(gj.coordinates))}`;
     case 'MultiPolygon':
-      return `MULTIPOLYGON ${wrapParens(multiRingsWKT(gj.coordinates as number[][][][]))}`;
+      return `MULTIPOLYGON ${wrapParens(multiRingsWKT(gj.coordinates))}`;
     case 'MultiLineString':
-      return `MULTILINESTRING ${wrapParens(ringsWKT(gj.coordinates as number[][][]))}`;
+      return `MULTILINESTRING ${wrapParens(ringsWKT(gj.coordinates))}`;
     case 'GeometryCollection':
       return `GEOMETRYCOLLECTION ${wrapParens(gj.geometries.map(encodeWKT).join(', '))}`;
     default:
