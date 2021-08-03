@@ -36,6 +36,6 @@
     "@loaders.gl/gis": "3.0.1",
     "@loaders.gl/loader-utils": "3.0.1",
     "@loaders.gl/schema": "3.0.1",
-    "@tmcw/togeojson": "^4.2.0"
+    "@tmcw/togeojson": "^4.5.0"
   }
 }
