@@ -6,23 +6,23 @@ const PARQUET_FILES = [
   {supported: true, title: 'alltypes_plain', path: 'good/alltypes_plain.parquet'},
   {supported: true, title: 'alltypes_plain_snappy', path: 'good/alltypes_plain.snappy.parquet'},
   {supported: true, title: 'binary', path: 'good/binary.parquet'},
-  {supported: false, title: 'bloom_filter', path: 'good/bloom_filter.bin'},
+  {supported: false, title: 'bloom_filter', path: 'good/bloom_filter.bin'}, // It's not a parquet file should we remove it?
   {supported: false, title: 'byte_array_decimal', path: 'good/byte_array_decimal.parquet'},
   {supported: false, title: 'datapage_v2', path: 'good/datapage_v2.snappy.parquet'}, // Doesn't work on parquet-tools
   {supported: true, title: 'dict', path: 'good/dict-page-offset-zero.parquet'},
   {supported: false, title: 'fixed_length_decimal', path: 'good/fixed_length_decimal.parquet'},
   {supported: false, title: 'fixed_length_decimal_legacy', path: 'good/fixed_length_decimal_legacy.parquet'},
-  {supported: false, title: 'hadoop_lz4_compressed', path: 'good/hadoop_lz4_compressed.parquet'},
-  {supported: false, title: 'hadoop_lz4_compressed_larger', path: 'good/hadoop_lz4_compressed_larger.parquet'},
+  {supported: false, title: 'hadoop_lz4_compressed', path: 'good/hadoop_lz4_compressed.parquet'}, // Doesn't work on parquet-tools
+  {supported: false, title: 'hadoop_lz4_compressed_larger', path: 'good/hadoop_lz4_compressed_larger.parquet'}, // Doesn't work on parquet-tools
   {supported: false, title: 'int32_decimal', path: 'good/int32_decimal.parquet'},
   {supported: false, title: 'int64_decimal', path: 'good/int64_decimal.parquet'},
   {supported: true, title: 'list_columns', path: 'good/list_columns.parquet'},
-  {supported: false, title: 'nation', path: 'good/nation.dict-malformed.parquet'},
-  {supported: false, title: 'nested_lists', path: 'good/nested_lists.snappy.parquet'},
-  {supported: false, title: 'nested_maps', path: 'good/nested_maps.snappy.parquet'},
+  {supported: true, title: 'nation', path: 'good/nation.dict-malformed.parquet'}, // Partially works, issue with indices for dictionary values.
+  {supported: true, title: 'nested_lists', path: 'good/nested_lists.snappy.parquet'},
+  {supported: true, title: 'nested_maps', path: 'good/nested_maps.snappy.parquet'},
   {supported: false, title: 'nested_structs', path: 'good/nested_structs.rust.parquet'},
   {supported: true, title: 'nonnullable', path: 'good/nonnullable.impala.parquet'},
-  {supported: false, title: 'nullable', path: 'good/nullable.impala.parquet'},
+  {supported: true, title: 'nullable', path: 'good/nullable.impala.parquet'},
   {supported: true, title: 'nulls', path: 'good/nulls.snappy.parquet'},
   {supported: true, title: 'repeated_no_annotation', path: 'good/repeated_no_annotation.parquet'},
   {supported: false, title: 'single_nan', path: 'good/single_nan.parquet'},
