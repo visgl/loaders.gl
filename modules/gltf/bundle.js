@@ -110,6 +110,7 @@ const config = {
 //   }
 // };
 
+// @ts-ignore
 const es5Config = {
   ...config,
   name: 'es5',

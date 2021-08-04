@@ -79,6 +79,7 @@ test('crypto#streaming hashes', async (t) => {
           transforms: [cryptoHash.hashBatches]
         });
 
+        // @ts-ignore
         // eslint-disable-next-line no-unused-vars, no-empty, max-depth
         for await (const batch of nullIterator) {
         }

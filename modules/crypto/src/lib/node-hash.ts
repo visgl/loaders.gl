@@ -17,7 +17,9 @@ export class NodeHash extends Hash {
   readonly name = 'crypto-node';
 
   options: CryptoHashOptions;
+  // @ts-ignore
   private _algorithm;
+  // @ts-ignore
   private _hash;
 
   constructor(options: CryptoHashOptions) {
