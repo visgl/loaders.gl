@@ -11,13 +11,15 @@ export function validateLoader(t, loader, name = '') {
     t.ok('worker' in loader, `Loader ${name} loader.worker is not defined`);
   }
 
+  // @ts-ignore
+  // eslint-disable-next-line no-unused-vars
   const loaderOptions = options[loader.id] || {};
   if (!loader.parse) {
     // t.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
   } else {
     t.equal(typeof loader.parse, 'function', `Loader ${name} has 'parse' function`);
     // Call parse just to ensure it returns a promise
-    const promise = loader.parse(null, {}).catch(_ => {});
+    const promise = loader.parse(null, {}).catch((_) => {});
     t.ok(promise.then, `Loader ${name} is async (returns a promise)`);
   }
 }
@@ -40,11 +42,12 @@ export function validateMeshCategoryData(t, data) {
   // t.ok(data.loaderData && data.loaderData.header, 'data has original header');
 
   t.ok(data.header && Number.isFinite(data.header.vertexCount), 'data has normalized header');
-  t.ok(data.header.boundingBox
-    && data.header.boundingBox.length === 2
-    && data.header.boundingBox.every(p =>
-      p.length === 3 && p.every(Number.isFinite)
-    ), 'data header has boundingBox');
+  t.ok(
+    data.header.boundingBox &&
+      data.header.boundingBox.length === 2 &&
+      data.header.boundingBox.every((p) => p.length === 3 && p.every(Number.isFinite)),
+    'data header has boundingBox'
+  );
 
   t.ok(Number.isFinite(data.mode), 'data has draw mode');
 
@@ -63,7 +66,7 @@ function validateAttribute(attributeName, attribute) {
   if (!ArrayBuffer.isView(attribute.value)) {
     return `${attributeName} value is not typed array`;
   }
-  if (attribute.value.slice(0, 10).some(x => !Number.isFinite(x))) {
+  if (attribute.value.slice(0, 10).some((x) => !Number.isFinite(x))) {
     return `${attributeName} contains invalid value`;
   }
   if (!Number.isFinite(attribute.size)) {

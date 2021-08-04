@@ -1,4 +1,4 @@
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {gpx} from '@tmcw/togeojson';
 

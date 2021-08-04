@@ -24,14 +24,11 @@ const NODE = {
   crypto: 'empty',
   tls: 'empty',
   net: 'empty',
-  'child_process': 'empty'
+  child_process: 'empty'
 };
 
 const ES5_BABEL_CONFIG = {
-  presets: [
-    '@babel/preset-typescript',
-    ['@babel/preset-env', {forceAllTransforms: true}]
-  ],
+  presets: ['@babel/preset-typescript', ['@babel/preset-env', {forceAllTransforms: true}]],
   plugins: [
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
@@ -40,14 +37,12 @@ const ES5_BABEL_CONFIG = {
     '@babel/plugin-proposal-class-properties',
     // inject __VERSION__ from package.json
     'version-inline',
-    ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
+    ['@babel/plugin-transform-modules-commonjs', {allowTopLevelThis: true}]
   ]
 };
 
 const ES6_BABEL_CONFIG = {
-  presets: [
-    '@babel/preset-typescript'
-  ],
+  presets: ['@babel/preset-typescript'],
   plugins: [
     // webpack 4 cannot parse the most recent JS syntax
     '@babel/plugin-proposal-optional-chaining',
@@ -95,7 +90,7 @@ const config = {
       {
         test: /\.mjs$/,
         include: /node_modules/,
-        type: "javascript/auto"
+        type: 'javascript/auto'
       }
     ]
   },
@@ -122,6 +117,7 @@ const config = {
 //   }
 // };
 
+// @ts-ignore
 const es5Config = {
   ...config,
   name: 'es5',
@@ -129,16 +125,18 @@ const es5Config = {
     filename: 'dist.es5.min.js'
   },
   module: {
-    rules: [{
-      // Compile ES2015 using babel
-      test: /\.(js|ts)$/,
-      loader: 'babel-loader',
-      include: /src/,
-      options: ES5_BABEL_CONFIG
-    }]
+    rules: [
+      {
+        // Compile ES2015 using babel
+        test: /\.(js|ts)$/,
+        loader: 'babel-loader',
+        include: /src/,
+        options: ES5_BABEL_CONFIG
+      }
+    ]
   }
 };
 
 // console.error(JSON.stringify(config, null, 2))
 
-module.exports = [config]; // , es5Config] - DROP ES5 in 3.1 
+module.exports = [config]; // , es5Config] - DROP ES5 in 3.1

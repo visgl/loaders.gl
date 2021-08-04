@@ -19,6 +19,8 @@ const scratchNorthWest = new Vector3();
 const scratchSouthEast = new Vector3();
 // const scratchRectangle = new Rectangle();
 // const scratchOrientedBoundingBox = new OrientedBoundingBox();
+
+// @ts-ignore
 const scratchTransform = new Matrix4();
 
 /**

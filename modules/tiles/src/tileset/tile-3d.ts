@@ -69,31 +69,42 @@ export default class TileHeader {
 
   traverser: object;
 
+  // @ts-ignore
   private _cacheNode: any;
   private _frameNumber: any;
   // TODO i3s specific, needs to remove
+  // @ts-ignore
   private _lodJudge: any;
   // TODO Cesium 3d tiles specific
   private _expireDate: any;
   private _expiredContent: any;
+  // @ts-ignore
   private _shouldRefine: boolean;
 
   // Members this are updated every frame for tree traversal and rendering optimizations:
+  // @ts-ignore
   private _distanceToCamera: number;
+  // @ts-ignore
   private _centerZDepth: number;
   private _screenSpaceError: number;
   private _visibilityPlaneMask: any;
   private _visible?: boolean;
   private _inRequestVolume: boolean;
 
+  // @ts-ignore
   private _stackLength: number;
+  // @ts-ignore
   private _selectionDepth: number;
 
+  // @ts-ignore
   private _touchedFrame: number;
+  // @ts-ignore
   private _visitedFrame: number;
   private _selectedFrame: number;
+  // @ts-ignore
   private _requestedFrame: number;
 
+  // @ts-ignore
   private _priority: number;
 
   private _contentBoundingVolume: any;
