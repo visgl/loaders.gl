@@ -11,9 +11,7 @@ export function validateLoader(t, loader, name = '') {
     t.ok('worker' in loader, `Loader ${name} loader.worker is not defined`);
   }
 
-  // @ts-ignore
-  // eslint-disable-next-line no-unused-vars
-  const loaderOptions = options[loader.id] || {};
+  // const loaderOptions = options[loader.id] || {};
   if (!loader.parse) {
     // t.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
   } else {
