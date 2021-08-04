@@ -25,6 +25,7 @@ import AttributesPanel from './components/attributes-panel';
 import {StatsWidgetWrapper, StatsWidgetContainer, MemoryButton} from './components/memory-stats';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
+import MapInfoPanel from './components/map-info';
 import SemanticValidator from './components/semantic-validator';
 
 import {
@@ -121,8 +122,8 @@ const VIEWS = [
     id: 'minimap',
 
     // Position on top of main map
-    x: '80%',
-    y: '80%',
+    x: '79%',
+    y: '79%',
     width: '20%',
     height: '20%',
 
@@ -712,6 +713,12 @@ export default class App extends PureComponent {
     return <SemanticValidator warnings={warnings} />;
   }
 
+  _renderInfo() {
+    const {showFullInfo} = this.state;
+    return <MapInfoPanel showFullInfo={showFullInfo}/>
+  }
+
+
   render() {
     const layers = this._renderLayers();
     const {selectedMapStyle, tileInfo, debugOptions} = this.state;
@@ -719,6 +726,7 @@ export default class App extends PureComponent {
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderDebugPanel()}
+        {this._renderInfo()}
         {tileInfo ? this._renderAttributesPanel() : this._renderControlPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
         <DeckGL

@@ -74,6 +74,24 @@ export default class SemanticValidator extends PureComponent {
     ));
   }
 
+  _clearButtonStyles(isClearButtonDisabled) {
+    return {
+      display: 'flex',
+      background: isClearButtonDisabled ? '#212529' : '#00ADE6',
+      color: isClearButtonDisabled ? '#f2e9e4' : '#242730',
+      width: '100px',
+      alignItems: 'center',
+      height: '20px',
+      margin: '5px 5px 5px 120px',
+      fontSize: '10px',
+      borderRadius: '2px',
+      textTransform: 'uppercase',
+      justifyContent: 'center',
+      border: 'none',
+      cursor: isClearButtonDisabled ? 'auto' : 'pointer'
+    };
+  }
+
   renderWarnings(warnings) {
     const columns = this.renderColumns(warnings);
 
@@ -92,10 +110,17 @@ export default class SemanticValidator extends PureComponent {
   }
 
   render() {
-    const {warnings} = this.props;
+    const {warnings, clearWarnings, isClearButtonDisabled} = this.props;
 
     return (
       <SemanticValidatorContainer>
+        <button
+          style={this._clearButtonStyles(isClearButtonDisabled)}
+          disabled={isClearButtonDisabled}
+          onClick={clearWarnings}
+        >
+          Clear All
+        </button>
         {warnings && Boolean(warnings.length) ? (
           this.renderWarnings(warnings)
         ) : (
