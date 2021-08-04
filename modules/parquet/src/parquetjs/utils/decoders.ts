@@ -92,7 +92,7 @@ export async function decodeDataPages(
  */
 export function decodePage(cursor: CursorBuffer, options: ParquetOptions): ParquetPageData {
   let page;
-  const {pageHeader, length} = decodePageHeader(cursor.buffer);
+  const {pageHeader, length} = decodePageHeader(cursor.buffer, cursor.offset);
   cursor.offset += length;
 
   const pageType = getThriftEnum(PageType, pageHeader.type);
