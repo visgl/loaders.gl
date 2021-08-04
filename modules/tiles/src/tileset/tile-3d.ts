@@ -296,13 +296,17 @@ export default class TileHeader {
     /*
      * Tiles that are outside of the camera's frustum could be skipped if we are in 'ADD' mode
      * or if we are using 'Skip Traversal' in 'REPLACE' mode.
-     * In 'REPLACE' and 'Base Traversal' mode, all child tiles have to be loaded and displayed,
-     * including ones outide of the camera frustum, so that we can hide the parent tile.
+     * Otherewise, all 'touched' child tiles have to be loaded and displayed,
+     * this may include tiles that are outide of the camera frustum (so that we can hide the parent tile).
      */
     const maySkipTile = this.refine === TILE_REFINEMENT.ADD || skipLevelOfDetail;
 
     // Check if any reason to abort
     if (maySkipTile && !this.isVisible && this._visible !== undefined) {
+      return -1;
+    }
+    // Condition used in `cancelOutOfViewRequests` function in CesiumJS/Cesium3DTileset.js
+    if (this.tileset._frameNumber - this._touchedFrame >= 1) {
       return -1;
     }
     if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
