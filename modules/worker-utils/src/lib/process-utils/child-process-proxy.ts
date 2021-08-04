@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-import {spawn, ChildProcess, SpawnOptionsWithoutStdio} from 'child_process';
+import ChildProcess from 'child_process';
 import {getAvailablePort} from './process-utils';
+import type {SpawnOptionsWithoutStdio} from 'child_process';
 
 export type ChildProcessProxyProps = {
   command: string;
@@ -39,7 +40,7 @@ const DEFAULT_PROPS: ChildProcessProxyProps = {
 export default class ChildProcessProxy {
   id: string;
   props: ChildProcessProxyProps = {...DEFAULT_PROPS};
-  private childProcess: ChildProcess | null = null;
+  private childProcess: ReturnType<typeof ChildProcess['spawn']> | null = null;
   private port: number = 0;
   private successTimer?;
 
@@ -74,7 +75,7 @@ export default class ChildProcessProxy {
         });
 
         console.log(`Spawning ${props.command} ${props.arguments.join(' ')}`);
-        const childProcess = spawn(props.command, args, props.spawn);
+        const childProcess = ChildProcess.spawn(props.command, args, props.spawn);
         this.childProcess = childProcess;
 
         childProcess.stdout.on('data', (data) => {
