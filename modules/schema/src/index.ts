@@ -110,6 +110,7 @@ export {
 
 // SCHEMA UTILS
 export {deduceTableSchema} from './lib/schema-utils/deduce-table-schema';
+export {deduceMeshSchema, deduceMeshField} from './lib/schema-utils/deduce-mesh-schema';
 export {getTypeInfo} from './lib/schema-utils/get-type-info';
 export {getArrowTypeFromTypedArray} from './lib/schema-utils/type-utils';
 

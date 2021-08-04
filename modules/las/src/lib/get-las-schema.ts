@@ -1,29 +1,44 @@
-// import {Schema, Field, Float32, Uint8, FixedSizeList, MeshAttributes} from '@loaders.gl/schema';
-import {Schema, Field, MeshAttributes} from '@loaders.gl/schema';
+import {Schema, MeshAttributes, deduceMeshSchema} from '@loaders.gl/schema';
 import type {LASHeader} from './las-types';
 
 /**
  * Gets schema from PLY header
- * @param plyHeader
+ * @param lasHeader
  * @param metadata
  * @returns Schema
  */
-export function getLASSchema(plyHeader: LASHeader, attributes: MeshAttributes): Schema {
-  const fields: Field[] = [];
+export function getLASSchema(lasHeader: LASHeader, attributes: MeshAttributes): Schema {
+  const metadataMap = makeMetadataFromLasHeader(lasHeader);
+  const schema = deduceMeshSchema(attributes, metadataMap);
+  return schema;
+}
 
-  // if (offset.x !== undefined) {
-  //   fields.push(
-  //     new Field('POSITION', new FixedSizeList(3, new Field('xyz', new Float32())), false)
-  //   );
-  // }
-
-  // if (offset.normal_x !== undefined) {
-  //   fields.push(new Field('NORMAL', new FixedSizeList(3, new Field('xyz', new Float32())), false));
-  // }
-
-  // if (offset.rgb !== undefined) {
-  //   fields.push(new Field('COLOR_0', new FixedSizeList(3, new Field('rgb', new Uint8())), false));
-  // }
-
-  return new Schema(fields);
+/**
+ * Make arrow like schema metadata by LASHeader properties
+ * @param lasHeader
+ * @returns
+ */
+function makeMetadataFromLasHeader(lasHeader: LASHeader): Map<string, string> {
+  const metadataMap = new Map();
+  metadataMap.set('pointsOffset', lasHeader.pointsOffset.toString(10));
+  metadataMap.set('pointsFormatId', lasHeader.pointsFormatId.toString(10));
+  metadataMap.set('pointsStructSize', lasHeader.pointsStructSize.toString(10));
+  metadataMap.set('pointsCount', lasHeader.pointsCount.toString(10));
+  metadataMap.set('scale', JSON.stringify(lasHeader.scale));
+  metadataMap.set('offset', JSON.stringify(lasHeader.offset));
+  if (lasHeader.maxs !== undefined) {
+    metadataMap.set('maxs', JSON.stringify(lasHeader.maxs));
+  }
+  if (lasHeader.mins !== undefined) {
+    metadataMap.set('mins', JSON.stringify(lasHeader.mins));
+  }
+  metadataMap.set('totalToRead', lasHeader.totalToRead.toString(10));
+  metadataMap.set('pointsFortotalReadmatId', lasHeader.totalRead.toString(10));
+  if (lasHeader.versionAsString !== undefined) {
+    metadataMap.set('versionAsString', lasHeader.versionAsString);
+  }
+  if (lasHeader.isCompressed !== undefined) {
+    metadataMap.set('isCompressed', lasHeader.isCompressed.toString());
+  }
+  return metadataMap;
 }
