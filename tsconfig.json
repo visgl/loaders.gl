@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "baseUrl": ".",
+    "noUnusedLocals": true,
     "paths": {
       "@loaders.gl/schema/*": ["modules/schema/src/*"],
       "@loaders.gl/schema/test": ["modules/schema/test"],

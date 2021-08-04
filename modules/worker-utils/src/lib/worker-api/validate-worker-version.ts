@@ -31,6 +31,8 @@ export function validateWorkerVersion(
 
   return true;
 }
+
+// @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function parseVersion(version) {
   const parts = version.split('.').map(Number);
