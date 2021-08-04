@@ -1,19 +1,21 @@
 const PARQUET_FILES = [
-  {supported: false, title: 'lz4_raw_compressed', path: 'good/lz4_raw_compressed.parquet'}, // Doesn't work on parquet-tools
-  {supported: false, title: 'lz4_raw_compressed_larger', path: 'good/lz4_raw_compressed_larger.parquet'}, // Doesn't work on parquet-tools
+  // Parquet seems to use LZ4 compression without header so we need to find a way to e.g. add a dummy header.
+  {supported: false, title: 'lz4_raw_compressed', path: 'good/lz4_raw_compressed.parquet'},
+  {supported: false, title: 'lz4_raw_compressed_larger', path: 'good/lz4_raw_compressed_larger.parquet'},
   {supported: false, title: 'non_hadoop_lz4_compressed', path: 'good/non_hadoop_lz4_compressed.parquet'},
   {supported: true, title: 'alltypes_dictionary', path: 'good/alltypes_dictionary.parquet'},
   {supported: true, title: 'alltypes_plain', path: 'good/alltypes_plain.parquet'},
   {supported: true, title: 'alltypes_plain_snappy', path: 'good/alltypes_plain.snappy.parquet'},
   {supported: true, title: 'binary', path: 'good/binary.parquet'},
-  {supported: false, title: 'bloom_filter', path: 'good/bloom_filter.bin'}, // It's not a parquet file should we remove it?
+  // Specialized Dict for very large dictionaries: https://github.com/apache/parquet-format/blob/master/BloomFilter.md
+  {supported: false, title: 'bloom_filter', path: 'good/bloom_filter.bin'}, 
   {supported: false, title: 'byte_array_decimal', path: 'good/byte_array_decimal.parquet'},
   {supported: false, title: 'datapage_v2', path: 'good/datapage_v2.snappy.parquet'}, // Doesn't work on parquet-tools
   {supported: true, title: 'dict', path: 'good/dict-page-offset-zero.parquet'},
   {supported: false, title: 'fixed_length_decimal', path: 'good/fixed_length_decimal.parquet'},
   {supported: false, title: 'fixed_length_decimal_legacy', path: 'good/fixed_length_decimal_legacy.parquet'},
-  {supported: false, title: 'hadoop_lz4_compressed', path: 'good/hadoop_lz4_compressed.parquet'}, // Doesn't work on parquet-tools
-  {supported: false, title: 'hadoop_lz4_compressed_larger', path: 'good/hadoop_lz4_compressed_larger.parquet'}, // Doesn't work on parquet-tools
+  {supported: false, title: 'hadoop_lz4_compressed', path: 'good/hadoop_lz4_compressed.parquet'},
+  {supported: false, title: 'hadoop_lz4_compressed_larger', path: 'good/hadoop_lz4_compressed_larger.parquet'},
   {supported: false, title: 'int32_decimal', path: 'good/int32_decimal.parquet'},
   {supported: false, title: 'int64_decimal', path: 'good/int64_decimal.parquet'},
   {supported: true, title: 'list_columns', path: 'good/list_columns.parquet'},
