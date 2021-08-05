@@ -1,5 +1,8 @@
 /* eslint-disable no-console */
-import {spawn, ChildProcess, SpawnOptionsWithoutStdio} from 'child_process';
+// Avoid using named imports for Node builtins to help with "empty" resolution
+// for bundlers targeting browser environments. Access imports & types
+// through the `ChildProcess` object (e.g. `ChildProcess.spawn`, `ChildProcess.ChildProcess`).
+import * as ChildProcess from 'child_process';
 import {getAvailablePort} from './process-utils';
 
 export type ChildProcessProxyProps = {
@@ -15,7 +18,7 @@ export type ChildProcessProxyProps = {
   /** wait: 0 - infinity */
   wait?: number;
   /** Options passed on to Node'.js `spawn` */
-  spawn?: SpawnOptionsWithoutStdio;
+  spawn?: ChildProcess.SpawnOptionsWithoutStdio;
   /** Callback when the  */
   onStart?: (proxy: ChildProcessProxy) => void;
   onSuccess?: (proxy: ChildProcessProxy) => void;
@@ -39,7 +42,7 @@ const DEFAULT_PROPS: ChildProcessProxyProps = {
 export default class ChildProcessProxy {
   id: string;
   props: ChildProcessProxyProps = {...DEFAULT_PROPS};
-  private childProcess: ChildProcess | null = null;
+  private childProcess: ChildProcess.ChildProcess | null = null;
   private port: number = 0;
   private successTimer?;
 
@@ -74,7 +77,7 @@ export default class ChildProcessProxy {
         });
 
         console.log(`Spawning ${props.command} ${props.arguments.join(' ')}`);
-        const childProcess = spawn(props.command, args, props.spawn);
+        const childProcess = ChildProcess.spawn(props.command, args, props.spawn);
         this.childProcess = childProcess;
 
         childProcess.stdout.on('data', (data) => {
