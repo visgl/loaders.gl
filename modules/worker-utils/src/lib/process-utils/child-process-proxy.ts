@@ -1,4 +1,7 @@
 /* eslint-disable no-console */
+// Avoid using named imports for Node builtins to help with "empty" resolution
+// for bundlers targeting browser environments. Access imports & types
+// through the `ChildProcess` object (e.g. `ChildProcess.spawn`, `ChildProcess.ChildProcess`).
 import * as ChildProcess from 'child_process';
 import {getAvailablePort} from './process-utils';
 
