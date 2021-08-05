@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
-import ChildProcess from 'child_process';
+import * as ChildProcess from 'child_process';
 import {getAvailablePort} from './process-utils';
-import type {SpawnOptionsWithoutStdio} from 'child_process';
 
 export type ChildProcessProxyProps = {
   command: string;
@@ -16,7 +15,7 @@ export type ChildProcessProxyProps = {
   /** wait: 0 - infinity */
   wait?: number;
   /** Options passed on to Node'.js `spawn` */
-  spawn?: SpawnOptionsWithoutStdio;
+  spawn?: ChildProcess.SpawnOptionsWithoutStdio;
   /** Callback when the  */
   onStart?: (proxy: ChildProcessProxy) => void;
   onSuccess?: (proxy: ChildProcessProxy) => void;
@@ -40,7 +39,7 @@ const DEFAULT_PROPS: ChildProcessProxyProps = {
 export default class ChildProcessProxy {
   id: string;
   props: ChildProcessProxyProps = {...DEFAULT_PROPS};
-  private childProcess: ReturnType<typeof ChildProcess['spawn']> | null = null;
+  private childProcess: ChildProcess.ChildProcess | null = null;
   private port: number = 0;
   private successTimer?;
 
