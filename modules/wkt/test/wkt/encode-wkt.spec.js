@@ -4,6 +4,7 @@ import encodeWKT from '@loaders.gl/wkt/lib/encode-wkt';
 import parseWKT from '@loaders.gl/wkt/lib/parse-wkt';
 
 test('encodeWKT', (t) => {
+  // @ts-ignore
   t.throws(() => encodeWKT({type: 'FeatureCollection'}), 'does not accept featurecollections');
 
   const fixtures = [

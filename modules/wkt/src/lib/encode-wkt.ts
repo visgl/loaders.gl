@@ -1,22 +1,13 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
-/* eslint-disable prefer-template */
-
+// eslint-disable-next-line import/no-unresolved
+import type {Feature, Geometry} from 'geojson';
 /**
  * Stringifies a GeoJSON object into WKT
- */
-
-/**
  * @param geojson
  * @returns string
  */
 
-export default function encodeWKT(gj: {
-  type: string;
-  properties?: {};
-  geometry?: any;
-  coordinates?: any[];
-  geometries?: any;
-}): string {
+export default function encodeWKT(gj: Geometry | Feature): string {
   if (gj.type === 'Feature') {
     gj = gj.geometry;
   }
@@ -38,25 +29,27 @@ export default function encodeWKT(gj: {
   }
 
   function wrapParens(s: string) {
-    return '(' + s + ')';
+    return `(${s})`;
   }
 
   switch (gj.type) {
     case 'Point':
-      return 'POINT (' + pairWKT(gj.coordinates as any[]) + ')';
+      return `POINT ${wrapParens(pairWKT(gj.coordinates))}`;
     case 'LineString':
-      return 'LINESTRING (' + ringWKT(gj.coordinates as any[]) + ')';
+      return `LINESTRING ${wrapParens(ringWKT(gj.coordinates))}`;
     case 'Polygon':
-      return 'POLYGON (' + ringsWKT(gj.coordinates as any[]) + ')';
+      return `POLYGON ${wrapParens(ringsWKT(gj.coordinates))}`;
     case 'MultiPoint':
-      return 'MULTIPOINT (' + ringWKT(gj.coordinates as any[]) + ')';
+      return `MULTIPOINT ${wrapParens(ringWKT(gj.coordinates))}`;
     case 'MultiPolygon':
-      return 'MULTIPOLYGON (' + multiRingsWKT(gj.coordinates as any[]) + ')';
+      return `MULTIPOLYGON ${wrapParens(multiRingsWKT(gj.coordinates))}`;
     case 'MultiLineString':
-      return 'MULTILINESTRING (' + ringsWKT(gj.coordinates as any[]) + ')';
+      return `MULTILINESTRING ${wrapParens(ringsWKT(gj.coordinates))}`;
     case 'GeometryCollection':
-      return 'GEOMETRYCOLLECTION (' + gj.geometries.map(encodeWKT).join(', ') + ')';
+      return `GEOMETRYCOLLECTION ${wrapParens(gj.geometries.map(encodeWKT).join(', '))}`;
     default:
-      throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
+      return ((_x: never): never => {
+        throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
+      })(gj);
   }
 }
