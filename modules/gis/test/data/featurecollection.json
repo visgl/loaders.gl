@@ -4,6 +4,7 @@
       "type": "FeatureCollection",
       "features": [
         {
+          "id": 1,
           "type": "Feature",
           "geometry": {
             "type": "Point",
@@ -15,6 +16,7 @@
           }
         },
         {
+          "id": 2,
           "type": "Feature",
           "geometry": {
             "type": "MultiPoint",
@@ -36,7 +38,7 @@
           "numeric1": {"value": [1, 2, 2], "size": 1}
         },
         "properties": [{"string1": "a"}, {"string1": "b"}],
-        "fields": []
+        "fields": [{"id": 1}, {"id": 2}]
       }
     }
   },
@@ -45,6 +47,7 @@
       "type": "FeatureCollection",
       "features": [
         {
+          "id": 1,
           "type": "Feature",
           "geometry": {
             "type": "LineString",
@@ -81,7 +84,7 @@
           "numeric1": {"value": [3, 3, 4, 4, 4, 4], "size": 1}
         },
         "properties": [{"string1": "c"}, {"string1": "d"}],
-        "fields": []
+        "fields": [{"id": 1}, {}]
       }
     }
   },
