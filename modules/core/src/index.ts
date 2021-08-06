@@ -30,7 +30,7 @@ export {RequestScheduler} from '@loaders.gl/loader-utils';
 export {makeIterator} from './iterators/make-iterator/make-iterator';
 export {makeStream} from './iterators/make-stream/make-stream';
 export {makeDOMStream} from './iterators/make-stream/make-dom-stream';
-export {makeNodeStream} from './iterators/make-stream/make-node-stream';
+export {default as makeNodeStream} from './iterators/make-stream/make-node-stream';
 
 // CORE LOADERS
 export {NullWorkerLoader, NullLoader} from './null-loader';
