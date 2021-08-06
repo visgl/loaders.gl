@@ -3,7 +3,7 @@ import {Readable, ReadableOptions} from 'stream';
 export type MakeNodeStreamOptions = ReadableOptions;
 
 /** Builds a node stream from an iterator */
-export function makeNodeStream<ArrayBuffer>(
+function makeNodeStream<ArrayBuffer>(
   source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   options?: ReadableOptions
 ): Readable {
@@ -63,3 +63,8 @@ class AsyncIterableReadable extends Readable {
     return !this.readable;
   }
 }
+
+// This module is marked `false` in the the "browser" field of the `package.json` for
+// `@loaders.gl/core`. We avoid using named exports so that bundlers have an easier
+// time resolving this "empty" module.
+export default makeNodeStream;

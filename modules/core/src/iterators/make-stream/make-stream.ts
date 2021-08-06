@@ -4,7 +4,7 @@ import type {MakeNodeStreamOptions} from './make-node-stream';
 
 import {isBrowser} from '@loaders.gl/loader-utils';
 import {makeDOMStream} from './make-dom-stream';
-import {makeNodeStream} from './make-node-stream';
+import makeNodeStream from './make-node-stream';
 
 export type MakeStreamOptions = MakeDOMStreamOptions | MakeNodeStreamOptions;
 
