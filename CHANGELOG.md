@@ -2,6 +2,18 @@
 
 ## v3.0
 
+### v3.0.8
+
+- Add an out-of-view condition based on 'touchFrame' to 3d tiles request scheduling (#1739)
+- fix(worker-utils/loader-utils): loaders.gl for vite (#1742)
+- fix(worker-utils): Use default import for "child_process" (#1741)
+- chore(tsc): add noUnusedLocals rule to tsconfig (#1738)
+- Bump togeojson dependency for better TCX parsing (#1735)
+- chore(I3S-Debug): memory stats positioning change (#1725)
+- MVTLoader binary mode supports feature.id (#1724)
+- feat(parquet): Add Parquet worker (#1722)
+- fixes(kml): mime types (#1720)
+
 ### v3.0.7
 
 - chore(I3S & I3SDebug): UI improvements (#1704)
