@@ -20,16 +20,16 @@ export function getPLYSchema(plyHeader: PLYHeader, attributes: MeshAttributes): 
  */
 function makeMetadataFromPlyHeader(plyHeader: PLYHeader): Map<string, string> {
   const metadataMap = new Map();
-  metadataMap.set('comments', JSON.stringify(plyHeader.comments));
-  metadataMap.set('elements', JSON.stringify(plyHeader.elements));
+  metadataMap.set('ply_comments', JSON.stringify(plyHeader.comments));
+  metadataMap.set('ply_elements', JSON.stringify(plyHeader.elements));
   if (plyHeader.format !== undefined) {
-    metadataMap.set('format', plyHeader.format);
+    metadataMap.set('ply_format', plyHeader.format);
   }
   if (plyHeader.version !== undefined) {
-    metadataMap.set('version', plyHeader.version);
+    metadataMap.set('ply_version', plyHeader.version);
   }
   if (plyHeader.headerLength !== undefined) {
-    metadataMap.set('headerLength', plyHeader.headerLength.toString(10));
+    metadataMap.set('ply_headerLength', plyHeader.headerLength.toString(10));
   }
   return metadataMap;
 }
