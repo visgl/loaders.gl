@@ -14,7 +14,7 @@ export const CONTRAST_MAP_STYLES = {
     'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json'
 };
 
-export const INITIAL_MAP_STYLE = MAP_STYLES['Light'];
+export const INITIAL_MAP_STYLE = MAP_STYLES['Dark'];
 
 export const TILE_COLOR_MODES = {
   'Original': COLORED_BY.ORIGINAL,

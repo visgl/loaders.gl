@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import { Color, Flex, Font } from './styles';
+import Vector from './Vector.png'
 
 const FrameWrap = styled.div`
   ${Flex}
@@ -16,7 +17,7 @@ const FrameControl = styled.div`
   ${Color}
   ${Font}
   padding: 8px 24px;
-  margin: 15px;
+  margin: 10px;
   width: 290px;
   border-radius: 8px;
 `;
@@ -24,14 +25,24 @@ const FrameControl = styled.div`
 const FrameButton = styled.button`
   ${Font}
   ${Color}
+  color: rgba(255,255,255,.6);
   border: none;
   width: 145px;
+  cursor: pointer;
 `;
 
 const LinkButton = styled.button`
   border: none;
   width: 145px;
+  cursor: pointer;
 `;
+
+const VectorImg = styled.img`
+  width: 12px;
+  height: 7px;
+  margin: 0 0 2px 10px;
+  transform: ${props => (props.showFullInfo ? 'none' : 'rotate(0.5turn)')};
+`
 
 const propTypes = {
   showFullInfo: PropTypes.bool,
@@ -60,7 +71,8 @@ export default class MapInfoPanel extends PureComponent {
           <FrameWrap>
             <FrameControl showFullInfo={showFullInfo}>
               <FrameButton onClick={() => this.setState({showFullInfo: !showFullInfo})}>
-                {showFullInfo ? `Less Info` : `More Info`}
+                {showFullInfo ? `Show less` : `Show more`}
+                <VectorImg src={Vector} showFullInfo={showFullInfo}/>
               </FrameButton>
               <LinkButton as="a" target="_blank" rel="noopener noreferrer">
                 Go to ArcGIS

@@ -8,16 +8,18 @@ import DebugOptionGroup from './debug-option-group';
 import ToggleSwitch from './toggle-switch';
 import Checkbox from './checkbox';
 import {DropDown} from './control-panel';
-import {Color, Flex, Font} from './styles';
+import {Color, Font} from './styles';
 
 import {TILE_COLOR_MODES, BOUNDING_VOLUME_COLOR_MODES, BOUNDING_VOLUME_TYPE} from '../constants';
 
 const Container = styled.div`
-  ${Flex}
+  position: absolute;
+  display: flex;
   flex-direction: row;
+  overflow-x: hidden;
   z-index: 1;
   top: 120px;
-  margin: 15px;
+  margin: 10px 15px;
   -moz-user-select: none;
   -khtml-user-select: none;
   user-select: none; 
@@ -29,12 +31,11 @@ const DebugOptions = styled.div`
   border-radius: 8px;
   width: 278px;
   min-width: 278px;
-  padding: 15px;
+  padding:  10px 15px 0px 15px;
   height: 100%;
   margin: 0 0 15px 0;
   overflow: auto;
   outline: none;
-  z-index: 1;
   box-sizing: border-box;
 `;
 
@@ -50,12 +51,11 @@ const Header = styled.h6`
 
 const Expander = styled.div`
   top: calc(50% - 54px);
-  width: 14px;
-  padding: 10px 0 10px 0;
-  border-radius: 3px;
+  width: 20px;
+  padding: 15px 5px 15px 7px;
+  border-radius: 4px;
   background: #0E111A;
-  color: #4F52CC;
-  z-index: 1;
+  color: white;
   align-self: center;
   margin: 0px 10px;
   cursor: pointer;
@@ -67,11 +67,11 @@ const CheckboxOption = styled.div`
   flex-direction: row;
   align-items: center;
   width: 246px;
-`;
+  padding-bottom: 8px;
+`
 
 const Label = styled.label`
   cursor: pointer;
-  margin: 8px 0 8px 0;
 `;
 
 const Option = styled.h3`
@@ -79,6 +79,7 @@ const Option = styled.h3`
   ${Font}
   font-weight: 500;
   width: 70px;
+  margin: 8px 15px 8px 0;
 `;
 
 const DebugTextureContainer = styled.div`
@@ -92,7 +93,6 @@ const DebugTextureContainer = styled.div`
 `;
 
 const propTypes = {
-  isClearButtonDisabled: PropTypes.bool,
   onDebugOptionsChange: PropTypes.func,
   clearWarnings: PropTypes.func,
   debugTextureImage: PropTypes.string,
@@ -101,8 +101,7 @@ const propTypes = {
 
 const defaultProps = {
   clearWarnings: () => {},
-  onDebugOptionsChange: () => {},
-  isClearButtonDisabled: true
+  onDebugOptionsChange: () => {}
 };
 
 export default class DebugPanel extends PureComponent {
@@ -148,7 +147,7 @@ export default class DebugPanel extends PureComponent {
       onDebugOptionsChange
     } = this.props;
     return (
-      <CheckboxOption>
+      <CheckboxOption style={{margin: '0'}}>
         <Option>Color</Option>
         <DropDown
           value={boundingVolumeColorMode}
@@ -200,7 +199,7 @@ export default class DebugPanel extends PureComponent {
       debugOptions: {boundingVolume}, onDebugOptionsChange} = this.props;
     return (
       <DebugOptionGroup>
-        <CheckboxOption style={{borderTop: 'rgba(255,255,255, .6)'}}>
+        <CheckboxOption style={{borderTop: 'rgba(255,255,255, .6)', padding: '0 0 16px 0'}}>
           <Label htmlFor="boundingVolume" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Bounding Volumes</Label>
           <ToggleSwitch
             id="boundingVolume"
@@ -232,7 +231,8 @@ export default class DebugPanel extends PureComponent {
       onDebugOptionsChange
     } = this.props;
     return (
-      <DebugOptionGroup title="Tiles">
+      <DebugOptionGroup>
+      <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6)', fontWeight: 'bold', lineHeight: '185%'}}>Tiles</Label>
         <CheckboxOption>
           <Checkbox
             id="loadTiles"
@@ -326,16 +326,33 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
+  _renderMemoryUsage() {
+    const {
+      debugOptions: {showMemory},
+      onDebugOptionsChange
+    } = this.props;
+
+    return (
+      <CheckboxOption style={{padding: '16px 0 16px 0'}}>
+      <Label htmlFor="showMemory" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Memory usage</Label>
+        <ToggleSwitch
+          id="showMemory"
+          value={showMemory}
+          checked={showMemory}
+          onChange={() => onDebugOptionsChange({showMemory: !showMemory})}
+        />
+      </CheckboxOption>
+    )
+  }
+
   _renderSemanticValidatorOption() {
     const {
-      clearWarnings,
-      isClearButtonDisabled,
       debugOptions: {semanticValidator},
       onDebugOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup>
-        <CheckboxOption>
+        <CheckboxOption style={{padding: '0 0 16px 0'}}>
           <Label htmlFor="showSemanticValidator" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Semantic Validator</Label>
           <ToggleSwitch
             id="showSemanticValidator"
@@ -357,6 +374,7 @@ export default class DebugPanel extends PureComponent {
           {this._renderTileOptions()}
           {this._renderBoundingVolume()}
           {this._renderSemanticValidatorOption()}
+          {this._renderMemoryUsage()}
         </DebugOptions>
         <Expander onClick={this._onToggleDebugPanel}>{this._renderExpandIcon()}</Expander>
       </Container>

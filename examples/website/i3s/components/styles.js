@@ -6,6 +6,7 @@ export const DropDownStyle = `
   justify-content: space-between;
   align-items: center;
   padding: 4px 16px;
+  height: 28px;
   cursor: pointer;
   border-radius: 4px;
   box-sizing: border-box;

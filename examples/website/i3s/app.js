@@ -7,10 +7,10 @@ import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
+import { StatsWidgetContainer, StatsWidgetWrapper } from './app-debug';
 
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
-import {StatsWidgetWrapper, StatsWidgetContainer, MemoryButton} from './components/memory-stats';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
@@ -178,10 +178,9 @@ export default class App extends PureComponent {
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         selectedMapStyle={selectedMapStyle}>
-          <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>Memory Usage</MemoryButton>
-          <StatsWidgetWrapper showMemory={showMemory}>
-            {this._renderStats()}
-          </StatsWidgetWrapper>
+        <StatsWidgetWrapper showMemory={showMemory}>
+          {this._renderStats()}
+        </StatsWidgetWrapper>
         </ControlPanel>
     );
   }
