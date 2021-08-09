@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import React, {PureComponent}from 'react';
 import PropTypes from 'prop-types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg-icons';
+import {faChevronLeft, faChevronRight} from '@fortawesome/free-solid-svg-icons';
 
 import DebugOptionGroup from './debug-option-group';
 import ToggleSwitch from './toggle-switch';
@@ -50,16 +50,17 @@ const Header = styled.h6`
 `;
 
 const Expander = styled.div`
+  ${Color}
+  display: flex;
+  align-items: center;
+  justify-content: center;
   top: calc(50% - 54px);
   width: 20px;
-  padding: 15px 5px 15px 7px;
+  height: 30px;
   border-radius: 4px;
-  background: #0E111A;
-  color: white;
   align-self: center;
   margin: 0px 10px;
   cursor: pointer;
-  flex-direction: row;
 `;
 
 const CheckboxOption = styled.div`
@@ -124,21 +125,23 @@ export default class DebugPanel extends PureComponent {
     if (expand) {
       return {
         marginLeft: '0',
-        transition: 'margin-left 800ms'
+        transition: 'all 0.5s',
+        transform: 'translateX(0)'
       };
     }
     return {
-      marginLeft: '-293px',
-      transition: 'margin-left 800ms'
+      marginLeft: '-278px',
+      transition: 'all 1s',
+      transform: 'translateX(-100%)'
     };
   }
 
   _renderExpandIcon() {
     const {expand} = this.state;
     if (expand) {
-      return <FontAwesomeIcon icon={faAngleDoubleLeft} />;
+      return <FontAwesomeIcon icon={faChevronLeft} />;
     }
-    return <FontAwesomeIcon icon={faAngleDoubleRight} />;
+    return <FontAwesomeIcon icon={faChevronRight} />;
   }
 
   _renderBoundingVolumeColor() {

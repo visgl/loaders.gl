@@ -156,7 +156,6 @@ export const StatsWidgetContainer = styled.div`
   z-index: 999;
   top: 0;
   right: 0;
-  width: 300px;
   word-break: break-word;
   padding: 24px;
   margin: 15px;

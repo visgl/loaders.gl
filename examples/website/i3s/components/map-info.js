@@ -1,8 +1,10 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faAngleUp, faAngleDown} from '@fortawesome/free-solid-svg-icons';
 import { Color, Flex, Font } from './styles';
-import Vector from './Vector.png'
+
 
 const FrameWrap = styled.div`
   ${Flex}
@@ -11,6 +13,9 @@ const FrameWrap = styled.div`
   height: fit-content;
   overflow: hidden;
   z-index: 2;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  user-select: none;
 `;
 
 const FrameControl = styled.div`
@@ -36,13 +41,6 @@ const LinkButton = styled.button`
   width: 145px;
   cursor: pointer;
 `;
-
-const VectorImg = styled.img`
-  width: 12px;
-  height: 7px;
-  margin: 0 0 2px 10px;
-  transform: ${props => (props.showFullInfo ? 'none' : 'rotate(0.5turn)')};
-`
 
 const propTypes = {
   showFullInfo: PropTypes.bool,
@@ -71,8 +69,8 @@ export default class MapInfoPanel extends PureComponent {
           <FrameWrap>
             <FrameControl showFullInfo={showFullInfo}>
               <FrameButton onClick={() => this.setState({showFullInfo: !showFullInfo})}>
-                {showFullInfo ? `Show less` : `Show more`}
-                <VectorImg src={Vector} showFullInfo={showFullInfo}/>
+                {showFullInfo ? `Show more` : `Hide`}
+                {showFullInfo ? <FontAwesomeIcon icon={faAngleUp} style={{marginLeft: '10px'}} /> : <FontAwesomeIcon icon={faAngleDown} style={{marginLeft: '10px'}} />}
               </FrameButton>
               <LinkButton as="a" target="_blank" rel="noopener noreferrer">
                 Go to ArcGIS
