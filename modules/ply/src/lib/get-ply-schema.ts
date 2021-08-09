@@ -1,5 +1,4 @@
-// import {Schema, Field, Float32, Uint8, FixedSizeList, MeshAttributes} from '@loaders.gl/schema';
-import {Schema, Field, MeshAttributes} from '@loaders.gl/schema';
+import {Schema, MeshAttributes, deduceMeshSchema} from '@loaders.gl/schema';
 import type {PLYHeader} from './ply-types';
 
 /**
@@ -9,21 +8,28 @@ import type {PLYHeader} from './ply-types';
  * @returns Schema
  */
 export function getPLYSchema(plyHeader: PLYHeader, attributes: MeshAttributes): Schema {
-  const fields: Field[] = [];
+  const metadataMap = makeMetadataFromPlyHeader(plyHeader);
+  const schema = deduceMeshSchema(attributes, metadataMap);
+  return schema;
+}
 
-  // if (offset.x !== undefined) {
-  //   fields.push(
-  //     new Field('POSITION', new FixedSizeList(3, new Field('xyz', new Float32())), false)
-  //   );
-  // }
-
-  // if (offset.normal_x !== undefined) {
-  //   fields.push(new Field('NORMAL', new FixedSizeList(3, new Field('xyz', new Float32())), false));
-  // }
-
-  // if (offset.rgb !== undefined) {
-  //   fields.push(new Field('COLOR_0', new FixedSizeList(3, new Field('rgb', new Uint8())), false));
-  // }
-
-  return new Schema(fields);
+/**
+ * Make arrow like schema metadata by PlyHeader properties
+ * @param plyHeader
+ * @returns
+ */
+function makeMetadataFromPlyHeader(plyHeader: PLYHeader): Map<string, string> {
+  const metadataMap = new Map();
+  metadataMap.set('ply_comments', JSON.stringify(plyHeader.comments));
+  metadataMap.set('ply_elements', JSON.stringify(plyHeader.elements));
+  if (plyHeader.format !== undefined) {
+    metadataMap.set('ply_format', plyHeader.format);
+  }
+  if (plyHeader.version !== undefined) {
+    metadataMap.set('ply_version', plyHeader.version);
+  }
+  if (plyHeader.headerLength !== undefined) {
+    metadataMap.set('ply_headerLength', plyHeader.headerLength.toString(10));
+  }
+  return metadataMap;
 }
