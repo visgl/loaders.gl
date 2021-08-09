@@ -254,7 +254,7 @@ export default class Tileset3D {
     // PUBLIC MEMBERS
     // All user options are comming from deck.gl in 'loadOptions'
     // @ts-ignore
-    this.options = {...DEFAULT_PROPS, ...options.loadOptions, ...options};
+    this.options = {...DEFAULT_PROPS, ...options?.loadOptions, ...options};
     // raw data
     this.tileset = json;
     this.loader = json.loader;
