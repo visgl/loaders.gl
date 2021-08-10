@@ -17,9 +17,9 @@ const Container = styled.div`
   display: flex;
   flex-direction: row;
   overflow-x: hidden;
-  z-index: 1;
+  z-index: 20;
   top: 120px;
-  margin: 10px 15px;
+  margin: 10px 15px 10px 0;
   -moz-user-select: none;
   -khtml-user-select: none;
   user-select: none; 
@@ -33,7 +33,7 @@ const DebugOptions = styled.div`
   min-width: 278px;
   padding:  10px 15px 0px 15px;
   height: 100%;
-  margin: 0 0 15px 0;
+  margin: 0 0 15px 15px;
   overflow: auto;
   outline: none;
   box-sizing: border-box;
@@ -124,15 +124,13 @@ export default class DebugPanel extends PureComponent {
     const {expand} = this.state;
     if (expand) {
       return {
-        marginLeft: '0',
-        transition: 'all 0.5s',
-        transform: 'translateX(0)'
+        marginLeft: '15px',
+        transition: 'all 0.5s'
       };
     }
     return {
       marginLeft: '-278px',
-      transition: 'all 1s',
-      transform: 'translateX(-100%)'
+      transition: 'all 0.5s'
     };
   }
 
@@ -234,44 +232,52 @@ export default class DebugPanel extends PureComponent {
       onDebugOptionsChange
     } = this.props;
     return (
-      <DebugOptionGroup>
+      <DebugOptionGroup style={{cursor: 'pointer'}}>
       <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6)', fontWeight: 'bold', lineHeight: '185%'}}>Tiles</Label>
         <CheckboxOption>
+          <label>
           <Checkbox
             id="loadTiles"
             value={loadTiles}
             checked={loadTiles}
             onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
-          /> 
-          <Label htmlFor="loadTiles">Load tiles</Label>
+          />
+          <span style={{ marginLeft: 5 }}>Load tiles</span>
+          </label>
         </CheckboxOption>
         <CheckboxOption>
-          <Checkbox
-            id="pickable"
-            value={pickable}
-            checked={pickable}
-            onChange={() => onDebugOptionsChange({pickable: !pickable})}
-          />
-          <Label htmlFor="pickable">Picking</Label>
+          <label>
+            <Checkbox
+              id="pickable"
+              value={pickable}
+              checked={pickable}
+              onChange={() => onDebugOptionsChange({pickable: !pickable})}>
+            </Checkbox>
+            <span style={{ marginLeft: 5 }}>Picking</span>
+          </label>
         </CheckboxOption>
         <CheckboxOption>
-          <Checkbox
-            id="uvDebugTexture"
-            value={showUVDebugTexture}
-            checked={showUVDebugTexture}
-            onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
-          />
-          <Label htmlFor="uvDebugTexture">Texture UVs</Label>
+          <label>
+            <Checkbox
+              id="uvDebugTexture"
+              value={showUVDebugTexture}
+              checked={showUVDebugTexture}
+              onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
+            />
+            <span style={{ marginLeft: 5 }}>Texture UVs</span>
+          </label>
         </CheckboxOption>
         {showUVDebugTexture ? this._renderDebugTextureImage() : null}
         <CheckboxOption>
-          <Checkbox
-            id="wireframe"
-            value={wireframe}
-            checked={wireframe}
-            onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
-          />
-          <Label htmlFor="wireframe">Wireframe</Label>
+          <label>
+            <Checkbox
+              id="wireframe"
+              value={wireframe}
+              checked={wireframe}
+              onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
+            />
+            <span style={{ marginLeft: 5 }}>Wireframe</span>
+          </label>
         </CheckboxOption>
         <CheckboxOption>
           <Option>Color</Option>
@@ -297,13 +303,15 @@ export default class DebugPanel extends PureComponent {
     const {debugOptions: {minimapViewport}, onDebugOptionsChange} = this.props;
     return (
       <CheckboxOption>
-        <Checkbox
-          id="showFrustumCullingMinimapViewport"
-          value={minimapViewport}
-          checked={minimapViewport}
-          onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
-        />
-        <Label htmlFor="showFrustumCullingMinimapViewport">Different viewports</Label>
+        <label>
+          <Checkbox
+            id="showFrustumCullingMinimapViewport"
+            value={minimapViewport}
+            checked={minimapViewport}
+            onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
+          />
+          <span style={{ marginLeft: 5 }}>Different viewports</span>
+        </label>
       </CheckboxOption>
     )
   }
@@ -316,7 +324,7 @@ export default class DebugPanel extends PureComponent {
     return (
       <DebugOptionGroup>
         <CheckboxOption>
-          <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Frustum Culling</Label>
+          <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Minimap</Label>
           <ToggleSwitch
             id="showFrustumCullingMinimap"
             value={minimap}

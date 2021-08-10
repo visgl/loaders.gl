@@ -153,15 +153,14 @@ export const StatsWidgetContainer = styled.div`
   ${Color}
   ${Font}
   color: rgba(255, 255, 255, .6);
-  z-index: 999;
-  top: 0;
-  right: 0;
+  z-index: 3;
+  top: 15px;
+  right: 15px;
   word-break: break-word;
   padding: 24px;
-  margin: 15px;
   border-radius: 8px;
-  width: 270px;
-  height: 500px;
+  width: 250px;
+  height: auto;
   line-height: 135%;
 `;
 
@@ -553,6 +552,18 @@ export default class App extends PureComponent {
     );
   }
 
+  _renderInfo() {
+    const {showFullInfo, token, metadata, debugOptions: {minimap}} = this.state;
+    return (
+      <MapInfoPanel
+        showFullInfo={showFullInfo}
+        metadata={metadata}
+        token={token}
+        isMinimapShown={minimap}
+      />
+    );
+  }
+
   _layerFilter({layer, viewport}) {
     const {
       debugOptions: {minimapViewport}
@@ -742,12 +753,6 @@ export default class App extends PureComponent {
       <SemanticValidator warnings={warnings} clearWarnings={this.handleClearWarnings}/>
     )
   }
-
-  _renderInfo() {
-    const {showFullInfo} = this.state;
-    return <MapInfoPanel showFullInfo={showFullInfo}/>
-  }
-
 
   render() {
     const layers = this._renderLayers();
