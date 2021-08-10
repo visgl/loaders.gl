@@ -1,4 +1,4 @@
-import {Table, FloatVector, DateVector} from 'apache-arrow';
+import {Table, FloatVector, DateVector} from 'apache-arrow/Arrow.node';
 import {AnyArrayType, VECTOR_TYPES} from '../types';
 
 type ColumnarTable = {

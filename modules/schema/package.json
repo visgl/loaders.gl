@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@types/geojson": "^7946.0.7",
-    "apache-arrow": "^4.0.0",
+    "apache-arrow": "^5.0.0",
     "d3-dsv": "^1.2.0"
   }
 }

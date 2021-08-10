@@ -1,5 +1,5 @@
 import type {ArrowLoaderOptions} from '../arrow-loader';
-import {Table} from 'apache-arrow';
+import {Table} from 'apache-arrow/Arrow.node';
 
 // Parses arrow to a columnar table
 export default function parseArrowSync(arrayBuffer, options?: ArrowLoaderOptions) {
