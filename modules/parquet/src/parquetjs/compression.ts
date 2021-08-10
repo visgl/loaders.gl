@@ -104,7 +104,7 @@ function addDummyHeaderForLZ4file(value: ArrayBuffer): ArrayBuffer {
   const frameDescriptor = Buffer.from([
     FILE_DESCRIPTOR_VERSION,
     DEFAULT_BLOCK_SIZE << BLOCK_SIZE_SHIFT,
-    100
+    0 // Here should be hash part
   ]);
 
   return concatenateArrayBuffers(magic.buffer, frameDescriptor, value);
