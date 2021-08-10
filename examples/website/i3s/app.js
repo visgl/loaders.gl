@@ -7,10 +7,10 @@ import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
+import { StatsWidgetContainer, StatsWidgetWrapper } from './app-debug';
 
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
-import {StatsWidgetWrapper, StatsWidgetContainer, MemoryButton} from './components/memory-stats';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
@@ -45,7 +45,7 @@ export default class App extends PureComponent {
       selectedFeatureAttributes: null,
       selectedFeatureIndex: -1,
       isAttributesLoading: false,
-      showMemory: false
+      showMemory: true
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
@@ -178,10 +178,9 @@ export default class App extends PureComponent {
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         selectedMapStyle={selectedMapStyle}>
-          <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>Memory Usage</MemoryButton>
-          <StatsWidgetWrapper showMemory={showMemory}>
-            {this._renderStats()}
-          </StatsWidgetWrapper>
+        <StatsWidgetWrapper showMemory={showMemory}>
+          {this._renderStats()}
+        </StatsWidgetWrapper>
         </ControlPanel>
     );
   }
@@ -216,6 +215,20 @@ export default class App extends PureComponent {
     );
   }
 
+  renderStats() {
+    // TODO - too verbose, get more default styling from stats widget?
+    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
+  }
+
+  _renderMemory() {
+    const {showMemory} = this.state;
+    return (
+      <StatsWidgetWrapper showMemory={showMemory}>
+       {this._renderStats()}
+      </StatsWidgetWrapper>
+    );
+  }
+
   render() {
     const layers = this._renderLayers();
     const {viewState, selectedMapStyle, selectedFeatureAttributes} = this.state;
@@ -223,6 +236,7 @@ export default class App extends PureComponent {
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
+        {this._renderMemory()}
         <DeckGL
           layers={layers}
           viewState={viewState}

@@ -2,9 +2,13 @@ import styled from 'styled-components';
 import React, {PureComponent}from 'react';
 import PropTypes from 'prop-types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faAngleDoubleLeft, faAngleDoubleRight} from '@fortawesome/free-solid-svg-icons';
+import {faChevronLeft, faChevronRight} from '@fortawesome/free-solid-svg-icons';
+
 import DebugOptionGroup from './debug-option-group';
 import ToggleSwitch from './toggle-switch';
+import Checkbox from './checkbox';
+import {DropDown} from './control-panel';
+import {Color, Font} from './styles';
 
 import {TILE_COLOR_MODES, BOUNDING_VOLUME_COLOR_MODES, BOUNDING_VOLUME_TYPE} from '../constants';
 
@@ -13,93 +17,70 @@ const Container = styled.div`
   display: flex;
   flex-direction: row;
   overflow-x: hidden;
-  z-index: 1;
-  @media screen and (max-width: 768px) {
-    top: 120px;
-    max-height: 500px;
-  }
+  z-index: 20;
+  top: 120px;
+  margin: 10px 15px 10px 0;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  user-select: none; 
 `;
 
 const DebugOptions = styled.div`
-  width: 260px;
-  min-width: 260px;
-  margin: 5px;
-  padding: 5px;
-  text-transform: uppercase;
-  font-size: 11px;
+  ${Color}
+  ${Font}
+  border-radius: 8px;
+  width: 278px;
+  min-width: 278px;
+  padding:  10px 15px 0px 15px;
   height: 100%;
+  margin: 0 0 15px 15px;
   overflow: auto;
-  background: rgba(35, 35, 35, 0.7);
-  line-height: 1;
   outline: none;
-  z-index: 1;
   box-sizing: border-box;
-  @media screen and (max-width: 768px) {
-   margin: 0;
-   font-size: 13px;
-   line-height: 2;
-  };
 `;
 
-const Header = styled.h3`
-  margin: 0 0 10px 0;
-  padding: 5px;
-  color: #00ADE6;
-  text-shadow: 1px 1px 1px #212529;
-  text-align: center;
-  top: 0px;
+const Header = styled.h6`
+  padding: 0;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  line-height: 15px;
   text-transform: uppercase;
-  @media screen and (max-width: 768px) {
-    padding: 3px;
-  }
-`;
-
-const DropDown = styled.select`
-  padding: 5px;
-  display: flex;
-  width: 205px;
-  margin: 5px;
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.5);
-  border: none;
-  color: #ced4da;
-  font-size: 12px;
-    option {
-      color: black;
-      background: white;
-      font-weight: small;
-      display: flex;
-      white-space: pre;
-      min-height: 20px;
-      padding: 0px 2px 1px;
-    }
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
 `;
 
 const Expander = styled.div`
+  ${Color}
+  display: flex;
+  align-items: center;
+  justify-content: center;
   top: calc(50% - 54px);
-  width: 14px;
-  padding: 10px 0px 10px 1px;
-  background: rgba( 36, 39, 48, 0.7);
-  color: #00ADE6;
-  z-index: 1;
+  width: 20px;
+  height: 30px;
+  border-radius: 4px;
   align-self: center;
-  margin: 0px 5px;
+  margin: 0px 10px;
   cursor: pointer;
-  border-rarius: 2px;
 `;
 
 const CheckboxOption = styled.div`
   display: flex;
-  line-height: 2;
-  &:hover {
-    transition: all 1s;
-    color: white;
-  }
-`;
+  flex-direction: row;
+  align-items: center;
+  width: 246px;
+  padding-bottom: 8px;
+`
 
 const Label = styled.label`
   cursor: pointer;
-  margin-left: 10px;
+`;
+
+const Option = styled.h3`
+  ${Color}
+  ${Font}
+  font-weight: 500;
+  width: 70px;
+  margin: 8px 15px 8px 0;
 `;
 
 const DebugTextureContainer = styled.div`
@@ -113,7 +94,6 @@ const DebugTextureContainer = styled.div`
 `;
 
 const propTypes = {
-  isClearButtonDisabled: PropTypes.bool,
   onDebugOptionsChange: PropTypes.func,
   clearWarnings: PropTypes.func,
   debugTextureImage: PropTypes.string,
@@ -122,8 +102,7 @@ const propTypes = {
 
 const defaultProps = {
   clearWarnings: () => {},
-  onDebugOptionsChange: () => {},
-  isClearButtonDisabled: true
+  onDebugOptionsChange: () => {}
 };
 
 export default class DebugPanel extends PureComponent {
@@ -145,40 +124,22 @@ export default class DebugPanel extends PureComponent {
     const {expand} = this.state;
     if (expand) {
       return {
-        marginLeft: '5px',
-        transition: 'margin-left 800ms'
+        marginLeft: '15px',
+        transition: 'all 0.5s'
       };
     }
     return {
-      marginLeft: '-260px',
-      transition: 'margin-left 800ms'
-    };
-  }
-
-  _clearButtonStyles(isClearButtonDisabled) {
-    return {
-      display: 'flex',
-      background: isClearButtonDisabled ? '#212529' : '#00ADE6',
-      color: isClearButtonDisabled ? '#f2e9e4' : '#242730',
-      width: '100px',
-      alignItems: 'center',
-      height: '20px',
-      margin: '5px 5px 5px 120px',
-      fontSize: '10px',
-      borderRadius: '2px',
-      textTransform: 'uppercase',
-      justifyContent: 'center',
-      border: 'none',
-      cursor: isClearButtonDisabled ? 'auto' : 'pointer'
+      marginLeft: '-278px',
+      transition: 'all 0.5s'
     };
   }
 
   _renderExpandIcon() {
     const {expand} = this.state;
     if (expand) {
-      return <FontAwesomeIcon icon={faAngleDoubleLeft} />;
+      return <FontAwesomeIcon icon={faChevronLeft} />;
     }
-    return <FontAwesomeIcon icon={faAngleDoubleRight} />;
+    return <FontAwesomeIcon icon={faChevronRight} />;
   }
 
   _renderBoundingVolumeColor() {
@@ -187,20 +148,24 @@ export default class DebugPanel extends PureComponent {
       onDebugOptionsChange
     } = this.props;
     return (
-      <DropDown
-        value={boundingVolumeColorMode}
-        onChange={(evt) =>
-          onDebugOptionsChange({boundingVolumeColorMode: parseInt(evt.target.value, 10)})
-        }
-      >
-        {Object.keys(BOUNDING_VOLUME_COLOR_MODES).map((key) => {
-          return (
-            <option key={key} value={BOUNDING_VOLUME_COLOR_MODES[key]}>
-              {key}
-            </option>
-          );
-        })}
-      </DropDown>
+      <CheckboxOption style={{margin: '0'}}>
+        <Option>Color</Option>
+        <DropDown
+          value={boundingVolumeColorMode}
+          onChange={(evt) =>
+            onDebugOptionsChange({boundingVolumeColorMode: parseInt(evt.target.value, 10)})
+          }
+        >
+        
+          {Object.keys(BOUNDING_VOLUME_COLOR_MODES).map((key) => {
+            return (
+              <option key={key} value={BOUNDING_VOLUME_COLOR_MODES[key]}>
+                {key}
+              </option>
+            );
+          })}
+        </DropDown>
+      </CheckboxOption>
     );
   }
 
@@ -211,20 +176,43 @@ export default class DebugPanel extends PureComponent {
     } = this.props;
 
     return (
-      <DropDown
-        value={boundingVolumeType}
-        onChange={(evt) => onDebugOptionsChange({boundingVolumeType: evt.target.value})}
-      >
-        {Object.keys(BOUNDING_VOLUME_TYPE).map((key) => {
-          const shape = BOUNDING_VOLUME_TYPE[key];
-          return (
-            <option key={key} value={shape}>
-              {key}
-            </option>
-          );
-        })}
-      </DropDown>
+      <CheckboxOption>
+        <Option>Type</Option>
+        <DropDown
+          value={boundingVolumeType}
+          onChange={(evt) => onDebugOptionsChange({boundingVolumeType: evt.target.value})}
+        >
+          {Object.keys(BOUNDING_VOLUME_TYPE).map((key) => {
+            const shape = BOUNDING_VOLUME_TYPE[key];
+            return (
+              <option key={key} value={shape}>
+                {key}
+              </option>
+            );
+          })}
+        </DropDown>
+      </CheckboxOption>
     );
+  }
+
+  _renderBoundingVolume() {
+    const {
+      debugOptions: {boundingVolume}, onDebugOptionsChange} = this.props;
+    return (
+      <DebugOptionGroup>
+        <CheckboxOption style={{borderTop: 'rgba(255,255,255, .6)', padding: '0 0 16px 0'}}>
+          <Label htmlFor="boundingVolume" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Bounding Volumes</Label>
+          <ToggleSwitch
+            id="boundingVolume"
+            value={boundingVolume}
+            checked={boundingVolume}
+            onChange={() => onDebugOptionsChange({boundingVolume: !boundingVolume})}
+          />
+        </CheckboxOption>
+        {boundingVolume ? this._renderBoundingVolumeTypes() : null}
+        {boundingVolume ? this._renderBoundingVolumeColor() : null}
+      </DebugOptionGroup>
+    )
   }
 
   _renderDebugTextureImage() {
@@ -240,84 +228,103 @@ export default class DebugPanel extends PureComponent {
 
   _renderTileOptions() {
     const {
-      debugOptions: {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe, boundingVolume},
+      debugOptions: {tileColorMode, pickable, loadTiles, showUVDebugTexture, wireframe},
       onDebugOptionsChange
     } = this.props;
     return (
-      <DebugOptionGroup title="Tiles">
+      <DebugOptionGroup style={{cursor: 'pointer'}}>
+      <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6)', fontWeight: 'bold', lineHeight: '185%'}}>Tiles</Label>
         <CheckboxOption>
-          <Label htmlFor="loadTiles">Load tiles</Label>
-          <ToggleSwitch
+          <label>
+          <Checkbox
             id="loadTiles"
             value={loadTiles}
             checked={loadTiles}
             onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
           />
+          <span style={{ marginLeft: 5 }}>Load tiles</span>
+          </label>
         </CheckboxOption>
         <CheckboxOption>
-          <Label htmlFor="pickable">Pickable</Label>
-          <ToggleSwitch
-            id="pickable"
-            value={pickable}
-            checked={pickable}
-            onChange={() => onDebugOptionsChange({pickable: !pickable})}
-          />
+          <label>
+            <Checkbox
+              id="pickable"
+              value={pickable}
+              checked={pickable}
+              onChange={() => onDebugOptionsChange({pickable: !pickable})}>
+            </Checkbox>
+            <span style={{ marginLeft: 5 }}>Picking</span>
+          </label>
         </CheckboxOption>
         <CheckboxOption>
-          <Label htmlFor="uvDebugTexture">Texture UVs</Label>
-          <ToggleSwitch
-            id="uvDebugTexture"
-            value={showUVDebugTexture}
-            checked={showUVDebugTexture}
-            onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
-          />
+          <label>
+            <Checkbox
+              id="uvDebugTexture"
+              value={showUVDebugTexture}
+              checked={showUVDebugTexture}
+              onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
+            />
+            <span style={{ marginLeft: 5 }}>Texture UVs</span>
+          </label>
         </CheckboxOption>
         {showUVDebugTexture ? this._renderDebugTextureImage() : null}
         <CheckboxOption>
-          <Label htmlFor="wireframe">Wireframe</Label>
-          <ToggleSwitch
-            id="wireframe"
-            value={wireframe}
-            checked={wireframe}
-            onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
-          />
+          <label>
+            <Checkbox
+              id="wireframe"
+              value={wireframe}
+              checked={wireframe}
+              onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
+            />
+            <span style={{ marginLeft: 5 }}>Wireframe</span>
+          </label>
         </CheckboxOption>
-        <DropDown
-          value={tileColorMode}
-          onChange={(evt) => onDebugOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})}
-        >
-          {Object.keys(TILE_COLOR_MODES).map((key) => {
-            return (
-              <option key={key} value={TILE_COLOR_MODES[key]}>
-                {key}
-              </option>
-            );
-          })}
-        </DropDown>
         <CheckboxOption>
-          <Label htmlFor="boundingVolume">Bounding Volume</Label>
-          <ToggleSwitch
-            id="boundingVolume"
-            value={boundingVolume}
-            checked={boundingVolume}
-            onChange={() => onDebugOptionsChange({boundingVolume: !boundingVolume})}
-          />
+          <Option>Color</Option>
+          <DropDown
+            id="color"
+            value={tileColorMode}
+            onChange={(evt) => onDebugOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})}
+          >
+            {Object.keys(TILE_COLOR_MODES).map((key) => {
+              return (
+                <option key={key} value={TILE_COLOR_MODES[key]}>
+                  {key}
+                </option>
+              );
+            })}
+          </DropDown>
         </CheckboxOption>
-        {boundingVolume ? this._renderBoundingVolumeTypes() : null}
-        {boundingVolume ? this._renderBoundingVolumeColor() : null}
       </DebugOptionGroup>
     );
   }
 
+  _renderMiniMap() {
+    const {debugOptions: {minimapViewport}, onDebugOptionsChange} = this.props;
+    return (
+      <CheckboxOption>
+        <label>
+          <Checkbox
+            id="showFrustumCullingMinimapViewport"
+            value={minimapViewport}
+            checked={minimapViewport}
+            onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
+          />
+          <span style={{ marginLeft: 5 }}>Different viewports</span>
+        </label>
+      </CheckboxOption>
+    )
+  }
+
   _renderFrustumCullingOption() {
     const {
-      debugOptions: {minimap, minimapViewport},
+      debugOptions: {minimap},
       onDebugOptionsChange
     } = this.props;
     return (
-      <DebugOptionGroup title="Frustum Culling">
+      <DebugOptionGroup>
         <CheckboxOption>
-          <Label htmlFor="showFrustumCullingMinimap">Minimap</Label>
+          <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Minimap</Label>
           <ToggleSwitch
             id="showFrustumCullingMinimap"
             value={minimap}
@@ -325,30 +332,39 @@ export default class DebugPanel extends PureComponent {
             onChange={() => onDebugOptionsChange({minimap: !minimap})}
           />
         </CheckboxOption>
-        <CheckboxOption>
-          <Label htmlFor="showFrustumCullingMinimapViewport">Different viewports</Label>
-          <ToggleSwitch
-            id="showFrustumCullingMinimapViewport"
-            value={minimapViewport}
-            checked={minimapViewport}
-            onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
-          />
-        </CheckboxOption>
+        {minimap ? this._renderMiniMap() : null}
       </DebugOptionGroup>
     );
   }
 
+  _renderMemoryUsage() {
+    const {
+      debugOptions: {showMemory},
+      onDebugOptionsChange
+    } = this.props;
+
+    return (
+      <CheckboxOption style={{padding: '16px 0 16px 0'}}>
+      <Label htmlFor="showMemory" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Memory usage</Label>
+        <ToggleSwitch
+          id="showMemory"
+          value={showMemory}
+          checked={showMemory}
+          onChange={() => onDebugOptionsChange({showMemory: !showMemory})}
+        />
+      </CheckboxOption>
+    )
+  }
+
   _renderSemanticValidatorOption() {
     const {
-      clearWarnings,
-      isClearButtonDisabled,
       debugOptions: {semanticValidator},
       onDebugOptionsChange
     } = this.props;
     return (
       <DebugOptionGroup>
-        <CheckboxOption>
-          <Label htmlFor="showSemanticValidator" style={{fontWeight: 'bold'}}>Semantic Validator</Label>
+        <CheckboxOption style={{padding: '0 0 16px 0'}}>
+          <Label htmlFor="showSemanticValidator" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Semantic Validator</Label>
           <ToggleSwitch
             id="showSemanticValidator"
             value={semanticValidator}
@@ -356,13 +372,6 @@ export default class DebugPanel extends PureComponent {
             onChange={() => onDebugOptionsChange({semanticValidator: !semanticValidator})}
           />
         </CheckboxOption>
-        <button
-            style={this._clearButtonStyles(isClearButtonDisabled)}
-            disabled={isClearButtonDisabled}
-            onClick={clearWarnings}
-          >
-            Clear All
-          </button>
       </DebugOptionGroup>
     );
   }
@@ -372,9 +381,11 @@ export default class DebugPanel extends PureComponent {
       <Container className="debug-panel">
         <DebugOptions style={this._getExpandStyles()}>
           <Header>Debug Panel</Header>
-          {this._renderTileOptions()}
           {this._renderFrustumCullingOption()}
+          {this._renderTileOptions()}
+          {this._renderBoundingVolume()}
           {this._renderSemanticValidatorOption()}
+          {this._renderMemoryUsage()}
         </DebugOptions>
         <Expander onClick={this._onToggleDebugPanel}>{this._renderExpandIcon()}</Expander>
       </Container>
