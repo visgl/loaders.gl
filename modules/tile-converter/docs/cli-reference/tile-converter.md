@@ -2,9 +2,11 @@
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
-  <img src="https://badge.fury.io/js/%40loaders.gl%tile-converter.svg" />
+  <a href="https://badge.fury.io/js/%40loaders.gl%2Ftile-converter">
+    <img src="https://badge.fury.io/js/%40loaders.gl%2Ftile-converter.svg" alt="npm version" height="18">
+  </a>
   <a href="https://hub.docker.com/r/visgl/tile-converter/tags">
-    <img src="https://img.shields.io/badge/dockerhub-visgl%tile-converter.svg?style=flat-square" alt="dockerhub" />
+    <img src="https://img.shields.io/badge/dockerhub-visgl&tile-converter.svg?style=flat-square" alt="dockerhub" />
   </a>
 </p>
 
@@ -51,7 +53,7 @@ $ docker pull visgl/tile-converter
 | slpk                 | \*                        |                           | Whether the converter generates \*.slpk (Scene Layer Package) I3S output file                                                                                                                                                                        |
 | 7zExe                | \*                        |                           | location of 7z.exe archiver to create slpk on Windows OS, default: "C:\\Program Files\\7-Zip\\7z.exe"                                                                                                                                                |
 | egm                  | \*                        | \*                        | location of the Earth Gravity Model (\*.pgm) file to convert heights from ellipsoidal to gravity-related format, default: "./deps/egm2008-5.pgm". A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html |
-| token                | \*                        |                           | Token for I3S or Cesium ION tileset authentication.                                                                                                                                                                                                         |
+| token                | \*                        |                           | Token for Cesium ION tileset authentication.                                                                                                                                                                                                         |
 | no-draco             | \*                        |                           | Disable draco compression for geometry. Default: not set                                                                                                                                                                                             |
 | help                 | \*                        | \*                        | Show the converter tool options list                                                                                                                                                                                                                 |
 
