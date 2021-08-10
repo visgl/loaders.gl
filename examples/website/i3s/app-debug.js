@@ -2,6 +2,7 @@ import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import {HuePicker, MaterialPicker} from 'react-color';
+import styled from 'styled-components';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
@@ -22,9 +23,9 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 import {buildMinimapData} from './helpers/build-minimap-data';
 import AttributesPanel from './components/attributes-panel';
-import {StatsWidgetWrapper, StatsWidgetContainer, MemoryButton} from './components/memory-stats';
 import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
+import MapInfoPanel from './components/map-info';
 import SemanticValidator from './components/semantic-validator';
 
 import {
@@ -54,6 +55,7 @@ import {
   selectOriginalTextureForTile,
   selectOriginalTextureForTileset
 } from './utils/texture-selector-utils';
+import { Color, Flex, Font } from './components/styles';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
@@ -100,7 +102,9 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Use "uv-debug-texture" texture to check UV coordinates
   showUVDebugTexture: false,
   // Enable/Disable wireframe mode
-  wireframe: false
+  wireframe: false,
+  // Show statswidget
+  showMemory: false
 };
 
 const MATERIAL_PICKER_STYLE = {
@@ -121,8 +125,8 @@ const VIEWS = [
     id: 'minimap',
 
     // Position on top of main map
-    x: '80%',
-    y: '80%',
+    x: '79%',
+    y: '79%',
     width: '20%',
     height: '20%',
 
@@ -139,6 +143,26 @@ const VIEWS = [
 ];
 
 const TILE_COLOR_SELECTOR = 'Tile Color Selector';
+
+export const StatsWidgetWrapper = styled.div`
+  display: ${props => props.showMemory ? 'inherit' : 'none'};
+`;
+
+export const StatsWidgetContainer = styled.div`
+  ${Flex}
+  ${Color}
+  ${Font}
+  color: rgba(255, 255, 255, .6);
+  z-index: 3;
+  top: 15px;
+  right: 15px;
+  word-break: break-word;
+  padding: 24px;
+  border-radius: 8px;
+  width: 250px;
+  height: auto;
+  line-height: 135%;
+`;
 
 export default class App extends PureComponent {
   constructor(props) {
@@ -313,7 +337,7 @@ export default class App extends PureComponent {
       });
     }
   }
-
+  
   _onSelectMapStyle({selectedMapStyle}) {
     this.setState({selectedMapStyle});
   }
@@ -485,28 +509,37 @@ export default class App extends PureComponent {
     ];
   }
 
-  _renderDebugPanel() {
-    const {warnings, debugOptions} = this.state;
-    const isClearButtonDisabled = !warnings.length || !debugOptions.semanticValidator;
-
-    return (
-      <DebugPanel
-        onDebugOptionsChange={this._setDebugOptions}
-        clearWarnings={this.handleClearWarnings}
-        isClearButtonDisabled={isClearButtonDisabled}
-        debugTextureImage={UV_DEBUG_TEXTURE_URL}
-        debugOptions={debugOptions}
-      />
-    );
-  }
-
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
     return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
+  _renderMemory() {
+    const {
+      debugOptions: {showMemory}
+    } = this.state;
+    return (
+      <StatsWidgetWrapper showMemory={showMemory}>
+       {this._renderStats()}
+      </StatsWidgetWrapper>
+    );
+  }
+
+  _renderDebugPanel() {
+    const {debugOptions} = this.state;
+
+    return (
+      <DebugPanel
+        onDebugOptionsChange={this._setDebugOptions}
+        clearWarnings={this.handleClearWarnings}
+        debugTextureImage={UV_DEBUG_TEXTURE_URL}
+        debugOptions={debugOptions}>
+        </DebugPanel>
+    );
+  }
+
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle, showMemory} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
     return (
       <ControlPanel
         tileset={tileset}
@@ -515,12 +548,19 @@ export default class App extends PureComponent {
         token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        selectedMapStyle={selectedMapStyle}>
-          <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>Memory Usage</MemoryButton>
-          <StatsWidgetWrapper showMemory={showMemory}>
-          {this._renderStats()}
-          </StatsWidgetWrapper>
-        </ControlPanel>
+        selectedMapStyle={selectedMapStyle}/>
+    );
+  }
+
+  _renderInfo() {
+    const {showFullInfo, token, metadata, debugOptions: {minimap}} = this.state;
+    return (
+      <MapInfoPanel
+        showFullInfo={showFullInfo}
+        metadata={metadata}
+        token={token}
+        isMinimapShown={minimap}
+      />
     );
   }
 
@@ -709,7 +749,9 @@ export default class App extends PureComponent {
 
   _renderSemanticValidator() {
     const {warnings} = this.state;
-    return <SemanticValidator warnings={warnings} />;
+    return (
+      <SemanticValidator warnings={warnings} clearWarnings={this.handleClearWarnings}/>
+    )
   }
 
   render() {
@@ -719,6 +761,8 @@ export default class App extends PureComponent {
     return (
       <div style={{position: 'relative', height: '100%'}}>
         {this._renderDebugPanel()}
+        {this._renderInfo()}
+        {this._renderMemory()}
         {tileInfo ? this._renderAttributesPanel() : this._renderControlPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
         <DeckGL

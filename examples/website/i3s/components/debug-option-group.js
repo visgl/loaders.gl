@@ -1,23 +1,19 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {Color, Flex, Font} from './styles';
 
 const OptionGroup = styled.div`
-  background: rgba(36, 39, 48, 0.5);
-  margin-top: 5px;
-  padding: 12px;
-  border-radius: 2px;
-  color: #adb5bd;
+  ${Color}
+  ${Font}
+  line-height: 19px;
+  border-bottom: 1px solid rgba(255, 255, 255, .2);
 `;
 
 const TitleLabel = styled.div`
-  margin-bottom: 5px;
-  width: 80%;
-  left: 0;
-  text-align: left;
   font-weight: bold;
-  text-transform: none;
-  color: #f2e9e4;
+  color: rgba(250, 250, 250, 0.6);
+  padding-top: 15px;
 `;
 
 const propTypes = {

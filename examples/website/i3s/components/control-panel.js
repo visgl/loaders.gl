@@ -3,121 +3,49 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {EXAMPLES} from '../examples';
 import {MAP_STYLES} from '../constants';
+import {DropDownStyle, Font, Color, Flex} from './styles';
 
 const Container = styled.div`
-  display: grid;
-  grid-template-columns: 100px 100px 100px;
-  grid-template-rows: 30px 25px 35px;
-  grid-template-areas: 
-    "tileset tileset tileset" 
-    "mapstyle mapstyle mapstyle"
-    "frame frame memory";
-  position: absolute;
-  padding: 5px;
-  top: 0;
-  right: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  ${Flex}
+  width: 277px;
+  height: 105px;
+  margin: 15px 15px 0 15px;
+  line-height: 28px;
+  background: #0E111A;
+  border-radius: 8px;
   z-index: 1;
-  cursor: pointer;
 `;
 
 const TilesetDropDown = styled.select`
-  grid-area: tileset;
-  background: rgba(36,39,48,0.7);
-  padding: 5px;
-  font-weight: 800;
-  cursor: pointer;
-  font-size: 13px;
-  text-transform: uppercase;
-  color: #00ADE6;
-  text-shadow: 1px 1px 1px #212529;
-  border: none;
-    option {
-      color: black;
-      background: white;
-      font-weight: small;
-      display: flex;
-      white-space: pre;
-      min-height: 20px;
-      padding: 0px 2px 1px;
-    }
-  &:hover {
-    background: #212529;
-  }
+  ${Color}
+  ${Font}
+  ${DropDownStyle}
+  width: 245px;
+  margin: 16px 16px 0 16px;
 `;
 
-const DropDown = styled.select`
-  grid-area: mapstyle;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 5px;
-  text-transform: uppercase;
-  border: none;
-  font-size: 11px;
-  color: #adb5bd;
-  cursor: pointer;
-    option {
-      color: black;
-      background: white;
-      display: flex;
-      white-space: pre;
-      min-height: 20px;
-      padding: 0px 2px 1px;
-    }
-  &:hover {
-    background: #212529;
-  }
-`;
-
-const FrameWrap = styled.div`
-  grid-area: frame;
-  height: fit-content;
-  overflow: hidden;
-`;
-
-const FrameControl = styled.div`
-  width: 100%;
-  z-index: 20;
-  margin-top: 5px;
-`;
-
-const FrameButton = styled.button`
-  border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: #f2e9e4;
-  font-size: 9px;
-  height: 30px;
-  width: 100px;
-  text-transform: uppercase;
+const MapContainer = styled.div`
+  display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  transition: all 1s;
-  border-radius: 2px;
-  cursor: pointer;
-  &:hover {
-    color: #242730;
-    background: #00ADE6;
-  }
+  padding: 0px;
+  margin: 0 16px 8px 16px;
+  width: 245px;
 `;
 
-const LinkButton = styled.button`
-  grid-area: link;
-  background: rgba(0, 0, 0, 0.5);
-  color: #f2e9e4;
-  align-items: center;
-  margin-left: 10px;
-  font-size: 9px;
-  height: 30px;
-  width: 100px;
-  padding: 10px;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: all 1s;
-  border-radius: 2px;
-  cursor: pointer;
-  &:hover {
-    color: #242730;
-    background: #00ADE6;
-  }
+const MapName = styled.h3`
+  ${Color}
+  font-weight: normal;
+  width: 70px;
+`;
+
+export const DropDown = styled.select`
+  ${Color}
+  ${Font}
+  ${DropDownStyle}
+  width: 167px;
+  margin-left: 8px;
+  left: 86px;
 `;
 
 const propTypes = {
@@ -179,53 +107,24 @@ export default class ControlPanel extends PureComponent {
   _renderMapStyles() {
     const {mapStyles = MAP_STYLES, selectedMapStyle, onMapStyleChange} = this.props;
     return (
-      <DropDown
+      <MapContainer>
+        <MapName>Base map</MapName>
+        <DropDown
         value={selectedMapStyle}
         onChange={(evt) => {
           const selected = evt.target.value;
           onMapStyleChange({selectedMapStyle: selected});
         }}
-      >
-        {Object.keys(mapStyles).map((key) => {
-          return (
-            <option key={key} value={mapStyles[key]}>
-              {key}
-            </option>
-          );
-        })}
-      </DropDown>
-    );
-  }
-
-  _renderInfo() {
-    const {metadata, token} = this.props;
-    const {showFullInfo} = this.state;
-    if (!metadata) {
-      return null;
-    }
-
-    let url = `https://www.arcgis.com/home/item.html?id=${metadata.serviceItemId}`;
-    if (token) {
-      url = `${url}&token=${token}`;
-    }
-
-    return (
-      <FrameWrap>
-        <FrameControl showFullInfo={showFullInfo}>
-          <FrameButton onClick={() => this.setState({showFullInfo: !showFullInfo})}>
-            {showFullInfo ? `Less Info` : `More Info`}
-          </FrameButton>
-          <LinkButton as="a" target="_blank" rel="noopener noreferrer" href={url}>
-            Go to ArcGIS
-          </LinkButton>
-        </FrameControl>
-        <iframe
-          id="tileset-info"
-          title="tileset-info"
-          style={{display: showFullInfo ? 'inherit' : 'none', height: '400px', width: '99%', marginTop: '5px', border: '1px solid rgba(200, 200, 200, 100)'}}
-          src={url}
-        />
-      </FrameWrap>
+        >
+          {Object.keys(mapStyles).map((key) => {
+            return (
+              <option key={key} value={mapStyles[key]}>
+                {key}
+              </option>
+            );
+          })}
+        </DropDown>
+      </MapContainer>
     );
   }
 
@@ -234,8 +133,6 @@ export default class ControlPanel extends PureComponent {
       <Container>
         {this._renderExamples()}
         {this._renderMapStyles()}
-        {this._renderInfo()}
-        {this.props.children}
       </Container>
     );
   }
