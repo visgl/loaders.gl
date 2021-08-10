@@ -1,46 +1,41 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import {Flex} from './styles';
 
 const SemanticValidatorContainer = styled.div`
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%);
+  ${Flex}
+  right: 21%;
   bottom: 0;
-  margin: 5px;
-  display: flex;
-  flex-flow: column nowrap;
-  min-width: 35%;
-  min-height: 100px;
-  max-height: 150px;
-  overflow-y: auto;
-  background: rgba(36, 39, 48, 0.8);
+  color: rgba(255, 255, 255, .6);
+  font-size: 16px;
+  background: #0E111A;
   z-index: 17;
-  font-size: 12px;
-  line-height: 1;
-  border-bottom: none;
-  @media screen and (max-width: 768px) {
-    bottom: 20px;
-    border: none;
-    min-width: 55%;
-    background: #242730;
-  }
+  margin: 10px;
+  line-height: 135%;
+  border-radius: 8px;
+  width: 730px;
+  min-width: 35%;
+  min-height: 38px;
+  max-height: 135px;
+  overflow-y: auto;
 `;
 
 const TableHeader = styled.th`
   position: sticky;
   top: 0;
-  background-color: rgba(0,0,0,.5);
   text-align: left;
-  padding: 3px;
-  color: #f2e9e4;
+  background: #0E111A;
+  padding: 8px;
+  height: 22px;
 `;
 
-const NoIssuesItem = styled.h2`
+const NoIssuesItem = styled.h4`
   margin: auto;
-  text-transform: uppercase;
-  color: #2a9d8f;
+  color: white;
+  font-weight: normal;
 `;
+
 
 const NO_ISSUES = 'No Issues';
 
@@ -67,23 +62,46 @@ export default class SemanticValidator extends PureComponent {
   renderColumns(warnings) {
     return warnings.map((warning, index) => (
       <tr key={`${warning.title}-${index}`}>
-        <td style={{padding: '3px', color: '#00ade6'}}>{index + 1}</td>
-        <td style={{padding: '3px', color: '#f2e9e4'}}>{WARNING_TYPES[warning.type]}</td>
-        <td style={{color: '#e76f51', padding: '3px'}}>{warning.title}</td>
+        <td style={{padding: '0 8px 0 8px', textAlign: 'center'}}>{index + 1}</td>
+        <td style={{padding: '0 8px 0 8px'}}>{WARNING_TYPES[warning.type]}</td>
+        <td style={{color: 'rgba(249, 80, 80, .6)', padding: '0 8px 0 8px'}}>{warning.title}</td>
       </tr>
     ));
   }
 
+  _clearButtonStyles() {
+    return {
+      display: 'flex',
+      position: 'absolute',
+      top: '0',
+      right: '0',
+      width: '90px',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'transparent',
+      padding: '4px 16px',
+      margin: '0 10px',
+      color: 'rgba(255,255,255,.6)',
+      fontWeight: '500px',
+      borderRadius: '4px',
+      margin: '8px',
+      cursor: 'pointer'
+    };
+  }
+
   renderWarnings(warnings) {
     const columns = this.renderColumns(warnings);
+    const {clearWarnings} = this.props;
 
     return (
       <table>
         <thead>
-          <tr>
+          <tr style={{color: 'rgba(255, 255, 255, .3)', margin: '8px 0'}}>
             <TableHeader>{COLUMN_NUMBER}</TableHeader>
             <TableHeader>{WARNING_TYPE}</TableHeader>
-            <TableHeader>{WARNING}</TableHeader>
+            <TableHeader>{WARNING}
+              <button style={this._clearButtonStyles()} onClick={clearWarnings}>Clear All</button>
+            </TableHeader>
           </tr>
         </thead>
         <tbody>{columns}</tbody>
