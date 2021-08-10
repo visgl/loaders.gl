@@ -1,5 +1,5 @@
 import type {ArrowTableBatch} from '@loaders.gl/schema';
-import {Schema, Field, RecordBatch, Float32Vector, Float32} from 'apache-arrow';
+import {Schema, Field, RecordBatch, Struct, makeVector, makeData, Vector, Float32} from 'apache-arrow';
 import {ColumnarTableBatchAggregator} from '@loaders.gl/schema';
 
 export default class ArrowTableBatchAggregator extends ColumnarTableBatchAggregator {
@@ -15,11 +15,16 @@ export default class ArrowTableBatchAggregator extends ColumnarTableBatchAggrega
     if (batch) {
       // Get the arrow schema
       this.arrowSchema = this.arrowSchema || getArrowSchema(batch.schema);
+
       // Get arrow format vectors
       const arrowVectors = getArrowVectors(this.arrowSchema, batch.data);
+
       // Create the record batch
-      // new RecordBatch(schema, numRows, vectors, ...);
-      const recordBatch = new RecordBatch(this.arrowSchema, batch.length, arrowVectors);
+      const recordBatch = new RecordBatch(this.arrowSchema, makeData({
+        type: new Struct(this.arrowSchema.fields),
+        children: arrowVectors.map(({data}) => data[0])
+      }));
+
       return {
         shape: 'arrow-table',
         batchType: 'data',
@@ -33,7 +38,7 @@ export default class ArrowTableBatchAggregator extends ColumnarTableBatchAggrega
 }
 
 // Convert from a simple loaders.gl schema to an Arrow schema
-function getArrowSchema(schema) {
+function getArrowSchema(schema): Schema {
   const arrowFields: Field[] = [];
   for (const key in schema) {
     const field = schema[key];
@@ -52,12 +57,12 @@ function getArrowSchema(schema) {
 }
 
 // Convert from simple loaders.gl arrays to arrow vectors
-function getArrowVectors(arrowSchema, data) {
+function getArrowVectors(arrowSchema, data): Vector[] {
   const arrowVectors: any[] = [];
   for (const field of arrowSchema.fields) {
     const vector = data[field.name];
     if (vector instanceof Float32Array) {
-      const arrowVector = Float32Vector.from(vector);
+      const arrowVector = makeVector(vector);
       arrowVectors.push(arrowVector);
     }
   }

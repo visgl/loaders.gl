@@ -1,6 +1,6 @@
 import type {Mesh} from './mesh-types';
 import type {ColumnarTable, ArrowTable} from '../table/table-types';
-import {convertMeshToArrowTable} from './mesh-to-arrow-table';
+// import {convertMeshToArrowTable} from './mesh-to-arrow-table';
 
 type TargetShape = 'mesh' | 'columnar-table' | 'arrow-table';
 
@@ -17,11 +17,11 @@ export function convertMesh(
       return mesh;
     case 'columnar-table':
       return convertMeshToColumnarTable(mesh);
-    case 'arrow-table':
-      return {
-        shape: 'arrow-table',
-        data: convertMeshToArrowTable(mesh)
-      };
+    // case 'arrow-table':
+    //   return {
+    //     shape: 'arrow-table',
+    //     data: convertMeshToArrowTable(mesh)
+    //   };
     default:
       throw new Error(`Unsupported shape ${options?.shape}`);
   }

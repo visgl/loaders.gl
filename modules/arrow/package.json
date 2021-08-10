@@ -32,12 +32,15 @@
   },
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js --platform=browser --external:{stream}",
+    "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "pre-build2": "cp fixed-package.json ../../node_modules/apache-arrow/package.json && npm run build-bundle && npm run build-worker",
+    "build-bundle2": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js --platform=browser --external:{stream}",
+    "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.2.0-alpha.4",
     "@loaders.gl/schema": "3.2.0-alpha.4",
-    "apache-arrow": "^4.0.0"
+    "apache-arrow": "^7.0.0"
   }
 }

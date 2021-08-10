@@ -1,9 +1,9 @@
 import type {ArrowLoaderOptions} from '../arrow-loader';
-import {Table} from 'apache-arrow';
+import {tableFromIPC} from 'apache-arrow';
 
 // Parses arrow to a columnar table
 export default function parseArrowSync(arrayBuffer, options?: ArrowLoaderOptions) {
-  const arrowTable = Table.from([new Uint8Array(arrayBuffer)]);
+  const arrowTable = tableFromIPC([new Uint8Array(arrayBuffer)]);
 
   // Extract columns
 
@@ -13,8 +13,8 @@ export default function parseArrowSync(arrayBuffer, options?: ArrowLoaderOptions
 
   arrowTable.schema.fields.forEach((field) => {
     // This (is intended to) coalesce all record batches into a single typed array
-    const arrowColumn = arrowTable.getColumn(field.name);
-    const values = arrowColumn.toArray();
+    const arrowColumn = arrowTable.getChild(field.name);
+    const values = arrowColumn?.toArray();
     columnarTable[field.name] = values;
   });
 

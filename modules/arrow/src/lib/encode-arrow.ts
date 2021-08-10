@@ -1,4 +1,4 @@
-import {Table, FloatVector, DateVector} from 'apache-arrow';
+import {Table, tableToIPC, makeVector, Vector} from 'apache-arrow';
 import {AnyArrayType, VECTOR_TYPES} from '../types';
 
 type ColumnarTable = {
@@ -15,15 +15,13 @@ type ColumnarTable = {
  * @returns - encoded ArrayBuffer
  */
 export function encodeArrowSync(data: ColumnarTable): ArrayBuffer {
-  const vectors: any[] = [];
-  const arrayNames: string[] = [];
+  const vectors: Record<string, Vector> = {};
   for (const arrayData of data) {
-    arrayNames.push(arrayData.name);
     const arrayVector = createVector(arrayData.array, arrayData.type);
-    vectors.push(arrayVector);
+    vectors[arrayData.name] = arrayVector;
   }
-  const table = Table.new(vectors, arrayNames);
-  const arrowBuffer = table.serialize();
+  const table = new Table(vectors);
+  const arrowBuffer = tableToIPC(table);
   return arrowBuffer;
 }
 
@@ -33,12 +31,12 @@ export function encodeArrowSync(data: ColumnarTable): ArrayBuffer {
  * @param type {number} - the writer options
  * @return a vector of one of vector's types defined in the Apache Arrow library
  */
-function createVector(array, type) {
+function createVector(array, type): Vector {
   switch (type) {
     case VECTOR_TYPES.DATE:
-      return DateVector.from(array);
+      return makeVector(array);
     case VECTOR_TYPES.FLOAT:
     default:
-      return FloatVector.from(array);
+      return makeVector(array);
   }
 }
