@@ -19,7 +19,7 @@ test('constructor copies headers', (t) => {
 });
 
 test('constructor works with arrays', (t) => {
-  const array = [
+  const array: [string, string][] = [
     ['Content-Type', 'text/xml'],
     ['Breaking-Bad', '<3']
   ];
@@ -125,7 +125,7 @@ test('is iterable with forEach', (t) => {
   headers.append('Accept', 'text/plain');
   headers.append('Content-Type', 'text/html');
 
-  const results = [];
+  const results: {value: string; key: string; object: Headers}[] = [];
   headers.forEach((value, key, object) => results.push({value, key, object}));
 
   t.equal(results.length, 2);
