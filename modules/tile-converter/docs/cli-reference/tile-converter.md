@@ -6,7 +6,7 @@
     <img src="https://badge.fury.io/js/%40loaders.gl%2Ftile-converter.svg" alt="npm version" height="18">
   </a>
   <a href="https://hub.docker.com/r/visgl/tile-converter/tags">
-    <img src="https://img.shields.io/badge/dockerhub-visgl&tile-converter.svg?style=flat-square" alt="dockerhub" />
+    <img alt="Dockerhub" src="https://img.shields.io/docker/v/visgl/tile-converter?label=dockerhub">
   </a>
 </p>
 
