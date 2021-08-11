@@ -1,13 +1,14 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
+import styled from 'styled-components';
+
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
-import { StatsWidgetContainer, StatsWidgetWrapper } from './app-debug';
 
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
@@ -16,6 +17,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
+import { Color, Flex, Font } from './components/styles';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -31,6 +33,26 @@ const INITIAL_VIEW_STATE = {
   maxZoom: 30,
   zoom: 14.5
 };
+
+const StatsWidgetWrapper = styled.div`
+  display: ${props => props.showMemory ? 'inherit' : 'none'};
+`;
+
+const StatsWidgetContainer = styled.div`
+  ${Flex}
+  ${Color}
+  ${Font}
+  color: rgba(255, 255, 255, .6);
+  z-index: 3;
+  top: 15px;
+  right: 15px;
+  word-break: break-word;
+  padding: 24px;
+  border-radius: 8px;
+  width: 250px;
+  height: auto;
+  line-height: 135%;
+`;
 
 export default class App extends PureComponent {
   constructor(props) {
