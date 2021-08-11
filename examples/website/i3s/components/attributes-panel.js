@@ -1,48 +1,50 @@
 import React, {PureComponent} from 'react';
+import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faWindowClose} from '@fortawesome/free-solid-svg-icons';
+import {faTimes} from '@fortawesome/free-solid-svg-icons';
+import {Flex} from './styles';
 
-const CONTAINER_STYLE = {
-  display: 'flex',
-  position: 'absolute',
-  backgroundColor: 'rgba(36, 39, 48, 0.9)',
-  color: '#adb5bd',
-  flexFlow: 'column',
-  lineHeight: '1',
-  right: 0,
-  margin: '5px',
-  width: '350px',
-  padding: '10px',
-  maxHeight: '90%',
-  marginBottom: '20px',
-  zIndex: 1000,
-  overflowY: 'auto',
-  wordBreak: 'break-word'
-};
+const Container = styled.div`
+  ${Flex}
+  color: rgba(255, 255, 255, .6);
+  background: #0E111A;
+  flex-flow: column;
+  right: 0;
+  margin: 15px;
+  width: 320px;
+  padding: 0 15px 10px 15px;
+  max-height: 90%;
+  z-index: 1000;
+  overflow-y: auto;
+  word-break: break-word;
+  border-radius: 8px;
+`;
 
 const STYLED_TH = {
   width: '50%',
   textAlign: 'left',
-  fontSize: '11px',
-  textTransform: 'uppercase',
+  fontWeight: '500',
   borderRight: '3px solid rgba(0,0,0,.05)',
-  padding: '.5em .7em'
+  padding: '5px 0'
 };
 
 const STYLED_TD = {
   width: '50%',
-  padding: '.5em .7em'
+  fontWeight: '400',
+  padding: '5px 0'
 };
 
 const CLOSE_BUTTON_STYLE = {
   height: '30px',
   border: 'none',
-  backgroundColor: 'transparent',
   cursor: 'pointer',
+  background: '#0E111A',
   color: 'white',
   outline: 'none',
-  fontSize: '19px'
+  fontSize: '19px',
+  right: '30px',
+  position: 'fixed'
 };
 
 const propTypes = {
@@ -111,16 +113,16 @@ export default class AttributesPanel extends PureComponent {
     const {title, attributesObject, handleClosePanel, children} = this.props;
 
     return (
-      <div style={CONTAINER_STYLE}>
+      <Container>
         <div style={this.getHeaderStyle(title)}>
-          {title && <h2 style={{marginLeft: '30px'}}>{title}</h2>}
+          {title && <h3 style={{color: 'white'}}>{title}</h3>}
           <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
-            <FontAwesomeIcon icon={faWindowClose} />
+            <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
         {attributesObject && this.prepareTable()}
         {children}
-      </div>
+      </Container>
     );
   }
 }

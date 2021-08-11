@@ -144,11 +144,11 @@ const VIEWS = [
 
 const TILE_COLOR_SELECTOR = 'Tile Color Selector';
 
-export const StatsWidgetWrapper = styled.div`
+const StatsWidgetWrapper = styled.div`
   display: ${props => props.showMemory ? 'inherit' : 'none'};
 `;
 
-export const StatsWidgetContainer = styled.div`
+const StatsWidgetContainer = styled.div`
   ${Flex}
   ${Color}
   ${Font}
@@ -636,13 +636,15 @@ export default class App extends PureComponent {
   getResetButtonStyle(isResetButtonDisabled) {
     return {
       display: 'flex',
-      padding: '6px 12px',
-      color: 'white',
-      background: isResetButtonDisabled ? 'gray' : 'red',
+      padding: '4px 16px',
+      borderRadius: '8px',
       alignItems: 'center',
-      height: '20px',
+      height: '27px',
+      fontWeight: 'bold',
       marginTop: '10px',
-      cursor: isResetButtonDisabled ? 'auto' : 'pointer'
+      cursor: isResetButtonDisabled ? 'auto' : 'pointer',
+      color: isResetButtonDisabled ? 'rgba(255,255,255,.6)' : 'white',
+      background: isResetButtonDisabled ? '#0E111A' : '#4F52CC',
     };
   }
 
@@ -722,8 +724,8 @@ export default class App extends PureComponent {
           handleChangeNormalsLength={this.handleChangeNormalsLength}
         />
         {isShowColorPicker && (
-          <div>
-            <h3>{TILE_COLOR_SELECTOR}</h3>
+          <div style={{cursor: 'pointer'}}>
+            <h3 style={{color: 'white'}}>{TILE_COLOR_SELECTOR}</h3>
             <HuePicker
               width={'auto'}
               color={tileSelectedColor}
@@ -763,7 +765,8 @@ export default class App extends PureComponent {
         {this._renderDebugPanel()}
         {this._renderInfo()}
         {this._renderMemory()}
-        {tileInfo ? this._renderAttributesPanel() : this._renderControlPanel()}
+        {this._renderControlPanel()}
+        {tileInfo && this._renderAttributesPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
         <DeckGL
           layers={layers}

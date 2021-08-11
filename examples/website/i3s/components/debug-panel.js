@@ -201,7 +201,7 @@ export default class DebugPanel extends PureComponent {
     return (
       <DebugOptionGroup>
         <CheckboxOption style={{borderTop: 'rgba(255,255,255, .6)', padding: '0 0 16px 0'}}>
-          <Label htmlFor="boundingVolume" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Bounding Volumes</Label>
+          <Label htmlFor="boundingVolume" style={{color: 'rgba(255,255,255,.6)', fontWeight:'bold'}}>Bounding Volumes</Label>
           <ToggleSwitch
             id="boundingVolume"
             value={boundingVolume}
@@ -232,7 +232,7 @@ export default class DebugPanel extends PureComponent {
       onDebugOptionsChange
     } = this.props;
     return (
-      <DebugOptionGroup style={{cursor: 'pointer'}}>
+      <DebugOptionGroup>
       <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6)', fontWeight: 'bold', lineHeight: '185%'}}>Tiles</Label>
         <CheckboxOption>
           <label>
@@ -242,7 +242,7 @@ export default class DebugPanel extends PureComponent {
             checked={loadTiles}
             onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
           />
-          <span style={{ marginLeft: 5 }}>Load tiles</span>
+          <span style={{ marginLeft: 5, cursor: 'pointer' }}>Load tiles</span>
           </label>
         </CheckboxOption>
         <CheckboxOption>
@@ -253,7 +253,7 @@ export default class DebugPanel extends PureComponent {
               checked={pickable}
               onChange={() => onDebugOptionsChange({pickable: !pickable})}>
             </Checkbox>
-            <span style={{ marginLeft: 5 }}>Picking</span>
+            <span style={{ marginLeft: 5, cursor: 'pointer' }}>Picking</span>
           </label>
         </CheckboxOption>
         <CheckboxOption>
@@ -264,7 +264,7 @@ export default class DebugPanel extends PureComponent {
               checked={showUVDebugTexture}
               onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
             />
-            <span style={{ marginLeft: 5 }}>Texture UVs</span>
+            <span style={{ marginLeft: 5, cursor: 'pointer' }}>Texture UVs</span>
           </label>
         </CheckboxOption>
         {showUVDebugTexture ? this._renderDebugTextureImage() : null}
@@ -276,7 +276,7 @@ export default class DebugPanel extends PureComponent {
               checked={wireframe}
               onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
             />
-            <span style={{ marginLeft: 5 }}>Wireframe</span>
+            <span style={{ marginLeft: 5, cursor: 'pointer' }}>Wireframe</span>
           </label>
         </CheckboxOption>
         <CheckboxOption>
@@ -310,7 +310,7 @@ export default class DebugPanel extends PureComponent {
             checked={minimapViewport}
             onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
           />
-          <span style={{ marginLeft: 5 }}>Different viewports</span>
+          <span style={{ marginLeft: 5, cursor: 'pointer' }}>Different viewports</span>
         </label>
       </CheckboxOption>
     )
@@ -324,7 +324,7 @@ export default class DebugPanel extends PureComponent {
     return (
       <DebugOptionGroup>
         <CheckboxOption>
-          <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Minimap</Label>
+          <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6)', fontWeight:'bold'}}>Minimap</Label>
           <ToggleSwitch
             id="showFrustumCullingMinimap"
             value={minimap}
@@ -345,7 +345,7 @@ export default class DebugPanel extends PureComponent {
 
     return (
       <CheckboxOption style={{padding: '16px 0 16px 0'}}>
-      <Label htmlFor="showMemory" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Memory usage</Label>
+      <Label htmlFor="showMemory" style={{color: 'rgba(255,255,255,.6)', fontWeight:'bold'}}>Memory usage</Label>
         <ToggleSwitch
           id="showMemory"
           value={showMemory}
@@ -364,7 +364,7 @@ export default class DebugPanel extends PureComponent {
     return (
       <DebugOptionGroup>
         <CheckboxOption style={{padding: '0 0 16px 0'}}>
-          <Label htmlFor="showSemanticValidator" style={{color: 'rgba(255,255,255,.6', fontWeight:'bold'}}>Semantic Validator</Label>
+          <Label htmlFor="showSemanticValidator" style={{color: 'rgba(255,255,255,.6)', fontWeight:'bold'}}>Semantic Validator</Label>
           <ToggleSwitch
             id="showSemanticValidator"
             value={semanticValidator}
