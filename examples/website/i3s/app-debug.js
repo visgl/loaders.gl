@@ -144,6 +144,14 @@ const VIEWS = [
 
 const TILE_COLOR_SELECTOR = 'Tile Color Selector';
 
+const HEADER_STYLE = {
+  color: 'white'
+}
+
+const CURSOR_STYLE = {
+  cursor: 'pointer'
+}
+
 const StatsWidgetWrapper = styled.div`
   display: ${props => props.showMemory ? 'inherit' : 'none'};
 `;
@@ -724,8 +732,8 @@ export default class App extends PureComponent {
           handleChangeNormalsLength={this.handleChangeNormalsLength}
         />
         {isShowColorPicker && (
-          <div style={{cursor: 'pointer'}}>
-            <h3 style={{color: 'white'}}>{TILE_COLOR_SELECTOR}</h3>
+          <div style={CURSOR_STYLE}>
+            <h3 style={HEADER_STYLE}>{TILE_COLOR_SELECTOR}</h3>
             <HuePicker
               width={'auto'}
               color={tileSelectedColor}

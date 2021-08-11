@@ -61,7 +61,7 @@ const defaultProps = {
   handleClosePanel: () => {}
 };
 
-const COLOR = {
+const HEADER_STYLE = {
   color: 'white'
 }
 
@@ -119,7 +119,7 @@ export default class AttributesPanel extends PureComponent {
     return (
       <Container>
         <div style={this.getHeaderStyle(title)}>
-          {title && <h3 style={COLOR}>{title}</h3>}
+          {title && <h3 style={HEADER_STYLE}>{title}</h3>}
           <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
             <FontAwesomeIcon icon={faTimes} />
           </button>
