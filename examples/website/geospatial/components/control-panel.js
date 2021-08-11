@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import FileUploader from './file-uploader';
 
 const Container = styled.div`
   display: flex;
@@ -122,6 +123,7 @@ export default class ControlPanel extends PureComponent {
         {this._renderHeader()}
         {this._renderDropDown()}
         {this.props.children}
+        {<FileUploader/>}
       </Container>
     );
   }
