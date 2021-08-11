@@ -1,19 +1,14 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Color, Flex, Font} from './styles';
+import {Color, Font} from './styles';
 
 const OptionGroup = styled.div`
   ${Color}
   ${Font}
   line-height: 19px;
-  border-bottom: 1px solid rgba(255, 255, 255, .2);
-`;
-
-const TitleLabel = styled.div`
-  font-weight: bold;
-  color: rgba(250, 250, 250, 0.6);
-  padding-top: 15px;
+  marign-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, .2);
 `;
 
 const propTypes = {
@@ -32,7 +27,6 @@ export default class DebugOptionGroup extends PureComponent {
     const {children, title} = this.props;
     return (
       <OptionGroup>
-        <TitleLabel>{title}</TitleLabel>
         {children}
       </OptionGroup>
     );
