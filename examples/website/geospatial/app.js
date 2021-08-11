@@ -3,16 +3,16 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator} from '@deck.gl/core';
+import {MapController} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
-import {FlatGeobufWorkerLoader} from '@loaders.gl/flatgeobuf';
+import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {load, registerLoaders} from '@loaders.gl/core';
 import ControlPanel from './components/control-panel';
-import { INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES, LOADERS } from './examples';
+import { INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES } from './examples';
 
-registerLoaders([GeoPackageLoader, FlatGeobufWorkerLoader]);
+registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
 
 export const INITIAL_VIEW_STATE = {
   latitude: 49.254,
@@ -36,19 +36,28 @@ export default class App extends PureComponent {
       selectedLoader: GeoPackageLoader.name
     };
 
-    // this._onLoad = this._onLoad.bind(this);
-    this._onViewStateChange = this._onViewStateChange.bind(this);
+    this._onLoad = this._onLoad.bind(this);
     this._onExampleChange = this._onExampleChange.bind(this);
+  }
+
+  _rotateCamera() {
+    const {viewState} = this.state;
+    this.setState({viewState});
   }
 
   _onViewStateChange({viewState}) {
     this.setState({viewState});
   }
 
-
   _onExampleChange({selectedLoader, selectedExample, example}) {
-    const {data} = example;
-    this.setState({selectedLoader, selectedExample});
+    const {data, viewState} = example;
+    this.setState({selectedLoader, selectedExample, viewState});
+    load(data).then(this._onLoad.bind(this));
+  }
+
+  _onLoad() {
+    const {viewState} = this.state;
+    this.setState({viewState}, this._rotateCamera);
   }
 
   _renderControlPanel() {
@@ -76,7 +85,6 @@ export default class App extends PureComponent {
       new GeoJsonLayer({
         id: `geojson-${selectedExample}(${selectedLoader})`,
         data: EXAMPLES[selectedLoader][selectedExample].data,
-        loader: LOADERS[selectedLoader],
         opacity: 0.8,
         stroked: false,
         filled: true,
@@ -98,7 +106,7 @@ export default class App extends PureComponent {
         <DeckGL
           layers={this._renderLayer()}
           viewState={viewState}
-          onViewStateChange={this._onViewStateChange}
+          onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85}}
         >
           <StaticMap mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
