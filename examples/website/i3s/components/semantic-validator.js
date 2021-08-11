@@ -36,6 +36,10 @@ const NoIssuesItem = styled.h4`
   font-weight: normal;
 `;
 
+const TR_STYLE = {
+  color: 'rgba(255, 255, 255, .3)',
+  margin: '8px 0'
+}
 
 const NO_ISSUES = 'No Issues';
 
@@ -96,7 +100,7 @@ export default class SemanticValidator extends PureComponent {
     return (
       <table>
         <thead>
-          <tr style={{color: 'rgba(255, 255, 255, .3)', margin: '8px 0'}}>
+          <tr style={TR_STYLE}>
             <TableHeader>{COLUMN_NUMBER}</TableHeader>
             <TableHeader>{WARNING_TYPE}</TableHeader>
             <TableHeader>{WARNING}

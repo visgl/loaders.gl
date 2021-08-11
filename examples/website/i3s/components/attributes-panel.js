@@ -61,6 +61,10 @@ const defaultProps = {
   handleClosePanel: () => {}
 };
 
+const COLOR = {
+  color: 'white'
+}
+
 const NO_DATA = 'No Data';
 export default class AttributesPanel extends PureComponent {
   prepareTable() {
@@ -115,7 +119,7 @@ export default class AttributesPanel extends PureComponent {
     return (
       <Container>
         <div style={this.getHeaderStyle(title)}>
-          {title && <h3 style={{color: 'white'}}>{title}</h3>}
+          {title && <h3 style={COLOR}>{title}</h3>}
           <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
             <FontAwesomeIcon icon={faTimes} />
           </button>

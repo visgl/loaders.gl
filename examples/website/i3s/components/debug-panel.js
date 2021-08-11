@@ -31,7 +31,7 @@ const DebugOptions = styled.div`
   border-radius: 8px;
   width: 278px;
   min-width: 278px;
-  padding:  10px 15px 0px 15px;
+  padding:  10px 15px 5px 15px;
   height: 100%;
   margin: 0 0 15px 15px;
   overflow: auto;
@@ -73,6 +73,8 @@ const CheckboxOption = styled.div`
 
 const Label = styled.label`
   cursor: pointer;
+  color: rgba(255,255,255,.6);
+  font-weight: bold;
 `;
 
 const Option = styled.h3`
@@ -92,6 +94,15 @@ const DebugTextureContainer = styled.div`
     width: 85%;
   }
 `;
+
+const SPAN_STYLE = { 
+  marginLeft: 5, 
+  cursor: 'pointer' 
+}
+
+const CHECKBOX_STYLE = {
+  padding: '15px 0'
+}
 
 const propTypes = {
   onDebugOptionsChange: PropTypes.func,
@@ -148,7 +159,7 @@ export default class DebugPanel extends PureComponent {
       onDebugOptionsChange
     } = this.props;
     return (
-      <CheckboxOption style={{margin: '0'}}>
+      <CheckboxOption>
         <Option>Color</Option>
         <DropDown
           value={boundingVolumeColorMode}
@@ -200,8 +211,8 @@ export default class DebugPanel extends PureComponent {
       debugOptions: {boundingVolume}, onDebugOptionsChange} = this.props;
     return (
       <DebugOptionGroup>
-        <CheckboxOption style={{borderTop: 'rgba(255,255,255, .6)', padding: '0 0 16px 0'}}>
-          <Label htmlFor="boundingVolume" style={{color: 'rgba(255,255,255,.6)', fontWeight:'bold'}}>Bounding Volumes</Label>
+        <CheckboxOption style={CHECKBOX_STYLE}>
+          <Label htmlFor="boundingVolume">Bounding Volumes</Label>
           <ToggleSwitch
             id="boundingVolume"
             value={boundingVolume}
@@ -233,7 +244,9 @@ export default class DebugPanel extends PureComponent {
     } = this.props;
     return (
       <DebugOptionGroup>
-      <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6)', fontWeight: 'bold', lineHeight: '185%'}}>Tiles</Label>
+        <CheckboxOption style={CHECKBOX_STYLE}>
+          <Label>Tiles</Label>
+        </CheckboxOption>
         <CheckboxOption>
           <label>
           <Checkbox
@@ -242,7 +255,7 @@ export default class DebugPanel extends PureComponent {
             checked={loadTiles}
             onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
           />
-          <span style={{ marginLeft: 5, cursor: 'pointer' }}>Load tiles</span>
+          <span style={SPAN_STYLE}>Load tiles</span>
           </label>
         </CheckboxOption>
         <CheckboxOption>
@@ -253,7 +266,7 @@ export default class DebugPanel extends PureComponent {
               checked={pickable}
               onChange={() => onDebugOptionsChange({pickable: !pickable})}>
             </Checkbox>
-            <span style={{ marginLeft: 5, cursor: 'pointer' }}>Picking</span>
+            <span style={SPAN_STYLE}>Picking</span>
           </label>
         </CheckboxOption>
         <CheckboxOption>
@@ -264,7 +277,7 @@ export default class DebugPanel extends PureComponent {
               checked={showUVDebugTexture}
               onChange={() => onDebugOptionsChange({showUVDebugTexture: !showUVDebugTexture})}
             />
-            <span style={{ marginLeft: 5, cursor: 'pointer' }}>Texture UVs</span>
+            <span style={SPAN_STYLE}>Texture UVs</span>
           </label>
         </CheckboxOption>
         {showUVDebugTexture ? this._renderDebugTextureImage() : null}
@@ -276,7 +289,7 @@ export default class DebugPanel extends PureComponent {
               checked={wireframe}
               onChange={() => onDebugOptionsChange({wireframe: !wireframe})}
             />
-            <span style={{ marginLeft: 5, cursor: 'pointer' }}>Wireframe</span>
+            <span style={SPAN_STYLE}>Wireframe</span>
           </label>
         </CheckboxOption>
         <CheckboxOption>
@@ -310,7 +323,7 @@ export default class DebugPanel extends PureComponent {
             checked={minimapViewport}
             onChange={() => onDebugOptionsChange({minimapViewport: !minimapViewport})}
           />
-          <span style={{ marginLeft: 5, cursor: 'pointer' }}>Different viewports</span>
+          <span style={SPAN_STYLE}>Different viewports</span>
         </label>
       </CheckboxOption>
     )
@@ -323,8 +336,8 @@ export default class DebugPanel extends PureComponent {
     } = this.props;
     return (
       <DebugOptionGroup>
-        <CheckboxOption>
-          <Label htmlFor="showFrustumCullingMinimap" style={{color: 'rgba(255,255,255,.6)', fontWeight:'bold'}}>Minimap</Label>
+        <CheckboxOption style={CHECKBOX_STYLE}>
+          <Label htmlFor="showFrustumCullingMinimap">Minimap</Label>
           <ToggleSwitch
             id="showFrustumCullingMinimap"
             value={minimap}
@@ -344,15 +357,17 @@ export default class DebugPanel extends PureComponent {
     } = this.props;
 
     return (
-      <CheckboxOption style={{padding: '16px 0 16px 0'}}>
-      <Label htmlFor="showMemory" style={{color: 'rgba(255,255,255,.6)', fontWeight:'bold'}}>Memory usage</Label>
-        <ToggleSwitch
-          id="showMemory"
-          value={showMemory}
-          checked={showMemory}
-          onChange={() => onDebugOptionsChange({showMemory: !showMemory})}
-        />
-      </CheckboxOption>
+      <DebugOptionGroup>
+        <CheckboxOption style={CHECKBOX_STYLE}>
+          <Label htmlFor="showMemory">Memory usage</Label>
+          <ToggleSwitch
+            id="showMemory"
+            value={showMemory}
+            checked={showMemory}
+            onChange={() => onDebugOptionsChange({showMemory: !showMemory})}
+          />
+        </CheckboxOption>
+      </DebugOptionGroup>
     )
   }
 
@@ -363,8 +378,8 @@ export default class DebugPanel extends PureComponent {
     } = this.props;
     return (
       <DebugOptionGroup>
-        <CheckboxOption style={{padding: '0 0 16px 0'}}>
-          <Label htmlFor="showSemanticValidator" style={{color: 'rgba(255,255,255,.6)', fontWeight:'bold'}}>Semantic Validator</Label>
+        <CheckboxOption style={CHECKBOX_STYLE}>
+          <Label htmlFor="showSemanticValidator">Semantic Validator</Label>
           <ToggleSwitch
             id="showSemanticValidator"
             value={semanticValidator}
