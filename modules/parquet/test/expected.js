@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-export const ALL_TYPES_DICTIONARY_STUB = [
+export const ALL_TYPES_DICTIONARY_EXPECTED = [
   {
     bigint_col: '0',
     bool_col: true,
@@ -29,7 +29,7 @@ export const ALL_TYPES_DICTIONARY_STUB = [
   }
 ];
 
-export const ALL_TYPES_PLAIN_STUB = [
+export const ALL_TYPES_PLAIN_EXPECTED = [
   {
     bigint_col: '0',
     bool_col: true,
@@ -136,7 +136,7 @@ export const ALL_TYPES_PLAIN_STUB = [
   }
 ];
 
-export const ALL_TYPES_PLAIN_SNUPPY_STUB = [
+export const ALL_TYPES_PLAIN_SNAPPY_EXPECTED = [
   {
     bigint_col: '0',
     bool_col: true,
@@ -165,7 +165,7 @@ export const ALL_TYPES_PLAIN_SNUPPY_STUB = [
   }
 ];
 
-export const BINARY_STUB = () => {
+export const BINARY_EXPECTED = () => {
   const result = [];
 
   for (let index = 0; index < 12; index++) {
@@ -175,7 +175,7 @@ export const BINARY_STUB = () => {
   return result;
 };
 
-export const DICT_STUB = () => {
+export const DICT_EXPECTED = () => {
   const result = [];
 
   for (let index = 0; index < 39; index++) {
@@ -185,7 +185,7 @@ export const DICT_STUB = () => {
   return result;
 };
 
-export const LIST_COLUMNS_STUB = [
+export const LIST_COLUMNS_EXPECTED = [
   {
     int64_list: { list: [{ item: '1' }, { item: '2' }, { item: '3' }] },
     utf8_list: { list: [{ item: 'abc' }, { item: 'efg' }, { item: 'hij' }] }
@@ -199,7 +199,7 @@ export const LIST_COLUMNS_STUB = [
   }
 ];
 
-export const NESTED_LIST_STUB = [
+export const NESTED_LIST_EXPECTED = [
   {
     a: {
       list: [
@@ -270,7 +270,7 @@ export const NESTED_LIST_STUB = [
   }
 ];
 
-export const NESTED_MAPS_STUB = [
+export const NESTED_MAPS_EXPECTED = [
   {
     a:
     {
@@ -363,7 +363,7 @@ export const NESTED_MAPS_STUB = [
   }
 ];
 
-export const NO_NULLABLE_STUB = [
+export const NO_NULLABLE_EXPECTED = [
   {
     ID: 8,
     Int_Array: { list: [{ element: -1 }] },
@@ -398,7 +398,7 @@ export const NO_NULLABLE_STUB = [
   }
 ];
 
-export const NULLABLE_STUB = [
+export const NULLABLE_EXPECTED = [
   {
     id: 1,
     int_array: {
@@ -547,7 +547,7 @@ export const NULLABLE_STUB = [
   }
 ];
 
-export const NULLS_STUB = [
+export const NULLS_EXPECTED = [
   { b_struct: {} },
   { b_struct: {} },
   { b_struct: {} },
@@ -558,7 +558,7 @@ export const NULLS_STUB = [
   { b_struct: {} }
 ];
 
-export const REPEATED_NO_ANNOTATION_STUB = [
+export const REPEATED_NO_ANNOTATION_EXPECTED = [
   { id: "1" },
   { id: "2" },
   { id: "3", phoneNumbers: {} },

@@ -8,19 +8,19 @@ import {isBrowser, load, setLoaderOptions} from '@loaders.gl/core';
 
 import {SUPPORTED_FILES, UNSUPPORTED_FILES, ENCRYPTED_FILES, BAD_FILES} from './data/files';
 import {
-  ALL_TYPES_DICTIONARY_STUB,
-  ALL_TYPES_PLAIN_STUB,
-  ALL_TYPES_PLAIN_SNUPPY_STUB,
-  BINARY_STUB,
-  DICT_STUB,
-  LIST_COLUMNS_STUB,
-  NESTED_LIST_STUB,
-  NESTED_MAPS_STUB,
-  NO_NULLABLE_STUB,
-  NULLABLE_STUB,
-  NULLS_STUB,
-  REPEATED_NO_ANNOTATION_STUB
-} from './stubs';
+  ALL_TYPES_DICTIONARY_EXPECTED,
+  ALL_TYPES_PLAIN_EXPECTED,
+  ALL_TYPES_PLAIN_SNAPPY_EXPECTED,
+  BINARY_EXPECTED,
+  DICT_EXPECTED,
+  LIST_COLUMNS_EXPECTED,
+  NESTED_LIST_EXPECTED,
+  NESTED_MAPS_EXPECTED,
+  NO_NULLABLE_EXPECTED,
+  NULLABLE_EXPECTED,
+  NULLS_EXPECTED,
+  REPEATED_NO_ANNOTATION_EXPECTED
+} from './expected';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
 
@@ -34,72 +34,134 @@ test('ParquetLoader#loader objects', (t) => {
   t.end();
 });
 
+test('ParquetLoader#load alltypes_dictionary file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 2);
+  t.deepEqual(data, ALL_TYPES_DICTIONARY_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load alltypes_plain file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 8);
+  t.deepEqual(data, ALL_TYPES_PLAIN_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load alltypes_plain_snappy file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.snappy.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 2);
+  t.deepEqual(data, ALL_TYPES_PLAIN_SNAPPY_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load binary file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/binary.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 12);
+  t.deepEqual(data, BINARY_EXPECTED());
+  t.end();
+});
+
+test('ParquetLoader#load binary file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/binary.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 12);
+  t.deepEqual(data, BINARY_EXPECTED());
+  t.end();
+});
+
+test('ParquetLoader#load dict file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/dict-page-offset-zero.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 39);
+  t.deepEqual(data, DICT_EXPECTED());
+  t.end();
+});
+
+test('ParquetLoader#load list_columns file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/list_columns.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 3);
+  t.deepEqual(data, LIST_COLUMNS_EXPECTED);
+  t.end();
+});
+
+// TODO fix malformed dictionary before adding deep equal test
+test('ParquetLoader#load nation file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/nation.dict-malformed.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.ok(data);
+  t.equal(data.length, 25);
+  t.end();
+});
+
+test('ParquetLoader#load nested_lists file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/nested_lists.snappy.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 3);
+  t.deepEqual(data, NESTED_LIST_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load nested_maps file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/nested_maps.snappy.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 6);
+  t.deepEqual(data, NESTED_MAPS_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load nonnullable file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/nonnullable.impala.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 1);
+  t.deepEqual(data, NO_NULLABLE_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load nullable file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/nullable.impala.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 7);
+  t.deepEqual(data, NULLABLE_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load nulls file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/nulls.snappy.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 8);
+  t.deepEqual(data, NULLS_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load repeated_no_annotation file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/repeated_no_annotation.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 6);
+  t.deepEqual(data, REPEATED_NO_ANNOTATION_EXPECTED);
+  t.end();
+});
 
 test('ParquetLoader#load', async (t) => {
-  t.comment(`SUPPORTED FILES`);
-
-  for (const {title, path} of SUPPORTED_FILES) {
-    const url = `${PARQUET_DIR}/${path}`;
-    const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
-
-    switch (title) {
-      case 'alltypes_dictionary':
-        t.equal(data.length, 2);
-        t.deepEqual(data, ALL_TYPES_DICTIONARY_STUB, `${title} deep equal ok`);
-        break;
-      case 'alltypes_plain':
-        t.equal(data.length, 8);
-        t.deepEqual(data, ALL_TYPES_PLAIN_STUB, `${title} deep equal ok`);
-        break;
-      case 'alltypes_plain_snappy':
-        t.equal(data.length, 2);
-        t.deepEqual(data, ALL_TYPES_PLAIN_SNUPPY_STUB, `${title} deep equal ok`);
-        break;
-      case 'binary':
-        t.equal(data.length, 12);
-        t.deepEqual(data, BINARY_STUB(), `${title} deep equal ok`);
-        break;
-      case 'dict':
-        t.equal(data.length, 39);
-        t.deepEqual(data, DICT_STUB(), `${title} deep equal ok`);
-        break;
-      case 'list_columns':
-        t.equal(data.length, 3);
-        t.deepEqual(data, LIST_COLUMNS_STUB, `${title} deep equal ok`);
-        break;
-      case 'nation':
-        t.equal(data.length, 25);
-        // TODO fix malformed dictionary before adding deep equal test
-        t.ok(data, `GOOD(${title})`);
-        break;
-      case 'nested_lists':
-        t.equal(data.length, 3);
-        t.deepEqual(data, NESTED_LIST_STUB, `${title} deep equal ok`);
-        break;
-      case 'nested_maps':
-        t.equal(data.length, 6);
-        t.deepEqual(data, NESTED_MAPS_STUB, `${title} deep equal ok`);
-        break;
-      case 'nonnullable':
-        t.equal(data.length, 1);
-        t.deepEqual(data, NO_NULLABLE_STUB, `${title} deep equal ok`);
-        break;
-      case 'nullable':
-        t.equal(data.length, 7);
-        t.deepEqual(data, NULLABLE_STUB, `${title} deep equal ok`);
-        break;
-      case 'nulls':
-        t.equal(data.length, 8);
-        t.deepEqual(data, NULLS_STUB, `${title} deep equal ok`);
-        break;
-      case 'repeated_no_annotation':
-        t.equal(data.length, 6);
-        t.deepEqual(data, REPEATED_NO_ANNOTATION_STUB, `${title} deep equal ok`);
-        break;
-      default:
-        t.ok(data, `GOOD(${title})`);
-    }
-  }
 
   // Buffer is not defined issue in worker thread of browser.
   if (!isBrowser) {
@@ -112,7 +174,7 @@ test('ParquetLoader#load', async (t) => {
   }
 
   t.comment(`UNSUPPORTED FILES`);
-  for (const { title, path } of UNSUPPORTED_FILES) {
+  for (const {title, path} of UNSUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/${path}`;
     try {
       const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
