@@ -43,7 +43,7 @@ const ToolContainer = styled.div`
     justify-content: center;
 `;
 
-export default class ToolsBar extends PureComponent {
+export default class ToolBar extends PureComponent {
 
   render() {
     return (
