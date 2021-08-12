@@ -35,7 +35,10 @@ const INITIAL_VIEW_STATE = {
 };
 
 const StatsWidgetWrapper = styled.div`
-  display: ${props => props.showMemory ? 'inherit' : 'none'};
+  display: flex;
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const StatsWidgetContainer = styled.div`
@@ -44,8 +47,8 @@ const StatsWidgetContainer = styled.div`
   ${Font}
   color: rgba(255, 255, 255, .6);
   z-index: 3;
-  top: 15px;
-  right: 15px;
+  bottom: 15px;
+  left: 15px;
   word-break: break-word;
   padding: 24px;
   border-radius: 8px;
@@ -257,7 +260,8 @@ export default class App extends PureComponent {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
+        {this._renderControlPanel()}
+        {selectedFeatureAttributes && this.renderAttributesPanel()}
         {this._renderMemory()}
         <DeckGL
           layers={layers}
