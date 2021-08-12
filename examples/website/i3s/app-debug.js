@@ -765,12 +765,6 @@ export default class App extends PureComponent {
     )
   }
 
-  _renderMobileToolBar() {
-    return (
-      <ToolBar />
-    )
-  }
-
   render() {
     const layers = this._renderLayers();
     const {selectedMapStyle, tileInfo, debugOptions} = this.state;
@@ -783,7 +777,7 @@ export default class App extends PureComponent {
         {this._renderControlPanel()}
         {tileInfo && this._renderAttributesPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
-        {this._renderMobileToolBar()}
+        <ToolBar />
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}
