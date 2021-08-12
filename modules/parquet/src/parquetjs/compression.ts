@@ -23,7 +23,6 @@ import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
 import lzo from 'lzo';
 import {ZstdCodec} from 'zstd-codec';
-import {concatenateArrayBuffers} from '@loaders.gl/loader-utils/';
 
 // Inject large dependencies through Compression constructor options
 const modules = {
@@ -82,32 +81,9 @@ export function decompress(method: ParquetCompression, value: Buffer, size: numb
   if (!compression) {
     throw new Error(`parquet: invalid compression method: ${method}`);
   }
-
-  let inputArrayBuffer = toArrayBuffer(value);
-
-  if (['LZ4_RAW', 'LZ4'].includes(method)) {
-    inputArrayBuffer = addDummyHeaderForLZ4file(inputArrayBuffer);
-  }
-
+  const inputArrayBuffer = toArrayBuffer(value);
   const compressedArrayBuffer = compression.decompressSync(inputArrayBuffer);
   return toBuffer(compressedArrayBuffer);
-}
-
-function addDummyHeaderForLZ4file(value: ArrayBuffer): ArrayBuffer {
-  const FILE_DESCRIPTOR_VERSION = 0x40;
-  const DEFAULT_BLOCK_SIZE = 7;
-  const BLOCK_SIZE_SHIFT = 4;
-  const LZ4_MAGIC_NUMBER = 0x184d2204;
-
-  const magic = new Uint32Array([LZ4_MAGIC_NUMBER]);
-  // TODO need to implement descriptor checksum https://github.com/Benzinga/lz4js/blob/master/lz4.js#L486
-  const frameDescriptor = Buffer.from([
-    FILE_DESCRIPTOR_VERSION,
-    DEFAULT_BLOCK_SIZE << BLOCK_SIZE_SHIFT,
-    0 // Here should be hash part
-  ]);
-
-  return concatenateArrayBuffers(magic.buffer, frameDescriptor, value);
 }
 
 /*
