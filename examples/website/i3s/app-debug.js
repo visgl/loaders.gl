@@ -27,6 +27,7 @@ import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 import MapInfoPanel from './components/map-info';
 import SemanticValidator from './components/semantic-validator';
+import ToolsBar from './components/tools-bar';
 
 import {
   INITIAL_MAP_STYLE,
@@ -764,6 +765,13 @@ export default class App extends PureComponent {
     )
   }
 
+  _renderMobileToolBar() {
+
+    return (
+      <ToolsBar />
+    )
+  }
+
   render() {
     const layers = this._renderLayers();
     const {selectedMapStyle, tileInfo, debugOptions} = this.state;
@@ -776,6 +784,7 @@ export default class App extends PureComponent {
         {this._renderControlPanel()}
         {tileInfo && this._renderAttributesPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
+        {this._renderMobileToolBar()}
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}
