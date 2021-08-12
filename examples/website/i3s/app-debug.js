@@ -27,6 +27,7 @@ import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 import MapInfoPanel from './components/map-info';
 import SemanticValidator from './components/semantic-validator';
+import ToolBar from './components/tool-bar';
 
 import {
   INITIAL_MAP_STYLE,
@@ -776,6 +777,7 @@ export default class App extends PureComponent {
         {this._renderControlPanel()}
         {tileInfo && this._renderAttributesPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
+        <ToolBar />
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}
