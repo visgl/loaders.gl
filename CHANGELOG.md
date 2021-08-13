@@ -2,6 +2,15 @@
 
 ## v3.0
 
+### v3.0.9
+
+- fix(core): Help browser resolution; use default export for make-node-stream.ts (#1745)
+- chore(I3S-Debug): UI changing - Debug Panel (#1737)
+- chore(I3S-Debug): change tile validator styles (#1755)
+- chore(I3S): change memory stats styles (#1757)
+- chore(i3s-debug-app): fix tile info panel bug (#1760)
+- chore(i3s-debug-app): fix minor application issues (#1761)
+
 ### v3.0.8
 
 - Add an out-of-view condition based on 'touchFrame' to 3d tiles request scheduling (#1739)
