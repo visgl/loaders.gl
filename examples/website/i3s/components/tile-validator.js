@@ -39,6 +39,7 @@ const NormalsValidator = styled.div`
 const ValidatorInfoList = styled.div`
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 `;
 
 const GapInput = styled.input`

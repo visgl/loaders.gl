@@ -109,7 +109,8 @@ export default class AttributesPanel extends PureComponent {
       display: 'flex',
       flexFlow: 'row nowrap',
       justifyContent: isTitleExists ? 'space-between' : 'flex-end',
-      alignItems: 'center'
+      alignItems: 'center',
+      flexShrink: 0
     };
   }
 

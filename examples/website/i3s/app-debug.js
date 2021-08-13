@@ -260,7 +260,7 @@ export default class App extends PureComponent {
     this.setState({tilesetUrl, name, token});
     this.handleClearWarnings();
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    this.setState({metadata, tileInfo: null});
+    this.setState({metadata, tileInfo: null, normalsDebugData: []});
   }
 
   // Updates stats, called every frame
