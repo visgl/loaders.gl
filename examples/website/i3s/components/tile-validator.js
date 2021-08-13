@@ -49,7 +49,7 @@ const GapInput = styled.input`
   font-weight: bold;
   text-align: center;
   border-radius: 4px; 
-  cursor: pointer;
+  cursor: ${props => props.disabled ? 'auto' : 'pointer'};
   border: none;
   padding: 5px;
 `;
@@ -243,17 +243,9 @@ export default class TileValidator extends PureComponent {
     };
   }
 
-  getNormalControlsStyle(isTileHasNormals, element = null) {
-    switch (element) {
-      case 'checkbox':
-        return {
-          cursor: isTileHasNormals ? 'pointer' : 'auto',
-          color: isTileHasNormals ? 'white' : 'grey'
-        };
-      default:
-        return {
-          color: isTileHasNormals ? 'white' : 'grey'
-        };
+  getCheckboxStyle(isTileHasNormals) {
+    return {
+      cursor: isTileHasNormals ? 'pointer' : 'auto'
     }
   }
 
@@ -303,7 +295,7 @@ export default class TileValidator extends PureComponent {
         {!isTileHasNormals && <NoNormalsInfo>{'Tile has no normals'}</NoNormalsInfo>}
         <NormalsControl>
           <label
-            style={this.getNormalControlsStyle(isTileHasNormals, 'checkbox')}
+            style={this.getCheckboxStyle(isTileHasNormals)}
             htmlFor="normals-checkbox"
           >
             <Checkbox
@@ -317,7 +309,7 @@ export default class TileValidator extends PureComponent {
           </label>
         </NormalsControl>
         <NormalsControl>
-          <span style={this.getNormalControlsStyle(isTileHasNormals)}>Percent</span>
+          <span>Percent</span>
           <GapInput
             type="number"
             min="1"
@@ -326,12 +318,12 @@ export default class TileValidator extends PureComponent {
             disabled={!isTileHasNormals}
             onChange={(event) => handleChangeTrianglesPercentage(tile, Number(event.target.value))}
           />
-          <span style={this.getNormalControlsStyle(isTileHasNormals)}>
+          <span>
             % triangles with normals
           </span>
         </NormalsControl>
         <NormalsControl>
-          <span style={this.getNormalControlsStyle(isTileHasNormals)}>Normals length</span>
+          <span>Normals length</span>
           <GapInput
             type="number"
             min="1"
@@ -339,7 +331,7 @@ export default class TileValidator extends PureComponent {
             disabled={!isTileHasNormals}
             onChange={(event) => handleChangeNormalsLength(tile, Number(event.target.value))}
           />
-          <span style={this.getNormalControlsStyle(isTileHasNormals)}>m</span>
+          <span>m</span>
         </NormalsControl>
       </NormalsValidator>
     );
