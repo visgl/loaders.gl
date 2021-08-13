@@ -1,6 +1,7 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
+import {get} from 'lodash';
 
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
@@ -10,6 +11,7 @@ import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {load, registerLoaders} from '@loaders.gl/core';
 import ControlPanel from './components/control-panel';
+import FileUploader from './components/file-uploader';
 import { INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES } from './examples';
 
 registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
@@ -33,11 +35,14 @@ export default class App extends PureComponent {
 
       // EXAMPLE STATE
       selectedExample: INITIAL_EXAMPLE_NAME,
-      selectedLoader: GeoPackageLoader.name
+      selectedLoader: GeoPackageLoader.name,
+      uploadedFile: null
     };
 
     this._onLoad = this._onLoad.bind(this);
     this._onExampleChange = this._onExampleChange.bind(this);
+    this._onFileRemoved = this._onFileRemoved.bind(this);
+    this._onFileUploaded = this._onFileUploaded.bind(this);
   }
 
   _rotateCamera() {
@@ -53,6 +58,14 @@ export default class App extends PureComponent {
     const {data, viewState} = example;
     this.setState({selectedLoader, selectedExample, viewState});
     load(data).then(this._onLoad.bind(this));
+  }
+
+  _onFileRemoved(){
+   this.setState({uploadedFile: null});
+  }
+
+  _onFileUploaded(data, loader, uploadedFile){
+    this.setState({selectedLoader: loader.name, selectedExample: uploadedFile.name, uploadedFile: data});
   }
 
   _onLoad() {
@@ -74,17 +87,17 @@ export default class App extends PureComponent {
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:{' '}
           {viewState.zoom.toFixed(2)}
         </div>
+        {<FileUploader onFileUploaded={this._onFileUploaded} onFileRemoved={this._onFileRemoved}/>}
       </ControlPanel>
     );
   }
 
   _renderLayer() {
-    const {selectedExample, selectedLoader} = this.state;
-
+    const {selectedExample, selectedLoader, uploadedFile} = this.state;
     return [
       new GeoJsonLayer({
         id: `geojson-${selectedExample}(${selectedLoader})`,
-        data: EXAMPLES[selectedLoader][selectedExample].data,
+        data: uploadedFile ? uploadedFile : get(EXAMPLES, '[selectedLoader][selectedExample].data', EXAMPLES.GeoPackage.Vancouver.data),
         opacity: 0.8,
         stroked: false,
         filled: true,

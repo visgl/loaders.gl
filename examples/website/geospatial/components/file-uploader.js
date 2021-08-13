@@ -1,6 +1,7 @@
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import ParsedFile from './parse-file';
 
 const Container = styled.div`
   display: flex;
@@ -24,11 +25,8 @@ const FileContainer = styled.div`
 `;
 
 const propTypes = {
-
-};
-
-const defaultProps = {
-
+  onFileRemoved: PropTypes.func,
+  onFileUploaded: PropTypes.func
 };
 
 export default class FileUploader extends PureComponent {
@@ -50,11 +48,14 @@ export default class FileUploader extends PureComponent {
   }
 
   handleCleanFile() {
+    const { onFileRemoved } = this.props;
+    onFileRemoved();
     this.setState({uploadedFile: null});
   }
 
   render() {
-    const {uploadedFile, files} = this.state;
+    const {onFileUploaded} = this.props;
+    const {uploadedFile} = this.state;
 
     return (
       <div>
@@ -66,11 +67,12 @@ export default class FileUploader extends PureComponent {
             >
               Drag&Drop file
             </FileFrame>
-            <input style={{display: 'none'}} type="file" id="fileInput" files={files} />
           </Container>
         )}
         <FileContainer>
-          {uploadedFile}
+          {uploadedFile && (
+            <ParsedFile file={uploadedFile} onFileUploaded={onFileUploaded}/>
+          )}
           {uploadedFile && <button onClick={this.handleCleanFile}>Clean</button>}
         </FileContainer>
       </div>
@@ -79,4 +81,3 @@ export default class FileUploader extends PureComponent {
 }
 
 FileUploader.propTypes = propTypes;
-FileUploader.defaultProps = defaultProps;
