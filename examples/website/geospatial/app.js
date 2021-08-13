@@ -94,10 +94,11 @@ export default class App extends PureComponent {
 
   _renderLayer() {
     const {selectedExample, selectedLoader, uploadedFile} = this.state;
+    debugger;
     return [
       new GeoJsonLayer({
         id: `geojson-${selectedExample}(${selectedLoader})`,
-        data: uploadedFile ? uploadedFile : get(EXAMPLES, '[selectedLoader][selectedExample].data', EXAMPLES.GeoPackage.Vancouver.data),
+        data: uploadedFile ? uploadedFile : get(EXAMPLES, `[${selectedLoader}][${selectedExample}].data`, EXAMPLES.GeoPackage.Vancouver.data),
         opacity: 0.8,
         stroked: false,
         filled: true,
