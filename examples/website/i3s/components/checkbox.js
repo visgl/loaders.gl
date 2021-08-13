@@ -4,7 +4,7 @@ import styled from 'styled-components'
 const CheckboxContainer = styled.div`
   display: inline-block;
   vertical-align: middle;
-  cursor: pointer;
+  cursor: ${props => props.disabled ? 'auto' : 'pointer'}};
 `
 const Icon = styled.svg`
   fill: none;
@@ -28,8 +28,8 @@ const StyledCheckbox = styled.div`
   width: 22px;
   height: 22px;
   margin-right: 8px;
-  background: ${props => (props.checked ? '#4F52CC' : '#0E111A')};
-  border: 1px solid #4F52CC;
+  background: ${props => props.checked ? '#4F52CC' : '#0E111A'};
+  border: ${props => props.disabled ? '1px solid rgba(255,255,255, .6)' : '1px solid #4F52CC'};
   border-radius: 4px;
   transition: all 150ms;
 
@@ -42,9 +42,9 @@ const StyledCheckbox = styled.div`
   }
 `
 const Checkbox = ({ checked, ...props }) => (
-  <CheckboxContainer>
+  <CheckboxContainer disabled={props.disabled}>
     <HiddenCheckbox checked={checked} {...props} />
-    <StyledCheckbox checked={checked}>
+    <StyledCheckbox disabled={props.disabled} checked={checked}>
       <Icon viewBox="0 0 24 24">
         <polyline points="20 6 9 17 4 12" />
       </Icon>

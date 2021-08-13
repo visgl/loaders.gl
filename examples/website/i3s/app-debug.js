@@ -260,7 +260,7 @@ export default class App extends PureComponent {
     this.setState({tilesetUrl, name, token});
     this.handleClearWarnings();
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    this.setState({metadata});
+    this.setState({metadata, tileInfo: null});
   }
 
   // Updates stats, called every frame
@@ -543,7 +543,7 @@ export default class App extends PureComponent {
         clearWarnings={this.handleClearWarnings}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
         debugOptions={debugOptions}>
-        </DebugPanel>
+      </DebugPanel>
     );
   }
 
