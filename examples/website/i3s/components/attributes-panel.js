@@ -15,10 +15,17 @@ const Container = styled.div`
   width: 320px;
   padding: 0 15px 10px 15px;
   max-height: 90%;
-  z-index: 1000;
+  z-index: 999;
   overflow-y: auto;
   word-break: break-word;
   border-radius: 8px;
+  @media (max-width: 768px) {
+      bottom: 60px;
+      margin: 0;
+      top: 85px;
+      width: 100vw;
+      border-radius: 0;
+    }
 `;
 
 const STYLED_TH = {

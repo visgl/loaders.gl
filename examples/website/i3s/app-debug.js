@@ -105,7 +105,13 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Enable/Disable wireframe mode
   wireframe: false,
   // Show statswidget
-  showMemory: false
+  showMemory: false,
+  // Show control panel
+  controlPanel: true,
+  // Show debug panel
+  debugPanel: false,
+  // Show map info
+  showFullInfo: false
 };
 
 const MATERIAL_PICKER_STYLE = {
@@ -171,6 +177,15 @@ const StatsWidgetContainer = styled.div`
   width: 250px;
   height: auto;
   line-height: 135%;
+  @media (max-width: 768px) {
+      width: calc(100% - 48px);
+      height: 450px;
+      top: 85px;
+      bottom: 0;
+      right: 0;
+      border-radius: 0;
+      margin: 0;
+    }
 `;
 
 export default class App extends PureComponent {
@@ -184,7 +199,6 @@ export default class App extends PureComponent {
       token: null,
       tileset: null,
       frameNumber: 0,
-      showMemory: false,
       name: INITIAL_EXAMPLE_NAME,
       viewState: {
         main: INITIAL_VIEW_STATE,
@@ -548,9 +562,10 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, debugOptions: {showControlPanel}} = this.state;
     return (
       <ControlPanel
+        showControlPanel={showControlPanel}
         tileset={tileset}
         name={name}
         metadata={metadata}
@@ -562,7 +577,7 @@ export default class App extends PureComponent {
   }
 
   _renderInfo() {
-    const {showFullInfo, token, metadata, debugOptions: {minimap}} = this.state;
+    const {debugOptions: {showFullInfo}, token, metadata, debugOptions: {minimap}} = this.state;
     return (
       <MapInfoPanel
         showFullInfo={showFullInfo}
@@ -571,6 +586,18 @@ export default class App extends PureComponent {
         isMinimapShown={minimap}
       />
     );
+  }
+
+  _renderToolPanel() {
+    const {debugOptions, token, metadata} = this.state;
+    return (
+      <ToolBar 
+        onDebugOptionsChange={this._setDebugOptions}
+        debugOptions={debugOptions}
+        metadata={metadata}
+        token={token}
+      />
+    )
   }
 
   _layerFilter({layer, viewport}) {
@@ -771,13 +798,14 @@ export default class App extends PureComponent {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderDebugPanel()}
-        {this._renderInfo()}
+        {debugOptions.debugPanel && this._renderDebugPanel()}
+        {debugOptions.showFullInfo && this._renderInfo()}
+        {debugOptions.controlPanel && this._renderControlPanel()}
+        {this._renderToolPanel()}
         {this._renderMemory()}
-        {this._renderControlPanel()}
         {tileInfo && this._renderAttributesPanel()}
         {debugOptions.semanticValidator && this._renderSemanticValidator()}
-        <ToolBar />
+
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}
