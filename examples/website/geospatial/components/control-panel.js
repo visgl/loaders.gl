@@ -50,7 +50,6 @@ export default class ControlPanel extends PureComponent {
 
     let selectedLoader = this.props.selectedLoader;
     let selectedExample = this.props.selectedExample;
-    debugger;
 
     if ((!selectedLoader || !selectedExample) && !this._autoSelected) {
       selectedLoader = Object.keys(examples)[0];
