@@ -3,10 +3,10 @@
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
   <a href="https://badge.fury.io/js/%40loaders.gl%2Ftile-converter">
-    <img src="https://badge.fury.io/js/%40loaders.gl%2Ftile-converter.svg" alt="npm version" height="18">
+    <img src="https://badge.fury.io/js/%40loaders.gl%2Ftile-converter.svg" alt="npm version" height="18" />
   </a>
   <a href="https://hub.docker.com/r/visgl/tile-converter/tags">
-    <img alt="Dockerhub" src="https://img.shields.io/docker/v/visgl/tile-converter?label=dockerhub">
+    <img alt="Dockerhub" src="https://img.shields.io/docker/v/visgl/tile-converter?label=dockerhub" />
   </a>
 </p>
 
