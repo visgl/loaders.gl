@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {INITIAL_EXAMPLE_NAME} from '../examples';
+import {INITIAL_EXAMPLE_NAME, INITIAL_LOADER_NAME} from '../examples';
 
 const Container = styled.div`
   display: flex;
@@ -52,7 +52,7 @@ export default class ControlPanel extends PureComponent {
     let selectedExample = this.props.selectedExample;
 
     if ((!selectedLoader || !selectedExample) && !this._autoSelected) {
-      selectedLoader = Object.keys(examples)[0];
+      selectedLoader = INITIAL_LOADER_NAME;
       selectedExample = examples[selectedLoader][INITIAL_EXAMPLE_NAME];
       this._autoSelected = true;
     }

@@ -11,7 +11,7 @@ import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {registerLoaders} from '@loaders.gl/core';
 import ControlPanel from './components/control-panel';
 import FileUploader from './components/file-uploader';
-import {INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
+import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
 
 registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
 
@@ -34,7 +34,7 @@ export default class App extends PureComponent {
 
       // EXAMPLE STATE
       selectedExample: INITIAL_EXAMPLE_NAME,
-      selectedLoader: GeoPackageLoader.name,
+      selectedLoader: INITIAL_LOADER_NAME,
       uploadedFile: null
     };
 
@@ -49,7 +49,7 @@ export default class App extends PureComponent {
   }
 
   _onExampleChange({selectedLoader, selectedExample, example}) {
-    const {data, viewState} = example;
+    const {viewState} = example;
     this.setState({selectedLoader, selectedExample, viewState});
   }
 
@@ -93,7 +93,7 @@ export default class App extends PureComponent {
           ? uploadedFile
           : EXAMPLES[selectedLoader][selectedExample]
           ? EXAMPLES[selectedLoader][selectedExample].data
-          : EXAMPLES.GeoPackage.Vancouver.data,
+          : EXAMPLES[INITIAL_LOADER_NAME][INITIAL_EXAMPLE_NAME].data,
         opacity: 0.8,
         stroked: false,
         filled: true,
