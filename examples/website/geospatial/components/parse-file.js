@@ -31,7 +31,6 @@ export default class ParsedFile extends PureComponent {
       fileError: null,
       data: null
     };
-
   }
 
   async componentDidMount() {
@@ -43,27 +42,22 @@ export default class ParsedFile extends PureComponent {
     const {file, onFileUploaded} = this.props;
     const format = this._checkFileFormat(file);
     if (format) {
-        try {
-            const {arrayBuffer, src} = await this.getLoadedData(file);
-            const loader = await selectLoader(src, [
-              GeoPackageLoader,
-              FlatGeobufLoader
-            ]);
-            const result = loader && (await load(arrayBuffer, loader));
-            switch (loader && loader.id) {
-              case 'geopackage':
-                  onFileUploaded(result, loader, file);
-                  break;
-              case 'flatgeobuf':
-                  onFileUploaded(result, loader, file);        
-                  break;
-              default:
-                throw new Error('Unknown geospatial loader');
-            }
-          } catch (error) {
-            console.error(error);
-            this.setState({fileError: error.message});
-          }
+      try {
+        const {arrayBuffer, src} = await this.getLoadedData(file);
+        const loader = await selectLoader(src, [GeoPackageLoader, FlatGeobufLoader]);
+        const result = loader && (await load(arrayBuffer, loader));
+        switch (loader && loader.id) {
+          case 'geopackage':
+          case 'flatgeobuf':
+            onFileUploaded(result, loader, file);
+            break;
+          default:
+            throw new Error('Unknown geospatial loader');
+        }
+      } catch (error) {
+        console.error(error);
+        this.setState({fileError: error.message});
+      }
     }
   }
 
@@ -75,32 +69,30 @@ export default class ParsedFile extends PureComponent {
       arrayBuffer = await file.arrayBuffer();
       src = file.name;
       return {arrayBuffer, src};
-    } 
+    }
   }
 
- _checkFileFormat(file) {
+  _checkFileFormat(file) {
     const fileName = file.name;
     const values = fileName.split('.');
-    const fileExtension = values[values.length-1];
+    const fileExtension = values[values.length - 1];
     let format;
     const keys = Object.keys(SUPPORTED_FORMATS);
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (SUPPORTED_FORMATS[key].includes(fileExtension)) {
         format = key;
       }
-    })
+    });
     if (format) return format;
     else {
-			const e = new Error('This format is not supported by these loaders');
-			this.setState({fileError: e.message});
+      const e = new Error('This format is not supported by these loaders');
+      this.setState({fileError: e.message});
     }
   }
 
   render() {
     const {fileError} = this.state;
-    return (
-		<ErrorFormatHeader style={{color: 'red'}}>{fileError}</ErrorFormatHeader>
-		)
+    return <ErrorFormatHeader style={{color: 'red'}}>{fileError}</ErrorFormatHeader>;
   }
 }
 

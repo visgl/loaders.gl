@@ -1,7 +1,6 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
-import {get} from 'lodash';
 
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
@@ -12,7 +11,7 @@ import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {load, registerLoaders} from '@loaders.gl/core';
 import ControlPanel from './components/control-panel';
 import FileUploader from './components/file-uploader';
-import { INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES } from './examples';
+import {INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
 
 registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
 
@@ -39,15 +38,10 @@ export default class App extends PureComponent {
       uploadedFile: null
     };
 
-    this._onLoad = this._onLoad.bind(this);
     this._onExampleChange = this._onExampleChange.bind(this);
     this._onFileRemoved = this._onFileRemoved.bind(this);
     this._onFileUploaded = this._onFileUploaded.bind(this);
-  }
-
-  _rotateCamera() {
-    const {viewState} = this.state;
-    this.setState({viewState});
+    this._onViewStateChange = this._onViewStateChange.bind(this);
   }
 
   _onViewStateChange({viewState}) {
@@ -57,20 +51,19 @@ export default class App extends PureComponent {
   _onExampleChange({selectedLoader, selectedExample, example}) {
     const {data, viewState} = example;
     this.setState({selectedLoader, selectedExample, viewState});
-    load(data).then(this._onLoad.bind(this));
+    load(data);
   }
 
-  _onFileRemoved(){
-   this.setState({uploadedFile: null});
+  _onFileRemoved() {
+    this.setState({uploadedFile: null});
   }
 
-  _onFileUploaded(data, loader, uploadedFile){
-    this.setState({selectedLoader: loader.name, selectedExample: uploadedFile.name, uploadedFile: data});
-  }
-
-  _onLoad() {
-    const {viewState} = this.state;
-    this.setState({viewState}, this._rotateCamera);
+  _onFileUploaded(data, loader, uploadedFile) {
+    this.setState({
+      selectedLoader: loader.name,
+      selectedExample: uploadedFile.name,
+      uploadedFile: data
+    });
   }
 
   _renderControlPanel() {
@@ -78,33 +71,36 @@ export default class App extends PureComponent {
 
     return (
       <ControlPanel
-      examples={EXAMPLES}
-      selectedExample={selectedExample}
-      selectedLoader={selectedLoader}
-      onExampleChange={this._onExampleChange}
+        examples={EXAMPLES}
+        selectedExample={selectedExample}
+        selectedLoader={selectedLoader}
+        onExampleChange={this._onExampleChange}
       >
         <div style={{textAlign: 'center'}}>
-          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:{' '}
+          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:
           {viewState.zoom.toFixed(2)}
         </div>
-        {<FileUploader onFileUploaded={this._onFileUploaded} onFileRemoved={this._onFileRemoved}/>}
+        {<FileUploader onFileUploaded={this._onFileUploaded} onFileRemoved={this._onFileRemoved} />}
       </ControlPanel>
     );
   }
 
   _renderLayer() {
     const {selectedExample, selectedLoader, uploadedFile} = this.state;
-    debugger;
     return [
       new GeoJsonLayer({
         id: `geojson-${selectedExample}(${selectedLoader})`,
-        data: uploadedFile ? uploadedFile : get(EXAMPLES, `[${selectedLoader}][${selectedExample}].data`, EXAMPLES.GeoPackage.Vancouver.data),
+        data: uploadedFile
+          ? uploadedFile
+          : EXAMPLES[selectedLoader][selectedExample]
+          ? EXAMPLES[selectedLoader][selectedExample].data
+          : EXAMPLES.GeoPackage.Vancouver.data,
         opacity: 0.8,
         stroked: false,
         filled: true,
         extruded: true,
         wireframe: true,
-        getElevation: f => Math.sqrt(f.properties.valuePerSqm) * 10,
+        getElevation: (f) => Math.sqrt(f.properties.valuePerSqm) * 10,
         getLineColor: [255, 255, 255],
         pickable: true
       })
@@ -120,7 +116,7 @@ export default class App extends PureComponent {
         <DeckGL
           layers={this._renderLayer()}
           viewState={viewState}
-          onViewStateChange={this._onViewStateChange.bind(this)}
+          onViewStateChange={this._onViewStateChange}
           controller={{type: MapController, maxPitch: 85}}
         >
           <StaticMap mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />

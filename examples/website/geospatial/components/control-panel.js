@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import {INITIAL_EXAMPLE_NAME} from '../examples';
 
 const Container = styled.div`
   display: flex;
@@ -27,7 +28,7 @@ const propTypes = {
   examples: PropTypes.object,
   selectedExample: PropTypes.string,
   selectedLoader: PropTypes.string,
-  onExampleChange: PropTypes.func,
+  onExampleChange: PropTypes.func
 };
 
 const defaultProps = {
@@ -41,6 +42,7 @@ const defaultProps = {
 export default class ControlPanel extends PureComponent {
   constructor(props) {
     super(props);
+    this._autoSelected = false;
   }
 
   componentDidMount() {
@@ -48,10 +50,11 @@ export default class ControlPanel extends PureComponent {
 
     let selectedLoader = this.props.selectedLoader;
     let selectedExample = this.props.selectedExample;
+    debugger;
 
     if ((!selectedLoader || !selectedExample) && !this._autoSelected) {
       selectedLoader = Object.keys(examples)[0];
-      selectedExample = Object.keys(examples[selectedLoader])[0];
+      selectedExample = examples[selectedLoader][INITIAL_EXAMPLE_NAME];
       this._autoSelected = true;
     }
 
@@ -81,22 +84,22 @@ export default class ControlPanel extends PureComponent {
           const example = examples[loaderName][exampleName];
           onExampleChange({selectedLoader: loaderName, selectedExample: exampleName, example});
         }}
-      > 
-      {Object.keys(examples).map((loaderName, loaderIndex) => {
-        const loaderExamples = examples[loaderName];
-        return (
-          <optgroup key={loaderIndex} label={loaderName}>
-            {Object.keys(loaderExamples).map((exampleName, exampleIndex) => {
-              const value = `${loaderName}.${exampleName}`;
-              return (
-                <option key={exampleIndex} value={value}>
-                  {`${exampleName} (${loaderName})`}
-                </option>
-              );
-            })}
-          </optgroup>
-        );
-      })}
+      >
+        {Object.keys(examples).map((loaderName, loaderIndex) => {
+          const loaderExamples = examples[loaderName];
+          return (
+            <optgroup key={loaderIndex} label={loaderName}>
+              {Object.keys(loaderExamples).map((exampleName, exampleIndex) => {
+                const value = `${loaderName}.${exampleName}`;
+                return (
+                  <option key={exampleIndex} value={value}>
+                    {`${exampleName} (${loaderName})`}
+                  </option>
+                );
+              })}
+            </optgroup>
+          );
+        })}
       </DropDown>
     );
   }

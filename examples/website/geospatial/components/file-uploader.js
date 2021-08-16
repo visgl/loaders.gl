@@ -48,7 +48,7 @@ export default class FileUploader extends PureComponent {
   }
 
   handleCleanFile() {
-    const { onFileRemoved } = this.props;
+    const {onFileRemoved} = this.props;
     onFileRemoved();
     this.setState({uploadedFile: null});
   }
@@ -61,18 +61,13 @@ export default class FileUploader extends PureComponent {
       <div>
         {!uploadedFile && (
           <Container>
-            <FileFrame
-              onDrop={this.handleLoadFile}
-              onDragOver={(event) => event.preventDefault()}
-            >
+            <FileFrame onDrop={this.handleLoadFile} onDragOver={(event) => event.preventDefault()}>
               Drag&Drop file
             </FileFrame>
           </Container>
         )}
         <FileContainer>
-          {uploadedFile && (
-            <ParsedFile file={uploadedFile} onFileUploaded={onFileUploaded}/>
-          )}
+          {uploadedFile && <ParsedFile file={uploadedFile} onFileUploaded={onFileUploaded} />}
           {uploadedFile && <button onClick={this.handleCleanFile}>Clean</button>}
         </FileContainer>
       </div>

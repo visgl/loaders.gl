@@ -1,13 +1,14 @@
 export const SUPPORTED_FORMATS = {
- 'FlatGeobuf': ['fgb'],
- 'GeoPackage': ['geojson', 'gpkg', 'json']
+  FlatGeobuf: ['fgb'],
+  GeoPackage: ['geojson', 'gpkg', 'json']
 };
 
 export const LOADERS_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
 
 export const INITIAL_EXAMPLE_NAME = 'Vancouver';
 
-export const INITIAL_MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
+export const INITIAL_MAP_STYLE =
+  'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 
 const VIEW_STATE = {
   height: 600,
@@ -22,17 +23,17 @@ const VIEW_STATE = {
 
 export const EXAMPLES = {
   GeoPackage: {
-    'Vancouver': {
+    Vancouver: {
       data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/geojson/vancouver-blocks.json',
       viewState: {
         ...VIEW_STATE,
         latitude: 49.254,
-        longitude: -123.13,
+        longitude: -123.13
       }
     }
   },
   FlatGeobuf: {
-    'Countries': {
+    Countries: {
       data: `${LOADERS_URI}/modules/flatgeobuf/test/data/countries.fgb`,
       viewState: {
         ...VIEW_STATE,
@@ -42,4 +43,4 @@ export const EXAMPLES = {
       }
     }
   }
-}
+};
