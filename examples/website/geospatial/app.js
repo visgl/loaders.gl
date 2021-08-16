@@ -8,7 +8,7 @@ import {GeoJsonLayer} from '@deck.gl/layers';
 
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
-import {load, registerLoaders} from '@loaders.gl/core';
+import {registerLoaders} from '@loaders.gl/core';
 import ControlPanel from './components/control-panel';
 import FileUploader from './components/file-uploader';
 import {INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
@@ -51,7 +51,6 @@ export default class App extends PureComponent {
   _onExampleChange({selectedLoader, selectedExample, example}) {
     const {data, viewState} = example;
     this.setState({selectedLoader, selectedExample, viewState});
-    load(data);
   }
 
   _onFileRemoved() {
