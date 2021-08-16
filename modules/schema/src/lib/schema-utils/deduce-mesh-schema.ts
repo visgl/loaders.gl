@@ -58,7 +58,7 @@ function deduceMeshFields(attributes: MeshAttributes): Field[] {
  * @param attribute
  * @returns
  */
-function makeMeshAttributeMetadata(attribute: MeshAttribute): Map<string, string> {
+export function makeMeshAttributeMetadata(attribute: MeshAttribute): Map<string, string> {
   const result = new Map();
   if ('byteOffset' in attribute) {
     result.set('byteOffset', attribute.byteOffset!.toString(10));
