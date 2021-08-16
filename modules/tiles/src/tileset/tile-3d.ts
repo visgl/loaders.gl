@@ -69,31 +69,42 @@ export default class TileHeader {
 
   traverser: object;
 
+  // @ts-ignore
   private _cacheNode: any;
   private _frameNumber: any;
   // TODO i3s specific, needs to remove
+  // @ts-ignore
   private _lodJudge: any;
   // TODO Cesium 3d tiles specific
   private _expireDate: any;
   private _expiredContent: any;
+  // @ts-ignore
   private _shouldRefine: boolean;
 
   // Members this are updated every frame for tree traversal and rendering optimizations:
+  // @ts-ignore
   private _distanceToCamera: number;
+  // @ts-ignore
   private _centerZDepth: number;
   private _screenSpaceError: number;
   private _visibilityPlaneMask: any;
   private _visible?: boolean;
   private _inRequestVolume: boolean;
 
+  // @ts-ignore
   private _stackLength: number;
+  // @ts-ignore
   private _selectionDepth: number;
 
+  // @ts-ignore
   private _touchedFrame: number;
+  // @ts-ignore
   private _visitedFrame: number;
   private _selectedFrame: number;
+  // @ts-ignore
   private _requestedFrame: number;
 
+  // @ts-ignore
   private _priority: number;
 
   private _contentBoundingVolume: any;
@@ -296,13 +307,17 @@ export default class TileHeader {
     /*
      * Tiles that are outside of the camera's frustum could be skipped if we are in 'ADD' mode
      * or if we are using 'Skip Traversal' in 'REPLACE' mode.
-     * In 'REPLACE' and 'Base Traversal' mode, all child tiles have to be loaded and displayed,
-     * including ones outide of the camera frustum, so that we can hide the parent tile.
+     * Otherewise, all 'touched' child tiles have to be loaded and displayed,
+     * this may include tiles that are outide of the camera frustum (so that we can hide the parent tile).
      */
     const maySkipTile = this.refine === TILE_REFINEMENT.ADD || skipLevelOfDetail;
 
     // Check if any reason to abort
     if (maySkipTile && !this.isVisible && this._visible !== undefined) {
+      return -1;
+    }
+    // Condition used in `cancelOutOfViewRequests` function in CesiumJS/Cesium3DTileset.js
+    if (this.tileset._frameNumber - this._touchedFrame >= 1) {
       return -1;
     }
     if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {

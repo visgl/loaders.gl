@@ -1,5 +1,5 @@
-import type {MeshAttribute} from '@loaders.gl/schema';
-import {Schema, Field, FixedSizeList, getArrowTypeFromTypedArray} from '@loaders.gl/schema';
+import {deduceMeshField, MeshAttribute} from '@loaders.gl/schema';
+import {Schema, Field} from '@loaders.gl/schema';
 import type {DracoAttribute, DracoLoaderData, DracoMetadataEntry} from '../draco-types';
 
 /** Extract an arrow-like schema from a Draco mesh */
@@ -44,13 +44,8 @@ function getArrowFieldFromAttribute(
   loaderData?: DracoAttribute
 ): Field {
   const metadataMap = loaderData ? makeMetadata(loaderData.metadata) : undefined;
-  const type = getArrowTypeFromTypedArray(attribute.value);
-  return new Field(
-    attributeName,
-    new FixedSizeList(attribute.size, new Field('value', type)),
-    false,
-    metadataMap
-  );
+  const field = deduceMeshField(attributeName, attribute, metadataMap);
+  return field;
 }
 
 function makeMetadata(metadata: {[key: string]: DracoMetadataEntry}): Map<string, string> {
@@ -58,6 +53,5 @@ function makeMetadata(metadata: {[key: string]: DracoMetadataEntry}): Map<string
   for (const key in metadata) {
     metadataMap.set(`${key}.string`, JSON.stringify(metadata[key]));
   }
-
   return metadataMap;
 }

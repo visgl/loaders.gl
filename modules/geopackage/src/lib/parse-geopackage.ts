@@ -263,6 +263,7 @@ function constructGeoJsonFeature(
  * @returns version string. One of '1.0', '1.1', '1.2'
  */
 
+// @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getGeopackageVersion(db: Database): string | null {
   const textDecoder = new TextDecoder();

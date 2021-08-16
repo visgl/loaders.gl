@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle",
-    "build-worker": "webpack --entry ./src/workers/mvt-worker.js --output ./dist/mvt-worker.js --config ../../scripts/webpack/worker.js",
+    "build-worker": "webpack --entry ./src/workers/mvt-worker.ts --output ./dist/mvt-worker.js --config ../../scripts/webpack/worker.js",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {

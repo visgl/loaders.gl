@@ -55,6 +55,7 @@ async function safeCreateImageBitmap(blob, imagebitmapOptions = null) {
 }
 
 function isEmptyObject(object) {
+  // @ts-ignore
   for (const key in object || EMPTY_OBJECT) {
     return false;
   }

@@ -13,6 +13,8 @@ type GLTF_EXT_meshopt_compression = {
   mode: 'ATTRIBUTES' | 'TRIANGLES' | 'INDICES';
   filter?: 'NONE' | 'OCTAHEDRAL' | 'QUATERNION' | 'EXPONENTIAL';
 };
+
+// @ts-ignore
 // eslint-disable-next-line
 const DEFAULT_MESHOPT_OPTIONS = {
   byteOffset: 0,

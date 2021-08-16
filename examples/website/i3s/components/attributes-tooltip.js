@@ -2,14 +2,20 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
 const TH_STYLE = {
-  textAlign: 'left'
+  textAlign: 'left',
+  fontSize: '14px',
+  color: 'white',
+  fontWeight: '400'
 };
 
 const TOOLTIP_STYLE = {
-  color: '#adb5bd',
-  fontSize: '11px',
-  textTransform: 'uppercase',
+  background: '#0E111A',
+  margin: '-10px',
+  color: 'rgba(255,255,255,.6)',
+  fontSize: '14px',
+  padding: '10px'
 };
+
 const NO_DATA = 'No Data';
 
 const propTypes = {

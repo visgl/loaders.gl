@@ -1,6 +1,8 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
+import styled from 'styled-components';
+
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
@@ -10,12 +12,12 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
-import {StatsWidgetWrapper, StatsWidgetContainer, MemoryButton} from './components/memory-stats';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
+import { Color, Flex, Font } from './components/styles';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -32,6 +34,29 @@ const INITIAL_VIEW_STATE = {
   zoom: 14.5
 };
 
+const StatsWidgetWrapper = styled.div`
+  display: flex;
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const StatsWidgetContainer = styled.div`
+  ${Flex}
+  ${Color}
+  ${Font}
+  color: rgba(255, 255, 255, .6);
+  z-index: 3;
+  bottom: 15px;
+  left: 15px;
+  word-break: break-word;
+  padding: 24px;
+  border-radius: 8px;
+  width: 250px;
+  height: auto;
+  line-height: 135%;
+`;
+
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
@@ -45,7 +70,7 @@ export default class App extends PureComponent {
       selectedFeatureAttributes: null,
       selectedFeatureIndex: -1,
       isAttributesLoading: false,
-      showMemory: false
+      showMemory: true
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
@@ -178,10 +203,9 @@ export default class App extends PureComponent {
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         selectedMapStyle={selectedMapStyle}>
-          <MemoryButton onClick={() => this.setState({showMemory: !showMemory})}>Memory Usage</MemoryButton>
-          <StatsWidgetWrapper showMemory={showMemory}>
-            {this._renderStats()}
-          </StatsWidgetWrapper>
+        <StatsWidgetWrapper showMemory={showMemory}>
+          {this._renderStats()}
+        </StatsWidgetWrapper>
         </ControlPanel>
     );
   }
@@ -216,13 +240,29 @@ export default class App extends PureComponent {
     );
   }
 
+  renderStats() {
+    // TODO - too verbose, get more default styling from stats widget?
+    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
+  }
+
+  _renderMemory() {
+    const {showMemory} = this.state;
+    return (
+      <StatsWidgetWrapper showMemory={showMemory}>
+       {this._renderStats()}
+      </StatsWidgetWrapper>
+    );
+  }
+
   render() {
     const layers = this._renderLayers();
     const {viewState, selectedMapStyle, selectedFeatureAttributes} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {selectedFeatureAttributes ? this.renderAttributesPanel() : this._renderControlPanel()}
+        {this._renderControlPanel()}
+        {selectedFeatureAttributes && this.renderAttributesPanel()}
+        {this._renderMemory()}
         <DeckGL
           layers={layers}
           viewState={viewState}

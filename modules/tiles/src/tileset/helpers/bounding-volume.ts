@@ -19,7 +19,7 @@ const scratchNorthWest = new Vector3();
 const scratchSouthEast = new Vector3();
 // const scratchRectangle = new Rectangle();
 // const scratchOrientedBoundingBox = new OrientedBoundingBox();
-const scratchTransform = new Matrix4();
+// const scratchTransform = new Matrix4();
 
 /**
  * Create a bounding volume from the tile's bounding volume header.
