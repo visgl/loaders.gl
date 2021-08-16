@@ -6,7 +6,7 @@ import {lasToArrow} from '../../src/lib/las-to-arrow';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 
-test('LASLoader#parse(binary)', async (t) => {
+test('LAS#arrow interaction', async (t) => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {skip: 10}, worker: false});
   const result = lasToArrow(data);
   t.ok(result);
