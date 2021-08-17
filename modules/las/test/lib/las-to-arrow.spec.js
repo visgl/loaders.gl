@@ -13,12 +13,12 @@ test('LAS#arrow interaction', async (t) => {
   const arrowData = await parse(result, ArrowLoader);
   t.ok(arrowData);
   t.equals(arrowData.classification.length, 1);
-  t.equals(arrowData.classification[0].values.length, 80805);
+  t.equals(arrowData.classification[0].data.values.length, 80805);
   t.equals(arrowData.COLOR_0.length, 1);
-  t.equals(arrowData.COLOR_0[0].values.length, 323220);
+  t.equals(arrowData.COLOR_0[0].data.values.length, 323220);
   t.equals(arrowData.intensity.length, 1);
-  t.equals(arrowData.intensity[0].values.length, 80805);
+  t.equals(arrowData.intensity[0].data.values.length, 80805);
   t.equals(arrowData.POSITION.length, 1);
-  t.equals(arrowData.POSITION[0].values.length, 242415);
+  t.equals(arrowData.POSITION[0].data.values.length, 242415);
   t.end();
 });
