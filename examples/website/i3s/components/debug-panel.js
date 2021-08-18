@@ -16,15 +16,15 @@ const Container = styled.div`
   overflow-x: hidden;
   z-index: 20;
   top: 175px;
-  margin: 10px 15px 10px 0;
+  top: ${props => (props.renderControlPanel ? "170px" : "55px")};
+  margin: 5px 10px;
   -moz-user-select: none;
   -khtml-user-select: none;
   user-select: none; 
   @media (max-width: 768px) {
-      bottom: 60px;
-      margin: 0;
-      top: 85px;
-    }
+    bottom: 60px;
+    margin: 0;
+  }
 `;
 
 const DebugOptions = styled.div`
@@ -35,14 +35,12 @@ const DebugOptions = styled.div`
   min-width: 278px;
   padding:  10px 15px 5px 15px;
   height: 100%;
-  margin: 0 0 15px 15px;
   overflow: auto;
   outline: none;
   box-sizing: border-box;
   @media (max-width: 768px) {
-      margin: 0;
-      border-radius: 0;
-      height: 550px;
+    border-radius: 0;
+  }
 `;
 
 const Header = styled.h6`
@@ -63,8 +61,8 @@ const DropDown = styled.select`
   left: 86px;
   margin: 10px;
   @media (max-width: 768px) {
-      width: 100%;
-    }
+    width: 100%;
+  }
 `;
 
 
@@ -99,8 +97,8 @@ const DebugTextureContainer = styled.div`
     width: 85%;
   }
   @media (max-width: 768px) {
-      display: none;
-    }
+    display: none;
+  }
 `;
 
 const SPAN_STYLE = { 
@@ -328,8 +326,9 @@ export default class DebugPanel extends PureComponent {
   }
 
   render() {
+    const {renderControlPanel} = this.props;
     return (
-      <Container className="debug-panel">
+      <Container className="debug-panel" renderControlPanel={renderControlPanel}>
         <DebugOptions>
           <Header>Debug Panel</Header>
           {this._renderFrustumCullingOption()}

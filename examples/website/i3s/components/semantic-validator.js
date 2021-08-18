@@ -20,14 +20,14 @@ const SemanticValidatorContainer = styled.div`
   max-height: 135px;
   overflow-y: auto;
   @media (max-width: 768px) {
-      bottom: 60px;
-      width: 100vw;
-      right: 0;
-      margin: 0;
-      border-radius: 0;
-      max-height: 300px;
-      line-height: 100%;
-    }
+    bottom: 60px;
+    width: 100vw;
+    right: 0;
+    margin: 0;
+    border-radius: 0;
+    max-height: 300px;
+    line-height: 100%;
+  }
 `;
 
 const TableHeader = styled.th`

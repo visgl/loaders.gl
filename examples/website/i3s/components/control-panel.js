@@ -9,20 +9,20 @@ const Container = styled.div`
   ${Flex}
   width: 277px;
   height: 105px;
-  margin: 15px 15px 0 15px;
+  margin: 10px;
   line-height: 28px;
   background: #0E111A;
   border-radius: 8px;
   z-index: 15;
-  top: 55px;
+  top: ${props => (props.styleDebug ? "50px" : "0")};
   @media (max-width: 768px) {
-      width: 100vw;
-      margin: 0;
-      top: 0;
-      border-radius: 0;
-      flex-direction: row;
-      height: 80px;
-    }
+    width: 100vw;
+    margin: 0;
+    top: 0;
+    border-radius: 0;
+    flex-direction: row;
+    height: 80px;
+  }
 `;
 
 const TilesetDropDown = styled.select`
@@ -32,9 +32,9 @@ const TilesetDropDown = styled.select`
   width: 245px;
   margin: 16px 16px 0 16px;
   @media (max-width: 768px) {
-      margin: 25px 0 25px 15px;
-      width: 100%;
-    }
+    margin: 25px 0 25px 15px;
+    width: 100%;
+  }
 `;
 
 const MapContainer = styled.div`
@@ -51,8 +51,8 @@ const MapName = styled.h3`
   font-weight: normal;
   width: 70px;
   @media (max-width: 768px) {
-      display: none;
-    }
+    display: none;
+  }
 `;
 
 const DropDown = styled.select`
@@ -63,9 +63,9 @@ const DropDown = styled.select`
   margin-left: 8px;
   left: 86px;
   @media (max-width: 768px) {
-      width: 100%;
-      margin: 25px 0 25px 5px;
-    }
+    width: 100%;
+    margin: 25px 0 25px 5px;
+  }
 `;
 
 const propTypes = {
@@ -81,7 +81,8 @@ const propTypes = {
 
 const defaultProps = {
   droppedFile: null,
-  onChange: () => {}
+  onChange: () => {},
+  style: {}
 };
 const CUSTOM_EXAMPLE = 'Custom example';
 
@@ -146,8 +147,9 @@ export default class ControlPanel extends PureComponent {
   }
 
   render() {
+    const {styleDebug} = this.props;
     return (
-      <Container>
+      <Container styleDebug={styleDebug}>
         {this._renderExamples()}
         {this._renderMapStyles()}
       </Container>

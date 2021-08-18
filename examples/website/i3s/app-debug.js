@@ -169,8 +169,8 @@ const StatsWidgetContainer = styled.div`
   ${Font}
   color: rgba(255, 255, 255, .6);
   z-index: 3;
-  top: 15px;
-  right: 15px;
+  top: 10px;
+  right: 10px;
   word-break: break-word;
   padding: 24px;
   border-radius: 8px;
@@ -178,14 +178,11 @@ const StatsWidgetContainer = styled.div`
   height: auto;
   line-height: 135%;
   @media (max-width: 768px) {
-      width: calc(100% - 48px);
-      height: 450px;
-      top: 85px;
-      bottom: 0;
-      right: 0;
-      border-radius: 0;
-      margin: 0;
-    }
+    top: 85px;
+    bottom: 0;
+    right: 0;
+    border-radius: 0;
+  }
 `;
 
 export default class App extends PureComponent {
@@ -218,7 +215,8 @@ export default class App extends PureComponent {
       tileInfo: null,
       selectedTileId: null,
       coloredTilesMap: {},
-      warnings: []
+      warnings: [],
+      appDebug: true
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -549,23 +547,25 @@ export default class App extends PureComponent {
   }
 
   _renderDebugPanel() {
-    const {debugOptions} = this.state;
+    const {debugOptions, debugOptions: {controlPanel}} = this.state;
 
     return (
       <DebugPanel
         onDebugOptionsChange={this._setDebugOptions}
         clearWarnings={this.handleClearWarnings}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
-        debugOptions={debugOptions}>
+        debugOptions={debugOptions}
+        renderControlPanel={controlPanel}>
       </DebugPanel>
     );
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle, debugOptions: {showControlPanel}} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, appDebug, debugOptions: {controlPanel}} = this.state;
     return (
       <ControlPanel
-        showControlPanel={showControlPanel}
+        controlPanel={controlPanel}
+        styleDebug={appDebug}
         tileset={tileset}
         name={name}
         metadata={metadata}
@@ -794,18 +794,17 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle, tileInfo, debugOptions} = this.state;
+    const {selectedMapStyle, tileInfo, debugOptions: {debugPanel, showFullInfo, controlPanel, semanticValidator}} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {debugOptions.debugPanel && this._renderDebugPanel()}
-        {debugOptions.showFullInfo && this._renderInfo()}
-        {debugOptions.controlPanel && this._renderControlPanel()}
         {this._renderToolPanel()}
         {this._renderMemory()}
+        {debugPanel && this._renderDebugPanel()}
+        {showFullInfo && this._renderInfo()}
+        {controlPanel && this._renderControlPanel()}
         {tileInfo && this._renderAttributesPanel()}
-        {debugOptions.semanticValidator && this._renderSemanticValidator()}
-
+        {semanticValidator && this._renderSemanticValidator()}
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}

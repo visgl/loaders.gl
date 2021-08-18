@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 const FrameWrap = styled.div`
   position: absolute;
-  right: 15px;
+  right: 1%;
   bottom: ${props => (props.isMinimapShown ? "22%" : "20px")};
   overflow: hidden;
   z-index: 3;
@@ -12,8 +12,8 @@ const FrameWrap = styled.div`
   -khtml-user-select: none;
   user-select: none;
   @media (max-width: 768px) {
-      bottom: 60px;
-    }
+    bottom: 60px;
+  }
 `;
 
 const IFRAME_STYLES = (showFullInfo) => ({
@@ -21,7 +21,7 @@ const IFRAME_STYLES = (showFullInfo) => ({
   height: '470px', 
   transition: 'linear 0.5s',
   marginTop: showFullInfo ? '0' : '-540px',
-  padding: '15px',
+  padding: '8px',
   background: 'black',
   borderRadius: '8px',
   overflowX: showFullInfo ? 'auto' : 'none',
@@ -60,7 +60,7 @@ export default class MapInfoPanel extends PureComponent {
       if (token) {
         url = `${url}&token=${token}`;
       }
-      console.log(url)
+      
       return (
         <FrameWrap isMinimapShown={isMinimapShown}>
           <iframe
