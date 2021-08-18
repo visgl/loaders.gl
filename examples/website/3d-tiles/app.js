@@ -258,7 +258,7 @@ export default class App extends PureComponent {
           layers={[tile3DLayer]}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={{type: MapController, maxPitch: 85, inertia: true}}
+          controller={{type: MapController, maxPitch: 85}}
           onAfterRender={() => this._updateStatWidgets()}
         >
           <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
