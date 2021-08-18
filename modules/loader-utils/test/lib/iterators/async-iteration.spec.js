@@ -97,9 +97,9 @@ test('async-iterator#parseNDJSONInBatches', async (t) => {
   let id = 0;
   for await (const obj of parseNDJSONInBatches(asyncNDJson())) {
     t.equals(typeof obj, 'object', 'async iterator yields object');
-    t.equals(obj.id, id, 'id property matches');
-    t.equals(obj.field, `value${id}`, 'field property matches');
-    t.equals(obj.flag, Boolean(id % 2), 'flag field matches');
+    t.equals(obj['id'], id, 'id property matches');
+    t.equals(obj['field'], `value${id}`, 'field property matches');
+    t.equals(obj['flag'], Boolean(id % 2), 'flag field matches');
     id++;
   }
 });
