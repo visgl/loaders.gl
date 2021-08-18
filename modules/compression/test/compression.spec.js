@@ -19,7 +19,7 @@ import {getData, compareArrayBuffers} from './utils/test-utils';
 
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
-import lz4js from 'lz4js';
+import LZ4 from 'lz4';
 import lzo from 'lzo';
 import {ZstdCodec} from 'zstd-codec';
 
@@ -32,7 +32,7 @@ const modules = {
       throw new Error('brotli compress');
     }
   },
-  lz4js,
+  LZ4,
   lzo,
   'zstd-codec': ZstdCodec
 };
@@ -58,7 +58,7 @@ const TEST_CASES = [
         compressedLength: 10915
       },
       lz4: {
-        compressedLength: 10422
+        compressedLength: 10402
       },
       snappy: {
         compressedLength: 23764
@@ -104,7 +104,10 @@ test('compression#atomic', async (t) => {
           `${name}(${title}) compressed length correct`
         );
       }
-      const uncompressedData = await compression.decompress(compressedData);
+
+      const uncompressedSize = Buffer.from(tc.data).length;
+      const uncompressedData = await compression.decompress(compressedData, uncompressedSize);
+
       t.ok(
         compareArrayBuffers(tc.data, uncompressedData),
         `${name}(${title}) decompressed data equals original`
@@ -142,8 +145,11 @@ test('compression#batched', async (t) => {
 
       // test chained iterators
       compressedBatches = compression.compressBatches(inputChunks);
-
-      const decompressedBatches = compression.decompressBatches(compressedBatches);
+      const uncompressedSize = Buffer.from(tc.data).length;
+      const decompressedBatches = compression.decompressBatches(
+        compressedBatches,
+        uncompressedSize
+      );
 
       const inputData = concatenateArrayBuffers(...inputChunks);
       const decompressedData = await concatenateArrayBuffersAsync(decompressedBatches);
@@ -252,20 +258,5 @@ test.skip('zstd#worker', async (t) => {
   t.equal(decompressdData.byteLength, 100000, 'Length correct');
 
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
-  t.end();
-});
-
-test('lz4#compresion should add dummy header', async (t) => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
-
-  const compression = new LZ4Compression({modules});
-  const emptyLz4Buffer = new Uint8Array([4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0]).buffer;
-  const emptyLz4BufferWithoutMagicAndHashPart = emptyLz4Buffer.slice(6);
-  const result = compression.decompressSync(emptyLz4BufferWithoutMagicAndHashPart);
-
-  t.deepEqual(result, new Uint8Array(0));
   t.end();
 });

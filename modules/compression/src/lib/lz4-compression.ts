@@ -1,16 +1,9 @@
 // LZ4
-import {concatenateArrayBuffers} from '@loaders.gl/loader-utils/';
+import {toArrayBuffer} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-// import lz4js from 'lz4js'; // https://bundlephobia.com/package/lz4
 
-let lz4js;
-// Numbers are taken from here:
-// https://github.com/Benzinga/lz4js
-const FILE_DESCRIPTOR_VERSION = 0x40;
-const DEFAULT_BLOCK_SIZE = 7;
-const BLOCK_SIZE_SHIFT = 4;
-const LZ4_MAGIC_NUMBER = 0x184d2204;
+let LZ4;
 
 /**
  * LZ4 compression / decompression
@@ -26,15 +19,23 @@ export class LZ4Compression extends Compression {
     super(options);
     this.options = options;
 
-    lz4js = lz4js || this.options?.modules?.lz4js;
-    if (!lz4js) {
+    LZ4 = LZ4 || this.options?.modules?.LZ4;
+    if (!LZ4) {
       throw new Error(this.name);
     }
   }
 
-  compressSync(input: ArrayBuffer): ArrayBuffer {
-    const inputArray = new Uint8Array(input);
-    return lz4js.compress(inputArray).buffer;
+  compressSync(data: ArrayBuffer): ArrayBuffer {
+    try {
+      const input = Buffer.from(data);
+      let output = Buffer.alloc(LZ4.encodeBound(input.length));
+      const compressedSize = LZ4.encodeBlock(input, output);
+      output = output.slice(0, compressedSize);
+
+      return toArrayBuffer(output);
+    } catch (error) {
+      throw this.improveError(error);
+    }
   }
 
   /**
@@ -42,50 +43,22 @@ export class LZ4Compression extends Compression {
    * provided, a maximum size will be determined by examining the data. The
    * returned ArrayBuffer will always be perfectly sized.
    */
-  decompressSync(input: ArrayBuffer, maxSize?: number): ArrayBuffer {
-    // let result = Buffer.alloc(maxSize);
-    // const uncompressedSize = lz4js.decodeBlock(value, result);
-    // // remove unnecessary bytes
-    // result = result.slice(0, uncompressedSize);
-    // return result;
-    const shouldAddHeader = this.checkMagicNumber(input);
-
-    if (shouldAddHeader) {
-      input = this.addHeaderForLZ4file(input);
+  decompressSync(data: ArrayBuffer, maxSize?: number): ArrayBuffer {
+    if (!maxSize) {
+      const error = new Error('Need to provide maxSize');
+      throw this.improveError(error);
     }
 
-    const inputArray = new Uint8Array(input);
     try {
-      return lz4js.decompress(inputArray, maxSize).buffer;
+      const input = Buffer.from(data);
+
+      let uncompressed = Buffer.alloc(maxSize);
+      const uncompressedSize = LZ4.decodeBlock(input, uncompressed);
+      uncompressed = uncompressed.slice(0, uncompressedSize);
+
+      return toArrayBuffer(uncompressed);
     } catch (error) {
       throw this.improveError(error);
     }
-  }
-
-  /**
-   * Add dummy header to file if it is missed.
-   * @param input
-   */
-  addHeaderForLZ4file(input: ArrayBuffer): ArrayBuffer {
-    const magic = new Uint32Array([LZ4_MAGIC_NUMBER]);
-    // TODO need to implement descriptor as part of header
-    // https://github.com/Benzinga/lz4js/blob/master/lz4.js#L486
-    const frameDescriptor = Buffer.from([
-      FILE_DESCRIPTOR_VERSION,
-      DEFAULT_BLOCK_SIZE << BLOCK_SIZE_SHIFT
-      // Here should be hash part
-    ]);
-
-    return concatenateArrayBuffers(magic.buffer, frameDescriptor, input);
-  }
-
-  /**
-   * Compare file magic with lz4 magic number
-   * @param input
-   * @returns
-   */
-  checkMagicNumber(input: ArrayBuffer): boolean {
-    const magic = new Uint32Array(input.slice(0, 4));
-    return magic[0] !== LZ4_MAGIC_NUMBER;
   }
 }

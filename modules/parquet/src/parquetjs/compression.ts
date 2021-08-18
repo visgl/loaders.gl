@@ -20,7 +20,7 @@ import {toArrayBuffer, toBuffer} from './utils/buffer-utils';
 
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
-import lz4js from 'lz4js';
+import LZ4 from 'lz4';
 import lzo from 'lzo';
 import {ZstdCodec} from 'zstd-codec';
 
@@ -33,7 +33,7 @@ const modules = {
       throw new Error('brotli compress');
     }
   },
-  lz4js,
+  LZ4,
   lzo,
   'zstd-codec': ZstdCodec
 };
@@ -82,7 +82,7 @@ export function decompress(method: ParquetCompression, value: Buffer, size: numb
     throw new Error(`parquet: invalid compression method: ${method}`);
   }
   const inputArrayBuffer = toArrayBuffer(value);
-  const compressedArrayBuffer = compression.decompressSync(inputArrayBuffer);
+  const compressedArrayBuffer = compression.decompressSync(inputArrayBuffer, size);
   return toBuffer(compressedArrayBuffer);
 }
 

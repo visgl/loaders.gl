@@ -1,8 +1,8 @@
 const PARQUET_FILES = [
   // Parquet seems to use LZ4 compression without header so we need to find a way to e.g. add a dummy header.
-  {supported: false, title: 'lz4_raw_compressed', path: 'good/lz4_raw_compressed.parquet'},
-  {supported: false, title: 'lz4_raw_compressed_larger', path: 'good/lz4_raw_compressed_larger.parquet'},
-  {supported: false, title: 'non_hadoop_lz4_compressed', path: 'good/non_hadoop_lz4_compressed.parquet'},
+  {supported: true, title: 'lz4_raw_compressed', path: 'good/lz4_raw_compressed.parquet'},
+  {supported: true, title: 'lz4_raw_compressed_larger', path: 'good/lz4_raw_compressed_larger.parquet'},
+  {supported: true, title: 'non_hadoop_lz4_compressed', path: 'good/non_hadoop_lz4_compressed.parquet'},
   {supported: true, title: 'alltypes_dictionary', path: 'good/alltypes_dictionary.parquet'},
   {supported: true, title: 'alltypes_plain', path: 'good/alltypes_plain.parquet'},
   {supported: true, title: 'alltypes_plain_snappy', path: 'good/alltypes_plain.snappy.parquet'},
