@@ -120,7 +120,7 @@ const MATERIAL_PICKER_STYLE = {
 const VIEWS = [
   new MapView({
     id: 'main',
-    controller: true
+    controller: {inertia: true}
   }),
   new MapView({
     id: 'minimap',

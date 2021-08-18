@@ -192,7 +192,7 @@ export default class App extends PureComponent {
         <DeckGL
           views={new OrbitView()}
           viewState={viewState}
-          controller={true}
+          controller={{inertia: true}}
           onViewStateChange={this._onViewStateChange}
           layers={this._renderLayers()}
           parameters={{
