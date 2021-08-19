@@ -36,7 +36,7 @@ const ToolButton = styled.button`
   border: none;
   font-size: 22px;
   min-width: 40px;
-  flex: 1 0 2px;
+  flex: 1 0 1px;
   padding: 0;
   &:hover {
     transition: all 1s;
@@ -186,7 +186,7 @@ export default class ToolBar extends PureComponent {
 
   render() {
     return (
-      <Container >
+      <Container>
         {this._renderDebugButton()}
         {this._renderValidatorButton()}
         {this._renderMapButton()}
