@@ -22,7 +22,6 @@ const Container = styled.div`
   border-radius: 8px;
   @media (max-width: 768px) {
     margin: 0;
-    top: 0;
     top: 85px;
     border-radius: 0;
   }
