@@ -121,7 +121,6 @@ export default class ToolBar extends PureComponent {
       <ToolButton
         active={debugPanel}
         onClick={() => onDebugOptionsChange({ debugPanel: !debugPanel })}
-        debugPanel={debugPanel}
       >
         <FontAwesomeIcon icon={faBug} />
         <Title>Debug</Title>
