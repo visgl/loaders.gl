@@ -254,18 +254,3 @@ test.skip('zstd#worker', async (t) => {
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
   t.end();
 });
-
-test('lz4#compresion should add dummy header', async (t) => {
-  if (isBrowser) {
-    t.end();
-    return;
-  }
-
-  const compression = new LZ4Compression({modules});
-  const emptyLz4Buffer = new Uint8Array([4, 34, 77, 24, 64, 112, 223, 0, 0, 0, 0]).buffer;
-  const emptyLz4BufferWithoutMagicAndHashPart = emptyLz4Buffer.slice(6);
-  const result = compression.decompressSync(emptyLz4BufferWithoutMagicAndHashPart);
-
-  t.deepEqual(result, new Uint8Array(0));
-  t.end();
-});
