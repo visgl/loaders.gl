@@ -23,6 +23,7 @@ export const DropDownStyle = `
     color: black;
   }
 `
+
 export const Font = `
   font-family: 'Uber Move' sans-serif;
   font-size: 16px;
@@ -32,12 +33,14 @@ export const Font = `
   letter-spacing: 0em;
   text-align: left;
 `
+
 export const Flex = `
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   position: absolute;
 `
+
 export const Color = `
   background: #0E111A;
   color: white;

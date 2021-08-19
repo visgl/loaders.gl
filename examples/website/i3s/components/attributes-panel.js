@@ -14,11 +14,17 @@ const Container = styled.div`
   margin: 15px;
   width: 320px;
   padding: 0 15px 10px 15px;
-  max-height: 90%;
-  z-index: 1000;
+  height: auto;
+  max-height: 80%;
+  z-index: 999;
   overflow-y: auto;
   word-break: break-word;
   border-radius: 8px;
+  @media (max-width: 768px) {
+    margin: 0;
+    top: 85px;
+    border-radius: 0;
+  }
 `;
 
 const STYLED_TH = {
@@ -43,8 +49,8 @@ const CLOSE_BUTTON_STYLE = {
   color: 'white',
   outline: 'none',
   fontSize: '19px',
-  right: '30px',
-  position: 'fixed'
+  right: '15px',
+  position: 'absolute'
 };
 
 const propTypes = {

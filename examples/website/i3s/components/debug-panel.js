@@ -1,14 +1,11 @@
 import styled from 'styled-components';
 import React, {PureComponent}from 'react';
 import PropTypes from 'prop-types';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faChevronLeft, faChevronRight} from '@fortawesome/free-solid-svg-icons';
 
 import DebugOptionGroup from './debug-option-group';
 import ToggleSwitch from './toggle-switch';
 import Checkbox from './checkbox';
-import {DropDown} from './control-panel';
-import {Color, Font} from './styles';
+import {Color, DropDownStyle, Font} from './styles';
 
 import {TILE_COLOR_MODES, BOUNDING_VOLUME_COLOR_MODES, BOUNDING_VOLUME_TYPE} from '../constants';
 
@@ -18,11 +15,16 @@ const Container = styled.div`
   flex-direction: row;
   overflow-x: hidden;
   z-index: 20;
-  top: 120px;
-  margin: 10px 15px 10px 0;
+  top: 175px;
+  top: ${props => (props.renderControlPanel ? "170px" : "55px")};
+  margin: 5px 10px;
   -moz-user-select: none;
   -khtml-user-select: none;
   user-select: none; 
+  @media (max-width: 768px) {
+    bottom: 60px;
+    margin: 0;
+  }
 `;
 
 const DebugOptions = styled.div`
@@ -33,10 +35,12 @@ const DebugOptions = styled.div`
   min-width: 278px;
   padding:  10px 15px 5px 15px;
   height: 100%;
-  margin: 0 0 15px 15px;
   overflow: auto;
   outline: none;
   box-sizing: border-box;
+  @media (max-width: 768px) {
+    border-radius: 0;
+  }
 `;
 
 const Header = styled.h6`
@@ -49,19 +53,18 @@ const Header = styled.h6`
   color: rgba(255, 255, 255, 0.6);
 `;
 
-const Expander = styled.div`
+const DropDown = styled.select`
   ${Color}
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  top: calc(50% - 54px);
-  width: 20px;
-  height: 30px;
-  border-radius: 4px;
-  align-self: center;
-  margin: 0px 10px;
-  cursor: pointer;
+  ${Font}
+  ${DropDownStyle}
+  width: 167px;
+  left: 86px;
+  margin: 10px;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
+
 
 const CheckboxOption = styled.div`
   display: flex;
@@ -93,6 +96,9 @@ const DebugTextureContainer = styled.div`
     transition: all 1s;
     width: 85%;
   }
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const SPAN_STYLE = { 
@@ -117,40 +123,9 @@ const defaultProps = {
 };
 
 export default class DebugPanel extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = {
-      expand: true
-    };
-
-    this._onToggleDebugPanel = this._onToggleDebugPanel.bind(this);
-  }
-
   _onToggleDebugPanel() {
     const {expand} = this.state;
     this.setState({expand: !expand});
-  }
-
-  _getExpandStyles() {
-    const {expand} = this.state;
-    if (expand) {
-      return {
-        marginLeft: '15px',
-        transition: 'all 0.5s'
-      };
-    }
-    return {
-      marginLeft: '-278px',
-      transition: 'all 0.5s'
-    };
-  }
-
-  _renderExpandIcon() {
-    const {expand} = this.state;
-    if (expand) {
-      return <FontAwesomeIcon icon={faChevronLeft} />;
-    }
-    return <FontAwesomeIcon icon={faChevronRight} />;
   }
 
   _renderBoundingVolumeColor() {
@@ -350,59 +325,16 @@ export default class DebugPanel extends PureComponent {
     );
   }
 
-  _renderMemoryUsage() {
-    const {
-      debugOptions: {showMemory},
-      onDebugOptionsChange
-    } = this.props;
-
-    return (
-      <DebugOptionGroup>
-        <CheckboxOption style={CHECKBOX_STYLE}>
-          <Label htmlFor="showMemory">Memory usage</Label>
-          <ToggleSwitch
-            id="showMemory"
-            value={showMemory}
-            checked={showMemory}
-            onChange={() => onDebugOptionsChange({showMemory: !showMemory})}
-          />
-        </CheckboxOption>
-      </DebugOptionGroup>
-    )
-  }
-
-  _renderSemanticValidatorOption() {
-    const {
-      debugOptions: {semanticValidator},
-      onDebugOptionsChange
-    } = this.props;
-    return (
-      <DebugOptionGroup>
-        <CheckboxOption style={CHECKBOX_STYLE}>
-          <Label htmlFor="showSemanticValidator">Semantic Validator</Label>
-          <ToggleSwitch
-            id="showSemanticValidator"
-            value={semanticValidator}
-            checked={semanticValidator}
-            onChange={() => onDebugOptionsChange({semanticValidator: !semanticValidator})}
-          />
-        </CheckboxOption>
-      </DebugOptionGroup>
-    );
-  }
-
   render() {
+    const {renderControlPanel} = this.props;
     return (
-      <Container className="debug-panel">
-        <DebugOptions style={this._getExpandStyles()}>
+      <Container className="debug-panel" renderControlPanel={renderControlPanel}>
+        <DebugOptions>
           <Header>Debug Panel</Header>
           {this._renderFrustumCullingOption()}
           {this._renderTileOptions()}
           {this._renderBoundingVolume()}
-          {this._renderSemanticValidatorOption()}
-          {this._renderMemoryUsage()}
         </DebugOptions>
-        <Expander onClick={this._onToggleDebugPanel}>{this._renderExpandIcon()}</Expander>
       </Container>
     );
   }
