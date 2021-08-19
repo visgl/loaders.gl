@@ -7,7 +7,9 @@ import { faMap, faBug, faSdCard, faExclamationCircle, faInfo, faGlobe } from '@f
 const Container = styled.div`
   position: absolute;
   background: #232323;
-  display: flex;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ;
+  display: flex;     
+  align-items: center;
+  justify-content: space-around;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ;
   bottom: 0;
   width: 100%;
   height: 60px;
@@ -25,16 +27,21 @@ const Container = styled.div`
 `;
 
 const ToolButton = styled.button`
-  background: transparent;
-  color: white;
-  width: 100%;
-  height: 100%;
+  background: ${props => props.active ? '#4F52CC' : 'transparent'};
+  color: ${props => props.active ? 'white' : 'rgba(255, 255 , 255, .8)'};
+  border-radius: 4px;
+  height: 80%;
+  margin-left: 2px;
   cursor: pointer;
   border: none;
   font-size: 22px;
   min-width: 40px;
   flex: 1 0 1px;
-  padding: 0;                
+  padding: 0;
+  &:hover {
+    transition: all 1s;
+    color: white;
+  }               
   @media (min-width: 768px) {
     font-size: 18px;
   }
@@ -75,11 +82,10 @@ export default class ToolBar extends PureComponent {
       debugOptions: { showMemory },
       onDebugOptionsChange
     } = this.props;
-    const isActive = true;
 
     return (
       <ToolButton
-        className={`button ${isActive ? 'active' : ''} ${this.props.className}`}
+        active={showMemory}
         onClick={() => onDebugOptionsChange({ showMemory: !showMemory })}
       >
         <FontAwesomeIcon icon={faSdCard} />
@@ -96,6 +102,7 @@ export default class ToolBar extends PureComponent {
 
     return (
       <ToolButton
+        active={semanticValidator}
         onClick={() => onDebugOptionsChange({ semanticValidator: !semanticValidator })}
       >
         <FontAwesomeIcon icon={faExclamationCircle} />
@@ -112,6 +119,7 @@ export default class ToolBar extends PureComponent {
 
     return (
       <ToolButton
+        active={debugPanel}
         onClick={() => onDebugOptionsChange({ debugPanel: !debugPanel })}
       >
         <FontAwesomeIcon icon={faBug} />
@@ -128,6 +136,7 @@ export default class ToolBar extends PureComponent {
 
     return (
       <ToolButton
+        active={controlPanel}
         onClick={() => onDebugOptionsChange({ controlPanel: !controlPanel })}
       >
         <FontAwesomeIcon icon={faMap} />
@@ -144,6 +153,7 @@ export default class ToolBar extends PureComponent {
 
     return (
       <ToolButton
+        active={showFullInfo}
         onClick={() => onDebugOptionsChange({ showFullInfo: !showFullInfo })}
       >
         <FontAwesomeIcon icon={faInfo} />
@@ -174,7 +184,6 @@ export default class ToolBar extends PureComponent {
   }
 
   render() {
-
     return (
       <Container>
         {this._renderDebugButton()}
