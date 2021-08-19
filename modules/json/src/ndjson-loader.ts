@@ -25,7 +25,7 @@ async function parse(arrayBuffer: ArrayBuffer) {
   return parseTextSync(new TextDecoder().decode(arrayBuffer));
 }
 
-function parseTextSync(text: string, options?: LoaderOptions) {
+function parseTextSync(text: string) {
   return parseNDJSONSync(text);
 }
 
