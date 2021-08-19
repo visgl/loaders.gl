@@ -206,7 +206,7 @@ export default class App extends PureComponent {
         <StatsWidgetWrapper showMemory={showMemory}>
           {this._renderStats()}
         </StatsWidgetWrapper>
-        </ControlPanel>
+      </ControlPanel>
     );
   }
 
