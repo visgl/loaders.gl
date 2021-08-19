@@ -21,8 +21,8 @@ const Container = styled.div`
   word-break: break-word;
   border-radius: 8px;
   @media (max-width: 768px) {
-    bottom: 60px;
     margin: 0;
+    top: 0;
     top: 85px;
     border-radius: 0;
   }
@@ -50,7 +50,7 @@ const CLOSE_BUTTON_STYLE = {
   color: 'white',
   outline: 'none',
   fontSize: '19px',
-  right: '30px',
+  right: '15px',
   position: 'absolute'
 };
 
