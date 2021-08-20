@@ -204,7 +204,8 @@ function materializeColumn(
       const value = Types.fromPrimitive(
         // @ts-ignore
         field.originalType || field.primitiveType,
-        data.values[vIndex]
+        data.values[vIndex],
+        field
       );
       vIndex++;
       if (field.repetitionType === 'REPEATED') {

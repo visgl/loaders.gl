@@ -46,7 +46,10 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: typeof DataType} = {
   JSON: Binary,
   BSON: Binary,
   // TODO check interal type
-  INTERVAL: Binary
+  INTERVAL: Binary,
+  DECIMAL_INT32: Float32,
+  DECIMAL_BYTE_ARRAY: Float32,
+  DECIMAL_INT64: Float64
 };
 
 export function convertParquetToArrowSchema(parquetSchema: ParquetSchema): Schema {

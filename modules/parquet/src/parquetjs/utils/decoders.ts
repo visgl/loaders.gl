@@ -169,15 +169,25 @@ export function decodeSchema(
         fields: res.schema
       };
     } else {
-      let logicalType = getThriftEnum(Type, schemaElement.type!);
+      const type = getThriftEnum(Type, schemaElement.type!);
+      let logicalType = type;
 
       if (schemaElement.converted_type) {
         logicalType = getThriftEnum(ConvertedType, schemaElement.converted_type);
       }
 
+      switch (logicalType) {
+        case 'DECIMAL':
+          logicalType = `${logicalType}_${type}` as ParquetType;
+          break;
+        default:
+      }
+
       schema[schemaElement.name] = {
         type: logicalType as ParquetType,
         typeLength: schemaElement.type_length,
+        presision: schemaElement.precision,
+        scale: schemaElement.scale,
         optional,
         repeated
       };
