@@ -7,19 +7,18 @@ import { faMap, faBug, faSdCard, faExclamationCircle, faInfo, faGlobe } from '@f
 const Container = styled.div`
   position: absolute;
   background: #232323;
-  display: flex;     
-  align-items: center;
-  justify-content: space-around;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ;
-  bottom: 0;
-  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ;
+  bottom: 0;   
+  width: 100vw;
   height: 60px;
-  z-index: 5;
+  z-index: 100;
   @media (min-width: 769px) {
-    display: flex;
     position: absolute;
     top: 0;
     margin: 10px 0 0 10px;
-    width: 277px;
+    width: auto;
     height: 40px;
     background: #0E111A;
     border-radius: 8px;
@@ -29,21 +28,22 @@ const Container = styled.div`
 const ToolButton = styled.button`
   background: ${props => props.active ? '#4F52CC' : 'transparent'};
   color: ${props => props.active ? 'white' : 'rgba(255, 255 , 255, .8)'};
-  border-radius: 4px;
-  height: 80%;
-  margin-left: 2px;
   cursor: pointer;
   border: none;
   font-size: 22px;
-  min-width: 40px;
-  flex: 1 0 1px;
-  padding: 0;
+  flex: 1 1 0px;
+  margin: 2px 0 2px 1px;
+  height: 56px;
+  width: 16.5vw;
   &:hover {
     transition: all 1s;
     color: white;
   }               
-  @media (min-width: 768px) {
+  @media (min-width: 769px) {
     font-size: 18px;
+    width: 45px;
+    height: 36px;
+    border-radius: 5px;
   }
 `;
 
@@ -66,6 +66,57 @@ const Title = styled.h3`
   }
 `
 
+const TooltipBox = styled.div`
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  font-weight: 500;
+  font-size: 16px;
+  visibility: hidden;
+  color: transparent;
+  background-color: transparent;
+  text-align: center;
+  width: 110px;
+  height: 19px;
+  border-radius: 4px;
+  transition: visibility 0.5s, color 0.5s, background-color 0.5s, padding 0.5s ease-in-out;
+  @media (max-width: 769px) {
+    display: none;
+  }
+
+  &:before {
+    content: "";
+    width: 0;
+    height: 0;
+    left: 18px;
+    top: -6px;
+    position: absolute;
+    border: 6px solid transparent;
+    transform: rotate(135deg);
+    transition: border 0.3s ease-in-out;
+  }
+`;
+
+const TooltipCard = styled.div`
+  position: relative;
+  & ${ToolButton}:hover + ${TooltipBox} {
+    visibility: visible;
+    color: #0E111A;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    width: 110px;
+    padding: 4px;
+    border-radius: 4px;
+    &:before {
+      border-color: transparent transparent white white;
+    }
+    @media (max-width: 769px) {
+      display: none;
+    }
+  }
+`;
+
 const propTypes = {
   onDebugOptionsChange: PropTypes.func,
   debugOptions: PropTypes.object,
@@ -84,13 +135,18 @@ export default class ToolBar extends PureComponent {
     } = this.props;
 
     return (
-      <ToolButton
-        active={showMemory}
-        onClick={() => onDebugOptionsChange({ showMemory: !showMemory })}
-      >
-        <FontAwesomeIcon icon={faSdCard} />
-        <Title>Memory</Title>
-      </ToolButton>
+      <TooltipCard>
+        <ToolButton
+            active={showMemory}
+            onClick={() => onDebugOptionsChange({ showMemory: !showMemory })}
+          >
+          <FontAwesomeIcon icon={faSdCard} />
+          <Title>Memory</Title>
+        </ToolButton>
+        <TooltipBox>
+          Memory usage
+        </TooltipBox>
+      </TooltipCard>
     );
   }
 
@@ -101,13 +157,18 @@ export default class ToolBar extends PureComponent {
     } = this.props;
 
     return (
-      <ToolButton
-        active={semanticValidator}
-        onClick={() => onDebugOptionsChange({ semanticValidator: !semanticValidator })}
-      >
-        <FontAwesomeIcon icon={faExclamationCircle} />
-        <Title>Validator</Title>
-      </ToolButton>
+      <TooltipCard>
+        <ToolButton
+            active={semanticValidator}
+            onClick={() => onDebugOptionsChange({ semanticValidator: !semanticValidator })}
+          >
+          <FontAwesomeIcon icon={faExclamationCircle} />
+          <Title>Vaidator</Title>
+        </ToolButton>
+        <TooltipBox>
+          Validator
+        </TooltipBox>
+      </TooltipCard>
     );
   }
 
@@ -118,13 +179,18 @@ export default class ToolBar extends PureComponent {
     } = this.props;
 
     return (
-      <ToolButton
-        active={debugPanel}
-        onClick={() => onDebugOptionsChange({ debugPanel: !debugPanel })}
-      >
-        <FontAwesomeIcon icon={faBug} />
-        <Title>Debug</Title>
-      </ToolButton>
+      <TooltipCard>
+        <ToolButton
+          active={debugPanel}
+          onClick={() => onDebugOptionsChange({ debugPanel: !debugPanel })}
+        >
+          <FontAwesomeIcon icon={faBug} />
+          <Title>Debug</Title>
+        </ToolButton>
+        <TooltipBox>
+          Debug panel
+        </TooltipBox>
+      </TooltipCard>
     );
   }
 
@@ -135,13 +201,18 @@ export default class ToolBar extends PureComponent {
     } = this.props;
 
     return (
-      <ToolButton
-        active={controlPanel}
-        onClick={() => onDebugOptionsChange({ controlPanel: !controlPanel })}
-      >
-        <FontAwesomeIcon icon={faMap} />
-        <Title>Map</Title>
-      </ToolButton>
+      <TooltipCard>
+        <ToolButton
+          active={controlPanel}
+          onClick={() => onDebugOptionsChange({ controlPanel: !controlPanel })}
+        >
+          <FontAwesomeIcon icon={faMap} />
+          <Title>Map</Title>
+        </ToolButton>
+        <TooltipBox>
+          Select map
+        </TooltipBox>
+      </TooltipCard>
     );
   }
 
@@ -152,13 +223,18 @@ export default class ToolBar extends PureComponent {
     } = this.props;
 
     return (
-      <ToolButton
-        active={showFullInfo}
-        onClick={() => onDebugOptionsChange({ showFullInfo: !showFullInfo })}
-      >
-        <FontAwesomeIcon icon={faInfo} />
-        <Title>Info</Title>
-      </ToolButton>
+      <TooltipCard>
+        <ToolButton
+          active={showFullInfo}
+          onClick={() => onDebugOptionsChange({ showFullInfo: !showFullInfo })}
+        >
+          <FontAwesomeIcon icon={faInfo} />
+          <Title>Info</Title>
+        </ToolButton>
+        <TooltipBox>
+          Map info
+        </TooltipBox>
+      </TooltipCard>
     );
   }
 
@@ -176,10 +252,15 @@ export default class ToolBar extends PureComponent {
     }
 
     return (
-      <LinkButton as="a" target="_blank" rel="noopener noreferrer" href={url}>
-        <FontAwesomeIcon icon={faGlobe} />
-        <Title>ArcGIS</Title>
-      </LinkButton>
+      <TooltipCard>
+        <LinkButton as="a" target="_blank" rel="noopener noreferrer" href={url}>
+          <FontAwesomeIcon icon={faGlobe} />
+          <Title style={{marginTop: '3px'}}>ArcGIS</Title>
+        </LinkButton>
+        <TooltipBox>
+          Go to ArcGIS
+        </TooltipBox>
+      </TooltipCard>
     );
   }
 
