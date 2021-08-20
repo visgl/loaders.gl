@@ -69,7 +69,7 @@ const Title = styled.h3`
 const TooltipBox = styled.div`
   position: absolute;
   top: calc(100% + 5px);
-  left: 0;
+  left: -37px;
   font-weight: 500;
   font-size: 16px;
   visibility: hidden;
@@ -77,9 +77,9 @@ const TooltipBox = styled.div`
   background-color: transparent;
   text-align: center;
   width: 110px;
-  height: 19px;
+  line-height: 22px;
   border-radius: 4px;
-  transition: visibility 0.5s, color 0.5s, background-color 0.5s, padding 0.5s ease-in-out;
+  transition: visibility 0.5s, color 0.5s, background-color 0.5s, width 0.5s ease-in-out;
   @media (max-width: 769px) {
     display: none;
   }
@@ -88,7 +88,7 @@ const TooltipBox = styled.div`
     content: "";
     width: 0;
     height: 0;
-    left: 18px;
+    left: 55px;
     top: -6px;
     position: absolute;
     border: 6px solid transparent;
@@ -105,8 +105,7 @@ const TooltipCard = styled.div`
     justify-content: center;
     align-items: center;
     background-color: white;
-    width: 110px;
-    padding: 4px;
+    width: 120px;
     border-radius: 4px;
     &:before {
       border-color: transparent transparent white white;
@@ -116,6 +115,13 @@ const TooltipCard = styled.div`
     }
   }
 `;
+
+const DebugTooltip = styled(TooltipBox)`
+  left: 0;
+  &:before {
+    left: 18px;
+  }
+`
 
 const propTypes = {
   onDebugOptionsChange: PropTypes.func,
@@ -187,9 +193,9 @@ export default class ToolBar extends PureComponent {
           <FontAwesomeIcon icon={faBug} />
           <Title>Debug</Title>
         </ToolButton>
-        <TooltipBox>
+        <DebugTooltip>
           Debug panel
-        </TooltipBox>
+        </DebugTooltip>
       </TooltipCard>
     );
   }
