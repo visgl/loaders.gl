@@ -107,8 +107,9 @@ const SPAN_STYLE = {
 }
 
 const CHECKBOX_STYLE = {
-  padding: '15px 0'
-}
+  padding: '15px 0',
+  position: 'relative'
+};
 
 const propTypes = {
   onDebugOptionsChange: PropTypes.func,
