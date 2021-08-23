@@ -1,6 +1,12 @@
 // ported and es6-ified from https://github.com/verma/plasio/
 
-import {Schema, getMeshBoundingBox} from '@loaders.gl/schema';
+import {
+  Schema,
+  getMeshBoundingBox,
+  ArrowTable,
+  convertMesh,
+  ColumnarTable
+} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../las-loader';
 import type {LASMesh, LASHeader} from './las-types';
 import {LASFile} from './laslaz-decoder';
@@ -20,11 +26,22 @@ type LASChunk = {
  * @param options
  * @returns LASHeader
  */
-/* eslint-disable max-statements */
 export default function parseLAS(
   arrayBuffer: ArrayBuffer,
-  options: LASLoaderOptions = {}
-): LASMesh {
+  options?: LASLoaderOptions
+): LASMesh | ArrowTable | ColumnarTable {
+  const mesh = parseLASMesh(arrayBuffer, options);
+  return convertMesh(mesh, options?.las?.shape || 'mesh') as LASMesh | ArrowTable | ColumnarTable;
+}
+
+/**
+ * Parsing of .las file
+ * @param arrayBuffer
+ * @param options
+ * @returns LASHeader
+ */
+/* eslint-disable max-statements */
+function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}): LASMesh {
   let pointIndex: number = 0;
 
   let positions: Float32Array | Float64Array;

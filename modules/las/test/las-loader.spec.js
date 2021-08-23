@@ -4,6 +4,7 @@ import {validateLoader, validateMeshCategoryData} from 'test/common/conformance'
 
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
+import {ArrowLoader} from '@loaders.gl/arrow';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
@@ -83,12 +84,38 @@ test('LASWorkerLoader#load(worker)', async (t) => {
   t.end();
 });
 
-test('LASLoader#shapes', async (t) => {
-  let data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
-  validateMeshCategoryData(t, data);
+test('LASLoader#shape="mesh"', async (t) => {
+  const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
+  validateMeshCategoryData(t, result);
+  t.end();
+});
 
-  data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'columnar-table'}});
-  validateMeshCategoryData(t, data);
+// TODO - error, use something like validateTableCategoryData
+test.skip('LASLoader#shape="columnar-table"', async (t) => {
+  const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {shape: 'columnar-table'}
+  });
+  validateMeshCategoryData(t, result);
+  t.end();
+});
 
+test('LAS#shape="arrow-table"', async (t) => {
+  const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {shape: 'arrow-table', skip: 10},
+    worker: false
+  });
+  t.ok(result);
+
+  const table = result.data;
+  const arrowData = await parse(table.serialize(), ArrowLoader);
+  t.ok(arrowData);
+  t.equals(arrowData.classification.length, 1);
+  t.equals(arrowData.classification[0].data.values.length, 80805);
+  t.equals(arrowData.COLOR_0.length, 1);
+  t.equals(arrowData.COLOR_0[0].data.values.length, 323220);
+  t.equals(arrowData.intensity.length, 1);
+  t.equals(arrowData.intensity[0].data.values.length, 80805);
+  t.equals(arrowData.POSITION.length, 1);
+  t.equals(arrowData.POSITION[0].data.values.length, 242415);
   t.end();
 });

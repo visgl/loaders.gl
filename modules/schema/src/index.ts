@@ -39,8 +39,7 @@ export type {
 } from './category/mesh/mesh-types';
 
 export {getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
-export {convertMeshToArrowTable} from './category/mesh/mesh-to-arrow-table';
-export {convertMeshToColumnarTable} from './category/mesh/mesh-to-columnar-table';
+export {convertMesh} from './category/mesh/convert-mesh';
 export {
   deduceMeshSchema,
   deduceMeshField,
@@ -120,6 +119,6 @@ export {
 // SCHEMA UTILS
 export {deduceTypeFromColumn, deduceTypeFromValue} from './lib/schema-utils/deduce-column-type';
 export {getTypeInfo} from './lib/arrow/get-type-info';
-export {getArrowTypeFromTypedArray} from './lib/arrow/arrow-type-utils';
+export {getArrowTypeFromTypedArray} from './lib/arrow/arrow-like-type-utils';
 
 export {default as AsyncQueue} from './lib/utils/async-queue';
