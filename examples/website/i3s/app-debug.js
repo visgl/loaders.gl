@@ -27,6 +27,7 @@ import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 import MapInfoPanel from './components/map-info';
 import SemanticValidator from './components/semantic-validator';
+import ToolBar from './components/tool-bar';
 
 import {
   INITIAL_MAP_STYLE,
@@ -55,6 +56,7 @@ import {
   selectOriginalTextureForTile,
   selectOriginalTextureForTileset
 } from './utils/texture-selector-utils';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import { Color, Flex, Font } from './components/styles';
 
 const TRANSITION_DURAITON = 4000;
@@ -104,7 +106,13 @@ const INITIAL_DEBUG_OPTIONS_STATE = {
   // Enable/Disable wireframe mode
   wireframe: false,
   // Show statswidget
-  showMemory: false
+  showMemory: false,
+  // Show control panel
+  controlPanel: true,
+  // Show debug panel
+  debugPanel: false,
+  // Show map info
+  showFullInfo: false
 };
 
 const MATERIAL_PICKER_STYLE = {
@@ -119,7 +127,7 @@ const MATERIAL_PICKER_STYLE = {
 const VIEWS = [
   new MapView({
     id: 'main',
-    controller: true
+    controller: {inertia: true}
   }),
   new MapView({
     id: 'minimap',
@@ -162,14 +170,22 @@ const StatsWidgetContainer = styled.div`
   ${Font}
   color: rgba(255, 255, 255, .6);
   z-index: 3;
-  top: 15px;
-  right: 15px;
+  top: 10px;
+  right: 10px;
   word-break: break-word;
   padding: 24px;
   border-radius: 8px;
   width: 250px;
-  height: auto;
+  max-height: calc(100% - 10px);
   line-height: 135%;
+  overflow: auto;
+
+  @media (max-width: 768px) {
+    top: ${props => (props.renderControlPanel ? "85px" : "10px")};
+    max-height: ${props => (props.renderControlPanel ? "calc(100% - 145px)" : "calc(100% - 70px)")};
+    right: 0px;
+    border-radius: 0px;
+  }
 `;
 
 export default class App extends PureComponent {
@@ -183,7 +199,6 @@ export default class App extends PureComponent {
       token: null,
       tileset: null,
       frameNumber: 0,
-      showMemory: false,
       name: INITIAL_EXAMPLE_NAME,
       viewState: {
         main: INITIAL_VIEW_STATE,
@@ -203,7 +218,8 @@ export default class App extends PureComponent {
       tileInfo: null,
       selectedTileId: null,
       coloredTilesMap: {},
-      warnings: []
+      warnings: [],
+      appDebug: true
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -518,8 +534,9 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
+    const { debugOptions: {controlPanel}} = this.state;
     // TODO - too verbose, get more default styling from stats widget?
-    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
+    return <StatsWidgetContainer renderControlPanel={controlPanel} ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
   _renderMemory() {
@@ -534,22 +551,25 @@ export default class App extends PureComponent {
   }
 
   _renderDebugPanel() {
-    const {debugOptions} = this.state;
+    const {debugOptions, debugOptions: {controlPanel}} = this.state;
 
     return (
       <DebugPanel
         onDebugOptionsChange={this._setDebugOptions}
         clearWarnings={this.handleClearWarnings}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
-        debugOptions={debugOptions}>
+        debugOptions={debugOptions}
+        renderControlPanel={controlPanel}>
       </DebugPanel>
     );
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle} = this.state;
+    const {name, tileset, token, metadata, selectedMapStyle, appDebug, debugOptions: {controlPanel}} = this.state;
     return (
       <ControlPanel
+        controlPanel={controlPanel}
+        styleDebug={appDebug}
         tileset={tileset}
         name={name}
         metadata={metadata}
@@ -561,7 +581,7 @@ export default class App extends PureComponent {
   }
 
   _renderInfo() {
-    const {showFullInfo, token, metadata, debugOptions: {minimap}} = this.state;
+    const {debugOptions: {showFullInfo}, token, metadata, debugOptions: {minimap}} = this.state;
     return (
       <MapInfoPanel
         showFullInfo={showFullInfo}
@@ -570,6 +590,18 @@ export default class App extends PureComponent {
         isMinimapShown={minimap}
       />
     );
+  }
+
+  _renderToolPanel() {
+    const {debugOptions, token, metadata} = this.state;
+    return (
+      <ToolBar 
+        onDebugOptionsChange={this._setDebugOptions}
+        debugOptions={debugOptions}
+        metadata={metadata}
+        token={token}
+      />
+    )
   }
 
   _layerFilter({layer, viewport}) {
@@ -598,7 +630,7 @@ export default class App extends PureComponent {
   }
 
   getTooltip(info) {
-    if (!info.object || info.index < 0 || !info.layer) {
+    if (!info.object || info.index < 0 || !info.layer || !isBrowser) {
       return null;
     }
     const tileInfo = getShortTileDebugInfo(info.object);
@@ -721,6 +753,7 @@ export default class App extends PureComponent {
         handleClosePanel={this.handleClosePanel}
         attributesObject={tileInfo}
         selectTileColor={this.handleSelectTileColor}
+        isControlPanelShown={debugOptions.controlPanel}
       >
         <TileValidator
           tile={currenTile}
@@ -766,16 +799,17 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle, tileInfo, debugOptions} = this.state;
+    const {selectedMapStyle, tileInfo, debugOptions: {debugPanel, showFullInfo, controlPanel, semanticValidator}} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderDebugPanel()}
-        {this._renderInfo()}
+        {this._renderToolPanel()}
         {this._renderMemory()}
-        {this._renderControlPanel()}
+        {debugPanel && this._renderDebugPanel()}
+        {showFullInfo && this._renderInfo()}
+        {controlPanel && this._renderControlPanel()}
         {tileInfo && this._renderAttributesPanel()}
-        {debugOptions.semanticValidator && this._renderSemanticValidator()}
+        {semanticValidator && this._renderSemanticValidator()}
         <DeckGL
           layers={layers}
           viewState={this._getViewState()}

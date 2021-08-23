@@ -14,11 +14,24 @@ const Container = styled.div`
   margin: 15px;
   width: 320px;
   padding: 0 15px 10px 15px;
-  max-height: 90%;
-  z-index: 1000;
+  height: auto;
+  max-height: 75%;
+  z-index: 16;
   overflow-y: auto;
   word-break: break-word;
   border-radius: 8px;
+
+  @media (max-width: 768px) {
+    margin: 0;
+    top:  ${props => (props.isControlPanelShown ? '95px' : '10px')};
+    max-height: ${props => (props.isControlPanelShown ? 'calc(75% - 95px)' : 'calc(75% - 10px)')};
+    border-radius: 0;
+    width: 300px;
+  }
+`;
+
+const AttributesTable = styled.table`
+  width: 100%;
 `;
 
 const STYLED_TH = {
@@ -43,13 +56,14 @@ const CLOSE_BUTTON_STYLE = {
   color: 'white',
   outline: 'none',
   fontSize: '19px',
-  right: '30px',
-  position: 'fixed'
+  right: '15px',
+  position: 'absolute'
 };
 
 const propTypes = {
   title: PropTypes.string,
   attributesObject: PropTypes.object,
+  isControlPanelShown: PropTypes.bool,
   children: PropTypes.node,
   handleClosePanel: PropTypes.func
 };
@@ -57,6 +71,7 @@ const propTypes = {
 const defaultProps = {
   title: null,
   attributesObject: {},
+  isControlPanelShown: false,
   children: null,
   handleClosePanel: () => {}
 };
@@ -78,11 +93,9 @@ export default class AttributesPanel extends PureComponent {
     }
 
     return (
-      <div>
-        <table>
-          <tbody>{tableColumns}</tbody>
-        </table>
-      </div>
+      <AttributesTable>
+        <tbody>{tableColumns}</tbody>
+      </AttributesTable>
     );
   }
 
@@ -115,10 +128,10 @@ export default class AttributesPanel extends PureComponent {
   }
 
   render() {
-    const {title, attributesObject, handleClosePanel, children} = this.props;
+    const {title, attributesObject, handleClosePanel, isControlPanelShown, children} = this.props;
 
     return (
-      <Container>
+      <Container isControlPanelShown={isControlPanelShown}>
         <div style={this.getHeaderStyle(title)}>
           {title && <h3 style={HEADER_STYLE}>{title}</h3>}
           <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>

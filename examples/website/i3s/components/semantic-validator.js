@@ -5,20 +5,32 @@ import {Flex} from './styles';
 
 const SemanticValidatorContainer = styled.div`
   ${Flex}
-  right: 21%;
-  bottom: 0;
+  left: 25%;
+  right: 25%;
+  bottom: 10px;
   color: rgba(255, 255, 255, .6);
   font-size: 16px;
   background: #0E111A;
   z-index: 17;
-  margin: 10px;
   line-height: 135%;
   border-radius: 8px;
-  width: 730px;
-  min-width: 35%;
   min-height: 38px;
   max-height: 135px;
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    bottom: 60px;
+    width: 100vw;
+    left: 0;
+    right: 0;
+    border-radius: 0;
+    max-height: 200px;
+    line-height: 100%;
+  }
+`;
+
+const Table = styled.table`
+  width: 100%;
 `;
 
 const TableHeader = styled.th`
@@ -98,7 +110,7 @@ export default class SemanticValidator extends PureComponent {
     const {clearWarnings} = this.props;
 
     return (
-      <table>
+      <Table>
         <thead>
           <tr style={TR_STYLE}>
             <TableHeader>{COLUMN_NUMBER}</TableHeader>
@@ -109,7 +121,7 @@ export default class SemanticValidator extends PureComponent {
           </tr>
         </thead>
         <tbody>{columns}</tbody>
-      </table>
+      </Table>
     );
   }
 

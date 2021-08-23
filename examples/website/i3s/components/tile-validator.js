@@ -11,6 +11,7 @@ import Checkbox from './checkbox';
 const TileValidatorContainer = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1 0;
 `;
 
 const ValidateButton = styled.button`
