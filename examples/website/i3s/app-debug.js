@@ -56,6 +56,7 @@ import {
   selectOriginalTextureForTile,
   selectOriginalTextureForTileset
 } from './utils/texture-selector-utils';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import { Color, Flex, Font } from './components/styles';
 
 const TRANSITION_DURAITON = 4000;
@@ -629,7 +630,7 @@ export default class App extends PureComponent {
   }
 
   getTooltip(info) {
-    if (!info.object || info.index < 0 || !info.layer) {
+    if (!info.object || info.index < 0 || !info.layer || !isBrowser) {
       return null;
     }
     const tileInfo = getShortTileDebugInfo(info.object);
