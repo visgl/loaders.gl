@@ -15,6 +15,9 @@ export type ParquetCompression =
 export type RepetitionType = 'REQUIRED' | 'OPTIONAL' | 'REPEATED';
 export type ParquetType = PrimitiveType | OriginalType;
 
+/**
+ * Physical type
+ */
 export type PrimitiveType =
   // Base Types
   | 'BOOLEAN' // 0
@@ -26,6 +29,9 @@ export type PrimitiveType =
   | 'BYTE_ARRAY' // 6,
   | 'FIXED_LEN_BYTE_ARRAY'; // 7
 
+/**
+ * Logical type
+ */
 export type OriginalType =
   // Converted Types
   | 'UTF8' // 0
