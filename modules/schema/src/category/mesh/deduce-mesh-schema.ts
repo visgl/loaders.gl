@@ -1,6 +1,6 @@
-import {MeshAttribute, MeshAttributes} from '../../category/mesh';
-import {Schema, Field, FixedSizeList} from '../schema';
-import {getArrowTypeFromTypedArray} from './type-utils';
+import {MeshAttribute, MeshAttributes} from './mesh-types';
+import {Schema, Field, FixedSizeList} from '../../lib/schema';
+import {getArrowTypeFromTypedArray} from '../../lib/arrow/arrow-type-utils';
 
 /**
  * Create a schema for mesh attributes data

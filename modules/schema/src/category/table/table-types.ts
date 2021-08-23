@@ -1,7 +1,7 @@
-import type {Schema} from '../lib/schema';
+import type {Schema} from '../../lib/schema';
 import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow';
-import type {AnyArray} from '../types';
-import type {Batch} from './common';
+import type {AnyArray} from '../../types';
+import type {Batch} from '../common';
 
 /** A general table */
 export interface Table {
