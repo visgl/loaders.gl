@@ -11,20 +11,20 @@ export type {
   ObjectRowTable,
   ColumnarTable,
   ArrowTable
-} from './category/table';
+} from './category/table/table-types';
 export type {
   TableBatch,
   RowArrayTableBatch,
   RowObjectTableBatch,
   ColumnarTableBatch,
   ArrowTableBatch
-} from './category/table';
+} from './category/table/table-types';
 
 // TABLE CATEGORY UTILS
-export {default as TableBatchBuilder} from './lib/table/table-batch-builder';
-export type {TableBatchAggregator} from './lib/table/table-batch-aggregator';
-export {default as RowTableBatchAggregator} from './lib/table/row-table-batch-aggregator';
-export {default as ColumnarTableBatchAggregator} from './lib/table/columnar-table-batch-aggregator';
+export {default as TableBatchBuilder} from './lib/batches/table-batch-builder';
+export type {TableBatchAggregator} from './lib/batches/table-batch-aggregator';
+export {default as RowTableBatchAggregator} from './lib/batches/row-table-batch-aggregator';
+export {default as ColumnarTableBatchAggregator} from './lib/batches/columnar-table-batch-aggregator';
 
 export {convertToObjectRow, convertToArrayRow} from './lib/utils/row-utils';
 
@@ -36,9 +36,16 @@ export type {
   MeshGeometry,
   MeshAttribute,
   MeshAttributes
-} from './category/mesh';
+} from './category/mesh/mesh-types';
 
-export {getMeshSize, getMeshBoundingBox} from './category/mesh-utils/mesh-utils';
+export {getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
+export {convertMeshToArrowTable} from './category/mesh/mesh-to-arrow-table';
+export {convertMeshToColumnarTable} from './category/mesh/mesh-to-columnar-table';
+export {
+  deduceMeshSchema,
+  deduceMeshField,
+  makeMeshAttributeMetadata
+} from './category/mesh/deduce-mesh-schema';
 
 // TYPES
 // GIS CATEGORY - GEOJSON
@@ -108,15 +115,11 @@ export {
   Struct
 } from './lib/schema';
 
-// SCHEMA UTILS
-export {deduceTableSchema} from './lib/schema-utils/deduce-table-schema';
-export {
-  deduceMeshSchema,
-  deduceMeshField,
-  makeMeshAttributeMetadata
-} from './lib/schema-utils/deduce-mesh-schema';
-export {getTypeInfo} from './lib/schema-utils/get-type-info';
-export {getArrowTypeFromTypedArray} from './lib/schema-utils/type-utils';
-
 // EXPERIMENTAL APIs
+
+// SCHEMA UTILS
+export {deduceTypeFromColumn, deduceTypeFromValue} from './lib/schema-utils/deduce-column-type';
+export {getTypeInfo} from './lib/arrow/get-type-info';
+export {getArrowTypeFromTypedArray} from './lib/arrow/arrow-type-utils';
+
 export {default as AsyncQueue} from './lib/utils/async-queue';

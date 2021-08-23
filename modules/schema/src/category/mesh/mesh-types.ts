@@ -1,6 +1,6 @@
-import type {Schema} from '../lib/schema';
-import type {TypedArray} from '../types';
-import type {ColumnarTable, ArrowTable} from './table';
+import type {Schema} from '../../lib/schema';
+import type {TypedArray} from '../../types';
+import type {ColumnarTable, ArrowTable} from '../table/table-types';
 
 /** Mesh as columnar table */
 export interface MeshTable extends ColumnarTable {
