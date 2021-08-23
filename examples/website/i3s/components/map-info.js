@@ -5,14 +5,21 @@ import PropTypes from 'prop-types';
 const FrameWrap = styled.div`
   position: absolute;
   right: 1%;
-  bottom: ${props => (props.isMinimapShown ? "22%" : "20px")};
-  overflow: hidden;
+  height: 478px;
+  max-height: calc(78% - 85px);
+  bottom: 25%;
   z-index: 3;
   -moz-user-select: none;
   -khtml-user-select: none;
   user-select: none;
+
+  iframe {
+    height: 100% !important;
+    width: 310px;
+  }
+
   @media (max-width: 768px) {
-    bottom: 60px;
+    right: 0;
   }
 `;
 
