@@ -27,6 +27,7 @@ import DebugPanel from './components/debug-panel';
 import ControlPanel from './components/control-panel';
 import MapInfoPanel from './components/map-info';
 import SemanticValidator from './components/semantic-validator';
+import ToolBar from './components/tool-bar';
 
 import {
   INITIAL_MAP_STYLE,
