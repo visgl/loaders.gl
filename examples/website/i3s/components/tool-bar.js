@@ -36,7 +36,6 @@ const ToolButton = styled.button`
   height: 56px;
   width: 16.5vw;
   &:hover {
-    transition: all 1s;
     color: white;
   }               
   @media (min-width: 769px) {
@@ -79,11 +78,7 @@ const TooltipBox = styled.div`
   width: 110px;
   line-height: 22px;
   border-radius: 4px;
-  transition: visibility 0.5s, color 0.5s, background-color 0.5s, width 0.5s ease-in-out;
-  @media (max-width: 769px) {
-    display: none;
-  }
-
+  transition: visibility 0.1s, color 0.1s, background-color 0.1s all;
   &:before {
     content: "";
     width: 0;
@@ -93,7 +88,10 @@ const TooltipBox = styled.div`
     position: absolute;
     border: 6px solid transparent;
     transform: rotate(135deg);
-    transition: border 0.3s ease-in-out;
+    transition: border 0.1s all;
+  }
+  @media (any-hover: none) {
+    display: none;
   }
 `;
 
@@ -110,7 +108,7 @@ const TooltipCard = styled.div`
     &:before {
       border-color: transparent transparent white white;
     }
-    @media (max-width: 769px) {
+    @media (any-hover: none) {
       display: none;
     }
   }
