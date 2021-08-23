@@ -56,6 +56,7 @@ import {
   selectOriginalTextureForTile,
   selectOriginalTextureForTileset
 } from './utils/texture-selector-utils';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import { Color, Flex, Font } from './components/styles';
 
 const TRANSITION_DURAITON = 4000;
@@ -175,13 +176,15 @@ const StatsWidgetContainer = styled.div`
   padding: 24px;
   border-radius: 8px;
   width: 250px;
-  height: auto;
+  max-height: calc(100% - 10px);
   line-height: 135%;
+  overflow: auto;
+
   @media (max-width: 768px) {
-    top: 85px;
-    bottom: 0;
-    right: 0;
-    border-radius: 0;
+    top: ${props => (props.renderControlPanel ? "85px" : "10px")};
+    max-height: ${props => (props.renderControlPanel ? "calc(100% - 145px)" : "calc(100% - 70px)")};
+    right: 0px;
+    border-radius: 0px;
   }
 `;
 
@@ -531,8 +534,9 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
+    const { debugOptions: {controlPanel}} = this.state;
     // TODO - too verbose, get more default styling from stats widget?
-    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
+    return <StatsWidgetContainer renderControlPanel={controlPanel} ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
   _renderMemory() {
@@ -626,7 +630,7 @@ export default class App extends PureComponent {
   }
 
   getTooltip(info) {
-    if (!info.object || info.index < 0 || !info.layer) {
+    if (!info.object || info.index < 0 || !info.layer || !isBrowser) {
       return null;
     }
     const tileInfo = getShortTileDebugInfo(info.object);

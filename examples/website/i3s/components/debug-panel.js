@@ -15,15 +15,18 @@ const Container = styled.div`
   flex-direction: row;
   overflow-x: hidden;
   z-index: 20;
-  top: 175px;
-  top: ${props => (props.renderControlPanel ? "170px" : "55px")};
-  margin: 5px 10px;
+  top: ${props => (props.renderControlPanel ? "170px" : "60px")};
+  left: 10px;
   -moz-user-select: none;
   -khtml-user-select: none;
-  user-select: none; 
+  user-select: none;
+  height: ${props => (props.renderControlPanel ? "calc(100% - 170px)" : "calc(100% - 60px)")};
+  max-height: 520px;
+
   @media (max-width: 768px) {
+    top: auto;
     bottom: 60px;
-    margin: 0;
+    left: 0;
   }
 `;
 
@@ -34,8 +37,7 @@ const DebugOptions = styled.div`
   width: 278px;
   min-width: 278px;
   padding:  10px 15px 5px 15px;
-  height: 100%;
-  overflow: auto;
+  height: 520px;
   outline: none;
   box-sizing: border-box;
   @media (max-width: 768px) {
@@ -107,8 +109,9 @@ const SPAN_STYLE = {
 }
 
 const CHECKBOX_STYLE = {
-  padding: '15px 0'
-}
+  padding: '15px 0',
+  position: 'relative'
+};
 
 const propTypes = {
   onDebugOptionsChange: PropTypes.func,
