@@ -127,7 +127,7 @@ const MATERIAL_PICKER_STYLE = {
 const VIEWS = [
   new MapView({
     id: 'main',
-    controller: true
+    controller: {inertia: true}
   }),
   new MapView({
     id: 'minimap',
@@ -753,6 +753,7 @@ export default class App extends PureComponent {
         handleClosePanel={this.handleClosePanel}
         attributesObject={tileInfo}
         selectTileColor={this.handleSelectTileColor}
+        isControlPanelShown={debugOptions.controlPanel}
       >
         <TileValidator
           tile={currenTile}

@@ -18,7 +18,7 @@ export function getLASSchema(lasHeader: LASHeader, attributes: MeshAttributes): 
  * @param lasHeader
  * @returns
  */
-function makeMetadataFromLasHeader(lasHeader: LASHeader): Map<string, string> {
+export function makeMetadataFromLasHeader(lasHeader: LASHeader): Map<string, string> {
   const metadataMap = new Map();
   metadataMap.set('las_pointsOffset', lasHeader.pointsOffset.toString(10));
   metadataMap.set('las_pointsFormatId', lasHeader.pointsFormatId.toString(10));

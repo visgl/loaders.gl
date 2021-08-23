@@ -82,7 +82,7 @@ export function decompress(method: ParquetCompression, value: Buffer, size: numb
     throw new Error(`parquet: invalid compression method: ${method}`);
   }
   const inputArrayBuffer = toArrayBuffer(value);
-  const compressedArrayBuffer = compression.decompressSync(inputArrayBuffer);
+  const compressedArrayBuffer = compression.decompressSync(inputArrayBuffer, size);
   return toBuffer(compressedArrayBuffer);
 }
 
