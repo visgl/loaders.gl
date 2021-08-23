@@ -239,6 +239,7 @@ export default class App extends PureComponent {
         title={title}
         handleClosePanel={this.handleClosePanel}
         attributesObject={selectedFeatureAttributes}
+        isControlPanelShown
       />
     );
   }

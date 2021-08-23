@@ -17,13 +17,14 @@ const SemanticValidatorContainer = styled.div`
   min-height: 38px;
   max-height: 135px;
   overflow-y: auto;
+
   @media (max-width: 768px) {
     bottom: 60px;
     width: 100vw;
     left: 0;
     right: 0;
     border-radius: 0;
-    max-height: 300px;
+    max-height: 200px;
     line-height: 100%;
   }
 `;
