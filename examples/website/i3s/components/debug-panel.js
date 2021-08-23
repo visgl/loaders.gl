@@ -10,37 +10,30 @@ import {Color, DropDownStyle, Font} from './styles';
 import {TILE_COLOR_MODES, BOUNDING_VOLUME_COLOR_MODES, BOUNDING_VOLUME_TYPE} from '../constants';
 
 const Container = styled.div`
+  ${Color}
+  ${Font}
   position: absolute;
   display: flex;
-  flex-direction: row;
-  overflow-x: hidden;
+  flex-direction: column;
   z-index: 20;
   top: ${props => (props.renderControlPanel ? "170px" : "60px")};
   left: 10px;
   -moz-user-select: none;
   -khtml-user-select: none;
   user-select: none;
+  padding:  10px 15px 5px 15px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  width: 278px;
   height: ${props => (props.renderControlPanel ? "calc(100% - 170px)" : "calc(100% - 60px)")};
-  max-height: 520px;
+  max-height: 540px;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   @media (max-width: 768px) {
     top: auto;
     bottom: 60px;
     left: 0;
-  }
-`;
-
-const DebugOptions = styled.div`
-  ${Color}
-  ${Font}
-  border-radius: 8px;
-  width: 278px;
-  min-width: 278px;
-  padding:  10px 15px 5px 15px;
-  height: 520px;
-  outline: none;
-  box-sizing: border-box;
-  @media (max-width: 768px) {
     border-radius: 0;
   }
 `;
@@ -61,7 +54,7 @@ const DropDown = styled.select`
   ${DropDownStyle}
   width: 167px;
   left: 86px;
-  margin: 10px;
+  margin: 10px 0;
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -332,12 +325,10 @@ export default class DebugPanel extends PureComponent {
     const {renderControlPanel} = this.props;
     return (
       <Container className="debug-panel" renderControlPanel={renderControlPanel}>
-        <DebugOptions>
-          <Header>Debug Panel</Header>
-          {this._renderFrustumCullingOption()}
-          {this._renderTileOptions()}
-          {this._renderBoundingVolume()}
-        </DebugOptions>
+        <Header>Debug Panel</Header>
+        {this._renderFrustumCullingOption()}
+        {this._renderTileOptions()}
+        {this._renderBoundingVolume()}
       </Container>
     );
   }
