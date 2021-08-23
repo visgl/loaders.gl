@@ -128,6 +128,13 @@ module.exports = {
             path: 'examples/i3s-debug'
           },
           {
+            title: 'Geospatial Loaders',
+            category: "Loaders",
+            image: 'images/example-textures.png',
+            componentUrl: resolve(__dirname, '../examples/website/geopkg/app.js'),
+            path: 'examples/geopkg'
+          },
+          {
             title: 'Benchmarks',
             category: "Benchmarks",
             image: 'images/benchmark.png',
