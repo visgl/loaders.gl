@@ -13,7 +13,7 @@ export type ParquetCompression =
   | 'LZ4_RAW'
   | 'ZSTD';
 export type RepetitionType = 'REQUIRED' | 'OPTIONAL' | 'REPEATED';
-export type ParquetType = PrimitiveType | OriginalType | DecimalTypes;
+export type ParquetType = PrimitiveType | OriginalType;
 
 export type PrimitiveType =
   // Base Types
@@ -37,6 +37,7 @@ export type OriginalType =
   | 'DECIMAL_INT32' // 5
   | 'DECIMAL_INT64' // 5
   | 'DECIMAL_BYTE_ARRAY' // 5
+  | 'DECIMAL_FIXED_LEN_BYTE_ARRAY' // 5
   | 'DATE' // 6
   | 'TIME_MILLIS' // 7
   | 'TIME_MICROS' // 8
@@ -53,8 +54,6 @@ export type OriginalType =
   | 'JSON' // 19
   | 'BSON' // 20
   | 'INTERVAL'; // 21
-
-export type DecimalTypes = 'DECIMAL_INT32' | 'DECIMAL_INT64' | 'DECIMAL_BYTE_ARRAY';
 
 export type ParquetDictionary = string[];
 

@@ -12,8 +12,8 @@ const PARQUET_FILES = [
   {supported: true, title: 'byte_array_decimal', path: 'good/byte_array_decimal.parquet'},
   {supported: false, title: 'datapage_v2', path: 'good/datapage_v2.snappy.parquet'}, // Doesn't work on parquet-tools
   {supported: true, title: 'dict', path: 'good/dict-page-offset-zero.parquet'},
-  {supported: false, title: 'fixed_length_decimal', path: 'good/fixed_length_decimal.parquet'},
-  {supported: false, title: 'fixed_length_decimal_legacy', path: 'good/fixed_length_decimal_legacy.parquet'},
+  {supported: true, title: 'fixed_length_decimal', path: 'good/fixed_length_decimal.parquet'},
+  {supported: true, title: 'fixed_length_decimal_legacy', path: 'good/fixed_length_decimal_legacy.parquet'},
   {supported: false, title: 'hadoop_lz4_compressed', path: 'good/hadoop_lz4_compressed.parquet'},
   {supported: false, title: 'hadoop_lz4_compressed_larger', path: 'good/hadoop_lz4_compressed_larger.parquet'},
   {supported: true, title: 'int32_decimal', path: 'good/int32_decimal.parquet'},

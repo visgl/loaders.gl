@@ -155,6 +155,12 @@ export const PARQUET_LOGICAL_TYPES: Record<ParquetType, ParquetTypeKit> = {
     originalType: 'DECIMAL_BYTE_ARRAY',
     toPrimitive: decimalToPrimitive_BYTE_ARRAY,
     fromPrimitive: decimalFromPrimitive_BYTE_ARRAY
+  },
+  DECIMAL_FIXED_LEN_BYTE_ARRAY: {
+    primitiveType: 'FIXED_LEN_BYTE_ARRAY',
+    originalType: 'DECIMAL_FIXED_LEN_BYTE_ARRAY',
+    toPrimitive: decimalToPrimitive_BYTE_ARRAY,
+    fromPrimitive: decimalFromPrimitive_BYTE_ARRAY
   }
 };
 
@@ -459,14 +465,22 @@ function decimalFromPrimitive_INT(value: any, field: ParquetField) {
 }
 
 function decimalFromPrimitive_BYTE_ARRAY(value: any, field: ParquetField) {
-  if (value.length > 4) {
-    throw new Error('BYTE_ARRAY for DECIMAL value is too long');
-  }
   let number = 0;
-  for (let i = 0; i < value.length; i++) {
-    const component = value[i] << (8 * (value.length - i - 1));
-    number += component;
+  if (value.length <= 4) {
+    // Bytewise operators faster. Use them if it is possible
+    for (let i = 0; i < value.length; i++) {
+      // `value.length - i - 1` bytes have reverse order (big-endian)
+      const component = value[i] << (8 * (value.length - i - 1));
+      number += component;
+    }
+  } else {
+    for (let i = 0; i < value.length; i++) {
+      // `value.length - i - 1` bytes have reverse order (big-endian)
+      const component = value[i] * 2 ** (8 * (value.length - 1 - i));
+      number += component;
+    }
   }
+
   const presisionInt = Math.round(
     ((number * 10 ** -field.presision!) % 1) * 10 ** field.presision!
   );
