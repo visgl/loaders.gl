@@ -752,6 +752,7 @@ export default class App extends PureComponent {
         handleClosePanel={this.handleClosePanel}
         attributesObject={tileInfo}
         selectTileColor={this.handleSelectTileColor}
+        isControlPanelShown={debugOptions.controlPanel}
       >
         <TileValidator
           tile={currenTile}
