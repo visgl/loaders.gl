@@ -566,3 +566,63 @@ export const REPEATED_NO_ANNOTATION_EXPECTED = [
   { id: "5", phoneNumbers: { phone: [{ number: "1111111111", kind: "home" }] } },
   { id: "6", phoneNumbers: { phone: [{ number: "1111111111", kind: "home" }, { number: "2222222222" }, { number: "3333333333", kind: "mobile" }] } }
 ];
+
+export const LZ4_RAW_COMPRESSED_LARGER_FIRST_EXPECTED = {
+  a: Buffer.from([
+    99, 55, 99, 101, 54, 98, 101, 102, 45, 100, 53, 98, 48, 45, 52, 56, 54, 51,
+    45, 98, 49, 57, 57, 45, 56, 101, 97, 56, 99, 55, 102, 98, 49, 49, 55, 98
+  ])
+};
+
+export const LZ4_RAW_COMPRESSED_LARGER_LAST_EXPECTED = {
+  a: Buffer.from([
+    56, 53, 52, 52, 48, 55, 55, 56, 45, 52, 54, 48, 97, 45, 52, 49, 97, 99,
+    45, 97, 97, 50, 101, 45, 97, 99, 51, 101, 101, 52, 49, 54, 57, 54, 98, 102
+  ])
+};
+
+export const LZ4_RAW_COMPRESSED_EXPECTED = [
+  {
+    c0: 1593604800,
+    c1: Buffer.from([97, 98, 99]),
+    v11: 42
+  },
+  {
+    c0: 1593604800,
+    c1: Buffer.from([100, 101, 102]),
+    v11: 7.7
+  },
+  {
+    c0: 1593604801,
+    c1: Buffer.from([97, 98, 99]),
+    v11: 42.125
+  },
+  {
+    c0: 1593604801,
+    c1: Buffer.from([100, 101, 102]),
+    v11: 7.7
+  }
+];
+
+export const NON_HADOOP_LZ4_COMPRESSED_EXPECTED = [
+  {
+    c0: '1593604800',
+    c1: 'abc',
+    v11: '42'
+  },
+  {
+    c0: '1593604800',
+    c1: 'def',
+    v11: '7.7'
+  },
+  {
+    c0: '1593604801',
+    c1: 'abc',
+    v11: '42.125'
+  },
+  {
+    c0: '1593604801',
+    c1: 'def',
+    v11: '7.7'
+  }
+];

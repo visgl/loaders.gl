@@ -19,7 +19,11 @@ import {
   NO_NULLABLE_EXPECTED,
   NULLABLE_EXPECTED,
   NULLS_EXPECTED,
-  REPEATED_NO_ANNOTATION_EXPECTED
+  REPEATED_NO_ANNOTATION_EXPECTED,
+  LZ4_RAW_COMPRESSED_LARGER_FIRST_EXPECTED,
+  LZ4_RAW_COMPRESSED_LARGER_LAST_EXPECTED,
+  LZ4_RAW_COMPRESSED_EXPECTED,
+  NON_HADOOP_LZ4_COMPRESSED_EXPECTED
 } from './expected';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
@@ -158,6 +162,36 @@ test('ParquetLoader#load repeated_no_annotation file', async (t) => {
 
   t.equal(data.length, 6);
   t.deepEqual(data, REPEATED_NO_ANNOTATION_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load lz4_raw_compressed file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/lz4_raw_compressed.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+  
+
+  t.equal(data.length, 4);
+  t.deepEqual(data, LZ4_RAW_COMPRESSED_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load lz4_raw_compressed_larger file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/lz4_raw_compressed_larger.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 10000);
+  // Compare only first and last items in data because file is huge.
+  t.deepEqual(data[0], LZ4_RAW_COMPRESSED_LARGER_FIRST_EXPECTED);
+  t.deepEqual(data[9999], LZ4_RAW_COMPRESSED_LARGER_LAST_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load non_hadoop_lz4_compressed file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/non_hadoop_lz4_compressed.parquet';
+  const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+
+  t.equal(data.length, 4);
+  t.deepEqual(data, NON_HADOOP_LZ4_COMPRESSED_EXPECTED);
   t.end();
 });
 

@@ -31,9 +31,9 @@ export abstract class Compression {
   }
 
   /** Asynchronously decompress data */
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
+  async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
     await this.preload();
-    return this.decompressSync(input);
+    return this.decompressSync(input, size);
   }
 
   /** Synchronously compress data */
@@ -42,7 +42,7 @@ export abstract class Compression {
   }
 
   /** Synchronously compress data */
-  decompressSync(input: ArrayBuffer): ArrayBuffer {
+  decompressSync(input: ArrayBuffer, size?: number): ArrayBuffer {
     throw new Error(`${this.name}: sync decompression not supported`);
   }
 
