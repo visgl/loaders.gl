@@ -48,13 +48,16 @@ const StatsWidgetContainer = styled.div`
   color: rgba(255, 255, 255, .6);
   z-index: 3;
   bottom: 15px;
-  left: 15px;
   word-break: break-word;
   padding: 24px;
   border-radius: 8px;
-  width: 250px;
-  height: auto;
   line-height: 135%;
+  top: 125px;
+  bottom: auto;
+  width: 277px;
+  left: 10px;
+  max-height: calc(100% - 125px);
+  overflow: auto;
 `;
 
 export default class App extends PureComponent {
