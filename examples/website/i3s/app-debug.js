@@ -56,7 +56,6 @@ import {
   selectOriginalTextureForTile,
   selectOriginalTextureForTileset
 } from './utils/texture-selector-utils';
-import {isBrowser} from '@loaders.gl/loader-utils';
 import { Color, Flex, Font } from './components/styles';
 
 const TRANSITION_DURAITON = 4000;
@@ -593,13 +592,11 @@ export default class App extends PureComponent {
   }
 
   _renderToolPanel() {
-    const {debugOptions, token, metadata} = this.state;
+    const {debugOptions} = this.state;
     return (
       <ToolBar 
         onDebugOptionsChange={this._setDebugOptions}
         debugOptions={debugOptions}
-        metadata={metadata}
-        token={token}
       />
     )
   }
@@ -630,7 +627,7 @@ export default class App extends PureComponent {
   }
 
   getTooltip(info) {
-    if (!info.object || info.index < 0 || !info.layer || !isBrowser) {
+    if (!info.object || info.index < 0 || !info.layer) {
       return null;
     }
     const tileInfo = getShortTileDebugInfo(info.object);
