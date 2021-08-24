@@ -567,6 +567,33 @@ export const REPEATED_NO_ANNOTATION_EXPECTED = [
   { id: "6", phoneNumbers: { phone: [{ number: "1111111111", kind: "home" }, { number: "2222222222" }, { number: "3333333333", kind: "mobile" }] } }
 ];
 
+export const DECIMAL_EXPECTED = [
+ {value: 1},
+ {value: 2},
+ {value: 3},
+ {value: 4},
+ {value: 5},
+ {value: 6},
+ {value: 7},
+ {value: 8},
+ {value: 9},
+ {value: 10},
+ {value: 11},
+ {value: 12},
+ {value: 13},
+ {value: 14},
+ {value: 15},
+ {value: 16},
+ {value: 17},
+ {value: 18},
+ {value: 19},
+ {value: 20},
+ {value: 21},
+ {value: 22},
+ {value: 23},
+ {value: 24}
+];
+
 export const LZ4_RAW_COMPRESSED_LARGER_FIRST_EXPECTED = {
   a: Buffer.from([
     99, 55, 99, 101, 54, 98, 101, 102, 45, 100, 53, 98, 48, 45, 52, 56, 54, 51,

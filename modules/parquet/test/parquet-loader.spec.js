@@ -12,6 +12,7 @@ import {
   ALL_TYPES_PLAIN_EXPECTED,
   ALL_TYPES_PLAIN_SNAPPY_EXPECTED,
   BINARY_EXPECTED,
+  DECIMAL_EXPECTED,
   DICT_EXPECTED,
   LIST_COLUMNS_EXPECTED,
   NESTED_LIST_EXPECTED,
@@ -153,6 +154,22 @@ test('ParquetLoader#load nulls file', async (t) => {
 
   t.equal(data.length, 8);
   t.deepEqual(data, NULLS_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#decimal files', async (t) => {
+  const urls = [
+    '@loaders.gl/parquet/test/data/apache/good/byte_array_decimal.parquet',
+    '@loaders.gl/parquet/test/data/apache/good/fixed_length_decimal.parquet',
+    '@loaders.gl/parquet/test/data/apache/good/fixed_length_decimal_legacy.parquet',
+    '@loaders.gl/parquet/test/data/apache/good/int32_decimal.parquet',
+    '@loaders.gl/parquet/test/data/apache/good/int64_decimal.parquet'
+  ];
+  for (const url of urls) {
+    const data = await load(url, ParquetLoader, {parquet: {url}, worker: false});
+    t.deepEqual(data, DECIMAL_EXPECTED);
+  }
+  
   t.end();
 });
 

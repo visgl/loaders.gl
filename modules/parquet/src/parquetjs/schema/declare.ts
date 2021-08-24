@@ -15,6 +15,9 @@ export type ParquetCompression =
 export type RepetitionType = 'REQUIRED' | 'OPTIONAL' | 'REPEATED';
 export type ParquetType = PrimitiveType | OriginalType;
 
+/**
+ * Physical type
+ */
 export type PrimitiveType =
   // Base Types
   | 'BOOLEAN' // 0
@@ -26,6 +29,9 @@ export type PrimitiveType =
   | 'BYTE_ARRAY' // 6,
   | 'FIXED_LEN_BYTE_ARRAY'; // 7
 
+/**
+ * Logical type
+ */
 export type OriginalType =
   // Converted Types
   | 'UTF8' // 0
@@ -34,6 +40,10 @@ export type OriginalType =
   // | 'LIST' // 3
   // | 'ENUM' // 4
   // | 'DECIMAL' // 5
+  | 'DECIMAL_INT32' // 5
+  | 'DECIMAL_INT64' // 5
+  | 'DECIMAL_BYTE_ARRAY' // 5
+  | 'DECIMAL_FIXED_LEN_BYTE_ARRAY' // 5
   | 'DATE' // 6
   | 'TIME_MILLIS' // 7
   | 'TIME_MICROS' // 8
@@ -60,6 +70,8 @@ export interface SchemaDefinition {
 export interface FieldDefinition {
   type?: ParquetType;
   typeLength?: number;
+  presision?: number;
+  scale?: number;
   encoding?: ParquetCodec;
   compression?: ParquetCompression;
   optional?: boolean;
@@ -75,6 +87,8 @@ export interface ParquetField {
   originalType?: OriginalType;
   repetitionType: RepetitionType;
   typeLength?: number;
+  presision?: number;
+  scale?: number;
   encoding?: ParquetCodec;
   compression?: ParquetCompression;
   rLevelMax: number;
