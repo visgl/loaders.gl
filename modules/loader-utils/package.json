@@ -35,7 +35,8 @@
     "./src/lib/node/fs.js": false,
     "./dist/es5/lib/node/fs.js": false,
     "./dist/esm/lib/node/fs.js": false,
-    "fs": false
+    "fs": false,
+    "util": false
   },
   "scripts": {
     "pre-build-disabled": "npm run build-bundle",
