@@ -18,7 +18,7 @@ export function getBlobOrSVGDataUrl(arrayBuffer, url) {
     //   xmlText = unescape(encodeURLComponent(xmlText));
     // }
     // base64 encoding is safer. utf-8 fails in some browsers
-    const src = `data:image/svg+xml;base64,${btoa(xmlText)}`;
+    const src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(xmlText)))}`;
     return src;
   }
   return getBlob(arrayBuffer, url);
