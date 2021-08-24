@@ -25,7 +25,7 @@ import {
   Float32Vector,
   Float64Vector,
   FixedSizeListVector
-} from 'apache-arrow';
+} from 'apache-arrow/Arrow';
 import {AbstractVector} from 'apache-arrow/vector';
 
 /**
