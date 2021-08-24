@@ -110,7 +110,7 @@ export default class App extends PureComponent {
     const {viewState} = this.state;
 
     return (
-      <div style={{height: '100%'}}>
+      <div style={{position: 'relative', height: '100%'}}>
         {this._renderControlPanel()}
         <DeckGL
           layers={this._renderLayer()}
