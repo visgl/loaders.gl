@@ -39,8 +39,5 @@
     "@loaders.gl/worker-utils": "3.0.0-alpha.18",
     "fast-xml-parser": "^3.16.0",
     "geotiff": "^1.0.4"
-  },
-  "devDependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18"
   }
 }
