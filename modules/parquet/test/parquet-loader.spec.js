@@ -4,7 +4,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {ParquetLoader, ParquetWorkerLoader} from '@loaders.gl/parquet';
-import {isBrowser, load, setLoaderOptions} from '@loaders.gl/core';
+import {fetchFile, isBrowser, load, setLoaderOptions} from '@loaders.gl/core';
 
 import {SUPPORTED_FILES, UNSUPPORTED_FILES, ENCRYPTED_FILES, BAD_FILES} from './data/files';
 import {
@@ -45,6 +45,20 @@ test('ParquetLoader#load alltypes_dictionary file', async (t) => {
 
   t.equal(data.length, 2);
   t.deepEqual(data, ALL_TYPES_DICTIONARY_EXPECTED);
+  t.end();
+});
+
+test('ParquetLoader#load in batches alltypes_dictionary file', async (t) => {
+  const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
+  const response = await fetchFile(url);
+  const data = await response.arrayBuffer();
+  const asyncIterator = ParquetLoader.parseFileInBatches(new Blob([data]), {parquet: {url}, worker: false});
+  let batchIndex = 0;
+  for await (const batch of asyncIterator) {
+    t.deepEqual(batch, ALL_TYPES_DICTIONARY_EXPECTED[batchIndex]);
+    batchIndex++;
+  }
+  t.equal(batchIndex, 2, 'Correct number of batches received');
   t.end();
 });
 
