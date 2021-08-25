@@ -57,9 +57,8 @@ export default class App extends PureComponent {
     this.setState({uploadedFile: null});
   }
 
-  _onFileUploaded(data, loader, uploadedFile) {
+  _onFileUploaded(data, uploadedFile) {
     this.setState({
-      selectedLoader: loader.name,
       selectedExample: uploadedFile.name,
       uploadedFile: data
     });
