@@ -1918,13 +1918,6 @@
     "@loaders.gl/worker-utils" "3.0.6"
     "@probe.gl/stats" "^3.4.0"
 
-"@loaders.gl/worker-utils@3.0.0-alpha.18":
-  version "3.0.0-alpha.18"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-alpha.18.tgz#1d02b1bd497c00edcbc8e60ccbe4e030811a5394"
-  integrity sha512-w/kmwz091hLu9D2907UTelcl/JH1LxbFxKzCAk3XsNjsNkrGQcOucHq5bAJxiSdPm6yAv/BUdqG+mt39ZNpFnA==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
 "@loaders.gl/worker-utils@3.0.6":
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.6.tgz#c7fdeae5c74c6fd83daf76bdeaf34d4b9e9f72a0"
