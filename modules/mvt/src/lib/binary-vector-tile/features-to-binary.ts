@@ -368,7 +368,7 @@ function handlePolygon(
       const end =
         i === il - 1
           ? // last line, so either read to:
-          nextLines === undefined
+            nextLines === undefined
             ? geometry.data.length // end of data (no next lines)
             : nextLines[0] // start of first line in nextLines
           : lines[i + 1]; // start index for next line
