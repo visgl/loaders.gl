@@ -6,14 +6,9 @@ import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
-import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
-import {registerLoaders} from '@loaders.gl/core';
 import ControlPanel from './components/control-panel';
 import FileUploader from './components/file-uploader';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
-
-registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
 
 export const INITIAL_VIEW_STATE = {
   latitude: 49.254,
