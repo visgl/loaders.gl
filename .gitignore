@@ -1,3 +1,6 @@
+# Unexplained CI errors
+modules/mvt/src/lib/binary-vector-tile
+
 # tests
 test/data/test.png
 tmp
