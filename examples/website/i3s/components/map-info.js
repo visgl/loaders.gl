@@ -5,16 +5,22 @@ import PropTypes from 'prop-types';
 const FrameWrap = styled.div`
   position: absolute;
   right: 1%;
-  height: 478px;
-  max-height: calc(78% - 85px);
-  bottom: 25%;
+  height: calc(75% - 85px);
+  max-height: 500px;
+  bottom: 22%;
   z-index: 3;
   -moz-user-select: none;
   -khtml-user-select: none;
   user-select: none;
+  background: white;
+  border: 8px solid black;
+  border-radius: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   iframe {
-    height: 100% !important;
+    overflow-x: hidden;
+    height: 90% !important;
     width: 310px;
   }
 
@@ -23,14 +29,17 @@ const FrameWrap = styled.div`
   }
 `;
 
+const ArcGisContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+`;
+
 const IFRAME_STYLES = (showFullInfo) => ({
   display: showFullInfo ? 'block' : 'none',
-  height: '470px', 
   transition: 'linear 0.5s',
   marginTop: showFullInfo ? '0' : '-540px',
-  padding: '8px',
-  background: 'black',
-  borderRadius: '8px',
   overflowX: showFullInfo ? 'auto' : 'none',
   border: 'none'
 });
@@ -59,7 +68,7 @@ export default class MapInfoPanel extends PureComponent {
       const {showFullInfo} = this.props;
       const serviceItemId = metadata?.serviceItemId;
 
-      if(!serviceItemId) {
+      if (!serviceItemId) {
         return null;
       }
 
@@ -75,7 +84,17 @@ export default class MapInfoPanel extends PureComponent {
             title="tileset-info"
             style={IFRAME_STYLES(showFullInfo)}
             src={url}
-          />
+          >
+          </iframe>
+          <ArcGisContainer>
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`https://www.arcgis.com/home/item.html?id=${serviceItemId}`}
+            >
+              Go to ArcGiS
+            </a>
+          </ArcGisContainer>
         </FrameWrap>
       );
     }

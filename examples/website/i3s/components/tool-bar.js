@@ -2,56 +2,56 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMap, faBug, faSdCard, faExclamationCircle, faInfo, faGlobe } from '@fortawesome/free-solid-svg-icons';
+import { faMap, faBug, faSdCard, faExclamationCircle, faInfo } from '@fortawesome/free-solid-svg-icons';
 
 const Container = styled.div`
-  position: absolute;
-  background: #232323;
   display: flex;
   justify-content: space-around;
-  align-items: center;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ;
-  bottom: 0;
-  width: 100vw;
-  height: 60px;
+  align-items: center;  
+  position: absolute;
+  top: 0;
+  margin: 10px 10px;
+  width: 277px;
+  height: 40px;
+  background: #0E111A;
+  border-radius: 8px;
   z-index: 100;
-  @media (min-width: 769px) {
-    position: absolute;
-    top: 0;
-    margin: 10px 0 0 10px;
-    width: auto;
-    height: 40px;
-    background: #0E111A;
-    border-radius: 8px;
+  background: #232323;
+
+  @media (max-width: 769px) {
+    top: auto;
+    margin: 0;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    border-radius: 0;
   }                   
 `;
 
 const ToolButton = styled.button`
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  font-size: 18px;
+  height: 36px;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
   background: ${props => props.active ? '#4F52CC' : 'transparent'};
   color: ${props => props.active ? 'white' : 'rgba(255, 255 , 255, .8)'};
   cursor: pointer;
-  border: none;
-  font-size: 22px;
-  flex: 1 1 0px;
-  margin: 2px 0 2px 1px;
-  height: 56px;
-  width: 16.5vw;
+
   &:hover {
     color: white;
-  }               
-  @media (min-width: 769px) {
-    font-size: 18px;
-    width: 45px;
-    height: 36px;
-    border-radius: 5px;
-  }
-`;
+  }  
 
-const LinkButton = styled(ToolButton)`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-flow: column nowrap;
-  text-decoration: none;
+  @media (max-width: 769px) {
+    font-size: 22px;
+    height: 56px;
+    border-radius: 0;
+  }
 `;
 
 const Title = styled.h3`
@@ -97,6 +97,8 @@ const TooltipBox = styled.div`
 
 const TooltipCard = styled.div`
   position: relative;
+  min-width: 51px;
+
   & ${ToolButton}:hover + ${TooltipBox} {
     visibility: visible;
     color: #0E111A;
@@ -105,16 +107,28 @@ const TooltipCard = styled.div`
     background-color: white;
     width: 120px;
     border-radius: 4px;
+
     &:before {
       border-color: transparent transparent white white;
     }
+
     @media (any-hover: none) {
       display: none;
+      
     }
   }
+
+  @media (max-width: 769px) {
+    flex: 1 0 1px;
+
+    &:not(:first-child) {
+      margin-left: 1px;
+    }
+    
+  }   
 `;
 
-const DebugTooltip = styled(TooltipBox)`
+const LeftTooltip = styled(TooltipBox)`
   left: 0;
   &:before {
     left: 18px;
@@ -191,9 +205,9 @@ export default class ToolBar extends PureComponent {
           <FontAwesomeIcon icon={faBug} />
           <Title>Debug</Title>
         </ToolButton>
-        <DebugTooltip>
+        <TooltipBox>
           Debug panel
-        </DebugTooltip>
+        </TooltipBox>
       </TooltipCard>
     );
   }
@@ -213,9 +227,9 @@ export default class ToolBar extends PureComponent {
           <FontAwesomeIcon icon={faMap} />
           <Title>Map</Title>
         </ToolButton>
-        <TooltipBox>
+        <LeftTooltip>
           Select map
-        </TooltipBox>
+        </LeftTooltip>
       </TooltipCard>
     );
   }
@@ -242,41 +256,14 @@ export default class ToolBar extends PureComponent {
     );
   }
 
-  _renderLinkButton() {
-    const { metadata, token } = this.props;
-    const serviceItemId = metadata?.serviceItemId;
-
-    if (!serviceItemId) {
-      return null;
-    }
-
-    let url = `https://www.arcgis.com/home/item.html?id=${serviceItemId}`;
-    if (token) {
-      url = `${url}&token=${token}`;
-    }
-
-    return (
-      <TooltipCard>
-        <LinkButton as="a" target="_blank" rel="noopener noreferrer" href={url}>
-          <FontAwesomeIcon icon={faGlobe} />
-          <Title style={{marginTop: '3px'}}>ArcGIS</Title>
-        </LinkButton>
-        <TooltipBox>
-          Go to ArcGIS
-        </TooltipBox>
-      </TooltipCard>
-    );
-  }
-
   render() {
     return (
       <Container>
-        {this._renderDebugButton()}
-        {this._renderValidatorButton()}
         {this._renderMapButton()}
-        {this._renderMemoryButton()}
         {this._renderMapInfoButton()}
-        {this._renderLinkButton()}
+        {this._renderMemoryButton()}
+        {this._renderValidatorButton()}
+        {this._renderDebugButton()}
       </Container>
     );
   }
