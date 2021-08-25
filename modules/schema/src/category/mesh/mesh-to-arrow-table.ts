@@ -6,7 +6,7 @@ import {
   Field,
   Data,
   FixedSizeListVector
-} from 'apache-arrow';
+} from 'apache-arrow/Arrow';
 import {AbstractVector} from 'apache-arrow/vector';
 import {getArrowType, getArrowVector} from '../../lib/arrow/arrow-type-utils';
 import type {Mesh} from './mesh-types';
