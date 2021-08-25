@@ -1919,17 +1919,17 @@
     "@loaders.gl/worker-utils" "3.0.0-alpha.18"
     "@probe.gl/stats" "^3.3.0"
 
-"@loaders.gl/worker-utils@3.0.0-alpha.18":
-  version "3.0.0-alpha.18"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.0-alpha.18.tgz#1d02b1bd497c00edcbc8e60ccbe4e030811a5394"
-  integrity sha512-w/kmwz091hLu9D2907UTelcl/JH1LxbFxKzCAk3XsNjsNkrGQcOucHq5bAJxiSdPm6yAv/BUdqG+mt39ZNpFnA==
+"@loaders.gl/worker-utils@3.0.6":
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.6.tgz#c7fdeae5c74c6fd83daf76bdeaf34d4b9e9f72a0"
+  integrity sha512-fEWXC/ImKqfwhAQW/EGN+UAk/FkH8nEZ8BoWRmkfNwUZ1ZeQHTItpVgZp9F0WYdN7Pz1j2KIqTa27W10afnhmQ==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
-"@luma.gl/constants@8.5.0", "@luma.gl/constants@^8.5.0":
-  version "8.5.0"
-  resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.5.0.tgz#f31e355332677c14d67f69c2065135a470232af2"
-  integrity sha512-jB6Vm/IzlZ9vd7qMovsNAcUSBLHbT43ZdoDj4Yt7Y3S0vxjzHQdqdzVH19vV0oTUp7M/YYV2GMmdSv1Eau3LbQ==
+"@luma.gl/constants@8.5.4", "@luma.gl/constants@^8.5.4":
+  version "8.5.4"
+  resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.5.4.tgz#f7be8146bd60f9426c5a72ef6773ff134cb85bf5"
+  integrity sha512-lrA4ja92om/gDHYOvM9itL5S7FVzjKulyknDz6S+Y7gmgHgXk2ln1Xar5zUCsLnhAYx4glHITXGH5Y5rdWgT1Q==
 
 "@luma.gl/core@8.5.0", "@luma.gl/core@^8.5.0", "@luma.gl/core@^8.5.0-beta.1":
   version "8.5.0"
