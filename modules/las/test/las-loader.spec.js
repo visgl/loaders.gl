@@ -1,6 +1,10 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
+import {
+  validateLoader,
+  validateMeshCategoryData,
+  validateTableCategoryData
+} from 'test/common/conformance';
 
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
@@ -90,12 +94,11 @@ test('LASLoader#shape="mesh"', async (t) => {
   t.end();
 });
 
-// TODO - error, use something like validateTableCategoryData
-test.skip('LASLoader#shape="columnar-table"', async (t) => {
+test('LASLoader#shape="columnar-table"', async (t) => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'columnar-table'}
   });
-  validateMeshCategoryData(t, result);
+  validateTableCategoryData(t, result);
   t.end();
 });
 
@@ -109,13 +112,32 @@ test('LAS#shape="arrow-table"', async (t) => {
   const table = result.data;
   const arrowData = await parse(table.serialize(), ArrowLoader);
   t.ok(arrowData);
-  t.equals(arrowData.classification.length, 1);
-  t.equals(arrowData.classification[0].data.values.length, 80805);
-  t.equals(arrowData.COLOR_0.length, 1);
-  t.equals(arrowData.COLOR_0[0].data.values.length, 323220);
-  t.equals(arrowData.intensity.length, 1);
-  t.equals(arrowData.intensity[0].data.values.length, 80805);
-  t.equals(arrowData.POSITION.length, 1);
-  t.equals(arrowData.POSITION[0].data.values.length, 242415);
+  t.equals(arrowData.classification.length, 80805);
+  t.ok(
+    arrowData.classification[0].data.values instanceof Uint8Array,
+    'arrowData.classification value is instance of `Uint8Vector`'
+  );
+  t.equals(arrowData.classification[0].data.values.length, 1);
+
+  t.equals(arrowData.COLOR_0.length, 80805);
+  t.ok(
+    arrowData.COLOR_0[0].data.values instanceof Uint8Array,
+    'arrowData.COLOR_0 value is instance of `Uint8Vector`'
+  );
+  t.equals(arrowData.COLOR_0[0].data.values.length, 4);
+
+  t.equals(arrowData.intensity.length, 80805);
+  t.ok(
+    arrowData.intensity[0].data.values instanceof Uint16Array,
+    'arrowData.intensity value is instance of `Uint16Vector`'
+  );
+  t.equals(arrowData.intensity[0].data.values.length, 1);
+
+  t.equals(arrowData.POSITION.length, 80805);
+  t.ok(
+    arrowData.POSITION[0].data.values instanceof Float32Array,
+    'arrowData.POSITION value is instance of `Float32Vector`'
+  );
+  t.equals(arrowData.POSITION[0].data.values.length, 3);
   t.end();
 });

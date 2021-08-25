@@ -24,12 +24,12 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): Table {
   const fields: Field[] = [];
   for (const attributeKey in mesh.attributes) {
     const attribute = mesh.attributes[attributeKey];
-    const {value} = attribute;
+    const {value, size = 1} = attribute;
     const type = getArrowType(value);
     const vector = getArrowVector(value);
-    const listType = new FixedSizeList(value.length, new Field('value', type));
+    const listType = new FixedSizeList(size, new Field('value', type));
     const field = new Field(attributeKey, listType, false, makeMeshAttributeMetadata(attribute));
-    const data = new Data(listType, 0, 1, 0, undefined, [vector]);
+    const data = new Data(listType, 0, value.length / size, 0, undefined, [vector]);
     const listVector = new FixedSizeListVector(data);
     vectors.push(listVector);
     fields.push(field);

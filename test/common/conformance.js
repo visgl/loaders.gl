@@ -60,6 +60,30 @@ export function validateMeshCategoryData(t, data) {
   t.notOk(attributesError, 'data has valid attributes');
 }
 
+/**
+ * Check if the returned data from loaders use the format specified in `ColumnarTable`:
+ *  modules/schema/src/category/table/table-types.ts
+ */
+ export function validateTableCategoryData(t, data) {
+  t.equals(data.shape, 'columnar-table');
+  t.ok(data.data);
+  let hasAttributes = false;
+  let attributesError = null;
+  for (const attributeName in data.data) {
+    hasAttributes = true;
+    const value = data.data[attributeName];
+    if (!('length' in value && 'byteOffset' in value && 'byteLength' in value && 'buffer' in value)) {
+      attributesError = true;
+    }
+  }
+  attributesError = attributesError || !hasAttributes;
+  t.notOk(attributesError, 'data has valid attributes');
+  if (data.schema) {
+    t.ok(data.schema.fields && data.schema.metadata, 'Schema is instance of `Schema` class');
+    t.ok(data.schema.fields, 'Schema has fields');
+  }
+}
+
 function validateAttribute(attributeName, attribute) {
   if (!ArrayBuffer.isView(attribute.value)) {
     return `${attributeName} value is not typed array`;

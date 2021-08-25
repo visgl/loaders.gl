@@ -40,7 +40,6 @@ export default function parseLAS(
  * @param options
  * @returns LASHeader
  */
-/* eslint-disable max-statements */
 function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}): LASMesh {
   let pointIndex: number = 0;
 
@@ -67,6 +66,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
     mode: 0 // GL.POINTS
   };
 
+  /* eslint-disable max-statements */
   // @ts-ignore Possibly undefined
   parseLASChunked(arrayBuffer, options.las?.skip, (decoder: any = {}, lasHeader: LASHeader) => {
     if (!originalHeader) {
@@ -137,6 +137,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
 
     options?.onProgress?.(meshBatch);
   });
+  /* eslint-enable max-statements */
 
   lasMesh.header = {
     vertexCount: originalHeader.totalToRead,
