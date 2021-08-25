@@ -512,7 +512,6 @@ export default class Tileset3D {
     // requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of this._requestedTiles) {
       if (tile.contentUnloaded) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._loadTile(tile);
       }
     }

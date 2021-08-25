@@ -300,7 +300,6 @@ export default class TileHeader {
    * If skipLevelOfDetail is off try to load child tiles as soon as possible so that their parent can refine sooner.
    * Tiles are prioritized by screen space error.
    */
-  // eslint-disable-next-line complexity
   _getPriority() {
     const traverser = this.tileset._traverser;
     const {skipLevelOfDetail} = traverser.options;
