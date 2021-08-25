@@ -32,8 +32,5 @@
   "dependencies": {
     "@loaders.gl/worker-utils": "3.0.0-alpha.18",
     "zarr": "^0.5.0"
-  },
-  "devDependencies": {
-    "@loaders.gl/core": "3.0.0-alpha.18"
   }
 }
