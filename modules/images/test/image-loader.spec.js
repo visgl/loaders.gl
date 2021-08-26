@@ -3,7 +3,13 @@ import test from 'tape-promise/tape';
 import {ImageLoader, isImageTypeSupported, getImageType, getImageData} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
-import {TEST_CASES, IMAGE_URL, IMAGE_DATA_URL, SVG_DATA_URL} from './lib/test-cases';
+import {
+  TEST_CASES,
+  IMAGE_URL,
+  IMAGE_DATA_URL,
+  SVG_DATA_URL,
+  SVG_DATA_URL_NOT_LATIN
+} from './lib/test-cases';
 
 const TYPES = ['auto', 'imagebitmap', 'image', 'data'].filter(isImageTypeSupported);
 
@@ -66,6 +72,18 @@ test('ImageLoader#DATA URL - SVG', async (t) => {
 
   const svgImage = await load(SVG_DATA_URL, ImageLoader);
   t.ok(svgImage, 'SVG is loaded from data URL');
+  t.end();
+});
+
+test('ImageLoader#DATA URL - SVG/ not latin', async (t) => {
+  if (!isBrowser) {
+    t.comment('Skipping browser-only test');
+    t.end();
+    return;
+  }
+
+  const svgImage = await load(SVG_DATA_URL_NOT_LATIN, ImageLoader);
+  t.ok(svgImage, 'SVG with characters outside latin range is loaded from data URL');
   t.end();
 });
 
