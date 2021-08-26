@@ -12,9 +12,15 @@ const SVG_BITS = `\
 <path d="M14 26c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6zm24-12H22v14H6V10H2v30h4v-6h36v6h4V22c0-4.42-3.58-8-8-8z"/>\
 </svg>`;
 
+const SVG_BITS_NOT_LATIN = `\
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">\
+<text>你好</text>
+</svg>`;
+
 export const IMAGE_DATA_URL = `data:image/png;base64,${PNG_BITS}`;
 export const SVG_DATA_URL = `data:image/svg+xml;charset=utf-8,${SVG_BITS}`;
 export const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
+export const SVG_DATA_URL_NOT_LATIN = `data:image/svg+xml;charset=utf-8,${SVG_BITS_NOT_LATIN}`;
 
 export const TEST_CASES = [
   {
@@ -32,6 +38,13 @@ export const TEST_CASES = [
   {
     title: 'Data URL (SVG)',
     url: SVG_DATA_URL,
+    width: 48,
+    height: 48,
+    skip: !isBrowser
+  },
+  {
+    title: 'Data URL (SVG)/ not latin',
+    url: SVG_DATA_URL_NOT_LATIN,
     width: 48,
     height: 48,
     skip: !isBrowser
