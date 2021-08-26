@@ -35,7 +35,7 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): Table {
     fields.push(field);
   }
   const schema = new Schema(fields, mesh?.schema?.metadata || new Map<string, string>());
-  const recordBatch = new RecordBatch(schema, 1, vectors);
+  const recordBatch = new RecordBatch(schema, vectors[0].length, vectors);
   const table = new Table(schema, recordBatch);
   return table;
 }
