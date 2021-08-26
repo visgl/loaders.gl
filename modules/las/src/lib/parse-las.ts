@@ -1,14 +1,8 @@
 // ported and es6-ified from https://github.com/verma/plasio/
-
-import {
-  Schema,
-  getMeshBoundingBox,
-  ArrowTable,
-  convertMesh,
-  ColumnarTable
-} from '@loaders.gl/schema';
+import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../las-loader';
 import type {LASMesh, LASHeader} from './las-types';
+import {Schema, getMeshBoundingBox, convertMesh} from '@loaders.gl/schema';
 import {LASFile} from './laslaz-decoder';
 import {getLASSchema} from './get-las-schema';
 
