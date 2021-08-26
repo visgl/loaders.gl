@@ -7,6 +7,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type LASLoaderOptions = LoaderOptions & {
   las?: {
+    shape?: 'mesh' | 'columnar-table' | 'arrow-table';
     fp64?: boolean;
     skip?: number;
     colorDepth?: number | string;
@@ -15,6 +16,7 @@ export type LASLoaderOptions = LoaderOptions & {
 
 const DEFAULT_LAS_OPTIONS: LASLoaderOptions = {
   las: {
+    shape: 'mesh',
     fp64: false,
     skip: 1,
     colorDepth: 8

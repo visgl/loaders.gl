@@ -1,9 +1,14 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
+import {
+  validateLoader,
+  validateMeshCategoryData,
+  validateTableCategoryData
+} from 'test/common/conformance';
 
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
+import {ArrowLoader} from '@loaders.gl/arrow';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
@@ -83,12 +88,56 @@ test('LASWorkerLoader#load(worker)', async (t) => {
   t.end();
 });
 
-test('LASLoader#shapes', async (t) => {
-  let data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
-  validateMeshCategoryData(t, data);
+test('LASLoader#shape="mesh"', async (t) => {
+  const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
+  validateMeshCategoryData(t, result);
+  t.end();
+});
 
-  data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'columnar-table'}});
-  validateMeshCategoryData(t, data);
+test('LASLoader#shape="columnar-table"', async (t) => {
+  const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {shape: 'columnar-table'}
+  });
+  validateTableCategoryData(t, result);
+  t.end();
+});
 
+test('LAS#shape="arrow-table"', async (t) => {
+  const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {shape: 'arrow-table', skip: 10},
+    worker: false
+  });
+  t.ok(result);
+
+  const table = result.data;
+  const arrowData = await parse(table.serialize(), ArrowLoader);
+  t.ok(arrowData);
+  t.equals(arrowData.classification.length, 80805);
+  t.ok(
+    arrowData.classification[0].data.values instanceof Uint8Array,
+    'arrowData.classification value is instance of `Uint8Vector`'
+  );
+  t.equals(arrowData.classification[0].data.values.length, 1);
+
+  t.equals(arrowData.COLOR_0.length, 80805);
+  t.ok(
+    arrowData.COLOR_0[0].data.values instanceof Uint8Array,
+    'arrowData.COLOR_0 value is instance of `Uint8Vector`'
+  );
+  t.equals(arrowData.COLOR_0[0].data.values.length, 4);
+
+  t.equals(arrowData.intensity.length, 80805);
+  t.ok(
+    arrowData.intensity[0].data.values instanceof Uint16Array,
+    'arrowData.intensity value is instance of `Uint16Vector`'
+  );
+  t.equals(arrowData.intensity[0].data.values.length, 1);
+
+  t.equals(arrowData.POSITION.length, 80805);
+  t.ok(
+    arrowData.POSITION[0].data.values instanceof Float32Array,
+    'arrowData.POSITION value is instance of `Float32Vector`'
+  );
+  t.equals(arrowData.POSITION[0].data.values.length, 3);
   t.end();
 });

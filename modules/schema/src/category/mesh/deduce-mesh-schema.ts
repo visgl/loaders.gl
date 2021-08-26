@@ -1,6 +1,6 @@
 import {MeshAttribute, MeshAttributes} from './mesh-types';
 import {Schema, Field, FixedSizeList} from '../../lib/schema';
-import {getArrowTypeFromTypedArray} from '../../lib/arrow/arrow-type-utils';
+import {getArrowTypeFromTypedArray} from '../../lib/arrow/arrow-like-type-utils';
 
 /**
  * Create a schema for mesh attributes data

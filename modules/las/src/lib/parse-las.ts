@@ -1,8 +1,8 @@
 // ported and es6-ified from https://github.com/verma/plasio/
-
-import {Schema, getMeshBoundingBox} from '@loaders.gl/schema';
+import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../las-loader';
 import type {LASMesh, LASHeader} from './las-types';
+import {Schema, getMeshBoundingBox, convertMesh} from '@loaders.gl/schema';
 import {LASFile} from './laslaz-decoder';
 import {getLASSchema} from './get-las-schema';
 
@@ -20,11 +20,21 @@ type LASChunk = {
  * @param options
  * @returns LASHeader
  */
-/* eslint-disable max-statements */
 export default function parseLAS(
   arrayBuffer: ArrayBuffer,
-  options: LASLoaderOptions = {}
-): LASMesh {
+  options?: LASLoaderOptions
+): LASMesh | ArrowTable | ColumnarTable {
+  const mesh = parseLASMesh(arrayBuffer, options);
+  return convertMesh(mesh, options?.las?.shape || 'mesh') as LASMesh | ArrowTable | ColumnarTable;
+}
+
+/**
+ * Parsing of .las file
+ * @param arrayBuffer
+ * @param options
+ * @returns LASHeader
+ */
+function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}): LASMesh {
   let pointIndex: number = 0;
 
   let positions: Float32Array | Float64Array;
@@ -50,6 +60,7 @@ export default function parseLAS(
     mode: 0 // GL.POINTS
   };
 
+  /* eslint-disable max-statements */
   // @ts-ignore Possibly undefined
   parseLASChunked(arrayBuffer, options.las?.skip, (decoder: any = {}, lasHeader: LASHeader) => {
     if (!originalHeader) {
@@ -120,6 +131,7 @@ export default function parseLAS(
 
     options?.onProgress?.(meshBatch);
   });
+  /* eslint-enable max-statements */
 
   lasMesh.header = {
     vertexCount: originalHeader.totalToRead,
