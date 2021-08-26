@@ -130,7 +130,7 @@ module.exports = {
           {
             title: 'Geospatial Loaders',
             category: "Loaders",
-            image: 'images/example-textures.png',
+            image: 'images/example-geospatial.jpg',
             componentUrl: resolve(__dirname, '../examples/website/geospatial/app.js'),
             path: 'examples/geopkg'
           },
