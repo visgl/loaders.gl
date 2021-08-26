@@ -11,8 +11,8 @@ export function makeDOMStream<ArrayBuffer>(
   options?: MakeDOMStreamOptions
 ): ReadableStream {
   const iterator = source[Symbol.asyncIterator]
-    ? source[Symbol.asyncIterator]()
-    : source[Symbol.iterator]();
+    ? (source as AsyncIterable<ArrayBuffer>)[Symbol.asyncIterator]()
+    : (source as Iterable<ArrayBuffer>)[Symbol.iterator]();
 
   return new ReadableStream<Uint8Array>(
     {
