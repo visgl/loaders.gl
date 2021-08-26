@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
-import {load, registerLoaders, selectLoader} from '@loaders.gl/core';
+import {load, registerLoaders} from '@loaders.gl/core';
 
 const ErrorFormatHeader = styled.h1`
   color: red;
@@ -40,32 +40,12 @@ export default class ParsedFile extends PureComponent {
   async getFileDataUrl() {
     const {file, onFileUploaded} = this.props;
       try {
-        const {arrayBuffer, src} = await this.getLoadedData(file);
-        const loader = await selectLoader(src, [GeoPackageLoader, FlatGeobufLoader]);
-        const result = loader && (await load(arrayBuffer, loader));
-        switch (loader && loader.id) {
-          case 'geopackage':
-          case 'flatgeobuf':
-            onFileUploaded(result, loader, file);
-            break;
-          default:
-            throw new Error('Unknown geospatial loader');
-        }
+        const result = await load(file);
+        onFileUploaded(result, file);
       } catch (error) {
         console.error(error);
         this.setState({fileError: error.message});
       }
-  }
-
-  async getLoadedData(file) {
-    let arrayBuffer = null;
-    let src = '';
-
-    if (file instanceof File) {
-      arrayBuffer = await file.arrayBuffer();
-      src = file.name;
-      return {arrayBuffer, src};
-    }
   }
 
   render() {
