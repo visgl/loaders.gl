@@ -68,12 +68,14 @@ test('require-utils', (tt) => {
     try {
       requireFromString('throw new Error("Boom!");');
     } catch (error) {
+      // @ts-ignore
       t.ok(/\(<anonymous>:1:69\)/.test(error.stack), 'should contain (<anonymous>:1:69) in stack');
     }
 
     try {
       requireFromString('throw new Error("Boom!");', '');
     } catch (error) {
+      // @ts-ignore
       t.ok(/\(<anonymous>:1:69\)/.test(error.stack), 'should contain (<anonymous>:1:69) in stack');
     }
     t.end();

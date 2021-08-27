@@ -249,8 +249,8 @@ class LAZLoader {
       this.instance.readOffset = 0;
 
       return true;
-    } catch (e) {
-      throw new Error(`Failed to open file: ${e.message}`);
+    } catch (error) {
+      throw new Error(`Failed to open file: ${(error as Error).message}`);
     }
   }
 
@@ -264,8 +264,8 @@ class LAZLoader {
       header.pointsFormatId &= 0x3f;
       this.header = header;
       return header;
-    } catch (e) {
-      throw new Error(`Failed to get header: ${e.message}`);
+    } catch (error) {
+      throw new Error(`Failed to get header: ${(error as Error).message}`);
     }
   }
   /**
@@ -311,8 +311,8 @@ class LAZLoader {
         count: pointsRead,
         hasMoreData: instance.readOffset < header.pointsCount
       };
-    } catch (e) {
-      throw new Error(`Failed to read data: ${e.message}`);
+    } catch (error) {
+      throw new Error(`Failed to read data: ${(error as Error).message}`);
     }
   }
 
@@ -327,8 +327,8 @@ class LAZLoader {
         this.instance = null;
       }
       return true;
-    } catch (e) {
-      throw new Error(`Failed to close file: ${e.message}`);
+    } catch (error) {
+      throw new Error(`Failed to close file: ${(error as Error).message}`);
     }
   }
 }
