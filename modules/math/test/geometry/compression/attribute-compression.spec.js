@@ -81,6 +81,7 @@ it('throws oct encode vector undefined', () => {
 
 it('throws oct encode result undefined', () => {
   const result = undefined;
+  // @ts-ignore
   expect(() => octEncode(VECTOR3_UNIT_Z, result)).toThrow();
 });
 
@@ -97,6 +98,7 @@ it('throws oct encode zero length vector', () => {
 
 it('throws oct decode result undefined', () => {
   const result = undefined;
+  // @ts-ignore
   expect(() => octDecode(0, 0, result)).toThrow();
 });
 
