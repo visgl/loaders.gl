@@ -415,6 +415,8 @@ function getDataColumns(db: Database, tableName: string): DataColumnsMapping | n
     if ((error as Error).message.includes('no such table')) {
       return null;
     }
+
+    throw error;
   }
 
   stmt.bind({':tableName': tableName});
