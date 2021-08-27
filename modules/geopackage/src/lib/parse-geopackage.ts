@@ -412,11 +412,9 @@ function getDataColumns(db: Database, tableName: string): DataColumnsMapping | n
   try {
     stmt = db.prepare('SELECT * FROM gpkg_data_columns WHERE table_name=:tableName;');
   } catch (error) {
-    if (error instanceof Error && error.message.includes('no such table')) {
+    if ((error as Error).message.includes('no such table')) {
       return null;
     }
-
-    throw error;
   }
 
   stmt.bind({':tableName': tableName});

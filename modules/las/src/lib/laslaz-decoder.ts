@@ -250,10 +250,7 @@ class LAZLoader {
 
       return true;
     } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to open file: ${error.message}`);
-      }
-      throw error;
+      throw new Error(`Failed to open file: ${(error as Error).message}`);
     }
   }
 
@@ -268,10 +265,7 @@ class LAZLoader {
       this.header = header;
       return header;
     } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to get header: ${error.message}`);
-      }
-      throw error;
+      throw new Error(`Failed to get header: ${(error as Error).message}`);
     }
   }
   /**
@@ -318,10 +312,7 @@ class LAZLoader {
         hasMoreData: instance.readOffset < header.pointsCount
       };
     } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to read data: ${error.message}`);
-      }
-      throw error;
+      throw new Error(`Failed to read data: ${(error as Error).message}`);
     }
   }
 
@@ -337,10 +328,7 @@ class LAZLoader {
       }
       return true;
     } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to close file: ${error.message}`);
-      }
-      throw error;
+      throw new Error(`Failed to close file: ${(error as Error).message}`);
     }
   }
 }

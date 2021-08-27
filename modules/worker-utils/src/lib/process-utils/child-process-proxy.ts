@@ -121,9 +121,7 @@ export default class ChildProcessProxy {
       // eslint-disable-next-line no-process-exit
       process.exit(statusCode);
     } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message || error);
-      }
+      console.error((error as Error).message || error);
       // eslint-disable-next-line no-process-exit
       process.exit(1);
     }
