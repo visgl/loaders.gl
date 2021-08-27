@@ -53,6 +53,7 @@ function isTransferable(object) {
   if (typeof ImageBitmap !== 'undefined' && object instanceof ImageBitmap) {
     return true;
   }
+  // @ts-ignore
   if (typeof OffscreenCanvas !== 'undefined' && object instanceof OffscreenCanvas) {
     return true;
   }

@@ -87,7 +87,9 @@ function parseStringsAttribute(arrayBuffer: ArrayBuffer): string[] {
       stringOffset += stringByteSize;
     }
   } catch (error) {
-    console.error('Parse string attribute error: ', error.message); // eslint-disable-line
+    if (error instanceof Error) {
+      console.error('Parse string attribute error: ', error.message); // eslint-disable-line
+    }
   }
 
   return stringsArray;
