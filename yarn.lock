@@ -1886,15 +1886,6 @@
     "@babel/runtime" "^7.3.1"
     "@loaders.gl/loader-utils" "^2.1.3"
 
-"@loaders.gl/core@3.0.0-alpha.18":
-  version "3.0.0-alpha.18"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.0.0-alpha.18.tgz#75c80eb5c1ab02fb5d42f65e42b42829cbc37fbc"
-  integrity sha512-rMan1kjLs+oLru5F4SjnEdMuLzFPTZB1fvcSZyJS4TeKUj6mDA72JaNSDROCg2nEBlJZkHA7GUyfRak+68Nbmw==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.0.0-alpha.18"
-    "@loaders.gl/worker-utils" "3.0.0-alpha.18"
-
 "@loaders.gl/images@^2.3.7":
   version "2.3.13"
   resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-2.3.13.tgz#3b827cf1e8d31c8f1adf85136c7fd53c08dbb0a8"
@@ -1910,26 +1901,15 @@
     "@babel/runtime" "^7.3.1"
     "@probe.gl/stats" "^3.3.0"
 
-"@loaders.gl/loader-utils@3.0.0-alpha.18":
-  version "3.0.0-alpha.18"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.0-alpha.18.tgz#1ff8e6c3383911ee94a46730c18dc9abc08b3060"
-  integrity sha512-1qOadPmhYN1d/3js73f3RkXuQq11XabCajdGz8lUAlzjQFPZ7PxjDafpsPicszRVDSBc1AbNl2AHHEcWBEvK7g==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.0.0-alpha.18"
-    "@probe.gl/stats" "^3.3.0"
+"@luma.gl/constants@8.5.0":
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.5.0.tgz#f31e355332677c14d67f69c2065135a470232af2"
+  integrity sha512-jB6Vm/IzlZ9vd7qMovsNAcUSBLHbT43ZdoDj4Yt7Y3S0vxjzHQdqdzVH19vV0oTUp7M/YYV2GMmdSv1Eau3LbQ==
 
-"@loaders.gl/worker-utils@3.0.6":
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.6.tgz#c7fdeae5c74c6fd83daf76bdeaf34d4b9e9f72a0"
-  integrity sha512-fEWXC/ImKqfwhAQW/EGN+UAk/FkH8nEZ8BoWRmkfNwUZ1ZeQHTItpVgZp9F0WYdN7Pz1j2KIqTa27W10afnhmQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@luma.gl/constants@8.5.4", "@luma.gl/constants@^8.5.4":
-  version "8.5.4"
-  resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.5.4.tgz#f7be8146bd60f9426c5a72ef6773ff134cb85bf5"
-  integrity sha512-lrA4ja92om/gDHYOvM9itL5S7FVzjKulyknDz6S+Y7gmgHgXk2ln1Xar5zUCsLnhAYx4glHITXGH5Y5rdWgT1Q==
+"@luma.gl/constants@^8.5.0":
+  version "8.5.5"
+  resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.5.5.tgz#3de04c81d1c67fef619951cb4ba123aac7a192ed"
+  integrity sha512-3pDC7jFaXliDP7Gvr6pPkorLFBXDnuakNeN87aEYcIM+p3XrkF0rPnDQJEzwScWS9RIopXT858xmL3vG7IYsDw==
 
 "@luma.gl/core@8.5.0", "@luma.gl/core@^8.5.0", "@luma.gl/core@^8.5.0-beta.1":
   version "8.5.0"

@@ -2,6 +2,20 @@
 
 ## v3.0
 
+### v3.0.10
+
+- chore(images): add test for svg (#1810)
+- chore(example) fixed code after code review (#1806)
+- fix: remove unnecessary dependencies (#1807)
+- fix(images): fix svg data encoding (#1792)
+- chore(textures): remove unnecessary dependencies (#1787)
+- I3S-Debug-App - Fix toolbar layout (#1790)
+- chore(website): fix geospatial example import and styles (#1786)
+- fix: add util rule to prevent webpack error (#1788)
+- chore(examples): improving code after code review (#1791)
+- feat(examples): created website example with geospatial loaders (#1749)
+- Add mobile version for I3S App and I3S Debug App (#1782)
+
 ### v3.0.9
 
 - fix(core): Help browser resolution; use default export for make-node-stream.ts (#1745)
