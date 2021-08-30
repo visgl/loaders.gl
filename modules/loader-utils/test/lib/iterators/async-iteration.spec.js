@@ -95,8 +95,10 @@ test('async-iterator#makeNumberedLineIterator', async (t) => {
 
 test('async-iterator#parseNDJSONInBatches', async (t) => {
   let id = 0;
-  for await (const obj of parseNDJSONInBatches(asyncNDJson())) {
+  for await (const batch of parseNDJSONInBatches(asyncNDJson())) {
+    const obj = batch.data[0];
     t.equals(typeof obj, 'object', 'async iterator yields object');
+    /* eslint-disable */
     t.equals(obj['id'], id, 'id property matches');
     t.equals(obj['field'], `value${id}`, 'field property matches');
     t.equals(obj['flag'], Boolean(id % 2), 'flag field matches');

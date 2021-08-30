@@ -1,3 +1,4 @@
+import type {Batch} from '@loaders.gl/schema';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import parseNDJSONSync from './lib/parse-ndjson';
 import parseNDJSONInBatches from './lib/parse-ndjson-in-batches';
@@ -31,6 +32,6 @@ function parseTextSync(text: string) {
 
 function parseInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-): AsyncIterable<Object> {
+): AsyncIterable<Batch> {
   return parseNDJSONInBatches(asyncIterator);
 }
