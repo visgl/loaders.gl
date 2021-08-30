@@ -1,7 +1,7 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
 import {toArrayBuffer} from './buffer-utils.node';
-import {promisify} from 'util';
+import util from 'util';
 
 const error = (fsFunction) => () => {
   throw new Error(`${fsFunction} not available in browser`);
@@ -9,13 +9,13 @@ const error = (fsFunction) => () => {
 
 export const isSupported = Boolean(fs);
 
-export const open = fs?.open ? promisify(fs.open) : error('fs.open');
-export const close = fs?.close ? promisify(fs.close) : error('fs.close');
-export const read = fs?.read ? promisify(fs.read) : error('fs.read');
+export const open = fs?.open ? util.promisify(fs.open) : error('fs.open');
+export const close = fs?.close ? util.promisify(fs.close) : error('fs.close');
+export const read = fs?.read ? util.promisify(fs.read) : error('fs.read');
 
-export const readFile = fs?.readFile ? promisify(fs.readFile) : error('fs.readFile');
+export const readFile = fs?.readFile ? util.promisify(fs.readFile) : error('fs.readFile');
 export const readFileSync = fs?.readFileSync ? fs.readFileSync : error('fs.readFileSync');
-export const writeFile = fs?.writeFile ? promisify(fs.writeFile) : error('fs.writeFile');
+export const writeFile = fs?.writeFile ? util.promisify(fs.writeFile) : error('fs.writeFile');
 export const writeFileSync = fs?.writeFileSync ? fs.writeFileSync : error('fs.writeFileSync');
 
 export async function _readToArrayBuffer(fd: number, start: number, length: number) {

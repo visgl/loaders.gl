@@ -5,7 +5,7 @@ import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
 import type brotliNamespace from 'brotli';
 // import brotli from 'brotli';  // https://bundlephobia.com/package/brotli
 import zlib from 'zlib';
-import {promisify} from 'util';
+import util from 'util';
 
 export type BrotliCompressionOptions = CompressionOptions & {
   brotli?: {
@@ -55,7 +55,7 @@ export class BrotliCompression extends Compression {
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
     // On Node.js we can use built-in zlib
     if (!isBrowser && this.options.brotli?.useZlib) {
-      const buffer = await promisify(zlib.brotliCompress)(input);
+      const buffer = await util.promisify(zlib.brotliCompress)(input);
       return toArrayBuffer(buffer);
     }
     return this.compressSync(input);
@@ -76,7 +76,7 @@ export class BrotliCompression extends Compression {
   async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
     // On Node.js we can use built-in zlib
     if (!isBrowser && this.options.brotli?.useZlib) {
-      const buffer = await promisify(zlib.brotliDecompress)(input);
+      const buffer = await util.promisify(zlib.brotliDecompress)(input);
       return toArrayBuffer(buffer);
     }
     return this.decompressSync(input);
