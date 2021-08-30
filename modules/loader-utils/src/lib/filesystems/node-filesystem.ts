@@ -1,5 +1,5 @@
-import fs from 'fs';
-import util from 'util';
+import * as fs from '../node/fs';
+import {promisify} from '../node/util';
 import {IFileSystem, IRandomAccessReadFileSystem} from '@loaders.gl/loader-utils';
 // import {fetchFile} from "../fetch/fetch-file"
 // import {selectLoader} from "../api/select-loader";
@@ -30,12 +30,12 @@ export default class NodeFileSystem implements IFileSystem, IRandomAccessReadFil
   }
 
   async readdir(dirname = '.', options?: {}): Promise<any[]> {
-    const readdir = util.promisify(fs.readdir);
+    const readdir = promisify(fs.readdir);
     return await readdir(dirname, options);
   }
 
   async stat(path: string, options?: {}): Promise<Stat> {
-    const stat = util.promisify(fs.stat);
+    const stat = promisify(fs.stat);
     const info = await stat(path, options);
     return {size: Number(info.size), isDirectory: () => false, info};
   }
@@ -49,17 +49,17 @@ export default class NodeFileSystem implements IFileSystem, IRandomAccessReadFil
 
   // implements IRandomAccessFileSystem
   async open(path: string, flags: string | number, mode?: any): Promise<number> {
-    const open = util.promisify(fs.open);
+    const open = promisify(fs.open);
     return await open(path, flags);
   }
 
   async close(fd: number): Promise<void> {
-    const close = util.promisify(fs.close);
+    const close = promisify(fs.close);
     return await close(fd);
   }
 
   async fstat(fd: number): Promise<Stat> {
-    const fstat = util.promisify(fs.fstat);
+    const fstat = promisify(fs.fstat);
     const info = await fstat(fd);
     return info;
   }
@@ -69,7 +69,7 @@ export default class NodeFileSystem implements IFileSystem, IRandomAccessReadFil
     // @ts-ignore Possibly null
     {buffer = null, offset = 0, length = buffer.byteLength, position = null}: ReadOptions
   ): Promise<{bytesRead: number; buffer: Buffer}> {
-    const fsRead = util.promisify(fs.read);
+    const fsRead = promisify(fs.read);
     let totalBytesRead = 0;
     // Read in loop until we get required number of bytes
     while (totalBytesRead < length) {

@@ -64,17 +64,32 @@ export {forEach, concatenateArrayBuffersAsync} from './lib/iterators/async-itera
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 
-// NODE `path`` REPLACEMENT
-import * as path from './lib/path-utils/path';
-export {path};
+// PATH HELPERS
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
 export {addAliases as _addAliases} from './lib/path-utils/file-aliases';
 
-// NODE `fs` WRAPPERS
-import * as fs from './lib/node/fs';
-export {fs};
+// MICRO LOADERS
+export {JSONLoader} from './json-loader';
 
-// NODE `buffer` WRAPPERS
+// NODE support
+
+// Node.js emulation (can be used in browser)
+
+// `path` replacement (avoids bundling big path polyfill)
+import * as path from './lib/path-utils/path';
+export {path};
+
+// Avoid direct use of `Buffer` which pulls in 50KB polyfill
 export {isBuffer, toBuffer, bufferToArrayBuffer} from './lib/binary-utils/buffer-utils';
 
-export {JSONLoader} from './json-loader';
+// Note.js wrappers (can be safely imported, but not used in browser)
+
+// Use instead of importing 'util'
+import * as util from  './lib/node/util';
+export {util};
+// TODO - remove
+export {promisify} from './lib/node/util';
+
+// Use instead of importing 'fs';`
+import * as fs from './lib/node/fs';
+export {fs};

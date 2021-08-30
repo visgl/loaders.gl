@@ -27,14 +27,18 @@
     "README.md"
   ],
   "browser": {
-    "./src/lib/node/buffer-utils.node.ts": false,
-    "./src/lib/node/buffer-utils.node.js": false,
-    "./dist/es5/lib/node/buffer-utils.node.js": false,
-    "./dist/esm/lib/node/buffer-utils.node.js": false,
+    "./src/lib/node/buffer.ts": false,
+    "./src/lib/node/buffer.js": false,
+    "./dist/es5/lib/node/buffer.js": false,
+    "./dist/esm/lib/node/buffer.js": false,
     "./src/lib/node/fs.ts": false,
     "./src/lib/node/fs.js": false,
     "./dist/es5/lib/node/fs.js": false,
     "./dist/esm/lib/node/fs.js": false,
+    "./src/lib/node/util.ts": false,
+    "./src/lib/node/util.js": false,
+    "./dist/es5/lib/node/util.js": false,
+    "./dist/esm/lib/node/util.js": false,
     "fs": false,
     "util": false
   },

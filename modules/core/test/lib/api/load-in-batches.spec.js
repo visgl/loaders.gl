@@ -8,7 +8,7 @@ const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
 const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
 
-test('loadInBatches#FileList', async (t) => {
+test.only('loadInBatches#FileList', async (t) => {
   if (isBrowser) {
     const response = await fetchFile(OBJ_ASCII_URL);
     const blob = await response.blob();
@@ -40,23 +40,6 @@ test('loadInBatches#non-batched loader (gis)', async (t) => {
     // Just the one batch...
     t.equal(batch.data.length, 20, 'KML length of data features table is correct');
   }
-  t.end();
-});
-
-test('loadInBatches#FileList', async (t) => {
-  if (isBrowser) {
-    const response = await fetchFile(OBJ_ASCII_URL);
-    const blob = await response.blob();
-
-    const iteratorPromises = await loadInBatches([blob, blob], OBJLoader);
-    for await (const iterator of iteratorPromises) {
-      for await (const batch of iterator) {
-        // Just the one batch...
-        t.equal(batch.data.mode, 4, 'mode is TRIANGLES (4)');
-      }
-    }
-  }
-
   t.end();
 });
 
