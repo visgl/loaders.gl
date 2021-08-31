@@ -70,6 +70,7 @@
         {"entry": "modules/images/docs/api-reference/image-loader"},
         {"entry": "modules/images/docs/api-reference/image-writer"},
         {"entry": "modules/json/docs/api-reference/json-loader"},
+        {"entry": "modules/json/docs/api-reference/ndjson-loader"},
         {"entry": "modules/kml/docs/api-reference/gpx-loader"},
         {"entry": "modules/kml/docs/api-reference/kml-loader"},
         {"entry": "modules/kml/docs/api-reference/tcx-loader"},
