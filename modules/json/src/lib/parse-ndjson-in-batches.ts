@@ -18,7 +18,8 @@ export default async function* parseNDJSONInBatches(
   });
 
   for await (const chunk of lineIterator) {
-    tableBatchBuilder.addObjectRow(JSON.parse(chunk));
+    const row = JSON.parse(chunk);
+    tableBatchBuilder.addRow(row);
     tableBatchBuilder.chunkComplete(chunk);
     const batch = tableBatchBuilder.getFullBatch();
     if (batch) {
