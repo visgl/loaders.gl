@@ -1,4 +1,4 @@
-import {loadBasisModule} from './basis-module-loader';
+import {loadBasisEncoderModule, loadBasisModule} from './basis-module-loader';
 import {GL} from '../gl-constants';
 
 const OutputFormat = {
@@ -12,7 +12,7 @@ const OutputFormat = {
   'bc7-m5': {basisFormat: 7, compressed: true},
   'pvrtc1-4-rgb': {basisFormat: 8, compressed: true},
   'pvrtc1-4-rgba': {basisFormat: 9, compressed: true},
-  'astc-4x4': {basisFormat: 10, compressed: true},
+  'astc-4x4': {basisFormat: 10, compressed: true, format: GL.COMPRESSED_RGBA_ASTC_4X4_KHR},
   'atc-rgb': {basisFormat: 11, compressed: true},
   'atc-rgba-interpolated-alpha': {basisFormat: 12, compressed: true},
   rgba32: {basisFormat: 13, compressed: false},
@@ -22,11 +22,30 @@ const OutputFormat = {
 };
 
 export default async function parseBasis(data, options) {
-  const {BasisFile} = await loadBasisModule(options);
+  switch (options.basis.module) {
+    case 'encoder':
+      const fileConstructors = await loadBasisEncoderModule(options);
+      switch (options.basis.decoderFormat) {
+        case 'KTX2':
+          return parseKTX2File(fileConstructors.KTX2File, data, options);
+        case 'Basis':
+        default:
+          return parseBasisFile(fileConstructors.BasisFile, data, options);
+      }
+    case 'transcoder':
+    default:
+      const {BasisFile} = await loadBasisModule(options);
+      return parseBasisFile(BasisFile, data, options);
+  }
+}
+
+function parseBasisFile(BasisFile, data, options) {
   const basisFile = new BasisFile(new Uint8Array(data));
 
   try {
     if (!basisFile.startTranscoding()) {
+      basisFile.close();
+      basisFile.delete();
       return null;
     }
 
@@ -49,16 +68,6 @@ export default async function parseBasis(data, options) {
     basisFile.close();
     basisFile.delete();
   }
-}
-
-function getBasisOptions(options, hasAlpha) {
-  let format = options && options.basis && options.basis.format;
-  if (typeof format === 'object') {
-    format = hasAlpha ? format.alpha : format.noAlpha;
-  }
-
-  format = format.toLowerCase();
-  return OutputFormat[format];
 }
 
 function transcodeImage(basisFile, imageIndex, levelIndex, options) {
@@ -90,4 +99,81 @@ function transcodeImage(basisFile, imageIndex, levelIndex, options) {
     hasAlpha,
     format
   };
+}
+
+function parseKTX2File(KTX2File, data, options) {
+  const basisFile = new KTX2File(new Uint8Array(data));
+
+  try {
+    if (!basisFile.startTranscoding()) {
+      basisFile.close();
+      basisFile.delete();
+      return null;
+    }
+    const levelsCount = basisFile.getLevels();
+    const levels = [];
+
+    for (let levelIndex = 0; levelIndex < levelsCount; levelIndex++) {
+      levels.push(transcodeKTX2Image(basisFile, levelIndex, options));
+      break; // texture app can only show one level for some reason
+    }
+
+    return levels;
+  } finally {
+    basisFile.close();
+    basisFile.delete();
+  }
+}
+
+function transcodeKTX2Image(ktx2File, levelIndex, options) {
+  const {alphaFlag, height, width} = ktx2File.getImageLevelInfo(levelIndex, 0, 0);
+
+  // Check options for output format etc
+  const {compressed, format, basisFormat} = getBasisOptions(options, alphaFlag);
+
+  const decodedSize = ktx2File.getImageTranscodedSizeInBytes(
+    levelIndex,
+    0 /* layerIndex */,
+    0 /* faceIndex */,
+    basisFormat
+  );
+  const decodedData = new Uint8Array(decodedSize);
+
+  if (
+    !ktx2File.transcodeImage(
+      decodedData,
+      levelIndex,
+      0 /* layerIndex */,
+      0 /* faceIndex */,
+      basisFormat,
+      0,
+      -1 /* channel0 */,
+      -1 /* channel1 */
+    )
+  ) {
+    return null;
+  }
+
+  return {
+    // standard loaders.gl image category payload
+    width,
+    height,
+    data: decodedData,
+    compressed,
+
+    // Additional fields
+    // Add levelSize field.
+    alphaFlag,
+    format
+  };
+}
+
+function getBasisOptions(options, hasAlpha) {
+  let format = options && options.basis && options.basis.format;
+  if (typeof format === 'object') {
+    format = hasAlpha ? format.alpha : format.noAlpha;
+  }
+
+  format = format.toLowerCase();
+  return OutputFormat[format];
 }

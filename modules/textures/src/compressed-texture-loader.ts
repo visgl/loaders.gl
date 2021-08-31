@@ -1,6 +1,8 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {parse} from '@loaders.gl/core';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
+import {BasisLoader} from './basis-loader';
 
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
@@ -27,7 +29,8 @@ export const CompressedTextureWorkerLoader = {
   binary: true,
   options: {
     'compressed-texture': {
-      libraryPath: 'libs/'
+      libraryPath: 'libs/',
+      useBasis: false
     }
   }
 };
@@ -37,7 +40,13 @@ export const CompressedTextureWorkerLoader = {
  */
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
-  parse: async (arrayBuffer) => parseCompressedTexture(arrayBuffer)
+  parse: async (arrayBuffer, options) => {
+    if (options['compressed-texture'].useBasis) {
+      options.basis = {...options.basis, decoderFormat: 'KTX2', module: 'encoder'};
+      return await parse(arrayBuffer, BasisLoader, options);
+    }
+    return parseCompressedTexture(arrayBuffer);
+  }
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk
