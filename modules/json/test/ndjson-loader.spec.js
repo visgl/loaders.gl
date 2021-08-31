@@ -82,9 +82,11 @@ test('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async (t) => {
   });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
+  // eslint-disable-next-line dot-notation
   const firstBatch = await iterator['next']();
   t.ok(firstBatch);
   await t.rejects(
+    // eslint-disable-next-line dot-notation
     () => iterator['next'](),
     /failed to parse JSON on line 9/,
     'throws on invalid ndjson'
