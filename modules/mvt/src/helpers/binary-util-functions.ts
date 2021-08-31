@@ -50,7 +50,7 @@ export function classifyRings(geom: MvtBinaryGeometry) {
       offset += endIndex - startIndex;
 
       // Do not add this index to the output and process next shape
-      continue;
+      continue; // eslint-disable-line no-continue
     }
 
     if (ccw === undefined) ccw = area < 0;

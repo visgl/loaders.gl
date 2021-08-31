@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import {earcut} from '@math.gl/polygon';
 import {
   MvtBinaryCoordinates,

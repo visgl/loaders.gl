@@ -18,7 +18,7 @@ export function classifyRings(rings: MvtMapboxGeometry) {
 
   for (let i = 0; i < len; i++) {
     const area = signedArea(rings[i]);
-    if (area === 0) continue;
+    if (area === 0) continue; // eslint-disable-line no-continue
 
     if (ccw === undefined) ccw = area < 0;
 
