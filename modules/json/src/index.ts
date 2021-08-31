@@ -1,5 +1,6 @@
 export type {JSONLoaderOptions} from './json-loader';
 export {JSONLoader} from './json-loader';
+export {NDJSONLoader} from './ndjson-loader';
 
 // EXPERIMENTAL EXPORTS - WARNING: MAY BE REMOVED WIHTOUT NOTICE IN FUTURE RELEASES
 export type {GeoJSONLoaderOptions as _GeoJSONLoaderOptions} from './geojson-loader';
