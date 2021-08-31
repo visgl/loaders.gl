@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 
 import {CompressedTextureLoader} from '@loaders.gl/textures';
-import {load} from '@loaders.gl/core';
+import {load, isBrowser} from '@loaders.gl/core';
 import {setLoaderOptions} from '@loaders.gl/core';
 
 const KTX_URL = '@loaders.gl/textures/test/data/test_etc1s.ktx2';
@@ -25,10 +25,14 @@ test('CompressedTextureLoader#KTX', async (t) => {
 });
 
 test('CompressedTextureLoader#KTX2 with BasisLoader', async (t) => {
-  const texture = await load(KTX2_URL, CompressedTextureLoader, {
-    'compressed-texture': {useBasis: true}
-  });
-  t.ok(texture, 'KTX2 container loaded OK');
+  // Browser tests can't load module from https://raw.githubusercontent.com/BinomialLLC/basis_universal/master/webgl/encoder/build/basis_encoder.wasm
+  // The test should work in browser as soon as encoder_module.wasm is published on npm
+  if (!isBrowser) {
+    const texture = await load(KTX2_URL, CompressedTextureLoader, {
+      'compressed-texture': {useBasis: true}
+    });
+    t.ok(texture, 'KTX2 container loaded OK');
+  }
   t.end();
 });
 
