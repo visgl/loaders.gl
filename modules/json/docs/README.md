@@ -10,9 +10,10 @@ npm install @loaders.gl/core @loaders.gl/json
 
 ## Loaders and Writers
 
-| Loader                                                      |
-| ----------------------------------------------------------- |
-| [`JSONLoader`](modules/json/docs/api-reference/json-loader) |
+| Loader                                                          |
+| --------------------------------------------------------------- |
+| [`JSONLoader`](modules/json/docs/api-reference/json-loader)     |
+| [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader) |
 
 ## Additional APIs
 
@@ -24,12 +25,11 @@ See table category.
 
 Error messages: `JSON.parse` tends to have unhelpful error messages
 
-### Support Streaming JSON Formats
+### Support More Streaming JSON Formats
 
 - Overview of [JSON Streaming Formats](https://en.wikipedia.org/wiki/JSON_streaming) (Wikipedia).
 
 - [Line-delimited JSON](http://jsonlines.org/) (LDJSON) (aka JSON lines) (JSONL).
-- [NewLine delimited JSON](https://github.com/ndjson/ndjson-spec)
 
 ### Autodetection of streaming JSON
 

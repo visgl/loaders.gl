@@ -29,7 +29,7 @@ Aspirational goals:
 - Unbundled loaders.
 - More comprehensive support for `options.shape` to control output format of loaders.
 - Replace `Schema` class with arrow schema if arrowjs tree-shaking improvements are satisfactory.
-- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`
+- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`, `NDJSONLoader`
 - `ffmpeg` WASM integration for `@loaders.gl/video`
 
 ## v3.0
