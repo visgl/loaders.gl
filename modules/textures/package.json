@@ -42,7 +42,6 @@
     "build-crunch-worker": "webpack --entry ./src/workers/crunch-worker.ts --output ./dist/crunch-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.1",
     "@loaders.gl/images": "3.0.1",
     "@loaders.gl/loader-utils": "3.0.1",
     "@loaders.gl/worker-utils": "3.0.1",

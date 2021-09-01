@@ -1,18 +1,28 @@
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
-let loadBasisPromise;
+let loadBasisTranscoderPromise;
 
-export async function loadBasisModule(options) {
+/**
+ * Loads wasm transcoder module
+ * @param options
+ * @returns {BasisFile} promise
+ */
+export async function loadBasisTrascoderModule(options) {
   const modules = options.modules || {};
   if (modules.basis) {
     return modules.basis;
   }
 
-  loadBasisPromise = loadBasisPromise || loadBasis(options);
-  return await loadBasisPromise;
+  loadBasisTranscoderPromise = loadBasisTranscoderPromise || loadBasisTrascoder(options);
+  return await loadBasisTranscoderPromise;
 }
 
-async function loadBasis(options) {
+/**
+ * Loads wasm transcoder module
+ * @param options
+ * @returns {BasisFile} promise
+ */
+async function loadBasisTrascoder(options) {
   let BASIS = null;
   let wasmBinary = null;
 
@@ -24,10 +34,16 @@ async function loadBasis(options) {
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
   BASIS = BASIS || globalThis.BASIS;
-  return await initializeBasisModule(BASIS, wasmBinary);
+  return await initializeBasisTrascoderModule(BASIS, wasmBinary);
 }
 
-function initializeBasisModule(BasisModule, wasmBinary) {
+/**
+ * Initialize wasm transcoder module
+ * @param BasisModule - js part of the module
+ * @param wasmBinary - wasm part of the module
+ * @returns {BasisFile} promise
+ */
+function initializeBasisTrascoderModule(BasisModule, wasmBinary) {
   const options: {wasmBinary?} = {};
 
   if (wasmBinary) {
@@ -46,6 +62,11 @@ function initializeBasisModule(BasisModule, wasmBinary) {
 
 let loadBasisEncoderPromise;
 
+/**
+ * Loads wasm encoder module
+ * @param options
+ * @returns {BasisFile, KTX2File} promise
+ */
 export async function loadBasisEncoderModule(options) {
   const modules = options.modules || {};
   if (modules.basisEncoder) {
@@ -56,6 +77,11 @@ export async function loadBasisEncoderModule(options) {
   return await loadBasisEncoderPromise;
 }
 
+/**
+ * Loads wasm encoder module
+ * @param options
+ * @returns {BasisFile, KTX2File} promise
+ */
 async function loadBasisEncoder(options) {
   let BASIS_ENCODER = null;
   let wasmBinary = null;
@@ -76,10 +102,16 @@ async function loadBasisEncoder(options) {
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
-  BASIS_ENCODER = BASIS_ENCODER || globalThis.BASIS;
+  BASIS_ENCODER = BASIS_ENCODER || globalThis.BASIS_ENCODER;
   return await initializeBasisEncoderModule(BASIS_ENCODER, wasmBinary);
 }
 
+/**
+ * Initialize wasm transcoder module
+ * @param BasisEncoderModule - js part of the module
+ * @param wasmBinary - wasm part of the module
+ * @returns {BasisFile, KTX2File} promise
+ */
 function initializeBasisEncoderModule(BasisEncoderModule, wasmBinary) {
   const options: {wasmBinary?} = {};
 

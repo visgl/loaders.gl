@@ -1,4 +1,4 @@
-import {loadBasisEncoderModule, loadBasisModule} from './basis-module-loader';
+import {loadBasisEncoderModule, loadBasisTrascoderModule} from './basis-module-loader';
 import {GL} from '../gl-constants';
 
 const OutputFormat = {
@@ -21,31 +21,42 @@ const OutputFormat = {
   rgba4444: {basisFormat: 16, compressed: false}
 };
 
+/**
+ * parse data with a Binomial Basis_Universal module
+ * @param {ArrayBuffer} data
+ * @param {*} options
+ * @returns compressed texture data
+ */
 export default async function parseBasis(data, options) {
   switch (options.basis.module) {
     case 'encoder':
       const fileConstructors = await loadBasisEncoderModule(options);
       switch (options.basis.decoderFormat) {
-        case 'KTX2':
+        case 'ktx2':
           return parseKTX2File(fileConstructors.KTX2File, data, options);
-        case 'Basis':
+        case 'basis':
         default:
           return parseBasisFile(fileConstructors.BasisFile, data, options);
       }
     case 'transcoder':
     default:
-      const {BasisFile} = await loadBasisModule(options);
+      const {BasisFile} = await loadBasisTrascoderModule(options);
       return parseBasisFile(BasisFile, data, options);
   }
 }
 
+/**
+ * Parse *.basis file data
+ * @param {*} BasisFile - initialized transcoder module
+ * @param {*} data
+ * @param {*} options
+ * @returns compressed texture data
+ */
 function parseBasisFile(BasisFile, data, options) {
   const basisFile = new BasisFile(new Uint8Array(data));
 
   try {
     if (!basisFile.startTranscoding()) {
-      basisFile.close();
-      basisFile.delete();
       return null;
     }
 
@@ -70,6 +81,14 @@ function parseBasisFile(BasisFile, data, options) {
   }
 }
 
+/**
+ * Parse the particular level image of a basis file
+ * @param {*} basisFile
+ * @param {*} imageIndex
+ * @param {*} levelIndex
+ * @param {*} options
+ * @returns compressed texture data
+ */
 function transcodeImage(basisFile, imageIndex, levelIndex, options) {
   const width = basisFile.getImageWidth(imageIndex, levelIndex);
   const height = basisFile.getImageHeight(imageIndex, levelIndex);
@@ -101,30 +120,42 @@ function transcodeImage(basisFile, imageIndex, levelIndex, options) {
   };
 }
 
+/**
+ * Parse *.ktx2 file data
+ * @param {*} KTX2File
+ * @param {*} data
+ * @param {*} options
+ * @returns compressed texture data
+ */
 function parseKTX2File(KTX2File, data, options) {
-  const basisFile = new KTX2File(new Uint8Array(data));
+  const ktx2File = new KTX2File(new Uint8Array(data));
 
   try {
-    if (!basisFile.startTranscoding()) {
-      basisFile.close();
-      basisFile.delete();
+    if (!ktx2File.startTranscoding()) {
       return null;
     }
-    const levelsCount = basisFile.getLevels();
+    const levelsCount = ktx2File.getLevels();
     const levels = [];
 
     for (let levelIndex = 0; levelIndex < levelsCount; levelIndex++) {
-      levels.push(transcodeKTX2Image(basisFile, levelIndex, options));
+      levels.push(transcodeKTX2Image(ktx2File, levelIndex, options));
       break; // texture app can only show one level for some reason
     }
 
     return levels;
   } finally {
-    basisFile.close();
-    basisFile.delete();
+    ktx2File.close();
+    ktx2File.delete();
   }
 }
 
+/**
+ * Parse the particular level image of a ktx2 file
+ * @param {*} ktx2File
+ * @param {*} levelIndex
+ * @param {*} options
+ * @returns
+ */
 function transcodeKTX2Image(ktx2File, levelIndex, options) {
   const {alphaFlag, height, width} = ktx2File.getImageLevelInfo(levelIndex, 0, 0);
 
@@ -168,6 +199,12 @@ function transcodeKTX2Image(ktx2File, levelIndex, options) {
   };
 }
 
+/**
+ * Get BasisFormat by loader format option
+ * @param {*} options
+ * @param {*} hasAlpha
+ * @returns BasisFormat data
+ */
 function getBasisOptions(options, hasAlpha) {
   let format = options && options.basis && options.basis.format;
   if (typeof format === 'object') {

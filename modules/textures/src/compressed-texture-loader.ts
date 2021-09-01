@@ -1,8 +1,7 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {parse} from '@loaders.gl/core';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
-import {BasisLoader} from './basis-loader';
+import parseBasis from './lib/parsers/parse-basis';
 
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
@@ -42,8 +41,16 @@ export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
   parse: async (arrayBuffer, options) => {
     if (options['compressed-texture'].useBasis) {
-      options.basis = {...options.basis, decoderFormat: 'KTX2', module: 'encoder'};
-      return await parse(arrayBuffer, BasisLoader, options);
+      options.basis = {
+        format: {
+          alpha: 'BC3',
+          noAlpha: 'BC1'
+        },
+        ...options.basis,
+        decoderFormat: 'ktx2',
+        module: 'encoder'
+      };
+      return await parseBasis(arrayBuffer, options);
     }
     return parseCompressedTexture(arrayBuffer);
   }
