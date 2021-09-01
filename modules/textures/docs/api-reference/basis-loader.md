@@ -28,9 +28,11 @@ for (const compressedImage of miplevels) {
 
 ## Options
 
-| Option         | Type   | Default  | Description                                             |
-| -------------- | ------ | -------- | ------------------------------------------------------- |
-| `basis.format` | String | `'auto'` | Set to one of the supported compressed texture formats. |
+| Option                | Type   | Default        | Description                                                                                                                                                                                 |
+| --------------------- | ------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `basis.format`        | String | `'auto'`       | Set to one of the supported compressed texture formats.                                                                                                                                     |
+| `basis.decoderFormat` | String | `'Basis'`      | BasisLoader can decode KTX2 container. Set this options to `KTX2` to parse the ArrayBuffer with `KTX2File` class                                                                            |
+| `basis.module`        | String | `'transcoder'` | Possible values: `transcoder` or `encoder`. Selects wasm module to decode the texture. `transcoder` is smaller but supports only `BasisFile`. `encoder` supports `BasisFile` and `KTX2File`. |
 
 ## Compressed Texture Formats
 

@@ -34,6 +34,6 @@ Returns an array of image data objects representing mip levels.
 
 ## Options
 
-| Option | Type | Default | Description |
-| ------ | ---- | ------- | ----------- |
-| N/A    |      |         |             |
+| Option                        | Type    | Default | Description                            |
+| ----------------------------- | ------- | ------- | -------------------------------------- |
+| `compressed-texture.useBasis` | Boolean | `false` | Use BasisLoader to decode KTX2 texture |

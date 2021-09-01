@@ -18,7 +18,9 @@ export const BasisWorkerLoader = {
   options: {
     basis: {
       format: 'rgb565', // TODO: auto...
-      libraryPath: 'libs/'
+      libraryPath: 'libs/',
+      decoderFormat: 'basis', // 'basis' || 'ktx2'
+      module: 'transcoder' // 'transcoder' || 'encoder'
     }
   }
 };
