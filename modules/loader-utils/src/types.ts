@@ -204,7 +204,7 @@ export type LoaderContext = {
     loaders?,
     options?: LoaderOptions,
     context?: LoaderContext
-  ) => AsyncIterable<any>;
+  ) => AsyncIterable<any> | Promise<AsyncIterable<any>>;
 };
 
 type Parse = (
