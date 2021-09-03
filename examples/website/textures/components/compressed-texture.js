@@ -188,14 +188,18 @@ export default class CompressedTexture extends PureComponent {
     const {canvas, gl, program, image} = this.props;
 
     try {
-      const {arrayBuffer, length, src} = await this.getLoadedData(image);
+      const {arrayBuffer, length, src, useBasis} = await this.getLoadedData(image);
       const loader = await selectLoader(src, [
         CompressedTextureLoader,
         CrunchWorkerLoader,
         BasisLoader,
         ImageLoader
       ]);
-      const result = loader && (await load(arrayBuffer, loader, loadOptions));
+      const options = {...loadOptions};
+      if (useBasis) {
+        options['compressed-texture'] = {useBasis: true};
+      }
+      const result = loader && (await load(arrayBuffer, loader, options));
 
       this.addStat('File Size', Math.floor(length / 1024), 'Kb');
 
@@ -230,6 +234,7 @@ export default class CompressedTexture extends PureComponent {
     let arrayBuffer = null;
     let length = 0;
     let src = '';
+    let useBasis = false;
 
     // eslint-disable-next-line no-undef
     if (image instanceof File) {
@@ -241,9 +246,10 @@ export default class CompressedTexture extends PureComponent {
       const response = await fetchFile(src);
       arrayBuffer = await response.arrayBuffer();
       length = arrayBuffer.byteLength;
+      useBasis = image.useBasis || false;
     }
 
-    return {arrayBuffer, length, src};
+    return {arrayBuffer, length, src, useBasis};
   }
 
   createCompressedTexture2D(gl, images) {

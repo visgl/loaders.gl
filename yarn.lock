@@ -1869,13 +1869,15 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-2.2.0.tgz#2bd609132ca1d83b34ecc1a74272f7da2d50b018"
-  integrity sha512-2a0vEAuNjr/RIQKvVXxRNjFomcQyToGBixdxvdRO0V1Y9Nub+2HMcPBhpF5XaTaBG2imptkXJCgePmWt6um9GQ==
+"@loaders.gl/core@^3.0":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.0.11.tgz#ad8bf8b7da4e73957a9f68f97851926ed5d8ff36"
+  integrity sha512-yOoUPGDBr6r57ktUT2kzmINM4lFmuN+pP2DsbZ5uc7upq8BEp5EIX14X4Nrh4b9HDWLN424zby4xOsncSHofpQ==
   dependencies:
     "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "^2.1.3"
+    "@loaders.gl/loader-utils" "3.0.11"
+    "@loaders.gl/worker-utils" "3.0.11"
+    probe.gl "^3.4.0"
 
 "@loaders.gl/core@^3.0.6":
   version "3.0.6"
@@ -1887,12 +1889,12 @@
     "@loaders.gl/worker-utils" "3.0.6"
     probe.gl "^3.4.0"
 
-"@loaders.gl/images@^2.3.7":
-  version "2.3.13"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-2.3.13.tgz#3b827cf1e8d31c8f1adf85136c7fd53c08dbb0a8"
-  integrity sha512-BBgLf17udhRnYwvsObAOM7jEeLBaeU3di1NyLhpTMa7WbG3jAnDlmy1BRue8wYfgVpWnmk18YubZtX6vCRrJnA==
+"@loaders.gl/images@3.0.11", "@loaders.gl/images@^3.0":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-3.0.11.tgz#5a7fe814da4995cd5df5bfec90b2815132eb6eca"
+  integrity sha512-uCRvZTtyWkAPAt0+b8bcGVy3s31nnlJAIxbe1c94yHPQbiQT2GD3NGuRwgIaLTXU9Y96zAw+WPUG9F74g34w2g==
   dependencies:
-    "@loaders.gl/loader-utils" "2.3.13"
+    "@loaders.gl/loader-utils" "3.0.11"
 
 "@loaders.gl/images@^3.0.6":
   version "3.0.6"
@@ -1901,13 +1903,14 @@
   dependencies:
     "@loaders.gl/loader-utils" "3.0.6"
 
-"@loaders.gl/loader-utils@2.3.13", "@loaders.gl/loader-utils@^2.1.3":
-  version "2.3.13"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-2.3.13.tgz#5cf6403b1c19b2fe5abacbd89e6252b8ca50db96"
-  integrity sha512-vXzH5CWG8pWjUEb7hUr6CM4ERj4NVRpA60OxvVv/OaZZ7hNN63+9/tSUA5IXD9QArWPWrFBnKnvE+5gg4WNqTg==
+"@loaders.gl/loader-utils@3.0.11":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.11.tgz#99a3ad8dae57747a85f36825388da958cc508dc9"
+  integrity sha512-AdaEIfkOsUQZFPp6EbdZLxzXadiBESXvP8sMWwCZuPqQuBeq8YvwBHk58YtiKII8LRpbq75zT9CGdsB1ruCN5g==
   dependencies:
     "@babel/runtime" "^7.3.1"
-    "@probe.gl/stats" "^3.3.0"
+    "@loaders.gl/worker-utils" "3.0.11"
+    "@probe.gl/stats" "^3.4.0"
 
 "@loaders.gl/loader-utils@3.0.6":
   version "3.0.6"
@@ -1917,6 +1920,24 @@
     "@babel/runtime" "^7.3.1"
     "@loaders.gl/worker-utils" "3.0.6"
     "@probe.gl/stats" "^3.4.0"
+
+"@loaders.gl/textures@^3.0":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/textures/-/textures-3.0.11.tgz#132d9ee0ded3460f04d016ec869e41f103a86456"
+  integrity sha512-KXMB949YTrFz/LHHhs0pezhp0Er85uQJ+JIZuXPcar8OdOBNwMUXEhSDlyQkLjEkRmn7y0lhApvodM4Wxnt79w==
+  dependencies:
+    "@loaders.gl/images" "3.0.11"
+    "@loaders.gl/loader-utils" "3.0.11"
+    "@loaders.gl/worker-utils" "3.0.11"
+    ktx-parse "^0.0.4"
+    texture-compressor "^1.0.2"
+
+"@loaders.gl/worker-utils@3.0.11":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.11.tgz#6418032e0a0a89d6988ab8a822eaa2e6f8ea56c5"
+  integrity sha512-zJZtc+EQUKDRL+Xz7uMWfFLARn9gAgG38GZXdPJAGOKD+H7QQ9f72csPqb6/cxrjDyF7ryv02tMF3Ry/40a8fw==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
 
 "@loaders.gl/worker-utils@3.0.6":
   version "3.0.6"
@@ -2267,13 +2288,6 @@
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.4.0.tgz#9315c4726ea031661daa6a1771b8e978684a8b9b"
   integrity sha512-Gl37r9qGuiKadIvTZdSZvzCNOttJYw6RcY1oT0oDuB8r2uhuZAdSMQRQTy9FTinp6MY6O9wngGnV6EpQ8wSBAw==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-
-"@probe.gl/stats@^3.3.0":
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.3.1.tgz#6119c4ce978420ea08464aaf1773d983d4ad9c66"
-  integrity sha512-7ekl4qYndDgmCzZMNhicgJpIzApyjdqo67qv1zKx8hmAgC+AeCk6LE8sdiTauddd8+FDViAkxhrr271KwOgHfw==
   dependencies:
     "@babel/runtime" "^7.0.0"
 
