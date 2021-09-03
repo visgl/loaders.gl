@@ -86,23 +86,14 @@ async function loadBasisEncoder(options) {
   let BASIS_ENCODER = null;
   let wasmBinary = null;
 
-  // TODO: load from `libs` path as soon as module is published on npm
   [BASIS_ENCODER, wasmBinary] = await Promise.all([
-    await loadLibrary(
-      'https://raw.githubusercontent.com/BinomialLLC/basis_universal/master/webgl/encoder/build/basis_encoder.js',
-      null,
-      options
-    ),
-    await loadLibrary(
-      'https://raw.githubusercontent.com/BinomialLLC/basis_universal/master/webgl/encoder/build/basis_encoder.wasm',
-      null,
-      options
-    )
+    await loadLibrary('basis_encoder.js', 'textures', options),
+    await loadLibrary('basis_encoder.wasm', 'textures', options)
   ]);
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
-  BASIS_ENCODER = BASIS_ENCODER || globalThis.BASIS_ENCODER;
+  BASIS_ENCODER = BASIS_ENCODER || globalThis.BASIS;
   return await initializeBasisEncoderModule(BASIS_ENCODER, wasmBinary);
 }
 
