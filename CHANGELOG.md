@@ -2,6 +2,10 @@
 
 ## v3.1 Prerelease
 
+## v3.1.0-alpha.2
+
+- feat(textures): change CDN for basis encoder (#1822)
+
 ## v3.1.0-alpha.1
 
 - feat(textures): parse KTX2 with BasisLoader (#1818)
