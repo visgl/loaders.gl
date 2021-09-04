@@ -17,11 +17,11 @@ type GlobalLoaderState = {
  */
 export function getGlobalLoaderState(): GlobalLoaderState {
   // @ts-ignore
-  global.loaders = global.loaders || {};
+  globalThis.loaders = globalThis.loaders || {};
   // @ts-ignore
   const {loaders} = globalThis;
 
-  // Add _state object to keep separate from modules added to global.loaders
+  // Add _state object to keep separate from modules added to globalThis.loaders
   loaders._state = loaders._state || {};
   return loaders._state;
 }
