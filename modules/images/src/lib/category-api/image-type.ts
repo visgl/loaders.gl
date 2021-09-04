@@ -1,8 +1,8 @@
+import {isBrowser} from '@loaders.gl/loader-utils';
 import type {ImageTypeEnum} from '../../types';
-import {global, isBrowser} from '../utils/globals';
 
 // @ts-ignore TS2339: Property does not exist on type
-const {_parseImageNode} = global;
+const {_parseImageNode} = globalThis;
 
 const IMAGE_SUPPORTED = typeof Image !== 'undefined'; // NOTE: "false" positives if jsdom is installed
 const IMAGE_BITMAP_SUPPORTED = typeof ImageBitmap !== 'undefined';
