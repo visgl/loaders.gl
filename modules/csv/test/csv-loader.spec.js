@@ -16,7 +16,7 @@ const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
 const TSV_BRAZIL = '@loaders.gl/csv/test/data/tsv/brazil.tsv';
 
 test('CSVLoader#loader conformance', (t) => {
-  validateLoader(t, [CSVLoader], 'CSVLoader');
+  validateLoader(t, CSVLoader, 'CSVLoader');
   t.end();
 });
 
