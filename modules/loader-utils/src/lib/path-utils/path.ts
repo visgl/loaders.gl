@@ -1,6 +1,15 @@
 // Beginning of a minimal implementation of the Node.js path API, that doesn't pull in big polyfills.
 
 /**
+ * Replacement for Node.js path.filename
+ * @param url
+ */
+export function filename(url: string): string {
+  const slashIndex = url && url.lastIndexOf('/');
+  return slashIndex >= 0 ? url.substr((slashIndex as number) + 1) : '';
+}
+
+/**
  * Replacement for Node.js path.dirname
  * @param url
  */

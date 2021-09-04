@@ -1,5 +1,5 @@
 import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-utils';
-import {compareArrayBuffers} from '@loaders.gl/loader-utils';
+import {compareArrayBuffers, path} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {getRegisteredLoaders} from './register-loaders';
@@ -143,16 +143,17 @@ function validHTTPResponse(data: any): boolean {
   return true;
 }
 
+/** Generate a helpful message to help explain why loader selection failed. */
 function getNoValidLoaderMessage(data): string {
   const {url, type} = getResourceUrlAndType(data);
 
-  let message = 'No valid loader found';
-  if (data) {
-    message += ` data: "${getFirstCharacters(data)}", contentType: "${type}"`;
-  }
-  if (url) {
-    message += ` url: ${url}`;
-  }
+  let message = 'No valid loader found (';
+  message += url ? `${path.filename(url)}, ` : 'no url provided, ';
+  message += `MIME type: ${type ? `"${type}"` : 'not provided'}, `;
+  // First characters are only accessible when called on data (string or arrayBuffer).
+  const firstCharacters: string = data ? getFirstCharacters(data) : '';
+  message += firstCharacters ? ` first bytes: "${firstCharacters}"` : 'first bytes: not available';
+  message += ')';
   return message;
 }
 
@@ -257,7 +258,7 @@ function testBinary(data, byteOffset, loader, test) {
   }
 }
 
-function getFirstCharacters(data, length = 5) {
+function getFirstCharacters(data, length: number = 5) {
   if (typeof data === 'string') {
     return data.slice(0, length);
   } else if (ArrayBuffer.isView(data)) {

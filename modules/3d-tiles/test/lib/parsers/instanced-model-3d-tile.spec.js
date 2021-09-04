@@ -92,7 +92,11 @@ test('instanced model tile#throws on invalid url', async (t) => {
     gltfUri: 'not-a-real-path'
   };
   const arrayBuffer = encodeSync(TILE, Tile3DWriter);
-  await t.rejects(parse(arrayBuffer, Tiles3DLoader), /url/, 'throws on invalid url');
+  await t.rejects(
+    parse(arrayBuffer, Tiles3DLoader),
+    /No valid loader found/,
+    'throws on invalid url'
+  );
   t.end();
 });
 

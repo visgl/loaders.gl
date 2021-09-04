@@ -64,8 +64,8 @@ export const CSVLoader = {
   module: 'csv',
   name: 'CSV',
   version: VERSION,
-  extensions: ['csv'],
-  mimeTypes: ['text/csv'],
+  extensions: ['csv', 'tsv', 'dsv'],
+  mimeTypes: ['text/csv', 'text/tab-separated-values', 'text/dsv'],
   category: 'table',
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     parseCSV(new TextDecoder().decode(arrayBuffer), options),

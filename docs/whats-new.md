@@ -29,8 +29,16 @@ Aspirational goals:
 - Unbundled loaders.
 - More comprehensive support for `options.shape` to control output format of loaders.
 - Replace `Schema` class with arrow schema if arrowjs tree-shaking improvements are satisfactory.
-- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`, `NDJSONLoader`
+- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`, 
 - `ffmpeg` WASM integration for `@loaders.gl/video`
+
+**@loaders.gl/json**
+
+- New [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader) which handles new-line delimited JSON files.
+
+**@loaders.gl/csv**
+
+- The CSVLoader now recognizes TSV files via `.tsv` file extension or the `text/tab-separated-values` MIME type.
 
 ## v3.0
 
