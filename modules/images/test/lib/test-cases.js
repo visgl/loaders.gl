@@ -81,4 +81,5 @@ export const TEST_CASES = [
     height: 72,
     skip: !isBrowser
   }
+  // TODO - Add webp test file
 ];

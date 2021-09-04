@@ -20,7 +20,7 @@ export {self_ as self, window_ as window, global_ as global, document_ as docume
 /** true if running in a browser */
 export const isBrowser: boolean =
   // @ts-ignore process does not exist on browser
-  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
+  Boolean(typeof process !== 'object' || String(process) !== '[object process]' || process.browser);
 
 /** true if running in a worker thread */
 export const isWorker: boolean = typeof importScripts === 'function';
