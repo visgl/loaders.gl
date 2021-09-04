@@ -28,7 +28,7 @@ function checkFormatSupport(mimeType: string): boolean {
     default:
       if (!isBrowser) {
         // @ts-ignore
-        const {_parseImageNode} = global;
+        const {_parseImageNode} = globalThis;
         return Boolean(_parseImageNode) && NODE_FORMAT_SUPPORT.includes(mimeType);
       }
       return true;

@@ -1,5 +1,4 @@
 import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import {global} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
 import {probeLog, NullLog} from './loggers';
@@ -20,7 +19,7 @@ export function getGlobalLoaderState(): GlobalLoaderState {
   // @ts-ignore
   global.loaders = global.loaders || {};
   // @ts-ignore
-  const {loaders} = global;
+  const {loaders} = globalThis;
 
   // Add _state object to keep separate from modules added to global.loaders
   loaders._state = loaders._state || {};

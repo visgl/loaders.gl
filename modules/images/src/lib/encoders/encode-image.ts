@@ -1,9 +1,8 @@
 // Image loading/saving for browser and Node.js
-import {global} from '../utils/globals';
 import {getImageSize} from '../category-api/parsed-image-api';
 
 // @ts-ignore TS2339: Property does not exist on type
-const {_encodeImageNode} = global;
+const {_encodeImageNode} = globalThis;
 
 /**
  * Returns data bytes representing a compressed image in PNG or JPG format,
