@@ -82,7 +82,7 @@ test('BasisLoader#auto format', async (t) => {
   t.end();
 });
 
-test('BasisLoader#transcode to implicit format', async (t) => {
+test('BasisLoader#transcode to explicit format', async (t) => {
   const images = await load(TEST_URL, BasisLoader, {
     worker: true,
     basis: {
