@@ -25,10 +25,15 @@ test('BasisLoader#load(URL, worker: false)', async (t) => {
 
   t.equals(image.width, 768, 'image width is correct');
   t.equals(image.height, 512, 'image height is correct');
-  t.equals(image.compressed, false, 'image height is correct');
+  if (isBrowser) {
+    t.equals(image.compressed, true, 'image is compressed');
+    t.equals(image.data.byteLength, 393216, 'image `data.byteLength` is correct');
+  } else {
+    t.equals(image.compressed, false, 'image is compressed');
+    t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
+  }
 
   t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
-  t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
 
   t.end();
 });
