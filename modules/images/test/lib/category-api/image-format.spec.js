@@ -34,7 +34,7 @@ export const TEST_CASES = [
   }
 ];
 
-test('Image Category#isImageFormatSupported', (t) => {
+test('Image Category#_isImageFormatSupported', (t) => {
   for (const tc of TEST_CASES) {
     const isSupported = _isImageFormatSupported(tc.mimeType);
     t.equal(isSupported, tc.supported, `${tc.mimeType} support ${isSupported}`);

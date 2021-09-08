@@ -9,7 +9,7 @@ const mimeTypeSupported: {[mimeType: string]: boolean} = {};
 /**
  * Check if image MIME type is supported. Result is cached.
  */
-export function isImageFormatSupported(mimeType: string): boolean {
+export function _isImageFormatSupported(mimeType: string): boolean {
   if (mimeTypeSupported[mimeType] === undefined) {
     mimeTypeSupported[mimeType] = checkFormatSupport(mimeType);
   }

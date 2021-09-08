@@ -35,7 +35,7 @@ export default async function parseImage(
       break;
     case 'data':
       // Node.js loads imagedata directly
-      image = await parseToNodeImage(arrayBuffer, options);
+      image = parseToNodeImage(arrayBuffer, options);
       break;
     default:
       assert(false);
