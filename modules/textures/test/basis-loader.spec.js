@@ -1,7 +1,8 @@
 import test from 'tape-promise/tape';
 
 import {BasisLoader} from '@loaders.gl/textures';
-import {load, setLoaderOptions} from '@loaders.gl/core';
+import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
+import {GL} from '../src/lib/gl-constants';
 
 const TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
 
@@ -45,6 +46,56 @@ test('BasisLoader#load(URL, worker: true)', async (t) => {
 
   t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
   t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
+
+  t.end();
+});
+
+test('BasisLoader#auto format', async (t) => {
+  // Can't auto-select format in worker because gl context isn't not available on a worker thread
+  const images = await load(TEST_URL, BasisLoader, {worker: false});
+
+  const image = images[0][0];
+
+  if (isBrowser) {
+    t.ok(
+      [
+        GL.COMPRESSED_RGBA_ASTC_4X4_KHR,
+        GL.COMPRESSED_RGB_S3TC_DXT1_EXT,
+        GL.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+        GL.COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+        GL.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+        GL.COMPRESSED_RGB_ETC1_WEBGL
+      ].includes(image.format),
+      'Browser supports one of GPU textures formats'
+    );
+    t.ok(image.compressed, 'Basis transcodes to compressed texture');
+  } else {
+    t.notOk(image.format, 'Basis transcodes to RGB565 in NodeJS');
+    t.notOk(image.compressed, "Basis can't transcode to compressed texture in NodeJS");
+  }
+
+  t.end();
+});
+
+test('BasisLoader#transcode to implicit format', async (t) => {
+  const images = await load(TEST_URL, BasisLoader, {
+    worker: true,
+    basis: {
+      format: {
+        alpha: 'BC3',
+        noAlpha: 'BC1'
+      }
+    }
+  });
+
+  const image = images[0][0];
+
+  t.equals(
+    image.format,
+    GL.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    'The texture was transcoded to DXT fromat'
+  );
+  t.ok(image.compressed, 'Basis transcodes to compressed texture');
 
   t.end();
 });

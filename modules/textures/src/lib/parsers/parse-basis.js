@@ -1,8 +1,9 @@
 import {loadBasisEncoderModule, loadBasisTrascoderModule} from './basis-module-loader';
 import {GL} from '../gl-constants';
+import {getSupportedGPUTextureFormats} from '../..';
 
 const OutputFormat = {
-  etc1: {basisFormat: 0, compressed: true},
+  etc1: {basisFormat: 0, compressed: true, format: GL.COMPRESSED_RGB_ETC1_WEBGL},
   etc2: {basisFormat: 1, compressed: true},
   bc1: {basisFormat: 2, compressed: true, format: GL.COMPRESSED_RGB_S3TC_DXT1_EXT},
   bc3: {basisFormat: 3, compressed: true, format: GL.COMPRESSED_RGBA_S3TC_DXT5_EXT},
@@ -10,8 +11,8 @@ const OutputFormat = {
   bc5: {basisFormat: 5, compressed: true},
   'bc7-m6-opaque-only': {basisFormat: 6, compressed: true},
   'bc7-m5': {basisFormat: 7, compressed: true},
-  'pvrtc1-4-rgb': {basisFormat: 8, compressed: true},
-  'pvrtc1-4-rgba': {basisFormat: 9, compressed: true},
+  'pvrtc1-4-rgb': {basisFormat: 8, compressed: true, format: GL.COMPRESSED_RGB_PVRTC_4BPPV1_IMG},
+  'pvrtc1-4-rgba': {basisFormat: 9, compressed: true, format: GL.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG},
   'astc-4x4': {basisFormat: 10, compressed: true, format: GL.COMPRESSED_RGBA_ASTC_4X4_KHR},
   'atc-rgb': {basisFormat: 11, compressed: true},
   'atc-rgba-interpolated-alpha': {basisFormat: 12, compressed: true},
@@ -207,10 +208,38 @@ function transcodeKTX2Image(ktx2File, levelIndex, options) {
  */
 function getBasisOptions(options, hasAlpha) {
   let format = options && options.basis && options.basis.format;
+  if (format === 'auto') {
+    format = selectSupportedFormat();
+  }
   if (typeof format === 'object') {
     format = hasAlpha ? format.alpha : format.noAlpha;
   }
-
   format = format.toLowerCase();
   return OutputFormat[format];
+}
+
+/**
+ * Select transcode format from the list of supported formats
+ * @returns key for OutputFormat map
+ */
+function selectSupportedFormat() {
+  const supportedFormats = getSupportedGPUTextureFormats();
+  if (supportedFormats.has('astc')) {
+    return 'astc-4x4';
+  } else if (supportedFormats.has('dxt')) {
+    return {
+      alpha: 'bc3',
+      noAlpha: 'bc1'
+    };
+  } else if (supportedFormats.has('pvrtc')) {
+    return {
+      alpha: 'pvrtc1-4-rgba',
+      noAlpha: 'pvrtc1-4-rgb'
+    };
+  } else if (supportedFormats.has('etc1')) {
+    return 'etc1';
+  } else if (supportedFormats.has('etc2')) {
+    return 'etc2';
+  }
+  return 'rgb565';
 }
