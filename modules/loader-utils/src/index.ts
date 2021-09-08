@@ -85,7 +85,7 @@ export {isBuffer, toBuffer, bufferToArrayBuffer} from './lib/binary-utils/buffer
 // Note.js wrappers (can be safely imported, but not used in browser)
 
 // Use instead of importing 'util'
-import * as util from  './lib/node/util';
+import * as util from './lib/node/util';
 export {util};
 // TODO - remove
 export {promisify} from './lib/node/util';
@@ -93,3 +93,6 @@ export {promisify} from './lib/node/util';
 // Use instead of importing 'fs';`
 import * as fs from './lib/node/fs';
 export {fs};
+
+// EXPERIMENTAL
+export {default as _NodeFileSystem} from './lib/filesystems/node-filesystem';
