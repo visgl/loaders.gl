@@ -31,7 +31,6 @@ export function getSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Set<s
 
     for (const prefix of BROWSER_PREFIXES) {
       for (const extension in WEBGL_EXTENSIONS) {
-        // eslint-disable-next-line max-depth
         if (gl && gl.getExtension(`${prefix}${extension}`)) {
           const gpuTextureFormat = WEBGL_EXTENSIONS[extension];
           formats.add(gpuTextureFormat);

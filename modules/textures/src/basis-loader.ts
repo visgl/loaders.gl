@@ -17,7 +17,7 @@ export const BasisWorkerLoader = {
   binary: true,
   options: {
     basis: {
-      format: 'rgb565', // TODO: auto...
+      format: 'auto', // gl context doesn't exist on a worker thread
       libraryPath: 'libs/',
       decoderFormat: 'basis', // 'basis' || 'ktx2'
       module: 'transcoder' // 'transcoder' || 'encoder'
