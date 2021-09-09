@@ -1,7 +1,8 @@
 import getPixels from 'get-pixels';
-import {promisify} from '@loaders.gl/loader-utils';
 import {assert} from '../../utils/assert';
+import util from 'util';
 
+// Note: These types are also defined in @loaders.gl/images and need to be kept in sync
 type NDArray = {
   shape: number[];
   data: Uint8Array;
@@ -16,7 +17,7 @@ export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string)
 
   // TODO - check if getPixels callback is asynchronous if provided with buffer input
   // if not, parseImage can be a sync function
-  const getPixelsAsync = promisify(getPixels);
+  const getPixelsAsync = util.promisify(getPixels);
 
   const buffer = arrayBuffer instanceof Buffer ? arrayBuffer : Buffer.from(arrayBuffer);
 
