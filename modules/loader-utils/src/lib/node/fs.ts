@@ -1,22 +1,38 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
-import {toArrayBuffer} from './buffer-utils.node';
-import {promisify} from 'util';
+import {toArrayBuffer} from './buffer';
+import {promisify} from './util';
 
-const error = (fsFunction) => () => {
-  throw new Error(`${fsFunction} not available in browser`);
-};
+export type {Stats} from 'fs';
+
+// paths
+
+/** Wrapper for Node.js fs method */
+export const readdir = promisify(fs.readdir);
+/** Wrapper for Node.js fs method */
+export const stat = promisify(fs.stat);
+
+/** Wrapper for Node.js fs method */
+export const readFile = promisify(fs.readFile);
+/** Wrapper for Node.js fs method */
+export const readFileSync = fs.readFileSync;
+/** Wrapper for Node.js fs method */
+export const writeFile = promisify(fs.writeFile);
+/** Wrapper for Node.js fs method */
+export const writeFileSync = fs.writeFileSync;
+
+// file descriptors
+
+/** Wrapper for Node.js fs method */
+export const open = promisify(fs.open);
+/** Wrapper for Node.js fs method */
+export const close = promisify(fs.close);
+/** Wrapper for Node.js fs method */
+export const read = promisify(fs.read);
+/** Wrapper for Node.js fs method */
+export const fstat = promisify(fs.fstat);
 
 export const isSupported = Boolean(fs);
-
-export const open = fs?.open ? promisify(fs.open) : error('fs.open');
-export const close = fs?.close ? promisify(fs.close) : error('fs.close');
-export const read = fs?.read ? promisify(fs.read) : error('fs.read');
-
-export const readFile = fs?.readFile ? promisify(fs.readFile) : error('fs.readFile');
-export const readFileSync = fs?.readFileSync ? fs.readFileSync : error('fs.readFileSync');
-export const writeFile = fs?.writeFile ? promisify(fs.writeFile) : error('fs.writeFile');
-export const writeFileSync = fs?.writeFileSync ? fs.writeFileSync : error('fs.writeFileSync');
 
 export async function _readToArrayBuffer(fd: number, start: number, length: number) {
   const buffer = Buffer.alloc(length);

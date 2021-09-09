@@ -3813,9 +3813,9 @@ camelize@^1.0.0:
   integrity sha1-FkpUg+Yw+kMh5a8HAg5TGDGyYJs=
 
 caniuse-lite@^1.0.30001219:
-  version "1.0.30001252"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001252.tgz"
-  integrity sha512-I56jhWDGMtdILQORdusxBOH+Nl/KgQSdDmpJezYddnAkVOmnoU8zwjTV9xAjMIYxr0iPreEAVylCGcmHCjfaOw==
+  version "1.0.30001255"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001255.tgz"
+  integrity sha512-F+A3N9jTZL882f/fg/WWVnKSu6IOo3ueLz4zwaOPbPYHNmM/ZaDUyzyJwS1mZhX7Ex5jqTyW599Gdelh5PDYLQ==
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -5932,19 +5932,15 @@ flatbuffers@1.12.0:
   resolved "https://registry.yarnpkg.com/flatbuffers/-/flatbuffers-1.12.0.tgz#72e87d1726cb1b216e839ef02658aa87dcef68aa"
   integrity sha512-c7CZADjRcl6j0PlvFy0ZqXQ67qSEZfrVPynmnL+2zPc+NtMvrF8Y0QceMo7QqnSPc7+uWjUIAbvCQ5WIKlMVdQ==
 
-flatbuffers@2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/flatbuffers/-/flatbuffers-2.0.3.tgz#3bfb2c00c0d5acc1a5d219087e0ee25c756f410a"
-  integrity sha512-lTN0GS4FjwPY6h8BDDuq8f2ZORIyRgI4pHXzIt7GBsTgyCt2z9OAPiWNaeEaNcjrmuLLzFagEDwpYiqGv5BEWg==
-
-flatgeobuf@^3.1.0:
-  version "3.17.4"
-  resolved "https://registry.yarnpkg.com/flatgeobuf/-/flatgeobuf-3.17.4.tgz#9b3843aed3292652e245a30977e09bc035bc7c3e"
-  integrity sha512-wc9KRkqmw7NVpwwIiuU/m+Huq9GOya+jUNBjxiHMN5jlFzxo2hpqFivb1FEmLWCkbAvY08K0/erPll2CWr5hQg==
+flatgeobuf@~3.1.0:
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/flatgeobuf/-/flatgeobuf-3.1.5.tgz#76584999a156c520f60aa32ee0d9d88885dc50e6"
+  integrity sha512-DBJrvTES1X8ytpw+ac+uoGgxXODBfruvEYoRLqYoesrX2PGHl0FhXp3Fxrk0wDF45xyI2iLIo+ZKm72alnNyKQ==
   dependencies:
-    flatbuffers "2.0.3"
+    flatbuffers "1.12.0"
     slice-source "0.4.1"
     stream-buffers "3.0.2"
+    web-streams-polyfill "2.1.1"
 
 flatted@^3.1.0:
   version "3.1.1"
@@ -12169,6 +12165,11 @@ wcwidth@^1.0.0:
   integrity sha1-8LDc+RW8X/FSivrbLA4XtTLaL+g=
   dependencies:
     defaults "^1.0.3"
+
+web-streams-polyfill@2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/web-streams-polyfill/-/web-streams-polyfill-2.1.1.tgz#2c82b6193849ccb9efaa267772c28260ef68d6d2"
+  integrity sha512-dlNpL2aab3g8CKfGz6rl8FNmGaRWLLn2g/DtSc9IjB30mEdE6XxzPfPSig5BwGSzI+oLxHyETrQGKjrVVhbLCg==
 
 web-streams-polyfill@^3.0.0:
   version "3.0.3"
