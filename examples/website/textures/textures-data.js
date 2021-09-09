@@ -35,6 +35,13 @@ export const IMAGES_DATA = [
     ]
   },
   {
+    formatName: 'KTX2',
+    codeSample: 'load(url, CompressedTextureLoader)',
+    images: [
+      {format: 'KTX2', src: 'kodim23.ktx2', useBasis: true}
+    ]
+  },
+  {
     formatName: 'DDS: S3 Texture Compression (WEBGL_compressed_texture_s3tc',
     description: 'S3 (aka DXTn, DXTC, or BCn).',
     availability: 'Common on desktop GPUs. DXT5 is usually the preferred version',
