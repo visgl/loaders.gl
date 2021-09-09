@@ -2,7 +2,16 @@ import getPixels from 'get-pixels';
 import {promisify} from '@loaders.gl/loader-utils';
 import {assert} from '../../utils/assert';
 
-export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string, options) {
+type NDArray = {
+  shape: number[];
+  data: Uint8Array;
+  width: number;
+  height: number;
+  components: number;
+  layers: number[];
+};
+
+export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string): Promise<NDArray> {
   assert(mimeType, 'MIMEType is required to parse image under Node.js');
 
   // TODO - check if getPixels callback is asynchronous if provided with buffer input

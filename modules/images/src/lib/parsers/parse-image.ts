@@ -1,5 +1,6 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
+import type {ImageType} from '../../types';
 import type {ImageLoaderOptions} from '../../image-loader';
 import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
 import {getImageData} from '../category-api/parsed-image-api';
@@ -13,7 +14,7 @@ export default async function parseImage(
   arrayBuffer: ArrayBuffer,
   options?: ImageLoaderOptions,
   context?: LoaderContext
-) {
+): Promise<ImageType> {
   options = options || {};
   const imageOptions = options.image || {};
 
@@ -35,7 +36,7 @@ export default async function parseImage(
       break;
     case 'data':
       // Node.js loads imagedata directly
-      image = parseToNodeImage(arrayBuffer, options);
+      image = await parseToNodeImage(arrayBuffer, options);
       break;
     default:
       assert(false);

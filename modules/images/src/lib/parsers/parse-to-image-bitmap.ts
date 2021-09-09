@@ -44,7 +44,7 @@ export default async function parseToImageBitmap(
 async function safeCreateImageBitmap(
   blob: Blob,
   imagebitmapOptions: ImageBitmapOptions | null = null
-) {
+): Promise<ImageBitmap> {
   if (isEmptyObject(imagebitmapOptions) || !imagebitmapOptionsSupported) {
     imagebitmapOptions = null;
   }

@@ -174,7 +174,7 @@ function getReferencesImageIndices(gltf: GLTFWithBuffers): number[] {
 
   const textures = gltf.json.textures || [];
   for (const texture of textures) {
-    if (texture.source) {
+    if (texture.source !== undefined) {
       imageIndices.add(texture.source);
     }
   }
