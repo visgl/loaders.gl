@@ -19,7 +19,8 @@ parse a format is not bundled into the application but loaded on demand. This is
 particularly useful when adding loaders that are only used occasionally by your
 application.
 
-More details on advantages and complications with worker thread based loading the [Worker Threads](./concepts/worker-threads.md) article in the concepts secion.
+More details on advantages and complications with worker thread based loading the
+[Worker Threads](./concepts/worker-threads.md) article in the concepts section.
 
 ## Processing Data on Workers
 
@@ -31,7 +32,9 @@ processing intensive tasks to workers.
 
 ## Loading Files in Parallel using Worker Loaders
 
-The `DracoLoader` is an example of a worker enabled loader. It parses data on worker threads by default. To load two Draco encoded meshes _in parallel_ on worker threads, just use the `DracoLoader` as follows:
+The `DracoLoader` is an example of a worker enabled loader.
+It parses data on worker threads by default. To load two Draco encoded meshes
+_in parallel_ on worker threads, just use the `DracoLoader` as follows:
 
 ```js
 import {load} from '@loaders.gl/core';
@@ -47,7 +50,7 @@ async function loadInParallel(url1, url2) {
 Applications can use the `worker: false` option to disable worker loaders, for instance to simplify debugging of parsing issues:
 
 ```js
-async function loadwWithoutWorker(url1) {
+async function loadWithoutWorker(url1) {
   const data = await load(url1, DracoLoader, {worker: false});
 }
 ```

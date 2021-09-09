@@ -43,23 +43,6 @@ test('loadInBatches#non-batched loader (gis)', async (t) => {
   t.end();
 });
 
-test('loadInBatches#FileList', async (t) => {
-  if (isBrowser) {
-    const response = await fetchFile(OBJ_ASCII_URL);
-    const blob = await response.blob();
-
-    const iteratorPromises = await loadInBatches([blob, blob], OBJLoader);
-    for await (const iterator of iteratorPromises) {
-      for await (const batch of iterator) {
-        // Just the one batch...
-        t.equal(batch.data.mode, 4, 'mode is TRIANGLES (4)');
-      }
-    }
-  }
-
-  t.end();
-});
-
 test('loadInBatches(options.limit)', async (t) => {
   // @ts-expect-error
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
