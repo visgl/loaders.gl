@@ -8,7 +8,7 @@ const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
 const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
 
-test.only('loadInBatches#FileList', async (t) => {
+test('loadInBatches#FileList', async (t) => {
   if (isBrowser) {
     const response = await fetchFile(OBJ_ASCII_URL);
     const blob = await response.blob();
