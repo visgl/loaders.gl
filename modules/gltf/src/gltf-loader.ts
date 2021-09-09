@@ -1,9 +1,10 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
-// import type {ImageLoaderOptions} from '@loaders.gl/images';
-// import type {TextureLoaderOptions} from '@loaders.gl/textures';
-import type {GLTFParseOptions} from './lib/parsers/parse-gltf';
 import {VERSION} from './lib/utils/version';
+import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {TextureLoaderOptions} from '@loaders.gl/textures';
+import type {GLTFParseOptions} from './lib/parsers/parse-gltf';
+import type {GLTFWithBuffers} from './lib/types/gltf-types';
 import {parseGLTF} from './lib/parsers/parse-gltf';
 import {GLBLoaderOptions} from './glb-loader';
 
@@ -11,6 +12,8 @@ import {GLBLoaderOptions} from './glb-loader';
  * GLTF loader options
  */
 export type GLTFLoaderOptions = LoaderOptions &
+  ImageLoaderOptions &
+  TextureLoaderOptions &
   GLBLoaderOptions &
   DracoLoaderOptions & {
     gltf?: GLTFParseOptions;
@@ -63,5 +66,5 @@ export async function parse(arrayBuffer, options: GLTFLoaderOptions = {}, contex
 
   const {byteOffset = 0} = options;
   const gltf = {};
-  return await parseGLTF(gltf, arrayBuffer, byteOffset, options, context);
+  return await parseGLTF(gltf as GLTFWithBuffers, arrayBuffer, byteOffset, options, context);
 }

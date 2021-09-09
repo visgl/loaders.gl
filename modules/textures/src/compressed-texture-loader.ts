@@ -3,6 +3,20 @@ import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 import parseBasis from './lib/parsers/parse-basis';
 
+export type TextureLoaderOptions = {
+  'compressed-texture'?: {
+    libraryPath?: string;
+    useBasis?: boolean;
+  };
+};
+
+const DEFAULT_TEXTURE_LOADER_OPTIONS = {
+  'compressed-texture': {
+    libraryPath: 'libs/',
+    useBasis: false
+  }
+};
+
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
  */
@@ -26,12 +40,7 @@ export const CompressedTextureWorkerLoader = {
     'application/octet-stream'
   ],
   binary: true,
-  options: {
-    'compressed-texture': {
-      libraryPath: 'libs/',
-      useBasis: false
-    }
-  }
+  options: DEFAULT_TEXTURE_LOADER_OPTIONS
 };
 
 /**

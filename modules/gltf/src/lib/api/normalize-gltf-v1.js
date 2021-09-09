@@ -139,7 +139,8 @@ class GLTFV1Normalizer {
 
     // Extract bufferView indices for images
     // (this extension needs to be invoked early in the normalization process)
-    KHR_binary_glTF.decode(gltf);
+    // TODO can this be handled by standard extension processing instead of called explicitly?
+    KHR_binary_glTF.preprocess(gltf);
 
     // Convert object references from ids to indices
     this._convertObjectIdsToArrayIndices(json);

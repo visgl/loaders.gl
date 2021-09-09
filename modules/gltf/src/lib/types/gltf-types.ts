@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 // Export renamed auto generated types
 import type {
   GLTF,
@@ -12,7 +14,12 @@ import type {
   Scene as GLTFScene,
   Skin as GLTFSkin,
   Texture as GLTFTexture,
-  Image as GLTFImage
+  Image as GLTFImage,
+  GLTF_KHR_binary_glTF,
+  GLTF_KHR_draco_mesh_compression,
+  GLTF_KHR_texture_basisu,
+  GLTF_EXT_meshopt_compression,
+  GLTF_EXT_texture_webp
 } from './gltf-json-schema';
 
 export type {
@@ -28,7 +35,12 @@ export type {
   GLTFScene,
   GLTFSkin,
   GLTFTexture,
-  GLTFImage
+  GLTFImage,
+  GLTF_KHR_binary_glTF,
+  GLTF_KHR_draco_mesh_compression,
+  GLTF_KHR_texture_basisu,
+  GLTF_EXT_meshopt_compression,
+  GLTF_EXT_texture_webp
 };
 
 export type GLTFObject =
@@ -45,23 +57,9 @@ export type GLTFObject =
   | GLTFTexture
   | GLTFImage;
 
-// Extensions
-/* eslint-disable camelcase */
-export type GLTF_KHR_draco_mesh_compression = {
-  bufferView: number;
-  attributes: {[name: string]: number};
-  extensions?: any;
-  extras?: any;
+export type GLTFWithBuffers = {
+  json: GLTF;
+  buffers: any[];
+  binary?: ArrayBuffer;
+  images?: any[];
 };
-
-// export type GLTF = {
-//   json: GLTFRoot;
-//   buffers?: any[];
-//   images?: any[];
-// }
-
-// export type GLTFWithBuffers = {
-//   json: GLTF;
-//   buffers: any[];
-//   binary?: ArrayBuffer;
-// };

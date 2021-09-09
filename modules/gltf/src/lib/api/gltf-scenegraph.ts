@@ -36,6 +36,7 @@ const DEFAULT_GLTF_JSON: GLTF = {
   buffers: []
 };
 
+type Extension = {[key: string]: any};
 /**
  * Class for structured access to GLTF data
  */
@@ -79,13 +80,13 @@ export default class GLTFScenegraph {
     return extras[key];
   }
 
-  getExtension(extensionName: string): {[key: string]: any} | null {
+  getExtension<T = Extension>(extensionName: string): T | null {
     const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
     return isExtension ? extensions[extensionName] || true : null;
   }
 
-  getRequiredExtension(extensionName: string): {[key: string]: any} | null {
+  getRequiredExtension<T = Extension>(extensionName: string): T | null {
     const isRequired = this.getRequiredExtensions().find((name) => name === extensionName);
     return isRequired ? this.getExtension(extensionName) : null;
   }
@@ -98,10 +99,7 @@ export default class GLTFScenegraph {
     return this.json.extensionsUsed || [];
   }
 
-  getObjectExtension(
-    object: {[key: string]: any},
-    extensionName: string
-  ): {[key: string]: any} | null {
+  getObjectExtension<T = Extension>(object: {[key: string]: any}, extensionName: string): T | null {
     const extensions = object.extensions || {};
     return extensions[extensionName];
   }

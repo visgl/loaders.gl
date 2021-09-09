@@ -1,5 +1,5 @@
 import * as fs from '../node/fs';
-import {IFileSystem, IRandomAccessReadFileSystem} from '@loaders.gl/loader-utils';
+import {IFileSystem, IRandomAccessReadFileSystem} from '../../types';
 // import {fetchFile} from "../fetch/fetch-file"
 // import {selectLoader} from "../api/select-loader";
 

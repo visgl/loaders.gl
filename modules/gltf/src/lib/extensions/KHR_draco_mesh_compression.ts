@@ -1,8 +1,14 @@
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
+/* eslint-disable camelcase */
 
 /* eslint-disable camelcase */
-import type {GLTF, GLTFAccessor, GLTFMeshPrimitive} from '../types/gltf-types';
+import type {
+  GLTF,
+  GLTFAccessor,
+  GLTFMeshPrimitive,
+  GLTF_KHR_draco_mesh_compression
+} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import type {LoaderContext} from '@loaders.gl/loader-utils';
@@ -10,10 +16,26 @@ import {DracoLoader} from '@loaders.gl/draco';
 import {DracoLoaderOptions, DracoMesh} from '@loaders.gl/draco';
 import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {default as Scenegraph} from '../api/gltf-scenegraph';
-import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-utils/gltf-constants';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
-// Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
+const KHR_DRACO_MESH_COMPRESSION = 'KHR_draco_mesh_compression';
+
+/** Extension name */
+export const name = KHR_DRACO_MESH_COMPRESSION;
+
+export function preprocess(
+  gltfData: {json: GLTF},
+  options: GLTFLoaderOptions,
+  context: LoaderContext
+): void {
+  const scenegraph = new Scenegraph(gltfData);
+  for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
+    if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
+      // TODO - Remove fallback accessors to make sure we don't load unnecessary buffers
+    }
+  }
+}
+
 export async function decode(
   gltfData: {json: GLTF},
   options: GLTFLoaderOptions,
@@ -64,7 +86,10 @@ async function decompressPrimitive(
   options: GLTFLoaderOptions,
   context: LoaderContext
 ): Promise<void> {
-  const dracoExtension = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
+  const dracoExtension = scenegraph.getObjectExtension<GLTF_KHR_draco_mesh_compression>(
+    primitive,
+    KHR_DRACO_MESH_COMPRESSION
+  );
   if (!dracoExtension) {
     return;
   }

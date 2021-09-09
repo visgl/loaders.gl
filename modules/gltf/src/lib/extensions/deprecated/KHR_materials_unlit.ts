@@ -1,10 +1,13 @@
 // GLTF EXTENSION: KHR_materials_unlit
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit
 
-import type {GLTF} from '../types/gltf-types';
+import type {GLTF} from '../../types/gltf-types';
 
-import GLTFScenegraph from '../api/gltf-scenegraph';
-import {KHR_MATERIALS_UNLIT} from '../gltf-utils/gltf-constants';
+import GLTFScenegraph from '../../api/gltf-scenegraph';
+
+const KHR_MATERIALS_UNLIT = 'KHR_materials_unlit';
+
+export const name = KHR_MATERIALS_UNLIT;
 
 export async function decode(gltfData: {json: GLTF}): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);

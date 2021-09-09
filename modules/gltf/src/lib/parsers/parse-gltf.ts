@@ -1,25 +1,26 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLB} from '../types/glb-types';
-import type {GLBParseOptions} from './parse-glb';
+import type {GLTFWithBuffers} from '../types/gltf-types';
 
 import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
 import {resolveUrl} from '../gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
-import {decodeExtensions} from '../extensions/gltf-extensions';
+import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
 import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
 import {postProcessGLTF} from '../api/post-process-gltf';
 import parseGLBSync, {isGLB} from './parse-glb';
 
 export type GLTFParseOptions = {
-  excludeExtensions?: string[];
-  decompressMeshes?: boolean;
   normalize?: boolean;
-  loadBuffers?: boolean;
   loadImages?: boolean;
+  loadBuffers?: boolean;
+  decompressMeshes?: boolean;
   postProcess?: boolean;
+  excludeExtensions?: string[];
 };
 
 // export type GLTFOptions = {
@@ -32,18 +33,17 @@ export function isGLTF(arrayBuffer, options?): boolean {
 }
 
 export async function parseGLTF(
-  gltf,
+  gltf: GLTFWithBuffers,
   arrayBufferOrString,
   byteOffset = 0,
-  options: {
-    gltf?: GLTFParseOptions;
-    glb?: GLBParseOptions;
-  },
+  options: GLTFLoaderOptions,
   context: LoaderContext
 ) {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   normalizeGLTFV1(gltf, {normalize: options?.gltf?.normalize});
+
+  preprocessExtensions(gltf, options, context);
 
   const promises: Promise<any>[] = [];
 
@@ -120,10 +120,14 @@ function parseGLTFContainerSync(gltf, data, byteOffset, options) {
   gltf.images = new Array(images.length).fill({});
 }
 
-// Asynchronously fetch and parse buffers, store in buffers array outside of json
-async function loadBuffers(gltf, options, context: LoaderContext) {
-  for (let i = 0; i < gltf.json.buffers.length; ++i) {
-    const buffer = gltf.json.buffers[i];
+/** Asynchronously fetch and parse buffers, store in buffers array outside of json
+ * TODO - traverse gltf and determine which buffers are actually needed
+ */
+async function loadBuffers(gltf: GLTFWithBuffers, options, context: LoaderContext) {
+  // TODO
+  const buffers = gltf.json.buffers || [];
+  for (let i = 0; i < buffers.length; ++i) {
+    const buffer = buffers[i];
     if (buffer.uri) {
       const {fetch} = context;
       assert(fetch);
@@ -143,19 +147,49 @@ async function loadBuffers(gltf, options, context: LoaderContext) {
   }
 }
 
-async function loadImages(gltf, options, context: LoaderContext) {
+/**
+ * Loads all images
+ * TODO - traverse gltf and determine which images are actually needed
+ * @param gltf
+ * @param options
+ * @param context
+ * @returns
+ */
+async function loadImages(gltf: GLTFWithBuffers, options, context: LoaderContext) {
+  const imageIndices = getReferencesImageIndices(gltf);
+
   const images = gltf.json.images || [];
 
   const promises: Promise<any>[] = [];
-  for (let i = 0; i < images.length; ++i) {
-    promises.push(loadImage(gltf, images[i], i, options, context));
+  for (const imageIndex of imageIndices) {
+    promises.push(loadImage(gltf, images[imageIndex], imageIndex, options, context));
   }
 
   return await Promise.all(promises);
 }
 
-// Asynchronously fetches and parses one image, store in images array outside of json
-async function loadImage(gltf, image, index: number, options, context: LoaderContext) {
+/** Make sure we only load images that are actually referenced by textures */
+function getReferencesImageIndices(gltf: GLTFWithBuffers): number[] {
+  const imageIndices = new Set<number>();
+
+  const textures = gltf.json.textures || [];
+  for (const texture of textures) {
+    if (texture.source !== undefined) {
+      imageIndices.add(texture.source);
+    }
+  }
+
+  return Array.from(imageIndices).sort();
+}
+
+/** Asynchronously fetches and parses one image, store in images array outside of json */
+async function loadImage(
+  gltf: GLTFWithBuffers,
+  image,
+  index: number,
+  options,
+  context: LoaderContext
+) {
   const {fetch, parse} = context;
 
   let arrayBuffer;
@@ -178,5 +212,7 @@ async function loadImage(gltf, image, index: number, options, context: LoaderCon
   // TODO making sure ImageLoader is overridable by using array of loaders
   // const parsedImage = await parse(arrayBuffer, [ImageLoader]);
 
+  // Store the loaded image
+  gltf.images = gltf.images || [];
   gltf.images[index] = parsedImage;
 }

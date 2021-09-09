@@ -15,6 +15,7 @@ const config = deepMerge(defaultConfig, {
   },
 
   rules: {
+    indent: 0,
     'import/no-unresolved': 1,
     'no-console': 1,
     'no-continue': ['warn'],

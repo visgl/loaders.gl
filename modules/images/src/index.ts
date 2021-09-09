@@ -1,5 +1,6 @@
 // TYPES
 export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
+export type {ImageLoaderOptions} from './image-loader';
 
 // LOADERS AND WRITERS
 export {ImageLoader} from './image-loader';
@@ -21,7 +22,7 @@ export {
 } from './lib/category-api/parsed-image-api';
 
 // EXPERIMENTAL
-export {isImageFormatSupported as _isImageFormatSupported} from './lib/category-api/image-format';
+export {_isImageFormatSupported} from './lib/category-api/image-format';
 
 // DEPRECATED - Remove in V3 (fix dependency in luma.gl)
 export {loadImage} from './lib/texture-api/load-image';

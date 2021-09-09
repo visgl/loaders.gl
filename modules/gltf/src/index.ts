@@ -1,3 +1,4 @@
+/* eslint-disable camelcase, indent */
 export type {GLB} from './lib/types/glb-types';
 export type {
   GLTF,
@@ -12,11 +13,14 @@ export type {
   GLTFScene,
   GLTFSkin,
   GLTFTexture,
-  GLTFImage
+  GLTFImage,
+  // The following extensions are handled by the GLTFLoader and removed from the parsed glTF (disable via options.gltf.excludeExtensions)
+  GLTF_KHR_binary_glTF,
+  GLTF_KHR_draco_mesh_compression,
+  GLTF_KHR_texture_basisu,
+  GLTF_EXT_meshopt_compression,
+  GLTF_EXT_texture_webp
 } from './lib/types/gltf-types';
-
-// Constants
-export {KHR_DRACO_MESH_COMPRESSION} from './lib/gltf-utils/gltf-constants';
 
 // glTF loader/writer definition objects
 export {GLTFLoader} from './gltf-loader';
