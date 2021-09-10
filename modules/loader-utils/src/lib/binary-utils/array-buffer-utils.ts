@@ -15,9 +15,12 @@ export function toArrayBuffer(data: any): ArrayBuffer {
     return data;
   }
 
-  // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
+  // Careful - Node Buffers look like Uint8Arrays (keep after isBuffer)
   if (ArrayBuffer.isView(data)) {
-    return data.buffer;
+    if (data.byteOffset === 0 && data.byteLength === data.buffer.byteLength) {
+      return data.buffer;
+    }
+    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
   }
 
   if (typeof data === 'string') {

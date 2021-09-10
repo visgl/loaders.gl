@@ -2,6 +2,10 @@
 
 ## v3.0
 
+### v3.0.12
+
+- fix: promisify wrapper to contain util import
+
 ### v3.0.11
 
 - chore(typescript) - fix typescript warnings (#1812)

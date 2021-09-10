@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/wkt",
   "description": "Loader and Writer for the WKT (Well Known Text) Format",
-  "version": "3.0.11",
+  "version": "3.0.12",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -35,7 +35,7 @@
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.11",
-    "@loaders.gl/schema": "3.0.11"
+    "@loaders.gl/loader-utils": "3.0.12",
+    "@loaders.gl/schema": "3.0.12"
   }
 }
