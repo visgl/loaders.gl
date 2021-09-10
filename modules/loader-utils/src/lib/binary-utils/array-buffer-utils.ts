@@ -1,25 +1,23 @@
 import {TypedArray} from '../../types';
-import {isBuffer, bufferToArrayBuffer} from './buffer-utils';
+import * as node from './buffer-utils';
 
 /**
  * Convert an object to an array buffer
  */
 export function toArrayBuffer(data: any): ArrayBuffer {
   // Note: Should be called first, Buffers can trigger other detections below
-  if (isBuffer(data)) {
-    return bufferToArrayBuffer(data);
+  if (node.isBuffer(data)) {
+    // TODO - per docs we should just be able to call buffer.buffer, but there are issues
+    data = node.bufferToArrayBuffer(data);
   }
 
   if (data instanceof ArrayBuffer) {
     return data;
   }
 
-  // Careful - Node Buffers look like Uint8Arrays (keep after isBuffer)
+  // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
   if (ArrayBuffer.isView(data)) {
-    if (data.byteOffset === 0 && data.byteLength === data.buffer.byteLength) {
-      return data.buffer;
-    }
-    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+    return data.buffer;
   }
 
   if (typeof data === 'string') {
