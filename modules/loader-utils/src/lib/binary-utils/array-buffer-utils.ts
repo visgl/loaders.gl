@@ -1,14 +1,14 @@
 import {TypedArray} from '../../types';
-import * as node from '../node/buffer-utils.node';
+import * as node from './buffer-utils';
 
 /**
  * Convert an object to an array buffer
  */
 export function toArrayBuffer(data: any): ArrayBuffer {
   // Note: Should be called first, Buffers can trigger other detections below
-  if (node.toArrayBuffer) {
+  if (node.isBuffer(data)) {
     // TODO - per docs we should just be able to call buffer.buffer, but there are issues
-    data = node.toArrayBuffer(data);
+    data = node.bufferToArrayBuffer(data);
   }
 
   if (data instanceof ArrayBuffer) {

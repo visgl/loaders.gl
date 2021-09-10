@@ -5,7 +5,7 @@ import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
 import type brotliNamespace from 'brotli';
 // import brotli from 'brotli';  // https://bundlephobia.com/package/brotli
 import zlib from 'zlib';
-import {promisify} from 'util';
+import {promisify} from '@loaders.gl/loader-utils';
 
 export type BrotliCompressionOptions = CompressionOptions & {
   brotli?: {

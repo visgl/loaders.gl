@@ -1,13 +1,13 @@
 import getPixels from 'get-pixels';
-import util from 'util';
+import {promisify} from '@loaders.gl/loader-utils';
 import {assert} from '../../utils/assert';
 
-export async function parseImageNode(arrayBuffer, mimeType, options) {
+export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string, options) {
   assert(mimeType, 'MIMEType is required to parse image under Node.js');
 
   // TODO - check if getPixels callback is asynchronous if provided with buffer input
   // if not, parseImage can be a sync function
-  const getPixelsAsync = util.promisify(getPixels);
+  const getPixelsAsync = promisify(getPixels);
 
   const buffer = arrayBuffer instanceof Buffer ? arrayBuffer : Buffer.from(arrayBuffer);
 
