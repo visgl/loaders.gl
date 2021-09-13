@@ -1,0 +1,366 @@
+{
+  "id": 0,
+  "name": "Admin_Building_v17",
+  "layerType": "Building",
+  "alias": "Admin_Building_v17",
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326,
+    "vcsWkid": 5773,
+    "latestVcsWkid": 5773
+  },
+  "fullExtent": {
+    "xmin": -117.187101925256556,
+    "ymin": 34.0595986540351277,
+    "xmax": -117.186530164312373,
+    "ymax": 34.0602377184537346,
+    "spatialReference": {
+      "wkid": 4326,
+      "latestWkid": 4326,
+      "vcsWkid": 5773,
+      "latestVcsWkid": 5773
+    },
+    "zmin": 400.010477566525083,
+    "zmax": 428.686498730372307
+  },
+  "version": "1.7",
+  "sublayers": [
+    {
+      "id": 200,
+      "layerType": "group",
+      "name": "Full Model",
+      "alias": "Full Model",
+      "modelName": "FullModel",
+      "visibility": false,
+      "sublayers": [
+        {
+          "id": 210,
+          "layerType": "group",
+          "name": "Piping",
+          "alias": "Piping",
+          "modelName": "Piping",
+          "visibility": false,
+          "sublayers": []
+        },
+        {
+          "id": 220,
+          "layerType": "group",
+          "name": "Electrical",
+          "alias": "Electrical",
+          "modelName": "Electrical",
+          "visibility": false,
+          "sublayers": [
+            {
+              "id": 31,
+              "layerType": "3DObject",
+              "name": "TelephoneDevices",
+              "alias": "TelephoneDevices",
+              "modelName": "TelephoneDevices",
+              "discipline": "Electrical",
+              "visibility": true
+            },
+            {
+              "id": 30,
+              "layerType": "3DObject",
+              "name": "SecurityDevices",
+              "alias": "SecurityDevices",
+              "modelName": "SecurityDevices",
+              "discipline": "Electrical",
+              "visibility": true
+            },
+            {
+              "id": 29,
+              "layerType": "3DObject",
+              "name": "LightingFixtures",
+              "alias": "LightingFixtures",
+              "modelName": "LightingFixtures",
+              "discipline": "Electrical",
+              "visibility": true
+            },
+            {
+              "id": 28,
+              "layerType": "3DObject",
+              "name": "LightingDevices",
+              "alias": "LightingDevices",
+              "modelName": "LightingDevices",
+              "discipline": "Electrical",
+              "visibility": true
+            },
+            {
+              "id": 27,
+              "layerType": "3DObject",
+              "name": "FireAlarmDevices",
+              "alias": "FireAlarmDevices",
+              "modelName": "FireAlarmDevices",
+              "discipline": "Electrical",
+              "visibility": true
+            },
+            {
+              "id": 26,
+              "layerType": "3DObject",
+              "name": "ElectricalEquipment",
+              "alias": "ElectricalEquipment",
+              "modelName": "ElectricalEquipment",
+              "discipline": "Electrical",
+              "visibility": true
+            },
+            {
+              "id": 25,
+              "layerType": "3DObject",
+              "name": "CommDevices",
+              "alias": "CommDevices",
+              "modelName": "CommDevices",
+              "discipline": "Electrical",
+              "visibility": true
+            }
+          ]
+        },
+        {
+          "id": 230,
+          "layerType": "group",
+          "name": "Structural",
+          "alias": "Structural",
+          "modelName": "Structural",
+          "visibility": false,
+          "sublayers": [
+            {
+              "id": 24,
+              "layerType": "3DObject",
+              "name": "StructuralFoundation",
+              "alias": "StructuralFoundation",
+              "modelName": "StructuralFoundation",
+              "discipline": "Structural",
+              "visibility": true
+            },
+            {
+              "id": 23,
+              "layerType": "3DObject",
+              "name": "StructuralColumns",
+              "alias": "StructuralColumns",
+              "modelName": "StructuralColumns",
+              "discipline": "Structural",
+              "visibility": true
+            }
+          ]
+        },
+        {
+          "id": 240,
+          "layerType": "group",
+          "name": "Architectural",
+          "alias": "Architectural",
+          "modelName": "Architectural",
+          "visibility": false,
+          "sublayers": [
+            {
+              "id": 22,
+              "layerType": "3DObject",
+              "name": "Windows",
+              "alias": "Windows",
+              "modelName": "Windows",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 21,
+              "layerType": "3DObject",
+              "name": "Walls",
+              "alias": "Walls",
+              "modelName": "Walls",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 20,
+              "layerType": "3DObject",
+              "name": "StairsRailing",
+              "alias": "StairsRailing",
+              "modelName": "StairsRailing",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 19,
+              "layerType": "3DObject",
+              "name": "Stairs",
+              "alias": "Stairs",
+              "modelName": "Stairs",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 18,
+              "layerType": "3DObject",
+              "name": "SpecialtyEquipment",
+              "alias": "SpecialtyEquipment",
+              "modelName": "SpecialtyEquipment",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 17,
+              "layerType": "3DObject",
+              "name": "Site",
+              "alias": "Site",
+              "modelName": "Site",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 16,
+              "layerType": "3DObject",
+              "name": "Rooms",
+              "alias": "Rooms",
+              "modelName": "Rooms",
+              "discipline": "Architectural",
+              "visibility": false
+            },
+            {
+              "id": 15,
+              "layerType": "3DObject",
+              "name": "Roofs",
+              "alias": "Roofs",
+              "modelName": "Roofs",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 14,
+              "layerType": "3DObject",
+              "name": "Ramps",
+              "alias": "Ramps",
+              "modelName": "Ramps",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 13,
+              "layerType": "3DObject",
+              "name": "PlumbingFixtures",
+              "alias": "PlumbingFixtures",
+              "modelName": "PlumbingFixtures",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 12,
+              "layerType": "3DObject",
+              "name": "Planting",
+              "alias": "Planting",
+              "modelName": "Planting",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 11,
+              "layerType": "3DObject",
+              "name": "Mass",
+              "alias": "Mass",
+              "modelName": "Mass",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 10,
+              "layerType": "3DObject",
+              "name": "GenericModel",
+              "alias": "GenericModel",
+              "modelName": "GenericModel",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 9,
+              "layerType": "3DObject",
+              "name": "FurnitureSystems",
+              "alias": "FurnitureSystems",
+              "modelName": "FurnitureSystems",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 8,
+              "layerType": "3DObject",
+              "name": "Furniture",
+              "alias": "Furniture",
+              "modelName": "Furniture",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 7,
+              "layerType": "3DObject",
+              "name": "Floors",
+              "alias": "Floors",
+              "modelName": "Floors",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 6,
+              "layerType": "3DObject",
+              "name": "Entourage",
+              "alias": "Entourage",
+              "modelName": "Entourage",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 5,
+              "layerType": "3DObject",
+              "name": "Doors",
+              "alias": "Doors",
+              "modelName": "Doors",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 4,
+              "layerType": "3DObject",
+              "name": "CurtainWallPanels",
+              "alias": "CurtainWallPanels",
+              "modelName": "CurtainWallPanels",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 3,
+              "layerType": "3DObject",
+              "name": "CurtainWallMullions",
+              "alias": "CurtainWallMullions",
+              "modelName": "CurtainWallMullions",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 2,
+              "layerType": "3DObject",
+              "name": "Ceilings",
+              "alias": "Ceilings",
+              "modelName": "Ceilings",
+              "discipline": "Architectural",
+              "visibility": true
+            },
+            {
+              "id": 1,
+              "layerType": "3DObject",
+              "name": "Casework",
+              "alias": "Casework",
+              "modelName": "Casework",
+              "discipline": "Architectural",
+              "visibility": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 0,
+      "layerType": "3DObject",
+      "name": "Overview",
+      "alias": "Overview",
+      "modelName": "Overview",
+      "visibility": true
+    }
+  ],
+  "statisticsHRef": "./statistics/summary"
+}

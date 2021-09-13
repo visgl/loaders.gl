@@ -26,12 +26,7 @@ export type SceneLayer3D = {
   id: number;
   href?: string;
   layerType: string;
-  spatialReference?: {
-    wkid: number;
-    latestWkid: number;
-    vcsWkid: number;
-    latestVcsWkid: number;
-  };
+  spatialReference?: SpatialReference;
   heightModelInfo?: HeightModelInfo;
   version: string;
   name?: string;
@@ -180,6 +175,106 @@ export type Extent = [number, number, number, number];
 
 export type FeatureAttribute = {[key: string]: any};
 
+export type BuildingSceneLayerTileset = {
+  header: BuildingSceneLayer;
+  sublayers: BuildingSceneSublayer[];
+};
+
+export type BuildingSceneLayer = {
+  id: number;
+  name: string;
+  version: string;
+  alias?: string;
+  layerType: 'Building';
+  description?: string;
+  copyrightText?: string;
+  fullExtent: FullExtent;
+  spatialReference: SpatialReference;
+  heightModelInfo?: HeightModelInfo;
+  sublayers: BuildingSceneSublayer[];
+  filters?: Filter[];
+  activeFilterID?: string;
+  statisticsHRef?: string;
+};
+
+export type BuildingSceneSublayer = {
+  id: number;
+  name: string;
+  alias?: string;
+  discipline?: 'Mechanical' | 'Architectural' | 'Piping' | 'Electrical' | 'Structural';
+  modelName?: string;
+  layerType: 'group' | '3DObject' | 'Point';
+  visibility?: boolean;
+  sublayers?: BuildingSceneSublayer[];
+  isEmpty?: boolean;
+  url?: string;
+};
+
+type Filter = {
+  id: string;
+  name: string;
+  description: string;
+  isDefaultFilter?: boolean;
+  isVisible?: boolean;
+  filterBlocks: FilterBlock[];
+  filterAuthoringInfo?: FilterAuthoringInfo;
+};
+
+type FilterAuthoringInfo = {
+  type: string;
+  filterBlocks: FilterBlockAuthoringInfo[];
+};
+
+type FilterBlockAuthoringInfo = {
+  filterTypes: FilterType[];
+};
+
+type FilterType = {
+  filterType: string;
+  filterValues: string[];
+};
+
+type FilterBlock = {
+  title: string;
+  filterMode: FilterModeSolid | FilterModeWireFrame;
+  filterExpression: string;
+};
+
+type Edges = {
+  type: string;
+  color: number[];
+  size: number;
+  transparency: number;
+  extensionLength: number;
+};
+
+type FilterModeSolid = {
+  type: 'solid';
+};
+
+type FilterModeWireFrame = {
+  type: 'wireFrame';
+  edges: Edges;
+};
+
+type SpatialReference = {
+  wkid: number;
+  latestWkid: number;
+  vcsWkid: number;
+  latestVcsWkid: number;
+  wkt?: string;
+};
+
+type FullExtent = {
+  xmin: number; // left
+  xmax: number; // right
+  ymin: number; // bottom
+  ymax: number; // top
+  zmin: number; // lowest elevation
+  zmax: number; // highest elevation
+  spatialReference?: SpatialReference;
+};
+
 type TextureDefinitionInfo = {
   encoding: string[];
   wrap?: string[];
@@ -229,6 +324,7 @@ type DefaultGeometrySchema = {
   region: Uint16Array;
 };
 
+// TODO change string to possible values from https://github.com/Esri/i3s-spec/blob/master/docs/1.8/heightModelInfo.cmn.md
 type HeightModelInfo = {
   heightModel: string;
   vertCRS: string;
