@@ -2,6 +2,17 @@
 
 ## v3.1 Prerelease
 
+## v3.1.0-alpha.3
+
+- feat(images): Add isImageFormatSupported('image/webp') (#1825)
+- chore: Use globalThis (#1826)
+- feat(csv): TSV file support (#1824)
+- fix: promisify wrapper to contain util import (#1817)
+- feat(textures): basis - autoselect target format (#1829)
+- feat(examples): parse ktx2 with basis universal (#1823)
+- feat(gltf): basisu and webp extensions (#1827)
+- feat(i3s): support ktx2 texture in I3SContentLoader (#1831)
+
 ## v3.1.0-alpha.2
 
 - feat(textures): change CDN for basis encoder (#1822)
