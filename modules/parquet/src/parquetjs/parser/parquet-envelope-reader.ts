@@ -9,9 +9,9 @@ import {
   PrimitiveType,
   ParquetOptions
 } from '../schema/declare';
-import {decodeDataPages, decodePage} from '../utils/decoders';
 import {fstat, fopen, fread, fclose} from '../utils/file-utils';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
+import {decodeDataPages, decodePage} from './decoders';
 
 const DEFAULT_DICTIONARY_SIZE = 1e6;
 
@@ -147,9 +147,8 @@ export class ParquetEnvelopeReader {
     }
 
     dictionary = options.dictionary?.length ? options.dictionary : dictionary;
-    return await this.read(pagesOffset, pagesSize).then((pagesBuf) =>
-      decodeDataPages(pagesBuf, {...options, dictionary})
-    );
+    const pagesBuf = await this.read(pagesOffset, pagesSize);
+    return await decodeDataPages(pagesBuf, {...options, dictionary});
   }
 
   /**
@@ -182,7 +181,7 @@ export class ParquetEnvelopeReader {
     const pagesBuf = await this.read(dictionaryPageOffset, dictionarySize);
 
     const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};
-    const decodedPage = decodePage(cursor, options);
+    const decodedPage = await decodePage(cursor, options);
 
     return decodedPage.dictionary!;
   }
