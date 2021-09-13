@@ -6,7 +6,8 @@ import {
   CompressedTextureLoader,
   CrunchWorkerLoader,
   GL_CONSTANTS,
-  getSupportedGPUTextureFormats
+  getSupportedGPUTextureFormats,
+  selectSupportedFormat
 } from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
 import {load, registerLoaders, selectLoader, fetchFile} from '@loaders.gl/core';
@@ -135,11 +136,9 @@ export default class CompressedTexture extends PureComponent {
   constructor(props) {
     super(props);
 
-    const supportedFormats = getSupportedGPUTextureFormats(props.gl);
-    const loadOptions = this.getLoadOptions(supportedFormats);
+    const loadOptions = this.getLoadOptions();
 
     this.state = {
-      supportedFormats,
       loadOptions,
       textureError: null,
       showStats: false,
@@ -168,18 +167,12 @@ export default class CompressedTexture extends PureComponent {
     return ext;
   }
 
-  getLoadOptions(supportedFormats) {
-    if (supportedFormats.has('dxt')) {
-      return {
-        basis: {
-          format: {
-            alpha: 'BC3',
-            noAlpha: 'BC1'
-          }
-        }
-      };
-    }
-    return {};
+  getLoadOptions() {
+    return {
+      basis: {
+        format: selectSupportedFormat()
+      }
+    };
   }
 
   // eslint-disable-next-line max-statements
@@ -351,7 +344,7 @@ export default class CompressedTexture extends PureComponent {
     if (typeof format !== 'number') {
       throw new Error('Invalid internal format of compressed texture');
     }
-    const {supportedFormats} = this.state;
+    const supportedFormats = getSupportedGPUTextureFormats(this.props.gl);
 
     switch (format) {
       case COMPRESSED_RGB_S3TC_DXT1_EXT:

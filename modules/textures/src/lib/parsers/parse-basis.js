@@ -222,7 +222,7 @@ function getBasisOptions(options, hasAlpha) {
  * Select transcode format from the list of supported formats
  * @returns key for OutputFormat map
  */
-function selectSupportedFormat() {
+export function selectSupportedFormat() {
   const supportedFormats = getSupportedGPUTextureFormats();
   if (supportedFormats.has('astc')) {
     return 'astc-4x4';
