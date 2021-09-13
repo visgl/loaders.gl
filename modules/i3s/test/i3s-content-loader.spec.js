@@ -55,6 +55,11 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
   t.end();
 });
 
+// TODO: implement test after test data 'Montreal_3DObjects_subset_1_v17_ktx2' is published on github
+test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async (t) => {
+  t.end();
+});
+
 test('ParseI3sTileContent#should make PBR material', async (t) => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
