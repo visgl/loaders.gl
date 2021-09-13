@@ -6,7 +6,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
-import {CompressedTextureLoader} from '@loaders.gl/textures';
+import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
 import {Tileset, Tile} from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
@@ -26,7 +26,8 @@ const FORMAT_LOADER_MAP = {
   jpeg: ImageLoader,
   png: ImageLoader,
   'ktx-etc2': CompressedTextureLoader,
-  dds: CompressedTextureLoader
+  dds: CompressedTextureLoader,
+  ktx2: BasisLoader
 };
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
@@ -53,14 +54,14 @@ export async function parseI3STileContent(
     const arrayBuffer = await response.arrayBuffer();
 
     if (loader === ImageLoader) {
-      const options = {image: {type: 'data'}};
+      const options = {...tile.textureLoaderOptions, image: {type: 'data'}};
       // @ts-ignore context must be defined
       // Image constructor is not supported in worker thread.
       // Do parsing image data on the main thread by using context to avoid worker issues.
       tile.content.texture = await context.parse(arrayBuffer, options);
-    } else if (loader === CompressedTextureLoader) {
+    } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
       // @ts-ignore context must be defined
-      const texture = await load(arrayBuffer, CompressedTextureLoader);
+      const texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
       tile.content.texture = {
         compressed: true,
         mipmaps: false,
