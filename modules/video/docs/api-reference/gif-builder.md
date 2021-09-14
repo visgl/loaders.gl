@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
 </p>
 
-> This `GIFBuilder` is currenly highly experimental and may change significantly in minor releases and ev en patch releases. Pin down your loaders.gl version if you wish to use it.
+> This `GIFBuilder` is experimental and may change significantly in minor releases and ev en patch releases. Pin down your loaders.gl version if you wish to use it.
 
 The `GIFBuilder` class creates a base64 encoded GIF image from either:
 
