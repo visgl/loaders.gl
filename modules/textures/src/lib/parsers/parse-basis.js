@@ -209,7 +209,7 @@ function transcodeKTX2Image(ktx2File, levelIndex, options) {
 function getBasisOptions(options, hasAlpha) {
   let format = options && options.basis && options.basis.format;
   if (format === 'auto') {
-    format = selectSupportedFormat();
+    format = selectSupportedBasisFormat();
   }
   if (typeof format === 'object') {
     format = hasAlpha ? format.alpha : format.noAlpha;
@@ -222,7 +222,7 @@ function getBasisOptions(options, hasAlpha) {
  * Select transcode format from the list of supported formats
  * @returns key for OutputFormat map
  */
-function selectSupportedFormat() {
+export function selectSupportedBasisFormat() {
   const supportedFormats = getSupportedGPUTextureFormats();
   if (supportedFormats.has('astc')) {
     return 'astc-4x4';

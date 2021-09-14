@@ -1,5 +1,5 @@
 import {load} from '@loaders.gl/core';
-import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
+import {getSupportedGPUTextureFormats, selectSupportedBasisFormat} from '@loaders.gl/textures';
 import {Tileset, NodePage} from '../../types';
 import {I3SNodePageLoader} from '../../i3s-node-page-loader';
 import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
@@ -16,6 +16,7 @@ export default class I3SNodePagesTiles {
   options: {[key: string]: any};
   lodSelectionMetricType: any;
   textureDefinitionsSelectedFormats: any[] = [];
+  private textureLoaderOptions: {[key: string]: any} = {};
 
   /**
    * @constructs
@@ -29,7 +30,7 @@ export default class I3SNodePagesTiles {
     this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
     this.options = options;
 
-    this._initSelectedFormatsForTextureDefinitions(tileset);
+    this.initSelectedFormatsForTextureDefinitions(tileset);
   }
 
   /**
@@ -83,11 +84,11 @@ export default class I3SNodePagesTiles {
     if (node && node.mesh) {
       // Get geometry resource URL and type (compressed / non-compressed)
       const {url, isDracoGeometry: isDracoGeometryResult} = (node.mesh.geometry &&
-        this._getContentUrl(node.mesh.geometry)) || {url: null, isDracoGeometry: null};
+        this.getContentUrl(node.mesh.geometry)) || {url: null, isDracoGeometry: null};
       contentUrl = url;
       isDracoGeometry = isDracoGeometryResult;
 
-      const [textureData, nodeMaterialDefinition] = this._getInformationFromMaterial(
+      const [textureData, nodeMaterialDefinition] = this.getInformationFromMaterial(
         node.mesh.material
       );
       materialDefinition = nodeMaterialDefinition;
@@ -101,7 +102,7 @@ export default class I3SNodePagesTiles {
       }
     }
 
-    const lodSelection = this._getLodSelection(node);
+    const lodSelection = this.getLodSelection(node);
 
     return normalizeTileNonUrlData({
       id,
@@ -112,6 +113,7 @@ export default class I3SNodePagesTiles {
       attributeUrls,
       materialDefinition,
       textureFormat,
+      textureLoaderOptions: this.textureLoaderOptions,
       children,
       isDracoGeometry
     });
@@ -124,7 +126,7 @@ export default class I3SNodePagesTiles {
    *   {string} url - url to the geometry resource
    *   {boolean} isDracoGeometry - whether the geometry resource contain DRACO compressed geometry
    */
-  _getContentUrl(meshGeometryData) {
+  private getContentUrl(meshGeometryData) {
     let result = {};
     const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
     let geometryIndex = -1;
@@ -159,7 +161,7 @@ export default class I3SNodePagesTiles {
    *   {string} metricType - the label of the LOD metric
    *   {number} maxError - the value of the metric
    */
-  _getLodSelection(node): object[] {
+  private getLodSelection(node): object[] {
     const lodSelection: object[] = [];
     if (this.lodSelectionMetricType === 'maxScreenThresholdSQ') {
       lodSelection.push({
@@ -182,7 +184,7 @@ export default class I3SNodePagesTiles {
    * {string} textureData.format - format of the texture
    * materialDefinition - PBR-like material definition from `materialDefinitions`
    */
-  _getInformationFromMaterial(material) {
+  private getInformationFromMaterial(material) {
     const textureDataDefault = {name: null, format: null};
     if (material) {
       const materialDefinition = this.tileset.materialDefinitions[material.definition];
@@ -206,13 +208,13 @@ export default class I3SNodePagesTiles {
    * @param {Object} tileset - I3S layer data
    * @returns {void}
    */
-  _initSelectedFormatsForTextureDefinitions(tileset) {
+  private initSelectedFormatsForTextureDefinitions(tileset) {
     this.textureDefinitionsSelectedFormats = [];
-    const possibleI3sFormats = this._getSupportedTextureFormats();
+    const possibleI3sFormats = this.getSupportedTextureFormats();
     const textureSetDefinitions = tileset.textureSetDefinitions || [];
     for (const textureSetDefinition of textureSetDefinitions) {
       const formats = (textureSetDefinition && textureSetDefinition.formats) || [];
-      let selectedFormat = null;
+      let selectedFormat: {format: string; name: string} | null = null;
       for (const i3sFormat of possibleI3sFormats) {
         const format = formats.find((value) => value.format === i3sFormat);
         if (format) {
@@ -220,6 +222,15 @@ export default class I3SNodePagesTiles {
           break;
         }
       }
+      // For I3S 1.8 need to define basis target format to decode
+      if (selectedFormat && selectedFormat.format === 'ktx2') {
+        this.textureLoaderOptions.basis = {
+          format: selectSupportedBasisFormat(),
+          decoderFormat: 'ktx2',
+          module: 'encoder'
+        };
+      }
+
       this.textureDefinitionsSelectedFormats.push(selectedFormat);
     }
   }
@@ -228,9 +239,10 @@ export default class I3SNodePagesTiles {
    * Returns the array of supported texture format
    * @returns list of format strings
    */
-  _getSupportedTextureFormats(): string[] {
+  private getSupportedTextureFormats(): string[] {
     const formats: string[] = [];
     if (!this.options.i3s || this.options.i3s.useCompressedTextures) {
+      // I3S 1.7 selection
       const supportedCompressedFormats = getSupportedGPUTextureFormats();
       // List of possible in i3s formats:
       // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
@@ -240,6 +252,10 @@ export default class I3SNodePagesTiles {
       if (supportedCompressedFormats.has('dxt')) {
         formats.push('dds');
       }
+
+      // I3S 1.8 selection
+      // ktx2 wraps basis texture which at the edge case can be decoded as uncompressed image
+      formats.push('ktx2');
     }
 
     formats.push('jpg');
