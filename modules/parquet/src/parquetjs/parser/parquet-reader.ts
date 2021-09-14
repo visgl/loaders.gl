@@ -4,7 +4,7 @@ import {FileMetaData} from '../parquet-thrift';
 import {ParquetSchema} from '../schema/schema';
 import {ParquetCursor} from './parquet-cursor';
 import {PARQUET_VERSION} from '../../constants';
-import {decodeSchema} from '../utils/decoders';
+import {decodeSchema} from './decoders';
 
 /**
  * A parquet reader allows retrieving the rows from a parquet file in order.

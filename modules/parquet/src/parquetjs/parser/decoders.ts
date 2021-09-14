@@ -20,8 +20,7 @@ import {
 } from '../parquet-thrift';
 import {decompress} from '../compression';
 import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../constants';
-import {decodePageHeader, getThriftEnum, getBitWidth} from './read-utils';
-// import Fs = require('fs');
+import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils';
 
 /**
  * Decode data pages
@@ -55,7 +54,8 @@ export async function decodeDataPages(
     cursor.offset < cursor.size &&
     (!options.numValues || data.dlevels.length < Number(options.numValues))
   ) {
-    const page = decodePage(cursor, options);
+    // Looks like we have to decode these in sequence due to cursor updates?
+    const page = await decodePage(cursor, options);
 
     if (page.dictionary) {
       dictionary = page.dictionary;
@@ -90,23 +90,26 @@ export async function decodeDataPages(
  * @param cursor
  * @param options
  */
-export function decodePage(cursor: CursorBuffer, options: ParquetOptions): ParquetPageData {
+export async function decodePage(
+  cursor: CursorBuffer,
+  options: ParquetOptions
+): Promise<ParquetPageData> {
   let page;
-  const {pageHeader, length} = decodePageHeader(cursor.buffer, cursor.offset);
+  const {pageHeader, length} = await decodePageHeader(cursor.buffer, cursor.offset);
   cursor.offset += length;
 
   const pageType = getThriftEnum(PageType, pageHeader.type);
 
   switch (pageType) {
     case 'DATA_PAGE':
-      page = decodeDataPage(cursor, pageHeader, options);
+      page = await decodeDataPage(cursor, pageHeader, options);
       break;
     case 'DATA_PAGE_V2':
-      page = decodeDataPageV2(cursor, pageHeader, options);
+      page = await decodeDataPageV2(cursor, pageHeader, options);
       break;
     case 'DICTIONARY_PAGE':
       page = {
-        dictionary: decodeDictionaryPage(cursor, pageHeader, options),
+        dictionary: await decodeDictionaryPage(cursor, pageHeader, options),
         pageHeader
       };
       break;
@@ -219,11 +222,11 @@ function decodeValues(
  * @param header
  * @param options
  */
-function decodeDataPage(
+async function decodeDataPage(
   cursor: CursorBuffer,
   header: PageHeader,
   options: ParquetOptions
-): ParquetPageData {
+): Promise<ParquetPageData> {
   const cursorEnd = cursor.offset + header.compressed_page_size;
   const valueCount = header.data_page_header?.num_values;
 
@@ -231,7 +234,7 @@ function decodeDataPage(
   let dataCursor = cursor;
 
   if (options.compression !== 'UNCOMPRESSED') {
-    const valuesBuf = decompress(
+    const valuesBuf = await decompress(
       options.compression,
       cursor.buffer.slice(cursor.offset, cursorEnd),
       header.uncompressed_page_size
@@ -316,7 +319,11 @@ function decodeDataPage(
  * @param opts
  * @returns
  */
-function decodeDataPageV2(cursor: CursorBuffer, header: PageHeader, opts: any): ParquetPageData {
+async function decodeDataPageV2(
+  cursor: CursorBuffer,
+  header: PageHeader,
+  opts: any
+): Promise<ParquetPageData> {
   const cursorEnd = cursor.offset + header.compressed_page_size;
 
   const valueCount = header.data_page_header_v2?.num_values;
@@ -355,7 +362,7 @@ function decodeDataPageV2(cursor: CursorBuffer, header: PageHeader, opts: any): 
   let valuesBufCursor = cursor;
 
   if (header.data_page_header_v2?.is_compressed) {
-    const valuesBuf = decompress(
+    const valuesBuf = await decompress(
       opts.compression,
       cursor.buffer.slice(cursor.offset, cursorEnd),
       header.uncompressed_page_size
@@ -398,11 +405,11 @@ function decodeDataPageV2(cursor: CursorBuffer, header: PageHeader, opts: any): 
  * @param pageHeader
  * @param options
  */
-function decodeDictionaryPage(
+async function decodeDictionaryPage(
   cursor: CursorBuffer,
   pageHeader: PageHeader,
   options: ParquetOptions
-): string[] {
+): Promise<string[]> {
   const cursorEnd = cursor.offset + pageHeader.compressed_page_size;
 
   let dictCursor = {
@@ -414,7 +421,7 @@ function decodeDictionaryPage(
   cursor.offset = cursorEnd;
 
   if (options.compression !== 'UNCOMPRESSED') {
-    const valuesBuf = decompress(
+    const valuesBuf = await decompress(
       options.compression,
       dictCursor.buffer.slice(dictCursor.offset, cursorEnd),
       pageHeader.uncompressed_page_size

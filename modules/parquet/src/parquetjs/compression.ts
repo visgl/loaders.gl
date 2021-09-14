@@ -63,26 +63,30 @@ export async function preloadCompressions(options?: {modules: {[key: string]: an
 /**
  * Deflate a value using compression method `method`
  */
-export function deflate(method: ParquetCompression, value: Buffer): Buffer {
+export async function deflate(method: ParquetCompression, value: Buffer): Promise<Buffer> {
   const compression = PARQUET_COMPRESSION_METHODS[method];
   if (!compression) {
     throw new Error(`parquet: invalid compression method: ${method}`);
   }
   const inputArrayBuffer = toArrayBuffer(value);
-  const compressedArrayBuffer = compression.compressSync(inputArrayBuffer);
+  const compressedArrayBuffer = await compression.compress(inputArrayBuffer);
   return toBuffer(compressedArrayBuffer);
 }
 
 /**
  * Inflate a value using compression method `method`
  */
-export function decompress(method: ParquetCompression, value: Buffer, size: number) {
+export async function decompress(
+  method: ParquetCompression,
+  value: Buffer,
+  size: number
+): Promise<Buffer> {
   const compression = PARQUET_COMPRESSION_METHODS[method];
   if (!compression) {
     throw new Error(`parquet: invalid compression method: ${method}`);
   }
   const inputArrayBuffer = toArrayBuffer(value);
-  const compressedArrayBuffer = compression.decompressSync(inputArrayBuffer, size);
+  const compressedArrayBuffer = await compression.decompress(inputArrayBuffer, size);
   return toBuffer(compressedArrayBuffer);
 }
 
@@ -96,6 +100,7 @@ export function inflate(method: ParquetCompression, value: Buffer, size: number)
   // @ts-ignore
   return PARQUET_COMPRESSION_METHODS[method].inflate(value, size);
 }
+
 /*
 function deflate_identity(value: Buffer): Buffer {
   return value;

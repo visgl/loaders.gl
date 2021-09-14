@@ -22,9 +22,9 @@ export {ParquetWriter as _ParquetWriter} from './parquet-writer';
 
 export {preloadCompressions} from './parquetjs/compression';
 
-export {ParquetEnvelopeReader} from './parquetjs/classes/parquet-envelope-reader';
-export {ParquetReader} from './parquetjs/classes/parquet-reader';
-export {ParquetWriter, ParquetEnvelopeWriter, ParquetTransformer} from './parquetjs/writer';
+export {ParquetEnvelopeReader} from './parquetjs/parser/parquet-envelope-reader';
+export {ParquetReader} from './parquetjs/parser/parquet-reader';
+export {ParquetWriter, ParquetEnvelopeWriter, ParquetTransformer} from './parquetjs/encoder/writer';
 export {ParquetSchema} from './parquetjs/schema/schema';
 export {convertParquetToArrowSchema} from './lib/convert-schema';
 

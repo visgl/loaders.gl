@@ -1,17 +1,17 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 /* eslint-disable camelcase */
 import {Transform, Writable} from 'stream';
-import {ParquetCodecOptions, PARQUET_CODECS} from './codecs';
-import * as Compression from './compression';
+import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs';
+import * as Compression from '../compression';
 import {
   ParquetBuffer,
   ParquetCodec,
   ParquetData,
   ParquetField,
   PrimitiveType
-} from './schema/declare';
-import {ParquetSchema} from './schema/schema';
-import * as Shred from './schema/shred';
+} from '../schema/declare';
+import {ParquetSchema} from '../schema/schema';
+import * as Shred from '../schema/shred';
 import {
   ColumnChunk,
   ColumnMetaData,
@@ -28,9 +28,9 @@ import {
   RowGroup,
   SchemaElement,
   Type
-} from './parquet-thrift';
-import {osopen, oswrite, osclose} from './utils/file-utils';
-import {getBitWidth, serializeThrift} from './utils/read-utils';
+} from '../parquet-thrift';
+import {osopen, oswrite, osclose} from '../utils/file-utils';
+import {getBitWidth, serializeThrift} from '../utils/read-utils';
 import Int64 from 'node-int64';
 
 /**
@@ -132,13 +132,16 @@ export class ParquetWriter<T> {
     this.closed = false;
     this.userMetadata = {};
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.writeHeader();
+  }
+
+  async writeHeader(): Promise<void> {
     // TODO - better not mess with promises in the constructor
     try {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      envelopeWriter.writeHeader();
+      await this.envelopeWriter.writeHeader();
     } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      envelopeWriter.close();
+      await this.envelopeWriter.close();
       throw err;
     }
   }
@@ -275,7 +278,7 @@ export class ParquetEnvelopeWriter {
    * shredRecord method
    */
   async writeRowGroup(records: ParquetBuffer): Promise<void> {
-    const rgroup = encodeRowGroup(this.schema, records, {
+    const rgroup = await encodeRowGroup(this.schema, records, {
       baseOffset: this.offset,
       pageSize: this.pageSize,
       useDataPageV2: this.useDataPageV2
@@ -283,7 +286,7 @@ export class ParquetEnvelopeWriter {
 
     this.rowCount += records.rowCount;
     this.rowGroups.push(rgroup.metadata);
-    return this.writeSection(rgroup.body);
+    return await this.writeSection(rgroup.body);
   }
 
   /**
@@ -364,14 +367,14 @@ function encodeValues(
 /**
  * Encode a parquet data page
  */
-function encodeDataPage(
+async function encodeDataPage(
   column: ParquetField,
   data: ParquetData
-): {
+): Promise<{
   header: PageHeader;
   headerSize: number;
   page: Buffer;
-} {
+}> {
   /* encode repetition and definition levels */
   let rLevelsBuf = Buffer.alloc(0);
   if (column.rLevelMax > 0) {
@@ -398,7 +401,7 @@ function encodeDataPage(
   const dataBuf = Buffer.concat([rLevelsBuf, dLevelsBuf, valuesBuf]);
 
   // compression = column.compression === 'UNCOMPRESSED' ? (compression || 'UNCOMPRESSED') : column.compression;
-  const compressedBuf = Compression.deflate(column.compression!, dataBuf);
+  const compressedBuf = await Compression.deflate(column.compression!, dataBuf);
 
   /* build page header */
   const header = new PageHeader({
@@ -423,15 +426,15 @@ function encodeDataPage(
 /**
  * Encode a parquet data page (v2)
  */
-function encodeDataPageV2(
+async function encodeDataPageV2(
   column: ParquetField,
   data: ParquetData,
   rowCount: number
-): {
+): Promise<{
   header: PageHeader;
   headerSize: number;
   page: Buffer;
-} {
+}> {
   /* encode values */
   const valuesBuf = encodeValues(column.primitiveType!, column.encoding!, data.values, {
     typeLength: column.typeLength,
@@ -439,7 +442,7 @@ function encodeDataPageV2(
   });
 
   // compression = column.compression === 'UNCOMPRESSED' ? (compression || 'UNCOMPRESSED') : column.compression;
-  const compressedBuf = Compression.deflate(column.compression!, valuesBuf);
+  const compressedBuf = await Compression.deflate(column.compression!, valuesBuf);
 
   /* encode repetition and definition levels */
   let rLevelsBuf = Buffer.alloc(0);
@@ -483,16 +486,16 @@ function encodeDataPageV2(
 /**
  * Encode an array of values into a parquet column chunk
  */
-function encodeColumnChunk(
+async function encodeColumnChunk(
   column: ParquetField,
   buffer: ParquetBuffer,
   offset: number,
   opts: ParquetWriterOptions
-): {
+): Promise<{
   body: Buffer;
   metadata: ColumnMetaData;
   metadataOffset: number;
-} {
+}> {
   const data = buffer.columnData[column.path.join()];
   const baseOffset = (opts.baseOffset || 0) + offset;
   /* encode data page(s) */
@@ -503,12 +506,9 @@ function encodeColumnChunk(
   // tslint:disable-next-line:variable-name
   let total_compressed_size = 0;
   {
-    let result: any;
-    if (opts.useDataPageV2) {
-      result = encodeDataPageV2(column, data, buffer.rowCount);
-    } else {
-      result = encodeDataPage(column, data);
-    }
+    const result = opts.useDataPageV2
+      ? await encodeDataPageV2(column, data, buffer.rowCount)
+      : await encodeDataPage(column, data);
     // pages.push(result.page);
     pageBuf = result.page;
     total_uncompressed_size += result.header.uncompressed_page_size + result.headerSize;
@@ -543,14 +543,14 @@ function encodeColumnChunk(
 /**
  * Encode a list of column values into a parquet row group
  */
-function encodeRowGroup(
+async function encodeRowGroup(
   schema: ParquetSchema,
   data: ParquetBuffer,
   opts: ParquetWriterOptions
-): {
+): Promise<{
   body: Buffer;
   metadata: RowGroup;
-} {
+}> {
   const metadata = new RowGroup({
     num_rows: data.rowCount,
     columns: [],
@@ -563,7 +563,7 @@ function encodeRowGroup(
       continue; // eslint-disable-line no-continue
     }
 
-    const cchunkData = encodeColumnChunk(field, data, body.length, opts);
+    const cchunkData = await encodeColumnChunk(field, data, body.length, opts);
 
     const cchunk = new ColumnChunk({
       file_offset: cchunkData.metadataOffset,
