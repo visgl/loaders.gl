@@ -20,7 +20,8 @@ export function parseTilesetUrlParams(url, options) {
 
 function prepareTilesetUrl(parsedUrl) {
   if (parsedUrl.pathname.includes('layers/0')) {
-    return parsedUrl.href;
+    // Replace useless last "/" character if it presents.
+    return parsedUrl.href.replace(/\/+$/, '');
   }
   // Add '/' to url if needed + layers/0 if not exists in url.
   const replacedPathName = parsedUrl.pathname.replace(/\/?$/, '/').concat('layers/0');
