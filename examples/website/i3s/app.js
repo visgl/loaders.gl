@@ -109,6 +109,12 @@ export default class App extends PureComponent {
     this._onSelectTileset(tileset);
   }
 
+   /**
+   * Tries to get Building Scene Layer sublayer urls if exists.
+   * @param {string} tilesetUrl 
+   * @returns {string[]} Sublayer urls or tileset url.
+   * TODO Add filtration mode for sublayers which were selected by user.
+   */
   async getLayerUrls(tilesetUrl) {
     try {
       const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
@@ -172,10 +178,9 @@ export default class App extends PureComponent {
       loadOptions.i3s = {token};
     }
     const layerType = metadata?.layers[0]?.layerType;
-    // TODO Add layers filtration if it is Building Scene Layer.
     return layerUrls.map((url, index) => (
       new Tile3DLayer({
-        id: `layer-${index}`,
+        id: `tile-layer-${index}`,
         data: url,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
