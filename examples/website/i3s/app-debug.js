@@ -17,7 +17,7 @@ import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 
 import {load} from '@loaders.gl/core';
-import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SLoader, I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
 import {ImageLoader} from '@loaders.gl/images';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -218,7 +218,8 @@ export default class App extends PureComponent {
       selectedTileId: null,
       coloredTilesMap: {},
       warnings: [],
-      appDebug: true
+      appDebug: true,
+      layerUrls: []
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -274,7 +275,17 @@ export default class App extends PureComponent {
     this.setState({tilesetUrl, name, token});
     this.handleClearWarnings();
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    this.setState({metadata, tileInfo: null, normalsDebugData: []});
+    const layerUrls = await this.getLayerUrls(tilesetUrl);
+    this.setState({metadata, tileInfo: null, normalsDebugData: [], layerUrls});
+  }
+
+  async getLayerUrls(tilesetUrl) {
+    try {
+      const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
+      return tileset?.sublayers.map(sublayer => sublayer.url);
+    } catch (e) {
+      return [tilesetUrl];
+    }
   }
 
   // Updates stats, called every frame
@@ -463,7 +474,7 @@ export default class App extends PureComponent {
 
   _renderLayers() {
     const {
-      tilesetUrl,
+      layerUrls,
       token,
       viewState,
       debugOptions: {boundingVolume, boundingVolumeType, pickable, wireframe},
@@ -483,9 +494,10 @@ export default class App extends PureComponent {
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
 
-    return [
+    const tile3dLayers = layerUrls.map((url, index) => 
       new Tile3DLayer({
-        data: tilesetUrl,
+        id: `layer-${index}`,
+        data: url,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: this._onTileLoad.bind(this),
@@ -500,6 +512,10 @@ export default class App extends PureComponent {
         },
         _getMeshColor: this.getMeshColor.bind(this)
       }),
+    );
+
+    return [
+      ...tile3dLayers,
       new LineLayer({
         id: 'frustum',
         data: frustumBounds,
