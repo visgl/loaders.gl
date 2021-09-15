@@ -14,7 +14,7 @@ const Container = styled.div`
   background: #0E111A;
   border-radius: 8px;
   z-index: 15;
-  top: ${props => (props.styleDebug ? "50px" : "0")};
+  top: ${props => (props.debugMode ? "50px" : "0")};
   @media (max-width: 768px) {
     width: 100vw;
     margin: 0;
@@ -70,20 +70,18 @@ const DropDown = styled.select`
 
 const propTypes = {
   name: PropTypes.string,
-  tileset: PropTypes.object,
-  mapStyles: PropTypes.object,
-  metadata: PropTypes.object,
-  token: PropTypes.string,
-  onExampleChange: PropTypes.func,
   selectedMapStyle: PropTypes.string,
+  mapStyles: PropTypes.object,
+  debugMode: PropTypes.bool,
+  onExampleChange: PropTypes.func,
   onMapStyleChange: PropTypes.func
 };
 
 const defaultProps = {
-  droppedFile: null,
-  onChange: () => {},
-  style: {}
+  name: '',
+  debugMode: false
 };
+
 const CUSTOM_EXAMPLE = 'Custom example';
 
 export default class ControlPanel extends PureComponent {
@@ -129,11 +127,7 @@ export default class ControlPanel extends PureComponent {
         <MapName>Base map</MapName>
         <DropDown
         value={selectedMapStyle}
-        onChange={(evt) => {
-          const selected = evt.target.value;
-          onMapStyleChange({selectedMapStyle: selected});
-        }}
-        >
+        onChange={(evt) =>  onMapStyleChange({selectedMapStyle: evt.target.value})}>
           {Object.keys(mapStyles).map((key) => {
             return (
               <option key={key} value={mapStyles[key]}>
@@ -147,9 +141,9 @@ export default class ControlPanel extends PureComponent {
   }
 
   render() {
-    const {styleDebug} = this.props;
+    const {debugMode} = this.props;
     return (
-      <Container styleDebug={styleDebug}>
+      <Container debugMode={debugMode}>
         {this._renderExamples()}
         {this._renderMapStyles()}
       </Container>
