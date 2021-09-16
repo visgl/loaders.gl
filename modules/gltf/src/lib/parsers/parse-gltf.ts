@@ -1,5 +1,6 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
+import {BasisLoader} from '@loaders.gl/textures';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLB} from '../types/glb-types';
 import type {GLTFWithBuffers} from '../types/gltf-types';
@@ -208,7 +209,22 @@ async function loadImage(
   assert(arrayBuffer, 'glTF image has no data');
 
   // Call `parse`
-  const parsedImage = await parse(arrayBuffer, ImageLoader, {}, context);
+  let parsedImage = await parse(
+    arrayBuffer,
+    [ImageLoader, BasisLoader],
+    {mimeType: image.mimeType},
+    context
+  );
+
+  if (parsedImage && parsedImage[0]) {
+    parsedImage = {
+      compressed: true,
+      mipmaps: false,
+      width: parsedImage[0].width,
+      height: parsedImage[0].height,
+      data: parsedImage
+    };
+  }
   // TODO making sure ImageLoader is overridable by using array of loaders
   // const parsedImage = await parse(arrayBuffer, [ImageLoader]);
 

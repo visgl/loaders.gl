@@ -9,18 +9,19 @@ export function addModelsToDropdown(models, onChange) {
 
   const VARIANTS = ['glTF-Draco', 'glTF-Binary', 'glTF-Embedded', 'glTF'];
 
-  models.forEach(({name, variants}) => {
+  models.forEach(({name, url, variants}) => {
     const variant = VARIANTS.find((v) => variants[v]);
 
     const option = document.createElement('option');
-    option.text = `${name} (${variant})`;
-    option.value = `${name}/${variant}/${variants[variant]}`;
+    const variantText = variant ? ` (${variant})` : '';
+    option.text = `${name}${variantText}`;
+    option.value = url || `${GLTF_BASE_URL}/${name}/${variant}/${variants[variant]}`;
     modelDropdown.appendChild(option);
   });
 
   modelDropdown.onchange = (event) => {
     const modelUrl = (modelDropdown && modelDropdown.value) || GLTF_DEFAULT_MODEL;
-    onChange(`${GLTF_BASE_URL}/${modelUrl}`);
+    onChange(`${modelUrl}`);
   };
 }
 
@@ -28,7 +29,7 @@ export function getSelectedModel() {
   const modelSelector = document.getElementById('modelSelector');
   const modelUrl = (modelSelector && modelSelector.value) || GLTF_DEFAULT_MODEL;
 
-  return `${GLTF_BASE_URL}/${modelUrl}`;
+  return `${modelUrl}`;
 }
 
 export function onSettingsChange(onChange) {
