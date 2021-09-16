@@ -7,7 +7,7 @@ import {
   CrunchWorkerLoader,
   GL_CONSTANTS,
   getSupportedGPUTextureFormats,
-  selectSupportedFormat
+  selectSupportedBasisFormat
 } from '@loaders.gl/textures';
 import {ImageLoader} from '@loaders.gl/images';
 import {load, registerLoaders, selectLoader, fetchFile} from '@loaders.gl/core';
@@ -170,7 +170,7 @@ export default class CompressedTexture extends PureComponent {
   getLoadOptions() {
     return {
       basis: {
-        format: selectSupportedFormat()
+        format: selectSupportedBasisFormat()
       }
     };
   }
