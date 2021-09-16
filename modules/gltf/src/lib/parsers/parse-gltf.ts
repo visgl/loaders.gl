@@ -1,6 +1,6 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {BasisLoader} from '@loaders.gl/textures';
+import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLB} from '../types/glb-types';
 import type {GLTFWithBuffers} from '../types/gltf-types';
@@ -212,7 +212,7 @@ async function loadImage(
   let parsedImage = await parse(
     arrayBuffer,
     [ImageLoader, BasisLoader],
-    {mimeType: image.mimeType},
+    {mimeType: image.mimeType, basis: {format: selectSupportedBasisFormat()}},
     context
   );
 
