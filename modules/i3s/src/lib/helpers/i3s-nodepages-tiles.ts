@@ -226,7 +226,7 @@ export default class I3SNodePagesTiles {
       if (selectedFormat && selectedFormat.format === 'ktx2') {
         this.textureLoaderOptions.basis = {
           format: selectSupportedBasisFormat(),
-          decoderFormat: 'ktx2',
+          containerFormat: 'ktx2',
           module: 'encoder'
         };
       }
