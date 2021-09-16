@@ -7,7 +7,7 @@ import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
-import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
+import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import ControlPanel from './components/control-panel';
@@ -18,8 +18,10 @@ import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
 import { Color, Flex, Font } from './components/styles';
+import {load} from '@loaders.gl/core';
 
 const TRANSITION_DURAITON = 4000;
+const BUILDING_SCENE_LAYER_TYPE = 'Building';
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -65,6 +67,7 @@ export default class App extends PureComponent {
     super(props);
     this._tilesetStatsWidget = null;
     this.state = {
+      tileset: null,
       url: null,
       token: null,
       name: INITIAL_EXAMPLE_NAME,
@@ -73,7 +76,8 @@ export default class App extends PureComponent {
       selectedFeatureAttributes: null,
       selectedFeatureIndex: -1,
       isAttributesLoading: false,
-      showMemory: true
+      showMemory: true,
+      layerUrls: []
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
@@ -105,12 +109,28 @@ export default class App extends PureComponent {
     this._onSelectTileset(tileset);
   }
 
+   /**
+   * Tries to get Building Scene Layer sublayer urls if exists.
+   * @param {string} tilesetUrl 
+   * @returns {string[]} Sublayer urls or tileset url.
+   * TODO Add filtration mode for sublayers which were selected by user.
+   */
+  async getLayerUrls(tilesetUrl) {
+    try {
+      const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
+      return tileset?.sublayers.map(sublayer => sublayer.url);
+    } catch (e) {
+      return [tilesetUrl];
+    }
+  }
+
   async _onSelectTileset(tileset) {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
     this.setState({tilesetUrl, name, token});
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    this.setState({metadata, selectedFeatureAttributes: null});
+    const layerUrls = await this.getLayerUrls(tilesetUrl);
+    this.setState({metadata, selectedFeatureAttributes: null, layerUrls});
   }
 
   // Updates stats, called every frame
@@ -151,24 +171,27 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {tilesetUrl, token, selectedFeatureIndex} = this.state;
+    const {layerUrls, token, selectedFeatureIndex, metadata} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {};
     if (token) {
       loadOptions.i3s = {token};
     }
-    return [
+    const layerType = metadata?.layers[0]?.layerType;
+    return layerUrls.map((url, index) => (
       new Tile3DLayer({
-        data: tilesetUrl,
+        id: `tile-layer-${index}`,
+        data: url,
         loader: I3SLoader,
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        pickable: true,
+        // TODO enable it when Building Scene Layer picking will be implemented.
+        pickable: layerType !== BUILDING_SCENE_LAYER_TYPE,
         loadOptions,
         highlightedObjectIndex: selectedFeatureIndex
       })
-    ];
+    ));
   }
 
   async handleClick(info) {
