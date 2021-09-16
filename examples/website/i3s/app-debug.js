@@ -493,6 +493,7 @@ export default class App extends PureComponent {
     const tiles = (tileset || {}).tiles || [];
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
+    const isBuildingSceneLayer = layerUrls.length > 1;
 
     const tile3dLayers = layerUrls.map((url, index) => 
       new Tile3DLayer({
@@ -503,7 +504,8 @@ export default class App extends PureComponent {
         onTileLoad: this._onTileLoad.bind(this),
         onTileUnload: this._onTileUnload.bind(this),
         loadOptions,
-        pickable,
+        // Disable picking for Building Scene Layer until this feature will be fully supported!
+        pickable: !isBuildingSceneLayer,
         autoHighlight: true,
         _subLayerProps: {
           mesh: {
