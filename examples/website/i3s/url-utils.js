@@ -19,7 +19,10 @@ export function parseTilesetUrlParams(url, options) {
 }
 
 function prepareTilesetUrl(parsedUrl) {
-  if (parsedUrl.pathname.includes('layers/0')) {
+  // Try to find particular layer in url.
+  const layer = parsedUrl.pathname.match(/layers\/\d/);
+
+  if (layer) {
     // Replace useless last "/" character if it presents.
     return parsedUrl.href.replace(/\/+$/, '');
   }
