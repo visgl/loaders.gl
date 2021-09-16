@@ -4,8 +4,8 @@ import {BasisLoader} from '@loaders.gl/textures';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {GL} from '../src/lib/gl-constants';
 
-const TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
-const KTX2_TEST_URL = '@loaders.gl/textures/test/data/kodim23.ktx2';
+const BASIS_TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
+const KTX2_BASIS_TEST_URL = '@loaders.gl/textures/test/data/kodim23.ktx2';
 
 setLoaderOptions({
   _workerType: 'test',
@@ -18,7 +18,7 @@ test('BasisLoader#imports', (t) => {
 });
 
 test('BasisLoader#load(URL, worker: false)', async (t) => {
-  const images = await load(TEST_URL, BasisLoader, {worker: false});
+  const images = await load(BASIS_TEST_URL, BasisLoader, {worker: false});
 
   const image = images[0][0];
 
@@ -40,7 +40,7 @@ test('BasisLoader#load(URL, worker: false)', async (t) => {
 });
 
 test('BasisLoader#load(URL, worker: true)', async (t) => {
-  const images = await load(TEST_URL, BasisLoader, {worker: true});
+  const images = await load(BASIS_TEST_URL, BasisLoader, {worker: true});
 
   const image = images[0][0];
 
@@ -58,7 +58,7 @@ test('BasisLoader#load(URL, worker: true)', async (t) => {
 
 test('BasisLoader#auto-select a target format', async (t) => {
   // Can't auto-select format in worker because gl context isn't not available on a worker thread
-  const images = await load(TEST_URL, BasisLoader, {worker: false, basis: {format: 'auto'}});
+  const images = await load(BASIS_TEST_URL, BasisLoader, {worker: false, basis: {format: 'auto'}});
 
   const image = images[0][0];
 
@@ -84,7 +84,7 @@ test('BasisLoader#auto-select a target format', async (t) => {
 });
 
 test('BasisLoader#transcode to explicit format', async (t) => {
-  const images = await load(TEST_URL, BasisLoader, {
+  const images = await load(BASIS_TEST_URL, BasisLoader, {
     worker: true,
     basis: {
       format: {
@@ -107,21 +107,21 @@ test('BasisLoader#transcode to explicit format', async (t) => {
 });
 
 test('BasisLoader#auto-select a decoder format', async (t) => {
-  const images = await load(TEST_URL, BasisLoader, {
+  const images = await load(BASIS_TEST_URL, BasisLoader, {
     worker: true,
     basis: {
       format: 'astc-4x4',
-      decoderFormat: 'auto'
+      containerFormat: 'auto'
     }
   });
   const image = images[0][0];
   t.ok(image, 'Transcode .basis');
 
-  const ktx2Images = await load(KTX2_TEST_URL, BasisLoader, {
+  const ktx2Images = await load(KTX2_BASIS_TEST_URL, BasisLoader, {
     worker: true,
     basis: {
       format: 'astc-4x4',
-      decoderFormat: 'auto'
+      containerFormat: 'auto'
     }
   });
   const ktx2Image = ktx2Images[0];

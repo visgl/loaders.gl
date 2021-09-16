@@ -30,7 +30,7 @@ const OutputFormat = {
  * @returns compressed texture data
  */
 export default async function parseBasis(data, options) {
-  if (options.basis.decoderFormat === 'auto') {
+  if (options.basis.containerFormat === 'auto') {
     if (isKTX(data)) {
       const fileConstructors = await loadBasisEncoderModule(options);
       return parseKTX2File(fileConstructors.KTX2File, data, options);
@@ -41,7 +41,7 @@ export default async function parseBasis(data, options) {
   switch (options.basis.module) {
     case 'encoder':
       const fileConstructors = await loadBasisEncoderModule(options);
-      switch (options.basis.decoderFormat) {
+      switch (options.basis.containerFormat) {
         case 'ktx2':
           return parseKTX2File(fileConstructors.KTX2File, data, options);
         case 'basis':

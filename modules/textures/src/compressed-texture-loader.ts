@@ -56,7 +56,7 @@ export const CompressedTextureLoader = {
           noAlpha: 'BC1'
         },
         ...options.basis,
-        decoderFormat: 'ktx2',
+        containerFormat: 'ktx2',
         module: 'encoder'
       };
       return await parseBasis(arrayBuffer, options);

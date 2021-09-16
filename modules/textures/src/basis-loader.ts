@@ -19,7 +19,7 @@ export const BasisWorkerLoader = {
     basis: {
       format: 'auto', // gl context doesn't exist on a worker thread
       libraryPath: 'libs/',
-      decoderFormat: 'auto', // 'basis' || 'ktx2' || 'auto'
+      containerFormat: 'auto', // 'basis' || 'ktx2' || 'auto'
       module: 'transcoder' // 'transcoder' || 'encoder'
     }
   }
