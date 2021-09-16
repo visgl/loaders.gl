@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "publishConfig": {
@@ -34,9 +34,9 @@
     "build-bundle": "webpack --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.1.0-alpha.3",
-    "@loaders.gl/draco": "3.1.0-alpha.3",
-    "@loaders.gl/images": "3.1.0-alpha.3",
-    "@loaders.gl/loader-utils": "3.1.0-alpha.3"
+    "@loaders.gl/core": "3.1.0-alpha.4",
+    "@loaders.gl/draco": "3.1.0-alpha.4",
+    "@loaders.gl/images": "3.1.0-alpha.4",
+    "@loaders.gl/loader-utils": "3.1.0-alpha.4"
   }
 }

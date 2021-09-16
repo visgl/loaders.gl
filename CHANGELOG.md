@@ -2,6 +2,15 @@
 
 ## v3.1 Prerelease
 
+## v3.1.0-alpha.4
+
+- fix(website): gltf page (#1834)
+- chore(parquet): Use async compression/decompression (#1835)
+- feat(i3s): support ktx2 texture (#1833)
+- Create loader for Building Scene Layer JSON structure. (#1832)
+- chore: Reintroduce ES5 build (#1842)
+- feat(textures): basis - auto-select decoder format (#1840)
+
 ## v3.1.0-alpha.3
 
 - feat(images): Add isImageFormatSupported('image/webp') (#1825)
