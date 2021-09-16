@@ -208,13 +208,10 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle, showMemory} = this.state;
+    const {name, selectedMapStyle, showMemory} = this.state;
     return (
       <ControlPanel
-        tileset={tileset}
         name={name}
-        metadata={metadata}
-        token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         selectedMapStyle={selectedMapStyle}>

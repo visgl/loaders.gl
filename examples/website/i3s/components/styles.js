@@ -18,7 +18,6 @@ export const DropDownStyle = `
       padding: 0px 2px 1px;
     }
   &:hover {
-    transition: all 1s;
     background: #4F52CC;
     color: black;
   }
