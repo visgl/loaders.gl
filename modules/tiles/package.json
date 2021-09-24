@@ -33,7 +33,6 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.1.0-alpha.4",
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",
     "@loaders.gl/math": "3.1.0-alpha.4",
     "@math.gl/core": "^3.5.1",
@@ -41,5 +40,8 @@
     "@math.gl/geospatial": "^3.5.1",
     "@math.gl/web-mercator": "^3.5.1",
     "@probe.gl/stats": "^3.4.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^3.0.0"
   }
 }

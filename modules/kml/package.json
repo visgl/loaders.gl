@@ -32,10 +32,12 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.1.0-alpha.4",
     "@loaders.gl/gis": "3.1.0-alpha.4",
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",
     "@loaders.gl/schema": "3.1.0-alpha.4",
     "@tmcw/togeojson": "^4.5.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^3.0.0"
   }
 }

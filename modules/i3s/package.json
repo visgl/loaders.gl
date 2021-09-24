@@ -32,7 +32,6 @@
     "build-worker": "webpack --entry ./src/workers/i3s-content-worker.ts --output ./dist/i3s-content-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.1.0-alpha.4",
     "@loaders.gl/draco": "3.1.0-alpha.4",
     "@loaders.gl/images": "3.1.0-alpha.4",
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",
@@ -44,5 +43,8 @@
     "@math.gl/culling": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
     "probe.gl": "^3.4.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^3.0.0"
   }
 }
