@@ -498,7 +498,6 @@ export default class App extends PureComponent {
     const tiles = (tileset || {}).tiles || [];
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
-    const isBuildingSceneLayer = layerUrls.length > 1;
 
     const tile3dLayers = layerUrls.map((url, index) => 
       new Tile3DLayer({
@@ -509,8 +508,7 @@ export default class App extends PureComponent {
         onTileLoad: this._onTileLoad.bind(this),
         onTileUnload: this._onTileUnload.bind(this),
         loadOptions,
-        // Disable picking for Building Scene Layer until this feature will be fully supported!
-        pickable: !isBuildingSceneLayer,
+        pickable,
         autoHighlight: true,
         _subLayerProps: {
           mesh: {
@@ -771,7 +769,8 @@ export default class App extends PureComponent {
         selectTileColor={this.handleSelectTileColor}
         isControlPanelShown={debugOptions.controlPanel}
       >
-        <TileValidator
+        {
+        currenTile && <TileValidator
           tile={currenTile}
           showNormals={Boolean(normalsDebugData.length)}
           trianglesPercentage={trianglesPercentage}
@@ -780,6 +779,7 @@ export default class App extends PureComponent {
           handleChangeTrianglesPercentage={this.handleChangeTrianglesPercentage}
           handleChangeNormalsLength={this.handleChangeNormalsLength}
         />
+        }
         {isShowColorPicker && (
           <div style={CURSOR_STYLE}>
             <h3 style={HEADER_STYLE}>{TILE_COLOR_SELECTOR}</h3>
