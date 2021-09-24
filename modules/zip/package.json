@@ -30,7 +30,9 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.1.0-alpha.4",
     "jszip": "^3.1.5"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^3.0.0"
   }
 }

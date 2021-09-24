@@ -34,10 +34,12 @@
     "build-bundle": "webpack --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.1.0-alpha.4",
     "@loaders.gl/draco": "3.1.0-alpha.4",
     "@loaders.gl/images": "3.1.0-alpha.4",
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",
     "@loaders.gl/textures": "3.1.0-alpha.4"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^3.0.0"
   }
 }
