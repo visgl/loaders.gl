@@ -7,7 +7,7 @@ import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
-import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
+import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes, invertCantorPairing} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import ControlPanel from './components/control-panel';
@@ -173,11 +173,22 @@ export default class App extends PureComponent {
   _renderLayers() {
     const {layerUrls, token, selectedFeatureIndex, metadata} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
-    const loadOptions = {};
+
+    const layerType = metadata?.layers[0]?.layerType;
+    const loadOptions = {
+      'i3s-content': {
+        // TODO avoid such option in future and do it by default.
+        // Current problem that pairing funciton can produce long numbers
+        // which are not properly handleby RGB encode function in layer.js in deck.gl.
+        // Use it for building scene layer only for now.
+        makeFeatureIdsUniqueAmongTilesets: layerType === BUILDING_SCENE_LAYER_TYPE
+      }
+    };
+
     if (token) {
       loadOptions.i3s = {token};
     }
-    const layerType = metadata?.layers[0]?.layerType;
+
     return layerUrls.map((url, index) => (
       new Tile3DLayer({
         id: `tile-layer-${index}`,
@@ -186,8 +197,7 @@ export default class App extends PureComponent {
         onTilesetLoad: this._onTilesetLoad.bind(this),
         onTileLoad: () => this._updateStatWidgets(),
         onTileUnload: () => this._updateStatWidgets(),
-        // TODO enable it when Building Scene Layer picking will be implemented.
-        pickable: layerType !== BUILDING_SCENE_LAYER_TYPE,
+        pickable: true,
         loadOptions,
         highlightedObjectIndex: selectedFeatureIndex
       })
@@ -200,6 +210,18 @@ export default class App extends PureComponent {
       return;
     }
 
+    let featureId = info.index;
+
+    const {metadata} = this.state;
+    const layerType = metadata?.layers[0]?.layerType;
+    const isPairingUsed = layerType === BUILDING_SCENE_LAYER_TYPE;
+    // Invert cantor pairing to get initial featureId
+    // This made for make featureIds unique among all rendered tilesets.
+    if (isPairingUsed) {
+      const {x: featureIdDecoded} = invertCantorPairing(info.index);
+      featureId = featureIdDecoded;
+    }
+
     const {token} = this.state;
     const options = {};
 
@@ -208,7 +230,7 @@ export default class App extends PureComponent {
     }
 
     this.setState({isAttributesLoading: true});
-    const selectedFeatureAttributes = await loadFeatureAttributes(info.object, info.index, options);
+    const selectedFeatureAttributes = await loadFeatureAttributes(info.object, featureId, options);
     this.setState({isAttributesLoading: false});
     this.setState({selectedFeatureAttributes, selectedFeatureIndex: info.index});
   }

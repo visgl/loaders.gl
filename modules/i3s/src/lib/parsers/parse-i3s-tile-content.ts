@@ -10,6 +10,7 @@ import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
 import {Tileset, Tile} from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
+import {cantorPair} from '../utils/pairing-function';
 
 import {
   GL_TYPE_MAP,
@@ -77,13 +78,15 @@ export async function parseI3STileContent(
     tile.content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, context);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, tileset.id, options, context);
 }
 
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
   tile: Tile = {},
+  tilesetId: number,
+  options: any,
   context?: LoaderContext
 ) {
   if (!tile.content) {
@@ -129,7 +132,7 @@ async function parseI3SNodeGeometry(
     const featureIds = getFeatureIdsFromFeatureIndexMetadata(featureIndex);
 
     if (featureIds) {
-      flattenFeatureIdsByFeatureIndices(attributes, featureIds);
+      flattenFeatureIdsByFeatureIndices(attributes, featureIds, tilesetId, options);
     }
   } else {
     const {vertexAttributes, attributesOrder, featureAttributes, featureAttributeOrder} =
@@ -157,7 +160,7 @@ async function parseI3SNodeGeometry(
       featureAttributeOrder
     );
 
-    flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes);
+    flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes, tilesetId, options);
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   }
 
@@ -531,7 +534,7 @@ function setMaterialTexture(material, image) {
  * @param {object} normalizedFeatureAttributes
  * @returns {void}
  */
-function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
+function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes, tilesetId, options) {
   const {id, faceRange} = normalizedFeatureAttributes;
 
   if (!id || !faceRange) {
@@ -542,16 +545,21 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
   const range = faceRange.value;
   const featureIdsLength = range[range.length - 1] + 1;
   const orderedFeatureIndices = new Uint32Array(featureIdsLength * 3);
+  const needCantorPairing = options['i3s-content'].makeFeatureIdsUniqueAmongTilesets;
 
   let featureIndex = 0;
   let startIndex = 0;
 
   for (let index = 1; index < range.length; index += 2) {
-    const fillId = Number(featureIds[featureIndex]);
+    let fillId = Number(featureIds[featureIndex]);
     const endValue = range[index];
     const prevValue = range[index - 1];
     const trianglesCount = endValue - prevValue + 1;
     const endIndex = startIndex + trianglesCount * 3;
+
+    if (needCantorPairing) {
+      fillId = cantorPair(fillId, tilesetId);
+    }
 
     orderedFeatureIndices.fill(fillId, startIndex, endIndex);
 
@@ -568,12 +576,16 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
  * @param {any} featureIds
  * @returns {void}
  */
-function flattenFeatureIdsByFeatureIndices(attributes, featureIds) {
+function flattenFeatureIdsByFeatureIndices(attributes, featureIds, tilesetId, options) {
   const featureIndices = attributes.id.value;
   const result = new Float32Array(featureIndices.length);
+  const needCantorPairing = options['i3s-content'].makeFeatureIdsUniqueAmongTilesets;
 
   for (let index = 0; index < featureIndices.length; index++) {
-    result[index] = featureIds[featureIndices[index]];
+    const featureId = featureIds[featureIndices[index]];
+    // For multiple tilesets need to make feature ids unique among all layers.
+    // To make it we can use pairing function.
+    result[index] = needCantorPairing ? cantorPair(featureId, tilesetId) : featureId;
   }
 
   attributes.id.value = result;

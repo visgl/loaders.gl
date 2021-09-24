@@ -91,6 +91,12 @@ function getAttributeValueType(attribute) {
   return '';
 }
 
+function getFeatureIdsAttributeName(attributeStorageInfo) {
+  const objectIdsAttribute = attributeStorageInfo.find(attribute => attribute.name.includes('OBJECTID'));
+
+  return objectIdsAttribute?.name;
+}
+
 /**
  * Generates mapping featureId to feature attributes
  * @param {Array} attributes
@@ -99,13 +105,14 @@ function getAttributeValueType(attribute) {
  * @returns {Object}
  */
 function generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId) {
-  const objectIds = attributes.find((attribute) => attribute.value.OBJECTID);
+  const objectIdsAttributeName = getFeatureIdsAttributeName(attributeStorageInfo);
+  const objectIds = attributes.find((attribute) => attribute.value[objectIdsAttributeName]);
 
   if (!objectIds) {
     return null;
   }
 
-  const attributeIndex = objectIds.value.OBJECTID.indexOf(featureId);
+  const attributeIndex = objectIds.value[objectIdsAttributeName].indexOf(featureId);
 
   if (attributeIndex < 0) {
     return null;
