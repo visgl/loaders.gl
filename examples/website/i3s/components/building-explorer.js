@@ -70,7 +70,9 @@ export default class BuildingExplorer extends PureComponent {
   }
 
   _setChild(sublayer, isShown) {
+    const {onUpdateSublayerVisibility} = this.props;
     sublayer.show = isShown;
+    onUpdateSublayerVisibility(sublayer);
     this._setChildren(sublayer.sublayers, isShown);
   }
 
@@ -83,7 +85,9 @@ export default class BuildingExplorer extends PureComponent {
   }
 
   _toggleSublayer(sublayer) {
+    const {onUpdateSublayerVisibility} = this.props;
     sublayer.show = !sublayer.show;
+    onUpdateSublayerVisibility(sublayer);
     this._setChildren(sublayer.sublayers, sublayer.show);
     this.setState({updateCounter: this.state.updateCounter + 1});
   }

@@ -146,7 +146,7 @@ export default class ControlPanel extends PureComponent {
   }
 
   render() {
-    const {debugMode, sublayers, setMemoryVisibility} = this.props;
+    const {debugMode, sublayers, setMemoryVisibility, onUpdateSublayerVisibility} = this.props;
     return (
       <Container debugMode={debugMode}>
         {this._renderExamples()}
@@ -155,6 +155,7 @@ export default class ControlPanel extends PureComponent {
           <BuildingExplorer
             sublayers={sublayers}
             setMemoryVisibility={setMemoryVisibility}
+            onUpdateSublayerVisibility={onUpdateSublayerVisibility}
           ></BuildingExplorer>
         ) : null}
       </Container>
