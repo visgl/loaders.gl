@@ -232,11 +232,11 @@ export default class App extends PureComponent {
     const style = {
       display: 'flex',
       top: '125px'
-    }
+    };
     if (!showMemory) {
       style.display = 'none';
     }
-    if (sublayers?.length) {
+    if (sublayers.length) {
       style.top = '159px';
     }
     return <StatsWidgetContainer style={style} ref={(_) => (this._statsWidgetContainer = _)} />;

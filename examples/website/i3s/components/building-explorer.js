@@ -8,7 +8,7 @@ import {faAngleRight, faAngleDown, faCircle} from '@fortawesome/free-solid-svg-i
 import ToggleSwitch from './toggle-switch';
 
 const BuildingExplorerContainer = styled.div`
-  height: 450px;
+  height: ${(props) => (props.showExplorerTree ? '450px' : '36px')};
   overflow: auto;
   align-items: flex-start;
   position: absolute;
@@ -136,7 +136,7 @@ export default class BuildingExplorer extends PureComponent {
     const {sublayers, setMemoryVisibility} = this.props;
     const {showExplorerTree} = this.state;
     return (
-      <BuildingExplorerContainer style={{height: showExplorerTree ? undefined : '36px'}}>
+      <BuildingExplorerContainer showExplorerTree={showExplorerTree}>
         <CheckboxOption style={{marginRight: '16px', paddingBottom: 0}}>
           <Label htmlFor="BuildingExplorerToggle">BuildingExplorer</Label>
           <ToggleSwitch

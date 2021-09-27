@@ -1,3 +1,10 @@
+/**
+ * - deep copy the tree for React
+ * - filter "preview" layer
+ * - calculate the number of child nodes for each node (just in case)
+ * @param {*} sublayers
+ * @returns
+ */
 export function buildSublayersTree(sublayers) {
   const fullModel = sublayers.find((subtree) => subtree.modelName === 'FullModel');
   const result = postprocessNode(fullModel);
