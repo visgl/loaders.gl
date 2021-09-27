@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import {EXAMPLES} from '../examples';
 import {MAP_STYLES} from '../constants';
 import {DropDownStyle, Font, Color, Flex} from './styles';
+import BuildingExplorer from './building-explorer';
 
 const Container = styled.div`
   ${Flex}
@@ -11,10 +12,10 @@ const Container = styled.div`
   height: 105px;
   margin: 10px;
   line-height: 28px;
-  background: #0E111A;
+  background: #0e111a;
   border-radius: 8px;
   z-index: 15;
-  top: ${props => (props.debugMode ? "50px" : "0")};
+  top: ${(props) => (props.debugMode ? '50px' : '0')};
   @media (max-width: 768px) {
     width: 100vw;
     margin: 0;
@@ -73,13 +74,16 @@ const propTypes = {
   selectedMapStyle: PropTypes.string,
   mapStyles: PropTypes.object,
   debugMode: PropTypes.bool,
+  sublayers: PropTypes.array,
   onExampleChange: PropTypes.func,
-  onMapStyleChange: PropTypes.func
+  onMapStyleChange: PropTypes.func,
+  setMemoryVisibility: PropTypes.func
 };
 
 const defaultProps = {
   name: '',
-  debugMode: false
+  debugMode: false,
+  sublayers: []
 };
 
 const CUSTOM_EXAMPLE = 'Custom example';
@@ -126,8 +130,9 @@ export default class ControlPanel extends PureComponent {
       <MapContainer>
         <MapName>Base map</MapName>
         <DropDown
-        value={selectedMapStyle}
-        onChange={(evt) =>  onMapStyleChange({selectedMapStyle: evt.target.value})}>
+          value={selectedMapStyle}
+          onChange={(evt) => onMapStyleChange({selectedMapStyle: evt.target.value})}
+        >
           {Object.keys(mapStyles).map((key) => {
             return (
               <option key={key} value={mapStyles[key]}>
@@ -141,11 +146,17 @@ export default class ControlPanel extends PureComponent {
   }
 
   render() {
-    const {debugMode} = this.props;
+    const {debugMode, sublayers, setMemoryVisibility} = this.props;
     return (
       <Container debugMode={debugMode}>
         {this._renderExamples()}
         {this._renderMapStyles()}
+        {sublayers?.length ? (
+          <BuildingExplorer
+            sublayers={sublayers}
+            setMemoryVisibility={setMemoryVisibility}
+          ></BuildingExplorer>
+        ) : null}
       </Container>
     );
   }

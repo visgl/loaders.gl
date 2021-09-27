@@ -17,8 +17,9 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
-import { Color, Flex, Font } from './components/styles';
+import {Color, Flex, Font} from './components/styles';
 import {load} from '@loaders.gl/core';
+import {buildSublayersTree} from './helpers/sublayers';
 
 const TRANSITION_DURAITON = 4000;
 const BUILDING_SCENE_LAYER_TYPE = 'Building';
@@ -54,7 +55,7 @@ const StatsWidgetContainer = styled.div`
   padding: 24px;
   border-radius: 8px;
   line-height: 135%;
-  top: 125px;
+  top: 159px;
   bottom: auto;
   width: 277px;
   left: 10px;
@@ -77,10 +78,12 @@ export default class App extends PureComponent {
       selectedFeatureIndex: -1,
       isAttributesLoading: false,
       showMemory: true,
-      layerUrls: []
+      layerUrls: [],
+      sublayers: []
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
+    this._setMemoryVisibility = this._setMemoryVisibility.bind(this);
   }
 
   componentDidMount() {
@@ -109,16 +112,25 @@ export default class App extends PureComponent {
     this._onSelectTileset(tileset);
   }
 
-   /**
+  /**
    * Tries to get Building Scene Layer sublayer urls if exists.
-   * @param {string} tilesetUrl 
+   * @param {string} tilesetUrl
    * @returns {string[]} Sublayer urls or tileset url.
    * TODO Add filtration mode for sublayers which were selected by user.
    */
   async getLayerUrls(tilesetUrl) {
     try {
       const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
-      return tileset?.sublayers.map(sublayer => sublayer.url);
+      const sublayersTree = buildSublayersTree(tileset.header.sublayers);
+      this.setState({sublayers: sublayersTree.sublayers});
+      const urls = tileset?.sublayers
+        .map((sublayer) => sublayer.url)
+        .filter(
+          (url) =>
+            url !==
+            'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Admin_Building_v17/SceneServer/layers/0/sublayers/0'
+        );
+      return urls;
     } catch (e) {
       return [tilesetUrl];
     }
@@ -190,20 +202,21 @@ export default class App extends PureComponent {
       loadOptions.i3s = {token};
     }
     const layerType = metadata?.layers[0]?.layerType;
-    return layerUrls.map((url, index) => (
-      new Tile3DLayer({
-        id: `tile-layer-${index}`,
-        data: url,
-        loader: I3SLoader,
-        onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: () => this._updateStatWidgets(),
-        onTileUnload: () => this._updateStatWidgets(),
-        // TODO enable it when Building Scene Layer picking will be implemented.
-        pickable: layerType !== BUILDING_SCENE_LAYER_TYPE,
-        loadOptions,
-        highlightedObjectIndex: selectedFeatureIndex
-      })
-    ));
+    return layerUrls.map(
+      (url, index) =>
+        new Tile3DLayer({
+          id: `tile-layer-${index}`,
+          data: url,
+          loader: I3SLoader,
+          onTilesetLoad: this._onTilesetLoad.bind(this),
+          onTileLoad: () => this._updateStatWidgets(),
+          onTileUnload: () => this._updateStatWidgets(),
+          // TODO enable it when Building Scene Layer picking will be implemented.
+          pickable: layerType !== BUILDING_SCENE_LAYER_TYPE,
+          loadOptions,
+          highlightedObjectIndex: selectedFeatureIndex
+        })
+    );
   }
 
   async handleClick(info) {
@@ -226,21 +239,33 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
+    const {showMemory, sublayers} = this.state;
     // TODO - too verbose, get more default styling from stats widget?
-    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
+    const style = {
+      display: 'flex',
+      top: '125px'
+    };
+    if (!showMemory) {
+      style.display = 'none';
+    }
+    if (sublayers.length) {
+      style.top = '159px';
+    }
+    return <StatsWidgetContainer style={style} ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
   _renderControlPanel() {
-    const {name, selectedMapStyle, showMemory} = this.state;
+    const {name, selectedMapStyle, sublayers} = this.state;
     return (
       <ControlPanel
         name={name}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        selectedMapStyle={selectedMapStyle}>
-        <StatsWidgetWrapper showMemory={showMemory}>
-          {this._renderStats()}
-        </StatsWidgetWrapper>
+        setMemoryVisibility={this._setMemoryVisibility}
+        selectedMapStyle={selectedMapStyle}
+        sublayers={sublayers}
+      >
+        <StatsWidgetWrapper>{this._renderStats()}</StatsWidgetWrapper>
       </ControlPanel>
     );
   }
@@ -283,11 +308,11 @@ export default class App extends PureComponent {
 
   _renderMemory() {
     const {showMemory} = this.state;
-    return (
-      <StatsWidgetWrapper showMemory={showMemory}>
-       {this._renderStats()}
-      </StatsWidgetWrapper>
-    );
+    return <StatsWidgetWrapper showMemory={showMemory}>{this._renderStats()}</StatsWidgetWrapper>;
+  }
+
+  _setMemoryVisibility(isShown) {
+    this.setState({showMemory: isShown});
   }
 
   render() {
