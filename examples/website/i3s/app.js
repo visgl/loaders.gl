@@ -78,12 +78,16 @@ export default class App extends PureComponent {
       selectedFeatureIndex: -1,
       isAttributesLoading: false,
       showMemory: true,
-      layerUrls: [],
-      sublayers: []
+      flattenedSublayers: [],
+      sublayers: [],
+      sublayersUpdateCounter: 0
     };
+    this.needTransitionToTileset = true;
+
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
     this._setMemoryVisibility = this._setMemoryVisibility.bind(this);
+    this._updateSublayerVisibility = this._updateSublayerVisibility.bind(this);
   }
 
   componentDidMount() {
@@ -118,21 +122,19 @@ export default class App extends PureComponent {
    * @returns {string[]} Sublayer urls or tileset url.
    * TODO Add filtration mode for sublayers which were selected by user.
    */
-  async getLayerUrls(tilesetUrl) {
+  async getFlattenedSublayers(tilesetUrl) {
     try {
       const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
       const sublayersTree = buildSublayersTree(tileset.header.sublayers);
       this.setState({sublayers: sublayersTree.sublayers});
-      const urls = tileset?.sublayers
-        .map((sublayer) => sublayer.url)
-        .filter(
-          (url) =>
-            url !==
-            'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Admin_Building_v17/SceneServer/layers/0/sublayers/0'
-        );
-      return urls;
+      const sublayers = tileset?.sublayers
+        .filter((sublayer) => sublayer.name !== 'Overview')
+        .map((sublayer) => {
+          return sublayer;
+        });
+      return sublayers;
     } catch (e) {
-      return [tilesetUrl];
+      return [{url: tilesetUrl, visibility: true}];
     }
   }
 
@@ -141,8 +143,9 @@ export default class App extends PureComponent {
     const {tilesetUrl, token, name, metadataUrl} = params;
     this.setState({tilesetUrl, name, token});
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    const layerUrls = await this.getLayerUrls(tilesetUrl);
-    this.setState({metadata, selectedFeatureAttributes: null, layerUrls});
+    const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
+    this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});
+    this.needTransitionToTileset = true;
   }
 
   // Updates stats, called every frame
@@ -155,22 +158,24 @@ export default class App extends PureComponent {
     const {zoom, cartographicCenter} = tileset;
     const [longitude, latitude] = cartographicCenter;
 
-    const viewState = {
-      ...this.state.viewState,
-      zoom: zoom + 2.5,
-      longitude,
-      latitude
-    };
-
-    this.setState({
-      tileset,
-      viewState: {
-        ...viewState,
-        transitionDuration: TRANSITION_DURAITON,
-        transitionInterpolator: new FlyToInterpolator()
-      }
-    });
-
+    if (this.needTransitionToTileset) {
+      const viewState = {
+        ...this.state.viewState,
+        zoom: zoom + 2.5,
+        longitude,
+        latitude
+      };
+  
+      this.setState({
+        tileset,
+        viewState: {
+          ...viewState,
+          transitionDuration: TRANSITION_DURAITON,
+          transitionInterpolator: new FlyToInterpolator()
+        }
+      });
+      this.needTransitionToTileset = false;
+    }
     this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
@@ -183,28 +188,30 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {layerUrls, token, selectedFeatureIndex, metadata} = this.state;
+    const {flattenedSublayers, token, selectedFeatureIndex, metadata} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {};
     if (token) {
       loadOptions.i3s = {token};
     }
     const layerType = metadata?.layers[0]?.layerType;
-    return layerUrls.map(
-      (url, index) =>
-        new Tile3DLayer({
-          id: `tile-layer-${index}`,
-          data: url,
-          loader: I3SLoader,
-          onTilesetLoad: this._onTilesetLoad.bind(this),
-          onTileLoad: () => this._updateStatWidgets(),
-          onTileUnload: () => this._updateStatWidgets(),
-          // TODO enable it when Building Scene Layer picking will be implemented.
-          pickable: layerType !== BUILDING_SCENE_LAYER_TYPE,
-          loadOptions,
-          highlightedObjectIndex: selectedFeatureIndex
-        })
-    );
+    return flattenedSublayers
+      .filter((sublayer) => sublayer.visibility)
+      .map(
+        (sublayer) =>
+          new Tile3DLayer({
+            id: `tile-layer-${sublayer.id}`,
+            data: sublayer.url,
+            loader: I3SLoader,
+            onTilesetLoad: this._onTilesetLoad.bind(this),
+            onTileLoad: () => this._updateStatWidgets(),
+            onTileUnload: () => this._updateStatWidgets(),
+            // TODO enable it when Building Scene Layer picking will be implemented.
+            pickable: layerType !== BUILDING_SCENE_LAYER_TYPE,
+            loadOptions,
+            highlightedObjectIndex: selectedFeatureIndex
+          })
+      );
   }
 
   async handleClick(info) {
@@ -242,6 +249,19 @@ export default class App extends PureComponent {
     return <StatsWidgetContainer style={style} ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
+  _updateSublayerVisibility(sublayer) {
+    if (sublayer.layerType === '3DObject') {
+      const {flattenedSublayers, sublayersUpdateCounter} = this.state;
+      const flattenedSublayer = flattenedSublayers.find(
+        (fSublayer) => fSublayer.id === sublayer.id
+      );
+      if (flattenedSublayer) {
+        flattenedSublayer.visibility = sublayer.visibility;
+        this.setState({sublayersUpdateCounter: sublayersUpdateCounter + 1});
+      }
+    }
+  }
+
   _renderControlPanel() {
     const {name, selectedMapStyle, sublayers} = this.state;
     return (
@@ -250,6 +270,7 @@ export default class App extends PureComponent {
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
         setMemoryVisibility={this._setMemoryVisibility}
+        onUpdateSublayerVisibility={this._updateSublayerVisibility}
         selectedMapStyle={selectedMapStyle}
         sublayers={sublayers}
       >
