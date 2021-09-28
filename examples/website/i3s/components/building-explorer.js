@@ -71,7 +71,7 @@ export default class BuildingExplorer extends PureComponent {
 
   _setChild(sublayer, isShown) {
     const {onUpdateSublayerVisibility} = this.props;
-    sublayer.show = isShown;
+    sublayer.visibility = isShown;
     onUpdateSublayerVisibility(sublayer);
     this._setChildren(sublayer.sublayers, isShown);
   }
@@ -86,9 +86,9 @@ export default class BuildingExplorer extends PureComponent {
 
   _toggleSublayer(sublayer) {
     const {onUpdateSublayerVisibility} = this.props;
-    sublayer.show = !sublayer.show;
+    sublayer.visibility = !sublayer.visibility;
     onUpdateSublayerVisibility(sublayer);
-    this._setChildren(sublayer.sublayers, sublayer.show);
+    this._setChildren(sublayer.sublayers, sublayer.visibility);
     this.setState({updateCounter: this.state.updateCounter + 1});
   }
 
@@ -123,8 +123,8 @@ export default class BuildingExplorer extends PureComponent {
             <label>
               <Checkbox
                 id={`CheckBox${sublayer.id}`}
-                value={sublayer.show}
-                checked={sublayer.show}
+                value={sublayer.visibility}
+                checked={sublayer.visibility}
                 onChange={() => this._toggleSublayer(sublayer)}
               />
               <CheckboxSpan>{sublayer.name}</CheckboxSpan>

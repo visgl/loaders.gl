@@ -130,12 +130,11 @@ export default class App extends PureComponent {
       const sublayers = tileset?.sublayers
         .filter((sublayer) => sublayer.name !== 'Overview')
         .map((sublayer) => {
-          sublayer.show = true;
           return sublayer;
         });
       return sublayers;
     } catch (e) {
-      return [{url: tilesetUrl, show: true}];
+      return [{url: tilesetUrl, visibility: true}];
     }
   }
 
@@ -197,7 +196,7 @@ export default class App extends PureComponent {
     }
     const layerType = metadata?.layers[0]?.layerType;
     return flattenedSublayers
-      .filter((sublayer) => sublayer.show)
+      .filter((sublayer) => sublayer.visibility)
       .map(
         (sublayer) =>
           new Tile3DLayer({
@@ -257,7 +256,7 @@ export default class App extends PureComponent {
         (fSublayer) => fSublayer.id === sublayer.id
       );
       if (flattenedSublayer) {
-        flattenedSublayer.show = sublayer.show;
+        flattenedSublayer.visibility = sublayer.visibility;
         this.setState({sublayersUpdateCounter: sublayersUpdateCounter + 1});
       }
     }

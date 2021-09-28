@@ -13,7 +13,6 @@ export function buildSublayersTree(sublayers) {
 
 function postprocessNode(sublayer) {
   const sublayerCopy = {...sublayer, sublayers: undefined};
-  sublayerCopy.show = true;
   sublayerCopy.expanded = false;
   if (sublayer.sublayers?.length) {
     const {childNodesCount, sublayersCopy} = postrocessSublayers(sublayer.sublayers);
