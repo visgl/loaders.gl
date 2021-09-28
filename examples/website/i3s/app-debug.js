@@ -318,7 +318,7 @@ export default class App extends PureComponent {
     this._updateStatWidgets();
   }
 
-  _updateTilestsList(tileset) {
+  _addTileset(tileset) {
     const {loadedTilesets} = this.state;
 
     if (!loadedTilesets.some(loadedTileset => loadedTileset.basePath === tileset.basePath)) {
@@ -330,7 +330,7 @@ export default class App extends PureComponent {
     const {zoom, cartographicCenter} = tileset;
     const [longitude, latitude] = cartographicCenter;
 
-    this._updateTilestsList(tileset);
+    this._addTileset(tileset);
     // TODO Should we change view state for each tileset is being loaded?
     this.setState({
       viewState: {
