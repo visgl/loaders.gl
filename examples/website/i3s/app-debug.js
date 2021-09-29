@@ -294,14 +294,10 @@ export default class App extends PureComponent {
    */
   async getFlattenedSublayers(tilesetUrl) {
     try {
-      const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
+      const mainTileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
       const sublayersTree = buildSublayersTree(tileset.header.sublayers);
       this.setState({sublayers: sublayersTree.sublayers});
-      const sublayers = tileset?.sublayers
-        .filter((sublayer) => sublayer.name !== 'Overview')
-        .map((sublayer) => {
-          return sublayer;
-        });
+      const sublayers = mainTileset?.sublayers.filter((sublayer) => sublayer.name !== 'Overview');
       return sublayers;
     } catch (e) {
       return [{url: tilesetUrl, visibility: true}];
