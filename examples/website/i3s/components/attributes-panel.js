@@ -8,7 +8,7 @@ import {Flex} from './styles';
 const Container = styled.div`
   ${Flex}
   color: rgba(255, 255, 255, .6);
-  background: #0E111A;
+  background: #0e111a;
   flex-flow: column;
   right: 0;
   margin: 15px;
@@ -23,8 +23,8 @@ const Container = styled.div`
 
   @media (max-width: 768px) {
     margin: 0;
-    top:  ${props => (props.isControlPanelShown ? '95px' : '10px')};
-    max-height: ${props => (props.isControlPanelShown ? 'calc(75% - 95px)' : 'calc(75% - 10px)')};
+    top: ${(props) => (props.isControlPanelShown ? '95px' : '10px')};
+    max-height: ${(props) => (props.isControlPanelShown ? 'calc(75% - 95px)' : 'calc(75% - 10px)')};
     border-radius: 0;
     width: 300px;
   }
@@ -78,7 +78,7 @@ const defaultProps = {
 
 const HEADER_STYLE = {
   color: 'white'
-}
+};
 
 const NO_DATA = 'No Data';
 export default class AttributesPanel extends PureComponent {

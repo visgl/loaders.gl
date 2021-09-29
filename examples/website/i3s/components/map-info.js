@@ -54,7 +54,7 @@ const propTypes = {
 
 const defaultProps = {
   showFullInfo: false
-}
+};
 
 export default class MapInfoPanel extends PureComponent {
   constructor(props) {
@@ -63,41 +63,40 @@ export default class MapInfoPanel extends PureComponent {
       showFullInfo: false
     };
   }
-    render() {
-      const {metadata, token, isMinimapShown} = this.props;
-      const {showFullInfo} = this.props;
-      const serviceItemId = metadata?.serviceItemId;
+  render() {
+    const {metadata, token, isMinimapShown} = this.props;
+    const {showFullInfo} = this.props;
+    const serviceItemId = metadata?.serviceItemId;
 
-      if (!serviceItemId) {
-        return null;
-      }
-
-      let url = `https://www.arcgis.com/home/item.html?id=${serviceItemId}`;
-      if (token) {
-        url = `${url}&token=${token}`;
-      }
-      
-      return (
-        <FrameWrap isMinimapShown={isMinimapShown}>
-          <iframe
-            id="tileset-info"
-            title="tileset-info"
-            style={IFRAME_STYLES(showFullInfo)}
-            src={url}
-          >
-          </iframe>
-          <ArcGisContainer>
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href={`https://www.arcgis.com/home/item.html?id=${serviceItemId}`}
-            >
-              Go to ArcGiS
-            </a>
-          </ArcGisContainer>
-        </FrameWrap>
-      );
+    if (!serviceItemId) {
+      return null;
     }
+
+    let url = `https://www.arcgis.com/home/item.html?id=${serviceItemId}`;
+    if (token) {
+      url = `${url}&token=${token}`;
+    }
+
+    return (
+      <FrameWrap isMinimapShown={isMinimapShown}>
+        <iframe
+          id="tileset-info"
+          title="tileset-info"
+          style={IFRAME_STYLES(showFullInfo)}
+          src={url}
+        ></iframe>
+        <ArcGisContainer>
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href={`https://www.arcgis.com/home/item.html?id=${serviceItemId}`}
+          >
+            Go to ArcGiS
+          </a>
+        </ArcGisContainer>
+      </FrameWrap>
+    );
+  }
 }
 
 MapInfoPanel.propTypes = propTypes;

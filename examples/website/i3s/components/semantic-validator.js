@@ -8,9 +8,9 @@ const SemanticValidatorContainer = styled.div`
   left: 25%;
   right: 25%;
   bottom: 10px;
-  color: rgba(255, 255, 255, .6);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 16px;
-  background: #0E111A;
+  background: #0e111a;
   z-index: 17;
   line-height: 135%;
   border-radius: 8px;
@@ -37,7 +37,7 @@ const TableHeader = styled.th`
   position: sticky;
   top: 0;
   text-align: left;
-  background: #0E111A;
+  background: #0e111a;
   padding: 8px;
   height: 22px;
 `;
@@ -51,7 +51,7 @@ const NoIssuesItem = styled.h4`
 const TR_STYLE = {
   color: 'rgba(255, 255, 255, .3)',
   margin: '8px 0'
-}
+};
 
 const NO_ISSUES = 'No Issues';
 
@@ -115,8 +115,11 @@ export default class SemanticValidator extends PureComponent {
           <tr style={TR_STYLE}>
             <TableHeader>{COLUMN_NUMBER}</TableHeader>
             <TableHeader>{WARNING_TYPE}</TableHeader>
-            <TableHeader>{WARNING}
-              <button style={this._clearButtonStyles()} onClick={clearWarnings}>Clear All</button>
+            <TableHeader>
+              {WARNING}
+              <button style={this._clearButtonStyles()} onClick={clearWarnings}>
+                Clear All
+              </button>
             </TableHeader>
           </tr>
         </thead>

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import React, {PureComponent}from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
 import DebugOptionGroup from './debug-option-group';
@@ -16,16 +16,16 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   z-index: 20;
-  top: ${props => (props.renderControlPanel ? "170px" : "60px")};
+  top: ${(props) => (props.renderControlPanel ? '170px' : '60px')};
   left: 10px;
   -moz-user-select: none;
   -khtml-user-select: none;
   user-select: none;
-  padding:  10px 15px 5px 15px;
+  padding: 10px 15px 5px 15px;
   box-sizing: border-box;
   border-radius: 8px;
   width: 278px;
-  height: ${props => (props.renderControlPanel ? "calc(100% - 170px)" : "calc(100% - 60px)")};
+  height: ${(props) => (props.renderControlPanel ? 'calc(100% - 170px)' : 'calc(100% - 60px)')};
   max-height: 540px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -62,7 +62,7 @@ const DropDown = styled.select`
 
 const Label = styled.label`
   cursor: pointer;
-  color: rgba(255,255,255,.6);
+  color: rgba(255, 255, 255, 0.6);
   font-weight: bold;
 `;
 
@@ -96,7 +96,7 @@ const propTypes = {
   onDebugOptionsChange: PropTypes.func,
   clearWarnings: PropTypes.func,
   debugTextureImage: PropTypes.string,
-  debugOptions: PropTypes.object,
+  debugOptions: PropTypes.object
 };
 
 const defaultProps = {
@@ -124,7 +124,6 @@ export default class DebugPanel extends PureComponent {
             onDebugOptionsChange({boundingVolumeColorMode: parseInt(evt.target.value, 10)})
           }
         >
-        
           {Object.keys(BOUNDING_VOLUME_COLOR_MODES).map((key) => {
             return (
               <option key={key} value={BOUNDING_VOLUME_COLOR_MODES[key]}>
@@ -165,7 +164,9 @@ export default class DebugPanel extends PureComponent {
 
   _renderBoundingVolume() {
     const {
-      debugOptions: {boundingVolume}, onDebugOptionsChange} = this.props;
+      debugOptions: {boundingVolume},
+      onDebugOptionsChange
+    } = this.props;
     return (
       <DebugOptionGroup>
         <CheckboxOption style={CHECKBOX_STYLE}>
@@ -180,16 +181,13 @@ export default class DebugPanel extends PureComponent {
         {boundingVolume ? this._renderBoundingVolumeTypes() : null}
         {boundingVolume ? this._renderBoundingVolumeColor() : null}
       </DebugOptionGroup>
-    )
+    );
   }
 
   _renderDebugTextureImage() {
     return (
       <DebugTextureContainer>
-        <img 
-        src={this.props.debugTextureImage} 
-        alt="Debug Texture Image" 
-        width="100%" />
+        <img src={this.props.debugTextureImage} alt="Debug Texture Image" width="100%" />
       </DebugTextureContainer>
     );
   }
@@ -206,13 +204,13 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         <CheckboxOption>
           <label>
-          <Checkbox
-            id="loadTiles"
-            value={loadTiles}
-            checked={loadTiles}
-            onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
-          />
-          <CheckboxSpan>Load tiles</CheckboxSpan>
+            <Checkbox
+              id="loadTiles"
+              value={loadTiles}
+              checked={loadTiles}
+              onChange={() => onDebugOptionsChange({loadTiles: !loadTiles})}
+            />
+            <CheckboxSpan>Load tiles</CheckboxSpan>
           </label>
         </CheckboxOption>
         <CheckboxOption>
@@ -221,8 +219,8 @@ export default class DebugPanel extends PureComponent {
               id="pickable"
               value={pickable}
               checked={pickable}
-              onChange={() => onDebugOptionsChange({pickable: !pickable})}>
-            </Checkbox>
+              onChange={() => onDebugOptionsChange({pickable: !pickable})}
+            ></Checkbox>
             <CheckboxSpan>Picking</CheckboxSpan>
           </label>
         </CheckboxOption>
@@ -254,7 +252,9 @@ export default class DebugPanel extends PureComponent {
           <DropDown
             id="color"
             value={tileColorMode}
-            onChange={(evt) => onDebugOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})}
+            onChange={(evt) =>
+              onDebugOptionsChange({tileColorMode: parseInt(evt.target.value, 10)})
+            }
           >
             {Object.keys(TILE_COLOR_MODES).map((key) => {
               return (
@@ -270,7 +270,10 @@ export default class DebugPanel extends PureComponent {
   }
 
   _renderMiniMap() {
-    const {debugOptions: {minimapViewport}, onDebugOptionsChange} = this.props;
+    const {
+      debugOptions: {minimapViewport},
+      onDebugOptionsChange
+    } = this.props;
     return (
       <CheckboxOption>
         <label>
@@ -283,7 +286,7 @@ export default class DebugPanel extends PureComponent {
           <CheckboxSpan>Different viewports</CheckboxSpan>
         </label>
       </CheckboxOption>
-    )
+    );
   }
 
   _renderFrustumCullingOption() {

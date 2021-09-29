@@ -132,4 +132,3 @@ export function makeRGBObjectFromColor(color) {
   }
   return {r: color[0], g: color[1], b: color[2]};
 }
-

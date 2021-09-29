@@ -1,8 +1,8 @@
 import {COLORED_BY} from './color-map';
 
 export const MAP_STYLES = {
-  'Light': 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json',
-  'Dark': 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json'
+  Light: 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json',
+  Dark: 'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json'
 };
 
 export const CONTRAST_MAP_STYLES = {
@@ -17,7 +17,7 @@ export const CONTRAST_MAP_STYLES = {
 export const INITIAL_MAP_STYLE = MAP_STYLES['Dark'];
 
 export const TILE_COLOR_MODES = {
-  'Original': COLORED_BY.ORIGINAL,
+  Original: COLORED_BY.ORIGINAL,
   'Random by tile': COLORED_BY.RANDOM,
   'By depth': COLORED_BY.DEPTH,
   'User selected': COLORED_BY.CUSTOM
@@ -26,7 +26,7 @@ export const TILE_COLOR_MODES = {
 export const INITIAL_TILE_COLOR_MODE = COLORED_BY.ORIGINAL;
 
 export const BOUNDING_VOLUME_COLOR_MODES = {
-  'White': COLORED_BY.ORIGINAL,
+  White: COLORED_BY.ORIGINAL,
   'By tile': COLORED_BY.TILE
 };
 
