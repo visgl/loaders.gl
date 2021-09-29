@@ -75,14 +75,16 @@ const propTypes = {
   mapStyles: PropTypes.object,
   debugMode: PropTypes.bool,
   sublayers: PropTypes.array,
+  isBuildingExplorerShown: PropTypes.bool,
   onExampleChange: PropTypes.func,
   onMapStyleChange: PropTypes.func,
-  setMemoryVisibility: PropTypes.func
+  onToggleBuildingExplorer: PropTypes.func
 };
 
 const defaultProps = {
   name: '',
   debugMode: false,
+  isBuildingExplorerShown: false,
   sublayers: []
 };
 
@@ -146,18 +148,25 @@ export default class ControlPanel extends PureComponent {
   }
 
   render() {
-    const {debugMode, sublayers, setMemoryVisibility, onUpdateSublayerVisibility} = this.props;
+    const {
+      debugMode,
+      sublayers,
+      onToggleBuildingExplorer,
+      onUpdateSublayerVisibility,
+      isBuildingExplorerShown
+    } = this.props;
     return (
       <Container debugMode={debugMode}>
         {this._renderExamples()}
         {this._renderMapStyles()}
-        {sublayers?.length ? (
+        {sublayers?.length && (
           <BuildingExplorer
             sublayers={sublayers}
-            setMemoryVisibility={setMemoryVisibility}
+            onToggleBuildingExplorer={onToggleBuildingExplorer}
             onUpdateSublayerVisibility={onUpdateSublayerVisibility}
+            isShown={isBuildingExplorerShown}
           ></BuildingExplorer>
-        ) : null}
+        )}
       </Container>
     );
   }

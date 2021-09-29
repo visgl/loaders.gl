@@ -16,7 +16,8 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   z-index: 20;
-  top: ${(props) => (props.renderControlPanel ? '170px' : '60px')};
+  top: ${(props) =>
+    props.renderControlPanel ? (props.hasBuildingExplore ? '209px' : '170px') : '60px'};
   left: 10px;
   -moz-user-select: none;
   -khtml-user-select: none;
@@ -96,12 +97,14 @@ const propTypes = {
   onDebugOptionsChange: PropTypes.func,
   clearWarnings: PropTypes.func,
   debugTextureImage: PropTypes.string,
-  debugOptions: PropTypes.object
+  debugOptions: PropTypes.object,
+  hasBuildingExplorer: PropTypes.bool
 };
 
 const defaultProps = {
   clearWarnings: () => {},
-  onDebugOptionsChange: () => {}
+  onDebugOptionsChange: () => {},
+  hasBuildingExplorer: false
 };
 
 export default class DebugPanel extends PureComponent {
@@ -311,9 +314,13 @@ export default class DebugPanel extends PureComponent {
   }
 
   render() {
-    const {renderControlPanel} = this.props;
+    const {renderControlPanel, hasBuildingExplorer} = this.props;
     return (
-      <Container className="debug-panel" renderControlPanel={renderControlPanel}>
+      <Container
+        className="debug-panel"
+        renderControlPanel={renderControlPanel}
+        hasBuildingExplore={hasBuildingExplorer}
+      >
         <Header>Debug Panel</Header>
         {this._renderFrustumCullingOption()}
         {this._renderTileOptions()}
