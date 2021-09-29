@@ -127,11 +127,7 @@ export default class App extends PureComponent {
       const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
       const sublayersTree = buildSublayersTree(tileset.header.sublayers);
       this.setState({sublayers: sublayersTree.sublayers});
-      const sublayers = tileset?.sublayers
-        .filter((sublayer) => sublayer.name !== 'Overview')
-        .map((sublayer) => {
-          return sublayer;
-        });
+      const sublayers = tileset?.sublayers.filter((sublayer) => sublayer.name !== 'Overview');
       return sublayers;
     } catch (e) {
       return [{url: tilesetUrl, visibility: true}];
@@ -141,7 +137,7 @@ export default class App extends PureComponent {
   async _onSelectTileset(tileset) {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
-    this.setState({tilesetUrl, name, token});
+    this.setState({tilesetUrl, name, token, sublayers: []});
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});

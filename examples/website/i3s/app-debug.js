@@ -295,7 +295,7 @@ export default class App extends PureComponent {
   async getFlattenedSublayers(tilesetUrl) {
     try {
       const mainTileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
-      const sublayersTree = buildSublayersTree(tileset.header.sublayers);
+      const sublayersTree = buildSublayersTree(mainTileset.header.sublayers);
       this.setState({sublayers: sublayersTree.sublayers});
       const sublayers = mainTileset?.sublayers.filter((sublayer) => sublayer.name !== 'Overview');
       return sublayers;
@@ -636,7 +636,7 @@ export default class App extends PureComponent {
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
         debugOptions={debugOptions}
         renderControlPanel={controlPanel}
-        hasBuildingExplorer={sublayers.length}
+        hasBuildingExplorer={Boolean(sublayers.length)}
       ></DebugPanel>
     );
   }

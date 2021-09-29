@@ -159,14 +159,14 @@ export default class ControlPanel extends PureComponent {
       <Container debugMode={debugMode}>
         {this._renderExamples()}
         {this._renderMapStyles()}
-        {sublayers?.length && (
+        {sublayers?.length ? (
           <BuildingExplorer
             sublayers={sublayers}
             onToggleBuildingExplorer={onToggleBuildingExplorer}
             onUpdateSublayerVisibility={onUpdateSublayerVisibility}
             isShown={isBuildingExplorerShown}
           ></BuildingExplorer>
-        )}
+        ) : null}
       </Container>
     );
   }
