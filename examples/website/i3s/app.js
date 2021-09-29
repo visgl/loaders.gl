@@ -165,7 +165,7 @@ export default class App extends PureComponent {
         longitude,
         latitude
       };
-  
+
       this.setState({
         tileset,
         viewState: {

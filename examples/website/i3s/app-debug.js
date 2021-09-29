@@ -56,7 +56,7 @@ import {
   selectOriginalTextureForTile,
   selectOriginalTextureForTileset
 } from './utils/texture-selector-utils';
-import { Color, Flex, Font } from './components/styles';
+import {Color, Flex, Font} from './components/styles';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
@@ -153,14 +153,14 @@ const TILE_COLOR_SELECTOR = 'Tile Color Selector';
 
 const HEADER_STYLE = {
   color: 'white'
-}
+};
 
 const CURSOR_STYLE = {
   cursor: 'pointer'
-}
+};
 
 const StatsWidgetWrapper = styled.div`
-  display: ${props => props.showMemory ? 'inherit' : 'none'};
+  display: ${(props) => (props.showMemory ? 'inherit' : 'none')};
 `;
 
 const StatsWidgetContainer = styled.div`
@@ -180,8 +180,9 @@ const StatsWidgetContainer = styled.div`
   overflow: auto;
 
   @media (max-width: 768px) {
-    top: ${props => (props.renderControlPanel ? "85px" : "10px")};
-    max-height: ${props => (props.renderControlPanel ? "calc(100% - 145px)" : "calc(100% - 70px)")};
+    top: ${(props) => (props.renderControlPanel ? '85px' : '10px')};
+    max-height: ${(props) =>
+      props.renderControlPanel ? 'calc(100% - 145px)' : 'calc(100% - 70px)'};
     right: 0px;
     border-radius: 0px;
   }
@@ -281,14 +282,14 @@ export default class App extends PureComponent {
 
   /**
    * Tries to get Building Scene Layer sublayer urls if exists.
-   * @param {string} tilesetUrl 
+   * @param {string} tilesetUrl
    * @returns {string[]} Sublayer urls or tileset url.
    * TODO Add filtration mode for sublayers which were selected by user.
    */
   async getLayerUrls(tilesetUrl) {
     try {
       const mainTileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
-      return mainTileset?.sublayers.map(sublayer => sublayer.url);
+      return mainTileset?.sublayers.map((sublayer) => sublayer.url);
     } catch (e) {
       return [tilesetUrl];
     }
@@ -321,7 +322,7 @@ export default class App extends PureComponent {
   _addTileset(tileset) {
     const {loadedTilesets} = this.state;
 
-    if (!loadedTilesets.some(loadedTileset => loadedTileset.basePath === tileset.basePath)) {
+    if (!loadedTilesets.some((loadedTileset) => loadedTileset.basePath === tileset.basePath)) {
       this.setState({loadedTilesets: [...loadedTilesets, tileset]});
     }
   }
@@ -389,7 +390,7 @@ export default class App extends PureComponent {
       });
     }
   }
-  
+
   _onSelectMapStyle({selectedMapStyle}) {
     this.setState({selectedMapStyle});
   }
@@ -407,7 +408,7 @@ export default class App extends PureComponent {
       debugOptions: {showUVDebugTexture}
     } = this.state;
     if (debugOptions.showUVDebugTexture !== showUVDebugTexture) {
-      loadedTilesets.forEach(tileset => {
+      loadedTilesets.forEach((tileset) => {
         if (debugOptions.showUVDebugTexture) {
           selectDebugTextureForTileset(tileset, this._uvDebugTexture);
         } else {
@@ -419,7 +420,7 @@ export default class App extends PureComponent {
     const {minimapViewport, loadTiles} = debugOptions;
     const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
 
-    loadedTilesets.forEach(tileset => {
+    loadedTilesets.forEach((tileset) => {
       tileset.setOptions({
         viewportTraversersMap,
         loadTiles
@@ -468,7 +469,7 @@ export default class App extends PureComponent {
   }
 
   _getAllTilesFromTilesets(tilesets) {
-    const allTiles = tilesets.map(tileset => tileset.tiles);
+    const allTiles = tilesets.map((tileset) => tileset.tiles);
     return allTiles.flat();
   }
 
@@ -526,24 +527,25 @@ export default class App extends PureComponent {
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
 
-    const tile3dLayers = layerUrls.map((url, index) => 
-      new Tile3DLayer({
-        id: `tile-layer-${index}`,
-        data: url,
-        loader: I3SLoader,
-        onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: this._onTileLoad.bind(this),
-        onTileUnload: this._onTileUnload.bind(this),
-        loadOptions,
-        pickable,
-        autoHighlight: true,
-        _subLayerProps: {
-          mesh: {
-            wireframe
-          }
-        },
-        _getMeshColor: this.getMeshColor.bind(this)
-      }),
+    const tile3dLayers = layerUrls.map(
+      (url, index) =>
+        new Tile3DLayer({
+          id: `tile-layer-${index}`,
+          data: url,
+          loader: I3SLoader,
+          onTilesetLoad: this._onTilesetLoad.bind(this),
+          onTileLoad: this._onTileLoad.bind(this),
+          onTileUnload: this._onTileUnload.bind(this),
+          loadOptions,
+          pickable,
+          autoHighlight: true,
+          _subLayerProps: {
+            mesh: {
+              wireframe
+            }
+          },
+          _getMeshColor: this.getMeshColor.bind(this)
+        })
     );
 
     return [
@@ -581,24 +583,30 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
-    const { debugOptions: {controlPanel}} = this.state;
+    const {
+      debugOptions: {controlPanel}
+    } = this.state;
     // TODO - too verbose, get more default styling from stats widget?
-    return <StatsWidgetContainer renderControlPanel={controlPanel} ref={(_) => (this._statsWidgetContainer = _)} />;
+    return (
+      <StatsWidgetContainer
+        renderControlPanel={controlPanel}
+        ref={(_) => (this._statsWidgetContainer = _)}
+      />
+    );
   }
 
   _renderMemory() {
     const {
       debugOptions: {showMemory}
     } = this.state;
-    return (
-      <StatsWidgetWrapper showMemory={showMemory}>
-       {this._renderStats()}
-      </StatsWidgetWrapper>
-    );
+    return <StatsWidgetWrapper showMemory={showMemory}>{this._renderStats()}</StatsWidgetWrapper>;
   }
 
   _renderDebugPanel() {
-    const {debugOptions, debugOptions: {controlPanel}} = this.state;
+    const {
+      debugOptions,
+      debugOptions: {controlPanel}
+    } = this.state;
 
     return (
       <DebugPanel
@@ -606,8 +614,8 @@ export default class App extends PureComponent {
         clearWarnings={this.handleClearWarnings}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
         debugOptions={debugOptions}
-        renderControlPanel={controlPanel}>
-      </DebugPanel>
+        renderControlPanel={controlPanel}
+      ></DebugPanel>
     );
   }
 
@@ -619,12 +627,18 @@ export default class App extends PureComponent {
         name={name}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        selectedMapStyle={selectedMapStyle}/>
+        selectedMapStyle={selectedMapStyle}
+      />
     );
   }
 
   _renderInfo() {
-    const {debugOptions: {showFullInfo}, token, metadata, debugOptions: {minimap}} = this.state;
+    const {
+      debugOptions: {showFullInfo},
+      token,
+      metadata,
+      debugOptions: {minimap}
+    } = this.state;
     return (
       <MapInfoPanel
         showFullInfo={showFullInfo}
@@ -637,12 +651,7 @@ export default class App extends PureComponent {
 
   _renderToolPanel() {
     const {debugOptions} = this.state;
-    return (
-      <ToolBar 
-        onDebugOptionsChange={this._setDebugOptions}
-        debugOptions={debugOptions}
-      />
-    )
+    return <ToolBar onDebugOptionsChange={this._setDebugOptions} debugOptions={debugOptions} />;
   }
 
   _layerFilter({layer, viewport}) {
@@ -725,7 +734,7 @@ export default class App extends PureComponent {
       marginTop: '10px',
       cursor: isResetButtonDisabled ? 'auto' : 'pointer',
       color: isResetButtonDisabled ? 'rgba(255,255,255,.6)' : 'white',
-      background: isResetButtonDisabled ? '#0E111A' : '#4F52CC',
+      background: isResetButtonDisabled ? '#0E111A' : '#4F52CC'
     };
   }
 
@@ -832,14 +841,17 @@ export default class App extends PureComponent {
 
   _renderSemanticValidator() {
     const {warnings} = this.state;
-    return (
-      <SemanticValidator warnings={warnings} clearWarnings={this.handleClearWarnings}/>
-    )
+    return <SemanticValidator warnings={warnings} clearWarnings={this.handleClearWarnings} />;
   }
 
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle, selectedTile, tileInfo, debugOptions: {debugPanel, showFullInfo, controlPanel, semanticValidator}} = this.state;
+    const {
+      selectedMapStyle,
+      selectedTile,
+      tileInfo,
+      debugOptions: {debugPanel, showFullInfo, controlPanel, semanticValidator}
+    } = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>

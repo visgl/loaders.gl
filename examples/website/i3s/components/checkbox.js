@@ -61,6 +61,6 @@ export const CheckboxOption = styled.div`
 `;
 
 export const CheckboxSpan = styled.span`
-  margin-left: 5; 
+  margin-left: 5;
   cursor: pointer;
 `;

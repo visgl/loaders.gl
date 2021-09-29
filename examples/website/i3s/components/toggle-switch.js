@@ -1,5 +1,5 @@
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
 const Input = styled.input`
   height: 0;
@@ -16,7 +16,7 @@ const Label = styled.label`
   width: 28px;
   height: 18px;
   border-radius: 8px;
-  cursor: ${props => (props.disabled ? "not-allowed" : "pointer")};
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
   ${Input} {
     opacity: 0;
     width: 0;
@@ -41,17 +41,16 @@ const Slider = styled.span`
     position: absolute;
     top: 2px;
     left: 2px;
-    content: "";
+    content: '';
     width: 13px;
     height: 13px;
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     transition: 0.4s;
     border-radius: 8px;
   }
 
   ${Input}:checked + & {
-    background: #4F52CC;
-;
+    background: #4f52cc;
   }
 
   ${Input}:checked + &::before {
@@ -61,13 +60,7 @@ const Slider = styled.span`
   }
 `;
 
-export default function ToggleSwitch({
-  checked,
-  onChange,
-  name,
-  id,
-  title
-}) {
+export default function ToggleSwitch({checked, onChange, name, id, title}) {
   return (
     <Label htmlFor={id} title={title}>
       <Input
