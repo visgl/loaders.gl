@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/potree",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "potree loaders for large point clouds.",
   "license": "MIT",
   "publishConfig": {
@@ -22,8 +22,8 @@
     "pointcloud"
   ],
   "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -35,7 +35,7 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/math": "3.1.0-alpha.3",
+    "@loaders.gl/math": "3.1.0-alpha.4",
     "@math.gl/core": "^3.5.1"
   }
 }

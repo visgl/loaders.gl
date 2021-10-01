@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/draco",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Framework-independent loader and writer for Draco compressed meshes and point clouds",
   "license": "MIT",
   "publishConfig": {
@@ -20,8 +20,8 @@
     "draco"
   ],
   "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "browser": {
     "fs": false
@@ -38,9 +38,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.1.0-alpha.3",
-    "@loaders.gl/schema": "3.1.0-alpha.3",
-    "@loaders.gl/worker-utils": "3.1.0-alpha.3",
+    "@loaders.gl/loader-utils": "3.1.0-alpha.4",
+    "@loaders.gl/schema": "3.1.0-alpha.4",
+    "@loaders.gl/worker-utils": "3.1.0-alpha.4",
     "draco3d": "1.4.1"
   }
 }

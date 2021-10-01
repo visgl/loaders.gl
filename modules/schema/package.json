@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/schema",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Table format APIs for JSON, CSV, etc...",
   "license": "MIT",
   "publishConfig": {
@@ -19,8 +19,8 @@
     "PLY"
   ],
   "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@types/geojson": "^7946.0.7",
-    "apache-arrow": "^4.0.0",
-    "d3-dsv": "^1.2.0"
+    "apache-arrow": "^4.0.0"
   }
 }

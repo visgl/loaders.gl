@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zarr",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Framework-independent loaders for Zarr",
   "license": "MIT",
   "publishConfig": {
@@ -15,9 +15,9 @@
     "loader",
     "zarr"
   ],
-  "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "types": "src/index.d.ts",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",

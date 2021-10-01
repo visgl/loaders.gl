@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "publishConfig": {
@@ -16,8 +16,8 @@
     "thread"
   ],
   "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",

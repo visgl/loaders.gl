@@ -11,15 +11,15 @@ export const BasisWorkerLoader = {
   module: 'textures',
   version: VERSION,
   worker: true,
-  extensions: ['basis'],
-  mimeTypes: ['application/octet-stream'],
+  extensions: ['basis', 'ktx2'],
+  mimeTypes: ['application/octet-stream', 'image/ktx2'],
   tests: ['sB'],
   binary: true,
   options: {
     basis: {
       format: 'auto', // gl context doesn't exist on a worker thread
       libraryPath: 'libs/',
-      decoderFormat: 'basis', // 'basis' || 'ktx2'
+      containerFormat: 'auto', // 'basis' || 'ktx2' || 'auto'
       module: 'transcoder' // 'transcoder' || 'encoder'
     }
   }

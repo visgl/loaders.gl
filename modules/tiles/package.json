@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Common components for different tiles loaders.",
   "license": "MIT",
   "publishConfig": {
@@ -20,8 +20,8 @@
     "pointcloud"
   ],
   "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -33,13 +33,15 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.1.0-alpha.3",
-    "@loaders.gl/loader-utils": "3.1.0-alpha.3",
-    "@loaders.gl/math": "3.1.0-alpha.3",
+    "@loaders.gl/loader-utils": "3.1.0-alpha.4",
+    "@loaders.gl/math": "3.1.0-alpha.4",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
     "@math.gl/web-mercator": "^3.5.1",
     "@probe.gl/stats": "^3.4.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^3.0.0"
   }
 }

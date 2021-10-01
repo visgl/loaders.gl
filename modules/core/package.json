@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -18,8 +18,8 @@
     "point cloud"
   ],
   "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "browser": {
     "fs": false,
@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.1.0-alpha.3",
-    "@loaders.gl/worker-utils": "3.1.0-alpha.3",
+    "@loaders.gl/loader-utils": "3.1.0-alpha.4",
+    "@loaders.gl/worker-utils": "3.1.0-alpha.4",
     "probe.gl": "^3.4.0"
   }
 }

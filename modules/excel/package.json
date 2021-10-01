@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/excel",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Framework-independent loader for Excel files",
   "license": "MIT",
   "publishConfig": {
@@ -21,8 +21,8 @@
     "Spreadsheets"
   ],
   "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -35,8 +35,8 @@
     "build-worker": "webpack --entry ./src/workers/excel-worker.ts --output ./dist/excel-worker.js --config ../../scripts/webpack/worker.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.1.0-alpha.3",
-    "@loaders.gl/schema": "3.1.0-alpha.3",
+    "@loaders.gl/loader-utils": "3.1.0-alpha.4",
+    "@loaders.gl/schema": "3.1.0-alpha.4",
     "xlsx": "^0.17.0"
   }
 }

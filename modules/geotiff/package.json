@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geotiff",
-  "version": "3.1.0-alpha.3",
+  "version": "3.1.0-alpha.4",
   "description": "Framework-independent loaders for tiff and geotiff",
   "license": "MIT",
   "publishConfig": {
@@ -19,8 +19,8 @@
     "geotiff"
   ],
   "types": "src/index.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
