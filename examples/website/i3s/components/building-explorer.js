@@ -8,11 +8,11 @@ import {faAngleRight, faAngleDown, faCircle} from '@fortawesome/free-solid-svg-i
 import ToggleSwitch from './toggle-switch';
 
 const BuildingExplorerContainer = styled.div`
-  height: ${(props) => (props.isShown ? '450px' : '36px')};
+  height: ${(props) => (props.isShown ? '450px' : '40px')};
   overflow: auto;
   align-items: flex-start;
   position: absolute;
-  top: 107px;
+  top: 109px;
   display: flex;
   flex-direction: column;
   background: #0e111a;

@@ -17,7 +17,7 @@ const Container = styled.div`
   flex-direction: column;
   z-index: 20;
   top: ${(props) =>
-    props.renderControlPanel ? (props.hasBuildingExplore ? '209px' : '170px') : '60px'};
+    props.renderControlPanel ? (props.hasBuildingExplore ? '213px' : '170px') : '60px'};
   left: 10px;
   -moz-user-select: none;
   -khtml-user-select: none;

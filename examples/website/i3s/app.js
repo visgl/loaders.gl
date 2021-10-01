@@ -55,7 +55,7 @@ const StatsWidgetContainer = styled.div`
   padding: 24px;
   border-radius: 8px;
   line-height: 135%;
-  top: 159px;
+  top: 163px;
   bottom: auto;
   width: 277px;
   left: 10px;
@@ -240,7 +240,7 @@ export default class App extends PureComponent {
       style.display = 'none';
     }
     if (sublayers.length) {
-      style.top = '159px';
+      style.top = '163px';
     }
     return <StatsWidgetContainer style={style} ref={(_) => (this._statsWidgetContainer = _)} />;
   }
