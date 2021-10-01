@@ -8,7 +8,7 @@ import {faAngleRight, faAngleDown, faCircle} from '@fortawesome/free-solid-svg-i
 import ToggleSwitch from './toggle-switch';
 
 const BuildingExplorerContainer = styled.div`
-  height: ${(props) => (props.showExplorerTree ? '450px' : '36px')};
+  height: ${(props) => (props.isShown ? '450px' : '36px')};
   overflow: auto;
   align-items: flex-start;
   position: absolute;
@@ -50,18 +50,19 @@ const Label = styled.h3`
 
 const propTypes = {
   sublayers: PropTypes.array,
-  setMemoryVisibility: PropTypes.func
+  onToggleBuildingExplorer: PropTypes.func,
+  isShown: PropTypes.bool
 };
 const defaultProps = {
-  sublayers: []
+  sublayers: [],
+  isShown: false
 };
 
 export default class BuildingExplorer extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      updateCounter: 0,
-      showExplorerTree: false
+      updateCounter: 0
     };
     this._setChild = this._setChild.bind(this);
     this._setChildren = this._setChildren.bind(this);
@@ -137,23 +138,23 @@ export default class BuildingExplorer extends PureComponent {
   }
 
   render() {
-    const {sublayers, setMemoryVisibility} = this.props;
-    const {showExplorerTree} = this.state;
+    const {sublayers, onToggleBuildingExplorer, isShown} = this.props;
     return (
-      <BuildingExplorerContainer showExplorerTree={showExplorerTree}>
+      <BuildingExplorerContainer isShown={isShown}>
         <CheckboxOption style={{marginRight: '16px', paddingBottom: 0}}>
           <Label htmlFor="BuildingExplorerToggle">BuildingExplorer</Label>
           <ToggleSwitch
             id="BuildingExplorerToggle"
-            value={showExplorerTree}
-            checked={showExplorerTree}
+            value={isShown}
+            checked={isShown}
             onChange={() => {
-              this.setState({showExplorerTree: !showExplorerTree});
-              setMemoryVisibility(showExplorerTree);
+              if (onToggleBuildingExplorer) {
+                onToggleBuildingExplorer(!isShown);
+              }
             }}
           />
         </CheckboxOption>
-        {showExplorerTree ? (
+        {isShown ? (
           <BuildingExplorerSublayers>{this._renderSublayers(sublayers)}</BuildingExplorerSublayers>
         ) : null}
       </BuildingExplorerContainer>

@@ -77,7 +77,7 @@ export default class App extends PureComponent {
       selectedFeatureAttributes: null,
       selectedFeatureIndex: -1,
       isAttributesLoading: false,
-      showMemory: true,
+      showBuildingExplorer: false,
       flattenedSublayers: [],
       sublayers: [],
       sublayersUpdateCounter: 0
@@ -86,7 +86,7 @@ export default class App extends PureComponent {
 
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
-    this._setMemoryVisibility = this._setMemoryVisibility.bind(this);
+    this._onToggleBuildingExplorer = this._onToggleBuildingExplorer.bind(this);
     this._updateSublayerVisibility = this._updateSublayerVisibility.bind(this);
   }
 
@@ -127,11 +127,7 @@ export default class App extends PureComponent {
       const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
       const sublayersTree = buildSublayersTree(tileset.header.sublayers);
       this.setState({sublayers: sublayersTree.sublayers});
-      const sublayers = tileset?.sublayers
-        .filter((sublayer) => sublayer.name !== 'Overview')
-        .map((sublayer) => {
-          return sublayer;
-        });
+      const sublayers = tileset?.sublayers.filter((sublayer) => sublayer.name !== 'Overview');
       return sublayers;
     } catch (e) {
       return [{url: tilesetUrl, visibility: true}];
@@ -141,7 +137,7 @@ export default class App extends PureComponent {
   async _onSelectTileset(tileset) {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
-    this.setState({tilesetUrl, name, token});
+    this.setState({tilesetUrl, name, token, sublayers: []});
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});
@@ -234,13 +230,13 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
-    const {showMemory, sublayers} = this.state;
+    const {showBuildingExplorer, sublayers} = this.state;
     // TODO - too verbose, get more default styling from stats widget?
     const style = {
       display: 'flex',
       top: '125px'
     };
-    if (!showMemory) {
+    if (showBuildingExplorer) {
       style.display = 'none';
     }
     if (sublayers.length) {
@@ -263,16 +259,17 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, selectedMapStyle, sublayers} = this.state;
+    const {name, selectedMapStyle, sublayers, showBuildingExplorer} = this.state;
     return (
       <ControlPanel
         name={name}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        setMemoryVisibility={this._setMemoryVisibility}
+        onToggleBuildingExplorer={this._onToggleBuildingExplorer}
         onUpdateSublayerVisibility={this._updateSublayerVisibility}
         selectedMapStyle={selectedMapStyle}
         sublayers={sublayers}
+        isBuildingExplorerShown={showBuildingExplorer}
       >
         <StatsWidgetWrapper>{this._renderStats()}</StatsWidgetWrapper>
       </ControlPanel>
@@ -316,12 +313,16 @@ export default class App extends PureComponent {
   }
 
   _renderMemory() {
-    const {showMemory} = this.state;
-    return <StatsWidgetWrapper showMemory={showMemory}>{this._renderStats()}</StatsWidgetWrapper>;
+    const {showBuildingExplorer} = this.state;
+    return (
+      <StatsWidgetWrapper showMemory={!showBuildingExplorer}>
+        {this._renderStats()}
+      </StatsWidgetWrapper>
+    );
   }
 
-  _setMemoryVisibility(isShown) {
-    this.setState({showMemory: isShown});
+  _onToggleBuildingExplorer(isShown) {
+    this.setState({showBuildingExplorer: isShown});
   }
 
   render() {

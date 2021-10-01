@@ -57,6 +57,7 @@ import {
   selectOriginalTextureForTileset
 } from './utils/texture-selector-utils';
 import {Color, Flex, Font} from './components/styles';
+import {buildSublayersTree} from './helpers/sublayers';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
@@ -219,8 +220,10 @@ export default class App extends PureComponent {
       selectedTile: null,
       coloredTilesMap: {},
       warnings: [],
-      layerUrls: [],
-      loadedTilesets: []
+      flattenedSublayers: [],
+      sublayers: [],
+      loadedTilesets: [],
+      sublayersUpdateCounter: 0
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -231,6 +234,8 @@ export default class App extends PureComponent {
     this.handleShowNormals = this.handleShowNormals.bind(this);
     this.handleChangeTrianglesPercentage = this.handleChangeTrianglesPercentage.bind(this);
     this.handleChangeNormalsLength = this.handleChangeNormalsLength.bind(this);
+    this._updateSublayerVisibility = this._updateSublayerVisibility.bind(this);
+    this._onToggleBuildingExplorer = this._onToggleBuildingExplorer.bind(this);
   }
 
   componentDidMount() {
@@ -273,11 +278,12 @@ export default class App extends PureComponent {
   async _onSelectTileset(mainTileset) {
     const params = parseTilesetUrlParams(mainTileset.url, mainTileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
-    this.setState({tilesetUrl, name, token});
+    this.setState({tilesetUrl, name, token, sublayers: []});
     this.handleClearWarnings();
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    const layerUrls = await this.getLayerUrls(tilesetUrl);
-    this.setState({metadata, tileInfo: null, normalsDebugData: [], layerUrls});
+    const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
+    this.setState({metadata, tileInfo: null, normalsDebugData: [], flattenedSublayers});
+    this.needTransitionToTileset = true;
   }
 
   /**
@@ -286,12 +292,15 @@ export default class App extends PureComponent {
    * @returns {string[]} Sublayer urls or tileset url.
    * TODO Add filtration mode for sublayers which were selected by user.
    */
-  async getLayerUrls(tilesetUrl) {
+  async getFlattenedSublayers(tilesetUrl) {
     try {
       const mainTileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
-      return mainTileset?.sublayers.map((sublayer) => sublayer.url);
+      const sublayersTree = buildSublayersTree(mainTileset.header.sublayers);
+      this.setState({sublayers: sublayersTree.sublayers});
+      const sublayers = mainTileset?.sublayers.filter((sublayer) => sublayer.name !== 'Overview');
+      return sublayers;
     } catch (e) {
-      return [tilesetUrl];
+      return [{url: tilesetUrl, visibility: true}];
     }
   }
 
@@ -333,24 +342,27 @@ export default class App extends PureComponent {
 
     this._addTileset(tileset);
     // TODO Should we change view state for each tileset is being loaded?
-    this.setState({
-      viewState: {
-        main: {
-          ...this.state.viewState.main,
-          zoom: zoom + 2.5,
-          longitude,
-          latitude,
-          transitionDuration: TRANSITION_DURAITON,
-          transitionInterpolator: new FlyToInterpolator()
+    if (this.needTransitionToTileset) {
+      this.setState({
+        viewState: {
+          main: {
+            ...this.state.viewState.main,
+            zoom: zoom + 2.5,
+            longitude,
+            latitude,
+            transitionDuration: TRANSITION_DURAITON,
+            transitionInterpolator: new FlyToInterpolator()
+          },
+          minimap: {
+            ...this.state.viewState.minimap,
+            longitude,
+            latitude
+          }
         },
-        minimap: {
-          ...this.state.viewState.minimap,
-          longitude,
-          latitude
-        }
-      },
-      debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE}
-    });
+        debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE}
+      });
+      this.needTransitionToTileset = false;
+    }
 
     const {
       debugOptions: {minimapViewport, loadTiles}
@@ -427,6 +439,12 @@ export default class App extends PureComponent {
       });
       tileset.update();
     });
+
+    const {debugPanel} = this.state;
+    const {debugPanel: newDebugPanel} = debugOptions;
+    if (debugPanel !== newDebugPanel && newDebugPanel) {
+      debugOptions.buildingExplorer = false;
+    }
 
     this.setState({debugOptions});
   }
@@ -507,7 +525,7 @@ export default class App extends PureComponent {
 
   _renderLayers() {
     const {
-      layerUrls,
+      flattenedSublayers,
       token,
       viewState,
       debugOptions: {boundingVolume, boundingVolumeType, pickable, wireframe},
@@ -527,26 +545,28 @@ export default class App extends PureComponent {
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
 
-    const tile3dLayers = layerUrls.map(
-      (url, index) =>
-        new Tile3DLayer({
-          id: `tile-layer-${index}`,
-          data: url,
-          loader: I3SLoader,
-          onTilesetLoad: this._onTilesetLoad.bind(this),
-          onTileLoad: this._onTileLoad.bind(this),
-          onTileUnload: this._onTileUnload.bind(this),
-          loadOptions,
-          pickable,
-          autoHighlight: true,
-          _subLayerProps: {
-            mesh: {
-              wireframe
-            }
-          },
-          _getMeshColor: this.getMeshColor.bind(this)
-        })
-    );
+    const tile3dLayers = flattenedSublayers
+      .filter((sublayer) => sublayer.visibility)
+      .map(
+        (sublayer) =>
+          new Tile3DLayer({
+            id: `tile-layer-${sublayer.id}`,
+            data: sublayer.url,
+            loader: I3SLoader,
+            onTilesetLoad: this._onTilesetLoad.bind(this),
+            onTileLoad: this._onTileLoad.bind(this),
+            onTileUnload: this._onTileUnload.bind(this),
+            loadOptions,
+            pickable,
+            autoHighlight: true,
+            _subLayerProps: {
+              mesh: {
+                wireframe
+              }
+            },
+            _getMeshColor: this.getMeshColor.bind(this)
+          })
+      );
 
     return [
       ...tile3dLayers,
@@ -605,7 +625,8 @@ export default class App extends PureComponent {
   _renderDebugPanel() {
     const {
       debugOptions,
-      debugOptions: {controlPanel}
+      debugOptions: {controlPanel},
+      sublayers
     } = this.state;
 
     return (
@@ -615,19 +636,50 @@ export default class App extends PureComponent {
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
         debugOptions={debugOptions}
         renderControlPanel={controlPanel}
+        hasBuildingExplorer={Boolean(sublayers.length)}
       ></DebugPanel>
     );
   }
 
+  _updateSublayerVisibility(sublayer) {
+    if (sublayer.layerType === '3DObject') {
+      const {flattenedSublayers, sublayersUpdateCounter} = this.state;
+      const flattenedSublayer = flattenedSublayers.find(
+        (fSublayer) => fSublayer.id === sublayer.id
+      );
+      if (flattenedSublayer) {
+        flattenedSublayer.visibility = sublayer.visibility;
+        this.setState({sublayersUpdateCounter: sublayersUpdateCounter + 1});
+      }
+    }
+  }
+
+  _onToggleBuildingExplorer(isShown) {
+    const newDebugOptions = {buildingExplorer: isShown};
+    if (isShown) {
+      newDebugOptions.debugPanel = !isShown;
+    }
+    this._setDebugOptions(newDebugOptions);
+  }
+
   _renderControlPanel() {
-    const {name, selectedMapStyle} = this.state;
+    const {
+      name,
+      selectedMapStyle,
+      sublayers,
+      debugOptions: {buildingExplorer}
+    } = this.state;
     return (
       <ControlPanel
         debugMode
         name={name}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
+        onToggleBuildingExplorer={this._onToggleBuildingExplorer}
+        onUpdateSublayerVisibility={this._updateSublayerVisibility}
         selectedMapStyle={selectedMapStyle}
+        sublayers={sublayers}
+        isBuildingExplorerShown={buildingExplorer}
       />
     );
   }
