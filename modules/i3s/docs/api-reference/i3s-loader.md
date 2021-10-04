@@ -4,7 +4,14 @@
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
 
-> The `I3SLoader` is experimental. Currently only support I3S `MeshPyramids` data format.
+I3SLoader supported formats:
+- `3DObject` 
+- `Integrated Mesh`
+
+I3SLoader not supported formats:
+- `Points` 
+- `PointClouds`
+- `Building Scene Layer`
 
 A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i3s-spec), and its geometries and textures data.
 
@@ -16,6 +23,16 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 | File Format    | [i3s](https://www.opengeospatial.org/standards/i3s) |
 | Data Format    | [Data formats](#data-formats)                       |
 | Supported APIs | `load`, `parse`                                     |
+
+## I3S format versions support
+- `I3S 1.6`
+- `I3S 1.7`
+  - Node pages
+  - Draco compression
+  - PBR materials
+  - Compressed textures (.dds format)
+- `I3S 1.8`
+  - Support for Basis Universal Texture format in Khronos KTX2
 
 ## Terms
 
