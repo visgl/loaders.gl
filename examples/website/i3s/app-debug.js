@@ -8,6 +8,7 @@ import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {
   FlyToInterpolator,
+  MapController,
   View,
   MapView,
   WebMercatorViewport,
@@ -920,6 +921,12 @@ export default class App extends PureComponent {
           views={this._getViews()}
           layerFilter={this._layerFilter}
           onViewStateChange={this._onViewStateChange.bind(this)}
+          controller={{
+            type: MapController,
+            maxPitch: 60,
+            inertia: true,
+            scrollZoom: {speed: 0.01, smooth: true}
+          }}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={(info) => this.getTooltip(info)}
           onClick={(info) => this.handleClick(info)}
