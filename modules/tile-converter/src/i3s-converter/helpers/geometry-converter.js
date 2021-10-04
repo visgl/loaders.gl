@@ -40,8 +40,8 @@ export default async function convertB3dmToI3sGeometry(
 
   const result = [];
   let nodesCounter = nodeId;
-  for (let i = 0; i < (tileContent.gltf.materials.length || 1); i++) {
-    const sourceMaterial = tileContent.gltf.materials[i] || {id: 'default'};
+  for (let i = 0; i < (tileContent.gltf.materials?.length || 1); i++) {
+    const sourceMaterial = tileContent.gltf.materials?.[i] || {id: 'default'};
     if (!convertedAttributesMap.has(sourceMaterial.id)) {
       continue; // eslint-disable-line no-continue
     }
@@ -62,6 +62,9 @@ export default async function convertB3dmToI3sGeometry(
     nodesCounter++;
   }
 
+  if (!result.length) {
+    return null;
+  }
   return result;
 }
 
@@ -158,7 +161,7 @@ function convertAttributes(tileContent) {
     });
   }
 
-  const nodes = tileContent.gltf.scene.nodes;
+  const nodes = (tileContent.gltf.scene || tileContent.gltf.scenes?.[0] || tileContent.gltf).nodes;
   convertNodes(nodes, tileContent, attributesMap);
 
   for (const attrKey of attributesMap.keys()) {
@@ -445,7 +448,7 @@ function getBatchIdsByAttributeName(attributes) {
 
 function convertMaterials(tileContent) {
   const result = [];
-  const sourceMaterials = tileContent.gltf.materials;
+  const sourceMaterials = tileContent.gltf.materials || [];
   for (const sourceMaterial of sourceMaterials) {
     result.push(convertMaterial(sourceMaterial));
   }
