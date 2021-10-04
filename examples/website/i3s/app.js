@@ -350,7 +350,12 @@ export default class App extends PureComponent {
           layers={layers}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={{type: MapController, maxPitch: 85, inertia: true}}
+          controller={{
+            type: MapController,
+            maxPitch: 60,
+            inertia: true,
+            scrollZoom: {speed: 0.01, smooth: true}
+          }}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={(info) => this.getTooltip(info)}
           onClick={(info) => this.handleClick(info)}
