@@ -636,14 +636,14 @@ export default class I3SConverter {
     parentId: number,
     resources: I3SGeometry
   ): NodeInPage {
-    const {meshMaterial, texture, vertexCount, featureCount} = resources;
+    const {meshMaterial, texture, vertexCount, featureCount, geometry} = resources;
     const nodeInPage = {
       lodThreshold: maxScreenThresholdSQ.maxError,
       obb: boundingVolumes.obb,
       children: [],
       mesh: null
     };
-    if (sourceTile.content && sourceTile.content.type === 'b3dm') {
+    if (geometry && sourceTile.content && sourceTile.content.type === 'b3dm') {
       nodeInPage.mesh = {
         geometry: {
           definition: texture ? 0 : 1
