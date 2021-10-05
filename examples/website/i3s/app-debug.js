@@ -58,6 +58,7 @@ import {
 } from './utils/texture-selector-utils';
 import {Color, Flex, Font} from './components/styles';
 import {buildSublayersTree} from './helpers/sublayers';
+import {initStats, sumTilesetsStats} from './helpers/stats';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
@@ -195,6 +196,7 @@ export default class App extends PureComponent {
     this._tilesetStatsWidget = null;
     this._colorMap = null;
     this._uvDebugTexture = null;
+    this._loadedTilesets = [];
     this.state = {
       url: null,
       token: null,
@@ -222,7 +224,6 @@ export default class App extends PureComponent {
       warnings: [],
       flattenedSublayers: [],
       sublayers: [],
-      loadedTilesets: [],
       sublayersUpdateCounter: 0
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
@@ -261,6 +262,7 @@ export default class App extends PureComponent {
     } else {
       mainTileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
+    initStats(tilesetUrl);
     this._onSelectTileset(mainTileset);
     load(UV_DEBUG_TEXTURE_URL, ImageLoader).then((image) => (this._uvDebugTexture = image));
   }
@@ -284,6 +286,7 @@ export default class App extends PureComponent {
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, tileInfo: null, normalsDebugData: [], flattenedSublayers});
     this.needTransitionToTileset = true;
+    this._tilesetStatsWidget.setStats(initStats(tilesetUrl));
   }
 
   /**
@@ -307,6 +310,8 @@ export default class App extends PureComponent {
   // Updates stats, called every frame
   _updateStatWidgets() {
     this._memWidget.update();
+
+    sumTilesetsStats(this._loadedTilesets);
     this._tilesetStatsWidget.update();
   }
 
@@ -328,20 +333,11 @@ export default class App extends PureComponent {
     this._updateStatWidgets();
   }
 
-  _addTileset(tileset) {
-    const {loadedTilesets} = this.state;
-
-    if (!loadedTilesets.some((loadedTileset) => loadedTileset.basePath === tileset.basePath)) {
-      this.setState({loadedTilesets: [...loadedTilesets, tileset]});
-    }
-  }
-
   _onTilesetLoad(tileset) {
     const {zoom, cartographicCenter} = tileset;
     const [longitude, latitude] = cartographicCenter;
 
-    this._addTileset(tileset);
-    // TODO Should we change view state for each tileset is being loaded?
+    this._loadedTilesets = [...this._loadedTilesets, tileset];
     if (this.needTransitionToTileset) {
       this.setState({
         viewState: {
@@ -372,8 +368,6 @@ export default class App extends PureComponent {
       viewportTraversersMap,
       loadTiles
     });
-    // TODO fix stats for multiple tilesets
-    this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
   _onViewStateChange({viewState, viewId}) {
@@ -416,11 +410,10 @@ export default class App extends PureComponent {
     }
 
     const {
-      loadedTilesets,
       debugOptions: {showUVDebugTexture}
     } = this.state;
     if (debugOptions.showUVDebugTexture !== showUVDebugTexture) {
-      loadedTilesets.forEach((tileset) => {
+      this._loadedTilesets.forEach((tileset) => {
         if (debugOptions.showUVDebugTexture) {
           selectDebugTextureForTileset(tileset, this._uvDebugTexture);
         } else {
@@ -432,7 +425,7 @@ export default class App extends PureComponent {
     const {minimapViewport, loadTiles} = debugOptions;
     const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
 
-    loadedTilesets.forEach((tileset) => {
+    this._loadedTilesets.forEach((tileset) => {
       tileset.setOptions({
         viewportTraversersMap,
         loadTiles
@@ -493,7 +486,6 @@ export default class App extends PureComponent {
 
   _renderMainOnMinimap() {
     const {
-      loadedTilesets,
       debugOptions: {minimapViewport}
     } = this.state;
     if (!minimapViewport) {
@@ -501,8 +493,8 @@ export default class App extends PureComponent {
     }
     let data = [];
 
-    if (loadedTilesets.length) {
-      const tiles = this._getAllTilesFromTilesets(loadedTilesets);
+    if (this._loadedTilesets.length) {
+      const tiles = this._getAllTilesFromTilesets(this._loadedTilesets);
       data = buildMinimapData(tiles);
     }
     return new ScatterplotLayer({
@@ -529,7 +521,6 @@ export default class App extends PureComponent {
       token,
       viewState,
       debugOptions: {boundingVolume, boundingVolumeType, pickable, wireframe},
-      loadedTilesets,
       normalsDebugData,
       trianglesPercentage,
       normalsLength
@@ -541,7 +532,7 @@ export default class App extends PureComponent {
     }
 
     this._colorMap = this._colorMap || new ColorMap();
-    const tiles = this._getAllTilesFromTilesets(loadedTilesets);
+    const tiles = this._getAllTilesFromTilesets(this._loadedTilesets);
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
 
@@ -650,6 +641,11 @@ export default class App extends PureComponent {
       if (flattenedSublayer) {
         flattenedSublayer.visibility = sublayer.visibility;
         this.setState({sublayersUpdateCounter: sublayersUpdateCounter + 1});
+        if (!sublayer.visibility) {
+          this._loadedTilesets = this._loadedTilesets.filter(
+            (tileset) => tileset.basePath !== flattenedSublayer.url
+          );
+        }
       }
     }
   }

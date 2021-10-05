@@ -20,6 +20,7 @@ import {INITIAL_MAP_STYLE} from './constants';
 import {Color, Flex, Font} from './components/styles';
 import {load} from '@loaders.gl/core';
 import {buildSublayersTree} from './helpers/sublayers';
+import {initStats, sumTilesetsStats} from './helpers/stats';
 
 const TRANSITION_DURAITON = 4000;
 const BUILDING_SCENE_LAYER_TYPE = 'Building';
@@ -67,6 +68,7 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
+    this._loadedTilesets = [];
     this.state = {
       tileset: null,
       url: null,
@@ -113,6 +115,7 @@ export default class App extends PureComponent {
     } else {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
+    initStats(tilesetUrl);
     this._onSelectTileset(tileset);
   }
 
@@ -142,11 +145,14 @@ export default class App extends PureComponent {
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});
     this.needTransitionToTileset = true;
+    this._tilesetStatsWidget.setStats(initStats(tilesetUrl));
   }
 
   // Updates stats, called every frame
   _updateStatWidgets() {
     this._memWidget.update();
+
+    sumTilesetsStats(this._loadedTilesets);
     this._tilesetStatsWidget.update();
   }
 
@@ -154,6 +160,7 @@ export default class App extends PureComponent {
     const {zoom, cartographicCenter} = tileset;
     const [longitude, latitude] = cartographicCenter;
 
+    this._loadedTilesets = [...this._loadedTilesets, tileset];
     if (this.needTransitionToTileset) {
       const viewState = {
         ...this.state.viewState,
@@ -172,7 +179,6 @@ export default class App extends PureComponent {
       });
       this.needTransitionToTileset = false;
     }
-    this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
   _onViewStateChange({viewState}) {
@@ -254,6 +260,11 @@ export default class App extends PureComponent {
       if (flattenedSublayer) {
         flattenedSublayer.visibility = sublayer.visibility;
         this.setState({sublayersUpdateCounter: sublayersUpdateCounter + 1});
+        if (!sublayer.visibility) {
+          this._loadedTilesets = this._loadedTilesets.filter(
+            (tileset) => tileset.basePath !== flattenedSublayer.url
+          );
+        }
       }
     }
   }
