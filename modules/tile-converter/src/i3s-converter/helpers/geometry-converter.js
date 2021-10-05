@@ -40,8 +40,12 @@ export default async function convertB3dmToI3sGeometry(
 
   const result = [];
   let nodesCounter = nodeId;
-  for (let i = 0; i < (tileContent.gltf.materials?.length || 1); i++) {
-    const sourceMaterial = tileContent.gltf.materials?.[i] || {id: 'default'};
+  let {materials = []} = tileContent.gltf;
+  if (!materials.length === 0) {
+    materials.push({id: 'default'});
+  }
+  for (let i = 0; i < materials.length; i++) {
+    const sourceMaterial = materials[i];
     if (!convertedAttributesMap.has(sourceMaterial.id)) {
       continue; // eslint-disable-line no-continue
     }
