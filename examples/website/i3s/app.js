@@ -183,14 +183,31 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
+  // TODO Enable highlightedObjectIndex for Building Scene Layer
+  // when it will work across multiple tilesets with repeated feature ids.
+  _getPickingProps() {
+    const {selectedFeatureIndex, metadata} = this.state;
+    const layerType = metadata?.layers[0]?.layerType;
+
+    if (layerType === BUILDING_SCENE_LAYER_TYPE) {
+      return {
+        autoHighlight: true
+      }
+    }
+
+    return {
+      highlightedObjectIndex: selectedFeatureIndex
+    }
+  }
+
   _renderLayers() {
-    const {flattenedSublayers, token, selectedFeatureIndex, metadata} = this.state;
+    const {flattenedSublayers, token, selectedFeatureIndex} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {};
     if (token) {
       loadOptions.i3s = {token};
     }
-    const layerType = metadata?.layers[0]?.layerType;
+    const pickingProps = this._getPickingProps()
     return flattenedSublayers
       .filter((sublayer) => sublayer.visibility)
       .map(
@@ -202,10 +219,9 @@ export default class App extends PureComponent {
             onTilesetLoad: this._onTilesetLoad.bind(this),
             onTileLoad: () => this._updateStatWidgets(),
             onTileUnload: () => this._updateStatWidgets(),
-            // TODO enable it when Building Scene Layer picking will be implemented.
-            pickable: layerType !== BUILDING_SCENE_LAYER_TYPE,
+            pickable: true,
             loadOptions,
-            highlightedObjectIndex: selectedFeatureIndex
+            ...pickingProps
           })
       );
   }
