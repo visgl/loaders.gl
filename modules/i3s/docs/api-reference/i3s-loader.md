@@ -4,15 +4,6 @@
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
 
-I3SLoader supported formats:
-- `3DObject` 
-- `Integrated Mesh`
-
-I3SLoader not supported formats:
-- `Points` 
-- `PointClouds`
-- `Building Scene Layer`
-
 A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i3s-spec), and its geometries and textures data.
 
 | Loader         | Characteristic                                      |
@@ -24,15 +15,37 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 | Data Format    | [Data formats](#data-formats)                       |
 | Supported APIs | `load`, `parse`                                     |
 
-## I3S format versions support
-- `I3S 1.6`
-- `I3S 1.7`
-  - Node pages
-  - Draco compression
-  - PBR materials
-  - Compressed textures (.dds format)
-- `I3S 1.8`
-  - Support for Basis Universal Texture format in Khronos KTX2
+## I3S Layer Type support
+
+| Layer Type           | Supported | I3S Spec Link                                                                  |
+| -------------------- | --------- | ------------------------------------------------------------------------------ |
+| 3DObject             | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3Dobject_ReadMe.md       |
+| Integrated Mesh      | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/IntegratedMesh_ReadMe.md |
+| Points               | false     | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/Point_ReadMe.md          |
+| PointClouds          | false     | https://github.com/Esri/i3s-spec/blob/master/docs/2.0/pcsl_ReadMe.md           |
+| Building Scene Layer | false     | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md            |
+
+## I3S format features support
+
+| Feature               | Supported | I3S Spec Link                                                                     |
+| --------------------- | --------- | --------------------------------------------------------------------------------- |
+| Node pages            | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodePage.cmn.md             |
+| Compressed attributes | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md |
+| PBR materials         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md |
+
+## Textures support
+I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md
+
+| Texture                                        | Supported |
+| ---------------------------------------------- | --------- |
+| JPEG                                           | yes       |
+| PNG                                            | yes       |
+| .dds with DXT1 (no alpha)                      | yes       |
+| .dds with DXT5 (alpha channel)                 | yes       |
+| ktx-etc2                                       | yes       |
+| Basis Universal Texture format in Khronos KTX2 | yes       |
+| Texture Atlas                                  | no        |
+
 
 ## Terms
 
