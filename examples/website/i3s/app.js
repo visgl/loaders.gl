@@ -22,7 +22,6 @@ import {load} from '@loaders.gl/core';
 import {buildSublayersTree} from './helpers/sublayers';
 
 const TRANSITION_DURAITON = 4000;
-const BUILDING_SCENE_LAYER_TYPE = 'Building';
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
