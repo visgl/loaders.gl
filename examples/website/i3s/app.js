@@ -76,6 +76,7 @@ export default class App extends PureComponent {
       selectedMapStyle: INITIAL_MAP_STYLE,
       selectedFeatureAttributes: null,
       selectedFeatureIndex: -1,
+      selectedTilesetBasePath: null,
       isAttributesLoading: false,
       showBuildingExplorer: false,
       flattenedSublayers: [],
@@ -183,31 +184,13 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
-  // TODO Enable highlightedObjectIndex for Building Scene Layer
-  // when it will work across multiple tilesets with repeated feature ids.
-  _getPickingProps() {
-    const {selectedFeatureIndex, metadata} = this.state;
-    const layerType = metadata?.layers[0]?.layerType;
-
-    if (layerType === BUILDING_SCENE_LAYER_TYPE) {
-      return {
-        autoHighlight: true
-      }
-    }
-
-    return {
-      highlightedObjectIndex: selectedFeatureIndex
-    }
-  }
-
   _renderLayers() {
-    const {flattenedSublayers, token, selectedFeatureIndex} = this.state;
+    const {flattenedSublayers, token, selectedFeatureIndex, selectedTilesetBasePath} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {};
     if (token) {
       loadOptions.i3s = {token};
     }
-    const pickingProps = this._getPickingProps()
     return flattenedSublayers
       .filter((sublayer) => sublayer.visibility)
       .map(
@@ -221,7 +204,8 @@ export default class App extends PureComponent {
             onTileUnload: () => this._updateStatWidgets(),
             pickable: true,
             loadOptions,
-            ...pickingProps
+            highlightedObjectIndex:
+              sublayer.url === selectedTilesetBasePath ? selectedFeatureIndex : -1
           })
       );
   }
@@ -242,7 +226,13 @@ export default class App extends PureComponent {
     this.setState({isAttributesLoading: true});
     const selectedFeatureAttributes = await loadFeatureAttributes(info.object, info.index, options);
     this.setState({isAttributesLoading: false});
-    this.setState({selectedFeatureAttributes, selectedFeatureIndex: info.index});
+
+    const selectedTilesetBasePath = info.object.tileset.basePath;
+    this.setState({
+      selectedFeatureAttributes,
+      selectedFeatureIndex: info.index,
+      selectedTilesetBasePath
+    });
   }
 
   _renderStats() {
