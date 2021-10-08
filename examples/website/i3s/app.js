@@ -183,6 +183,18 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
+  _isLayerPickable() {
+    const {tileset} = this.state;
+    const layerType = tileset?.tileset?.layerType;
+
+    switch (layerType) {
+      case 'IntegratedMesh':
+        return false;
+      default:
+        return true;
+    }
+  }
+
   _renderLayers() {
     const {flattenedSublayers, token, selectedFeatureIndex, selectedTilesetBasePath} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
@@ -201,7 +213,7 @@ export default class App extends PureComponent {
             onTilesetLoad: this._onTilesetLoad.bind(this),
             onTileLoad: () => this._updateStatWidgets(),
             onTileUnload: () => this._updateStatWidgets(),
-            pickable: true,
+            pickable: this._isLayerPickable(),
             loadOptions,
             highlightedObjectIndex:
               sublayer.url === selectedTilesetBasePath ? selectedFeatureIndex : -1

@@ -7,17 +7,17 @@ import {Flex} from './styles';
 
 const Container = styled.div`
   ${Flex}
+  align-items: center;
   color: rgba(255, 255, 255, .6);
   background: #0e111a;
   flex-flow: column;
   right: 0;
-  margin: 15px;
+  top: 15px;
+  right: 15px;
   width: 320px;
-  padding: 0 15px 10px 15px;
   height: auto;
   max-height: 75%;
   z-index: 16;
-  overflow-y: auto;
   word-break: break-word;
   border-radius: 8px;
 
@@ -28,6 +28,13 @@ const Container = styled.div`
     border-radius: 0;
     width: 300px;
   }
+`;
+
+const ContentWrapper = styled.div`
+  overflow-y: auto;
+  width: 95%;
+  padding: 0 15px;
+  margin-bottom: 15px;
 `;
 
 const AttributesTable = styled.table`
@@ -52,12 +59,11 @@ const CLOSE_BUTTON_STYLE = {
   height: '30px',
   border: 'none',
   cursor: 'pointer',
-  background: '#0E111A',
+  background: 'transparent',
   color: 'white',
   outline: 'none',
   fontSize: '19px',
-  right: '15px',
-  position: 'absolute'
+  marginRight: '5px'
 };
 
 const propTypes = {
@@ -77,10 +83,12 @@ const defaultProps = {
 };
 
 const HEADER_STYLE = {
+  marginLeft: '15px',
   color: 'white'
 };
 
 const NO_DATA = 'No Data';
+
 export default class AttributesPanel extends PureComponent {
   prepareTable() {
     const {attributesObject} = this.props;
@@ -123,23 +131,34 @@ export default class AttributesPanel extends PureComponent {
       flexFlow: 'row nowrap',
       justifyContent: isTitleExists ? 'space-between' : 'flex-end',
       alignItems: 'center',
-      flexShrink: 0
+      minHeight: '40px',
+      width: '100%',
     };
   }
 
+  renderHeader() {
+    const {title, handleClosePanel} = this.props;
+
+    return (
+      <div style={this.getHeaderStyle(title)}>
+        {title && <h3 style={HEADER_STYLE}>{title}</h3>}
+        <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
+          <FontAwesomeIcon icon={faTimes} />
+        </button>
+      </div>
+    );
+  }
+
   render() {
-    const {title, attributesObject, handleClosePanel, isControlPanelShown, children} = this.props;
+    const {attributesObject, isControlPanelShown, children} = this.props;
 
     return (
       <Container isControlPanelShown={isControlPanelShown}>
-        <div style={this.getHeaderStyle(title)}>
-          {title && <h3 style={HEADER_STYLE}>{title}</h3>}
-          <button style={CLOSE_BUTTON_STYLE} onClick={handleClosePanel}>
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-        </div>
-        {attributesObject && this.prepareTable()}
-        {children}
+        {this.renderHeader()}
+        <ContentWrapper>
+          {attributesObject && this.prepareTable()}
+          {children}
+        </ContentWrapper>
       </Container>
     );
   }
