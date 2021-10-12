@@ -27,14 +27,15 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 
 ## I3S Aspects support
 
-| Aspect                | Supported | I3S Spec Link                                                                     |
-| --------------------- | --------- | --------------------------------------------------------------------------------- |
-| Node pages            | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodePage.cmn.md             |
-| Compressed attributes | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md |
-| PBR materials         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md |
-| Feature attributes    | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md |
+| Aspect                | Supported | I3S Spec Link                                                                                |
+| --------------------- | --------- | -------------------------------------------------------------------------------------------- |
+| Node pages            | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodePage.cmn.md                        |
+| Compressed attributes | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md            |
+| PBR materials         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md            |
+| Feature attributes    | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md            |
+| Texture Atlas         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md#atlas-usage-and-regions |
 
-## Textures support
+## Texture formats
 I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md
 
 | Texture                                        | Supported |
@@ -45,8 +46,6 @@ I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1
 | .dds with DXT5 (alpha channel)                 | yes       |
 | ktx-etc2                                       | yes       |
 | Basis Universal Texture format in Khronos KTX2 | yes       |
-| Texture Atlas                                  | yes       |
-
 
 ## Terms
 
