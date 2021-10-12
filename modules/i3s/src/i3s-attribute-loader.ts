@@ -117,7 +117,7 @@ function generateAttributesByFeatureId(attributes, attributeStorageInfo, feature
     return null;
   }
 
-  const attributeIndex = objectIds.value.OBJECTID.indexOf(featureId);
+  const attributeIndex = objectIds.value[objectIdsAttributeName].indexOf(featureId);
 
   if (attributeIndex < 0) {
     return null;
