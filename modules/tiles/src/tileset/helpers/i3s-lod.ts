@@ -12,7 +12,7 @@ import {FrameState} from './frame-state';
  * @param frameState 
  * @returns 
  */
-export function lodJudge(tile: Tile3D, frameState: FrameState): 'DIG' | 'OUT' | 'DRAW' {
+export function getLodStatus(tile: Tile3D, frameState: FrameState): 'DIG' | 'OUT' | 'DRAW' {
   if (tile.lodMetricValue === 0 || isNaN(tile.lodMetricValue)) {
     return 'DIG';
   }
