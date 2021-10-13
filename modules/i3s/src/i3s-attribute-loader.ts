@@ -69,10 +69,15 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
   return generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId, tilesetFields);
 }
 
+/**
+ * Gets attributes data from tile.
+ * @param tile 
+ * @returns 
+ */
 function getAttributesData(tile) {
-  const attributeStorageInfo = tile?.tileset?.tileset?.attributeStorageInfo;
-  const attributeUrls = tile?.header?.attributeUrls;
-  const tilesetFields = tile?.tileset?.tileset?.fields || [];
+  const attributeStorageInfo = tile.tileset?.tileset?.attributeStorageInfo;
+  const attributeUrls = tile.header?.attributeUrls;
+  const tilesetFields = tile.tileset?.tileset?.fields || [];
 
   return {attributeStorageInfo, attributeUrls, tilesetFields};
 }

@@ -208,7 +208,7 @@ test('I3SAttributeLoader# should load float attribute', async (t) => {
 });
 
 test('I3SAttributeLoader#loadFeatureAttributes should return null if no tile', async (t) => {
-  const tile = null;
+  const tile = {};
   const featureId = 1;
   const options = {};
 
