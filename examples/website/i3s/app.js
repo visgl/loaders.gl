@@ -20,6 +20,7 @@ import {INITIAL_MAP_STYLE} from './constants';
 import {Color, Flex, Font} from './components/styles';
 import {load} from '@loaders.gl/core';
 import {buildSublayersTree} from './helpers/sublayers';
+import {initStats, sumTilesetsStats} from './helpers/stats';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -66,6 +67,7 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
+    this._loadedTilesets = [];
     this.state = {
       tileset: null,
       url: null,
@@ -80,7 +82,8 @@ export default class App extends PureComponent {
       showBuildingExplorer: false,
       flattenedSublayers: [],
       sublayers: [],
-      sublayersUpdateCounter: 0
+      sublayersUpdateCounter: 0,
+      tilesetsStats: initStats()
     };
     this.needTransitionToTileset = true;
 
@@ -113,6 +116,7 @@ export default class App extends PureComponent {
     } else {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
+    this.setState({tilesetsStats: initStats(tilesetUrl)});
     this._onSelectTileset(tileset);
   }
 
@@ -141,12 +145,19 @@ export default class App extends PureComponent {
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});
+    this._loadedTilesets = [];
     this.needTransitionToTileset = true;
+    const tilesetsStats = initStats(tilesetUrl);
+    this._tilesetStatsWidget.setStats(tilesetsStats);
+    this.setState({tilesetsStats});
   }
 
   // Updates stats, called every frame
   _updateStatWidgets() {
     this._memWidget.update();
+
+    const {tilesetsStats} = this.state;
+    sumTilesetsStats(this._loadedTilesets, tilesetsStats);
     this._tilesetStatsWidget.update();
   }
 
@@ -154,6 +165,7 @@ export default class App extends PureComponent {
     const {zoom, cartographicCenter} = tileset;
     const [longitude, latitude] = cartographicCenter;
 
+    this._loadedTilesets = [...this._loadedTilesets, tileset];
     if (this.needTransitionToTileset) {
       const viewState = {
         ...this.state.viewState,
@@ -172,7 +184,6 @@ export default class App extends PureComponent {
       });
       this.needTransitionToTileset = false;
     }
-    this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
   _onViewStateChange({viewState}) {
@@ -271,6 +282,11 @@ export default class App extends PureComponent {
       if (flattenedSublayer) {
         flattenedSublayer.visibility = sublayer.visibility;
         this.setState({sublayersUpdateCounter: sublayersUpdateCounter + 1});
+        if (!sublayer.visibility) {
+          this._loadedTilesets = this._loadedTilesets.filter(
+            (tileset) => tileset.basePath !== flattenedSublayer.url
+          );
+        }
       }
     }
   }
