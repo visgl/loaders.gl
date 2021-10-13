@@ -12,7 +12,7 @@ import {FrameState} from './frame-state';
  * @param frameState 
  * @returns 
  */
-export function lodJudge(tile: Tile3D, frameState: FrameState) {
+export function lodJudge(tile: Tile3D, frameState: FrameState): 'DIG' | 'OUT' | 'DRAW' {
   if (tile.lodMetricValue === 0 || isNaN(tile.lodMetricValue)) {
     return 'DIG';
   }
@@ -34,7 +34,7 @@ export function lodJudge(tile: Tile3D, frameState: FrameState) {
  * @param frameState
  * @returns
  */
-export function getProjectedRadius(tile: Tile3D, frameState: FrameState) {
+export function getProjectedRadius(tile: Tile3D, frameState: FrameState): number {
   const viewport = frameState.viewport;
   const mbsLat = tile.header.mbs[1];
   const mbsLon = tile.header.mbs[0];
