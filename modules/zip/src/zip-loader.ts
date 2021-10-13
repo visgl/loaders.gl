@@ -19,10 +19,12 @@ export const ZipLoader = {
   parse: parseZipAsync
 };
 
+type FileMap = Record<string, ArrayBuffer>;
+
 // TODO - Could return a map of promises, perhaps as an option...
-async function parseZipAsync(data: any, options = {}) {
+async function parseZipAsync(data: any, options = {}): Promise<FileMap> {
   const promises: Promise<any>[] = [];
-  const fileMap = {};
+  const fileMap: Record<string, ArrayBuffer> = {};
 
   try {
     const jsZip = new JSZip();
