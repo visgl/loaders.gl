@@ -82,7 +82,8 @@ export default class App extends PureComponent {
       showBuildingExplorer: false,
       flattenedSublayers: [],
       sublayers: [],
-      sublayersUpdateCounter: 0
+      sublayersUpdateCounter: 0,
+      tilesetsStats: initStats()
     };
     this.needTransitionToTileset = true;
 
@@ -115,7 +116,7 @@ export default class App extends PureComponent {
     } else {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
-    initStats(tilesetUrl);
+    this.setState({tilesetsStats: initStats(tilesetUrl)});
     this._onSelectTileset(tileset);
   }
 
@@ -144,15 +145,19 @@ export default class App extends PureComponent {
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});
+    this._loadedTilesets = [];
     this.needTransitionToTileset = true;
-    this._tilesetStatsWidget.setStats(initStats(tilesetUrl));
+    const tilesetsStats = initStats(tilesetUrl);
+    this._tilesetStatsWidget.setStats(tilesetsStats);
+    this.setState({tilesetsStats});
   }
 
   // Updates stats, called every frame
   _updateStatWidgets() {
     this._memWidget.update();
 
-    sumTilesetsStats(this._loadedTilesets);
+    const {tilesetsStats} = this.state;
+    sumTilesetsStats(this._loadedTilesets, tilesetsStats);
     this._tilesetStatsWidget.update();
   }
 

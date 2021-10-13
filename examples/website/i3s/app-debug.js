@@ -224,7 +224,8 @@ export default class App extends PureComponent {
       warnings: [],
       flattenedSublayers: [],
       sublayers: [],
-      sublayersUpdateCounter: 0
+      sublayersUpdateCounter: 0,
+      tilesetsStats: initStats()
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -262,7 +263,7 @@ export default class App extends PureComponent {
     } else {
       mainTileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
-    initStats(tilesetUrl);
+    this.setState({tilesetsStats: initStats(tilesetUrl)});
     this._onSelectTileset(mainTileset);
     load(UV_DEBUG_TEXTURE_URL, ImageLoader).then((image) => (this._uvDebugTexture = image));
   }
@@ -285,8 +286,11 @@ export default class App extends PureComponent {
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, tileInfo: null, normalsDebugData: [], flattenedSublayers});
+    this._loadedTilesets = [];
     this.needTransitionToTileset = true;
-    this._tilesetStatsWidget.setStats(initStats(tilesetUrl));
+    const tilesetsStats = initStats(tilesetUrl);
+    this._tilesetStatsWidget.setStats(tilesetsStats);
+    this.setState({tilesetsStats});
   }
 
   /**
@@ -311,7 +315,8 @@ export default class App extends PureComponent {
   _updateStatWidgets() {
     this._memWidget.update();
 
-    sumTilesetsStats(this._loadedTilesets);
+    const {tilesetsStats} = this.state;
+    sumTilesetsStats(this._loadedTilesets, tilesetsStats);
     this._tilesetStatsWidget.update();
   }
 
