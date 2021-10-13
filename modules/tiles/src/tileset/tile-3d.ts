@@ -9,7 +9,7 @@ import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 import {FrameState} from './helpers/frame-state';
 import {createBoundingVolume} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
-import {getI3ScreenSize} from './helpers/i3s-lod';
+import {getProjectedRadius} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
 import TilesetTraverser from './traversers/tileset-traverser';
 
@@ -287,7 +287,7 @@ export default class TileHeader {
   getScreenSpaceError(frameState, useParentLodMetric) {
     switch (this.tileset.type) {
       case TILESET_TYPE.I3S:
-        return getI3ScreenSize(this, frameState);
+        return getProjectedRadius(this, frameState);
       case TILESET_TYPE.TILES3D:
         return getTiles3DScreenSpaceError(this, frameState, useParentLodMetric);
       default:
