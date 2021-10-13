@@ -1,4 +1,9 @@
-import {STRING_ATTRIBUTE_TYPE, OBJECT_ID_ATTRIBUTE_TYPE, FLOAT_64_TYPE} from './constants';
+import {
+  STRING_ATTRIBUTE_TYPE,
+  OBJECT_ID_ATTRIBUTE_TYPE,
+  FLOAT_64_TYPE,
+  INT_16_ATTRIBUTE_TYPE
+} from './constants';
 
 /**
  * Get particular tile and creates attribute object inside.
@@ -31,6 +36,8 @@ function parseAttribute(attributeType, arrayBuffer) {
       return parseShortNumberAttribute(arrayBuffer);
     case FLOAT_64_TYPE:
       return parseFloatAttribute(arrayBuffer);
+    case INT_16_ATTRIBUTE_TYPE:
+      return parseInt16ShortNumberAttribute(arrayBuffer);
     default:
       return parseShortNumberAttribute(arrayBuffer);
   }
@@ -45,6 +52,17 @@ function parseAttribute(attributeType, arrayBuffer) {
 function parseShortNumberAttribute(arrayBuffer) {
   const countOffset = 4;
   return new Uint32Array(arrayBuffer, countOffset);
+}
+
+/**
+ * Parse Int16 short number attribute.
+ * Parsing of such data is not documented. Added to handle Building Scene Layer Tileset attributes data.
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {Int16Array}
+ */
+function parseInt16ShortNumberAttribute(arrayBuffer) {
+  const countOffset = 4;
+  return new Int16Array(arrayBuffer, countOffset);
 }
 
 /**

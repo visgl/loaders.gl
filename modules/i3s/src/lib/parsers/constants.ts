@@ -47,3 +47,4 @@ export const SIZEOF = {
 export const STRING_ATTRIBUTE_TYPE = 'String';
 export const OBJECT_ID_ATTRIBUTE_TYPE = 'Oid32';
 export const FLOAT_64_TYPE = 'Float64';
+export const INT_16_ATTRIBUTE_TYPE = 'Int16';
