@@ -27,7 +27,7 @@
     "bootstrap": "yarn install-fast && ocular-bootstrap",
     "install-fast": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn",
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
-    "build": "ocular-clean && ocular-build --dist esm && lerna run pre-build",
+    "build": "ocular-clean && lerna run pre-build && ocular-build --dist esm",
     "build-workers": "lerna run pre-build",
     "clean": "ocular-clean",
     "cover": "ocular-test cover",
