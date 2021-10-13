@@ -29,8 +29,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/parquet-worker.ts --output ./dist/parquet-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap --external:{util,fs,path,crypto}",
+    "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --bundle --minify --sourcemap --external:{util,fs,path,crypto}"
   },
   "browser": {
     "child_process": false,
