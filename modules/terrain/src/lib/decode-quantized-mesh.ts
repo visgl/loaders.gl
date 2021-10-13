@@ -213,8 +213,13 @@ function decodeWaterMaskExtension(extensionDataView) {
   );
 }
 
+type Extensions = {
+  vertexNormals?: any;
+  waterMask?: any;
+};
+
 function decodeExtensions(dataView, indicesEndPosition) {
-  const extensions = {};
+  const extensions: Extensions = {};
 
   if (dataView.byteLength <= indicesEndPosition) {
     return {extensions, extensionsEndPosition: indicesEndPosition};
