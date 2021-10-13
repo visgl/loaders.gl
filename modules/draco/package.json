@@ -34,7 +34,7 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
-    "build-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js"
+    "build-worker": "esbuild src/workers/draco-worker.ts --bundle --outfile=dist/draco-worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
