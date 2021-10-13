@@ -1,4 +1,4 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {default as parsePotreeBin} from './parsers/parse-potree-bin';
 
 /**
@@ -16,7 +16,7 @@ export const PotreeBinLoader: LoaderWithParser = {
   binary: true
 };
 
-function parseSync(arrayBuffer, options) {
+function parseSync(arrayBuffer: ArrayBuffer, options?: LoaderOptions) {
   const index = {};
   const byteOffset = 0;
   parsePotreeBin(arrayBuffer, byteOffset, options, index);

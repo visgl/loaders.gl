@@ -13,8 +13,8 @@ const NUM_DIMENSIONS = {
   3: 4 // 4D (ZM)
 };
 
-export default function parseWKB(buffer): BinaryGeometry {
-  const view = new DataView(buffer);
+export default function parseWKB(arrayBuffer: ArrayBuffer): BinaryGeometry {
+  const view = new DataView(arrayBuffer);
   let offset = 0;
 
   // Check endianness of data
@@ -26,7 +26,8 @@ export default function parseWKB(buffer): BinaryGeometry {
   offset += 4;
 
   const geometryType = geometryCode % 1000;
-  const dimension = NUM_DIMENSIONS[(geometryCode - geometryType) / 1000];
+  const type = ((geometryCode - geometryType) / 1000) as 0 | 1 | 2 | 3;
+  const dimension = NUM_DIMENSIONS[type];
 
   switch (geometryType) {
     case 1:
@@ -60,10 +61,10 @@ export default function parseWKB(buffer): BinaryGeometry {
 
 // Primitives; parse point and linear ring
 function parsePoint(
-  view,
-  offset,
-  dimension,
-  littleEndian
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
 ): {geometry: BinaryPointGeometry; offset: number} {
   const positions = new Float64Array(dimension);
   for (let i = 0; i < dimension; i++) {
@@ -78,10 +79,10 @@ function parsePoint(
 }
 
 function parseLineString(
-  view,
-  offset,
-  dimension,
-  littleEndian
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
 ): {geometry: BinaryLineGeometry; offset: number} {
   const nPoints = view.getUint32(offset, littleEndian);
   offset += 4;
@@ -109,13 +110,13 @@ function parseLineString(
 }
 
 // https://stackoverflow.com/a/55261098
-const cumulativeSum = (sum) => (value) => (sum += value);
+const cumulativeSum = (sum: number) => (value: number) => (sum += value);
 
 function parsePolygon(
-  view,
-  offset,
-  dimension,
-  littleEndian
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
 ): {geometry: BinaryPolygonGeometry; offset: number} {
   const nRings = view.getUint32(offset, littleEndian);
   offset += 4;
@@ -150,7 +151,12 @@ function parsePolygon(
   };
 }
 
-function parseMultiPoint(view, offset, dimension, littleEndian): BinaryPointGeometry {
+function parseMultiPoint(
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
+): BinaryPointGeometry {
   const nPoints = view.getUint32(offset, littleEndian);
   offset += 4;
 
@@ -175,7 +181,12 @@ function parseMultiPoint(view, offset, dimension, littleEndian): BinaryPointGeom
   return concatenateBinaryPointGeometries(binaryPointGeometries, dimension);
 }
 
-function parseMultiLineString(view, offset, dimension, littleEndian): BinaryLineGeometry {
+function parseMultiLineString(
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
+): BinaryLineGeometry {
   const nLines = view.getUint32(offset, littleEndian);
   offset += 4;
 
@@ -199,7 +210,12 @@ function parseMultiLineString(view, offset, dimension, littleEndian): BinaryLine
   return concatenateBinaryLineGeometries(binaryLineGeometries, dimension);
 }
 
-function parseMultiPolygon(view, offset, dimension, littleEndian): BinaryPolygonGeometry {
+function parseMultiPolygon(
+  view: DataView,
+  offset: number,
+  dimension: number,
+  littleEndian: boolean
+): BinaryPolygonGeometry {
   const nPolygons = view.getUint32(offset, littleEndian);
   offset += 4;
 

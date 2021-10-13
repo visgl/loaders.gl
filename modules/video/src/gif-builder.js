@@ -1,4 +1,5 @@
 // A GIFBuilder based on the gifshot module
+// @ts-nocheck
 import {assert} from './lib/utils/assert';
 import gifshot from './libs/gifshot'; // TODO - load dynamically to avoid bloating
 
