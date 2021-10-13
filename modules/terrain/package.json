@@ -29,9 +29,9 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/terrain-worker.js --output ./dist/terrain-worker.js --config ../../scripts/webpack/worker.js",
-    "build-worker2": "webpack --entry ./src/workers/quantized-mesh-worker.js --output ./dist/quantized-mesh-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-worker": "esbuild src/workers/terrain-worker.js --bundle --outfile=dist/terrain-worker.js",
+    "build-worker2": "esbuild src/workers/quantized-mesh-worker.js --bundle --outfile=dist/quantized-mesh-worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

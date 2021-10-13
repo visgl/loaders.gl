@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/worker-utils';
-import {getLoadableWorkerURL} from '@loaders.gl/worker-utils/lib/worker-utils/get-loadable-worker-url';
+import {getLoadableWorkerURL} from '../../../src/lib/worker-utils/get-loadable-worker-url';
 
 const WORKER_SOURCE = `
   self.onmessage = function(event) {

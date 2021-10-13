@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import '@loaders.gl/polyfills';
-import {isBrowser} from '@loaders.gl/polyfills/utils/globals';
+import {isBrowser} from '../../src/utils/globals';
 
 test('Node image polyfills', (t) => {
   if (!isBrowser) {

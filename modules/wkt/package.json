@@ -28,8 +28,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/wkt-worker.ts --output ./dist/wkt-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-worker": "esbuild src/workers/wkt-worker.ts --bundle --outfile=dist/wkt-worker.js"
   },
   "devDependencies": {
     "fuzzer": "^0.2.1"

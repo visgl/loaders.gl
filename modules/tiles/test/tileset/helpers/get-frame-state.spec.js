@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {getFrameState} from '@loaders.gl/tiles';
 import {Viewport} from '@deck.gl/core';
 import {equals, Vector3} from '@math.gl/core';

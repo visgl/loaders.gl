@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
-import {normalize3DTileColorAttribute} from '@loaders.gl/3d-tiles/lib/parsers/helpers/normalize-3d-tile-colors';
 import test from 'tape-promise/tape';
 import {GL} from '@loaders.gl/math';
+import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers/normalize-3d-tile-colors';
 
 const TEST_CASES = [
   {
