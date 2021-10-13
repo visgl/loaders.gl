@@ -29,8 +29,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/pcd-worker.ts --output ./dist/pcd-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-worker": "esbuild src/workers/pcd-worker.ts --bundle --outfile=dist/pcd-worker.js"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",

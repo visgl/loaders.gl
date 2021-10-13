@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 
-import encodeWKT from '@loaders.gl/wkt/lib/encode-wkt';
-import parseWKT from '@loaders.gl/wkt/lib/parse-wkt';
+import encodeWKT from '../../src/lib/encode-wkt';
+import parseWKT from '../../src/lib/parse-wkt';
 
 test('encodeWKT', (t) => {
   // @ts-ignore

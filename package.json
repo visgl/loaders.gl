@@ -51,6 +51,7 @@
     "base64-inline-loader": "^1.1.1",
     "base64-loader": "^1.0.0",
     "coveralls": "^3.0.3",
+    "esbuild": "^0.13.4",
     "ocular-dev-tools": "1.0.0-alpha.6",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1"

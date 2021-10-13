@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import test from 'tape-promise/tape';
-import {getDracoSchema} from '@loaders.gl/draco/lib/utils/get-draco-schema';
+import {getDracoSchema} from '../../../src/lib/utils/get-draco-schema';
 
 const ATTRIBUTES_STUB = {
   POSITIONS: {

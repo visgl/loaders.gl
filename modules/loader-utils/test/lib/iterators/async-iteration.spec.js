@@ -9,7 +9,9 @@ import {
   makeNumberedLineIterator
 } from '@loaders.gl/loader-utils';
 
-import parseNDJSONInBatches from '@loaders.gl/json/lib/parse-ndjson-in-batches';
+import {NDJSONLoader} from '@loaders.gl/json';
+
+const parseNDJSONInBatches = NDJSONLoader.parseInBatches;
 
 const setTimeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
