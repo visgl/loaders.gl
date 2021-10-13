@@ -44,7 +44,7 @@ export default class ChildProcessProxy {
   props: ChildProcessProxyProps = {...DEFAULT_PROPS};
   private childProcess: ChildProcess.ChildProcess | null = null;
   private port: number = 0;
-  private successTimer?;
+  private successTimer?: any; // NodeJS.Timeout;
 
   // constructor(props?: {id?: string});
   constructor({id = 'browser-driver'} = {}) {

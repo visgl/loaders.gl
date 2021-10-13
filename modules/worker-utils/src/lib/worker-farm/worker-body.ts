@@ -29,7 +29,7 @@ export default class WorkerBody {
     let onMessageWrapper = onMessageWrapperMap.get(onMessage);
 
     if (!onMessageWrapper) {
-      onMessageWrapper = (message) => {
+      onMessageWrapper = (message: MessageEvent<any>) => {
         if (!isKnownMessage(message)) {
           return;
         }
@@ -70,7 +70,7 @@ export default class WorkerBody {
 }
 
 // Filter out noise messages sent to workers
-function isKnownMessage(message) {
+function isKnownMessage(message: MessageEvent<any>) {
   const {type, data} = message;
   return (
     type === 'message' &&

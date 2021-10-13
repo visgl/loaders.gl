@@ -23,6 +23,7 @@ test('require-utils', (tt) => {
   });
 
   test('requireFromString#should accept only string as code', (t) => {
+    // @ts-expect-error
     t.throws(() => requireFromString(), /code must be a string, not undefined/);
     t.end();
   });
@@ -33,7 +34,7 @@ test('require-utils', (tt) => {
   });
 
   test('requireFromString#should accept filename', (t) => {
-    t.throws(() => requireFromString('module.exports = ', 'bug.js', /bug\.js|Unexpected token }/));
+    t.throws(() => requireFromString('module.exports = ', 'bug.js'), /bug\.js|Unexpected/);
     t.end();
   });
 
