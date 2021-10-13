@@ -1,4 +1,4 @@
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {WorkerThread} from '@loaders.gl/worker-utils';
 
 const hasWorker = typeof Worker !== 'undefined';

@@ -1,4 +1,4 @@
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {WorkerPool} from '@loaders.gl/worker-utils';
 import {toArrayBuffer, parseWithWorker} from '@loaders.gl/loader-utils';
 import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core';

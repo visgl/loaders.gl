@@ -2291,6 +2291,23 @@
   dependencies:
     "@babel/runtime" "^7.0.0"
 
+"@probe.gl/stats@3.4.1":
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.4.1.tgz#5bc0ec5f87ae3195c22a98363e9c15031fbfe8e8"
+  integrity sha512-1Ol5cH8MQqIrGNgU4NCBj2cw1qiXYfHP1QCFX+u/xyrvgwLkPrOGkdSYMzw4VKTjJzNae4i7urOTf2m2hduZzQ==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+
+"@probe.gl/test-utils@^3.0.2":
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/@probe.gl/test-utils/-/test-utils-3.4.1.tgz#d82d9e345945f8d361bc4460fb18a7844877b43c"
+  integrity sha512-Ur2w/Kb7NChNZTVks9J2xRr82FNnMkuSM9knyIP5ceY0l0kffmvOloE6Bnw1craCbH6oEuCakYm3SOh38tKKMQ==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    pixelmatch "^4.0.2"
+    probe.gl "3.4.1"
+    puppeteer "*"
+
 "@probe.gl/test-utils@^3.4.0":
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/@probe.gl/test-utils/-/test-utils-3.4.0.tgz#5427d8923a0921dc28ae3e59fe597f9a807bb28f"
@@ -4904,11 +4921,6 @@ dom-serializer@^1.0.1:
     domhandler "^4.2.0"
     entities "^2.0.0"
 
-dom-walk@^0.1.0:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/dom-walk/-/dom-walk-0.1.2.tgz#0c548bef048f4d1f2a97249002236060daa3fd84"
-  integrity sha512-6QvTW9mrGeIegrFXdtQi9pk7O/nSK6lSdXW2eqUspN5LWD7UTji2Fqw5V2YLjBpHEoU9Xl/eUWNpDeZvoyOv2w==
-
 domain-browser@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/domain-browser/-/domain-browser-1.2.0.tgz#3d31f50191a6749dd1375a7f522e823d42e54eda"
@@ -5386,6 +5398,11 @@ eslint-plugin-markdown@^2.2.0:
   integrity sha512-Ctuc7aP1tU92qnFwVO1wDLEzf1jqMxwRkcSTw7gjbvnEqfh5CKUcTXM0sxg8CB2KDXrqpTuMZPgJ1XE9Olr7KA==
   dependencies:
     mdast-util-from-markdown "^0.8.5"
+
+eslint-plugin-react-hooks@^4.0.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-4.2.0.tgz#8c229c268d468956334c943bb45fc860280f5556"
+  integrity sha512-623WEiZJqxR7VdxFCKLI6d6LLpwJkGPYKODnkH3D7WpOG5KM8yWueBd8TLsNAetEJNF5iJmolaAKO3F8yzyVBQ==
 
 eslint-plugin-react@^6.7.1:
   version "6.10.3"
@@ -6454,14 +6471,6 @@ global-prefix@^3.0.0:
     ini "^1.3.5"
     kind-of "^6.0.2"
     which "^1.3.1"
-
-global@~4.3.0:
-  version "4.3.2"
-  resolved "https://registry.yarnpkg.com/global/-/global-4.3.2.tgz#e76989268a6c74c38908b1305b10fc0e394e9d0f"
-  integrity sha1-52mJJopsdMOJCLEwWxD8DjlOnQ8=
-  dependencies:
-    min-document "^2.19.0"
-    process "~0.5.1"
 
 globals@^11.1.0:
   version "11.12.0"
@@ -8354,13 +8363,6 @@ mimic-fn@^1.0.0:
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-1.2.0.tgz#820c86a39334640e99516928bd03fca88057d022"
   integrity sha512-jf84uxzwiuiIVKiOLpfYk7N46TSy8ubTonmneY9vrpHNAnp0QBt2BxWV9dO3/j+BoVAb+a5G6YDPW3M5HOdMWQ==
 
-min-document@^2.19.0:
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/min-document/-/min-document-2.19.0.tgz#7bd282e3f5842ed295bb748cdd9f1ffa2c824685"
-  integrity sha1-e9KC4/WELtKVu3SM3Z8f+iyCRoU=
-  dependencies:
-    dom-walk "^0.1.0"
-
 min-indent@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/min-indent/-/min-indent-1.0.1.tgz#a63f681673b30571fbe8bc25686ae746eefa9869"
@@ -9019,10 +9021,10 @@ octokit-pagination-methods@^1.1.0:
   resolved "https://registry.yarnpkg.com/octokit-pagination-methods/-/octokit-pagination-methods-1.1.0.tgz#cf472edc9d551055f9ef73f6e42b4dbb4c80bea4"
   integrity sha512-fZ4qZdQ2nxJvtcasX7Ghl+WlWS/d9IgnBIwFZXVNNZUmzpno91SX5bc5vuxiuKoCtK78XxGGNuSCrDC7xYB3OQ==
 
-ocular-dev-tools@1.0.0-alpha.6:
-  version "1.0.0-alpha.6"
-  resolved "https://registry.yarnpkg.com/ocular-dev-tools/-/ocular-dev-tools-1.0.0-alpha.6.tgz#9f2f8259f7f7ebebebb40b46498cbf809f2628c9"
-  integrity sha512-7I6yeU3lEZv/xf5whRhuFpaxZvzWHrjNP76SrQFmIjZdo18pRPa6lWGVy1oYZsxeOaB8VoPt880InvCYcUWkVA==
+ocular-dev-tools@1.0.0-alpha.7:
+  version "1.0.0-alpha.7"
+  resolved "https://registry.yarnpkg.com/ocular-dev-tools/-/ocular-dev-tools-1.0.0-alpha.7.tgz#1defc262b67bb564821c96ced89af369127ca7a0"
+  integrity sha512-UDCNcDjbpiI7jDTodSasdrW0D2YveeDNEVS2ktEIEYq30Ao8Wr5m7DpVWcrkzHA/nF1qbetax1kqFiJVhtr5fA==
   dependencies:
     "@babel/cli" "^7.14.5"
     "@babel/core" "^7.14.5"
@@ -9030,17 +9032,20 @@ ocular-dev-tools@1.0.0-alpha.6:
     "@babel/plugin-proposal-class-properties" "^7.14.5"
     "@babel/plugin-proposal-nullish-coalescing-operator" "^7.14.2"
     "@babel/plugin-proposal-optional-chaining" "^7.14.2"
+    "@babel/plugin-transform-runtime" "^7.14.5"
     "@babel/preset-env" "^7.14.5"
     "@babel/preset-react" "^7.14.5"
     "@babel/preset-typescript" "^7.14.5"
     "@babel/register" "^7.14.5"
     "@babel/runtime" "7.14.5"
+    "@probe.gl/test-utils" "^3.0.2"
     "@typescript-eslint/eslint-plugin" "^4.26.1"
     "@typescript-eslint/parser" "^4.26.1"
     babel-loader "8.2.2"
     babel-plugin-istanbul "^6.0.0"
     babel-plugin-version-inline "^1.0.0"
     core-js "^3.2.1"
+    coveralls "^3.0.3"
     deepmerge "^4.2.2"
     eslint "^7.28.0"
     eslint-config-airbnb "^18.0.1"
@@ -9052,6 +9057,7 @@ ocular-dev-tools@1.0.0-alpha.6:
     eslint-plugin-jsx-a11y "^6.1.2"
     eslint-plugin-markdown "^2.2.0"
     eslint-plugin-react "^7.22.0"
+    eslint-plugin-react-hooks "^4.0.0"
     glob "^7.1.4"
     handlebars "^4.1.2"
     html-webpack-plugin "^3.2.0"
@@ -9060,13 +9066,13 @@ ocular-dev-tools@1.0.0-alpha.6:
     lodash.template "^4.5.0"
     module-alias "^2.0.0"
     nyc "^15.0.0"
-    prettier "^1.17.0"
+    prettier "2.3.1"
     prettier-check "2.0.0"
     source-map-loader "^0.2.3"
-    tape "^5.2.2"
-    tape-catch "^1.0.4"
+    source-map-support "^0.5.12"
+    tape "4.11.0"
     tape-promise "^4.0.0"
-    typescript "^4.2.3"
+    typescript "^4.3.4"
     webpack "^4.28.4"
     webpack-bundle-analyzer "^3.0.3"
     webpack-cli "^3.2.1"
@@ -9695,7 +9701,7 @@ prettier-check@2.0.0:
   dependencies:
     execa "^0.6.0"
 
-prettier@2.3.1, prettier@^1.17.0:
+prettier@2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.3.1.tgz#76903c3f8c4449bc9ac597acefa24dc5ad4cbea6"
   integrity sha512-p+vNbgpLjif/+D+DwAZAbndtRrR0md0MwfmOVN9N+2RgyACMT+7tfaRnT+WDPkqnuVwleyuBIG2XBxKDme3hPA==
@@ -9721,6 +9727,14 @@ probe.gl@3.4.0, probe.gl@^3.4.0:
     "@babel/runtime" "^7.0.0"
     "@probe.gl/stats" "3.4.0"
 
+probe.gl@3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.4.1.tgz#88d8629fbac5a627049d6fdc6b8c364d56f00815"
+  integrity sha512-k/6YoZr6cBwnFpQLs/s4yZ8cCxapQzRrxl16EQg1b2wYXLlerDJ4PkNoQ3YDN9yu3Jcipipr+Avy1GRpyBF6ZA==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@probe.gl/stats" "3.4.1"
+
 process-nextick-args@~2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"
@@ -9737,11 +9751,6 @@ process@^0.11.10:
   version "0.11.10"
   resolved "https://registry.yarnpkg.com/process/-/process-0.11.10.tgz#7332300e840161bda3e69a1d1d91a7d4bc16f182"
   integrity sha1-czIwDoQBYb2j5podHZGn1LwW8YI=
-
-process@~0.5.1:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/process/-/process-0.5.2.tgz#1638d8a8e34c2f440a91db95ab9aeb677fc185cf"
-  integrity sha1-FjjYqONML0QKkduVq5rrZ3/Bhc8=
 
 progress@2.0.1:
   version "2.0.1"
@@ -10962,6 +10971,14 @@ source-map-resolve@^0.5.0:
     source-map-url "^0.4.0"
     urix "^0.1.0"
 
+source-map-support@^0.5.12:
+  version "0.5.20"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.20.tgz#12166089f8f5e5e8c56926b377633392dd2cb6c9"
+  integrity sha512-n1lZZ8Ve4ksRqizaBQgxXDgKwttHDhyfQjA6YZZn8+AroHbsIz+JjwxQDxbp+7y5OYCI8t1Yk7etjD9CRd2hIw==
+  dependencies:
+    buffer-from "^1.0.0"
+    source-map "^0.6.0"
+
 source-map-support@^0.5.16, source-map-support@~0.5.12:
   version "0.5.19"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.19.tgz#a98b62f86dcaf4f67399648c085291ab9e8fed61"
@@ -11449,13 +11466,6 @@ tapable@^1.0.0, tapable@^1.1.3:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-1.1.3.tgz#a1fccc06b58db61fd7a45da2da44f5f3a3e67ba2"
   integrity sha512-4WK/bYZmj8xLr+HUCODHGF1ZFzsYffasLUgEiMBY4fgtltdO6B4WJtlSbPaDTLpYTcGVwM2qLnFTICEcNxs3kA==
 
-tape-catch@^1.0.4:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/tape-catch/-/tape-catch-1.0.6.tgz#12931d5ea60a03a97d9bd19d0d7d8cfc3f6cecf1"
-  integrity sha1-EpMdXqYKA6l9m9GdDX2M/D9s7PE=
-  dependencies:
-    global "~4.3.0"
-
 tape-promise@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/tape-promise/-/tape-promise-4.0.0.tgz#c1f3553959b2e9d64b1546e7276b8a017c616897"
@@ -11464,7 +11474,7 @@ tape-promise@^4.0.0:
     is-promise "^2.1.0"
     onetime "^2.0.0"
 
-tape@4.11.0, tape@^5.2.2:
+tape@4.11.0:
   version "4.11.0"
   resolved "https://registry.yarnpkg.com/tape/-/tape-4.11.0.tgz#63d41accd95e45a23a874473051c57fdbc58edc1"
   integrity sha512-yixvDMX7q7JIs/omJSzSZrqulOV51EC9dK8dM0TzImTIkHWfe2/kFyL5v+d9C+SrCMaICk59ujsqFAVidDqDaA==
@@ -11899,7 +11909,7 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@^4.2.3, typescript@^4.3.5:
+typescript@^4.3.4, typescript@^4.3.5:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.2.tgz#6d618640d430e3569a1dfb44f7d7e600ced3ee86"
   integrity sha512-gzP+t5W4hdy4c+68bfcv0t400HVJMMd2+H9B7gae1nQlBzCqvrXX+6GL/b3GAgyTH966pzrZ70/fRjwAtZksSQ==
