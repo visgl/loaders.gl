@@ -9,7 +9,7 @@ export function removeNontransferableOptions(object: object): object {
   return JSON.parse(stringifyJSON(object));
 }
 
-function stringifyJSON(v) {
+function stringifyJSON(v: unknown) {
   const cache = new Set();
   return JSON.stringify(v, (key, value) => {
     if (typeof value === 'object' && value !== null) {

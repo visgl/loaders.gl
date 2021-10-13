@@ -42,7 +42,7 @@ export default class WorkerJob {
   /**
    * Call to resolve the `result` Promise with the supplied value
    */
-  done(value): void {
+  done(value: any): void {
     assert(this.isRunning);
     this.isRunning = false;
     this._resolve(value);
@@ -51,7 +51,7 @@ export default class WorkerJob {
   /**
    * Call to reject the `result` Promise with the supplied error
    */
-  error(error): void {
+  error(error: Error): void {
     assert(this.isRunning);
     this.isRunning = false;
     this._reject(error);

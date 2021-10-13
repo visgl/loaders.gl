@@ -14,7 +14,7 @@ export type WorkerOptions = {
 
 export type WorkerContext = {
   process?: Process;
-  processInBatches?;
+  processInBatches?: ProcessInBatches;
 };
 
 export type Process = (data: any, options?: {[key: string]: any}, context?: WorkerContext) => any;

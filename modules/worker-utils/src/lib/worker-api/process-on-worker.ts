@@ -80,7 +80,7 @@ async function onMessage(
 
     case 'error':
       // Worker encountered an error
-      job.error(payload.error);
+      job.error(new Error(payload.error));
       break;
 
     case 'process':

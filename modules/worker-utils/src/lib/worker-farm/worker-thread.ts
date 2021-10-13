@@ -73,7 +73,7 @@ export default class WorkerThread {
    * Generate a standard Error from an ErrorEvent
    * @param {ErrorEvent} event
    */
-  _getErrorFromErrorEvent(event) {
+  _getErrorFromErrorEvent(event: ErrorEvent): Error {
     // Note Error object does not have the expected fields if loading failed completely
     // https://developer.mozilla.org/en-US/docs/Web/API/Worker#Event_handlers
     // https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
@@ -105,7 +105,7 @@ export default class WorkerThread {
       }
     };
     // This callback represents an uncaught exception in the worker thread
-    worker.onerror = (error) => {
+    worker.onerror = (error: ErrorEvent): void => {
       this.onError(this._getErrorFromErrorEvent(error));
       this.terminated = true;
     };

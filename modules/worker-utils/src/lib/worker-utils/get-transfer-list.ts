@@ -40,7 +40,7 @@ export function getTransferList(
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Transferable
-function isTransferable(object) {
+function isTransferable(object: unknown) {
   if (!object) {
     return false;
   }
