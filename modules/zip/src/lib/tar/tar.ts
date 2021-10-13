@@ -65,7 +65,7 @@ class Tar {
     const uid = opts.uid || 0;
     const gid = opts.gid || 0;
 
-    const data = {
+    const data: Record<string, string> = {
       fileName: filepath,
       fileMode: pad(mode, 7),
       uid: pad(uid, 7),

@@ -101,7 +101,7 @@ function getAttributeValueType(attribute) {
  * @param attributeStorageInfo 
  * @returns Feature ids attribute name
  */
- function getFeatureIdsAttributeName(attributeStorageInfo) {
+function getFeatureIdsAttributeName(attributeStorageInfo) {
   const objectIdsAttribute = attributeStorageInfo.find(attribute => attribute.name.includes('OBJECTID'));
 
   return objectIdsAttribute?.name;
