@@ -1,4 +1,4 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseNPY} from './lib/parsers/parse-npy';
 
@@ -28,7 +28,7 @@ export const NPYWorkerLoader = {
 export const NPYLoader = {
   ...NPYWorkerLoader,
   parseSync: parseNPY,
-  parse: async (arrayBuffer, options) => parseNPY(arrayBuffer, options)
+  parse: async (arrayBuffer: ArrayBuffer, options?: LoaderOptions) => parseNPY(arrayBuffer, options)
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk

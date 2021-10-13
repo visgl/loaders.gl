@@ -1,10 +1,14 @@
+// loaders.gl, MIT license
 import {asyncDeepMap} from './async-deep-map';
 
-export async function deepLoad(urlTree, load, options) {
-  return await asyncDeepMap(urlTree, (url) => shallowLoad(url, load, options));
+export type LoadOptions = Record<string, any>;
+export type Load = (data: ArrayBuffer, options: Record<string, any>) => Promise<any>;
+
+export async function deepLoad(urlTree: unknown, load: Load, options: LoadOptions) {
+  return await asyncDeepMap(urlTree, (url: string) => shallowLoad(url, load, options));
 }
 
-export async function shallowLoad(url, load, options) {
+export async function shallowLoad(url: string, load: Load, options: LoadOptions): Promise<any> {
   // console.error('loading', url);
   const response = await fetch(url, options.fetch);
   const arrayBuffer = await response.arrayBuffer();
