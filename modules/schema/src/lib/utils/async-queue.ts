@@ -2,7 +2,7 @@
 // http://2ality.com/2016/10/asynchronous-iteration.html
 
 class ArrayQueue<T> extends Array<T> {
-  enqueue(value) {
+  enqueue(value: T) {
     // Add at the end
     return this.push(value);
   }
@@ -13,15 +13,18 @@ class ArrayQueue<T> extends Array<T> {
 }
 
 export default class AsyncQueue<T> {
-  private _values: ArrayQueue<T>;
-  private _settlers: ArrayQueue<{resolve; reject}>;
+  private _values: ArrayQueue<T | Error>;
+  private _settlers: ArrayQueue<{resolve: (value: any) => void; reject: (reason?: any) => void}>;
   private _closed: boolean;
 
   constructor() {
     // enqueues > dequeues
     this._values = new ArrayQueue<T>();
     // dequeues > enqueues
-    this._settlers = new ArrayQueue<{resolve; reject}>();
+    this._settlers = new ArrayQueue<{
+      resolve: (value: any) => void;
+      reject: (reason?: any) => void;
+    }>();
     this._closed = false;
   }
 

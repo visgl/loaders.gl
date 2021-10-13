@@ -114,7 +114,7 @@ export default class TableBatchBuilder {
 
   // INTERNAL
 
-  _estimateRowMB(row) {
+  _estimateRowMB(row: any[] | object): number {
     return Array.isArray(row) ? row.length * 8 : Object.keys(row).length * 8;
   }
 
