@@ -37,7 +37,7 @@ async function parse(data, options) {
  */
 // eslint-disable-next-line complexity
 export async function loadFeatureAttributes(tile, featureId, options = {}) {
-  const {attributeStorageInfo, attributeUrls} = getAttributesData(tile);
+  const {attributeStorageInfo, attributeUrls, tilesetFields} = getAttributesData(tile);
 
   if (!attributeStorageInfo || !attributeUrls || !featureId) {
     return null;
@@ -66,15 +66,20 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
     return null;
   }
 
-  return generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId);
+  return generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId, tilesetFields);
 }
 
+/**
+ * Gets attributes data from tile.
+ * @param tile 
+ * @returns 
+ */
 function getAttributesData(tile) {
-  const attributeStorageInfo =
-    tile && tile.tileset && tile.tileset.tileset && tile.tileset.tileset.attributeStorageInfo;
-  const attributeUrls = tile && tile.header && tile.header.attributeUrls;
+  const attributeStorageInfo = tile.tileset?.tileset?.attributeStorageInfo;
+  const attributeUrls = tile.header?.attributeUrls;
+  const tilesetFields = tile.tileset?.tileset?.fields || [];
 
-  return {attributeStorageInfo, attributeUrls};
+  return {attributeStorageInfo, attributeUrls, tilesetFields};
 }
 
 /**
@@ -109,7 +114,7 @@ function getFeatureIdsAttributeName(attributeStorageInfo) {
  * @param {number} featureId
  * @returns {Object}
  */
-function generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId) {
+function generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId, tilesetFields) {
   const objectIdsAttributeName = getFeatureIdsAttributeName(attributeStorageInfo);
   const objectIds = attributes.find((attribute) => attribute.value[objectIdsAttributeName]);
 
@@ -123,7 +128,7 @@ function generateAttributesByFeatureId(attributes, attributeStorageInfo, feature
     return null;
   }
 
-  return getFeatureAttributesByIndex(attributes, attributeIndex, attributeStorageInfo);
+  return getFeatureAttributesByIndex(attributes, attributeIndex, attributeStorageInfo, tilesetFields);
 }
 
 /**
@@ -133,16 +138,29 @@ function generateAttributesByFeatureId(attributes, attributeStorageInfo, feature
  * @param {Object} attributeStorageInfo
  * @returns {Object}
  */
-function getFeatureAttributesByIndex(attributes, featureIdIndex, attributeStorageInfo) {
+function getFeatureAttributesByIndex(attributes, featureIdIndex, attributeStorageInfo, tilesetFields) {
   const attributesObject = {};
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
     const attributeName = attributeStorageInfo[index].name;
+    const codedValues = getAttributeCodedValues(attributeName, tilesetFields);
     const attribute = getAttributeByIndexAndAttributeName(attributes, index, attributeName);
-    attributesObject[attributeName] = formatAttributeValue(attribute, featureIdIndex);
+    attributesObject[attributeName] = formatAttributeValue(attribute, featureIdIndex, codedValues);
   }
 
   return attributesObject;
+}
+
+/**
+ * Get coded values list from tileset.
+ * @param attributeName 
+ * @param tilesetFields 
+ */
+function getAttributeCodedValues(attributeName, tilesetFields) {
+  const attributeField = tilesetFields
+    .find(field => field.name === attributeName || field.alias === attributeName);
+
+  return attributeField?.domain?.codedValues || [];
 }
 
 /**
@@ -167,12 +185,19 @@ function getAttributeByIndexAndAttributeName(attributes, index, attributesName) 
  * @param {Number} featureIdIndex
  * @returns {String}
  */
-function formatAttributeValue(attribute, featureIdIndex) {
-  return attribute && attribute[featureIdIndex]
-    ? attribute[featureIdIndex]
-      .toString()
+function formatAttributeValue(attribute, featureIdIndex, codedValues) {
+  let value = EMPTY_VALUE;
+
+  if (attribute && (featureIdIndex in attribute)) {
     // eslint-disable-next-line no-control-regex
-      .replace(/\u0000/g, '')
-      .trim()
-    : EMPTY_VALUE;
+    value = String(attribute[featureIdIndex]).replace(/\u0000|NaN/g, '').trim();
+  }
+
+  // Check if coded values are existed. If so we use them.
+  if (codedValues.length) {
+    const codeValue = codedValues.find(codedValue => codedValue.code === Number(value));
+    value = codeValue?.name || EMPTY_VALUE;
+  }
+
+  return value;
 }
