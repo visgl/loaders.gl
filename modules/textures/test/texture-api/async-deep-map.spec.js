@@ -12,6 +12,7 @@ const OUTPUT = {
 };
 
 test('asyncDeepMap#map', async (t) => {
-  t.deepEqual(await asyncDeepMap(INPUT, async (n) => Promise.resolve(n * 2)), OUTPUT);
+  // @ts-expect-error
+  t.deepEqual(await asyncDeepMap(INPUT, async (n) => Promise.resolve(2 * n)), OUTPUT);
   t.end();
 });

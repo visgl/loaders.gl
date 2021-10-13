@@ -1,4 +1,6 @@
+// loaders.gl, MIT license
 import {ImageLoader} from '@loaders.gl/images';
+import type {GetUrl, UrlOptions} from './texture-api-types';
 import {getImageUrls} from './load-image';
 import {deepLoad} from './deep-load';
 
@@ -19,11 +21,20 @@ const CUBE_FACES = [
   {face: GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, direction: 'back', axis: 'z', sign: 'negative'}
 ];
 
+export type ImageCubeTexture = {
+  GL_TEXTURE_CUBE_MAP_POSITIVE_X: any;
+  GL_TEXTURE_CUBE_MAP_NEGATIVE_X: any;
+  GL_TEXTURE_CUBE_MAP_POSITIVE_Y: any;
+  GL_TEXTURE_CUBE_MAP_NEGATIVE_Y: any;
+  GL_TEXTURE_CUBE_MAP_POSITIVE_Z: any;
+  GL_TEXTURE_CUBE_MAP_NEGATIVE_Z: any;
+};
+
 // Returns an object with six key-value pairs containing the urls (or url mip arrays)
 // for each cube face
-export async function getImageCubeUrls(getUrl, options) {
+export async function getImageCubeUrls(getUrl: GetUrl, options: UrlOptions) {
   // Calculate URLs
-  const urls = {};
+  const urls: Record<number, string | string[]> = {};
   const promises: Promise<any>[] = [];
 
   let index = 0;
@@ -42,7 +53,10 @@ export async function getImageCubeUrls(getUrl, options) {
 
 // Returns an object with six key-value pairs containing the images (or image mip arrays)
 // for each cube face
-export async function loadImageTextureCube(getUrl, options = {}) {
+export async function loadImageTextureCube(
+  getUrl: GetUrl,
+  options = {}
+): Promise<ImageCubeTexture> {
   const urls = await getImageCubeUrls(getUrl, options);
-  return await deepLoad(urls, ImageLoader.parse, options);
+  return (await deepLoad(urls, ImageLoader.parse, options)) as ImageCubeTexture;
 }

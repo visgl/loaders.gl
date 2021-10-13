@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
 let loadBasisTranscoderPromise;
