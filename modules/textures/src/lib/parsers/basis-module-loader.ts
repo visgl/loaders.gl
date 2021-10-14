@@ -114,9 +114,9 @@ function initializeBasisEncoderModule(BasisEncoderModule, wasmBinary) {
   return new Promise((resolve) => {
     // if you try to return BasisModule the browser crashes!
     BasisEncoderModule(options).then((module) => {
-      const {BasisFile, KTX2File, initializeBasis, BasisEncoder} = module;
+      const {BasisFile, KTX2File, initializeBasis} = module;
       initializeBasis();
-      resolve({BasisFile, KTX2File, BasisEncoder});
+      resolve({BasisFile, KTX2File});
     });
   });
 }

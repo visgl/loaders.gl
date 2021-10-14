@@ -1,7 +1,20 @@
 /* eslint-disable */
 // @ts-nocheck
 import test from 'tape-promise/tape';
-import ClarinetParser, {EVENTS} from '@loaders.gl/json/lib/clarinet/clarinet';
+import ClarinetParser from '@loaders.gl/json/lib/clarinet/clarinet';
+
+export const EVENTS = [
+  'value',
+  'string',
+  'key',
+  'openobject',
+  'closeobject',
+  'openarray',
+  'closearray',
+  'error',
+  'end',
+  'ready'
+];
 
 const seps = [undefined, /\t|\n|\r/, ''];
 const docs = {
