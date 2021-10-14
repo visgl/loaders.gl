@@ -1,14 +1,21 @@
 import {concatenateTypedArrays} from '@loaders.gl/loader-utils';
 
+export type EdgeIndices = {
+  westIndices: number[];
+  northIndices: number[];
+  eastIndices: number[];
+  southIndices: number[];
+};
+
 /**
  * Add skirt to existing mesh
  * @param {object} attributes - POSITION and TEXCOOD_0 attributes data
  * @param {any} triangles - indices array of the mesh geometry
- * @param {number} skirtHeight - height of the skirt geometry
- * @param {object} outsideIndices - edge indices from quantized mesh data
+ * @param skirtHeight - height of the skirt geometry
+ * @param outsideIndices - edge indices from quantized mesh data
  * @returns - geometry data with added skirt
  */
-export function addSkirt(attributes, triangles, skirtHeight, outsideIndices = null) {
+export function addSkirt(attributes, triangles, skirtHeight: number, outsideIndices?: EdgeIndices) {
   const outsideEdges = outsideIndices
     ? getOutsideEdgesFromIndices(outsideIndices, attributes.POSITION.value)
     : getOutsideEdgesFromTriangles(triangles);
@@ -53,7 +60,7 @@ export function addSkirt(attributes, triangles, skirtHeight, outsideIndices = nu
  * @returns {number[][]} - outside edges data
  */
 function getOutsideEdgesFromTriangles(triangles) {
-  const edges = [];
+  const edges: number[][] = [];
   for (let i = 0; i < triangles.length; i += 3) {
     edges.push([triangles[i], triangles[i + 1]]);
     edges.push([triangles[i + 1], triangles[i + 2]]);
@@ -62,7 +69,7 @@ function getOutsideEdgesFromTriangles(triangles) {
 
   edges.sort((a, b) => Math.min(...a) - Math.min(...b) || Math.max(...a) - Math.max(...b));
 
-  const outsideEdges = [];
+  const outsideEdges: number[][] = [];
   let index = 1;
   while (index < edges.length) {
     if (edges[index][0] === edges[index - 1][1] && edges[index][1] === edges[index - 1][0]) {
@@ -81,7 +88,7 @@ function getOutsideEdgesFromTriangles(triangles) {
  * @param {TypedArray} position - position attribute geometry data
  * @returns {number[][]} - outside edges data
  */
-function getOutsideEdgesFromIndices(indices, position) {
+function getOutsideEdgesFromIndices(indices: EdgeIndices, position) {
   // Sort skirt indices to create adjacent triangles
   indices.westIndices.sort((a, b) => position[3 * a + 1] - position[3 * b + 1]);
   // Reverse (b - a) to match triangle winding
@@ -90,7 +97,7 @@ function getOutsideEdgesFromIndices(indices, position) {
   // Reverse (b - a) to match triangle winding
   indices.northIndices.sort((a, b) => position[3 * a] - position[3 * b]);
 
-  const edges = [];
+  const edges: number[][] = [];
   for (const index in indices) {
     const indexGroup = indices[index];
     for (let i = 0; i < indexGroup.length - 1; i++) {
