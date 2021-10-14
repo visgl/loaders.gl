@@ -36,6 +36,7 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 | Texture Atlas         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md#atlas-usage-and-regions |
 
 ## Texture formats
+
 I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md
 
 | Texture                                        | Supported |
@@ -198,6 +199,7 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 | `options.i3s.tile`                  | `Object`         | `null`  | `Tile` object loaded by I3SLoader or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                                                                                                                                                                                       |
 | `options.i3s.useDracoGeometry`      | `Bool`           | `true`  | Use 'Draco' compressed geometry to show if applicable                                                                                                                                                                                                                                                                           |
 | `options.i3s.useCompressedTextures` | `Bool`           | `true`  | Use "Compressed textures" (_.dds or _.ktx) if available and supported by GPU                                                                                                                                                                                                                                                    |
+| `options.i3s.decodeTextures`        | `Bool`           | `true`  | Decode texture image to ImageBitmap or compressed texture object (if supported by GPU)                                                                                                                                                                                                                                          |
 
 ## Data formats
 
