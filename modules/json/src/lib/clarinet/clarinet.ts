@@ -1,21 +1,23 @@
-/* eslint-disable */
-// @ts-nocheck
+// loaders.gl, MIT license
+// This is a fork of the clarinet library, originally BSD license (see LICENSE file)
+// loaders.gl changes:
+// - typescript port
 
 export type ClarinetEvent =
-  | 'value'
-  | 'string'
-  | 'key'
-  | 'openobject'
-  | 'closeobject'
-  | 'openarray'
-  | 'closearray'
-  | 'error'
-  | 'end'
-  | 'ready';
+  | 'onvalue'
+  | 'onstring'
+  | 'onkey'
+  | 'onopenobject'
+  | 'oncloseobject'
+  | 'onopenarray'
+  | 'onclosearray'
+  | 'onerror'
+  | 'onend'
+  | 'onready';
 
 // Removes the MAX_BUFFER_LENGTH, originally set to 64 * 1024
 const MAX_BUFFER_LENGTH = Number.MAX_SAFE_INTEGER;
-const DEBUG = false;
+// const DEBUG = false;
 
 enum STATE {
   BEGIN = 0,
@@ -82,28 +84,7 @@ const Char = {
   closeBrace: 0x7d // }
 };
 
-function checkBufferLength(parser) {
-  const maxAllowed = Math.max(MAX_BUFFER_LENGTH, 10);
-  let maxActual = 0;
-
-  for (var buffer of ['textNode', 'numberNode']) {
-    var len = parser[buffer] === undefined ? 0 : parser[buffer].length;
-    if (len > maxAllowed) {
-      switch (buffer) {
-        case 'text':
-          closeText(parser);
-          break;
-
-        default:
-          parser._error('Max buffer length exceeded: ' + buffer);
-      }
-    }
-    maxActual = Math.max(maxActual, len);
-  }
-  parser.bufferCheckPosition = MAX_BUFFER_LENGTH - maxActual + parser.position;
-}
-
-var stringTokenPattern = /[\\"\n]/g;
+const stringTokenPattern = /[\\"\n]/g;
 
 type ParserEvent = (parser: ClarinetParser, event: string, data?: any) => void;
 
@@ -142,18 +123,21 @@ export default class ClarinetParser {
   closed = false;
   closedRoot = false;
   sawRoot = false;
-  tag = null;
-  error = null;
+  // tag = null;
+  error: Error | null = null;
   state = STATE.BEGIN;
-  stack = new Array();
+  stack: STATE[] = [];
   // mostly just for error reporting
-  position = 0;
-  column = 0;
-  line = 1;
-  slashed = false;
-  unicodeI = 0;
-  unicodeS = null;
-  depth = 0;
+  position: number = 0;
+  column: number = 0;
+  line: number = 1;
+  slashed: boolean = false;
+  unicodeI: number = 0;
+  unicodeS: string | null = null;
+  depth: number = 0;
+
+  textNode;
+  numberNode;
 
   constructor(options: ClarinetParserOptions = {}) {
     this.options = {...DEFAULT_OPTIONS, ...options};
@@ -184,9 +168,7 @@ export default class ClarinetParser {
   // protected
 
   emit(event: string, data?: any): void {
-    if (DEBUG) {
-      console.log('-- emit', event, data);
-    }
+    // if (DEBUG) console.log('-- emit', event, data);
     this.options[event]?.(data, this);
   }
 
@@ -195,6 +177,8 @@ export default class ClarinetParser {
     this.emit(event, data);
   }
 
+  /* eslint-disable no-continue */
+  // eslint-disable-next-line complexity, max-statements
   write(chunk) {
     if (this.error) {
       throw this.error;
@@ -205,10 +189,10 @@ export default class ClarinetParser {
     if (chunk === null) {
       return this.end();
     }
-    var i = 0,
-      c = chunk.charCodeAt(0),
-      p = this.p;
-    if (DEBUG) console.log('write -> [' + chunk + ']');
+    let i = 0;
+    let c = chunk.charCodeAt(0);
+    let p = this.p;
+    // if (DEBUG) console.log(`write -> [${  chunk  }]`);
     while (c) {
       p = c;
       this.c = c = chunk.charCodeAt(i++);
@@ -224,7 +208,7 @@ export default class ClarinetParser {
 
       if (!c) break;
 
-      if (DEBUG) console.log(i, c, STATE[this.state]);
+      // if (DEBUG) console.log(i, c, STATE[this.state]);
       this.position++;
       if (c === Char.lineFeed) {
         this.line++;
@@ -244,16 +228,14 @@ export default class ClarinetParser {
         case STATE.OPEN_OBJECT:
           if (isWhitespace(c)) continue;
           if (this.state === STATE.OPEN_KEY) this.stack.push(STATE.CLOSE_KEY);
-          else {
-            if (c === Char.closeBrace) {
-              this.emit('onopenobject');
-              this.depth++;
-              this.emit('oncloseobject');
-              this.depth--;
-              this.state = this.stack.pop() || STATE.VALUE;
-              continue;
-            } else this.stack.push(STATE.CLOSE_OBJECT);
-          }
+          else if (c === Char.closeBrace) {
+            this.emit('onopenobject');
+            this.depth++;
+            this.emit('oncloseobject');
+            this.depth--;
+            this.state = this.stack.pop() || STATE.VALUE;
+            continue;
+          } else this.stack.push(STATE.CLOSE_OBJECT);
           if (c === Char.doubleQuote) this.state = STATE.STRING;
           else this._error('Malformed object key should start with "');
           continue;
@@ -261,7 +243,7 @@ export default class ClarinetParser {
         case STATE.CLOSE_KEY:
         case STATE.CLOSE_OBJECT:
           if (isWhitespace(c)) continue;
-          var event = this.state === STATE.CLOSE_KEY ? 'key' : 'object';
+          // let event = this.state === STATE.CLOSE_KEY ? 'key' : 'object';
           if (c === Char.colon) {
             if (this.state === STATE.CLOSE_OBJECT) {
               this.stack.push(STATE.CLOSE_OBJECT);
@@ -330,11 +312,12 @@ export default class ClarinetParser {
           }
 
           // thanks thejh, this is an about 50% performance improvement.
-          var starti = i - 1,
-            slashed = this.slashed,
-            unicodeI = this.unicodeI;
+          let starti = i - 1;
+          let slashed = this.slashed;
+          let unicodeI = this.unicodeI;
+          // eslint-disable-next-line no-constant-condition, no-labels
           STRING_BIGLOOP: while (true) {
-            if (DEBUG) console.log(i, c, STATE[this.state], slashed);
+            // if (DEBUG) console.log(i, c, STATE[this.state], slashed);
             // zero means "no unicode active". 1-4 mean "parse some more". end after 4.
             while (unicodeI > 0) {
               this.unicodeS += String.fromCharCode(c);
@@ -342,13 +325,14 @@ export default class ClarinetParser {
               this.position++;
               if (unicodeI === 4) {
                 // TODO this might be slow? well, probably not used too often anyway
-                this.textNode += String.fromCharCode(parseInt(this.unicodeS, 16));
+                this.textNode += String.fromCharCode(parseInt(this.unicodeS as string, 16));
                 unicodeI = 0;
                 starti = i - 1;
               } else {
                 unicodeI++;
               }
               // we can just break here: no stuff we skipped that still has to be sliced out or so
+              // eslint-disable-next-line no-labels
               if (!c) break STRING_BIGLOOP;
             }
             if (c === Char.doubleQuote && !slashed) {
@@ -392,7 +376,7 @@ export default class ClarinetParser {
             }
 
             stringTokenPattern.lastIndex = i;
-            var reResult = stringTokenPattern.exec(chunk);
+            const reResult = stringTokenPattern.exec(chunk);
             if (reResult === null) {
               i = chunk.length + 1;
               this.textNode += chunk.substring(starti, i - 1);
@@ -413,58 +397,58 @@ export default class ClarinetParser {
 
         case STATE.TRUE:
           if (c === Char.r) this.state = STATE.TRUE2;
-          else this._error('Invalid true started with t' + c);
+          else this._error(`Invalid true started with t${c}`);
           continue;
 
         case STATE.TRUE2:
           if (c === Char.u) this.state = STATE.TRUE3;
-          else this._error('Invalid true started with tr' + c);
+          else this._error(`Invalid true started with tr${c}`);
           continue;
 
         case STATE.TRUE3:
           if (c === Char.e) {
             this.emit('onvalue', true);
             this.state = this.stack.pop() || STATE.VALUE;
-          } else this._error('Invalid true started with tru' + c);
+          } else this._error(`Invalid true started with tru${c}`);
           continue;
 
         case STATE.FALSE:
           if (c === Char.a) this.state = STATE.FALSE2;
-          else this._error('Invalid false started with f' + c);
+          else this._error(`Invalid false started with f${c}`);
           continue;
 
         case STATE.FALSE2:
           if (c === Char.l) this.state = STATE.FALSE3;
-          else this._error('Invalid false started with fa' + c);
+          else this._error(`Invalid false started with fa${c}`);
           continue;
 
         case STATE.FALSE3:
           if (c === Char.s) this.state = STATE.FALSE4;
-          else this._error('Invalid false started with fal' + c);
+          else this._error(`Invalid false started with fal${c}`);
           continue;
 
         case STATE.FALSE4:
           if (c === Char.e) {
             this.emit('onvalue', false);
             this.state = this.stack.pop() || STATE.VALUE;
-          } else this._error('Invalid false started with fals' + c);
+          } else this._error(`Invalid false started with fals${c}`);
           continue;
 
         case STATE.NULL:
           if (c === Char.u) this.state = STATE.NULL2;
-          else this._error('Invalid null started with n' + c);
+          else this._error(`Invalid null started with n${c}`);
           continue;
 
         case STATE.NULL2:
           if (c === Char.l) this.state = STATE.NULL3;
-          else this._error('Invalid null started with nu' + c);
+          else this._error(`Invalid null started with nu${c}`);
           continue;
 
         case STATE.NULL3:
           if (c === Char.l) {
             this.emit('onvalue', null);
             this.state = this.stack.pop() || STATE.VALUE;
-          } else this._error('Invalid null started with nul' + c);
+          } else this._error(`Invalid null started with nul${c}`);
           continue;
 
         case STATE.NUMBER_DECIMAL_POINT:
@@ -484,6 +468,7 @@ export default class ClarinetParser {
               this._error('Invalid number has two exponential');
             this.numberNode += 'e';
           } else if (c === Char.plus || c === Char.minus) {
+            // @ts-expect-error
             if (!(p === Char.e || p === Char.E)) this._error('Invalid symbol in number');
             this.numberNode += String.fromCharCode(c);
           } else {
@@ -494,7 +479,7 @@ export default class ClarinetParser {
           continue;
 
         default:
-          this._error('Unknown state: ' + this.state);
+          this._error(`Unknown state: ${this.state}`);
       }
     }
     if (this.position >= this.bufferCheckPosition) {
@@ -518,15 +503,37 @@ export default class ClarinetParser {
     this.numberNode = '';
   }
 
-  _error(er: string = ''): void {
+  _error(message: string = ''): void {
     this._closeValue();
-    er += '\nLine: ' + this.line + '\nColumn: ' + this.column + '\nChar: ' + this.c;
-    er = new Error(er);
-    this.error = er;
-    this.emit('onerror', er);
+    message += `\nLine: ${this.line}\nColumn: ${this.column}\nChar: ${this.c}`;
+    const error = new Error(message);
+    this.error = error;
+    this.emit('onerror', error);
   }
 }
 
 function isWhitespace(c): boolean {
   return c === Char.carriageReturn || c === Char.lineFeed || c === Char.space || c === Char.tab;
+}
+
+function checkBufferLength(parser) {
+  const maxAllowed = Math.max(MAX_BUFFER_LENGTH, 10);
+  let maxActual = 0;
+
+  for (const buffer of ['textNode', 'numberNode']) {
+    const len = parser[buffer] === undefined ? 0 : parser[buffer].length;
+    if (len > maxAllowed) {
+      switch (buffer) {
+        case 'text':
+          // TODO - should this be closeValue?
+          // closeText(parser);
+          break;
+
+        default:
+          parser._error(`Max buffer length exceeded: ${buffer}`);
+      }
+    }
+    maxActual = Math.max(maxActual, len);
+  }
+  parser.bufferCheckPosition = MAX_BUFFER_LENGTH - maxActual + parser.position;
 }
