@@ -21,7 +21,7 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
  */
 export async function parseWithWorker(
   loader: Loader,
-  data: any,
+  data,
   options?: LoaderOptions,
   context?: LoaderContext,
   parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<void>
@@ -38,7 +38,6 @@ export async function parseWithWorker(
 
   const job = await workerPool.startJob(
     'process-on-worker',
-    // @ts-expect-error
     // eslint-disable-next-line
     onMessage.bind(null, parseOnMainThread)
   );
@@ -49,7 +48,8 @@ export async function parseWithWorker(
     options
   });
 
-  return await job.result;
+  const result = await job.result;
+  return await result.result;
 }
 
 /**
@@ -59,7 +59,7 @@ export async function parseWithWorker(
  * @param payload
  */
 async function onMessage(
-  parseOnMainThread: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<void>,
+  parseOnMainThread,
   job: WorkerJob,
   type: WorkerMessageType,
   payload: WorkerMessagePayload
@@ -77,7 +77,7 @@ async function onMessage(
       // Worker is asking for main thread to parseO
       const {id, input, options} = payload;
       try {
-        const result = await parseOnMainThread(input, options || {});
+        const result = await parseOnMainThread(input, options);
         job.postMessage('done', {id, result});
       } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown error';
