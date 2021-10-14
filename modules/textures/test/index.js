@@ -12,4 +12,3 @@ import './npy-loader.spec';
 
 import './lib/parsers/parse-pvr.spec';
 import './lib/parsers/parse-dds.spec';
-import './lib/encoders/encode-basis.spec';

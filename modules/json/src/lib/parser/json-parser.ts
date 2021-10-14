@@ -1,17 +1,64 @@
 // @ts-nocheck
 
-import ClarinetParser from '../clarinet/clarinet';
+import ClarinetParser, {ClarinetParserOptions} from '../clarinet/clarinet';
 import JSONPath from '../jsonpath/jsonpath';
 
 // JSONParser builds a JSON object using the events emitted by the Clarinet parser
 
 export default class JSONParser {
-  jsonpath: JSONPath;
-  _parser?: ClarinetParser;
+  readonly parser: ClarinetParser;
+  result = undefined;
+  previousStates = [];
+  currentState = Object.freeze({container: [], key: null});
+  jsonpath: JSONPath = new JSONPath();
 
-  constructor() {
+  constructor(options: ClarinetParserOptions) {
     this.reset();
-    this._initializeParser();
+    this.parser = new ClarinetParser({
+      onready: () => {
+        this.jsonpath = new JSONPath();
+        this.previousStates.length = 0;
+        this.currentState.container.length = 0;
+      },
+
+      onopenobject: (name) => {
+        this._openObject({});
+        if (typeof name !== 'undefined') {
+          this.parser.emit('onkey', name);
+        }
+      },
+
+      onkey: (name) => {
+        this.jsonpath.set(name);
+        this.currentState.key = name;
+      },
+
+      oncloseobject: () => {
+        this._closeObject();
+      },
+
+      onopenarray: () => {
+        this._openArray();
+      },
+
+      onclosearray: () => {
+        this._closeArray();
+      },
+
+      onvalue: (value) => {
+        this._pushOrSet(value);
+      },
+
+      onerror: (error) => {
+        throw error;
+      },
+
+      onend: () => {
+        this.result = this.currentState.container.pop();
+      },
+
+      ...options
+    });
   }
 
   reset(): void {
@@ -63,55 +110,5 @@ export default class JSONParser {
   _closeObject(): void {
     this.jsonpath.pop();
     this.currentState = this.previousStates.pop();
-  }
-
-  _initializeParser(): void {
-    this._parser = new ClarinetParser({
-      onready: () => {
-        this.jsonpath = new JSONPath();
-        this.previousStates.length = 0;
-        this.currentState.container.length = 0;
-      },
-
-      onopenobject: (name) => {
-        this._openObject({});
-        if (typeof name !== 'undefined') {
-          this.parser.onkey(name);
-        }
-      },
-
-      onkey: (name) => {
-        this.jsonpath.set(name);
-        this.currentState.key = name;
-      },
-
-      oncloseobject: () => {
-        this._closeObject();
-      },
-
-      onopenarray: () => {
-        this._openArray();
-      },
-
-      onclosearray: () => {
-        this._closeArray();
-      },
-
-      onvalue: (value) => {
-        this._pushOrSet(value);
-      },
-
-      onerror: (error) => {
-        throw error;
-      },
-
-      onend: () => {
-        this.result = this.currentState.container.pop();
-      }
-    });
-  }
-
-  protected get parser(): ClarinetParser {
-    return this._parser as ClarinetParser;
   }
 }

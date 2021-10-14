@@ -12,10 +12,36 @@ export default class StreamingJSONParser extends JSONParser {
   private topLevelObject: object | null = null;
 
   constructor(options: {[key: string]: any} = {}) {
-    super();
+    super({
+      onopenarray: () => {
+        if (!this.streamingArray) {
+          if (this._matchJSONPath()) {
+            // @ts-ignore
+            this.streamingJsonPath = this.getJsonPath().clone();
+            this.streamingArray = [];
+            this._openArray(this.streamingArray as []);
+            return;
+          }
+        }
+
+        this._openArray();
+      },
+
+      // Redefine onopenarray to inject value for top-level object
+      onopenobject: (name) => {
+        if (!this.topLevelObject) {
+          this.topLevelObject = {};
+          this._openObject(this.topLevelObject);
+        } else {
+          this._openObject({});
+        }
+        if (typeof name !== 'undefined') {
+          this.parser.emit('onkey', name);
+        }
+      }
+    });
     const jsonpaths = options.jsonpaths || [];
     this.jsonPaths = jsonpaths.map((jsonpath) => new JSONPath(jsonpath));
-    this._extendParser();
   }
 
   /**
@@ -78,35 +104,5 @@ export default class StreamingJSONParser extends JSONParser {
     }
 
     return false;
-  }
-
-  _extendParser() {
-    // Redefine onopenarray to locate and inject value for top-level array
-    this.parser.onopenarray = () => {
-      if (!this.streamingArray) {
-        if (this._matchJSONPath()) {
-          // @ts-ignore
-          this.streamingJsonPath = this.getJsonPath().clone();
-          this.streamingArray = [];
-          this._openArray(this.streamingArray as []);
-          return;
-        }
-      }
-
-      this._openArray();
-    };
-
-    // Redefine onopenarray to inject value for top-level object
-    this.parser.onopenobject = (name) => {
-      if (!this.topLevelObject) {
-        this.topLevelObject = {};
-        this._openObject(this.topLevelObject);
-      } else {
-        this._openObject({});
-      }
-      if (typeof name !== 'undefined') {
-        this.parser.onkey(name);
-      }
-    };
   }
 }

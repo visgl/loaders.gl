@@ -8,12 +8,13 @@ test('clarinet#track position', async (t) => {
   const response = await fetchFile(SAMPLE_PATH);
   const data = await response.text();
 
-  const parser = new ClarinetParser();
+  const parser = new ClarinetParser({
+    onend: () => {
+      t.equals(parser.position, 696, 'parser.position is correct');
+      t.end();
+    }
+  });
 
-  parser.onend = () => {
-    t.equals(parser.position, 696, 'parser.position is correct');
-    t.end();
-  };
   parser.write(data);
   parser.close();
 });
