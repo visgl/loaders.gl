@@ -13,7 +13,7 @@ export const METADATA = {
   },
   I3SVersion: {
     path: 'I3SVersion',
-    default: '1.7'
+    default: '1.8'
   },
   nodeCount: {
     path: 'nodeCount'

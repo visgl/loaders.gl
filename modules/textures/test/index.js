@@ -7,6 +7,7 @@ import './basis-loader.spec';
 import './crunch-loader.spec';
 import './compressed-texture-loader.spec';
 import './compressed-texture-writer.spec';
+import './ktx2-texture-writer.spec';
 
 import './npy-loader.spec';
 

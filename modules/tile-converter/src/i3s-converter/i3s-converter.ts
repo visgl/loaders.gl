@@ -19,7 +19,7 @@ import type {
   Field,
   PopupInfo
 } from '@loaders.gl/i3s';
-import {load} from '@loaders.gl/core';
+import {load, encode} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 import {join} from 'path';
@@ -51,6 +51,7 @@ import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {GeoidHeightModel} from '../lib/geoid-height-model';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
+import {KTX2TextureWriter} from '@loaders.gl/textures';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -717,7 +718,7 @@ export default class I3SConverter {
       node.sharedResource = {href: './shared'};
 
       if (texture) {
-        node.textureData = [{href: './textures/0'}];
+        node.textureData = [{href: './textures/0'}, {href: './textures/1'}];
       }
 
       if (
@@ -852,24 +853,41 @@ export default class I3SConverter {
             {
               name: '0',
               format
+            },
+            {
+              name: '1',
+              format: 'ktx2'
             }
           ]
         });
       }
 
       const textureData = texture.bufferView.data;
+      const ktx2TextureData = await encode(texture.image, KTX2TextureWriter);
+
       if (this.options.slpk) {
         const slpkTexturePath = join(childPath, 'textures');
         const compress = false;
+
         this.fileMap[`${slpkChildPath}/textures/0.${format}`] = await writeFileForSlpk(
           slpkTexturePath,
           textureData,
           `0.${format}`,
           compress
         );
+
+        this.fileMap[`${slpkChildPath}/textures/1.ktx2`] = await writeFileForSlpk(
+          slpkTexturePath,
+          ktx2TextureData,
+          `1.ktx2`,
+          compress
+        );
       } else {
         const texturePath = join(childPath, 'textures/0/');
         await writeFile(texturePath, textureData, `index.${format}`);
+
+        const ktx2TexturePath = join(childPath, 'textures/1/');
+        await writeFile(ktx2TexturePath, ktx2TextureData, `index.ktx2`);
       }
     }
   }

@@ -2,19 +2,23 @@ import type {ImageDataType} from '@loaders.gl/images';
 import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
 
 /**
- * Encodes image to basis texture
- * Code example is taken from here - https://github.com/BinomialLLC/basis_universal/blob/master/webgl/encode_test/index.html#L413
+ * Encodes image to KTX2 texture
+ * Code example is taken from here - https://github.com/BinomialLLC/basis_universal/blob/master/webgl/ktx2_encode_test/index.html#L279
  * BasisEncoder API - https://github.com/BinomialLLC/basis_universal/blob/master/webgl/transcoder/basis_wrappers.cpp#L1712
  * @param image
  * @param options
  */
-export default async function encodeBasis(image: ImageDataType, options: any): Promise<Uint8Array> {
+export async function encodeKTX2(image: ImageDataType, options: any = {}): Promise<Uint8Array> {
+  // TODO remove default values after writer options will be normalized like it done in load module.
   const {useSRGB = false, qualityLevel = 10, encodeUASTC = false, mipmaps = false} = options;
   const {BasisEncoder} = await loadBasisEncoderModule(options);
   const basisEncoder = new BasisEncoder();
 
   try {
-    const basisFileData = new Uint8Array(image.width * image.height * 10);
+    const basisFileData = new Uint8Array(image.width * image.height * 4);
+    basisEncoder.setCreateKTX2File(true);
+    basisEncoder.setKTX2UASTCSupercompression(true);
+    basisEncoder.setKTX2SRGBTransferFunc(true);
 
     basisEncoder.setSliceSourceImage(0, image.data, image.width, image.height, false);
     basisEncoder.setPerceptual(useSRGB);
@@ -24,12 +28,12 @@ export default async function encodeBasis(image: ImageDataType, options: any): P
     basisEncoder.setMipGen(mipmaps);
 
     const numOutputBytes = basisEncoder.encode(basisFileData);
-    const actualBasisFileData = new Uint8Array(basisFileData.buffer, 0, numOutputBytes);
 
-    return actualBasisFileData;
+    const actualKTX2FileData = new Uint8Array(basisFileData.buffer, 0, numOutputBytes);
+    return actualKTX2FileData;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Basis Encoder Error: ', error);
+    console.error('KTX2 Encoder Error: ', error);
     throw error;
   } finally {
     basisEncoder.delete();
