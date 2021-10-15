@@ -53,22 +53,26 @@ export async function parseI3STileContent(
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
 
-    if (loader === ImageLoader) {
-      const options = {...tile.textureLoaderOptions, image: {type: 'data'}};
-      // @ts-ignore context must be defined
-      // Image constructor is not supported in worker thread.
-      // Do parsing image data on the main thread by using context to avoid worker issues.
-      tile.content.texture = await context.parse(arrayBuffer, options);
-    } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-      // @ts-ignore context must be defined
-      const texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
-      tile.content.texture = {
-        compressed: true,
-        mipmaps: false,
-        width: texture[0].width,
-        height: texture[0].height,
-        data: texture
-      };
+    if (options?.i3s.decodeTextures) {
+      if (loader === ImageLoader) {
+        const options = {...tile.textureLoaderOptions, image: {type: 'data'}};
+        // @ts-ignore context must be defined
+        // Image constructor is not supported in worker thread.
+        // Do parsing image data on the main thread by using context to avoid worker issues.
+        tile.content.texture = await context.parse(arrayBuffer, options);
+      } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
+        // @ts-ignore context must be defined
+        const texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
+        tile.content.texture = {
+          compressed: true,
+          mipmaps: false,
+          width: texture[0].width,
+          height: texture[0].height,
+          data: texture
+        };
+      }
+    } else {
+      tile.content.texture = arrayBuffer;
     }
   }
 

@@ -31,7 +31,8 @@ export const I3SLoader: LoaderWithParser = {
       tile: null,
       tileset: null,
       useDracoGeometry: true,
-      useCompressedTextures: true
+      useCompressedTextures: true,
+      decodeTextures: true
     }
   }
 };
