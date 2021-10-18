@@ -10,6 +10,7 @@ export {NPYLoader, NPYWorkerLoader} from './npy-loader';
 
 // Writers
 export {CompressedTextureWriter} from './compressed-texture-writer';
+export {KTX2BasisUniversalTextureWriter} from './ktx2-basis-universal-texture-writer';
 
 // Texture Loading API
 export {loadImageTexture} from './lib/texture-api/load-image';

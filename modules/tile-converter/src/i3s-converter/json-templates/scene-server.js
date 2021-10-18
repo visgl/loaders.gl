@@ -14,7 +14,7 @@ export const SCENE_SERVER_TEMPLATE = {
   },
   serviceVersion: {
     path: 'serviceVersion',
-    default: '1.7'
+    default: '1.8'
   },
   supportedBindings: {
     path: 'supportedBindings',
