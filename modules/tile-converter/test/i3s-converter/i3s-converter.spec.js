@@ -103,7 +103,7 @@ test('tile-converter - Converters#should create SceneServer path', async (t) => 
     const sceneServerJson = await fs.readFile('data/BatchedColors/SceneServer/index.json', 'utf8');
     const sceneServer = JSON.parse(sceneServerJson);
     t.ok(sceneServer.layers[0]);
-    t.equal(sceneServer.serviceVersion, '1.7');
+    t.equal(sceneServer.serviceVersion, '1.8');
   }
   await cleanUpPath('data/BatchedColors');
   t.end();

@@ -9,7 +9,7 @@ export const STORE = {
   },
   version: {
     path: 'version',
-    default: '1.7'
+    default: '1.8'
   },
   resourcePattern: {
     path: 'resourcePattern',
@@ -40,7 +40,7 @@ export const STORE = {
   },
   textureEncoding: {
     path: 'textureEncoding',
-    default: ['image/jpeg']
+    default: ['image/jpeg', 'image/ktx2']
   },
   lodType: {
     path: 'lodType',

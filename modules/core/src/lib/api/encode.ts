@@ -12,6 +12,7 @@ export async function encode(
   writer: Writer,
   options?: LoaderOptions
 ): Promise<ArrayBuffer> {
+  // TODO Merge default writer options with options argument like it is done in load module.
   if (writer.encode) {
     return await writer.encode(data, options);
   }
