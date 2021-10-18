@@ -8,7 +8,7 @@ import {VERSION as __VERSION__} from '../env-utils/version';
 const LATEST = 'beta';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
 
-const loadLibraryPromises = {}; // promises
+const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 
 /**
  * Dynamically loads a library ("module")
@@ -35,13 +35,15 @@ export async function loadLibrary(
   }
 
   // Ensure libraries are only loaded once
+
   loadLibraryPromises[libraryUrl] =
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     loadLibraryPromises[libraryUrl] || loadLibraryFromFile(libraryUrl);
   return await loadLibraryPromises[libraryUrl];
 }
 
 // TODO - sort out how to resolve paths for main/worker and dev/prod
-export function getLibraryUrl(library, moduleName?: string, options?): string {
+export function getLibraryUrl(library: string, moduleName?: string, options?: any): string {
   // Check if already a URL
   if (library.startsWith('http')) {
     return library;
@@ -73,7 +75,7 @@ export function getLibraryUrl(library, moduleName?: string, options?): string {
   return `modules/${moduleName}/src/libs/${library}`;
 }
 
-async function loadLibraryFromFile(libraryUrl) {
+async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   if (libraryUrl.endsWith('wasm')) {
     const response = await fetch(libraryUrl);
     return await response.arrayBuffer();
@@ -113,7 +115,7 @@ async function loadScriptFromFile(libraryUrl) {
 //  - Potentially bypasses CORS
 // Upside is that this separates fetching and parsing
 // we could create a`LibraryLoader` or`ModuleLoader`
-function loadLibraryFromString(scriptSource, id) {
+function loadLibraryFromString(scriptSource: string, id: string): null | any {
   if (!isBrowser) {
     return node.requireFromString && node.requireFromString(scriptSource, id);
   }

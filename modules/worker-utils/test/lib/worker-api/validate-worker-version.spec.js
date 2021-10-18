@@ -1,8 +1,8 @@
 import test from 'tape-promise/tape';
 // import {isBrowser} from '@loaders.gl/core';
-import {getWorkerURL} from '@loaders.gl/worker-utils/lib/worker-api/get-worker-url';
-import {validateWorkerVersion} from '@loaders.gl/worker-utils/lib/worker-api/validate-worker-version';
 import {NullWorker} from '@loaders.gl/worker-utils';
+import {getWorkerURL} from '../../../src/lib/worker-api/get-worker-url';
+import {validateWorkerVersion} from '../../../src/lib/worker-api/validate-worker-version';
 
 test('getWorkerURL', (t) => {
   // TODO(ib): version injection issue in babel register

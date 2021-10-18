@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
-import parseWKB from '@loaders.gl/wkt/lib/parse-wkb';
 import {fetchFile} from '@loaders.gl/core';
+import parseWKB from '../../src/lib/parse-wkb';
 import hexStringToArrayBuffer from './hex-string-to-array-buffer';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';

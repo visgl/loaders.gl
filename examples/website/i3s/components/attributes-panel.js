@@ -117,12 +117,9 @@ export default class AttributesPanel extends PureComponent {
   }
 
   formatValue(value) {
-    return (
-      value
-        .toString()
-        .replace(/[{}']+/g, '')
-        .trim() || NO_DATA
-    );
+    return String(value)
+      .replace(/[{}']+/g, '')
+      .trim() || NO_DATA;
   }
 
   getHeaderStyle(isTitleExists) {

@@ -4,8 +4,6 @@
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
 
-> The `I3SLoader` is experimental. Currently only support I3S `MeshPyramids` data format.
-
 A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i3s-spec), and its geometries and textures data.
 
 | Loader         | Characteristic                                      |
@@ -16,6 +14,39 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 | File Format    | [i3s](https://www.opengeospatial.org/standards/i3s) |
 | Data Format    | [Data formats](#data-formats)                       |
 | Supported APIs | `load`, `parse`                                     |
+
+## I3S Layer type support
+
+| Layer Type           | Supported | I3S Spec Link                                                                  |
+| -------------------- | --------- | ------------------------------------------------------------------------------ |
+| 3DObject             | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3Dobject_ReadMe.md       |
+| Integrated Mesh      | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/IntegratedMesh_ReadMe.md |
+| Points               | no        | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/Point_ReadMe.md          |
+| PointClouds          | no        | https://github.com/Esri/i3s-spec/blob/master/docs/2.0/pcsl_ReadMe.md           |
+| Building Scene Layer | no        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md            |
+
+## I3S Aspects support
+
+| Aspect                | Supported | I3S Spec Link                                                                                |
+| --------------------- | --------- | -------------------------------------------------------------------------------------------- |
+| Node pages            | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodePage.cmn.md                        |
+| Compressed attributes | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md            |
+| PBR materials         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md            |
+| Feature attributes    | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md            |
+| Texture Atlas         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md#atlas-usage-and-regions |
+
+## Texture formats
+
+I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md
+
+| Texture                                        | Supported |
+| ---------------------------------------------- | --------- |
+| JPEG                                           | yes       |
+| PNG                                            | yes       |
+| .dds with DXT1 (no alpha)                      | yes       |
+| .dds with DXT5 (alpha channel)                 | yes       |
+| ktx-etc2                                       | yes       |
+| Basis Universal Texture format in Khronos KTX2 | yes       |
 
 ## Terms
 
@@ -168,6 +199,7 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 | `options.i3s.tile`                  | `Object`         | `null`  | `Tile` object loaded by I3SLoader or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                                                                                                                                                                                       |
 | `options.i3s.useDracoGeometry`      | `Bool`           | `true`  | Use 'Draco' compressed geometry to show if applicable                                                                                                                                                                                                                                                                           |
 | `options.i3s.useCompressedTextures` | `Bool`           | `true`  | Use "Compressed textures" (_.dds or _.ktx) if available and supported by GPU                                                                                                                                                                                                                                                    |
+| `options.i3s.decodeTextures`        | `Bool`           | `true`  | Decode texture image to ImageBitmap or compressed texture object (if supported by GPU)                                                                                                                                                                                                                                          |
 
 ## Data formats
 

@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {getFrameState} from '@loaders.gl/tiles';
 import {Viewport} from '@deck.gl/core';
 import {equals, Vector3} from '@math.gl/core';
@@ -60,7 +60,7 @@ test('getFrameState', (t) => {
   );
   t.ok(equals(results.camera.up, expected.camera.up, EPSILON), 'camera.up should match.');
   t.equals(results.sseDenominator, results.sseDenominator, 'sseDenominator should match.');
-  t.ok(results.cullingVolume.planes.length, 6, 'Should have 6 planes.');
+  t.equals(results.cullingVolume.planes.length, 6, 'Should have 6 planes.');
 
   const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
     [viewport.longitude, viewport.latitude, 0],

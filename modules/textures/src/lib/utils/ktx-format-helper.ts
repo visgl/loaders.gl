@@ -1,6 +1,6 @@
 import {GL} from '../gl-constants';
 
-const VULKAN_TO_WEBGL_FORMAT_MAP = {
+const VULKAN_TO_WEBGL_FORMAT_MAP: Record<number, number> = {
   131: GL.COMPRESSED_RGB_S3TC_DXT1_EXT,
   132: GL.COMPRESSED_SRGB_S3TC_DXT1_EXT,
   133: GL.COMPRESSED_RGBA_S3TC_DXT1_EXT,
@@ -115,9 +115,9 @@ const VULKAN_TO_WEBGL_FORMAT_MAP = {
  * Returns WebGl format based on Vulkan format
  * Vulkan to WebGl format mapping provided here http://github.khronos.org/KTX-Specification/#formatMapping
  * Vulkan name to format number mapping provided here: https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkFormat.html
- * @param {Number} vkFormat
- * @returns {Number}
+ * @param vkFormat
+ * @returns WebGL / OpenGL constant
  */
-export function mapVkFormatToWebGL(vkFormat) {
+export function mapVkFormatToWebGL(vkFormat: number): number {
   return VULKAN_TO_WEBGL_FORMAT_MAP[vkFormat];
 }

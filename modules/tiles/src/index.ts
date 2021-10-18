@@ -9,6 +9,7 @@ export {createBoundingVolume} from './tileset/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset/helpers/transform-utils';
 
 export {getFrameState} from './tileset/helpers/frame-state';
+export {getLodStatus} from './tileset/helpers/i3s-lod';
 
 export {
   TILE_CONTENT_STATE,

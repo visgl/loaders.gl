@@ -1,5 +1,5 @@
-import test from 'tape-catch';
-import WorkerThread from '@loaders.gl/worker-utils/lib/worker-farm/worker-thread';
+import test from 'tape-promise/tape';
+import {WorkerThread} from '@loaders.gl/worker-utils';
 
 const hasWorker = typeof Worker !== 'undefined';
 const testWorkerSource = `

@@ -16,8 +16,8 @@
     "i3s"
   ],
   "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "sideEffects": false,
   "bin": {
     "tile-converter": "./bin/converter.js",
@@ -34,7 +34,7 @@
   },
   "scripts": {
     "pre-build": "npm run build-bin && npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
+    "build-bundle": "esbuild ./src/index.ts --bundle --outfile=dist/bundle.js --platform=node",
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts",
     "build-converter-bundle": "webpack --config ./converter-webpack/bundle.js"
   },

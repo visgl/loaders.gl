@@ -19,8 +19,8 @@
     "PLY"
   ],
   "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -32,8 +32,8 @@
   },
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/arrow-worker.ts --output ./dist/arrow-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",

@@ -1,8 +1,7 @@
 import test from 'tape-promise/tape';
 import {Viewport} from '@deck.gl/core';
 import {TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
-import {getFrameState, Tile3D, Tileset3D} from '@loaders.gl/tiles/';
-import {getLodStatus} from '@loaders.gl/tiles/tileset/helpers/i3s-lod';
+import {getFrameState, Tile3D, Tileset3D, getLodStatus} from '@loaders.gl/tiles';
 import {getTileHeader, ROOT_TILE_HEADER} from '../../data/tile-header-examples';
 import {
   VIEWPORT_DEFAULT,

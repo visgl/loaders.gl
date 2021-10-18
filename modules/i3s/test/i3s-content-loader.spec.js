@@ -36,7 +36,8 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
     i3s: {
       tile,
       tileset,
-      useDracoGeometry: false
+      useDracoGeometry: false,
+      decodeTextures: true
     }
   });
   const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
@@ -70,7 +71,8 @@ test('ParseI3sTileContent#should make PBR material', async (t) => {
     i3s: {
       tile,
       tileset,
-      useDracoGeometry: false
+      useDracoGeometry: false,
+      decodeTextures: true
     }
   });
   const material = content.material;
@@ -107,7 +109,8 @@ test('ParseI3sTileContent#should have featureIds', async (t) => {
     i3s: {
       tile,
       tileset,
-      useDracoGeometry: false
+      useDracoGeometry: false,
+      decodeTextures: true
     }
   });
   t.ok(content);
@@ -123,5 +126,51 @@ test('ParseI3sTileContent#should generate mbs from obb', async (t) => {
   t.ok(tile.mbs);
   t.equals(tile.mbs.length, 4);
   t.deepEquals(tile.mbs.slice(0, 3), tile.obb.center);
+  t.end();
+});
+
+test('ParseI3sTileContent#should not decode the texture image if "decodeTextures" === false', async (t) => {
+  const tileset = TILESET_STUB();
+  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
+  const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
+  const response = await fetchFile(I3S_TILE_CONTENT);
+  const data = await response.arrayBuffer();
+  const content = await parse(data, I3SContentLoader, {
+    i3s: {
+      tile,
+      tileset,
+      useDracoGeometry: false,
+      decodeTextures: false
+    }
+  });
+  const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
+  t.ok(texture instanceof ArrayBuffer);
+  if (isBrowser) {
+    const supportedFormats = getSupportedGPUTextureFormats();
+    if (supportedFormats.has('dxt')) {
+      t.equal(texture.byteLength, 45200);
+    } else {
+      t.equal(texture.byteLength, 7199);
+    }
+  } else {
+    t.equal(texture.byteLength, 7199);
+  }
+
+  const i3SNodePagesTiles2 = new I3SNodePagesTiles(tileset, {i3s: {useCompressedTextures: false}});
+  const tile2 = await i3SNodePagesTiles2.formTileFromNodePages(1);
+  const response2 = await fetchFile(I3S_TILE_CONTENT);
+  const data2 = await response2.arrayBuffer();
+  const content2 = await parse(data2, I3SContentLoader, {
+    i3s: {
+      tile: tile2,
+      tileset,
+      useDracoGeometry: false,
+      decodeTextures: false
+    }
+  });
+  const texture2 = content2.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
+  t.ok(texture2 instanceof ArrayBuffer);
+  t.equal(texture2.byteLength, 7199);
+
   t.end();
 });

@@ -333,10 +333,10 @@ const TimeUnit = {
 };
 
 export class Time extends DataType {
-  readonly unit: number;
+  readonly unit: any;
   readonly bitWidth: number;
 
-  constructor(unit, bitWidth) {
+  constructor(unit: any, bitWidth: number) {
     super();
     this.unit = unit;
     this.bitWidth = bitWidth;

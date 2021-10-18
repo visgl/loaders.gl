@@ -21,8 +21,8 @@
     "Spreadsheets"
   ],
   "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -31,8 +31,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/excel-worker.ts --output ./dist/excel-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-worker": "esbuild src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",

@@ -3,7 +3,7 @@
 
 // Change to `latest` on production branches
 const DEFAULT_VERSION = 'beta';
-declare let __VERSION__;
+declare let __VERSION__: string;
 export const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : DEFAULT_VERSION;
 if (typeof __VERSION__ === 'undefined') {
   // eslint-disable-next-line

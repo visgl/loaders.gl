@@ -10,6 +10,7 @@ const getGlobalLoaderRegistry = () => {
   return state.loaderRegistry;
 };
 
+/** Register a list of global loaders */
 export function registerLoaders(loaders: Loader[]) {
   const loaderRegistry = getGlobalLoaderRegistry();
 
@@ -28,7 +29,7 @@ export function getRegisteredLoaders(): Loader[] {
   return getGlobalLoaderRegistry();
 }
 
-// For testing
+/** @deprecated For testing only  */
 export function _unregisterLoaders() {
   const state = getGlobalLoaderState();
   state.loaderRegistry = [];

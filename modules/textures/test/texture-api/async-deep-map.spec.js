@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {asyncDeepMap} from '@loaders.gl/textures/lib/texture-api/async-deep-map';
+import {asyncDeepMap} from '../../src/lib/texture-api/async-deep-map';
 
 const INPUT = {
   a: [1, 2, 3],
@@ -12,6 +12,7 @@ const OUTPUT = {
 };
 
 test('asyncDeepMap#map', async (t) => {
-  t.deepEqual(await asyncDeepMap(INPUT, async (n) => Promise.resolve(n * 2)), OUTPUT);
+  // @ts-expect-error
+  t.deepEqual(await asyncDeepMap(INPUT, async (n) => Promise.resolve(2 * n)), OUTPUT);
   t.end();
 });

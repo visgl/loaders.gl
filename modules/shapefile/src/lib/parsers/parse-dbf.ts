@@ -62,9 +62,10 @@ class DBFParser {
     data: []
   };
 
-  constructor({encoding}) {
-    this.textDecoder = new TextDecoder(encoding);
+  constructor(options: {encoding: string}) {
+    this.textDecoder = new TextDecoder(options.encoding);
   }
+
   /**
    * @param arrayBuffer
    */
@@ -89,6 +90,7 @@ class DBFParser {
     }
   }
 }
+
 /**
  * @param arrayBuffer
  * @param options
@@ -260,7 +262,7 @@ function parseDBFHeader(headerView: DataView): DBFHeader {
 /**
  * @param view
  */
-function parseFieldDescriptors(view: DataView, textDecoder): DBFField[] {
+function parseFieldDescriptors(view: DataView, textDecoder: TextDecoder): DBFField[] {
   // NOTE: this might overestimate the number of fields if the "Database
   // Container" container exists and is included in the headerLength
   const nFields = (view.byteLength - 1) / 32;

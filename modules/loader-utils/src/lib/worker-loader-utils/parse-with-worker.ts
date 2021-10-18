@@ -70,7 +70,7 @@ async function onMessage(
       break;
 
     case 'error':
-      job.error(payload.error);
+      job.error(new Error(payload.error));
       break;
 
     case 'process':

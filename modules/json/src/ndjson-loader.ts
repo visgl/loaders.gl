@@ -7,7 +7,7 @@ import parseNDJSONInBatches from './lib/parse-ndjson-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export const NDJSONLoader: LoaderWithParser = {
+export const NDJSONLoader = {
   name: 'NDJSON',
   id: 'ndjson',
   module: 'json',
@@ -36,3 +36,5 @@ function parseInBatches(
 ): AsyncIterable<Batch> {
   return parseNDJSONInBatches(asyncIterator, options);
 }
+
+export const _typecheckNDJSONLoader: LoaderWithParser = NDJSONLoader;

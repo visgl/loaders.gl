@@ -20,8 +20,8 @@
     "draco"
   ],
   "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "sideEffects": false,
   "browser": {
     "fs": false
@@ -33,8 +33,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "webpack --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/draco-worker.ts --output ./dist/draco-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-worker": "esbuild src/workers/draco-worker.ts --bundle --outfile=dist/draco-worker.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

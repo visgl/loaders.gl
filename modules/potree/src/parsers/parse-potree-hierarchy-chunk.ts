@@ -54,14 +54,16 @@ Would have an index looking like this:
 | r36  | `0b00000000` (=0)  | `1`    |
 */
 
+// @ts-nocheck
+
 // load hierarchy
-export default function parsePotreeHierarchyChunk(arrayBuffer) {
+export default function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer) {
   const tileHeaders = parseBinaryChunk(arrayBuffer);
   return buildHierarchy(tileHeaders);
 }
 
 // Parses the binary rows
-function parseBinaryChunk(arrayBuffer, byteOffset = 0) {
+function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
   const dataView = new DataView(arrayBuffer);
 
   const stack = [];

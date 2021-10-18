@@ -33,7 +33,9 @@
 //   TYPED_ARRAY_TO_TYPE.BigUint64Array = new Uint64();
 // }
 
-export function deduceTypeFromColumn(value) {
+export function deduceTypeFromColumn(
+  value: unknown
+): StringConstructor | DateConstructor | Float32ArrayConstructor | null {
   if (value instanceof Date) {
     return Date;
   } else if (value instanceof Number) {
@@ -44,7 +46,9 @@ export function deduceTypeFromColumn(value) {
   return null;
 }
 
-export function deduceTypeFromValue(value) {
+export function deduceTypeFromValue(
+  value: unknown
+): StringConstructor | DateConstructor | Float32ArrayConstructor | null {
   if (value instanceof Date) {
     return Date;
   } else if (value instanceof Number) {

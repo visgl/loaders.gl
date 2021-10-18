@@ -5,10 +5,7 @@
 import test from 'tape-promise/tape';
 import fs from 'fs';
 import {isBrowser} from '@loaders.gl/worker-utils';
-import {
-  requireFromFile,
-  requireFromString
-} from '@loaders.gl/worker-utils/lib/node/require-utils.node';
+import {requireFromFile, requireFromString} from '../../../src/lib/node/require-utils.node';
 
 const MODULE_URL = `${__dirname}/fixture/module.js`;
 const SUBMODULE_URL = `${__dirname}/fixture/submodule.js`;
@@ -26,6 +23,7 @@ test('require-utils', (tt) => {
   });
 
   test('requireFromString#should accept only string as code', (t) => {
+    // @ts-expect-error
     t.throws(() => requireFromString(), /code must be a string, not undefined/);
     t.end();
   });
@@ -36,7 +34,7 @@ test('require-utils', (tt) => {
   });
 
   test('requireFromString#should accept filename', (t) => {
-    t.throws(() => requireFromString('module.exports = ', 'bug.js', /bug\.js|Unexpected token }/));
+    t.throws(() => requireFromString('module.exports = ', 'bug.js'), /bug\.js|Unexpected/);
     t.end();
   });
 

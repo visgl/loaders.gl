@@ -19,6 +19,7 @@ test('CompressedTextureWriter#write-and-read-image', async (t) => {
     );
     t.ok(outputFilename, 'a filename was returned');
   } catch (error) {
+    // @ts-ignore
     t.comment(error);
   }
   t.end();

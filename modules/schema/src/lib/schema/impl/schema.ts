@@ -82,8 +82,8 @@ export default class Schema {
 }
 
 // Warn if any duplicated field names
-function checkNames(fields) {
-  const usedNames = {};
+function checkNames(fields: Field[]): void {
+  const usedNames: Record<string, boolean> = {};
   for (const field of fields) {
     if (usedNames[field.name]) {
       // eslint-disable-next-line

@@ -18,8 +18,8 @@
     "shp"
   ],
   "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "sideEffects": false,
   "browser": {
     "./src/lib/filesystems/node-filesystem.js": false,
@@ -31,10 +31,10 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-shp-worker && npm run build-dbf-worker && npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-shp-worker": "webpack --entry ./src/workers/shp-worker.js --output ./dist/shp-worker.js --config ../../scripts/webpack/worker.js",
-    "build-dbf-worker": "webpack --entry ./src/workers/dbf-worker.js --output ./dist/dbf-worker.js --config ../../scripts/webpack/worker.js"
+    "pre-build": "npm run build-worker-shp && npm run build-worker-dbf && npm run build-bundle",
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-worker-shp": "esbuild src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js",
+    "build-worker-dbf": "esbuild src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js"
   },
   "dependencies": {
     "@loaders.gl/gis": "3.1.0-alpha.4",

@@ -18,8 +18,8 @@
     "TextDecoder"
   ],
   "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "files": [
     "src",
     "dist",
@@ -93,7 +93,7 @@
   },
   "scripts": {
     "pre-build": "npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

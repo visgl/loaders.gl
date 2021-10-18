@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import {MVTLoader} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
-import {TEST_EXPORTS} from '@loaders.gl/mvt/lib/binary-vector-tile/vector-tile-feature';
+import {TEST_EXPORTS} from '../src/lib/binary-vector-tile/vector-tile-feature';
 
 const {classifyRings} = TEST_EXPORTS;
 

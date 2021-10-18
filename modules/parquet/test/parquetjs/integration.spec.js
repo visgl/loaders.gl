@@ -3,6 +3,8 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 // import fs from 'fs';
 // import objectStream from 'object-stream';
+// @ts-expect-error
+// eslint-disable-next-line  import/named
 import {ParquetSchema, ParquetReader, ParquetWriter, ParquetTransformer} from '@loaders.gl/parquet';
 import {fetchFile} from '@loaders.gl/core/';
 

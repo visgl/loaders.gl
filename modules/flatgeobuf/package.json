@@ -18,8 +18,8 @@
     "Mapbox Vector Tiles"
   ],
   "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -28,8 +28,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle",
-    "build-worker": "webpack --entry ./src/workers/flatgeobuf-worker.ts --output ./dist/flatgeobuf-worker.js --config ../../scripts/webpack/worker.js",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-worker": "esbuild src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",

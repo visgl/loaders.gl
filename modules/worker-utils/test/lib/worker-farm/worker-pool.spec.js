@@ -1,4 +1,4 @@
-import test from 'tape-catch';
+import test from 'tape-promise/tape';
 import {WorkerPool} from '@loaders.gl/worker-utils';
 
 const CHUNKS_TOTAL = 6;

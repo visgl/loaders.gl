@@ -70,17 +70,17 @@ test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
     json: {jsonpaths: ['$.features']}
   });
 
-  let batchCount = 0;
+  // let batchCount = 0;
   let rowCount = 0;
   // let byteLength = 0;
   for await (const batch of iterator) {
-    batchCount++;
+    // batchCount++;
     rowCount += batch.length;
     // byteLength = batch.bytesUsed;
     t.equal(batch.jsonpath.toString(), '$.features', 'correct jsonpath on batch');
   }
 
-  t.skip(batchCount <= 3, 'Correct number of batches received');
+  // t.skip(batchCount <= 3, 'Correct number of batches received');
   t.equal(rowCount, 308, 'Correct number of row received');
   // t.equal(byteLength, 135910, 'Correct number of bytes received');
 

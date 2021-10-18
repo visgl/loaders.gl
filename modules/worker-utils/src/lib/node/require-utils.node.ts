@@ -11,7 +11,7 @@ import path from 'path';
 // Relative names are resolved relative to cwd
 // This indirect function is provided because webpack will try to bundle `module.require`.
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
-export async function requireFromFile(filename) {
+export async function requireFromFile(filename: string): Promise<any> {
   if (filename.startsWith('http')) {
     const response = await fetch(filename);
     const code = await response.text();
@@ -30,17 +30,18 @@ export async function requireFromFile(filename) {
 // - `options.appendPaths` Type: Array List of paths, that will be appended to module paths.
 // Useful, when you want to be able require modules from these paths.
 // - `options.prependPaths` Type: Array Same as appendPaths, but paths will be prepended.
-export function requireFromString(code, filename = '', options = {}) {
+export function requireFromString(
+  code: string,
+  filename = '',
+  options?: {
+    prependPaths?: string[];
+    appendPaths?: string[];
+  }
+): any {
   if (typeof filename === 'object') {
     options = filename;
     filename = '';
   }
-
-  options = {
-    appendPaths: [],
-    prependPaths: [],
-    ...options
-  };
 
   if (typeof code !== 'string') {
     throw new Error(`code must be a string, not ${typeof code}`);
@@ -53,7 +54,10 @@ export function requireFromString(code, filename = '', options = {}) {
   // @ts-ignore
   const newModule = new Module(filename, parent);
   newModule.filename = filename;
-  newModule.paths = [].concat(options.prependPaths).concat(paths).concat(options.appendPaths);
+  newModule.paths = ([] as string[])
+    .concat(options?.prependPaths || [])
+    .concat(paths)
+    .concat(options?.appendPaths || []);
   // @ts-ignore
   newModule._compile(code, filename);
 
