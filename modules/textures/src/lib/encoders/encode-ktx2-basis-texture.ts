@@ -2,13 +2,16 @@ import type {ImageDataType} from '@loaders.gl/images';
 import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
 
 /**
- * Encodes image to KTX2 texture
+ * Encodes image to Basis Universal Supercompressed GPU Texture.
  * Code example is taken from here - https://github.com/BinomialLLC/basis_universal/blob/master/webgl/ktx2_encode_test/index.html#L279
  * BasisEncoder API - https://github.com/BinomialLLC/basis_universal/blob/master/webgl/transcoder/basis_wrappers.cpp#L1712
  * @param image
  * @param options
  */
-export async function encodeKTX2(image: ImageDataType, options: any = {}): Promise<Uint8Array> {
+export async function encodeKTX2BasisTexture(
+  image: ImageDataType,
+  options: any = {}
+): Promise<Uint8Array> {
   // TODO remove default values after writer options will be normalized like it done in load module.
   const {useSRGB = false, qualityLevel = 10, encodeUASTC = false, mipmaps = false} = options;
   const {BasisEncoder} = await loadBasisEncoderModule(options);
@@ -33,7 +36,7 @@ export async function encodeKTX2(image: ImageDataType, options: any = {}): Promi
     return actualKTX2FileData;
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('KTX2 Encoder Error: ', error);
+    console.error('Basis Universal Supercompressed GPU Texture encoder Error: ', error);
     throw error;
   } finally {
     basisEncoder.delete();

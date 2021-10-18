@@ -51,7 +51,7 @@ import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {GeoidHeightModel} from '../lib/geoid-height-model';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
-import {KTX2TextureWriter} from '@loaders.gl/textures';
+import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -863,7 +863,7 @@ export default class I3SConverter {
       }
 
       const textureData = texture.bufferView.data;
-      const ktx2TextureData = await encode(texture.image, KTX2TextureWriter);
+      const ktx2TextureData = await encode(texture.image, KTX2BasisUniversalTextureWriter);
 
       if (this.options.slpk) {
         const slpkTexturePath = join(childPath, 'textures');
