@@ -652,3 +652,169 @@ export const getTileHeader = () => ({
   type: 'mesh',
   refine: 2
 });
+
+export const getNextAfterRootTileHeader = () => ({
+  id: 41543,
+  lodSelection: [
+    {
+      metricType: 'maxScreenThreshold',
+      maxError: 190.35122760438074
+    },
+    {
+      metricType: 'maxScreenThresholdSQ',
+      maxError: 28457.794921875
+    }
+  ],
+  obb: {
+    center: [-122.40892227790425, 37.79412655271593, 143.70168329402804],
+    halfSize: [946.2178955078125, 966.2469482421875, 136.01101684570312],
+    quaternion: [0.788020670413971, 0.41908901929855347, 0.38250574469566345, -0.23890817165374756]
+  },
+  contentUrl:
+    'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/41543/geometries/1',
+  textureUrl:
+    'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/41543/textures/0_0_1',
+  attributeUrls: [
+    'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/41543/attributes/f_0/0',
+    'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/41543/attributes/f_1/0'
+  ],
+  materialDefinition: {
+    cullFace: 'back',
+    pbrMetallicRoughness: {
+      baseColorTexture: {
+        textureSetDefinitionId: 0,
+        texCoord: 0
+      },
+      metallicFactor: 0
+    }
+  },
+  textureFormat: 'dds',
+  textureLoaderOptions: {},
+  children: [
+    {
+      id: 41494,
+      obb: {
+        center: [-122.40892227790499, 37.79412655271634, 143.701683296822],
+        halfSize: [946.2178955078125, 966.2469482421875, 136.01101684570312],
+        quaternion: [
+          0.788020670413971, 0.41908901929855347, 0.38250574469566345, -0.23890817165374756
+        ]
+      }
+    }
+  ],
+  isDracoGeometry: true,
+  mbs: [-122.40892227790425, 37.79412655271593, 143.70168329402804, 1359.2131544451538],
+  boundingVolume: {
+    sphere: [-2704755.6799697783, -4260546.326939532, 3887500.0994313606, 1359.2131544451538],
+    box: [
+      -2704755.6799697783, -4260546.326939532, 3887500.0994313606, 946.2178955078125,
+      966.2469482421875, 136.01101684570312, 0.788020670413971, 0.41908901929855347,
+      0.38250574469566345, -0.23890817165374756
+    ]
+  },
+  lodMetricType: 'maxScreenThreshold',
+  lodMetricValue: 190.35122760438074,
+  type: 'mesh',
+  refine: 2
+});
+
+export const getBigLodMetricTileHeader = () => ({
+  id: 2103,
+  lodSelection: [
+    {
+      metricType: 'maxScreenThreshold',
+      maxError: 2545.5409969441134
+    },
+    {
+      metricType: 'maxScreenThresholdSQ',
+      maxError: 5089206.5
+    }
+  ],
+  obb: {
+    center: [-74.01224561539388, 40.689378970323915, 43.68304331135005],
+    halfSize: [2748.5205078125, 1617.2325439453125, 113.44554138183594],
+    quaternion: [0.16726532578468323, -0.4008112847805023, 0.8910421133041382, 0.13197216391563416]
+  },
+  contentUrl:
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/geometries/1',
+  textureUrl: null,
+  attributeUrls: [
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_0/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_1/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_2/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_3/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_4/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_5/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_6/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_7/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_8/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_9/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_10/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_11/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_12/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_13/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_14/0',
+    'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0/nodes/2102/attributes/f_15/0'
+  ],
+  materialDefinition: {
+    doubleSided: true
+  },
+  textureFormat: 'jpeg',
+  textureLoaderOptions: {},
+  children: [
+    {
+      id: 2104,
+      obb: {
+        center: [-74.00735794942466, 40.674884685074765, 26.424795985221863],
+        halfSize: [511.4256286621094, 676.6785888671875, 25.632099151611328],
+        quaternion: [
+          0.12048618495464325, 0.9008316993713379, 0.3828689157962799, -0.16552002727985382
+        ]
+      }
+    },
+    {
+      id: 2107,
+      obb: {
+        center: [-74.0034126693549, 40.68115999371559, 21.9132988313213],
+        halfSize: [524.7799682617188, 463.6318054199219, 20.944942474365234],
+        quaternion: [
+          0.09495606273412704, -0.4089607894420624, 0.9068772792816162, -0.03616717830300331
+        ]
+      }
+    },
+    {
+      id: 2112,
+      obb: {
+        center: [-74.0218546582727, 40.694235544803846, 108.91047429759055],
+        halfSize: [1758.814453125, 114.03099060058594, 1599.049072265625],
+        quaternion: [
+          0.902656078338623, 0.026173165068030357, -0.2234274297952652, 0.3668884038925171
+        ]
+      }
+    },
+    {
+      id: 2116,
+      obb: {
+        center: [-73.9916551460206, 40.672573621190736, 15.680643054656684],
+        halfSize: [826.0719604492188, 15.417656898498535, 356.4653625488281],
+        quaternion: [
+          0.14524587988853455, 0.7017393112182617, -0.33847472071647644, -0.6098363995552063
+        ]
+      }
+    }
+  ],
+  isDracoGeometry: true,
+  mbs: [-74.01224561539388, 40.689378970323915, 43.68304331135005, 3191.0310200815197],
+  boundingVolume: {
+    sphere: [1333967.3976591302, -4655852.524170438, 4136356.947935957, 3191.0310200815197],
+    box: [
+      1333967.3976591302, -4655852.524170438, 4136356.947935957, 2748.5205078125,
+      1617.2325439453125, 113.44554138183594, 0.16726532578468323, -0.4008112847805023,
+      0.8910421133041382, 0.13197216391563416
+    ]
+  },
+  lodMetricType: 'maxScreenThreshold',
+  lodMetricValue: 2545.5409969441134,
+  type: 'mesh',
+  refine: 2
+});
