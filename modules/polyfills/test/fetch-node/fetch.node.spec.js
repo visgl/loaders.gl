@@ -7,6 +7,7 @@ const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
 const PLY_CUBE_ATT_SIZE = 853;
 const TEXT_URL = `@loaders.gl/polyfills/test/data/data.txt`;
 const TEXT_URL_GZIPPED = `@loaders.gl/polyfills/test/data/data.txt.gz`;
+const TEXT_URL_WITH_NOT_FULL_LOCATION = `https://unpkg.com/@loaders.gl/textures@beta/dist/libs/basis_encoder.js`;
 
 // This type of links on github works via 302 redirect
 // ("https://github.com/repository/raw/branch-name/path/to/file/file-name.extension")
@@ -124,6 +125,14 @@ test('polyfills#fetch() should follow redirect if `followRedirect` option is tru
     // TODO/ActionEngine - restore
     // const failedResponse = await fetchFile(REDIRECT_URL, {followRedirect: false});
     // t.equal(failedResponse.status, 302);
+  }
+  t.end();
+});
+
+test('polyfills#fetch() should follow redirect if header location doesn`t have protocol and origin', async (t) => {
+  if (!isBrowser) {
+    const defaultFetchResponse = await fetch(TEXT_URL_WITH_NOT_FULL_LOCATION);
+    t.equal(defaultFetchResponse.status, 200);
   }
   t.end();
 });
