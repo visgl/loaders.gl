@@ -1,4 +1,4 @@
-import {Vector3} from '@math.gl/core';
+import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Tile3D} from '../..';
 import {FrameState} from './frame-state';
@@ -34,23 +34,46 @@ export function getLodStatus(tile: Tile3D, frameState: FrameState): 'DIG' | 'OUT
  * @param frameState
  * @returns
  */
+// eslint-disable-next-line max-statements
 export function getProjectedRadius(tile: Tile3D, frameState: FrameState): number {
-  const viewport = frameState.viewport;
+  const originalViewport = frameState.viewport;
+  const ViewportClass = originalViewport.constructor;
+  const {longitude, latitude, height, width, bearing, zoom} = originalViewport;
+  // @ts-ignore
+  const viewport = new ViewportClass({longitude, latitude, height, width, bearing, zoom, pitch: 0});
   const mbsLat = tile.header.mbs[1];
   const mbsLon = tile.header.mbs[0];
   const mbsZ = tile.header.mbs[2];
   const mbsR = tile.header.mbs[3];
   const mbsCenterCartesian = [...tile.boundingVolume.center];
-  const cameraPositionCartesian = [...frameState.camera.position];
+  const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
+  const cameraPositionCartesian = Ellipsoid.WGS84.cartographicToCartesian(
+    cameraPositionCartographic,
+    new Vector3()
+  );
 
   // ---------------------------
   // Calculate mbs border vertex
   // ---------------------------
   const toEye = new Vector3(cameraPositionCartesian).subtract(mbsCenterCartesian).normalize();
   // Add extra vector to form plane
-  const topVector = new Vector3([0, 1, 0]).normalize();
+  const enuToCartesianMatrix = new Matrix4();
+  Ellipsoid.WGS84.eastNorthUpToFixedFrame(mbsCenterCartesian, enuToCartesianMatrix);
+  const cartesianToEnuMatrix = new Matrix4(enuToCartesianMatrix).invert();
+  const cameraPositionEnu = new Vector3(cameraPositionCartesian).transform(cartesianToEnuMatrix);
+  // Mean Proportionals in Right Triangles - Altitude rule
+  // https://mathbitsnotebook.com/Geometry/RightTriangles/RTmeanRight.html
+  const projection = Math.sqrt(
+    cameraPositionEnu[0] * cameraPositionEnu[0] + cameraPositionEnu[1] * cameraPositionEnu[1]
+  );
+  const extraZ = (projection * projection) / cameraPositionEnu[2];
+  const extraVertexEnu = new Vector3([cameraPositionEnu[0], cameraPositionEnu[1], extraZ]);
+  const extraVertexCartesian = extraVertexEnu.transform(enuToCartesianMatrix);
+  const extraVectorCartesian = new Vector3(extraVertexCartesian)
+    .subtract(mbsCenterCartesian)
+    .normalize();
   // We need radius vector orthogonal to toEye vector
-  const radiusVector = toEye.cross(topVector).normalize().scale(mbsR);
+  const radiusVector = toEye.cross(extraVectorCartesian).normalize().scale(mbsR);
   const sphereMbsBorderVertexCartesian = new Vector3(mbsCenterCartesian).add(radiusVector);
   const sphereMbsBorderVertexCartographic = Ellipsoid.WGS84.cartesianToCartographic(
     sphereMbsBorderVertexCartesian
