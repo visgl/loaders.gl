@@ -43,15 +43,32 @@ export default async function fetchNode(url, options) {
       !options || options.followRedirect || options.followRedirect === undefined;
 
     if (status >= 300 && status < 400 && headers.has('location') && followRedirect) {
-      // Redirect
-      return await fetchNode(headers.get('location'), options);
-    }
+      const redirectUrl = generateRedirectUrl(url, headers.get('location'));
 
+      // Redirect
+      return await fetchNode(redirectUrl, options);
+    }
     return new Response(body, {headers, status, statusText, url});
   } catch (error) {
     // TODO - what error code to use here?
     return new Response(null, {status: 400, statusText: String(error), url});
   }
+}
+
+/**
+ * Generate redirect url from location without origin and protocol.
+ * @param originalUrl
+ * @param redirectUrl
+ */
+function generateRedirectUrl(originalUrl: string, location: string): string {
+  if (location.startsWith('http')) {
+    return location;
+  }
+  // If url doesn't have origin and protocol just extend current url origin with location.
+  const url = new URL(originalUrl);
+  url.pathname = location;
+
+  return url.href;
 }
 
 // HELPER FUNCTIONS
