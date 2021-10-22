@@ -43,11 +43,8 @@ export default async function fetchNode(url, options) {
       !options || options.followRedirect || options.followRedirect === undefined;
 
     if (status >= 300 && status < 400 && headers.has('location') && followRedirect) {
-      let redirectUrl = headers.get('location');
+      const redirectUrl = generateRedirectUrl(url, headers.get('location'));
 
-      if (!redirectUrl.startsWith('http')) {
-        redirectUrl = generateRedirectUrl(url, redirectUrl);
-      }
       // Redirect
       return await fetchNode(redirectUrl, options);
     }
@@ -62,11 +59,14 @@ export default async function fetchNode(url, options) {
  * Generate redirect url from location without origin and protocol.
  * @param originalUrl
  * @param redirectUrl
- * @returns
  */
-function generateRedirectUrl(originalUrl: string, redirectUrl: string): string {
+function generateRedirectUrl(originalUrl: string, location: string): string {
+  if (location.startsWith('http')) {
+    return location;
+  }
+  // If url doesn't have origin and protocol just extend current url origin with location.
   const url = new URL(originalUrl);
-  url.pathname = redirectUrl;
+  url.pathname = location;
 
   return url.href;
 }
