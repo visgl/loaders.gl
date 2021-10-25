@@ -59,5 +59,9 @@ export function calculateTransformProps(tileHeader, tile) {
   tile.cartographicOrigin = cartographicOrigin;
 
   // Deprecated, drop
-  tile.modelMatrix = tile.cartographicModelMatrix;
+  if (!tile.coordinateSystem) {
+    tile.modelMatrix = tile.cartographicModelMatrix;
+  } else {
+    tile.modelMatrix = modelMatrix;
+  }
 }
