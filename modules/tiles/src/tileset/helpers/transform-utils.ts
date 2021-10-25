@@ -61,7 +61,5 @@ export function calculateTransformProps(tileHeader, tile) {
   // Deprecated, drop
   if (!tile.coordinateSystem) {
     tile.modelMatrix = tile.cartographicModelMatrix;
-  } else {
-    tile.modelMatrix = modelMatrix;
   }
 }

@@ -1,7 +1,6 @@
 import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
-import {Vector3} from '@math.gl/core';
-import {Ellipsoid} from '@math.gl/geospatial';
+import {Matrix4} from '@math.gl/core';
 
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
@@ -166,8 +165,6 @@ async function parseI3SNodeGeometry(
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   }
 
-  const {cartographicOrigin, cartesianOrigin} = parsePositions(attributes.position, tile);
-
   content.attributes = {
     positions: attributes.position,
     normals: attributes.normal,
@@ -189,8 +186,7 @@ async function parseI3SNodeGeometry(
   }
 
   content.vertexCount = vertexCount;
-  content.cartographicCenter = cartographicOrigin;
-  content.cartesianOrigin = cartesianOrigin;
+  content.modelMatrix = getModelMatrix(attributes.position);
   content.coordinateSystem = COORDINATE_SYSTEM_LNGLAT_OFFSETS;
   content.byteLength = arrayBuffer.byteLength;
 
@@ -383,38 +379,19 @@ function parseUint64Values(
   return values;
 }
 
-function parsePositions(attribute, tile) {
-  const mbs = tile.mbs;
-  const value = attribute.value;
-  const metadata = attribute.metadata;
-  const cartographicOrigin = new Vector3(mbs[0], mbs[1], mbs[2]);
-  const cartesianOrigin = new Vector3();
-  Ellipsoid.WGS84.cartographicToCartesian(cartographicOrigin, cartesianOrigin);
-  attribute.value = offsetsToCartesians(value, metadata);
-
-  return {
-    cartographicOrigin,
-    cartesianOrigin
-  };
-}
-
 /**
- * Converts position coordinates to absolute cartesian coordinates
- * @param {Float32Array} vertices - "position" attribute data
- * @param {Object} metadata - When the geometry is DRACO compressed, contain position attribute's metadata
- *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md
- * @param {Vector3} cartographicOrigin - Cartographic origin coordinates
- * @returns {Float64Array} - converted "position" data
+ * Get model matrix for loaded vertices
+ * @param positions positions attribute
+ * @returns Matrix4 - model matrix for geometry transformation
  */
-function offsetsToCartesians(vertices, metadata = {}) {
-  const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
-  const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
-  for (let i = 0; i < vertices.length; i += 3) {
-    vertices[i] = vertices[i] * scaleX;
-    vertices[i + 1] = vertices[i + 1] * scaleY;
-  }
-
-  return vertices;
+function getModelMatrix(positions) {
+  const metadata = positions.metadata;
+  const scaleX = metadata?.['i3s-scale_x']?.double || 1;
+  const scaleY = metadata?.['i3s-scale_y']?.double || 1;
+  const modelMatrix = new Matrix4();
+  modelMatrix[0] = scaleX;
+  modelMatrix[5] = scaleY;
+  return modelMatrix;
 }
 
 /**
