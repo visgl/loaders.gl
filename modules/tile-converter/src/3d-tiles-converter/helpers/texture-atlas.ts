@@ -7,25 +7,21 @@
  */
 export function convertTextureAtlas(texCoords: Float32Array, uvRegions: Uint16Array): Float32Array {
   const convertedTexCoords = new Float32Array(texCoords.length);
+  const normalisedRegions = normalizeRegions(uvRegions);
 
   for (let index = 0; index < texCoords.length; index += 2) {
     const uv = texCoords.subarray(index, index + 2);
-    const regions = uvRegions.subarray(index * 2, index * 2 + 4);
-    const normalizedRegions = normalizeRegions(regions);
-
+    const regions = normalisedRegions.slice(index * 2, index * 2 + 4);
     // fract(texCoords)
     const fractatedUV = fract(uv);
     // (uvRegions.zw - uvRegions.xy)
-    const subtracted = [
-      normalizedRegions[2] - normalizedRegions[0],
-      normalizedRegions[3] - normalizedRegions[1]
-    ];
+    const subtracted = [regions[2] - regions[0], regions[3] - regions[1]];
     // fract(texCoords) * (uvRegions.zw - uvRegions.xy)
     const multiplicationResult = [fractatedUV[0] * subtracted[0], fractatedUV[1] * subtracted[1]];
     // fract(texCoords) * (uvRegions.zw - uvRegions.xy) + uvRegions.xy;
     const convertedUV = [
-      multiplicationResult[0] + normalizedRegions[0],
-      multiplicationResult[1] + normalizedRegions[1]
+      multiplicationResult[0] + regions[0],
+      multiplicationResult[1] + regions[1]
     ];
 
     convertedTexCoords[index] = convertedUV[0];

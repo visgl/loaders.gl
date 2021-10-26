@@ -23,12 +23,6 @@ export default class B3dmConverter {
     return b3dm;
   }
 
-  flipY(texCoords) {
-    for (let i = 0; i < texCoords.length; i += 2) {
-      texCoords[i + 1] = 1 - texCoords[i + 1];
-    }
-  }
-
   async buildGltf(i3sTile) {
     const {material, attributes, indices: originalIndices, cartesianOrigin} = i3sTile.content;
     const gltfBuilder = new GLTFScenegraph();
