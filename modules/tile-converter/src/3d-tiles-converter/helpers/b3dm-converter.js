@@ -3,6 +3,7 @@ import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {ImageWriter} from '@loaders.gl/images';
 import {Matrix4, Vector3} from '@math.gl/core';
+import {convertTextureAtlas} from './texture-atlas';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 
@@ -32,6 +33,14 @@ export default class B3dmConverter {
 
     const positions = attributes.positions;
     const positionsValue = positions.value;
+
+    if (attributes.uvRegions && attributes.texCoords) {
+      attributes.texCoords.value = convertTextureAtlas(
+        attributes.texCoords.value,
+        attributes.uvRegions.value
+      );
+    }
+
     attributes.positions.value = this._normalizePositions(positionsValue, cartesianOrigin);
     if (attributes.normals && !this._checkNormals(attributes.normals.value)) {
       delete attributes.normals;
@@ -267,7 +276,7 @@ export default class B3dmConverter {
       return 0;
     }
     const firstKey = Object.keys(attributes)[0];
-    return attributes[firstKey].length;
+    return firstKey ? attributes[firstKey].length : 0;
   }
 
   /* Checks that normals buffer is correct
