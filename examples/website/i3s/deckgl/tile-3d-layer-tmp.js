@@ -6,7 +6,7 @@ import {default as _MeshLayer} from './mesh-layer/mesh-layer';
 
 const SINGLE_DATA = [0];
 
-export class Tile3DLayerTmp extends Tile3DLayer {
+export default class Tile3DLayerTmp extends Tile3DLayer {
   _makeSimpleMeshLayer(tileHeader, oldLayer) {
     const content = tileHeader.content;
     const {attributes, indices, modelMatrix, cartographicOrigin, coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS, material, featureIds} = content;

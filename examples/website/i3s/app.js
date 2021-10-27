@@ -21,7 +21,7 @@ import {load} from '@loaders.gl/core';
 import {buildSublayersTree} from './helpers/sublayers';
 import {initStats, sumTilesetsStats} from './helpers/stats';
 
-import {Tile3DLayerTmp} from './deckgl/tile-3d-lalyer-tmp';
+import {default as Tile3DLayer} from './deckgl/tile-3d-layer-tmp';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -218,7 +218,7 @@ export default class App extends PureComponent {
       .filter((sublayer) => sublayer.visibility)
       .map(
         (sublayer) =>
-          new Tile3DLayerTmp({
+          new Tile3DLayer({
             id: `tile-layer-${sublayer.id}`,
             data: sublayer.url,
             loader: I3SLoader,
