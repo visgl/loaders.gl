@@ -15,7 +15,6 @@ import {
   COORDINATE_SYSTEM
 } from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
 
 import {load} from '@loaders.gl/core';
 import {I3SLoader, I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
@@ -60,6 +59,8 @@ import {
 import {Color, Flex, Font} from './components/styles';
 import {buildSublayersTree} from './helpers/sublayers';
 import {initStats, sumTilesetsStats} from './helpers/stats';
+
+import {Tile3DLayerTmp} from './deckgl/tile-3d-lalyer-tmp';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
@@ -546,7 +547,7 @@ export default class App extends PureComponent {
       .filter((sublayer) => sublayer.visibility)
       .map(
         (sublayer) =>
-          new Tile3DLayer({
+          new Tile3DLayerTmp({
             id: `tile-layer-${sublayer.id}`,
             data: sublayer.url,
             loader: I3SLoader,
