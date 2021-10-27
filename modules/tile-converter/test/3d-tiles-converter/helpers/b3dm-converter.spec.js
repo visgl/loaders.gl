@@ -6,6 +6,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {load} from '@loaders.gl/core';
 import {I3SAttributeLoader} from '@loaders.gl/i3s';
 import {Matrix4, Vector3} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 
 const ATTRIBUTES_STORAGE_INFO_STUB = [
   {
@@ -75,6 +76,7 @@ test('tile-converter - b3dm converter#should normalise positions correctly', asy
     const tile = await loadI3STile();
     const i3sContent = tile.content;
     const originPositions = i3sContent.attributes.positions.value;
+    const cartographicOrigin = i3sContent.cartographicOrigin;
     const b3dmConverter = new B3dmConverter();
     const encodedContent = await b3dmConverter.convert(tile);
 
@@ -88,7 +90,7 @@ test('tile-converter - b3dm converter#should normalise positions correctly', asy
 
     const positionOffsets = decodedContent.gltf.meshes[0].primitives[0].attributes.POSITION.value;
     const matrix = decodedContent.gltf.nodes[0].matrix;
-    const positions = _transformPositionsWithMatrix(positionOffsets, matrix);
+    const positions = _transformPositionsWithMatrix(positionOffsets, matrix, cartographicOrigin);
     t.ok(_areArraysEqualWithDelta(originPositions, positions, 0.0001));
 
     t.end();
@@ -190,7 +192,7 @@ async function _loadAttributes(tile, attributeStorageInfo) {
   return Object.assign({}, ...attributesList);
 }
 
-function _transformPositionsWithMatrix(positions, matrix) {
+function _transformPositionsWithMatrix(positions, matrix, cartographicOrigin) {
   const transformationMatrix = new Matrix4(matrix);
   const result = new Float64Array(positions.length);
   for (let index = 0; index < positions.length; index += 3) {
@@ -198,6 +200,8 @@ function _transformPositionsWithMatrix(positions, matrix) {
     let vertexVector = new Vector3(Array.from(vertex));
     vertexVector = vertexVector.transform(transformationMatrix);
     vertexVector = vertexVector.transform(Y_UP_TO_Z_UP_MATRIX);
+    Ellipsoid.WGS84.cartesianToCartographic(vertexVector, vertexVector);
+    vertexVector = vertexVector.subtract(cartographicOrigin);
     result.set(vertexVector, index);
   }
   return result;

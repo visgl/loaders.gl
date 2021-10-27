@@ -4,8 +4,10 @@ import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {ImageWriter} from '@loaders.gl/images';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {convertTextureAtlas} from './texture-atlas';
+import {Ellipsoid} from '@math.gl/geospatial';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
+const scratchVector = new Vector3();
 
 export default class B3dmConverter {
   async convert(i3sTile, attributes = null) {
@@ -24,7 +26,13 @@ export default class B3dmConverter {
   }
 
   async buildGltf(i3sTile) {
-    const {material, attributes, indices: originalIndices, cartesianOrigin} = i3sTile.content;
+    const {
+      material,
+      attributes,
+      indices: originalIndices,
+      cartesianOrigin,
+      cartographicOrigin
+    } = i3sTile.content;
     const gltfBuilder = new GLTFScenegraph();
 
     const textureIndex = await this._addI3sTextureToGltf(i3sTile, gltfBuilder);
@@ -41,7 +49,11 @@ export default class B3dmConverter {
       );
     }
 
-    attributes.positions.value = this._normalizePositions(positionsValue, cartesianOrigin);
+    attributes.positions.value = this._normalizePositions(
+      positionsValue,
+      cartesianOrigin,
+      cartographicOrigin
+    );
     if (attributes.normals && !this._checkNormals(attributes.normals.value)) {
       delete attributes.normals;
     }
@@ -99,13 +111,14 @@ export default class B3dmConverter {
    * @param {number[]} cartesianOrigin - the tile center in the cartesian coordinate system
    * @returns {Float32Array} - the output geometry positions array
    */
-  _normalizePositions(positionsValue, cartesianOrigin) {
+  _normalizePositions(positionsValue, cartesianOrigin, cartographicOrigin) {
     const newPositionsValue = new Float32Array(positionsValue.length);
     for (let index = 0; index < positionsValue.length; index += 3) {
       const vertex = positionsValue.subarray(index, index + 3);
-      const originVector = new Vector3(cartesianOrigin);
-      let vertexVector = new Vector3(Array.from(vertex));
-      vertexVector = vertexVector.subtract(originVector);
+      const cartesianOriginVector = new Vector3(cartesianOrigin);
+      let vertexVector = new Vector3(Array.from(vertex)).add(cartographicOrigin);
+      Ellipsoid.WGS84.cartographicToCartesian(vertexVector, scratchVector);
+      vertexVector = scratchVector.subtract(cartesianOriginVector);
       newPositionsValue.set(vertexVector, index);
     }
     return newPositionsValue;
