@@ -4,7 +4,7 @@ import {loadI3STile} from '@loaders.gl/i3s/test/test-utils/load-utils';
 import B3dmConverter from '../../../src/3d-tiles-converter/helpers/b3dm-converter';
 import {isBrowser} from '@loaders.gl/core';
 import {load} from '@loaders.gl/core';
-import {I3SAttributeLoader} from '@loaders.gl/i3s';
+import {I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -73,7 +73,7 @@ test('tile-converter - b3dm converter#should convert i3s node data to b3dm encod
 
 test('tile-converter - b3dm converter#should normalise positions correctly', async (t) => {
   if (!isBrowser) {
-    const tile = await loadI3STile();
+    const tile = await loadI3STile({i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}});
     const i3sContent = tile.content;
     const originPositions = i3sContent.attributes.positions.value;
     const cartographicOrigin = i3sContent.cartographicOrigin;
