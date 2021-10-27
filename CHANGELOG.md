@@ -1,5 +1,31 @@
 # CHANGELOG for loaders.gl
 
+## v4.0 Prerelease
+
+- feat(i3s): change output coordinate system (#1893) (#1896)
+- feat(tile-converter): add atlas texture conversion I3S -> 3DTiles (#1894)
+- fix(fetch-node): fix redirect location handling in fetch polyfill (#1892)
+- chore: TS remove implicit any - multiple PRs
+- feat(tile-converter): use converter.min.js as entry for npx command (#1890)
+- feat(i3s-converter): add basis universal supercompressed texture writer (#1887)
+- feat(i3s): decodeTextures option (#1883)
+- chore(json): improve clarinet types and perf (#1684)
+- chore(json): Clean up clarinet typings (#1884)
+- feat(basis-encoder): add basis encoder (#1871)
+- fix(i3s-attributes): fix picking attributes parsing (#1869)
+- chore: Move bundle builds to esbuild (#1876)
+- Revert "chore: Reintroduce ES5 build (#1842)" (#1875)
+- chore: Bump master to v4.0-alpha (#1874)
+- chore(deps): bump url-parse from 1.5.1 to 1.5.3 (#1865)
+- chore(i3s-docs): udpate I3sLoader docs (#1862)
+- chore(i3s-app): fix attributes panel layout (#1868)
+- chore(i3s-picking): disable feature picking for integratedMesh layer type (#1867)
+- fix(tile-converter): support specific gltf structure (#1860)
+- consistently use core as peer dependency (#1853)
+- fix(i3s): change logic of tileset urls parsing for i3s apps (#1841)
+- feat(gltf): parse basis textures (#1843)
+- fix(examples): textures fix function name (#1845)
+
 ## v3.1 Prerelease
 
 ## v3.1.0-alpha.4
