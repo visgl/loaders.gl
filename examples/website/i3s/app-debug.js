@@ -532,10 +532,9 @@ export default class App extends PureComponent {
       trianglesPercentage,
       normalsLength
     } = this.state;
-    const loadOptions = {};
-
+    const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
     if (token) {
-      loadOptions.token = token;
+      loadOptions.i3s = {...loadOptions.i3s, token};
     }
 
     this._colorMap = this._colorMap || new ColorMap();

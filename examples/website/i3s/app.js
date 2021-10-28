@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator} from '@deck.gl/core';
+import {MapController, FlyToInterpolator, COORDINATE_SYSTEM} from '@deck.gl/core';
 import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -210,9 +210,9 @@ export default class App extends PureComponent {
   _renderLayers() {
     const {flattenedSublayers, token, selectedFeatureIndex, selectedTilesetBasePath} = this.state;
     // TODO: support compressed textures in GLTFMaterialParser
-    const loadOptions = {};
+    const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
     if (token) {
-      loadOptions.i3s = {token};
+      loadOptions.i3s = {...loadOptions.i3s, token};
     }
     return flattenedSublayers
       .filter((sublayer) => sublayer.visibility)
