@@ -21,7 +21,7 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
  */
 export async function parseWithWorker(
   loader: Loader,
-  data,
+  data: any,
   options?: LoaderOptions,
   context?: LoaderContext,
   parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<void>
@@ -38,8 +38,8 @@ export async function parseWithWorker(
 
   const job = await workerPool.startJob(
     'process-on-worker',
-    // eslint-disable-next-line
-    onMessage.bind(null, parseOnMainThread)
+    // @ts-expect-error
+    onMessage.bind(null, parseOnMainThread) // eslint-disable-this-line
   );
 
   job.postMessage('process', {
@@ -49,6 +49,7 @@ export async function parseWithWorker(
   });
 
   const result = await job.result;
+  // TODO - what is going on here?
   return await result.result;
 }
 
@@ -59,7 +60,7 @@ export async function parseWithWorker(
  * @param payload
  */
 async function onMessage(
-  parseOnMainThread,
+  parseOnMainThread: (arrayBuffer: ArrayBuffer, options?: {[key: string]: any}) => Promise<void>,
   job: WorkerJob,
   type: WorkerMessageType,
   payload: WorkerMessagePayload

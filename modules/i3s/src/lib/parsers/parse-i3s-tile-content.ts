@@ -1,6 +1,7 @@
 import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
-import {Matrix4} from '@math.gl/core';
+import {Vector3, Matrix4} from '@math.gl/core';
+import {Ellipsoid} from '@math.gl/geospatial';
 
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
@@ -16,11 +17,11 @@ import {
   SIZEOF,
   I3S_NAMED_HEADER_ATTRIBUTES,
   I3S_NAMED_VERTEX_ATTRIBUTES,
-  I3S_NAMED_GEOMETRY_ATTRIBUTES
+  I3S_NAMED_GEOMETRY_ATTRIBUTES,
+  COORDINATE_SYSTEM
 } from './constants';
 
-// https://github.com/visgl/deck.gl/blob/46d378fe7693baff25382ac3b9f9cbc2e71e9ebc/modules/core/src/lib/constants.js#L40
-const COORDINATE_SYSTEM_LNGLAT_OFFSETS = 3;
+const scratchVector = new Vector3([0, 0, 0]);
 
 const FORMAT_LOADER_MAP = {
   jpeg: ImageLoader,
@@ -59,7 +60,7 @@ export async function parseI3STileContent(
         // @ts-ignore context must be defined
         // Image constructor is not supported in worker thread.
         // Do parsing image data on the main thread by using context to avoid worker issues.
-        tile.content.texture = await context.parse(arrayBuffer, options);
+        tile.content.texture = await context.parse(arrayBuffer, loader, options);
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
         // @ts-ignore context must be defined
         const texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
@@ -81,13 +82,14 @@ export async function parseI3STileContent(
     tile.content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, context);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, options, context);
 }
 
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
   tile: Tile = {},
+  options?: LoaderOptions,
   context?: LoaderContext
 ) {
   if (!tile.content) {
@@ -165,6 +167,18 @@ async function parseI3SNodeGeometry(
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   }
 
+  if (
+    !options?.i3s?.coordinateSystem ||
+    options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
+  ) {
+    const {enuMatrix} = parsePositions(attributes.position, tile);
+    content.modelMatrix = enuMatrix.invert();
+    content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
+  } else {
+    content.modelMatrix = getModelMatrix(attributes.position);
+    content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
+  }
+
   content.attributes = {
     positions: attributes.position,
     normals: attributes.normal,
@@ -186,8 +200,6 @@ async function parseI3SNodeGeometry(
   }
 
   content.vertexCount = vertexCount;
-  content.modelMatrix = getModelMatrix(attributes.position);
-  content.coordinateSystem = COORDINATE_SYSTEM_LNGLAT_OFFSETS;
   content.byteLength = arrayBuffer.byteLength;
 
   return tile;
@@ -377,6 +389,51 @@ function parseUint64Values(
   }
 
   return values;
+}
+
+function parsePositions(attribute, tile) {
+  const mbs = tile.mbs;
+  const value = attribute.value;
+  const metadata = attribute.metadata;
+  const enuMatrix = new Matrix4();
+  const cartographicOrigin = new Vector3(mbs[0], mbs[1], mbs[2]);
+  const cartesianOrigin = new Vector3();
+  Ellipsoid.WGS84.cartographicToCartesian(cartographicOrigin, cartesianOrigin);
+  Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin, enuMatrix);
+  attribute.value = offsetsToCartesians(value, metadata, cartographicOrigin);
+
+  return {
+    enuMatrix
+  };
+}
+
+/**
+ * Converts position coordinates to absolute cartesian coordinates
+ * @param {Float32Array} vertices - "position" attribute data
+ * @param {Object} metadata - When the geometry is DRACO compressed, contain position attribute's metadata
+ *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md
+ * @param {Vector3} cartographicOrigin - Cartographic origin coordinates
+ * @returns {Float64Array} - converted "position" data
+ */
+function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
+  const positions = new Float64Array(vertices.length);
+  const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
+  const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
+  for (let i = 0; i < positions.length; i += 3) {
+    positions[i] = vertices[i] * scaleX + cartographicOrigin.x;
+    positions[i + 1] = vertices[i + 1] * scaleY + cartographicOrigin.y;
+    positions[i + 2] = vertices[i + 2] + cartographicOrigin.z;
+  }
+
+  for (let i = 0; i < positions.length; i += 3) {
+    // @ts-ignore
+    Ellipsoid.WGS84.cartographicToCartesian(positions.subarray(i, i + 3), scratchVector);
+    positions[i] = scratchVector.x;
+    positions[i + 1] = scratchVector.y;
+    positions[i + 2] = scratchVector.z;
+  }
+
+  return positions;
 }
 
 /**

@@ -5,7 +5,7 @@ import {join} from 'path';
 import process from 'process';
 import transform from 'json-map-transform';
 import {load} from '@loaders.gl/core';
-import {I3SLoader, I3SAttributeLoader} from '@loaders.gl/i3s';
+import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 
 import {PGMLoader} from '../pgm-loader';
@@ -67,7 +67,9 @@ export default class Tiles3DConverter {
     console.log('Loading egm file completed!'); // eslint-disable-line
 
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
-    this.sourceTileset = new Tileset3D(sourceTilesetJson, {});
+    this.sourceTileset = new Tileset3D(sourceTilesetJson, {
+      loadOptions: {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}}
+    });
 
     if (!this.sourceTileset.root.header.obb) {
       this.sourceTileset.root.header.obb = createObbFromMbs(this.sourceTileset.root.header.mbs);

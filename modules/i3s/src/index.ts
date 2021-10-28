@@ -24,3 +24,4 @@ export type {
   Extent,
   FeatureAttribute
 } from './types';
+export {COORDINATE_SYSTEM} from './lib/parsers/constants';

@@ -3831,9 +3831,9 @@ camelize@^1.0.0:
   integrity sha1-FkpUg+Yw+kMh5a8HAg5TGDGyYJs=
 
 caniuse-lite@^1.0.30001219:
-  version "1.0.30001269"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001269.tgz"
-  integrity sha512-UOy8okEVs48MyHYgV+RdW1Oiudl1H6KolybD6ZquD0VcrPSgj25omXO1S7rDydjpqaISCwA8Pyx+jUQKZwWO5w==
+  version "1.0.30001272"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001272.tgz"
+  integrity sha512-DV1j9Oot5dydyH1v28g25KoVm7l8MTxazwuiH3utWiAS6iL/9Nh//TGwqFEeqqN8nnWYQ8HHhUq+o4QPt9kvYw==
 
 caseless@~0.12.0:
   version "0.12.0"
