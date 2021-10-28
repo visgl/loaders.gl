@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "4.0.0-alpha.3",
+  "version": "4.0.0-alpha.4",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -32,6 +32,6 @@
     "build-bundle": "webpack  --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.0.0-alpha.3"
+    "@loaders.gl/loader-utils": "4.0.0-alpha.4"
   }
 }

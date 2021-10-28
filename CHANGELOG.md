@@ -2,7 +2,11 @@
 
 ## v4.0 Prerelease
 
-## v4.0.0-alpha.2
+## v4.0.0-alpha.4
+
+- fix(i3s): coordinate system option - backward compatibility (#1900)
+
+## v4.0.0-alpha.3
 
 - feat(i3s): coordinate system option (#1899)
 
