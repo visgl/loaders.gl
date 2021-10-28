@@ -167,7 +167,10 @@ async function parseI3SNodeGeometry(
     attributes = concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes);
   }
 
-  if (options?.i3s?.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS) {
+  if (
+    !options?.i3s?.coordinateSystem ||
+    options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
+  ) {
     const {enuMatrix} = parsePositions(attributes.position, tile);
     content.modelMatrix = enuMatrix.invert();
     content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
