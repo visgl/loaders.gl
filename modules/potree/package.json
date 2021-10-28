@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/potree",
-  "version": "4.0.0-alpha.1",
+  "version": "4.0.0-alpha.2",
   "description": "potree loaders for large point clouds.",
   "license": "MIT",
   "publishConfig": {
@@ -35,7 +35,7 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/math": "4.0.0-alpha.1",
+    "@loaders.gl/math": "4.0.0-alpha.2",
     "@math.gl/core": "^3.5.1"
   }
 }

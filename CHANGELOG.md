@@ -2,6 +2,12 @@
 
 ## v4.0 Prerelease
 
+## v4.0.0-alpha.2
+
+- feat(i3s): coordinate system option (#1899)
+
+## v4.0.0-alpha.1
+
 - feat(i3s): change output coordinate system (#1893) (#1896)
 - feat(tile-converter): add atlas texture conversion I3S -> 3DTiles (#1894)
 - fix(fetch-node): fix redirect location handling in fetch polyfill (#1892)
