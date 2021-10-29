@@ -209,7 +209,6 @@ export default class App extends PureComponent {
 
   _renderLayers() {
     const {flattenedSublayers, token, selectedFeatureIndex, selectedTilesetBasePath} = this.state;
-    // TODO: support compressed textures in GLTFMaterialParser
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
     if (token) {
       loadOptions.i3s = {...loadOptions.i3s, token};
@@ -260,7 +259,6 @@ export default class App extends PureComponent {
 
   _renderStats() {
     const {showBuildingExplorer, sublayers} = this.state;
-    // TODO - too verbose, get more default styling from stats widget?
     const style = {
       display: 'flex',
       top: '125px'
@@ -271,6 +269,7 @@ export default class App extends PureComponent {
     if (sublayers.length) {
       style.top = '163px';
     }
+    // TODO - too verbose, get more default styling from stats widget?
     return <StatsWidgetContainer style={style} ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
@@ -339,11 +338,6 @@ export default class App extends PureComponent {
         isControlPanelShown
       />
     );
-  }
-
-  renderStats() {
-    // TODO - too verbose, get more default styling from stats widget?
-    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
   }
 
   _renderMemory() {
