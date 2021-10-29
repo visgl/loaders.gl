@@ -18,11 +18,10 @@ export const DropDownStyle = `
       padding: 0px 2px 1px;
     }
   &:hover {
-    transition: all 1s;
     background: #4F52CC;
     color: black;
   }
-`
+`;
 
 export const Font = `
   font-family: 'Uber Move' sans-serif;
@@ -32,16 +31,16 @@ export const Font = `
   line-height: 19px;
   letter-spacing: 0em;
   text-align: left;
-`
+`;
 
 export const Flex = `
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   position: absolute;
-`
+`;
 
 export const Color = `
   background: #0E111A;
   color: white;
-`
+`;

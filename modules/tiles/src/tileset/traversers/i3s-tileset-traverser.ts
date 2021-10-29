@@ -1,7 +1,7 @@
 import {load} from '@loaders.gl/core';
 import TilesetTraverser from './tileset-traverser';
 
-import {lodJudge} from '../helpers/i3s-lod';
+import {getLodStatus} from '../helpers/i3s-lod';
 import TileHeader from '../tile-3d';
 import I3STileManager from './i3s-tile-manager';
 
@@ -14,8 +14,7 @@ export default class I3STilesetTraverser extends TilesetTraverser {
   }
 
   shouldRefine(tile, frameState) {
-    // TODO refactor loaJudge
-    tile._lodJudge = lodJudge(tile, frameState);
+    tile._lodJudge = getLodStatus(tile, frameState);
     return tile._lodJudge === 'DIG';
   }
 

@@ -5,9 +5,8 @@ import styled from 'styled-components';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator} from '@deck.gl/core';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
-import {I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
+import {MapController, FlyToInterpolator, COORDINATE_SYSTEM} from '@deck.gl/core';
+import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 import ControlPanel from './components/control-panel';
@@ -17,7 +16,12 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
-import { Color, Flex, Font } from './components/styles';
+import {Color, Flex, Font} from './components/styles';
+import {load} from '@loaders.gl/core';
+import {buildSublayersTree} from './helpers/sublayers';
+import {initStats, sumTilesetsStats} from './helpers/stats';
+
+import {default as Tile3DLayer} from './deckgl/tile-3d-layer-tmp';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -52,7 +56,7 @@ const StatsWidgetContainer = styled.div`
   padding: 24px;
   border-radius: 8px;
   line-height: 135%;
-  top: 125px;
+  top: 163px;
   bottom: auto;
   width: 277px;
   left: 10px;
@@ -64,7 +68,9 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
+    this._loadedTilesets = [];
     this.state = {
+      tileset: null,
       url: null,
       token: null,
       name: INITIAL_EXAMPLE_NAME,
@@ -72,11 +78,20 @@ export default class App extends PureComponent {
       selectedMapStyle: INITIAL_MAP_STYLE,
       selectedFeatureAttributes: null,
       selectedFeatureIndex: -1,
+      selectedTilesetBasePath: null,
       isAttributesLoading: false,
-      showMemory: true
+      showBuildingExplorer: false,
+      flattenedSublayers: [],
+      sublayers: [],
+      sublayersUpdateCounter: 0,
+      tilesetsStats: initStats()
     };
+    this.needTransitionToTileset = true;
+
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this.handleClosePanel = this.handleClosePanel.bind(this);
+    this._onToggleBuildingExplorer = this._onToggleBuildingExplorer.bind(this);
+    this._updateSublayerVisibility = this._updateSublayerVisibility.bind(this);
   }
 
   componentDidMount() {
@@ -102,20 +117,48 @@ export default class App extends PureComponent {
     } else {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
+    this.setState({tilesetsStats: initStats(tilesetUrl)});
     this._onSelectTileset(tileset);
+  }
+
+  /**
+   * Tries to get Building Scene Layer sublayer urls if exists.
+   * @param {string} tilesetUrl
+   * @returns {string[]} Sublayer urls or tileset url.
+   * TODO Add filtration mode for sublayers which were selected by user.
+   */
+  async getFlattenedSublayers(tilesetUrl) {
+    try {
+      const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
+      const sublayersTree = buildSublayersTree(tileset.header.sublayers);
+      this.setState({sublayers: sublayersTree.sublayers});
+      const sublayers = tileset?.sublayers.filter((sublayer) => sublayer.name !== 'Overview');
+      return sublayers;
+    } catch (e) {
+      return [{url: tilesetUrl, visibility: true}];
+    }
   }
 
   async _onSelectTileset(tileset) {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
-    this.setState({tilesetUrl, name, token});
+    this.setState({tilesetUrl, name, token, sublayers: []});
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    this.setState({metadata, selectedFeatureAttributes: null});
+    const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
+    this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});
+    this._loadedTilesets = [];
+    this.needTransitionToTileset = true;
+    const tilesetsStats = initStats(tilesetUrl);
+    this._tilesetStatsWidget.setStats(tilesetsStats);
+    this.setState({tilesetsStats});
   }
 
   // Updates stats, called every frame
   _updateStatWidgets() {
     this._memWidget.update();
+
+    const {tilesetsStats} = this.state;
+    sumTilesetsStats(this._loadedTilesets, tilesetsStats);
     this._tilesetStatsWidget.update();
   }
 
@@ -123,23 +166,25 @@ export default class App extends PureComponent {
     const {zoom, cartographicCenter} = tileset;
     const [longitude, latitude] = cartographicCenter;
 
-    const viewState = {
-      ...this.state.viewState,
-      zoom: zoom + 2.5,
-      longitude,
-      latitude
-    };
+    this._loadedTilesets = [...this._loadedTilesets, tileset];
+    if (this.needTransitionToTileset) {
+      const viewState = {
+        ...this.state.viewState,
+        zoom: zoom + 2.5,
+        longitude,
+        latitude
+      };
 
-    this.setState({
-      tileset,
-      viewState: {
-        ...viewState,
-        transitionDuration: TRANSITION_DURAITON,
-        transitionInterpolator: new FlyToInterpolator()
-      }
-    });
-
-    this._tilesetStatsWidget.setStats(tileset.stats);
+      this.setState({
+        tileset,
+        viewState: {
+          ...viewState,
+          transitionDuration: TRANSITION_DURAITON,
+          transitionInterpolator: new FlyToInterpolator()
+        }
+      });
+      this.needTransitionToTileset = false;
+    }
   }
 
   _onViewStateChange({viewState}) {
@@ -163,24 +208,28 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {tilesetUrl, token, selectedFeatureIndex} = this.state;
-    // TODO: support compressed textures in GLTFMaterialParser
-    const loadOptions = {};
+    const {flattenedSublayers, token, selectedFeatureIndex, selectedTilesetBasePath} = this.state;
+    const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
     if (token) {
-      loadOptions.i3s = {token};
+      loadOptions.i3s = {...loadOptions.i3s, token};
     }
-    return [
-      new Tile3DLayer({
-        data: tilesetUrl,
-        loader: I3SLoader,
-        onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: () => this._updateStatWidgets(),
-        onTileUnload: () => this._updateStatWidgets(),
-        pickable: this._isLayerPickable(),
-        loadOptions,
-        highlightedObjectIndex: selectedFeatureIndex
-      })
-    ];
+    return flattenedSublayers
+      .filter((sublayer) => sublayer.visibility)
+      .map(
+        (sublayer) =>
+          new Tile3DLayer({
+            id: `tile-layer-${sublayer.id}`,
+            data: sublayer.url,
+            loader: I3SLoader,
+            onTilesetLoad: this._onTilesetLoad.bind(this),
+            onTileLoad: () => this._updateStatWidgets(),
+            onTileUnload: () => this._updateStatWidgets(),
+            pickable: this._isLayerPickable(),
+            loadOptions,
+            highlightedObjectIndex:
+              sublayer.url === selectedTilesetBasePath ? selectedFeatureIndex : -1
+          })
+      );
   }
 
   async handleClick(info) {
@@ -199,28 +248,63 @@ export default class App extends PureComponent {
     this.setState({isAttributesLoading: true});
     const selectedFeatureAttributes = await loadFeatureAttributes(info.object, info.index, options);
     this.setState({isAttributesLoading: false});
-    this.setState({selectedFeatureAttributes, selectedFeatureIndex: info.index});
+
+    const selectedTilesetBasePath = info.object.tileset.basePath;
+    this.setState({
+      selectedFeatureAttributes,
+      selectedFeatureIndex: info.index,
+      selectedTilesetBasePath
+    });
   }
 
   _renderStats() {
+    const {showBuildingExplorer, sublayers} = this.state;
+    const style = {
+      display: 'flex',
+      top: '125px'
+    };
+    if (showBuildingExplorer) {
+      style.display = 'none';
+    }
+    if (sublayers.length) {
+      style.top = '163px';
+    }
     // TODO - too verbose, get more default styling from stats widget?
-    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
+    return <StatsWidgetContainer style={style} ref={(_) => (this._statsWidgetContainer = _)} />;
+  }
+
+  _updateSublayerVisibility(sublayer) {
+    if (sublayer.layerType === '3DObject') {
+      const {flattenedSublayers, sublayersUpdateCounter} = this.state;
+      const flattenedSublayer = flattenedSublayers.find(
+        (fSublayer) => fSublayer.id === sublayer.id
+      );
+      if (flattenedSublayer) {
+        flattenedSublayer.visibility = sublayer.visibility;
+        this.setState({sublayersUpdateCounter: sublayersUpdateCounter + 1});
+        if (!sublayer.visibility) {
+          this._loadedTilesets = this._loadedTilesets.filter(
+            (tileset) => tileset.basePath !== flattenedSublayer.url
+          );
+        }
+      }
+    }
   }
 
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle, showMemory} = this.state;
+    const {name, selectedMapStyle, sublayers, showBuildingExplorer} = this.state;
     return (
       <ControlPanel
-        tileset={tileset}
         name={name}
-        metadata={metadata}
-        token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        selectedMapStyle={selectedMapStyle}>
-        <StatsWidgetWrapper showMemory={showMemory}>
-          {this._renderStats()}
-        </StatsWidgetWrapper>
+        onToggleBuildingExplorer={this._onToggleBuildingExplorer}
+        onUpdateSublayerVisibility={this._updateSublayerVisibility}
+        selectedMapStyle={selectedMapStyle}
+        sublayers={sublayers}
+        isBuildingExplorerShown={showBuildingExplorer}
+      >
+        <StatsWidgetWrapper>{this._renderStats()}</StatsWidgetWrapper>
       </ControlPanel>
     );
   }
@@ -256,18 +340,17 @@ export default class App extends PureComponent {
     );
   }
 
-  renderStats() {
-    // TODO - too verbose, get more default styling from stats widget?
-    return <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />;
-  }
-
   _renderMemory() {
-    const {showMemory} = this.state;
+    const {showBuildingExplorer} = this.state;
     return (
-      <StatsWidgetWrapper showMemory={showMemory}>
-       {this._renderStats()}
+      <StatsWidgetWrapper showMemory={!showBuildingExplorer}>
+        {this._renderStats()}
       </StatsWidgetWrapper>
     );
+  }
+
+  _onToggleBuildingExplorer(isShown) {
+    this.setState({showBuildingExplorer: isShown});
   }
 
   render() {
@@ -283,7 +366,12 @@ export default class App extends PureComponent {
           layers={layers}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={{type: MapController, maxPitch: 85, inertia: true}}
+          controller={{
+            type: MapController,
+            maxPitch: 60,
+            inertia: true,
+            scrollZoom: {speed: 0.01, smooth: true}
+          }}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={(info) => this.getTooltip(info)}
           onClick={(info) => this.handleClick(info)}

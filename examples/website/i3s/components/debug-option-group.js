@@ -8,7 +8,7 @@ const OptionGroup = styled.div`
   ${Font}
   line-height: 19px;
   marign-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, .2);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 `;
 
 const propTypes = {
@@ -25,11 +25,7 @@ export default class DebugOptionGroup extends PureComponent {
   }
   render() {
     const {children, title} = this.props;
-    return (
-      <OptionGroup>
-        {children}
-      </OptionGroup>
-    );
+    return <OptionGroup>{children}</OptionGroup>;
   }
 }
 

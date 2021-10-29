@@ -34,7 +34,7 @@ function parseSublayersTree(
 
   for (let index = 0; index < sublayers.length; index++) {
     const subLayer = sublayers[index];
-    const {id, layerType, ...rest} = subLayer;
+    const {id, layerType, visibility = true, ...rest} = subLayer;
 
     // Add support only for 3DObject layer type for I3S purposes.
     if (layerType === OBJECT_3D_LAYER_TYPE) {
@@ -44,6 +44,7 @@ function parseSublayersTree(
         url: sublayerUrl,
         id,
         layerType,
+        visibility,
         ...rest
       });
     }

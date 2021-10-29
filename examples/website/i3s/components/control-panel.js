@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import {EXAMPLES} from '../examples';
 import {MAP_STYLES} from '../constants';
 import {DropDownStyle, Font, Color, Flex} from './styles';
+import BuildingExplorer from './building-explorer';
 
 const Container = styled.div`
   ${Flex}
@@ -11,10 +12,10 @@ const Container = styled.div`
   height: 105px;
   margin: 10px;
   line-height: 28px;
-  background: #0E111A;
+  background: #0e111a;
   border-radius: 8px;
   z-index: 15;
-  top: ${props => (props.styleDebug ? "50px" : "0")};
+  top: ${(props) => (props.debugMode ? '50px' : '0')};
   @media (max-width: 768px) {
     width: 100vw;
     margin: 0;
@@ -70,20 +71,23 @@ const DropDown = styled.select`
 
 const propTypes = {
   name: PropTypes.string,
-  tileset: PropTypes.object,
-  mapStyles: PropTypes.object,
-  metadata: PropTypes.object,
-  token: PropTypes.string,
-  onExampleChange: PropTypes.func,
   selectedMapStyle: PropTypes.string,
-  onMapStyleChange: PropTypes.func
+  mapStyles: PropTypes.object,
+  debugMode: PropTypes.bool,
+  sublayers: PropTypes.array,
+  isBuildingExplorerShown: PropTypes.bool,
+  onExampleChange: PropTypes.func,
+  onMapStyleChange: PropTypes.func,
+  onToggleBuildingExplorer: PropTypes.func
 };
 
 const defaultProps = {
-  droppedFile: null,
-  onChange: () => {},
-  style: {}
+  name: '',
+  debugMode: false,
+  isBuildingExplorerShown: false,
+  sublayers: []
 };
+
 const CUSTOM_EXAMPLE = 'Custom example';
 
 export default class ControlPanel extends PureComponent {
@@ -128,11 +132,8 @@ export default class ControlPanel extends PureComponent {
       <MapContainer>
         <MapName>Base map</MapName>
         <DropDown
-        value={selectedMapStyle}
-        onChange={(evt) => {
-          const selected = evt.target.value;
-          onMapStyleChange({selectedMapStyle: selected});
-        }}
+          value={selectedMapStyle}
+          onChange={(evt) => onMapStyleChange({selectedMapStyle: evt.target.value})}
         >
           {Object.keys(mapStyles).map((key) => {
             return (
@@ -147,11 +148,25 @@ export default class ControlPanel extends PureComponent {
   }
 
   render() {
-    const {styleDebug} = this.props;
+    const {
+      debugMode,
+      sublayers,
+      onToggleBuildingExplorer,
+      onUpdateSublayerVisibility,
+      isBuildingExplorerShown
+    } = this.props;
     return (
-      <Container styleDebug={styleDebug}>
+      <Container debugMode={debugMode}>
         {this._renderExamples()}
         {this._renderMapStyles()}
+        {sublayers?.length ? (
+          <BuildingExplorer
+            sublayers={sublayers}
+            onToggleBuildingExplorer={onToggleBuildingExplorer}
+            onUpdateSublayerVisibility={onUpdateSublayerVisibility}
+            isShown={isBuildingExplorerShown}
+          ></BuildingExplorer>
+        ) : null}
       </Container>
     );
   }

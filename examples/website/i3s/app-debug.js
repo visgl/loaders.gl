@@ -8,16 +8,16 @@ import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {
   FlyToInterpolator,
+  MapController,
   View,
   MapView,
   WebMercatorViewport,
   COORDINATE_SYSTEM
 } from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
 
 import {load} from '@loaders.gl/core';
-import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SLoader, I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
 import {ImageLoader} from '@loaders.gl/images';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -56,7 +56,11 @@ import {
   selectOriginalTextureForTile,
   selectOriginalTextureForTileset
 } from './utils/texture-selector-utils';
-import { Color, Flex, Font } from './components/styles';
+import {Color, Flex, Font} from './components/styles';
+import {buildSublayersTree} from './helpers/sublayers';
+import {initStats, sumTilesetsStats} from './helpers/stats';
+
+import {default as Tile3DLayer} from './deckgl/tile-3d-layer-tmp';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
@@ -153,14 +157,14 @@ const TILE_COLOR_SELECTOR = 'Tile Color Selector';
 
 const HEADER_STYLE = {
   color: 'white'
-}
+};
 
 const CURSOR_STYLE = {
   cursor: 'pointer'
-}
+};
 
 const StatsWidgetWrapper = styled.div`
-  display: ${props => props.showMemory ? 'inherit' : 'none'};
+  display: ${(props) => (props.showMemory ? 'inherit' : 'none')};
 `;
 
 const StatsWidgetContainer = styled.div`
@@ -180,8 +184,9 @@ const StatsWidgetContainer = styled.div`
   overflow: auto;
 
   @media (max-width: 768px) {
-    top: ${props => (props.renderControlPanel ? "85px" : "10px")};
-    max-height: ${props => (props.renderControlPanel ? "calc(100% - 145px)" : "calc(100% - 70px)")};
+    top: ${(props) => (props.renderControlPanel ? '85px' : '10px')};
+    max-height: ${(props) =>
+      props.renderControlPanel ? 'calc(100% - 145px)' : 'calc(100% - 70px)'};
     right: 0px;
     border-radius: 0px;
   }
@@ -193,10 +198,11 @@ export default class App extends PureComponent {
     this._tilesetStatsWidget = null;
     this._colorMap = null;
     this._uvDebugTexture = null;
+    this._loadedTilesets = [];
     this.state = {
       url: null,
       token: null,
-      tileset: null,
+      mainTileset: null,
       frameNumber: 0,
       name: INITIAL_EXAMPLE_NAME,
       viewState: {
@@ -215,10 +221,13 @@ export default class App extends PureComponent {
       trianglesPercentage: DEFAULT_TRIANGLES_PERCENTAGE,
       normalsLength: DEFAULT_NORMALS_LENGTH,
       tileInfo: null,
-      selectedTileId: null,
+      selectedTile: null,
       coloredTilesMap: {},
       warnings: [],
-      appDebug: true
+      flattenedSublayers: [],
+      sublayers: [],
+      sublayersUpdateCounter: 0,
+      tilesetsStats: initStats()
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -229,6 +238,8 @@ export default class App extends PureComponent {
     this.handleShowNormals = this.handleShowNormals.bind(this);
     this.handleChangeTrianglesPercentage = this.handleChangeTrianglesPercentage.bind(this);
     this.handleChangeNormalsLength = this.handleChangeNormalsLength.bind(this);
+    this._updateSublayerVisibility = this._updateSublayerVisibility.bind(this);
+    this._onToggleBuildingExplorer = this._onToggleBuildingExplorer.bind(this);
   }
 
   componentDidMount() {
@@ -247,14 +258,15 @@ export default class App extends PureComponent {
     });
 
     // Check if a tileset is specified in the query params
-    let tileset;
+    let mainTileset;
     const tilesetUrl = parseTilesetUrlFromUrl();
     if (tilesetUrl) {
-      tileset = {url: tilesetUrl};
+      mainTileset = {url: tilesetUrl};
     } else {
-      tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
+      mainTileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
-    this._onSelectTileset(tileset);
+    this.setState({tilesetsStats: initStats(tilesetUrl)});
+    this._onSelectTileset(mainTileset);
     load(UV_DEBUG_TEXTURE_URL, ImageLoader).then((image) => (this._uvDebugTexture = image));
   }
 
@@ -268,18 +280,45 @@ export default class App extends PureComponent {
     return debugOptions.minimap ? VIEWS : [VIEWS[0]];
   }
 
-  async _onSelectTileset(tileset) {
-    const params = parseTilesetUrlParams(tileset.url, tileset);
+  async _onSelectTileset(mainTileset) {
+    const params = parseTilesetUrlParams(mainTileset.url, mainTileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
-    this.setState({tilesetUrl, name, token});
+    this.setState({tilesetUrl, name, token, sublayers: []});
     this.handleClearWarnings();
     const metadata = await fetch(metadataUrl).then((resp) => resp.json());
-    this.setState({metadata, tileInfo: null, normalsDebugData: []});
+    const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
+    this.setState({metadata, tileInfo: null, normalsDebugData: [], flattenedSublayers});
+    this._loadedTilesets = [];
+    this.needTransitionToTileset = true;
+    const tilesetsStats = initStats(tilesetUrl);
+    this._tilesetStatsWidget.setStats(tilesetsStats);
+    this.setState({tilesetsStats});
+  }
+
+  /**
+   * Tries to get Building Scene Layer sublayer urls if exists.
+   * @param {string} tilesetUrl
+   * @returns {string[]} Sublayer urls or tileset url.
+   * TODO Add filtration mode for sublayers which were selected by user.
+   */
+  async getFlattenedSublayers(tilesetUrl) {
+    try {
+      const mainTileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
+      const sublayersTree = buildSublayersTree(mainTileset.header.sublayers);
+      this.setState({sublayers: sublayersTree.sublayers});
+      const sublayers = mainTileset?.sublayers.filter((sublayer) => sublayer.name !== 'Overview');
+      return sublayers;
+    } catch (e) {
+      return [{url: tilesetUrl, visibility: true}];
+    }
   }
 
   // Updates stats, called every frame
   _updateStatWidgets() {
     this._memWidget.update();
+
+    const {tilesetsStats} = this.state;
+    sumTilesetsStats(this._loadedTilesets, tilesetsStats);
     this._tilesetStatsWidget.update();
   }
 
@@ -287,7 +326,7 @@ export default class App extends PureComponent {
     this.removeFeatureIdsFromTile(tile);
     this._updateStatWidgets();
     this.validateTile(tile);
-    this.setState({frameNumber: this.state.tileset.frameNumber});
+
     if (this.state.debugOptions.showUVDebugTexture) {
       selectDebugTextureForTile(tile, this._uvDebugTexture);
     } else {
@@ -303,25 +342,28 @@ export default class App extends PureComponent {
     const {zoom, cartographicCenter} = tileset;
     const [longitude, latitude] = cartographicCenter;
 
-    this.setState({
-      tileset,
-      viewState: {
-        main: {
-          ...this.state.viewState.main,
-          zoom: zoom + 2.5,
-          longitude,
-          latitude,
-          transitionDuration: TRANSITION_DURAITON,
-          transitionInterpolator: new FlyToInterpolator()
+    this._loadedTilesets = [...this._loadedTilesets, tileset];
+    if (this.needTransitionToTileset) {
+      this.setState({
+        viewState: {
+          main: {
+            ...this.state.viewState.main,
+            zoom: zoom + 2.5,
+            longitude,
+            latitude,
+            transitionDuration: TRANSITION_DURAITON,
+            transitionInterpolator: new FlyToInterpolator()
+          },
+          minimap: {
+            ...this.state.viewState.minimap,
+            longitude,
+            latitude
+          }
         },
-        minimap: {
-          ...this.state.viewState.minimap,
-          longitude,
-          latitude
-        }
-      },
-      debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE}
-    });
+        debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE}
+      });
+      this.needTransitionToTileset = false;
+    }
 
     const {
       debugOptions: {minimapViewport, loadTiles}
@@ -331,7 +373,6 @@ export default class App extends PureComponent {
       viewportTraversersMap,
       loadTiles
     });
-    this._tilesetStatsWidget.setStats(tileset.stats);
   }
 
   _onViewStateChange({viewState, viewId}) {
@@ -360,7 +401,7 @@ export default class App extends PureComponent {
       });
     }
   }
-  
+
   _onSelectMapStyle({selectedMapStyle}) {
     this.setState({selectedMapStyle});
   }
@@ -368,29 +409,41 @@ export default class App extends PureComponent {
   _setDebugOptions(newDebugOptions) {
     const {debugOptions: oldDebugOptions} = this.state;
     const debugOptions = {...oldDebugOptions, ...newDebugOptions};
+
     if (debugOptions.tileColorMode !== COLORED_BY.CUSTOM) {
-      this.setState({coloredTilesMap: {}, selectedTileId: null});
+      this.setState({coloredTilesMap: {}, selectedTile: null});
     }
 
     const {
-      tileset,
       debugOptions: {showUVDebugTexture}
     } = this.state;
     if (debugOptions.showUVDebugTexture !== showUVDebugTexture) {
-      if (debugOptions.showUVDebugTexture) {
-        selectDebugTextureForTileset(tileset, this._uvDebugTexture);
-      } else {
-        selectOriginalTextureForTileset(tileset);
-      }
+      this._loadedTilesets.forEach((tileset) => {
+        if (debugOptions.showUVDebugTexture) {
+          selectDebugTextureForTileset(tileset, this._uvDebugTexture);
+        } else {
+          selectOriginalTextureForTileset(tileset);
+        }
+      });
     }
 
     const {minimapViewport, loadTiles} = debugOptions;
     const viewportTraversersMap = {main: 'main', minimap: minimapViewport ? 'minimap' : 'main'};
-    tileset.setOptions({
-      viewportTraversersMap,
-      loadTiles
+
+    this._loadedTilesets.forEach((tileset) => {
+      tileset.setOptions({
+        viewportTraversersMap,
+        loadTiles
+      });
+      tileset.update();
     });
-    tileset.update();
+
+    const {debugPanel} = this.state;
+    const {debugPanel: newDebugPanel} = debugOptions;
+    if (debugPanel !== newDebugPanel && newDebugPanel) {
+      debugOptions.buildingExplorer = false;
+    }
+
     this.setState({debugOptions});
   }
 
@@ -419,29 +472,35 @@ export default class App extends PureComponent {
   }
 
   getMeshColor(tile) {
-    const {selectedTileId, coloredTilesMap, debugOptions} = this.state;
+    const {selectedTile, coloredTilesMap, debugOptions} = this.state;
     const {tileColorMode} = debugOptions;
 
     return (
       this._colorMap.getColor(tile, {
         coloredBy: tileColorMode,
-        selectedTileId,
+        selectedTileId: selectedTile?.id,
         coloredTilesMap
       }) || DEFAULT_COLOR
     );
   }
 
+  _getAllTilesFromTilesets(tilesets) {
+    const allTiles = tilesets.map((tileset) => tileset.tiles);
+    return allTiles.flat();
+  }
+
   _renderMainOnMinimap() {
     const {
-      tileset,
       debugOptions: {minimapViewport}
     } = this.state;
     if (!minimapViewport) {
       return null;
     }
     let data = [];
-    if (tileset) {
-      data = buildMinimapData(tileset.tiles);
+
+    if (this._loadedTilesets.length) {
+      const tiles = this._getAllTilesFromTilesets(this._loadedTilesets);
+      data = buildMinimapData(tiles);
     }
     return new ScatterplotLayer({
       id: 'main-on-minimap',
@@ -463,43 +522,49 @@ export default class App extends PureComponent {
 
   _renderLayers() {
     const {
-      tilesetUrl,
+      flattenedSublayers,
       token,
       viewState,
       debugOptions: {boundingVolume, boundingVolumeType, pickable, wireframe},
-      tileset,
       normalsDebugData,
       trianglesPercentage,
       normalsLength
     } = this.state;
-    const loadOptions = {};
-
+    const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
     if (token) {
-      loadOptions.token = token;
+      loadOptions.i3s = {...loadOptions.i3s, token};
     }
 
     this._colorMap = this._colorMap || new ColorMap();
-    const tiles = (tileset || {}).tiles || [];
+    const tiles = this._getAllTilesFromTilesets(this._loadedTilesets);
     const viewport = new WebMercatorViewport(viewState.main);
     const frustumBounds = getFrustumBounds(viewport);
 
+    const tile3dLayers = flattenedSublayers
+      .filter((sublayer) => sublayer.visibility)
+      .map(
+        (sublayer) =>
+          new Tile3DLayer({
+            id: `tile-layer-${sublayer.id}`,
+            data: sublayer.url,
+            loader: I3SLoader,
+            onTilesetLoad: this._onTilesetLoad.bind(this),
+            onTileLoad: this._onTileLoad.bind(this),
+            onTileUnload: this._onTileUnload.bind(this),
+            loadOptions,
+            pickable,
+            autoHighlight: true,
+            _subLayerProps: {
+              mesh: {
+                wireframe
+              }
+            },
+            _getMeshColor: this.getMeshColor.bind(this)
+          })
+      );
+
     return [
-      new Tile3DLayer({
-        data: tilesetUrl,
-        loader: I3SLoader,
-        onTilesetLoad: this._onTilesetLoad.bind(this),
-        onTileLoad: this._onTileLoad.bind(this),
-        onTileUnload: this._onTileUnload.bind(this),
-        loadOptions,
-        pickable,
-        autoHighlight: true,
-        _subLayerProps: {
-          mesh: {
-            wireframe
-          }
-        },
-        _getMeshColor: this.getMeshColor.bind(this)
-      }),
+      ...tile3dLayers,
       new LineLayer({
         id: 'frustum',
         data: frustumBounds,
@@ -533,24 +598,31 @@ export default class App extends PureComponent {
   }
 
   _renderStats() {
-    const { debugOptions: {controlPanel}} = this.state;
+    const {
+      debugOptions: {controlPanel}
+    } = this.state;
     // TODO - too verbose, get more default styling from stats widget?
-    return <StatsWidgetContainer renderControlPanel={controlPanel} ref={(_) => (this._statsWidgetContainer = _)} />;
+    return (
+      <StatsWidgetContainer
+        renderControlPanel={controlPanel}
+        ref={(_) => (this._statsWidgetContainer = _)}
+      />
+    );
   }
 
   _renderMemory() {
     const {
       debugOptions: {showMemory}
     } = this.state;
-    return (
-      <StatsWidgetWrapper showMemory={showMemory}>
-       {this._renderStats()}
-      </StatsWidgetWrapper>
-    );
+    return <StatsWidgetWrapper showMemory={showMemory}>{this._renderStats()}</StatsWidgetWrapper>;
   }
 
   _renderDebugPanel() {
-    const {debugOptions, debugOptions: {controlPanel}} = this.state;
+    const {
+      debugOptions,
+      debugOptions: {controlPanel},
+      sublayers
+    } = this.state;
 
     return (
       <DebugPanel
@@ -558,29 +630,67 @@ export default class App extends PureComponent {
         clearWarnings={this.handleClearWarnings}
         debugTextureImage={UV_DEBUG_TEXTURE_URL}
         debugOptions={debugOptions}
-        renderControlPanel={controlPanel}>
-      </DebugPanel>
+        renderControlPanel={controlPanel}
+        hasBuildingExplorer={Boolean(sublayers.length)}
+      ></DebugPanel>
     );
   }
 
+  _updateSublayerVisibility(sublayer) {
+    if (sublayer.layerType === '3DObject') {
+      const {flattenedSublayers, sublayersUpdateCounter} = this.state;
+      const flattenedSublayer = flattenedSublayers.find(
+        (fSublayer) => fSublayer.id === sublayer.id
+      );
+      if (flattenedSublayer) {
+        flattenedSublayer.visibility = sublayer.visibility;
+        this.setState({sublayersUpdateCounter: sublayersUpdateCounter + 1});
+        if (!sublayer.visibility) {
+          this._loadedTilesets = this._loadedTilesets.filter(
+            (tileset) => tileset.basePath !== flattenedSublayer.url
+          );
+        }
+      }
+    }
+  }
+
+  _onToggleBuildingExplorer(isShown) {
+    const newDebugOptions = {buildingExplorer: isShown};
+    if (isShown) {
+      newDebugOptions.debugPanel = !isShown;
+    }
+    this._setDebugOptions(newDebugOptions);
+  }
+
   _renderControlPanel() {
-    const {name, tileset, token, metadata, selectedMapStyle, appDebug, debugOptions: {controlPanel}} = this.state;
+    const {
+      name,
+      selectedMapStyle,
+      sublayers,
+      debugOptions: {buildingExplorer}
+    } = this.state;
     return (
       <ControlPanel
-        controlPanel={controlPanel}
-        styleDebug={appDebug}
-        tileset={tileset}
+        debugMode
         name={name}
-        metadata={metadata}
-        token={token}
         onExampleChange={this._onSelectTileset}
         onMapStyleChange={this._onSelectMapStyle.bind(this)}
-        selectedMapStyle={selectedMapStyle}/>
+        onToggleBuildingExplorer={this._onToggleBuildingExplorer}
+        onUpdateSublayerVisibility={this._updateSublayerVisibility}
+        selectedMapStyle={selectedMapStyle}
+        sublayers={sublayers}
+        isBuildingExplorerShown={buildingExplorer}
+      />
     );
   }
 
   _renderInfo() {
-    const {debugOptions: {showFullInfo}, token, metadata, debugOptions: {minimap}} = this.state;
+    const {
+      debugOptions: {showFullInfo},
+      token,
+      metadata,
+      debugOptions: {minimap}
+    } = this.state;
     return (
       <MapInfoPanel
         showFullInfo={showFullInfo}
@@ -593,12 +703,7 @@ export default class App extends PureComponent {
 
   _renderToolPanel() {
     const {debugOptions} = this.state;
-    return (
-      <ToolBar 
-        onDebugOptionsChange={this._setDebugOptions}
-        debugOptions={debugOptions}
-      />
-    )
+    return <ToolBar onDebugOptionsChange={this._setDebugOptions} debugOptions={debugOptions} />;
   }
 
   _layerFilter({layer, viewport}) {
@@ -643,13 +748,12 @@ export default class App extends PureComponent {
       this.handleClosePanel();
       return;
     }
-    // TODO add more tile info to panel.
     const tileInfo = getTileDebugInfo(info.object);
-    this.setState({tileInfo, selectedTileId: info.object.id, normalsDebugData: []});
+    this.setState({tileInfo, normalsDebugData: [], selectedTile: info.object});
   }
 
   handleClosePanel() {
-    this.setState({tileInfo: null, selectedTileId: null, normalsDebugData: []});
+    this.setState({tileInfo: null, selectedTile: null, normalsDebugData: []});
   }
 
   handleSelectTileColor(tileId, selectedColor) {
@@ -681,7 +785,7 @@ export default class App extends PureComponent {
       marginTop: '10px',
       cursor: isResetButtonDisabled ? 'auto' : 'pointer',
       color: isResetButtonDisabled ? 'rgba(255,255,255,.6)' : 'white',
-      background: isResetButtonDisabled ? '#0E111A' : '#4F52CC',
+      background: isResetButtonDisabled ? '#0E111A' : '#4F52CC'
     };
   }
 
@@ -732,17 +836,16 @@ export default class App extends PureComponent {
       tileInfo,
       debugOptions,
       coloredTilesMap,
-      tileset,
       normalsDebugData,
       trianglesPercentage,
-      normalsLength
+      normalsLength,
+      selectedTile
     } = this.state;
     const isShowColorPicker = debugOptions.tileColorMode === COLORED_BY.CUSTOM;
     const tileId = tileInfo['Tile Id'];
     const tileSelectedColor = makeRGBObjectFromColor(coloredTilesMap[tileId]);
     const isResetButtonDisabled = !coloredTilesMap[tileId];
-    const currenTile = tileset._tiles[tileId];
-    const title = `Tile: ${tileId}`;
+    const title = `Tile: ${selectedTile.id}`;
 
     return (
       <AttributesPanel
@@ -753,7 +856,7 @@ export default class App extends PureComponent {
         isControlPanelShown={debugOptions.controlPanel}
       >
         <TileValidator
-          tile={currenTile}
+          tile={selectedTile}
           showNormals={Boolean(normalsDebugData.length)}
           trianglesPercentage={trianglesPercentage}
           normalsLength={normalsLength}
@@ -789,14 +892,17 @@ export default class App extends PureComponent {
 
   _renderSemanticValidator() {
     const {warnings} = this.state;
-    return (
-      <SemanticValidator warnings={warnings} clearWarnings={this.handleClearWarnings}/>
-    )
+    return <SemanticValidator warnings={warnings} clearWarnings={this.handleClearWarnings} />;
   }
 
   render() {
     const layers = this._renderLayers();
-    const {selectedMapStyle, tileInfo, debugOptions: {debugPanel, showFullInfo, controlPanel, semanticValidator}} = this.state;
+    const {
+      selectedMapStyle,
+      selectedTile,
+      tileInfo,
+      debugOptions: {debugPanel, showFullInfo, controlPanel, semanticValidator}
+    } = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
@@ -805,7 +911,7 @@ export default class App extends PureComponent {
         {debugPanel && this._renderDebugPanel()}
         {showFullInfo && this._renderInfo()}
         {controlPanel && this._renderControlPanel()}
-        {tileInfo && this._renderAttributesPanel()}
+        {selectedTile && tileInfo && this._renderAttributesPanel()}
         {semanticValidator && this._renderSemanticValidator()}
         <DeckGL
           layers={layers}
@@ -813,6 +919,12 @@ export default class App extends PureComponent {
           views={this._getViews()}
           layerFilter={this._layerFilter}
           onViewStateChange={this._onViewStateChange.bind(this)}
+          controller={{
+            type: MapController,
+            maxPitch: 60,
+            inertia: true,
+            scrollZoom: {speed: 0.01, smooth: true}
+          }}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={(info) => this.getTooltip(info)}
           onClick={(info) => this.handleClick(info)}

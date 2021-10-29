@@ -6,7 +6,7 @@ import {
   getGeometryVsTextureMetrics,
   isGeometryBoundingVolumeMoreSuitable
 } from '../tile-debug';
-import Checkbox from './checkbox';
+import {Checkbox} from './checkbox';
 
 const TileValidatorContainer = styled.div`
   display: flex;
@@ -17,7 +17,7 @@ const TileValidatorContainer = styled.div`
 const ValidateButton = styled.button`
   display: flex;
   padding: 4px 16px;
-  background: #4F52CC;
+  background: #4f52cc;
   color: white;
   align-items: center;
   height: 20px;
@@ -46,12 +46,12 @@ const ValidatorInfoList = styled.div`
 const GapInput = styled.input`
   max-width: 50px;
   margin: 0 10px;
-  background: #1D2335;
+  background: #1d2335;
   color: white;
   font-weight: bold;
   text-align: center;
-  border-radius: 4px; 
-  cursor: ${props => props.disabled ? 'auto' : 'pointer'};
+  border-radius: 4px;
+  cursor: ${(props) => (props.disabled ? 'auto' : 'pointer')};
   border: none;
   padding: 5px;
 `;
@@ -67,7 +67,7 @@ const NoNormalsInfo = styled.span`
   display: flex;
   align-self: flex-start;
   margin: 5px;
-  color: #FF0047;
+  color: #ff0047;
 `;
 
 const VALIDATE_TILE = 'Validate Tile';
@@ -248,7 +248,7 @@ export default class TileValidator extends PureComponent {
   getCheckboxStyle(isTileHasNormals) {
     return {
       cursor: isTileHasNormals ? 'pointer' : 'auto'
-    }
+    };
   }
 
   _renderTriangleMetrics() {
@@ -296,17 +296,14 @@ export default class TileValidator extends PureComponent {
       <NormalsValidator>
         {!isTileHasNormals && <NoNormalsInfo>{'Tile has no normals'}</NoNormalsInfo>}
         <NormalsControl>
-          <label
-            style={this.getCheckboxStyle(isTileHasNormals)}
-            htmlFor="normals-checkbox"
-          >
+          <label style={this.getCheckboxStyle(isTileHasNormals)} htmlFor="normals-checkbox">
             <Checkbox
               id="normals-checkbox"
               type="checkbox"
               disabled={!isTileHasNormals}
               checked={showNormals}
-              onChange={() => handleShowNormals(tile)}>
-            </Checkbox>
+              onChange={() => handleShowNormals(tile)}
+            ></Checkbox>
             Show Normals
           </label>
         </NormalsControl>
@@ -320,9 +317,7 @@ export default class TileValidator extends PureComponent {
             disabled={!isTileHasNormals}
             onChange={(event) => handleChangeTrianglesPercentage(tile, Number(event.target.value))}
           />
-          <span>
-            % triangles with normals
-          </span>
+          <span>% triangles with normals</span>
         </NormalsControl>
         <NormalsControl>
           <span>Normals length</span>
