@@ -326,8 +326,6 @@ export default class App extends PureComponent {
     this.removeFeatureIdsFromTile(tile);
     this._updateStatWidgets();
     this.validateTile(tile);
-    // TODO fix frame number calculation to handle multiple tilesets
-    // this.setState({frameNumber: this.state.tileset.frameNumber});
 
     if (this.state.debugOptions.showUVDebugTexture) {
       selectDebugTextureForTile(tile, this._uvDebugTexture);
@@ -750,7 +748,6 @@ export default class App extends PureComponent {
       this.handleClosePanel();
       return;
     }
-    // TODO add more tile info to panel.
     const tileInfo = getTileDebugInfo(info.object);
     this.setState({tileInfo, normalsDebugData: [], selectedTile: info.object});
   }
