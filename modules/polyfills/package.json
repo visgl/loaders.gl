@@ -17,7 +17,7 @@
     "TextEncoder",
     "TextDecoder"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "files": [
@@ -92,7 +92,7 @@
     "web-streams-polyfill": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle",
+    "pre-build": "tsc && npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js"
   },
   "dependencies": {

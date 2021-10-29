@@ -1,3 +1,4 @@
+// This is a base TS config for the entire mono repo, mainly for linting
 {
   "compilerOptions": {
     "target": "es2020",
@@ -12,8 +13,9 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
     "noUnusedLocals": true,
+    // This must be specified if "paths" is.
+    "baseUrl": ".",
     "paths": {
       "@loaders.gl/schema": ["modules/schema/src"],
       "@loaders.gl/schema/test": ["modules/schema/test"],
@@ -45,8 +47,8 @@
       "@loaders.gl/draco/test": ["modules/draco/test"],
       "@loaders.gl/excel": ["modules/excel/src"],
       "@loaders.gl/excel/test": ["modules/excel/test"],
-      "@loaders.gl/images": ["modules/images/src"],
-      "@loaders.gl/images/test": ["modules/images/test"],
+      "@loaders.gl/flatgeobuf": ["modules/flatgeobuf/src"],
+      "@loaders.gl/flatgeobuf/test": ["modules/flatgeobuf/test"],
       "@loaders.gl/geopackage": ["modules/geopackage/src"],
       "@loaders.gl/geopackage/test": ["modules/geopackage/test"],
       "@loaders.gl/geotiff": ["modules/geotiff/src"],
@@ -55,6 +57,8 @@
       "@loaders.gl/gis/test": ["modules/gis/test"],
       "@loaders.gl/gltf": ["modules/gltf/src"],
       "@loaders.gl/gltf/test": ["modules/gltf/test"],
+      "@loaders.gl/images": ["modules/images/src"],
+      "@loaders.gl/images/test": ["modules/images/test"],
       "@loaders.gl/json": ["modules/json/src"],
       "@loaders.gl/json/test": ["modules/json/test"],
       "@loaders.gl/kml": ["modules/kml/src"],

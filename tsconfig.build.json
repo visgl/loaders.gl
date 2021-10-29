@@ -1,0 +1,14 @@
+// This is a base TS config for the individual packages, mainly for building .d.ts files
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    // "declarationMap": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    // "listEmittedFiles": true,
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  }
+} 

@@ -7,7 +7,7 @@ import Protobuf from 'pbf';
 import {MvtBinaryCoordinates, MvtMapboxCoordinates, MvtOptions} from '../lib/types';
 import VectorTileFeatureBinary from './binary-vector-tile/vector-tile-feature';
 import VectorTileFeatureMapBox from './mapbox-vector-tile/vector-tile-feature';
-import {LoaderOptions} from '@loaders.gl/loader-utils/';
+import {LoaderOptions} from '@loaders.gl/loader-utils';
 
 /**
  * Parse MVT arrayBuffer and return GeoJSON.
