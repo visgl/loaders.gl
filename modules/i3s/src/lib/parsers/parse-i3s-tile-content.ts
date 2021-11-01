@@ -287,9 +287,9 @@ function parseHeaders(content: TileContent, buffer: ArrayBuffer) {
   // First 8 bytes reserved for header (vertexCount and featurecount)
   let vertexCount = 0;
   let featureCount = 0;
-  const headers = content.featureData.header[I3S_NAMED_HEADER_ATTRIBUTES.header];
-  for (const header in headers) {
-    const {property, type} = headers[header];
+  const headers = content.featureData.header;
+  headers.forEach((header) => {
+    const {property, type} = header;
     const TypedArrayTypeHeader = TYPE_ARRAY_MAP[type];
     if (property === I3S_NAMED_HEADER_ATTRIBUTES.vertexCount) {
       vertexCount = new TypedArrayTypeHeader(buffer, 0, 4)[0];
@@ -299,7 +299,8 @@ function parseHeaders(content: TileContent, buffer: ArrayBuffer) {
       featureCount = new TypedArrayTypeHeader(buffer, 4, 4)[0];
       byteOffset += SIZEOF[type];
     }
-  }
+  });
+
   return {
     vertexCount,
     featureCount,
