@@ -1,10 +1,32 @@
 import type {GLTFMaterial} from '@loaders.gl/gltf';
-import type {Quaternion, Vector3} from '@math.gl/core';
+import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {Mesh} from '@loaders.gl/gltf';
-
-export type Tileset = {[key: string]: any};
+import type {TypedArray} from '@loaders.gl/schema';
+// TODO Replace "[key: string]: any" with actual defenition
+export type Tileset = {
+  store: Store;
+  [key: string]: any;
+};
+// TODO Replace "[key: string]: any" with actual defenition
 export type NodePage = {[key: string]: any};
-export type Tile = {[key: string]: any};
+// TODO Replace "[key: string]: any" with actual defenition
+export type Tile = {
+  content: TileContent;
+  isDracoGeometry: boolean;
+  [key: string]: any;
+};
+// TODO Replace "[key: string]: any" with actual defenition
+export type TileContent = {
+  featureData: DefaultGeometrySchema;
+  attributes: normalizedAttributes;
+  indices: normalizedAttribute | null;
+  featureIds: number[] | TypedArray;
+  vertexCount: number;
+  modelMatrix: Matrix4;
+  coordinateSystem: number;
+  byteLength: number;
+  [key: string]: any;
+};
 
 export type BoundingVolumes = {
   mbs: Mbs;
@@ -173,7 +195,10 @@ export type Attribute = 'OBJECTID' | 'string' | 'double' | 'Int32' | string;
 
 export type Extent = [number, number, number, number];
 
-export type FeatureAttribute = {[key: string]: any};
+export type FeatureAttribute = {
+  id: AttributeValue;
+  faceRange: AttributeValue;
+};
 
 export type BuildingSceneLayerTileset = {
   header: BuildingSceneLayer;
@@ -311,24 +336,78 @@ type Store = {
   lodModel: string;
   defaultGeometrySchema: DefaultGeometrySchema;
 };
-
+// Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/defaultGeometrySchema.cmn.md
 type DefaultGeometrySchema = {
-  vartexCount: number;
-  featureCount: number;
-  position: Float32Array;
-  normal: Float32Array;
-  uv0: Float32Array;
-  color: Uint8Array;
-  id: Float32Array;
-  faceRange: Uint32Array;
-  region: Uint16Array;
+  geometryType?: 'triangles';
+  topology: 'PerAttributeArray' | 'Indexed';
+  header: {
+    property: string;
+    type:
+      | 'UInt8'
+      | 'UInt16'
+      | 'UInt32'
+      | 'UInt64'
+      | 'Int16'
+      | 'Int32'
+      | 'Int64'
+      | 'Float32'
+      | 'Float64';
+  }[];
+  ordering: string[];
+  vertexAttributes: vertexAttribute;
+  faces?: vertexAttribute;
+  featureAttributeOrder: string[];
+  featureAttributes: FeatureAttribute;
+  // TODO Do we realy need this Property?
+  attributesOrder?: string[];
 };
-
-// TODO change string to possible values from https://github.com/Esri/i3s-spec/blob/master/docs/1.8/heightModelInfo.cmn.md
+export type vertexAttribute = {
+  position: geometryAttribute;
+  normal: geometryAttribute;
+  uv0: geometryAttribute;
+  color: geometryAttribute;
+  region?: geometryAttribute;
+};
+export type geometryAttribute = {
+  byteOffset?: number;
+  valueType: 'UInt8' | 'UInt16' | 'Int16' | 'Int32' | 'Int64' | 'Float32' | 'Float64';
+  valuesPerElement: number;
+};
+export type normalizedAttributes = {
+  [key: string]: normalizedAttribute;
+};
+export type normalizedAttribute = {
+  value: number[] | TypedArray;
+  type: number;
+  size: number;
+  normalized?: boolean;
+  metadata?: any;
+};
 type HeightModelInfo = {
-  heightModel: string;
+  heightModel: 'gravity_related_height' | 'ellipsoidal';
   vertCRS: string;
-  heightUnit: string;
+  heightUnit:
+    | 'meter'
+    | 'us-foot'
+    | 'foot'
+    | 'clarke-foot'
+    | 'clarke-yard'
+    | 'clarke-link'
+    | 'sears-yard'
+    | 'sears-foot'
+    | 'sears-chain'
+    | 'benoit-1895-b-chain'
+    | 'indian-yard'
+    | 'indian-1937-yard'
+    | 'gold-coast-foot'
+    | 'sears-1922-truncated-chain'
+    | 'us-inch'
+    | 'us-mile'
+    | 'us-yard'
+    | 'millimeter'
+    | 'decimeter'
+    | 'centimeter'
+    | 'kilometer';
 };
 
 type NodePages = {

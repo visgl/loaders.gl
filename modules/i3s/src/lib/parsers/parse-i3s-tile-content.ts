@@ -8,7 +8,15 @@ import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
-import {Tileset, Tile} from '../../types';
+import {
+  Tileset,
+  Tile,
+  FeatureAttribute,
+  TileContent,
+  vertexAttribute,
+  normalizedAttribute,
+  normalizedAttributes
+} from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
 import {
@@ -44,7 +52,7 @@ export async function parseI3STileContent(
   tile.content.featureIds = tile.content.featureIds || null;
 
   // construct featureData from defaultGeometrySchema;
-  tile.content.featureData = constructFeatureDataStruct(tile, tileset);
+  tile.content.featureData = constructFeatureDataStruct(tileset);
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
@@ -82,25 +90,20 @@ export async function parseI3STileContent(
     tile.content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, options, context);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, options);
 }
 
 /* eslint-disable max-statements */
-async function parseI3SNodeGeometry(
-  arrayBuffer: ArrayBuffer,
-  tile: Tile = {},
-  options?: LoaderOptions,
-  context?: LoaderContext
-) {
+async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile, options?: LoaderOptions) {
   if (!tile.content) {
     return tile;
   }
 
   const content = tile.content;
-  let attributes;
-  let vertexCount;
-  let byteOffset = 0;
-  let featureCount = 0;
+  let attributes: normalizedAttributes;
+  let vertexCount: number;
+  let byteOffset: number = 0;
+  let featureCount: number = 0;
 
   if (tile.isDracoGeometry) {
     const decompressedGeometry = await parse(arrayBuffer, DracoLoader, {
@@ -151,7 +154,7 @@ async function parseI3SNodeGeometry(
       byteOffset,
       vertexAttributes,
       vertexCount,
-      attributesOrder
+      attributesOrder!
     );
 
     // Getting feature attributes such as featureIds and faceRange
@@ -210,7 +213,7 @@ async function parseI3SNodeGeometry(
  * @param decompressedGeometry
  * @param attributes
  */
-function updateAttributesMetadata(attributes, decompressedGeometry) {
+function updateAttributesMetadata(attributes: normalizedAttributes, decompressedGeometry): void {
   for (const key in decompressedGeometry.loaderData.attributes) {
     const dracoAttribute = decompressedGeometry.loaderData.attributes[key];
 
@@ -230,11 +233,14 @@ function updateAttributesMetadata(attributes, decompressedGeometry) {
 /**
  * Do concatenation of attribute objects.
  * Done as separate fucntion to avoid ts errors.
- * @param {Object} normalizedVertexAttributes
- * @param {Object} normalizedFeatureAttributes
- * @returns {object} - result of attributes concatenation.
+ * @param {normalizedAttributes} normalizedVertexAttributes
+ * @param {normalizedAttributes} normalizedFeatureAttributes
+ * @returns {normalizedAttributes} - result of attributes concatenation.
  */
-function concatAttributes(normalizedVertexAttributes, normalizedFeatureAttributes) {
+function concatAttributes(
+  normalizedVertexAttributes: normalizedAttributes,
+  normalizedFeatureAttributes: normalizedAttributes
+): normalizedAttributes {
   return {...normalizedVertexAttributes, ...normalizedFeatureAttributes};
 }
 
@@ -251,7 +257,7 @@ function normalizeAttribute(attribute) {
   return attribute;
 }
 
-function constructFeatureDataStruct(tile, tileset) {
+function constructFeatureDataStruct(tileset: Tileset) {
   // seed featureData from defaultGeometrySchema
   const defaultGeometrySchema = tileset.store.defaultGeometrySchema;
   const featureData = defaultGeometrySchema;
@@ -276,12 +282,12 @@ function constructFeatureDataStruct(tile, tileset) {
   return featureData;
 }
 
-function parseHeaders(content, buffer) {
+function parseHeaders(content: TileContent, buffer: ArrayBuffer) {
   let byteOffset = 0;
   // First 8 bytes reserved for header (vertexCount and featurecount)
   let vertexCount = 0;
   let featureCount = 0;
-  const headers = content.featureData[I3S_NAMED_HEADER_ATTRIBUTES.header];
+  const headers = content.featureData.header[I3S_NAMED_HEADER_ATTRIBUTES.header];
   for (const header in headers) {
     const {property, type} = headers[header];
     const TypedArrayTypeHeader = TYPE_ARRAY_MAP[type];
@@ -304,18 +310,19 @@ function parseHeaders(content, buffer) {
 /* eslint-enable max-statements */
 
 function normalizeAttributes(
-  arrayBuffer,
-  byteOffset,
-  vertexAttributes,
-  vertexCount,
-  attributesOrder
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  vertexAttributes: vertexAttribute | FeatureAttribute,
+  vertexCount: number,
+  attributesOrder: string[]
 ) {
-  const attributes = {};
+  const attributes: normalizedAttributes = {};
 
   // the order of attributes depend on the order being added to the vertexAttributes object
   for (const attribute of attributesOrder) {
     if (vertexAttributes[attribute]) {
-      const {valueType, valuesPerElement} = vertexAttributes[attribute];
+      const {valueType, valuesPerElement}: {valueType: string; valuesPerElement: number} =
+        vertexAttributes[attribute];
       // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
       const count = vertexCount;
       // protect from arrayBuffer read overunns by NOT assuming node has regions always even though its declared in defaultGeometrySchema.
@@ -345,7 +352,6 @@ function normalizeAttributes(
 
       switch (attribute) {
         case 'color':
-          // @ts-ignore
           attributes.color.normalized = true;
           break;
         case 'position':
@@ -441,10 +447,10 @@ function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
  * @param positions positions attribute
  * @returns Matrix4 - model matrix for geometry transformation
  */
-function getModelMatrix(positions) {
+function getModelMatrix(positions: normalizedAttribute): Matrix4 {
   const metadata = positions.metadata;
-  const scaleX = metadata?.['i3s-scale_x']?.double || 1;
-  const scaleY = metadata?.['i3s-scale_y']?.double || 1;
+  const scaleX: number = metadata?.['i3s-scale_x']?.double || 1;
+  const scaleY: number = metadata?.['i3s-scale_y']?.double || 1;
   const modelMatrix = new Matrix4();
   modelMatrix[0] = scaleX;
   modelMatrix[5] = scaleY;
@@ -520,7 +526,7 @@ function convertColorFormat(colorFactor) {
  * @param {object} image - texture image
  * @returns {void}
  */
-function setMaterialTexture(material, image) {
+function setMaterialTexture(material, image): void {
   const texture = {source: {image}};
   // I3SLoader now support loading only one texture. This elseif sequence will assign this texture to one of
   // properties defined in materialDefinition
@@ -551,7 +557,7 @@ function setMaterialTexture(material, image) {
  * @param {object} normalizedFeatureAttributes
  * @returns {void}
  */
-function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes) {
+function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes: normalizedAttributes): void {
   const {id, faceRange} = normalizedFeatureAttributes;
 
   if (!id || !faceRange) {

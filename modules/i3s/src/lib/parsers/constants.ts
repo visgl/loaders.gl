@@ -8,7 +8,7 @@ export const TYPE_ARRAY_MAP = {
   UInt64: Float64Array
 };
 
-export const GL_TYPE_MAP = {
+export const GL_TYPE_MAP: {[key: string]: number} = {
   UInt8: GL.UNSIGNED_BYTE,
   UInt16: GL.UNSIGNED_INT,
   Float32: GL.FLOAT,
@@ -29,14 +29,14 @@ export const I3S_NAMED_GEOMETRY_ATTRIBUTES = {
   featureAttributeOrder: 'featureAttributeOrder',
   featureAttributes: 'featureAttributes'
 };
-
+// TODO Remove Named Attributes and replase with Typescipt types
 export const I3S_NAMED_HEADER_ATTRIBUTES = {
   header: 'header',
   vertexCount: 'vertexCount',
   featureCount: 'featureCount'
 };
 
-export const SIZEOF = {
+export const SIZEOF: {[key: string]: number} = {
   UInt8: 1,
   UInt16: 2,
   UInt32: 4,
