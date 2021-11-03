@@ -3,7 +3,7 @@ import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {Mesh} from '@loaders.gl/gltf';
 import type {TypedArray} from '@loaders.gl/schema';
 
-export enum DTYPE_LOOKUP {
+export enum DATA_TYPE {
   UInt8 = 'UInt8',
   UInt16 = 'UInt16',
   UInt32 = 'UInt32',
@@ -14,9 +14,14 @@ export enum DTYPE_LOOKUP {
   Float32 = 'Float32',
   Float64 = 'Float64'
 }
-
+/**
+ * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DSceneLayer.cmn.md
+ */
 // TODO Replace "[key: string]: any" with actual defenition
 export type Tileset = {
+  /**
+   * The store object describes the exact physical storage of a layer and enables the client to detect when multiple layers are served from the same store.
+   */
   store: Store;
   [key: string]: any;
 };
@@ -28,7 +33,10 @@ export type Tile = {
   isDracoGeometry: boolean;
   textureUrl: string;
   url: string;
-  attributeData: {href: string}[];
+  /**
+   * Resource reference describing a featureData document.
+   */
+  attributeData: Resource[];
   textureFormat: 'jpeg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
   textureLoaderOptions: any;
   materialDefinition: GLTFMaterial;
@@ -37,8 +45,8 @@ export type Tile = {
 // TODO Replace "[key: string]: any" with actual defenition
 export type TileContent = {
   featureData: DefaultGeometrySchema;
-  attributes: normalizedAttributes;
-  indices: normalizedAttribute | null;
+  attributes: NormalizedAttributes;
+  indices: NormalizedAttribute | null;
   featureIds: number[] | TypedArray;
   vertexCount: number;
   modelMatrix: Matrix4;
@@ -131,7 +139,9 @@ export type PopupInfo = {
   popupElements?: {text?: string; type?: string; fieldInfos?: FieldInfo[]}[];
 };
 
-// Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
+/**
+ * Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
+ */
 export type Node3DIndexDocument = {
   id: string;
   version?: string;
@@ -350,7 +360,9 @@ type Domain = {
   mergePolicy?: string;
   splitPolicy?: string;
 };
-
+/**
+ * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/store.cmn.md
+ */
 type Store = {
   id: string | number;
   profile: string;
@@ -367,54 +379,56 @@ type Store = {
   lodModel: string;
   defaultGeometrySchema: DefaultGeometrySchema;
 };
-// Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/defaultGeometrySchema.cmn.md
+/**
+ * Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/defaultGeometrySchema.cmn.md
+ */
 type DefaultGeometrySchema = {
   geometryType?: 'triangles';
   topology: 'PerAttributeArray' | 'Indexed';
   header: {
     property: 'vertexCount' | 'featureCount' | string;
     type:
-      | DTYPE_LOOKUP.UInt8
-      | DTYPE_LOOKUP.UInt16
-      | DTYPE_LOOKUP.UInt32
-      | DTYPE_LOOKUP.UInt64
-      | DTYPE_LOOKUP.Int16
-      | DTYPE_LOOKUP.Int32
-      | DTYPE_LOOKUP.Int64
-      | DTYPE_LOOKUP.Float32
-      | DTYPE_LOOKUP.Float64;
+      | DATA_TYPE.UInt8
+      | DATA_TYPE.UInt16
+      | DATA_TYPE.UInt32
+      | DATA_TYPE.UInt64
+      | DATA_TYPE.Int16
+      | DATA_TYPE.Int32
+      | DATA_TYPE.Int64
+      | DATA_TYPE.Float32
+      | DATA_TYPE.Float64;
   }[];
   ordering: string[];
-  vertexAttributes: vertexAttribute;
-  faces?: vertexAttribute;
+  vertexAttributes: VertexAttribute;
+  faces?: VertexAttribute;
   featureAttributeOrder: string[];
   featureAttributes: FeatureAttribute;
   // TODO Do we realy need this Property?
   attributesOrder?: string[];
 };
-export type vertexAttribute = {
-  position: geometryAttribute;
-  normal: geometryAttribute;
-  uv0: geometryAttribute;
-  color: geometryAttribute;
-  region?: geometryAttribute;
+export type VertexAttribute = {
+  position: GeometryAttribute;
+  normal: GeometryAttribute;
+  uv0: GeometryAttribute;
+  color: GeometryAttribute;
+  region?: GeometryAttribute;
 };
-export type geometryAttribute = {
+export type GeometryAttribute = {
   byteOffset?: number;
   valueType:
-    | DTYPE_LOOKUP.UInt8
-    | DTYPE_LOOKUP.UInt16
-    | DTYPE_LOOKUP.Int16
-    | DTYPE_LOOKUP.Int32
-    | DTYPE_LOOKUP.Int64
-    | DTYPE_LOOKUP.Float32
-    | DTYPE_LOOKUP.Float64;
+    | DATA_TYPE.UInt8
+    | DATA_TYPE.UInt16
+    | DATA_TYPE.Int16
+    | DATA_TYPE.Int32
+    | DATA_TYPE.Int64
+    | DATA_TYPE.Float32
+    | DATA_TYPE.Float64;
   valuesPerElement: number;
 };
-export type normalizedAttributes = {
-  [key: string]: normalizedAttribute;
+export type NormalizedAttributes = {
+  [key: string]: NormalizedAttribute;
 };
-export type normalizedAttribute = {
+export type NormalizedAttribute = {
   value: number[] | TypedArray;
   type: number;
   size: number;

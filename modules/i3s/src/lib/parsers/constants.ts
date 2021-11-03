@@ -1,17 +1,17 @@
 import GL from '@luma.gl/constants';
-import {DTYPE_LOOKUP} from '../../types';
+import {DATA_TYPE} from '../../types';
 
-export function TYPE_ARRAY_MAP(dType: string) {
-  switch (dType) {
-    case DTYPE_LOOKUP.UInt8:
+export function getConstructorForDataFormat(dataType: string) {
+  switch (dataType) {
+    case DATA_TYPE.UInt8:
       return Uint8Array;
-    case DTYPE_LOOKUP.UInt16:
+    case DATA_TYPE.UInt16:
       return Uint16Array;
-    case DTYPE_LOOKUP.UInt32:
+    case DATA_TYPE.UInt32:
       return Uint32Array;
-    case DTYPE_LOOKUP.Float32:
+    case DATA_TYPE.Float32:
       return Float32Array;
-    case DTYPE_LOOKUP.UInt64:
+    case DATA_TYPE.UInt64:
       return Float64Array;
     default:
       return null;
@@ -47,23 +47,23 @@ export const I3S_NAMED_HEADER_ATTRIBUTES = {
 };
 /**
  * Returns how many bytes a type occupies
- * @param dType
+ * @param dataType
  * @returns
  */
-export function SIZEOF(dType: string): number {
-  switch (dType) {
-    case DTYPE_LOOKUP.UInt8:
+export function sizeOf(dataType: string): number {
+  switch (dataType) {
+    case DATA_TYPE.UInt8:
       return 1;
-    case DTYPE_LOOKUP.UInt16:
-    case DTYPE_LOOKUP.Int16:
+    case DATA_TYPE.UInt16:
+    case DATA_TYPE.Int16:
       return 2;
-    case DTYPE_LOOKUP.UInt32:
-    case DTYPE_LOOKUP.Int32:
-    case DTYPE_LOOKUP.Float32:
+    case DATA_TYPE.UInt32:
+    case DATA_TYPE.Int32:
+    case DATA_TYPE.Float32:
       return 4;
-    case DTYPE_LOOKUP.UInt64:
-    case DTYPE_LOOKUP.Int64:
-    case DTYPE_LOOKUP.Float64:
+    case DATA_TYPE.UInt64:
+    case DATA_TYPE.Int64:
+    case DATA_TYPE.Float64:
       return 8;
     default:
       return NaN;
