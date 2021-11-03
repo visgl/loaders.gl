@@ -373,10 +373,10 @@ function transformVertexNormals(vertexVector, calleeArgs) {
  * @returns {Float32Array}
  */
 function flattenTexCoords(texCoords, indices) {
-  if (!texCoords) {
-    return new Float32Array(0);
-  }
   const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
+  if (!texCoords) {
+    return newTexCoords;
+  }
   for (let i = 0; i < indices.length; i++) {
     const coordIndex = indices[i] * VALUES_PER_TEX_COORD;
     const texCoord = texCoords.subarray(coordIndex, coordIndex + VALUES_PER_TEX_COORD);
@@ -393,12 +393,12 @@ function flattenTexCoords(texCoords, indices) {
  * @returns {Uint8Array}
  */
 function flattenColors(colorsAttribute, indices) {
-  if (!colorsAttribute) {
-    return new Uint8Array(0);
-  }
-  const components = colorsAttribute.components;
-  const colors = colorsAttribute.value;
+  const components = colorsAttribute?.components || VALUES_PER_COLOR_ELEMENT;
   const newColors = new Uint8Array(indices.length * components);
+  if (!colorsAttribute) {
+    return newColors;
+  }
+  const colors = colorsAttribute.value;
   for (let i = 0; i < indices.length; i++) {
     const colorIndex = indices[i] * components;
     const color = colors.subarray(colorIndex, colorIndex + components);
