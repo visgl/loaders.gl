@@ -31,7 +31,8 @@ export default class B3dmConverter {
       attributes,
       indices: originalIndices,
       cartesianOrigin,
-      cartographicOrigin
+      cartographicOrigin,
+      modelMatrix
     } = i3sTile.content;
     const gltfBuilder = new GLTFScenegraph();
 
@@ -52,7 +53,8 @@ export default class B3dmConverter {
     attributes.positions.value = this._normalizePositions(
       positionsValue,
       cartesianOrigin,
-      cartographicOrigin
+      cartographicOrigin,
+      modelMatrix
     );
     if (attributes.normals && !this._checkNormals(attributes.normals.value)) {
       delete attributes.normals;
@@ -109,14 +111,18 @@ export default class B3dmConverter {
    * Generate a positions array which is correct for 3DTiles/GLTF format
    * @param {Float64Array} positionsValue - the input geometry positions array
    * @param {number[]} cartesianOrigin - the tile center in the cartesian coordinate system
+   * @param {number[]} cartographicOrigin - the tile center in the cartographic coordinate system
+   * @param {number[]} modelMatrix - the model matrix of geometry
    * @returns {Float32Array} - the output geometry positions array
    */
-  _normalizePositions(positionsValue, cartesianOrigin, cartographicOrigin) {
+  _normalizePositions(positionsValue, cartesianOrigin, cartographicOrigin, modelMatrix) {
     const newPositionsValue = new Float32Array(positionsValue.length);
     for (let index = 0; index < positionsValue.length; index += 3) {
       const vertex = positionsValue.subarray(index, index + 3);
       const cartesianOriginVector = new Vector3(cartesianOrigin);
-      let vertexVector = new Vector3(Array.from(vertex)).add(cartographicOrigin);
+      let vertexVector = new Vector3(Array.from(vertex))
+        .transform(modelMatrix)
+        .add(cartographicOrigin);
       Ellipsoid.WGS84.cartographicToCartesian(vertexVector, scratchVector);
       vertexVector = scratchVector.subtract(cartesianOriginVector);
       newPositionsValue.set(vertexVector, index);
