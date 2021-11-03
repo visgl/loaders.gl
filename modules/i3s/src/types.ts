@@ -2,6 +2,19 @@ import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {Mesh} from '@loaders.gl/gltf';
 import type {TypedArray} from '@loaders.gl/schema';
+
+export enum DTYPE_LOOKUP {
+  UInt8 = 'UInt8',
+  UInt16 = 'UInt16',
+  UInt32 = 'UInt32',
+  UInt64 = 'UInt64',
+  Int16 = 'Int16',
+  Int32 = 'Int32',
+  Int64 = 'Int64',
+  Float32 = 'Float32',
+  Float64 = 'Float64'
+}
+
 // TODO Replace "[key: string]: any" with actual defenition
 export type Tileset = {
   store: Store;
@@ -13,7 +26,13 @@ export type NodePage = {[key: string]: any};
 export type Tile = {
   content: TileContent;
   isDracoGeometry: boolean;
-  [key: string]: any;
+  textureUrl: string;
+  url: string;
+  attributeData: {href: string}[];
+  textureFormat: 'jpeg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
+  textureLoaderOptions: any;
+  materialDefinition: GLTFMaterial;
+  mbs: Mbs;
 };
 // TODO Replace "[key: string]: any" with actual defenition
 export type TileContent = {
@@ -25,8 +44,20 @@ export type TileContent = {
   modelMatrix: Matrix4;
   coordinateSystem: number;
   byteLength: number;
+  texture: TileContentTexture;
   [key: string]: any;
 };
+
+export type TileContentTexture =
+  | ArrayBuffer
+  | {
+      compressed: boolean;
+      mipmaps: boolean;
+      width: number;
+      height: number;
+      data: any;
+    }
+  | null;
 
 export type BoundingVolumes = {
   mbs: Mbs;
@@ -341,17 +372,17 @@ type DefaultGeometrySchema = {
   geometryType?: 'triangles';
   topology: 'PerAttributeArray' | 'Indexed';
   header: {
-    property: string;
+    property: 'vertexCount' | 'featureCount' | string;
     type:
-      | 'UInt8'
-      | 'UInt16'
-      | 'UInt32'
-      | 'UInt64'
-      | 'Int16'
-      | 'Int32'
-      | 'Int64'
-      | 'Float32'
-      | 'Float64';
+      | DTYPE_LOOKUP.UInt8
+      | DTYPE_LOOKUP.UInt16
+      | DTYPE_LOOKUP.UInt32
+      | DTYPE_LOOKUP.UInt64
+      | DTYPE_LOOKUP.Int16
+      | DTYPE_LOOKUP.Int32
+      | DTYPE_LOOKUP.Int64
+      | DTYPE_LOOKUP.Float32
+      | DTYPE_LOOKUP.Float64;
   }[];
   ordering: string[];
   vertexAttributes: vertexAttribute;
@@ -370,7 +401,14 @@ export type vertexAttribute = {
 };
 export type geometryAttribute = {
   byteOffset?: number;
-  valueType: 'UInt8' | 'UInt16' | 'Int16' | 'Int32' | 'Int64' | 'Float32' | 'Float64';
+  valueType:
+    | DTYPE_LOOKUP.UInt8
+    | DTYPE_LOOKUP.UInt16
+    | DTYPE_LOOKUP.Int16
+    | DTYPE_LOOKUP.Int32
+    | DTYPE_LOOKUP.Int64
+    | DTYPE_LOOKUP.Float32
+    | DTYPE_LOOKUP.Float64;
   valuesPerElement: number;
 };
 export type normalizedAttributes = {

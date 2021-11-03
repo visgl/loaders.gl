@@ -3,6 +3,7 @@ import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
+import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader} from '@loaders.gl/draco';
@@ -15,7 +16,8 @@ import {
   TileContent,
   vertexAttribute,
   normalizedAttribute,
-  normalizedAttributes
+  normalizedAttributes,
+  TileContentTexture
 } from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
@@ -31,13 +33,20 @@ import {
 
 const scratchVector = new Vector3([0, 0, 0]);
 
-const FORMAT_LOADER_MAP = {
-  jpeg: ImageLoader,
-  png: ImageLoader,
-  'ktx-etc2': CompressedTextureLoader,
-  dds: CompressedTextureLoader,
-  ktx2: BasisLoader
-};
+function FORMAT_LOADER_MAP(textureFormat: 'jpeg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2') {
+  switch (textureFormat) {
+    case 'jpeg':
+    case 'png':
+      return ImageLoader;
+    case 'ktx-etc2':
+    case 'dds':
+      return CompressedTextureLoader;
+    case 'ktx2':
+      return BasisLoader;
+    default:
+      return null;
+  }
+}
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
@@ -57,7 +66,7 @@ export async function parseI3STileContent(
 
   if (tile.textureUrl) {
     const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
-    const loader = FORMAT_LOADER_MAP[tile.textureFormat] || ImageLoader;
+    const loader = FORMAT_LOADER_MAP(tile.textureFormat) || ImageLoader;
     // @ts-ignore context must be defined
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
@@ -174,7 +183,7 @@ async function parseI3SNodeGeometry(arrayBuffer: ArrayBuffer, tile: Tile, option
     !options?.i3s?.coordinateSystem ||
     options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
   ) {
-    const {enuMatrix} = parsePositions(attributes.position, tile);
+    const enuMatrix = parsePositions(attributes.position, tile);
     content.modelMatrix = enuMatrix.invert();
     content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
   } else {
@@ -246,10 +255,10 @@ function concatAttributes(
 
 /**
  * Normalize attribute to range [0..1] . Eg. convert colors buffer from [255,255,255,255] to [1,1,1,1]
- * @param {Object} attribute - geometry attribute
- * @returns {Object} - geometry attribute in right format
+ * @param {normalizedAttribute} attribute - geometry attribute
+ * @returns {normalizedAttribute} - geometry attribute in right format
  */
-function normalizeAttribute(attribute) {
+function normalizeAttribute(attribute: normalizedAttribute): normalizedAttribute {
   if (!attribute) {
     return attribute;
   }
@@ -287,17 +296,15 @@ function parseHeaders(content: TileContent, buffer: ArrayBuffer) {
   // First 8 bytes reserved for header (vertexCount and featurecount)
   let vertexCount = 0;
   let featureCount = 0;
-  const headers = content.featureData.header;
-  headers.forEach((header) => {
-    const {property, type} = header;
-    const TypedArrayTypeHeader = TYPE_ARRAY_MAP[type];
+  content.featureData.header.forEach(({property, type}) => {
+    const TypedArrayTypeHeader = TYPE_ARRAY_MAP(type)!;
     if (property === I3S_NAMED_HEADER_ATTRIBUTES.vertexCount) {
       vertexCount = new TypedArrayTypeHeader(buffer, 0, 4)[0];
-      byteOffset += SIZEOF[type];
+      byteOffset += SIZEOF(type);
     }
     if (property === I3S_NAMED_HEADER_ATTRIBUTES.featureCount) {
       featureCount = new TypedArrayTypeHeader(buffer, 4, 4)[0];
-      byteOffset += SIZEOF[type];
+      byteOffset += SIZEOF(type);
     }
   });
 
@@ -339,9 +346,9 @@ function normalizeAttributes(
       let value: number[] | TypedArray = [];
 
       if (valueType === 'UInt64') {
-        value = parseUint64Values(buffer, count * valuesPerElement, SIZEOF[valueType]);
+        value = parseUint64Values(buffer, count * valuesPerElement, SIZEOF(valueType));
       } else {
-        const TypedArrayType = TYPE_ARRAY_MAP[valueType];
+        const TypedArrayType = TYPE_ARRAY_MAP(valueType)!;
         value = new TypedArrayType(buffer, 0, count * valuesPerElement);
       }
 
@@ -361,7 +368,7 @@ function normalizeAttributes(
         default:
       }
 
-      byteOffset = byteOffset + count * valuesPerElement * SIZEOF[valueType];
+      byteOffset = byteOffset + count * valuesPerElement * SIZEOF(valueType);
     }
   }
 
@@ -398,7 +405,7 @@ function parseUint64Values(
   return values;
 }
 
-function parsePositions(attribute, tile) {
+function parsePositions(attribute: normalizedAttribute, tile: Tile): Matrix4 {
   const mbs = tile.mbs;
   const value = attribute.value;
   const metadata = attribute.metadata;
@@ -409,20 +416,22 @@ function parsePositions(attribute, tile) {
   Ellipsoid.WGS84.eastNorthUpToFixedFrame(cartesianOrigin, enuMatrix);
   attribute.value = offsetsToCartesians(value, metadata, cartographicOrigin);
 
-  return {
-    enuMatrix
-  };
+  return enuMatrix;
 }
 
 /**
  * Converts position coordinates to absolute cartesian coordinates
- * @param {Float32Array} vertices - "position" attribute data
+ * @param {number[] | TypedArray} vertices - "position" attribute data
  * @param {Object} metadata - When the geometry is DRACO compressed, contain position attribute's metadata
  *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md
  * @param {Vector3} cartographicOrigin - Cartographic origin coordinates
  * @returns {Float64Array} - converted "position" data
  */
-function offsetsToCartesians(vertices, metadata = {}, cartographicOrigin) {
+function offsetsToCartesians(
+  vertices: number[] | TypedArray,
+  metadata: object = {},
+  cartographicOrigin: Vector3
+): Float64Array {
   const positions = new Float64Array(vertices.length);
   const scaleX = (metadata['i3s-scale_x'] && metadata['i3s-scale_x'].double) || 1;
   const scaleY = (metadata['i3s-scale_y'] && metadata['i3s-scale_y'].double) || 1;
@@ -460,12 +469,12 @@ function getModelMatrix(positions: normalizedAttribute): Matrix4 {
 
 /**
  * Makes a glTF-compatible PBR material from an I3S material definition
- * @param {object} materialDefinition - i3s material definition
+ * @param {GLTFMaterial} materialDefinition - i3s material definition
  *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
- * @param {object} texture - texture image
+ * @param {TileContentTexture} texture - texture image
  * @returns {object}
  */
-function makePbrMaterial(materialDefinition, texture) {
+function makePbrMaterial(materialDefinition: GLTFMaterial, texture: TileContentTexture) {
   let pbrMaterial;
   if (materialDefinition) {
     pbrMaterial = {
@@ -513,7 +522,7 @@ function makePbrMaterial(materialDefinition, texture) {
  * @param {Array} colorFactor - color array
  * @returns {Array} - new color array
  */
-function convertColorFormat(colorFactor) {
+function convertColorFormat(colorFactor: number[]): number[] {
   const normalizedColor = [...colorFactor];
   for (let index = 0; index < colorFactor.length; index++) {
     normalizedColor[index] = colorFactor[index] / 255;
@@ -524,10 +533,10 @@ function convertColorFormat(colorFactor) {
 /**
  * Set texture in PBR material
  * @param {object} material - i3s material definition
- * @param {object} image - texture image
+ * @param {TileContentTexture} image - texture image
  * @returns {void}
  */
-function setMaterialTexture(material, image): void {
+function setMaterialTexture(material, image: TileContentTexture): void {
   const texture = {source: {image}};
   // I3SLoader now support loading only one texture. This elseif sequence will assign this texture to one of
   // properties defined in materialDefinition
@@ -555,7 +564,7 @@ function setMaterialTexture(material, image): void {
 
 /**
  * Flatten feature ids using face ranges
- * @param {object} normalizedFeatureAttributes
+ * @param {normalizedAttributes} normalizedFeatureAttributes
  * @returns {void}
  */
 function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes: normalizedAttributes): void {
@@ -592,10 +601,13 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes: normalizedAt
 /**
  * Flatten feature ids using featureIndices
  * @param {object} attributes
- * @param {any} featureIds
+ * @param {Int32Array} featureIds
  * @returns {void}
  */
-function flattenFeatureIdsByFeatureIndices(attributes, featureIds) {
+function flattenFeatureIdsByFeatureIndices(
+  attributes: normalizedAttributes,
+  featureIds: Int32Array
+): void {
   const featureIndices = attributes.id.value;
   const result = new Float32Array(featureIndices.length);
 
@@ -608,10 +620,12 @@ function flattenFeatureIdsByFeatureIndices(attributes, featureIds) {
 
 /**
  * Flatten feature ids using featureIndices
- * @param {object} featureIndex
- * @returns {Int32Array}
+ * @param {normalizedAttribute} featureIndex
+ * @returns {Int32Array | undefined}
  */
-function getFeatureIdsFromFeatureIndexMetadata(featureIndex) {
+function getFeatureIdsFromFeatureIndexMetadata(
+  featureIndex: normalizedAttribute
+): Int32Array | undefined {
   return (
     featureIndex &&
     featureIndex.metadata &&
