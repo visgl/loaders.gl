@@ -21,7 +21,7 @@ import type {
 } from '@loaders.gl/i3s';
 import {load, encode} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
-import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {join} from 'path';
 import {v4 as uuidv4} from 'uuid';
 import process from 'process';
@@ -52,6 +52,7 @@ import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {GeoidHeightModel} from '../lib/geoid-height-model';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
+import {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -64,6 +65,7 @@ const SHORT_INT_TYPE = 'Int32';
 const DOUBLE_TYPE = 'double';
 const OBJECT_ID_TYPE = 'OBJECTID';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
+const CESIUM_DATASET_PREFIX = 'https://';
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
 
 /**
@@ -89,6 +91,7 @@ export default class I3SConverter {
   refreshTokenTime: [number, number];
   sourceTileset: Tileset3D | null;
   geoidHeightModel: GeoidHeightModel | null;
+  Loader: LoaderWithParser = Tiles3DLoader;
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
@@ -149,6 +152,7 @@ export default class I3SConverter {
     } = options;
     this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
     this.validate = validate;
+    this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
 
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
@@ -164,7 +168,7 @@ export default class I3SConverter {
       tilesetOptions.loadOptions.fetch = {headers: preloadOptions.headers};
     }
     Object.assign(tilesetOptions, preloadOptions);
-    const sourceTilesetJson = await load(inputUrl, CesiumIonLoader, tilesetOptions.loadOptions);
+    const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
     // console.log(tilesetJson); // eslint-disable-line
     this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
 
@@ -1177,10 +1181,13 @@ export default class I3SConverter {
    * Fetch preload options for ION tileset
    */
   private async _fetchPreloadOptions(): Promise<any> {
+    if (!this.Loader.preload) {
+      return {};
+    }
     const options = {
       'cesium-ion': {accessToken: this.options.token || ION_DEFAULT_TOKEN}
     };
-    const preloadOptions = await CesiumIonLoader.preload(this.options.inputUrl, options);
+    const preloadOptions = await this.Loader.preload(this.options.inputUrl, options);
     this.refreshTokenTime = process.hrtime();
     return {...options, ...preloadOptions};
   }
