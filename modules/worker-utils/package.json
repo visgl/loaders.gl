@@ -15,7 +15,7 @@
     "process",
     "thread"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -36,6 +36,7 @@
   },
   "scripts": {
     "pre-build": "npm run build-workers",
+    "post-build": "tsc",
     "pre-build-disabled": "npm run build-bundle && npm run build-workers",
     "build-bundle": "webpack --config ../../scripts/webpack/bundle.ts",
     "build-workers": "webpack --entry ./src/workers/null-worker.ts --output ./dist/null-worker.js --env.dev --config ../../scripts/webpack/worker.js"

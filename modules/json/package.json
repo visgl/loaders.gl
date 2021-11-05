@@ -20,7 +20,7 @@
     "JSON stream",
     "JSON async iterator"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -31,6 +31,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
+    "post-build": "tsc",
     "build-bundle": "webpack --config ../../scripts/webpack/bundle.js",
     "build-worker": "webpack --entry ./src/workers/geojson-worker.ts --output ./dist/geojson-worker.js --config ../../scripts/webpack/worker.js"
   },
