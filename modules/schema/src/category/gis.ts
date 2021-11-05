@@ -55,6 +55,7 @@ export type BinaryPolygonFeatures = BinaryPolygonGeometry & BinaryProperties;
  * Represent a collection of Features, similar to a GeoJSON FeatureCollection
  */
 export type BinaryFeatures = {
+  type?: BinaryGeometryType;
   points?: BinaryPointFeatures;
   lines?: BinaryLineFeatures;
   polygons?: BinaryPolygonFeatures;
