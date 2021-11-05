@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import test from 'tape-promise/tape';
 import {ParquetReader} from '@loaders.gl/parquet';
-import {fetchFile} from '@loaders.gl/core/';
+import {fetchFile} from '@loaders.gl/core';
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 // const TEST_NUM_ROWS = 1; // 10000;

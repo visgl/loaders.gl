@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    // Issues with papaparse typescript parsing
+    "allowJs": false,
+    "checkJs": false,
+    "outDir": "dist"
+  }
+}

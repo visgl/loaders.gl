@@ -19,7 +19,7 @@
     "draco3d",
     "draco"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "sideEffects": false,

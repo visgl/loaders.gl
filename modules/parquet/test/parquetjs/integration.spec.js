@@ -6,7 +6,7 @@ import {isBrowser} from '@loaders.gl/core';
 // @ts-expect-error
 // eslint-disable-next-line  import/named
 import {ParquetSchema, ParquetReader, ParquetWriter, ParquetTransformer} from '@loaders.gl/parquet';
-import {fetchFile} from '@loaders.gl/core/';
+import {fetchFile} from '@loaders.gl/core';
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const TEST_NUM_ROWS = 10000;
