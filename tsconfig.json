@@ -95,6 +95,7 @@
     }
   },
   "exclude":[
+    "modules/3d-tiles/test/**/*",
     "modules/tile-converter/**/*",
     "modules/i3s/test/**/*",
     "modules/gltf/test/**/*",

@@ -14,7 +14,7 @@
     "geometry",
     "GeoJSON"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -23,6 +23,9 @@
     "dist",
     "README.md"
   ],
+  "scripts": {
+    "post-build": "tsc"
+  },
   "dependencies": {
     "@loaders.gl/loader-utils": "3.1.0-alpha.4",
     "@loaders.gl/schema": "3.1.0-alpha.4",

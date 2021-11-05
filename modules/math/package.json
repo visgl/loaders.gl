@@ -17,7 +17,7 @@
     "GLB",
     "glTF"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -28,7 +28,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "echo \"Nothing to build in @loaders.gl/math\""
+    "pre-build": "echo \"Nothing to build in @loaders.gl/math\"",
+    "post-build": "tsc"
   },
   "dependencies": {
     "@loaders.gl/images": "3.1.0-alpha.4",

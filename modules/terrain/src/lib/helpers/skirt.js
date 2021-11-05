@@ -78,7 +78,7 @@ function getOutsideEdgesFromTriangles(triangles) {
 /**
  * Get geometry edges that located on a border of the mesh
  * @param {object} indices - edge indices from quantized mesh data
- * @param {TypedArray} position - position attribute geometry data
+ * @param {import('modules/schema').TypedArray} position - position attribute geometry data
  * @returns {number[][]} - outside edges data
  */
 function getOutsideEdgesFromIndices(indices, position) {
@@ -107,9 +107,9 @@ function getOutsideEdgesFromIndices(indices, position) {
  * @param {number} args.edgeIndex - edge index in outsideEdges array
  * @param {object} args.attributes - POSITION and TEXCOORD_0 attributes
  * @param {number} args.skirtHeight - height of the skirt geometry
- * @param {TypedArray} args.newPosition - POSITION array for skirt data
- * @param {TypedArray} args.newTexcoord0 - TEXCOORD_0 array for skirt data
- * @param {TypedArray | Array} args.newTriangles - trinagle indices array for skirt data
+ * @param {import('modules/schema').TypedArray} args.newPosition - POSITION array for skirt data
+ * @param {import('modules/schema').TypedArray} args.newTexcoord0 - TEXCOORD_0 array for skirt data
+ * @param {import('modules/schema').TypedArray | Array} args.newTriangles - trinagle indices array for skirt data
  * @returns {void}
  */
 function updateAttributesForNewEdge({

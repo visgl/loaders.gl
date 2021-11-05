@@ -16,7 +16,7 @@
     "parser",
     "NetCDF"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "sideEffects": false,
@@ -27,6 +27,7 @@
   ],
   "scripts": {
     "pre-build-disabled": "npm run build-bundle",
+    "post-build": "tsc",
     "build-worker": "webpack --entry ./src/workers/mvt-worker.ts --output ./dist/mvt-worker.js --config ../../scripts/webpack/worker.js",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },

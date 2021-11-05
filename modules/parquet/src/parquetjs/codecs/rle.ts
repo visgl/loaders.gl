@@ -63,7 +63,7 @@ export function encodeValues(
   }
 
   const envelope = Buffer.alloc(buf.length + 4);
-  envelope.writeUInt32LE(buf.length, undefined);
+  envelope.writeUInt32LE(buf.length, 0);
   buf.copy(envelope, 4);
 
   return envelope;

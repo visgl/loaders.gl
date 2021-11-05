@@ -112,7 +112,7 @@ export function binaryToGeometry(
     case 'Polygon':
       return polygonToGeoJson(data, startIndex, endIndex);
     default:
-      const unexpectedInput: never = data;
+      const unexpectedInput = data;
       throw new Error(`Unsupported geometry type: ${(unexpectedInput as any)?.type}`);
   }
 }
@@ -126,8 +126,6 @@ function normalizeInput(data: BinaryFeatures, type?: BinaryGeometryType): Binary
   const isHeterogeneousType = Boolean(data.points || data.lines || data.polygons);
 
   if (!isHeterogeneousType) {
-    // @ts-expect-error This is a legacy check which allowed `data` to be an instance of the values
-    // here. Aka the new data.points, data.lines, or data.polygons.
     data.type = type || parseType(data);
     return [data] as BinaryFeaturesArray;
   }

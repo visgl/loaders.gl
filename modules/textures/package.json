@@ -21,7 +21,7 @@
     "ETC",
     "basis"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -33,6 +33,7 @@
   ],
   "scripts": {
     "pre-build": "npm run copy-libs && npm run build-worker && npm run build-bundle",
+    "post-build": "tsc",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-worker": "npm run build-basis-worker && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker",

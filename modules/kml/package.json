@@ -18,7 +18,7 @@
     "point cloud",
     "KML"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -29,6 +29,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle",
+    "post-build": "tsc",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {

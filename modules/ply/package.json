@@ -18,7 +18,7 @@
     "point cloud",
     "PLY"
   ],
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "sideEffects": false,
@@ -29,6 +29,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
+    "post-build": "tsc",
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
     "build-worker": "webpack --entry ./src/workers/ply-worker.ts --output ./dist/ply-worker.js --config ../../scripts/webpack/worker.js"
   },
