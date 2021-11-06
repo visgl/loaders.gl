@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/mvt",
   "description": "Loader for Mapbox Vector Tiles",
-  "version": "3.1.0-alpha.4",
+  "version": "3.1.0-alpha.5",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -33,8 +33,8 @@
     "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/gis": "3.1.0-alpha.4",
-    "@loaders.gl/loader-utils": "3.1.0-alpha.4",
+    "@loaders.gl/gis": "3.1.0-alpha.5",
+    "@loaders.gl/loader-utils": "3.1.0-alpha.5",
     "@math.gl/polygon": "^3.5.1",
     "pbf": "^3.2.1"
   },
