@@ -1,3 +1,4 @@
+// @ts-nocheck
 // This is a fork of papaparse
 // https://github.com/mholt/PapaParse
 /* @license
@@ -14,7 +15,6 @@ License: MIT
 // - Remove unused jQuery plugin support
 
 /* eslint-disable */
-// @ts-nocheck
 var global = (function() {
   // alternative method, similar to `Function('return this')()`
   // but without using `eval` (which is disabled when

@@ -3,9 +3,12 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    // Issues with papaparse typescript parsing
-    "allowJs": false,
-    "checkJs": false,
+    "composite": true,
+    "rootDir": "src",
     "outDir": "dist"
-  }
+  },
+  "references": [
+    {"path": "../loader-utils"},
+    {"path": "../schema"}
+  ]
 }
