@@ -8,8 +8,8 @@
     "declaration": true,
     // Source map for declarations... not currently needed
     // "declarationMap": true,
-    "noEmit": true,
-    // "emitDeclarationOnly": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
     // Uncomment to debug
     "listEmittedFiles": true
   },
@@ -59,9 +59,10 @@
   ],
   "exclude": [
     "modules/tile-converter",
+    "modules/textures/src/libs/basis_encoder.js",
     "examples",
     "test",
-    "modules/*/libs",
+    "**/libs",
     "modules/*/wip",
     "modules/*/bin",
     "modules/*/wip",

@@ -2,7 +2,7 @@
  * `btoa()` polyfill as defined by the HTML and Infra specs, which mostly just references
  * RFC 4648.
  */
-export function toBase64(string) {
+export function toBase64(string: string): string | null {
   // String conversion as required by Web IDL.
   string = `${string}`;
   // "The btoa() method must throw an "InvalidCharacterError" DOMException if
@@ -15,7 +15,7 @@ export function toBase64(string) {
   let out = '';
   for (let i = 0; i < string.length; i += 3) {
     /** @type {Array[4]} */
-    const groupsOfSix = [undefined, undefined, undefined, undefined];
+    const groupsOfSix: (number | undefined)[] = [undefined, undefined, undefined, undefined];
     groupsOfSix[0] = string.charCodeAt(i) >> 2;
     groupsOfSix[1] = (string.charCodeAt(i) & 0x03) << 4;
     if (string.length > i + 1) {
@@ -23,6 +23,7 @@ export function toBase64(string) {
       groupsOfSix[2] = (string.charCodeAt(i + 1) & 0x0f) << 2;
     }
     if (string.length > i + 2) {
+      // @ts-expect-error
       groupsOfSix[2] |= string.charCodeAt(i + 2) >> 6;
       groupsOfSix[3] = string.charCodeAt(i + 2) & 0x3f;
     }

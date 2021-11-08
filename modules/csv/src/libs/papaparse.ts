@@ -15,51 +15,33 @@ License: MIT
 // - Remove unused jQuery plugin support
 
 /* eslint-disable */
-var global = (function() {
-  // alternative method, similar to `Function('return this')()`
-  // but without using `eval` (which is disabled when
-  // using Content Security Policy).
 
-  if (typeof self !== 'undefined') {
-    return self;
-  }
-  if (typeof window !== 'undefined') {
-    return window;
-  }
-  if (typeof global !== 'undefined') {
-    return global;
-  }
+const Papa = {
+  parse: CsvToJson,
+  unparse: JsonToCsv,
+  
+  RECORD_SEP: String.fromCharCode(30),
+  UNIT_SEP: String.fromCharCode(31),
+  BYTE_ORDER_MARK: '\ufeff',
+  BAD_DELIMITERS: ['\r', '\n', '"', BYTE_ORDER_MARK],
+  WORKERS_SUPPORTED: false, // !IS_WORKER && !!globalThis.Worker
+  NODE_STREAM_INPUT: 1,
+  
+  // Configurable chunk sizes for local and remote files, respectively
+  LocalChunkSize: 1024 * 1024 * 10, // 10 M,
+  RemoteChunkSize: 1024 * 1024 * 5, // 5 M,
+  DefaultDelimiter: ',', // Used if not specified and detection fail,
+  
+  // Exposed for testing and development only
+  Parser: Parser,
+  ParserHandle: ParserHandle,
+  
+  // BEGIN FORK
+  ChunkStreamer: ChunkStreamer,
+  StringStreamer: StringStreamer
+};
+export default  Papa;
 
-  // When running tests none of the above have been defined
-  return {};
-})();
-
-var IS_PAPA_WORKER = false;
-
-var Papa = {};
-module.exports = Papa;
-Papa.parse = CsvToJson;
-Papa.unparse = JsonToCsv;
-
-Papa.RECORD_SEP = String.fromCharCode(30);
-Papa.UNIT_SEP = String.fromCharCode(31);
-Papa.BYTE_ORDER_MARK = '\ufeff';
-Papa.BAD_DELIMITERS = ['\r', '\n', '"', Papa.BYTE_ORDER_MARK];
-Papa.WORKERS_SUPPORTED = false; // !IS_WORKER && !!global.Worker;
-Papa.NODE_STREAM_INPUT = 1;
-
-// Configurable chunk sizes for local and remote files, respectively
-Papa.LocalChunkSize = 1024 * 1024 * 10; // 10 MB
-Papa.RemoteChunkSize = 1024 * 1024 * 5; // 5 MB
-Papa.DefaultDelimiter = ','; // Used if not specified and detection fails
-
-// Exposed for testing and development only
-Papa.Parser = Parser;
-Papa.ParserHandle = ParserHandle;
-
-// BEGIN FORK
-Papa.ChunkStreamer = ChunkStreamer;
-Papa.StringStreamer = StringStreamer;
 /*
 Papa.NetworkStreamer = NetworkStreamer;
 Papa.FileStreamer = FileStreamer;
@@ -76,7 +58,7 @@ if (typeof PAPA_BROWSER_CONTEXT === 'undefined') {
 function CsvToJson(
   _input,
   _config,
-  UserDefinedStreamer // BEGIN FORK
+  UserDefinedStreamer? // BEGIN FORK
 ) {
   _config = _config || {};
   var dynamicTyping = _config.dynamicTyping || false;
@@ -129,7 +111,7 @@ function CsvToJson(
   /*
   else if (_input.readable === true && isFunction(_input.read) && isFunction(_input.on)) {
     streamer = new ReadableStreamStreamer(_config);
-  } else if ((global.File && _input instanceof File) || _input instanceof Object)
+  } else if ((globalThis.File && _input instanceof File) || _input instanceof Object)
     // ...Safari. (see issue #106)
     streamer = new FileStreamer(_config);
   */
@@ -367,13 +349,7 @@ function ChunkStreamer(config) {
     var finishedIncludingPreview =
       this._finished || (this._config.preview && this._rowCount >= this._config.preview);
 
-    if (IS_PAPA_WORKER) {
-      global.postMessage({
-        results: results,
-        workerId: Papa.WORKER_ID,
-        finished: finishedIncludingPreview
-      });
-    } else if (isFunction(this._config.chunk) && !isFakeChunk) {
+    if (isFunction(this._config.chunk) && !isFakeChunk) {
       this._config.chunk(results, this._handle);
       if (this._handle.paused() || this._handle.aborted()) return;
       results = undefined;
@@ -403,13 +379,6 @@ function ChunkStreamer(config) {
 
   this._sendError = function(error) {
     if (isFunction(this._config.error)) this._config.error(error);
-    else if (IS_PAPA_WORKER && this._config.error) {
-      global.postMessage({
-        workerId: Papa.WORKER_ID,
-        error: error,
-        finished: false
-      });
-    }
   };
 
   function replaceConfig(config) {
