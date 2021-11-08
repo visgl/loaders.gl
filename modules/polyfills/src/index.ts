@@ -1,5 +1,5 @@
 /* eslint-disable dot-notation */
-import {DOMParser} from 'xmldom';
+import {DOMParser} from '@xmldom/xmldom';
 import {isBrowser, global} from './utils/globals';
 
 import {TextDecoder, TextEncoder} from './libs/encoding';
