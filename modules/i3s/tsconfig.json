@@ -10,6 +10,7 @@
   "references": [
     {"path": "../core"},
     {"path": "../draco"},
+    {"path": "../gltf"},
     {"path": "../images"},
     {"path": "../loader-utils"},
     {"path": "../schema"},

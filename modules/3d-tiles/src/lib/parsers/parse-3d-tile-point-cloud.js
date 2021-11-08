@@ -250,7 +250,7 @@ export async function loadDraco(tile, dracoData, options, context) {
 
   tile.attributes = {
     positions: decodedPositions,
-    colors: normalize3DTileColorAttribute(tile, decodedColors),
+    colors: normalize3DTileColorAttribute(tile, decodedColors, undefined),
     normals: decodedNormals,
     batchIds: decodedBatchIds,
     ...batchTableAttributes
