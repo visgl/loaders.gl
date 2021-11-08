@@ -9,7 +9,7 @@
     // Source map for declarations... not currently needed
     // "declarationMap": true,
     "noEmit": false,
-    "emitDeclarationOnly": true,
+    // "emitDeclarationOnly": true,
     // Uncomment to debug
     "listEmittedFiles": true
   },
@@ -62,6 +62,7 @@
     "modules/textures/src/libs/basis_encoder.js",
     "examples",
     "test",
+    "scripts",
     "**/libs",
     "modules/*/wip",
     "modules/*/bin",

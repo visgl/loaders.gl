@@ -39,7 +39,7 @@ export async function parseWithWorker(
   const job = await workerPool.startJob(
     'process-on-worker',
     // @ts-expect-error
-    onMessage.bind(null, parseOnMainThread) // eslint-disable-this-line
+    onMessage.bind(null, parseOnMainThread) // eslint-disable-line @typescript-eslint/no-misused-promises
   );
 
   job.postMessage('process', {

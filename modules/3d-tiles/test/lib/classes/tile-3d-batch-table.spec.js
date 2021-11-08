@@ -35,14 +35,18 @@ function transpose(matrix) {
 
 test('Tile3DBatchTable#hasProperty throws with invalid batchId', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.hasProperty());
+  // @ts-expect-error
   t.throws(() => batchTable.hasProperty(-1));
+  // @ts-expect-error
   t.throws(() => batchTable.hasProperty(2));
   t.end();
 });
 
 test('Tile3DBatchTable#hasProperty throws with undefined name', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.hasProperty(0));
   t.end();
 });
@@ -59,14 +63,18 @@ test('Tile3DBatchTable#hasProperty', (t) => {
 
 test('Tile3DBatchTable#getPropertyNames throws with invalid batchId', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.getPropertyNames());
+  // @ts-expect-error
   t.throws(() => batchTable.getPropertyNames(-1));
+  // @ts-expect-error
   t.throws(() => batchTable.getPropertyNames(2));
   t.end();
 });
 
 test('Tile3DBatchTable#getPropertyNames', (t) => {
   let batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.deepEquals(batchTable.getPropertyNames(0), []);
 
   const BATCH_TABLE_JSON = {
@@ -74,6 +82,7 @@ test('Tile3DBatchTable#getPropertyNames', (t) => {
     id: [0]
   };
   batchTable = new Tile3DBatchTable(BATCH_TABLE_JSON, null, 1);
+  // @ts-expect-error
   t.deepEquals(batchTable.getPropertyNames(0), ['height', 'id']);
   t.end();
 });
@@ -93,14 +102,18 @@ test('Tile3DBatchTable#getPropertyNames works with results argument', (t) => {
 
 test('Tile3DBatchTable#getProperty throws with invalid batchId', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.getProperty());
+  // @ts-expect-error
   t.throws(() => batchTable.getProperty(-1));
+  // @ts-expect-error
   t.throws(() => batchTable.getProperty(2));
   t.end();
 });
 
 test('Tile3DBatchTable#getProperty throws with undefined name', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.getProperty(0));
   t.end();
 });
@@ -120,14 +133,18 @@ test('Tile3DBatchTable#getProperty', (t) => {
 
 test('Tile3DBatchTable#setProperty throws with invalid batchId', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.setProperty());
+  // @ts-expect-error
   t.throws(() => batchTable.setProperty(-1));
+  // @ts-expect-error
   t.throws(() => batchTable.setProperty(2));
   t.end();
 });
 
 test('Tile3DBatchTable#setProperty throws with undefined name', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.setProperty(0));
   t.end();
 });
@@ -463,6 +480,7 @@ test('Tile3DBatchTable#renders translucent style when vertex texture fetch is no
 
 test('Tile3DBatchTable#isExactClass throws with invalid batchId', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.isExactClass());
   t.throws(() => batchTable.isExactClass(2, 'door'));
   t.throws(() => batchTable.isExactClass(-1, 'door'));
@@ -471,12 +489,14 @@ test('Tile3DBatchTable#isExactClass throws with invalid batchId', (t) => {
 
 test('Tile3DBatchTable#isExactClass throws with undefined className', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.isExactClass(0));
   t.end();
 });
 
 test('Tile3DBatchTable#isClass throws with invalid batchId', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.isClass());
   t.throws(() => batchTable.isClass(2, 'door'));
   t.throws(() => batchTable.isClass(-1, 'door'));
@@ -485,12 +505,14 @@ test('Tile3DBatchTable#isClass throws with invalid batchId', (t) => {
 
 test('Tile3DBatchTable#isClass throws with undefined className', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.isClass(0));
   t.end();
 });
 
 test('Tile3DBatchTable#getExactClassName throws with invalid batchId', (t) => {
   const batchTable = new Tile3DBatchTable({}, null, 1);
+  // @ts-expect-error
   t.throws(() => batchTable.getExactClassName());
   t.throws(() => batchTable.getExactClassName(1000));
   t.throws(() => batchTable.getExactClassName(-1));

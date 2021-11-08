@@ -9,11 +9,9 @@ import DoublyLinkedListNode from '../utils/doubly-linked-list-node';
  * @private
  */
 export default class DoublyLinkedList {
-  constructor() {
-    this.head = null;
-    this.tail = null;
-    this._length = 0;
-  }
+  head: DoublyLinkedListNode | null = null;
+  tail: DoublyLinkedListNode | null = null;
+  _length = 0;
 
   get length() {
     return this._length;

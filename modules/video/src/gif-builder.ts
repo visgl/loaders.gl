@@ -83,17 +83,17 @@ export default class GIFBuilder {
     this.gifshot = gifshot;
   }
 
-  async initialize(options) {
+  async initialize(options): void {
     // Expose the gifshot module so that the full gifshot API is available to apps (Experimental)
     // this.gifshot = await loadGifshotModule(options);
   }
 
-  async add(file) {
+  async add(file): void {
     await this.initialize();
     this.files.push(file);
   }
 
-  async build() {
+  async build(): Promise<string> {
     await this.initialize();
     this._cleanOptions(this.options);
 
@@ -116,7 +116,7 @@ export default class GIFBuilder {
 
   // PRIVATE
 
-  async _createGIF() {
+  async _createGIF(): Promise<string> {
     return new Promise((resolve, reject) => {
       this.gifshot.createGIF(this.options, (result) => {
         // callback object properties
@@ -145,7 +145,7 @@ export default class GIFBuilder {
   }
 
   // Remove some gifshot options
-  _cleanOptions(options) {
+  _cleanOptions(options): void {
     if (options.video || options.images || options.gifWidth || options.gifHeight) {
       console.warn('GIFBuilder: ignoring options'); // eslint-disable-line
     }

@@ -1,11 +1,11 @@
+/* eslint-disable */
+// @ts-nocheck
 /* !
  * MD5 WebAssembly
  * https://github.com/briantbutton/md5-wasm
  * (c) 2020 Brian Todd Button
  * Released under the MIT license
  */
-/* eslint-disable */
-// @ts-nocheck
 
 // *-*=*  *=*-* *-*=*  *=*-* *-*=*  *=*-* *-*=*  *=*-* *-*=*  *=*-* *-*=*  *=*-*
 // This contains two functions designed to achieve the same thing

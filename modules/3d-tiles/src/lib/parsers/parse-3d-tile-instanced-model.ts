@@ -146,6 +146,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
     }
 
     instancePosition.copy(position);
+    // @ts-expect-error
     instanceTranslationRotationScale.translation = instancePosition;
 
     // Get the instance rotation
@@ -203,6 +204,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
     }
 
     instanceQuaternion.fromMatrix3(instanceRotation);
+    // @ts-expect-error
     instanceTranslationRotationScale.rotation = instanceQuaternion;
 
     // Get the instance scale
@@ -216,6 +218,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
       instanceScale.scale(nonUniformScale);
     }
 
+    // @ts-expect-error
     instanceTranslationRotationScale.scale = instanceScale;
 
     // Get the batchId
@@ -225,12 +228,15 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
       batchId = i;
     }
 
+    // @ts-expect-error
     const rotationMatrix = new Matrix4().fromQuaternion(instanceTranslationRotationScale.rotation);
 
     // Create the model matrix and the instance
     instanceTransform.identity();
+    // @ts-expect-error
     instanceTransform.translate(instanceTranslationRotationScale.translation);
     instanceTransform.multiplyRight(rotationMatrix);
+    // @ts-expect-error
     instanceTransform.scale(instanceTranslationRotationScale.scale);
 
     const modelMatrix = instanceTransform.clone();

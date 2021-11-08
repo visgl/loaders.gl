@@ -137,7 +137,7 @@ function parseNormals(tile, featureTable) {
 }
 
 function parseBatchIds(tile, featureTable) {
-  let batchTable = null;
+  let batchTable: Tile3DBatchTable | null = null;
   if (!tile.batchIds && featureTable.hasProperty('BATCH_ID')) {
     tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
 

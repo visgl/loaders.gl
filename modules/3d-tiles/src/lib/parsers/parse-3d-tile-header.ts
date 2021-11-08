@@ -53,7 +53,7 @@ export function normalizeTileHeaders(tileset) {
   const basePath = tileset.basePath;
   const root = normalizeTileData(tileset.root, tileset);
 
-  const stack = [];
+  const stack: any[] = [];
   stack.push(root);
 
   while (stack.length > 0) {

@@ -1,7 +1,7 @@
 import {decodeRGB565, GL} from '@loaders.gl/math';
 
 /* eslint-disable complexity*/
-export function normalize3DTileColorAttribute(tile, colors, batchTable) {
+export function normalize3DTileColorAttribute(tile, colors, batchTable?) {
   // no colors defined
   if (!colors && (!tile || !tile.batchIds || !batchTable)) {
     return null;

@@ -97,7 +97,7 @@ class GLTFV1Normalizer {
 
   json;
 
-  constructor() {}
+  // constructor() {}
 
   /**
    * Convert (normalize) glTF < 2.0 to glTF 2.0

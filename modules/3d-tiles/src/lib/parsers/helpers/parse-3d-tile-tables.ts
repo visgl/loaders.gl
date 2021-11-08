@@ -4,7 +4,7 @@
 import {getStringFromArrayBuffer} from './parse-utils';
 
 const SIZEOF_UINT32 = 4;
-const DEPRECATION_WARNING = `b3dm tile in legacy format.`;
+const DEPRECATION_WARNING = 'b3dm tile in legacy format.';
 
 // eslint-disable-next-line max-statements
 export function parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset) {

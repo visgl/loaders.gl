@@ -8,6 +8,9 @@
  * Calculates the CRC32C checksum of a string.
  */
 export default class CRC32C {
+  options;
+  crc: number;
+
   constructor(options = {}) {
     this.options = options;
     this.crc = ~0;
