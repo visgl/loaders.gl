@@ -21,9 +21,9 @@ npm install @loaders.gl/core
 
 ## API
 
-| Loader                                                            | Description |
-| ----------------------------------------------------------------- | ----------- |
-| [`BasisLoader`](modules/textures/docs/api-reference/basis-loader) |             |
+| Loader                                           | Description |
+| ------------------------------------------------ | ----------- |
+| [`BasisLoader`](docs/api-reference/basis-loader) |             |
 
 ### Compressed Texture API
 
