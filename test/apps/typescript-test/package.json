@@ -1,0 +1,40 @@
+{
+  "name": "loaders.gl-compiler-issue",
+  "version": "1.0.0",
+  "description": "loaders.gl-compiler-issue demonstration",
+  "main": "index.js",
+  "scripts": {
+    "build": "rimraf ./build && tsc",
+    "start:dev": "nodemon",
+    "start": "npm run build && node build/index.js",
+    "lint": "eslint . --ext .ts",
+    "lint:tsc": "tsc -p tsconfig.json --noEmit"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm run lint:tsc"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^12.7.2",
+    "@typescript-eslint/eslint-plugin": "^2.21.0",
+    "@typescript-eslint/parser": "^2.21.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^4.2.3",
+    "nodemon": "^2.0.12",
+    "onchange": "^6.1.0",
+    "prettier": "^1.19.1",
+    "rimraf": "^3.0.0",
+    "run-script-os": "^1.1.1",
+    "ts-node": "^8.3.0",
+    "typescript": "^4.0.3"
+  },
+  "dependencies": {
+    "@loaders.gl/shapefile": "^3.0.12"
+  }
+}

@@ -74,12 +74,17 @@ export async function parseI3STileContent(
     if (options?.i3s.decodeTextures) {
       if (loader === ImageLoader) {
         const options = {...tile.textureLoaderOptions, image: {type: 'data'}};
-        // @ts-ignore context must be defined
-        // Image constructor is not supported in worker thread.
-        // Do parsing image data on the main thread by using context to avoid worker issues.
-        tile.content.texture = await context.parse(arrayBuffer, loader, options);
+        try {
+          // @ts-ignore context must be defined
+          // Image constructor is not supported in worker thread.
+          // Do parsing image data on the main thread by using context to avoid worker issues.
+          tile.content.texture = await context.parse(arrayBuffer, options);
+        } catch (e) {
+          // context object is different between worker and node.js conversion script.
+          // To prevent error we parse data in ordinary way if it is not parsed by using context.
+          tile.content.texture = await parse(arrayBuffer, loader, options);
+        }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        // @ts-ignore context must be defined
         const texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
         tile.content.texture = {
           compressed: true,
