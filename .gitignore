@@ -14,6 +14,8 @@ package-lock.json
 examples/**/yarn.lock
 
 
+tsconfig.buildinfo
+
 .reify-cache
 .nyc_output/
 coverage/

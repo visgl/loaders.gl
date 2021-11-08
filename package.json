@@ -30,7 +30,7 @@
     "build-old": "ocular-build --dist esm && lerna run pre-build",
     "build-workers": "lerna run pre-build",
     "clean": "ocular-clean && npm run tsclean",
-    "build": "time npm run tsbuild && time lerna run pre-build",
+    "build": "npm run clean && time npm run tsbuild && time lerna run pre-build",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
     "tsbuild": "tsc -b tsconfig.modules.json",
     "cover": "ocular-test cover",
