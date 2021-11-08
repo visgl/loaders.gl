@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../core"},
     {"path": "../draco"},
     {"path": "../gltf"},
     {"path": "../loader-utils"},
