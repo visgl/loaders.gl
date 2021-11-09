@@ -6,7 +6,7 @@
 /* eslint-disable no-invalid-this */
 
 // Note: papaparse is not an ES6 module
-import Papa from '../libs/papaparse';
+import Papa from './papaparse';
 const {ChunkStreamer} = Papa;
 
 export default function AsyncIteratorStreamer(config) {

@@ -8,8 +8,8 @@ import {
   convertToArrayRow,
   convertToObjectRow
 } from '@loaders.gl/schema';
-import Papa from './libs/papaparse';
-import AsyncIteratorStreamer from './lib/async-iterator-streamer';
+import Papa from './papaparse/papaparse';
+import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
