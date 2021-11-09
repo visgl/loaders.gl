@@ -90,6 +90,6 @@ function extractGLTFBufferOrURL(tile, gltfFormat, options) {
     case GLTF_FORMAT.EMBEDDED:
       break;
     default:
-      throw new Error(`b3dm: Illegal glTF format field`);
+      throw new Error('b3dm: Illegal glTF format field');
   }
 }

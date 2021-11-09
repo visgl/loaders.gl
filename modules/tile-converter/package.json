@@ -33,7 +33,7 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "tsc && npm run build-bundle",
+    "pre-build": "npm run build-bundle",
     "post-build": "npm run build-converter-bundle",
     "build-bundle": "esbuild ./src/index.ts --bundle --outfile=dist/bundle.js --platform=node",
     "build-converter-bundle": "webpack --display errors-only --config ./converter-webpack/bundle.js"
@@ -66,6 +66,6 @@
     "uuid": "^8.1.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^3.0.0"
+    "@loaders.gl/core": "4.0.0-alpha.4"
   }
 }

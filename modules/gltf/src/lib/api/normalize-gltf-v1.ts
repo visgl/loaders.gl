@@ -80,22 +80,24 @@ const GLTF_KEYS = {
  * Converts (normalizes) glTF v1 to v2
  */
 class GLTFV1Normalizer {
-  constructor(gltf) {
-    this.idToIndexMap = {
-      animations: {},
-      accessors: {},
-      buffers: {},
-      bufferViews: {},
-      images: {},
-      materials: {},
-      meshes: {},
-      nodes: {},
-      samplers: {},
-      scenes: {},
-      skins: {},
-      textures: {}
-    };
-  }
+  idToIndexMap = {
+    animations: {},
+    accessors: {},
+    buffers: {},
+    bufferViews: {},
+    images: {},
+    materials: {},
+    meshes: {},
+    nodes: {},
+    samplers: {},
+    scenes: {},
+    skins: {},
+    textures: {}
+  };
+
+  json;
+
+  // constructor() {}
 
   /**
    * Convert (normalize) glTF < 2.0 to glTF 2.0

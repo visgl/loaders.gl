@@ -11,9 +11,12 @@ import {parseComposite3DTile} from './parse-3d-tile-composite';
 
 // Extracts
 export async function parse3DTile(arrayBuffer, byteOffset = 0, options, context, tile = {}) {
+  // @ts-expect-error
   tile.byteOffset = byteOffset;
+  // @ts-expect-error
   tile.type = getMagicString(arrayBuffer, byteOffset);
 
+  // @ts-expect-error
   switch (tile.type) {
     case TILE3D_TYPE.COMPOSITE:
       // Note: We pass this function as argument so that embedded tiles can be parsed recursively
@@ -36,6 +39,7 @@ export async function parse3DTile(arrayBuffer, byteOffset = 0, options, context,
       return await parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options, context);
 
     default:
+      // @ts-expect-error
       throw new Error(`3DTileLoader: unknown type ${tile.type}`); // eslint-disable-line
   }
 }

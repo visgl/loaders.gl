@@ -1,12 +1,12 @@
+// @ts-nocheck
 // A custom papaparse `Streamer` for async iterators
 // Ideally this can be contributed back to papaparse
 // Or papaparse can expose Streamer API so we can extend without forking.
 
-// @ts-nocheck
 /* eslint-disable no-invalid-this */
 
 // Note: papaparse is not an ES6 module
-import Papa from '../libs/papaparse';
+import Papa from './papaparse';
 const {ChunkStreamer} = Papa;
 
 export default function AsyncIteratorStreamer(config) {

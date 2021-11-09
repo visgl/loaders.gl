@@ -6,11 +6,14 @@ import {GL, GLType} from '@loaders.gl/math';
 // Reference:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/1de96d087f0b17575eb1a3f736407b348c765d59/Source/Scene/Cesium3DTileFeatureTable.js
 export default class Tile3DFeatureTable {
+  json;
+  buffer;
+  featuresLength = 0;
+  _cachedTypedArrays = {};
+
   constructor(featureTableJson, featureTableBinary) {
     this.json = featureTableJson;
     this.buffer = featureTableBinary;
-    this.featuresLength = 0;
-    this._cachedTypedArrays = {};
   }
 
   getExtension(extensionName) {

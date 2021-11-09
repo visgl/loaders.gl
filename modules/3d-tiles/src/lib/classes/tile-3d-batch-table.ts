@@ -21,6 +21,16 @@ const IGNORED_PROPERTY_FIELDS = {
 
 // The size of this array equals the maximum instance count among all loaded tiles, which has the potential to be large.
 export default class Tile3DBatchTableParser {
+  json;
+  binary;
+  featureCount;
+  _extensions;
+  // Copy all top-level property fields from the json object, ignoring special fields
+  _properties;
+  _binaryProperties;
+  // TODO: hierarchy support is only partially implemented and not tested
+  _hierarchy;
+
   constructor(json, binary, featureCount, options = {}) {
     assert(featureCount >= 0);
     this.json = json || {};
@@ -49,11 +59,11 @@ export default class Tile3DBatchTableParser {
     return this.json && this.json.extensions && this.json.extensions[extensionName];
   }
 
-  memorySizeInBytes() {
+  memorySizeInBytes(): number {
     return 0;
   }
 
-  isClass(batchId, className) {
+  isClass(batchId, className: string): boolean {
     this._checkBatchId(batchId);
     assert(typeof className === 'string', className);
 
@@ -178,7 +188,7 @@ export default class Tile3DBatchTableParser {
   _checkBatchId(batchId) {
     const valid = batchId >= 0 && batchId < this.featureCount;
     if (!valid) {
-      throw new Error(`batchId not in range [0, featureCount - 1].`);
+      throw new Error('batchId not in range [0, featureCount - 1].');
     }
   }
 
@@ -191,7 +201,7 @@ export default class Tile3DBatchTableParser {
   }
 
   _initializeBinaryProperties() {
-    let binaryProperties = null;
+    let binaryProperties: Record<string, any> | null = null;
     for (const name in this._properties) {
       const property = this._properties[name];
       const binaryProperty = this._initializeBinaryProperty(name, property);

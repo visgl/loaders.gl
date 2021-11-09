@@ -21,6 +21,7 @@ export class MD5Hash extends Hash {
    */
   async hash(input: ArrayBuffer): Promise<string> {
     const md5Promise = new Promise<string>((resolve, reject) =>
+      // @ts-expect-error
       md5WASM(input).then(resolve).catch(reject)
     );
     const hex = await md5Promise;

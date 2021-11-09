@@ -137,7 +137,7 @@ function parseNormals(tile, featureTable) {
 }
 
 function parseBatchIds(tile, featureTable) {
-  let batchTable = null;
+  let batchTable: Tile3DBatchTable | null = null;
   if (!tile.batchIds && featureTable.hasProperty('BATCH_ID')) {
     tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
 
@@ -250,7 +250,7 @@ export async function loadDraco(tile, dracoData, options, context) {
 
   tile.attributes = {
     positions: decodedPositions,
-    colors: normalize3DTileColorAttribute(tile, decodedColors),
+    colors: normalize3DTileColorAttribute(tile, decodedColors, undefined),
     normals: decodedNormals,
     batchIds: decodedBatchIds,
     ...batchTableAttributes

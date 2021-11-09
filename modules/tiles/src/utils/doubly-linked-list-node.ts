@@ -7,6 +7,10 @@
  * @private
  */
 export default class DoublyLinkedListNode {
+  item;
+  previous;
+  next;
+
   constructor(item, previous, next) {
     this.item = item;
     this.previous = previous;

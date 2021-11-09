@@ -80,7 +80,9 @@ export default class TilesetCache {
       node !== sentinel &&
       (tileset.gpuMemoryUsageInBytes > maximumMemoryUsageInBytes || trimTiles)
     ) {
+      // @ts-expect-error
       const tile = node.item;
+      // @ts-expect-error
       node = node.next;
       this.unloadTile(tileset, tile, unloadCallback);
     }

@@ -56,7 +56,7 @@ const DEFAULT_SAMPLER = {
   [GL_SAMPLER.TEXTURE_MAG_FILTER]: GL_SAMPLER.LINEAR,
   [GL_SAMPLER.TEXTURE_MIN_FILTER]: GL_SAMPLER.NEAREST_MIPMAP_LINEAR,
   [GL_SAMPLER.TEXTURE_WRAP_S]: GL_SAMPLER.REPEAT,
-  [GL_SAMPLER.TEXTURE_WRAP_]: GL_SAMPLER.REPEAT
+  [GL_SAMPLER.TEXTURE_WRAP_T]: GL_SAMPLER.REPEAT
 };
 
 function getBytesFromComponentType(componentType) {
@@ -68,6 +68,11 @@ function getSizeFromAccessorType(type) {
 }
 
 class GLTFPostProcessor {
+  baseUri: string = '';
+  json: Record<string, any> = {};
+  buffers: [] = [];
+  images: [] = [];
+
   postProcess(gltf, options = {}) {
     const {json, buffers = [], images = [], baseUri = ''} = gltf;
     assert(json);
@@ -359,7 +364,9 @@ class GLTFPostProcessor {
     const bufferIndex = bufferView.buffer;
     bufferView.buffer = this.buffers[bufferIndex];
 
+    // @ts-expect-error
     const arrayBuffer = this.buffers[bufferIndex].arrayBuffer;
+    // @ts-expect-error
     let byteOffset = this.buffers[bufferIndex].byteOffset || 0;
 
     if ('byteOffset' in bufferView) {

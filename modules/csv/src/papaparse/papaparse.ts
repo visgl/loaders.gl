@@ -1,3 +1,4 @@
+// @ts-nocheck
 // This is a fork of papaparse
 // https://github.com/mholt/PapaParse
 /* @license
@@ -14,52 +15,34 @@ License: MIT
 // - Remove unused jQuery plugin support
 
 /* eslint-disable */
-// @ts-nocheck
-var global = (function() {
-  // alternative method, similar to `Function('return this')()`
-  // but without using `eval` (which is disabled when
-  // using Content Security Policy).
+const BYTE_ORDER_MARK = '\ufeff';
 
-  if (typeof self !== 'undefined') {
-    return self;
-  }
-  if (typeof window !== 'undefined') {
-    return window;
-  }
-  if (typeof global !== 'undefined') {
-    return global;
-  }
+const Papa = {
+  parse: CsvToJson,
+  unparse: JsonToCsv,
 
-  // When running tests none of the above have been defined
-  return {};
-})();
+  RECORD_SEP: String.fromCharCode(30),
+  UNIT_SEP: String.fromCharCode(31),
+  BYTE_ORDER_MARK,
+  BAD_DELIMITERS: ['\r', '\n', '"', BYTE_ORDER_MARK],
+  WORKERS_SUPPORTED: false, // !IS_WORKER && !!globalThis.Worker
+  NODE_STREAM_INPUT: 1,
 
-var IS_PAPA_WORKER = false;
+  // Configurable chunk sizes for local and remote files, respectively
+  LocalChunkSize: 1024 * 1024 * 10, // 10 M,
+  RemoteChunkSize: 1024 * 1024 * 5, // 5 M,
+  DefaultDelimiter: ',', // Used if not specified and detection fail,
 
-var Papa = {};
-module.exports = Papa;
-Papa.parse = CsvToJson;
-Papa.unparse = JsonToCsv;
+  // Exposed for testing and development only
+  Parser: Parser,
+  ParserHandle: ParserHandle,
 
-Papa.RECORD_SEP = String.fromCharCode(30);
-Papa.UNIT_SEP = String.fromCharCode(31);
-Papa.BYTE_ORDER_MARK = '\ufeff';
-Papa.BAD_DELIMITERS = ['\r', '\n', '"', Papa.BYTE_ORDER_MARK];
-Papa.WORKERS_SUPPORTED = false; // !IS_WORKER && !!global.Worker;
-Papa.NODE_STREAM_INPUT = 1;
+  // BEGIN FORK
+  ChunkStreamer: ChunkStreamer,
+  StringStreamer: StringStreamer
+};
+export default Papa;
 
-// Configurable chunk sizes for local and remote files, respectively
-Papa.LocalChunkSize = 1024 * 1024 * 10; // 10 MB
-Papa.RemoteChunkSize = 1024 * 1024 * 5; // 5 MB
-Papa.DefaultDelimiter = ','; // Used if not specified and detection fails
-
-// Exposed for testing and development only
-Papa.Parser = Parser;
-Papa.ParserHandle = ParserHandle;
-
-// BEGIN FORK
-Papa.ChunkStreamer = ChunkStreamer;
-Papa.StringStreamer = StringStreamer;
 /*
 Papa.NetworkStreamer = NetworkStreamer;
 Papa.FileStreamer = FileStreamer;
@@ -76,7 +59,7 @@ if (typeof PAPA_BROWSER_CONTEXT === 'undefined') {
 function CsvToJson(
   _input,
   _config,
-  UserDefinedStreamer // BEGIN FORK
+  UserDefinedStreamer? // BEGIN FORK
 ) {
   _config = _config || {};
   var dynamicTyping = _config.dynamicTyping || false;
@@ -129,7 +112,7 @@ function CsvToJson(
   /*
   else if (_input.readable === true && isFunction(_input.read) && isFunction(_input.on)) {
     streamer = new ReadableStreamStreamer(_config);
-  } else if ((global.File && _input instanceof File) || _input instanceof Object)
+  } else if ((globalThis.File && _input instanceof File) || _input instanceof Object)
     // ...Safari. (see issue #106)
     streamer = new FileStreamer(_config);
   */
@@ -204,7 +187,7 @@ function JsonToCsv(_input, _config) {
 
     if (
       typeof _config.delimiter === 'string' &&
-      !Papa.BAD_DELIMITERS.filter(function(value) {
+      !Papa.BAD_DELIMITERS.filter(function (value) {
         return _config.delimiter.indexOf(value) !== -1;
       }).length
     ) {
@@ -339,7 +322,7 @@ function ChunkStreamer(config) {
   };
   replaceConfig.call(this, config);
 
-  this.parseChunk = function(chunk, isFakeChunk) {
+  this.parseChunk = function (chunk, isFakeChunk) {
     // First chunk pre-processing
     if (this.isFirstChunk && isFunction(this._config.beforeFirstChunk)) {
       var modifiedChunk = this._config.beforeFirstChunk(chunk);
@@ -367,13 +350,7 @@ function ChunkStreamer(config) {
     var finishedIncludingPreview =
       this._finished || (this._config.preview && this._rowCount >= this._config.preview);
 
-    if (IS_PAPA_WORKER) {
-      global.postMessage({
-        results: results,
-        workerId: Papa.WORKER_ID,
-        finished: finishedIncludingPreview
-      });
-    } else if (isFunction(this._config.chunk) && !isFakeChunk) {
+    if (isFunction(this._config.chunk) && !isFakeChunk) {
       this._config.chunk(results, this._handle);
       if (this._handle.paused() || this._handle.aborted()) return;
       results = undefined;
@@ -401,15 +378,8 @@ function ChunkStreamer(config) {
     return results;
   };
 
-  this._sendError = function(error) {
+  this._sendError = function (error) {
     if (isFunction(this._config.error)) this._config.error(error);
-    else if (IS_PAPA_WORKER && this._config.error) {
-      global.postMessage({
-        workerId: Papa.WORKER_ID,
-        error: error,
-        finished: false
-      });
-    }
   };
 
   function replaceConfig(config) {
@@ -427,11 +397,11 @@ function StringStreamer(config) {
   ChunkStreamer.call(this, config);
 
   var remaining;
-  this.stream = function(s) {
+  this.stream = function (s) {
     remaining = s;
     return this._nextChunk();
   };
-  this._nextChunk = function() {
+  this._nextChunk = function () {
     if (this._finished) return;
     var size = this._config.chunkSize;
     var chunk = size ? remaining.substr(0, size) : remaining;
@@ -447,7 +417,8 @@ StringStreamer.prototype.constructor = StringStreamer;
 function ParserHandle(_config) {
   // One goal is to minimize the use of regular expressions...
   var FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
-  var ISO_DATE = /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
+  var ISO_DATE =
+    /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
 
   var self = this;
   var _stepCounter = 0; // Number of times step was called (number of rows parsed)
@@ -467,7 +438,7 @@ function ParserHandle(_config) {
 
   if (isFunction(_config.step)) {
     var userStep = _config.step;
-    _config.step = function(results) {
+    _config.step = function (results) {
       _results = results;
 
       if (needsHeaderRow()) processResults();
@@ -490,7 +461,7 @@ function ParserHandle(_config) {
    * and ignoreLastRow parameters. They are used by streamers (wrapper functions)
    * when an input comes in multiple chunks, like from a file.
    */
-  this.parse = function(input, baseIndex, ignoreLastRow) {
+  this.parse = function (input, baseIndex, ignoreLastRow) {
     var quoteChar = _config.quoteChar || '"';
     if (!_config.newline) _config.newline = guessLineEndings(input, quoteChar);
 
@@ -524,26 +495,26 @@ function ParserHandle(_config) {
     return _paused ? {meta: {paused: true}} : _results || {meta: {paused: false}};
   };
 
-  this.paused = function() {
+  this.paused = function () {
     return _paused;
   };
 
-  this.pause = function() {
+  this.pause = function () {
     _paused = true;
     _parser.abort();
     _input = _input.substr(_parser.getCharIndex());
   };
 
-  this.resume = function() {
+  this.resume = function () {
     _paused = false;
     self.streamer.parseChunk(_input, true);
   };
 
-  this.aborted = function() {
+  this.aborted = function () {
     return _aborted;
   };
 
-  this.abort = function() {
+  this.abort = function () {
     _aborted = true;
     _parser.abort();
     _results.meta.aborted = true;
@@ -620,7 +591,11 @@ function ParserHandle(_config) {
   }
 
   function applyHeaderAndDynamicTypingAndTransformation() {
-    if (!_results || !_results.data || (!_config.header && !_config.dynamicTyping && !_config.transform))
+    if (
+      !_results ||
+      !_results.data ||
+      (!_config.header && !_config.dynamicTyping && !_config.transform)
+    )
       return _results;
 
     function processRow(rowSource, i) {
@@ -802,7 +777,7 @@ function Parser(config) {
   var cursor = 0;
   var aborted = false;
 
-  this.parse = function(input, baseIndex, ignoreLastRow) {
+  this.parse = function (input, baseIndex, ignoreLastRow) {
     // For some reason, in Chrome, this speeds things up (!?)
     if (typeof input !== 'string') throw new Error('Input must be a string');
 
@@ -1075,12 +1050,12 @@ function Parser(config) {
   };
 
   /** Sets the abort flag */
-  this.abort = function() {
+  this.abort = function () {
     aborted = true;
   };
 
   /** Gets the cursor position */
-  this.getCharIndex = function() {
+  this.getCharIndex = function () {
     return cursor;
   };
 }

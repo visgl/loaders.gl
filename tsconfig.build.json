@@ -2,13 +2,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "build": true,
+    "target": "es2020",
+    "module": "es2020",
+    "esModuleInterop": true,
     "declaration": true,
-    // "declarationMap": true,
-    "noEmit": false,
-    "emitDeclarationOnly": true,
-    // "listEmittedFiles": true,
-    "module": "commonjs",
-    "resolveJsonModule": true,
-    "esModuleInterop": true
+    "declarationMap": true,
+    // "emitDeclarationOnly": true
+    // Uncomment to debug
+    // "listEmittedFiles": true
   }
-} 
+}
