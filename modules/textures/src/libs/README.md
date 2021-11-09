@@ -1,4 +1,4 @@
-# Basis decoder
+# Basis transcoder/encoder
 
 Version 1.15
 

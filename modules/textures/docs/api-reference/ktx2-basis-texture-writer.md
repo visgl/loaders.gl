@@ -1,4 +1,4 @@
-# KTX2BasisUniversalTextureWriter
+# KTX2BasisWriter
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
@@ -45,7 +45,7 @@ https://github.khronos.org/KTX-Specification/
 
 ## WASM module
 
-The writer applies BinomialLCC basis universal encoder (v1.15). The libraries are loaded during runtime from URLs:
+The writer applies BinomialLCC basis universal encoder. The libraries are loaded during runtime from URLs:
 
 - https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm
 - https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js
