@@ -1,6 +1,6 @@
 import {load} from '@loaders.gl/core';
 import {getSupportedGPUTextureFormats, selectSupportedBasisFormat} from '@loaders.gl/textures';
-import {Tileset, NodePage} from '../../types';
+import {I3sTilesetHeader, NodePage} from '../../types';
 import {I3SNodePageLoader} from '../../i3s-node-page-loader';
 import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
 import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
@@ -9,7 +9,7 @@ import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils'
  * class I3SNodePagesTiles - loads nodePages and form i3s tiles from them
  */
 export default class I3SNodePagesTiles {
-  tileset: Tileset;
+  tileset: I3sTilesetHeader;
   nodePages: NodePage[] = [];
   pendingNodePages: {promise: Promise<NodePage>; status: 'Pending' | 'Done'}[] = [];
   nodesPerPage: number;
@@ -24,7 +24,7 @@ export default class I3SNodePagesTiles {
    * @param tileset - i3s tileset header ('layers/0')
    * @param options - i3s loader options
    */
-  constructor(tileset: Tileset, options: object) {
+  constructor(tileset: I3sTilesetHeader, options: object) {
     this.tileset = {...tileset}; // spread the tileset to avoid circular reference
     this.nodesPerPage = tileset.nodePages.nodesPerPage;
     this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
@@ -77,7 +77,7 @@ export default class I3SNodePagesTiles {
     let contentUrl = null;
     let textureUrl: string | null = null;
     let materialDefinition = null;
-    let textureFormat = 'jpeg';
+    let textureFormat = 'jpg';
     let attributeUrls: string[] = [];
     let isDracoGeometry = false;
 
