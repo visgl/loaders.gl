@@ -19,22 +19,36 @@
   </tbody>
 </table>
 
-## v3.1 (Planning/prototyping stage)
+## v4.0 (Planning/prototyping stage)
 
-Target Release Date: Q4 2021.
+Target Release Date: Q1 2022. Alpha releases available.
 
 Aspirational goals:
 
-- EcmaScript module support
+- EcmaScript module support (type: module).
 - Unbundled loaders.
 - More comprehensive support for `options.shape` to control output format of loaders.
 - Replace `Schema` class with arrow schema if arrowjs tree-shaking improvements are satisfactory.
 - New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`.
 - `ffmpeg` WASM integration for `@loaders.gl/video`.
-- Upgrade basis to 1.15.
+
+## v3.1 (in testing)
+
+Target Release Date: Nov 2021.
+
+**@loaders.gl/textures** 
+
 - Parse KTX2 with BasisLoader.
-- Support KTX2 in `@loaders.gl/gltf` and `@loader.gl/i3s` packages.
-- New KTX2BasisWriter in `@loaders.gl/textures`.
+- New `KTX2BasisWriter` enables transcoding textures to basis (works both in browser and Node).
+- Upgrade `basis_universal` libraries to [v1.15](https://github.com/BinomialLLC/basis_universal/releases/tag/v1_15).
+
+**@loaders.gl/gltf** 
+
+- Support for KTX2-Basis textures via the [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu) extension.
+
+**@loaders.gl/i3s** 
+
+- Support KTX2-Basis textures.
 
 **@loaders.gl/json**
 
