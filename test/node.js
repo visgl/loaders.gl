@@ -1,6 +1,6 @@
-require('@babel/register')({
-  extensions: ['.js', '.jsx', '.ts', '.tsx']
-});
+// require('@babel/register')({
+//   extensions: ['.js', '.jsx', '.ts', '.tsx']
+// });
 
 // Determine Node version
 let version = 10;
@@ -16,4 +16,4 @@ global.__VERSION__ = require('../lerna.json').version;
 // @ts-ignore TS2339: Property does not exist on type 'Global'
 global.nodeVersion = version;
 
-require('./modules');
+import './modules.js';
