@@ -2,14 +2,6 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "build": true,
-    "module": "ES2020",
-    "esModuleInterop": true,
-    "declaration": true,
-    // Source map for declarations... not currently needed
-    // "declarationMap": true,
-    "noEmit": false,
-    // "emitDeclarationOnly": true,
     // Uncomment to debug
     "listEmittedFiles": true
   },
@@ -55,15 +47,15 @@
     {"path": "modules/zip"}
   ],
   "include": [
-    "modules"
+    "modules/*/src"
   ],
   "exclude": [
+    "modules/*/src/libs",
     "modules/tile-converter",
     "modules/textures/src/libs/basis_encoder.js",
     "examples",
     "test",
     "scripts",
-    "**/libs",
     "modules/*/wip",
     "modules/*/bin",
     "modules/*/wip",

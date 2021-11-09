@@ -13,7 +13,6 @@ package-lock.json
 */**/package-lock.json
 examples/**/yarn.lock
 
-
 tsconfig.tsbuildinfo
 
 .reify-cache
