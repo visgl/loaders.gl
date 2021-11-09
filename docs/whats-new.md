@@ -29,8 +29,12 @@ Aspirational goals:
 - Unbundled loaders.
 - More comprehensive support for `options.shape` to control output format of loaders.
 - Replace `Schema` class with arrow schema if arrowjs tree-shaking improvements are satisfactory.
-- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`, 
-- `ffmpeg` WASM integration for `@loaders.gl/video`
+- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`.
+- `ffmpeg` WASM integration for `@loaders.gl/video`.
+- Upgrade basis to 1.15.
+- Parse KTX2 with BasisLoader.
+- Support KTX2 in `@loaders.gl/gltf` and `@loader.gl/i3s` packages.
+- New KTX2BasisWriter in `@loaders.gl/textures`.
 
 **@loaders.gl/json**
 
@@ -72,8 +76,8 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
 **@loaders.gl/csv**
 
 - `options.csv.type` can be explicitly set to
-    + `'object-row-table'` (default) transforms rows to JS objects with the header row as keys.
-    + `'array-row-table'` in which the row will be returned as an array of values.
+  - `'object-row-table'` (default) transforms rows to JS objects with the header row as keys.
+  - `'array-row-table'` in which the row will be returned as an array of values.
 - Duplicate column names will have a counter suffix added to ensure that they are unique.
 
 **@loaders.gl/gis**
@@ -102,10 +106,10 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
 **@loaders.gl/i3s**
 
 - Thanks to a major contribution from Esri, the `I3SLoader` now offers full I3S 1.7 support including:
-  + page nodes
-  + compressed geometry
-  + compressed textures
-  + attributes (object picking)
+  - page nodes
+  - compressed geometry
+  - compressed textures
+  - attributes (object picking)
 
 **@loaders.gl/mvt**
 
@@ -139,9 +143,10 @@ _Benchmarks ran using scripts on a 2012 MacBook Pro, 2.3 GHz Intel Core i7, 8 GB
 **@loaders.gl/tile-converter** (NEW)
 
 - Thanks to a major contribution from Esri, the new `tile-converter` module implements conversion between the OGC 3D tiles and the OGC I3S tileset formats, through:
-   + A `tile-converter` CLI tool for automated batch conversion of multi-terabyte tilesets.
-   + A docker image to facilitate easy installs of the converter.
-   + A Node.js converter class API is also available for programmatic use.
+  - A `tile-converter` CLI tool for automated batch conversion of multi-terabyte tilesets.
+  - A docker image to facilitate easy installs of the converter.
+  - A Node.js converter class API is also available for programmatic use.
+
 ## v2.3
 
 Release Date: October 12, 2020
