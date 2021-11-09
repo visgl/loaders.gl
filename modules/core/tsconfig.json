@@ -10,6 +10,6 @@
   "references": [
     {"path": "../loader-utils"},
     {"path": "../schema"},
-    {"path": "../worker-utils"},
+    {"path": "../worker-utils"}
   ]
 }

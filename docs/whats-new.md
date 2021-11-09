@@ -23,12 +23,7 @@
 
 Target Release Date: Q1 2022. Alpha releases available.
 
-- EcmaScript module support (type: module).
-- Unbundled loaders.
-- More comprehensive support for `options.shape` to control output format of loaders.
-- Replace `Schema` class with arrow schema if arrowjs tree-shaking improvements are satisfactory.
-- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`.
-- `ffmpeg` WASM integration for `@loaders.gl/video`.
+See [roadmap](./roadmap) for more details.
 
 ## v3.1 (in final testing)
 

@@ -49,7 +49,7 @@ for await (const batch of batches) {
 
 ## Data Format
 
-TBA
+For details see [@loaders.gl/parquet](/modules/parquet/docs).
 
 ## Options
 

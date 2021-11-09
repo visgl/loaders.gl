@@ -1,6 +1,6 @@
 # Roadmap
 
-## v3.x
+## v4.0
 
 loaders.gl is developed under open governance by multiple contributors.
 White it is hard to catalog all ongoing work, current development tracks and aspirations include:

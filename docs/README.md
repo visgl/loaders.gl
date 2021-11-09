@@ -21,8 +21,6 @@ loaders.gl is packaged and published as a suite of composable loader modules off
 
 Other [vis.gl frameworks](https://vis.gl/frameworks) such as [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) integrate seamlessly with loaders.gl, however the API is framework-agnostic, and all loaders and writers can be used with any JavaScript application or framework.
 
-_If you find loaders.gl useful, consider giving us a github star. The project has almost 300K monthly downloads but only 300 stars._
-
 ## Loaders
 
 loaders.gl provides a wide selection of loaders organized into categories:
