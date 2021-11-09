@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2020",                          
-    "module": "commonjs",                    
+    "module": "es2020",
     "lib": ["es6"],                     
     "allowJs": true,
     "outDir": "build",                          
@@ -9,6 +9,7 @@
     "strict": true,         
     "noImplicitAny": true,
     "esModuleInterop": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "types": ["node"],

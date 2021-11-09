@@ -1,5 +1,5 @@
 import {MeshAttribute, MeshAttributes} from './mesh-types';
-import {Schema, Field, FixedSizeList} from '../../lib/schema';
+import {Schema, Field, FixedSizeList} from '../../lib/schema/schema';
 import {getArrowTypeFromTypedArray} from '../../lib/arrow/arrow-like-type-utils';
 
 /**

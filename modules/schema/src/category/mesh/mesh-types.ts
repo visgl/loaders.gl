@@ -1,4 +1,4 @@
-import type {Schema} from '../../lib/schema';
+import type {Schema} from '../../lib/schema/schema';
 import type {TypedArray} from '../../types';
 import type {ColumnarTable, ArrowTable} from '../table/table-types';
 

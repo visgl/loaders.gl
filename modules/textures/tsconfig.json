@@ -1,7 +1,7 @@
 {
-  "extends": "../../tsconfig.build.json",
+  "extends": "../../tsconfig.module.json",
   "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "src/libs"],
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
