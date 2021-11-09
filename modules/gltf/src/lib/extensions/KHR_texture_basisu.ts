@@ -1,5 +1,5 @@
-// GLTF EXTENSION: EXT_TEXTURE_WEBP
-// https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/EXT_TEXTURE_WEBP
+// GLTF EXTENSION: KHR_texture_basisu
+// https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu
 /* eslint-disable camelcase */
 
 import type {GLTF, GLTF_KHR_texture_basisu} from '../types/gltf-types';
