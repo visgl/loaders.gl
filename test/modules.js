@@ -26,8 +26,8 @@ import '@loaders.gl/core/test/index.js';
 import '@loaders.gl/images/test/index.js';
 import '@loaders.gl/textures/test/index.js';
 // import '@loaders.gl/video/test/index.js';
-import '@loaders.gl/geotiff/test/index.js';
-import '@loaders.gl/zarr/test/index.js';
+// import '@loaders.gl/geotiff/test/index.js';
+// import '@loaders.gl/zarr/test/index.js';
 import '@loaders.gl/netcdf/test/index.js';
 
 // Pointcloud/Mesh Formats
