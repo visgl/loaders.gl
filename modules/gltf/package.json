@@ -19,7 +19,6 @@
     "GLB",
     "glTF"
   ],
-  "type": "module",
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "module": "dist/index.js",
