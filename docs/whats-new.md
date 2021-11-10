@@ -23,16 +23,9 @@
 
 Target Release Date: Q1 2022. Alpha releases available.
 
-Aspirational goals:
+See [roadmap](./roadmap) for more details.
 
-- EcmaScript module support (type: module).
-- Unbundled loaders.
-- More comprehensive support for `options.shape` to control output format of loaders.
-- Replace `Schema` class with arrow schema if arrowjs tree-shaking improvements are satisfactory.
-- New loaders: `GeoTIFFLoader`, `ZarrLoader`, `ParquetLoader`, `AVROLoader`.
-- `ffmpeg` WASM integration for `@loaders.gl/video`.
-
-## v3.1 (in testing)
+## v3.1 (in final testing)
 
 Target Release Date: Nov 2021.
 
@@ -44,7 +37,7 @@ Target Release Date: Nov 2021.
 
 **@loaders.gl/gltf** 
 
-- Support for KTX2-Basis textures via the [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu) extension.
+- `GTLTLoader` now decodes Basis super compressed textures if present (via the [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension).
 
 **@loaders.gl/i3s** 
 
@@ -56,7 +49,11 @@ Target Release Date: Nov 2021.
 
 **@loaders.gl/csv**
 
-- The CSVLoader now recognizes TSV files via `.tsv` file extension or the `text/tab-separated-values` MIME type.
+- `CSVLoader` now recognizes TSV files via `.tsv` file extension or the `text/tab-separated-values` MIME type.
+
+**@loaders.gl/parquet** (NEW)
+
+- New experimental [`ParquetLoader`](modules/parquet/docs/api-reference/parquet-loader)
 
 ## v3.0
 

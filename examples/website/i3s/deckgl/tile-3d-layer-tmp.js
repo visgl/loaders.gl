@@ -1,4 +1,5 @@
 // Merge this component back to @deck.gl when it is moved on version 8
+import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {Geometry} from '@luma.gl/core';
 import GL from '@luma.gl/constants';
