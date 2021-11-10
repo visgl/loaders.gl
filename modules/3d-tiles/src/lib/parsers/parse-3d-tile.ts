@@ -8,6 +8,7 @@ import {parsePointCloud3DTile} from './parse-3d-tile-point-cloud';
 import {parseBatchedModel3DTile} from './parse-3d-tile-batched-model';
 import {parseInstancedModel3DTile} from './parse-3d-tile-instanced-model';
 import {parseComposite3DTile} from './parse-3d-tile-composite';
+import {parseGltf3DTile} from './parse-3d-tile-gltf';
 
 // Extracts
 export async function parse3DTile(arrayBuffer, byteOffset = 0, options, context, tile = {}) {
@@ -31,6 +32,9 @@ export async function parse3DTile(arrayBuffer, byteOffset = 0, options, context,
 
     case TILE3D_TYPE.BATCHED_3D_MODEL:
       return await parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options, context);
+
+    case TILE3D_TYPE.GLTF:
+      return await parseGltf3DTile(tile, arrayBuffer, options, context);
 
     case TILE3D_TYPE.INSTANCED_3D_MODEL:
       return await parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options, context);
