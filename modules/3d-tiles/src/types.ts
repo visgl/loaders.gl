@@ -62,14 +62,14 @@ export type SubtreeAvailability = {
   childSubtreeAvailability: Availability;
 };
 
-export type Availability = {
+type Availability = {
   constant?: 0 | 1;
   bufferView?: number;
   // Internal bitstream type
   explicitBitstream?: ExplicitBitstream;
 };
 
-export type ExplicitBitstream = number[];
+export type ExplicitBitstream = Uint8Array;
 
 type Buffer = {
   name: string;

@@ -23,18 +23,15 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Su
     throw new Error('Wrong subtree file verson, must be 1');
   }
 
-  const jsonByteLengthArray = new BigUint64Array(data.slice(8, 16));
-  const jsonByteLength = Number(jsonByteLengthArray[0]);
+  const jsonByteLength = parseUint64Value(data.slice(8, 16));
   const stringAttribute = new Uint8Array(data, 24, jsonByteLength);
 
   const textDecoder = new TextDecoder('utf8');
   const string = textDecoder.decode(stringAttribute);
   const subtree = JSON.parse(string);
 
+  const binaryByteLength = parseUint64Value(data.slice(16, 24));
   let internalBinaryBuffer = new ArrayBuffer(0);
-
-  const binaryByteLengthArray = new BigUint64Array(data.slice(16, 24));
-  const binaryByteLength = Number(binaryByteLengthArray[0]);
 
   if (binaryByteLength) {
     internalBinaryBuffer = data.slice(24 + jsonByteLength);
@@ -86,19 +83,22 @@ async function getExplicitBitstream(
   if (buffer.uri) {
     const response = await fetchFile(buffer.uri);
     const data = await response.arrayBuffer();
-    return toBinList(new Uint8Array(data, bufferView.byteOffset, bufferView.byteLength));
+    // Return view of bitstream.
+    return new Uint8Array(data, bufferView.byteOffset, bufferView.byteLength);
   }
-
-  return toBinList(
-    new Uint8Array(internalBinaryBuffer, bufferView.byteOffset, bufferView.byteLength)
-  );
+  // Return view of bitstream.
+  return new Uint8Array(internalBinaryBuffer, bufferView.byteOffset, bufferView.byteLength);
 }
 
 /**
- * Generates binary list like [0,0,1,0,0,1,0,1]
- * @param bytes
+ * Parse buffer to return uint64 value
+ * @param buffer
+ * @returns 64-bit value until precision is lost after Number.MAX_SAFE_INTEGER
  */
-function toBinList(bytes: Uint8Array): ExplicitBitstream {
-  const binString = bytes.reduce((str, byte) => str + byte.toString(2).padStart(8, '0'), '');
-  return Array.from(binString).map((item) => Number(item));
+function parseUint64Value(buffer: ArrayBuffer): number {
+  const dataView = new DataView(buffer);
+  const left = dataView.getUint32(0, true);
+  const right = dataView.getUint32(4, true);
+  // combine the two 32-bit values
+  return left + 2 ** 32 * right;
 }
