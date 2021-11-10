@@ -12,3 +12,4 @@ import './lib/parsers/helpers/normalize-3d-tile-colors.spec';
 // import './styles/tile-3d-style.spec';
 
 import './tiles-3d-loader.spec';
+import './tile-3d-subtree-loader.spec';
