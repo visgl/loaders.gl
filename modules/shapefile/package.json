@@ -18,8 +18,8 @@
     "shp"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "browser": {
     "./src/lib/filesystems/node-filesystem.js": false,
