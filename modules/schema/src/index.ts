@@ -112,7 +112,7 @@ export {
   IntervalYearMonth,
   FixedSizeList,
   Struct
-} from './lib/schema';
+} from './lib/schema/schema';
 
 // EXPERIMENTAL APIs
 

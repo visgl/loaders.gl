@@ -1,14 +1,13 @@
 {
   "extends": "../../tsconfig.module.json",
   "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "src/libs"],
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
     "outDir": "dist"
   },
   "references": [
-    {"path": "../core"},
     {"path": "../loader-utils"},
     {"path": "../schema"}
   ]

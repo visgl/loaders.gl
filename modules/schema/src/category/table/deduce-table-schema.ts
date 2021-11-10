@@ -14,7 +14,7 @@ import {
   // Utf8,
   // TimestampMillisecond,
   // Null
-} from '../../lib/schema';
+} from '../../lib/schema/schema';
 
 // const TYPED_ARRAY_TO_TYPE = {
 //   Int8Array: new Int8(),

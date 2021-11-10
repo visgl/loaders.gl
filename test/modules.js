@@ -2,104 +2,74 @@
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-const ALIASES = require('./aliases');
-const {_addAliases} = require('@loaders.gl/loader-utils');
+import ALIASES from './aliases.js';
+import {_addAliases} from '@loaders.gl/loader-utils';
+import {installFilePolyfills} from '@loaders.gl/polyfills';
+
 _addAliases(ALIASES);
-
-const TEST_BASE = true;
-const TEST_CORE = true;
-const TEST_IMAGES = true;
-const TEST_MESHES = true;
-const TEST_SCENEGRAPHS = true;
-const TEST_TILES = true;
-const TEST_GEOSPATIAL = true;
-const TEST_TABLES = true;
-const TEST_ARCHIVES = true;
-const TEST_CLI = true;
-
-export const isBrowser =
-  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
-
 // Install polyfills (primarily for Node)
-const {installFilePolyfills} = require('@loaders.gl/polyfills');
-
 installFilePolyfills();
 
+// const isBrowser =
+//   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
+
 // base
-if (TEST_BASE) {
-  require('@loaders.gl/polyfills/test');
-  require('@loaders.gl/worker-utils/test');
-  require('@loaders.gl/math/test');
-}
+import '@loaders.gl/polyfills/test/index.js';
+import '@loaders.gl/worker-utils/test/index.js';
+import '@loaders.gl/math/test/index.js';
 
 // Core
-if (TEST_CORE) {
-  require('@loaders.gl/loader-utils/test');
-  require('@loaders.gl/core/test');
-}
+import '@loaders.gl/loader-utils/test/index.js';
+import '@loaders.gl/core/test/index.js';
 
 // Image Formats
-if (TEST_IMAGES) {
-  require('@loaders.gl/images/test');
-  require('@loaders.gl/textures/test');
-  require('@loaders.gl/video/test');
-  require('@loaders.gl/geotiff/test');
-  require('@loaders.gl/zarr/test');
-  require('@loaders.gl/netcdf/test');
-}
+import '@loaders.gl/images/test/index.js';
+import '@loaders.gl/textures/test/index.js';
+// import '@loaders.gl/video/test/index.js';
+// import '@loaders.gl/geotiff/test/index.js';
+// import '@loaders.gl/zarr/test/index.js';
+import '@loaders.gl/netcdf/test/index.js';
 
 // Pointcloud/Mesh Formats
-if (TEST_MESHES) {
-  require('@loaders.gl/draco/test');
-  require('@loaders.gl/las/test');
-  require('@loaders.gl/obj/test');
-  require('@loaders.gl/pcd/test');  
-  require('@loaders.gl/ply/test');  
-  require('@loaders.gl/terrain/test');
-}
+import '@loaders.gl/draco/test/index.js';
+import '@loaders.gl/las/test/index.js';
+import '@loaders.gl/obj/test/index.js';
+import '@loaders.gl/pcd/test/index.js';
+import '@loaders.gl/ply/test/index.js';
+import '@loaders.gl/terrain/test/index.js';
 
 // Scenegraph Formats
-if (TEST_SCENEGRAPHS) {
-  require('@loaders.gl/gltf/test');
-}
+import '@loaders.gl/gltf/test/index.js';
 
 // 3D Tile Formats
-if (TEST_TILES) {
-  require('@loaders.gl/3d-tiles/test');
-  require('@loaders.gl/i3s/test');
-  require('@loaders.gl/potree/test');
-  require('@loaders.gl/tiles/test');
-}
+import '@loaders.gl/3d-tiles/test/index.js';
+import '@loaders.gl/i3s/test/index.js';
+import '@loaders.gl/potree/test/index.js';
+import '@loaders.gl/tiles/test/index.js';
 
 // Geospatial Formats
-if (TEST_GEOSPATIAL) {
-  require('@loaders.gl/flatgeobuf/test')
-  require('@loaders.gl/geopackage/test')
-  require('@loaders.gl/gis/test')
-  require('@loaders.gl/kml/test');
-  require('@loaders.gl/mvt/test');
-  require('@loaders.gl/shapefile/test')
-  require('@loaders.gl/wkt/test');
-}
+import '@loaders.gl/flatgeobuf/test/index.js';
+import '@loaders.gl/geopackage/test/index.js';
+import '@loaders.gl/gis/test/index.js';
+import '@loaders.gl/kml/test/index.js';
+import '@loaders.gl/mvt/test/index.js';
+import '@loaders.gl/shapefile/test/index.js';
+import '@loaders.gl/wkt/test/index.js';
 
 // Table Formats
-if (TEST_TABLES) {
-  require('@loaders.gl/schema/test');
-  require('@loaders.gl/arrow/test');
-  require('@loaders.gl/csv/test');
-  require('@loaders.gl/json/test');
-  require('@loaders.gl/excel/test');
-  require('@loaders.gl/parquet/test');
-}
+import '@loaders.gl/schema/test/index.js';
+import '@loaders.gl/arrow/test/index.js';
+import '@loaders.gl/csv/test/index.js';
+import '@loaders.gl/json/test/index.js';
+import '@loaders.gl/excel/test/index.js';
+import '@loaders.gl/parquet/test/index.js';
 
 // Archive Formats
-if (TEST_ARCHIVES) {
-  require('@loaders.gl/compression/test');
-  require('@loaders.gl/crypto/test');
-  require('@loaders.gl/zip/test');
-}
+import '@loaders.gl/compression/test/index.js';
+// import '@loaders.gl/crypto/test/index.js';
+import '@loaders.gl/zip/test/index.js';
 
 // Cli
-if (!isBrowser && TEST_CLI) {
-  require('@loaders.gl/tile-converter/test');
-}
+// if (!isBrowser && TEST_CLI) {
+//   import '@loaders.gl/tile-converter/test/index.js';
+// }

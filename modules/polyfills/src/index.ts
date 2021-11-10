@@ -2,7 +2,7 @@
 import {DOMParser} from '@xmldom/xmldom';
 import {isBrowser, global} from './utils/globals';
 
-import {TextDecoder, TextEncoder} from './libs/encoding';
+import {TextDecoder, TextEncoder} from './lib/encoding';
 import {allSettled} from './promise/all-settled';
 
 // Node specific

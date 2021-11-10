@@ -1,6 +1,6 @@
 import {loadBasisEncoderModule, loadBasisTrascoderModule} from './basis-module-loader';
 import {GL} from '../gl-constants';
-import {getSupportedGPUTextureFormats} from '../..';
+import {getSupportedGPUTextureFormats} from '../utils/texture-formats';
 import {isKTX} from './parse-ktx';
 
 const OutputFormat = {

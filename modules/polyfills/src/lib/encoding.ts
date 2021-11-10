@@ -1,14 +1,14 @@
-/* eslint-disable */
 // @ts-nocheck
+/* eslint-disable */
 
 // Copied from https://github.com/inexorabletash/text-encoding/blob/b4e5bc26e26e51f56e3daa9f13138c79f49d3c34/lib/encoding.js
-//
 // This is free and unencumbered software released into the public domain.
 // See LICENSE.md for more information.
 
-// FORK: indices add half a megabyte to bundle. Ignore, since we only want the built-in UTF8...
-const indexes = require('./encoding-indexes.js')
-global['encoding-indexes'] = (indexes && indexes['encoding-indexes']) || {};
+import indexes from './encoding-indexes';
+// Note: Aaian character indices add half a megabyte to bundle. Ignore, since we really only want the built-in UTF8...
+// import indexes from './encoding-indexes-asian.js';
+global['encoding-indexes'] = indexes || {};
 
 //
 // Utilities
@@ -193,7 +193,7 @@ Stream.prototype = {
   /**
    * @return {boolean} True if end-of-stream has been hit.
    */
-  endOfStream: function() {
+  endOfStream: function () {
     return !this.tokens.length;
   },
 
@@ -205,7 +205,7 @@ Stream.prototype = {
    * @return {number} Get the next token from the stream, or
    * end_of_stream.
    */
-  read: function() {
+  read: function () {
     if (!this.tokens.length) return end_of_stream;
     return this.tokens.pop();
   },
@@ -218,9 +218,9 @@ Stream.prototype = {
    * @param {(number|!Array.<number>)} token The token(s) to prepend to the
    * stream.
    */
-  prepend: function(token) {
+  prepend: function (token) {
     if (Array.isArray(token)) {
-      var tokens = /**@type {!Array.<number>}*/ (token);
+      var tokens = /**@type {!Array.<number>}*/ token;
       while (tokens.length) this.tokens.push(tokens.pop());
     } else {
       this.tokens.push(token);
@@ -235,9 +235,9 @@ Stream.prototype = {
    * @param {(number|!Array.<number>)} token The tokens(s) to push to the
    * stream.
    */
-  push: function(token) {
+  push: function (token) {
     if (Array.isArray(token)) {
-      var tokens = /**@type {!Array.<number>}*/ (token);
+      var tokens = /**@type {!Array.<number>}*/ token;
       while (tokens.length) this.tokens.unshift(tokens.shift());
     } else {
       this.tokens.unshift(token);
@@ -282,7 +282,7 @@ Decoder.prototype = {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point, or |finished|.
    */
-  handler: function(stream, bite) {}
+  handler: function (stream, bite) {}
 };
 
 /** @interface */
@@ -293,7 +293,7 @@ Encoder.prototype = {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit, or |finished|.
    */
-  handler: function(stream, code_point) {}
+  handler: function (stream, code_point) {}
 };
 
 // 5.2 Names and labels
@@ -307,9 +307,7 @@ Encoder.prototype = {
  */
 function getEncoding(label) {
   // 1. Remove any leading and trailing ASCII whitespace from label.
-  label = String(label)
-    .trim()
-    .toLowerCase();
+  label = String(label).trim().toLowerCase();
 
   // 2. If label is an ASCII case-insensitive match for any of the
   // labels listed in the table below, return the corresponding
@@ -677,9 +675,9 @@ var encodings = [
 // Label to encoding registry.
 /** @type {Object.<string,{name:string,labels:Array.<string>}>} */
 var label_to_encoding = {};
-encodings.forEach(function(category) {
-  category.encodings.forEach(function(encoding) {
-    encoding.labels.forEach(function(label) {
+encodings.forEach(function (category) {
+  category.encodings.forEach(function (encoding) {
+    encoding.labels.forEach(function (label) {
       label_to_encoding[label] = encoding;
     });
   });
@@ -807,7 +805,7 @@ function indexShiftJISPointerFor(code_point) {
   // pointer is in the range 8272 to 8835, inclusive.
   shift_jis_index =
     shift_jis_index ||
-    index('jis0208').map(function(code_point, pointer) {
+    index('jis0208').map(function (code_point, pointer) {
       return inRange(pointer, 8272, 8835) ? null : code_point;
     });
   var index_ = shift_jis_index;
@@ -827,7 +825,7 @@ function indexBig5PointerFor(code_point) {
   // 1. Let index be index Big5 excluding all entries whose pointer
   big5_index_no_hkscs =
     big5_index_no_hkscs ||
-    index('big5').map(function(code_point, pointer) {
+    index('big5').map(function (code_point, pointer) {
       return pointer < (0xa1 - 0x81) * 157 ? null : code_point;
     });
   var index_ = big5_index_no_hkscs;
@@ -930,7 +928,7 @@ if (Object.defineProperty) {
   // The encoding attribute's getter must return encoding's name.
   Object.defineProperty(TextDecoder.prototype, 'encoding', {
     /** @this {TextDecoder} */
-    get: function() {
+    get: function () {
       return this._encoding.name.toLowerCase();
     }
   });
@@ -939,7 +937,7 @@ if (Object.defineProperty) {
   // is fatal, and false otherwise.
   Object.defineProperty(TextDecoder.prototype, 'fatal', {
     /** @this {TextDecoder} */
-    get: function() {
+    get: function () {
       return this._error_mode === 'fatal';
     }
   });
@@ -948,7 +946,7 @@ if (Object.defineProperty) {
   // BOM flag is set, and false otherwise.
   Object.defineProperty(TextDecoder.prototype, 'ignoreBOM', {
     /** @this {TextDecoder} */
-    get: function() {
+    get: function () {
       return this._ignoreBOM;
     }
   });
@@ -1019,7 +1017,7 @@ TextDecoder.prototype.decode = function decode(input, options) {
     if (result === finished) break;
 
     if (result !== null) {
-      if (Array.isArray(result)) output.push.apply(output, /**@type {!Array.<number>}*/ (result));
+      if (Array.isArray(result)) output.push.apply(output, /**@type {!Array.<number>}*/ result);
       else output.push(result);
     }
 
@@ -1034,7 +1032,7 @@ TextDecoder.prototype.decode = function decode(input, options) {
       result = this._decoder.handler(input_stream, input_stream.read());
       if (result === finished) break;
       if (result === null) continue;
-      if (Array.isArray(result)) output.push.apply(output, /**@type {!Array.<number>}*/ (result));
+      if (Array.isArray(result)) output.push.apply(output, /**@type {!Array.<number>}*/ result);
       else output.push(result);
     } while (!input_stream.endOfStream());
     this._decoder = null;
@@ -1139,7 +1137,7 @@ if (Object.defineProperty) {
   // The encoding attribute's getter must return encoding's name.
   Object.defineProperty(TextEncoder.prototype, 'encoding', {
     /** @this {TextEncoder} */
-    get: function() {
+    get: function () {
       return this._encoding.name.toLowerCase();
     }
   });
@@ -1180,7 +1178,7 @@ TextEncoder.prototype.encode = function encode(opt_string, options) {
     // input, output.
     result = this._encoder.handler(input, token);
     if (result === finished) break;
-    if (Array.isArray(result)) output.push.apply(output, /**@type {!Array.<number>}*/ (result));
+    if (Array.isArray(result)) output.push.apply(output, /**@type {!Array.<number>}*/ result);
     else output.push(result);
   }
   // TODO: Align with spec algorithm.
@@ -1188,7 +1186,7 @@ TextEncoder.prototype.encode = function encode(opt_string, options) {
     while (true) {
       result = this._encoder.handler(input, input.read());
       if (result === finished) break;
-      if (Array.isArray(result)) output.push.apply(output, /**@type {!Array.<number>}*/ (result));
+      if (Array.isArray(result)) output.push.apply(output, /**@type {!Array.<number>}*/ result);
       else output.push(result);
     }
     this._encoder = null;
@@ -1231,7 +1229,7 @@ function UTF8Decoder(options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream and utf-8 bytes needed is not 0,
     // set utf-8 bytes needed to 0 and return error.
     if (bite === end_of_stream && utf8_bytes_needed !== 0) {
@@ -1351,7 +1349,7 @@ function UTF8Encoder(options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -1402,11 +1400,11 @@ function UTF8Encoder(options) {
 }
 
 /** @param {{fatal: boolean}} options */
-encoders['UTF-8'] = function(options) {
+encoders['UTF-8'] = function (options) {
   return new UTF8Encoder(options);
 };
 /** @param {{fatal: boolean}} options */
-decoders['UTF-8'] = function(options) {
+decoders['UTF-8'] = function (options) {
   return new UTF8Decoder(options);
 };
 
@@ -1430,7 +1428,7 @@ function SingleByteDecoder(index, options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream, return finished.
     if (bite === end_of_stream) return finished;
 
@@ -1464,7 +1462,7 @@ function SingleByteEncoder(index, options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -1484,19 +1482,19 @@ function SingleByteEncoder(index, options) {
   };
 }
 
-(function() {
+(function () {
   if (!('encoding-indexes' in global)) return;
-  encodings.forEach(function(category) {
+  encodings.forEach(function (category) {
     if (category.heading !== 'Legacy single-byte encodings') return;
-    category.encodings.forEach(function(encoding) {
+    category.encodings.forEach(function (encoding) {
       var name = encoding.name;
       var idx = index(name.toLowerCase());
       /** @param {{fatal: boolean}} options */
-      decoders[name] = function(options) {
+      decoders[name] = function (options) {
         return new SingleByteDecoder(idx, options);
       };
       /** @param {{fatal: boolean}} options */
-      encoders[name] = function(options) {
+      encoders[name] = function (options) {
         return new SingleByteEncoder(idx, options);
       };
     });
@@ -1512,14 +1510,14 @@ function SingleByteEncoder(index, options) {
 // 11.1.1 gbk decoder
 // gbk's decoder is gb18030's decoder.
 /** @param {{fatal: boolean}} options */
-decoders['GBK'] = function(options) {
+decoders['GBK'] = function (options) {
   return new GB18030Decoder(options);
 };
 
 // 11.1.2 gbk encoder
 // gbk's encoder is gb18030's encoder with its gbk flag set.
 /** @param {{fatal: boolean}} options */
-encoders['GBK'] = function(options) {
+encoders['GBK'] = function (options) {
   return new GB18030Encoder(options, true);
 };
 
@@ -1545,7 +1543,7 @@ function GB18030Decoder(options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream and gb18030 first, gb18030
     // second, and gb18030 third are 0x00, return finished.
     if (
@@ -1698,7 +1696,7 @@ function GB18030Encoder(options, gbk_flag) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -1764,11 +1762,11 @@ function GB18030Encoder(options, gbk_flag) {
 }
 
 /** @param {{fatal: boolean}} options */
-encoders['gb18030'] = function(options) {
+encoders['gb18030'] = function (options) {
   return new GB18030Encoder(options);
 };
 /** @param {{fatal: boolean}} options */
-decoders['gb18030'] = function(options) {
+decoders['gb18030'] = function (options) {
   return new GB18030Decoder(options);
 };
 
@@ -1796,7 +1794,7 @@ function Big5Decoder(options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream and Big5 lead is not 0x00, set
     // Big5 lead to 0x00 and return error.
     if (bite === end_of_stream && Big5_lead !== 0x00) {
@@ -1890,7 +1888,7 @@ function Big5Encoder(options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -1923,11 +1921,11 @@ function Big5Encoder(options) {
 }
 
 /** @param {{fatal: boolean}} options */
-encoders['Big5'] = function(options) {
+encoders['Big5'] = function (options) {
   return new Big5Encoder(options);
 };
 /** @param {{fatal: boolean}} options */
-decoders['Big5'] = function(options) {
+decoders['Big5'] = function (options) {
   return new Big5Decoder(options);
 };
 
@@ -1958,7 +1956,7 @@ function EUCJPDecoder(options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream and euc-jp lead is not 0x00, set
     // euc-jp lead to 0x00, and return error.
     if (bite === end_of_stream && eucjp_lead !== 0x00) {
@@ -2050,7 +2048,7 @@ function EUCJPEncoder(options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -2091,11 +2089,11 @@ function EUCJPEncoder(options) {
 }
 
 /** @param {{fatal: boolean}} options */
-encoders['EUC-JP'] = function(options) {
+encoders['EUC-JP'] = function (options) {
   return new EUCJPEncoder(options);
 };
 /** @param {{fatal: boolean}} options */
-decoders['EUC-JP'] = function(options) {
+decoders['EUC-JP'] = function (options) {
   return new EUCJPDecoder(options);
 };
 
@@ -2134,7 +2132,7 @@ function ISO2022JPDecoder(options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // switching on iso-2022-jp decoder state:
     switch (iso2022jp_decoder_state) {
       default:
@@ -2433,7 +2431,7 @@ function ISO2022JPEncoder(options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream and iso-2022-jp encoder
     // state is not ASCII, prepend code point to stream, set
     // iso-2022-jp encoder state to ASCII, and return three bytes
@@ -2467,7 +2465,8 @@ function ISO2022JPEncoder(options) {
     if (
       iso2022jp_state === states.Roman &&
       ((isASCIICodePoint(code_point) && code_point !== 0x005c && code_point !== 0x007e) ||
-        (code_point == 0x00a5 || code_point == 0x203e))
+        code_point == 0x00a5 ||
+        code_point == 0x203e)
     ) {
       // 1. If code point is an ASCII code point, return a byte
       // whose value is code point.
@@ -2531,11 +2530,11 @@ function ISO2022JPEncoder(options) {
 }
 
 /** @param {{fatal: boolean}} options */
-encoders['ISO-2022-JP'] = function(options) {
+encoders['ISO-2022-JP'] = function (options) {
   return new ISO2022JPEncoder(options);
 };
 /** @param {{fatal: boolean}} options */
-decoders['ISO-2022-JP'] = function(options) {
+decoders['ISO-2022-JP'] = function (options) {
   return new ISO2022JPDecoder(options);
 };
 
@@ -2559,7 +2558,7 @@ function ShiftJISDecoder(options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream and Shift_JIS lead is not 0x00,
     // set Shift_JIS lead to 0x00 and return error.
     if (bite === end_of_stream && Shift_JIS_lead !== 0x00) {
@@ -2646,7 +2645,7 @@ function ShiftJISEncoder(options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -2694,11 +2693,11 @@ function ShiftJISEncoder(options) {
 }
 
 /** @param {{fatal: boolean}} options */
-encoders['Shift_JIS'] = function(options) {
+encoders['Shift_JIS'] = function (options) {
   return new ShiftJISEncoder(options);
 };
 /** @param {{fatal: boolean}} options */
-decoders['Shift_JIS'] = function(options) {
+decoders['Shift_JIS'] = function (options) {
   return new ShiftJISDecoder(options);
 };
 
@@ -2726,7 +2725,7 @@ function EUCKRDecoder(options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream and euc-kr lead is not 0x00, set
     // euc-kr lead to 0x00 and return error.
     if (bite === end_of_stream && euckr_lead !== 0) {
@@ -2794,7 +2793,7 @@ function EUCKREncoder(options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -2821,11 +2820,11 @@ function EUCKREncoder(options) {
 }
 
 /** @param {{fatal: boolean}} options */
-encoders['EUC-KR'] = function(options) {
+encoders['EUC-KR'] = function (options) {
   return new EUCKREncoder(options);
 };
 /** @param {{fatal: boolean}} options */
-decoders['EUC-KR'] = function(options) {
+decoders['EUC-KR'] = function (options) {
   return new EUCKRDecoder(options);
 };
 
@@ -2876,7 +2875,7 @@ function UTF16Decoder(utf16_be, options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream and either utf-16 lead byte or
     // utf-16 lead surrogate is not null, set utf-16 lead byte and
     // utf-16 lead surrogate to null, and return error.
@@ -2962,7 +2961,7 @@ function UTF16Encoder(utf16_be, options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1. If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -2987,24 +2986,24 @@ function UTF16Encoder(utf16_be, options) {
 // 15.3 utf-16be
 // 15.3.1 utf-16be decoder
 /** @param {{fatal: boolean}} options */
-encoders['UTF-16BE'] = function(options) {
+encoders['UTF-16BE'] = function (options) {
   return new UTF16Encoder(true, options);
 };
 // 15.3.2 utf-16be encoder
 /** @param {{fatal: boolean}} options */
-decoders['UTF-16BE'] = function(options) {
+decoders['UTF-16BE'] = function (options) {
   return new UTF16Decoder(true, options);
 };
 
 // 15.4 utf-16le
 // 15.4.1 utf-16le decoder
 /** @param {{fatal: boolean}} options */
-encoders['UTF-16LE'] = function(options) {
+encoders['UTF-16LE'] = function (options) {
   return new UTF16Encoder(false, options);
 };
 // 15.4.2 utf-16le encoder
 /** @param {{fatal: boolean}} options */
-decoders['UTF-16LE'] = function(options) {
+decoders['UTF-16LE'] = function (options) {
   return new UTF16Decoder(false, options);
 };
 
@@ -3025,7 +3024,7 @@ function XUserDefinedDecoder(options) {
    *     decoded, or null if not enough data exists in the input
    *     stream to decode a complete code point.
    */
-  this.handler = function(stream, bite) {
+  this.handler = function (stream, bite) {
     // 1. If byte is end-of-stream, return finished.
     if (bite === end_of_stream) return finished;
 
@@ -3051,7 +3050,7 @@ function XUserDefinedEncoder(options) {
    * @param {number} code_point Next code point read from the stream.
    * @return {(number|!Array.<number>)} Byte(s) to emit.
    */
-  this.handler = function(stream, code_point) {
+  this.handler = function (stream, code_point) {
     // 1.If code point is end-of-stream, return finished.
     if (code_point === end_of_stream) return finished;
 
@@ -3069,11 +3068,11 @@ function XUserDefinedEncoder(options) {
 }
 
 /** @param {{fatal: boolean}} options */
-encoders['x-user-defined'] = function(options) {
+encoders['x-user-defined'] = function (options) {
   return new XUserDefinedEncoder(options);
 };
 /** @param {{fatal: boolean}} options */
-decoders['x-user-defined'] = function(options) {
+decoders['x-user-defined'] = function (options) {
   return new XUserDefinedDecoder(options);
 };
 
@@ -3081,4 +3080,5 @@ decoders['x-user-defined'] = function(options) {
 // if (!global['TextEncoder']) global['TextEncoder'] = TextEncoder;
 // if (!global['TextDecoder']) global['TextDecoder'] = TextDecoder;
 // babel.config.js skip transpiling files in `libs/`
-module.exports = {TextEncoder, TextDecoder};
+// module.exports = {TextEncoder, TextDecoder};
+export {TextEncoder, TextDecoder};

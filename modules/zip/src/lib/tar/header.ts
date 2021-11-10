@@ -4,7 +4,7 @@
  * tar-js
  * MIT (c) 2011 T. Jameson Little
  */
-
+/* eslint-disable */
 import * as utils from './utils';
 import type {TarStructure, TarData} from './types';
 /*
