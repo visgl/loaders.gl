@@ -53,22 +53,6 @@ export class ParquetReader<T> implements AsyncIterable<T> {
     }
   }
 
-  /**
-   * Open the parquet file pointed to by the specified path and return a new
-   * parquet reader
-   */
-  static async openFile<T>(filePath: string): Promise<ParquetReader<T>> {
-    const envelopeReader = await ParquetEnvelopeReader.openFile(filePath);
-    try {
-      await envelopeReader.readHeader();
-      const metadata = await envelopeReader.readFooter();
-      return new ParquetReader<T>(metadata, envelopeReader);
-    } catch (err) {
-      await envelopeReader.close();
-      throw err;
-    }
-  }
-
   static async openBuffer<T>(buffer: Buffer): Promise<ParquetReader<T>> {
     const envelopeReader = await ParquetEnvelopeReader.openBuffer(buffer);
     try {

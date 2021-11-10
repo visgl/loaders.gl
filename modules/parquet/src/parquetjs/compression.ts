@@ -34,7 +34,7 @@ const modules = {
   //   }
   // },
   lz4js,
-  lzo,
+  lzo
   // 'zstd-codec': ZstdCodec
 };
 
