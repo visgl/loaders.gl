@@ -97,12 +97,12 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
+    "@xmldom/xmldom": "^0.7.5",
     "get-pixels": "^3.3.2",
     "ndarray": "^1.0.18",
     "save-pixels": "^2.3.2",
     "stream-to-async-iterator": "^0.2.0",
     "through": "^2.3.8",
-    "web-streams-polyfill": "^3.0.0",
-    "xmldom": "^0.5.0"
+    "web-streams-polyfill": "^3.0.0"
   }
 }
