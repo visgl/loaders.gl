@@ -12,6 +12,8 @@ function getTileType(tile) {
       return TILE_TYPE.POINTCLOUD;
     case 'i3dm':
     case 'b3dm':
+    case 'glb':
+    case 'gltf':
       return TILE_TYPE.SCENEGRAPH;
     default:
       return fileExtension;

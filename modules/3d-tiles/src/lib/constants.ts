@@ -6,7 +6,8 @@ export const TILE3D_TYPE = {
   BATCHED_3D_MODEL: 'b3dm',
   INSTANCED_3D_MODEL: 'i3dm',
   GEOMETRY: 'geom',
-  VECTOR: 'vect'
+  VECTOR: 'vect',
+  GLTF: 'glTF'
 };
 
 export const TILE3D_TYPES = Object.keys(TILE3D_TYPE);
