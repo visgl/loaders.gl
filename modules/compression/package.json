@@ -33,8 +33,8 @@
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/worker.ts --output ./dist/compression-worker.js --config ../../scripts/webpack/worker.js"
+    "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap --external:{fs,path,crypto}",
+    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/compression-worker.js --bundle --minify --sourcemap --external:{fs,path,crypto}"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

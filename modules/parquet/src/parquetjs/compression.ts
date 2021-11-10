@@ -19,23 +19,23 @@ import {toArrayBuffer, toBuffer} from './utils/buffer-utils';
 // TODO switch to worker compression to avoid bundling...
 
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
-import brotliDecompress from 'brotli/decompress';
+// import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
 import lzo from 'lzo';
-import {ZstdCodec} from 'zstd-codec';
+// import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
 const modules = {
   // brotli has problems with decompress in browsers
-  brotli: {
-    decompress: brotliDecompress,
-    compress: () => {
-      throw new Error('brotli compress');
-    }
-  },
+  // brotli: {
+  //   decompress: brotliDecompress,
+  //   compress: () => {
+  //     throw new Error('brotli compress');
+  //   }
+  // },
   lz4js,
-  lzo,
-  'zstd-codec': ZstdCodec
+  lzo
+  // 'zstd-codec': ZstdCodec
 };
 
 // See https://github.com/apache/parquet-format/blob/master/Compression.md

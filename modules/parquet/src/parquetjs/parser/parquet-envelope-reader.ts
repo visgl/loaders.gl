@@ -9,7 +9,6 @@ import {
   PrimitiveType,
   ParquetOptions
 } from '../schema/declare';
-import {fstat, fopen, fread, fclose} from '../utils/file-utils';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
 import {decodeDataPages, decodePage} from './decoders';
 
@@ -30,16 +29,6 @@ export class ParquetEnvelopeReader {
   public close: () => Promise<void>;
   public fileSize: number;
   public defaultDictionarySize: number;
-
-  static async openFile(filePath: string): Promise<ParquetEnvelopeReader> {
-    const fileStat = await fstat(filePath);
-    const fileDescriptor = await fopen(filePath);
-
-    const readFn = fread.bind(undefined, fileDescriptor);
-    const closeFn = fclose.bind(undefined, fileDescriptor);
-
-    return new ParquetEnvelopeReader(readFn, closeFn, fileStat.size);
-  }
 
   static async openBuffer(buffer: Buffer): Promise<ParquetEnvelopeReader> {
     const readFn = (position: number, length: number) =>
