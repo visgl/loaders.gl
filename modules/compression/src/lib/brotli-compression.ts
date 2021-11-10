@@ -4,6 +4,7 @@ import {Compression} from './compression';
 import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
 import type brotliNamespace from 'brotli';
 // import brotli from 'brotli';  // https://bundlephobia.com/package/brotli
+import {BrotliDecode} from "../brotli/decode";
 import zlib from 'zlib';
 import {promisify} from '@loaders.gl/loader-utils';
 
@@ -69,8 +70,14 @@ export class BrotliCompression extends Compression {
     }
     const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
     const inputArray = new Uint8Array(input);
+
+    if (!brotli) {
+      throw new Error('brotli compression: brotli module not installed');
+    }
+
     // @ts-ignore brotli types state that only Buffers are accepted...
-    return brotli.compress(inputArray, brotliOptions);
+    const outputArray = brotli.compress(inputArray, brotliOptions);
+    return outputArray.buffer;
   }
 
   async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
@@ -88,9 +95,16 @@ export class BrotliCompression extends Compression {
       const buffer = zlib.brotliDecompressSync(input);
       return toArrayBuffer(buffer);
     }
+
     const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
     const inputArray = new Uint8Array(input);
-    // @ts-ignore brotli types state that only Buffers are accepted...
-    return brotli.decompress(inputArray, brotliOptions);
+
+    if (brotli) {
+      // @ts-ignore brotli types state that only Buffers are accepted...
+      const outputArray = brotli.decompress(inputArray, brotliOptions);
+      return outputArray.buffer;
+    }
+    const outputArray = BrotliDecode(inputArray, undefined);
+    return outputArray.buffer;
   }
 }
