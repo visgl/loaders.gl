@@ -10,10 +10,10 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "noUnusedLocals": true,
+    "noEmit": true,
     // This must be specified if "paths" is.
     "baseUrl": ".",
     "paths": {

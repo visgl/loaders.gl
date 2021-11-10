@@ -43,8 +43,6 @@
     "util": false
   },
   "scripts": {
-    "pre-build-disabled": "npm run build-bundle",
-    "build-bundle": "webpack --config ../../scripts/webpack/bundle.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

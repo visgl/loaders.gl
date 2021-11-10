@@ -1,16 +1,6 @@
 # Introduction
 
 <p align="center">
-  <a href="https://vis.gl">
-    <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/vis-logo.png" />
-    <span style="padding-left: 50px;" />
-    <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/linux-foundation.svg" />
-    <span style="padding-left: 50px;" />
-    <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/ucf-color-hztl.svg" />
-  </a>
-</p>
-<br/>
-<p align="center">
   <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />
   <img src="https://flat.badgen.net/badge/icon/Typed?icon=typescript&label&labelColor=blue&color=555555)" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" />
@@ -18,33 +8,18 @@
   <br />
 </p>
 
-<p align="center" style="margin-left: 10%; margin-right: 10%">
-loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</b></a>, an open governance Linux Foundation project that is developed collaboratively by multiple organizations and individuals and the Urban Computing Foundation.
-</p>
 
-<p align="center">
-  These docs are for <img src="https://img.shields.io/badge/loaders.gl-v3.0-blue.svg" />
-  <br />
-  Docs for older versions are available on github: 
-  <a href="https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md">
-    <b>v2.3</b>
-  </a>
-  <a href="https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md">
-    <b>v1.3</b>
-  </a>
-</p>
-
-<p align="center">
-<i>If you find loaders.gl useful, please consider giving a github star. The project has almost 300K monthly downloads but only 300 stars.</i>
-</p>
+Documentation for loaders.gl **v3.1**. Docs for older versions are available on github:
+**[v2.3](https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md)**,
+**[v1.3](https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md)**.
 
 ## Overview
 
-loaders.gl is a is a collection of the best open source loaders and writers for file formats focused on visualization of big data, including tabular and geospatial data formats as well as images, point clouds and 3D geometries.
+loaders.gl is a collection of open source loaders and writers for file formats focused on visualization of big data, including tabular, geospatial, and 3D formats.
 
-loader.gl is packaged and published as a composable module suite with consistent APIs and features across the suite, and supports advanced features such as running loaders on workers and incremental loading (streaming) in a consistent way across the entire suite, and all loaders work in both the browser and in Node.js.
+loaders.gl is packaged and published as a suite of composable loader modules offering consistent APIs and features, and offers advanced features such as running loaders on workers and incremental parsing, and all loaders work in both the browser and in Node.js.
 
-[vis.gl frameworks](https://vis.gl/frameworks) such as [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) integrate seamlessly with loaders.gl, however the design is framework-agnostic, and all loaders and writers can be used with any JavaScript application or framework.
+Other [vis.gl frameworks](https://vis.gl/frameworks) such as [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) integrate seamlessly with loaders.gl, however the API is framework-agnostic, and all loaders and writers can be used with any JavaScript application or framework.
 
 ## Loaders
 
@@ -136,6 +111,18 @@ loaders.gl is maintained by a group of organizations collaborating through open 
 While loaders.gl contains a lot of original code, it is also partly a repackaging of superb work done by others in the open source community. We try to be as explicit as we can about the origins and attributions of each piece of code, both in the documentation page for each module and in the preservation of comments relating to authorship and contributions inside forked source code.
 
 Even so, we can make mistakes, and we may not have the full history of the code we are reusing. If you think that we have missed something, or that we could do better in regard to attribution, please let us know.
+
+## Open Governance
+
+<a href="https://vis.gl">
+  <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/linux-foundation.svg" />
+  <span style="padding-left: 50px;" />
+  <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/ucf-color-hztl.svg" />
+  <span style="padding-left: 50px;" />
+  <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/vis-logo.png" />
+</a>
+
+loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</b></a>, an open governance Linux Foundation project that is developed collaboratively by multiple organizations and individuals and the Urban Computing Foundation.
 
 ### Primary maintainers
 

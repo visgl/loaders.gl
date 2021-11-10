@@ -1,8 +1,15 @@
 {
-  "extends": "../../tsconfig.build.json",
+  "extends": "../../tsconfig.module.json",
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
     "outDir": "dist"
-  }
+  },
+  "references": [
+    {"path": "../gis"},
+    {"path": "../loader-utils"},
+    {"path": "../schema"}
+  ]
 }

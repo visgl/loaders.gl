@@ -198,6 +198,7 @@ function getMartiniTileMesh(meshMaxError, width, terrain) {
 function getDelatinTileMesh(meshMaxError, width, height, terrain) {
   const tin = new Delatin(terrain, width + 1, height + 1);
   tin.run(meshMaxError);
+  // @ts-expect-error
   const {coords, triangles} = tin;
   const vertices = coords;
   return {vertices, triangles};

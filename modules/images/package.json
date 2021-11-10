@@ -28,8 +28,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "tsc && npm run build-bundle",
-    "build-bundle": "webpack  --display=minimal --config ../../scripts/webpack/bundle.js"
+    "pre-build": "npm run build-bundle",
+    "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.0.0-alpha.4"

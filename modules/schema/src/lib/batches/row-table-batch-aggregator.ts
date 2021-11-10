@@ -1,4 +1,4 @@
-import type {Schema} from '../schema';
+import type {Schema} from '../schema/schema';
 import type {TableBatch} from '../../category/table/table-types';
 // import type {ArrayRowTableBatch, ObjectRowTableBatch} from '../../category/table';
 import {convertToArrayRow, convertToObjectRow} from '../utils/row-utils';

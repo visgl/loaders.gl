@@ -9,8 +9,7 @@
           "entries": [
             {"entry": "docs"},
             {"entry": "docs/whats-new"},
-            {"entry": "docs/upgrade-guide"},
-            {"entry": "docs/roadmap"}
+            {"entry": "docs/upgrade-guide"}
           ]
         },
         {
@@ -77,6 +76,7 @@
         {"entry": "modules/las/docs/api-reference/las-loader"},
         {"entry": "modules/mvt/docs/api-reference/mvt-loader"},
         {"entry": "modules/obj/docs/api-reference/obj-loader"},
+        {"entry": "modules/parquet/docs/api-reference/parquet-loader"},
         {"entry": "modules/pcd/docs/api-reference/pcd-loader"},
         {"entry": "modules/ply/docs/api-reference/ply-loader"},
         {"entry": "modules/terrain/docs/api-reference/quantized-mesh-loader"},
@@ -85,6 +85,7 @@
         {"entry": "modules/textures/docs/api-reference/basis-loader"},
         {"entry": "modules/textures/docs/api-reference/compressed-texture-loader"},
         {"entry": "modules/textures/docs/api-reference/compressed-texture-writer"},
+        {"entry": "modules/textures/docs/api-reference/ktx2-basis-texture-writer"},
         {"entry": "modules/textures/docs/api-reference/crunch-loader"},
         {"entry": "modules/textures/docs/api-reference/npy-loader"},
         {"entry": "modules/video/docs/api-reference/video-loader"},
@@ -185,8 +186,7 @@
             {"entry": "modules/gltf/docs"},
             {"entry": "modules/gltf/docs/api-reference/gltf-extensions"},
             {"entry": "modules/gltf/docs/api-reference/gltf-scenegraph"},
-            {"entry": "modules/gltf/docs/api-reference/post-process-gltf"},
-            {"entry": "modules/gltf/docs/api-reference/glbdump"}
+            {"entry": "modules/gltf/docs/api-reference/post-process-gltf"}
           ]
         },
         {
@@ -234,6 +234,12 @@
           "title": "@loaders.gl/obj",
           "entries": [
             {"entry": "modules/obj/docs"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/parquet",
+          "entries": [
+            {"entry": "modules/parquet/docs"}
           ]
         },
         {

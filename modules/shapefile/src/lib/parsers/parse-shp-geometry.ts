@@ -1,4 +1,4 @@
-import type {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
+import {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
 
 const LITTLE_ENDIAN = true;
 

@@ -26,7 +26,7 @@ export class ZstdCompression extends Compression {
 
     ZstdCodec = this.options?.modules?.['zstd-codec'];
     if (!ZstdCodec) {
-      throw new Error(this.name);
+      console.warn(`${this.name} library not installed`);
     }
   }
 

@@ -17,36 +17,36 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 
 ## I3S Layer type support
 
-| Layer Type           | Supported | I3S Spec Link                                                                  |
-| -------------------- | --------- | ------------------------------------------------------------------------------ |
-| 3DObject             | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3Dobject_ReadMe.md       |
-| Integrated Mesh      | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/IntegratedMesh_ReadMe.md |
-| Points               | no        | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/Point_ReadMe.md          |
-| PointClouds          | no        | https://github.com/Esri/i3s-spec/blob/master/docs/2.0/pcsl_ReadMe.md           |
-| Building Scene Layer | no        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md            |
+| Layer Type           | Supported    | I3S Spec Link                                                                  |
+| -------------------- | ------------ | ------------------------------------------------------------------------------ |
+| 3DObject             | yes          | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3Dobject_ReadMe.md       |
+| Integrated Mesh      | yes          | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/IntegratedMesh_ReadMe.md |
+| Points               | no           | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/Point_ReadMe.md          |
+| PointClouds          | no           | https://github.com/Esri/i3s-spec/blob/master/docs/2.0/pcsl_ReadMe.md           |
+| Building Scene Layer | experimental | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md            |
 
 ## I3S Aspects support
 
 | Aspect                | Supported | I3S Spec Link                                                                                |
 | --------------------- | --------- | -------------------------------------------------------------------------------------------- |
-| Node pages            | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodePage.cmn.md                        |
-| Compressed attributes | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/compressedAttributes.cmn.md            |
-| PBR materials         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md            |
-| Feature attributes    | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md            |
-| Texture Atlas         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md#atlas-usage-and-regions |
+| Node pages            | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md                        |
+| Compressed attributes | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/compressedAttributes.cmn.md            |
+| PBR materials         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md            |
+| Feature attributes    | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/attributeStorageInfo.cmn.md            |
+| Texture Atlas         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md#atlas-usage-and-regions |
 
 ## Texture formats
 
-I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/texture.cmn.md
+I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md
 
-| Texture                                        | Supported |
-| ---------------------------------------------- | --------- |
-| JPEG                                           | yes       |
-| PNG                                            | yes       |
-| .dds with DXT1 (no alpha)                      | yes       |
-| .dds with DXT5 (alpha channel)                 | yes       |
-| ktx-etc2                                       | yes       |
-| Basis Universal Texture format in Khronos KTX2 | yes       |
+| Texture                                        | Supported  |
+| ---------------------------------------------- | ---------- |
+| JPEG                                           | yes        |
+| PNG                                            | yes        |
+| .dds with DXT1 (no alpha)                      | yes        |
+| .dds with DXT5 (alpha channel)                 | yes        |
+| ktx-etc2                                       | not tested |
+| Basis Universal Texture format in Khronos KTX2 | yes        |
 
 ## Terms
 
@@ -212,7 +212,7 @@ The following fields are guaranteed. Additionally, the loaded tileset object wil
 | Field            | Type     | Contents                                                                                                                                                                                                                                                                         |
 | ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `type`           | `String` | Value is `i3s`. Indicates the returned object is an `i3s` tileset.                                                                                                                                                                                                               |
-| `lodMetricType`  | `String` | Root's level of detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details. |
+| `lodMetricType`  | `String` | Root's level of detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn.md) for more details. |
 | `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                       |
 
 ### Tile Object
@@ -229,7 +229,7 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 | `featureUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
 | `textureUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
 | `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md) that encloses a tile or its content. Exactly one box, region, or sphere property is required. |
-| `lodMetricType`  | `String` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details.                |
+| `lodMetricType`  | `String` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn.md) for more details.                |
 | `lodMetricValue` | `String` | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                      |
 | `content`        | `String` | The actual payload of the tile or the url point to the actual payload. If `option.loadContent` is enabled, content will be populated with the loaded value following the Tile Content section                                                                                            |
 

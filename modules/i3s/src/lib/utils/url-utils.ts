@@ -6,7 +6,7 @@ import {Tile} from '../../types';
  * @param {any} token
  * @returns {string}
  */
-export function getUrlWithToken(url, token = null) {
+export function getUrlWithToken(url: string, token = null): string {
   return token ? `${url}?token=${token}` : url;
 }
 

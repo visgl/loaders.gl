@@ -30,7 +30,7 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "tsc && npm run build-bundle",
+    "pre-build": "npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js"
   },
   "dependencies": {
@@ -40,6 +40,6 @@
     "@loaders.gl/textures": "4.0.0-alpha.4"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^3.0.0"
+    "@loaders.gl/core": "4.0.0-alpha.4"
   }
 }
