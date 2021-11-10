@@ -4,7 +4,7 @@ import {Compression} from './compression';
 import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
 import type brotliNamespace from 'brotli';
 // import brotli from 'brotli';  // https://bundlephobia.com/package/brotli
-import {BrotliDecode} from "../brotli/decode";
+import {BrotliDecode} from '../brotli/decode';
 import zlib from 'zlib';
 import {promisify} from '@loaders.gl/loader-utils';
 
