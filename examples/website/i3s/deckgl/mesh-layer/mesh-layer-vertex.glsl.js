@@ -27,8 +27,21 @@ out vec4 position_commonspace;
 out vec4 vColor;
 
 void main(void) {
-  // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/geometryUVRegion.cmn.md
-  vec2 uv = fract(texCoords) * (uvRegions.zw - uvRegions.xy) + uvRegions.xy;
+  //------------------------
+  // New code
+  //------------------------
+  #ifdef HAS_UV_REGIONS
+    // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/geometryUVRegion.cmn.md
+    vec2 uv = fract(texCoords) * (uvRegions.zw - uvRegions.xy) + uvRegions.xy;
+  #else
+    vec2 uv = texCoords;
+  #endif
+  // ------------------------
+  // Old code
+  // ------------------------
+  // // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/geometryUVRegion.cmn.md
+  // vec2 uv = fract(texCoords) * (uvRegions.zw - uvRegions.xy) + uvRegions.xy;
+  // ------------------------
 
   geometry.uv = uv;
   geometry.uv = texCoords;
