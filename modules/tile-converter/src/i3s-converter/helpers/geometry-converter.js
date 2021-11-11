@@ -174,19 +174,6 @@ function convertAttributes(tileContent) {
       attributesMap.delete(attrKey);
       continue; // eslint-disable-line no-continue
     }
-    const vertexCount = attributes.positions.length / VALUES_PER_VERTEX;
-    if (!attributes.colors.length) {
-      attributes.colors = new Uint8Array(vertexCount * VALUES_PER_COLOR_ELEMENT);
-      for (let index = 0; index < attributes.colors.length; index += 4) {
-        attributes.colors.set([255, 255, 255, 255], index);
-      }
-    }
-    if (!attributes.texCoords.length) {
-      attributes.texCoords = new Float32Array(vertexCount * VALUES_PER_TEX_COORD);
-      for (let index = 0; index < attributes.texCoords.length; index += 2) {
-        attributes.texCoords.set([1, 1], index);
-      }
-    }
     attributes.featureIndices = attributes.featureIndices.reduce((acc, value) => acc.concat(value));
   }
 
@@ -375,6 +362,7 @@ function transformVertexNormals(vertexVector, calleeArgs) {
 function flattenTexCoords(texCoords, indices) {
   const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
   if (!texCoords) {
+    newTexCoords.fill(1);
     return newTexCoords;
   }
   for (let i = 0; i < indices.length; i++) {
@@ -396,6 +384,7 @@ function flattenColors(colorsAttribute, indices) {
   const components = colorsAttribute?.components || VALUES_PER_COLOR_ELEMENT;
   const newColors = new Uint8Array(indices.length * components);
   if (!colorsAttribute) {
+    newColors.fill(255);
     return newColors;
   }
   const colors = colorsAttribute.value;
