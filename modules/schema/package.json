@@ -32,7 +32,6 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js"
   },
   "dependencies": {
-    "@types/geojson": "^7946.0.7",
-    "apache-arrow": "^4.0.0"
+    "@types/geojson": "^7946.0.7"
   }
 }

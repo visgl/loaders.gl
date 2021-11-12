@@ -102,7 +102,7 @@ test('LASLoader#shape="columnar-table"', async (t) => {
   t.end();
 });
 
-test('LAS#shape="arrow-table"', async (t) => {
+test.skip('LAS#shape="arrow-table"', async (t) => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'arrow-table', skip: 10},
     worker: false
