@@ -1,3 +1,4 @@
+/*
 import type {TypedArray} from '../../types';
 import {
   DataType,
@@ -65,3 +66,4 @@ export function getArrowVector(array: TypedArray): AbstractVector {
       throw new Error('array type not supported');
   }
 }
+*/

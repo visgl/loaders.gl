@@ -1,7 +1,10 @@
 import type {Schema} from '../../lib/schema/schema';
-import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow/Arrow.dom';
 import type {AnyArray} from '../../types';
 import type {Batch} from '../common';
+// TODO Arrow dependency causes issues
+// import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow/Arrow.dom';
+type ApacheArrowTable = any;
+type RecordBatch = any;
 
 /** A general table */
 export interface Table {

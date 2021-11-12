@@ -1,4 +1,5 @@
-import type {RecordBatch} from 'apache-arrow';
+// import type {RecordBatch} from 'apache-arrow';
+type RecordBatch = any;
 
 export type Field = any;
 
