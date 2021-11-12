@@ -362,6 +362,8 @@ function transformVertexNormals(vertexVector, calleeArgs) {
 function flattenTexCoords(texCoords, indices) {
   const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
   if (!texCoords) {
+    // We need dummy UV0s because it is required in 1.6
+    // https://github.com/Esri/i3s-spec/blob/master/docs/1.6/vertexAttribute.cmn.md
     newTexCoords.fill(1);
     return newTexCoords;
   }
@@ -384,6 +386,7 @@ function flattenColors(colorsAttribute, indices) {
   const components = colorsAttribute?.components || VALUES_PER_COLOR_ELEMENT;
   const newColors = new Uint8Array(indices.length * components);
   if (!colorsAttribute) {
+    // Vertex color multiplies by material color so it must be normalized 1 by default
     newColors.fill(255);
     return newColors;
   }
