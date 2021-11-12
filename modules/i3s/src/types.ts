@@ -1,6 +1,5 @@
 import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
-import type {Mesh} from '@loaders.gl/gltf';
 import type {TypedArray} from '@loaders.gl/schema';
 
 export enum DATA_TYPE {
@@ -206,7 +205,24 @@ export type NodeInPage = {
   lodThreshold: number;
   obb: Obb;
   children: any[];
-  mesh: Mesh;
+  mesh?: NodeInPageMesh;
+};
+
+export type NodeInPageMesh = {
+  material?: {
+    definition: number;
+    resource?: number;
+    texelCountHint?: number;
+  };
+  geometry?: {
+    definition: number;
+    resource: number;
+    vertexCount?: number;
+    featureCount?: number;
+  };
+  attribute?: {
+    resource: number;
+  };
 };
 
 export type SharedResources = {
@@ -493,7 +509,7 @@ type GeometryBufferItem = {type: string; component: number; encoding?: string; b
 
 type AttributeValue = {valueType: string; encoding?: string; valuesPerElement?: number};
 
-type FieldInfo = {
+export type FieldInfo = {
   fieldName: string;
   visible: boolean;
   isEditable: boolean;

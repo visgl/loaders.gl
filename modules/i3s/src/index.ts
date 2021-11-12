@@ -22,6 +22,7 @@ export type {
   TextureImage,
   Attribute,
   Extent,
-  FeatureAttribute
+  FeatureAttribute,
+  FieldInfo
 } from './types';
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';

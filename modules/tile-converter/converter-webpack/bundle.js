@@ -2,7 +2,7 @@ const {resolve} = require('path');
 const PACKAGE_ROOT = resolve('.');
 
 module.exports = {
-  mode: 'production',
+  mode: 'development',
   entry: './scripts/converter.js',
   node: {
     fs: 'empty',
@@ -15,5 +15,28 @@ module.exports = {
     libraryTarget: 'commonjs'
   },
   stats: 'detailed',
-  target: 'node'
+  target: 'node',
+  module: {
+    rules: [
+      {
+        test: /\.m?js$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env'],
+            plugins: [
+              [
+                '@babel/plugin-transform-runtime',
+                {
+                  helpers: false,
+                  corejs: true,
+                  regenerator: true
+                }
+              ]
+            ]
+          }
+        }
+      }
+    ]
+  }
 };
