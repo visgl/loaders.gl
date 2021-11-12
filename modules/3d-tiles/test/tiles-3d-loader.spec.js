@@ -16,6 +16,11 @@ const DEPRECATED_B3DM_1 =
 const DEPRECATED_B3DM_2 =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/batchedDeprecated2.b3dm';
 
+const IMPLICIT_OCTREE_TILESET_URL = '@loaders.gl/3d-tiles/test/data/SparseOctree/tileset.json';
+const IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL =
+  '@loaders.gl/3d-tiles/test/data/FullQuadtree/tileset.json';
+const IMPLICIT_QUADTREE_TILESET_URL = '@loaders.gl/3d-tiles/test/data/BasicExample/tileset.json';
+
 test('Tiles3DLoader#Tileset file', async (t) => {
   const response = await fetchFile(TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
@@ -103,5 +108,29 @@ test('Tiles3DLoader#loads json from base64 URL', async (t) => {
   t.equals(typeof tilesetHeader.basePath, 'string', 'basePath should be string');
   t.ok('root' in tilesetHeader, 'should contain root tile');
   t.equals(tilesetHeader.type, 'TILES3D');
+  t.end();
+});
+
+test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subtrees', async (t) => {
+  const response = await fetchFile(IMPLICIT_OCTREE_TILESET_URL);
+  const tileset = await parse(response, Tiles3DLoader);
+  t.ok(tileset);
+
+  t.end();
+});
+
+test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', async (t) => {
+  const response = await fetchFile(IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL);
+  const tileset = await parse(response, Tiles3DLoader);
+  t.ok(tileset);
+
+  t.end();
+});
+
+test.only('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', async (t) => {
+  const response = await fetchFile(IMPLICIT_QUADTREE_TILESET_URL);
+  const tileset = await parse(response, Tiles3DLoader);
+  t.ok(tileset);
+
   t.end();
 });

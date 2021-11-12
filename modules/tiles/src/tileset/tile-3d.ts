@@ -60,6 +60,7 @@ export default class TileHeader {
   depth: number;
   viewportIds: any[];
   transform: Matrix4;
+  extensions: any;
 
   // Container to store application specific data
   userData: {[key: string]: any};
@@ -168,6 +169,7 @@ export default class TileHeader {
 
     // Container to store application specific data
     this.userData = {};
+    this.extensions = null;
 
     // PRIVATE MEMBERS
     this._priority = 0;
