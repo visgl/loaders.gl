@@ -49,7 +49,8 @@ export class BrotliCompression extends Compression {
   async preload(): Promise<void> {
     brotli = brotli || this.options?.modules?.brotli;
     if (!brotli) {
-      throw new Error(this.name);
+      // eslint-disable-next-line no-console
+      console.warn(`${this.name} library not installed`);
     }
   }
 
