@@ -1,6 +1,3 @@
-// import built-in Symbols (eg Symbol.toStringTag). Otherwise they will be undefined and cause error
-import _Symbol from '@babel/runtime-corejs3/core-js-stable/symbol';
-
 import type {AttributeStorageInfo, FeatureAttribute, NodeReference} from '@loaders.gl/i3s';
 import type {Node3D} from '@loaders.gl/3d-tiles';
 

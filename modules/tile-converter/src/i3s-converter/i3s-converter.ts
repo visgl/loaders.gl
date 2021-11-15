@@ -1,6 +1,3 @@
-// import built-in Symbols (eg Symbol.toStringTag). Otherwise they will be undefined and cause error
-import _Symbol from '@babel/runtime-corejs3/core-js-stable/symbol';
-
 import type {Tileset3DProps} from '@loaders.gl/tiles';
 import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {BatchTableJson, B3DMContent} from '@loaders.gl/3d-tiles';
