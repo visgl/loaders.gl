@@ -60,6 +60,7 @@
         {"entry": "modules/csv/docs/api-reference/csv-loader"},
         {"entry": "modules/draco/docs/api-reference/draco-loader"},
         {"entry": "modules/draco/docs/api-reference/draco-writer"},
+        {"entry": "modules/flatgeobuf/docs/api-reference/flatgeobuf-loader"},
         {"entry": "modules/geopackage/docs/api-reference/geopackage-loader"},
         {"entry": "modules/gltf/docs/api-reference/gltf-loader"},
         {"entry": "modules/gltf/docs/api-reference/gltf-writer"},
