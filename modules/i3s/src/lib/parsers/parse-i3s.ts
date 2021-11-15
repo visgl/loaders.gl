@@ -4,8 +4,14 @@ import {load} from '@loaders.gl/core';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../helpers/i3s-nodepages-tiles';
 import {generateTileAttributeUrls, getUrlWithToken} from '../utils/url-utils';
+import {
+  I3sTilesetHeader,
+  I3sTileHeader,
+  Mbs
+} from '../../types';
+import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 
-export function normalizeTileData(tile, options, context) {
+export function normalizeTileData(tile : I3sTileHeader, options : LoaderOptions, context: LoaderContext) {
   tile.url = context.url;
 
   if (tile.featureData) {
@@ -27,7 +33,7 @@ export function normalizeTileData(tile, options, context) {
   return normalizeTileNonUrlData(tile);
 }
 
-export function normalizeTileNonUrlData(tile) {
+export function normalizeTileNonUrlData(tile : I3sTileHeader) {
   const box = tile.obb
     ? [
       ...Ellipsoid.WGS84.cartographicToCartesian(tile.obb.center), // cartesian center of box
@@ -35,12 +41,12 @@ export function normalizeTileNonUrlData(tile) {
       ...tile.obb.quaternion // quaternion
     ]
     : undefined;
-  let sphere;
+  let sphere : Mbs;
   if (tile.mbs) {
     sphere = [
       ...Ellipsoid.WGS84.cartographicToCartesian(tile.mbs.slice(0, 3)), // cartesian center of sphere
       tile.mbs[3] // radius of sphere
-    ];
+    ] as Mbs;
   } else if (box) {
     const obb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
       box.slice(0, 3),
@@ -48,11 +54,12 @@ export function normalizeTileNonUrlData(tile) {
       tile.obb.quaternion
     );
     const boundingSphere = obb.getBoundingSphere();
-    sphere = [...boundingSphere.center, boundingSphere.radius];
-    tile.mbs = [...tile.obb.center, boundingSphere.radius];
+    sphere = [...boundingSphere.center , boundingSphere.radius] as Mbs;
+    tile.mbs = [...tile.obb.center, boundingSphere.radius] as Mbs;
   }
 
   tile.boundingVolume = {
+    // @ts-ignore
     sphere,
     box
   };
@@ -66,7 +73,7 @@ export function normalizeTileNonUrlData(tile) {
   return tile;
 }
 
-export async function normalizeTilesetData(tileset, options, context) {
+export async function normalizeTilesetData(tileset : I3sTilesetHeader, options : LoaderOptions, context: LoaderContext) {
   tileset.url = context.url;
 
   if (tileset.nodePages) {

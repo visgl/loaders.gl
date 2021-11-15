@@ -2,8 +2,6 @@ import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-
-import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
@@ -18,7 +16,8 @@ import {
   I3sMeshAttributes,
   I3sMeshAttribute,
   TileContentTexture,
-  HeaderAttributeProperty
+  HeaderAttributeProperty,
+  I3sMaterialDefinition
 } from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
@@ -489,7 +488,7 @@ function getModelMatrix(positions: I3sMeshAttribute): Matrix4 {
  * @param texture - texture image
  * @returns {object}
  */
-function makePbrMaterial(materialDefinition: GLTFMaterial, texture: TileContentTexture) {
+function makePbrMaterial(materialDefinition: I3sMaterialDefinition, texture: TileContentTexture) {
   let pbrMaterial;
   if (materialDefinition) {
     pbrMaterial = {
