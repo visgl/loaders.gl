@@ -1,6 +1,7 @@
 import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
-import type {TypedArray} from '@loaders.gl/schema';
+import type {TypedArray, MeshAttribute} from '@loaders.gl/schema';
+import type {TextureLevel} from '@loaders.gl/textures/src/types';
 
 export enum DATA_TYPE {
   UInt8 = 'UInt8',
@@ -17,9 +18,11 @@ export enum DATA_TYPE {
  * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DSceneLayer.cmn.md
  */
 // TODO Replace "[key: string]: any" with actual defenition
-export type Tileset = {
+export type I3sTilesetHeader = {
   /**
-   * The store object describes the exact physical storage of a layer and enables the client to detect when multiple layers are served from the same store.
+   * The store object describes the exact physical storage of a layer and
+   * enables the client to detect when multiple layers are served from
+   * the same store.
    */
   store: Store;
   [key: string]: any;
@@ -27,8 +30,8 @@ export type Tileset = {
 // TODO Replace "[key: string]: any" with actual defenition
 export type NodePage = {[key: string]: any};
 // TODO Replace "[key: string]: any" with actual defenition
-export type Tile = {
-  content: TileContent;
+export type I3sTileHeader = {
+  content: I3sTileContent;
   isDracoGeometry: boolean;
   textureUrl: string;
   url: string;
@@ -36,16 +39,16 @@ export type Tile = {
    * Resource reference describing a featureData document.
    */
   attributeData: Resource[];
-  textureFormat: 'jpeg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
+  textureFormat: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
   textureLoaderOptions: any;
   materialDefinition: GLTFMaterial;
   mbs: Mbs;
 };
 // TODO Replace "[key: string]: any" with actual defenition
-export type TileContent = {
+export type I3sTileContent = {
   featureData: DefaultGeometrySchema;
-  attributes: NormalizedAttributes;
-  indices: NormalizedAttribute | null;
+  attributes: I3sMeshAttributes;
+  indices: TypedArray | null;
   featureIds: number[] | TypedArray;
   vertexCount: number;
   modelMatrix: Matrix4;
@@ -62,7 +65,7 @@ export type TileContentTexture =
       mipmaps: boolean;
       width: number;
       height: number;
-      data: any;
+      data: TextureLevel[];
     }
   | null;
 
@@ -401,19 +404,7 @@ type Store = {
 type DefaultGeometrySchema = {
   geometryType?: 'triangles';
   topology: 'PerAttributeArray' | 'Indexed';
-  header: {
-    property: 'vertexCount' | 'featureCount' | string;
-    type:
-      | DATA_TYPE.UInt8
-      | DATA_TYPE.UInt16
-      | DATA_TYPE.UInt32
-      | DATA_TYPE.UInt64
-      | DATA_TYPE.Int16
-      | DATA_TYPE.Int32
-      | DATA_TYPE.Int64
-      | DATA_TYPE.Float32
-      | DATA_TYPE.Float64;
-  }[];
+  header: HeaderAttribute[];
   ordering: string[];
   vertexAttributes: VertexAttribute;
   faces?: VertexAttribute;
@@ -422,6 +413,26 @@ type DefaultGeometrySchema = {
   // TODO Do we realy need this Property?
   attributesOrder?: string[];
 };
+/**
+ * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/headerAttribute.cmn.md
+ */
+export type HeaderAttribute = {
+  property: HeaderAttributeProperty.vertexCount | HeaderAttributeProperty.featureCount | string;
+  type:
+    | DATA_TYPE.UInt8
+    | DATA_TYPE.UInt16
+    | DATA_TYPE.UInt32
+    | DATA_TYPE.UInt64
+    | DATA_TYPE.Int16
+    | DATA_TYPE.Int32
+    | DATA_TYPE.Int64
+    | DATA_TYPE.Float32
+    | DATA_TYPE.Float64;
+};
+export enum HeaderAttributeProperty {
+  vertexCount = 'vertexCount',
+  featureCount = 'featureCount'
+}
 export type VertexAttribute = {
   position: GeometryAttribute;
   normal: GeometryAttribute;
@@ -441,16 +452,13 @@ export type GeometryAttribute = {
     | DATA_TYPE.Float64;
   valuesPerElement: number;
 };
-export type NormalizedAttributes = {
-  [key: string]: NormalizedAttribute;
+export type I3sMeshAttributes = {
+  [key: string]: I3sMeshAttribute;
 };
-export type NormalizedAttribute = {
-  value: number[] | TypedArray;
-  type: number;
-  size: number;
-  normalized?: boolean;
+export interface I3sMeshAttribute extends MeshAttribute {
+  type?: number;
   metadata?: any;
-};
+}
 type HeightModelInfo = {
   heightModel: 'gravity_related_height' | 'ellipsoidal';
   vertCRS: string;
