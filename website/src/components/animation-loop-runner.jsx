@@ -135,7 +135,7 @@ export default class AnimationLoopRunner extends Component {
     const {pageContext, panel = true, stats, sourceLink} = this.props;
     const name = pageContext && pageContext.exampleConfig && pageContext.exampleConfig.title;
 
-    const notSupported = this.animationLoop.isSupported && !this.animationLoop.isSupported();
+    const notSupported = this.animationLoop && this.animationLoop.isSupported && !this.animationLoop.isSupported();
 
     if (notSupported) {
       const altText = this.animationLoop?.getAltText?.() || DEFAULT_ALT_TEXT;

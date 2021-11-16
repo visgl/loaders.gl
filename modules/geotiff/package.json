@@ -29,8 +29,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+    "pre-build": "# npm run build-bundle",
+    "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap --external:{fs,http,https}"
   },
   "dependencies-disabled": {
     "geotiff": "ilan-gold/geotiff.js#ilan-gold/viv_094"

@@ -26,12 +26,15 @@ export class ZstdCompression extends Compression {
 
     ZstdCodec = this.options?.modules?.['zstd-codec'];
     if (!ZstdCodec) {
-      throw new Error(this.name);
+      // eslint-disable-next-line no-console
+      console.warn(`${this.name} library not installed`);
     }
   }
 
   async preload(): Promise<void> {
-    zstd = zstd || (await new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd))));
+    if (!zstd && ZstdCodec) {
+      zstd = await new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd)));
+    }
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {

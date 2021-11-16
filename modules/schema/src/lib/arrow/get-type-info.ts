@@ -1,4 +1,4 @@
-import {Type} from '../schema';
+import {Type} from '../schema/schema';
 import {AnyArray} from '../../types';
 
 /**

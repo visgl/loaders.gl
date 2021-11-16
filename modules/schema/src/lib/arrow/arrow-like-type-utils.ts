@@ -1,5 +1,15 @@
 import type {TypedArray} from '../../types';
-import {DataType, Float32, Float64, Int16, Int32, Int8, Uint16, Uint32, Uint8} from '../schema';
+import {
+  DataType,
+  Float32,
+  Float64,
+  Int16,
+  Int32,
+  Int8,
+  Uint16,
+  Uint32,
+  Uint8
+} from '../schema/schema';
 
 export function getArrowTypeFromTypedArray(array: TypedArray): DataType {
   switch (array.constructor) {

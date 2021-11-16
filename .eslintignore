@@ -13,7 +13,9 @@ public/
 .cache/
 
 examples/**
+
 modules/tiles/src/bundle.ts
+modules/zarr
 modules/tile-converter/
 modules/potree/test/data/**/cloud.js
 examples/experimental/gltf-with-raw-webgl/

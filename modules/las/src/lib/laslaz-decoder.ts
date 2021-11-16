@@ -5,7 +5,7 @@
 */
 // laslaz.js - treat as compiled code
 import type {LASHeader} from './las-types';
-import getModule from '../libs/laz-perf';
+import getModule from './libs/laz-perf';
 
 let Module: any = null;
 

@@ -1,4 +1,4 @@
-import type {Schema} from '../../lib/schema';
+import type {Schema} from '../../lib/schema/schema';
 import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow/Arrow.dom';
 import type {AnyArray} from '../../types';
 import type {Batch} from '../common';

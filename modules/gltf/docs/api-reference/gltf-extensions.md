@@ -11,6 +11,7 @@ Note that many glTF extensions affect aspects that are firmly outside of the sco
 | [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression) |             |
 | [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)               |             |
 | [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)               |             |
+| [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)                   |             |
 
 ## Official Extensions
 
@@ -51,6 +52,12 @@ Encoding Support:
 Specifies that a material should not be affected by light. Useful for pre-lit materials (e.g. photogrammetry).
 
 [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
+
+### KHR_texture_basisu
+
+This extension adds the ability to specify textures using KTX v2 images with Basis Universal supercompression.
+
+[KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)
 
 ## Custom Extensions
 

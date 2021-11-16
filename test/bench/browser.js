@@ -29,7 +29,7 @@ import {addModuleBenchmarksToSuite} from './modules';
 _addAliases(ALIASES);
 
 const suite = new Bench({
-  minIterations: 10
+  minIterations: 1
 });
 
 addModuleBenchmarksToSuite(suite).then(_ => suite.run());

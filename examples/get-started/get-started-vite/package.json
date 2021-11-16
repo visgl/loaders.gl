@@ -1,0 +1,17 @@
+{
+  "name": "get-started-vite",
+  "version": "0.0.0",
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "2.2.0",
+    "@loaders.gl/obj": "2.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.2",
+    "vite": "^2.6.4"
+  }
+}
