@@ -1,6 +1,6 @@
 # Overview
 
-The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](https://github.com/mapbox/vector-tile-spec) format, a protobuf encoded format that defines geospatial geometries.
+The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](https://github.com/mapbox/vector-tile-spec) format, a protobuf-encoded format that defines geospatial geometries.
 
 ## Installation
 
@@ -17,4 +17,4 @@ npm install @loaders.gl/core
 
 ## Attribution
 
-The `MVTLoader` uses [`@mapbox/vector-tile`](https://github.com/mapbox/vector-tile-js) module under the BSD-3-Clause.
+The `MVTLoader` uses the [`@mapbox/vector-tile`](https://github.com/mapbox/vector-tile-js) module under the BSD-3-Clause license.

@@ -33,9 +33,9 @@
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "flatgeobuf": "~3.1.0"
+    "@loaders.gl/gis": "4.0.0-alpha.1",
+    "@math.gl/proj4": "^3.3.1",
+    "flatgeobuf": "3.6.5"
   },
-  "devDependencies": {
-    "esm": "^3.2.25"
-  }
+  "devDependencies": {}
 }
