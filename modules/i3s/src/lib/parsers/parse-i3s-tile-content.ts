@@ -11,7 +11,6 @@ import {
   I3STilesetHeader,
   I3STileHeader,
   FeatureAttribute,
-  I3STileContent,
   VertexAttribute,
   I3SMeshAttributes,
   I3SMeshAttribute,
@@ -21,14 +20,7 @@ import {
 } from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
-import {
-  GL_TYPE_MAP,
-  getConstructorForDataFormat,
-  sizeOf,
-  I3S_NAMED_VERTEX_ATTRIBUTES,
-  I3S_NAMED_GEOMETRY_ATTRIBUTES,
-  COORDINATE_SYSTEM
-} from './constants';
+import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -58,8 +50,6 @@ export async function parseI3STileContent(
   tile.content = tile.content || {};
   tile.content.featureIds = tile.content.featureIds || null;
 
-  // construct featureData from defaultGeometrySchema;
-  tile.content.featureData = constructFeatureDataStruct(tileset);
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
@@ -101,13 +91,14 @@ export async function parseI3STileContent(
     tile.content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, options);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, tileset, options);
 }
 
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
   tile: I3STileHeader,
+  tileset: I3STilesetHeader,
   options?: LoaderOptions
 ) {
   if (!tile.content) {
@@ -156,10 +147,14 @@ async function parseI3SNodeGeometry(
       flattenFeatureIdsByFeatureIndices(attributes, featureIds);
     }
   } else {
-    const {vertexAttributes, attributesOrder, featureAttributes, featureAttributeOrder} =
-      content.featureData;
+    const {
+      vertexAttributes,
+      ordering: attributesOrder,
+      featureAttributes,
+      featureAttributeOrder
+    } = tileset.store.defaultGeometrySchema;
     // First 8 bytes reserved for header (vertexCount and featureCount)
-    const headers = parseHeaders(content, arrayBuffer);
+    const headers = parseHeaders(tileset, arrayBuffer);
     byteOffset = headers.byteOffset;
     vertexCount = headers.vertexCount;
     featureCount = headers.featureCount;
@@ -169,7 +164,6 @@ async function parseI3SNodeGeometry(
       byteOffset,
       vertexAttributes,
       vertexCount,
-      // @ts-expect-error
       attributesOrder
     );
 
@@ -276,37 +270,12 @@ function normalizeAttribute(attribute: I3SMeshAttribute): I3SMeshAttribute {
   return attribute;
 }
 
-function constructFeatureDataStruct(tileset: I3STilesetHeader) {
-  // seed featureData from defaultGeometrySchema
-  const defaultGeometrySchema = tileset.store.defaultGeometrySchema;
-  const featureData = defaultGeometrySchema;
-  // populate the vertex attributes value types and values per element
-  for (const geometryAttribute in I3S_NAMED_GEOMETRY_ATTRIBUTES) {
-    for (const namedAttribute in I3S_NAMED_VERTEX_ATTRIBUTES) {
-      const attribute = defaultGeometrySchema[geometryAttribute][namedAttribute];
-      if (attribute) {
-        const {byteOffset = 0, count = 0, valueType, valuesPerElement} = attribute;
-
-        featureData[geometryAttribute][namedAttribute] = {
-          valueType,
-          valuesPerElement,
-          byteOffset,
-          count
-        };
-      }
-    }
-  }
-
-  featureData.attributesOrder = defaultGeometrySchema.ordering;
-  return featureData;
-}
-
-function parseHeaders(content: I3STileContent, arrayBuffer: ArrayBuffer) {
+function parseHeaders(tileset: I3STilesetHeader, arrayBuffer: ArrayBuffer) {
   let byteOffset = 0;
   // First 8 bytes reserved for header (vertexCount and featurecount)
   let vertexCount = 0;
   let featureCount = 0;
-  for (const {property, type} of content.featureData.header) {
+  for (const {property, type} of tileset.store.defaultGeometrySchema.header) {
     const TypedArrayTypeHeader = getConstructorForDataFormat(type);
     switch (property) {
       case HeaderAttributeProperty.vertexCount:

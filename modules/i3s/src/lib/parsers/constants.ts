@@ -25,20 +25,6 @@ export const GL_TYPE_MAP: {[key: string]: number} = {
   UInt32: GL.UNSIGNED_INT,
   UInt64: GL.DOUBLE
 };
-
-export const I3S_NAMED_VERTEX_ATTRIBUTES = {
-  position: 'position',
-  normal: 'normal',
-  uv0: 'uv0',
-  color: 'color',
-  region: 'region'
-};
-
-export const I3S_NAMED_GEOMETRY_ATTRIBUTES = {
-  vertexAttributes: 'vertexAttributes',
-  featureAttributeOrder: 'featureAttributeOrder',
-  featureAttributes: 'featureAttributes'
-};
 /**
  * Returns how many bytes a type occupies
  * @param dataType

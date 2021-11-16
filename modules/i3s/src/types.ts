@@ -86,7 +86,6 @@ export type I3STileHeader = {
 };
 // TODO Replace "[key: string]: any" with actual defenition
 export type I3STileContent = {
-  featureData: DefaultGeometrySchema;
   attributes: I3SMeshAttributes;
   indices: TypedArray | null;
   featureIds: number[] | TypedArray;
