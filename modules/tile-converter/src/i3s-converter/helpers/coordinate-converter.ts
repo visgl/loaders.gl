@@ -55,10 +55,14 @@ export function createBoundingVolumes(
  * Convert common coordinate to extent coordinate
  * @param tileset
  * @returns - Extent
+ * @todo why lodMetricValue is radius? need to check this function
  */
-export function convertCommonToI3SExtentCoordinate(tileset: Tileset3D): Extent {
-  const cartesianCenter = tileset.cartesianCenter;
-  const radius = tileset.lodMetricValue;
+export function convertCommonToI3SExtentCoordinate(tileset: Tileset3D | null): Extent | null {
+  const cartesianCenter = tileset?.cartesianCenter;
+  if (!cartesianCenter) {
+    return null;
+  }
+  const radius = tileset?.lodMetricValue;
   const rightTop = Ellipsoid.WGS84.cartesianToCartographic(
     new Vector3(cartesianCenter[0] + radius, cartesianCenter[1] + radius, cartesianCenter[2]),
     new Vector3()
