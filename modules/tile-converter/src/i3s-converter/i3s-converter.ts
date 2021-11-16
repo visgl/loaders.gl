@@ -1,5 +1,4 @@
 import type {Tileset3DProps} from '@loaders.gl/tiles';
-import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {BatchTableJson, B3DMContent} from '@loaders.gl/3d-tiles';
 
 import type {
@@ -54,6 +53,7 @@ import {GeoidHeightModel} from '../lib/geoid-height-model';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {I3SMaterialDefinition} from '@loaders.gl/i3s/src/types';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -78,7 +78,7 @@ export default class I3SConverter {
   options: any;
   layers0Path: string;
   materialMap: Map<any, any>;
-  materialDefinitions: GLTFMaterial[];
+  materialDefinitions: I3SMaterialDefinition[];
   vertexCounter: number;
   layers0: SceneLayer3D | null;
   featuresHashArray: string[];
@@ -201,6 +201,7 @@ export default class I3SConverter {
     const sourceRootTile: TileHeader = this.sourceTileset!.root!;
     const boundingVolumes = createBoundingVolumes(sourceRootTile, this.geoidHeightModel!);
     const parentId = this.nodePages.push({
+      index: 0,
       lodThreshold: 0,
       obb: boundingVolumes.obb,
       children: []
@@ -648,6 +649,7 @@ export default class I3SConverter {
   ): NodeInPage {
     const {meshMaterial, texture, vertexCount, featureCount, geometry} = resources;
     const nodeInPage: NodeInPage = {
+      index: 0,
       lodThreshold: maxScreenThresholdSQ.maxError,
       obb: boundingVolumes.obb,
       children: []
@@ -660,6 +662,9 @@ export default class I3SConverter {
         },
         attribute: {
           resource: 0
+        },
+        material: {
+          definition: 0
         }
       };
     }
@@ -949,7 +954,7 @@ export default class I3SConverter {
    * @param material - end-to-end index of the node
    * @return material id
    */
-  private _findOrCreateMaterial(material: GLTFMaterial): number {
+  private _findOrCreateMaterial(material: I3SMaterialDefinition): number {
     const hash = md5(JSON.stringify(material));
     if (this.materialMap.has(hash)) {
       return this.materialMap.get(hash);

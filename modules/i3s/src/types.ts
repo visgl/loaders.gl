@@ -355,7 +355,7 @@ export type I3SGeometry = {
   compressedGeometry?: ArrayBuffer | null;
   texture: any | null;
   sharedResources: SharedResources | null;
-  meshMaterial?: GLTFMaterial | null;
+  meshMaterial?: I3SMaterialDefinition | null;
   vertexCount: number | null;
   attributes: any | null;
   featureCount: number | null;
