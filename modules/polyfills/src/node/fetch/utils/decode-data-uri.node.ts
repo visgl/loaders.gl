@@ -1,7 +1,5 @@
 // Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
-import {assert} from '../../../utils/assert';
-
 const isArrayBuffer = (x) => x && x instanceof ArrayBuffer;
 const isBuffer = (x) => x && x instanceof Buffer;
 
@@ -11,7 +9,7 @@ const isBuffer = (x) => x && x instanceof Buffer;
  * @param {string} uri - a data URI (assumed to be valid)
  * @returns {Object} { buffer, mimeType }
  */
-export function decodeDataUri(uri) {
+export function decodeDataUri(uri: string): {arrayBuffer: ArrayBuffer; mimeType: string} {
   const dataIndex = uri.indexOf(',');
 
   let buffer;
@@ -37,13 +35,14 @@ export function decodeDataUri(uri) {
  * @param data
  * @todo Duplicate of core
  */
-export function toArrayBuffer(data) {
+export function toArrayBuffer(data: unknown): ArrayBuffer {
   if (isArrayBuffer(data)) {
-    return data;
+    return data as ArrayBuffer;
   }
 
   // TODO - per docs we should just be able to call buffer.buffer, but there are issues
   if (isBuffer(data)) {
+    // @ts-expect-error
     const typedArray = new Uint8Array(data);
     return typedArray.buffer;
   }
@@ -60,9 +59,11 @@ export function toArrayBuffer(data) {
   }
 
   // HACK to support Blob polyfill
+  // @ts-expect-error
   if (data && typeof data === 'object' && data._toArrayBuffer) {
+    // @ts-expect-error
     return data._toArrayBuffer();
   }
 
-  return assert(false, `toArrayBuffer(${JSON.stringify(data, null, 2).slice(10)})`);
+  throw new Error(`toArrayBuffer(${JSON.stringify(data, null, 2).slice(10)})`);
 }
