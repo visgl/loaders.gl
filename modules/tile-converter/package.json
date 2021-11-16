@@ -33,8 +33,7 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle",
-    "post-build": "npm run build-converter-bundle",
+    "pre-build": "npm run build-bundle  && npm run build-converter-bundle",
     "build-bundle": "esbuild ./src/index.ts --bundle --outfile=dist/bundle.js --platform=node",
     "build-converter-bundle": "webpack --display errors-only --config ./converter-webpack/bundle.js",
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts"

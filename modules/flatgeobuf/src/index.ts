@@ -1,6 +1,6 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {FlatGeobufLoader as FlatGeobufWorkerLoader} from './flatgeobuf-loader';
-import parseFlatGeobuf, {parseFlatGeobufInBatches} from './lib/parse-flatgeobuf';
+import {parseFlatGeobuf, parseFlatGeobufInBatches} from './lib/parse-flatgeobuf';
 
 export {FlatGeobufWorkerLoader};
 

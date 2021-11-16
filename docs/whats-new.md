@@ -51,6 +51,10 @@ Target Release Date: Nov 2021.
 
 - `CSVLoader` now recognizes TSV files via `.tsv` file extension or the `text/tab-separated-values` MIME type.
 
+**@loaders.gl/flatgeobuf**
+
+- The experimental [`FlatgeobufLoader`](modules/flatgeobug/docs/api-reference/flatgeobuf-loader) is now documented.
+
 **@loaders.gl/parquet** (NEW)
 
 - New experimental [`ParquetLoader`](modules/parquet/docs/api-reference/parquet-loader)

@@ -10,9 +10,6 @@ _addAliases(ALIASES);
 // Install polyfills (primarily for Node)
 installFilePolyfills();
 
-// const isBrowser =
-//   typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
-
 // base
 import '@loaders.gl/polyfills/test/index.js';
 import '@loaders.gl/worker-utils/test/index.js';
@@ -70,6 +67,8 @@ import '@loaders.gl/compression/test/index.js';
 import '@loaders.gl/zip/test/index.js';
 
 // Cli
-// if (!isBrowser && TEST_CLI) {
-//   import '@loaders.gl/tile-converter/test/index.js';
-// }
+export const isBrowser =
+  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
+if (!isBrowser) {
+  require('@loaders.gl/tile-converter/test');
+}
