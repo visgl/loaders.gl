@@ -14,7 +14,7 @@ export function getConstructorForDataFormat(dataType: string) {
     case DATA_TYPE.UInt64:
       return Float64Array;
     default:
-      return null;
+      throw new Error(`parse i3s tile content: unknown type of data: ${dataType}`);
   }
 }
 
@@ -39,12 +39,6 @@ export const I3S_NAMED_GEOMETRY_ATTRIBUTES = {
   featureAttributeOrder: 'featureAttributeOrder',
   featureAttributes: 'featureAttributes'
 };
-// TODO Remove Named Attributes and replase with Typescipt types
-export const I3S_NAMED_HEADER_ATTRIBUTES = {
-  // header: 'header',
-  vertexCount: 'vertexCount',
-  featureCount: 'featureCount'
-};
 /**
  * Returns how many bytes a type occupies
  * @param dataType
@@ -66,7 +60,7 @@ export function sizeOf(dataType: string): number {
     case DATA_TYPE.Float64:
       return 8;
     default:
-      return NaN;
+      throw new Error(`parse i3s tile content: unknown size of data: ${dataType}`);
   }
 }
 
