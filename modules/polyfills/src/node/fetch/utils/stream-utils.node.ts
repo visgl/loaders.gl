@@ -5,10 +5,12 @@ import zlib from 'zlib';
 
 import {toArrayBuffer} from './decode-data-uri.node';
 
-const isRequestURL = (url) => url.startsWith('http:') || url.startsWith('https:');
+function isRequestURL(url: string): boolean {
+  return url.startsWith('http:') || url.startsWith('https:');
+}
 
 // Returns a promise that resolves to a readable stream
-export async function createReadStream(url, options) {
+export async function createReadStream(url, options): Promise<any> {
   // Handle file streams in node
   if (!isRequestURL(url)) {
     const noqueryUrl = url.split('?')[0];
@@ -46,8 +48,8 @@ export function decompressReadStream(readStream, headers) {
   }
 }
 
-export async function concatenateReadStream(readStream) {
-  let arrayBuffer = new ArrayBuffer(0);
+export async function concatenateReadStream(readStream): Promise<ArrayBuffer> {
+  const arrayBufferChunks: ArrayBuffer[] = [];
 
   return await new Promise((resolve, reject) => {
     readStream.on('error', (error) => reject(error));
@@ -60,17 +62,19 @@ export async function concatenateReadStream(readStream) {
       if (typeof chunk === 'string') {
         reject(new Error('Read stream not binary'));
       }
-      const chunkAsArrayBuffer = toArrayBuffer(chunk);
-      arrayBuffer = concatenateArrayBuffers(arrayBuffer, chunkAsArrayBuffer);
+      arrayBufferChunks.push(toArrayBuffer(chunk));
     });
 
-    readStream.on('end', () => resolve(arrayBuffer));
+    readStream.on('end', () => {
+      const arrayBuffer = concatenateArrayBuffers(arrayBufferChunks);
+      resolve(arrayBuffer);
+    });
   });
 }
 
 // HELPERS
 
-function getRequestOptions(url, options?: {fetch?: typeof fetch; headers?}) {
+function getRequestOptions(url: string, options?: {fetch?: typeof fetch; headers?}) {
   // Ensure header keys are lower case so that we can merge without duplicates
   const originalHeaders = options?.headers || {};
   const headers = {};
@@ -94,11 +98,30 @@ function getRequestOptions(url, options?: {fetch?: typeof fetch; headers?}) {
   };
 }
 
-function concatenateArrayBuffers(source1, source2) {
-  const sourceArray1 = source1 instanceof ArrayBuffer ? new Uint8Array(source1) : source1;
-  const sourceArray2 = source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2;
-  const temp = new Uint8Array(sourceArray1.byteLength + sourceArray2.byteLength);
-  temp.set(sourceArray1, 0);
-  temp.set(sourceArray2, sourceArray1.byteLength);
-  return temp.buffer;
+/**
+ * Concatenate a sequence of ArrayBuffers
+ * @return A concatenated ArrayBuffer
+ * @note duplicates loader-utils since polyfills should be independent
+ */
+export function concatenateArrayBuffers(sources: (ArrayBuffer | Uint8Array)[]): ArrayBuffer {
+  // Make sure all inputs are wrapped in typed arrays
+  const sourceArrays = sources.map((source2) =>
+    source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2
+  );
+
+  // Get length of all inputs
+  const byteLength = sourceArrays.reduce((length, typedArray) => length + typedArray.byteLength, 0);
+
+  // Allocate array with space for all inputs
+  const result = new Uint8Array(byteLength);
+
+  // Copy the subarrays
+  let offset = 0;
+  for (const sourceArray of sourceArrays) {
+    result.set(sourceArray, offset);
+    offset += sourceArray.byteLength;
+  }
+
+  // We work with ArrayBuffers, discard the typed array wrapper
+  return result.buffer;
 }
