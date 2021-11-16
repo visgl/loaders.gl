@@ -67,4 +67,8 @@ import '@loaders.gl/compression/test/index.js';
 import '@loaders.gl/zip/test/index.js';
 
 // Cli
-import '@loaders.gl/tile-converter/test/index.js';
+export const isBrowser =
+  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
+if (!isBrowser) {
+  require('@loaders.gl/tile-converter/test');
+}
