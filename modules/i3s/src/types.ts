@@ -18,7 +18,7 @@ export enum DATA_TYPE {
  * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DSceneLayer.cmn.md
  */
 // TODO Replace "[key: string]: any" with actual defenition
-export interface I3sTilesetHeader extends SceneLayer3D {
+export interface I3STilesetHeader extends SceneLayer3D {
   /** Not in spec, but is necessary for woking */
   url?: string;
   [key: string]: any;
@@ -67,8 +67,8 @@ type meshAttribute = {
   resource: number;
 };
 // TODO Replace "[key: string]: any" with actual defenition
-export type I3sTileHeader = {
-  content: I3sTileContent;
+export type I3STileHeader = {
+  content: I3STileContent;
   isDracoGeometry: boolean;
   textureUrl: string;
   url?: string;
@@ -78,16 +78,16 @@ export type I3sTileHeader = {
   attributeData: Resource[];
   textureFormat: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
   textureLoaderOptions: any;
-  materialDefinition: I3sMaterialDefinition;
+  materialDefinition: I3SMaterialDefinition;
   mbs: Mbs;
   obb: Obb;
   lodSelection: LodSelection[];
   [key: string]: any;
 };
 // TODO Replace "[key: string]: any" with actual defenition
-export type I3sTileContent = {
+export type I3STileContent = {
   featureData: DefaultGeometrySchema;
-  attributes: I3sMeshAttributes;
+  attributes: I3SMeshAttributes;
   indices: TypedArray | null;
   featureIds: number[] | TypedArray;
   vertexCount: number;
@@ -175,11 +175,11 @@ export type SceneLayer3D = {
   /** The paged-access index description. */
   nodePages?: NodePageDefinition;
   /** List of materials classes used in this layer. */
-  materialDefinitions?: I3sMaterialDefinition[];
+  materialDefinitions?: I3SMaterialDefinition[];
   /** Defines the set of textures that can be referenced by meshes. */
   textureSetDefinitions?: TextureSetDefinition[];
   /** Define the layouts of mesh geometry and its attributes */
-  geometryDefinitions?: GeometryDefinitions;
+  geometryDefinitions?: GeometryDefinition[];
   /** 3D extent. */
   fullExtent?: FullExtent;
 };
@@ -222,15 +222,15 @@ export type NodePageDefinition = {
   lodSelectionMetricType: 'maxScreenThresholdSQ';
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialDefinitions.cmn.md */
-export type I3sMaterialDefinition = {
+export type I3SMaterialDefinition = {
   /** A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology. When not specified, all the default values of pbrMetallicRoughness apply. */
-  pbrMetallicRoughness: I3sPbrMetallicRoughness;
+  pbrMetallicRoughness: I3SPbrMetallicRoughness;
   /** The normal texture map. */
-  normalTexture: I3sMaterialTexture;
+  normalTexture: I3SMaterialTexture;
   /** The occlusion texture map. */
-  occlusionTexture: I3sMaterialTexture;
+  occlusionTexture: I3SMaterialTexture;
   /** The emissive texture map. */
-  emissiveTexture: I3sMaterialTexture;
+  emissiveTexture: I3SMaterialTexture;
   /** The emissive color of the material. */
   emissiveFactor: [number, number, number];
   /** Defines the meaning of the alpha-channel/alpha-mask. */
@@ -243,20 +243,20 @@ export type I3sMaterialDefinition = {
   cullFace: 'none' | 'front' | 'back';
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md */
-export type I3sPbrMetallicRoughness = {
+export type I3SPbrMetallicRoughness = {
   /** The material's base color factor. default=[1,1,1,1] */
   baseColorFactor: [number, number, number, number];
   /** The base color texture. */
-  baseColorTexture: I3sMaterialTexture;
+  baseColorTexture: I3SMaterialTexture;
   /** the metalness of the material. default=1.0 */
   metallicFactor: number;
   /** the roughness of the material. default=1.0 */
   roughnessFactor: number;
   /** the metallic-roughness texture. */
-  metallicRoughnessTexture: I3sMaterialTexture;
+  metallicRoughnessTexture: I3SMaterialTexture;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialTexture.cmn.md */
-export type I3sMaterialTexture = {
+export type I3SMaterialTexture = {
   /** The index in layer.textureSetDefinitions. */
   textureSetDefinitionId: number;
   /** The set index of texture's TEXCOORD attribute used for texture coordinate mapping. Default is 0. Deprecated. */
@@ -632,10 +632,10 @@ export type GeometryAttribute = {
     | DATA_TYPE.Float64;
   valuesPerElement: number;
 };
-export type I3sMeshAttributes = {
-  [key: string]: I3sMeshAttribute;
+export type I3SMeshAttributes = {
+  [key: string]: I3SMeshAttribute;
 };
-export interface I3sMeshAttribute extends MeshAttribute {
+export interface I3SMeshAttribute extends MeshAttribute {
   type?: number;
   metadata?: any;
 }
@@ -673,7 +673,7 @@ type TextureSetDefinition = {
   atlas?: boolean;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/geometryDefinition.cmn.md */
-type GeometryDefinitions = {
+type GeometryDefinition = {
   topology: 'triangle' | string;
   geometryBuffers: GeometryBuffer[];
 };

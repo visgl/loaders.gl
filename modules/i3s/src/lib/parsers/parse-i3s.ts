@@ -5,13 +5,13 @@ import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../helpers/i3s-nodepages-tiles';
 import {generateTileAttributeUrls, getUrlWithToken} from '../utils/url-utils';
 import {
-  I3sTilesetHeader,
-  I3sTileHeader,
+  I3STilesetHeader,
+  I3STileHeader,
   Mbs
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 
-export function normalizeTileData(tile : I3sTileHeader, options : LoaderOptions, context: LoaderContext) {
+export function normalizeTileData(tile : I3STileHeader, options : LoaderOptions, context: LoaderContext) {
   tile.url = context.url;
 
   if (tile.featureData) {
@@ -33,7 +33,7 @@ export function normalizeTileData(tile : I3sTileHeader, options : LoaderOptions,
   return normalizeTileNonUrlData(tile);
 }
 
-export function normalizeTileNonUrlData(tile : I3sTileHeader) {
+export function normalizeTileNonUrlData(tile : I3STileHeader) {
   const box = tile.obb
     ? [
       ...Ellipsoid.WGS84.cartographicToCartesian(tile.obb.center), // cartesian center of box
@@ -73,7 +73,7 @@ export function normalizeTileNonUrlData(tile : I3sTileHeader) {
   return tile;
 }
 
-export async function normalizeTilesetData(tileset : I3sTilesetHeader, options : LoaderOptions, context: LoaderContext) {
+export async function normalizeTilesetData(tileset : I3STilesetHeader, options : LoaderOptions, context: LoaderContext) {
   tileset.url = context.url;
 
   if (tileset.nodePages) {
