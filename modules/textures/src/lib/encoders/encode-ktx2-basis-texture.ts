@@ -11,7 +11,7 @@ import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
 export async function encodeKTX2BasisTexture(
   image: ImageDataType,
   options: any = {}
-): Promise<Uint8Array> {
+): Promise<ArrayBuffer> {
   // TODO remove default values after writer options will be normalized like it done in load module.
   const {useSRGB = false, qualityLevel = 10, encodeUASTC = false, mipmaps = false} = options;
   const {BasisEncoder} = await loadBasisEncoderModule(options);
@@ -32,7 +32,7 @@ export async function encodeKTX2BasisTexture(
 
     const numOutputBytes = basisEncoder.encode(basisFileData);
 
-    const actualKTX2FileData = new Uint8Array(basisFileData.buffer, 0, numOutputBytes);
+    const actualKTX2FileData = basisFileData.subarray(0, numOutputBytes).buffer;
     return actualKTX2FileData;
   } catch (error) {
     // eslint-disable-next-line no-console

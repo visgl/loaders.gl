@@ -234,7 +234,7 @@ export type SharedResources = {
   nodePath: string;
 };
 
-export type TextureImage = {
+type TextureImage = {
   id: string;
   size?: number;
   pixelInWorldUnits?: number;
@@ -248,7 +248,6 @@ export type TextureImage = {
   image?: {
     height: number;
     width: number;
-    data: TextureImageData[];
   };
 };
 
@@ -294,12 +293,6 @@ export type BuildingSceneSublayer = {
   sublayers?: BuildingSceneSublayer[];
   isEmpty?: boolean;
   url?: string;
-};
-
-type TextureImageData = {
-  data: Uint8Array;
-  width: number;
-  height: number;
 };
 
 type Filter = {
