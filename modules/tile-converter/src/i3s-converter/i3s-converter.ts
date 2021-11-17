@@ -54,6 +54,7 @@ import {GeoidHeightModel} from '../lib/geoid-height-model';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {ImageWriter} from '@loaders.gl/images';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -163,7 +164,7 @@ export default class I3SConverter {
     }
 
     const preloadOptions = await this._fetchPreloadOptions();
-    const tilesetOptions: Tileset3DProps = {loadOptions: {}};
+    const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
     if (preloadOptions.headers) {
       tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
     }
@@ -283,7 +284,7 @@ export default class I3SConverter {
     boundingVolumes: BoundingVolumes
   ): Promise<void> {
     await this.sourceTileset!._loadTile(sourceRootTile);
-    if (sourceRootTile.content && sourceRootTile.content.type === 'b3dm') {
+    if (this.isContentSupported(sourceRootTile)) {
       root0.children = root0.children || [];
       root0.children.push({
         id: '1',
@@ -612,7 +613,7 @@ export default class I3SConverter {
    * result.featureCount - number of features
    */
   private async _convertResources(sourceTile: TileHeader): Promise<I3SGeometry[] | null> {
-    if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
+    if (!this.isContentSupported(sourceTile)) {
       return null;
     }
     const resourcesData = await convertB3dmToI3sGeometry(
@@ -652,7 +653,7 @@ export default class I3SConverter {
       obb: boundingVolumes.obb,
       children: []
     };
-    if (geometry && sourceTile.content && sourceTile.content.type === 'b3dm') {
+    if (geometry && this.isContentSupported(sourceTile)) {
       nodeInPage.mesh = {
         geometry: {
           definition: texture ? 0 : 1,
@@ -868,8 +869,16 @@ export default class I3SConverter {
         });
       }
 
-      const textureData = texture.bufferView!.data;
-      const ktx2TextureData = await encode(texture.image, KTX2BasisUniversalTextureWriter);
+      let textureData;
+      let ktx2TextureData;
+
+      if (texture.mimeType === 'image/ktx2') {
+        ktx2TextureData = texture.bufferView!.data;
+        textureData = new Uint8Array(await encode(texture.image!.data[0], ImageWriter));
+      } else {
+        textureData = texture.bufferView!.data;
+        ktx2TextureData = await encode(texture.image, KTX2BasisUniversalTextureWriter);
+      }
 
       if (this.options.slpk) {
         const slpkTexturePath = join(childPath, 'textures');
@@ -1226,5 +1235,8 @@ export default class I3SConverter {
     }
 
     this.refinementCounter.tilesCount += 1;
+  }
+  private isContentSupported(sourceRootTile) {
+    return ['b3dm', 'glTF'].includes(sourceRootTile?.content?.type);
   }
 }
