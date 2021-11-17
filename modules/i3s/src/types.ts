@@ -232,6 +232,7 @@ export type TextureImage = {
   image?: {
     height: number;
     width: number;
+    data: TextureImageData[];
   };
 };
 
@@ -277,6 +278,12 @@ export type BuildingSceneSublayer = {
   sublayers?: BuildingSceneSublayer[];
   isEmpty?: boolean;
   url?: string;
+};
+
+type TextureImageData = {
+  data: Uint8Array;
+  width: number;
+  height: number;
 };
 
 type Filter = {
