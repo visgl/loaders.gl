@@ -212,7 +212,7 @@ async function loadImage(
   let parsedImage = await parse(
     arrayBuffer,
     [ImageLoader, BasisLoader],
-    {mimeType: image.mimeType, basis: {format: selectSupportedBasisFormat()}},
+    {mimeType: image.mimeType, basis: options.basis || {format: selectSupportedBasisFormat()}},
     context
   );
 
