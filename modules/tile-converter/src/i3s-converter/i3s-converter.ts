@@ -1,4 +1,4 @@
-import type {Tileset3DProps} from '@loaders.gl/tiles';
+import type {Tile3D, Tileset3DProps} from '@loaders.gl/tiles';
 import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {BatchTableJson, B3DMContent} from '@loaders.gl/3d-tiles';
 
@@ -13,7 +13,6 @@ import type {
   NodeInPage,
   LodSelection,
   SharedResources,
-  TextureImage,
   Attribute,
   ESRIField,
   Field,
@@ -55,6 +54,7 @@ import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {ImageWriter} from '@loaders.gl/images';
+import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -848,7 +848,7 @@ export default class I3SConverter {
    * @param slpkChildPath - the resource path inside *slpk file
    */
   private async _writeTexture(
-    texture: TextureImage,
+    texture: GLTFImagePostprocessed,
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
@@ -877,7 +877,9 @@ export default class I3SConverter {
         textureData = new Uint8Array(await encode(texture.image!.data[0], ImageWriter));
       } else {
         textureData = texture.bufferView!.data;
-        ktx2TextureData = await encode(texture.image, KTX2BasisUniversalTextureWriter);
+        ktx2TextureData = new Uint8Array(
+          await encode(texture.image, KTX2BasisUniversalTextureWriter)
+        );
       }
 
       if (this.options.slpk) {
@@ -1236,7 +1238,12 @@ export default class I3SConverter {
 
     this.refinementCounter.tilesCount += 1;
   }
-  private isContentSupported(sourceRootTile) {
+  /**
+   * Check if the tile's content format is supported by the converter
+   * @param sourceRootTile
+   * @returns
+   */
+  private isContentSupported(sourceRootTile: Tile3D): boolean {
     return ['b3dm', 'glTF'].includes(sourceRootTile?.content?.type);
   }
 }

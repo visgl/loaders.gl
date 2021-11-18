@@ -1,5 +1,7 @@
 import {assert} from '../utils/assert';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
+import {BufferView} from '../types/gltf-json-schema';
+import {BufferView as BufferViewPostprocessed} from '../types/gltf-postprocessed-schema';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -358,11 +360,14 @@ class GLTFPostProcessor {
     return image;
   }
 
-  _resolveBufferView(bufferView, index) {
+  _resolveBufferView(bufferView: BufferView, index: number): BufferViewPostprocessed {
     // bufferView = {...bufferView};
-    bufferView.id = bufferView.id || `bufferView-${index}`;
     const bufferIndex = bufferView.buffer;
-    bufferView.buffer = this.buffers[bufferIndex];
+    const result: BufferViewPostprocessed = {
+      id: `bufferView-${index}`,
+      ...bufferView,
+      buffer: this.buffers[bufferIndex]
+    };
 
     // @ts-expect-error
     const arrayBuffer = this.buffers[bufferIndex].arrayBuffer;
@@ -373,8 +378,8 @@ class GLTFPostProcessor {
       byteOffset += bufferView.byteOffset;
     }
 
-    bufferView.data = new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
-    return bufferView;
+    result.data = new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
+    return result;
   }
 
   _resolveCamera(camera, index) {
