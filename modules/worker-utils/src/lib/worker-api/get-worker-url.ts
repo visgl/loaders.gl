@@ -27,6 +27,16 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
 
   let url = workerOptions.workerUrl;
 
+  // Allow for non-nested workerUrl for the CompressionWorker.
+  // For the compression worker, workerOptions is currently not nested correctly. For most loaders,
+  // you'd have options within an object, i.e. `{mvt: {coordinates: ...}}` but the CompressionWorker
+  // puts options at the top level, not within a `compression` key (its `id`). For this reason, the
+  // above `workerOptions` will always be a string (i.e. `'gzip'`) for the CompressionWorker. To not
+  // break backwards compatibility, we allow the CompressionWorker to have options at the top level.
+  if (!url && worker.id === 'compression') {
+    url = options.workerUrl;
+  }
+
   // If URL is test, generate local loaders.gl url
   // @ts-ignore _workerType
   if (options._workerType === 'test') {
