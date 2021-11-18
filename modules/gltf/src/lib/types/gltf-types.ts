@@ -22,6 +22,8 @@ import type {
   GLTF_EXT_texture_webp
 } from './gltf-json-schema';
 
+import type {Image as GLTFImagePostprocessed} from './gltf-postprocessed-schema';
+
 export type {
   GLTF,
   GLTFAccessor,
@@ -40,7 +42,8 @@ export type {
   GLTF_KHR_draco_mesh_compression,
   GLTF_KHR_texture_basisu,
   GLTF_EXT_meshopt_compression,
-  GLTF_EXT_texture_webp
+  GLTF_EXT_texture_webp,
+  GLTFImagePostprocessed
 };
 
 export type GLTFObject =

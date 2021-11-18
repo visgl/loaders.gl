@@ -19,7 +19,6 @@ export type {
   MaxScreenThresholdSQ,
   NodeInPage,
   SharedResources,
-  TextureImage,
   Attribute,
   Extent,
   FeatureAttribute
