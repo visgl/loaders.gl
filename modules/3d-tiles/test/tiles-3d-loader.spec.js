@@ -127,7 +127,7 @@ test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', a
   t.end();
 });
 
-test.only('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', async (t) => {
+test('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', async (t) => {
   const response = await fetchFile(IMPLICIT_QUADTREE_TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
   t.ok(tileset);

@@ -71,6 +71,9 @@ export type Availability = {
 
 export type ExplicitBitstream = Uint8Array;
 
+/**
+ * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling#subdivision-scheme
+ */
 export type SubdivisionScheme = 'QUADTREE' | 'OCTREE';
 
 type Buffer = {
