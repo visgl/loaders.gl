@@ -2,6 +2,10 @@
 
 ## v3.0
 
+### v3.0.13
+
+- fix: Allow top-level workerUrl for CompressionWorker
+
 ### v3.0.12
 
 - fix: promisify wrapper to contain util import
