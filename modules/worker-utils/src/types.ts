@@ -9,6 +9,7 @@ export type WorkerOptions = {
   maxMobileConcurrency?: number;
   reuseWorkers?: boolean;
   _workerType?: string;
+  workerUrl?: string;
   [key: string]: any; // TODO
 };
 
