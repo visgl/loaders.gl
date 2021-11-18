@@ -27,7 +27,7 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
 
   let url = workerOptions.workerUrl;
 
-  // Allow for non-nested workerUrl for the CompressionWorker.
+  // HACK: Allow for non-nested workerUrl for the CompressionWorker.
   // For the compression worker, workerOptions is currently not nested correctly. For most loaders,
   // you'd have options within an object, i.e. `{mvt: {coordinates: ...}}` but the CompressionWorker
   // puts options at the top level, not within a `compression` key (its `id`). For this reason, the
