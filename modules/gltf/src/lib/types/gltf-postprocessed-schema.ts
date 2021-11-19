@@ -220,10 +220,11 @@ export interface Buffer {
  * A view into a buffer generally representing a subset of the buffer.
  */
 export interface BufferView {
+  id: string;
   /**
    * The index of the buffer.
    */
-  buffer: GlTfId;
+  buffer: ArrayBuffer;
   /**
    * The offset into the buffer in bytes.
    */
@@ -329,7 +330,7 @@ export interface Image {
   /**
    * The index of the bufferView that contains the image. Use this instead of the image's uri property.
    */
-  bufferView?: GlTfId;
+  bufferView?: BufferView;
   name?: any;
   extensions?: any;
   extras?: any;

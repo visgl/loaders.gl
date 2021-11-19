@@ -1,4 +1,4 @@
-import type {Tileset3DProps} from '@loaders.gl/tiles';
+import type {Tile3D, Tileset3DProps} from '@loaders.gl/tiles';
 import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {BatchTableJson, B3DMContent} from '@loaders.gl/3d-tiles';
 
@@ -13,11 +13,11 @@ import type {
   NodeInPage,
   LodSelection,
   SharedResources,
-  TextureImage,
   Attribute,
   ESRIField,
   Field,
-  PopupInfo
+  PopupInfo,
+  FieldInfo
 } from '@loaders.gl/i3s';
 import {load, encode} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
@@ -53,6 +53,8 @@ import {GeoidHeightModel} from '../lib/geoid-height-model';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {ImageWriter} from '@loaders.gl/images';
+import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -79,18 +81,18 @@ export default class I3SConverter {
   materialMap: Map<any, any>;
   materialDefinitions: GLTFMaterial[];
   vertexCounter: number;
-  layers0: SceneLayer3D;
+  layers0: SceneLayer3D | null;
   featuresHashArray: string[];
   refinementCounter: {
     tilesCount: number;
     tilesWithAddRefineCount: number;
   };
   validate: boolean;
-  boundingVolumeWarnings?: string[];
-  conversionStartTime: [number, number];
-  refreshTokenTime: [number, number];
-  sourceTileset: Tileset3D | null;
-  geoidHeightModel: GeoidHeightModel | null;
+  boundingVolumeWarnings?: string[] = [];
+  conversionStartTime: [number, number] = [0, 0];
+  refreshTokenTime: [number, number] = [0, 0];
+  sourceTileset: Tileset3D | null = null;
+  geoidHeightModel: GeoidHeightModel | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
 
   constructor() {
@@ -108,7 +110,6 @@ export default class I3SConverter {
       tilesWithAddRefineCount: 0
     };
     this.validate = false;
-    this.boundingVolumeWarnings = null;
   }
 
   /**
@@ -130,7 +131,7 @@ export default class I3SConverter {
     outputPath: string;
     tilesetName: string;
     sevenZipExe: string;
-    egmFilePath?: string;
+    egmFilePath: string;
     maxDepth?: number;
     slpk?: boolean;
     token?: string;
@@ -151,7 +152,7 @@ export default class I3SConverter {
       token
     } = options;
     this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
-    this.validate = validate;
+    this.validate = Boolean(validate);
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
 
     console.log('Loading egm file...'); // eslint-disable-line
@@ -163,9 +164,9 @@ export default class I3SConverter {
     }
 
     const preloadOptions = await this._fetchPreloadOptions();
-    const tilesetOptions: Tileset3DProps = {loadOptions: {}};
+    const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
     if (preloadOptions.headers) {
-      tilesetOptions.loadOptions.fetch = {headers: preloadOptions.headers};
+      tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
     }
     Object.assign(tilesetOptions, preloadOptions);
     const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
@@ -173,7 +174,7 @@ export default class I3SConverter {
     this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
 
     await this._createAndSaveTileset(outputPath, tilesetName);
-    await this._finishConversion({slpk, outputPath, tilesetName});
+    await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
     return sourceTilesetJson;
   }
 
@@ -198,8 +199,8 @@ export default class I3SConverter {
     this.materialDefinitions = [];
     this.materialMap = new Map();
 
-    const sourceRootTile = this.sourceTileset.root;
-    const boundingVolumes = createBoundingVolumes(sourceRootTile, this.geoidHeightModel);
+    const sourceRootTile: TileHeader = this.sourceTileset!.root!;
+    const boundingVolumes = createBoundingVolumes(sourceRootTile, this.geoidHeightModel!);
     const parentId = this.nodePages.push({
       lodThreshold: 0,
       obb: boundingVolumes.obb,
@@ -211,7 +212,7 @@ export default class I3SConverter {
 
     await this._convertNodesTree(root0, sourceRootTile, parentId, boundingVolumes);
 
-    this.layers0.materialDefinitions = this.materialDefinitions;
+    this.layers0!.materialDefinitions = this.materialDefinitions;
     await this._writeLayers0();
     createSceneServerPath(tilesetName, this.layers0, tilesetPath);
     await this._writeNodeIndexDocument(root0, 'root', join(this.layers0Path, 'nodes', 'root'));
@@ -282,15 +283,16 @@ export default class I3SConverter {
     parentId: number,
     boundingVolumes: BoundingVolumes
   ): Promise<void> {
-    await this.sourceTileset._loadTile(sourceRootTile);
-    if (sourceRootTile.content && sourceRootTile.content.type === 'b3dm') {
+    await this.sourceTileset!._loadTile(sourceRootTile);
+    if (this.isContentSupported(sourceRootTile)) {
+      root0.children = root0.children || [];
       root0.children.push({
         id: '1',
         href: './1',
         ...boundingVolumes
       });
       const [child] = await this._createNode(root0, sourceRootTile, parentId, 0);
-      const childPath = join(this.layers0Path, 'nodes', child.path);
+      const childPath = join(this.layers0Path, 'nodes', child.path!);
 
       if (this.options.slpk) {
         this.fileMap['nodes/1/3dNodeIndexDocument.json.gz'] = await writeFileForSlpk(
@@ -429,7 +431,7 @@ export default class I3SConverter {
     }
     for (const sourceTile of sourceTiles) {
       if (sourceTile.type === 'json') {
-        await this.sourceTileset._loadTile(sourceTile);
+        await this.sourceTileset!._loadTile(sourceTile);
         await this._addChildren({
           parentNode,
           sourceTiles: sourceTile.children,
@@ -439,8 +441,9 @@ export default class I3SConverter {
         });
         await sourceTile.unloadContent();
       } else {
-        const boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel);
+        const boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel!);
         const children = await this._createNode(parentNode, sourceTile, parentId, level);
+        parentNode.children = parentNode.children || [];
         for (const child of children) {
           parentNode.children.push({
             id: child.id,
@@ -466,19 +469,21 @@ export default class I3SConverter {
     childNodes: Node3DIndexDocument[]
   ): Promise<void> {
     for (const node of childNodes) {
-      const childPath = join(this.layers0Path, 'nodes', node.path);
+      const childPath = join(this.layers0Path, 'nodes', node.path!);
       const nodePath = node.path;
       delete node.path;
 
       // Don't do large amount of "neightbors" to avoid big memory consumption
-      if (parentNode.children.length < 1000) {
-        for (const neighbor of parentNode.children) {
+      if (Number(parentNode?.children?.length) < 1000) {
+        for (const neighbor of parentNode.children || []) {
           // eslint-disable-next-line max-depth
           if (node.id === neighbor.id) {
             continue; // eslint-disable-line
           }
 
-          node.neighbors.push({...neighbor});
+          if (node.neighbors) {
+            node.neighbors.push({...neighbor});
+          }
         }
       } else {
         // eslint-disable-next-line no-console, no-undef
@@ -487,7 +492,7 @@ export default class I3SConverter {
         );
         delete node.neighbors;
       }
-      await this._writeNodeIndexDocument(node, nodePath, childPath);
+      await this._writeNodeIndexDocument(node, nodePath!, childPath);
       node.neighbors = [];
     }
   }
@@ -510,8 +515,8 @@ export default class I3SConverter {
     }
 
     await this._updateTilesetOptions();
-    await this.sourceTileset._loadTile(sourceTile);
-    const boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel);
+    await this.sourceTileset!._loadTile(sourceTile);
+    const boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel!);
 
     const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, boundingVolumes);
     const maxScreenThresholdSQ = lodSelection.find(
@@ -526,7 +531,8 @@ export default class I3SConverter {
 
     const resourcesData = await this._convertResources(sourceTile);
 
-    const nodes = [];
+    const nodes: Node3DIndexDocument[] = [];
+    const nodesInPage: NodeInPage[] = [];
     const emptyResources = {
       geometry: null,
       compressedGeometry: null,
@@ -554,7 +560,7 @@ export default class I3SConverter {
       );
 
       if (nodeInPage.mesh) {
-        await this._writeResources(resources, node.path);
+        await this._writeResources(resources, node.path!);
       }
 
       if (this.validate) {
@@ -566,15 +572,15 @@ export default class I3SConverter {
       }
 
       nodes.push(node);
+      nodesInPage.push(nodeInPage);
     }
 
     sourceTile.unloadContent();
 
-    const firstNode = nodes[0];
     await this._addChildrenWithNeighborsAndWriteFile({
-      parentNode: firstNode,
+      parentNode: nodes[0],
       sourceTiles: sourceTile.children,
-      parentId: firstNode.id,
+      parentId: nodesInPage[0].index!,
       level: level + 1
     });
     return nodes;
@@ -589,7 +595,7 @@ export default class I3SConverter {
   private _convertAttributeStorageInfo(sourceTileContent: B3DMContent): void {
     // In legacy b3dm files sometimes sourceTileContent is null.
     const batchTable = sourceTileContent && sourceTileContent.batchTableJson;
-    if (batchTable && !this.layers0.attributeStorageInfo.length) {
+    if (batchTable && !this.layers0?.attributeStorageInfo?.length) {
       this._convertBatchTableInfoToNodeAttributes(batchTable);
     }
   }
@@ -606,15 +612,15 @@ export default class I3SConverter {
    * result.attributes - feature attributes
    * result.featureCount - number of features
    */
-  private async _convertResources(sourceTile: TileHeader): Promise<I3SGeometry[]> {
-    if (!sourceTile.content || sourceTile.content.type !== 'b3dm') {
+  private async _convertResources(sourceTile: TileHeader): Promise<I3SGeometry[] | null> {
+    if (!this.isContentSupported(sourceTile)) {
       return null;
     }
     const resourcesData = await convertB3dmToI3sGeometry(
       sourceTile.content,
       Number(this.nodePages.nodesCounter),
       this.featuresHashArray,
-      this.layers0.attributeStorageInfo,
+      this.layers0?.attributeStorageInfo,
       this.options.draco
     );
     return resourcesData;
@@ -642,18 +648,20 @@ export default class I3SConverter {
     resources: I3SGeometry
   ): NodeInPage {
     const {meshMaterial, texture, vertexCount, featureCount, geometry} = resources;
-    const nodeInPage = {
+    const nodeInPage: NodeInPage = {
       lodThreshold: maxScreenThresholdSQ.maxError,
       obb: boundingVolumes.obb,
-      children: [],
-      mesh: null
+      children: []
     };
-    if (geometry && sourceTile.content && sourceTile.content.type === 'b3dm') {
+    if (geometry && this.isContentSupported(sourceTile)) {
       nodeInPage.mesh = {
         geometry: {
-          definition: texture ? 0 : 1
+          definition: texture ? 0 : 1,
+          resource: 0
         },
-        attribute: {}
+        attribute: {
+          resource: 0
+        }
       };
     }
     const nodeId = this.nodePages.push(nodeInPage, parentId);
@@ -698,12 +706,12 @@ export default class I3SConverter {
     resources: I3SGeometry
   ): Node3DIndexDocument {
     const {texture, attributes} = resources;
-    const nodeId = nodeInPage.index;
+    const nodeId = nodeInPage.index!;
     const nodeData = {
       version: parentNode.version,
       id: nodeId.toString(),
       path: nodeId.toString(),
-      level: parentNode.level + 1,
+      level: parentNode.level! + 1,
       ...boundingVolumes,
       lodSelection,
       parentNode: {
@@ -725,12 +733,7 @@ export default class I3SConverter {
         node.textureData = [{href: './textures/0'}, {href: './textures/1'}];
       }
 
-      if (
-        attributes &&
-        attributes.length &&
-        this.layers0.attributeStorageInfo &&
-        this.layers0.attributeStorageInfo.length
-      ) {
+      if (attributes && attributes.length && this.layers0?.attributeStorageInfo?.length) {
         node.attributeData = [];
         for (let index = 0; index < attributes.length; index++) {
           const folderName = this.layers0.attributeStorageInfo[index].key;
@@ -763,8 +766,8 @@ export default class I3SConverter {
     const childPath = join(this.layers0Path, 'nodes', nodePath);
     const slpkChildPath = join('nodes', nodePath);
 
-    await this._writeGeometries(geometryBuffer, compressedGeometry, childPath, slpkChildPath);
-    await this._writeShared(sharedResources, childPath, slpkChildPath, nodePath);
+    await this._writeGeometries(geometryBuffer!, compressedGeometry!, childPath, slpkChildPath);
+    await this._writeShared(sharedResources!, childPath, slpkChildPath, nodePath);
     await this._writeTexture(texture, childPath, slpkChildPath);
     await this._writeAttributes(attributes, childPath, slpkChildPath);
   }
@@ -845,14 +848,14 @@ export default class I3SConverter {
    * @param slpkChildPath - the resource path inside *slpk file
    */
   private async _writeTexture(
-    texture: TextureImage,
+    texture: GLTFImagePostprocessed,
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
     if (texture) {
-      const format = this._getFormatByMimeType(texture.mimeType);
-      if (!this.layers0.textureSetDefinitions.length) {
-        this.layers0.textureSetDefinitions.push({
+      const format = this._getFormatByMimeType(texture?.mimeType);
+      if (!this.layers0!.textureSetDefinitions!.length) {
+        this.layers0!.textureSetDefinitions!.push({
           formats: [
             {
               name: '0',
@@ -866,8 +869,18 @@ export default class I3SConverter {
         });
       }
 
-      const textureData = texture.bufferView.data;
-      const ktx2TextureData = await encode(texture.image, KTX2BasisUniversalTextureWriter);
+      let textureData;
+      let ktx2TextureData;
+
+      if (texture.mimeType === 'image/ktx2') {
+        ktx2TextureData = texture.bufferView!.data;
+        textureData = new Uint8Array(await encode(texture.image!.data[0], ImageWriter));
+      } else {
+        textureData = texture.bufferView!.data;
+        ktx2TextureData = new Uint8Array(
+          await encode(texture.image, KTX2BasisUniversalTextureWriter)
+        );
+      }
 
       if (this.options.slpk) {
         const slpkTexturePath = join(childPath, 'textures');
@@ -907,11 +920,7 @@ export default class I3SConverter {
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
-    if (
-      attributes.length &&
-      this.layers0.attributeStorageInfo &&
-      this.layers0.attributeStorageInfo.length
-    ) {
+    if (attributes.length && this.layers0?.attributeStorageInfo?.length) {
       for (let index = 0; index < attributes.length; index++) {
         const folderName = this.layers0.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
@@ -935,7 +944,7 @@ export default class I3SConverter {
    * Return file format by its MIME type
    * @param mimeType - feature attributes
    */
-  private _getFormatByMimeType(mimeType: string): string {
+  private _getFormatByMimeType(mimeType: string | undefined): string {
     switch (mimeType) {
       case 'image/jpeg':
         return 'jpg';
@@ -1022,7 +1031,7 @@ export default class I3SConverter {
    * @param storageAttribute - attribute for map segmentation.
    */
   private _setupStringAttribute(storageAttribute: AttributeStorageInfo): void {
-    storageAttribute.ordering.unshift('attributeByteCounts');
+    storageAttribute.ordering!.unshift('attributeByteCounts');
     storageAttribute.header.push({property: 'attributeValuesByteCount', valueType: 'UInt32'});
     storageAttribute.attributeValues = {
       valueType: 'String',
@@ -1090,10 +1099,10 @@ export default class I3SConverter {
       const fieldAttribute = this._createFieldAttribute(key, fieldAttributeType);
       const popupInfo = this._createPopupInfo(batchTableWithObjectId);
 
-      this.layers0.attributeStorageInfo.push(storageAttribute);
-      this.layers0.fields.push(fieldAttribute);
-      this.layers0.popupInfo = popupInfo;
-      this.layers0.layerType = _3D_OBJECT_LAYER_TYPE;
+      this.layers0!.attributeStorageInfo!.push(storageAttribute);
+      this.layers0!.fields!.push(fieldAttribute);
+      this.layers0!.popupInfo = popupInfo;
+      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
 
       attributeIndex += 1;
     }
@@ -1126,8 +1135,11 @@ export default class I3SConverter {
   private _createPopupInfo(batchTable: BatchTableJson): PopupInfo {
     const title = '{OBJECTID}';
     const mediaInfos = [];
-    const fieldInfos = [];
-    const popupElements = [];
+    const fieldInfos: FieldInfo[] = [];
+    const popupElements: {
+      fieldInfos: FieldInfo[];
+      type: string;
+    }[] = [];
     const expressionInfos = [];
 
     for (const key in batchTable) {
@@ -1203,10 +1215,10 @@ export default class I3SConverter {
     this.refreshTokenTime = process.hrtime();
 
     const preloadOptions = await this._fetchPreloadOptions();
-    this.sourceTileset.options = {...this.sourceTileset.options, ...preloadOptions};
+    this.sourceTileset!.options = {...this.sourceTileset!.options, ...preloadOptions};
     if (preloadOptions.headers) {
-      this.sourceTileset.loadOptions.fetch = {
-        ...this.sourceTileset.loadOptions.fetch,
+      this.sourceTileset!.loadOptions.fetch = {
+        ...this.sourceTileset!.loadOptions.fetch,
         headers: preloadOptions.headers
       };
       console.log('Authorization Bearer token has been updated'); // eslint-disable-line no-undef, no-console
@@ -1225,5 +1237,13 @@ export default class I3SConverter {
     }
 
     this.refinementCounter.tilesCount += 1;
+  }
+  /**
+   * Check if the tile's content format is supported by the converter
+   * @param sourceRootTile
+   * @returns
+   */
+  private isContentSupported(sourceRootTile: Tile3D): boolean {
+    return ['b3dm', 'glTF'].includes(sourceRootTile?.content?.type);
   }
 }

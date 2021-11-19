@@ -38,7 +38,7 @@
     {"path": "modules/shapefile"},
     {"path": "modules/terrain"},
     {"path": "modules/textures"},
-    // {"path": "modules/tile-converter"},
+    {"path": "modules/tile-converter"},
     {"path": "modules/tiles"},
     {"path": "modules/video"},
     {"path": "modules/wkt"},

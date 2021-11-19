@@ -41,7 +41,7 @@ export default async function convertB3dmToI3sGeometry(
   const result = [];
   let nodesCounter = nodeId;
   let {materials = []} = tileContent.gltf;
-  if (!materials.length === 0) {
+  if (!materials?.length) {
     materials.push({id: 'default'});
   }
   for (let i = 0; i < materials.length; i++) {

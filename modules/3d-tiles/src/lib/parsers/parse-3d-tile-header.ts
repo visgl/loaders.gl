@@ -2,7 +2,7 @@ import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
 import {Tileset3D, LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
 import {Subtree} from '../../types';
-import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-impicit-tile';
+import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-implicit-tiles';
 
 function getTileType(tile) {
   if (!tile.contentUrl) {
@@ -76,7 +76,7 @@ export function normalizeTileHeaders(tileset) {
 }
 
 /**
- * Do normalisation of impicit tile headers
+ * Do normalisation of implicit tile headers
  * TODO Check if Tile3D class can be a return type here.
  * @param tileset
  */

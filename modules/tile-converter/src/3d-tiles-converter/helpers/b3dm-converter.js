@@ -64,7 +64,8 @@ export default class B3dmConverter {
     const meshIndex = gltfBuilder.addMesh({
       attributes,
       indices,
-      material: materialIndex
+      material: materialIndex,
+      mode: 4
     });
     const transformMatrix = this._generateTransformMatrix(cartesianOrigin);
     const nodeIndex = gltfBuilder.addNode({meshIndex, matrix: transformMatrix});
