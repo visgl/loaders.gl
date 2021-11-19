@@ -54,7 +54,7 @@ type BoundingVolume = {
  * 3DTILES_implicit_tiling types
  * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling#subtree-file-format
  */
-export type SubtreeAvailability = {
+export type Subtree = {
   buffers: Buffer[];
   bufferViews: BufferView[];
   tileAvailability: Availability;
@@ -62,7 +62,7 @@ export type SubtreeAvailability = {
   childSubtreeAvailability: Availability;
 };
 
-type Availability = {
+export type Availability = {
   constant?: 0 | 1;
   bufferView?: number;
   // Internal bitstream type
@@ -70,6 +70,11 @@ type Availability = {
 };
 
 export type ExplicitBitstream = Uint8Array;
+
+/**
+ * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling#subdivision-scheme
+ */
+export type SubdivisionScheme = 'QUADTREE' | 'OCTREE';
 
 type Buffer = {
   name: string;

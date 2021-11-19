@@ -3,7 +3,12 @@ import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {VERSION} from './lib/utils/version';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
-import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
+import {
+  normalizeTileHeaders,
+  normalizeImplicitTileHeaders
+} from './lib/parsers/parse-3d-tile-header';
+
+const IMPLICIT_TILING_EXTENSION_NAME = '3DTILES_implicit_tiling';
 
 /**
  * Loader for 3D Tiles
@@ -49,7 +54,10 @@ async function parseTileset(data, options, context) {
   tilesetJson.url = context.url;
   // base path that non-absolute paths in tileset are relative to.
   tilesetJson.basePath = getBaseUri(tilesetJson);
-  tilesetJson.root = normalizeTileHeaders(tilesetJson);
+  tilesetJson.root = hasImplicitTilingExtension(tilesetJson)
+    ? await normalizeImplicitTileHeaders(tilesetJson)
+    : normalizeTileHeaders(tilesetJson);
+
   tilesetJson.type = TILESET_TYPE.TILES3D;
 
   tilesetJson.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
@@ -75,4 +83,11 @@ async function parse(data, options, context) {
   }
 
   return data;
+}
+
+function hasImplicitTilingExtension(tilesetJson) {
+  return (
+    tilesetJson?.extensionsRequired?.includes(IMPLICIT_TILING_EXTENSION_NAME) &&
+    tilesetJson?.extensionsUsed?.includes(IMPLICIT_TILING_EXTENSION_NAME)
+  );
 }
