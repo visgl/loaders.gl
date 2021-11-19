@@ -108,7 +108,7 @@ export default class BoundingVolumeLayer extends CompositeLayer {
   _getBoundingVolumeLayer(tile) {
     const {content, viewportIds} = tile;
     const {material, getBoundingVolumeColor, boundingVolumeType} = this.props;
-    const {cartographicOrigin, modelMatrix} = content;
+    const {cartographicOrigin, cartographicModelMatrix} = content;
     const meshType = BOUNDING_VOLUME_MESH_TYPE[boundingVolumeType];
 
     tile.userData.boundingMeshes = tile.userData.boundingMeshes || {};
@@ -123,7 +123,7 @@ export default class BoundingVolumeLayer extends CompositeLayer {
       getColor: getBoundingVolumeColor(tile),
       viewportIds,
       material,
-      modelMatrix,
+      modelMatrix: cartographicModelMatrix,
       coordinateOrigin: cartographicOrigin,
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
     });
