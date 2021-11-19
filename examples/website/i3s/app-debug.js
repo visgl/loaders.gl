@@ -588,7 +588,7 @@ export default class App extends PureComponent {
         getTargetPosition: (_, {index, data}) =>
           getNormalTargetPosition(index, data, trianglesPercentage, normalsLength),
         getColor: () => NORMALS_COLOR,
-        modelMatrix: normalsDebugData.modelMatrix,
+        modelMatrix: normalsDebugData.cartographicModelMatrix,
         coordinateOrigin: normalsDebugData.cartographicOrigin,
         coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
         getWidth: 1

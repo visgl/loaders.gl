@@ -1,6 +1,9 @@
 import {Vector3} from '@math.gl/core';
+import { Ellipsoid } from '@math.gl/geospatial';
 
 const VALUES_PER_VERTEX = 3;
+
+const scratchVector = new Vector3();
 
 /**
  * Generates data for display normals by Line layer.
@@ -20,9 +23,25 @@ export function generateBinaryNormalsDebugData(tile) {
   const normals = tile.content.attributes.normals.value;
   const positions = tile.content.attributes.positions.value;
   const modelMatrix = tile.content.modelMatrix;
+  const cartographicModelMatrix = tile.content.cartographicModelMatrix;
   const cartographicOrigin = tile.content.cartographicOrigin;
 
-  return {src: {normals, positions}, length: positions.length, modelMatrix, cartographicOrigin};
+  const cartesianPositions = new positions.constructor(positions.length);
+  for (let i = 0; i < cartesianPositions.length; i += 3) {
+    const position = positions.subarray(i, i+3);
+    scratchVector.set(position[0], position[1], position[2]);
+    scratchVector.transform(modelMatrix).add(cartographicOrigin);
+    Ellipsoid.WGS84.cartographicToCartesian(scratchVector, scratchVector);
+    cartesianPositions.set(scratchVector, i);
+  }
+
+  return {
+    src: {normals, positions: cartesianPositions},
+    length: positions.length,
+    modelMatrix,
+    cartographicModelMatrix,
+    cartographicOrigin
+  };
 }
 
 /**
