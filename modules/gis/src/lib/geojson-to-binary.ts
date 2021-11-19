@@ -25,12 +25,12 @@ export const TEST_EXPORTS = {
   secondPass
 };
 
-type NumericArrayConstructor = Float32ArrayConstructor | Float64ArrayConstructor | ArrayConstructor;
+type PropArrayConstructor = Float32ArrayConstructor | Float64ArrayConstructor | ArrayConstructor;
 
 type FirstPassData = {
   coordLength: number;
   numericPropKeys: string[];
-  numericPropTypes: {[key: string]: NumericArrayConstructor};
+  propArrayConstructors: {[key: string]: PropArrayConstructor};
 
   pointPositionsCount: number;
   pointFeaturesCount: number;
@@ -61,7 +61,7 @@ function firstPass(features: Feature[]): FirstPassData {
   let polygonRingsCount = 0;
   let polygonFeaturesCount = 0;
   const coordLengths = new Set<number>();
-  const numericPropTypes = {};
+  const propArrayConstructors = {};
 
   for (const feature of features) {
     const geometry = feature.geometry;
@@ -134,7 +134,7 @@ function firstPass(features: Feature[]): FirstPassData {
         // in all previous features, check if numeric in this feature
         // If not numeric, Array is stored to prevent rechecking in the future
         // Additionally, detects if 64 bit precision is required
-        numericPropTypes[key] = deduceArrayType(val, numericPropTypes[key]);
+        propArrayConstructors[key] = deduceArrayType(val, propArrayConstructors[key]);
       }
     }
   }
@@ -153,8 +153,10 @@ function firstPass(features: Feature[]): FirstPassData {
     polygonFeaturesCount,
 
     // Array of keys whose values are always numeric
-    numericPropKeys: Object.keys(numericPropTypes).filter((k) => numericPropTypes[k] !== Array),
-    numericPropTypes
+    numericPropKeys: Object.keys(propArrayConstructors).filter(
+      (k) => propArrayConstructors[k] !== Array
+    ),
+    propArrayConstructors
   };
 }
 
@@ -177,7 +179,7 @@ function secondPass(
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
-    numericPropTypes,
+    propArrayConstructors,
     polygonFeaturesCount
   } = firstPassData;
   const {coordLength, numericPropKeys, PositionDataType = Float32Array} = options;
@@ -236,7 +238,7 @@ function secondPass(
     for (const propName of numericPropKeys || []) {
       // If property has been numeric in all previous features in which the property existed, check
       // if numeric in this feature
-      const TypedArray = numericPropTypes[propName];
+      const TypedArray = propArrayConstructors[propName];
       object.numericProps[propName] = new TypedArray(object.positions.length / coordLength);
     }
   }
@@ -461,7 +463,7 @@ function flatten(arrays): number[][] {
   return [].concat(...arrays);
 }
 
-function deduceArrayType(x: any, constructor: NumericArrayConstructor): NumericArrayConstructor {
+function deduceArrayType(x: any, constructor: PropArrayConstructor): PropArrayConstructor {
   if (constructor === Array || !Number.isFinite(x)) {
     return Array;
   }

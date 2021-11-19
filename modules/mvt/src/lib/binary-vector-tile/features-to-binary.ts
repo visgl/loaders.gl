@@ -4,7 +4,7 @@ import {
   MvtBinaryCoordinates,
   MvtBinaryGeometry,
   MvtBinaryOptions,
-  MvtNumericArrayConstructor,
+  MvtPropArrayConstructor,
   MvtFirstPassedData,
   MvtLines,
   MvtPoints,
@@ -29,13 +29,13 @@ export function featuresToBinary(
   firstPassData: MvtFirstPassedData,
   options?: MvtBinaryOptions
 ) {
-  const numericPropTypes = extractNumericPropTypes(features);
-  const numericPropKeys = Object.keys(numericPropTypes).filter(
-    (k) => numericPropTypes[k] !== Array
+  const propArrayConstructors = extractNumericPropTypes(features);
+  const numericPropKeys = Object.keys(propArrayConstructors).filter(
+    (k) => propArrayConstructors[k] !== Array
   );
   return fillArrays(features, firstPassData, {
     numericPropKeys: options ? options.numericPropKeys : numericPropKeys,
-    numericPropTypes,
+    propArrayConstructors,
     PositionDataType: options ? options.PositionDataType : Float32Array
   });
 }
@@ -51,9 +51,9 @@ export const TEST_EXPORTS = {
  * @returns object with numeric types
  */
 function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
-  [key: string]: MvtNumericArrayConstructor;
+  [key: string]: MvtPropArrayConstructor;
 } {
-  const numericPropTypes = {};
+  const propArrayConstructors = {};
   for (const feature of features) {
     if (feature.properties) {
       for (const key in feature.properties) {
@@ -62,12 +62,12 @@ function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
         // If not numeric, Array is stored to prevent rechecking in the future
         // Additionally, detects if 64 bit precision is required
         const val = feature.properties[key];
-        numericPropTypes[key] = deduceArrayType(val, numericPropTypes[key]);
+        propArrayConstructors[key] = deduceArrayType(val, propArrayConstructors[key]);
       }
     }
   }
 
-  return numericPropTypes;
+  return propArrayConstructors;
 }
 
 /**
@@ -95,7 +95,7 @@ function fillArrays(
     polygonRingsCount,
     polygonFeaturesCount
   } = firstPassData;
-  const {numericPropKeys, numericPropTypes, PositionDataType = Float32Array} = options;
+  const {numericPropKeys, propArrayConstructors, PositionDataType = Float32Array} = options;
   const hasGlobalId = features[0] && 'id' in features[0];
   const coordLength = 2;
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
@@ -151,7 +151,7 @@ function fillArrays(
     for (const propName of numericPropKeys) {
       // If property has been numeric in all previous features in which the property existed, check
       // if numeric in this feature
-      const TypedArray = numericPropTypes[propName];
+      const TypedArray = propArrayConstructors[propName];
       object.numericProps[propName] = new TypedArray(object.positions.length / coordLength);
     }
   }
@@ -519,10 +519,7 @@ function keepStringProperties(
   return props;
 }
 
-function deduceArrayType(
-  x: any,
-  constructor: MvtNumericArrayConstructor
-): MvtNumericArrayConstructor {
+function deduceArrayType(x: any, constructor: MvtPropArrayConstructor): MvtPropArrayConstructor {
   if (constructor === Array || !Number.isFinite(x)) {
     return Array;
   }
