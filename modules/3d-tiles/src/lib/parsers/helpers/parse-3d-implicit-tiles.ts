@@ -128,9 +128,10 @@ export async function parseImplicitTiles(
     tile.contentUrl = replaceContentUrlTemplate(contentUrlTemplate, lev, x, y, z);
   }
 
+  const childTileLevel = level + 1;
+  const pData = {mortonIndex: childTileMortonIndex, x: childTileX, y: childTileY, z: childTileZ};
+
   for (let index = 0; index < childrenPerTile; index++) {
-    const pData = {mortonIndex: childTileMortonIndex, x: childTileX, y: childTileY, z: childTileZ};
-    const childTileLevel = level + 1;
     const currentTile = await parseImplicitTiles(
       subtree,
       options,
@@ -141,7 +142,8 @@ export async function parseImplicitTiles(
     );
 
     if (currentTile.contentUrl || currentTile.children.length) {
-      const formattedTile = formatTileData(currentTile, childTileLevel, options);
+      const globalLevel = lev + 1;
+      const formattedTile = formatTileData(currentTile, globalLevel, options);
       // @ts-ignore
       tile.children.push(formattedTile);
     }
@@ -171,16 +173,16 @@ function getAvailabilityResult(availabilityData: Availability, index: number): b
  * @returns
  */
 function formatTileData(tile, level: number, options: any) {
-  const {basePath, refine, lodMetricType, getTileType, rootLodMetricValue} = options;
+  const {basePath, refine, getRefine, lodMetricType, getTileType, rootLodMetricValue} = options;
   const uri = tile.contentUrl && tile.contentUrl.replace(`${basePath}/`, '');
-  const lodMetricValue = rootLodMetricValue / (level * 2);
+  const lodMetricValue = rootLodMetricValue / 2 ** level;
   // TODO handle bounding volume
   return {
     children: tile.children,
     contentUrl: tile.contentUrl,
     content: {uri},
     id: tile.contentUrl,
-    refine,
+    refine: getRefine(refine),
     type: getTileType(tile),
     lodMetricType,
     lodMetricValue

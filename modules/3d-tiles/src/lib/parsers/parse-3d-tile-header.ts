@@ -2,7 +2,7 @@ import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
 import {Tileset3D, LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
 import {Subtree} from '../../types';
-import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-impicit-tile';
+import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-implicit-tiles';
 
 function getTileType(tile) {
   if (!tile.contentUrl) {
@@ -76,7 +76,7 @@ export function normalizeTileHeaders(tileset) {
 }
 
 /**
- * Do normalisation of impicit tile headers
+ * Do normalisation of implicit tile headers
  * TODO Check if Tile3D class can be a return type here.
  * @param tileset
  */
@@ -97,6 +97,9 @@ export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
   const rootSubtreeUrl = `${basePath}/${subtreeUrl}`;
   const rootSubtree = await load(rootSubtreeUrl, Tile3DSubtreeLoader);
   const contentUrlTemplate = `${basePath}/${tileset.root.content.uri}`;
+  const refine = tileset.root.refine;
+  // @ts-ignore
+  const rootLodMetricValue = tileset.root.geometricError;
 
   const options = {
     contentUrlTemplate,
@@ -104,12 +107,12 @@ export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
     subdivisionScheme,
     subtreeLevels,
     maximumLevel,
-    refine: tileset.root.refine,
+    refine,
     basePath,
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
-    // @ts-ignore
-    rootLodMetricValue: tileset.root.geometricError,
-    getTileType
+    rootLodMetricValue,
+    getTileType,
+    getRefine
   };
 
   return await normalizeImplicitTileData(tileset.root, rootSubtree, options);
@@ -130,8 +133,6 @@ export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, opti
   tile.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
   tile.lodMetricValue = tile.geometricError;
   tile.transformMatrix = tile.transform;
-  tile.type = getTileType(tile);
-  tile.refine = getRefine(tile.refine);
 
   const {children, contentUrl} = await parseImplicitTiles(rootSubtree, options);
 
@@ -140,6 +141,8 @@ export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, opti
     tile.content = {uri: contentUrl.replace(`${options.basePath}/`, '')};
   }
 
+  tile.refine = getRefine(tile.refine);
+  tile.type = getTileType(tile);
   tile.children = children;
   tile.id = tile.contentUrl;
 
