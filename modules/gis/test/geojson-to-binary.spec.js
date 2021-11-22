@@ -168,6 +168,13 @@ test('gis#geojson-to-binary properties', async (t) => {
     feature.properties.int2 = 1;
   }
 
+  // Mixed 32/64bit ints
+  const LARGE = 80650000088;
+  for (const feature of features) {
+    feature.properties.int3 = 1;
+  }
+  features[1].properties.int3 = LARGE;
+
   // Uniform float, missing in some features
   features[0].properties.float1 = 3.14;
   features[1].properties.float1 = 2.14;
@@ -189,7 +196,15 @@ test('gis#geojson-to-binary properties', async (t) => {
 
   const firstPassData = firstPass(features);
   const {numericPropKeys} = firstPassData;
-  const expectedNumericPropKeys = ['int1', 'int2', 'float1', 'float2', 'numeric1', 'numeric2'];
+  const expectedNumericPropKeys = [
+    'int1',
+    'int2',
+    'int3',
+    'float1',
+    'float2',
+    'numeric1',
+    'numeric2'
+  ];
   t.deepEquals(numericPropKeys, expectedNumericPropKeys);
 
   const options = {
@@ -216,7 +231,8 @@ test('gis#geojson-to-binary properties', async (t) => {
 
   // Verify selected values
   t.deepEquals(points.numericProps.int2.value, new Float32Array(3).fill(1));
-  t.deepEquals(points.numericProps.float2.value, new Float32Array(3).fill(3.14));
+  t.deepEquals(points.numericProps.int3.value, new Float64Array([1, LARGE, LARGE]));
+  t.deepEquals(points.numericProps.float2.value, new Float64Array(3).fill(3.14));
 
   // Verify point string property objects
   t.deepEquals(points.properties, [

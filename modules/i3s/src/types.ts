@@ -417,7 +417,7 @@ export type SharedResources = {
   nodePath: string;
 };
 
-export type TextureImage = {
+type TextureImage = {
   id: string;
   size?: number;
   pixelInWorldUnits?: number;

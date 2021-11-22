@@ -37,8 +37,14 @@ export type MvtMapboxCoordinates = {
   id?: number;
 };
 
+export type MvtPropArrayConstructor =
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor
+  | ArrayConstructor;
+
 export type MvtBinaryOptions = {
   numericPropKeys: string[];
+  propArrayTypes: {[key: string]: MvtPropArrayConstructor};
   PositionDataType: Float32ArrayConstructor;
 };
 

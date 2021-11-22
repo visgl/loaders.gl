@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator, COORDINATE_SYSTEM} from '@deck.gl/core';
+import {TerrainLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -56,7 +57,6 @@ const StatsWidgetContainer = styled.div`
   padding: 24px;
   border-radius: 8px;
   line-height: 135%;
-  top: 163px;
   bottom: auto;
   width: 277px;
   left: 10px;
@@ -84,7 +84,8 @@ export default class App extends PureComponent {
       flattenedSublayers: [],
       sublayers: [],
       sublayersUpdateCounter: 0,
-      tilesetsStats: initStats()
+      tilesetsStats: initStats(),
+      useTerrainLayer: false
     };
     this.needTransitionToTileset = true;
 
@@ -92,6 +93,7 @@ export default class App extends PureComponent {
     this.handleClosePanel = this.handleClosePanel.bind(this);
     this._onToggleBuildingExplorer = this._onToggleBuildingExplorer.bind(this);
     this._updateSublayerVisibility = this._updateSublayerVisibility.bind(this);
+    this._toggleTerrain = this._toggleTerrain.bind(this);
   }
 
   componentDidMount() {
@@ -119,6 +121,30 @@ export default class App extends PureComponent {
     }
     this.setState({tilesetsStats: initStats(tilesetUrl)});
     this._onSelectTileset(tileset);
+  }
+
+  /**
+   * Get elevation data for TerrainLayer
+   * Docs - https://github.com/tilezen/joerd/tree/master/docs
+   */
+  getTerrainLayerData() {
+    // https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
+    const MAPZEN_TERRAIN_IMAGE = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
+    const ARCGIS_STREET_MAP_SURFACE_IMAGE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+
+    // https://github.com/tilezen/joerd/blob/master/docs/formats.md#terrarium
+    const MAPZEN_ELEVATION_DECODER = {
+      rScaler: 256,
+      gScaler: 1,
+      bScaler: 1 / 256,
+      offset: -32768
+    };
+
+    return {
+      elevationData: MAPZEN_TERRAIN_IMAGE,
+      texture: ARCGIS_STREET_MAP_SURFACE_IMAGE,
+      elevationDecoder: MAPZEN_ELEVATION_DECODER
+    }
   }
 
   /**
@@ -195,6 +221,23 @@ export default class App extends PureComponent {
     this.setState({selectedMapStyle});
   }
 
+  _toggleTerrain() {
+    const {useTerrainLayer} = this.state;
+    this.setState({useTerrainLayer: !useTerrainLayer});
+  }
+
+  _renderTerrainLayer() {
+    const {elevationDecoder, texture, elevationData} = this.getTerrainLayerData();
+
+    return new TerrainLayer({
+      id: 'terrain',
+      elevationDecoder,
+      elevationData,
+      texture,
+      color: [255, 255, 255]
+    });
+  }
+
   _isLayerPickable() {
     const {tileset} = this.state;
     const layerType = tileset?.tileset?.layerType;
@@ -208,12 +251,13 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {flattenedSublayers, token, selectedFeatureIndex, selectedTilesetBasePath} = this.state;
+    const {flattenedSublayers, token, selectedFeatureIndex, selectedTilesetBasePath, metadata, useTerrainLayer} = this.state;
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
     if (token) {
       loadOptions.i3s = {...loadOptions.i3s, token};
     }
-    return flattenedSublayers
+
+    const layers = flattenedSublayers
       .filter((sublayer) => sublayer.visibility)
       .map(
         (sublayer) =>
@@ -230,6 +274,13 @@ export default class App extends PureComponent {
               sublayer.url === selectedTilesetBasePath ? selectedFeatureIndex : -1
           })
       );
+
+      if (useTerrainLayer) {
+        const terrainLayer = this._renderTerrainLayer();
+        layers.push(terrainLayer);
+      }
+
+      return layers;
   }
 
   async handleClick(info) {
@@ -261,13 +312,13 @@ export default class App extends PureComponent {
     const {showBuildingExplorer, sublayers} = this.state;
     const style = {
       display: 'flex',
-      top: '125px'
+      top: '150px'
     };
     if (showBuildingExplorer) {
       style.display = 'none';
     }
     if (sublayers.length) {
-      style.top = '163px';
+      style.top = '200px';
     }
     // TODO - too verbose, get more default styling from stats widget?
     return <StatsWidgetContainer style={style} ref={(_) => (this._statsWidgetContainer = _)} />;
@@ -292,7 +343,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {name, selectedMapStyle, sublayers, showBuildingExplorer} = this.state;
+    const {name, selectedMapStyle, sublayers, showBuildingExplorer, useTerrainLayer} = this.state;
     return (
       <ControlPanel
         name={name}
@@ -303,8 +354,9 @@ export default class App extends PureComponent {
         selectedMapStyle={selectedMapStyle}
         sublayers={sublayers}
         isBuildingExplorerShown={showBuildingExplorer}
+        useTerrainLayer={useTerrainLayer}
+        toggleTerrain={this._toggleTerrain}
       >
-        <StatsWidgetWrapper>{this._renderStats()}</StatsWidgetWrapper>
       </ControlPanel>
     );
   }

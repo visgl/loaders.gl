@@ -12,7 +12,7 @@ const BuildingExplorerContainer = styled.div`
   overflow: auto;
   align-items: flex-start;
   position: absolute;
-  top: 109px;
+  top: 140px;
   display: flex;
   flex-direction: column;
   background: #0e111a;
