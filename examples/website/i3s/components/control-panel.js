@@ -5,11 +5,12 @@ import {EXAMPLES} from '../examples';
 import {MAP_STYLES} from '../constants';
 import {DropDownStyle, Font, Color, Flex} from './styles';
 import BuildingExplorer from './building-explorer';
+import ToggleSwitch from './toggle-switch';
 
 const Container = styled.div`
   ${Flex}
   width: 277px;
-  height: 105px;
+  height: 132px;
   margin: 10px;
   line-height: 28px;
   background: #0e111a;
@@ -51,6 +52,16 @@ const MapName = styled.h3`
   ${Color}
   font-weight: normal;
   width: 70px;
+  margin-bottom: 0;
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const ItemName = styled.h3`
+  ${Color}
+  margin: 0;
+  font-weight: normal;
   @media (max-width: 768px) {
     display: none;
   }
@@ -74,18 +85,23 @@ const propTypes = {
   selectedMapStyle: PropTypes.string,
   mapStyles: PropTypes.object,
   debugMode: PropTypes.bool,
+  useTerrainLayer: PropTypes.bool,
   sublayers: PropTypes.array,
   isBuildingExplorerShown: PropTypes.bool,
   onExampleChange: PropTypes.func,
   onMapStyleChange: PropTypes.func,
-  onToggleBuildingExplorer: PropTypes.func
+  onToggleBuildingExplorer: PropTypes.func,
+  setMemoryVisibility: PropTypes.func,
+  toggleTerrain: PropTypes.func
 };
 
 const defaultProps = {
   name: '',
   debugMode: false,
   isBuildingExplorerShown: false,
-  sublayers: []
+  sublayers: [],
+  useTerrainLayer: false,
+  toggleTerrain: () => {}
 };
 
 const CUSTOM_EXAMPLE = 'Custom example';
@@ -147,6 +163,24 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
+
+  _renderTerrainControl() {
+    const {useTerrainLayer, toggleTerrain} = this.props;
+
+    return (
+      <MapContainer>
+        <ItemName>Terrain</ItemName>
+        <ToggleSwitch
+          value={useTerrainLayer}
+          checked={useTerrainLayer}
+          onChange={() => {
+            toggleTerrain({useTerrainLayer: !useTerrainLayer});
+          }}
+        />
+      </MapContainer>
+    );
+  }
+
   render() {
     const {
       debugMode,
@@ -159,6 +193,7 @@ export default class ControlPanel extends PureComponent {
       <Container debugMode={debugMode}>
         {this._renderExamples()}
         {this._renderMapStyles()}
+        {this._renderTerrainControl()}
         {sublayers?.length ? (
           <BuildingExplorer
             sublayers={sublayers}
