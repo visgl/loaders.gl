@@ -2,38 +2,29 @@ import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-
-import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
 import {
-  I3sTilesetHeader,
-  I3sTileHeader,
+  I3STilesetHeader,
+  I3STileHeader,
   FeatureAttribute,
-  I3sTileContent,
   VertexAttribute,
-  I3sMeshAttributes,
-  I3sMeshAttribute,
+  I3SMeshAttributes,
+  I3SMeshAttribute,
   TileContentTexture,
-  HeaderAttributeProperty
+  HeaderAttributeProperty,
+  I3SMaterialDefinition
 } from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
-import {
-  GL_TYPE_MAP,
-  getConstructorForDataFormat,
-  sizeOf,
-  I3S_NAMED_VERTEX_ATTRIBUTES,
-  I3S_NAMED_GEOMETRY_ATTRIBUTES,
-  COORDINATE_SYSTEM
-} from './constants';
+import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
-function getLoaderForTextureFormat(textureFormat: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2') {
+function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2') {
   switch (textureFormat) {
     case 'ktx-etc2':
     case 'dds':
@@ -51,16 +42,14 @@ const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
-  tile: I3sTileHeader,
-  tileset: I3sTilesetHeader,
+  tile: I3STileHeader,
+  tileset: I3STilesetHeader,
   options?: LoaderOptions,
   context?: LoaderContext
 ) {
   tile.content = tile.content || {};
   tile.content.featureIds = tile.content.featureIds || null;
 
-  // construct featureData from defaultGeometrySchema;
-  tile.content.featureData = constructFeatureDataStruct(tileset);
   tile.content.attributes = {};
 
   if (tile.textureUrl) {
@@ -102,13 +91,14 @@ export async function parseI3STileContent(
     tile.content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, options);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, tileset, options);
 }
 
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
-  tile: I3sTileHeader,
+  tile: I3STileHeader,
+  tileset: I3STilesetHeader,
   options?: LoaderOptions
 ) {
   if (!tile.content) {
@@ -116,7 +106,7 @@ async function parseI3SNodeGeometry(
   }
 
   const content = tile.content;
-  let attributes: I3sMeshAttributes;
+  let attributes: I3SMeshAttributes;
   let vertexCount: number;
   let byteOffset: number = 0;
   let featureCount: number = 0;
@@ -157,10 +147,14 @@ async function parseI3SNodeGeometry(
       flattenFeatureIdsByFeatureIndices(attributes, featureIds);
     }
   } else {
-    const {vertexAttributes, attributesOrder, featureAttributes, featureAttributeOrder} =
-      content.featureData;
+    const {
+      vertexAttributes,
+      ordering: attributesOrder,
+      featureAttributes,
+      featureAttributeOrder
+    } = tileset.store.defaultGeometrySchema;
     // First 8 bytes reserved for header (vertexCount and featureCount)
-    const headers = parseHeaders(content, arrayBuffer);
+    const headers = parseHeaders(tileset, arrayBuffer);
     byteOffset = headers.byteOffset;
     vertexCount = headers.vertexCount;
     featureCount = headers.featureCount;
@@ -170,7 +164,6 @@ async function parseI3SNodeGeometry(
       byteOffset,
       vertexAttributes,
       vertexCount,
-      // @ts-expect-error
       attributesOrder
     );
 
@@ -231,7 +224,7 @@ async function parseI3SNodeGeometry(
  * @param attributes
  */
 function updateAttributesMetadata(
-  attributes: I3sMeshAttributes,
+  attributes: I3SMeshAttributes,
   decompressedGeometry: DracoMesh
 ): void {
   for (const key in decompressedGeometry.loaderData.attributes) {
@@ -258,9 +251,9 @@ function updateAttributesMetadata(
  * @returns - result of attributes concatenation.
  */
 function concatAttributes(
-  normalizedVertexAttributes: I3sMeshAttributes,
-  normalizedFeatureAttributes: I3sMeshAttributes
-): I3sMeshAttributes {
+  normalizedVertexAttributes: I3SMeshAttributes,
+  normalizedFeatureAttributes: I3SMeshAttributes
+): I3SMeshAttributes {
   return {...normalizedVertexAttributes, ...normalizedFeatureAttributes};
 }
 
@@ -269,7 +262,7 @@ function concatAttributes(
  * @param attribute - geometry attribute
  * @returns - geometry attribute in right format
  */
-function normalizeAttribute(attribute: I3sMeshAttribute): I3sMeshAttribute {
+function normalizeAttribute(attribute: I3SMeshAttribute): I3SMeshAttribute {
   if (!attribute) {
     return attribute;
   }
@@ -277,37 +270,12 @@ function normalizeAttribute(attribute: I3sMeshAttribute): I3sMeshAttribute {
   return attribute;
 }
 
-function constructFeatureDataStruct(tileset: I3sTilesetHeader) {
-  // seed featureData from defaultGeometrySchema
-  const defaultGeometrySchema = tileset.store.defaultGeometrySchema;
-  const featureData = defaultGeometrySchema;
-  // populate the vertex attributes value types and values per element
-  for (const geometryAttribute in I3S_NAMED_GEOMETRY_ATTRIBUTES) {
-    for (const namedAttribute in I3S_NAMED_VERTEX_ATTRIBUTES) {
-      const attribute = defaultGeometrySchema[geometryAttribute][namedAttribute];
-      if (attribute) {
-        const {byteOffset = 0, count = 0, valueType, valuesPerElement} = attribute;
-
-        featureData[geometryAttribute][namedAttribute] = {
-          valueType,
-          valuesPerElement,
-          byteOffset,
-          count
-        };
-      }
-    }
-  }
-
-  featureData.attributesOrder = defaultGeometrySchema.ordering;
-  return featureData;
-}
-
-function parseHeaders(content: I3sTileContent, arrayBuffer: ArrayBuffer) {
+function parseHeaders(tileset: I3STilesetHeader, arrayBuffer: ArrayBuffer) {
   let byteOffset = 0;
   // First 8 bytes reserved for header (vertexCount and featurecount)
   let vertexCount = 0;
   let featureCount = 0;
-  for (const {property, type} of content.featureData.header) {
+  for (const {property, type} of tileset.store.defaultGeometrySchema.header) {
     const TypedArrayTypeHeader = getConstructorForDataFormat(type);
     switch (property) {
       case HeaderAttributeProperty.vertexCount:
@@ -339,7 +307,7 @@ function normalizeAttributes(
   vertexCount: number,
   attributesOrder: string[]
 ) {
-  const attributes: I3sMeshAttributes = {};
+  const attributes: I3SMeshAttributes = {};
 
   // the order of attributes depend on the order being added to the vertexAttributes object
   for (const attribute of attributesOrder) {
@@ -420,7 +388,7 @@ function parseUint64Values(
   return new Uint32Array(values);
 }
 
-function parsePositions(attribute: I3sMeshAttribute, tile: I3sTileHeader): Matrix4 {
+function parsePositions(attribute: I3SMeshAttribute, tile: I3STileHeader): Matrix4 {
   const mbs = tile.mbs;
   const value = attribute.value;
   const metadata = attribute.metadata;
@@ -472,7 +440,7 @@ function offsetsToCartesians(
  * @param positions positions attribute
  * @returns Matrix4 - model matrix for geometry transformation
  */
-function getModelMatrix(positions: I3sMeshAttribute): Matrix4 {
+function getModelMatrix(positions: I3SMeshAttribute): Matrix4 {
   const metadata = positions.metadata;
   const scaleX: number = metadata?.['i3s-scale_x']?.double || 1;
   const scaleY: number = metadata?.['i3s-scale_y']?.double || 1;
@@ -489,7 +457,7 @@ function getModelMatrix(positions: I3sMeshAttribute): Matrix4 {
  * @param texture - texture image
  * @returns {object}
  */
-function makePbrMaterial(materialDefinition: GLTFMaterial, texture: TileContentTexture) {
+function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: TileContentTexture) {
   let pbrMaterial;
   if (materialDefinition) {
     pbrMaterial = {
@@ -527,7 +495,9 @@ function makePbrMaterial(materialDefinition: GLTFMaterial, texture: TileContentT
     );
   }
 
-  setMaterialTexture(pbrMaterial, texture);
+  if (texture) {
+    setMaterialTexture(pbrMaterial, texture);
+  }
 
   return pbrMaterial;
 }
@@ -582,7 +552,7 @@ function setMaterialTexture(material, image: TileContentTexture): void {
  * @param normalizedFeatureAttributes
  * @returns
  */
-function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes: I3sMeshAttributes): void {
+function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes: I3SMeshAttributes): void {
   const {id, faceRange} = normalizedFeatureAttributes;
 
   if (!id || !faceRange) {
@@ -620,7 +590,7 @@ function flattenFeatureIdsByFaceRanges(normalizedFeatureAttributes: I3sMeshAttri
  * @returns
  */
 function flattenFeatureIdsByFeatureIndices(
-  attributes: I3sMeshAttributes,
+  attributes: I3SMeshAttributes,
   featureIds: Int32Array
 ): void {
   const featureIndices = attributes.id.value;
@@ -639,12 +609,7 @@ function flattenFeatureIdsByFeatureIndices(
  * @returns
  */
 function getFeatureIdsFromFeatureIndexMetadata(
-  featureIndex: I3sMeshAttribute
+  featureIndex: I3SMeshAttribute
 ): Int32Array | undefined {
-  return (
-    featureIndex &&
-    featureIndex.metadata &&
-    featureIndex.metadata['i3s-feature-ids'] &&
-    featureIndex.metadata['i3s-feature-ids'].intArray
-  );
+  return featureIndex?.metadata?.['i3s-feature-ids']?.intArray;
 }

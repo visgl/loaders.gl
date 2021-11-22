@@ -23,11 +23,10 @@ test('i3s-utils#getUrlWithToken Should return URL with token token if token exis
 
 test('i3s-utils#generateTileAttributeUrls Should return attribute URLs for tile', async (t) => {
   const tile = {
-    attributeData: [{href: './attributes/f_0/0'}, {href: './attributes/f_1/0'}],
-    url: 'test'
+    attributeData: [{href: './attributes/f_0/0'}, {href: './attributes/f_1/0'}]
   };
   const attrUrlsStub = ['test/attributes/f_0/0', 'test/attributes/f_1/0'];
-  const attributeUrls = generateTileAttributeUrls(tile);
+  const attributeUrls = generateTileAttributeUrls('test', tile);
 
   t.ok(attributeUrls);
   t.deepEqual(attributeUrls, attrUrlsStub);

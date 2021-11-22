@@ -1,22 +1,4 @@
-/**
- * Represents one page node
- * {@link https://github.com/Esri/i3s-spec/blob/master/docs/1.7/node.cmn.md}
- */
-export type PageNodeType = {
-  lodThreshold: number;
-  obb: any;
-  children: any[];
-  mesh?: {
-    geometry: {
-      resource?: number;
-      definition?: number;
-    };
-    material?: {
-      resource?: number;
-      definition?: number;
-    };
-  };
-};
+import {NodeInPage} from '@loaders.gl/i3s';
 
 /**
  * class NodePages - wrapper of nodePages array
@@ -54,7 +36,7 @@ export default class NodePages {
   readonly nodesPerPage: number;
   readonly nodesCounter: number;
   readonly writeFile: any;
-  readonly nodePages: {nodes: PageNodeType[]}[];
+  readonly nodePages: {nodes: NodeInPage[]}[];
 
   /**
    * @constructs

@@ -1,5 +1,4 @@
 import type {Tile3D, Tileset3DProps} from '@loaders.gl/tiles';
-import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {BatchTableJson, B3DMContent} from '@loaders.gl/3d-tiles';
 
 import type {
@@ -49,9 +48,9 @@ import {NODE as nodeTemplate} from './json-templates/node';
 import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {GeoidHeightModel} from '../lib/geoid-height-model';
-import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {I3SMaterialDefinition} from '@loaders.gl/i3s/src/types';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 
@@ -78,7 +77,7 @@ export default class I3SConverter {
   options: any;
   layers0Path: string;
   materialMap: Map<any, any>;
-  materialDefinitions: GLTFMaterial[];
+  materialDefinitions: I3SMaterialDefinition[];
   vertexCounter: number;
   layers0: SceneLayer3D;
   featuresHashArray: string[];
@@ -279,7 +278,7 @@ export default class I3SConverter {
    */
   private async _convertNodesTree(
     root0: Node3DIndexDocument,
-    sourceRootTile: TileHeader,
+    sourceRootTile: Tile3D,
     parentId: number,
     boundingVolumes: BoundingVolumes
   ): Promise<void> {
@@ -400,7 +399,7 @@ export default class I3SConverter {
    */
   private async _addChildrenWithNeighborsAndWriteFile(data: {
     parentNode: Node3DIndexDocument;
-    sourceTiles: TileHeader[];
+    sourceTiles: Tile3D[];
     parentId: number;
     level: number;
   }): Promise<void> {
@@ -420,7 +419,7 @@ export default class I3SConverter {
    */
   private async _addChildren(data: {
     childNodes: NodeReference[];
-    sourceTiles: TileHeader[];
+    sourceTiles: Tile3D[];
     parentNode: Node3DIndexDocument;
     parentId: number;
     level: number;
@@ -503,7 +502,7 @@ export default class I3SConverter {
    */
   private async _createNode(
     parentTile: Node3DIndexDocument,
-    sourceTile: TileHeader,
+    sourceTile: Tile3D,
     parentId: number,
     level: number
   ): Promise<Node3DIndexDocument[]> {
@@ -608,7 +607,7 @@ export default class I3SConverter {
    * result.attributes - feature attributes
    * result.featureCount - number of features
    */
-  private async _convertResources(sourceTile: TileHeader): Promise<I3SGeometry[] | null> {
+  private async _convertResources(sourceTile: Tile3D): Promise<I3SGeometry[] | null> {
     if (!this.isContentSupported(sourceTile)) {
       return null;
     }
@@ -639,12 +638,13 @@ export default class I3SConverter {
   private _createNodeInNodePages(
     maxScreenThresholdSQ: MaxScreenThresholdSQ,
     boundingVolumes: BoundingVolumes,
-    sourceTile: TileHeader,
+    sourceTile: Tile3D,
     parentId: number,
     resources: I3SGeometry
   ): NodeInPage {
     const {meshMaterial, texture, vertexCount, featureCount, geometry} = resources;
-    const nodeInPage = {
+    const nodeInPage: NodeInPage = {
+      index: 0,
       lodThreshold: maxScreenThresholdSQ.maxError,
       obb: boundingVolumes.obb,
       children: [],
@@ -653,9 +653,15 @@ export default class I3SConverter {
     if (geometry && this.isContentSupported(sourceTile)) {
       nodeInPage.mesh = {
         geometry: {
-          definition: texture ? 0 : 1
+          definition: texture ? 0 : 1,
+          resource: 0
         },
-        attribute: {}
+        attribute: {
+          resource: 0
+        },
+        material: {
+          definition: 0
+        }
       };
     }
     const nodeId = this.nodePages.push(nodeInPage, parentId);
@@ -947,7 +953,7 @@ export default class I3SConverter {
    * Return file format by its MIME type
    * @param mimeType - feature attributes
    */
-  private _getFormatByMimeType(mimeType: string): string {
+  private _getFormatByMimeType(mimeType: string | undefined): 'jpg' | 'png' {
     switch (mimeType) {
       case 'image/jpeg':
         return 'jpg';
@@ -963,7 +969,7 @@ export default class I3SConverter {
    * @param material - end-to-end index of the node
    * @return material id
    */
-  private _findOrCreateMaterial(material: GLTFMaterial): number {
+  private _findOrCreateMaterial(material: I3SMaterialDefinition): number {
     const hash = md5(JSON.stringify(material));
     if (this.materialMap.has(hash)) {
       return this.materialMap.get(hash);
@@ -1228,7 +1234,7 @@ export default class I3SConverter {
   /** Do calculations of all tiles and tiles with "ADD" type of refinement.
    * @param tile
    */
-  private _checkAddRefinementTypeForTile(tile: TileHeader): void {
+  private _checkAddRefinementTypeForTile(tile: Tile3D): void {
     const ADD_TILE_REFINEMENT = 1;
 
     if (tile.refine === ADD_TILE_REFINEMENT) {
