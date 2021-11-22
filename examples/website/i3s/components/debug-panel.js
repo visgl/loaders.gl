@@ -17,7 +17,7 @@ const Container = styled.div`
   flex-direction: column;
   z-index: 20;
   top: ${(props) =>
-    props.renderControlPanel ? (props.hasBuildingExplore ? '213px' : '170px') : '60px'};
+    props.renderControlPanel ? (props.hasBuildingExplore ? '253px' : '200px') : '60px'};
   left: 10px;
   -moz-user-select: none;
   -khtml-user-select: none;
@@ -26,7 +26,7 @@ const Container = styled.div`
   box-sizing: border-box;
   border-radius: 8px;
   width: 278px;
-  height: ${(props) => (props.renderControlPanel ? 'calc(100% - 170px)' : 'calc(100% - 60px)')};
+  height: ${(props) => (props.renderControlPanel ? 'calc(100% - 200px)' : 'calc(100% - 60px)')};
   max-height: 540px;
   overflow-y: auto;
   overflow-x: hidden;
