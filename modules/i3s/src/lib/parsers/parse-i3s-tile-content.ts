@@ -24,7 +24,7 @@ import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} fro
 
 const scratchVector = new Vector3([0, 0, 0]);
 
-function getLoaderForTextureFormat(textureFormat: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2') {
+function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2') {
   switch (textureFormat) {
     case 'ktx-etc2':
     case 'dds':
@@ -457,7 +457,7 @@ function getModelMatrix(positions: I3SMeshAttribute): Matrix4 {
  * @param texture - texture image
  * @returns {object}
  */
-function makePbrMaterial(materialDefinition: I3SMaterialDefinition, texture: TileContentTexture) {
+function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: TileContentTexture) {
   let pbrMaterial;
   if (materialDefinition) {
     pbrMaterial = {
@@ -495,7 +495,9 @@ function makePbrMaterial(materialDefinition: I3SMaterialDefinition, texture: Til
     );
   }
 
-  setMaterialTexture(pbrMaterial, texture);
+  if (texture) {
+    setMaterialTexture(pbrMaterial, texture);
+  }
 
   return pbrMaterial;
 }

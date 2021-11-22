@@ -938,7 +938,7 @@ export default class I3SConverter {
    * Return file format by its MIME type
    * @param mimeType - feature attributes
    */
-  private _getFormatByMimeType(mimeType: string | undefined): string {
+  private _getFormatByMimeType(mimeType: string | undefined): 'jpg' | 'png' {
     switch (mimeType) {
       case 'image/jpeg':
         return 'jpg';

@@ -35,14 +35,14 @@ type NodeMesh = {
   /**
    * The material definition.
    */
-  material: meshMaterial;
+  material: MeshMaterial;
   /** The geometry definition. */
-  geometry: meshGeometry;
+  geometry: MeshGeometry;
   /** The attribute set definition. */
   attribute: meshAttribute;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/meshMaterial.cmn.md */
-export type meshMaterial = {
+export type MeshMaterial = {
   /** The index in layer.materialDefinitions array. */
   definition: number;
   /** Resource id for the material textures. i.e: layers/0/nodes/{material.resource}/textures/{tex_name}. Is required if material declares any textures. */
@@ -51,7 +51,7 @@ export type meshMaterial = {
   texelCountHint?: number;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/meshGeometry.cmn.md */
-export type meshGeometry = {
+export type MeshGeometry = {
   /** The index in layer.geometryDefinitions array */
   definition: number;
   /** The resource locator to be used to query geometry resources: layers/0/nodes/{this.resource}/geometries/{layer.geometryDefinitions[this.definition].geometryBuffers[0 or 1]}. */
@@ -66,22 +66,20 @@ type meshAttribute = {
   /** The resource identifier to be used to locate attribute resources of this mesh. i.e. layers/0/nodes/<resource id>/attributes/... */
   resource: number;
 };
+
+export type I3STextureFormat = 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
+
 // TODO Replace "[key: string]: any" with actual defenition
 export type I3STileHeader = {
-  content: I3STileContent;
   isDracoGeometry: boolean;
-  textureUrl: string;
+  textureUrl?: string;
   url?: string;
-  /**
-   * Resource reference describing a featureData document.
-   */
-  attributeData: Resource[];
-  textureFormat: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
-  textureLoaderOptions: any;
-  materialDefinition: I3SMaterialDefinition;
+  textureFormat?: I3STextureFormat;
+  textureLoaderOptions?: any;
+  materialDefinition?: I3SMaterialDefinition;
   mbs: Mbs;
-  obb: Obb;
-  lodSelection: LodSelection[];
+  obb?: Obb;
+  lodSelection?: LodSelection[];
   [key: string]: any;
 };
 // TODO Replace "[key: string]: any" with actual defenition
@@ -313,7 +311,7 @@ export type Node3DIndexDocument = {
   level?: number;
   mbs?: Mbs;
   obb?: Obb;
-  lodSelection?: LodSelection;
+  lodSelection?: LodSelection[];
   children?: NodeReference[];
   neighbors?: NodeReference[];
   parentNode?: NodeReference;
@@ -324,6 +322,26 @@ export type Node3DIndexDocument = {
   attributeData?: Resource[];
   created?: string;
   expires?: string;
+};
+
+/**
+ * Minimal I3S node data is needed for loading
+ */
+export type I3SMinimalNodeData = {
+  id: string;
+  url?: string;
+  transform?: number[];
+  lodSelection?: LodSelection[];
+  obb?: Obb;
+  mbs?: Mbs;
+  contentUrl?: string;
+  textureUrl?: string;
+  attributeUrls?: string[];
+  materialDefinition?: I3SMaterialDefinition;
+  textureFormat?: I3STextureFormat;
+  textureLoaderOptions?: {[key: string]: any};
+  children?: NodeReference[];
+  isDracoGeometry: boolean;
 };
 
 export type LodSelection = {
@@ -668,7 +686,7 @@ type HeightModelInfo = {
 
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/textureSetDefinition.cmn.md */
 type TextureSetDefinition = {
-  formats: {name: string; format: string}[];
+  formats: {name: string; format: I3STextureFormat}[];
   atlas?: boolean;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/geometryDefinition.cmn.md */
