@@ -30,7 +30,7 @@ type PropArrayConstructor = Float32ArrayConstructor | Float64ArrayConstructor | 
 type FirstPassData = {
   coordLength: number;
   numericPropKeys: string[];
-  propArrayConstructors: {[key: string]: PropArrayConstructor};
+  propArrayTypes: {[key: string]: PropArrayConstructor};
 
   pointPositionsCount: number;
   pointFeaturesCount: number;
@@ -61,7 +61,7 @@ function firstPass(features: Feature[]): FirstPassData {
   let polygonRingsCount = 0;
   let polygonFeaturesCount = 0;
   const coordLengths = new Set<number>();
-  const propArrayConstructors = {};
+  const propArrayTypes = {};
 
   for (const feature of features) {
     const geometry = feature.geometry;
@@ -134,7 +134,7 @@ function firstPass(features: Feature[]): FirstPassData {
         // in all previous features, check if numeric in this feature
         // If not numeric, Array is stored to prevent rechecking in the future
         // Additionally, detects if 64 bit precision is required
-        propArrayConstructors[key] = deduceArrayType(val, propArrayConstructors[key]);
+        propArrayTypes[key] = deduceArrayType(val, propArrayTypes[key]);
       }
     }
   }
@@ -153,10 +153,8 @@ function firstPass(features: Feature[]): FirstPassData {
     polygonFeaturesCount,
 
     // Array of keys whose values are always numeric
-    numericPropKeys: Object.keys(propArrayConstructors).filter(
-      (k) => propArrayConstructors[k] !== Array
-    ),
-    propArrayConstructors
+    numericPropKeys: Object.keys(propArrayTypes).filter((k) => propArrayTypes[k] !== Array),
+    propArrayTypes
   };
 }
 
@@ -179,7 +177,7 @@ function secondPass(
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
-    propArrayConstructors,
+    propArrayTypes,
     polygonFeaturesCount
   } = firstPassData;
   const {coordLength, numericPropKeys, PositionDataType = Float32Array} = options;
@@ -238,7 +236,7 @@ function secondPass(
     for (const propName of numericPropKeys || []) {
       // If property has been numeric in all previous features in which the property existed, check
       // if numeric in this feature
-      const TypedArray = propArrayConstructors[propName];
+      const TypedArray = propArrayTypes[propName];
       object.numericProps[propName] = new TypedArray(object.positions.length / coordLength);
     }
   }

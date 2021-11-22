@@ -29,13 +29,11 @@ export function featuresToBinary(
   firstPassData: MvtFirstPassedData,
   options?: MvtBinaryOptions
 ) {
-  const propArrayConstructors = extractNumericPropTypes(features);
-  const numericPropKeys = Object.keys(propArrayConstructors).filter(
-    (k) => propArrayConstructors[k] !== Array
-  );
+  const propArrayTypes = extractNumericPropTypes(features);
+  const numericPropKeys = Object.keys(propArrayTypes).filter((k) => propArrayTypes[k] !== Array);
   return fillArrays(features, firstPassData, {
     numericPropKeys: options ? options.numericPropKeys : numericPropKeys,
-    propArrayConstructors,
+    propArrayTypes,
     PositionDataType: options ? options.PositionDataType : Float32Array
   });
 }
@@ -53,7 +51,7 @@ export const TEST_EXPORTS = {
 function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
   [key: string]: MvtPropArrayConstructor;
 } {
-  const propArrayConstructors = {};
+  const propArrayTypes = {};
   for (const feature of features) {
     if (feature.properties) {
       for (const key in feature.properties) {
@@ -62,12 +60,12 @@ function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
         // If not numeric, Array is stored to prevent rechecking in the future
         // Additionally, detects if 64 bit precision is required
         const val = feature.properties[key];
-        propArrayConstructors[key] = deduceArrayType(val, propArrayConstructors[key]);
+        propArrayTypes[key] = deduceArrayType(val, propArrayTypes[key]);
       }
     }
   }
 
-  return propArrayConstructors;
+  return propArrayTypes;
 }
 
 /**
@@ -95,7 +93,7 @@ function fillArrays(
     polygonRingsCount,
     polygonFeaturesCount
   } = firstPassData;
-  const {numericPropKeys, propArrayConstructors, PositionDataType = Float32Array} = options;
+  const {numericPropKeys, propArrayTypes, PositionDataType = Float32Array} = options;
   const hasGlobalId = features[0] && 'id' in features[0];
   const coordLength = 2;
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
@@ -151,7 +149,7 @@ function fillArrays(
     for (const propName of numericPropKeys) {
       // If property has been numeric in all previous features in which the property existed, check
       // if numeric in this feature
-      const TypedArray = propArrayConstructors[propName];
+      const TypedArray = propArrayTypes[propName];
       object.numericProps[propName] = new TypedArray(object.positions.length / coordLength);
     }
   }

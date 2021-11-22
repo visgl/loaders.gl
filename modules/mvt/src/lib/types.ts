@@ -44,7 +44,7 @@ export type MvtPropArrayConstructor =
 
 export type MvtBinaryOptions = {
   numericPropKeys: string[];
-  propArrayConstructors: {[key: string]: MvtPropArrayConstructor};
+  propArrayTypes: {[key: string]: MvtPropArrayConstructor};
   PositionDataType: Float32ArrayConstructor;
 };
 
