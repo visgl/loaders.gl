@@ -125,21 +125,9 @@ export default class App extends PureComponent {
 
   /**
    * Get elevation data for TerrainLayer
-   * If MapboxAccessToken is rovided we will use mapbox data.
-   * If not we will use Mapzen Terrain Tile and ArcGIS texture.
    * Docs - https://github.com/tilezen/joerd/tree/master/docs
    */
   getTerrainLayerData() {
-    const MAPBOX_TOKEN = process.env.MapboxAccessToken;
-    const MAPBOX_TERRAIN_IMAGE = `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.png?access_token=${MAPBOX_TOKEN}`;
-    const MAPBOX_SURFACE_IMAGE = `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.png?access_token=${MAPBOX_TOKEN}`;
-    const MAPBOX_ELEVATION_DECODER = {
-      rScaler: 6553.6,
-      gScaler: 25.6,
-      bScaler: 0.1,
-      offset: -10000
-    };
-
     // https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
     const MAPZEN_TERRAIN_IMAGE = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
     const ARCGIS_STREET_MAP_SURFACE_IMAGE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -151,14 +139,6 @@ export default class App extends PureComponent {
       bScaler: 1 / 256,
       offset: -32768
     };
-
-    if (MAPBOX_TOKEN) {
-      return {
-        elevationData: MAPBOX_TERRAIN_IMAGE,
-        texture: MAPBOX_SURFACE_IMAGE,
-        elevationDecoder: MAPBOX_ELEVATION_DECODER
-      }
-    }
 
     return {
       elevationData: MAPZEN_TERRAIN_IMAGE,
@@ -247,7 +227,7 @@ export default class App extends PureComponent {
   }
 
   _renderTerrainLayer() {
-    const {elevationDecoder, texture, elevationData } = this.getTerrainLayerData();
+    const {elevationDecoder, texture, elevationData} = this.getTerrainLayerData();
 
     return new TerrainLayer({
       id: 'terrain',
