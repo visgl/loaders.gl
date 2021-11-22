@@ -15,7 +15,6 @@ module.exports = {
         // TODO Implement dinamic creation of .env.production file with token inside.
         // Docs - https://www.gatsbyjs.com/docs/how-to/local-development/environment-variables/
         // eslint-disable-next-line no-process-env
-        GATSBY_MAPBOX_TOKEN: process.env.GATSBY_MAPBOX_TOKEN,
 
         // Folders
         DIR_NAME: __dirname,
