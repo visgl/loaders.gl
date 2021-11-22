@@ -176,7 +176,7 @@ export default class App extends PureComponent {
     this.needTransitionToTileset = true;
     const tilesetsStats = initStats(tilesetUrl);
     this._tilesetStatsWidget.setStats(tilesetsStats);
-    this.setState({tilesetsStats});
+    this.setState({tilesetsStats, showBuildingExplorer: false});
   }
 
   // Updates stats, called every frame
