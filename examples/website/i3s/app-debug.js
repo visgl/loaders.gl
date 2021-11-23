@@ -15,6 +15,7 @@ import {
   COORDINATE_SYSTEM
 } from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
+import {TerrainLayer} from '@deck.gl/geo-layers';
 
 import {load} from '@loaders.gl/core';
 import {I3SLoader, I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
@@ -227,7 +228,8 @@ export default class App extends PureComponent {
       flattenedSublayers: [],
       sublayers: [],
       sublayersUpdateCounter: 0,
-      tilesetsStats: initStats()
+      tilesetsStats: initStats(),
+      useTerrainLayer: false
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -240,6 +242,7 @@ export default class App extends PureComponent {
     this.handleChangeNormalsLength = this.handleChangeNormalsLength.bind(this);
     this._updateSublayerVisibility = this._updateSublayerVisibility.bind(this);
     this._onToggleBuildingExplorer = this._onToggleBuildingExplorer.bind(this);
+    this._toggleTerrain = this._toggleTerrain.bind(this);
   }
 
   componentDidMount() {
@@ -310,6 +313,30 @@ export default class App extends PureComponent {
       return sublayers;
     } catch (e) {
       return [{url: tilesetUrl, visibility: true}];
+    }
+  }
+
+  /**
+   * Get elevation data for TerrainLayer
+   * Docs - https://github.com/tilezen/joerd/tree/master/docs
+   */
+   getTerrainLayerData() {
+    // https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
+    const MAPZEN_TERRAIN_IMAGE = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
+    const ARCGIS_STREET_MAP_SURFACE_IMAGE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+
+    // https://github.com/tilezen/joerd/blob/master/docs/formats.md#terrarium
+    const MAPZEN_ELEVATION_DECODER = {
+      rScaler: 256,
+      gScaler: 1,
+      bScaler: 1 / 256,
+      offset: -32768
+    };
+
+    return {
+      elevationData: MAPZEN_TERRAIN_IMAGE,
+      texture: ARCGIS_STREET_MAP_SURFACE_IMAGE,
+      elevationDecoder: MAPZEN_ELEVATION_DECODER
     }
   }
 
@@ -489,6 +516,23 @@ export default class App extends PureComponent {
     return allTiles.flat();
   }
 
+  _toggleTerrain() {
+    const {useTerrainLayer} = this.state;
+    this.setState({useTerrainLayer: !useTerrainLayer});
+  }
+
+  _renderTerrainLayer() {
+    const {elevationDecoder, texture, elevationData} = this.getTerrainLayerData();
+
+    return new TerrainLayer({
+      id: 'terrain',
+      elevationDecoder,
+      elevationData,
+      texture,
+      color: [255, 255, 255]
+    });
+  }
+
   _renderMainOnMinimap() {
     const {
       debugOptions: {minimapViewport}
@@ -528,7 +572,8 @@ export default class App extends PureComponent {
       debugOptions: {boundingVolume, boundingVolumeType, pickable, wireframe},
       normalsDebugData,
       trianglesPercentage,
-      normalsLength
+      normalsLength,
+      useTerrainLayer
     } = this.state;
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
     if (token) {
@@ -562,6 +607,11 @@ export default class App extends PureComponent {
             _getMeshColor: this.getMeshColor.bind(this)
           })
       );
+
+    if (useTerrainLayer) {
+      const terrainLayer = this._renderTerrainLayer();
+      tile3dLayers.push(terrainLayer);
+    }
 
     return [
       ...tile3dLayers,
@@ -667,7 +717,8 @@ export default class App extends PureComponent {
       name,
       selectedMapStyle,
       sublayers,
-      debugOptions: {buildingExplorer}
+      debugOptions: {buildingExplorer},
+      useTerrainLayer
     } = this.state;
     return (
       <ControlPanel
@@ -680,6 +731,8 @@ export default class App extends PureComponent {
         selectedMapStyle={selectedMapStyle}
         sublayers={sublayers}
         isBuildingExplorerShown={buildingExplorer}
+        useTerrainLayer={useTerrainLayer}
+        toggleTerrain={this._toggleTerrain}
       />
     );
   }
@@ -726,6 +779,9 @@ export default class App extends PureComponent {
       return false;
     }
     if (viewportId === 'minimap' && layerId === 'normals-debug') {
+      return false;
+    }
+    if (viewportId === 'minimap' && layerId.indexOf('terrain') !== -1) {
       return false;
     }
     return true;
