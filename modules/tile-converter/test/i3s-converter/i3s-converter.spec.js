@@ -4,9 +4,11 @@ import {isBrowser} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 import {cleanUpPath} from '../utils/file-utils';
+import path from 'path';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
+const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/3DTilesWithKTX2/tileset.json';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -129,6 +131,116 @@ test('tile-converter - Converters#should create sharedResources json file', asyn
     t.ok(sharedResources.textureDefinitions);
   }
   await cleanUpPath('data/BatchedTextured');
+  t.end();
+});
+
+test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
+  if (!isBrowser) {
+    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
+      {
+        formats: [
+          {name: '0', format: 'jpg'},
+          {name: '1', format: 'ktx2'}
+        ]
+      }
+    ];
+
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_TEXTURES,
+      outputPath: 'data',
+      tilesetName: 'BatchedTextured',
+      inputType: '3dtiles',
+      generateTexture: true,
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const sharedResourcesJson = await fs.readFile(
+      'data/BatchedTextured/SceneServer/layers/0/index.json',
+      'utf8'
+    );
+    const ktx2Texture = await fs.stat(
+      'data/BatchedTextured/SceneServer/layers/0/nodes/1/textures/1/index.ktx2'
+    );
+    const tileset0 = JSON.parse(sharedResourcesJson);
+    t.ok(ktx2Texture, 'ktx2 texture exists!');
+    t.ok(tileset0.textureSetDefinitions);
+    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+  }
+  await cleanUpPath('data/BatchedTextured');
+  t.end();
+});
+
+test('tile-converter - Converters#Should not generate JPG texture if only KTX2 is provided and generateTexture = false', async (t) => {
+  if (!isBrowser) {
+    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
+      {
+        formats: [{name: '1', format: 'ktx2'}]
+      }
+    ];
+
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_KTX_2_TEXTURE,
+      outputPath: 'data',
+      tilesetName: 'ktx2_only',
+      inputType: '3dtiles',
+      generateTexture: false,
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const sharedResourcesJson = await fs.readFile(
+      'data/ktx2_only/SceneServer/layers/0/index.json',
+      'utf8'
+    );
+
+    const ktx2Texture = await fs.stat(
+      'data/ktx2_only/SceneServer/layers/0/nodes/1/textures/1/index.ktx2'
+    );
+    const tileset0 = JSON.parse(sharedResourcesJson);
+    t.ok(ktx2Texture, 'ktx2 texture exists!');
+    t.ok(tileset0.textureSetDefinitions);
+    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+  }
+  await cleanUpPath('data/ktx2_only');
+  t.end();
+});
+
+test('tile-converter - Converters#Should generate JPG texture if only KTX2 is provided and generateTexture = true', async (t) => {
+  if (!isBrowser) {
+    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
+      {
+        formats: [
+          {name: '1', format: 'ktx2'},
+          {name: '0', format: 'jpg'}
+        ]
+      }
+    ];
+
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_KTX_2_TEXTURE,
+      outputPath: 'data',
+      tilesetName: 'jpg_and_ktx2',
+      inputType: '3dtiles',
+      generateTexture: true,
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const sharedResourcesJson = await fs.readFile(
+      'data/jpg_and_ktx2/SceneServer/layers/0/index.json',
+      'utf8'
+    );
+
+    const ktx2Texture = await fs.stat(
+      'data/jpg_and_ktx2/SceneServer/layers/0/nodes/1/textures/1/index.ktx2'
+    );
+    const tileset0 = JSON.parse(sharedResourcesJson);
+    t.ok(ktx2Texture, 'ktx2 texture exists!');
+    t.ok(tileset0.textureSetDefinitions);
+    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+  }
+  await cleanUpPath('data/jpg_and_ktx2');
   t.end();
 });
 
