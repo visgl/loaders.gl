@@ -50,6 +50,7 @@
     "@loaders.gl/tiles": "4.0.0-alpha.4",
     "@loaders.gl/worker-utils": "4.0.0-alpha.4",
     "@loaders.gl/zip": "4.0.0-alpha.4",
+    "@loaders.gl/textures": "4.0.0-alpha.4",
     "@luma.gl/engine": "^8.5.4",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
