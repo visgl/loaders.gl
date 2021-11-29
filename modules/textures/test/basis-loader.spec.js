@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 
 import {BasisLoader} from '@loaders.gl/textures';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
-import {GL} from '../src/lib/gl-constants';
+import {GL_EXTENSIONS_CONSTANTS} from '../src/lib/gl-extensions';
 
 const BASIS_TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
 const KTX2_BASIS_TEST_URL = '@loaders.gl/textures/test/data/kodim23.ktx2';
@@ -65,12 +65,12 @@ test('BasisLoader#auto-select a target format', async (t) => {
   if (isBrowser) {
     t.ok(
       [
-        GL.COMPRESSED_RGBA_ASTC_4X4_KHR,
-        GL.COMPRESSED_RGB_S3TC_DXT1_EXT,
-        GL.COMPRESSED_RGBA_S3TC_DXT5_EXT,
-        GL.COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-        GL.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-        GL.COMPRESSED_RGB_ETC1_WEBGL
+        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_4X4_KHR,
+        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
+        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_ETC1_WEBGL
       ].includes(image.format),
       'Browser supports one of GPU textures formats'
     );
@@ -98,7 +98,7 @@ test('BasisLoader#transcode to explicit format', async (t) => {
 
   t.equals(
     image.format,
-    GL.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
     'The texture was transcoded to DXT fromat'
   );
   t.ok(image.compressed, 'Basis transcodes to compressed texture');

@@ -28,9 +28,11 @@
     "child_process": false,
     "fs": false,
     "./src/lib/node/require-utils.node.ts": false,
+    "./dist/lib/node/require-utils.node.js": false,
     "./dist/es5/lib/node/require-utils.node.js": false,
     "./dist/esm/lib/node/require-utils.node.js": false,
     "./src/lib/process-utils/child-process-proxy.ts": false,
+    "./dist/lib/process-utils/child-process-proxy.js": false,
     "./dist/es5/lib/process-utils/child-process-proxy.js": false,
     "./dist/esm/lib/process-utils/child-process-proxy.js": false
   },
