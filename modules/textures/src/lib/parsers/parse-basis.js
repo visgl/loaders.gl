@@ -1,13 +1,25 @@
 import {loadBasisEncoderModule, loadBasisTrascoderModule} from './basis-module-loader';
-import {GL_EXTENSIONS} from '../gl-extensions';
+import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {getSupportedGPUTextureFormats} from '../utils/texture-formats';
 import {isKTX} from './parse-ktx';
 
 const OutputFormat = {
-  etc1: {basisFormat: 0, compressed: true, format: GL_EXTENSIONS.COMPRESSED_RGB_ETC1_WEBGL},
+  etc1: {
+    basisFormat: 0,
+    compressed: true,
+    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_ETC1_WEBGL
+  },
   etc2: {basisFormat: 1, compressed: true},
-  bc1: {basisFormat: 2, compressed: true, format: GL_EXTENSIONS.COMPRESSED_RGB_S3TC_DXT1_EXT},
-  bc3: {basisFormat: 3, compressed: true, format: GL_EXTENSIONS.COMPRESSED_RGBA_S3TC_DXT5_EXT},
+  bc1: {
+    basisFormat: 2,
+    compressed: true,
+    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT
+  },
+  bc3: {
+    basisFormat: 3,
+    compressed: true,
+    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT
+  },
   bc4: {basisFormat: 4, compressed: true},
   bc5: {basisFormat: 5, compressed: true},
   'bc7-m6-opaque-only': {basisFormat: 6, compressed: true},
@@ -15,17 +27,17 @@ const OutputFormat = {
   'pvrtc1-4-rgb': {
     basisFormat: 8,
     compressed: true,
-    format: GL_EXTENSIONS.COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_PVRTC_4BPPV1_IMG
   },
   'pvrtc1-4-rgba': {
     basisFormat: 9,
     compressed: true,
-    format: GL_EXTENSIONS.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
+    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
   },
   'astc-4x4': {
     basisFormat: 10,
     compressed: true,
-    format: GL_EXTENSIONS.COMPRESSED_RGBA_ASTC_4X4_KHR
+    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_4X4_KHR
   },
   'atc-rgb': {basisFormat: 11, compressed: true},
   'atc-rgba-interpolated-alpha': {basisFormat: 12, compressed: true},
