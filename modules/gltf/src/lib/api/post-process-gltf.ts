@@ -308,11 +308,42 @@ class GLTFPostProcessor {
       const {ArrayType, byteLength} = getAccessorArrayTypeAndLength(accessor, accessor.bufferView);
       const byteOffset =
         (accessor.bufferView.byteOffset || 0) + (accessor.byteOffset || 0) + buffer.byteOffset;
-      const cutBufffer = buffer.arrayBuffer.slice(byteOffset, byteOffset + byteLength);
-      accessor.value = new ArrayType(cutBufffer);
+      let cutBuffer = buffer.arrayBuffer.slice(byteOffset, byteOffset + byteLength);
+      if (accessor.bufferView.byteStride) {
+        cutBuffer = this._getValueFromInterleavedBuffer(
+          buffer,
+          byteOffset,
+          accessor.bufferView.byteStride,
+          accessor.bytesPerElement,
+          accessor.count
+        );
+      }
+      accessor.value = new ArrayType(cutBuffer);
     }
 
     return accessor;
+  }
+
+  /**
+   * Take values of particular accessor from interleaved buffer
+   * various parts of the buffer
+   * @param buffer
+   * @param byteOffset
+   * @param byteStride
+   * @param bytesPerElement
+   * @param count
+   * @returns
+   */
+  _getValueFromInterleavedBuffer(buffer, byteOffset, byteStride, bytesPerElement, count) {
+    const result = new Uint8Array(count * bytesPerElement);
+    for (let i = 0; i < count; i++) {
+      const elementOffset = byteOffset + i * byteStride;
+      result.set(
+        new Uint8Array(buffer.arrayBuffer.slice(elementOffset, elementOffset + bytesPerElement)),
+        i * bytesPerElement
+      );
+    }
+    return result.buffer;
   }
 
   _resolveTexture(texture, index) {
