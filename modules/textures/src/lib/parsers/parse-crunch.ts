@@ -1,6 +1,6 @@
 import type {TextureLevel} from '../../types';
 import {loadCrunchModule} from './crunch-module-loader';
-import {GL} from '../gl-constants';
+import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {assert} from '@loaders.gl/loader-utils';
 import {getDxt1LevelSize, getDxtXLevelSize} from './parse-dds';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
@@ -20,15 +20,15 @@ const CRN_FORMAT = {
 // Mapping of Crunch formats to DXT formats.
 const DXT_FORMAT_MAP = {};
 DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT1] = {
-  pixelFormat: GL.COMPRESSED_RGB_S3TC_DXT1_EXT,
+  pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
   sizeFunction: getDxt1LevelSize
 };
 DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT3] = {
-  pixelFormat: GL.COMPRESSED_RGBA_S3TC_DXT3_EXT,
+  pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT3_EXT,
   sizeFunction: getDxtXLevelSize
 };
 DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT5] = {
-  pixelFormat: GL.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+  pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
   sizeFunction: getDxtXLevelSize
 };
 

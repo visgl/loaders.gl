@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-export const GL = {
+export const GL_EXTENSIONS_CONSTANTS = {
   // WEBGL_compressed_texture_s3tc
 
   COMPRESSED_RGB_S3TC_DXT1_EXT: 0x83f0,
