@@ -38,6 +38,33 @@
 
 ## v3.1 Prerelease
 
+## v3.1.0-beta.3
+
+- fix(textures, worker-utils): deck.gl compatibility (#1956)
+- fix(gltf): parse interleaved buffer (#1968)
+- fix(examples): i3s-app - building explorer visibility (#1957)
+- fix(examples): i3s debug - coordinate system related issues (#1954)
+
+## v3.1.0-beta.2
+
+- chore: Fix dependencies on 3.1-branch (#1937)
+- fix(tile-converter): black models issue (#1936)
+- fix(tile-converter): build converter bundle (#1934)
+
+## v3.1.0-beta.1
+
+- feat(3d-tiles_implicit_tiling): add subtree loader (#1924)
+- feat: enable tsbuild (#1930)
+- fix(website): natsby-theme-ocular@1.2.5 ignores .tsconfig.json (#1929)
+- docs(parquet): Parquet loader docs (#1836)
+- docs: mention ktx2-basis support (#1925)
+- docs(textures): 3.1 updates (#1922)
+- feat: Proper typescript monorepo references (#1920)
+- feat: Generate d.ts typings (#1907)
+- fix(tile-converter): i3s->3dtiles - model matrix transformation (#1902)
+- fix(website/tile-converter): parsing textures (#1901)
+- fix(3dtiles-converter): fix texture parsing for I3S-> 3DTiles conversion (#1897)
+
 ## v3.1.0-alpha.4
 
 - fix(website): gltf page (#1834)

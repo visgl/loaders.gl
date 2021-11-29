@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/netcdf",
   "description": "Loader for NetCDF",
-  "version": "3.1.0-beta.2",
+  "version": "3.1.0-beta.3",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -30,6 +30,6 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.1.0-beta.2"
+    "@loaders.gl/loader-utils": "3.1.0-beta.3"
   }
 }
