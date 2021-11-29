@@ -38,6 +38,10 @@
 
 ## v3.1 Prerelease
 
+## v3.1.0-beta.4
+
+- unpublish loaders.gl-compiler-issue
+
 ## v3.1.0-beta.3
 
 - fix(textures, worker-utils): deck.gl compatibility (#1956)
