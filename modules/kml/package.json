@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "3.1.0-beta.4",
+  "version": "3.1.0-beta.5",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
   "publishConfig": {
@@ -32,9 +32,9 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js"
   },
   "dependencies": {
-    "@loaders.gl/gis": "3.1.0-beta.4",
-    "@loaders.gl/loader-utils": "3.1.0-beta.4",
-    "@loaders.gl/schema": "3.1.0-beta.4",
+    "@loaders.gl/gis": "3.1.0-beta.5",
+    "@loaders.gl/loader-utils": "3.1.0-beta.5",
+    "@loaders.gl/schema": "3.1.0-beta.5",
     "@tmcw/togeojson": "^4.5.0"
   }
 }
