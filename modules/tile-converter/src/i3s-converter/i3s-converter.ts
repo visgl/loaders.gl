@@ -50,7 +50,7 @@ import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {GeoidHeightModel} from '../lib/geoid-height-model';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {I3SMaterialDefinition} from '@loaders.gl/i3s/src/types';
+import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 
@@ -92,6 +92,7 @@ export default class I3SConverter {
   sourceTileset: Tileset3D | null;
   geoidHeightModel: GeoidHeightModel | null;
   Loader: LoaderWithParser = Tiles3DLoader;
+  generateTexture: boolean;
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
@@ -109,6 +110,7 @@ export default class I3SConverter {
     };
     this.validate = false;
     this.boundingVolumeWarnings = null;
+    this.generateTexture = false;
   }
 
   /**
@@ -136,6 +138,7 @@ export default class I3SConverter {
     token?: string;
     draco?: boolean;
     validate?: boolean;
+    generateTexture?: boolean;
   }): Promise<any> {
     this.conversionStartTime = process.hrtime();
     const {
@@ -148,11 +151,13 @@ export default class I3SConverter {
       draco,
       sevenZipExe,
       maxDepth,
-      token
+      token,
+      generateTexture
     } = options;
     this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
     this.validate = validate;
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
+    this.generateTexture = Boolean(generateTexture);
 
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
@@ -847,7 +852,7 @@ export default class I3SConverter {
   }
 
   /**
-   * Write the texture image in a file
+   * Generates textures based on texture mime type and fill in textureSetDefinitions data.
    * @param texture - the texture image
    * @param childPath - a child path to write resources
    * @param slpkChildPath - the resource path inside *slpk file
@@ -858,59 +863,81 @@ export default class I3SConverter {
     slpkChildPath: string
   ): Promise<void> {
     if (texture) {
-      const format = this._getFormatByMimeType(texture.mimeType);
-      if (!this.layers0.textureSetDefinitions.length) {
-        this.layers0.textureSetDefinitions.push({
-          formats: [
-            {
-              name: '0',
-              format
-            },
-            {
-              name: '1',
-              format: 'ktx2'
-            }
-          ]
-        });
+      const format = this._getFormatByMimeType(texture?.mimeType);
+      const formats: TextureSetDefinitionFormats = [];
+      const textureData = texture.bufferView!.data;
+
+      switch (format) {
+        case 'jpg':
+        case 'png': {
+          formats.push({name: '0', format});
+          await this.writeTextureFile(textureData, '0', format, childPath, slpkChildPath);
+
+          if (this.generateTexture) {
+            formats.push({name: '1', format: 'ktx2'});
+            const ktx2TextureData = new Uint8Array(
+              await encode(texture.image, KTX2BasisUniversalTextureWriter)
+            );
+            await this.writeTextureFile(ktx2TextureData, '1', 'ktx2', childPath, slpkChildPath);
+          }
+
+          break;
+        }
+
+        case 'ktx2': {
+          formats.push({name: '1', format});
+          await this.writeTextureFile(textureData, '1', format, childPath, slpkChildPath);
+
+          if (this.generateTexture) {
+            formats.push({name: '0', format: 'jpg'});
+            const decodedFromKTX2TextureData = new Uint8Array(
+              await encode(texture.image!.data[0], ImageWriter)
+            );
+            await this.writeTextureFile(
+              decodedFromKTX2TextureData,
+              '0',
+              'jpg',
+              childPath,
+              slpkChildPath
+            );
+          }
+        }
       }
 
-      let textureData;
-      let ktx2TextureData;
-
-      if (texture.mimeType === 'image/ktx2') {
-        ktx2TextureData = texture.bufferView!.data;
-        textureData = new Uint8Array(await encode(texture.image!.data[0], ImageWriter));
-      } else {
-        textureData = texture.bufferView!.data;
-        ktx2TextureData = new Uint8Array(
-          await encode(texture.image, KTX2BasisUniversalTextureWriter)
-        );
+      if (!this.layers0!.textureSetDefinitions!.length) {
+        this.layers0!.textureSetDefinitions!.push({formats});
       }
+    }
+  }
 
-      if (this.options.slpk) {
-        const slpkTexturePath = join(childPath, 'textures');
-        const compress = false;
+  /**
+   * Write the texture image in a file
+   * @param textureData
+   * @param name
+   * @param format
+   * @param childPath
+   * @param slpkChildPath
+   */
+  private async writeTextureFile(
+    textureData: ArrayBuffer,
+    name: string,
+    format: 'jpg' | 'png' | 'ktx2',
+    childPath: string,
+    slpkChildPath: string
+  ): Promise<void> {
+    const texturePath = join(childPath, `textures/${name}/`);
+    await writeFile(texturePath, textureData, `index.${format}`);
 
-        this.fileMap[`${slpkChildPath}/textures/0.${format}`] = await writeFileForSlpk(
-          slpkTexturePath,
-          textureData,
-          `0.${format}`,
-          compress
-        );
+    if (this.options.slpk) {
+      const slpkTexturePath = join(childPath, 'textures');
+      const compress = false;
 
-        this.fileMap[`${slpkChildPath}/textures/1.ktx2`] = await writeFileForSlpk(
-          slpkTexturePath,
-          ktx2TextureData,
-          `1.ktx2`,
-          compress
-        );
-      } else {
-        const texturePath = join(childPath, 'textures/0/');
-        await writeFile(texturePath, textureData, `index.${format}`);
-
-        const ktx2TexturePath = join(childPath, 'textures/1/');
-        await writeFile(ktx2TexturePath, ktx2TextureData, `index.ktx2`);
-      }
+      this.fileMap[`${slpkChildPath}/textures/${name}.${format}`] = await writeFileForSlpk(
+        slpkTexturePath,
+        textureData,
+        `${name}.${format}`,
+        compress
+      );
     }
   }
 
@@ -953,12 +980,14 @@ export default class I3SConverter {
    * Return file format by its MIME type
    * @param mimeType - feature attributes
    */
-  private _getFormatByMimeType(mimeType: string | undefined): 'jpg' | 'png' {
+  private _getFormatByMimeType(mimeType: string | undefined): 'jpg' | 'png' | 'ktx2' {
     switch (mimeType) {
       case 'image/jpeg':
         return 'jpg';
       case 'image/png':
         return 'png';
+      case 'image/ktx2':
+        return 'ktx2';
       default:
         return 'jpg';
     }

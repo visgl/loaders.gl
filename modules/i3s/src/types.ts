@@ -684,11 +684,14 @@ type HeightModelInfo = {
     | 'kilometer';
 };
 
+export type TextureSetDefinitionFormats = {name: string; format: I3STextureFormat}[];
+
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/textureSetDefinition.cmn.md */
 type TextureSetDefinition = {
-  formats: {name: string; format: I3STextureFormat}[];
+  formats: TextureSetDefinitionFormats;
   atlas?: boolean;
 };
+
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/geometryDefinition.cmn.md */
 type GeometryDefinition = {
   topology: 'triangle' | string;
