@@ -1,4 +1,4 @@
-import {I3sTileHeader} from '../../types';
+import {Node3DIndexDocument} from '../../types';
 
 /**
  * Generates url with token if it is exists.
@@ -15,8 +15,8 @@ export function getUrlWithToken(url: string, token: string | null = null): strin
  * @param tile
  * @returns list of attribute urls
  */
-export function generateTileAttributeUrls(tile: I3sTileHeader): string[] {
-  const {url, attributeData} = tile;
+export function generateTileAttributeUrls(url: string, tile: Node3DIndexDocument): string[] {
+  const {attributeData = []} = tile;
   const attributeUrls: string[] = [];
 
   for (let index = 0; index < attributeData.length; index++) {

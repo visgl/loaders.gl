@@ -1,4 +1,4 @@
-import type {SubtreeAvailability, ExplicitBitstream} from '../../../types';
+import type {Subtree, ExplicitBitstream} from '../../../types';
 import {fetchFile} from '@loaders.gl/core';
 
 const SUBTREE_FILE_MAGIC = 0x74627573;
@@ -10,7 +10,8 @@ const SUBTREE_FILE_VERSION = 1;
  * @param data
  * @returns
  */
-export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<SubtreeAvailability> {
+// eslint-disable-next-line max-statements
+export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Subtree> {
   const magic = new Uint32Array(data.slice(0, 4));
 
   if (magic[0] !== SUBTREE_FILE_MAGIC) {
@@ -71,7 +72,7 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Su
  * @param internalBinaryBuffer
  */
 async function getExplicitBitstream(
-  subtree: SubtreeAvailability,
+  subtree: Subtree,
   name: string,
   internalBinaryBuffer: ArrayBuffer
 ): Promise<ExplicitBitstream> {

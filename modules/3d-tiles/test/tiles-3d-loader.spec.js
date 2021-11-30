@@ -17,6 +17,11 @@ const DEPRECATED_B3DM_2 =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/batchedDeprecated2.b3dm';
 const GLTF_CONTENT_TILESET_URL = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
 
+const IMPLICIT_OCTREE_TILESET_URL = '@loaders.gl/3d-tiles/test/data/SparseOctree/tileset.json';
+const IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL =
+  '@loaders.gl/3d-tiles/test/data/FullQuadtree/tileset.json';
+const IMPLICIT_QUADTREE_TILESET_URL = '@loaders.gl/3d-tiles/test/data/BasicExample/tileset.json';
+
 test('Tiles3DLoader#Tileset file', async (t) => {
   const response = await fetchFile(TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
@@ -112,5 +117,148 @@ test('Tiles3DLoader#Tile GLTF content extension', async (t) => {
   const glbTileContent = await load(tileset.root.children[0].contentUrl, Tiles3DLoader);
   t.equals(glbTileContent.type, 'glTF');
   t.ok(glbTileContent.gltf);
+});
+
+// eslint-disable-next-line max-statements
+test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subtrees', async (t) => {
+  const ROOT_EXTENSION_EXPECTED = {
+    '3DTILES_implicit_tiling': {
+      subdivisionScheme: 'OCTREE',
+      subtreeLevels: 2,
+      maximumLevel: 5,
+      subtrees: {uri: 'subtrees/{level}/{x}/{y}/{z}.subtree'}
+    }
+  };
+
+  const response = await fetchFile(IMPLICIT_OCTREE_TILESET_URL);
+  const tileset = await parse(response, Tiles3DLoader);
+
+  // root
+  t.ok(tileset);
+  t.equal(tileset.extensionsRequired[0], '3DTILES_implicit_tiling');
+  t.equal(tileset.extensionsUsed[0], '3DTILES_implicit_tiling');
+  t.ok(tileset.root);
+  t.equal(tileset.root.content.uri, 'content/0/0/0/0.pnts');
+  t.equal(tileset.root.lodMetricValue, 5000);
+  t.equal(tileset.root.type, 'pointcloud');
+  t.equal(tileset.root.refine, 1);
+  t.equal(tileset.root.children.length, 1);
+  t.deepEqual(tileset.root.extensions, ROOT_EXTENSION_EXPECTED);
+
+  // children level 1
+  t.equal(tileset.root.children[0].content.uri, 'content/1/0/0/0.pnts');
+  t.equal(tileset.root.children[0].lodMetricValue, 2500);
+  t.equal(tileset.root.children[0].refine, 1);
+  t.equal(tileset.root.children[0].type, 'pointcloud');
+  t.equal(tileset.root.children[0].children.length, 1);
+
+  // children level 2
+  t.equal(tileset.root.children[0].children[0].content.uri, 'content/2/1/0/0.pnts');
+  t.equal(tileset.root.children[0].children[0].lodMetricValue, 1250);
+  t.equal(tileset.root.children[0].children[0].refine, 1);
+  t.equal(tileset.root.children[0].children[0].type, 'pointcloud');
+  t.equal(tileset.root.children[0].children[0].children.length, 1);
+
+  // children level 3
+  t.equal(tileset.root.children[0].children[0].children[0].content.uri, 'content/3/2/0/1.pnts');
+  t.equal(tileset.root.children[0].children[0].children[0].lodMetricValue, 625);
+  t.equal(tileset.root.children[0].children[0].children[0].refine, 1);
+  t.equal(tileset.root.children[0].children[0].children[0].type, 'pointcloud');
+  t.equal(tileset.root.children[0].children[0].children[0].children.length, 0);
+
+  t.end();
+});
+
+// eslint-disable-next-line max-statements
+test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', async (t) => {
+  const ROOT_EXTENSION_EXPECTED = {
+    '3DTILES_implicit_tiling': {
+      subdivisionScheme: 'QUADTREE',
+      subtreeLevels: 3,
+      maximumLevel: 2,
+      subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
+    }
+  };
+
+  const response = await fetchFile(IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL);
+  const tileset = await parse(response, Tiles3DLoader);
+
+  // root
+  t.ok(tileset);
+  t.equal(tileset.extensionsRequired[0], '3DTILES_implicit_tiling');
+  t.equal(tileset.extensionsUsed[0], '3DTILES_implicit_tiling');
+  t.ok(tileset.root);
+  t.equal(tileset.root.content.uri, 'content/0/0/0.b3dm');
+  t.equal(tileset.root.lodMetricValue, 5000);
+  t.equal(tileset.root.type, 'scenegraph');
+  t.equal(tileset.root.refine, 1);
+  t.equal(tileset.root.children.length, 4);
+  t.deepEqual(tileset.root.extensions, ROOT_EXTENSION_EXPECTED);
+
+  // first children tree
+  t.equal(tileset.root.children[0].content.uri, 'content/1/0/0.b3dm');
+  t.equal(tileset.root.children[0].children[0].content.uri, 'content/2/0/0.b3dm');
+  t.equal(tileset.root.children[0].children[1].content.uri, 'content/2/1/0.b3dm');
+  t.equal(tileset.root.children[0].children[2].content.uri, 'content/2/0/1.b3dm');
+  t.equal(tileset.root.children[0].children[3].content.uri, 'content/2/1/1.b3dm');
+
+  // second children tree
+  t.equal(tileset.root.children[1].content.uri, 'content/1/1/0.b3dm');
+  t.equal(tileset.root.children[1].children[0].content.uri, 'content/2/2/0.b3dm');
+  t.equal(tileset.root.children[1].children[1].content.uri, 'content/2/3/0.b3dm');
+  t.equal(tileset.root.children[1].children[2].content.uri, 'content/2/2/1.b3dm');
+  t.equal(tileset.root.children[1].children[3].content.uri, 'content/2/3/1.b3dm');
+
+  // third children tree
+  t.equal(tileset.root.children[2].content.uri, 'content/1/0/1.b3dm');
+  t.equal(tileset.root.children[2].children[0].content.uri, 'content/2/0/2.b3dm');
+  t.equal(tileset.root.children[2].children[1].content.uri, 'content/2/1/2.b3dm');
+  t.equal(tileset.root.children[2].children[2].content.uri, 'content/2/0/3.b3dm');
+  t.equal(tileset.root.children[2].children[3].content.uri, 'content/2/1/3.b3dm');
+
+  // fourth children tree
+  t.equal(tileset.root.children[3].content.uri, 'content/1/1/1.b3dm');
+  t.equal(tileset.root.children[3].children[0].content.uri, 'content/2/2/2.b3dm');
+  t.equal(tileset.root.children[3].children[1].content.uri, 'content/2/3/2.b3dm');
+  t.equal(tileset.root.children[3].children[2].content.uri, 'content/2/2/3.b3dm');
+  t.equal(tileset.root.children[3].children[3].content.uri, 'content/2/3/3.b3dm');
+
+  t.end();
+});
+
+test('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', async (t) => {
+  const response = await fetchFile(IMPLICIT_QUADTREE_TILESET_URL);
+  const tileset = await parse(response, Tiles3DLoader);
+
+  const ROOT_EXTENSION_EXPECTED = {
+    '3DTILES_implicit_tiling': {
+      subdivisionScheme: 'QUADTREE',
+      subtreeLevels: 2,
+      maximumLevel: 1,
+      subtrees: {uri: 'subtrees/{level}/{x}/{y}.subtree'}
+    }
+  };
+
+  // root
+  t.ok(tileset);
+  t.equal(tileset.extensionsRequired[0], '3DTILES_implicit_tiling');
+  t.equal(tileset.extensionsUsed[0], '3DTILES_implicit_tiling');
+  t.ok(tileset.root);
+  t.equal(tileset.root.content.uri, 'content/0/0/0.b3dm');
+  t.equal(tileset.root.lodMetricValue, 5000);
+  t.equal(tileset.root.type, 'scenegraph');
+  t.equal(tileset.root.refine, 2);
+  t.equal(tileset.root.children.length, 2);
+  t.deepEqual(tileset.root.extensions, ROOT_EXTENSION_EXPECTED);
+
+  // children
+  t.equal(tileset.root.children[0].content.uri, 'content/1/1/0.b3dm');
+  t.equal(tileset.root.children[0].lodMetricValue, 2500);
+  t.equal(tileset.root.children[0].children.length, 0);
+
+  t.equal(tileset.root.children[1].content.uri, 'content/1/0/1.b3dm');
+  t.equal(tileset.root.children[1].lodMetricValue, 2500);
+  t.equal(tileset.root.children[1].children.length, 0);
+
   t.end();
 });

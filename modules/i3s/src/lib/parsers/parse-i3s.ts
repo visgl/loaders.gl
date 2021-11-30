@@ -4,69 +4,80 @@ import {load} from '@loaders.gl/core';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../helpers/i3s-nodepages-tiles';
 import {generateTileAttributeUrls, getUrlWithToken} from '../utils/url-utils';
+import {
+  I3STilesetHeader,
+  I3STileHeader,
+  Mbs,
+  I3SMinimalNodeData,
+  Node3DIndexDocument
+} from '../../types';
+import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 
-export function normalizeTileData(tile, options, context) {
-  tile.url = context.url;
-
-  if (tile.featureData) {
-    tile.featureUrl = `${tile.url}/${tile.featureData[0].href}`;
-  }
-
+export function normalizeTileData(tile : Node3DIndexDocument, options : LoaderOptions, context: LoaderContext): I3STileHeader {
+  const url: string = context.url || '';
+  let contentUrl: string | undefined;
   if (tile.geometryData) {
-    tile.contentUrl = `${tile.url}/${tile.geometryData[0].href}`;
+    contentUrl = `${url}/${tile.geometryData[0].href}`;
   }
 
+  let textureUrl: string | undefined;
   if (tile.textureData) {
-    tile.textureUrl = `${tile.url}/${tile.textureData[0].href}`;
+    textureUrl = `${url}/${tile.textureData[0].href}`;
   }
 
+  let attributeUrls: string[] | undefined;
   if (tile.attributeData) {
-    tile.attributeUrls = generateTileAttributeUrls(tile);
+    attributeUrls = generateTileAttributeUrls(url, tile);
   }
 
-  return normalizeTileNonUrlData(tile);
+  return normalizeTileNonUrlData({
+    ...tile,
+    url,
+    contentUrl,
+    textureUrl,
+    attributeUrls,
+    isDracoGeometry: false
+  });
 }
 
-export function normalizeTileNonUrlData(tile) {
-  const box = tile.obb
-    ? [
+export function normalizeTileNonUrlData(tile : I3SMinimalNodeData): I3STileHeader {
+  const boundingVolume: {box?: number[]; sphere?: number[]} = {};
+  let mbs: Mbs = [0, 0, 0, 1];
+  if (tile.mbs) {
+    mbs = tile.mbs;
+    boundingVolume.sphere = [
+      ...Ellipsoid.WGS84.cartographicToCartesian(tile.mbs.slice(0, 3)), // cartesian center of sphere
+      tile.mbs[3] // radius of sphere
+    ] as Mbs;
+  } else if (tile.obb) {
+    boundingVolume.box = [
       ...Ellipsoid.WGS84.cartographicToCartesian(tile.obb.center), // cartesian center of box
       ...tile.obb.halfSize, // halfSize
       ...tile.obb.quaternion // quaternion
-    ]
-    : undefined;
-  let sphere;
-  if (tile.mbs) {
-    sphere = [
-      ...Ellipsoid.WGS84.cartographicToCartesian(tile.mbs.slice(0, 3)), // cartesian center of sphere
-      tile.mbs[3] // radius of sphere
     ];
-  } else if (box) {
     const obb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
-      box.slice(0, 3),
+      boundingVolume.box.slice(0, 3),
       tile.obb.halfSize,
       tile.obb.quaternion
     );
     const boundingSphere = obb.getBoundingSphere();
-    sphere = [...boundingSphere.center, boundingSphere.radius];
-    tile.mbs = [...tile.obb.center, boundingSphere.radius];
+    boundingVolume.sphere = [...boundingSphere.center , boundingSphere.radius] as Mbs;
+    mbs = [...tile.obb.center, boundingSphere.radius] as Mbs;
   }
 
-  tile.boundingVolume = {
-    sphere,
-    box
-  };
-  tile.lodMetricType = tile.lodSelection[0].metricType;
-  tile.lodMetricValue = tile.lodSelection[0].maxError;
-  tile.transformMatrix = tile.transform;
-  tile.type = TILE_TYPE.MESH;
-  // TODO only support replacement for now
-  tile.refine = TILE_REFINEMENT.REPLACE;
+  const lodMetricType = tile.lodSelection?.[0].metricType;
+  const lodMetricValue = tile.lodSelection?.[0].maxError;
+  const transformMatrix = tile.transform;
+  const type = TILE_TYPE.MESH;
+  /**
+   * I3S specification supports only REPLACE
+   */
+  const refine = TILE_REFINEMENT.REPLACE;
 
-  return tile;
+  return {...tile, mbs, boundingVolume, lodMetricType, lodMetricValue, transformMatrix, type, refine};
 }
 
-export async function normalizeTilesetData(tileset, options, context) {
+export async function normalizeTilesetData(tileset : I3STilesetHeader, options : LoaderOptions, context: LoaderContext) {
   tileset.url = context.url;
 
   if (tileset.nodePages) {

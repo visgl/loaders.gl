@@ -18,7 +18,7 @@ export {loadImageTextureArray} from './lib/texture-api/load-image-array';
 export {loadImageTextureCube} from './lib/texture-api/load-image-cube';
 
 // Utilities
-export {GL as GL_CONSTANTS} from './lib/gl-constants';
+export {GL_EXTENSIONS_CONSTANTS} from './lib/gl-extensions';
 export {selectSupportedBasisFormat} from './lib/parsers/parse-basis';
 export {getSupportedGPUTextureFormats} from './lib/utils/texture-formats';
 

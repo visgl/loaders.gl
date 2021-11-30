@@ -1,4 +1,8 @@
-import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
+import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
+import {load} from '@loaders.gl/core';
+import {Tileset3D, LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
+import {Subtree} from '../../types';
+import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-implicit-tiles';
 
 function getTileType(tile) {
   if (!tile.contentUrl) {
@@ -47,6 +51,7 @@ export function normalizeTileData(tile, options) {
   tile.transformMatrix = tile.transform;
   tile.type = getTileType(tile);
   tile.refine = getRefine(tile.refine);
+
   return tile;
 }
 
@@ -68,4 +73,78 @@ export function normalizeTileHeaders(tileset) {
   }
 
   return root;
+}
+
+/**
+ * Do normalisation of implicit tile headers
+ * TODO Check if Tile3D class can be a return type here.
+ * @param tileset
+ */
+export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
+  if (!tileset.root) {
+    return null;
+  }
+
+  const basePath = tileset.basePath;
+  const implicitTilingExtension = tileset.root.extensions['3DTILES_implicit_tiling'];
+  const {
+    subdivisionScheme,
+    maximumLevel,
+    subtreeLevels,
+    subtrees: {uri: subtreesUriTemplate}
+  } = implicitTilingExtension;
+  const subtreeUrl = replaceContentUrlTemplate(subtreesUriTemplate, 0, 0, 0, 0);
+  const rootSubtreeUrl = `${basePath}/${subtreeUrl}`;
+  const rootSubtree = await load(rootSubtreeUrl, Tile3DSubtreeLoader);
+  const contentUrlTemplate = `${basePath}/${tileset.root.content.uri}`;
+  const refine = tileset.root.refine;
+  // @ts-ignore
+  const rootLodMetricValue = tileset.root.geometricError;
+
+  const options = {
+    contentUrlTemplate,
+    subtreesUriTemplate,
+    subdivisionScheme,
+    subtreeLevels,
+    maximumLevel,
+    refine,
+    basePath,
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    rootLodMetricValue,
+    getTileType,
+    getRefine
+  };
+
+  return await normalizeImplicitTileData(tileset.root, rootSubtree, options);
+}
+
+/**
+ * Do implicit data normalisation to create hierarchical tile structure
+ * @param tile
+ * @param rootSubtree
+ * @param options
+ * @returns
+ */
+export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, options: any) {
+  if (!tile) {
+    return null;
+  }
+
+  tile.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
+  tile.lodMetricValue = tile.geometricError;
+  tile.transformMatrix = tile.transform;
+
+  const {children, contentUrl} = await parseImplicitTiles(rootSubtree, options);
+
+  if (contentUrl) {
+    tile.contentUrl = contentUrl;
+    tile.content = {uri: contentUrl.replace(`${options.basePath}/`, '')};
+  }
+
+  tile.refine = getRefine(tile.refine);
+  tile.type = getTileType(tile);
+  tile.children = children;
+  tile.id = tile.contentUrl;
+
+  return tile;
 }
