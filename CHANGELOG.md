@@ -38,7 +38,12 @@
 
 ## v3.1 Prerelease
 
-## v3.1.0-beta.4
+## v3.1.0-beta.6
+
+- fix(examples): textures GL_EXTENSIONS_CONSTANTS (#1970)
+- Detect when 64 bit precision is required for a numericProp in MVTLoader (#1952)
+
+## v3.1.0-beta.5
 
 - unpublish loaders.gl-compiler-issue
 
