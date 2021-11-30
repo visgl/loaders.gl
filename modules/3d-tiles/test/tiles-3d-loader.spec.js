@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import test from 'tape-promise/tape';
-import {parse, fetchFile} from '@loaders.gl/core';
+import {parse, fetchFile, load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {DracoLoader} from '@loaders.gl/draco';
 import {isBrowser} from '@loaders.gl/core';
@@ -15,6 +15,7 @@ const DEPRECATED_B3DM_1 =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated1/batchedDeprecated1.b3dm';
 const DEPRECATED_B3DM_2 =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/batchedDeprecated2.b3dm';
+const GLTF_CONTENT_TILESET_URL = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
 
 const IMPLICIT_OCTREE_TILESET_URL = '@loaders.gl/3d-tiles/test/data/SparseOctree/tileset.json';
 const IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL =
@@ -109,6 +110,13 @@ test('Tiles3DLoader#loads json from base64 URL', async (t) => {
   t.ok('root' in tilesetHeader, 'should contain root tile');
   t.equals(tilesetHeader.type, 'TILES3D');
   t.end();
+});
+
+test('Tiles3DLoader#Tile GLTF content extension', async (t) => {
+  const tileset = await load(GLTF_CONTENT_TILESET_URL, Tiles3DLoader);
+  const glbTileContent = await load(tileset.root.children[0].contentUrl, Tiles3DLoader);
+  t.equals(glbTileContent.type, 'glTF');
+  t.ok(glbTileContent.gltf);
 });
 
 // eslint-disable-next-line max-statements
