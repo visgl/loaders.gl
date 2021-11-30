@@ -31,6 +31,9 @@ function printHelp() {
   );
   console.log('--token [Token for Cesium ION tilesets authentication]');
   console.log('--no-draco [Disable draco compression for geometry]');
+  console.log(
+    '--generate-texture [Enable KTX2 textures generation if only one of (JPG, PNG) texture is provided or generate JPG texture if only KTX2 is provided]'
+  );
   console.log('--validate [Enable validation]');
   process.exit(0); // eslint-disable-line
 }
@@ -113,7 +116,8 @@ async function convert(options) {
         egmFilePath: options.egm,
         token: options.token,
         draco: options.draco,
-        validate: options.validate
+        validate: options.validate,
+        generateTexture: options.generateTexture
       });
       break;
     default:
@@ -134,7 +138,8 @@ function parseOptions(args) {
     token: null,
     draco: true,
     installDependencies: false,
-    validate: false
+    validate: false,
+    generateTexture: false
   };
 
   const count = args.length;
@@ -188,6 +193,9 @@ function parseOptions(args) {
           break;
         case '--install-dependencies':
           opts.installDependencies = true;
+          break;
+        case '--generate-texture':
+          opts.generateTexture = true;
           break;
         case '--help':
           printHelp();
