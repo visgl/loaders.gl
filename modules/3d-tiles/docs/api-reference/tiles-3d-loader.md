@@ -6,16 +6,16 @@
 
 Parses a [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles) tileset.
 
-| Loader                | Characteristic                                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                  |
-| File Type             | Binary (with linked assets)                                                                                        |
-| File Format           | [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications) |
-| Data Format           | [Data Formats](#data-formats)                                                                                      |
-| Decoder Type          | Asynchronous                                                                                                       |
-| Worker Thread Support | No                                                                                                                 |
-| Streaming Support     | No \*                                                                                                              |
-| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageLoader` (.`.jpg`, `.png`), `TextureLoader` (`.ktx`)                                                           |
+| Loader                | Characteristic                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                   |
+| File Type             | Binary (with linked assets)                                                                                         |
+| File Format           | [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications)  |
+| Data Format           | [Data Formats](#data-formats)                                                                                       |
+| Decoder Type          | Asynchronous                                                                                                        |
+| Worker Thread Support | No                                                                                                                  |
+| Streaming Support     | No \*                                                                                                               |
+| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageLoader` (.`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
 
 \* Streaming is not supported for individual tiles, however tilesets are streamed by loading only the tiles needed for the specified viewports.
 
@@ -99,16 +99,21 @@ The Batched 3D Model and Instanced 3D model tile types contain an embedded glTF 
 
 Can load both binary `.glb` files and JSON `.gltf` files.
 
+### glTF content extension
+
+[3DTILES_content_gltf](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_content_gltf) extension is supported. This extension allows a tileset to use glTF 2.0 assets directly as tile content. Both glTF JSON and GLB binary formats are supported.
+
 ## Data Format
 
 Loaded data conforms to the 3D Tiles loader category specification with the following exceptions.
 
 ### Tileset Object
 
-| Field | Type | Contents |
-| ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | `type` | `String` | Value is `TILES3D`. Indicates the returned object is a Cesium `3D Tiles` tileset. |
-| `lodMetricType` | `String` | Root's Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
-| `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value. |
+| Field            | Type     | Contents                                                                                                                                                                                                                                                                                                                   |
+| ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`           | `String` | Value is `TILES3D`. Indicates the returned object is a Cesium `3D Tiles` tileset.                                                                                                                                                                                                                                          |
+| `lodMetricType`  | `String` | Root's Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
+| `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                                                                 |
 
 ### Tile Object
 
@@ -118,7 +123,7 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 | ----------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                         |
 | `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                     |
-| `type`            | `String`     | Type of the tile, one of `pointcloud` (`.pnts`), `scenegraph` (`.i3dm`, `.b3dm`)                                                                                                                                                                                                                                    |
+| `type`            | `String`     | Type of the tile, one of `pointcloud` (`.pnts`), `scenegraph` (`.i3dm`, `.b3dm`, `.glb`, `.gltf`)                                                                                                                                                                                                                                    |
 | `boundingVolume`  | `Object`     | A bounding volume in Cartesian coordinates that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))                                                               |
 | `lodMetricType`   | `String`     | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
 | `lodMetricValue`  | `String`     | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                                                 |
