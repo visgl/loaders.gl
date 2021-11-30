@@ -2,7 +2,11 @@ import type {BoundingVolumes, Extent, Mbs, Obb} from '@loaders.gl/i3s';
 
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {OrientedBoundingBox} from '@math.gl/culling';
+import {
+  OrientedBoundingBox,
+  makeOrientedBoundingBoxFromPoints,
+  makeBoundingSphereFromPoints
+} from '@math.gl/culling';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {GeoidHeightModel} from '../../lib/geoid-height-model';
 import {Tileset3D} from '@loaders.gl/tiles';
@@ -49,6 +53,52 @@ export function createBoundingVolumes(
       quaternion
     }
   };
+}
+
+/**
+ * Generates bounding volumes from geometry positions
+ * @param cartesianPositions
+ * @param geoidHeightModel
+ */
+export function createBoundingVolumesFromGeometry(
+  cartesianPositions: Float32Array,
+  geoidHeightModel: GeoidHeightModel
+) {
+  const positionVectors = convertPositionsToVectors(cartesianPositions);
+
+  const geometryObb = makeOrientedBoundingBoxFromPoints(positionVectors);
+  const geometryMbs = makeBoundingSphereFromPoints(positionVectors);
+
+  let mbsCenter = Ellipsoid.WGS84.cartesianToCartographic(geometryMbs.center, new Vector3());
+  let obbCenter = Ellipsoid.WGS84.cartesianToCartographic(geometryObb.center, new Vector3());
+
+  mbsCenter[2] = mbsCenter[2] - geoidHeightModel.getHeight(mbsCenter[1], mbsCenter[0]);
+  obbCenter[2] = obbCenter[2] - geoidHeightModel.getHeight(obbCenter[1], obbCenter[0]);
+
+  return {
+    mbs: [mbsCenter[0], mbsCenter[1], mbsCenter[2], geometryMbs.radius],
+    obb: {
+      center: obbCenter,
+      halfSize: geometryObb.halfSize,
+      quaternion: geometryObb.quaternion
+    }
+  };
+}
+
+/**
+ * Create array of posisitons where each vertex is vector
+ * @param {array} positions
+ * @returns {Vector3[]}
+ */
+export function convertPositionsToVectors(positions: Float32Array): Vector3[] {
+  const result: Vector3[] = [];
+
+  for (let i = 0; i < positions.length; i += 3) {
+    const positionVector = new Vector3(positions[i], positions[i + 1], positions[i + 2]);
+    result.push(positionVector);
+  }
+
+  return result;
 }
 
 /**

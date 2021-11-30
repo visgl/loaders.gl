@@ -34,6 +34,9 @@ function printHelp() {
   console.log(
     '--generate-texture [Enable KTX2 textures generation if only one of (JPG, PNG) texture is provided or generate JPG texture if only KTX2 is provided]'
   );
+  console.log(
+    '--generate-bounding-volumes [Will generate obb and mbs bounding volumes from geometry]'
+  );
   console.log('--validate [Enable validation]');
   process.exit(0); // eslint-disable-line
 }
@@ -117,7 +120,9 @@ async function convert(options) {
         token: options.token,
         draco: options.draco,
         validate: options.validate,
-        generateTexture: options.generateTexture
+        generateTexture: options.generateTexture,
+        generateBoundingVolumes: options.generateBoundingVolumes,
+        validate: options.validate
       });
       break;
     default:
@@ -138,8 +143,9 @@ function parseOptions(args) {
     token: null,
     draco: true,
     installDependencies: false,
-    validate: false,
-    generateTexture: false
+    generateTexture: false,
+    generateBoundingVolumes: false,
+    validate: false
   };
 
   const count = args.length;
@@ -196,6 +202,9 @@ function parseOptions(args) {
           break;
         case '--generate-texture':
           opts.generateTexture = true;
+          break;
+        case '--generate-bounding-volumes':
+          opts.generateBoundingVolumes = true;
           break;
         case '--help':
           printHelp();
