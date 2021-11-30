@@ -29,7 +29,7 @@ RUN yarn global add yarn@1.7.0
 WORKDIR /loaders-gl
 COPY . /loaders-gl
 RUN yarn
-RUN yarn build
+RUN yarn no-stats-build
 
 # build converter bundle
 WORKDIR /loaders-gl/modules/tile-converter
