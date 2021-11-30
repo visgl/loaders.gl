@@ -5,7 +5,7 @@ import {
   BasisLoader,
   CompressedTextureLoader,
   CrunchWorkerLoader,
-  GL_CONSTANTS,
+  GL_EXTENSIONS_CONSTANTS,
   getSupportedGPUTextureFormats,
   selectSupportedBasisFormat
 } from '@loaders.gl/textures';
@@ -72,7 +72,7 @@ const {
   COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT,
   COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT,
   COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
-} = GL_CONSTANTS;
+} = GL_EXTENSIONS_CONSTANTS;
 
 const TEXTURES_BASE_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/';
