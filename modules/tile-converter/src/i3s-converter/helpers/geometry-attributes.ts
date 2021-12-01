@@ -149,7 +149,7 @@ function getSliceAttributeCount(attributeName, startIndex, endIndex) {
  * @returns {Array} - unique list of objects
  */
 function unifyObjectsByFeatureId(sortedData) {
-  const uniqueObjects = [];
+  const uniqueObjects: any[] = [];
 
   for (let index = 0; index < sortedData.length; index++) {
     const currentObject = sortedData[index];

@@ -71,21 +71,62 @@ const stencilsize_ = 12;
 const nterms_ = ((3 + 1) * (3 + 2)) / 2; // for a cubic fit
 const PIXEL_SIZE = 2;
 
+/**
+ * class GeoidHeightModel - "Gravity Height Model"
+ * Calculates difference between mean see level height and WGS84 ellipsoid height
+ * Input data have to be loaded from "Earth Gravity Model" *.pgm file with "PGMLoader"
+ * A particular model file can be loaded on https://geographiclib.sourceforge.io/html/geoid.html
+ *
+ * The implementation is ported from GeographicLib-1.50.1
+ */
 export class GeoidHeightModel {
-  constructor(options) {
+  _v00 = 0;
+  _v01 = 0;
+  _v10 = 0;
+  _v11 = 0;
+  _t = [];
+
+  options;
+  _ix;
+  _iy;
+
+  /**
+   * @constructs
+   * Create a GeoidHeightModel instance.
+   * @param options - object which includes parameters parsed from *.pgm header
+   * @param options.data - binary buffer of *.pgm file
+   */
+  constructor(options: {
+    cubic: boolean;
+    _width: number;
+    _height: number;
+    _rlonres: number;
+    _rlatres: number;
+    _offset: number;
+    _scale: number;
+    _swidth: number;
+    _datastart: number;
+    _maxerror: number;
+    _rmserror: number;
+    _description: string;
+    _datetime: string;
+    data: Uint8Array;
+  }) {
     this.options = options;
-    this._v00 = 0;
-    this._v01 = 0;
-    this._v10 = 0;
-    this._v11 = 0;
-    this._t = [];
 
     this._ix = this.options._width;
     this._iy = this.options._height;
   }
 
+  /**
+   * Calculates difference between mean see level height and WGS84 ellipsoid height
+   * Code is ported from /GeographicLib-1.50.1/src/Geoid.cpp
+   * @param lat - latitude
+   * @param lon - longitude
+   * @returns height in meters
+   */
   // eslint-disable-next-line max-statements, complexity
-  getHeight(lat, lon) {
+  getHeight(lat: number, lon: number): number {
     // C++: Math::LatFix(lat)
     lat = Math.abs(lat) > 90 ? NaN : lat;
 

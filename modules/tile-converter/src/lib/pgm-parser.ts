@@ -17,6 +17,14 @@ import {GeoidHeightModel} from './geoid-height-model';
 const ENDL = 10;
 const PIXEL_MAX = 65535;
 
+/**
+ * Parse "Earth Gravity Model" loaded from a *.pgm file
+ * The implementation is ported from GeographicLib-1.50.1
+ * https://geographiclib.sourceforge.io/html/geoid.html
+ * @param {Uint8Array} data - binary buffer of pgm file
+ * @param {Object} options - loader options
+ * @returns {GeoidHeightModel} - instance of GeoidHeightModel class
+ */
 // eslint-disable-next-line
 export function parsePgm(data, options) {
   const getline = _getLineGenerator(data);
