@@ -1,4 +1,5 @@
 import {Vector3, Matrix4} from '@math.gl/core';
+import {GeoidHeightModel} from '../../lib/geoid-height-model';
 /**
  * Convert binary data from b3dm file to i3s resources
  *
@@ -25,7 +26,9 @@ export default function convertB3dmToI3sGeometry(
   nodeId: number,
   featuresHashArray: any,
   attributeStorageInfo: any,
-  draco: boolean
+  draco: boolean,
+  generateBoundingVolumes: boolean,
+  geoidHeightModel: GeoidHeightModel
 ): Promise<
   {
     geometry: ArrayBuffer;
@@ -36,5 +39,6 @@ export default function convertB3dmToI3sGeometry(
     vertexCount: number;
     attributes: any;
     featureCount: number;
+    boundingVolumes: any;
   }[]
 >;

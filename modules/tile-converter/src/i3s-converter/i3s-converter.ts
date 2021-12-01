@@ -93,6 +93,7 @@ export default class I3SConverter {
   geoidHeightModel: GeoidHeightModel | null;
   Loader: LoaderWithParser = Tiles3DLoader;
   generateTexture: boolean;
+  generateBoundingVolumes: boolean;
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
@@ -111,6 +112,7 @@ export default class I3SConverter {
     this.validate = false;
     this.boundingVolumeWarnings = null;
     this.generateTexture = false;
+    this.generateBoundingVolumes = false;
   }
 
   /**
@@ -139,6 +141,7 @@ export default class I3SConverter {
     draco?: boolean;
     validate?: boolean;
     generateTexture?: boolean;
+    generateBoundingVolumes?: boolean;
   }): Promise<any> {
     this.conversionStartTime = process.hrtime();
     const {
@@ -152,12 +155,14 @@ export default class I3SConverter {
       sevenZipExe,
       maxDepth,
       token,
-      generateTexture
+      generateTexture,
+      generateBoundingVolumes
     } = options;
     this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
     this.validate = validate;
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
     this.generateTexture = Boolean(generateTexture);
+    this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
 
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
@@ -445,13 +450,13 @@ export default class I3SConverter {
         });
         await sourceTile.unloadContent();
       } else {
-        const boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel);
         const children = await this._createNode(parentNode, sourceTile, parentId, level);
         for (const child of children) {
           parentNode.children.push({
             id: child.id,
             href: `../${child.path}`,
-            ...boundingVolumes
+            obb: child.obb,
+            mbs: child.mbs
           });
           childNodes.push(child);
         }
@@ -516,13 +521,9 @@ export default class I3SConverter {
     }
 
     await this._updateTilesetOptions();
-    await this.sourceTileset._loadTile(sourceTile);
-    const boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel);
+    await this.sourceTileset!._loadTile(sourceTile);
 
-    const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, boundingVolumes);
-    const maxScreenThresholdSQ = lodSelection.find(
-      (val) => val.metricType === 'maxScreenThresholdSQ'
-    ) || {maxError: 0};
+    let boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel!);
 
     const batchTable = sourceTile?.content?.batchTableJson;
 
@@ -541,9 +542,20 @@ export default class I3SConverter {
       meshMaterial: null,
       vertexCount: null,
       attributes: null,
-      featureCount: null
+      featureCount: null,
+      boundingVolumes: null
     };
+
     for (const resources of resourcesData || [emptyResources]) {
+      if (this.generateBoundingVolumes && resources.boundingVolumes) {
+        boundingVolumes = resources.boundingVolumes;
+      }
+
+      const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, boundingVolumes);
+      const maxScreenThresholdSQ = lodSelection.find(
+        (val) => val.metricType === 'maxScreenThresholdSQ'
+      ) || {maxError: 0};
+
       const nodeInPage = this._createNodeInNodePages(
         maxScreenThresholdSQ,
         boundingVolumes,
@@ -620,8 +632,10 @@ export default class I3SConverter {
       sourceTile.content,
       Number(this.nodePages.nodesCounter),
       this.featuresHashArray,
-      this.layers0.attributeStorageInfo,
-      this.options.draco
+      this.layers0?.attributeStorageInfo,
+      this.options.draco,
+      this.generateBoundingVolumes,
+      this.geoidHeightModel!
     );
     return resourcesData;
   }
