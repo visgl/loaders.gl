@@ -156,6 +156,7 @@ export const TILESET_STUB = () => ({
 
 export async function loadI3STile(options = {}) {
   const i3sTilesetData = TILESET_STUB();
+  // @ts-expect-error
   const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, options);
   const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
