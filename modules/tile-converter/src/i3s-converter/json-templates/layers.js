@@ -1,7 +1,7 @@
 import transform from 'json-map-transform';
 import {STORE} from './store';
 
-const PLAIN_GEOMETRY_DEFINITION = {
+const PLAIN_GEOMETRY_DEFINITION = () => ({
   offset: 8,
   position: {
     type: 'Float32',
@@ -29,9 +29,9 @@ const PLAIN_GEOMETRY_DEFINITION = {
     type: 'UInt32',
     component: 2
   }
-};
+});
 
-const PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0 = {
+const PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0 = () => ({
   offset: 8,
   position: {
     type: 'Float32',
@@ -55,23 +55,23 @@ const PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0 = {
     type: 'UInt32',
     component: 2
   }
-};
+});
 
-const COMPRESSED_GEOMETRY_DEFINITION = {
+const COMPRESSED_GEOMETRY_DEFINITION = () => ({
   compressedAttributes: {
     encoding: 'draco',
     attributes: ['position', 'normal', 'uv0', 'color', 'feature-index']
   }
-};
+});
 
-const COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0 = {
+const COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0 = () => ({
   compressedAttributes: {
     encoding: 'draco',
     attributes: ['position', 'normal', 'color', 'feature-index']
   }
-};
+});
 
-const SPATIAL_REFERENCE = {
+const SPATIAL_REFERENCE = () => ({
   wkid: {
     path: 'wkid',
     default: 4326
@@ -88,9 +88,9 @@ const SPATIAL_REFERENCE = {
     path: 'latestVcsWkid',
     default: 5773
   }
-};
+});
 
-const HEIGHT_MODEL_INFO = {
+const HEIGHT_MODEL_INFO = () => ({
   heightModel: {
     path: 'heightModel',
     default: 'gravity_related_height'
@@ -103,9 +103,9 @@ const HEIGHT_MODEL_INFO = {
     path: 'heightUnit',
     default: 'meter'
   }
-};
+});
 
-const NODE_PAGES = {
+const NODE_PAGES = () => ({
   nodesPerPage: {
     path: 'nodesPerPage'
   },
@@ -113,9 +113,9 @@ const NODE_PAGES = {
     path: 'lodSelectionMetricType',
     default: 'maxScreenThresholdSQ'
   }
-};
+});
 
-export const LAYERS = {
+export const LAYERS = () => ({
   version: {
     path: 'version',
     transform: (val) => val.toUpperCase()
@@ -137,7 +137,7 @@ export const LAYERS = {
   },
   spatialReference: {
     path: 'spatialReference',
-    transform: (val) => transform(val, SPATIAL_REFERENCE)
+    transform: (val) => transform(val, SPATIAL_REFERENCE())
   },
   capabilities: {
     path: 'capabilities',
@@ -149,11 +149,11 @@ export const LAYERS = {
   },
   heightModelInfo: {
     path: 'heightModelInfo',
-    transform: (val) => transform(val, HEIGHT_MODEL_INFO)
+    transform: (val) => transform(val, HEIGHT_MODEL_INFO())
   },
   nodePages: {
     path: 'nodePages',
-    transform: (val) => transform(val, NODE_PAGES)
+    transform: (val) => transform(val, NODE_PAGES())
   },
   materialDefinitions: {
     path: 'materialDefinitions',
@@ -170,17 +170,17 @@ export const LAYERS = {
       result[0].geometryBuffers = [];
       result[1].geometryBuffers = [];
 
-      result[0].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION);
-      result[1].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0);
+      result[0].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION());
+      result[1].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0());
       if (val) {
-        result[0].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION);
-        result[1].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0);
+        result[0].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION());
+        result[1].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0());
       }
       return result;
     },
     default: [
       {
-        geometryBuffers: [PLAIN_GEOMETRY_DEFINITION, PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0]
+        geometryBuffers: [PLAIN_GEOMETRY_DEFINITION(), PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0()]
       }
     ]
   },
@@ -196,4 +196,4 @@ export const LAYERS = {
     path: 'popupInfo',
     default: null
   }
-};
+});

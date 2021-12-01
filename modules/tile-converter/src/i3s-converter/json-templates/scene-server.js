@@ -1,4 +1,4 @@
-export const SCENE_SERVER_TEMPLATE = {
+export const SCENE_SERVER = () => ({
   serviceItemId: {
     path: 'serviceItemId'
   },
@@ -24,4 +24,4 @@ export const SCENE_SERVER_TEMPLATE = {
     path: 'layers0',
     transform: (layers0) => [layers0]
   }
-};
+});

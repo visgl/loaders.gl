@@ -187,7 +187,7 @@ export default class NodePages {
         promises.push(this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`));
         fileMap[`nodePages/${index.toString()}.json.gz`] = `${slpkPath}.json.gz`;
       }
-      const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate);
+      const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate());
       const compress = false;
       fileMap['metadata.json'] = await this.writeFile(
         layers0Path,

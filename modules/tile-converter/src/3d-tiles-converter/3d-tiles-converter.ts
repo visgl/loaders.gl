@@ -94,7 +94,7 @@ export default class Tiles3DConverter {
 
     await this._addChildren(this.sourceTileset.root, rootTile, 1);
 
-    const tileset = transform({root: rootTile}, tilesetTemplate);
+    const tileset = transform({root: rootTile}, tilesetTemplate());
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
 
     this._finishConversion({slpk: false, outputPath, tilesetName});
