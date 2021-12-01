@@ -46,7 +46,7 @@ import {PGMLoader} from '../pgm-loader';
 
 import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
-import {SHARED_RESOURCES_TEMPLATE} from './json-templates/shared-resources';
+import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {GeoidHeightModel} from '../lib/geoid-height-model';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
@@ -252,7 +252,7 @@ export default class I3SConverter {
       compressGeometry: this.options.draco
     };
 
-    this.layers0 = transform(layers0data, layersTemplate);
+    this.layers0 = transform(layers0data, layersTemplate());
   }
 
   /**
@@ -278,7 +278,7 @@ export default class I3SConverter {
       ...boundingVolumes,
       children: []
     };
-    return transform(root0data, nodeTemplate);
+    return transform(root0data, nodeTemplate());
   }
 
   /**
@@ -747,7 +747,7 @@ export default class I3SConverter {
       children: [],
       neighbors: []
     };
-    const node = transform(nodeData, nodeTemplate);
+    const node = transform(nodeData, nodeTemplate());
 
     if (nodeInPage.mesh) {
       node.geometryData = [{href: './geometries/0'}];
@@ -850,7 +850,7 @@ export default class I3SConverter {
     nodePath: string
   ): Promise<void> {
     sharedResources.nodePath = nodePath;
-    const sharedData = transform(sharedResources, SHARED_RESOURCES_TEMPLATE);
+    const sharedData = transform(sharedResources, sharedResourcesTemplate());
     const sharedDataStr = JSON.stringify(sharedData);
     if (this.options.slpk) {
       const slpkSharedPath = join(childPath, 'shared');

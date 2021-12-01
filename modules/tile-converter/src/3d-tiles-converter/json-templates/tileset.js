@@ -1,13 +1,13 @@
 import transform from 'json-map-transform';
 
-const ASSET = {
+const ASSET = () => ({
   version: {
     path: 'version',
     default: '1.0'
   }
-};
+});
 
-const TILE = {
+const TILE = () => ({
   boundingVolume: {
     path: 'boundingVolume'
   },
@@ -19,14 +19,14 @@ const TILE = {
   },
   children: {
     path: 'children',
-    transform: (val) => val.map((tile) => transform(tile, TILE))
+    transform: (val) => val.map((tile) => transform(tile, TILE()))
   }
-};
+});
 
-export const TILESET = {
+export const TILESET = () => ({
   asset: {
     path: 'asset',
-    transform: (val) => transform(val, ASSET)
+    transform: (val) => transform(val, ASSET())
   },
   geometricError: {
     path: 'root',
@@ -34,6 +34,6 @@ export const TILESET = {
   },
   root: {
     path: 'root',
-    transform: (val) => transform(val, TILE)
+    transform: (val) => transform(val, TILE())
   }
-};
+});
