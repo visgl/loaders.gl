@@ -29,7 +29,7 @@
     "install-fast": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn",
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "clean": "ocular-clean && npm run tsclean",
-    "build": "npm run clean && time npm run tsbuild && time ocular-build --dist esm && time lerna run pre-build",
+    "build": "npm run clean && npm run tsbuild && ocular-build --dist esm && lerna run pre-build",
     "build-workers": "lerna run pre-build",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
     "tsbuild": "tsc -b tsconfig.build.json && scripts/add-js-to-imports.sh",
