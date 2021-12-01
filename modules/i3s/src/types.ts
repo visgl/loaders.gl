@@ -377,6 +377,7 @@ export type I3SGeometry = {
   attributes: any | null;
   featureCount: number | null;
   geometryBuffer?: ArrayBuffer;
+  boundingVolumes: BoundingVolumes | null;
 };
 
 export type MaxScreenThresholdSQ = {
