@@ -1,29 +1,29 @@
 import transform from 'json-map-transform';
 
-const COORDINATES = {
+const COORDINATES = () => ({
   mbs: {
     path: 'mbs'
   },
   obb: {
     path: 'obb'
   }
-};
+});
 
-const _href = {
+const HREF = () => ({
   href: {
     path: 'href'
   }
-};
+});
 
-const PARENT_NODE = {
+const PARENT_NODE = () => ({
   id: {
     path: 'id'
   },
-  ..._href,
-  ...COORDINATES
-};
+  ...HREF(),
+  ...COORDINATES()
+});
 
-export const NODE = {
+export const NODE = () => ({
   version: {
     path: 'version'
   },
@@ -36,7 +36,7 @@ export const NODE = {
   level: {
     path: 'level'
   },
-  ...COORDINATES,
+  ...COORDINATES(),
   lodSelection: {
     path: 'lodSelection',
     default: [
@@ -60,7 +60,7 @@ export const NODE = {
   },
   parentNode: {
     path: 'parentNode',
-    transform: (val) => transform(val, PARENT_NODE),
+    transform: (val) => transform(val, PARENT_NODE()),
     default: null
   },
   sharedResource: {
@@ -83,4 +83,4 @@ export const NODE = {
     path: 'attributeData',
     default: null
   }
-};
+});

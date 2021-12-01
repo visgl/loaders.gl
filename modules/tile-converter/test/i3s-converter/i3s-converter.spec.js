@@ -7,7 +7,7 @@ import {cleanUpPath} from '../utils/file-utils';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
-const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/3DTilesWithKTX2/tileset.json';
+const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -173,11 +173,11 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
 
 test('tile-converter - Converters#Should not generate JPG texture if only KTX2 is provided and generateTexture = false', async (t) => {
   if (!isBrowser) {
-    // const EXPECTED_TEXTURE_SET_DEFINITIONS = [
-    //   {
-    //     formats: [{name: '1', format: 'ktx2'}]
-    //   }
-    // ];
+    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
+      {
+        formats: [{name: '1', format: 'ktx2'}]
+      }
+    ];
 
     const converter = new I3SConverter();
     await converter.convert({
@@ -200,8 +200,7 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
     const tileset0 = JSON.parse(sharedResourcesJson);
     t.ok(ktx2Texture, 'ktx2 texture exists!');
     t.ok(tileset0.textureSetDefinitions);
-    // TODO Need to fix the same value of textureSetDefinitions across different tests
-    // t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
   }
   await cleanUpPath('data/ktx2_only');
   t.end();
@@ -209,14 +208,14 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
 
 test('tile-converter - Converters#Should generate JPG texture if only KTX2 is provided and generateTexture = true', async (t) => {
   if (!isBrowser) {
-    // const EXPECTED_TEXTURE_SET_DEFINITIONS = [
-    //   {
-    //     formats: [
-    //       {name: '1', format: 'ktx2'},
-    //       {name: '0', format: 'jpg'}
-    //     ]
-    //   }
-    // ];
+    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
+      {
+        formats: [
+          {name: '1', format: 'ktx2'},
+          {name: '0', format: 'jpg'}
+        ]
+      }
+    ];
 
     const converter = new I3SConverter();
     await converter.convert({
@@ -239,8 +238,7 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
     const tileset0 = JSON.parse(sharedResourcesJson);
     t.ok(ktx2Texture, 'ktx2 texture exists!');
     t.ok(tileset0.textureSetDefinitions);
-    // TODO Need to fix the same value of textureSetDefinitions across different tests
-    // t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
   }
   await cleanUpPath('data/jpg_and_ktx2');
   t.end();

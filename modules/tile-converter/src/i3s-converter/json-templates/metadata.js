@@ -1,4 +1,4 @@
-export const METADATA = {
+export const METADATA = () => ({
   folderPattern: {
     path: 'folderPattern',
     default: 'BASIC'
@@ -18,4 +18,4 @@ export const METADATA = {
   nodeCount: {
     path: 'nodeCount'
   }
-};
+});

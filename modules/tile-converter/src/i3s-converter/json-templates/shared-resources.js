@@ -1,6 +1,6 @@
 import transform from 'json-map-transform';
 
-const MATERIAL_DEFINITION_INFO_PARAMS = {
+const MATERIAL_DEFINITION_INFO_PARAMS = () => ({
   renderMode: {
     path: 'renderMode',
     default: 'solid'
@@ -37,9 +37,9 @@ const MATERIAL_DEFINITION_INFO_PARAMS = {
     path: 'vertexColors',
     default: true
   }
-};
+});
 
-const MATERIAL_DEFINITION_INFO = {
+const MATERIAL_DEFINITION_INFO = () => ({
   name: {
     path: 'name',
     default: 'standard'
@@ -51,11 +51,11 @@ const MATERIAL_DEFINITION_INFO = {
   params: {
     path: 'params',
     transform: (val, thisObject, originalObject) =>
-      transform(originalObject, MATERIAL_DEFINITION_INFO_PARAMS)
+      transform(originalObject, MATERIAL_DEFINITION_INFO_PARAMS())
   }
-};
+});
 
-const TEXTURE_DEFINITION_IMAGE = {
+const TEXTURE_DEFINITION_IMAGE = () => ({
   id: {
     path: 'id'
   },
@@ -69,9 +69,9 @@ const TEXTURE_DEFINITION_IMAGE = {
   length: {
     path: 'length'
   }
-};
+});
 
-const TEXTURE_DEFINITION_INFO = {
+const TEXTURE_DEFINITION_INFO = () => ({
   encoding: {
     path: 'encoding'
   },
@@ -94,11 +94,11 @@ const TEXTURE_DEFINITION_INFO = {
   images: {
     path: 'images',
     transform: (val, thisObject, originalObject) =>
-      val.map((image) => transform(image, TEXTURE_DEFINITION_IMAGE))
+      val.map((image) => transform(image, TEXTURE_DEFINITION_IMAGE()))
   }
-};
+});
 
-export const SHARED_RESOURCES_TEMPLATE = {
+export const SHARED_RESOURCES = () => ({
   materialDefinitions: {
     path: 'materialDefinitionInfos',
     transform: transfromMaterialDefinitions
@@ -107,14 +107,14 @@ export const SHARED_RESOURCES_TEMPLATE = {
     path: 'textureDefinitionInfos',
     transform: transfromTextureDefinitions
   }
-};
+});
 
 function transfromMaterialDefinitions(materialDefinitionInfos, thisObject, originalObject) {
   const result = {};
   for (const [index, materialDefinitionInfo] of materialDefinitionInfos.entries()) {
     result[`Mat${originalObject.nodePath}${index}`] = transform(
       materialDefinitionInfo,
-      MATERIAL_DEFINITION_INFO
+      MATERIAL_DEFINITION_INFO()
     );
   }
   return result;
@@ -128,7 +128,7 @@ function transfromTextureDefinitions(textureDefinitionInfos, thisObject, origina
   for (const [index, textureDefinitionInfo] of textureDefinitionInfos.entries()) {
     const imageIndex = `${originalObject.nodePath}${index}`;
     textureDefinitionInfo.imageIndex = imageIndex;
-    result[imageIndex] = transform(textureDefinitionInfo, TEXTURE_DEFINITION_INFO);
+    result[imageIndex] = transform(textureDefinitionInfo, TEXTURE_DEFINITION_INFO());
   }
   return result;
 }
