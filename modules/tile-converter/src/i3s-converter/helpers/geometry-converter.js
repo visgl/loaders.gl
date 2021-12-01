@@ -110,7 +110,7 @@ function _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeigh
       vertexVector = vertexVector.subtract(cartographicOrigin);
     }
 
-    attributes.positions = positionVectors.flat();
+    attributes.positions = new Float32Array(positionVectors.flat());
   });
 }
 

@@ -32,7 +32,7 @@ function printHelp() {
   console.log('--token [Token for Cesium ION tilesets authentication]');
   console.log('--no-draco [Disable draco compression for geometry]');
   console.log(
-    '--generate-texture [Enable KTX2 textures generation if only one of (JPG, PNG) texture is provided or generate JPG texture if only KTX2 is provided]'
+    '--generate-textures [Enable KTX2 textures generation if only one of (JPG, PNG) texture is provided or generate JPG texture if only KTX2 is provided]'
   );
   console.log(
     '--generate-bounding-volumes [Will generate obb and mbs bounding volumes from geometry]'
@@ -120,7 +120,7 @@ async function convert(options) {
         token: options.token,
         draco: options.draco,
         validate: options.validate,
-        generateTexture: options.generateTexture,
+        generateTextures: options.generateTextures,
         generateBoundingVolumes: options.generateBoundingVolumes,
         validate: options.validate
       });
@@ -143,7 +143,7 @@ function parseOptions(args) {
     token: null,
     draco: true,
     installDependencies: false,
-    generateTexture: false,
+    generateTextures: false,
     generateBoundingVolumes: false,
     validate: false
   };
@@ -200,8 +200,8 @@ function parseOptions(args) {
         case '--install-dependencies':
           opts.installDependencies = true;
           break;
-        case '--generate-texture':
-          opts.generateTexture = true;
+        case '--generate-textures':
+          opts.generateTextures = true;
           break;
         case '--generate-bounding-volumes':
           opts.generateBoundingVolumes = true;

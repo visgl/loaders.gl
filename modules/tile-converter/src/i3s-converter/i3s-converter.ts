@@ -94,7 +94,7 @@ export default class I3SConverter {
   sourceTileset: Tileset3D | null = null;
   geoidHeightModel: GeoidHeightModel | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
-  generateTexture: boolean;
+  generateTextures: boolean;
   generateBoundingVolumes: boolean;
 
   constructor() {
@@ -112,7 +112,7 @@ export default class I3SConverter {
       tilesWithAddRefineCount: 0
     };
     this.validate = false;
-    this.generateTexture = false;
+    this.generateTextures = false;
     this.generateBoundingVolumes = false;
   }
 
@@ -141,7 +141,7 @@ export default class I3SConverter {
     token?: string;
     draco?: boolean;
     validate?: boolean;
-    generateTexture?: boolean;
+    generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
   }): Promise<any> {
     this.conversionStartTime = process.hrtime();
@@ -156,13 +156,13 @@ export default class I3SConverter {
       sevenZipExe,
       maxDepth,
       token,
-      generateTexture,
+      generateTextures,
       generateBoundingVolumes
     } = options;
     this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
     this.validate = Boolean(validate);
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
-    this.generateTexture = Boolean(generateTexture);
+    this.generateTextures = Boolean(generateTextures);
     this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
 
     console.log('Loading egm file...'); // eslint-disable-line
@@ -887,7 +887,7 @@ export default class I3SConverter {
           formats.push({name: '0', format});
           await this.writeTextureFile(textureData, '0', format, childPath, slpkChildPath);
 
-          if (this.generateTexture) {
+          if (this.generateTextures) {
             formats.push({name: '1', format: 'ktx2'});
             const ktx2TextureData = new Uint8Array(
               await encode(texture.image, KTX2BasisUniversalTextureWriter)
@@ -902,7 +902,7 @@ export default class I3SConverter {
           formats.push({name: '1', format});
           await this.writeTextureFile(textureData, '1', format, childPath, slpkChildPath);
 
-          if (this.generateTexture) {
+          if (this.generateTextures) {
             formats.push({name: '0', format: 'jpg'});
             const decodedFromKTX2TextureData = new Uint8Array(
               await encode(texture.image!.data[0], ImageWriter)
