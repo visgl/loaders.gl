@@ -22,6 +22,7 @@ test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
 
   const gltfScenegraph = new GLTFScenegraph(gltf);
 
+  // @ts-expect-error
   t.equals(gltfScenegraph.json.bufferViews.length, 4, 'gltf bufferView count as expected');
 
   t.equals(

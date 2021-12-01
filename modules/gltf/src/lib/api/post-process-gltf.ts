@@ -426,6 +426,6 @@ class GLTFPostProcessor {
   }
 }
 
-export function postProcessGLTF(gltf, options) {
+export function postProcessGLTF(gltf, options?) {
   return new GLTFPostProcessor().postProcess(gltf, options);
 }

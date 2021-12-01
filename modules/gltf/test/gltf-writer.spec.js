@@ -100,9 +100,9 @@ test('GLTFWriter#should write extra data to binary chunk', async (t) => {
 
   gltfScenegraph.createBinaryChunk();
 
-  t.ok(gltfScenegraph.gltf.json.meshes[0].primitives[0]);
+  t.ok(gltfScenegraph.gltf.json.meshes?.[0].primitives[0]);
   t.equal(
-    gltfScenegraph.gltf.json.meshes[0].primitives[0].attributes.POSITION,
+    gltfScenegraph.gltf.json.meshes?.[0].primitives[0].attributes.POSITION,
     1,
     'Input data should not be parsed'
   );

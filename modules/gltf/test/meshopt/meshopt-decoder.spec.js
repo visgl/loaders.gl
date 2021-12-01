@@ -5,6 +5,7 @@ import {
   meshoptDecodeIndexBuffer,
   meshoptDecodeIndexSequence
   // meshoptDecodeGltfBuffer
+  // @ts-expect-error
 } from '@loaders.gl/gltf/meshopt/meshopt-decoder';
 
 test('meshopt#isMeshoptSupported', async (t) => {

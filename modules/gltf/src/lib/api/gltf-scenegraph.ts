@@ -344,7 +344,7 @@ export default class GLTFScenegraph {
    *   `name`, `extensions`, `extras`, `camera`, `children`, `skin`, `rotation`, `scale`, `translation`, `weights`
    *   https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#node
    */
-  addNode(node: {meshIndex: number; matrix: number[]}): number {
+  addNode(node: {meshIndex: number; matrix?: number[]}): number {
     const {meshIndex, matrix} = node;
     this.json.nodes = this.json.nodes || [];
     const nodeData = {mesh: meshIndex};
@@ -357,7 +357,7 @@ export default class GLTFScenegraph {
   }
 
   /** Adds a mesh to the json part */
-  addMesh(mesh: {attributes: object; indices: object; material: number; mode: number}): number {
+  addMesh(mesh: {attributes: object; indices?: object; material?: number; mode?: number}): number {
     const {attributes, indices, material, mode = 4} = mesh;
     const accessors = this._addAttributes(attributes);
 
