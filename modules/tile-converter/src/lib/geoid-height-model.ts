@@ -84,7 +84,7 @@ export class GeoidHeightModel {
   _v01 = 0;
   _v10 = 0;
   _v11 = 0;
-  _t = [];
+  _t: any[] = [];
 
   options;
   _ix;

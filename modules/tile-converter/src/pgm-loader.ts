@@ -15,7 +15,7 @@ export const PGMLoader: LoaderWithParser = {
   module: 'tile-converter',
   version: VERSION,
   mimeTypes: ['image/x-portable-graymap'],
-  parse: (arrayBuffer, options) => parsePgm(new Uint8Array(arrayBuffer), options),
+  parse: async (arrayBuffer, options) => parsePgm(new Uint8Array(arrayBuffer), options),
   extensions: ['pgm'],
   options: {
     // TODO - use pgm namespace

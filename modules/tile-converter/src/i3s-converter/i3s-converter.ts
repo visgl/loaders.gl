@@ -372,6 +372,7 @@ export default class I3SConverter {
         slpkFileName,
         0,
         '.',
+        // @ts-expect-error
         this.options.sevenZipExe
       );
 

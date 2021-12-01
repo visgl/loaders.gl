@@ -68,6 +68,7 @@ function getTileObbVertices(node) {
     const rotatedPositions = positionsVector
       .transformByQuaternion(node.obb.quaternion)
       .add(obbCenterCartesian);
+    // @ts-expect-error
     vertices = vertices.concat(rotatedPositions);
   }
 

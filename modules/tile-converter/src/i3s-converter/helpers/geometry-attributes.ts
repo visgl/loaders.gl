@@ -41,8 +41,8 @@ function calculateFaceRangesAndFeaturesCount(featureIndices) {
   let rangeIndex = 1;
   let featureIndex = 1;
   let currentFeatureId = featureIndices[0];
-  const faceRangeList = [];
-  const featureIds = [];
+  const faceRangeList: any[] = [];
+  const featureIds: any[] = [];
   const uniqueFeatureIds = [currentFeatureId];
 
   faceRangeList[0] = 0;
@@ -79,7 +79,7 @@ function calculateFaceRangesAndFeaturesCount(featureIndices) {
  */
 function makeAttributeObjects(attributes) {
   const {featureIds, positions, normals, colors, texCoords, faceRange} = attributes;
-  const groupedData = [];
+  const groupedData: any[] = [];
 
   let positionsList = new Float32Array(positions);
   let normalsList = new Float32Array(normals);

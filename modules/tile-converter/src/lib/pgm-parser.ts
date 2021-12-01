@@ -40,8 +40,8 @@ export function parsePgm(data, options) {
   let _datetime = 'UNKNOWN';
   let _width = 0;
   let _height = 0;
-  let _datastart = null;
-  let _swidth = null;
+  let _datastart: number | null = null;
+  let _swidth: number | null = null;
   do {
     currentLine = getline.next();
     const s = currentLine.value.line;
