@@ -119,7 +119,6 @@ async function convert(options) {
         egmFilePath: options.egm,
         token: options.token,
         draco: options.draco,
-        validate: options.validate,
         generateTextures: options.generateTextures,
         generateBoundingVolumes: options.generateBoundingVolumes,
         validate: options.validate

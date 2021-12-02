@@ -143,6 +143,8 @@ export default class I3SConverter {
     validate?: boolean;
     generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
+    /** @deprecated */
+    inputType?: string;
   }): Promise<any> {
     this.conversionStartTime = process.hrtime();
     const {
@@ -372,6 +374,7 @@ export default class I3SConverter {
         slpkFileName,
         0,
         '.',
+        // @ts-expect-error
         this.options.sevenZipExe
       );
 
