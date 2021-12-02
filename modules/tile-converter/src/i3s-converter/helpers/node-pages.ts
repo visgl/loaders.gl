@@ -1,7 +1,9 @@
 import {join} from 'path';
 import transform from 'json-map-transform';
 import {METADATA as metadataTemplate} from '../json-templates/metadata';
+import {NodeInPage} from '@loaders.gl/i3s';
 
+// @ts-nocheck
 /**
  * class NodePages - wrapper of nodePages array
  *
@@ -35,6 +37,11 @@ import {METADATA as metadataTemplate} from '../json-templates/metadata';
  * await this.nodePages.save(layers0path);
  */
 export default class NodePages {
+  readonly nodesPerPage: number;
+  nodesCounter: number;
+  writeFile: Function;
+  readonly nodePages: {nodes: NodeInPage[]}[];
+
   /**
    * @constructs
    * Create a nodePages instance.
@@ -44,21 +51,26 @@ export default class NodePages {
   constructor(writeFileFunc, nodesPerPage) {
     this.nodesPerPage = nodesPerPage;
     this.nodesCounter = 0;
+    // @ts-expect-error
     this.nodePages = [{}];
     this.nodePages[0].nodes = [];
     this.writeFile = writeFileFunc;
   }
 
-  useWriteFunction(func) {
+  /**
+   * Setup function to save node pages
+   * @param func - function which should be used to save node pages
+   */
+  useWriteFunction(func: Function): void {
     this.writeFile = func;
   }
 
   /**
    * Get the node by its end-to-end index
-   * @param {number} id - end-to-end index of the node
-   * @return {object} the node object
+   * @param id - end-to-end index of the node
+   * @return the node object
    */
-  getNodeById(id) {
+  getNodeById(id: number): NodeInPage {
     const pageIndex = Math.floor(id / this.nodesPerPage);
     const nodeIndex = id % this.nodesPerPage;
     return this.nodePages[pageIndex].nodes[nodeIndex];
@@ -69,7 +81,7 @@ export default class NodePages {
    * @param id - end-to-end index of the node
    * @param materialId - id from scene layer materialDefinitions
    */
-  updateMaterialByNodeId(id, materialId) {
+  updateMaterialByNodeId(id: number, materialId: number): void {
     const node = this.getNodeById(id);
     if (!node.mesh) {
       return;
@@ -85,7 +97,7 @@ export default class NodePages {
    * @param id - end-to-end index of the node
    * @param vertexCount - vertex count for particular node
    */
-  updateVertexCountByNodeId(id, vertexCount) {
+  updateVertexCountByNodeId(id: number, vertexCount: number): void {
     const node = this.getNodeById(id);
     if (!node.mesh) {
       return;
@@ -97,7 +109,7 @@ export default class NodePages {
    * Update resource in node.mesh.attribute object by node id
    * @param id - end-to-end index of the node
    */
-  updateNodeAttributeByNodeId(id) {
+  updateNodeAttributeByNodeId(id: number): void {
     const node = this.getNodeById(id);
     if (!node.mesh) {
       return;
@@ -110,7 +122,7 @@ export default class NodePages {
    * @param id - end-to-end index of the node
    * @param featureCount - features count of the node
    */
-  updateFeatureCountByNodeId(id, featureCount) {
+  updateFeatureCountByNodeId(id: number, featureCount: number): void {
     const node = this.getNodeById(id);
     if (!node.mesh) {
       return;
@@ -118,7 +130,12 @@ export default class NodePages {
     node.mesh.geometry.featureCount = featureCount;
   }
 
-  updateTexelCountHintByNodeId(id, texelCountHint) {
+  /**
+   * Update texelCountHint in node.mesh.material object by node id
+   * @param id - end-to-end index of the node
+   * @param texelCountHint - texelCountHint of particular node
+   */
+  updateTexelCountHintByNodeId(id: number, texelCountHint: number): void {
     const node = this.getNodeById(id);
     if (!node.mesh || !node.mesh.material) {
       return;
@@ -128,24 +145,22 @@ export default class NodePages {
 
   /**
    * Add a child id into the parent node.children array
-   * @param {number | null} parentId - end-to-end parent node index
-   * @param {number} childId - end-to-end child node index
-   * @return {void}
+   * @param parentId - end-to-end parent node index
+   * @param childId - end-to-end child node index
    */
-  addChildRelation(parentId, childId) {
-    if (parentId === null) {
+  addChildRelation(parentId: number | undefined, childId: number): void {
+    if (parentId === null || parentId === undefined) {
       return;
     }
     const parentNode = this.getNodeById(parentId);
-    parentNode.children.push(childId);
+    parentNode.children?.push(childId);
   }
 
   /**
    * Update resource index in node.mesh object
-   * @param {object} node - node object
-   * @return {void}
+   * @param node - node object
    */
-  updateResourceInMesh(node) {
+  updateResourceInMesh(node: NodeInPage): void {
     if (node.mesh) {
       node.mesh.geometry.resource = node.index;
     }
@@ -153,11 +168,11 @@ export default class NodePages {
 
   /**
    * Put new node in nodePages array
-   * @param {object} node - node object
-   * @param {number | null} parentId - index of parent node
-   * @return {number}
+   * @param node - node object
+   * @param parentId - index of parent node
+   * @return
    */
-  push(node, parentId = null) {
+  push(node: NodeInPage, parentId?: number): number {
     let currentNodePage = this.nodePages[this.nodePages.length - 1];
     if (currentNodePage.nodes.length === this.nodesPerPage) {
       currentNodePage = {nodes: []};
@@ -174,12 +189,12 @@ export default class NodePages {
    * Save all the node pages
    * Run this method when all nodes is pushed in nodePages
    * @param {string} layers0Path - path of layer
-   * @param {Object} fileMap
+   * @param {Object} fileMap - fileMap which keep info for slpk archive
    * @param {boolean} slpk
    * @return {promise}
    */
-  async save(layers0Path, fileMap, slpk = false) {
-    const promises = [];
+  async save(layers0Path: string, fileMap: Object, slpk: boolean = false): Promise<void> {
+    const promises: Promise<any>[] = [];
     if (slpk) {
       for (const [index, nodePage] of this.nodePages.entries()) {
         const nodePageStr = JSON.stringify(nodePage);
