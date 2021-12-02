@@ -275,8 +275,7 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
-      // @ts-expect-error
-      generateBondingVolumesFromGeometry: true,
+      generateBoundingVolumes: true,
       slpk: false,
       inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',

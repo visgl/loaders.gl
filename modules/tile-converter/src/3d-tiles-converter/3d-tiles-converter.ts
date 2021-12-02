@@ -7,6 +7,7 @@ import transform from 'json-map-transform';
 import {load} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
+import {Geoid} from '@math.gl/geoid';
 
 import {PGMLoader} from '../pgm-loader';
 import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
@@ -16,7 +17,6 @@ import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import B3dmConverter from './helpers/b3dm-converter';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
-import {GeoidHeightModel} from '../lib/geoid-height-model';
 
 const I3S = 'I3S';
 
@@ -28,7 +28,7 @@ export default class Tiles3DConverter {
   tilesetPath: string;
   vertexCounter: number;
   conversionStartTime: [number, number];
-  geoidHeightModel: GeoidHeightModel | null;
+  geoidHeightModel: Geoid | null;
   sourceTileset: Tileset3D | null;
   attributeStorageInfo: AttributeStorageInfo | null;
 

@@ -8,7 +8,7 @@ import {
   makeBoundingSphereFromPoints
 } from '@math.gl/culling';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
-import {GeoidHeightModel} from '../../lib/geoid-height-model';
+import {Geoid} from '@math.gl/geoid';
 import {Tileset3D} from '@loaders.gl/tiles';
 
 /**
@@ -17,10 +17,7 @@ import {Tileset3D} from '@loaders.gl/tiles';
  * @param geoidHeightModel
  * @returns - Bounding volumes object
  */
-export function createBoundingVolumes(
-  tile: TileHeader,
-  geoidHeightModel: GeoidHeightModel
-): BoundingVolumes {
+export function createBoundingVolumes(tile: TileHeader, geoidHeightModel: Geoid): BoundingVolumes {
   let radius;
   let halfSize;
   let quaternion;
@@ -62,8 +59,8 @@ export function createBoundingVolumes(
  */
 export function createBoundingVolumesFromGeometry(
   cartesianPositions: Float32Array,
-  geoidHeightModel: GeoidHeightModel
-) {
+  geoidHeightModel: Geoid
+): {mbs: Mbs; obb: Obb} {
   const positionVectors = convertPositionsToVectors(cartesianPositions);
 
   const geometryObb = makeOrientedBoundingBoxFromPoints(positionVectors);
@@ -94,7 +91,9 @@ export function convertPositionsToVectors(positions: Float32Array): Vector3[] {
   const result: Vector3[] = [];
 
   for (let i = 0; i < positions.length; i += 3) {
-    const positionVector = new Vector3(positions[i], positions[i + 1], positions[i + 2]);
+    // TODO: (perf) new Vector3 is not optimal but required in `makeOrientedBoundingBoxFromPoints`.
+    // modify `makeOrientedBoundingBoxFromPoints` to use scratch vectors
+    const positionVector = new Vector3([positions[i], positions[i + 1], positions[i + 2]]);
     result.push(positionVector);
   }
 
