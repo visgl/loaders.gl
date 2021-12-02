@@ -367,19 +367,6 @@ export type Resource = {
   nodePath?: string;
 };
 
-export type I3SGeometry = {
-  geometry: ArrayBuffer | null;
-  compressedGeometry?: ArrayBuffer | null;
-  texture: any | null;
-  sharedResources: SharedResources | null;
-  meshMaterial?: I3SMaterialDefinition | null;
-  vertexCount: number | null;
-  attributes: any | null;
-  featureCount: number | null;
-  geometryBuffer?: ArrayBuffer;
-  boundingVolumes: BoundingVolumes | null;
-};
-
 export type MaxScreenThresholdSQ = {
   maxError: number;
 };

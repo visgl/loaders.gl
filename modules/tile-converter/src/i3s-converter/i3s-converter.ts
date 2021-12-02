@@ -7,7 +7,6 @@ import type {
   BoundingVolumes,
   Node3DIndexDocument,
   NodeReference,
-  I3SGeometry,
   MaxScreenThresholdSQ,
   NodeInPage,
   LodSelection,
@@ -21,6 +20,7 @@ import type {
 import {load, encode} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';
 import {v4 as uuidv4} from 'uuid';
 import process from 'process';
@@ -48,13 +48,13 @@ import {LAYERS as layersTemplate} from './json-templates/layers';
 import {NODE as nodeTemplate} from './json-templates/node';
 import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
-import {GeoidHeightModel} from '../lib/geoid-height-model';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
+import {I3SConvertedResources} from './types';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -92,7 +92,7 @@ export default class I3SConverter {
   conversionStartTime: [number, number] = [0, 0];
   refreshTokenTime: [number, number] = [0, 0];
   sourceTileset: Tileset3D | null = null;
-  geoidHeightModel: GeoidHeightModel | null = null;
+  geoidHeightModel: Geoid | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
   generateTextures: boolean;
   generateBoundingVolumes: boolean;
@@ -633,7 +633,7 @@ export default class I3SConverter {
    * result.attributes - feature attributes
    * result.featureCount - number of features
    */
-  private async _convertResources(sourceTile: TileHeader): Promise<I3SGeometry[] | null> {
+  private async _convertResources(sourceTile: TileHeader): Promise<I3SConvertedResources[] | null> {
     if (!this.isContentSupported(sourceTile)) {
       return null;
     }
@@ -668,7 +668,7 @@ export default class I3SConverter {
     boundingVolumes: BoundingVolumes,
     sourceTile: TileHeader,
     parentId: number,
-    resources: I3SGeometry
+    resources: I3SConvertedResources
   ): NodeInPage {
     const {meshMaterial, texture, vertexCount, featureCount, geometry} = resources;
     const nodeInPage: NodeInPage = {
@@ -730,7 +730,7 @@ export default class I3SConverter {
     boundingVolumes: BoundingVolumes,
     lodSelection: LodSelection[],
     nodeInPage: NodeInPage,
-    resources: I3SGeometry
+    resources: I3SConvertedResources
   ): Node3DIndexDocument {
     const {texture, attributes} = resources;
     const nodeId = nodeInPage.index!;
@@ -782,7 +782,7 @@ export default class I3SConverter {
    * @param resources.attributes - feature attributes
    * @return {Promise<void>}
    */
-  private async _writeResources(resources: I3SGeometry, nodePath: string): Promise<void> {
+  private async _writeResources(resources: I3SConvertedResources, nodePath: string): Promise<void> {
     const {
       geometry: geometryBuffer,
       compressedGeometry,

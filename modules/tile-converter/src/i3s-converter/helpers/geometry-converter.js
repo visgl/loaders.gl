@@ -6,7 +6,7 @@ import {encode, assert} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
-import {convertPositionsToVectors, createBoundingVolumesFromGeometry} from './coordinate-converter';
+import {createBoundingVolumesFromGeometry} from './coordinate-converter';
 
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
@@ -22,6 +22,8 @@ const OBJECT_ID_TYPE = 'Oid32';
  * BATCHID - Legacy attribute name which includes batch info.
  */
 const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', 'BATCHID'];
+
+let scratchVector = new Vector3();
 
 export default async function convertB3dmToI3sGeometry(
   tileContent,
@@ -86,32 +88,24 @@ export default async function convertB3dmToI3sGeometry(
  * @param geoidHeightModel
  */
 function _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel) {
-  convertedAttributesMap.forEach((attributes) => {
+  for (const attributes of convertedAttributesMap.values()) {
     const boundingVolumes = createBoundingVolumesFromGeometry(
       attributes.positions,
       geoidHeightModel
     );
 
     attributes.boundingVolumes = boundingVolumes;
-
     const cartographicOrigin = boundingVolumes.obb.center;
-    const positionVectors = convertPositionsToVectors(attributes.positions);
 
-    for (let index = 0; index < positionVectors.length; index++) {
-      let vertexVector = positionVectors[index];
-
-      Ellipsoid.WGS84.cartesianToCartographic(
-        [vertexVector[0], vertexVector[1], vertexVector[2]],
-        vertexVector
-      );
-
-      vertexVector[2] =
-        vertexVector[2] - geoidHeightModel.getHeight(vertexVector[1], vertexVector[0]);
-      vertexVector = vertexVector.subtract(cartographicOrigin);
+    for (let index = 0; index < attributes.positions.length; index += VALUES_PER_VERTEX) {
+      const vertex = attributes.positions.subarray(index, index + VALUES_PER_VERTEX);
+      Ellipsoid.WGS84.cartesianToCartographic(Array.from(vertex), scratchVector);
+      scratchVector[2] =
+        scratchVector[2] - geoidHeightModel.getHeight(scratchVector[1], scratchVector[0]);
+      scratchVector = scratchVector.subtract(cartographicOrigin);
+      attributes.positions.set(scratchVector, index);
     }
-
-    attributes.positions = new Float32Array(positionVectors.flat());
-  });
+  }
 }
 
 async function _makeNodeResources({

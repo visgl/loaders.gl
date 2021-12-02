@@ -15,13 +15,13 @@ export type {
   LodSelection,
   NodeReference,
   Resource,
-  I3SGeometry,
   MaxScreenThresholdSQ,
   NodeInPage,
   SharedResources,
   Attribute,
   Extent,
   FeatureAttribute,
-  FieldInfo
+  FieldInfo,
+  I3SMaterialDefinition
 } from './types';
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';

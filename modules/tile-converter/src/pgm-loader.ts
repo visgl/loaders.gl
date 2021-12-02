@@ -4,7 +4,7 @@ import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-import {parsePgm} from './lib/pgm-parser';
+import {parsePGM} from '@math.gl/geoid';
 
 /**
  * Loader for PGM - Netpbm grayscale image format
@@ -15,7 +15,7 @@ export const PGMLoader: LoaderWithParser = {
   module: 'tile-converter',
   version: VERSION,
   mimeTypes: ['image/x-portable-graymap'],
-  parse: async (arrayBuffer, options) => parsePgm(new Uint8Array(arrayBuffer), options),
+  parse: async (arrayBuffer, options) => parsePGM(new Uint8Array(arrayBuffer), options),
   extensions: ['pgm'],
   options: {
     // TODO - use pgm namespace
