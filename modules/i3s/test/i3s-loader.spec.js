@@ -51,6 +51,7 @@ test('I3SLoader#slpk is not supported', async (t) => {
   try {
     await load(slpkUrl, I3SLoader, {});
   } catch (err) {
+    // @ts-expect-error
     t.equal(err.message, message);
   }
   t.end();

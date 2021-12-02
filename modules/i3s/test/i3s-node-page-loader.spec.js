@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
 import {parse, fetchFile} from '@loaders.gl/core';
+// @ts-expect-error
 import {I3SNodePageLoader} from '@loaders.gl/i3s/i3s-node-page-loader';
 
 const NODEPAGE_URL =

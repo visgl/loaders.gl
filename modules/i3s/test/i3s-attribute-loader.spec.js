@@ -1,4 +1,5 @@
 import test from 'tape-promise/tape';
+// @ts-expect-error
 import {I3SAttributeLoader, loadFeatureAttributes} from '@loaders.gl/i3s/i3s-attribute-loader';
 import {load} from '@loaders.gl/core';
 

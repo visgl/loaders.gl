@@ -105,7 +105,6 @@
   },
   "exclude":[
     "modules/tile-converter/**",
-    "modules/i3s/test/**",
 
     "modules/**/src/libs",
     "modules/*/dist/**",
