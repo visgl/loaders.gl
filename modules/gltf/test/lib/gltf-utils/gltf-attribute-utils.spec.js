@@ -2,6 +2,7 @@ import test from 'tape-promise/tape';
 import {
   getGLTFAccessors,
   getGLTFAccessor
+  // @ts-expect-error
 } from '@loaders.gl/gltf/lib/gltf-utils/gltf-attribute-utils';
 
 // Check if an attribute contains indices
