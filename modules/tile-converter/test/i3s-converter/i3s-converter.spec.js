@@ -135,14 +135,14 @@ test('tile-converter - Converters#should create sharedResources json file', asyn
 
 test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
   if (!isBrowser) {
-    // const EXPECTED_TEXTURE_SET_DEFINITIONS = [
-    //   {
-    //     formats: [
-    //       {name: '0', format: 'jpg'},
-    //       {name: '1', format: 'ktx2'}
-    //     ]
-    //   }
-    // ];
+    const EXPECTED_TEXTURE_SET_DEFINITIONS = [
+      {
+        formats: [
+          {name: '0', format: 'jpg'},
+          {name: '1', format: 'ktx2'}
+        ]
+      }
+    ];
 
     const converter = new I3SConverter();
     await converter.convert({
@@ -150,7 +150,7 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
       inputType: '3dtiles',
-      generateTexture: true,
+      generateTextures: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -164,14 +164,13 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
     const tileset0 = JSON.parse(sharedResourcesJson);
     t.ok(ktx2Texture, 'ktx2 texture exists!');
     t.ok(tileset0.textureSetDefinitions);
-    // TODO Need to fix the same value of textureSetDefinitions across different tests
-    // t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
+    t.deepEqual(tileset0.textureSetDefinitions, EXPECTED_TEXTURE_SET_DEFINITIONS);
   }
   await cleanUpPath('data/BatchedTextured');
   t.end();
 });
 
-test('tile-converter - Converters#Should not generate JPG texture if only KTX2 is provided and generateTexture = false', async (t) => {
+test('tile-converter - Converters#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -185,7 +184,7 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
       outputPath: 'data',
       tilesetName: 'ktx2_only',
       inputType: '3dtiles',
-      generateTexture: false,
+      generateTextures: false,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -206,7 +205,7 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
   t.end();
 });
 
-test('tile-converter - Converters#Should generate JPG texture if only KTX2 is provided and generateTexture = true', async (t) => {
+test('tile-converter - Converters#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -223,7 +222,7 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
       outputPath: 'data',
       tilesetName: 'jpg_and_ktx2',
       inputType: '3dtiles',
-      generateTexture: true,
+      generateTextures: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
