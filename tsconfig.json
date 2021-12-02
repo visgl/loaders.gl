@@ -105,6 +105,7 @@
   },
   "exclude":[
     "modules/tile-converter/**",
+    "modules/gltf/test/**",
 
     "modules/**/src/libs",
     "modules/*/dist/**",
