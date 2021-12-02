@@ -3,6 +3,7 @@ import {
   getUrlWithToken,
   generateTileAttributeUrls,
   generateTilesetAttributeUrls
+  // @ts-expect-error
 } from '@loaders.gl/i3s/lib/utils/url-utils';
 
 test('i3s-utils#getUrlWithToken Should return URL without token if token null', async (t) => {
