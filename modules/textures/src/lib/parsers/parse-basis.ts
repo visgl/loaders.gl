@@ -95,11 +95,11 @@ function parseBasisFile(BasisFile, data, options) {
     }
 
     const imageCount = basisFile.getNumImages();
-    const images = [];
+    const images: any[] = [];
 
     for (let imageIndex = 0; imageIndex < imageCount; imageIndex++) {
       const levelsCount = basisFile.getNumLevels(imageIndex);
-      const levels = [];
+      const levels: any[] = [];
 
       for (let levelIndex = 0; levelIndex < levelsCount; levelIndex++) {
         levels.push(transcodeImage(basisFile, imageIndex, levelIndex, options));
@@ -169,7 +169,7 @@ function parseKTX2File(KTX2File, data, options) {
       return null;
     }
     const levelsCount = ktx2File.getLevels();
-    const levels = [];
+    const levels: any[] = [];
 
     for (let levelIndex = 0; levelIndex < levelsCount; levelIndex++) {
       levels.push(transcodeKTX2Image(ktx2File, levelIndex, options));

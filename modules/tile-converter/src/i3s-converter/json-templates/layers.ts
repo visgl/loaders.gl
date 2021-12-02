@@ -166,14 +166,16 @@ export const LAYERS = () => ({
   geometryDefinitions: {
     path: 'compressGeometry',
     transform: (val) => {
-      const result = [{}, {}];
-      result[0].geometryBuffers = [];
-      result[1].geometryBuffers = [];
+      const result = [{geometryBuffers: []}, {geometryBuffers: []}];
 
+      // @ts-expect-error
       result[0].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION());
+      // @ts-expect-error
       result[1].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0());
       if (val) {
+        // @ts-expect-error
         result[0].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION());
+        // @ts-expect-error
         result[1].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0());
       }
       return result;
