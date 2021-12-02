@@ -1,6 +1,8 @@
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
+// @ts-expect-error
 import {i3sObbTo3dTilesObb} from '@loaders.gl/tile-converter/3d-tiles-converter/helpers/i3s-obb-to-3d-tiles-obb';
+// @ts-expect-error
 import {PGMLoader} from '@loaders.gl/tile-converter/pgm-loader';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';

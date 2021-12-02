@@ -2,11 +2,13 @@ import test from 'tape-promise/tape';
 import {NodePages} from '@loaders.gl/tile-converter';
 import {isBrowser} from '@loaders.gl/core';
 
+/** @type {import('@loaders.gl/i3s').NodeInPage} */
 const newNodeStub = {
   lodThreshold: 123.123,
   obb: {
     center: [-75.61326768454079, 40.0434352648084, 9.998422015481468],
     halfSize: [142.18765285081892, 142.18765285081892, 142.18765285081892],
+    // @ts-expect-error
     quaternion: [0, 0, 0, 1]
   },
   children: []
@@ -92,16 +94,18 @@ test('tile-converter - Converters#NodePages', async (t) => {
       nodePages.push(newNodeStub);
     }
     nodePages.push(newNodeStub, 3);
-    st.ok(nodePages.nodePages[0].nodes[3].children.includes(66));
+    st.ok(nodePages.nodePages[0].nodes[3].children?.includes(66));
     st.end();
   });
 
   t.test(
     'Push method should set "resource" property in the "mesh" equal to the new node index',
     async (st) => {
+      /** @type {import('@loaders.gl/i3s').NodeInPage} */
       const newNodeWithMesh = {
         ...newNodeStub,
         mesh: {
+          // @ts-expect-error
           geometry: {
             definition: 0
           }
@@ -129,9 +133,11 @@ test('tile-converter - Converters#NodePages', async (t) => {
   t.test(
     'Update material method should set "material" object in the "mesh" with node index and material id',
     async (st) => {
+      /** @type {import('@loaders.gl/i3s').NodeInPage} */
       const newNodeWithMesh = {
         ...newNodeStub,
         mesh: {
+          // @ts-expect-error
           geometry: {
             definition: 0
           }

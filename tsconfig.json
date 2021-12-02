@@ -104,8 +104,6 @@
     }
   },
   "exclude":[
-    "modules/tile-converter/**",
-
     "modules/**/src/libs",
     "modules/*/dist/**",
     "modules/**/wip/**",

@@ -1,4 +1,5 @@
 import test from 'tape-promise/tape';
+// @ts-expect-error
 import {convertTextureAtlas} from '@loaders.gl/tile-converter/3d-tiles-converter/helpers/texture-atlas';
 
 test('3DTilesConverter#should convert texture atlas', async (t) => {

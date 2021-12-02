@@ -121,8 +121,7 @@ async function convert(options) {
         draco: options.draco,
         validate: options.validate,
         generateTexture: options.generateTexture,
-        generateBoundingVolumes: options.generateBoundingVolumes,
-        validate: options.validate
+        generateBoundingVolumes: options.generateBoundingVolumes
       });
       break;
     default:

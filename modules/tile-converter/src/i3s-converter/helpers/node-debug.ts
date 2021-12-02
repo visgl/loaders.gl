@@ -6,7 +6,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 // TODO Unite Tile validation logic in i3s-17-and-debug with this code.
 export function validateNodeBoundingVolumes(node) {
   if (!node.parentNode.obb || !node.parentNode.mbs) {
-    return null;
+    return [];
   }
   const tileWarnings = [];
 
@@ -53,7 +53,7 @@ function createBoundingBoxFromTileObb(obb) {
 function getTileObbVertices(node) {
   const geometry = new CubeGeometry();
   const halfSize = node.obb.halfSize;
-  const {attributes} = geometry;
+  const attributes = geometry.getAttributes();
   const positions = new Float32Array(attributes.POSITION.value);
   const obbCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(node.obb.center);
 

@@ -1,5 +1,4 @@
 import type {BoundingVolumes, Extent, Mbs, Obb} from '@loaders.gl/i3s';
-import type {Tile3D} from '@loaders.gl/tiles';
 
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -8,6 +7,7 @@ import {
   makeOrientedBoundingBoxFromPoints,
   makeBoundingSphereFromPoints
 } from '@math.gl/culling';
+import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {GeoidHeightModel} from '../../lib/geoid-height-model';
 import {Tileset3D} from '@loaders.gl/tiles';
 
@@ -18,7 +18,7 @@ import {Tileset3D} from '@loaders.gl/tiles';
  * @returns - Bounding volumes object
  */
 export function createBoundingVolumes(
-  tile: Tile3D,
+  tile: TileHeader,
   geoidHeightModel: GeoidHeightModel
 ): BoundingVolumes {
   let radius;
@@ -105,10 +105,14 @@ export function convertPositionsToVectors(positions: Float32Array): Vector3[] {
  * Convert common coordinate to extent coordinate
  * @param tileset
  * @returns - Extent
+ * @todo why lodMetricValue is radius? need to check this function
  */
-export function convertCommonToI3SExtentCoordinate(tileset: Tileset3D): Extent {
-  const cartesianCenter = tileset.cartesianCenter;
-  const radius = tileset.lodMetricValue;
+export function convertCommonToI3SExtentCoordinate(tileset: Tileset3D | null): Extent | null {
+  const cartesianCenter = tileset?.cartesianCenter;
+  if (!cartesianCenter) {
+    return null;
+  }
+  const radius = tileset?.lodMetricValue;
   const rightTop = Ellipsoid.WGS84.cartesianToCartographic(
     new Vector3(cartesianCenter[0] + radius, cartesianCenter[1] + radius, cartesianCenter[2]),
     new Vector3()

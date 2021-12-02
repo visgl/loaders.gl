@@ -715,7 +715,7 @@ type GeometryBufferItem = {type: string; component: number; encoding?: string; b
 
 type AttributeValue = {valueType: string; encoding?: string; valuesPerElement?: number};
 
-type FieldInfo = {
+export type FieldInfo = {
   fieldName: string;
   visible: boolean;
   isEditable: boolean;

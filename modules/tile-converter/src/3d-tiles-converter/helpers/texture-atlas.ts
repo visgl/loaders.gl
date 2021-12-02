@@ -13,7 +13,7 @@ export function convertTextureAtlas(texCoords: Float32Array, uvRegions: Uint16Ar
     const uv = texCoords.subarray(index, index + 2);
     const regions = normalisedRegions.slice(index * 2, index * 2 + 4);
     // fract(texCoords)
-    const fractatedUV = fract(uv);
+    const fractatedUV = fract([uv[0], uv[1]]);
     // (uvRegions.zw - uvRegions.xy)
     const subtracted = [regions[2] - regions[0], regions[3] - regions[1]];
     // fract(texCoords) * (uvRegions.zw - uvRegions.xy)
@@ -35,7 +35,7 @@ export function convertTextureAtlas(texCoords: Float32Array, uvRegions: Uint16Ar
  * Do fractation of UV array.
  * @param uv
  */
-function fract(uv: number[2]): number[2] {
+function fract(uv: [number, number]): [number, number] {
   return [uv[0] - Math.floor(uv[0]), uv[1] - Math.floor(uv[1])];
 }
 
@@ -43,9 +43,9 @@ function fract(uv: number[2]): number[2] {
  * Normalize uvRegions by dividing by the maximum Uint16 value
  * @param regions
  */
-function normalizeRegions(regions: Uint16Array): number[4] {
+function normalizeRegions(regions: Uint16Array): number[] {
   const MAX_UINT_16_VALUE = 65535;
-  const normalizedRegions = [];
+  const normalizedRegions: number[] = [];
 
   for (let index = 0; index < regions.length; index++) {
     normalizedRegions[index] = regions[index] / MAX_UINT_16_VALUE;
