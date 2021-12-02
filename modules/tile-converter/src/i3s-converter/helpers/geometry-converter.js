@@ -100,7 +100,8 @@ function _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeigh
     for (let index = 0; index < attributes.positions.length; index += VALUES_PER_VERTEX) {
       const vertex = attributes.positions.subarray(index, index + VALUES_PER_VERTEX);
       Ellipsoid.WGS84.cartesianToCartographic(Array.from(vertex), scratchVector);
-
+      scratchVector[2] =
+        scratchVector[2] - geoidHeightModel.getHeight(scratchVector[1], scratchVector[0]);
       scratchVector = scratchVector.subtract(cartographicOrigin);
       attributes.positions.set(scratchVector, index);
     }
