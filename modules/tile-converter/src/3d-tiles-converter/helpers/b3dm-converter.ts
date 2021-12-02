@@ -9,8 +9,20 @@ import {convertTextureAtlas} from './texture-atlas';
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
 
+/**
+ * Converts content of an I3S node to *.b3dm's file content
+ */
 export default class B3dmConverter {
-  async convert(i3sTile, attributes = null) {
+  // @ts-expect-error
+  rtcCenter: Float32Array;
+  i3sTile: any;
+
+  /**
+   * The starter of content conversion
+   * @param i3sTile - Tile3D instance for I3S node
+   * @returns - encoded content
+   */
+  async convert(i3sTile: Object, attributes: any = null): Promise<ArrayBuffer> {
     this.i3sTile = i3sTile;
     const gltf = await this.buildGltf(i3sTile);
     const b3dm = encodeSync(
@@ -25,7 +37,12 @@ export default class B3dmConverter {
     return b3dm;
   }
 
-  async buildGltf(i3sTile) {
+  /**
+   * Build and encode gltf
+   * @param i3sTile - Tile3D instance for I3S node
+   * @returns - encoded glb content
+   */
+  async buildGltf(i3sTile): Promise<ArrayBuffer> {
     const {
       material,
       attributes,
