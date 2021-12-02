@@ -1,7 +1,6 @@
 import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
-import type {TypedArray, MeshAttribute} from '@loaders.gl/schema';
-import type {TextureLevel} from '@loaders.gl/textures/src/types';
+import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 
 export enum DATA_TYPE {
   UInt8 = 'UInt8',

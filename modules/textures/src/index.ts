@@ -1,5 +1,5 @@
 // Types
-export type {GPUTextureFormat} from './types';
+export type {GPUTextureFormat} from '@loaders.gl/schema';
 export type {TextureLoaderOptions} from './compressed-texture-loader';
 
 // Loaders

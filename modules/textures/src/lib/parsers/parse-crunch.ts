@@ -1,4 +1,4 @@
-import type {TextureLevel} from '../../types';
+import type {TextureLevel} from '@loaders.gl/schema';
 import {loadCrunchModule} from './crunch-module-loader';
 import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {assert} from '@loaders.gl/loader-utils';
@@ -17,19 +17,20 @@ const CRN_FORMAT = {
   // Crunch supports more formats than this.
 };
 
-// Mapping of Crunch formats to DXT formats.
-const DXT_FORMAT_MAP = {};
-DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT1] = {
-  pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
-  sizeFunction: getDxt1LevelSize
-};
-DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT3] = {
-  pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT3_EXT,
-  sizeFunction: getDxtXLevelSize
-};
-DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT5] = {
-  pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
-  sizeFunction: getDxtXLevelSize
+/** Mapping of Crunch formats to DXT formats. */
+const DXT_FORMAT_MAP = {
+  [CRN_FORMAT.cCRNFmtDXT1]: {
+    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
+    sizeFunction: getDxt1LevelSize
+  },
+  [CRN_FORMAT.cCRNFmtDXT3]: {
+    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT3_EXT,
+    sizeFunction: getDxtXLevelSize
+  },
+  [CRN_FORMAT.cCRNFmtDXT5]: {
+    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    sizeFunction: getDxtXLevelSize
+  }
 };
 
 let cachedDstSize = 0;

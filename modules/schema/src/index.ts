@@ -4,7 +4,6 @@ export type {TypedArray, NumberArray, AnyArray} from './types';
 export type {Batch} from './category/common';
 
 // TABLE CATEGORY TYPES
-
 export type {
   Table,
   ArrayRowTable,
@@ -45,6 +44,12 @@ export {
   deduceMeshField,
   makeMeshAttributeMetadata
 } from './category/mesh/deduce-mesh-schema';
+
+// TEXTURES
+export type {TextureLevel, GPUTextureFormat} from './category/texture/texture';
+
+// IMAGES
+export type {ImageDataType, ImageType, ImageTypeEnum} from './category/image/image';
 
 // TYPES
 // GIS CATEGORY - GEOJSON

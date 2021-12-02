@@ -1,3 +1,5 @@
+// import type {TextureLevel} from '@loaders.gl/schema';
+
 type NumpyHeader = {descr: string; shape: number[]};
 
 function systemIsLittleEndian() {
