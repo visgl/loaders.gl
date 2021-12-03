@@ -4,7 +4,7 @@
 /*
 /* global global *
 /* global Blob *
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser} from '@loaders.gl/loader-utils';
 
 // TODO hack - trick filesaver.js to skip loading under node
 const savedNavigatorExists = 'navigator' in global;

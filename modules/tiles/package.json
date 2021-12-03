@@ -40,8 +40,5 @@
     "@math.gl/geospatial": "^3.5.1",
     "@math.gl/web-mercator": "^3.5.1",
     "@probe.gl/stats": "^3.4.0"
-  },
-  "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-alpha.4"
   }
 }
