@@ -31,8 +31,5 @@
   },
   "dependencies": {
     "jszip": "^3.1.5"
-  },
-  "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-alpha.4"
   }
 }
