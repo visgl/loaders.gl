@@ -39,8 +39,5 @@
     "@loaders.gl/loader-utils": "4.0.0-alpha.4",
     "@loaders.gl/schema": "4.0.0-alpha.4",
     "apache-arrow": "^4.0.0"
-  },
-  "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-alpha.4"
   }
 }
