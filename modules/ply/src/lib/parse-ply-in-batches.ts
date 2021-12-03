@@ -20,9 +20,8 @@
 //     diffuse_blue: 'blue'
 //   }
 // });
-// @ts-nocheck
 
-import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/core';
+import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/loader-utils';
 import normalizePLY from './normalize-ply';
 import {PLYMesh, PLYHeader, ASCIIElement, PLYAttributes} from './ply-types';
 
@@ -60,7 +59,7 @@ export default async function* parsePLYInBatches(
  * @returns
  */
 async function parsePLYHeader(
-  lineIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  lineIterator: AsyncIterable<string> | Iterable<string>,
   options: {[key: string]: any}
 ): Promise<PLYHeader> {
   const header: PLYHeader = {
@@ -161,7 +160,7 @@ function makePLYElementProperty(propertValues: string[], propertyNameMapping: []
  * @param header
  * @returns
  */
-async function parseASCII(lineIterator: string, header: PLYHeader) {
+async function parseASCII(lineIterator: AsyncIterable<string>, header: PLYHeader) {
   // PLY ascii format specification, as per http://en.wikipedia.org/wiki/PLY_(file_format)
   const attributes: PLYAttributes = {
     indices: [],
