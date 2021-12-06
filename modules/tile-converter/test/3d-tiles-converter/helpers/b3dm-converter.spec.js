@@ -174,6 +174,26 @@ test('tile-converter - b3dm converter#should handle geometry without normals', a
   }
 });
 
+test('tile-converter - b3dm converter#should convert i3s node data to b3dm encoded data with ktx2 textures', async (t) => {
+  if (!isBrowser) {
+    // Flag for testing purposes
+    const replaceWithKTX2Texture = true;
+    const options = {i3s: {decodeTextures: false, useCompressedTextures: true}};
+    const tile = await loadI3STile(options, replaceWithKTX2Texture);
+    const i3sContent = tile.content;
+
+    t.ok(i3sContent);
+    t.ok(i3sContent.material.pbrMetallicRoughness.baseColorTexture.texture.source.image);
+    t.equal(tile.header.textureFormat, 'ktx2');
+
+    const attributes = await _loadAttributes(tile, ATTRIBUTES_STORAGE_INFO_STUB);
+    const b3dmConverter = new B3dmConverter();
+    const encodedContent = await b3dmConverter.convert(tile, attributes);
+    t.ok(encodedContent);
+    t.end();
+  }
+});
+
 async function _loadAttributes(tile, attributeStorageInfo) {
   const promises = [];
   const {attributeUrls} = tile.header;

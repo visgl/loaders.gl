@@ -67,8 +67,11 @@ export default class Tiles3DConverter {
     console.log('Loading egm file completed!'); // eslint-disable-line
 
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
+
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {
-      loadOptions: {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}}
+      loadOptions: {
+        i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
+      }
     });
 
     const rootNode = this.sourceTileset.root!;

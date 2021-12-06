@@ -1,7 +1,6 @@
-import {encode, encodeSync} from '@loaders.gl/core';
+import {encodeSync} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
-import {ImageWriter} from '@loaders.gl/images';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
@@ -117,8 +116,7 @@ export default class B3dmConverter {
     }
     if (selectedTexture) {
       const mimeType = this._deduceMimeTypeFromFormat(textureFormat);
-      const imageBuffer = await encode(selectedTexture, ImageWriter);
-      const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
+      const imageIndex = gltfBuilder.addImage(selectedTexture, mimeType);
       textureIndex = gltfBuilder.addTexture({imageIndex});
       delete attributes.colors;
     }
@@ -211,6 +209,8 @@ export default class B3dmConverter {
         return 'image/jpeg';
       case 'png':
         return 'image/png';
+      case 'ktx2':
+        return 'image/ktx2';
       default:
         console.warn(`Unexpected texture format in I3S: ${format}`); // eslint-disable-line no-console, no-undef
         return 'image/jpeg';
