@@ -39,6 +39,17 @@ const INITIAL_VIEW_STATE = {
   zoom: 14.5
 };
 
+// https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
+const MAPZEN_TERRAIN_IMAGES = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
+const ARCGIS_STREET_MAP_SURFACE_IMAGES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const MAPZEN_ELEVATION_DECODE_PARAMETERS = {
+  rScaler: 256,
+  gScaler: 1,
+  bScaler: 1 / 256,
+  offset: -32768
+};
+const TERRAIN_LAYER_MAX_ZOOM = 15;
+
 const StatsWidgetWrapper = styled.div`
   display: flex;
   @media (max-width: 768px) {
@@ -124,32 +135,6 @@ export default class App extends PureComponent {
   }
 
   /**
-   * Get elevation data for TerrainLayer
-   * Docs - https://github.com/tilezen/joerd/tree/master/docs
-   */
-  getTerrainLayerData() {
-    // https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
-    const MAPZEN_TERRAIN_IMAGE = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
-    const ARCGIS_STREET_MAP_SURFACE_IMAGE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-    const MAX_ZOOM = 15;
-
-    // https://github.com/tilezen/joerd/blob/master/docs/formats.md#terrarium
-    const MAPZEN_ELEVATION_DECODER = {
-      rScaler: 256,
-      gScaler: 1,
-      bScaler: 1 / 256,
-      offset: -32768
-    };
-
-    return {
-      elevationData: MAPZEN_TERRAIN_IMAGE,
-      texture: ARCGIS_STREET_MAP_SURFACE_IMAGE,
-      elevationDecoder: MAPZEN_ELEVATION_DECODER,
-      maxZoom: MAX_ZOOM
-    };
-  }
-
-  /**
    * Tries to get Building Scene Layer sublayer urls if exists.
    * @param {string} tilesetUrl
    * @returns {string[]} Sublayer urls or tileset url.
@@ -229,14 +214,12 @@ export default class App extends PureComponent {
   }
 
   _renderTerrainLayer() {
-    const {elevationDecoder, texture, elevationData, maxZoom} = this.getTerrainLayerData();
-
     return new TerrainLayer({
       id: 'terrain',
-      maxZoom,
-      elevationDecoder,
-      elevationData,
-      texture,
+      maxZoom: TERRAIN_LAYER_MAX_ZOOM,
+      elevationDecoder: MAPZEN_ELEVATION_DECODE_PARAMETERS,
+      elevationData: MAPZEN_TERRAIN_IMAGES,
+      texture: ARCGIS_STREET_MAP_SURFACE_IMAGES,
       color: [255, 255, 255]
     });
   }
