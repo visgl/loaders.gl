@@ -1,5 +1,39 @@
 # CHANGELOG for loaders.gl
 
+## v3.1
+
+## v3.1.0
+
+- test: switch converter tests on (#1982)
+- chore(tile converter): refactoring (#1981)
+- fix(tile-converter): change converter options (#1975)
+- chore(tile-converter): Enable typescript check of tile-converter test folder (#1980)
+- chore(tile-converter): Convert most remaining files to .ts (#1977)
+- chore(gltf): Enable typescript checking of gltf/test folder (#1978)
+- chore(2d-tiles): Enable typescript check of 3d-tiles test folder (#1979)
+- fix(tile-converter): add build script for docker image of tile-converter (#1974)
+- fix(tile-converter): json-map-transform templates mutation (#1976)
+- feat(tile-converter): add '--generate-bounding-volume' flag (#1973)
+- doc,test(3d-tiles): glTF content extension (#1948)
+- feat(tile-converter): add "--generate-texture" flag (#1966)
+- fix(i3s-app, i3s-debug-app): set max zoom property for terrain layer (#1965)
+- feat(i3s-debug-app): add terrain layer (#1964)
+- chore(i3s): types (#1945)
+- feat(i3s-app): add terrain layer (#1955)
+- feat(3dtiles-implicit-tiling): add more tests (#1950)
+- feat(3dtiles-implicit-tiling): parse implicit tiling structure (#1938)
+- Allow top-level workerUrl for CompressionWorker (#1949)
+- chore: types refactoring (#1947)
+- feat(tile-conveter): 3dtiles->i3s converter glTF content (#1946)
+- fix(i3s): repeating textures (uv0>1 || uv0<0) (#1935)
+- chore(parse-i3s-tile-content): TS, refactor. (#1926)
+- chore(shapefile): add benchmarks (#898)
+- fix(polyfills): Slow performance in response.arrayBuffer() (#1944)
+- feat(flatgeobuf): Binary parsing (#1942)
+- feat(gis): Update gis category docs (#1431)
+- feat(json): rebuild json path (#877)
+- feat(3d-tiles): content glTF extension (#1933)
+
 ## v4.0 Prerelease
 
 ## v4.0.0-alpha.4
@@ -38,6 +72,7 @@
 
 ## v3.1 Prerelease
 
+## v3.1.0-beta.7
 ## v3.1.0-beta.6
 
 - fix(examples): textures GL_EXTENSIONS_CONSTANTS (#1970)
