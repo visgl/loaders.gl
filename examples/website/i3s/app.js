@@ -40,9 +40,9 @@ const INITIAL_VIEW_STATE = {
 };
 
 // https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
-const MAPZEN_TERRAIN_IMAGE = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
-const ARCGIS_STREET_MAP_SURFACE_IMAGE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-const MAPZEN_ELEVATION_DECODER = {
+const MAPZEN_TERRAIN_IMAGES = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
+const ARCGIS_STREET_MAP_SURFACE_IMAGES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const MAPZEN_ELEVATION_DECODE_PARAMETERS = {
   rScaler: 256,
   gScaler: 1,
   bScaler: 1 / 256,
@@ -217,9 +217,9 @@ export default class App extends PureComponent {
     return new TerrainLayer({
       id: 'terrain',
       maxZoom: TERRAIN_LAYER_MAX_ZOOM,
-      elevationDecoder: MAPZEN_ELEVATION_DECODER,
-      elevationData: MAPZEN_TERRAIN_IMAGE,
-      texture: ARCGIS_STREET_MAP_SURFACE_IMAGE,
+      elevationDecoder: MAPZEN_ELEVATION_DECODE_PARAMETERS,
+      elevationData: MAPZEN_TERRAIN_IMAGES,
+      texture: ARCGIS_STREET_MAP_SURFACE_IMAGES,
       color: [255, 255, 255]
     });
   }
