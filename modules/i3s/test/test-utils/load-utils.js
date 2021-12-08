@@ -154,11 +154,11 @@ export const TILESET_STUB = () => ({
   loader: I3SLoader
 });
 
-export async function loadI3STile(options = {}, replaceWithKTX2Texture = false) {
+export async function loadI3STile(options = {}, _replaceWithKTX2Texture = false) {
   const i3sTilesetData = TILESET_STUB();
 
-  // Flag for testing purposes
-  if (replaceWithKTX2Texture) {
+  // Replaced mocked textures with one ktx2 texture for testing purposes.
+  if (_replaceWithKTX2Texture) {
     i3sTilesetData.textureSetDefinitions[0].formats = [{name: '1', format: 'ktx2'}];
   }
   // @ts-expect-error
