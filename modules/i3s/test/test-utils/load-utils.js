@@ -154,8 +154,13 @@ export const TILESET_STUB = () => ({
   loader: I3SLoader
 });
 
-export async function loadI3STile(options = {}) {
+export async function loadI3STile(options = {}, _replaceWithKTX2Texture = false) {
   const i3sTilesetData = TILESET_STUB();
+
+  // Replaced mocked textures with one ktx2 texture for testing purposes.
+  if (_replaceWithKTX2Texture) {
+    i3sTilesetData.textureSetDefinitions[0].formats = [{name: '1', format: 'ktx2'}];
+  }
   // @ts-expect-error
   const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, options);
   const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
