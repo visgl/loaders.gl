@@ -1,7 +1,6 @@
 import {getPolygonSignedArea} from '@math.gl/polygon';
 
-import {Feature, FlatFeature, FlatGeometry} from '@loaders.gl/schema';
-import {Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon} from 'geojson';
+import {Feature, Position, FlatFeature} from '@loaders.gl/schema';
 
 export type GeojsonToFlatGeojsonOptions = {};
 
@@ -12,17 +11,17 @@ export function geojsonToFlatGeojson(
   return features.map(flattenFeature);
 }
 
-function flattenPoint(coordinates: number[], data: number[], lines: number[]) {
+function flattenPoint(coordinates: Position, data: number[], lines: number[]) {
   lines.push(data.length);
   data.push(...coordinates);
 }
 
-function flattenLineString(coordinates: number[][], data: number[], lines: number[]) {
+function flattenLineString(coordinates: Position[], data: number[], lines: number[]) {
   lines.push(data.length);
   data.push(...coordinates.flat());
 }
 
-function flattenPolygon(coordinates: number[][][], data: number[], lines: number[]) {
+function flattenPolygon(coordinates: Position[][], data: number[], lines: number[]) {
   let i = 0;
   let ccw;
   if (coordinates.length > 1) {
@@ -41,43 +40,42 @@ function flattenPolygon(coordinates: number[][][], data: number[], lines: number
 
 // Mimic output format of BVT
 function flattenFeature(feature: Feature): FlatFeature {
-  const {coordinates} = feature.geometry;
+  const {geometry} = feature;
+  if (geometry.type === 'GeometryCollection') {
+    throw new Error('GeometryCollection type not supported');
+  }
   const data = [];
   const lines = [];
   let type;
 
-  switch (feature.geometry.type) {
+  switch (geometry.type) {
     case 'Point':
       type = 'Point';
-      flattenPoint(coordinates, data, lines);
+      flattenPoint(geometry.coordinates, data, lines);
       break;
     case 'MultiPoint':
       type = 'Point';
-      coordinates.map((c) => flattenPoint(c, data, lines));
+      geometry.coordinates.map((c) => flattenPoint(c, data, lines));
       break;
     case 'LineString':
       type = 'LineString';
-      flattenLineString(coordinates, data, lines);
+      flattenLineString(geometry.coordinates, data, lines);
       break;
     case 'MultiLineString':
       type = 'LineString';
-      coordinates.map((c) => flattenLineString(c, data, lines));
+      geometry.coordinates.map((c) => flattenLineString(c, data, lines));
       break;
     case 'Polygon':
       type = 'Polygon';
-      flattenPolygon(coordinates, data, lines);
+      flattenPolygon(geometry.coordinates, data, lines);
       break;
     case 'MultiPolygon':
       type = 'Polygon';
-      coordinates.map((c) => flattenPolygon(c, data, lines));
+      geometry.coordinates.map((c) => flattenPolygon(c, data, lines));
       break;
-    case 'GeometryCollection':
-      throw new Error('GeometryCollection type not supported');
     default:
       throw new Error(`Unknown type: ${type}`);
   }
 
-  const geometry: FlatGeometry = {type, lines, data};
-
-  return {...feature, geometry};
+  return {...feature, geometry: {type, lines, data}};
 }
