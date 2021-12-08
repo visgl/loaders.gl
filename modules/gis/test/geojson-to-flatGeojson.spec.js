@@ -9,16 +9,8 @@ test.only('gis#geojson-to-flatGeojson', async (t) => {
   const {features} = await response.json();
 
   const flatFeatures = geojsonToFlatGeojson(features);
-
   const [point, multiPoint, lineString, multiLineString, polygon, polygonWithHole, multiPolygon] =
     flatFeatures;
-
-  flatFeatures.map((f, i) => {
-    t.notOk(
-      f.geometry.coordinates,
-      `coordinates array is removed from ${features[i].geometry.type}`
-    );
-  });
 
   // Point
   t.deepEquals(point.geometry.data, [100, 0], 'flat Point data should be equivalent');
