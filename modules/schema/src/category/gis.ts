@@ -1,5 +1,6 @@
 // GIS
 import type {TypedArray} from '../types';
+import type {Feature, Geometry} from 'geojson';
 
 // GEOJSON FORMAT GEOMETRY
 
@@ -7,6 +8,23 @@ import type {TypedArray} from '../types';
 export type {GeoJSON, Feature, Geometry, Position, GeoJsonProperties} from 'geojson';
 // eslint-disable-next-line import/no-unresolved
 export type {Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon} from 'geojson';
+
+// FLAT GEOJSON FORMAT GEOMETRY
+export type FlatGeometryType = 'Point' | 'LineString' | 'Polygon';
+type RemoveCoordinatesField<Type> = {
+  [Property in keyof Type as Exclude<Property, 'coordinates'>]: Type[Property];
+};
+
+export type FlatGeometry = RemoveCoordinatesField<Geometry> & {
+  data: number[];
+  lines: number[];
+};
+
+type FlattenGeometry<Type> = {
+  [Property in keyof Type]: Type[Property] extends Geometry ? FlatGeometry : Type[Property];
+};
+
+export type FlatFeature = FlattenGeometry<Feature>;
 
 // BINARY FORMAT GEOMETRY
 
