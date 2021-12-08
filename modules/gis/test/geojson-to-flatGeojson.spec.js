@@ -50,8 +50,8 @@ test.only('gis#geojson-to-flatGeojson', async (t) => {
     [100, 0, 101, 0, 101, 1, 100, 1, 100, 0],
     'flat Polygon data should be equivalent'
   );
-  t.deepEquals(polygon.geometry.lines, [0], 'flat Polygon lines should be equivalent');
-  t.deepEquals(polygon.geometry.areas, [-1], 'flat Polygon areas should be equivalent');
+  t.deepEquals(polygon.geometry.lines, [[0]], 'flat Polygon lines should be equivalent');
+  t.deepEquals(polygon.geometry.areas, [[-1]], 'flat Polygon areas should be equivalent');
 
   // Polygon (hole)
   t.deepEquals(
@@ -64,12 +64,12 @@ test.only('gis#geojson-to-flatGeojson', async (t) => {
   );
   t.deepEquals(
     polygonWithHole.geometry.lines,
-    [0, 10],
+    [[0, 10]],
     'flat Polygon (hole) lines should be equivalent'
   );
   t.deepEquals(
     polygonWithHole.geometry.areas,
-    [-1, 0.3599999999999966],
+    [[-1, 0.3599999999999966]],
     'flat Polygon (hole) areas should be equivalent'
   );
 
@@ -84,12 +84,12 @@ test.only('gis#geojson-to-flatGeojson', async (t) => {
   );
   t.deepEquals(
     multiPolygon.geometry.lines,
-    [0, 10, 20],
+    [[0], [10, 20]],
     'flat MultiPolygon lines should be equivalent'
   );
   t.deepEquals(
     multiPolygon.geometry.areas,
-    [-1, -1, 0.3599999999999966],
+    [[-1], [-1, 0.3599999999999966]],
     'flat MultiPolygon areas should be equivalent'
   );
 

@@ -23,24 +23,31 @@ function flattenLineString(coordinates: Position[], data: number[], lines: numbe
 function flattenPolygon(
   coordinates: Position[][],
   data: number[],
-  lines: number[],
-  areas: number[]
+  lines: number[][],
+  areas: number[][]
 ) {
-  let i = 0;
+  let count = 0;
+  const ringAreas: number[] = [];
+  const polygons: number[] = [];
   for (const lineString of coordinates) {
     const flatLineString = lineString.flat();
     let area = getPolygonSignedArea(lineString.flat());
     const ccw = area < 0;
 
     // Exterior ring must be CCW and interior rings CW
-    if ((i === 0 && !ccw) || (i > 0 && ccw)) {
+    if ((count === 0 && !ccw) || (count > 0 && ccw)) {
       lineString.reverse();
       area = -area;
     }
-    areas.push(area);
-    lines.push(data.length);
+    ringAreas.push(area);
+    polygons.push(data.length);
     data.push(...flatLineString);
-    i++;
+    count++;
+  }
+
+  if (count > 0) {
+    areas.push(ringAreas);
+    lines.push(polygons);
   }
 }
 
