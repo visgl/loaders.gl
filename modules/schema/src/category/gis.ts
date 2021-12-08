@@ -18,6 +18,7 @@ type RemoveCoordinatesField<Type> = {
 export type FlatGeometry = RemoveCoordinatesField<Geometry> & {
   data: number[];
   lines: number[];
+  areas?: number[];
 };
 
 type FlattenGeometry<Type> = {

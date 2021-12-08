@@ -1,7 +1,6 @@
 import {getPolygonSignedArea} from '@math.gl/polygon';
 
 import {Feature, Position, FlatFeature} from '@loaders.gl/schema';
-
 export type GeojsonToFlatGeojsonOptions = {};
 
 export function geojsonToFlatGeojson(
@@ -21,24 +20,30 @@ function flattenLineString(coordinates: Position[], data: number[], lines: numbe
   data.push(...coordinates.flat());
 }
 
-function flattenPolygon(coordinates: Position[][], data: number[], lines: number[]) {
+function flattenPolygon(
+  coordinates: Position[][],
+  data: number[],
+  lines: number[],
+  areas: number[]
+) {
   let i = 0;
-  let ccw;
-  if (coordinates.length > 1) {
-    // Check holes for correct winding
-    ccw = getPolygonSignedArea(coordinates[0].flat()) < 0;
-  }
   for (const lineString of coordinates) {
-    if (i > 0 && ccw === getPolygonSignedArea(lineString.flat()) < 0) {
-      // If winding is the same of outer ring, need to reverse
+    const flatLineString = lineString.flat();
+    let area = getPolygonSignedArea(lineString.flat());
+    const ccw = area < 0;
+
+    // Exterior ring must be CCW and interior rings CW
+    if ((i === 0 && !ccw) || (i > 0 && ccw)) {
       lineString.reverse();
+      area = -area;
     }
-    flattenLineString(lineString, data, lines);
+    areas.push(area);
+    lines.push(data.length);
+    data.push(...flatLineString);
     i++;
   }
 }
 
-// Mimic output format of BVT
 function flattenFeature(feature: Feature): FlatFeature {
   const {geometry} = feature;
   if (geometry.type === 'GeometryCollection') {
@@ -46,6 +51,7 @@ function flattenFeature(feature: Feature): FlatFeature {
   }
   const data = [];
   const lines = [];
+  let areas;
   let type;
 
   switch (geometry.type) {
@@ -67,15 +73,17 @@ function flattenFeature(feature: Feature): FlatFeature {
       break;
     case 'Polygon':
       type = 'Polygon';
-      flattenPolygon(geometry.coordinates, data, lines);
+      areas = [];
+      flattenPolygon(geometry.coordinates, data, lines, areas);
       break;
     case 'MultiPolygon':
       type = 'Polygon';
-      geometry.coordinates.map((c) => flattenPolygon(c, data, lines));
+      areas = [];
+      geometry.coordinates.map((c) => flattenPolygon(c, data, lines, areas));
       break;
     default:
       throw new Error(`Unknown type: ${type}`);
   }
 
-  return {...feature, geometry: {type, lines, data}};
+  return {...feature, geometry: {type, lines, data, areas}};
 }
