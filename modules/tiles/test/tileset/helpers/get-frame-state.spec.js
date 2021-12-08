@@ -68,7 +68,7 @@ test('getFrameState', (t) => {
   );
   for (const plane of results.cullingVolume.planes) {
     t.ok(
-      plane.getPointDistance(viewportCenterCartesian) > 0,
+      plane.getPointDistance(viewportCenterCartesian) >= 0,
       'viewport center is on the inside of the frustum plane'
     );
   }

@@ -33,7 +33,7 @@ export function getFrameState(viewport, frameNumber: number): FrameState {
   const {cameraDirection, cameraUp, height} = viewport;
   const {metersPerUnit} = viewport.distanceScales;
 
-  const viewportCenterCartographic = [viewport.longitude, viewport.latitude, 0];
+  const viewportCenterCartographic = viewport.unprojectPosition(viewport.center);
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
   const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
