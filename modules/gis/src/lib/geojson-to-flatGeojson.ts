@@ -41,35 +41,43 @@ function flattenPolygon(coordinates: number[][][], data: number[], lines: number
 
 // Mimic output format of BVT
 function flattenFeature(feature: Feature): FlatFeature {
-  const {geometry} = feature;
-  let {coordinates} = geometry;
+  const {coordinates} = feature.geometry;
   const data = [];
   const lines = [];
   let type;
 
-  switch (geometry.type) {
+  switch (feature.geometry.type) {
     case 'Point':
-      coordinates = [coordinates];
-    case 'MultiPoint':
-      coordinates.map((c) => flattenPoint(c, data, lines));
       type = 'Point';
+      flattenPoint(coordinates, data, lines);
+      break;
+    case 'MultiPoint':
+      type = 'Point';
+      coordinates.map((c) => flattenPoint(c, data, lines));
       break;
     case 'LineString':
-      coordinates = [coordinates];
-    case 'MultiLineString':
-      coordinates.map((c) => flattenLineString(c, data, lines));
       type = 'LineString';
+      flattenLineString(coordinates, data, lines);
+      break;
+    case 'MultiLineString':
+      type = 'LineString';
+      coordinates.map((c) => flattenLineString(c, data, lines));
       break;
     case 'Polygon':
-      coordinates = [coordinates];
-    case 'MultiPolygon':
-      coordinates.map((c) => flattenPolygon(c, data, lines));
       type = 'Polygon';
+      flattenPolygon(coordinates, data, lines);
       break;
+    case 'MultiPolygon':
+      type = 'Polygon';
+      coordinates.map((c) => flattenPolygon(c, data, lines));
+      break;
+    case 'GeometryCollection':
+      throw new Error('GeometryCollection type not supported');
+    default:
+      throw new Error(`Unknown type: ${type}`);
   }
 
-  return {
-    ...feature,
-    geometry: {type, lines, data}
-  };
+  const geometry: FlatGeometry = {type, lines, data};
+
+  return {...feature, geometry};
 }
