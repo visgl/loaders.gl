@@ -45,8 +45,7 @@ export type MvtPropArrayConstructor =
 export type MvtBinaryOptions = {
   coordLength?: number;
   numericPropKeys: string[];
-  propArrayTypes: {[key: string]: MvtPropArrayConstructor};
-  PositionDataType: Float32ArrayConstructor;
+  PositionDataType: Float32ArrayConstructor | Float64ArrayConstructor;
 };
 
 export type MvtFirstPassedData = {
@@ -65,7 +64,7 @@ export type MvtFirstPassedData = {
 
 export type MvtPoints = {
   type: 'Point';
-  positions: Float32Array;
+  positions: Float32Array | Float64Array;
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
   numericProps: object;
@@ -77,7 +76,7 @@ export type MvtPoints = {
 
 export type MvtLines = {
   type: 'LineString';
-  positions: Float32Array;
+  positions: Float32Array | Float64Array;
   pathIndices: Uint16Array | Uint32Array;
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
@@ -90,7 +89,7 @@ export type MvtLines = {
 
 export type MvtPolygons = {
   type: 'Polygon';
-  positions: Float32Array;
+  positions: Float32Array | Float64Array;
   polygonIndices: Uint16Array | Uint32Array;
   primitivePolygonIndices: Uint16Array | Uint32Array;
   triangles: number[];

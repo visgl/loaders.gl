@@ -33,12 +33,18 @@ export function featuresToBinary(
 ) {
   const propArrayTypes = extractNumericPropTypes(features);
   const numericPropKeys = Object.keys(propArrayTypes).filter((k) => propArrayTypes[k] !== Array);
-  return fillArrays(features, firstPassData, {
-    coordLength: (options && options.coordLength) || firstPassData.coordLength,
-    numericPropKeys: options ? options.numericPropKeys : numericPropKeys,
-    propArrayTypes,
-    PositionDataType: options ? options.PositionDataType : Float32Array
-  });
+  return fillArrays(
+    features,
+    {
+      propArrayTypes,
+      ...firstPassData
+    },
+    {
+      coordLength: (options && options.coordLength) || firstPassData.coordLength,
+      numericPropKeys: options ? options.numericPropKeys : numericPropKeys,
+      PositionDataType: options ? options.PositionDataType : Float32Array
+    }
+  );
 }
 
 export const TEST_EXPORTS = {
@@ -82,7 +88,9 @@ function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
 // eslint-disable-next-line complexity
 function fillArrays(
   features: MvtBinaryCoordinates[],
-  firstPassData: MvtFirstPassedData,
+  firstPassData: MvtFirstPassedData & {
+    propArrayTypes: {[key: string]: MvtPropArrayConstructor};
+  },
   options: MvtBinaryOptions
 ) {
   const {
@@ -94,14 +102,10 @@ function fillArrays(
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
-    polygonFeaturesCount
+    polygonFeaturesCount,
+    propArrayTypes
   } = firstPassData;
-  const {
-    coordLength = 2,
-    numericPropKeys,
-    propArrayTypes,
-    PositionDataType = Float32Array
-  } = options;
+  const {coordLength = 2, numericPropKeys, PositionDataType = Float32Array} = options;
   const hasGlobalId = features[0] && 'id' in features[0];
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points: MvtPoints = {

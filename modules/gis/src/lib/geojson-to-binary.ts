@@ -6,7 +6,7 @@ import {featuresToBinary} from '@loaders.gl/mvt';
 export type GeojsonToBinaryOptions = {
   coordLength?: number;
   numericPropKeys?: string[];
-  PositionDataType?: Function;
+  PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
 };
 
 /** Convert GeoJSON features to flat binary arrays */
