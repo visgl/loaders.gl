@@ -97,7 +97,7 @@ test('gis#geojson-to-flatGeojson 2D', async (t) => {
   t.end();
 });
 
-test.only('gis#geojson-to-flatGeojson 3D', async (t) => {
+test('gis#geojson-to-flatGeojson 3D', async (t) => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
 

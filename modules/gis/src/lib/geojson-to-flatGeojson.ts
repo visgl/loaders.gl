@@ -30,8 +30,9 @@ function flattenPolygon(
   const ringAreas: number[] = [];
   const polygons: number[] = [];
   for (const lineString of coordinates) {
-    const flatLineString = lineString.flat();
-    let area = getPolygonSignedArea(flatLineString);
+    const lineString2d =
+      lineString[0].length === 2 ? lineString : lineString.map((p) => p.slice(0, 2));
+    let area = getPolygonSignedArea(lineString2d.flat());
     const ccw = area < 0;
 
     // Exterior ring must be CCW and interior rings CW
@@ -41,7 +42,7 @@ function flattenPolygon(
     }
     ringAreas.push(area);
     polygons.push(data.length);
-    data.push(...flatLineString);
+    data.push(...lineString.flat());
     count++;
   }
 
