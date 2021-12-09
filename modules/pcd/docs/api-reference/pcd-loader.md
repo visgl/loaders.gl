@@ -12,7 +12,7 @@ The `PCDLoader` loads point cloud in the Point Cloud Data (PCD) format.
 | Worker Thread Support | Yes                                                                                    |
 | Streaming Support     | No                                                                                     |
 
-Note: Currently only `ascii` and `binary` subformats are supported. Compressed binary files are currently not supported.
+Note: Currently supports `ascii`, `binary` and compressed binary files. 
 
 ## Usage
 
