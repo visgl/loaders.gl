@@ -4,7 +4,7 @@ import {geojsonToFlatGeojson} from '@loaders.gl/gis';
 
 const FEATURES_2D = '@loaders.gl/gis/test/data/2d_features.json';
 
-test.only('gis#geojson-to-flatGeojson', async (t) => {
+test('gis#geojson-to-flatGeojson', async (t) => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
 
