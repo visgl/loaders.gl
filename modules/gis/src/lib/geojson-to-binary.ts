@@ -28,8 +28,6 @@ export const TEST_EXPORTS = {
   extractGeometryInfo
 };
 
-type PropArrayConstructor = Float32ArrayConstructor | Float64ArrayConstructor | ArrayConstructor;
-
 type GeojsonGeometryInfo = {
   coordLength: number;
   pointPositionsCount: number;

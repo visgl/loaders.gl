@@ -1,13 +1,14 @@
 import {getPolygonSignedArea} from '@math.gl/polygon';
 
 import {Feature, Position, FlatFeature} from '@loaders.gl/schema';
+
 export type GeojsonToFlatGeojsonOptions = {
-  coordLength?: number;
+  coordLength: number;
 };
 
 export function geojsonToFlatGeojson(
   features: Feature[],
-  options: GeojsonToFlatGeojsonOptions = {}
+  options: GeojsonToFlatGeojsonOptions = {coordLength: 2}
 ): FlatFeature[] {
   return features.map((feature) => flattenFeature(feature, options));
 }
@@ -16,7 +17,7 @@ function flattenPoint(
   coordinates: Position,
   data: number[],
   lines: number[],
-  options: GeojsonToFlatGeojsonOptions = {}
+  options: GeojsonToFlatGeojsonOptions
 ) {
   lines.push(data.length);
   data.push(...coordinates);
@@ -31,7 +32,7 @@ function flattenLineString(
   coordinates: Position[],
   data: number[],
   lines: number[],
-  options: GeojsonToFlatGeojsonOptions = {}
+  options: GeojsonToFlatGeojsonOptions
 ) {
   lines.push(data.length);
   for (const c of coordinates) {
@@ -49,7 +50,7 @@ function flattenPolygon(
   data: number[],
   lines: number[][],
   areas: number[][],
-  options: GeojsonToFlatGeojsonOptions = {}
+  options: GeojsonToFlatGeojsonOptions
 ) {
   let count = 0;
   const ringAreas: number[] = [];
@@ -75,7 +76,7 @@ function flattenPolygon(
   }
 }
 
-function flattenFeature(feature: Feature, options: GeojsonToFlatGeojsonOptions = {}): FlatFeature {
+function flattenFeature(feature: Feature, options: GeojsonToFlatGeojsonOptions): FlatFeature {
   const {geometry} = feature;
   if (geometry.type === 'GeometryCollection') {
     throw new Error('GeometryCollection type not supported');

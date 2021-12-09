@@ -44,8 +44,8 @@ export type MvtPropArrayConstructor =
 
 export type MvtBinaryOptions = {
   coordLength?: number;
-  numericPropKeys: string[];
-  PositionDataType: Float32ArrayConstructor | Float64ArrayConstructor;
+  numericPropKeys?: string[];
+  PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
 };
 
 export type MvtFirstPassedData = {
