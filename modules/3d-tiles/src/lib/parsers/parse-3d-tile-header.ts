@@ -134,7 +134,7 @@ export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, opti
   tile.lodMetricValue = tile.geometricError;
   tile.transformMatrix = tile.transform;
 
-  const {children, contentUrl} = await parseImplicitTiles(rootSubtree, options);
+  const {children, contentUrl} = await parseImplicitTiles({subtree: rootSubtree, options});
 
   if (contentUrl) {
     tile.contentUrl = contentUrl;
