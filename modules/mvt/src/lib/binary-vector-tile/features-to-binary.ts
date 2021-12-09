@@ -8,7 +8,8 @@ import {
   MvtFirstPassedData,
   MvtLines,
   MvtPoints,
-  MvtPolygons
+  MvtPolygons,
+  MvtGeometries
 } from '../types';
 
 /**
@@ -103,6 +104,7 @@ function fillArrays(
   const hasGlobalId = features[0] && 'id' in features[0];
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points: MvtPoints = {
+    type: 'Point',
     positions: new PositionDataType(pointPositionsCount * coordLength),
     globalFeatureIds: new GlobalFeatureIdsDataType(pointPositionsCount),
     featureIds:
@@ -114,6 +116,7 @@ function fillArrays(
     fields: []
   };
   const lines: MvtLines = {
+    type: 'LineString',
     pathIndices:
       linePositionsCount > 65535
         ? new Uint32Array(linePathsCount + 1)
@@ -129,6 +132,7 @@ function fillArrays(
     fields: []
   };
   const polygons: MvtPolygons = {
+    type: 'Polygon',
     polygonIndices:
       polygonPositionsCount > 65535
         ? new Uint32Array(polygonObjectsCount + 1)
@@ -490,7 +494,7 @@ function makeAccessorObjects(
  * @param length
  */
 function fillNumericProperties(
-  object: MvtPoints,
+  object: MvtGeometries,
   properties: {[x: string]: string | number | boolean | null},
   index: number,
   length: number

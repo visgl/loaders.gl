@@ -43,12 +43,15 @@ export type MvtPropArrayConstructor =
   | ArrayConstructor;
 
 export type MvtBinaryOptions = {
+  coordLength?: number;
   numericPropKeys: string[];
   propArrayTypes: {[key: string]: MvtPropArrayConstructor};
   PositionDataType: Float32ArrayConstructor;
 };
 
 export type MvtFirstPassedData = {
+  coordLength?: number;
+
   pointPositionsCount: number;
   pointFeaturesCount: number;
   linePositionsCount: number;
@@ -61,6 +64,7 @@ export type MvtFirstPassedData = {
 };
 
 export type MvtPoints = {
+  type: 'Point';
   positions: Float32Array;
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
@@ -72,8 +76,9 @@ export type MvtPoints = {
 };
 
 export type MvtLines = {
-  pathIndices: Uint16Array | Uint32Array;
+  type: 'LineString';
   positions: Float32Array;
+  pathIndices: Uint16Array | Uint32Array;
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
   numericProps: object;
@@ -84,9 +89,10 @@ export type MvtLines = {
 };
 
 export type MvtPolygons = {
+  type: 'Polygon';
+  positions: Float32Array;
   polygonIndices: Uint16Array | Uint32Array;
   primitivePolygonIndices: Uint16Array | Uint32Array;
-  positions: Float32Array;
   triangles: number[];
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
@@ -96,3 +102,5 @@ export type MvtPolygons = {
     id?: number;
   }[];
 };
+
+export type MvtGeometries = MvtPoints | MvtLines | MvtPolygons;
