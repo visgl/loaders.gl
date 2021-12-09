@@ -6,10 +6,11 @@
 // @author Filipe Caixeta / http://filipecaixeta.com.br
 // @author Mugen87 / https://github.com/Mugen87
 
-import {getMeshBoundingBox} from '@loaders.gl/schema';
 import type {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
-import type {PCDHeader} from './pcd-types';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
+import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
+import type {PCDHeader} from './pcd-types';
 
 type NormalizedAttributes = {
   POSITION: {
@@ -55,6 +56,9 @@ export default function parsePCD(data: ArrayBufferLike) {
       break;
 
     case 'binary_compressed':
+      attributes = parsePCDBinaryCompressed(pcdHeader, data);
+      break;
+
     default:
       throw new Error(`PCD: ${pcdHeader.data} files are not supported`);
   }
@@ -311,4 +315,96 @@ function parsePCDBinary(pcdHeader: PCDHeader, data: ArrayBufferLike): HeaderAttr
   }
 
   return {position, normal, color};
+}
+
+/** Parse compressed PCD data in in binary_compressed form ( https://pointclouds.org/documentation/tutorials/pcd_file_format.html)
+ * from https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/PCDLoader.js
+ * @license MIT (http://opensource.org/licenses/MIT)
+ * @param pcdHeader
+ * @param data
+ * @returns [attributes]
+ */
+function parsePCDBinaryCompressed(PCDheader: PCDHeader, data: ArrayBufferLike): HeaderAttributes {
+  const position: number[] = [];
+  const normal: number[] = [];
+  const color: number[] = [];
+
+  const sizes = new Uint32Array(data.slice(PCDheader.headerLen, PCDheader.headerLen + 8));
+  const compressedSize = sizes[0];
+  const decompressedSize = sizes[1];
+  const decompressed = decompressLZF(
+    new Uint8Array(data, PCDheader.headerLen + 8, compressedSize),
+    decompressedSize
+  );
+  const dataview = new DataView(decompressed.buffer);
+
+  const offset = PCDheader.offset;
+
+  for (let i = 0; i < PCDheader.points; i++) {
+    if (offset.x !== undefined) {
+      position.push(
+        dataview.getFloat32(
+          (PCDheader.points as number) * offset.x + (PCDheader.size as number[])[0] * i,
+          LITTLE_ENDIAN
+        )
+      );
+      position.push(
+        dataview.getFloat32(
+          (PCDheader.points as number) * offset.y + (PCDheader.size as number[])[1] * i,
+          LITTLE_ENDIAN
+        )
+      );
+      position.push(
+        dataview.getFloat32(
+          (PCDheader.points as number) * offset.z + (PCDheader.size as number[])[2] * i,
+          LITTLE_ENDIAN
+        )
+      );
+    }
+
+    if (offset.rgb !== undefined) {
+      color.push(
+        dataview.getUint8(
+          (PCDheader.points as number) * offset.rgb + (PCDheader.size as number[])[3] * i + 0
+        ) / 255.0
+      );
+      color.push(
+        dataview.getUint8(
+          (PCDheader.points as number) * offset.rgb + (PCDheader.size as number[])[3] * i + 1
+        ) / 255.0
+      );
+      color.push(
+        dataview.getUint8(
+          (PCDheader.points as number) * offset.rgb + (PCDheader.size as number[])[3] * i + 2
+        ) / 255.0
+      );
+    }
+
+    if (offset.normal_x !== undefined) {
+      normal.push(
+        dataview.getFloat32(
+          (PCDheader.points as number) * offset.normal_x + (PCDheader.size as number[])[4] * i,
+          LITTLE_ENDIAN
+        )
+      );
+      normal.push(
+        dataview.getFloat32(
+          (PCDheader.points as number) * offset.normal_y + (PCDheader.size as number[])[5] * i,
+          LITTLE_ENDIAN
+        )
+      );
+      normal.push(
+        dataview.getFloat32(
+          (PCDheader.points as number) * offset.normal_z + (PCDheader.size as number[])[6] * i,
+          LITTLE_ENDIAN
+        )
+      );
+    }
+  }
+
+  return {
+    position,
+    normal,
+    color
+  };
 }
