@@ -22,27 +22,33 @@ const SUBDIVISION_COUNT_MAP = {
  * @param level
  * @param globalData
  */
-// eslint-disable-next-line max-params
 // eslint-disable-next-line max-statements
-export async function parseImplicitTiles(
-  subtree: Subtree,
-  options: any,
-  parentData: {mortonIndex: number; x: number; y: number; z: number} = {
-    mortonIndex: 0,
-    x: 0,
-    y: 0,
-    z: 0
-  },
-  childIndex: number = 0,
-  level: number = 0,
-  globalData: {level: number; mortonIndex: number; x: number; y: number; z: number} = {
-    level: 0,
-    mortonIndex: 0,
-    x: 0,
-    y: 0,
-    z: 0
-  }
-) {
+export async function parseImplicitTiles(params: {
+  subtree: Subtree;
+  options: any;
+  parentData?: {mortonIndex: number; x: number; y: number; z: number};
+  childIndex?: number;
+  level?: number;
+  globalData?: {level: number; mortonIndex: number; x: number; y: number; z: number};
+}) {
+  const {
+    options,
+    parentData = {
+      mortonIndex: 0,
+      x: 0,
+      y: 0,
+      z: 0
+    },
+    childIndex = 0,
+    globalData = {
+      level: 0,
+      mortonIndex: 0,
+      x: 0,
+      y: 0,
+      z: 0
+    }
+  } = params;
+  let {subtree, level = 0} = params;
   const {
     subdivisionScheme,
     subtreeLevels,
@@ -132,14 +138,14 @@ export async function parseImplicitTiles(
   const pData = {mortonIndex: childTileMortonIndex, x: childTileX, y: childTileY, z: childTileZ};
 
   for (let index = 0; index < childrenPerTile; index++) {
-    const currentTile = await parseImplicitTiles(
+    const currentTile = await parseImplicitTiles({
       subtree,
       options,
-      pData,
-      index,
-      childTileLevel,
+      parentData: pData,
+      childIndex: index,
+      level: childTileLevel,
       globalData
-    );
+    });
 
     if (currentTile.contentUrl || currentTile.children.length) {
       const globalLevel = lev + 1;
