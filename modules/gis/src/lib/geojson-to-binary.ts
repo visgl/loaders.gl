@@ -15,9 +15,10 @@ export function geojsonToBinary(
   options: GeojsonToBinaryOptions = {}
 ): BinaryFeatures {
   const geometryInfo = extractGeometryInfo(features);
-  const flatFeatures = geojsonToFlatGeojson(features);
+  const coordLength = options.coordLength || geometryInfo.coordLength;
+  const flatFeatures = geojsonToFlatGeojson(features, {coordLength});
   return flatGeojsonToBinary(flatFeatures, geometryInfo, {
-    coordLength: options.coordLength || geometryInfo.coordLength,
+    coordLength,
     numericPropKeys: options.numericPropKeys,
     PositionDataType: options.PositionDataType || Float32Array
   });
