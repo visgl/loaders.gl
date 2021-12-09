@@ -2,8 +2,14 @@ import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToFlatGeojson} from '@loaders.gl/gis';
 
+// Sample GeoJSON data derived from examples in GeoJSON specification
+// https://tools.ietf.org/html/rfc7946#appendix-A
+// All features have 2D coordinates
 const FEATURES_2D = '@loaders.gl/gis/test/data/2d_features.json';
+// All features have 3D coordinates
 const FEATURES_3D = '@loaders.gl/gis/test/data/3d_features.json';
+// Some features have 3D coordinates
+const FEATURES_MIXED = '@loaders.gl/gis/test/data/mixed_features.json';
 
 test('gis#geojson-to-flatGeojson 2D', async (t) => {
   const response = await fetchFile(FEATURES_2D);
@@ -173,6 +179,98 @@ test('gis#geojson-to-flatGeojson 3D', async (t) => {
       102, 2, 25, 103, 2, 26, 103, 3, 27, 102, 3, 28, 102, 2, 29, 100, 0, 30, 101, 0, 31, 101, 1,
       32, 100, 1, 33, 100, 0, 34, 100.2, 0.2, 35, 100.2, 0.8, 36, 100.8, 0.8, 37, 100.8, 0.2, 38,
       100.2, 0.2, 39
+    ],
+    'flat MultiPolygon data should be equivalent'
+  );
+  t.deepEquals(
+    multiPolygon.geometry.lines,
+    [[0], [15, 30]],
+    'flat MultiPolygon lines should be equivalent'
+  );
+  t.deepEquals(
+    multiPolygon.geometry.areas,
+    [[-1], [-1, 0.3599999999999966]],
+    'flat MultiPolygon areas should be equivalent'
+  );
+
+  t.end();
+});
+
+test('gis#geojson-to-flatGeojson Mixed', async (t) => {
+  const response = await fetchFile(FEATURES_MIXED);
+  const {features} = await response.json();
+
+  const flatFeatures = geojsonToFlatGeojson(features, {coordLength: 3});
+  const [point, multiPoint, lineString, multiLineString, polygon, polygonWithHole, multiPolygon] =
+    flatFeatures;
+
+  // Point
+  t.deepEquals(point.geometry.data, [100, 0, 1], 'flat Point data should be equivalent');
+  t.deepEquals(point.geometry.lines, [0], 'flat Point lines should be equivalent');
+
+  // MultiPoint
+  t.deepEquals(
+    multiPoint.geometry.data,
+    [100, 0, 0, 101, 1, 0],
+    'flat MultiPoint data should be equivalent'
+  );
+  t.deepEquals(multiPoint.geometry.lines, [0, 3], 'flat MultiPoint lines should be equivalent');
+
+  // LineString
+  t.deepEquals(
+    lineString.geometry.data,
+    [100, 0, 0, 101, 1, 0],
+    'flat LineString data should be equivalent'
+  );
+  t.deepEquals(lineString.geometry.lines, [0], 'flat LineString lines should be equivalent');
+
+  // MultiLineString
+  t.deepEquals(
+    multiLineString.geometry.data,
+    [100, 0, 2, 101, 1, 0, 102, 2, 0, 103, 3, 0],
+    'flat MultiLineString data should be equivalent'
+  );
+  t.deepEquals(
+    multiLineString.geometry.lines,
+    [0, 6],
+    'flat MultiLineString lines should be equivalent'
+  );
+
+  // Polygon
+  t.deepEquals(
+    polygon.geometry.data,
+    [100, 0, 0, 101, 0, 0, 101, 1, 0, 100, 1, 0, 100, 0, 3],
+    'flat Polygon data should be equivalent'
+  );
+  t.deepEquals(polygon.geometry.lines, [[0]], 'flat Polygon lines should be equivalent');
+  t.deepEquals(polygon.geometry.areas, [[-1]], 'flat Polygon areas should be equivalent');
+
+  // Polygon (hole)
+  t.deepEquals(
+    polygonWithHole.geometry.data,
+    [
+      100, 0, 0, 101, 0, 0, 101, 1, 0, 100, 1, 0, 100, 0, 0, 100.8, 0.8, 0, 100.8, 0.2, 0, 100.2,
+      0.2, 0, 100.2, 0.8, 0, 100.8, 0.8, 0
+    ],
+    'flat Polygon (hole) data should be equivalent'
+  );
+  t.deepEquals(
+    polygonWithHole.geometry.lines,
+    [[0, 15]],
+    'flat Polygon (hole) lines should be equivalent'
+  );
+  t.deepEquals(
+    polygonWithHole.geometry.areas,
+    [[-1, 0.3599999999999966]],
+    'flat Polygon (hole) areas should be equivalent'
+  );
+
+  // MultiPolygon
+  t.deepEquals(
+    multiPolygon.geometry.data,
+    [
+      102, 2, 0, 103, 2, 0, 103, 3, 0, 102, 3, 0, 102, 2, 0, 100, 0, 0, 101, 0, 0, 101, 1, 0, 100,
+      1, 0, 100, 0, 0, 100.2, 0.2, 0, 100.2, 0.8, 0, 100.8, 0.8, 0, 100.8, 0.2, 0, 100.2, 0.2, 0
     ],
     'flat MultiPolygon data should be equivalent'
   );

@@ -6,7 +6,7 @@ import {geojsonToBinary} from '@loaders.gl/gis';
 import {TEST_EXPORTS} from '@loaders.gl/gis/lib/geojson-to-binary';
 
 // @ts-ignore
-const {firstPass, secondPass} = TEST_EXPORTS;
+const {firstPass} = TEST_EXPORTS;
 
 // Sample GeoJSON data derived from examples in GeoJSON specification
 // https://tools.ietf.org/html/rfc7946#appendix-A
@@ -14,7 +14,7 @@ const {firstPass, secondPass} = TEST_EXPORTS;
 const FEATURES_2D = '@loaders.gl/gis/test/data/2d_features.json';
 // All features have 3D coordinates
 const FEATURES_3D = '@loaders.gl/gis/test/data/3d_features.json';
-// All features have 3D coordinates
+// Some features have 3D coordinates
 const FEATURES_MIXED = '@loaders.gl/gis/test/data/mixed_features.json';
 
 // Example GeoJSON with no properties
@@ -119,7 +119,7 @@ test('gis#geojson-to-binary firstPass mixed-dimension features, no properties', 
     numericPropKeys: firstPassData.numericPropKeys,
     PositionDataType: Float32Array
   };
-  const {points, lines, polygons} = secondPass(features, firstPassData, options);
+  const {points, lines, polygons} = geojsonToBinary(features, firstPassData, options);
 
   // 3D size
   t.equal(points.positions.size, 3);
@@ -212,7 +212,7 @@ test('gis#geojson-to-binary properties', async (t) => {
     numericPropKeys: firstPassData.numericPropKeys,
     PositionDataType: Float32Array
   };
-  const {points, lines, polygons} = secondPass(features, firstPassData, options);
+  const {points, lines, polygons} = geojsonToBinary(features, firstPassData, options);
 
   // Check numeric properties keys exist
   t.deepEquals(Object.keys(points.numericProps), expectedNumericPropKeys);
@@ -264,7 +264,7 @@ test('gis#geojson-to-binary properties', async (t) => {
   t.end();
 });
 
-test('gis#geojson-to-binary secondPass 2D features, no properties', async (t) => {
+test('gis#geojson-to-binary 2D features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const firstPassData = firstPass(features);
@@ -274,7 +274,7 @@ test('gis#geojson-to-binary secondPass 2D features, no properties', async (t) =>
     numericPropKeys: firstPassData.numericPropKeys,
     PositionDataType: Float32Array
   };
-  const {points, lines, polygons} = secondPass(features, firstPassData, options);
+  const {points, lines, polygons} = geojsonToBinary(features, firstPassData, options);
 
   // 2D size
   t.equal(points.positions.size, 2);
