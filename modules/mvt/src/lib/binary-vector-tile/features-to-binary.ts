@@ -32,7 +32,7 @@ export function featuresToBinary(
   const propArrayTypes = extractNumericPropTypes(features);
   const numericPropKeys = Object.keys(propArrayTypes).filter((k) => propArrayTypes[k] !== Array);
   return fillArrays(features, firstPassData, {
-    coordLength: options ? options.coordLength : firstPassData.coordLength,
+    coordLength: (options && options.coordLength) || firstPassData.coordLength,
     numericPropKeys: options ? options.numericPropKeys : numericPropKeys,
     propArrayTypes,
     PositionDataType: options ? options.PositionDataType : Float32Array
@@ -94,7 +94,12 @@ function fillArrays(
     polygonRingsCount,
     polygonFeaturesCount
   } = firstPassData;
-  const {coordLength, numericPropKeys, propArrayTypes, PositionDataType = Float32Array} = options;
+  const {
+    coordLength = 2,
+    numericPropKeys,
+    propArrayTypes,
+    PositionDataType = Float32Array
+  } = options;
   const hasGlobalId = features[0] && 'id' in features[0];
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points: MvtPoints = {
