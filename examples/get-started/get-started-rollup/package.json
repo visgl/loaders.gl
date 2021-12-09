@@ -11,13 +11,13 @@
     "serve": "serve public"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.2.0",
-    "@loaders.gl/obj": "2.2.0"
+    "@loaders.gl/core": "^3.1.0",
+    "@loaders.gl/obj": "^3.1.0"
   },
   "devDependencies": {
-    "rollup": "^1.16.2",
-    "rollup-plugin-commonjs": "^10.0.0",
-    "rollup-plugin-node-resolve": "^5.1.0",
-    "serve": "^11.0.2"
+    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-node-resolve": "^13.0.6",
+    "rollup": "^2.61.0",
+    "serve": "^13.0.2"
   }
 }
