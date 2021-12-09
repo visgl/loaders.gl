@@ -60,7 +60,7 @@ Target Release Date: Nov 2021.
 - New experimental [`ParquetLoader`](modules/parquet/docs/api-reference/parquet-loader)
 
 **@loaders.gl/pcd**
-- `PCDLoader` now supports for compressed binary data.
+- `PCDLoader` now supports compressed binary data.
 
 ## v3.0
 
