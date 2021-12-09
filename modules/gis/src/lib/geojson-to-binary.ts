@@ -18,7 +18,7 @@ export function geojsonToBinary(
   const flatFeatures = geojsonToFlatGeojson(features);
   return flatGeojsonToBinary(flatFeatures, firstPassData, {
     coordLength: options.coordLength || firstPassData.coordLength,
-    numericPropKeys: options.numericPropKeys || firstPassData.numericPropKeys,
+    numericPropKeys: options.numericPropKeys,
     PositionDataType: options.PositionDataType || Float32Array
   });
 }
@@ -31,8 +31,6 @@ type PropArrayConstructor = Float32ArrayConstructor | Float64ArrayConstructor | 
 
 type FirstPassData = {
   coordLength: number;
-  numericPropKeys: string[];
-  propArrayTypes: {[key: string]: PropArrayConstructor};
 
   pointPositionsCount: number;
   pointFeaturesCount: number;
@@ -63,7 +61,6 @@ function firstPass(features: Feature[]): FirstPassData {
   let polygonRingsCount = 0;
   let polygonFeaturesCount = 0;
   const coordLengths = new Set<number>();
-  const propArrayTypes = {};
 
   for (const feature of features) {
     const geometry = feature.geometry;
@@ -127,18 +124,6 @@ function firstPass(features: Feature[]): FirstPassData {
       default:
         throw new Error(`Unsupported geometry type: ${geometry.type}`);
     }
-
-    if (feature.properties) {
-      for (const key in feature.properties) {
-        const val = feature.properties[key];
-
-        // If property has not been seen before, or if property has been numeric
-        // in all previous features, check if numeric in this feature
-        // If not numeric, Array is stored to prevent rechecking in the future
-        // Additionally, detects if 64 bit precision is required
-        propArrayTypes[key] = deduceArrayType(val, propArrayTypes[key]);
-      }
-    }
   }
 
   return {
@@ -152,24 +137,11 @@ function firstPass(features: Feature[]): FirstPassData {
     polygonPositionsCount,
     polygonObjectsCount,
     polygonRingsCount,
-    polygonFeaturesCount,
-
-    // Array of keys whose values are always numeric
-    numericPropKeys: Object.keys(propArrayTypes).filter((k) => propArrayTypes[k] !== Array),
-    propArrayTypes
+    polygonFeaturesCount
   };
 }
 
 // TODO - how does this work? Different `coordinates` have different nesting
 function flatten(arrays): number[][] {
   return [].concat(...arrays);
-}
-
-function deduceArrayType(x: any, constructor: PropArrayConstructor): PropArrayConstructor {
-  if (constructor === Array || !Number.isFinite(x)) {
-    return Array;
-  }
-
-  // If this or previous value required 64bits use Float64Array
-  return constructor === Float64Array || Math.fround(x) !== x ? Float64Array : Float32Array;
 }
