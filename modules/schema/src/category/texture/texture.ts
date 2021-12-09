@@ -17,11 +17,12 @@ export type GPUTextureFormat =
 /** One mip level */
 export type TextureLevel = {
   compressed: boolean;
-  format: number;
+  format?: number;
   data: Uint8Array;
   width: number;
   height: number;
   levelSize?: number;
+  hasAlpha?: boolean;
 };
 
-export type TextureOrImage = ImageType | (TextureLevel | ImageType)
+export type TextureOrImage = ImageType | (TextureLevel | ImageType);

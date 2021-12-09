@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import type {TextureLevel} from '@loaders.gl/schema';
 import {loadBasisEncoderModule, loadBasisTrascoderModule} from './basis-module-loader';
 import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
@@ -5,23 +6,23 @@ import {getSupportedGPUTextureFormats} from '../utils/texture-formats';
 import {isKTX} from './parse-ktx';
 
 export type BasisFormat =
-  'etc1' |
-  'etc2' |
-  'bc1' |
-  'bc3' |
-  'bc4' |
-  'bc5' |
-  'bc7-m6-opaque-only' |
-  'bc7-m5' |
-  'pvrtc1-4-rgb' |
-  'pvrtc1-4-rgba' |
-  'astc-4x4' |
-  'atc-rgb' |
-  'atc-rgba-interpolated-alpha' |
-  'rgba32' |
-  'rgb565' |
-  'bgr565' |
-  'rgba4444';
+  | 'etc1'
+  | 'etc2'
+  | 'bc1'
+  | 'bc3'
+  | 'bc4'
+  | 'bc5'
+  | 'bc7-m6-opaque-only'
+  | 'bc7-m5'
+  | 'pvrtc1-4-rgb'
+  | 'pvrtc1-4-rgba'
+  | 'astc-4x4'
+  | 'atc-rgb'
+  | 'atc-rgba-interpolated-alpha'
+  | 'rgba32'
+  | 'rgb565'
+  | 'bgr565'
+  | 'rgba4444';
 
 type BasisOutputOptions = {
   basisFormat: number;
@@ -79,7 +80,7 @@ const OutputFormat: Record<string, BasisOutputOptions> = {
  * @param options
  * @returns compressed texture data
  */
-export default async function parseBasis(data: ArrayBuffer, options): Promise<TextureLevel[]> {
+export default async function parseBasis(data: ArrayBuffer, options): Promise<TextureLevel[][]> {
   if (options.basis.containerFormat === 'auto') {
     if (isKTX(data)) {
       const fileConstructors = await loadBasisEncoderModule(options);
@@ -172,7 +173,6 @@ function transcodeImage(basisFile, imageIndex, levelIndex, options): TextureLeve
     height,
     data: decodedData,
     compressed,
-    // @ts-expect-error
     format,
 
     // Additional fields
@@ -188,7 +188,7 @@ function transcodeImage(basisFile, imageIndex, levelIndex, options): TextureLeve
  * @param options
  * @returns compressed texture data
  */
-function parseKTX2File(KTX2File, data: ArrayBuffer, options): TextureLevel[] {
+function parseKTX2File(KTX2File, data: ArrayBuffer, options): TextureLevel[][] {
   const ktx2File = new KTX2File(new Uint8Array(data));
 
   try {
@@ -203,7 +203,7 @@ function parseKTX2File(KTX2File, data: ArrayBuffer, options): TextureLevel[] {
       break; // texture app can only show one level for some reason
     }
 
-    return levels;
+    return [levels];
   } finally {
     ktx2File.close();
     ktx2File.delete();
@@ -217,7 +217,7 @@ function parseKTX2File(KTX2File, data: ArrayBuffer, options): TextureLevel[] {
  * @param options
  * @returns
  */
-function transcodeKTX2Image(ktx2File, levelIndex: number, options) {
+function transcodeKTX2Image(ktx2File, levelIndex: number, options): TextureLevel {
   const {alphaFlag, height, width} = ktx2File.getImageLevelInfo(levelIndex, 0, 0);
 
   // Check options for output format etc
@@ -255,7 +255,7 @@ function transcodeKTX2Image(ktx2File, levelIndex: number, options) {
 
     // Additional fields
     // Add levelSize field.
-    alphaFlag,
+    hasAlpha: alphaFlag,
     format
   };
 }
@@ -282,9 +282,12 @@ function getBasisOptions(options, hasAlpha: boolean): BasisOutputOptions {
  * Select transcode format from the list of supported formats
  * @returns key for OutputFormat map
  */
-export function selectSupportedBasisFormat(): BasisFormat | {
-  alpha: BasisFormat, noAlpha: BasisFormat
-} {
+export function selectSupportedBasisFormat():
+  | BasisFormat
+  | {
+      alpha: BasisFormat;
+      noAlpha: BasisFormat;
+    } {
   const supportedFormats = getSupportedGPUTextureFormats();
   if (supportedFormats.has('astc')) {
     return 'astc-4x4';
