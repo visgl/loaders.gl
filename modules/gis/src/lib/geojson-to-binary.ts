@@ -1,7 +1,7 @@
 import {Feature, GeoJsonProperties} from '@loaders.gl/schema';
 import type {BinaryFeatures} from '@loaders.gl/schema';
 import {geojsonToFlatGeojson} from '@loaders.gl/gis';
-import {featuresToBinary} from '@loaders.gl/mvt';
+import {featuresToBinary} from './features-to-binary';
 
 export type GeojsonToBinaryOptions = {
   coordLength?: number;

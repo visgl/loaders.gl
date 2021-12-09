@@ -11,7 +11,7 @@ import {
   MvtPoints,
   MvtPolygons,
   MvtGeometries
-} from '../types';
+} from './types';
 
 /**
  * Convert binary features to flat binary arrays. Similar to

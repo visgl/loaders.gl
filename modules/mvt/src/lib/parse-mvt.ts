@@ -2,7 +2,7 @@
 import VectorTile from './mapbox-vector-tile/vector-tile';
 import BinaryVectorTile from './binary-vector-tile/vector-tile';
 
-import {featuresToBinary} from './binary-vector-tile/features-to-binary';
+import {featuresToBinary} from '@loaders.gl/gis';
 import Protobuf from 'pbf';
 import {MvtBinaryCoordinates, MvtMapboxCoordinates, MvtOptions} from '../lib/types';
 import VectorTileFeatureBinary from './binary-vector-tile/vector-tile-feature';
