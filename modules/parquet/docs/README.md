@@ -12,7 +12,7 @@ Experimental loader and writer for the Apache Parquet format.
 Internal parquet compression formats are supported as follows:
 
 | Type | Read | Write |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | `UNCOMPRESSED`  | YES | YES |
 | `GZIP` | YES | YES |
 | `SNAPPY` | YES | YES | |
@@ -27,7 +27,7 @@ Internal parquet compression formats are supported as follows:
 The following Parquet encodings are supported:
 
 | Encoding | Read | Write | Types |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | `PLAIN` | YES | YES | All |
 | `PLAIN_DICTIONARY` | YES | YES | All |
 | `RLE_DICTIONARY` | YES | NO |  All |
@@ -40,7 +40,7 @@ The following Parquet encodings are supported:
 There are three repetition types in Parquet:
 
 | Repetition | Supported |
-| --- | --- |--- |
+| --- | --- |
 | `REQUIRED` | YES |
 | `OPTIONAL` | YES |
 | `REPEATED` | YES |
