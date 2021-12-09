@@ -222,7 +222,7 @@ async function loadImage(
       mipmaps: false,
       width: parsedImage[0].width,
       height: parsedImage[0].height,
-      data: parsedImage
+      data: parsedImage[0]
     };
   }
   // TODO making sure ImageLoader is overridable by using array of loaders

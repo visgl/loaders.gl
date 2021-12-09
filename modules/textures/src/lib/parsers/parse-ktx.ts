@@ -1,3 +1,4 @@
+import type {TextureLevel} from '@loaders.gl/schema';
 import {read} from 'ktx-parse';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 import {mapVkFormatToWebGL} from '../utils/ktx-format-helper';
@@ -29,7 +30,7 @@ export function isKTX(data: ArrayBuffer) {
   return !notKTX;
 }
 
-export function parseKTX(arrayBuffer: ArrayBuffer) {
+export function parseKTX(arrayBuffer: ArrayBuffer): TextureLevel[] {
   const uint8Array = new Uint8Array(arrayBuffer);
   const ktx = read(uint8Array);
   const mipMapLevels = Math.max(1, ktx.levels.length);

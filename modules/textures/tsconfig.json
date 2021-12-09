@@ -10,6 +10,7 @@
   "references": [
     {"path": "../images"},
     {"path": "../loader-utils"},
+    {"path": "../schema"},
     {"path": "../worker-utils"}
   ]
 }

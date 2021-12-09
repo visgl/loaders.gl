@@ -59,7 +59,7 @@ export const CompressedTextureLoader = {
         containerFormat: 'ktx2',
         module: 'encoder'
       };
-      return await parseBasis(arrayBuffer, options);
+      return (await parseBasis(arrayBuffer, options))[0];
     }
     return parseCompressedTexture(arrayBuffer);
   }

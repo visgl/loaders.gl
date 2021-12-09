@@ -72,7 +72,10 @@ export async function parseI3STileContent(
           tile.content.texture = await parse(arrayBuffer, loader, options);
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        const texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
+        let texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
+        if (loader === BasisLoader) {
+          texture = texture[0];
+        }
         tile.content.texture = {
           compressed: true,
           mipmaps: false,

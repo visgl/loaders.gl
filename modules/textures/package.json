@@ -44,6 +44,7 @@
   "dependencies": {
     "@loaders.gl/images": "4.0.0-alpha.4",
     "@loaders.gl/loader-utils": "4.0.0-alpha.4",
+    "@loaders.gl/schema": "4.0.0-alpha.4",
     "@loaders.gl/worker-utils": "4.0.0-alpha.4",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"

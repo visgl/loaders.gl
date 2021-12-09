@@ -1,4 +1,4 @@
-import type {GPUTextureFormat} from '../../types';
+import type {GPUTextureFormat} from '@loaders.gl/schema';
 
 const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
 

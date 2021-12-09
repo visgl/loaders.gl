@@ -10,7 +10,7 @@ test('KTX2BasisUniversalTextureWriter#Should encode PNG', async (t) => {
   const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
   const encodedData = await encode(image, KTX2BasisUniversalTextureWriter);
   const transcodedImages = await load(encodedData, BasisLoader);
-  const transcodedImage = transcodedImages[0];
+  const transcodedImage = transcodedImages[0][0];
 
   t.ok(encodedData);
   t.ok(transcodedImage);
@@ -24,7 +24,7 @@ test('KTX2BasisUniversalTextureWriter#Should encode JPG', async (t) => {
   const image = await load(shannonJPG, ImageLoader, {image: {type: 'data'}});
   const encodedData = await encode(image, KTX2BasisUniversalTextureWriter);
   const transcodedImages = await load(encodedData, BasisLoader);
-  const transcodedImage = transcodedImages[0];
+  const transcodedImage = transcodedImages[0][0];
 
   t.ok(encodedData);
   t.ok(transcodedImage);
