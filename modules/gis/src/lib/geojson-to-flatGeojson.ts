@@ -55,8 +55,7 @@ function flattenPolygon(
   const ringAreas: number[] = [];
   const polygons: number[] = [];
   for (const lineString of coordinates) {
-    const lineString2d =
-      lineString[0].length === 2 ? lineString : lineString.map((p) => p.slice(0, 2));
+    const lineString2d = lineString.map((p) => p.slice(0, 2));
     let area = getPolygonSignedArea(lineString2d.flat());
     const ccw = area < 0;
 
