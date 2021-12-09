@@ -22,13 +22,13 @@ import {
  * data format detais
  *
  * @param features
- * @param firstPassData
+ * @param geometryInfo
  * @param options
  * @returns filled arrays
  */
-export function featuresToBinary(
+export function flatGeojsonToBinary(
   features: MvtBinaryCoordinates[],
-  firstPassData: MvtFirstPassedData,
+  geometryInfo: MvtFirstPassedData,
   options?: MvtBinaryOptions
 ) {
   const propArrayTypes = extractNumericPropTypes(features);
@@ -37,17 +37,18 @@ export function featuresToBinary(
     features,
     {
       propArrayTypes,
-      ...firstPassData
+      ...geometryInfo
     },
     {
-      coordLength: (options && options.coordLength) || firstPassData.coordLength,
-      numericPropKeys: options ? options.numericPropKeys : numericPropKeys,
+      coordLength: (options && options.coordLength) || geometryInfo.coordLength,
+      numericPropKeys: (options && options.numericPropKeys) || numericPropKeys,
       PositionDataType: options ? options.PositionDataType : Float32Array
     }
   );
 }
 
 export const TEST_EXPORTS = {
+  extractNumericPropTypes,
   fillArrays
 };
 
@@ -81,14 +82,14 @@ function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
  * Fills coordinates into pre-allocated typed arrays
  *
  * @param features
- * @param firstPassData
+ * @param geometryInfo
  * @param options
  * @returns an accessor object with value and size keys
  */
 // eslint-disable-next-line complexity
 function fillArrays(
   features: MvtBinaryCoordinates[],
-  firstPassData: MvtFirstPassedData & {
+  geometryInfo: MvtFirstPassedData & {
     propArrayTypes: {[key: string]: MvtPropArrayConstructor};
   },
   options: MvtBinaryOptions
@@ -104,8 +105,8 @@ function fillArrays(
     polygonRingsCount,
     polygonFeaturesCount,
     propArrayTypes
-  } = firstPassData;
-  const {coordLength = 2, numericPropKeys, PositionDataType = Float32Array} = options;
+  } = geometryInfo;
+  const {coordLength = 2, numericPropKeys = [], PositionDataType = Float32Array} = options;
   const hasGlobalId = features[0] && 'id' in features[0];
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points: MvtPoints = {

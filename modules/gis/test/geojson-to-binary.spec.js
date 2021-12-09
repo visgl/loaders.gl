@@ -3,10 +3,9 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {TEST_EXPORTS} from '@loaders.gl/gis/lib/geojson-to-binary';
+import {extractGeometryInfo} from '@loaders.gl/gis/lib/extract-geometry-info';
 import {TEST_EXPORTS as TT} from '@loaders.gl/gis/lib/flatGeojson-to-binary';
 
-const {extractGeometryInfo} = TEST_EXPORTS;
 const {extractNumericPropTypes} = TT;
 
 // Sample GeoJSON data derived from examples in GeoJSON specification
