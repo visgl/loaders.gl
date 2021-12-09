@@ -140,7 +140,7 @@ function getDecodedFeatureBinary(
   );
 
   // Add layer name to GeoJSON properties
-  if (options.layerProperty) {
+  if (options.layerProperty && decodedFeature.properties) {
     decodedFeature.properties[options.layerProperty] = options.layerName;
   }
 

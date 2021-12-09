@@ -1,5 +1,6 @@
 /* eslint-disable indent */
 import {earcut} from '@math.gl/polygon';
+import type {BinaryFeatures} from '@loaders.gl/schema';
 import {
   MvtBinaryCoordinates,
   MvtBinaryGeometry,
@@ -448,7 +449,7 @@ function makeAccessorObjects(
   lines: MvtLines,
   polygons: MvtPolygons,
   coordLength: number
-) {
+): BinaryFeatures {
   const returnObj = {
     points: {
       ...points,
@@ -482,7 +483,7 @@ function makeAccessorObjects(
       };
     }
   }
-  return returnObj;
+  return returnObj as unknown as BinaryFeatures;
 }
 
 /**

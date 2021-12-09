@@ -10,7 +10,7 @@ export type MvtBinaryGeometry = {
   lines: any[];
   areas?: number[];
   type?: string;
-  id?: number;
+  id?: string | number;
 };
 
 export type MvtMapboxGeometry = {
@@ -23,8 +23,8 @@ export type MvtMapboxGeometry = {
 export type MvtBinaryCoordinates = {
   type: string;
   geometry: MvtBinaryGeometry;
-  properties: {[x: string]: string | number | boolean | null};
-  id?: number;
+  properties: {[x: string]: string | number | boolean | null} | null;
+  id?: string | number;
 };
 
 export type MvtMapboxCoordinates = {
@@ -71,7 +71,7 @@ export type MvtPoints = {
   numericProps: object;
   properties: {}[];
   fields: {
-    id?: number;
+    id?: string | number;
   }[];
 };
 
@@ -84,7 +84,7 @@ export type MvtLines = {
   numericProps: object;
   properties: {}[];
   fields: {
-    id?: number;
+    id?: string | number;
   }[];
 };
 
@@ -99,7 +99,7 @@ export type MvtPolygons = {
   numericProps: object;
   properties: {}[];
   fields: {
-    id?: number;
+    id?: string | number;
   }[];
 };
 
