@@ -6,10 +6,10 @@
 // @author Filipe Caixeta / http://filipecaixeta.com.br
 // @author Mugen87 / https://github.com/Mugen87
 
-import {getMeshBoundingBox} from '@loaders.gl/schema';
 import type {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
-import type {PCDHeader} from './pcd-types';
+import {getMeshBoundingBox} from '@loaders.gl/schema';
 import {getPCDSchema} from './get-pcd-schema';
+import type {PCDHeader} from './pcd-types';
 
 type NormalizedAttributes = {
   POSITION: {
@@ -55,6 +55,9 @@ export default function parsePCD(data: ArrayBufferLike) {
       break;
 
     case 'binary_compressed':
+      attributes = parsePCDBinaryCompressed(pcdHeader, data);
+      break;
+
     default:
       throw new Error(`PCD: ${pcdHeader.data} files are not supported`);
   }
@@ -311,4 +314,123 @@ function parsePCDBinary(pcdHeader: PCDHeader, data: ArrayBufferLike): HeaderAttr
   }
 
   return {position, normal, color};
+}
+
+/**
+ * @param pcdHeader
+ * @param data
+ * @returns [attributes]
+ */
+function parsePCDBinaryCompressed(PCDheader, data) {
+  const position: number[] = [];
+  const normal: number[] = [];
+  const color: number[] = [];
+
+  const sizes = new Uint32Array(data.slice(PCDheader.headerLen, PCDheader.headerLen + 8));
+  const compressedSize = sizes[0];
+  const decompressedSize = sizes[1];
+  const decompressed = decompressLZF(
+    new Uint8Array(data, PCDheader.headerLen + 8, compressedSize),
+    decompressedSize
+  );
+  const dataview = new DataView(decompressed.buffer);
+
+  const offset = PCDheader.offset;
+
+  for (let i = 0; i < PCDheader.points; i++) {
+    if (offset.x !== undefined) {
+      position.push(
+        dataview.getFloat32(PCDheader.points * offset.x + PCDheader.size[0] * i, LITTLE_ENDIAN)
+      );
+      position.push(
+        dataview.getFloat32(PCDheader.points * offset.y + PCDheader.size[1] * i, LITTLE_ENDIAN)
+      );
+      position.push(
+        dataview.getFloat32(PCDheader.points * offset.z + PCDheader.size[2] * i, LITTLE_ENDIAN)
+      );
+    }
+
+    if (offset.rgb !== undefined) {
+      color.push(
+        dataview.getUint8(PCDheader.points * offset.rgb + PCDheader.size[3] * i + 0) / 255.0
+      );
+      color.push(
+        dataview.getUint8(PCDheader.points * offset.rgb + PCDheader.size[3] * i + 1) / 255.0
+      );
+      color.push(
+        dataview.getUint8(PCDheader.points * offset.rgb + PCDheader.size[3] * i + 2) / 255.0
+      );
+    }
+
+    if (offset.normal_x !== undefined) {
+      normal.push(
+        dataview.getFloat32(
+          PCDheader.points * offset.normal_x + PCDheader.size[4] * i,
+          LITTLE_ENDIAN
+        )
+      );
+      normal.push(
+        dataview.getFloat32(
+          PCDheader.points * offset.normal_y + PCDheader.size[5] * i,
+          LITTLE_ENDIAN
+        )
+      );
+      normal.push(
+        dataview.getFloat32(
+          PCDheader.points * offset.normal_z + PCDheader.size[6] * i,
+          LITTLE_ENDIAN
+        )
+      );
+    }
+  }
+
+  return {
+    position,
+    normal,
+    color
+  };
+}
+
+function decompressLZF(inData, outLength) {
+  const inLength = inData.length;
+  const outData = new Uint8Array(outLength);
+  let inPtr = 0;
+  let outPtr = 0;
+  let ctrl;
+  let len;
+  let ref;
+
+  do {
+    ctrl = inData[inPtr++];
+
+    if (ctrl < 1 << 5) {
+      ctrl++;
+      if (outPtr + ctrl > outLength) throw new Error('Output buffer is not large enough');
+      if (inPtr + ctrl > inLength) throw new Error('Invalid compressed data');
+
+      do {
+        outData[outPtr++] = inData[inPtr++];
+      } while (--ctrl);
+    } else {
+      len = ctrl >> 5;
+      ref = outPtr - ((ctrl & 0x1f) << 8) - 1;
+      if (inPtr >= inLength) throw new Error('Invalid compressed data');
+
+      if (len === 7) {
+        len += inData[inPtr++];
+        if (inPtr >= inLength) throw new Error('Invalid compressed data');
+      }
+
+      ref -= inData[inPtr++];
+      if (outPtr + len + 2 > outLength) throw new Error('Output buffer is not large enough');
+      if (ref < 0) throw new Error('Invalid compressed data');
+      if (ref >= outPtr) throw new Error('Invalid compressed data');
+
+      do {
+        outData[outPtr++] = outData[ref++];
+      } while (--len + 2);
+    }
+  } while (inPtr < inLength);
+
+  return outData;
 }
