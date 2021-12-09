@@ -102,9 +102,10 @@ function extractGeometryInfo(features: Feature[]): GeojsonGeometryInfo {
         polygonFeaturesCount++;
         polygonObjectsCount++;
         polygonRingsCount += geometry.coordinates.length;
-        polygonPositionsCount += flatten(geometry.coordinates).length;
+        const flattened = geometry.coordinates.flat();
+        polygonPositionsCount += flattened.length;
 
-        for (const coord of flatten(geometry.coordinates)) {
+        for (const coord of flattened) {
           coordLengths.add(coord.length);
         }
         break;
@@ -113,10 +114,11 @@ function extractGeometryInfo(features: Feature[]): GeojsonGeometryInfo {
         for (const polygon of geometry.coordinates) {
           polygonObjectsCount++;
           polygonRingsCount += polygon.length;
-          polygonPositionsCount += flatten(polygon).length;
+          const flattened = polygon.flat();
+          polygonPositionsCount += flattened.length;
 
           // eslint-disable-next-line max-depth
-          for (const coord of flatten(polygon)) {
+          for (const coord of flattened) {
             coordLengths.add(coord.length);
           }
         }
@@ -139,9 +141,4 @@ function extractGeometryInfo(features: Feature[]): GeojsonGeometryInfo {
     polygonRingsCount,
     polygonFeaturesCount
   };
-}
-
-// TODO - how does this work? Different `coordinates` have different nesting
-function flatten(arrays): number[][] {
-  return [].concat(...arrays);
 }
