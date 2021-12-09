@@ -31,7 +31,7 @@ function flattenPolygon(
   const polygons: number[] = [];
   for (const lineString of coordinates) {
     const flatLineString = lineString.flat();
-    let area = getPolygonSignedArea(lineString.flat());
+    let area = getPolygonSignedArea(flatLineString);
     const ccw = area < 0;
 
     // Exterior ring must be CCW and interior rings CW
