@@ -5,7 +5,7 @@
  * @param outLength
  * @returns
  */
-export function decompressLZF(inData, outLength) {
+export function decompressLZF(inData: Uint8Array, outLength: number): Uint8Array {
   const inLength = inData.length;
   const outData = new Uint8Array(outLength);
   let inPtr = 0;
