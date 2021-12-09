@@ -192,24 +192,25 @@ test('gis#geojson-to-binary properties', async (t) => {
   }
   features[0].properties.numeric2 = 1;
 
-  const geometryInfo = extractGeometryInfo(features);
-  const {numericPropKeys} = geometryInfo;
-  const expectedNumericPropKeys = [
-    'int1',
-    'int2',
-    'int3',
-    'float1',
-    'float2',
-    'numeric1',
-    'numeric2'
-  ];
-  t.deepEquals(numericPropKeys, expectedNumericPropKeys);
-
-  const options = {
-    coordLength: geometryInfo.coordLength,
-    numericPropKeys: geometryInfo.numericPropKeys,
-    PositionDataType: Float32Array
+  const numericPropTypes = extractNumericPropTypes(features);
+  const expectedNumericPropTypes = {
+    string1: Array,
+    string2: Array,
+    mixed1: Array,
+    mixed2: Array,
+    int1: Float32Array,
+    int2: Float32Array,
+    int3: Float64Array,
+    float1: Float64Array,
+    float2: Float64Array,
+    numeric1: Float64Array,
+    numeric2: Float64Array
   };
+  t.deepEquals(numericPropTypes, expectedNumericPropTypes);
+  const expectedNumericPropKeys = Object.keys(expectedNumericPropTypes).filter(
+    (k) => expectedNumericPropTypes[k] !== Array
+  );
+
   const {points, lines, polygons} = geojsonToBinary(features);
 
   // Check numeric properties keys exist
