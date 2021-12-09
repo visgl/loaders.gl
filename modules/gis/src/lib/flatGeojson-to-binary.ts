@@ -1,9 +1,8 @@
 /* eslint-disable indent */
 import {earcut} from '@math.gl/polygon';
 import type {GeojsonToBinaryOptions} from './geojson-to-binary';
-import type {BinaryFeatures, GeojsonGeometryInfo} from '@loaders.gl/schema';
+import type {BinaryFeatures, FlatFeature, GeojsonGeometryInfo} from '@loaders.gl/schema';
 import {
-  MvtBinaryCoordinates,
   MvtBinaryGeometry,
   MvtPropArrayConstructor,
   MvtLines,
@@ -26,7 +25,7 @@ import {
  * @returns filled arrays
  */
 export function flatGeojsonToBinary(
-  features: MvtBinaryCoordinates[],
+  features: FlatFeature[],
   geometryInfo: GeojsonGeometryInfo,
   options?: GeojsonToBinaryOptions
 ) {
@@ -57,7 +56,7 @@ export const TEST_EXPORTS = {
  * @param features
  * @returns object with numeric types
  */
-function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
+function extractNumericPropTypes(features: FlatFeature[]): {
   [key: string]: MvtPropArrayConstructor;
 } {
   const propArrayTypes = {};
@@ -87,7 +86,7 @@ function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
  */
 // eslint-disable-next-line complexity
 function fillArrays(
-  features: MvtBinaryCoordinates[],
+  features: FlatFeature[],
   geometryInfo: GeojsonGeometryInfo & {
     propArrayTypes: {[key: string]: MvtPropArrayConstructor};
   },
@@ -192,7 +191,6 @@ function fillArrays(
 
     switch (geometry.type) {
       case 'Point':
-      case 'MultiPoint':
         handlePoint(geometry, points, indexMap, coordLength, properties);
         points.properties.push(keepStringProperties(properties, numericPropKeys));
         if (hasGlobalId) {
@@ -201,7 +199,6 @@ function fillArrays(
         indexMap.pointFeature++;
         break;
       case 'LineString':
-      case 'MultiLineString':
         handleLineString(geometry, lines, indexMap, coordLength, properties);
         lines.properties.push(keepStringProperties(properties, numericPropKeys));
         if (hasGlobalId) {
@@ -210,7 +207,6 @@ function fillArrays(
         indexMap.lineFeature++;
         break;
       case 'Polygon':
-      case 'MultiPolygon':
         handlePolygon(geometry, polygons, indexMap, coordLength, properties);
         polygons.properties.push(keepStringProperties(properties, numericPropKeys));
         if (hasGlobalId) {
@@ -219,7 +215,7 @@ function fillArrays(
         indexMap.polygonFeature++;
         break;
       default:
-        throw new Error('Invalid geometry type');
+        throw new Error(`Invalid geometry type: ${geometry.type}`);
     }
 
     indexMap.feature++;

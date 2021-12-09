@@ -1,8 +1,7 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import Protobuf from 'pbf';
-import {GeojsonGeometryInfo} from '@loaders.gl/schema';
-import {MvtBinaryCoordinates, MvtBinaryGeometry} from '../types';
+import {FlatFeature, FlatGeometryType, GeojsonGeometryInfo} from '@loaders.gl/schema';
 import {classifyRings, project, readFeature} from '../../helpers/binary-util-functions';
 
 // Reduce GC by reusing variables
@@ -28,8 +27,8 @@ export default class VectorTileFeature {
   _keys: string[];
   _values: (string | number | boolean | null)[];
   _geometryInfo: GeojsonGeometryInfo;
-  static get types() {
-    return ['Unknown', 'Point', 'LineString', 'Polygon'];
+  static get types(): FlatGeometryType[] {
+    return ['Point', 'LineString', 'Polygon'];
   }
 
   // eslint-disable-next-line max-params
@@ -58,7 +57,7 @@ export default class VectorTileFeature {
   }
 
   // eslint-disable-next-line complexity, max-statements
-  loadGeometry(): MvtBinaryGeometry {
+  loadGeometry() {
     const pbf = this._pbf;
     pbf.pos = this._geometry;
 
@@ -174,14 +173,11 @@ export default class VectorTileFeature {
         break;
     }
 
-    geom.type = VectorTileFeature.types[this.type];
-    if (geom.lines.length > 1) {
-      geom.type = `Multi${geom.type}`;
-    }
+    let type = VectorTileFeature.types[this.type - 1];
 
-    const result: MvtBinaryCoordinates = {
+    const result: FlatFeature = {
       type: 'Feature',
-      geometry: geom,
+      geometry: {type, ...geom},
       properties: this.properties
     };
 
@@ -194,7 +190,7 @@ export default class VectorTileFeature {
 
   toBinaryCoordinates(
     options: {x: number; y: number; z: number} | ((data: number[], feature: {extent: any}) => void)
-  ): MvtBinaryCoordinates {
+  ): FlatFeature {
     if (typeof options === 'function') {
       return this._toBinaryCoordinates(options);
     }

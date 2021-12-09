@@ -20,13 +20,6 @@ export type MvtMapboxGeometry = {
   coordinates?: any[];
 };
 
-export type MvtBinaryCoordinates = {
-  type: string;
-  geometry: MvtBinaryGeometry;
-  properties: {[x: string]: string | number | boolean | null} | null;
-  id?: string | number;
-};
-
 export type MvtMapboxCoordinates = {
   type: string;
   geometry: {
