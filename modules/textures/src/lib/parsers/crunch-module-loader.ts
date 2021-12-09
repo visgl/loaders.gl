@@ -31,7 +31,7 @@ async function loadCrunch(options) {
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
-  loadCrunchDecoder = loadCrunchDecoder || globalThis.loadCrunchDecoder;
+  loadCrunchDecoder = loadCrunchDecoder || globalThis.LoadCrunchDecoder;
   crunchModule = loadCrunchDecoder();
   return crunchModule;
 }
