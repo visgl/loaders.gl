@@ -1,4 +1,4 @@
-import {Feature} from '@loaders.gl/schema';
+import {Feature, GeojsonGeometryInfo} from '@loaders.gl/schema';
 
 /**
  *  Initial scan over GeoJSON features
@@ -99,16 +99,3 @@ export function extractGeometryInfo(features: Feature[]): GeojsonGeometryInfo {
     polygonFeaturesCount
   };
 }
-
-export type GeojsonGeometryInfo = {
-  coordLength: number;
-  pointPositionsCount: number;
-  pointFeaturesCount: number;
-  linePositionsCount: number;
-  linePathsCount: number;
-  lineFeaturesCount: number;
-  polygonPositionsCount: number;
-  polygonObjectsCount: number;
-  polygonRingsCount: number;
-  polygonFeaturesCount: number;
-};

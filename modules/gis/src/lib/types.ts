@@ -42,20 +42,6 @@ export type MvtPropArrayConstructor =
   | Float64ArrayConstructor
   | ArrayConstructor;
 
-export type MvtFirstPassedData = {
-  coordLength?: number;
-
-  pointPositionsCount: number;
-  pointFeaturesCount: number;
-  linePositionsCount: number;
-  linePathsCount: number;
-  lineFeaturesCount: number;
-  polygonPositionsCount: number;
-  polygonObjectsCount: number;
-  polygonRingsCount: number;
-  polygonFeaturesCount: number;
-};
-
 export type MvtPoints = {
   type: 'Point';
   positions: Float32Array | Float64Array;

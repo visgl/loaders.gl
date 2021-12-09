@@ -9,6 +9,20 @@ export type {GeoJSON, Feature, Geometry, Position, GeoJsonProperties} from 'geoj
 // eslint-disable-next-line import/no-unresolved
 export type {Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon} from 'geojson';
 
+// Aggregate information for converting GeoJSON into other formats
+export type GeojsonGeometryInfo = {
+  coordLength: number;
+  pointPositionsCount: number;
+  pointFeaturesCount: number;
+  linePositionsCount: number;
+  linePathsCount: number;
+  lineFeaturesCount: number;
+  polygonPositionsCount: number;
+  polygonObjectsCount: number;
+  polygonRingsCount: number;
+  polygonFeaturesCount: number;
+};
+
 // FLAT GEOJSON FORMAT GEOMETRY
 export type FlatGeometryType = 'Point' | 'LineString' | 'Polygon';
 type RemoveCoordinatesField<Type> = {

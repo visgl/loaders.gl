@@ -1,7 +1,8 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import Protobuf from 'pbf';
-import {MvtBinaryCoordinates, MvtBinaryGeometry, MvtFirstPassedData} from '../types';
+import {GeojsonGeometryInfo} from '@loaders.gl/schema';
+import {MvtBinaryCoordinates, MvtBinaryGeometry} from '../types';
 import {classifyRings, project, readFeature} from '../../helpers/binary-util-functions';
 
 // Reduce GC by reusing variables
@@ -26,7 +27,7 @@ export default class VectorTileFeature {
   _geometry: number;
   _keys: string[];
   _values: (string | number | boolean | null)[];
-  _firstPassData: MvtFirstPassedData;
+  _geometryInfo: GeojsonGeometryInfo;
   static get types() {
     return ['Unknown', 'Point', 'LineString', 'Polygon'];
   }
@@ -38,7 +39,7 @@ export default class VectorTileFeature {
     extent: any,
     keys: string[],
     values: (string | number | boolean | null)[],
-    firstPassData: MvtFirstPassedData
+    geometryInfo: GeojsonGeometryInfo
   ) {
     // Public
     this.properties = {};
@@ -51,7 +52,7 @@ export default class VectorTileFeature {
     this._geometry = -1;
     this._keys = keys;
     this._values = values;
-    this._firstPassData = firstPassData;
+    this._geometryInfo = geometryInfo;
 
     pbf.readFields(readFeature, this, end);
   }
@@ -146,14 +147,14 @@ export default class VectorTileFeature {
     // eslint-disable-next-line default-case
     switch (this.type) {
       case 1: // Point
-        this._firstPassData.pointFeaturesCount++;
-        this._firstPassData.pointPositionsCount += geom.lines.length;
+        this._geometryInfo.pointFeaturesCount++;
+        this._geometryInfo.pointPositionsCount += geom.lines.length;
         break;
 
       case 2: // LineString
-        this._firstPassData.lineFeaturesCount++;
-        this._firstPassData.linePathsCount += geom.lines.length;
-        this._firstPassData.linePositionsCount += geom.data.length / coordLength;
+        this._geometryInfo.lineFeaturesCount++;
+        this._geometryInfo.linePathsCount += geom.lines.length;
+        this._geometryInfo.linePositionsCount += geom.data.length / coordLength;
         break;
 
       case 3: // Polygon
@@ -161,13 +162,13 @@ export default class VectorTileFeature {
 
         // Unlike Point & LineString geom.lines is a 2D array, thanks
         // to the classifyRings method
-        this._firstPassData.polygonFeaturesCount++;
-        this._firstPassData.polygonObjectsCount += classified.lines.length;
+        this._geometryInfo.polygonFeaturesCount++;
+        this._geometryInfo.polygonObjectsCount += classified.lines.length;
 
         for (const lines of classified.lines) {
-          this._firstPassData.polygonRingsCount += lines.length;
+          this._geometryInfo.polygonRingsCount += lines.length;
         }
-        this._firstPassData.polygonPositionsCount += classified.data.length / coordLength;
+        this._geometryInfo.polygonPositionsCount += classified.data.length / coordLength;
 
         geom = classified;
         break;

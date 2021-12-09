@@ -1,12 +1,11 @@
 /* eslint-disable indent */
 import {earcut} from '@math.gl/polygon';
 import type {GeojsonToBinaryOptions} from './geojson-to-binary';
-import type {BinaryFeatures} from '@loaders.gl/schema';
+import type {BinaryFeatures, GeojsonGeometryInfo} from '@loaders.gl/schema';
 import {
   MvtBinaryCoordinates,
   MvtBinaryGeometry,
   MvtPropArrayConstructor,
-  MvtFirstPassedData,
   MvtLines,
   MvtPoints,
   MvtPolygons,
@@ -28,7 +27,7 @@ import {
  */
 export function flatGeojsonToBinary(
   features: MvtBinaryCoordinates[],
-  geometryInfo: MvtFirstPassedData,
+  geometryInfo: GeojsonGeometryInfo,
   options?: GeojsonToBinaryOptions
 ) {
   const propArrayTypes = extractNumericPropTypes(features);
@@ -89,7 +88,7 @@ function extractNumericPropTypes(features: MvtBinaryCoordinates[]): {
 // eslint-disable-next-line complexity
 function fillArrays(
   features: MvtBinaryCoordinates[],
-  geometryInfo: MvtFirstPassedData & {
+  geometryInfo: GeojsonGeometryInfo & {
     propArrayTypes: {[key: string]: MvtPropArrayConstructor};
   },
   options: GeojsonToBinaryOptions
