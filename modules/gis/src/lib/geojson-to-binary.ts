@@ -14,24 +14,23 @@ export function geojsonToBinary(
   features: Feature[],
   options: GeojsonToBinaryOptions = {}
 ): BinaryFeatures {
-  const firstPassData = firstPass(features);
+  const geometryInfo = extractGeometryInfo(features);
   const flatFeatures = geojsonToFlatGeojson(features);
-  return flatGeojsonToBinary(flatFeatures, firstPassData, {
-    coordLength: options.coordLength || firstPassData.coordLength,
+  return flatGeojsonToBinary(flatFeatures, geometryInfo, {
+    coordLength: options.coordLength || geometryInfo.coordLength,
     numericPropKeys: options.numericPropKeys,
     PositionDataType: options.PositionDataType || Float32Array
   });
 }
 
 export const TEST_EXPORTS = {
-  firstPass
+  extractGeometryInfo
 };
 
 type PropArrayConstructor = Float32ArrayConstructor | Float64ArrayConstructor | ArrayConstructor;
 
-type FirstPassData = {
+type GeojsonGeometryInfo = {
   coordLength: number;
-
   pointPositionsCount: number;
   pointFeaturesCount: number;
   linePositionsCount: number;
@@ -49,7 +48,7 @@ type FirstPassData = {
  *  keeps track of the max coordinate dimensions
  */
 // eslint-disable-next-line complexity, max-statements
-function firstPass(features: Feature[]): FirstPassData {
+function extractGeometryInfo(features: Feature[]): GeojsonGeometryInfo {
   // Counts the number of _positions_, so [x, y, z] counts as one
   let pointPositionsCount = 0;
   let pointFeaturesCount = 0;
