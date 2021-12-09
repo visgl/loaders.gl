@@ -115,7 +115,7 @@ test.only('gis#geojson-to-flatGeojson 3D', async (t) => {
     [100, 0, 2, 101, 1, 3],
     'flat MultiPoint data should be equivalent'
   );
-  t.deepEquals(multiPoint.geometry.lines, [0, 2], 'flat MultiPoint lines should be equivalent');
+  t.deepEquals(multiPoint.geometry.lines, [0, 3], 'flat MultiPoint lines should be equivalent');
 
   // LineString
   t.deepEquals(
@@ -133,7 +133,7 @@ test.only('gis#geojson-to-flatGeojson 3D', async (t) => {
   );
   t.deepEquals(
     multiLineString.geometry.lines,
-    [0, 4],
+    [0, 6],
     'flat MultiLineString lines should be equivalent'
   );
 
@@ -157,7 +157,7 @@ test.only('gis#geojson-to-flatGeojson 3D', async (t) => {
   );
   t.deepEquals(
     polygonWithHole.geometry.lines,
-    [[0, 10]],
+    [[0, 15]],
     'flat Polygon (hole) lines should be equivalent'
   );
   t.deepEquals(
@@ -178,7 +178,7 @@ test.only('gis#geojson-to-flatGeojson 3D', async (t) => {
   );
   t.deepEquals(
     multiPolygon.geometry.lines,
-    [[0], [10, 20]],
+    [[0], [15, 30]],
     'flat MultiPolygon lines should be equivalent'
   );
   t.deepEquals(
