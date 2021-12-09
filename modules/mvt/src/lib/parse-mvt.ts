@@ -2,7 +2,7 @@
 import VectorTile from './mapbox-vector-tile/vector-tile';
 import BinaryVectorTile from './binary-vector-tile/vector-tile';
 
-import {featuresToBinary} from '@loaders.gl/gis';
+import {flatGeojsonToBinary} from '@loaders.gl/gis';
 import Protobuf from 'pbf';
 import {MvtBinaryCoordinates, MvtMapboxCoordinates, MvtOptions} from '../lib/types';
 import VectorTileFeatureBinary from './binary-vector-tile/vector-tile-feature';
@@ -64,7 +64,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
     }
 
     if (binary) {
-      const data = featuresToBinary(features as MvtBinaryCoordinates[], firstPassData);
+      const data = flatGeojsonToBinary(features as MvtBinaryCoordinates[], firstPassData);
       // Add the original byteLength (as a reasonable approximation of the size of the binary data)
       // TODO decide where to store extra fields like byteLength (header etc) and document
       // @ts-ignore

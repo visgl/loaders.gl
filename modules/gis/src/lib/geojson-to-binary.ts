@@ -1,7 +1,7 @@
 import {Feature, GeoJsonProperties} from '@loaders.gl/schema';
 import type {BinaryFeatures} from '@loaders.gl/schema';
-import {geojsonToFlatGeojson} from '@loaders.gl/gis';
-import {featuresToBinary} from './features-to-binary';
+import {geojsonToFlatGeojson} from './geojson-to-flatGeojson';
+import {flatGeojsonToBinary} from './flatGeojson-to-binary';
 
 export type GeojsonToBinaryOptions = {
   coordLength?: number;
@@ -16,7 +16,7 @@ export function geojsonToBinary(
 ): BinaryFeatures {
   const firstPassData = firstPass(features);
   const flatFeatures = geojsonToFlatGeojson(features);
-  return featuresToBinary(flatFeatures, firstPassData, {
+  return flatGeojsonToBinary(flatFeatures, firstPassData, {
     coordLength: options.coordLength || firstPassData.coordLength,
     numericPropKeys: options.numericPropKeys || firstPassData.numericPropKeys,
     PositionDataType: options.PositionDataType || Float32Array
