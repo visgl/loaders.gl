@@ -1,4 +1,4 @@
-import type {Availability, Subtree} from '../../../types';
+import type {Availability, BoundingVolume, Subtree} from '../../../types';
 import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
 
@@ -149,7 +149,8 @@ export async function parseImplicitTiles(params: {
 
     if (currentTile.contentUrl || currentTile.children.length) {
       const globalLevel = lev + 1;
-      const formattedTile = formatTileData(currentTile, globalLevel, options);
+      const childCoordinates = {childTileX, childTileY, childTileZ};
+      const formattedTile = formatTileData(currentTile, globalLevel, childCoordinates, options);
       // @ts-ignore
       tile.children.push(formattedTile);
     }
@@ -178,11 +179,29 @@ function getAvailabilityResult(availabilityData: Availability, index: number): b
  * @param options
  * @returns
  */
-function formatTileData(tile, level: number, options: any) {
-  const {basePath, refine, getRefine, lodMetricType, getTileType, rootLodMetricValue} = options;
+function formatTileData(
+  tile,
+  level: number,
+  childCoordinates: {childTileX: number; childTileY: number; childTileZ: number},
+  options: any
+) {
+  const {
+    basePath,
+    refine,
+    getRefine,
+    lodMetricType,
+    getTileType,
+    rootLodMetricValue,
+    rootBoundingVolume
+  } = options;
   const uri = tile.contentUrl && tile.contentUrl.replace(`${basePath}/`, '');
   const lodMetricValue = rootLodMetricValue / 2 ** level;
-  // TODO handle bounding volume
+  const boundingVolume = calculateBoundingVolumeForChildTile(
+    level,
+    rootBoundingVolume,
+    childCoordinates
+  );
+
   return {
     children: tile.children,
     contentUrl: tile.contentUrl,
@@ -191,13 +210,52 @@ function formatTileData(tile, level: number, options: any) {
     refine: getRefine(refine),
     type: getTileType(tile),
     lodMetricType,
-    lodMetricValue
+    lodMetricValue,
+    boundingVolume
     // Temp debug values. Remove when real implicit tileset will be tested.
     // x: tile.x,
     // y: tile.y,
     // z: tile.z,
     // level: tile.level
   };
+}
+
+/**
+ * Calculate child bounding volume.
+ * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling#subdivision-rules
+ * @param level
+ * @param rootBoundingVolume
+ * @param childCoordinates
+ */
+function calculateBoundingVolumeForChildTile(
+  level: number,
+  rootBoundingVolume: BoundingVolume,
+  childCoordinates: {childTileX: number; childTileY: number; childTileZ: number}
+): BoundingVolume | null {
+  if (rootBoundingVolume.region) {
+    const {childTileX, childTileY, childTileZ} = childCoordinates;
+    const [west, south, east, north, minimumHeight, maximumHeight] = rootBoundingVolume.region;
+    const boundingVolumesCount = 2 ** level;
+
+    const sizeX = (east - west) / boundingVolumesCount;
+    const sizeY = (north - south) / boundingVolumesCount;
+    const sizeZ = (maximumHeight - minimumHeight) / boundingVolumesCount;
+
+    const [childWest, childEast] = [west + sizeX * childTileX, west + sizeX * (childTileX + 1)];
+    const [childSouth, childNorth] = [south + sizeY * childTileY, south + sizeY * (childTileY + 1)];
+    const [childMinimumHeight, childMaximumHeight] = [
+      minimumHeight + sizeZ * childTileZ,
+      minimumHeight + sizeZ * (childTileZ + 1)
+    ];
+
+    return {
+      region: [childWest, childSouth, childEast, childNorth, childMinimumHeight, childMaximumHeight]
+    };
+  }
+
+  // eslint-disable-next-line no-console
+  console.warn('Unsupported bounding volume type: ', rootBoundingVolume);
+  return null;
 }
 
 /**
