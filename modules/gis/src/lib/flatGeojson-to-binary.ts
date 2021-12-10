@@ -374,7 +374,7 @@ function handlePolygon(
     const startPosition = indexMap.polygonPosition;
     polygons.polygonIndices[indexMap.polygonObject++] = startPosition;
 
-    const areas = geometry.areas![l];
+    const areas = geometry.areas[l];
     const lines = geometry.lines[l];
     const nextLines = geometry.lines[l + 1];
 
@@ -407,7 +407,7 @@ function handlePolygon(
  */
 function triangulatePolygon(
   polygons: MvtPolygons,
-  areas: number,
+  areas: number[],
   lines: number[],
   {
     startPosition,

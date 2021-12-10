@@ -42,7 +42,7 @@ export type FlatLineString = RemoveCoordinatesField<LineString> & {
 export type FlatPolygon = RemoveCoordinatesField<Polygon> & {
   data: number[];
   lines: number[][];
-  areas?: number[];
+  areas: number[][];
 };
 
 export type FlatGeometry = FlatPoint | FlatLineString | FlatPolygon;
