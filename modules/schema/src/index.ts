@@ -66,7 +66,14 @@ export type {
 export type {GeojsonGeometryInfo} from './category/gis';
 
 // GIS CATEGORY - FLAT GEOJSON
-export type {FlatFeature, FlatGeometry, FlatGeometryType} from './category/gis';
+export type {
+  FlatFeature,
+  FlatGeometry,
+  FlatGeometryType,
+  FlatPoint,
+  FlatLineString,
+  FlatPolygon
+} from './category/gis';
 
 // GIS CATEGORY - BINARY
 export type {

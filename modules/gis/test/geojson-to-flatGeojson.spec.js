@@ -1,3 +1,4 @@
+// @ts-nocheck
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToFlatGeojson} from '@loaders.gl/gis';

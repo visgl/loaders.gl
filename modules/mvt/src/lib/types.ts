@@ -5,14 +5,6 @@ export type MvtOptions = {
   layerName: string;
 };
 
-export type MvtBinaryGeometry = {
-  data: number[];
-  lines: any[];
-  areas?: number[];
-  type?: string;
-  id?: string | number;
-};
-
 export type MvtMapboxGeometry = {
   type?: string;
   id?: number;

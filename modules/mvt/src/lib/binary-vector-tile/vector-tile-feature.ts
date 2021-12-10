@@ -137,6 +137,7 @@ export default class VectorTileFeature {
     // The Multi* versions of the above types share the same data
     // structure, just with multiple elements in the lines array
     let geom = this.loadGeometry();
+    let geometry;
 
     // Apply the supplied transformation to data
     transform(geom.data, this);
@@ -148,12 +149,14 @@ export default class VectorTileFeature {
       case 1: // Point
         this._geometryInfo.pointFeaturesCount++;
         this._geometryInfo.pointPositionsCount += geom.lines.length;
+        geometry = {type: 'Point', ...geom};
         break;
 
       case 2: // LineString
         this._geometryInfo.lineFeaturesCount++;
         this._geometryInfo.linePathsCount += geom.lines.length;
         this._geometryInfo.linePositionsCount += geom.data.length / coordLength;
+        geometry = {type: 'LineString', ...geom};
         break;
 
       case 3: // Polygon
@@ -169,17 +172,13 @@ export default class VectorTileFeature {
         }
         this._geometryInfo.polygonPositionsCount += classified.data.length / coordLength;
 
-        geom = classified;
+        geometry = {type: 'Polygon', ...classified};
         break;
+      default:
+        throw new Error(`Invalid geometry type: ${this.type}`);
     }
 
-    let type = VectorTileFeature.types[this.type - 1];
-
-    const result: FlatFeature = {
-      type: 'Feature',
-      geometry: {type, ...geom},
-      properties: this.properties
-    };
+    const result: FlatFeature = {type: 'Feature', geometry, properties: this.properties};
 
     if (this.id !== null) {
       result.id = this.id;

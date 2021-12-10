@@ -1,15 +1,15 @@
 /* eslint-disable indent */
 import {earcut} from '@math.gl/polygon';
 import type {GeojsonToBinaryOptions} from './geojson-to-binary';
-import type {BinaryFeatures, FlatFeature, GeojsonGeometryInfo} from '@loaders.gl/schema';
-import {
-  MvtBinaryGeometry,
-  MvtPropArrayConstructor,
-  MvtLines,
-  MvtPoints,
-  MvtPolygons,
-  MvtGeometries
-} from './types';
+import type {
+  BinaryFeatures,
+  FlatFeature,
+  FlatPoint,
+  FlatLineString,
+  FlatPolygon,
+  GeojsonGeometryInfo
+} from '@loaders.gl/schema';
+import {MvtPropArrayConstructor, MvtLines, MvtPoints, MvtPolygons, MvtGeometries} from './types';
 
 /**
  * Convert binary features to flat binary arrays. Similar to
@@ -215,7 +215,7 @@ function fillArrays(
         indexMap.polygonFeature++;
         break;
       default:
-        throw new Error(`Invalid geometry type: ${geometry.type}`);
+        throw new Error('Invalid geometry type');
     }
 
     indexMap.feature++;
@@ -235,7 +235,7 @@ function fillArrays(
  * @param properties
  */
 function handlePoint(
-  geometry: MvtBinaryGeometry,
+  geometry: FlatPoint,
   points: MvtPoints,
   indexMap: {
     pointPosition: number;
@@ -280,7 +280,7 @@ function handlePoint(
  * @param properties
  */
 function handleLineString(
-  geometry: MvtBinaryGeometry,
+  geometry: FlatLineString,
   lines: MvtLines,
   indexMap: {
     pointPosition?: number;
@@ -337,7 +337,7 @@ function handleLineString(
  * @param properties
  */
 function handlePolygon(
-  geometry: MvtBinaryGeometry,
+  geometry: FlatPolygon,
   polygons: MvtPolygons,
   indexMap: {
     pointPosition?: number;

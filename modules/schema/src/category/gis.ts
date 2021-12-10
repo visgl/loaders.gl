@@ -1,6 +1,6 @@
 // GIS
 import type {TypedArray} from '../types';
-import type {Feature, Geometry} from 'geojson';
+import type {Feature, Geometry, Point, LineString, Polygon} from 'geojson';
 
 // GEOJSON FORMAT GEOMETRY
 
@@ -29,11 +29,23 @@ type RemoveCoordinatesField<Type> = {
   [Property in keyof Type as Exclude<Property, 'coordinates'>]: Type[Property];
 };
 
-export type FlatGeometry = RemoveCoordinatesField<Geometry> & {
+export type FlatPoint = RemoveCoordinatesField<Point> & {
   data: number[];
   lines: number[];
+};
+
+export type FlatLineString = RemoveCoordinatesField<LineString> & {
+  data: number[];
+  lines: number[];
+};
+
+export type FlatPolygon = RemoveCoordinatesField<Polygon> & {
+  data: number[];
+  lines: number[][];
   areas?: number[];
 };
+
+export type FlatGeometry = FlatPoint | FlatLineString | FlatPolygon;
 
 type FlattenGeometry<Type> = {
   [Property in keyof Type]: Type[Property] extends Geometry ? FlatGeometry : Type[Property];

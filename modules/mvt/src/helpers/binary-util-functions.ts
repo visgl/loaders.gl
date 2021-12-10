@@ -1,6 +1,5 @@
 import Protobuf from 'pbf';
 import {getPolygonSignedArea} from '@math.gl/polygon';
-import {MvtBinaryGeometry} from '../lib/types';
 import VectorTileFeature from '../lib/binary-vector-tile/vector-tile-feature';
 
 /**
@@ -13,7 +12,7 @@ import VectorTileFeature from '../lib/binary-vector-tile/vector-tile-feature';
  * @returns object
  */
 // eslint-disable-next-line max-statements
-export function classifyRings(geom: MvtBinaryGeometry) {
+export function classifyRings(geom: {data: number[]; lines: number[]}) {
   const len = geom.lines.length;
 
   if (len <= 1) {
