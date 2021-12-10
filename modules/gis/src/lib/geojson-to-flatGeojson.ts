@@ -4,11 +4,12 @@ import {Feature, Position, FlatFeature} from '@loaders.gl/schema';
 
 export type GeojsonToFlatGeojsonOptions = {
   coordLength: number;
+  fixRingWinding: boolean;
 };
 
 export function geojsonToFlatGeojson(
   features: Feature[],
-  options: GeojsonToFlatGeojsonOptions = {coordLength: 2}
+  options: GeojsonToFlatGeojsonOptions = {coordLength: 2, fixRingWinding: true}
 ): FlatFeature[] {
   return features.map((feature) => flattenFeature(feature, options));
 }
@@ -61,7 +62,7 @@ function flattenPolygon(
     const ccw = area < 0;
 
     // Exterior ring must be CCW and interior rings CW
-    if ((count === 0 && !ccw) || (count > 0 && ccw)) {
+    if (options.fixRingWinding && ((count === 0 && !ccw) || (count > 0 && ccw))) {
       lineString.reverse();
       area = -area;
     }

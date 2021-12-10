@@ -6,6 +6,7 @@ import {flatGeojsonToBinary} from './flatGeojson-to-binary';
 
 export type GeojsonToBinaryOptions = {
   coordLength?: number;
+  fixRingWinding?: boolean;
   numericPropKeys?: string[];
   PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
 };
@@ -17,7 +18,8 @@ export function geojsonToBinary(
 ): BinaryFeatures {
   const geometryInfo = extractGeometryInfo(features);
   const coordLength = options.coordLength || geometryInfo.coordLength;
-  const flatFeatures = geojsonToFlatGeojson(features, {coordLength});
+  const {fixRingWinding} = options;
+  const flatFeatures = geojsonToFlatGeojson(features, {coordLength, fixRingWinding});
   return flatGeojsonToBinary(flatFeatures, geometryInfo, {
     coordLength,
     numericPropKeys: options.numericPropKeys,
