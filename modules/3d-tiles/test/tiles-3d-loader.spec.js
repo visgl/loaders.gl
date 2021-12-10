@@ -22,6 +22,14 @@ const IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/FullQuadtree/tileset.json';
 const IMPLICIT_QUADTREE_TILESET_URL = '@loaders.gl/3d-tiles/test/data/BasicExample/tileset.json';
 
+function checkRegionBoundingVolumes(t, tile) {
+  if (tile.children.length) {
+    return tile.children.forEach((childTile) => checkRegionBoundingVolumes(t, childTile));
+  }
+
+  return t.ok(tile.boundingVolume.region) && t.equal(tile.boundingVolume.region.length, 6);
+}
+
 test('Tiles3DLoader#Tileset file', async (t) => {
   const response = await fetchFile(TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
@@ -166,6 +174,8 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
   t.equal(tileset.root.children[0].children[0].children[0].type, 'pointcloud');
   t.equal(tileset.root.children[0].children[0].children[0].children.length, 0);
 
+  checkRegionBoundingVolumes(t, tileset.root);
+
   t.end();
 });
 
@@ -223,6 +233,8 @@ test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', a
   t.equal(tileset.root.children[3].children[2].content.uri, 'content/2/2/3.b3dm');
   t.equal(tileset.root.children[3].children[3].content.uri, 'content/2/3/3.b3dm');
 
+  checkRegionBoundingVolumes(t, tileset.root);
+
   t.end();
 });
 
@@ -259,6 +271,8 @@ test('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', asyn
   t.equal(tileset.root.children[1].content.uri, 'content/1/0/1.b3dm');
   t.equal(tileset.root.children[1].lodMetricValue, 2500);
   t.equal(tileset.root.children[1].children.length, 0);
+
+  checkRegionBoundingVolumes(t, tileset.root);
 
   t.end();
 });

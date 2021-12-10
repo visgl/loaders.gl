@@ -100,6 +100,7 @@ export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
   const refine = tileset.root.refine;
   // @ts-ignore
   const rootLodMetricValue = tileset.root.geometricError;
+  const rootBoundingVolume = tileset.root.boundingVolume;
 
   const options = {
     contentUrlTemplate,
@@ -111,6 +112,7 @@ export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
     basePath,
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
     rootLodMetricValue,
+    rootBoundingVolume,
     getTileType,
     getRefine
   };
