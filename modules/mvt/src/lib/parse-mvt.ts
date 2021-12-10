@@ -23,7 +23,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
 
   if (options) {
     const binary = options.gis.format === 'binary';
-    const firstPassData = {
+    const geometryInfo = {
       coordLength: 2,
       pointPositionsCount: 0,
       pointFeaturesCount: 0,
@@ -55,7 +55,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
         }
 
         for (let i = 0; i < vectorTileLayer.length; i++) {
-          const vectorTileFeature = vectorTileLayer.feature(i, firstPassData);
+          const vectorTileFeature = vectorTileLayer.feature(i, geometryInfo);
 
           const decodedFeature = binary
             ? getDecodedFeatureBinary(vectorTileFeature as VectorTileFeatureBinary, featureOptions)
@@ -66,7 +66,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
     }
 
     if (binary) {
-      const data = flatGeojsonToBinary(features as FlatFeature[], firstPassData);
+      const data = flatGeojsonToBinary(features as FlatFeature[], geometryInfo);
       // Add the original byteLength (as a reasonable approximation of the size of the binary data)
       // TODO decide where to store extra fields like byteLength (header etc) and document
       // @ts-ignore
