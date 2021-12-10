@@ -1,25 +1,10 @@
+import type {TypedArray} from '@loaders.gl/schema';
+
 export type MvtOptions = {
   coordinates: string | number[];
   tileIndex: {x: number; y: number; z: number};
   layerProperty: string | number;
   layerName: string;
-};
-
-export type MvtMapboxGeometry = {
-  type?: string;
-  id?: number;
-  length: number;
-  coordinates?: any[];
-};
-
-export type MvtMapboxCoordinates = {
-  type: string;
-  geometry: {
-    type: string;
-    coordinates: MvtMapboxGeometry;
-  };
-  properties: {[x: string]: string | number | boolean | null};
-  id?: number;
 };
 
 export type MvtPropArrayConstructor =
@@ -32,7 +17,7 @@ export type MvtPoints = {
   positions: Float32Array | Float64Array;
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
-  numericProps: object;
+  numericProps: {[key: string]: TypedArray};
   properties: {}[];
   fields: {
     id?: string | number;
@@ -45,7 +30,7 @@ export type MvtLines = {
   pathIndices: Uint16Array | Uint32Array;
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
-  numericProps: object;
+  numericProps: {[key: string]: TypedArray};
   properties: {}[];
   fields: {
     id?: string | number;
@@ -60,7 +45,7 @@ export type MvtPolygons = {
   triangles: number[];
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
-  numericProps: object;
+  numericProps: {[key: string]: TypedArray};
   properties: {}[];
   fields: {
     id?: string | number;

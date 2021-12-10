@@ -2,12 +2,14 @@
 import {earcut} from '@math.gl/polygon';
 import type {GeojsonToBinaryOptions} from './geojson-to-binary';
 import type {
+  BinaryAttribute,
   BinaryFeatures,
   FlatFeature,
   FlatPoint,
   FlatLineString,
   FlatPolygon,
-  GeojsonGeometryInfo
+  GeojsonGeometryInfo,
+  TypedArray
 } from '@loaders.gl/schema';
 import {MvtPropArrayConstructor, MvtLines, MvtPoints, MvtPolygons, MvtGeometries} from './types';
 
@@ -162,8 +164,8 @@ function fillArrays(
     for (const propName of numericPropKeys) {
       // If property has been numeric in all previous features in which the property existed, check
       // if numeric in this feature
-      const TypedArray = propArrayTypes[propName];
-      object.numericProps[propName] = new TypedArray(object.positions.length / coordLength);
+      const T = propArrayTypes[propName];
+      object.numericProps[propName] = new T(object.positions.length / coordLength) as TypedArray;
     }
   }
 
@@ -436,6 +438,23 @@ function triangulatePolygon(
 }
 
 /**
+ * Wraps an object containing array into accessors
+ *
+ * @param obj
+ * @param size
+ */
+function wrapProps(
+  obj: {[key: string]: TypedArray},
+  size: number
+): {[key: string]: BinaryAttribute} {
+  const returnObj = {};
+  for (const key in obj) {
+    returnObj[key] = {value: obj[key], size};
+  }
+  return returnObj;
+}
+
+/**
  * Wrap each array in an accessor object with value and size keys
  *
  * @param points
@@ -450,40 +469,33 @@ function makeAccessorObjects(
   polygons: MvtPolygons,
   coordLength: number
 ): BinaryFeatures {
-  const returnObj = {
+  return {
     points: {
       ...points,
       positions: {value: points.positions, size: coordLength},
       globalFeatureIds: {value: points.globalFeatureIds, size: 1},
-      featureIds: {value: points.featureIds, size: 1}
+      featureIds: {value: points.featureIds, size: 1},
+      numericProps: wrapProps(points.numericProps, 1)
     },
     lines: {
       ...lines,
-      pathIndices: {value: lines.pathIndices, size: 1},
       positions: {value: lines.positions, size: coordLength},
+      pathIndices: {value: lines.pathIndices, size: 1},
       globalFeatureIds: {value: lines.globalFeatureIds, size: 1},
-      featureIds: {value: lines.featureIds, size: 1}
+      featureIds: {value: lines.featureIds, size: 1},
+      numericProps: wrapProps(lines.numericProps, 1)
     },
     polygons: {
       ...polygons,
+      positions: {value: polygons.positions, size: coordLength},
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
-      positions: {value: polygons.positions, size: coordLength},
       triangles: {value: new Uint32Array(polygons.triangles), size: 1},
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
-      featureIds: {value: polygons.featureIds, size: 1}
+      featureIds: {value: polygons.featureIds, size: 1},
+      numericProps: wrapProps(polygons.numericProps, 1)
     }
   };
-
-  for (const geomType in returnObj) {
-    for (const numericProp in returnObj[geomType].numericProps) {
-      returnObj[geomType].numericProps[numericProp] = {
-        value: returnObj[geomType].numericProps[numericProp],
-        size: 1
-      };
-    }
-  }
-  return returnObj as unknown as BinaryFeatures;
 }
 
 /**
@@ -502,7 +514,8 @@ function fillNumericProperties(
 ): void {
   for (const numericPropName in object.numericProps) {
     if (numericPropName in properties) {
-      object.numericProps[numericPropName].fill(properties[numericPropName], index, index + length);
+      const value = properties[numericPropName] as number;
+      object.numericProps[numericPropName].fill(value, index, index + length);
     }
   }
 }

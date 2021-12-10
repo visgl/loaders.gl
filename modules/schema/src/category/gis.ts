@@ -82,6 +82,7 @@ export type BinaryPolygonGeometry = {
   positions: BinaryAttribute;
   polygonIndices: BinaryAttribute;
   primitivePolygonIndices: BinaryAttribute;
+  triangles?: BinaryAttribute;
 };
 
 export type BinaryProperties = {
