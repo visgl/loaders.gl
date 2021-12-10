@@ -11,7 +11,7 @@ import type {
   GeojsonGeometryInfo,
   TypedArray
 } from '@loaders.gl/schema';
-import {MvtPropArrayConstructor, MvtLines, MvtPoints, MvtPolygons, MvtGeometries} from './types';
+import {PropArrayConstructor, Lines, Points, Polygons} from './flatGeojson-to-binary-types';
 
 /**
  * Convert binary features to flat binary arrays. Similar to
@@ -59,7 +59,7 @@ export const TEST_EXPORTS = {
  * @returns object with numeric types
  */
 function extractNumericPropTypes(features: FlatFeature[]): {
-  [key: string]: MvtPropArrayConstructor;
+  [key: string]: PropArrayConstructor;
 } {
   const propArrayTypes = {};
   for (const feature of features) {
@@ -90,7 +90,7 @@ function extractNumericPropTypes(features: FlatFeature[]): {
 function fillArrays(
   features: FlatFeature[],
   geometryInfo: GeojsonGeometryInfo & {
-    propArrayTypes: {[key: string]: MvtPropArrayConstructor};
+    propArrayTypes: {[key: string]: PropArrayConstructor};
   },
   options: GeojsonToBinaryOptions
 ) {
@@ -109,7 +109,7 @@ function fillArrays(
   const {coordLength = 2, numericPropKeys = [], PositionDataType = Float32Array} = options;
   const hasGlobalId = features[0] && 'id' in features[0];
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
-  const points: MvtPoints = {
+  const points: Points = {
     type: 'Point',
     positions: new PositionDataType(pointPositionsCount * coordLength),
     globalFeatureIds: new GlobalFeatureIdsDataType(pointPositionsCount),
@@ -121,7 +121,7 @@ function fillArrays(
     properties: [],
     fields: []
   };
-  const lines: MvtLines = {
+  const lines: Lines = {
     type: 'LineString',
     pathIndices:
       linePositionsCount > 65535
@@ -137,7 +137,7 @@ function fillArrays(
     properties: [],
     fields: []
   };
-  const polygons: MvtPolygons = {
+  const polygons: Polygons = {
     type: 'Polygon',
     polygonIndices:
       polygonPositionsCount > 65535
@@ -238,7 +238,7 @@ function fillArrays(
  */
 function handlePoint(
   geometry: FlatPoint,
-  points: MvtPoints,
+  points: Points,
   indexMap: {
     pointPosition: number;
     pointFeature: number;
@@ -283,7 +283,7 @@ function handlePoint(
  */
 function handleLineString(
   geometry: FlatLineString,
-  lines: MvtLines,
+  lines: Lines,
   indexMap: {
     pointPosition?: number;
     pointFeature?: number;
@@ -340,7 +340,7 @@ function handleLineString(
  */
 function handlePolygon(
   geometry: FlatPolygon,
-  polygons: MvtPolygons,
+  polygons: Polygons,
   indexMap: {
     pointPosition?: number;
     pointFeature?: number;
@@ -408,7 +408,7 @@ function handlePolygon(
  * @param param3
  */
 function triangulatePolygon(
-  polygons: MvtPolygons,
+  polygons: Polygons,
   areas: number[],
   lines: number[],
   {
@@ -464,9 +464,9 @@ function wrapProps(
  * @returns object
  */
 function makeAccessorObjects(
-  points: MvtPoints,
-  lines: MvtLines,
-  polygons: MvtPolygons,
+  points: Points,
+  lines: Lines,
+  polygons: Polygons,
   coordLength: number
 ): BinaryFeatures {
   return {
@@ -507,7 +507,7 @@ function makeAccessorObjects(
  * @param length
  */
 function fillNumericProperties(
-  object: MvtGeometries,
+  object: Points | Lines | Polygons,
   properties: {[x: string]: string | number | boolean | null},
   index: number,
   length: number
@@ -540,7 +540,7 @@ function keepStringProperties(
   return props;
 }
 
-function deduceArrayType(x: any, constructor: MvtPropArrayConstructor): MvtPropArrayConstructor {
+function deduceArrayType(x: any, constructor: PropArrayConstructor): PropArrayConstructor {
   if (constructor === Array || !Number.isFinite(x)) {
     return Array;
   }

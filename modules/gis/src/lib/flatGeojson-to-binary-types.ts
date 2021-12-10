@@ -1,18 +1,11 @@
 import type {TypedArray} from '@loaders.gl/schema';
 
-export type MvtOptions = {
-  coordinates: string | number[];
-  tileIndex: {x: number; y: number; z: number};
-  layerProperty: string | number;
-  layerName: string;
-};
-
-export type MvtPropArrayConstructor =
+export type PropArrayConstructor =
   | Float32ArrayConstructor
   | Float64ArrayConstructor
   | ArrayConstructor;
 
-export type MvtPoints = {
+export type Points = {
   type: 'Point';
   positions: Float32Array | Float64Array;
   globalFeatureIds: Uint16Array | Uint32Array;
@@ -24,7 +17,7 @@ export type MvtPoints = {
   }[];
 };
 
-export type MvtLines = {
+export type Lines = {
   type: 'LineString';
   positions: Float32Array | Float64Array;
   pathIndices: Uint16Array | Uint32Array;
@@ -37,7 +30,7 @@ export type MvtLines = {
   }[];
 };
 
-export type MvtPolygons = {
+export type Polygons = {
   type: 'Polygon';
   positions: Float32Array | Float64Array;
   polygonIndices: Uint16Array | Uint32Array;
@@ -51,5 +44,3 @@ export type MvtPolygons = {
     id?: string | number;
   }[];
 };
-
-export type MvtGeometries = MvtPoints | MvtLines | MvtPolygons;
