@@ -45,9 +45,10 @@ export type Node3D = {
   };
 };
 
-type BoundingVolume = {
+export type BoundingVolume = {
   box?: number[];
   sphere?: number[];
+  region?: number[];
 };
 
 /**
