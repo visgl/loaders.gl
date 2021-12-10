@@ -1,6 +1,5 @@
 /* eslint-disable indent */
 import {earcut} from '@math.gl/polygon';
-import type {GeojsonToBinaryOptions} from './geojson-to-binary';
 import type {
   BinaryAttribute,
   BinaryFeatures,
@@ -29,7 +28,7 @@ import {PropArrayConstructor, Lines, Points, Polygons} from './flatGeojson-to-bi
 export function flatGeojsonToBinary(
   features: FlatFeature[],
   geometryInfo: GeojsonGeometryInfo,
-  options?: GeojsonToBinaryOptions
+  options?: FlatGeojsonToBinaryOptions
 ) {
   const propArrayTypes = extractNumericPropTypes(features);
   const numericPropKeys = Object.keys(propArrayTypes).filter((k) => propArrayTypes[k] !== Array);
@@ -40,12 +39,16 @@ export function flatGeojsonToBinary(
       ...geometryInfo
     },
     {
-      coordLength: (options && options.coordLength) || geometryInfo.coordLength,
       numericPropKeys: (options && options.numericPropKeys) || numericPropKeys,
       PositionDataType: options ? options.PositionDataType : Float32Array
     }
   );
 }
+
+export type FlatGeojsonToBinaryOptions = {
+  numericPropKeys?: string[];
+  PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
+};
 
 export const TEST_EXPORTS = {
   extractNumericPropTypes,
@@ -92,7 +95,7 @@ function fillArrays(
   geometryInfo: GeojsonGeometryInfo & {
     propArrayTypes: {[key: string]: PropArrayConstructor};
   },
-  options: GeojsonToBinaryOptions
+  options: FlatGeojsonToBinaryOptions
 ) {
   const {
     pointPositionsCount,
@@ -104,9 +107,10 @@ function fillArrays(
     polygonObjectsCount,
     polygonRingsCount,
     polygonFeaturesCount,
-    propArrayTypes
+    propArrayTypes,
+    coordLength
   } = geometryInfo;
-  const {coordLength = 2, numericPropKeys = [], PositionDataType = Float32Array} = options;
+  const {numericPropKeys = [], PositionDataType = Float32Array} = options;
   const hasGlobalId = features[0] && 'id' in features[0];
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points: Points = {

@@ -136,7 +136,7 @@ export default class VectorTileFeature {
     // from the data array.
     // The Multi* versions of the above types share the same data
     // structure, just with multiple elements in the lines array
-    let geom = this.loadGeometry();
+    const geom = this.loadGeometry();
     let geometry;
 
     // Apply the supplied transformation to data
