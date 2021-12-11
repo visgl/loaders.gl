@@ -1,12 +1,13 @@
 {
-  "license": "MIT",
+  "name": "bundle-with-webpack",
   "description": "Minimal example of using loaders.gl with webpack.",
+  "private": true,
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open -d"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.2.0",
-    "@loaders.gl/obj": "2.2.0"
+    "@loaders.gl/core": "^3.1.0",
+    "@loaders.gl/obj": "^3.1.0"
   },
   "devDependencies": {
     "html-webpack-plugin": "^3.2.0",
