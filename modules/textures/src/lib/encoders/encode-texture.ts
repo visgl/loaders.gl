@@ -1,11 +1,13 @@
 import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 
-const MODULE_ROOT = `${__dirname}/../../..`;
-
 /*
  * @see https://github.com/TimvanScherpenzeel/texture-compressor
  */
-export async function encodeImageURLToCompressedTextureURL(inputUrl, outputUrl) {
+export async function encodeImageURLToCompressedTextureURL(
+  inputUrl: string,
+  outputUrl: string,
+  options?: {cwd?: string}
+): Promise<string> {
   // prettier-ignore
   const args = [
     // Note: our actual executable is `npx`, so `texture-compressor` is an argument
@@ -20,9 +22,7 @@ export async function encodeImageURLToCompressedTextureURL(inputUrl, outputUrl) 
   await childProcess.start({
     command: 'npx',
     arguments: args,
-    spawn: {
-      cwd: MODULE_ROOT
-    }
+    spawn: options
   });
   return outputUrl;
 }
