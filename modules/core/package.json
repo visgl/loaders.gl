@@ -26,8 +26,7 @@
     "stream": false,
     "./src/iterators/make-stream/make-node-stream.ts": false,
     "./src/iterators/make-stream/make-node-stream.js": false,
-    "./dist/es5/iterators/make-stream/make-node-stream.js": false,
-    "./dist/esm/iterators/make-stream/make-node-stream.js": false
+    "./dist/iterators/make-stream/make-node-stream.js": false
   },
   "files": [
     "src",

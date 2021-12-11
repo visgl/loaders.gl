@@ -1,6 +1,7 @@
 {
   "license": "MIT",
   "description": "Minimal example of using loaders.gl with Cesium.",
+  "private": true,
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open -d",
     "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"

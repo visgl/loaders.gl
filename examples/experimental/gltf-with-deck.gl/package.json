@@ -1,4 +1,5 @@
 {
+  "private": true,
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
