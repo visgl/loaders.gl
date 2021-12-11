@@ -8,10 +8,13 @@ const TEXTURE_URL =
 const OBJ_URL =
   'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/obj/test/data/cube.obj';
 
+const getTextureBytes = (texture) => texture.map(level => level.data.byteLength).join(',')
+
 async function main() {
-  const imageData = await parse(fetch(TEXTURE_URL), CompressedTextureLoader);
+  const texture = await parse(fetch(TEXTURE_URL), CompressedTextureLoader);
   const data = await parse(fetch(OBJ_URL), OBJLoader);
-  document.getElementById('content').innerHTML = `Texture: bytes <br/> <br/>` + JSON.stringify(data, null, 2);
+  document.getElementById('content').innerHTML = 
+    `Texture: [${getTextureBytes(texture)}] bytes <br/> <br/>OBJ Mesh = ` + JSON.stringify(data, null, 2);
 }
 
 main();

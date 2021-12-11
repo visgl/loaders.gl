@@ -1,4 +1,6 @@
-import {Readable, ReadableOptions} from 'stream';
+import type {ReadableOptions, Readable} from 'stream';
+// Indirection to make things work under "problematic" bundlers like vite and rollup
+import {ReadableStream} from './node-stream-polyfill';
 
 export type MakeNodeStreamOptions = ReadableOptions;
 
@@ -12,8 +14,7 @@ function makeNodeStream<ArrayBuffer>(
     : source[Symbol.iterator]();
   return new AsyncIterableReadable(iterator, options);
 }
-
-class AsyncIterableReadable extends Readable {
+class AsyncIterableReadable extends ReadableStream {
   private _pulling: boolean;
   private _bytesMode: boolean;
   private _iterator: AsyncIterator<ArrayBuffer>;

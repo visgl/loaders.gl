@@ -4,8 +4,8 @@ import {ChildProcessProxy} from '@loaders.gl/worker-utils';
  * @see https://github.com/TimvanScherpenzeel/texture-compressor
  */
 export async function encodeImageURLToCompressedTextureURL(
-  inputUrl: string, 
-  outputUrl: string, 
+  inputUrl: string,
+  outputUrl: string,
   options?: {cwd?: string}
 ): Promise<string> {
   // prettier-ignore

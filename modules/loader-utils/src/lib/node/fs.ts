@@ -31,7 +31,6 @@ export let fstat;
 
 export let isSupported = Boolean(fs);
 
-
 // paths
 
 try {
