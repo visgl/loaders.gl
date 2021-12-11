@@ -11,7 +11,8 @@ export default {
   plugins: [
     resolve({
       browser: true,
-      preferBuiltins: false
+      preferBuiltins: false,
+      mainFields: ['browser','main']
     }),
     commonjs()
   ]
