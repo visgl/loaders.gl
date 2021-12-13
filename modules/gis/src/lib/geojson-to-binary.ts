@@ -2,8 +2,8 @@ import type {Feature} from '@loaders.gl/schema';
 import type {BinaryFeatures} from '@loaders.gl/schema';
 
 import {extractGeometryInfo} from './extract-geometry-info';
-import {geojsonToFlatGeojson} from './geojson-to-flatGeojson';
-import {flatGeojsonToBinary} from './flatGeojson-to-binary';
+import {geojsonToFlatGeojson} from './geojson-to-flat-geojson';
+import {flatGeojsonToBinary} from './flat-geojson-to-binary';
 
 export type GeojsonToBinaryOptions = {
   fixRingWinding: boolean;
