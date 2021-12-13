@@ -12,14 +12,14 @@ import VectorTileFeature from '../lib/binary-vector-tile/vector-tile-feature';
  * @returns object
  */
 // eslint-disable-next-line max-statements
-export function classifyRings(geom: {data: number[]; lines: number[]}) {
-  const len = geom.lines.length;
+export function classifyRings(geom: {data: number[]; indices: number[]}) {
+  const len = geom.indices.length;
 
   if (len <= 1) {
     return {
       data: geom.data,
       areas: [[getPolygonSignedArea(geom.data)]],
-      lines: [geom.lines]
+      indices: [geom.indices]
     };
   }
 
@@ -31,9 +31,9 @@ export function classifyRings(geom: {data: number[]; lines: number[]}) {
   let offset = 0;
 
   for (let endIndex: number, i = 0, startIndex: number; i < len; i++) {
-    startIndex = geom.lines[i] - offset;
+    startIndex = geom.indices[i] - offset;
 
-    endIndex = geom.lines[i + 1] - offset || geom.data.length;
+    endIndex = geom.indices[i + 1] - offset || geom.data.length;
     const shape = geom.data.slice(startIndex, endIndex);
     const area = getPolygonSignedArea(shape);
 
@@ -69,7 +69,7 @@ export function classifyRings(geom: {data: number[]; lines: number[]}) {
   if (ringAreas) areas.push(ringAreas);
   if (polygon.length) polygons.push(polygon);
 
-  return {areas, lines: polygons, data: geom.data};
+  return {areas, indices: polygons, data: geom.data};
 }
 
 /**

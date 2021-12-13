@@ -1,7 +1,7 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import Protobuf from 'pbf';
-import {FlatFeature, FlatGeometryType, GeojsonGeometryInfo} from '@loaders.gl/schema';
+import {FlatFeature, GeojsonGeometryInfo} from '@loaders.gl/schema';
 import {classifyRings, project, readFeature} from '../../helpers/binary-util-functions';
 
 // Reduce GC by reusing variables
@@ -70,7 +70,7 @@ export default class VectorTileFeature {
     // `set()` and direct index access. Also, we cannot
     // know how large the buffer should be, so it would
     // increase memory usage
-    const lines: number[] = []; // Indices where lines start
+    const indices: number[] = []; // Indices where geometries start
     const data: number[] = []; // Flat array of coordinate data
 
     while (pbf.pos < endPos) {
@@ -88,14 +88,14 @@ export default class VectorTileFeature {
 
         if (cmd === 1) {
           // New line
-          lines.push(i);
+          indices.push(i);
         }
         data.push(x, y);
         i += 2;
       } else if (cmd === 7) {
         // Workaround for https://github.com/mapbox/mapnik-vector-tile/issues/90
         if (i > 0) {
-          const start = lines[lines.length - 1]; // start index of polygon
+          const start = indices[indices.length - 1]; // start index of polygon
           data.push(data[start], data[start + 1]); // closePolygon
           i += 2;
         }
@@ -104,7 +104,7 @@ export default class VectorTileFeature {
       }
     }
 
-    return {data, lines};
+    return {data, indices};
   }
 
   /**
@@ -113,26 +113,26 @@ export default class VectorTileFeature {
    * @returns result
    */
   _toBinaryCoordinates(transform) {
-    // Expands the protobuf data to an intermediate `lines`
+    // Expands the protobuf data to an intermediate Flat GeoJSON
     // data format, which maps closely to the binary data buffers.
     // It is similar to GeoJSON, but rather than storing the coordinates
     // in multidimensional arrays, we have a 1D `data` with all the
-    // coordinates, and then index into this using the `lines`
+    // coordinates, and then index into this using the `indices`
     // parameter, e.g.
     //
     // geometry: {
-    //   type: 'Point', data: [1,2], lines: [0]
+    //   type: 'Point', data: [1,2], indices: [0]
     // }
     // geometry: {
-    //   type: 'LineString', data: [1,2,3,4,...], lines: [0]
+    //   type: 'LineString', data: [1,2,3,4,...], indices: [0]
     // }
     // geometry: {
-    //   type: 'Polygon', data: [1,2,3,4,...], lines: [[0, 2]]
+    //   type: 'Polygon', data: [1,2,3,4,...], indices: [[0, 2]]
     // }
-    // Thus the lines member lets us look up the relevant range
+    // Thus the indices member lets us look up the relevant range
     // from the data array.
     // The Multi* versions of the above types share the same data
-    // structure, just with multiple elements in the lines array
+    // structure, just with multiple elements in the indices array
     const geom = this.loadGeometry();
     let geometry;
 
@@ -145,13 +145,13 @@ export default class VectorTileFeature {
     switch (this.type) {
       case 1: // Point
         this._geometryInfo.pointFeaturesCount++;
-        this._geometryInfo.pointPositionsCount += geom.lines.length;
+        this._geometryInfo.pointPositionsCount += geom.indices.length;
         geometry = {type: 'Point', ...geom};
         break;
 
       case 2: // LineString
         this._geometryInfo.lineFeaturesCount++;
-        this._geometryInfo.linePathsCount += geom.lines.length;
+        this._geometryInfo.linePathsCount += geom.indices.length;
         this._geometryInfo.linePositionsCount += geom.data.length / coordLength;
         geometry = {type: 'LineString', ...geom};
         break;
@@ -159,13 +159,13 @@ export default class VectorTileFeature {
       case 3: // Polygon
         const classified = classifyRings(geom);
 
-        // Unlike Point & LineString geom.lines is a 2D array, thanks
+        // Unlike Point & LineString geom.indices is a 2D array, thanks
         // to the classifyRings method
         this._geometryInfo.polygonFeaturesCount++;
-        this._geometryInfo.polygonObjectsCount += classified.lines.length;
+        this._geometryInfo.polygonObjectsCount += classified.indices.length;
 
-        for (const lines of classified.lines) {
-          this._geometryInfo.polygonRingsCount += lines.length;
+        for (const indices of classified.indices) {
+          this._geometryInfo.polygonRingsCount += indices.length;
         }
         this._geometryInfo.polygonPositionsCount += classified.data.length / coordLength;
 
