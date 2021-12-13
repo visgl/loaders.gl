@@ -57,12 +57,15 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     // Object with accessor objects for numeric properties
     // Numeric properties are sized to have one value per vertex
     numericProps: {
-        numericProperty1: {value: Float32Array, size: 1}
+        numericProperty1: {value: Float32Array || Float64Array, size: 1}
     }
     // Array of objects with non-numeric properties from Point geometries
     properties: [{PointFeatureProperties}],
-    // Non-standard top-level fields, not populated at the moment
-    fields?: [{PointFeatureExtraFields}]
+    // Non-standard top-level fields
+    fields?: [{
+      // Feature ids of source data (if present)
+      id?: string || number
+    }]
   },
   lines: {
     // Array of x, y or x, y, z positions
@@ -76,21 +79,24 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     // Object with accessor objects for numeric properties
     // Numeric properties are sized to have one value per vertex
     numericProps: {
-        numericProperty1: {value: Float32Array, size: 1}
+        numericProperty1: {value: Float32Array || Float64Array, size: 1}
     }
     // Array of objects with non-numeric properties from LineString geometries
     properties: [{LineStringFeatureProperties}],
-    // Non-standard top-level fields, not populated at the moment
-    fields?: [{LineStringFeatureExtraFields}]
+    // Non-standard top-level fields
+    fields?: [{
+      // Feature ids of source data (if present)
+      id?: string || number
+    }]
   },
   polygons: {
-    // Array of x, y or x, y, z positions
+i   // Array of x, y or x, y, z positions
     positions: {value: PositionDataType, size: coordLength},
     // Indices within positions of the start of each complex Polygon
     polygonIndices: {value: Uint16Array || Uint32Array, size: 1},
     // Indices within positions of the start of each primitive Polygon/ring
     primitivePolygonIndices: {value: Uint16Array || Uint32Array, size: 1},
-    // (Optional) triangle indices. Returned by MVTLoader when `binary` option is used. Allows deck.gl to skip performing costly triangulation on main thread (https://github.com/visgl/loaders.gl/pull/1356)
+    // Triangle indices. Allows deck.gl to skip performing costly triangulation on main thread
     triangles: {value: Uint32Array, size: 1},
     // Array of original feature indexes by vertex
     globalFeatureIds: {value: Uint16Array || Uint32Array, size: 1},
@@ -99,12 +105,15 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     // Object with accessor objects for numeric properties
     // Numeric properties are sized to have one value per vertex
     numericProps: {
-        numericProperty1: {value: Float32Array, size: 1}
+        numericProperty1: {value: Float32Array || Float64Array, size: 1}
     }
     // Array of objects with non-numeric properties from Polygon geometries
     properties: [{PolygonFeatureProperties}],
-    // Non-standard top-level fields, not populated at the moment
-    fields?: [{PolygonFeatureExtraFields}]
+    // Non-standard top-level fields
+    fields?: [{
+      // Feature ids of source data (if present)
+      id?: string || number
+    }]
   }
 }
 ```
