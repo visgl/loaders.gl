@@ -2,6 +2,10 @@
 
 ## v3.0
 
+### v3.0.14
+
+- re-package version
+
 ### v3.0.13
 
 - fix: Allow top-level workerUrl for CompressionWorker
