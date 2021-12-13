@@ -2280,13 +2280,28 @@
     lodash ">=4.17.5 <5.0.0"
     lodash-es ">=4.17.5 <5.0.0"
 
-"@probe.gl/bench@^3.4.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@probe.gl/bench/-/bench-3.4.0.tgz#8e358bcfdcc5429eb9f85b48f5ab53b1762f1e10"
-  integrity sha512-S7iNPz5G3zEfEP0S4SAMvtj+dwP7EWfVBaA8Cy5CVIgM1lnpUbXvqoAJxlVEedNC32Icxwq65XQheufy1Zzmug==
+"@probe.gl/bench@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@probe.gl/bench/-/bench-3.5.0.tgz#54b0a3fe3912c4ad0f9c962daacf4a40f8c0075e"
+  integrity sha512-7E5UHxOAGxmwO446kpcVQeiXe+4ddODuFTgZ+svDkJMR3X2EltPuMsROfuKoSXz3RcLhoiyiK3PfvY65VvXGpQ==
   dependencies:
     "@babel/runtime" "^7.0.0"
-    probe.gl "3.4.0"
+    "@probe.gl/log" "3.5.0"
+
+"@probe.gl/env@3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@probe.gl/env/-/env-3.5.0.tgz#c6d8fbf414fda3eba7b3813cc274e76245216fe0"
+  integrity sha512-YdlpZZshhyYxvWDBmZ5RIW2pTR14Pw4p9czMlt/v7F6HbFzWfAdmH7q6xVwFRYxUpQLwhWensWyv4aFysiWl4g==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+
+"@probe.gl/log@3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@probe.gl/log/-/log-3.5.0.tgz#6589822ab771eadf77787ffc6ecf73e59d181c64"
+  integrity sha512-nW/qz2X1xY08WU/TsmJP6/6IPNcaY5fS/vLjpC4ahJuE2Mezga4hGM/R2X5JWE/nkPc+BsC5GnAnD13rwAxS7g==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@probe.gl/env" "3.5.0"
 
 "@probe.gl/stats@3.4.0", "@probe.gl/stats@^3.4.0":
   version "3.4.0"
@@ -2302,6 +2317,13 @@
   dependencies:
     "@babel/runtime" "^7.0.0"
 
+"@probe.gl/stats@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.5.0.tgz#774495772f06e898aae28c1d315c9edac07f3425"
+  integrity sha512-IH2M+F3c8HR1DTroBARePUFG7wIewumtKA0UFqx51Z7S4hKrD60wFbpMmg0AcF4FvHAXMBoC+kYi1UKW9XbAOw==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+
 "@probe.gl/test-utils@^3.0.2":
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/@probe.gl/test-utils/-/test-utils-3.4.1.tgz#d82d9e345945f8d361bc4460fb18a7844877b43c"
@@ -2312,14 +2334,14 @@
     probe.gl "3.4.1"
     puppeteer "*"
 
-"@probe.gl/test-utils@^3.4.0":
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/@probe.gl/test-utils/-/test-utils-3.4.0.tgz#5427d8923a0921dc28ae3e59fe597f9a807bb28f"
-  integrity sha512-CraP/2z+LQLgK2E1rs9v/TcNcS0ULnu8l/u1ZOAFBa7PRxNMdC9R5pb05yXLiqxOmTYR+sQWLT4tYa+kYPwjCw==
+"@probe.gl/test-utils@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@probe.gl/test-utils/-/test-utils-3.5.0.tgz#7a9335fd3f82fae38260063241f9de813f39640a"
+  integrity sha512-BBt1u7rcHvYkoMzQ6CMrJbKlKtl1mWNQ0ejcCkmL7r03rqCT7Qm04BfI+AJBaJLvNpCXNnC6W5yPhLRJLTzRwA==
   dependencies:
     "@babel/runtime" "^7.0.0"
+    "@probe.gl/log" "3.5.0"
     pixelmatch "^4.0.2"
-    probe.gl "3.4.0"
     puppeteer "*"
 
 "@tmcw/togeojson@^4.5.0":
@@ -9812,14 +9834,6 @@ printj@~1.1.0, printj@~1.1.2:
   resolved "https://registry.yarnpkg.com/printj/-/printj-1.1.2.tgz#d90deb2975a8b9f600fb3a1c94e3f4c53c78a222"
   integrity sha512-zA2SmoLaxZyArQTOPj5LXecR+RagfPSU5Kw1qP+jkWeNlrq+eJZyY2oS68SU1Z/7/myXM4lo9716laOFAVStCQ==
 
-probe.gl@3.4.0, probe.gl@^3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.4.0.tgz#f35029b0041fb909caff493ab23feae53339261e"
-  integrity sha512-9CLByZATuhuG/Viq3ckfWU+dAhb7dMmjzsyCy4s7ds9ueTejcVRENxL197/XacOK/AN61YrEERB0QnouB0Qc0Q==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    "@probe.gl/stats" "3.4.0"
-
 probe.gl@3.4.1:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.4.1.tgz#88d8629fbac5a627049d6fdc6b8c364d56f00815"
@@ -9827,6 +9841,14 @@ probe.gl@3.4.1:
   dependencies:
     "@babel/runtime" "^7.0.0"
     "@probe.gl/stats" "3.4.1"
+
+probe.gl@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.4.0.tgz#f35029b0041fb909caff493ab23feae53339261e"
+  integrity sha512-9CLByZATuhuG/Viq3ckfWU+dAhb7dMmjzsyCy4s7ds9ueTejcVRENxL197/XacOK/AN61YrEERB0QnouB0Qc0Q==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@probe.gl/stats" "3.4.0"
 
 process-nextick-args@~2.0.0:
   version "2.0.1"
