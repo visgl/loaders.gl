@@ -27,9 +27,6 @@ export default class VectorTileFeature {
   _keys: string[];
   _values: (string | number | boolean | null)[];
   _geometryInfo: GeojsonGeometryInfo;
-  static get types(): FlatGeometryType[] {
-    return ['Point', 'LineString', 'Polygon'];
-  }
 
   // eslint-disable-next-line max-params
   constructor(
