@@ -288,3 +288,74 @@ test('gis#geojson-to-flat-geojson Mixed', async (t) => {
 
   t.end();
 });
+
+test('gis#geojson-to-flat-geojson winding', async (t) => {
+  const response = await fetchFile(FEATURES_2D);
+  const {features} = await response.json();
+  const polygons = features.slice(4);
+
+  // Manually reverse winding for all shapes
+  for (const {geometry} of polygons) {
+    if (geometry.type === 'Polygon') {
+      geometry.coordinates.forEach((shape) => shape.reverse());
+    } else if (geometry.type === 'MultiPolygon') {
+      geometry.coordinates.forEach((g) => {
+        g.forEach((shape) => shape.reverse());
+      });
+    }
+  }
+
+  const flatFeatures = geojsonToFlatGeojson(polygons, {fixRingWinding: false});
+  const [polygon, polygonWithHole, multiPolygon] = flatFeatures;
+
+  // Polygon
+  t.deepEquals(
+    polygon.geometry.data,
+    [100, 0, 100, 1, 101, 1, 101, 0, 100, 0],
+    'flat Polygon data should be reversed'
+  );
+  t.deepEquals(polygon.geometry.indices, [[0]], 'flat Polygon indices should be equivalent');
+  t.deepEquals(polygon.geometry.areas, [[1]], 'flat Polygon areas should be negated');
+
+  // Polygon (hole)
+  t.deepEquals(
+    polygonWithHole.geometry.data,
+    [
+      100, 0, 100, 1, 101, 1, 101, 0, 100, 0, 100.8, 0.8, 100.2, 0.8, 100.2, 0.2, 100.8, 0.2, 100.8,
+      0.8
+    ],
+    'flat Polygon (hole) data should be reversed'
+  );
+  t.deepEquals(
+    polygonWithHole.geometry.indices,
+    [[0, 10]],
+    'flat Polygon (hole) indices should be equivalent'
+  );
+  t.deepEquals(
+    polygonWithHole.geometry.areas,
+    [[1, -0.3599999999999966]],
+    'flat Polygon (hole) areas should be negated'
+  );
+
+  // MultiPolygon
+  t.deepEquals(
+    multiPolygon.geometry.data,
+    [
+      102, 2, 102, 3, 103, 3, 103, 2, 102, 2, 100, 0, 100, 1, 101, 1, 101, 0, 100, 0, 100.2, 0.2,
+      100.8, 0.2, 100.8, 0.8, 100.2, 0.8, 100.2, 0.2
+    ],
+    'flat MultiPolygon data should be reversed'
+  );
+  t.deepEquals(
+    multiPolygon.geometry.indices,
+    [[0], [10, 20]],
+    'flat MultiPolygon indices should be equivalent'
+  );
+  t.deepEquals(
+    multiPolygon.geometry.areas,
+    [[1], [1, -0.3599999999999966]],
+    'flat MultiPolygon areas should be negated'
+  );
+
+  t.end();
+});
