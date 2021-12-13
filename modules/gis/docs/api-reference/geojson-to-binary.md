@@ -9,17 +9,16 @@ main process.
 
 ```js
 import {load} from '@loaders.gl/core';
-import {MVTLoader} from '@loaders.gl/mvt';
+import {JSONLoader} from '@loaders.gl/json';
 import {geojsonToBinary} from '@loaders.gl/gis';
 
-// See MVTLoader docs for loader options
-const geoJSONfeatures = await load(url, MVTLoader, loaderOptions);
+const geoJSONfeatures = await load('data.geojson', JSONLoader);
 
 /*
  * Default options are:
  *
  * {
- *   coordLength: derived from data
+ *   fixRingWinding: true
  *   numericPropKeys: derived from data
  *   PositionDataType: Float32Array
  * }
@@ -49,7 +48,7 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
 {
   points: {
     // Array of x, y or x, y, z positions
-    positions: {value: PositionDataType, size: coordLength},
+    positions: {value: PositionDataType, size: 3},
     // Array of original feature indexes by vertex
     globalFeatureIds: {value: Uint16Array || Uint32Array, size: 1},
     // Array of Point feature indexes by vertex
@@ -69,7 +68,7 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
   },
   lines: {
     // Array of x, y or x, y, z positions
-    positions: {value: PositionDataType, size: coordLength},
+    positions: {value: PositionDataType, size: 3},
     // Indices within positions of the start of each individual LineString
     pathIndices: {value: Uint16Array || Uint32Array, size: 1},
     // Array of original feature indexes by vertex
@@ -91,7 +90,7 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
   },
   polygons: {
 i   // Array of x, y or x, y, z positions
-    positions: {value: PositionDataType, size: coordLength},
+    positions: {value: PositionDataType, size: 3},
     // Indices within positions of the start of each complex Polygon
     polygonIndices: {value: Uint16Array || Uint32Array, size: 1},
     // Indices within positions of the start of each primitive Polygon/ring
@@ -120,11 +119,11 @@ i   // Array of x, y or x, y, z positions
 
 ## Options
 
-| Option           | Type     | Default           | Description                                                                                                                                             |
-| ---------------- | -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PositionDataType | `class`  | `Float32Array`    | Data type used for positions arrays.                                                                                                                    |
-| numericPropKeys  | `Array`  | Derived from data | Names of feature properties that should be converted to numeric `TypedArray`s. Passing `[]` will force all properties to be returned as normal objects. |
-| coordLength      | `number` | Derived from data | Number of dimensions per coordinate.                                                                                                                    |
+| Option           | Type      | Default           | Description                                                                                                                                             |
+| ---------------- | --------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| fixRingWinding   | `Boolean` | `true`            | Whether the fix incorrect ring winding for polygons. Valid `GeoJSON` polygons have the outer ring coordinates in CCW order and with holes in CW order   |
+| numericPropKeys  | `Array`   | Derived from data | Names of feature properties that should be converted to numeric `TypedArray`s. Passing `[]` will force all properties to be returned as normal objects. |
+| PositionDataType | `class`   | `Float32Array`    | Data type used for positions arrays.                                                                                                                    |
 
 ## Notes
 
