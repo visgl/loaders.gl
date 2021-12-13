@@ -359,3 +359,24 @@ test('gis#geojson-to-flat-geojson winding', async (t) => {
 
   t.end();
 });
+
+test('gis#geojson-to-flat-geojson invalid type', async (t) => {
+  const geojson = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        id: 0,
+        type: 'Feature',
+        geometry: {
+          type: 'GeometryCollection',
+          coordinates: []
+        }
+      }
+    ]
+  };
+
+  t.throws(() => geojsonToFlatGeojson(geojson), 'throws when type is GeometryCollection');
+
+  geojson.features[0].geometry.type = 'Invalid';
+  t.throws(() => geojsonToFlatGeojson(geojson), 'throws when type is Invalid');
+});
