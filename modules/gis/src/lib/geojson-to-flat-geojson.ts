@@ -17,10 +17,10 @@ export function geojsonToFlatGeojson(
 function flattenPoint(
   coordinates: Position,
   data: number[],
-  lines: number[],
+  indices: number[],
   options: GeojsonToFlatGeojsonOptions
 ) {
-  lines.push(data.length);
+  indices.push(data.length);
   data.push(...coordinates);
 
   // Pad up to coordLength
@@ -32,10 +32,10 @@ function flattenPoint(
 function flattenLineString(
   coordinates: Position[],
   data: number[],
-  lines: number[],
+  indices: number[],
   options: GeojsonToFlatGeojsonOptions
 ) {
-  lines.push(data.length);
+  indices.push(data.length);
   for (const c of coordinates) {
     data.push(...c);
 
@@ -49,7 +49,7 @@ function flattenLineString(
 function flattenPolygon(
   coordinates: Position[][],
   data: number[],
-  lines: number[][],
+  indices: number[][],
   areas: number[][],
   options: GeojsonToFlatGeojsonOptions
 ) {
@@ -73,7 +73,7 @@ function flattenPolygon(
 
   if (count > 0) {
     areas.push(ringAreas);
-    lines.push(polygons);
+    indices.push(polygons);
   }
 }
 
@@ -83,40 +83,40 @@ function flattenFeature(feature: Feature, options: GeojsonToFlatGeojsonOptions):
     throw new Error('GeometryCollection type not supported');
   }
   const data = [];
-  const lines = [];
+  const indices = [];
   let areas;
   let type;
 
   switch (geometry.type) {
     case 'Point':
       type = 'Point';
-      flattenPoint(geometry.coordinates, data, lines, options);
+      flattenPoint(geometry.coordinates, data, indices, options);
       break;
     case 'MultiPoint':
       type = 'Point';
-      geometry.coordinates.map((c) => flattenPoint(c, data, lines, options));
+      geometry.coordinates.map((c) => flattenPoint(c, data, indices, options));
       break;
     case 'LineString':
       type = 'LineString';
-      flattenLineString(geometry.coordinates, data, lines, options);
+      flattenLineString(geometry.coordinates, data, indices, options);
       break;
     case 'MultiLineString':
       type = 'LineString';
-      geometry.coordinates.map((c) => flattenLineString(c, data, lines, options));
+      geometry.coordinates.map((c) => flattenLineString(c, data, indices, options));
       break;
     case 'Polygon':
       type = 'Polygon';
       areas = [];
-      flattenPolygon(geometry.coordinates, data, lines, areas, options);
+      flattenPolygon(geometry.coordinates, data, indices, areas, options);
       break;
     case 'MultiPolygon':
       type = 'Polygon';
       areas = [];
-      geometry.coordinates.map((c) => flattenPolygon(c, data, lines, areas, options));
+      geometry.coordinates.map((c) => flattenPolygon(c, data, indices, areas, options));
       break;
     default:
       throw new Error(`Unknown type: ${type}`);
   }
 
-  return {...feature, geometry: {type, lines, data, areas}};
+  return {...feature, geometry: {type, indices, data, areas}};
 }

@@ -31,17 +31,17 @@ type RemoveCoordinatesField<Type> = {
 
 export type FlatPoint = RemoveCoordinatesField<Point> & {
   data: number[];
-  lines: number[];
+  indices: number[];
 };
 
 export type FlatLineString = RemoveCoordinatesField<LineString> & {
   data: number[];
-  lines: number[];
+  indices: number[];
 };
 
 export type FlatPolygon = RemoveCoordinatesField<Polygon> & {
   data: number[];
-  lines: number[][];
+  indices: number[][];
   areas: number[][];
 };
 

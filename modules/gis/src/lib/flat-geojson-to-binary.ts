@@ -10,7 +10,7 @@ import type {
   GeojsonGeometryInfo,
   TypedArray
 } from '@loaders.gl/schema';
-import {PropArrayConstructor, Lines, Points, Polygons} from './flatGeojson-to-binary-types';
+import {PropArrayConstructor, Lines, Points, Polygons} from './flat-geojson-to-binary-types';
 
 /**
  * Convert binary features to flat binary arrays. Similar to
@@ -319,14 +319,14 @@ function handleLineString(
     indexMap.linePosition + nPositions
   );
 
-  for (let i = 0, il = geometry.lines.length; i < il; ++i) {
+  for (let i = 0, il = geometry.indices.length; i < il; ++i) {
     // Extract range of data we are working with, defined by start
     // and end indices (these index into the geometry.data array)
-    const start = geometry.lines[i];
+    const start = geometry.indices[i];
     const end =
       i === il - 1
         ? geometry.data.length // last line, so read to end of data
-        : geometry.lines[i + 1]; // start index for next line
+        : geometry.indices[i + 1]; // start index for next line
 
     lines.pathIndices[indexMap.linePath++] = indexMap.linePosition;
     indexMap.linePosition += (end - start) / coordLength;
@@ -375,31 +375,31 @@ function handlePolygon(
     indexMap.polygonPosition + nPositions
   );
 
-  // Unlike Point & LineString geometry.lines is a 2D array
-  for (let l = 0, ll = geometry.lines.length; l < ll; ++l) {
+  // Unlike Point & LineString geometry.indices is a 2D array
+  for (let l = 0, ll = geometry.indices.length; l < ll; ++l) {
     const startPosition = indexMap.polygonPosition;
     polygons.polygonIndices[indexMap.polygonObject++] = startPosition;
 
     const areas = geometry.areas[l];
-    const lines = geometry.lines[l];
-    const nextLines = geometry.lines[l + 1];
+    const indices = geometry.indices[l];
+    const nextIndices = geometry.indices[l + 1];
 
-    for (let i = 0, il = lines.length; i < il; ++i) {
-      const start = lines[i];
+    for (let i = 0, il = indices.length; i < il; ++i) {
+      const start = indices[i];
       const end =
         i === il - 1
           ? // last line, so either read to:
-            nextLines === undefined
-            ? geometry.data.length // end of data (no next lines)
-            : nextLines[0] // start of first line in nextLines
-          : lines[i + 1]; // start index for next line
+            nextIndices === undefined
+            ? geometry.data.length // end of data (no next indices)
+            : nextIndices[0] // start of first line in nextIndices
+          : indices[i + 1]; // start index for next line
 
       polygons.primitivePolygonIndices[indexMap.polygonRing++] = indexMap.polygonPosition;
       indexMap.polygonPosition += (end - start) / coordLength;
     }
 
     const endPosition = indexMap.polygonPosition;
-    triangulatePolygon(polygons, areas, lines, {startPosition, endPosition, coordLength});
+    triangulatePolygon(polygons, areas, indices, {startPosition, endPosition, coordLength});
   }
 }
 
@@ -408,13 +408,13 @@ function handlePolygon(
  *
  * @param polygons
  * @param areas
- * @param lines
+ * @param indices
  * @param param3
  */
 function triangulatePolygon(
   polygons: Polygons,
   areas: number[],
-  lines: number[],
+  indices: number[],
   {
     startPosition,
     endPosition,
@@ -428,16 +428,16 @@ function triangulatePolygon(
   const polygonPositions = polygons.positions.subarray(start, end);
 
   // Holes are referenced relative to outer polygon
-  const offset = lines[0];
-  const holes = lines.slice(1).map((n: number) => (n - offset) / coordLength);
+  const offset = indices[0];
+  const holes = indices.slice(1).map((n: number) => (n - offset) / coordLength);
 
   // Compute triangulation
-  const indices = earcut(polygonPositions, holes, coordLength, areas);
+  const triangles = earcut(polygonPositions, holes, coordLength, areas);
 
   // Indices returned by triangulation are relative to start
   // of polygon, so we need to offset
-  for (let t = 0, tl = indices.length; t < tl; ++t) {
-    polygons.triangles.push(startPosition + indices[t]);
+  for (let t = 0, tl = triangles.length; t < tl; ++t) {
+    polygons.triangles.push(startPosition + triangles[t]);
   }
 }
 
