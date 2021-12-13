@@ -29,16 +29,25 @@ type RemoveCoordinatesField<Type> = {
   [Property in keyof Type as Exclude<Property, 'coordinates'>]: Type[Property];
 };
 
+/**
+ * GeoJSON (Multi)Point geometry with coordinate data flattened into `data` array and indexed by `indices`
+ */
 export type FlatPoint = RemoveCoordinatesField<Point> & {
   data: number[];
   indices: number[];
 };
 
+/**
+ * GeoJSON (Multi)LineString geometry with coordinate data flattened into `data` array and indexed by `indices`
+ */
 export type FlatLineString = RemoveCoordinatesField<LineString> & {
   data: number[];
   indices: number[];
 };
 
+/**
+ * GeoJSON (Multi)Polygon geometry with coordinate data flattened into `data` array and indexed by `indices`
+ */
 export type FlatPolygon = RemoveCoordinatesField<Polygon> & {
   data: number[];
   indices: number[][];
@@ -51,6 +60,9 @@ type FlattenGeometry<Type> = {
   [Property in keyof Type]: Type[Property] extends Geometry ? FlatGeometry : Type[Property];
 };
 
+/**
+ * GeoJSON Feature with Geometry replaced by FlatGeometry
+ */
 export type FlatFeature = FlattenGeometry<Feature>;
 
 // BINARY FORMAT GEOMETRY
