@@ -34,7 +34,7 @@
   "scripts": {
     "pre-build": "npm run copy-libs && npm run build-worker && npm run build-bundle",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
     "build-worker": "npm run build-basis-worker && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker",
     "build-basis-worker": "esbuild src/workers/basis-worker.ts --bundle --outfile=dist/basis-worker.js",
     "build-npy-worker": "esbuild src/workers/npy-worker.ts --bundle --outfile=dist/npy-worker.js",

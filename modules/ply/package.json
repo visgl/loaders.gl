@@ -29,7 +29,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
     "build-worker": "esbuild src/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js"
   },
   "dependencies": {
