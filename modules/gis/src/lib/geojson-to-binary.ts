@@ -5,13 +5,22 @@ import {extractGeometryInfo} from './extract-geometry-info';
 import {geojsonToFlatGeojson} from './geojson-to-flat-geojson';
 import {flatGeojsonToBinary} from './flat-geojson-to-binary';
 
+/**
+ * Options for `geojsonToBinary`
+ */
 export type GeojsonToBinaryOptions = {
   fixRingWinding: boolean;
   numericPropKeys?: string[];
   PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
 };
 
-/** Convert GeoJSON features to flat binary arrays */
+/**
+ * Convert GeoJSON features to flat binary arrays
+ *
+ * @param features
+ * @param options
+ * @returns features in binary format, grouped by geometry type
+ */
 export function geojsonToBinary(
   features: Feature[],
   options: GeojsonToBinaryOptions = {fixRingWinding: true}
