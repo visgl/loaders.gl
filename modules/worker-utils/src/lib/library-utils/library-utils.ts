@@ -82,7 +82,11 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   }
 
   if (!isBrowser) {
-    return node.requireFromFile && (await node.requireFromFile(libraryUrl));
+    try {
+      return node && node.requireFromFile && (await node.requireFromFile(libraryUrl));
+    } catch {
+      return null;
+    }
   }
   if (isWorker) {
     return importScripts(libraryUrl);
