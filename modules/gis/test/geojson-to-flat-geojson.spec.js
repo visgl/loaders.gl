@@ -305,8 +305,63 @@ test('gis#geojson-to-flat-geojson winding', async (t) => {
     }
   }
 
-  const flatFeatures = geojsonToFlatGeojson(polygons, {fixRingWinding: false});
-  const [polygon, polygonWithHole, multiPolygon] = flatFeatures;
+  let flatFeatures = geojsonToFlatGeojson(JSON.parse(JSON.stringify(polygons)), {
+    fixRingWinding: true
+  });
+  let [polygon, polygonWithHole, multiPolygon] = flatFeatures;
+
+  // Polygon
+  t.deepEquals(
+    polygon.geometry.data,
+    [100, 0, 101, 0, 101, 1, 100, 1, 100, 0],
+    'flat Polygon data should be equivalent'
+  );
+  t.deepEquals(polygon.geometry.indices, [[0]], 'flat Polygon indices should be equivalent');
+  t.deepEquals(polygon.geometry.areas, [[-1]], 'flat Polygon areas should be equivalent');
+
+  // Polygon (hole)
+  t.deepEquals(
+    polygonWithHole.geometry.data,
+    [
+      100, 0, 101, 0, 101, 1, 100, 1, 100, 0, 100.8, 0.8, 100.8, 0.2, 100.2, 0.2, 100.2, 0.8, 100.8,
+      0.8
+    ],
+    'flat Polygon (hole) data should be equivalent'
+  );
+  t.deepEquals(
+    polygonWithHole.geometry.indices,
+    [[0, 10]],
+    'flat Polygon (hole) indices should be equivalent'
+  );
+  t.deepEquals(
+    polygonWithHole.geometry.areas,
+    [[-1, 0.3599999999999966]],
+    'flat Polygon (hole) areas should be equivalent'
+  );
+
+  // MultiPolygon
+  t.deepEquals(
+    multiPolygon.geometry.data,
+    [
+      102, 2, 103, 2, 103, 3, 102, 3, 102, 2, 100, 0, 101, 0, 101, 1, 100, 1, 100, 0, 100.2, 0.2,
+      100.2, 0.8, 100.8, 0.8, 100.8, 0.2, 100.2, 0.2
+    ],
+    'flat MultiPolygon data should be equivalent'
+  );
+  t.deepEquals(
+    multiPolygon.geometry.indices,
+    [[0], [10, 20]],
+    'flat MultiPolygon indices should be equivalent'
+  );
+  t.deepEquals(
+    multiPolygon.geometry.areas,
+    [[-1], [-1, 0.3599999999999966]],
+    'flat MultiPolygon areas should be equivalent'
+  );
+
+  // Repeat tests without ring winding fix
+  flatFeatures = geojsonToFlatGeojson(polygons, {fixRingWinding: false});
+  [polygon, polygonWithHole, multiPolygon] = flatFeatures;
 
   // Polygon
   t.deepEquals(
