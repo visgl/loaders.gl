@@ -2,11 +2,21 @@ import {getPolygonSignedArea} from '@math.gl/polygon';
 
 import {Feature, Position, FlatFeature} from '@loaders.gl/schema';
 
+/**
+ * Options for `geojsonToFlatGeojson`
+ */
 export type GeojsonToFlatGeojsonOptions = {
   coordLength: number;
   fixRingWinding: boolean;
 };
 
+/**
+ * Convert GeoJSON features to Flat GeoJSON features
+ *
+ * @param features
+ * @param options
+ * @returns an Array of Flat GeoJSON features
+ */
 export function geojsonToFlatGeojson(
   features: Feature[],
   options: GeojsonToFlatGeojsonOptions = {coordLength: 2, fixRingWinding: true}
@@ -14,6 +24,14 @@ export function geojsonToFlatGeojson(
   return features.map((feature) => flattenFeature(feature, options));
 }
 
+/**
+ * Helper function to copy Point values from `coordinates` into `data` & `indices`
+ *
+ * @param coordinates
+ * @param data
+ * @param indices
+ * @param options
+ */
 function flattenPoint(
   coordinates: Position,
   data: number[],
@@ -29,6 +47,14 @@ function flattenPoint(
   }
 }
 
+/**
+ * Helper function to copy LineString values from `coordinates` into `data` & `indices`
+ *
+ * @param coordinates
+ * @param data
+ * @param indices
+ * @param options
+ */
 function flattenLineString(
   coordinates: Position[],
   data: number[],
@@ -46,6 +72,15 @@ function flattenLineString(
   }
 }
 
+/**
+ * Helper function to copy Polygon values from `coordinates` into `data` & `indices` & `areas`
+ *
+ * @param coordinates
+ * @param data
+ * @param indices
+ * @param areas
+ * @param options
+ */
 function flattenPolygon(
   coordinates: Position[][],
   data: number[],
@@ -77,6 +112,13 @@ function flattenPolygon(
   }
 }
 
+/**
+ * Flatten single GeoJSON feature into Flat GeoJSON
+ *
+ * @param feature
+ * @param options
+ * @returns A Flat GeoJSON feature
+ */
 function flattenFeature(feature: Feature, options: GeojsonToFlatGeojsonOptions): FlatFeature {
   const {geometry} = feature;
   if (geometry.type === 'GeometryCollection') {

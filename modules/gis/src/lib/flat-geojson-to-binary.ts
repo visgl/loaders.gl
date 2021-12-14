@@ -45,14 +45,16 @@ export function flatGeojsonToBinary(
   );
 }
 
+/**
+ * Options for `flatGeojsonToBinary`
+ */
 export type FlatGeojsonToBinaryOptions = {
   numericPropKeys?: string[];
   PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
 };
 
 export const TEST_EXPORTS = {
-  extractNumericPropTypes,
-  fillArrays
+  extractNumericPropTypes
 };
 
 /**
@@ -544,6 +546,14 @@ function keepStringProperties(
   return props;
 }
 
+/**
+ *
+ * Deduce correct array constructor to use for a given value
+ *
+ * @param x value to test
+ * @param constructor previous constructor deduced
+ * @returns PropArrayConstructor
+ */
 function deduceArrayType(x: any, constructor: PropArrayConstructor): PropArrayConstructor {
   if (constructor === Array || !Number.isFinite(x)) {
     return Array;

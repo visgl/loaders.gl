@@ -1,7 +1,7 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import Protobuf from 'pbf';
-import {FlatFeature, GeojsonGeometryInfo} from '@loaders.gl/schema';
+import {FlatFeature, FlatIndexedGeometry, GeojsonGeometryInfo} from '@loaders.gl/schema';
 import {classifyRings, project, readFeature} from '../../helpers/binary-util-functions';
 
 // Reduce GC by reusing variables
@@ -54,7 +54,7 @@ export default class VectorTileFeature {
   }
 
   // eslint-disable-next-line complexity, max-statements
-  loadGeometry() {
+  loadGeometry(): FlatIndexedGeometry {
     const pbf = this._pbf;
     pbf.pos = this._geometry;
 

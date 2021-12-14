@@ -30,29 +30,31 @@ type RemoveCoordinatesField<Type> = {
 };
 
 /**
- * GeoJSON (Multi)Point geometry with coordinate data flattened into `data` array and indexed by `indices`
+ * Generic flat geometry data storage type
  */
-export type FlatPoint = RemoveCoordinatesField<Point> & {
+export type FlatIndexedGeometry = {
   data: number[];
   indices: number[];
 };
+
+/**
+ * GeoJSON (Multi)Point geometry with coordinate data flattened into `data` array and indexed by `indices`
+ */
+export type FlatPoint = RemoveCoordinatesField<Point> & FlatIndexedGeometry;
 
 /**
  * GeoJSON (Multi)LineString geometry with coordinate data flattened into `data` array and indexed by `indices`
  */
-export type FlatLineString = RemoveCoordinatesField<LineString> & {
-  data: number[];
-  indices: number[];
-};
+export type FlatLineString = RemoveCoordinatesField<LineString> & FlatIndexedGeometry;
 
 /**
- * GeoJSON (Multi)Polygon geometry with coordinate data flattened into `data` array and indexed by `indices`
+ * GeoJSON (Multi)Polygon geometry with coordinate data flattened into `data` array and indexed by 2D `indices`
  */
-export type FlatPolygon = RemoveCoordinatesField<Polygon> & {
-  data: number[];
-  indices: number[][];
-  areas: number[][];
-};
+export type FlatPolygon = RemoveCoordinatesField<Polygon> &
+  FlatIndexedGeometry & {
+    indices: number[][];
+    areas: number[][];
+  };
 
 export type FlatGeometry = FlatPoint | FlatLineString | FlatPolygon;
 

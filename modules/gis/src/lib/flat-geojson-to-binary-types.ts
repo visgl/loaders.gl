@@ -1,10 +1,16 @@
 import type {TypedArray} from '@loaders.gl/schema';
 
+/**
+ * Permissable constructor for numeric props
+ */
 export type PropArrayConstructor =
   | Float32ArrayConstructor
   | Float64ArrayConstructor
   | ArrayConstructor;
 
+/**
+ * Collection type for holding intermediate binary data before conversion to `BinaryPointGeometry`
+ */
 export type Points = {
   type: 'Point';
   positions: Float32Array | Float64Array;
@@ -17,6 +23,9 @@ export type Points = {
   }[];
 };
 
+/**
+ * Collection type for holding intermediate binary data before conversion to `BinaryLineStringGeometry`
+ */
 export type Lines = {
   type: 'LineString';
   positions: Float32Array | Float64Array;
@@ -30,6 +39,9 @@ export type Lines = {
   }[];
 };
 
+/**
+ * Collection type for holding intermediate binary data before conversion to `BinaryPolygonGeometry`
+ */
 export type Polygons = {
   type: 'Polygon';
   positions: Float32Array | Float64Array;

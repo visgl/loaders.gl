@@ -1,5 +1,6 @@
 import Protobuf from 'pbf';
 import {getPolygonSignedArea} from '@math.gl/polygon';
+import {FlatIndexedGeometry, FlatPolygon} from '@loaders.gl/schema';
 import VectorTileFeature from '../lib/binary-vector-tile/vector-tile-feature';
 
 /**
@@ -12,7 +13,7 @@ import VectorTileFeature from '../lib/binary-vector-tile/vector-tile-feature';
  * @returns object
  */
 // eslint-disable-next-line max-statements
-export function classifyRings(geom: {data: number[]; indices: number[]}) {
+export function classifyRings(geom: FlatIndexedGeometry): FlatPolygon {
   const len = geom.indices.length;
 
   if (len <= 1) {
