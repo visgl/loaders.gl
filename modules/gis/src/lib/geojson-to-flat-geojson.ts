@@ -10,6 +10,13 @@ export type GeojsonToFlatGeojsonOptions = {
   fixRingWinding: boolean;
 };
 
+// Coordinates defining a Point
+type PointCoordinates = Position;
+// Coordinates defining a LineString
+type LineStringCoordinates = Position[];
+// Coordinates defining a Polygon
+type PolygonCoordinates = Position[][];
+
 /**
  * Convert GeoJSON features to Flat GeoJSON features
  *
@@ -33,7 +40,7 @@ export function geojsonToFlatGeojson(
  * @param options
  */
 function flattenPoint(
-  coordinates: Position,
+  coordinates: PointCoordinates,
   data: number[],
   indices: number[],
   options: GeojsonToFlatGeojsonOptions
@@ -56,7 +63,7 @@ function flattenPoint(
  * @param options
  */
 function flattenLineString(
-  coordinates: Position[],
+  coordinates: LineStringCoordinates,
   data: number[],
   indices: number[],
   options: GeojsonToFlatGeojsonOptions
@@ -82,7 +89,7 @@ function flattenLineString(
  * @param options
  */
 function flattenPolygon(
-  coordinates: Position[][],
+  coordinates: PolygonCoordinates,
   data: number[],
   indices: number[][],
   areas: number[][],
