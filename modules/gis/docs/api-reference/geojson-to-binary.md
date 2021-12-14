@@ -24,7 +24,7 @@ const geoJSONfeatures = await load('data.geojson', JSONLoader);
  * }
  */
 const options = {PositionDataType: Float32Array};
-const binaryArrays = geojsonToBinary(geoJSONfeatures, options);
+const binaryFeatures = geojsonToBinary(geoJSONfeatures, options);
 ```
 
 ## Outputs

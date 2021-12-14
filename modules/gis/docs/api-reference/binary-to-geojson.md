@@ -7,18 +7,17 @@ a valid GeoJSON Geometry, Feature or array of Features.
 
 ```js
 import {load} from '@loaders.gl/core';
-import {MVTLoader} from '@loaders.gl/mvt';
-import {binaryToGeojson} from '@loaders.gl/gis';
+import {JSONLoader} from '@loaders.gl/json';
+import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
 
-// See MVTLoader docs for loader options
-const binaryFeatures = await load(url, MVTLoader, {_format: 'binary'});
-
-const features = binaryToGeojson(binaryFeatures);
+const geoJSONfeatures = await load('data.geojson', JSONLoader);
+const binaryFeatures = geojsonToBinary(geoJSONfeatures);
+const geoJSONfeatures2 = binaryToGeoJson(binaryFeatures);
 ```
 
 ## Options
 
-| Option           | Type     | Default           | Description                                                                                                                                             |
-| ---------------- | -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| type | `'Point'` | `'LineString'` | `'Polygon'`  | (derived from data) | Geometry type |
-| globalFeatureId      | `number` |   | If specified, only returns the feature that matches the given global id.                                                                                             |
+| Option          | Type                                   | Default             | Description                                                              |
+| --------------- | -------------------------------------- | ------------------- | ------------------------------------------------------------------------ |
+| type            | `'Point' \| 'LineString' \| 'Polygon'` | (derived from data) | Geometry type                                                            |
+| globalFeatureId | `number`                               |                     | If specified, only returns the feature that matches the given global id. |
