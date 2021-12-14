@@ -50,68 +50,68 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     // Array of x, y or x, y, z positions
     positions: {value: PositionDataType, size: 3},
     // Array of original feature indexes by vertex
-    globalFeatureIds: {value: Uint16Array || Uint32Array, size: 1},
+    globalFeatureIds: {value: Uint16Array | Uint32Array, size: 1},
     // Array of Point feature indexes by vertex
-    featureIds: {value: Uint16Array || Uint32Array, size: 1},
+    featureIds: {value: Uint16Array | Uint32Array, size: 1},
     // Object with accessor objects for numeric properties
     // Numeric properties are sized to have one value per vertex
     numericProps: {
-        numericProperty1: {value: Float32Array || Float64Array, size: 1}
+        numericProperty1: {value: Float32Array | Float64Array, size: 1}
     }
     // Array of objects with non-numeric properties from Point geometries
     properties: [{PointFeatureProperties}],
     // Non-standard top-level fields
     fields?: [{
       // Feature ids of source data (if present)
-      id?: string || number
+      id?: string | number
     }]
   },
   lines: {
     // Array of x, y or x, y, z positions
     positions: {value: PositionDataType, size: 3},
     // Indices within positions of the start of each individual LineString
-    pathIndices: {value: Uint16Array || Uint32Array, size: 1},
+    pathIndices: {value: Uint16Array | Uint32Array, size: 1},
     // Array of original feature indexes by vertex
-    globalFeatureIds: {value: Uint16Array || Uint32Array, size: 1},
+    globalFeatureIds: {value: Uint16Array | Uint32Array, size: 1},
     // Array of LineString feature indexes by vertex
-    featureIds: {value: Uint16Array || Uint32Array, size: 1},
+    featureIds: {value: Uint16Array | Uint32Array, size: 1},
     // Object with accessor objects for numeric properties
     // Numeric properties are sized to have one value per vertex
     numericProps: {
-        numericProperty1: {value: Float32Array || Float64Array, size: 1}
+        numericProperty1: {value: Float32Array | Float64Array, size: 1}
     }
     // Array of objects with non-numeric properties from LineString geometries
     properties: [{LineStringFeatureProperties}],
     // Non-standard top-level fields
     fields?: [{
       // Feature ids of source data (if present)
-      id?: string || number
+      id?: string | number
     }]
   },
   polygons: {
-i   // Array of x, y or x, y, z positions
+    // Array of x, y or x, y, z positions
     positions: {value: PositionDataType, size: 3},
     // Indices within positions of the start of each complex Polygon
-    polygonIndices: {value: Uint16Array || Uint32Array, size: 1},
+    polygonIndices: {value: Uint16Array | Uint32Array, size: 1},
     // Indices within positions of the start of each primitive Polygon/ring
-    primitivePolygonIndices: {value: Uint16Array || Uint32Array, size: 1},
+    primitivePolygonIndices: {value: Uint16Array | Uint32Array, size: 1},
     // Triangle indices. Allows deck.gl to skip performing costly triangulation on main thread
     triangles: {value: Uint32Array, size: 1},
     // Array of original feature indexes by vertex
-    globalFeatureIds: {value: Uint16Array || Uint32Array, size: 1},
+    globalFeatureIds: {value: Uint16Array | Uint32Array, size: 1},
     // Array of Polygon feature indexes by vertex
-    featureIds: {value: Uint16Array || Uint32Array, size: 1},
+    featureIds: {value: Uint16Array | Uint32Array, size: 1},
     // Object with accessor objects for numeric properties
     // Numeric properties are sized to have one value per vertex
     numericProps: {
-        numericProperty1: {value: Float32Array || Float64Array, size: 1}
+        numericProperty1: {value: Float32Array | Float64Array, size: 1}
     }
     // Array of objects with non-numeric properties from Polygon geometries
     properties: [{PolygonFeatureProperties}],
     // Non-standard top-level fields
     fields?: [{
       // Feature ids of source data (if present)
-      id?: string || number
+      id?: string | number
     }]
   }
 }
