@@ -7,6 +7,24 @@ import parseNDJSONInBatches from './lib/parse-ndjson-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+export type NDGeoJSONLoaderOptions = LoaderOptions & {
+  geojson?: {
+    shape?: 'object-row-table';
+  };
+  gis?: {
+    format: 'geojson';
+  };
+};
+
+const DEFAULT_NDGEOJSON_LOADER_OPTIONS = {
+  geojson: {
+    shape: 'object-row-table'
+  },
+  gis: {
+    format: 'geojson'
+  }
+};
+
 export const NDJSONLoader = {
   name: 'NDJSON',
   id: 'ndjson',
@@ -21,3 +39,5 @@ export const NDJSONLoader = {
   parseInBatches: parseNDJSONInBatches,
   options: {}
 };
+
+export const _typecheckNDJSONLoader: LoaderWithParser = NDJSONLoader;

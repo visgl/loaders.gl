@@ -30,6 +30,12 @@ Target Release Date: Q1 2022.
 
 - ArrowLoader now recognizes recommended Arrow MIME types `application/vnd.apache.arrow.file`, `application/vnd.apache.arrow.stream`.
 
+**@loaders.gl/json**
+
+- `GeoJSONLoader` - The [GeoJSONLoader](modules/json/docs/api-reference/geojson-loader) is now officially documented.
+- `NDJSONLoader` - Now supports JSONL, JSONSeq etc.
+- `NDGeoJSONLoader` - Now supports JSONL, JSONSeq etc.
+
 ## v3.1
 
 Release Date: Dec 7, 2021.

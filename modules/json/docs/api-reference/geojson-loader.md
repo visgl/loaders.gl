@@ -1,35 +1,37 @@
-# JSONLoader
+# GeoJSONLoader
 
-Streaming loader for JSON encoded files.
+Streaming loader for GeoJSON encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
-| File Extension | `.json`                                              |
-| Media Type     | `application/json`
+| File Extension | `.geojson`                                              |
+| Media Type     | `application/geo+json` |
 | File Type      | Text                                                 |
-| File Format    | [JSON](https://www.json.org/json-en.html)            |
+| File Format    | [GeoJSON][format_geojson]            |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
+
+[format_geojson]: https://geojson.org
 
 ## Usage
 
 For simple usage, you can load and parse a JSON file atomically:
 
 ```js
-import {JSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, JSONLoader, {json: options});
+const data = await load(url, GeoJSONLoader, {json: options});
 ```
 
-For larger files, JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
+For larger files, GeoJSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
 To parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` to stream the `features` array.
 
 ```js
-import {JSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 
-const batches = await loadInBatches('geojson.json', JSONLoader, {json: {jsonpaths: ['$.features']}});
+const batches = await loadInBatches('geojson.json', GeoJSONLoader, {json: {jsonpaths: ['$.features']}});
 
 for await (const batch of batches) {
   // batch.data will contain a number of rows
@@ -49,10 +51,10 @@ When batch parsing an embedded JSON array as a table, it is possible to get acce
 The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result` respectively.
 
 ```js
-import {JSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 
-const batches = await loadInBatches('geojson.json', JSONLoader);
+const batches = await loadInBatches('geojson.json', GeoJSONLoader);
 
 for await (const batch of batches) {
   switch (batch.batchType) {
