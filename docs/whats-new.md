@@ -19,15 +19,15 @@
   </tbody>
 </table>
 
-## v4.0 (Planning/prototyping stage)
+## v4.0 (In development)
 
 Target Release Date: Q1 2022. Alpha releases available.
 
 See [roadmap](./roadmap) for more details.
 
-## v3.1 (in final testing)
+## v3.1
 
-Target Release Date: Nov 2021.
+Release Date: Dec 7, 2021.
 
 **@loaders.gl/textures** 
 
