@@ -63,6 +63,19 @@ export type {
   MultiPolygon
 } from './category/gis';
 
+export type {GeojsonGeometryInfo} from './category/gis';
+
+// GIS CATEGORY - FLAT GEOJSON
+export type {
+  FlatFeature,
+  FlatIndexedGeometry,
+  FlatGeometry,
+  FlatGeometryType,
+  FlatPoint,
+  FlatLineString,
+  FlatPolygon
+} from './category/gis';
+
 // GIS CATEGORY - BINARY
 export type {
   BinaryGeometryType,

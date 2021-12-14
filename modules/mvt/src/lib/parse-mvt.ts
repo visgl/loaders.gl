@@ -2,9 +2,10 @@
 import VectorTile from './mapbox-vector-tile/vector-tile';
 import BinaryVectorTile from './binary-vector-tile/vector-tile';
 
-import {featuresToBinary} from './binary-vector-tile/features-to-binary';
+import {flatGeojsonToBinary} from '@loaders.gl/gis';
 import Protobuf from 'pbf';
-import {MvtBinaryCoordinates, MvtMapboxCoordinates, MvtOptions} from '../lib/types';
+import type {FlatFeature} from '@loaders.gl/schema';
+import type {MvtMapboxCoordinates, MvtOptions} from '../lib/types';
 import VectorTileFeatureBinary from './binary-vector-tile/vector-tile-feature';
 import VectorTileFeatureMapBox from './mapbox-vector-tile/vector-tile-feature';
 import {LoaderOptions} from '@loaders.gl/loader-utils';
@@ -18,11 +19,12 @@ import {LoaderOptions} from '@loaders.gl/loader-utils';
  */
 export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptions) {
   options = normalizeOptions(options);
-  const features: (MvtBinaryCoordinates | MvtMapboxCoordinates)[] = [];
+  const features: (FlatFeature | MvtMapboxCoordinates)[] = [];
 
   if (options) {
     const binary = options.gis.format === 'binary';
-    const firstPassData = {
+    const geometryInfo = {
+      coordLength: 2,
       pointPositionsCount: 0,
       pointFeaturesCount: 0,
       linePositionsCount: 0,
@@ -53,7 +55,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
         }
 
         for (let i = 0; i < vectorTileLayer.length; i++) {
-          const vectorTileFeature = vectorTileLayer.feature(i, firstPassData);
+          const vectorTileFeature = vectorTileLayer.feature(i, geometryInfo);
 
           const decodedFeature = binary
             ? getDecodedFeatureBinary(vectorTileFeature as VectorTileFeatureBinary, featureOptions)
@@ -64,7 +66,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
     }
 
     if (binary) {
-      const data = featuresToBinary(features as MvtBinaryCoordinates[], firstPassData);
+      const data = flatGeojsonToBinary(features as FlatFeature[], geometryInfo);
       // Add the original byteLength (as a reasonable approximation of the size of the binary data)
       // TODO decide where to store extra fields like byteLength (header etc) and document
       // @ts-ignore
@@ -134,13 +136,13 @@ function getDecodedFeature(
 function getDecodedFeatureBinary(
   feature: VectorTileFeatureBinary,
   options: MvtOptions
-): MvtBinaryCoordinates {
+): FlatFeature {
   const decodedFeature = feature.toBinaryCoordinates(
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinatesBinary
   );
 
   // Add layer name to GeoJSON properties
-  if (options.layerProperty) {
+  if (options.layerProperty && decodedFeature.properties) {
     decodedFeature.properties[options.layerProperty] = options.layerName;
   }
 
