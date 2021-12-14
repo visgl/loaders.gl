@@ -30,7 +30,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.0.0-alpha.4",
