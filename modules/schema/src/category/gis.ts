@@ -50,11 +50,11 @@ export type FlatLineString = RemoveCoordinatesField<LineString> & FlatIndexedGeo
 /**
  * GeoJSON (Multi)Polygon geometry with coordinate data flattened into `data` array and indexed by 2D `indices`
  */
-export type FlatPolygon = RemoveCoordinatesField<Polygon> &
-  FlatIndexedGeometry & {
-    indices: number[][];
-    areas: number[][];
-  };
+export type FlatPolygon = RemoveCoordinatesField<Polygon> & {
+  data: number[];
+  indices: number[][];
+  areas: number[][];
+};
 
 export type FlatGeometry = FlatPoint | FlatLineString | FlatPolygon;
 

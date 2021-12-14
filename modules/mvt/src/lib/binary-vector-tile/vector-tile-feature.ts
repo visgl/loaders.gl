@@ -157,19 +157,18 @@ export default class VectorTileFeature {
         break;
 
       case 3: // Polygon
-        const classified = classifyRings(geom);
+        geometry = classifyRings(geom);
 
         // Unlike Point & LineString geom.indices is a 2D array, thanks
         // to the classifyRings method
         this._geometryInfo.polygonFeaturesCount++;
-        this._geometryInfo.polygonObjectsCount += classified.indices.length;
+        this._geometryInfo.polygonObjectsCount += geometry.indices.length;
 
-        for (const indices of classified.indices) {
+        for (const indices of geometry.indices) {
           this._geometryInfo.polygonRingsCount += indices.length;
         }
-        this._geometryInfo.polygonPositionsCount += classified.data.length / coordLength;
+        this._geometryInfo.polygonPositionsCount += geometry.data.length / coordLength;
 
-        geometry = {type: 'Polygon', ...classified};
         break;
       default:
         throw new Error(`Invalid geometry type: ${this.type}`);

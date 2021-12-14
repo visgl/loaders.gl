@@ -15,9 +15,11 @@ import VectorTileFeature from '../lib/binary-vector-tile/vector-tile-feature';
 // eslint-disable-next-line max-statements
 export function classifyRings(geom: FlatIndexedGeometry): FlatPolygon {
   const len = geom.indices.length;
+  const type = 'Polygon';
 
   if (len <= 1) {
     return {
+      type,
       data: geom.data,
       areas: [[getPolygonSignedArea(geom.data)]],
       indices: [geom.indices]
@@ -70,7 +72,7 @@ export function classifyRings(geom: FlatIndexedGeometry): FlatPolygon {
   if (ringAreas) areas.push(ringAreas);
   if (polygon.length) polygons.push(polygon);
 
-  return {areas, indices: polygons, data: geom.data};
+  return {type, areas, indices: polygons, data: geom.data};
 }
 
 /**
