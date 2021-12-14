@@ -211,20 +211,10 @@ test('Polygon MVT to local coordinates binary', async (t) => {
   const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
   t.ok(geometryBinary.byteLength > 0);
   delete geometryBinary.byteLength;
-  delete geometryBinary.polygons.triangles;
+
   // @ts-ignore deduced type of 'Feature' is string...
   const expectedBinary = geojsonToBinary(decodedPolygonsGeometry);
-
-  // We need to ignore these deletions from TS because the TS type requires the "type" field
-  // @ts-ignore
-  delete expectedBinary?.points?.type;
-  // @ts-ignore
-  delete expectedBinary?.lines?.type;
-  // @ts-ignore
-  delete expectedBinary?.polygons?.type;
-
   t.deepEqual(geometryBinary, expectedBinary);
-
   t.end();
 });
 
@@ -239,7 +229,7 @@ const TEST_FILES = [
   MVT_MULTIPLE_LAYERS_DATA_URL
 ];
 for (const filename of TEST_FILES) {
-  test(`Legacy MVT binary generation is equivalent ${filename}`, async (t) => {
+  test(`geojson-to-binary generation is equivalent ${filename}`, async (t) => {
     const response = await fetchFile(filename);
     const mvtArrayBuffer = await response.arrayBuffer();
     const geojson = await parse(mvtArrayBuffer, MVTLoader);
@@ -249,21 +239,8 @@ for (const filename of TEST_FILES) {
     const mvtArrayBuffer2 = await response2.arrayBuffer();
     const binary = await parse(mvtArrayBuffer2, MVTLoader, {gis: {format: 'binary'}});
     delete binary.byteLength;
-    delete binary.polygons.triangles;
 
-    // As of 3.0, the output of geojsonToBinary has a "type" key, but the MVT output doesn't yet
-    // We delete this key in this test suite to make things pass
-    // TODO: fix the MVT output in the future
     const expectedBinary = geojsonToBinary(geojson);
-
-    // We need to ignore these deletions from TS because the TS type requires the "type" field
-    // @ts-ignore
-    delete expectedBinary?.points?.type;
-    // @ts-ignore
-    delete expectedBinary?.lines?.type;
-    // @ts-ignore
-    delete expectedBinary?.polygons?.type;
-
     t.deepEqual(expectedBinary, binary);
     t.end();
   });
@@ -327,7 +304,7 @@ test('Rings - single ring', async (t) => {
   const geom = {...ringsSingleRing};
   const classified = classifyRings(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539]]);
-  t.deepEqual(classified.lines, [[0]]);
+  t.deepEqual(classified.indices, [[0]]);
   t.end();
 });
 
@@ -335,7 +312,7 @@ test('Rings - ring and hole', async (t) => {
   const geom = {...ringsRingAndHole};
   const classified = classifyRings(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539, 0.001363515853881836]]);
-  t.deepEqual(classified.lines, [[0, 10]]);
+  t.deepEqual(classified.indices, [[0, 10]]);
   t.end();
 });
 
@@ -343,7 +320,7 @@ test('Rings - two rings', async (t) => {
   const geom = {...ringsTwoRings};
   const classified = classifyRings(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539], [-0.001363515853881836]]);
-  t.deepEqual(classified.lines, [[0], [10]]);
+  t.deepEqual(classified.indices, [[0], [10]]);
   t.end();
 });
 
@@ -354,7 +331,7 @@ test('Rings - zero sized hole', async (t) => {
   t.equal(geom.data.length, 20);
   const classified = classifyRings(geom);
   t.deepEqual(classified.areas, [[-0.44582176208496094]]);
-  t.deepEqual(classified.lines, [[0]]);
+  t.deepEqual(classified.indices, [[0]]);
   t.equal(classified.data.length, 12);
   t.end();
 });
