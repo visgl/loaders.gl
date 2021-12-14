@@ -2,6 +2,13 @@
 
 ## v3.1
 
+## v3.1.1
+- rollup fixes (#2011)
+- chore: bump probe.gl@3.5.0 (#2010)
+- chore: Fix bundler examples versions (#2006)
+- fix(textures): Avoid using __dirname in texturee-encoder (#2005)
+- fix: load workers of latest version (#1993)
+
 ## v3.1.0
 
 - test: switch converter tests on (#1982)
