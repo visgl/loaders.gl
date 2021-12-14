@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/flatgeobuf",
   "description": "Loader for FlatGeobuf",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@loaders.gl/gis": "4.0.0-alpha.1",
-    "@loaders.gl/loader-utils": "3.1.0",
+    "@loaders.gl/loader-utils": "3.1.1",
     "@math.gl/proj4": "^3.3.1",
     "flatgeobuf": "3.6.5"
   }

@@ -3,10 +3,16 @@
 ## v3.1
 
 ## v3.1.1
+
+- Unify geojsonToBinary & MVTLoader (#2003)
+- feat(pcd): pcd loader support for compressed binary data (#1995)
+- fix(tiles): culling relative to viewport center (#1991)
+- fix(i3s-app, i3s-debug-app): move terrain layer data to global scope (#1985)
+- feat(i3s-debug-app): add terrain layer (#1964)
 - rollup fixes (#2011)
 - chore: bump probe.gl@3.5.0 (#2010)
 - chore: Fix bundler examples versions (#2006)
-- fix(textures): Avoid using __dirname in texturee-encoder (#2005)
+- fix(textures): Avoid using \_\_dirname in texturee-encoder (#2005)
 - fix: load workers of latest version (#1993)
 
 ## v3.1.0
@@ -80,6 +86,7 @@
 ## v3.1 Prerelease
 
 ## v3.1.0-beta.7
+
 ## v3.1.0-beta.6
 
 - fix(examples): textures GL_EXTENSIONS_CONSTANTS (#1970)
