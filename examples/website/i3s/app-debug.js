@@ -413,10 +413,10 @@ export default class App extends PureComponent {
         ? viewportCenterTerrainElevation
         : cameraTerrainElevation;
     if (!interactionState.isZooming) {
-      if (oldElevation - elevation > 20) {
-        elevation = oldElevation - 20;
-      } else if (elevation - oldElevation > 20) {
-        elevation = oldElevation + 20;
+      if (oldElevation - elevation > 5) {
+        elevation = oldElevation - 5;
+      } else if (elevation - oldElevation > 5) {
+        elevation = oldElevation + 5;
       }
     }
     const oldViewState = this.state.viewState;
