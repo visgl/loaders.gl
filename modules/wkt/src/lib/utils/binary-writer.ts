@@ -18,72 +18,72 @@ export default class BinaryWriter {
   }
 
   writeUInt8(value: number): void {
-    this._ensureSize(1); 
+    this._ensureSize(1);
     this.dataView.setUint8(this.byteOffset, value);
     this.byteOffset += 1;
   }
   writeUInt16LE(value: number): void {
-    this._ensureSize(2); 
+    this._ensureSize(2);
     this.dataView.setUint16(this.byteOffset, value, LE);
     this.byteOffset += 2;
   }
   writeUInt16BE(value: number): void {
-    this._ensureSize(2); 
+    this._ensureSize(2);
     this.dataView.setUint16(this.byteOffset, value, BE);
     this.byteOffset += 2;
   }
   writeUInt32LE(value: number): void {
-    this._ensureSize(4); 
+    this._ensureSize(4);
     this.dataView.setUint32(this.byteOffset, value, LE);
     this.byteOffset += 4;
   }
   writeUInt32BE(value: number): void {
-    this._ensureSize(4); 
+    this._ensureSize(4);
     this.dataView.setUint32(this.byteOffset, value, BE);
     this.byteOffset += 4;
   }
   writeInt8(value: number): void {
-    this._ensureSize(1); 
+    this._ensureSize(1);
     this.dataView.setInt8(this.byteOffset, value);
     this.byteOffset += 1;
   }
   writeInt16LE(value: number): void {
-    this._ensureSize(2); 
+    this._ensureSize(2);
     this.dataView.setInt16(this.byteOffset, value, LE);
     this.byteOffset += 2;
   }
   writeInt16BE(value: number): void {
-    this._ensureSize(2); 
+    this._ensureSize(2);
     this.dataView.setInt16(this.byteOffset, value, BE);
     this.byteOffset += 2;
   }
   writeInt32LE(value: number): void {
-    this._ensureSize(4); 
+    this._ensureSize(4);
     this.dataView.setInt32(this.byteOffset, value, LE);
     this.byteOffset += 4;
   }
   writeInt32BE(value: number): void {
-    this._ensureSize(4); 
+    this._ensureSize(4);
     this.dataView.setInt32(this.byteOffset, value, BE);
     this.byteOffset += 4;
   }
   writeFloatLE(value: number): void {
-    this._ensureSize(4); 
+    this._ensureSize(4);
     this.dataView.setFloat32(this.byteOffset, value, LE);
     this.byteOffset += 4;
   }
   writeFloatBE(value: number): void {
-    this._ensureSize(4); 
+    this._ensureSize(4);
     this.dataView.setFloat32(this.byteOffset, value, BE);
     this.byteOffset += 4;
   }
   writeDoubleLE(value: number): void {
-    this._ensureSize(8); 
+    this._ensureSize(8);
     this.dataView.setFloat64(this.byteOffset, value, LE);
     this.byteOffset += 8;
   }
   writeDoubleBE(value: number): void {
-    this._ensureSize(8); 
+    this._ensureSize(8);
     this.dataView.setFloat64(this.byteOffset, value, BE);
     this.byteOffset += 8;
   }
@@ -92,12 +92,12 @@ export default class BinaryWriter {
   writeVarInt(value: number): number {
     // TODO - ensure size?
     var length = 1;
-    while ((value & 0xFFFFFF80) !== 0) {
-        this.writeUInt8((value & 0x7F) | 0x80);
-        value >>>= 7;
-        length++;
+    while ((value & 0xffffff80) !== 0) {
+      this.writeUInt8((value & 0x7f) | 0x80);
+      value >>>= 7;
+      length++;
     }
-    this.writeUInt8(value & 0x7F);
+    this.writeUInt8(value & 0x7f);
     return length;
   }
 
@@ -117,8 +117,7 @@ export default class BinaryWriter {
         const tempArray = new Uint8Array(newArrayBuffer);
         tempArray.set(new Uint8Array(this.arrayBuffer));
         this.arrayBuffer = newArrayBuffer;
-      }
-      else {
+      } else {
         throw new Error('BinaryWriter overflow');
       }
     }
