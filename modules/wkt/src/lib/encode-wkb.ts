@@ -26,7 +26,7 @@ enum WKB {
 
 /**
  * Encodes a GeoJSON object into WKB
- * @param geojson A geojson feature or geometry
+ * @param geojson A GeoJSON Feature or Geometry
  * @returns string
  */
 export default function encodeWKB(geometry: Geometry | Feature, options?): ArrayBuffer {
@@ -36,19 +36,19 @@ export default function encodeWKB(geometry: Geometry | Feature, options?): Array
 
   switch (geometry.type) {
     case 'Point':
-      return encodePoint(geometry as Point);
+      return encodePoint(geometry);
     case 'LineString':
-      return encodeLineString(geometry as LineString);
+      return encodeLineString(geometry);
     case 'Polygon':
-      return encodePolygon(geometry as Polygon);
+      return encodePolygon(geometry);
     case 'MultiPoint':
-      return encodeMultiPoint(geometry as MultiPoint);
+      return encodeMultiPoint(geometry);
     case 'MultiPolygon':
-      return encodeMultiPolygon(geometry as MultiPolygon);
+      return encodeMultiPolygon(geometry);
     case 'MultiLineString':
-      return encodeMultiLineString(geometry as MultiLineString);
+      return encodeMultiLineString(geometry);
     case 'GeometryCollection':
-      return encodeGeometryCollection(geometry as GeometryCollection);
+      return encodeGeometryCollection(geometry);
     default:
       throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
   }
@@ -58,19 +58,19 @@ export default function encodeWKB(geometry: Geometry | Feature, options?): Array
 function getGeometrySize(geometry: Geometry): number {
   switch (geometry.type) {
     case 'Point':
-      return getPointSize(geometry as Point);
+      return getPointSize(geometry);
     case 'LineString':
-      return getLineStringSize(geometry as LineString);
+      return getLineStringSize(geometry);
     case 'Polygon':
-      return getPolygonSize(geometry as Polygon);
+      return getPolygonSize(geometry);
     case 'MultiPoint':
-      return getMultiPointSize(geometry as MultiPoint);
+      return getMultiPointSize(geometry);
     case 'MultiPolygon':
-      return getMultiPolygonSize(geometry as MultiPolygon);
+      return getMultiPolygonSize(geometry);
     case 'MultiLineString':
-      return getMultiLineStringSize(geometry as MultiLineString);
+      return getMultiLineStringSize(geometry);
     case 'GeometryCollection':
-      return getGeometryCollectionSize(geometry as GeometryCollection);
+      return getGeometryCollectionSize(geometry);
     default:
       return 0;
   }
