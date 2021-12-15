@@ -26,10 +26,10 @@ enum WKB {
 
 /**
  * Encodes a GeoJSON object into WKB
- * @param geojson
+ * @param geojson A geojson feature or geometry
  * @returns string
  */
-export default function encodeWKB(geometry: Geometry | Feature): ArrayBuffer {
+export default function encodeWKB(geometry: Geometry | Feature, options?): ArrayBuffer {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
   }
@@ -54,27 +54,50 @@ export default function encodeWKB(geometry: Geometry | Feature): ArrayBuffer {
   }
 }
 
-function encodePoint(point: Point): ArrayBuffer {
-  var wkb = new BinaryWriter(this._getWkbSize());
+/** Calculate the binary size (in the WKB encoding) of a specific geojson geometry */
+function getGeometrySize(geometry: Geometry): number {
+  switch (geometry.type) {
+    case 'Point':
+      return getPointSize(geometry as Point);
+    case 'LineString':
+      return getLineStringSize(geometry as LineString);
+    case 'Polygon':
+      return getPolygonSize(geometry as Polygon);
+    case 'MultiPoint':
+      return getMultiPointSize(geometry as MultiPoint);
+    case 'MultiPolygon':
+      return getMultiPolygonSize(geometry as MultiPolygon);
+    case 'MultiLineString':
+      return getMultiLineStringSize(geometry as MultiLineString);
+    case 'GeometryCollection':
+      return getGeometryCollectionSize(geometry as GeometryCollection);
+    default:
+      return 0;
+  }
+}
 
-  wkb.writeInt8(1);
-  this._writeWkbType(wkb, Types.wkb.Point, parentOptions);
+function encodePoint(point: Point, options?): ArrayBuffer {
+  const writer = new BinaryWriter(getPointSize(point));
+
+  writer.writeInt8(1);
+  writeWkbType(writer, WKB.Point, options);
 
   if (typeof this.x === 'undefined' && typeof this.y === 'undefined') {
-      wkb.writeDoubleLE(NaN);
-      wkb.writeDoubleLE(NaN);
+      writer.writeDoubleLE(NaN);
+      writer.writeDoubleLE(NaN);
 
       if (this.hasZ)
-          wkb.writeDoubleLE(NaN);
+          writer.writeDoubleLE(NaN);
       if (this.hasM)
-          wkb.writeDoubleLE(NaN);
+          writer.writeDoubleLE(NaN);
   }
   else {
       this._writeWkbPoint(wkb);
   }
 
-  return wkb.buffer;
+  return writer.buffer;
 };
+
 function getPointSize(point: Point): number {
   var size = 1 + 4 + 8 + 8;
 
@@ -86,20 +109,20 @@ function getPointSize(point: Point): number {
   return size;
 };
 
-function encodeLineString(lineString: LineString): ArrayBuffer {
+function encodeLineString(lineString: LineString, options?): ArrayBuffer {
   const size = getLineStringSize(lineString)
 
-  var wkb = new BinaryWriter(size);
+  const writer = new BinaryWriter(size);
 
-  wkb.writeInt8(1);
+  writer.writeInt8(1);
 
-  writeWkbType(wkb, WKB.LineString);
-  wkb.writeUInt32LE(this.points.length);
+  writeWkbType(writer, WKB.LineString);
+  writer.writeUInt32LE(this.points.length);
 
   for (var i = 0; i < this.points.length; i++)
       this.points[i]._writeWkbPoint(wkb);
 
-  return wkb.arrayBuffer;
+  return writer.arrayBuffer;
 }
 
 function getLineStringSize(lineString: LineString): number {
@@ -113,19 +136,151 @@ function getLineStringSize(lineString: LineString): number {
   return 1 + 4 + 4 + (lineString.points.length * coordinateSize);
 }
 
-export function encodeGeometryCollection(geometry: GeometryCollection): ArrayBuffer {
-  var writer = new BinaryWriter(this._getWkbSize());
+function encodePolygon(polygon: Polygon, options?) {
+  const writer = new BinaryWriter(getPolygonSize(polygon));
+
+  writer.writeInt8(1);
+
+  writeWkbType(writer, WKB.Polygon, options);
+
+  if (polygon.exteriorRing.length > 0) {
+      writer.writeUInt32LE(1 + this.interiorRings.length);
+      writer.writeUInt32LE(this.exteriorRing.length);
+  }
+  else {
+      writer.writeUInt32LE(0);
+  }
+
+  for (var i = 0; i < polygon.exteriorRing.length; i++)
+      polygon.exteriorRing[i]._writeWkbPoint(wkb);
+
+  for (i = 0; i < polygon.interiorRings.length; i++) {
+      writer.writeUInt32LE(polygon.interiorRings[i].length);
+
+      for (var j = 0; j < polygon.interiorRings[i].length; j++)
+          polygon.interiorRings[i][j]._writeWkbPoint(wkb);
+  }
+
+  return writer.arrayBuffer;
+}
+
+function getPolygonSize(polygon: Polygon): number {
+  var coordinateSize = 16;
+
+  if (polygon.hasZ)
+      coordinateSize += 8;
+  if (polygon.hasM)
+      coordinateSize += 8;
+
+  var size = 1 + 4 + 4;
+
+  if (polygon.coordinates.length > 0) {
+    size += 4 + (polygon.coordinates.length * coordinateSize);
+  }
+
+  for (var i = 0; i < polygon.interiorRings.length; i++)
+      size += 4 + (polygon.interiorRings[i].length * coordinateSize);
+
+  return size;
+};
+
+function encodeMultiPoint(multiPoint: MultiPoint, options?) {
+  const writer = new BinaryWriter(getMultiPointSize(multiPoint));
+
+  writer.writeInt8(1);
+
+  writeWkbType(writer, WKB.MultiPoint);
+  writer.writeUInt32LE(multiPoint.points.length);
+
+  for (var i = 0; i < multiPoint.points.length; i++)
+      writer.writeBuffer(multiPoint.points[i].toWkb({ srid: multiPoint.srid }));
+
+  return writer.arrayBuffer;
+}
+
+function getMultiPointSize(multiPoint: MultiPoint, options?) {
+  var coordinateSize = 16;
+
+  if (multiPoint.hasZ)
+      coordinateSize += 8;
+  if (multiPoint.hasM)
+      coordinateSize += 8;
+
+  coordinateSize += 5;
+
+  return 1 + 4 + 4 + (multiPoint.points.length * coordinateSize);
+}
+
+function encodeMultiLineString(multiLineString: MultiLineString, options?) {
+  const writer = new BinaryWriter(getMultiLineStringSize(multiLineString));
+
+  writer.writeInt8(1);
+
+  writeWkbType(writer, WKB.MultiLineString);
+  writer.writeUInt32LE(multiLineString.lineStrings.length);
+
+  for (var i = 0; i < multiLineString.lineStrings.length; i++)
+      writer.writeBuffer(multiLineString.lineStrings[i].toWkb({ srid: this.srid }));
+
+  return writer.arrayBuffer;
+}
+
+function getMultiLineStringSize(multiLineString: MultiLineString, options?): number {
+  var size = 1 + 4 + 4;
+
+  for (var i = 0; i < multiLineString.lineStrings.length; i++)
+      size += multiLineString.lineStrings[i]._getWkbSize();
+
+  return size;
+}
+
+function encodeMultiPolygon(multiPolygon: MultiPolygon): ArrayBuffer {
+  const writer = new BinaryWriter(getMultiPolygonSize(multiPolygon));
+
+  writer.writeInt8(1);
+
+  writeWkbType(writer, WKB.MultiPolygon);
+  writer.writeUInt32LE(multiPolygon.polygons.length);
+
+  for (var i = 0; i < multiPolygon.polygons.length; i++)
+      writer.writeBuffer(multiPolygon.polygons[i], { srid: this.srid });
+
+  return writer.arrayBuffer;
+};
+
+function getMultiPolygonSize(multiPolygon: MultiPolygon): number {
+  var size = 1 + 4 + 4;
+
+  for (var i = 0; i < multiPolygon.polygons.length; i++)
+      size += multiPolygon.polygons[i]._getWkbSize();
+
+  return size;
+};
+
+function encodeGeometryCollection(collection: GeometryCollection, options?): ArrayBuffer {
+  var writer = new BinaryWriter(getGeometryCollectionSize(collection));
 
   writer.writeInt8(1);
 
   writeWkbType(writer, WKB.GeometryCollection);
-  wkb.writeUInt32LE(this.geometries.length);
+  writer.writeUInt32LE(collection.geometries.length);
 
-  for (var i = 0; i < this.geometries.length; i++) {
-      wkb.writeBuffer(this.geometries[i].toWkb({ srid: this.srid }));
+  for (const geometry of collection.geometries) {
+    const arrayBuffer = encodeWKB(geometry, { srid: collection.srid });
+    writer.writeBuffer(arrayBuffer);
   }
 
-  return wkb.arrayBuffer;
+  return writer.arrayBuffer;
+}
+
+function getGeometryCollectionSize(collection: GeometryCollection): number {
+  let size = 1 + 4 + 4;
+
+  for (const geometry of collection.geometries) {
+    size += getGeometrySize(geometry);
+  }
+
+  return size;
 }
 
 // HELPERS
@@ -150,5 +305,5 @@ function writeWkbType(writer: BinaryWriter, geometryType: number, options?) {
   }
   */
 
-  writer.writeUInt32LE((dimensionType + geometryType) >>> 0, true);
-};
+  writer.writeUInt32LE((dimensionType + geometryType) >>> 0);
+}

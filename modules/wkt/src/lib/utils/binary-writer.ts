@@ -1,67 +1,96 @@
 // loaders.gl, MIT license
 // Forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz
 
+const LE = true;
+const BE = false;
+
 export default class BinaryWriter {
   arrayBuffer: ArrayBuffer;
-  position: number = 0;
+  dataView: DataView;
+  byteOffset: number = 0;
   allowResize: boolean = false;
 
   constructor(size: number, allowResize?: boolean) {
     this.arrayBuffer = new ArrayBuffer(size);
-    this.position = 0;
+    this.dataView = new DataView(this.arrayBuffer);
+    this.byteOffset = 0;
     this.allowResize = allowResize || false;
   }
 
-  writeUInt8() { 
-      // _write(Buffer.prototype.writeUInt8, 1);
+  writeUInt8(value: number): void {
+    this._ensureSize(1); 
+    this.dataView.setUint8(this.byteOffset, value);
+    this.byteOffset += 1;
   }
-  writeUInt16LE() { 
-      // _write(Buffer.prototype.writeUInt16LE, 2);
+  writeUInt16LE(value: number): void {
+    this._ensureSize(2); 
+    this.dataView.setUint16(this.byteOffset, value, LE);
+    this.byteOffset += 2;
   }
-  writeUInt16BE() { 
-      // _write(Buffer.prototype.writeUInt16BE, 2);
+  writeUInt16BE(value: number): void {
+    this._ensureSize(2); 
+    this.dataView.setUint16(this.byteOffset, value, BE);
+    this.byteOffset += 2;
   }
-  writeUInt32LE() { 
-      // _write(Buffer.prototype.writeUInt32LE, 4);
+  writeUInt32LE(value: number): void {
+    this._ensureSize(4); 
+    this.dataView.setUint32(this.byteOffset, value, LE);
+    this.byteOffset += 4;
   }
-  writeUInt32BE() { 
-      // _write(Buffer.prototype.writeUInt32BE, 4);
+  writeUInt32BE(value: number): void {
+    this._ensureSize(4); 
+    this.dataView.setUint32(this.byteOffset, value, BE);
+    this.byteOffset += 4;
   }
-  writeInt8() { 
-      // _write(Buffer.prototype.writeInt8, 1);
+  writeInt8(value: number): void {
+    this._ensureSize(1); 
+    this.dataView.setInt8(this.byteOffset, value);
+    this.byteOffset += 1;
   }
-  writeInt16LE() { 
-      // _write(Buffer.prototype.writeInt16LE, 2);
+  writeInt16LE(value: number): void {
+    this._ensureSize(2); 
+    this.dataView.setInt16(this.byteOffset, value, LE);
+    this.byteOffset += 2;
   }
-  writeInt16BE() { 
-      // _write(Buffer.prototype.writeInt16BE, 2);
+  writeInt16BE(value: number): void {
+    this._ensureSize(2); 
+    this.dataView.setInt16(this.byteOffset, value, BE);
+    this.byteOffset += 2;
   }
-  writeInt32LE() { 
-      // _write(Buffer.prototype.writeInt32LE, 4);
+  writeInt32LE(value: number): void {
+    this._ensureSize(4); 
+    this.dataView.setInt32(this.byteOffset, value, LE);
+    this.byteOffset += 4;
   }
-  writeInt32BE() { 
-      // _write(Buffer.prototype.writeInt32BE, 4);
+  writeInt32BE(value: number): void {
+    this._ensureSize(4); 
+    this.dataView.setInt32(this.byteOffset, value, BE);
+    this.byteOffset += 4;
   }
-  writeFloatLE() { 
-      // _write(Buffer.prototype.writeFloatLE, 4);
+  writeFloatLE(value: number): void {
+    this._ensureSize(4); 
+    this.dataView.setFloat32(this.byteOffset, value, LE);
+    this.byteOffset += 4;
   }
-  writeFloatBE() { 
-      // _write(Buffer.prototype.writeFloatBE, 4);
+  writeFloatBE(value: number): void {
+    this._ensureSize(4); 
+    this.dataView.setFloat32(this.byteOffset, value, BE);
+    this.byteOffset += 4;
   }
-  writeDoubleLE() { 
-      // _write(Buffer.prototype.writeDoubleLE, 8);
+  writeDoubleLE(value: number): void {
+    this._ensureSize(8); 
+    this.dataView.setFloat64(this.byteOffset, value, LE);
+    this.byteOffset += 8;
   }
-  writeDoubleBE() { 
-      // _write(Buffer.prototype.writeDoubleBE, 8);
+  writeDoubleBE(value: number): void {
+    this._ensureSize(8); 
+    this.dataView.setFloat64(this.byteOffset, value, BE);
+    this.byteOffset += 8;
   }
 
-  writeBuffer(buffer) {
-    this.ensureSize(buffer.length);
-    buffer.copy(this.buffer, this.position, 0, buffer.length);
-    this.position += buffer.length;
-  }
-
-  writeVarInt(value) {
+  /** A varint uses a variable number of bytes */
+  writeVarInt(value: number): number {
+    // TODO - ensure size?
     var length = 1;
     while ((value & 0xFFFFFF80) !== 0) {
         this.writeUInt8((value & 0x7F) | 0x80);
@@ -72,15 +101,25 @@ export default class BinaryWriter {
     return length;
   }
 
-  ensureSize(size) {
-    if (this.buffer.length < this.position + size) {
+  /** Append another ArrayBuffer to this ArrayBuffer */
+  writeBuffer(arrayBuffer: ArrayBuffer): void {
+    this._ensureSize(arrayBuffer.byteLength);
+    const tempArray = new Uint8Array(this.arrayBuffer);
+    tempArray.set(new Uint8Array(arrayBuffer), this.byteOffset);
+    this.byteOffset += arrayBuffer.byteLength;
+  }
+
+  /** Resizes this.arrayBuffer if not enough space */
+  _ensureSize(size: number) {
+    if (this.arrayBuffer.byteLength < this.byteOffset + size) {
       if (this.allowResize) {
-        var tempBuffer = new Buffer(this.position + size);
-        this.buffer.copy(tempBuffer, 0, 0, this.buffer.length);
-        this.buffer = tempBuffer;
+        const newArrayBuffer = new ArrayBuffer(this.byteOffset + size);
+        const tempArray = new Uint8Array(newArrayBuffer);
+        tempArray.set(new Uint8Array(this.arrayBuffer));
+        this.arrayBuffer = newArrayBuffer;
       }
       else {
-        throw new RangeError('index out of range');
+        throw new Error('BinaryWriter overflow');
       }
     }
   }

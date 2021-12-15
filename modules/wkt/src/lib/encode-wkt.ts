@@ -1,6 +1,6 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 // eslint-disable-next-line import/no-unresolved
-import type {Feature, Geometry} from 'geojson';
+import type {Feature, Geometry} from '@loaders.gl/schema';
 
 /**
  * Stringifies a GeoJSON object into WKT
@@ -32,22 +32,22 @@ export default function encodeWKT(geometry: Geometry | Feature): string {
   }
 }
 
-function pairWKT(c: number[]) {
+function pairWKT(c: number[]): string {
   return c.join(' ');
 }
 
-function ringWKT(r: number[][]) {
+function ringWKT(r: number[][]): string {
   return r.map(pairWKT).join(', ');
 }
 
-function ringsWKT(r: number[][][]) {
+function ringsWKT(r: number[][][]): string {
   return r.map(ringWKT).map(wrapParens).join(', ');
 }
 
-function multiRingsWKT(r: number[][][][]) {
+function multiRingsWKT(r: number[][][][]): string {
   return r.map(ringsWKT).map(wrapParens).join(', ');
 }
 
-function wrapParens(s: string) {
+function wrapParens(s: string): string {
   return `(${s})`;
 }
