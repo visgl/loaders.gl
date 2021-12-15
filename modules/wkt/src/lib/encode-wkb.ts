@@ -82,28 +82,38 @@ function encodePoint(point: Point, options?): ArrayBuffer {
   writer.writeInt8(1);
   writeWkbType(writer, WKB.Point, options);
 
-  if (typeof this.x === 'undefined' && typeof this.y === 'undefined') {
+  if (typeof point.coordinates[0] === 'undefined' && typeof point.coordinates[0] === 'undefined') {
       writer.writeDoubleLE(NaN);
       writer.writeDoubleLE(NaN);
 
-      if (this.hasZ)
+      if (options.hasZ)
           writer.writeDoubleLE(NaN);
-      if (this.hasM)
+      if (options.hasM)
           writer.writeDoubleLE(NaN);
   }
   else {
-      this._writeWkbPoint(wkb);
+    writePoint(writer, point, options);
   }
 
-  return writer.buffer;
-};
+  return writer.arrayBuffer;
+}
 
-function getPointSize(point: Point): number {
+function writePoint(writer: BinaryWriter, point: Point, options?): void {
+  writer.writeDoubleLE(point.coordinates[0]);
+  writer.writeDoubleLE(point.coordinates[1]);
+
+  if (options.hasZ)
+      writer.writeDoubleLE(point.coordinates[2]);
+  if (options.hasM)
+      writer.writeDoubleLE(point.coordinates[3]);
+}
+
+function getPointSize(point: Point, options?): number {
   var size = 1 + 4 + 8 + 8;
 
-  if (point.hasZ)
+  if (options.hasZ)
       size += 8;
-  if (point.hasM)
+  if (options.hasM)
       size += 8;
 
   return size;
@@ -117,20 +127,20 @@ function encodeLineString(lineString: LineString, options?): ArrayBuffer {
   writer.writeInt8(1);
 
   writeWkbType(writer, WKB.LineString);
-  writer.writeUInt32LE(this.points.length);
+  writer.writeUInt32LE(lineString.points.length);
 
-  for (var i = 0; i < this.points.length; i++)
-      this.points[i]._writeWkbPoint(wkb);
+  for (var i = 0; i < lineString.points.length; i++)
+    writePoint(writer, lineString.points[i], options);
 
   return writer.arrayBuffer;
 }
 
-function getLineStringSize(lineString: LineString): number {
+function getLineStringSize(lineString: LineString, options?): number {
   var coordinateSize = 16;
 
-  if (lineString.hasZ)
+  if (options.hasZ)
       coordinateSize += 8;
-  if (lineString.hasM)
+  if (options.hasM)
       coordinateSize += 8;
 
   return 1 + 4 + 4 + (lineString.points.length * coordinateSize);
@@ -152,24 +162,24 @@ function encodePolygon(polygon: Polygon, options?) {
   }
 
   for (var i = 0; i < polygon.exteriorRing.length; i++)
-      polygon.exteriorRing[i]._writeWkbPoint(wkb);
+      writePoint(writer, polygon.exteriorRing[i], options);
 
   for (i = 0; i < polygon.interiorRings.length; i++) {
       writer.writeUInt32LE(polygon.interiorRings[i].length);
 
       for (var j = 0; j < polygon.interiorRings[i].length; j++)
-          polygon.interiorRings[i][j]._writeWkbPoint(wkb);
+          writePoint(writer, polygon.interiorRings[i][j], options);
   }
 
   return writer.arrayBuffer;
 }
 
-function getPolygonSize(polygon: Polygon): number {
+function getPolygonSize(polygon: Polygon, options?): number {
   var coordinateSize = 16;
 
-  if (polygon.hasZ)
+  if (options.hasZ)
       coordinateSize += 8;
-  if (polygon.hasM)
+  if (options.hasM)
       coordinateSize += 8;
 
   var size = 1 + 4 + 4;
@@ -192,8 +202,10 @@ function encodeMultiPoint(multiPoint: MultiPoint, options?) {
   writeWkbType(writer, WKB.MultiPoint);
   writer.writeUInt32LE(multiPoint.points.length);
 
-  for (var i = 0; i < multiPoint.points.length; i++)
-      writer.writeBuffer(multiPoint.points[i].toWkb({ srid: multiPoint.srid }));
+  for (var i = 0; i < multiPoint.points.length; i++) {
+    const arrayBuffer = encodePoint(multiPoint.points[i], { srid: multiPoint.srid });
+    writer.writeBuffer(arrayBuffer);
+  }
 
   return writer.arrayBuffer;
 }
@@ -201,9 +213,9 @@ function encodeMultiPoint(multiPoint: MultiPoint, options?) {
 function getMultiPointSize(multiPoint: MultiPoint, options?) {
   var coordinateSize = 16;
 
-  if (multiPoint.hasZ)
+  if (options.hasZ)
       coordinateSize += 8;
-  if (multiPoint.hasM)
+  if (options.hasM)
       coordinateSize += 8;
 
   coordinateSize += 5;
