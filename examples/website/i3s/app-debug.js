@@ -15,7 +15,7 @@ import {
   COORDINATE_SYSTEM
 } from '@deck.gl/core';
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
-import {TerrainLayer} from '@deck.gl/geo-layers';
+import {TerrainLayer, Tile3DLayer} from '@deck.gl/geo-layers';
 
 import {load} from '@loaders.gl/core';
 import {I3SLoader, I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
@@ -60,8 +60,7 @@ import {
 import {Color, Flex, Font} from './components/styles';
 import {buildSublayersTree} from './helpers/sublayers';
 import {initStats, sumTilesetsStats} from './helpers/stats';
-
-import {default as Tile3DLayer} from './deckgl/tile-3d-layer-tmp';
+import { getElevationByCentralTile } from './helpers/terrain-elevation';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
@@ -86,8 +85,9 @@ const INITIAL_VIEW_STATE = {
 };
 
 // https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
-const MAPZEN_TERRAIN_IMAGES = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
-const ARCGIS_STREET_MAP_SURFACE_IMAGES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const MAPZEN_TERRAIN_IMAGES = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`;
+const ARCGIS_STREET_MAP_SURFACE_IMAGES =
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const MAPZEN_ELEVATION_DECODE_PARAMETERS = {
   rScaler: 256,
   gScaler: 1,
@@ -142,7 +142,8 @@ const MATERIAL_PICKER_STYLE = {
 const VIEWS = [
   new MapView({
     id: 'main',
-    controller: {inertia: true}
+    controller: {inertia: true},
+    farZMultiplier: 2.02
   }),
   new MapView({
     id: 'minimap',
@@ -240,7 +241,8 @@ export default class App extends PureComponent {
       sublayers: [],
       sublayersUpdateCounter: 0,
       tilesetsStats: initStats(),
-      useTerrainLayer: false
+      useTerrainLayer: false,
+      terrainTiles: {}
     };
     this._onSelectTileset = this._onSelectTileset.bind(this);
     this._setDebugOptions = this._setDebugOptions.bind(this);
@@ -389,7 +391,34 @@ export default class App extends PureComponent {
     });
   }
 
-  _onViewStateChange({viewState, viewId}) {
+  _onViewStateChange({interactionState, viewState, viewId}) {
+    let {
+      longitude,
+      latitude,
+      position: [x, y, oldElevation]
+    } = viewState;
+    const {terrainTiles} = this.state;
+    const viewportCenterTerrainElevation =
+      getElevationByCentralTile(longitude, latitude, terrainTiles) || 0;
+    let cameraTerrainElevation = null;
+    if (this.currentViewport) {
+      const cameraPosition = this.currentViewport.unprojectPosition(
+        this.currentViewport.cameraPosition
+      );
+      cameraTerrainElevation =
+        getElevationByCentralTile(cameraPosition[0], cameraPosition[1], terrainTiles) || 0;
+    }
+    let elevation =
+      cameraTerrainElevation === null || viewportCenterTerrainElevation > cameraTerrainElevation
+        ? viewportCenterTerrainElevation
+        : cameraTerrainElevation;
+    if (!interactionState.isZooming) {
+      if (oldElevation - elevation > 20) {
+        elevation = oldElevation - 20;
+      } else if (elevation - oldElevation > 20) {
+        elevation = oldElevation + 20;
+      }
+    }
     const oldViewState = this.state.viewState;
     if (viewId === 'minimap') {
       this.setState({
@@ -397,7 +426,8 @@ export default class App extends PureComponent {
           main: {
             ...oldViewState.main,
             longitude: viewState.longitude,
-            latitude: viewState.latitude
+            latitude: viewState.latitude,
+            position: [0, 0, elevation]
           },
           minimap: viewState
         }
@@ -405,7 +435,10 @@ export default class App extends PureComponent {
     } else {
       this.setState({
         viewState: {
-          main: viewState,
+          main: {
+            ...viewState,
+            position: [0, 0, elevation]
+          },
           minimap: {
             ...oldViewState.minimap,
             longitude: viewState.longitude,
@@ -508,6 +541,19 @@ export default class App extends PureComponent {
     this.setState({useTerrainLayer: !useTerrainLayer});
   }
 
+  _onTerrainTileLoad(tile) {
+    const {terrainTiles} = this.state;
+    const {
+      bbox: {east, north, south, west}
+    } = tile;
+    this.setState({
+      terrainTiles: {
+        ...terrainTiles,
+        [`${east};${north};${south};${west}`]: tile
+      }
+    });
+  }
+
   _renderTerrainLayer() {
     return new TerrainLayer({
       id: 'terrain',
@@ -515,6 +561,7 @@ export default class App extends PureComponent {
       elevationDecoder: MAPZEN_ELEVATION_DECODE_PARAMETERS,
       elevationData: MAPZEN_TERRAIN_IMAGES,
       texture: ARCGIS_STREET_MAP_SURFACE_IMAGES,
+      onTileLoad: (tile) => this._onTerrainTileLoad(tile),
       color: [255, 255, 255]
     });
   }
@@ -943,7 +990,8 @@ export default class App extends PureComponent {
       selectedMapStyle,
       selectedTile,
       tileInfo,
-      debugOptions: {debugPanel, showFullInfo, controlPanel, semanticValidator}
+      debugOptions: {debugPanel, showFullInfo, controlPanel, semanticValidator},
+      useTerrainLayer
     } = this.state;
 
     return (
@@ -971,7 +1019,9 @@ export default class App extends PureComponent {
           getTooltip={(info) => this.getTooltip(info)}
           onClick={(info) => this.handleClick(info)}
         >
-          <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
+          {!useTerrainLayer && (
+            <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
+          )}
           <View id="minimap">
             <StaticMap
               reuseMaps

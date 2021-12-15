@@ -5,8 +5,8 @@ import styled from 'styled-components';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator, COORDINATE_SYSTEM} from '@deck.gl/core';
-import {TerrainLayer} from '@deck.gl/geo-layers';
+import {MapController, FlyToInterpolator, COORDINATE_SYSTEM, MapView} from '@deck.gl/core';
+import {TerrainLayer, Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
@@ -21,8 +21,7 @@ import {Color, Flex, Font} from './components/styles';
 import {load} from '@loaders.gl/core';
 import {buildSublayersTree} from './helpers/sublayers';
 import {initStats, sumTilesetsStats} from './helpers/stats';
-
-import {default as Tile3DLayer} from './deckgl/tile-3d-layer-tmp';
+import {getElevationByCentralTile} from './helpers/terrain-elevation';
 
 const TRANSITION_DURAITON = 4000;
 
@@ -32,16 +31,23 @@ const INITIAL_VIEW_STATE = {
   height: 600,
   width: 800,
   pitch: 45,
-  maxPitch: 60,
+  maxPitch: 90,
   bearing: 0,
   minZoom: 2,
   maxZoom: 30,
   zoom: 14.5
 };
 
+const VIEW = new MapView({
+  id: 'main',
+  controller: {inertia: true},
+  farZMultiplier: 2.02
+});
+
 // https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
-const MAPZEN_TERRAIN_IMAGES = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`
-const ARCGIS_STREET_MAP_SURFACE_IMAGES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const MAPZEN_TERRAIN_IMAGES = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`;
+const ARCGIS_STREET_MAP_SURFACE_IMAGES =
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const MAPZEN_ELEVATION_DECODE_PARAMETERS = {
   rScaler: 256,
   gScaler: 1,
@@ -96,7 +102,8 @@ export default class App extends PureComponent {
       sublayers: [],
       sublayersUpdateCounter: 0,
       tilesetsStats: initStats(),
-      useTerrainLayer: false
+      useTerrainLayer: false,
+      terrainTiles: {}
     };
     this.needTransitionToTileset = true;
 
@@ -200,8 +207,35 @@ export default class App extends PureComponent {
     }
   }
 
-  _onViewStateChange({viewState}) {
-    this.setState({viewState});
+  _onViewStateChange({interactionState, viewState}) {
+    let {
+      longitude,
+      latitude,
+      position: [x, y, oldElevation]
+    } = viewState;
+    const {terrainTiles} = this.state;
+    const viewportCenterTerrainElevation =
+      getElevationByCentralTile(longitude, latitude, terrainTiles) || 0;
+    let cameraTerrainElevation = null;
+    if (this.currentViewport) {
+      const cameraPosition = this.currentViewport.unprojectPosition(
+        this.currentViewport.cameraPosition
+      );
+      cameraTerrainElevation =
+        getElevationByCentralTile(cameraPosition[0], cameraPosition[1], terrainTiles) || 0;
+    }
+    let elevation =
+      cameraTerrainElevation === null || viewportCenterTerrainElevation > cameraTerrainElevation
+        ? viewportCenterTerrainElevation
+        : cameraTerrainElevation;
+    if (!interactionState.isZooming) {
+      if (oldElevation - elevation > 20) {
+        elevation = oldElevation - 20;
+      } else if (elevation - oldElevation > 20) {
+        elevation = oldElevation + 20;
+      }
+    }
+    this.setState({viewState: {...viewState, position: [0, 0, elevation]}});
   }
 
   _onSelectMapStyle({selectedMapStyle}) {
@@ -213,6 +247,19 @@ export default class App extends PureComponent {
     this.setState({useTerrainLayer: !useTerrainLayer});
   }
 
+  _onTerrainTileLoad(tile) {
+    const {terrainTiles} = this.state;
+    const {
+      bbox: {east, north, south, west}
+    } = tile;
+    this.setState({
+      terrainTiles: {
+        ...terrainTiles,
+        [`${east};${north};${south};${west}`]: tile
+      }
+    });
+  }
+
   _renderTerrainLayer() {
     return new TerrainLayer({
       id: 'terrain',
@@ -220,6 +267,7 @@ export default class App extends PureComponent {
       elevationDecoder: MAPZEN_ELEVATION_DECODE_PARAMETERS,
       elevationData: MAPZEN_TERRAIN_IMAGES,
       texture: ARCGIS_STREET_MAP_SURFACE_IMAGES,
+      onTileLoad: (tile) => this._onTerrainTileLoad(tile),
       color: [255, 255, 255]
     });
   }
@@ -237,7 +285,13 @@ export default class App extends PureComponent {
   }
 
   _renderLayers() {
-    const {flattenedSublayers, token, selectedFeatureIndex, selectedTilesetBasePath, useTerrainLayer} = this.state;
+    const {
+      flattenedSublayers,
+      token,
+      selectedFeatureIndex,
+      selectedTilesetBasePath,
+      useTerrainLayer
+    } = this.state;
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
     if (token) {
       loadOptions.i3s = {...loadOptions.i3s, token};
@@ -261,12 +315,12 @@ export default class App extends PureComponent {
           })
       );
 
-      if (useTerrainLayer) {
-        const terrainLayer = this._renderTerrainLayer();
-        layers.push(terrainLayer);
-      }
+    if (useTerrainLayer) {
+      const terrainLayer = this._renderTerrainLayer();
+      layers.push(terrainLayer);
+    }
 
-      return layers;
+    return layers;
   }
 
   async handleClick(info) {
@@ -342,8 +396,7 @@ export default class App extends PureComponent {
         isBuildingExplorerShown={showBuildingExplorer}
         useTerrainLayer={useTerrainLayer}
         toggleTerrain={this._toggleTerrain}
-      >
-      </ControlPanel>
+      ></ControlPanel>
     );
   }
 
@@ -393,7 +446,7 @@ export default class App extends PureComponent {
 
   render() {
     const layers = this._renderLayers();
-    const {viewState, selectedMapStyle, selectedFeatureAttributes} = this.state;
+    const {viewState, selectedMapStyle, selectedFeatureAttributes, useTerrainLayer} = this.state;
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
@@ -403,6 +456,7 @@ export default class App extends PureComponent {
         <DeckGL
           layers={layers}
           viewState={viewState}
+          views={[VIEW]}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{
             type: MapController,
@@ -414,7 +468,10 @@ export default class App extends PureComponent {
           getTooltip={(info) => this.getTooltip(info)}
           onClick={(info) => this.handleClick(info)}
         >
-          <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
+          {({viewport}) => {
+            this.currentViewport = viewport;
+          }}
+          {!useTerrainLayer && <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />}
         </DeckGL>
       </div>
     );
