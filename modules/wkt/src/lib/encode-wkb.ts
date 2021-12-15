@@ -55,7 +55,8 @@ export default function encodeWKB(geometry: Geometry | Feature, options?): Array
     case 'GeometryCollection':
       return encodeGeometryCollection(geometry);
     default:
-      throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
+      const exhaustiveCheck: never = geometry;
+      throw new Error(`Unhandled case: ${exhaustiveCheck}`);
   }
 }
 
@@ -77,7 +78,8 @@ function getGeometrySize(geometry: Geometry): number {
     case 'GeometryCollection':
       return getGeometryCollectionSize(geometry);
     default:
-      return 0;
+      const exhaustiveCheck: never = geometry;
+      throw new Error(`Unhandled case: ${exhaustiveCheck}`);
   }
 }
 
