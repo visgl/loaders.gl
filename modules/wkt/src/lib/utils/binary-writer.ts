@@ -91,7 +91,7 @@ export default class BinaryWriter {
   /** A varint uses a variable number of bytes */
   writeVarInt(value: number): number {
     // TODO - ensure size?
-    var length = 1;
+    let length = 1;
     while ((value & 0xffffff80) !== 0) {
       this.writeUInt8((value & 0x7f) | 0x80);
       value >>>= 7;

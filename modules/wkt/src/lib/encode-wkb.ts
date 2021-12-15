@@ -35,6 +35,7 @@ enum WKB {
 interface WKBOptions {
   hasZ: boolean;
   hasM: boolean;
+  srid?: any;
 }
 
 /**
@@ -94,13 +95,15 @@ function getGeometrySize(geometry: Geometry, options: WKBOptions): number {
   }
 }
 
+/** Encode Point geometry as WKB ArrayBuffer */
 function encodePoint(point: Point, options: WKBOptions): ArrayBuffer {
   const writer = new BinaryWriter(getPointSize(options));
 
   writer.writeInt8(1);
   writeWkbType(writer, WKB.Point, options);
 
-  if (typeof point.coordinates[0] === 'undefined' && typeof point.coordinates[0] === 'undefined') {
+  // I believe this special case is to handle writing Point(NaN, NaN) correctly
+  if (typeof point.coordinates[0] === 'undefined' && typeof point.coordinates[1] === 'undefined') {
     writer.writeDoubleLE(NaN);
     writer.writeDoubleLE(NaN);
 
@@ -111,21 +114,21 @@ function encodePoint(point: Point, options: WKBOptions): ArrayBuffer {
       writer.writeDoubleLE(NaN);
     }
   } else {
-    writePoint(writer, point, options);
+    writeCoordinate(writer, point.coordinates, options);
   }
 
   return writer.arrayBuffer;
 }
 
-function writePoint(writer: BinaryWriter, point: Point, options: WKBOptions): void {
-  writer.writeDoubleLE(point.coordinates[0]);
-  writer.writeDoubleLE(point.coordinates[1]);
+function writeCoordinate(writer: BinaryWriter, coordinate: number[], options: WKBOptions): void {
+  writer.writeDoubleLE(coordinate[0]);
+  writer.writeDoubleLE(coordinate[1]);
 
   if (options.hasZ) {
-    writer.writeDoubleLE(point.coordinates[2]);
+    writer.writeDoubleLE(coordinate[2]);
   }
   if (options.hasM) {
-    writer.writeDoubleLE(point.coordinates[3]);
+    writer.writeDoubleLE(coordinate[3]);
   }
 }
 
@@ -135,6 +138,7 @@ function getPointSize(options: WKBOptions): number {
   return 1 + 4 + coordinateSize;
 }
 
+/** Encode LineString geometry as WKB ArrayBuffer */
 function encodeLineString(lineString: LineString, options: WKBOptions): ArrayBuffer {
   const size = getLineStringSize(lineString, options);
 
@@ -142,23 +146,26 @@ function encodeLineString(lineString: LineString, options: WKBOptions): ArrayBuf
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.LineString);
-  writer.writeUInt32LE(lineString.points.length);
+  writeWkbType(writer, WKB.LineString, options);
+  writer.writeUInt32LE(lineString.coordinates.length);
 
-  for (let i = 0; i < lineString.points.length; i++)
-    writePoint(writer, lineString.points[i], options);
+  for (let i = 0; i < lineString.coordinates.length; i++) {
+    writeCoordinate(writer, lineString.coordinates[i], options);
+  }
 
   return writer.arrayBuffer;
 }
 
+/** Get encoded size of LineString object */
 function getLineStringSize(lineString: LineString, options: WKBOptions): number {
   const coordinateSize = getCoordinateSize(options);
 
-  return 1 + 4 + 4 + lineString.points.length * coordinateSize;
+  return 1 + 4 + 4 + lineString.coordinates.length * coordinateSize;
 }
 
-function encodePolygon(polygon: Polygon, options: WKBOptions) {
-  const writer = new BinaryWriter(getPolygonSize(polygon));
+/** Encode Polygon geometry as WKB ArrayBuffer */
+function encodePolygon(polygon: Polygon, options: WKBOptions): ArrayBuffer {
+  const writer = new BinaryWriter(getPolygonSize(polygon, options));
 
   writer.writeInt8(1);
 
@@ -205,7 +212,7 @@ function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiPoint);
+  writeWkbType(writer, WKB.MultiPoint, options);
   writer.writeUInt32LE(multiPoint.points.length);
 
   for (let i = 0; i < multiPoint.points.length; i++) {
@@ -218,7 +225,7 @@ function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
 
 function getMultiPointSize(multiPoint: MultiPoint, options: WKBOptions) {
   let coordinateSize = getCoordinateSize(options);
-  
+
   // This is because each point has a 5-byte header?
   coordinateSize += 5;
 
@@ -230,7 +237,7 @@ function encodeMultiLineString(multiLineString: MultiLineString, options: WKBOpt
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiLineString);
+  writeWkbType(writer, WKB.MultiLineString, options);
   writer.writeUInt32LE(multiLineString.lineStrings.length);
 
   for (var i = 0; i < multiLineString.lineStrings.length; i++)
@@ -253,7 +260,7 @@ function encodeMultiPolygon(multiPolygon: MultiPolygon, options: WKBOptions): Ar
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiPolygon);
+  writeWkbType(writer, WKB.MultiPolygon, options);
   writer.writeUInt32LE(multiPolygon.polygons.length);
 
   for (let i = 0; i < multiPolygon.polygons.length; i++) {
@@ -280,7 +287,7 @@ function encodeGeometryCollection(
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.GeometryCollection);
+  writeWkbType(writer, WKB.GeometryCollection, options);
   writer.writeUInt32LE(collection.geometries.length);
 
   for (const geometry of collection.geometries) {
@@ -303,25 +310,31 @@ function getGeometryCollectionSize(collection: GeometryCollection, options: WKBO
 
 // HELPERS
 
-function writeWkbType(writer: BinaryWriter, geometryType: number, options: WKBOptions) {
-  var dimensionType = 0;
+/**
+ * Construct and write WKB integer code
+ * Reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
+ */
+function writeWkbType(writer: BinaryWriter, geometryType: number, options: WKBOptions): void {
+  const {hasZ, hasM, srid} = options;
 
-  /*
-  if (typeof this.srid === 'undefined' && (!options? || typeof options?.srid === 'undefined')) {
-      if (this.hasZ && this.hasM)
-          dimensionType += 3000;
-      else if (this.hasZ)
-          dimensionType += 1000;
-      else if (this.hasM)
-          dimensionType += 2000;
+  let dimensionType = 0;
+
+  if (!srid) {
+    if (hasZ && hasM) {
+      dimensionType += 3000;
+    } else if (hasZ) {
+      dimensionType += 1000;
+    } else if (hasM) {
+      dimensionType += 2000;
+    }
+  } else {
+    if (hasZ) {
+      dimensionType |= 0x80000000;
+    }
+    if (hasM) {
+      dimensionType |= 0x40000000;
+    }
   }
-  else {
-      if (this.hasZ)
-          dimensionType |= 0x80000000;
-      if (this.hasM)
-          dimensionType |= 0x40000000;
-  }
-  */
 
   writer.writeUInt32LE((dimensionType + geometryType) >>> 0);
 }
@@ -336,6 +349,6 @@ function getCoordinateSize(options: WKBOptions): number {
   if (options.hasM) {
     coordinateSize += 8;
   }
-  
+
   return coordinateSize;
 }
