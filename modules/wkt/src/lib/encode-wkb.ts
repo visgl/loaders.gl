@@ -120,7 +120,12 @@ function encodePoint(point: Point, options: WKBOptions): ArrayBuffer {
   return writer.arrayBuffer;
 }
 
-function writeCoordinate(writer: BinaryWriter, coordinate: number[], options: WKBOptions): void {
+/** Write coordinate to buffer */
+function writeCoordinate(
+  writer: BinaryWriter,
+  coordinate: Point['coordinates'],
+  options: WKBOptions
+): void {
   writer.writeDoubleLE(coordinate[0]);
   writer.writeDoubleLE(coordinate[1]);
 
@@ -170,22 +175,24 @@ function encodePolygon(polygon: Polygon, options: WKBOptions): ArrayBuffer {
   writer.writeInt8(1);
 
   writeWkbType(writer, WKB.Polygon, options);
+  const [exteriorRing, ...interiorRings] = polygon.coordinates;
 
-  if (polygon.exteriorRing.length > 0) {
-    writer.writeUInt32LE(1 + this.interiorRings.length);
-    writer.writeUInt32LE(this.exteriorRing.length);
+  if (exteriorRing.length > 0) {
+    writer.writeUInt32LE(1 + interiorRings.length);
+    writer.writeUInt32LE(exteriorRing.length);
   } else {
     writer.writeUInt32LE(0);
   }
 
-  for (let i = 0; i < polygon.exteriorRing.length; i++)
-    writePoint(writer, polygon.exteriorRing[i], options);
+  for (let i = 0; i < exteriorRing.length; i++) {
+    writeCoordinate(writer, exteriorRing[i], options);
+  }
 
-  for (i = 0; i < polygon.interiorRings.length; i++) {
-    writer.writeUInt32LE(polygon.interiorRings[i].length);
+  for (let i = 0; i < interiorRings.length; i++) {
+    writer.writeUInt32LE(interiorRings[i].length);
 
-    for (let j = 0; j < polygon.interiorRings[i].length; j++)
-      writePoint(writer, polygon.interiorRings[i][j], options);
+    for (let j = 0; j < interiorRings[i].length; j++)
+      writeCoordinate(writer, interiorRings[i][j], options);
   }
 
   return writer.arrayBuffer;
@@ -194,6 +201,8 @@ function encodePolygon(polygon: Polygon, options: WKBOptions): ArrayBuffer {
 /** Get encoded size of Polygon object */
 function getPolygonSize(polygon: Polygon, options: WKBOptions): number {
   const coordinateSize = getCoordinateSize(options);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, ...interiorRings] = polygon.coordinates;
 
   let totalSize = 1 + 4 + 4;
 
@@ -201,22 +210,24 @@ function getPolygonSize(polygon: Polygon, options: WKBOptions): number {
     totalSize += 4 + polygon.coordinates.length * coordinateSize;
   }
 
-  for (let i = 0; i < polygon.interiorRings.length; i++)
-    totalSize += 4 + polygon.interiorRings[i].length * coordinateSize;
+  for (let i = 0; i < interiorRings.length; i++) {
+    totalSize += 4 + interiorRings[i].length * coordinateSize;
+  }
 
   return totalSize;
 }
 
 function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
-  const writer = new BinaryWriter(getMultiPointSize(multiPoint));
+  const writer = new BinaryWriter(getMultiPointSize(multiPoint, options));
+  const points = multiPoint.coordinates;
 
   writer.writeInt8(1);
 
   writeWkbType(writer, WKB.MultiPoint, options);
-  writer.writeUInt32LE(multiPoint.points.length);
+  writer.writeUInt32LE(points.length);
 
-  for (let i = 0; i < multiPoint.points.length; i++) {
-    const arrayBuffer = encodePoint(multiPoint.points[i], {srid: multiPoint.srid});
+  for (let i = 0; i < points.length; i++) {
+    const arrayBuffer = encodePoint(points[i], {srid: multiPoint.srid});
     writer.writeBuffer(arrayBuffer);
   }
 
@@ -225,46 +236,52 @@ function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
 
 function getMultiPointSize(multiPoint: MultiPoint, options: WKBOptions) {
   let coordinateSize = getCoordinateSize(options);
+  const points = multiPoint.coordinates;
 
   // This is because each point has a 5-byte header?
   coordinateSize += 5;
 
-  return 1 + 4 + 4 + multiPoint.points.length * coordinateSize;
+  return 1 + 4 + 4 + points.length * coordinateSize;
 }
 
 function encodeMultiLineString(multiLineString: MultiLineString, options: WKBOptions) {
-  const writer = new BinaryWriter(getMultiLineStringSize(multiLineString));
+  const writer = new BinaryWriter(getMultiLineStringSize(multiLineString, options));
+  const lineStrings = multiLineString.coordinates;
 
   writer.writeInt8(1);
 
   writeWkbType(writer, WKB.MultiLineString, options);
-  writer.writeUInt32LE(multiLineString.lineStrings.length);
+  writer.writeUInt32LE(lineStrings.length);
 
-  for (var i = 0; i < multiLineString.lineStrings.length; i++)
-    writer.writeBuffer(multiLineString.lineStrings[i].toWkb({srid: this.srid}));
+  for (let i = 0; i < lineStrings.length; i++) {
+    writer.writeBuffer(lineStrings[i].toWkb({srid: this.srid}));
+  }
 
   return writer.arrayBuffer;
 }
 
 function getMultiLineStringSize(multiLineString: MultiLineString, options: WKBOptions): number {
-  var size = 1 + 4 + 4;
+  let size = 1 + 4 + 4;
+  const lineStrings = multiLineString.coordinates;
 
-  for (let i = 0; i < multiLineString.lineStrings.length; i++)
-    size += multiLineString.lineStrings[i]._getWkbSize();
+  for (let i = 0; i < lineStrings.length; i++) {
+    size += lineStrings[i]._getWkbSize();
+  }
 
   return size;
 }
 
 function encodeMultiPolygon(multiPolygon: MultiPolygon, options: WKBOptions): ArrayBuffer {
   const writer = new BinaryWriter(getMultiPolygonSize(multiPolygon));
+  const polygons = multiPolygon.coordinates
 
   writer.writeInt8(1);
 
   writeWkbType(writer, WKB.MultiPolygon, options);
-  writer.writeUInt32LE(multiPolygon.polygons.length);
+  writer.writeUInt32LE(polygons.length);
 
-  for (let i = 0; i < multiPolygon.polygons.length; i++) {
-    writer.writeBuffer(multiPolygon.polygons[i], {srid: this.srid});
+  for (let i = 0; i < polygons.length; i++) {
+    writer.writeBuffer(polygons[i], {srid: this.srid});
   }
 
   return writer.arrayBuffer;
@@ -272,9 +289,11 @@ function encodeMultiPolygon(multiPolygon: MultiPolygon, options: WKBOptions): Ar
 
 function getMultiPolygonSize(multiPolygon: MultiPolygon): number {
   let size = 1 + 4 + 4;
+  const polygons = multiPolygon.coordinates
 
-  for (let i = 0; i < multiPolygon.polygons.length; i++)
-    size += multiPolygon.polygons[i]._getWkbSize();
+  for (let i = 0; i < polygons.length; i++) {
+    size += polygons[i]._getWkbSize();
+  }
 
   return size;
 }
@@ -283,7 +302,7 @@ function encodeGeometryCollection(
   collection: GeometryCollection,
   options: WKBOptions
 ): ArrayBuffer {
-  const writer = new BinaryWriter(getGeometryCollectionSize(collection));
+  const writer = new BinaryWriter(getGeometryCollectionSize(collection, options));
 
   writer.writeInt8(1);
 
