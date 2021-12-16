@@ -194,7 +194,9 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
   for (const interiorRing of interiorRings) {
     writer.writeUInt32LE(interiorRing.length);
 
-    for (const coordinate of interiorRing) writeCoordinate(writer, coordinate, options);
+    for (const coordinate of interiorRing) {
+      writeCoordinate(writer, coordinate, options);
+    }
   }
 
   return writer.arrayBuffer;
@@ -203,20 +205,19 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
 /** Get encoded size of Polygon object */
 function getPolygonSize(coordinates: Polygon['coordinates'], options: WKBOptions): number {
   const coordinateSize = getCoordinateSize(options);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, ...interiorRings] = coordinates;
+  const [exteriorRing, ...interiorRings] = coordinates;
 
-  let totalSize = 1 + 4 + 4;
+  let size = 1 + 4 + 4;
 
-  if (coordinates.length > 0) {
-    totalSize += 4 + coordinates.length * coordinateSize;
+  if (exteriorRing.length > 0) {
+    size += 4 + exteriorRing.length * coordinateSize;
   }
 
   for (const interiorRing of interiorRings) {
-    totalSize += 4 + interiorRing.length * coordinateSize;
+    size += 4 + interiorRing.length * coordinateSize;
   }
 
-  return totalSize;
+  return size;
 }
 
 function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
