@@ -29,7 +29,7 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap",
-    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/worker.js --bundle --minify --sourcemap"
+    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/worker.js --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
