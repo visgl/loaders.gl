@@ -1,9 +1,9 @@
-import {ReadableOptions, Readable} from 'stream';
+import {Readable, ReadableOptions} from 'stream';
 
-export type MakeNodeStreamOptions = ReadableOptions;
+export type MakeStreamOptions = ReadableOptions;
 
 /** Builds a node stream from an iterator */
-function makeNodeStream<ArrayBuffer>(
+export function makeStream<ArrayBuffer>(
   source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   options?: ReadableOptions
 ): Readable {
@@ -12,6 +12,7 @@ function makeNodeStream<ArrayBuffer>(
     : source[Symbol.iterator]();
   return new AsyncIterableReadable(iterator, options);
 }
+
 class AsyncIterableReadable extends Readable {
   private _pulling: boolean;
   private _bytesMode: boolean;
@@ -62,8 +63,3 @@ class AsyncIterableReadable extends Readable {
     return !this.readable;
   }
 }
-
-// This module is marked `false` in the the "browser" field of the `package.json` for
-// `@loaders.gl/core`. We avoid using named exports so that bundlers have an easier
-// time resolving this "empty" module.
-export default makeNodeStream;

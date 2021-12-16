@@ -1,4 +1,4 @@
-export type MakeDOMStreamOptions = {
+export type MakeStreamOptions = {
   /** Stream allocates an arrayBuffer. Enables use of a default reader. */
   autoAllocateChunkSize?: number;
   /** Total number of chunks in queue before back pressure is applied */
@@ -6,9 +6,9 @@ export type MakeDOMStreamOptions = {
 };
 
 /** Builds a DOM stream from an iterator */
-export function makeDOMStream<ArrayBuffer>(
+export function makeStream<ArrayBuffer>(
   source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
-  options?: MakeDOMStreamOptions
+  options?: MakeStreamOptions
 ): ReadableStream {
   const iterator = source[Symbol.asyncIterator]
     ? (source as AsyncIterable<ArrayBuffer>)[Symbol.asyncIterator]()
