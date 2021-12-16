@@ -55,7 +55,7 @@ test('encodeWKB Z', async (t) => {
 
   for (const testCase of Object.values(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
-    const encoded = encodeWKB(geoJSON);
+    const encoded = encodeWKB(geoJSON, {hasZ: true});
     t.deepEqual(encoded, wkb);
   }
 

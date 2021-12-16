@@ -33,8 +33,8 @@ enum WKB {
  * Options for encodeWKB
  */
 interface WKBOptions {
-  hasZ: boolean;
-  hasM: boolean;
+  hasZ?: boolean;
+  hasM?: boolean;
   srid?: any;
 }
 
