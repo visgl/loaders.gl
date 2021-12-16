@@ -11,7 +11,7 @@ import type {
 import {binaryToGeometry} from '@loaders.gl/gis';
 import type {WKBLoaderOptions} from '../wkb-loader';
 
-import {parseWKBHeader} from './parse-wkb-header';
+import {parseWKBHeader, WKBGeometryType} from './parse-wkb-header';
 
 export function parseWKB(
   arrayBuffer: ArrayBuffer,
@@ -41,28 +41,28 @@ export function parseWKBToBinary(
   const offset = wkbHeader.byteOffset;
 
   switch (geometryType) {
-    case 1:
+    case WKBGeometryType.Point:
       const point = parsePoint(dataView, offset, dimensions, littleEndian);
       return point.geometry;
-    case 2:
+    case WKBGeometryType.LineString:
       const line = parseLineString(dataView, offset, dimensions, littleEndian);
       return line.geometry;
-    case 3:
+    case WKBGeometryType.Polygon:
       const polygon = parsePolygon(dataView, offset, dimensions, littleEndian);
       return polygon.geometry;
-    case 4:
+    case WKBGeometryType.MultiPoint:
       const multiPoint = parseMultiPoint(dataView, offset, dimensions, littleEndian);
       multiPoint.type = 'Point';
       return multiPoint;
-    case 5:
+    case WKBGeometryType.MultiLineString:
       const multiLine = parseMultiLineString(dataView, offset, dimensions, littleEndian);
       multiLine.type = 'LineString';
       return multiLine;
-    case 6:
+    case WKBGeometryType.MultiPolygon:
       const multiPolygon = parseMultiPolygon(dataView, offset, dimensions, littleEndian);
       multiPolygon.type = 'Polygon';
       return multiPolygon;
-    // case 7:
+    // case WKBGeometryType.GeometryCollection:
     // TODO: handle GeometryCollections
     // return parseGeometryCollection(dataView, offset, dimensions, littleEndian);
     default:

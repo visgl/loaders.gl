@@ -40,20 +40,24 @@ Well-known text (WKT) for geometry is a text markup language for representing ve
 | GeoJSON Geometry | JSON based, human-readable, slightly more verbose, easier to parse  |
 | GML Geometry     | XML based, human-readable, even more verbose, more complex to parse |
 
+## Ecosystem Support
+
+- PostGIS and some other databases offer functions to return geometries in WKT format: [WKT](https://postgis.net/docs/ST_AsText.html), [ST_AsEWKT](https://postgis.net/docs/ST_AsEWKT.html).
+
 ## Geometries
 
 WKT can represent a range of distinct geometric objects.
 
 *Note that some implementations, including loaders.gl, only handle the core GeoJSON geometry equivalents (points, line strings, polygons and to a varying degrees geometry collections of the same).*
 
-| Geometry                             |
-| ------------------------------------ |
-| Point, MultiPoint                    |
-| LineString, MultiLineString          |
-| Polygon, MultiPolygon                |
-| GeometryCollection                   |
-|                                      |
-| Triangle                             |
-| PolyhedralSurface                    |
-| TIN (Triangulated irregular network) |
+| Geometry                               |
+| -------------------------------------- |
+| `Point`, `MultiPoint`                  |
+| `LineString`, `MultiLineString`        |
+| `Polygon`, `MultiPolygon`              |
+| `GeometryCollection`                   |
+|                                        |
+| `Triangle`                             |
+| `PolyhedralSurface`                    |
+| `TIN` (Triangulated irregular network) |
 

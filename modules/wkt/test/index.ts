@@ -5,6 +5,9 @@ import './lib/utils/hex-transcoder.spec';
 import './wkb-loader.spec';
 import './wkb-writer.spec';
 
+import './twkb-loader.spec';
+import './twkb-writer.spec';
+
 import './hex-wkb-loader.spec';
 
 import './wkt-loader.spec';

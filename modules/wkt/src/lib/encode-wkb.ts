@@ -20,7 +20,7 @@ import {BinaryWriter} from './utils/binary-writer';
  * Integer code for geometry type
  * Reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
  */
-enum WKB {
+export enum WKB {
   Point = 1,
   LineString = 2,
   Polygon = 3,
@@ -33,7 +33,7 @@ enum WKB {
 /**
  * Options for encodeWKB
  */
-interface WKBOptions {
+type WKBOptions = {
   /** Does the GeoJSON input have Z values? */
   hasZ?: boolean;
 
@@ -42,7 +42,7 @@ interface WKBOptions {
 
   /** Spatial reference for input GeoJSON */
   srid?: any;
-}
+};
 
 /**
  * Encodes a GeoJSON object into WKB

@@ -2,16 +2,20 @@
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-- OGC Standard: https://www.ogc.org/standards/wkt-crs
-- Wikipedia Page: https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems
+- *[`@loaders.gl/wkt`](/docs/modules/wkt)*
+- *[OGC Standard](https://www.ogc.org/standards/wkt-crs)*
+- *[Wikipedia Page](https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems)*
 
 Well-known text representation of coordinate reference systems (WKT or WKT-CRS) is a text markup language for representing spatial reference systems and transformations between spatial reference systems. The formats were originally defined by the Open Geospatial Consortium (OGC) and described in their Simple Feature Access and Well-known text representation of coordinate reference systems specifications. The current standard definition is ISO 19162:2019.
 
-# Version History
+## Version History
 
-- WKT (1999) - As initially defined by the Open Geospatial Consortium (OGC) 
-- "WKT 1" (2001) - WKT was extended in 2001, to ISO 19125-1:2004, sometimes known as "WKT 1".
-- "WKT 2" / "WKT-CRS 1" (2015) - The updated "Well-known text representation of coordinate reference systems" standard, adopted by Open Geospatial Consortium / ISO 19162:2015. 
-  - Addresses new requirements and inconsistencies in implementation of WKT 1 format.
-  - Confusingly, this standard has a version number 1 for the new, stricter WKT-CRS specification. 
-- "WKT-CRS 2" (2018) - A newer revision called was published in 2018: ISO 19162:2019.
+| Name                  | Year   | Description                                                  | ISO              |
+| --------------------- | ------ | ------------------------------------------------------------ | ---------------- |
+| WKT                   | (1999  | As initially defined by the Open Geospatial Consortium (OGC) |
+| "WKT 1"               | (2001  | WKT was extended in 2001. Sometimes known as "WKT 1".        | ISO 19125-1:2004 |
+| "WKT 2" / "WKT-CRS 1" | (2015) | Addresses new requirements and inconsistencies in WKT 1.     | ISO 19162:2015   |
+| "WKT-CRS 2"           | (2018) | A newer revision.                                            | ISO 19162:2019   |
+
+## Ecosystem Support
+
