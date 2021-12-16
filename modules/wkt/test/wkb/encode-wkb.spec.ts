@@ -5,7 +5,9 @@ import hexStringToArrayBuffer from './hex-string-to-array-buffer';
 import {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
+const WKB_2D_NAN_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d-nan.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ.json';
+const WKB_Z_NAN_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ-nan.json';
 
 interface TestCase {
   geometry: string;
@@ -36,7 +38,7 @@ interface ParsedTestCase {
   binary: BinaryGeometry;
 }
 
-test('encodeWKB2D', async (t) => {
+test('encodeWKB 2D', async (t) => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -49,8 +51,35 @@ test('encodeWKB2D', async (t) => {
   t.end();
 });
 
+test('encodeWKB 2D NaN', async (t) => {
+  const response = await fetchFile(WKB_2D_NAN_TEST_CASES);
+  const TEST_CASES = parseTestCases(await response.json());
+
+  for (const testCase of Object.values(TEST_CASES)) {
+    const {geoJSON, wkb} = testCase;
+
+    const encoded = encodeWKB(geoJSON);
+    t.deepEqual(encoded, wkb);
+  }
+
+  t.end();
+});
+
 test('encodeWKB Z', async (t) => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
+  const TEST_CASES = parseTestCases(await response.json());
+
+  for (const testCase of Object.values(TEST_CASES)) {
+    const {geoJSON, wkb} = testCase;
+    const encoded = encodeWKB(geoJSON, {hasZ: true});
+    t.deepEqual(encoded, wkb);
+  }
+
+  t.end();
+});
+
+test('encodeWKB Z NaN', async (t) => {
+  const response = await fetchFile(WKB_Z_NAN_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
   for (const testCase of Object.values(TEST_CASES)) {
