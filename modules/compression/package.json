@@ -34,7 +34,7 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap --external:{fs,path,crypto}",
-    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/compression-worker.js --bundle --minify --sourcemap --external:{fs,path,crypto}"
+    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/compression-worker.js --bundle --minify --sourcemap --external:{fs,path,crypto} --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

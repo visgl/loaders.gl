@@ -36,10 +36,10 @@
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
     "build-worker": "npm run build-basis-worker && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker",
-    "build-basis-worker": "esbuild src/workers/basis-worker.ts --bundle --outfile=dist/basis-worker.js",
-    "build-npy-worker": "esbuild src/workers/npy-worker.ts --bundle --outfile=dist/npy-worker.js",
-    "build-compressed-texture-worker": "esbuild src/workers/compressed-texture-worker.ts --bundle --outfile=dist/compressed-texture-worker.js",
-    "build-crunch-worker": "esbuild src/workers/crunch-worker.ts --bundle --outfile=dist/crunch-worker.js"
+    "build-basis-worker": "esbuild src/workers/basis-worker.ts --bundle --outfile=dist/basis-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-npy-worker": "esbuild src/workers/npy-worker.ts --bundle --outfile=dist/npy-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-compressed-texture-worker": "esbuild src/workers/compressed-texture-worker.ts --bundle --outfile=dist/compressed-texture-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-crunch-worker": "esbuild src/workers/crunch-worker.ts --bundle --outfile=dist/crunch-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/images": "4.0.0-alpha.4",

@@ -33,8 +33,8 @@
   "scripts": {
     "pre-build": "npm run build-worker-shp && npm run build-worker-dbf && npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker-shp": "esbuild src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js",
-    "build-worker-dbf": "esbuild src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js"
+    "build-worker-shp": "esbuild src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-dbf": "esbuild src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/gis": "4.0.0-alpha.4",
