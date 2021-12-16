@@ -14,6 +14,7 @@ npm install @loaders.gl/core
 | Loader                                                   |
 | -------------------------------------------------------- |
 | [`WKBLoader`](modules/wkt/docs/api-reference/wkb-loader) |
+| [`WKBWriter`](modules/wkt/docs/api-reference/wkb-writer) |
 | [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) |
 | [`WKTWriter`](modules/wkt/docs/api-reference/wkt-writer) |
 
