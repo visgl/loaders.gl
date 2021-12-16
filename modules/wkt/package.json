@@ -29,7 +29,7 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/wkt-worker.ts --bundle --outfile=dist/wkt-worker.js"
+    "build-worker": "esbuild src/workers/wkt-worker.ts --bundle --outfile=dist/wkt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "devDependencies": {
     "fuzzer": "^0.2.1"

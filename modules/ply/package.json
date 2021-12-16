@@ -30,7 +30,7 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js"
+    "build-worker": "esbuild src/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

@@ -29,7 +29,7 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js"
+    "build-worker": "esbuild src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.0.0-alpha.4",
