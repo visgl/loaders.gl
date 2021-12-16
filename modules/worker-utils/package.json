@@ -40,7 +40,7 @@
     "pre-build": "npm run build-workers",
     "pre-build-disabled": "npm run build-bundle && npm run build-workers",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js",
-    "build-workers": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --sourcemap"
+    "build-workers": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1"
