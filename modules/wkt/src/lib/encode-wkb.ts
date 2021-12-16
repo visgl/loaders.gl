@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 // Forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz
+// Reference: https://www.ogc.org/standards/sfa
 
 import type {
   Feature,
