@@ -2,6 +2,15 @@
 
 ## v3.1
 
+## v3.1.2
+
+- Remove node-stream-polyfill (#2023)
+- feat(wkt): WKB writer (#2017)
+- Fix(docs): Update 3.1 release date in the whats new page (#2015)
+- fix: Rename bundle.js to dist.min.js (#2009)
+- chore(examples): i3s - comment out "Building" (#2024)
+- fix(basis): use encoder of "latest" version (#2025)
+
 ## v3.1.1
 
 - Unify geojsonToBinary & MVTLoader (#2003)
