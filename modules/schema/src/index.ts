@@ -60,7 +60,8 @@ export type {
   LineString,
   MultiLineString,
   Polygon,
-  MultiPolygon
+  MultiPolygon,
+  GeometryCollection
 } from './category/gis';
 
 export type {GeojsonGeometryInfo} from './category/gis';
