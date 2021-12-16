@@ -59,7 +59,7 @@
     "wkbXdr": "00000003eb00000000",
     "ewkbXdr": "00a0000003000010e600000000",
     "twkb": "a31801",
-    "geoJSON": {"type": "Polygon", "coordinates": []},
+    "geoJSON": {"type": "Polygon", "coordinates": [[[]]]},
     "ewkbNoSrid": "010300008000000000",
     "ewkbXdrNoSrid": "008000000300000000",
     "binary": {
