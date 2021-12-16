@@ -14,7 +14,7 @@ test('encodeWKB 2D', async (t) => {
 
   for (const testCase of Object.values(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
-    const encoded = encodeWKB(geoJSON);
+    const encoded = encodeWKB(geoJSON, {hasZ: false, hasM: false});
     t.deepEqual(encoded, wkb);
   }
 
@@ -28,7 +28,7 @@ test('encodeWKB 2D NaN', async (t) => {
   for (const testCase of Object.values(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
 
-    const encoded = encodeWKB(geoJSON);
+    const encoded = encodeWKB(geoJSON, {hasZ: false, hasM: false});
     t.deepEqual(encoded, wkb);
   }
 
