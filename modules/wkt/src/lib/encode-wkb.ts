@@ -72,7 +72,7 @@ export default function encodeWKB(
   }
 }
 
-/** Calculate the binary size (in the WKB encoding) of a specific geojson geometry */
+/** Calculate the binary size (in the WKB encoding) of a specific GeoJSON geometry */
 function getGeometrySize(geometry: Geometry, options: WKBOptions): number {
   switch (geometry.type) {
     case 'Point':
@@ -137,7 +137,7 @@ function writeCoordinate(
   }
 }
 
-/** Get encoded size of Point object */
+/** Get encoded size of Point geometry */
 function getPointSize(options: WKBOptions): number {
   const coordinateSize = getCoordinateSize(options);
   return 1 + 4 + coordinateSize;
@@ -164,7 +164,7 @@ function encodeLineString(
   return writer.arrayBuffer;
 }
 
-/** Get encoded size of LineString object */
+/** Get encoded size of LineString geometry */
 function getLineStringSize(coordinates: LineString['coordinates'], options: WKBOptions): number {
   const coordinateSize = getCoordinateSize(options);
 
@@ -202,7 +202,7 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
   return writer.arrayBuffer;
 }
 
-/** Get encoded size of Polygon object */
+/** Get encoded size of Polygon geometry */
 function getPolygonSize(coordinates: Polygon['coordinates'], options: WKBOptions): number {
   const coordinateSize = getCoordinateSize(options);
   const [exteriorRing, ...interiorRings] = coordinates;
@@ -220,6 +220,7 @@ function getPolygonSize(coordinates: Polygon['coordinates'], options: WKBOptions
   return size;
 }
 
+/** Encode MultiPoint geometry as WKB ArrayBufer */
 function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
   const writer = new BinaryWriter(getMultiPointSize(multiPoint, options));
   const points = multiPoint.coordinates;
@@ -238,6 +239,7 @@ function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
   return writer.arrayBuffer;
 }
 
+/** Get encoded size of MultiPoint geometry */
 function getMultiPointSize(multiPoint: MultiPoint, options: WKBOptions) {
   let coordinateSize = getCoordinateSize(options);
   const points = multiPoint.coordinates;
@@ -248,6 +250,7 @@ function getMultiPointSize(multiPoint: MultiPoint, options: WKBOptions) {
   return 1 + 4 + 4 + points.length * coordinateSize;
 }
 
+/** Encode MultiLineString geometry as WKB ArrayBufer */
 function encodeMultiLineString(multiLineString: MultiLineString, options: WKBOptions) {
   const writer = new BinaryWriter(getMultiLineStringSize(multiLineString, options));
   const lineStrings = multiLineString.coordinates;
@@ -266,6 +269,7 @@ function encodeMultiLineString(multiLineString: MultiLineString, options: WKBOpt
   return writer.arrayBuffer;
 }
 
+/** Get encoded size of MultiLineString geometry */
 function getMultiLineStringSize(multiLineString: MultiLineString, options: WKBOptions): number {
   let size = 1 + 4 + 4;
   const lineStrings = multiLineString.coordinates;
