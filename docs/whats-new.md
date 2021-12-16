@@ -29,17 +29,17 @@ See [roadmap](./roadmap) for more details.
 
 Release Date: Dec 7, 2021.
 
-**@loaders.gl/textures** 
+**@loaders.gl/textures**
 
 - Parse KTX2 with BasisLoader.
 - New `KTX2BasisWriter` enables transcoding textures to basis (works both in browser and Node).
 - Upgrade `basis_universal` libraries to [v1.15](https://github.com/BinomialLLC/basis_universal/releases/tag/v1_15).
 
-**@loaders.gl/gltf** 
+**@loaders.gl/gltf**
 
 - `GTLTLoader` now decodes Basis super compressed textures if present (via the [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension).
 
-**@loaders.gl/i3s** 
+**@loaders.gl/i3s**
 
 - Support KTX2-Basis textures.
 
@@ -60,7 +60,12 @@ Release Date: Dec 7, 2021.
 - New experimental [`ParquetLoader`](modules/parquet/docs/api-reference/parquet-loader)
 
 **@loaders.gl/pcd**
+
 - `PCDLoader` now supports compressed binary data.
+
+**@loaders.gl/wkt**
+
+- New `WKBWriter` for encoding GeoJSON geometries to WKB.
 
 ## v3.0
 
