@@ -1,6 +1,9 @@
 # CHANGELOG for loaders.gl
 
-## v3.1
+## v3.1.3
+
+- fix(core): clean up browser fields in package.json (#2031)
+- fix: Alternate approach to bundler issues (#2026)
 
 ## v3.1.2
 
