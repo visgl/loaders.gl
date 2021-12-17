@@ -289,6 +289,7 @@ test('gis#geojson-to-flat-geojson Mixed', async (t) => {
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('gis#geojson-to-flat-geojson winding', async (t) => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
