@@ -41,6 +41,7 @@ export type ParseMTLOptions = {
  *
  * @param  text - Content of MTL file
  */
+// eslint-disable-next-line complexity
 export function parseMTL(text: string, options?: ParseMTLOptions): MTLMaterial[] {
   // const materialsInfo: Record<string, MTLMaterial> = {};
   const materials: MTLMaterial[] = [];
@@ -53,7 +54,7 @@ export function parseMTL(text: string, options?: ParseMTLOptions): MTLMaterial[]
 
     if (line.length === 0 || line.charAt(0) === '#') {
       // Blank line or comment ignore
-      continue;
+      continue; // eslint-disable-line no-continue
     }
 
     const pos = line.indexOf(' ');
@@ -116,11 +117,15 @@ export function parseMTL(text: string, options?: ParseMTLOptions): MTLMaterial[]
         // TODO?
         // currentMaterial.shininessMap = parseFloat(value);
         break;
-        case 'ni':
+      case 'ni':
         currentMaterial.refraction = parseFloat(value);
         break;
       case 'illum':
         currentMaterial.illumination = parseFloat(value);
+        break;
+
+      default:
+        // log unknown message?
         break;
 
       /*
