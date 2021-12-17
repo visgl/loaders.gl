@@ -83,7 +83,7 @@ export default class GIFBuilder {
     this.gifshot = gifshot;
   }
 
-  async initialize(options): void {
+  async initialize(options): Promise<void> {
     // Expose the gifshot module so that the full gifshot API is available to apps (Experimental)
     // this.gifshot = await loadGifshotModule(options);
   }

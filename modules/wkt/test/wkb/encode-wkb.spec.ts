@@ -1,8 +1,8 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
+import {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 import encodeWKB from '../../src/lib/encode-wkb';
 import hexStringToArrayBuffer from './hex-string-to-array-buffer';
-import {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
 const WKB_2D_NAN_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d-nan.json';
