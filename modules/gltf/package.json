@@ -37,6 +37,8 @@
     "@loaders.gl/draco": "4.0.0-alpha.4",
     "@loaders.gl/images": "4.0.0-alpha.4",
     "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/textures": "4.0.0-alpha.4"
+    "@loaders.gl/textures": "4.0.0-alpha.4",
+    "@loaders.gl/schema": "4.0.0-alpha.4",
+    "@math.gl/core": "^3.5.1"
   }
 }
