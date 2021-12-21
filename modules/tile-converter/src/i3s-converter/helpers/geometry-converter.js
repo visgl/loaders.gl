@@ -245,6 +245,7 @@ function convertNodes(
 
 /**
  * Generate transformation matrix for node
+ * Aapply all gltf transformations to initial transformation matrix.
  * @param node
  * @param matrix
  */
