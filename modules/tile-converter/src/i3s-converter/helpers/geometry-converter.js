@@ -244,6 +244,36 @@ function convertNodes(
 }
 
 /**
+ * Generate transformation matrix for node
+ * Aapply all gltf transformations to initial transformation matrix.
+ * @param node
+ * @param matrix
+ */
+function getCompositeTransformationMatrix(node, matrix) {
+  let transformationMatrix = matrix;
+
+  const {matrix: nodeMatrix, rotation, scale, translation} = node;
+
+  if (nodeMatrix) {
+    transformationMatrix = matrix.multiplyRight(nodeMatrix);
+  }
+
+  if (rotation) {
+    transformationMatrix = transformationMatrix.rotateXYZ(rotation);
+  }
+
+  if (scale) {
+    transformationMatrix = transformationMatrix.scale(scale);
+  }
+
+  if (translation) {
+    transformationMatrix = transformationMatrix.translate(translation);
+  }
+
+  return transformationMatrix;
+}
+
+/**
  * Convert all primitives of node and all children nodes
  * @param {Object} node - gltf node
  * @param {Object} tileContent - 3d tile content
@@ -259,15 +289,20 @@ function convertNode(
   useCartesianPositions,
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
-  const nodeMatrix = node.matrix;
-  const compositeMatrix = nodeMatrix ? matrix.multiplyRight(nodeMatrix) : matrix;
+  const transformationMatrix = getCompositeTransformationMatrix(node, matrix);
 
   const mesh = node.mesh;
   if (mesh) {
-    convertMesh(mesh, tileContent, attributesMap, useCartesianPositions, compositeMatrix);
+    convertMesh(mesh, tileContent, attributesMap, useCartesianPositions, transformationMatrix);
   }
 
-  convertNodes(node.children, tileContent, attributesMap, useCartesianPositions, compositeMatrix);
+  convertNodes(
+    node.children,
+    tileContent,
+    attributesMap,
+    useCartesianPositions,
+    transformationMatrix
+  );
 }
 
 /**
