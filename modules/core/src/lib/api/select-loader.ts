@@ -111,7 +111,7 @@ function selectLoaderInternal(
 ) {
   const {url, type} = getResourceUrlAndType(data);
 
-  const testUrl = url || context?.url;
+  const testUrl = url || context?.url || options?.baseUri;
 
   let loader: Loader | null = null;
 
