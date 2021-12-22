@@ -2,7 +2,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 
 /**
- * Worker loader for quantized meshes
+ * Worker loader for color-encoded images
  */
 export const TerrainLoader = {
   name: 'Terrain',
@@ -29,6 +29,6 @@ export const TerrainLoader = {
 };
 
 /**
- * Loader for quantized meshes
+ * Loader for color-encoded images
  */
 export const _typecheckTerrainWorkerLoader: Loader = TerrainLoader;

@@ -205,9 +205,12 @@ function getDelatinTileMesh(meshMaxError, width, height, terrain) {
 }
 
 export default async function loadTerrain(arrayBuffer, options, context) {
-  options.image = options.image || {};
-  options.image.type = 'data';
-  const image = await context.parse(arrayBuffer, options, options.baseUri);
+  const loadImageOptions = {
+    ...options,
+    mimeType: 'application/x.image',
+    image: { ...options.image, type: 'data' }
+  };
+  const image = await context.parse(arrayBuffer, loadImageOptions);
   // Extend function to support additional mesh generation options (square grid or delatin)
   return getMesh(image, options.terrain);
 }
