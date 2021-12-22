@@ -1,14 +1,23 @@
+import type {Mbs, Node3DIndexDocument, Obb} from '@loaders.gl/i3s';
+
 import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
 import {CubeGeometry} from '@luma.gl/engine';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 // TODO Unite Tile validation logic in i3s-17-and-debug with this code.
-export function validateNodeBoundingVolumes(node) {
-  if (!node.parentNode.obb || !node.parentNode.mbs) {
+
+/**
+ * Do validation of bounding volumes for particular node.
+ * Generates special warnings if there are some issues.
+ * @param node
+ */
+export function validateNodeBoundingVolumes(node: Node3DIndexDocument): string[] {
+  if (!node?.parentNode?.obb || !node?.parentNode?.mbs) {
     return [];
   }
-  const tileWarnings = [];
+
+  const tileWarnings: string[] = [];
 
   validateObb(tileWarnings, node);
   validateMbs(tileWarnings, node);
@@ -16,7 +25,13 @@ export function validateNodeBoundingVolumes(node) {
   return tileWarnings;
 }
 
-function validateObb(tileWarnings, node) {
+/**
+ * Check if child Obb fit into parent Obb.
+ * @param tileWarnings
+ * @param node
+ */
+function validateObb(tileWarnings: string[], node: Node3DIndexDocument): void {
+  // @ts-ignore
   const parentObb = createBoundingBoxFromTileObb(node.parentNode.obb);
   const tileVertices = getTileObbVertices(node);
   const isTileObbInsideParentObb = isAllVerticesInsideBoundingVolume(parentObb, tileVertices);
@@ -25,36 +40,58 @@ function validateObb(tileWarnings, node) {
     return;
   }
 
-  const title = `OBB of Tile (${node.id}) doesn't fit into Parent (${node.parentNode.id}) tile OBB`;
+  const title = `OBB of Tile (${node.id}) doesn't fit into Parent (${node.parentNode?.id}) tile OBB`;
   tileWarnings.push(title);
 }
 
-function validateMbs(tileWarnings, node) {
+/**
+ * Check if child Mbs fit into parent Mbs.
+ * @param tileWarnings
+ * @param node
+ */
+function validateMbs(tileWarnings: string[], node: Node3DIndexDocument): void {
+  // @ts-ignore
   const tileMbs = createBoundingSphereFromTileMbs(node.mbs);
+  // @ts-ignore
   const parentMbs = createBoundingSphereFromTileMbs(node.parentNode.mbs);
   const distanceBetweenCenters = tileMbs.center.distanceTo(parentMbs.center);
 
   if (distanceBetweenCenters + tileMbs.radius > parentMbs.radius) {
-    const title = `MBS of Tile (${node.id}) doesn't fit into Parent (${node.parentNode.id}) tile MBS`;
+    const title = `MBS of Tile (${node.id}) doesn't fit into Parent (${node.parentNode?.id}) tile MBS`;
     tileWarnings.push(title);
   }
 }
 
-function createBoundingSphereFromTileMbs(mbs) {
+/**
+ * Generates bounding sphere from mbs
+ * @param mbs
+ */
+function createBoundingSphereFromTileMbs(mbs: Mbs): BoundingSphere {
   return new BoundingSphere([mbs[0], mbs[1], mbs[2]], mbs[3]);
 }
 
-function createBoundingBoxFromTileObb(obb) {
+/**
+ * Generates oriented bounding box from tile obb
+ * @param obb
+ * @returns
+ */
+function createBoundingBoxFromTileObb(obb: Obb): OrientedBoundingBox {
   const {center, halfSize, quaternion} = obb;
   return new OrientedBoundingBox().fromCenterHalfSizeQuaternion(center, halfSize, quaternion);
 }
 
-// TODO check if Obb generates properly
-function getTileObbVertices(node) {
+/**
+ * Get vertices fromnode obb
+ * TODO check if Obb generates properly
+ * @param node
+ */
+function getTileObbVertices(node: Node3DIndexDocument): number[] {
   const geometry = new CubeGeometry();
+  // @ts-ignore
   const halfSize = node.obb.halfSize;
   const attributes = geometry.getAttributes();
   const positions = new Float32Array(attributes.POSITION.value);
+  // @ts-ignore
   const obbCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(node.obb.center);
 
   let vertices = [];
@@ -66,6 +103,7 @@ function getTileObbVertices(node) {
       (positions[i + 2] *= halfSize[2])
     );
     const rotatedPositions = positionsVector
+      // @ts-ignore
       .transformByQuaternion(node.obb.quaternion)
       .add(obbCenterCartesian);
     // @ts-expect-error
@@ -75,7 +113,15 @@ function getTileObbVertices(node) {
   return vertices;
 }
 
-function isAllVerticesInsideBoundingVolume(boundingVolume, positions) {
+/**
+ * Check if all vertices inside bounding volume
+ * @param boundingVolume
+ * @param positions
+ */
+function isAllVerticesInsideBoundingVolume(
+  boundingVolume: OrientedBoundingBox,
+  positions: number[]
+): boolean {
   let isVerticesInsideObb = true;
 
   for (let index = 0; index < positions.length / 3; index += 3) {
