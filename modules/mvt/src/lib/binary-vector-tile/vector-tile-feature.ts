@@ -107,9 +107,9 @@ export default class VectorTileFeature {
     return {data, indices};
   }
 
-  toBinaryCoordinates(options: ((data: number[], feature: {extent: number}) => void)): FlatFeature {
-    if (typeof options === 'function') {
-      return this._toBinaryCoordinates(options);
+  toBinaryCoordinates(transform: (data: number[], feature: {extent: number}) => void): FlatFeature {
+    if (typeof transform === 'function') {
+      return this._toBinaryCoordinates(transform);
     }
     return this._toBinaryCoordinates(project);
   }
