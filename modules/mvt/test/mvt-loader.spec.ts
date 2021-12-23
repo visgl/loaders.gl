@@ -3,7 +3,6 @@ import test from 'tape-promise/tape';
 import {MVTLoader} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
-import {TEST_EXPORTS} from '../src/lib/binary-vector-tile/vector-tile-feature';
 
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/points_4-2-6.mvt';
 const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
@@ -293,11 +292,13 @@ test('Triangulation is supported', async (t) => {
   t.end();
 });
 
-test('Binary features with coordinates=wgs84', async (t) => {
+test.only('Binary features with coordinates=wgs84', async (t) => {
+  debugger
   const response = await fetchFile(WITH_FEATURE_ID);
   const mvtArrayBuffer = await response.arrayBuffer();
 
   const binary = await parse(mvtArrayBuffer, MVTLoader, {
+    worker: false,
     mvt: {coordinates: 'wgs84'},
     gis: {format: 'binary'}
   }) as BinaryFeatures;

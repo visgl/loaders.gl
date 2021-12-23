@@ -19,7 +19,7 @@ export const TEST_EXPORTS = {
 
 export default class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
-  extent: any;
+  extent: number;
   type: number;
   id: number | null;
   _pbf: Protobuf;
@@ -32,7 +32,7 @@ export default class VectorTileFeature {
   constructor(
     pbf: Protobuf,
     end: number,
-    extent: any,
+    extent: number,
     keys: string[],
     values: (string | number | boolean | null)[],
     geometryInfo: GeojsonGeometryInfo
@@ -107,12 +107,19 @@ export default class VectorTileFeature {
     return {data, indices};
   }
 
+  toBinaryCoordinates(options: ((data: number[], feature: {extent: number}) => void)): FlatFeature {
+    if (typeof options === 'function') {
+      return this._toBinaryCoordinates(options);
+    }
+    return this._toBinaryCoordinates(project);
+  }
+
   /**
    *
    * @param transform
    * @returns result
    */
-  _toBinaryCoordinates(transform) {
+  private _toBinaryCoordinates(transform: (data: number[], x0: number, y0: number, size: number) =>  void) {
     // Expands the protobuf data to an intermediate Flat GeoJSON
     // data format, which maps closely to the binary data buffers.
     // It is similar to GeoJSON, but rather than storing the coordinates
@@ -181,14 +188,5 @@ export default class VectorTileFeature {
     }
 
     return result;
-  }
-
-  toBinaryCoordinates(
-    options: {x: number; y: number; z: number} | ((data: number[], feature: {extent: any}) => void)
-  ): FlatFeature {
-    if (typeof options === 'function') {
-      return this._toBinaryCoordinates(options);
-    }
-    return this._toBinaryCoordinates(project);
   }
 }
