@@ -10,8 +10,8 @@ export const TerrainLoader = {
   module: 'terrain',
   version: VERSION,
   worker: true,
-  extensions: ['png', 'pngraw'],
-  mimeTypes: ['image/png'],
+  extensions: ['png', 'pngraw', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'],
+  mimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'],
   options: {
     terrain: {
       tesselator: 'auto',

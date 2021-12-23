@@ -208,7 +208,7 @@ export default async function loadTerrain(arrayBuffer, options, context) {
   const loadImageOptions = {
     ...options,
     mimeType: 'application/x.image',
-    image: { ...options.image, type: 'data' }
+    image: {...options.image, type: 'data'}
   };
   const image = await context.parse(arrayBuffer, loadImageOptions);
   // Extend function to support additional mesh generation options (square grid or delatin)
