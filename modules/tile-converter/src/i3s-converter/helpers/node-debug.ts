@@ -31,7 +31,7 @@ export function validateNodeBoundingVolumes(node: Node3DIndexDocument): string[]
  * @param node
  */
 function validateObb(tileWarnings: string[], node: Node3DIndexDocument): void {
-  // @ts-ignore
+  // @ts-expect-error
   const parentObb = createBoundingBoxFromTileObb(node.parentNode.obb);
   const tileVertices = getTileObbVertices(node);
   const isTileObbInsideParentObb = isAllVerticesInsideBoundingVolume(parentObb, tileVertices);
@@ -50,9 +50,9 @@ function validateObb(tileWarnings: string[], node: Node3DIndexDocument): void {
  * @param node
  */
 function validateMbs(tileWarnings: string[], node: Node3DIndexDocument): void {
-  // @ts-ignore
+  // @ts-expect-error
   const tileMbs = createBoundingSphereFromTileMbs(node.mbs);
-  // @ts-ignore
+  // @ts-expect-error
   const parentMbs = createBoundingSphereFromTileMbs(node.parentNode.mbs);
   const distanceBetweenCenters = tileMbs.center.distanceTo(parentMbs.center);
 
@@ -87,11 +87,11 @@ function createBoundingBoxFromTileObb(obb: Obb): OrientedBoundingBox {
  */
 function getTileObbVertices(node: Node3DIndexDocument): number[] {
   const geometry = new CubeGeometry();
-  // @ts-ignore
+  // @ts-expect-error
   const halfSize = node.obb.halfSize;
   const attributes = geometry.getAttributes();
   const positions = new Float32Array(attributes.POSITION.value);
-  // @ts-ignore
+  // @ts-expect-error
   const obbCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(node.obb.center);
 
   let vertices = [];
@@ -103,7 +103,7 @@ function getTileObbVertices(node: Node3DIndexDocument): number[] {
       (positions[i + 2] *= halfSize[2])
     );
     const rotatedPositions = positionsVector
-      // @ts-ignore
+      // @ts-expect-error
       .transformByQuaternion(node.obb.quaternion)
       .add(obbCenterCartesian);
     // @ts-expect-error
