@@ -8,7 +8,7 @@ test('tile-converter - geometry-attributes#should return the same attributes wit
       positions: new Float32Array([0]),
       normals: new Float32Array([0]),
       texCoords: new Float32Array([0]),
-      colors: new Float32Array([0]),
+      colors: new Uint8Array([0]),
       featureIndices: [],
       triangleCount: 1000
     };
@@ -20,7 +20,7 @@ test('tile-converter - geometry-attributes#should return the same attributes wit
       positions: new Float32Array([0]),
       normals: new Float32Array([0]),
       texCoords: new Float32Array([0]),
-      colors: new Float32Array([0])
+      colors: new Uint8Array([0])
     };
 
     const attributes = generateAttributes(oldAttributes);
@@ -36,7 +36,7 @@ test('tile-converter - geometry-attributes#should return the same attributes if 
       positions: new Float32Array([-1, -2, -3, -4, -5, -6, -7, -8, -9]),
       normals: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9]),
       texCoords: new Float32Array([1, 2, 3, 4, 5, 6]),
-      colors: new Float32Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]),
+      colors: new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]),
       featureIndices: [0, 0, 0],
       triangleCount: 1
     };
@@ -48,7 +48,7 @@ test('tile-converter - geometry-attributes#should return the same attributes if 
       positions: new Float32Array([-1, -2, -3, -4, -5, -6, -7, -8, -9]),
       normals: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9]),
       texCoords: new Float32Array([1, 2, 3, 4, 5, 6]),
-      colors: new Float32Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255])
+      colors: new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255])
     };
 
     const attributes = generateAttributes(oldAttributes);
@@ -68,7 +68,7 @@ test('tile-converter - geometry-attributes#should return reordered attributes', 
       // prettier-ignore
       texCoords: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]),
       // prettier-ignore
-      colors: new Float32Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+      colors: new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
       ]),
       featureIndices: [0, 0, 0, 1, 1, 1, 0, 0, 0],
       triangleCount: 3
@@ -84,7 +84,7 @@ test('tile-converter - geometry-attributes#should return reordered attributes', 
       normals: new Float32Array([1,2,3,4,5,6,7,8,9,19,20,21,22,23,34,25,26,27,10,11,12,13,14,15,16,17,18]),
       texCoords: new Float32Array([1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 17, 18, 7, 8, 9, 10, 11, 12]),
       // prettier-ignore
-      colors: new Float32Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+      colors: new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
       ])
     };
 
