@@ -227,7 +227,7 @@ export default class I3SConverter {
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
     await this._writeLayers0();
-    createSceneServerPath(tilesetName, this.layers0, tilesetPath);
+    createSceneServerPath(tilesetName, this.layers0!, tilesetPath);
     await this._writeNodeIndexDocument(root0, 'root', join(this.layers0Path, 'nodes', 'root'));
     await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
     await this._createSlpk(tilesetPath);
