@@ -17,7 +17,7 @@ const TEST_TEXTURE_MATERIAL = {
   alphaMode: 'opaque',
   pbrMetallicRoughness: {
     roughnessFactor: 1,
-    metallicFactor: 0,
+    metallicFactor: 1,
     baseColorTexture: {
       textureSetDefinitionId: 0
     }
