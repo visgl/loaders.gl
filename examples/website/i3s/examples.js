@@ -49,12 +49,12 @@ export const EXAMPLES = {
       longitude: -74,
       latitude: 40
     }
+  },
+  Building: {
+    name: 'Building',
+    url: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Admin_Building_v17/SceneServer/layers/0',
+    viewport: {
+      ...VIEW_STATE
+    }
   }
-  // Building: {
-  //   name: 'Building',
-  //   url: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Admin_Building_v17/SceneServer/layers/0',
-  //   viewport: {
-  //     ...VIEW_STATE
-  //   }
-  // }
 };
