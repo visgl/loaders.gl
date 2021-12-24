@@ -1,0 +1,7 @@
+/** Parse compressed PCD data in in binary_compressed form ( https://pointclouds.org/documentation/tutorials/pcd_file_format.html)
+ * from https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/PCDLoader.js
+ * @license MIT (http://opensource.org/licenses/MIT)
+ * @param pcdHeader
+ * @param data
+ * @returns [attributes]
+ */
