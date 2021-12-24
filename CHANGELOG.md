@@ -1,5 +1,20 @@
 # CHANGELOG for loaders.gl
 
+## v3.1.4
+
+- chore(i3s): enable building example (#2043)
+- TerrainLoader support for more image formats (#2040)
+- fix(textures): crunch loader (#1997)
+- feat(3dtiles-implicit-tiling): add region bounding volume calculation for child tiles (#2002)
+- chore(tile-converter): add ts to node-debug file (#2038)
+- chore(tile-converter): add ts to geometry-attributes file (#2037)
+- chore(i3s-converter): add ts for helper function (#2036)
+- feat(tile-converter): add transformation matrix generation for node (#2034)
+- feat(examples): i3s - terrain elevation support (#2020)
+- feat(obj): MTLLoader (#2033)
+- docs(wkt): Add some format notes (#2029)
+- fix: Added `__VERSION__` definitions to build-worker scripts (#2030)
+
 ## v3.1.3
 
 - fix(core): clean up browser fields in package.json (#2031)
