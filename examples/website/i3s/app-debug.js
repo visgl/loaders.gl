@@ -60,7 +60,7 @@ import {
 import {Color, Flex, Font} from './components/styles';
 import {buildSublayersTree} from './helpers/sublayers';
 import {initStats, sumTilesetsStats} from './helpers/stats';
-import { getElevationByCentralTile } from './helpers/terrain-elevation';
+import {getElevationByCentralTile} from './helpers/terrain-elevation';
 
 const TRANSITION_DURAITON = 4000;
 const DEFAULT_TRIANGLES_PERCENTAGE = 30; // Percentage of triangles to show normals for.
@@ -355,25 +355,39 @@ export default class App extends PureComponent {
   }
 
   _onTilesetLoad(tileset) {
-    const {zoom, cartographicCenter} = tileset;
-    const [longitude, latitude] = cartographicCenter;
-
     this._loadedTilesets = [...this._loadedTilesets, tileset];
     if (this.needTransitionToTileset) {
+      const {zoom, cartographicCenter} = tileset;
+      const [longitude, latitude] = cartographicCenter;
+      let pLongitue = longitude;
+      let pLatitude = latitude;
+      const viewport = new VIEWS[0].type(this.state.viewState.main);
+      const {
+        metadata,
+        viewState: {
+          main: {pitch}
+        }
+      } = this.state;
+
+      const {zmin = 0} = metadata?.layers?.[0]?.fullExtent || {};
+      const projection = zmin * Math.cos(Math.PI / pitch);
+      const projectedPostion = viewport.projectPosition([longitude, latitude]);
+      projectedPostion[1] += projection * viewport.distanceScales.unitsPerMeter[1];
+      [pLongitue, pLatitude] = viewport.unprojectPosition(projectedPostion);
       this.setState({
         viewState: {
           main: {
             ...this.state.viewState.main,
             zoom: zoom + 2.5,
-            longitude,
-            latitude,
+            longitude: pLongitue,
+            latitude: pLatitude,
             transitionDuration: TRANSITION_DURAITON,
             transitionInterpolator: new FlyToInterpolator()
           },
           minimap: {
             ...this.state.viewState.minimap,
-            longitude,
-            latitude
+            longitude: pLongitue,
+            latitude: pLatitude
           }
         },
         debugOptions: {...INITIAL_DEBUG_OPTIONS_STATE}

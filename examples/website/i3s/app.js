@@ -183,16 +183,31 @@ export default class App extends PureComponent {
   }
 
   _onTilesetLoad(tileset) {
-    const {zoom, cartographicCenter} = tileset;
-    const [longitude, latitude] = cartographicCenter;
-
     this._loadedTilesets = [...this._loadedTilesets, tileset];
     if (this.needTransitionToTileset) {
+      const {zoom, cartographicCenter} = tileset;
+      const [longitude, latitude] = cartographicCenter;
+      const viewport = this.currentViewport;
+      let pLongitue = longitude;
+      let pLatitude = latitude;
+      if (viewport) {
+        const {
+          metadata,
+          viewState: {pitch}
+        } = this.state;
+
+        const {zmin = 0} = metadata?.layers?.[0]?.fullExtent || {};
+        const projection = zmin * Math.cos(Math.PI / pitch);
+        const projectedPostion = viewport.projectPosition([longitude, latitude]);
+        projectedPostion[1] += projection * viewport.distanceScales.unitsPerMeter[1];
+        [pLongitue, pLatitude] = viewport.unprojectPosition(projectedPostion);
+      }
+
       const viewState = {
         ...this.state.viewState,
         zoom: zoom + 2.5,
-        longitude,
-        latitude
+        longitude: pLongitue,
+        latitude: pLatitude
       };
 
       this.setState({
