@@ -9,7 +9,7 @@ import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
-import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
+import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 import ControlPanel from './components/control-panel';
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
@@ -224,17 +224,17 @@ export default class App extends PureComponent {
       return null;
     }
 
-    const {ionAssetId, ionAccessToken, maximumScreenSpaceError} = selectedExample;
-    const tilesetUrl = `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json`;
+    const {ionAssetId, ionAccessToken, maximumScreenSpaceError, tilesetUrl} = selectedExample;
+    const dataUrl = ionAssetId? `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json` : tilesetUrl;
     const loadOptions = {'cesium-ion': {accessToken: ionAccessToken}};
     if (maximumScreenSpaceError) {
       loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
     }
 
     return new Tile3DLayer({
-      id: 'tile-3d-layer',
-      data: tilesetUrl,
-      loader: CesiumIonLoader,
+      id: 'tile-3d-layer',     
+      data: dataUrl,
+      loader: ionAssetId ? CesiumIonLoader : Tiles3DLoader,
       loadOptions,
       pickable: true,
       pointSize: 2,

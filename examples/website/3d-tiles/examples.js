@@ -2,7 +2,7 @@ const DECK_DATA_URI = 'https://raw.githubusercontent.com/uber-common/deck.gl-dat
 const ION_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
 
-const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
+const DATA_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
 export const INITIAL_EXAMPLE_CATEGORY = 'ion';
