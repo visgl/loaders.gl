@@ -662,7 +662,7 @@ function convertGLTFMaterialToI3sSharedResources(gltfMaterial, nodeId) {
  * @param {number} metallicFactor - "metallicFactor" attribute of gltf material object
  * @returns {Object}
  */
-function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor = 0) {
+function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor = 1) {
   const matDielectricColorComponent = 0.04 / 255; // Color from rgb (255) to 0..1 resolution
   // All color resolutions are 0..1
   const black = new Vector4(0, 0, 0, 1);
