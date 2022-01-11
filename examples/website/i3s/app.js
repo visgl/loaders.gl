@@ -193,13 +193,39 @@ export default class App extends PureComponent {
       if (viewport) {
         const {
           metadata,
-          viewState: {pitch}
+          viewState: {pitch, bearing}
         } = this.state;
 
         const {zmin = 0} = metadata?.layers?.[0]?.fullExtent || {};
-        const projection = zmin * Math.cos(Math.PI / pitch);
+        /**
+       * See image in the PR https://github.com/visgl/loaders.gl/pull/2046
+       * For elevated tilesets cartographic center position of a tileset is not correct
+       * to use it as viewState position because these positions are different.
+       * We need to calculate projection of camera direction onto the ellipsoid surface.
+       * We use this projection as offset to add it to the tileset cartographic center position.
+       */
+        const projection = zmin * Math.tan((pitch * Math.PI) / 180);
+        /**
+         * Convert to world coordinate system to shift the position on some distance in meters
+         */
         const projectedPostion = viewport.projectPosition([longitude, latitude]);
-        projectedPostion[1] += projection * viewport.distanceScales.unitsPerMeter[1];
+        /**
+         * Shift longitude
+         */
+        projectedPostion[0] +=
+          projection *
+          Math.sin((bearing * Math.PI) / 180) *
+          viewport.distanceScales.unitsPerMeter[0];
+        /**
+         * Shift latitude
+         */
+        projectedPostion[1] +=
+          projection *
+          Math.cos((bearing * Math.PI) / 180) *
+          viewport.distanceScales.unitsPerMeter[1];
+        /**
+         * Convert resulting coordinates to catrographic
+         */
         [pLongitue, pLatitude] = viewport.unprojectPosition(projectedPostion);
       }
 

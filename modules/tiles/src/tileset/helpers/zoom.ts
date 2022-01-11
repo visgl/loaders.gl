@@ -23,10 +23,12 @@ export function getZoomFromBoundingVolume(
     const {halfAxes} = boundingVolume;
     const obbSize = getObbSize(halfAxes);
     // Use WGS84_RADIUS_Z to allign with BoundingSphere algorithm
+    // Add the tile elevation value for correct zooming to elevated tiles
     return Math.log2(WGS84_RADIUS_Z / (obbSize + cartorgraphicCenter[2]));
   } else if (boundingVolume instanceof BoundingSphere) {
     // BoundingSphere
     const {radius} = boundingVolume;
+    // Add the tile elevation value for correct zooming to elevated tiles
     return Math.log2(WGS84_RADIUS_Z / (radius + cartorgraphicCenter[2]));
   } else if (boundingVolume.width && boundingVolume.height) {
     // BoundingRectangle
