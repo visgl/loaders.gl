@@ -96,68 +96,97 @@ test('Polygon MVT to local coordinates JSON', async (t) => {
   t.end();
 });
 
-test('Point MVT to GeoJSON', async (t) => {
-  const response = await fetchFile(MVT_POINTS_DATA_URL);
-  const mvtArrayBuffer = await response.arrayBuffer();
+for (const binary of [true, false]) {
+  test(`Point MVT to GeoJSON ${binary ? 'binary' : ''}`, async (t) => {
+    const response = await fetchFile(MVT_POINTS_DATA_URL);
+    const mvtArrayBuffer = await response.arrayBuffer();
 
-  const loaderOptions = {
-    mvt: {
-      coordinates: 'wgs84',
-      tileIndex: {
-        x: 2,
-        y: 6,
-        z: 4
+    const loaderOptions = {
+      mvt: {
+        coordinates: 'wgs84',
+        tileIndex: {
+          x: 2,
+          y: 6,
+          z: 4
+        }
       }
+    };
+    if (binary) {
+      loaderOptions.gis = {format: 'binary'};
     }
-  };
 
-  const geojson = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
-  t.deepEqual(geojson, decodedPointsGeoJSON);
+    const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
+    let expected = decodedPointsGeoJSON;
+    if (binary) {
+      expected = geojsonToBinary(expected);
+      t.ok(geometry.byteLength > 0);
+      delete geometry.byteLength;
+    }
+    t.deepEqual(geometry, expected);
 
-  t.end();
-});
+    t.end();
+  });
 
-test('Lines MVT to GeoJSON', async (t) => {
-  const response = await fetchFile(MVT_LINES_DATA_URL);
-  const mvtArrayBuffer = await response.arrayBuffer();
+  test(`Lines MVT to GeoJSON ${binary ? 'binary' : ''}`, async (t) => {
+    const response = await fetchFile(MVT_LINES_DATA_URL);
+    const mvtArrayBuffer = await response.arrayBuffer();
 
-  const loaderOptions = {
-    mvt: {
-      coordinates: 'wgs84',
-      tileIndex: {
-        x: 2,
-        y: 1,
-        z: 2
+    const loaderOptions = {
+      mvt: {
+        coordinates: 'wgs84',
+        tileIndex: {
+          x: 2,
+          y: 1,
+          z: 2
+        }
       }
+    };
+    if (binary) {
+      loaderOptions.gis = {format: 'binary'};
     }
-  };
 
-  const geojson = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
-  t.deepEqual(geojson, decodedLinesGeoJSON);
+    const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
+    let expected = decodedLinesGeoJSON;
+    if (binary) {
+      expected = geojsonToBinary(expected);
+      t.ok(geometry.byteLength > 0);
+      delete geometry.byteLength;
+    }
+    t.deepEqual(geometry, expected);
 
-  t.end();
-});
+    t.end();
+  });
 
-test('Polygons MVT to GeoJSON', async (t) => {
-  const response = await fetchFile(MVT_POLYGONS_DATA_URL);
-  const mvtArrayBuffer = await response.arrayBuffer();
+  test(`Polygons MVT to GeoJSON ${binary ? 'binary' : ''}`, async (t) => {
+    const response = await fetchFile(MVT_POLYGONS_DATA_URL);
+    const mvtArrayBuffer = await response.arrayBuffer();
 
-  const loaderOptions = {
-    mvt: {
-      coordinates: 'wgs84',
-      tileIndex: {
-        x: 133,
-        y: 325,
-        z: 10
+    const loaderOptions = {
+      mvt: {
+        coordinates: 'wgs84',
+        tileIndex: {
+          x: 133,
+          y: 325,
+          z: 10
+        }
       }
+    };
+    if (binary) {
+      loaderOptions.gis = {format: 'binary'};
     }
-  };
 
-  const geojson = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
-  t.deepEqual(geojson, decodedPolygonsGeoJSON);
+    const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
+    let expected = decodedPolygonsGeoJSON;
+    if (binary) {
+      expected = geojsonToBinary(expected, {fixRingWinding: false});
+      t.ok(geometry.byteLength > 0);
+      delete geometry.byteLength;
+    }
+    t.deepEqual(geometry, expected);
 
-  t.end();
-});
+    t.end();
+  });
+}
 
 test('Should raise an error when coordinates param is wgs84 and tileIndex is missing', async (t) => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
