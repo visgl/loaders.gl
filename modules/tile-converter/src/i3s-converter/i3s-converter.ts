@@ -942,9 +942,6 @@ export default class I3SConverter {
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
-    const texturePath = join(childPath, `textures/${name}/`);
-    await writeFile(texturePath, textureData, `index.${format}`);
-
     if (this.options.slpk) {
       const slpkTexturePath = join(childPath, 'textures');
       const compress = false;
@@ -955,6 +952,9 @@ export default class I3SConverter {
         `${name}.${format}`,
         compress
       );
+    } else {
+      const texturePath = join(childPath, `textures/${name}/`);
+      await writeFile(texturePath, textureData, `index.${format}`);
     }
   }
 
