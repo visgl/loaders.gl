@@ -118,6 +118,7 @@ for (const binary of [true, false]) {
     const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
     let expected = decodedPointsGeoJSON;
     if (binary) {
+      // @ts-ignore
       expected = geojsonToBinary(expected);
       t.ok(geometry.byteLength > 0);
       delete geometry.byteLength;
@@ -148,6 +149,7 @@ for (const binary of [true, false]) {
     const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
     let expected = decodedLinesGeoJSON;
     if (binary) {
+      // @ts-ignore
       expected = geojsonToBinary(expected);
       t.ok(geometry.byteLength > 0);
       delete geometry.byteLength;
@@ -178,6 +180,7 @@ for (const binary of [true, false]) {
     const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
     let expected = decodedPolygonsGeoJSON;
     if (binary) {
+      // @ts-ignore
       expected = geojsonToBinary(expected, {fixRingWinding: false});
       t.ok(geometry.byteLength > 0);
       delete geometry.byteLength;
