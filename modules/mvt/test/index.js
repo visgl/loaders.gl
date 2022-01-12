@@ -1,1 +1,0 @@
-import './mvt-loader.spec';

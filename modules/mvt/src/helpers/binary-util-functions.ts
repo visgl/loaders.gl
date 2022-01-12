@@ -83,7 +83,7 @@ export function classifyRings(geom: FlatIndexedGeometry): FlatPolygon {
  * @param size
  */
 export function project(data: number[], x0: number, y0: number, size: number): void {
-  for (let j = 0, jl = data.length; j < jl; j += 2) {
+  for (let j = 0; j < data.length; j += 2) {
     data[j] = ((data[j] + x0) * 360) / size - 180;
     const y2 = 180 - ((data[j + 1] + y0) * 360) / size;
     data[j + 1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;

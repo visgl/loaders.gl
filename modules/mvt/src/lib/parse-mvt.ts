@@ -153,7 +153,7 @@ function getDecodedFeatureBinary(
  * @param line
  * @param feature
  */
-function transformToLocalCoordinates(line: number[], feature: {extent: any}): void {
+function transformToLocalCoordinates(line: number[], feature: {extent: number}): void {
   // This function transforms local coordinates in a
   // [0 - bufferSize, this.extent + bufferSize] range to a
   // [0 - (bufferSize / this.extent), 1 + (bufferSize / this.extent)] range.
@@ -166,7 +166,7 @@ function transformToLocalCoordinates(line: number[], feature: {extent: any}): vo
   }
 }
 
-function transformToLocalCoordinatesBinary(data: number[], feature: {extent: any}) {
+function transformToLocalCoordinatesBinary(data: number[], feature: {extent: number}) {
   // For the binary code path, the feature data is just
   // one big flat array, so we just divide each value
   const {extent} = feature;
