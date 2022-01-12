@@ -225,14 +225,14 @@ export default class App extends PureComponent {
     }
 
     const {ionAssetId, ionAccessToken, maximumScreenSpaceError, tilesetUrl} = selectedExample;
-    const dataUrl = ionAssetId? `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json` : tilesetUrl;
+    const dataUrl = ionAssetId ? `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json` : tilesetUrl;
     const loadOptions = {'cesium-ion': {accessToken: ionAccessToken}};
     if (maximumScreenSpaceError) {
       loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
     }
 
     return new Tile3DLayer({
-      id: 'tile-3d-layer',     
+      id: 'tile-3d-layer',
       data: dataUrl,
       loader: ionAssetId ? CesiumIonLoader : Tiles3DLoader,
       loadOptions,
