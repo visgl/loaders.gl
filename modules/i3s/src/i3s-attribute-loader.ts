@@ -39,7 +39,7 @@ async function parse(data, options) {
 export async function loadFeatureAttributes(tile, featureId, options = {}) {
   const {attributeStorageInfo, attributeUrls, tilesetFields} = getAttributesData(tile);
 
-  if (!attributeStorageInfo || !attributeUrls || !featureId) {
+  if (!attributeStorageInfo || !attributeUrls || featureId < 0) {
     return null;
   }
 
