@@ -1,5 +1,12 @@
 # CHANGELOG for loaders.gl
 
+## v3.1.5
+
+- chore(i3s-loader): add fetch option (#2050)
+- fix(examples): 3d-tiles Tileset Demos URLs (#2051)
+- Fix MVTLoader bug when WGS84 is used (#2052)
+- fix(tile-converter): duplicated texture output (#2048)
+
 ## v3.1.4
 
 - chore(i3s): enable building example (#2043)

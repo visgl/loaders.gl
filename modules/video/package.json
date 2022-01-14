@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/video",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "description": "Framework-independent loaders and writers for video (MP4, WEBM, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -32,8 +32,8 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.1.4",
-    "@loaders.gl/worker-utils": "3.1.4",
+    "@loaders.gl/loader-utils": "3.1.5",
+    "@loaders.gl/worker-utils": "3.1.5",
     "gifshot": "^0.4.5"
   }
 }
