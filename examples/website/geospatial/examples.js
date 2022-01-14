@@ -1,4 +1,4 @@
-export const LOADERS_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
+export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 
 export const INITIAL_EXAMPLE_NAME = 'Vancouver';
 export const INITIAL_LOADER_NAME = 'GeoPackage';

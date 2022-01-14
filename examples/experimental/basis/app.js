@@ -22,7 +22,7 @@ if (dxtSupported) {
 
 // TODO - load images from github once the test images have been pushed to repo
 // const BASIS_URL =
-//   'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/textures/test/data/alpha.3.basis';
+//   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/alpha.3.basis';
 
 const textureRenderPogram = createProgram();
 

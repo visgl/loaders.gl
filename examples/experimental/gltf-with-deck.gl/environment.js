@@ -2,7 +2,7 @@ import {GLTFEnvironment} from '@luma.gl/experimental';
 import GL from '@luma.gl/constants';
 
 const GLTF_ENV_BASE_URL =
-  'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/luma.gl/examples/gltf/';
+  'https://raw.githubusercontent.com/visgl/deck.gl-data/master/luma.gl/examples/gltf/';
 
 const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_POSITIVE_X]: 'right',
