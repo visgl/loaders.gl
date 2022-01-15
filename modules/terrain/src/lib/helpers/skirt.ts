@@ -70,12 +70,12 @@ function getOutsideEdgesFromTriangles(triangles) {
   edges.sort((a, b) => Math.min(...a) - Math.min(...b) || Math.max(...a) - Math.max(...b));
 
   const outsideEdges: number[][] = [];
-  let index = 1;
+  let index = 0;
   while (index < edges.length) {
-    if (edges[index][0] === edges[index - 1][1] && edges[index][1] === edges[index - 1][0]) {
+    if (edges[index][0] === edges[index + 1]?.[1] && edges[index][1] === edges[index + 1]?.[0]) {
       index += 2;
     } else {
-      outsideEdges.push(edges[index - 1]);
+      outsideEdges.push(edges[index]);
       index++;
     }
   }
