@@ -570,7 +570,7 @@ export default class Tileset3D {
     }
     this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
     this.cartesianCenter = center;
-    this.zoom = getZoomFromBoundingVolume(root.boundingVolume);
+    this.zoom = getZoomFromBoundingVolume(root.boundingVolume, this.cartographicCenter);
   }
 
   _initializeStats() {
