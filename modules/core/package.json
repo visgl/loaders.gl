@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -40,8 +40,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.1.5",
-    "@loaders.gl/worker-utils": "3.1.5",
+    "@loaders.gl/loader-utils": "3.1.6",
+    "@loaders.gl/worker-utils": "3.1.6",
     "probe.gl": "^3.4.0"
   }
 }

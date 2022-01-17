@@ -1,5 +1,12 @@
 # CHANGELOG for loaders.gl
 
+## v3.1.6
+
+- chore(tile-converter): update docs (#2055)
+- fix(terrain): skirting misses last edge (#2045)
+- fix(tiles): init zoom calculation (#2046)
+- fix(tile-converter,i3s-app): default value of pbr + app picking (#2044)
+
 ## v3.1.5
 
 - chore(i3s-loader): add fetch option (#2050)
