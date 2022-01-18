@@ -26,7 +26,6 @@ import {v4 as uuidv4} from 'uuid';
 import process from 'process';
 import transform from 'json-map-transform';
 import md5 from 'md5';
-import {performance} from 'perf_hooks';
 
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
@@ -56,7 +55,12 @@ import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {I3SConvertedResources} from './types';
-import {initPerformanceObserver, writePerformanceLog} from '../lib/utils/perf-utils';
+import {
+  finishMeasurement,
+  initPerformanceObserver,
+  startMeasurement,
+  writePerformanceLog
+} from '../lib/utils/perf-utils';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -545,16 +549,11 @@ export default class I3SConverter {
     await this._updateTilesetOptions();
 
     if (this.options.performance) {
-      performance.mark(`Load Tile Content start - ${sourceTile.contentUrl}`);
+      startMeasurement('Load Tile Content', sourceTile.contentUrl);
     }
     await this.sourceTileset!._loadTile(sourceTile);
     if (this.options.performance) {
-      performance.mark(`Load Tile Content end - ${sourceTile.contentUrl}`);
-      performance.measure(
-        `Load Tile Content - ${sourceTile.contentUrl}`,
-        `Load Tile Content start - ${sourceTile.contentUrl}`,
-        `Load Tile Content end - ${sourceTile.contentUrl}`
-      );
+      finishMeasurement('Load Tile Content', sourceTile.contentUrl);
     }
 
     let boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel!);
@@ -565,7 +564,13 @@ export default class I3SConverter {
       this._convertAttributeStorageInfo(sourceTile.content);
     }
 
+    if (this.options.performance) {
+      startMeasurement('Convert Node Resources', sourceTile.contentUrl);
+    }
     const resourcesData = await this._convertResources(sourceTile);
+    if (this.options.performance) {
+      finishMeasurement('Convert Node Resources', sourceTile.contentUrl);
+    }
 
     const nodes: Node3DIndexDocument[] = [];
     const nodesInPage: NodeInPage[] = [];
