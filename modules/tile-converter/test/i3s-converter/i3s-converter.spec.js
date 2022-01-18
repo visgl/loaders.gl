@@ -1,9 +1,9 @@
 import test from 'tape-promise/tape';
 import {I3SConverter} from '@loaders.gl/tile-converter';
-import {isBrowser} from '@loaders.gl/core';
+import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
-import {cleanUpPath} from '../utils/file-utils';
+import {cleanUpPath, removeFile, isFileExists} from '../utils/file-utils';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
@@ -285,5 +285,75 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
     t.ok(tilesetJson);
   }
   await cleanUpPath('data/BatchedColors');
+  t.end();
+});
+
+test('tile-converter - Converters#create performance log if option is set', async (t) => {
+  if (!isBrowser) {
+    const tilesetName = 'BatchedColors';
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_URL,
+      outputPath: 'data',
+      tilesetName,
+      slpk: false,
+      inputType: '3dtiles',
+      performance: true,
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH,
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+    });
+    t.ok(await isFileExists(`${tilesetName}.perf-log.json`));
+
+    const perfLog = await fetchFile(`${tilesetName}.perf-log.json`);
+    const perfLogEntry = (await perfLog.json())[0];
+    t.ok(perfLogEntry);
+    t.ok(perfLogEntry.name.includes('Load Tile Content - '));
+    t.ok(
+      perfLogEntry.name.includes(
+        'modules/3d-tiles/test/data/Batched/BatchedColors/batchedColors.b3dm'
+      )
+    );
+    t.equals(perfLogEntry.entryType, 'measure');
+    t.ok(perfLogEntry.startTime);
+    t.ok(perfLogEntry.duration);
+
+    await cleanUpPath('data/BatchedColors');
+    removeFile(`${tilesetName}.perf-log.json`);
+
+    await converter.convert({
+      inputUrl: TILESET_URL,
+      outputPath: 'data',
+      tilesetName,
+      slpk: false,
+      inputType: '3dtiles',
+      performance: false,
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH,
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+    });
+    t.notOk(await isFileExists(`${tilesetName}.perf-log.json`));
+
+    await cleanUpPath('data/BatchedColors');
+    removeFile(`${tilesetName}.perf-log.json`);
+
+    await converter.convert({
+      inputUrl: TILESET_URL,
+      outputPath: 'data',
+      tilesetName,
+      slpk: false,
+      inputType: '3dtiles',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH,
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+    });
+    t.notOk(await isFileExists(`${tilesetName}.perf-log.json`));
+
+    await cleanUpPath('data/BatchedColors');
+    removeFile(`${tilesetName}.perf-log.json`);
+  }
   t.end();
 });

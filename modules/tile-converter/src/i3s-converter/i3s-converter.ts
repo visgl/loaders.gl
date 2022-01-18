@@ -26,6 +26,7 @@ import {v4 as uuidv4} from 'uuid';
 import process from 'process';
 import transform from 'json-map-transform';
 import md5 from 'md5';
+import {performance} from 'perf_hooks';
 
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
@@ -55,6 +56,7 @@ import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {I3SConvertedResources} from './types';
+import {initPerformanceObserver, writePerformanceLog} from '../lib/utils/perf-utils';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -129,6 +131,7 @@ export default class I3SConverter {
    * @param options.token Token for Cesium ION tilesets authentication
    * @param options.draco Generate I3S 1.7 draco compressed geometries
    * @param options.validate -enable validation
+   * @param options.performance - measure performance metrics and save in `${tilesetName}.perf-log.json`
    */
   async convert(options: {
     inputUrl: string;
@@ -143,6 +146,7 @@ export default class I3SConverter {
     validate?: boolean;
     generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
+    performance?: boolean;
     /** @deprecated */
     inputType?: string;
   }): Promise<any> {
@@ -159,13 +163,18 @@ export default class I3SConverter {
       maxDepth,
       token,
       generateTextures,
-      generateBoundingVolumes
+      generateBoundingVolumes,
+      performance
     } = options;
-    this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
+    this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl, performance};
     this.validate = Boolean(validate);
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
     this.generateTextures = Boolean(generateTextures);
     this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
+
+    if (performance) {
+      initPerformanceObserver();
+    }
 
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
@@ -187,6 +196,11 @@ export default class I3SConverter {
 
     await this._createAndSaveTileset(outputPath, tilesetName);
     await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+
+    if (performance) {
+      await writePerformanceLog(tilesetName);
+    }
+
     return sourceTilesetJson;
   }
 
@@ -529,7 +543,19 @@ export default class I3SConverter {
     }
 
     await this._updateTilesetOptions();
+
+    if (this.options.performance) {
+      performance.mark(`Load Tile Content start - ${sourceTile.contentUrl}`);
+    }
     await this.sourceTileset!._loadTile(sourceTile);
+    if (this.options.performance) {
+      performance.mark(`Load Tile Content end - ${sourceTile.contentUrl}`);
+      performance.measure(
+        `Load Tile Content - ${sourceTile.contentUrl}`,
+        `Load Tile Content start - ${sourceTile.contentUrl}`,
+        `Load Tile Content end - ${sourceTile.contentUrl}`
+      );
+    }
 
     let boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel!);
 

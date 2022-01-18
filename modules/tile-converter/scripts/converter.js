@@ -121,7 +121,8 @@ async function convert(options) {
         draco: options.draco,
         generateTextures: options.generateTextures,
         generateBoundingVolumes: options.generateBoundingVolumes,
-        validate: options.validate
+        validate: options.validate,
+        performance: options.performance
       });
       break;
     default:
@@ -144,7 +145,8 @@ function parseOptions(args) {
     installDependencies: false,
     generateTextures: false,
     generateBoundingVolumes: false,
-    validate: false
+    validate: false,
+    performance: false
   };
 
   const count = args.length;
@@ -204,6 +206,9 @@ function parseOptions(args) {
           break;
         case '--generate-bounding-volumes':
           opts.generateBoundingVolumes = true;
+          break;
+        case '--performance':
+          opts.performance = true;
           break;
         case '--help':
           printHelp();

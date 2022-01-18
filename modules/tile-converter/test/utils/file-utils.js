@@ -9,11 +9,15 @@ export async function cleanUpPath(testPath) {
     } catch (e) {
       // Do nothing
     }
-    try {
-      await fs.unlink(`${testPath}.slpk`);
-    } catch (e) {
-      // Do nothing
-    }
+    await removeFile(`${testPath}.slpk`);
+  }
+}
+
+export async function removeFile(fileName) {
+  try {
+    await fs.unlink(fileName);
+  } catch (e) {
+    // Do nothing
   }
 }
 
