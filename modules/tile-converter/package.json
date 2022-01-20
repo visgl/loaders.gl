@@ -30,7 +30,8 @@
     "README.md"
   ],
   "browser": {
-    "fs": false
+    "fs": false,
+    "perf_hooks": false
   },
   "scripts": {
     "pre-build": "npm run build-bundle  && npm run build-converter-bundle",
