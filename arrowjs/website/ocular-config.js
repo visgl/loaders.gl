@@ -21,7 +21,7 @@ module.exports = {
   PROJECT_TYPE: 'github',
 
   PROJECT_NAME: 'arrow/js',
-  PROJECT_ORG: 'uber-web',
+  PROJECT_ORG: 'visgl',
   PROJECT_URL: 'https://github.com/visgl/loaders.gl',
   PROJECT_DESC: 'Apache Arrow JavaScript Bindings',
 
