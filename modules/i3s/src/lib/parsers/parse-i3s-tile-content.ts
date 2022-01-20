@@ -307,7 +307,7 @@ function normalizeAttributes(
   arrayBuffer: ArrayBuffer,
   byteOffset: number,
   vertexAttributes: VertexAttribute | FeatureAttribute,
-  vertexCount: number,
+  attributeCount: number,
   attributesOrder: string[]
 ) {
   const attributes: I3SMeshAttributes = {};
@@ -317,44 +317,46 @@ function normalizeAttributes(
     if (vertexAttributes[attribute]) {
       const {valueType, valuesPerElement}: {valueType: string; valuesPerElement: number} =
         vertexAttributes[attribute];
-      // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
-      const count = vertexCount;
       // protect from arrayBuffer read overunns by NOT assuming node has regions always even though its declared in defaultGeometrySchema.
       // In i3s 1.6: client is required to decide that based on ./shared resource of the node (materialDefinitions.[Mat_id].params.vertexRegions == true)
       // In i3s 1.7 the property has been rolled into the 3d scene layer json/node pages.
       // Code below does not account when the bytelength is actually bigger than
       // the calculated value (b\c the tile potentially could have mesh segmentation information).
       // In those cases tiles without regions could fail or have garbage values.
-      if (byteOffset + count * valuesPerElement > arrayBuffer.byteLength) {
+      if (
+        byteOffset + attributeCount * valuesPerElement * sizeOf(valueType) <=
+        arrayBuffer.byteLength
+      ) {
+        const buffer = arrayBuffer.slice(byteOffset);
+        let value: TypedArray;
+
+        if (valueType === 'UInt64') {
+          value = parseUint64Values(buffer, attributeCount * valuesPerElement, sizeOf(valueType));
+        } else {
+          const TypedArrayType = getConstructorForDataFormat(valueType);
+          value = new TypedArrayType(buffer, 0, attributeCount * valuesPerElement);
+        }
+
+        attributes[attribute] = {
+          value,
+          type: GL_TYPE_MAP[valueType],
+          size: valuesPerElement
+        };
+
+        switch (attribute) {
+          case 'color':
+            attributes.color.normalized = true;
+            break;
+          case 'position':
+          case 'region':
+          case 'normal':
+          default:
+        }
+
+        byteOffset = byteOffset + attributeCount * valuesPerElement * sizeOf(valueType);
+      } else if (attribute !== 'uv0') {
         break;
       }
-      const buffer = arrayBuffer.slice(byteOffset);
-      let value: TypedArray;
-
-      if (valueType === 'UInt64') {
-        value = parseUint64Values(buffer, count * valuesPerElement, sizeOf(valueType));
-      } else {
-        const TypedArrayType = getConstructorForDataFormat(valueType);
-        value = new TypedArrayType(buffer, 0, count * valuesPerElement);
-      }
-
-      attributes[attribute] = {
-        value,
-        type: GL_TYPE_MAP[valueType],
-        size: valuesPerElement
-      };
-
-      switch (attribute) {
-        case 'color':
-          attributes.color.normalized = true;
-          break;
-        case 'position':
-        case 'region':
-        case 'normal':
-        default:
-      }
-
-      byteOffset = byteOffset + count * valuesPerElement * sizeOf(valueType);
     }
   }
 
