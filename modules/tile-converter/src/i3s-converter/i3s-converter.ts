@@ -566,9 +566,7 @@ export default class I3SConverter {
     };
 
     for (const resources of resourcesData || [emptyResources]) {
-      if (!this.layersHasTexture && resources.texture) {
-        this.layersHasTexture = true;
-      }
+      this.layersHasTexture = this.layersHasTexture || !!resources.texture;
 
       if (this.generateBoundingVolumes && resources.boundingVolumes) {
         boundingVolumes = resources.boundingVolumes;
