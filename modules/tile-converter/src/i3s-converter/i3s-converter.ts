@@ -229,7 +229,7 @@ export default class I3SConverter {
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
 
-    if (!this.layersHasTexture) {
+    if (this.layersHasTexture === false) {
       this.layers0!.store.defaultGeometrySchema.ordering =
         this.layers0!.store.defaultGeometrySchema.ordering.filter(
           (attribute) => attribute !== 'uv0'
@@ -566,7 +566,7 @@ export default class I3SConverter {
     };
 
     for (const resources of resourcesData || [emptyResources]) {
-      this.layersHasTexture = this.layersHasTexture || !!resources.texture;
+      this.layersHasTexture = this.layersHasTexture || Boolean(resources.texture);
 
       if (this.generateBoundingVolumes && resources.boundingVolumes) {
         boundingVolumes = resources.boundingVolumes;
