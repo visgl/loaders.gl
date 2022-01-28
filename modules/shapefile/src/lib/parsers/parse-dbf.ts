@@ -8,7 +8,7 @@ interface DBFTableOutput {
   rows: DBFRowsOutput;
 }
 
-type DBFHeader = {
+export type DBFHeader = {
   // Last updated date
   year: number;
   month: number;

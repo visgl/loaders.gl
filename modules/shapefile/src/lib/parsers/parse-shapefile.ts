@@ -1,4 +1,5 @@
 // import type {Feature} from '@loaders.gl/gis';
+import type {DBFHeader} from './parse-dbf';
 import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
 import type {LoaderContext} from '@loaders.gl/loader-utils';
@@ -16,6 +17,7 @@ interface ShapefileOutput {
   prj?: string;
   shx?: SHXOutput;
   header: SHPHeader;
+  dbfHeader?: DBFHeader;
   data: object[];
 }
 /**
@@ -59,10 +61,10 @@ export async function* parseShapefileInBatches(
     shapeHeader = (await shapeIterable.next()).value;
   }
 
-  let dbfHeader: {batchType?: string} = {};
+  let dbfHeader = undefined as DBFHeader | undefined;
   if (propertyIterable) {
     dbfHeader = (await propertyIterable.next()).value;
-    if (dbfHeader && dbfHeader.batchType === 'metadata') {
+    if (dbfHeader && (dbfHeader as {batchType?: string}).batchType === 'metadata') {
       dbfHeader = (await propertyIterable.next()).value;
     }
   }
@@ -94,6 +96,7 @@ export async function* parseShapefileInBatches(
       prj,
       shx,
       header: shapeHeader,
+      dbfHeader,
       data: features
     };
   }
@@ -123,12 +126,13 @@ export async function parseShapefile(
 
   // parse properties
   let properties = [];
-
+  let dbfHeader = undefined as DBFHeader | undefined;
+  
   // @ts-ignore context must be defined
   const dbfResponse = await context.fetch(replaceExtension(context.url, 'dbf'));
   if (dbfResponse.ok) {
     // @ts-ignore context must be defined
-    properties = await context.parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
+    ({dbfHeader, properties} = await context.parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}}));
   }
 
   let features = joinProperties(geojsonGeometries, properties);
@@ -141,6 +145,7 @@ export async function parseShapefile(
     prj,
     shx,
     header,
+    dbfHeader,
     data: features
   };
 }
