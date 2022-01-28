@@ -1,5 +1,10 @@
 # CHANGELOG for loaders.gl
 
+## v3.1.7
+
+- feat(core): Add debug logging for selectLoader (#2069)
+- fix(modules): peerDependencies version (#2071)
+
 ## v3.1.6
 
 - chore(tile-converter): update docs (#2055)
