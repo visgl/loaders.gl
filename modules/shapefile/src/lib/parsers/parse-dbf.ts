@@ -5,7 +5,7 @@ type DBFRowsOutput = object[];
 
 interface DBFTableOutput {
   schema?: Schema;
-  rows: DBFRowsOutput;
+  data: DBFRowsOutput;
 }
 
 type DBFHeader = {
@@ -111,7 +111,7 @@ export function parseDBF(
   switch (options.tables && options.tables.format) {
     case 'table':
       // TODO - parse columns
-      return {schema, rows: data};
+      return {schema, data};
 
     case 'rows':
     default:
@@ -139,13 +139,17 @@ export async function* parseDBFInBatches(
     }
 
     if (parser.result.data.length > 0) {
-      yield parser.result.data;
+      yield {
+        data: parser.result.data
+      };
       parser.result.data = [];
     }
   }
   parser.end();
   if (parser.result.data.length > 0) {
-    yield parser.result.data;
+    yield {
+      data: parser.result.data
+    };
   }
 }
 /**
