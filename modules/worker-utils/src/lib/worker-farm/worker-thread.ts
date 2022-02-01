@@ -1,4 +1,3 @@
-/* global Worker */
 import {Worker as NodeWorker} from 'worker_threads';
 import {isBrowser} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';

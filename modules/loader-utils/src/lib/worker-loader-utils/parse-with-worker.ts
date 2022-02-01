@@ -1,4 +1,9 @@
-import type {WorkerJob, WorkerMessageType, WorkerMessagePayload} from '@loaders.gl/worker-utils';
+import {
+  WorkerJob,
+  WorkerMessageType,
+  WorkerMessagePayload,
+  isBrowser
+} from '@loaders.gl/worker-utils';
 import type {Loader, LoaderOptions, LoaderContext} from '../../types';
 import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
 
@@ -9,6 +14,11 @@ import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
  */
 export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
   if (!WorkerFarm.isSupported()) {
+    return false;
+  }
+
+  // Node workers are still experimental
+  if (!isBrowser && !options?._nodeWorkers) {
     return false;
   }
 
