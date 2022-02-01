@@ -1,24 +1,26 @@
 import test from 'tape-promise/tape';
 import {WorkerPool} from '@loaders.gl/worker-utils';
+import {WORKER_BODY_UTILS} from './worker-thread.spec';
 
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
 
-const hasWorker = typeof Worker !== 'undefined';
 const testWorkerSource = `
-  self.onmessage = function(event) {
+  function onMessage(event) {
     const messageData = {
       source: 'loaders.gl',
       type: 'done',
-      payload: {output: event.data.payload.input}
+      payload: {output: event.payload.input}
     };
-    setTimeout(function () { self.postMessage(messageData); }, 50);
+    setTimeout(function () { postMessageToParent(messageData); }, 50);
   };
+
+  ${WORKER_BODY_UTILS}
 `;
 
 test('WorkerPool', async (t) => {
-  if (!hasWorker) {
-    t.comment('Worker test is browser only');
+  if (!WorkerPool.isSupported()) {
+    t.comment('Workers not supported, skipping tests');
     t.end();
     return;
   }
@@ -53,8 +55,8 @@ test('WorkerPool', async (t) => {
 });
 
 test('WorkerPool with reuseWorkers === false param', async (t) => {
-  if (!hasWorker) {
-    t.comment('Worker test is browser only');
+  if (!WorkerPool.isSupported()) {
+    t.comment('Workers not supported, skipping tests');
     t.end();
     return;
   }
@@ -83,8 +85,8 @@ test('WorkerPool with reuseWorkers === false param', async (t) => {
 });
 
 test('WorkerPool with reuseWorkers === true param', async (t) => {
-  if (!hasWorker) {
-    t.comment('Worker test is browser only');
+  if (!WorkerPool.isSupported()) {
+    t.comment('Workers not supported, skipping tests');
     t.end();
     return;
   }
