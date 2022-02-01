@@ -104,6 +104,7 @@ export function selectLoaderSync(
 }
 
 /** Implements loaders selection logic */
+// eslint-disable-next-line complexity
 function selectLoaderInternal(
   data: Response | Blob | ArrayBuffer | string,
   loaders: Loader[],

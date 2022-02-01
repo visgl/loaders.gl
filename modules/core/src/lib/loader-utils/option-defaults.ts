@@ -1,4 +1,5 @@
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import {ConsoleLog} from './loggers';
 
 export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
@@ -12,7 +13,8 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   worker: true, // By default, use worker if provided by loader.
   maxConcurrency: 3, // How many worker instances should be created for each loader.
   maxMobileConcurrency: 1, // How many worker instances should be created for each loader on mobile devices.
-  reuseWorkers: true, // By default reuse workers,
+  reuseWorkers: isBrowser, // By default reuse workers in browser (Node.js refuses to terminate if browsers are running)
+  _nodeWorkers: false, // By default do not support node workers
   _workerType: '', // 'test' to use locally generated workers
 
   limit: 0,
