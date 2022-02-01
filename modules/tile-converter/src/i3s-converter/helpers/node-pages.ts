@@ -194,13 +194,15 @@ export default class NodePages {
    * @return {promise}
    */
   async save(layers0Path: string, fileMap: Object, slpk: boolean = false): Promise<void> {
-    const promises: Promise<any>[] = [];
     if (slpk) {
       for (const [index, nodePage] of this.nodePages.entries()) {
         const nodePageStr = JSON.stringify(nodePage);
         const slpkPath = join(layers0Path, 'nodepages');
-        promises.push(this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`));
-        fileMap[`nodePages/${index.toString()}.json.gz`] = `${slpkPath}.json.gz`;
+        fileMap[`nodePages/${index.toString()}.json.gz`] = await this.writeFile(
+          slpkPath,
+          nodePageStr,
+          `${index.toString()}.json`
+        );
       }
       const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate());
       const compress = false;
@@ -214,10 +216,8 @@ export default class NodePages {
       for (const [index, nodePage] of this.nodePages.entries()) {
         const nodePageStr = JSON.stringify(nodePage);
         const nodePagePath = join(layers0Path, 'nodepages', index.toString());
-        promises.push(this.writeFile(nodePagePath, nodePageStr));
+        await this.writeFile(nodePagePath, nodePageStr);
       }
     }
-
-    await Promise.all(promises);
   }
 }
