@@ -8,19 +8,16 @@ import {assert} from '../env-utils/assert';
 export default class WorkerJob {
   readonly name: string;
   readonly workerThread: WorkerThread;
-  isRunning: boolean;
+  isRunning: boolean = true;
   /** Promise that resolves when Job is done */
   readonly result: Promise<any>;
 
-  private _resolve: (value: any) => void;
-  private _reject: (reason?: any) => void;
+  private _resolve: (value: any) => void = () => {};
+  private _reject: (reason?: any) => void = () => {};
 
   constructor(jobName: string, workerThread: WorkerThread) {
     this.name = jobName;
     this.workerThread = workerThread;
-    this.isRunning = true;
-    this._resolve = () => {};
-    this._reject = () => {};
     this.result = new Promise((resolve, reject) => {
       this._resolve = resolve;
       this._reject = reject;
