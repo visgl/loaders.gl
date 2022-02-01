@@ -3,7 +3,7 @@ import {isBrowser} from '@loaders.gl/worker-utils';
 import {getLoadableWorkerURL} from '../../../src/lib/worker-utils/get-loadable-worker-url';
 
 const WORKER_SOURCE = `
-  globalThis.onmessage = function(event) {
+  self.onmessage = function(event) {
     const messageData = {
       source: 'loaders.gl',
       type: 'done',
