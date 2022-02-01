@@ -2,7 +2,11 @@ import WorkerPool from './worker-pool';
 import WorkerThread from './worker-thread';
 
 /**
- * @param maxConcurrency {number} - max count of workers
+ * @param maxConcurrency - max count of workers
+ * @param maxMobileConcurrency - max count of workers on mobile
+ * @param maxConcurrency - max count of workers
+ * @param reuseWorkers - if false, destroys workers when task is completed
+ * @param onDebug - callback intended to allow application to log worker pool activity
  */
 export type WorkerFarmProps = {
   maxConcurrency?: number;
@@ -11,11 +15,11 @@ export type WorkerFarmProps = {
   onDebug?: () => void;
 };
 
-const DEFAULT_PROPS: WorkerFarmProps = {
+const DEFAULT_PROPS: Required<WorkerFarmProps> = {
   maxConcurrency: 3,
   maxMobileConcurrency: 1,
-  onDebug: () => {},
-  reuseWorkers: true
+  reuseWorkers: true,
+  onDebug: () => {}
 };
 
 /**
@@ -27,7 +31,7 @@ export default class WorkerFarm {
   // singleton
   private static _workerFarm?: WorkerFarm;
 
-  /** Check if Workers are supported */
+  /** Checks if workers are supported on this platform */
   static isSupported(): boolean {
     return WorkerThread.isSupported();
   }

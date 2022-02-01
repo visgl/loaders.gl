@@ -27,6 +27,7 @@
   "browser": {
     "child_process": false,
     "fs": false,
+    "worker_threads": "./src/lib/node/worker_threads-browser.js",
     "./src/lib/node/require-utils.node.ts": false,
     "./dist/lib/node/require-utils.node.js": false,
     "./dist/es5/lib/node/require-utils.node.js": false,
