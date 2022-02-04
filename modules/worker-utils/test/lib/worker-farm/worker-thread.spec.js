@@ -12,7 +12,7 @@ export const WORKER_BODY_UTILS = `\
   }
 
   if (typeof self !== 'undefined') {
-    self.onmessage = onMessage;
+    self.onmessage = message => onMessage(event.data);
   } else {
     const {parentPort} = require('worker_threads');
     parentPort.on('message', onMessage);
@@ -24,7 +24,7 @@ const testWorkerSource = `
   function onMessage(event) {
     setTimeout(function () {
       console.log('timed out');
-      postMessageToParent(event.data.payload)
+      postMessageToParent(event.payload)
       console.log('sent response');
     }, 50);
   }
