@@ -33,7 +33,9 @@ export abstract class Hash {
     }
     const output = await this.concatenate(arrayBuffers);
     const hash = await this.hash(output);
-    this.options?.crypto?.onEnd?.({hash});
+    if (this.options && this.options.crypto && this.options.crypto.onEnd) {
+      this.options.crypto.onEnd({hash});
+    }
   }
 
   // HELPERS

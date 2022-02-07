@@ -1,14 +1,9 @@
 import test from 'tape-promise/tape';
-import {processOnWorker, isBrowser} from '@loaders.gl/worker-utils';
+import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {CryptoWorker, CryptoJSWorker} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
 
 test('CryptoWorker', async (t) => {
-  if (!isBrowser) {
-    t.end();
-    return;
-  }
-
   const {binaryData} = getBinaryData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -33,6 +28,12 @@ test('CryptoWorker', async (t) => {
   });
 
   t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'MD5 Hash correct');
+
+  // Destroy all workers in NodeJS
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
 
   t.end();
 });
