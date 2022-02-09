@@ -1,5 +1,9 @@
 # CHANGELOG for loaders.gl
 
+## v3.1.8
+
+- fix(tile-converter): simultaneous file writing (#2074)
+
 ## v3.1.7
 
 - feat(core): Add debug logging for selectLoader (#2069)
