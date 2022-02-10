@@ -384,7 +384,7 @@ export default class Tileset3D {
    * @param viewports - list of viewports
    */
   // eslint-disable-next-line max-statements, complexity
-  update(viewports: any[]): void {
+  update(viewports: any[] | null = null): void {
     if ('loadTiles' in this.options && !this.options.loadTiles) {
       return;
     }
