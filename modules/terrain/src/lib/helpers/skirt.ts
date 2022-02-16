@@ -159,10 +159,10 @@ function updateAttributesForNewEdge({
   // Define new triangles
   const triangle1Offset = edgeIndex * 2 * 3;
   newTriangles[triangle1Offset] = edge[0];
-  newTriangles[triangle1Offset + 1] = edge[1];
-  newTriangles[triangle1Offset + 2] = positionsLength / 3 + vertex2Offset;
+  newTriangles[triangle1Offset + 1] = positionsLength / 3 + vertex2Offset;
+  newTriangles[triangle1Offset + 2] = edge[1];
 
   newTriangles[triangle1Offset + 3] = positionsLength / 3 + vertex2Offset;
-  newTriangles[triangle1Offset + 4] = positionsLength / 3 + vertex1Offset;
-  newTriangles[triangle1Offset + 5] = edge[0];
+  newTriangles[triangle1Offset + 4] = edge[0];
+  newTriangles[triangle1Offset + 5] = positionsLength / 3 + vertex1Offset;
 }
