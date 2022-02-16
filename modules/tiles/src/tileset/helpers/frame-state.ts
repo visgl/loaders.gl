@@ -1,3 +1,4 @@
+import {Tile3D} from '@loaders.gl/tiles';
 import {Vector3} from '@math.gl/core';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -9,6 +10,7 @@ export type FrameState = {
     up: number[];
   };
   viewport: {[key: string]: any};
+  viewportPitch0: {[key: string]: any}; // Use it to calculate projected radius for a tile
   height: number;
   cullingVolume: CullingVolume;
   frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?
@@ -60,6 +62,20 @@ export function getFrameState(viewport, frameNumber: number): FrameState {
 
   commonSpacePlanesToWGS84(viewport, viewportCenterCartesian);
 
+  const ViewportClass = viewport.constructor;
+  const {longitude, latitude, width, bearing, zoom} = viewport;
+  // @ts-ignore
+  const viewportPitch0 = new ViewportClass({
+    longitude,
+    latitude,
+    height,
+    width,
+    bearing,
+    zoom,
+    pitch: 0
+  });
+  // const viewport = originalViewport;
+
   // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
   return {
     camera: {
@@ -68,11 +84,52 @@ export function getFrameState(viewport, frameNumber: number): FrameState {
       up: cameraUpCartesian
     },
     viewport,
+    viewportPitch0,
     height,
     cullingVolume,
     frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
     sseDenominator: 1.15 // Assumes fovy = 60 degrees
   };
+}
+
+/**
+ * Limit `tiles` array length with `maximumTilesSelected` number.
+ * The criteria for this filtering is distance of a tile center
+ * to the `frameState.viewport`'s longitude and latitude
+ * @param tiles - tiles array to filter
+ * @param frameState - frameState to calculate distances
+ * @param maximumTilesSelected - maximal amount of tiles in the output array
+ * @returns new tiles array
+ */
+export function limitSelectedTilesAmount(
+  tiles: Tile3D[],
+  frameState: FrameState,
+  maximumTilesSelected: number
+): [Tile3D[], Tile3D[]] {
+  if (maximumTilesSelected === 0 || tiles.length <= maximumTilesSelected) {
+    return [tiles, []];
+  }
+  // Accumulate distances in couples array: [tileIndex: number, distanceToViewport: number]
+  const tuples: [number, number][] = [];
+  const {longitude: viewportLongitude, latitude: viewportLatitude} = frameState.viewport;
+  for (const [index, tile] of tiles.entries()) {
+    const [longitude, latitude] = tile.header.mbs;
+    const deltaLon = Math.abs(viewportLongitude - longitude);
+    const deltaLat = Math.abs(viewportLatitude - latitude);
+    const distance = Math.sqrt(deltaLat * deltaLat + deltaLon * deltaLon);
+    tuples.push([index, distance]);
+  }
+  const tuplesSorted = tuples.sort((a, b) => a[1] - b[1]);
+  const selectedTiles: Tile3D[] = [];
+  for (let i = 0; i < maximumTilesSelected; i++) {
+    selectedTiles.push(tiles[tuplesSorted[i][0]]);
+  }
+  const unselectedTiles: Tile3D[] = [];
+  for (let i = maximumTilesSelected; i < tuplesSorted.length; i++) {
+    unselectedTiles.push(tiles[tuplesSorted[i][0]]);
+  }
+
+  return [selectedTiles, unselectedTiles];
 }
 
 function commonSpacePlanesToWGS84(viewport, viewportCenterCartesian) {
