@@ -4,6 +4,7 @@ import type {DracoLoaderOptions} from './draco-loader';
 import {DracoLoader as DracoWorkerLoader} from './draco-loader';
 import DracoParser from './lib/draco-parser';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
+import {VERSION} from './lib/utils/version';
 
 // Draco data types
 
@@ -13,6 +14,15 @@ export type {DracoMesh, DracoLoaderData};
 
 export type {DracoWriterOptions} from './draco-writer';
 export {DracoWriter} from './draco-writer';
+export const DracoWriterWorker = {
+  id: 'draco-writer',
+  name: 'Draco compressed geometry writer',
+  module: 'draco',
+  version: VERSION,
+  options: {
+    draco: {}
+  }
+};
 
 // Draco Loader
 
