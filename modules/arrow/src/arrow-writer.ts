@@ -15,7 +15,11 @@ export const ArrowWriter = {
   module: 'arrow',
   version: VERSION,
   extensions: ['arrow', 'feather'],
-  mimeTypes: ['application/octet-stream'],
+  mimeTypes: [
+    'application/vnd.apache.arrow.file',
+    'application/vnd.apache.arrow.stream',
+    'application/octet-stream'
+  ],
   encodeSync,
   binary: true,
   options: {}
