@@ -187,6 +187,12 @@ test('gzip#worker', async (t) => {
   t.equal(decompressdData.byteLength, 100000, 'Length correct');
 
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
+
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
   t.end();
 });
 
@@ -212,6 +218,12 @@ test('lz4#worker', async (t) => {
   t.equal(decompressdData.byteLength, 100000, 'Length correct');
 
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
+
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
   t.end();
 });
 
@@ -242,14 +254,5 @@ test.skip('zstd#worker', async (t) => {
   t.equal(decompressdData.byteLength, 100000, 'Length correct');
 
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
-  t.end();
-});
-
-test('Destory worker farm', (t) => {
-  // Destroy all workers in NodeJS
-  if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
-  }
   t.end();
 });
