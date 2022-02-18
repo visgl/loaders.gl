@@ -19,11 +19,16 @@
   </tbody>
 </table>
 
-## v4.0 (In development)
 
-Target Release Date: Q1 2022. Alpha releases available.
+See [roadmap](./roadmap) for more details on planned development.
 
-See [roadmap](./roadmap) for more details.
+## v3.2 (In development)
+
+Target Release Date: Q1 2022.
+
+**loaders.gl/arrow**
+
+- ArrowLoader now recognizes recommended Arrow MIME types `application/vnd.apache.arrow.file`, `application/vnd.apache.arrow.stream`.
 
 ## v3.1
 
