@@ -14,9 +14,24 @@ export type {DracoMesh, DracoLoaderData};
 
 export type {DracoWriterOptions} from './draco-writer';
 export {DracoWriter} from './draco-writer';
+
+/**
+ * Browser worker doesn't work because of issue during "draco_encoder.js" loading.
+ * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
+ */
 export const DracoWriterWorker = {
   id: 'draco-writer',
   name: 'Draco compressed geometry writer',
+  module: 'draco',
+  version: VERSION,
+  options: {
+    draco: {}
+  }
+};
+
+export const DracoWriterNodeJSWorker = {
+  id: 'draco-writer-nodejs',
+  name: 'Draco compressed geometry writer for NodeJS',
   module: 'draco',
   version: VERSION,
   options: {
