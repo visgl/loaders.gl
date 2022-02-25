@@ -11,7 +11,7 @@ import {
   LZOCompression,
   CompressionWorker
 } from '@loaders.gl/compression';
-import {processOnWorker, isBrowser} from '@loaders.gl/worker-utils';
+import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {getData, compareArrayBuffers} from './utils/test-utils';
 
@@ -159,12 +159,7 @@ test('compression#batched', async (t) => {
 
 // WORKER TESTS
 
-test.skip('gzip#worker', async (t) => {
-  if (!isBrowser) {
-    t.end();
-    return;
-  }
-
+test('gzip#worker', async (t) => {
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -192,15 +187,16 @@ test.skip('gzip#worker', async (t) => {
   t.equal(decompressdData.byteLength, 100000, 'Length correct');
 
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
+
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
   t.end();
 });
 
-test.skip('lz4#worker', async (t) => {
-  if (!isBrowser) {
-    t.end();
-    return;
-  }
-
+test('lz4#worker', async (t) => {
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -222,6 +218,12 @@ test.skip('lz4#worker', async (t) => {
   t.equal(decompressdData.byteLength, 100000, 'Length correct');
 
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
+
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
   t.end();
 });
 

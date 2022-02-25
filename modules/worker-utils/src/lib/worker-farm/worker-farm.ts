@@ -59,6 +59,7 @@ export default class WorkerFarm {
     for (const workerPool of this.workerPools.values()) {
       workerPool.destroy();
     }
+    this.workerPools = new Map<string, WorkerPool>();
   }
 
   /**
