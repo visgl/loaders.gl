@@ -298,6 +298,14 @@ export default class TileHeader {
     }
   }
 
+  /**
+   * Make tile unselected than means it won't be shown
+   * but it can be still loaded in memory
+   */
+  unselect(): void {
+    this._selectedFrame = 0;
+  }
+
   /*
    * If skipLevelOfDetail is off try to load child tiles as soon as possible so that their parent can refine sooner.
    * Tiles are prioritized by screen space error.
