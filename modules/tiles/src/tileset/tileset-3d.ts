@@ -48,7 +48,7 @@ import {
 } from '@loaders.gl/loader-utils';
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
-import {FrameState, getFrameState, limitSelectedTilesAmount} from './helpers/frame-state';
+import {FrameState, getFrameState, limitSelectedTiles} from './helpers/frame-state';
 import {getZoomFromBoundingVolume} from './helpers/zoom';
 import Tile3D from './tile-3d';
 import Tileset3DTraverser from './traversers/tileset-3d-traverser';
@@ -128,11 +128,9 @@ const DEFAULT_PROPS: Props = {
   maxRequests: 64,
 
   maximumMemoryUsage: 32,
-  // Maximum number limit of tiles selected for show
-  // 0 means no limit
+  /** Maximum number limit of tiles selected for show. 0 means no limit */
   maximumTilesSelected: 0,
-  // Delay time before the tileset traversal.
-  // It prevents traversal requests spam.
+  /** Delay time before the tileset traversal. It prevents traversal requests spam.*/
   debounceTime: 0,
 
   /**
@@ -404,13 +402,18 @@ export default class Tileset3D {
     this.doUpdate(viewports);
   }
 
+  /**
+   * Update visible tiles relying on a list of viewports.
+   * Do it with debounce delay to prevent update spam
+   * @param viewports viewports
+   * @returns Promise of new frameNumber
+   */
   async selectTiles(viewports: any[] | null = null): Promise<number> {
     if (viewports) {
       this.lastUpdatedVieports = viewports;
     }
     if (!this.updatePromise) {
       this.updatePromise = new Promise<number>((resolve) => {
-        console.log(`Debounce Time: ${this.options.debounceTime} !!!!`);
         setTimeout(() => {
           this.doUpdate(this.lastUpdatedVieports);
           resolve(this._frameNumber);
@@ -421,8 +424,12 @@ export default class Tileset3D {
     return this.updatePromise;
   }
 
+  /**
+   * Update visible tiles relying on a list of viewports
+   * @param viewports viewports
+   */
   // eslint-disable-next-line max-statements, complexity
-  doUpdate(viewports: any[] | null = null): void {
+  private doUpdate(viewports: any[] | null = null): void {
     if ('loadTiles' in this.options && !this.options.loadTiles) {
       return;
     }
@@ -490,7 +497,7 @@ export default class Tileset3D {
     }
     const currentFrameStateData = this.frameStateData[id];
     const selectedTiles = Object.values(this._traverser.selectedTiles);
-    const [filteredSelectedTiles, unselectedTiles] = limitSelectedTilesAmount(
+    const [filteredSelectedTiles, unselectedTiles] = limitSelectedTiles(
       selectedTiles,
       frameState,
       this.options.maximumTilesSelected

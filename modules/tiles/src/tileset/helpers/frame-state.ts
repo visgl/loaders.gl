@@ -10,7 +10,7 @@ export type FrameState = {
     up: number[];
   };
   viewport: {[key: string]: any};
-  viewportPitch0: {[key: string]: any}; // Use it to calculate projected radius for a tile
+  topDownViewport: {[key: string]: any}; // Use it to calculate projected radius for a tile
   height: number;
   cullingVolume: CullingVolume;
   frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?
@@ -65,7 +65,7 @@ export function getFrameState(viewport, frameNumber: number): FrameState {
   const ViewportClass = viewport.constructor;
   const {longitude, latitude, width, bearing, zoom} = viewport;
   // @ts-ignore
-  const viewportPitch0 = new ViewportClass({
+  const topDownViewport = new ViewportClass({
     longitude,
     latitude,
     height,
@@ -74,7 +74,6 @@ export function getFrameState(viewport, frameNumber: number): FrameState {
     zoom,
     pitch: 0
   });
-  // const viewport = originalViewport;
 
   // TODO: make a file/class for frameState and document what needs to be attached to this so that traversal can function
   return {
@@ -84,7 +83,7 @@ export function getFrameState(viewport, frameNumber: number): FrameState {
       up: cameraUpCartesian
     },
     viewport,
-    viewportPitch0,
+    topDownViewport,
     height,
     cullingVolume,
     frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
@@ -101,7 +100,7 @@ export function getFrameState(viewport, frameNumber: number): FrameState {
  * @param maximumTilesSelected - maximal amount of tiles in the output array
  * @returns new tiles array
  */
-export function limitSelectedTilesAmount(
+export function limitSelectedTiles(
   tiles: Tile3D[],
   frameState: FrameState,
   maximumTilesSelected: number

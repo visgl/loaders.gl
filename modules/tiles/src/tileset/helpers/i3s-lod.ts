@@ -44,7 +44,7 @@ export function getLodStatus(tile: Tile3D, frameState: FrameState): 'DIG' | 'OUT
  */
 // eslint-disable-next-line max-statements
 export function getProjectedRadius(tile: Tile3D, frameState: FrameState): number {
-  const {viewportPitch0: viewport} = frameState;
+  const {topDownViewport: viewport} = frameState;
   const mbsLat = tile.header.mbs[1];
   const mbsLon = tile.header.mbs[0];
   const mbsZ = tile.header.mbs[2];
