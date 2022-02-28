@@ -1,12 +1,7 @@
 import test from 'tape-promise/tape';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 
-import {
-  DracoWriter,
-  DracoLoader,
-  DracoWriterNodeJSWorker,
-  DracoWriterWorker
-} from '@loaders.gl/draco';
+import {DracoWriter, DracoLoader, DracoWriterWorker} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
 import {getMeshSize} from '@loaders.gl/schema';
 import draco3d from 'draco3d';
@@ -166,7 +161,7 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
     }
     const meshSize = getMeshSize(mesh.attributes);
 
-    const compressedMesh = await processOnWorker(DracoWriterNodeJSWorker, mesh, {
+    const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
       ...tc.options,
       _workerType: 'test'
     });

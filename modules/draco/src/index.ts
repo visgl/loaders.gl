@@ -5,6 +5,7 @@ import {DracoLoader as DracoWorkerLoader} from './draco-loader';
 import DracoParser from './lib/draco-parser';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
+import {isBrowser} from '@loaders.gl/worker-utils';
 
 // Draco data types
 
@@ -20,18 +21,8 @@ export {DracoWriter} from './draco-writer';
  * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
  */
 export const DracoWriterWorker = {
-  id: 'draco-writer',
+  id: isBrowser ? 'draco-writer' : 'draco-writer-nodejs',
   name: 'Draco compressed geometry writer',
-  module: 'draco',
-  version: VERSION,
-  options: {
-    draco: {}
-  }
-};
-
-export const DracoWriterNodeJSWorker = {
-  id: 'draco-writer-nodejs',
-  name: 'Draco compressed geometry writer for NodeJS',
   module: 'draco',
   version: VERSION,
   options: {
