@@ -1,4 +1,3 @@
-import type {Batch} from '@loaders.gl/schema';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import parseNDJSONSync from './lib/parse-ndjson';
 import parseNDJSONInBatches from './lib/parse-ndjson-in-batches';
@@ -32,7 +31,7 @@ export const NDJSONLoader = {
   version: VERSION,
   extensions: ['ndjson', 'ndgeojson'],
   mimeTypes: [
-    `application/geo+x-ndjson`, 
+    `application/geo+x-ndjson`,
     `application/geo+x-ldjson`,
     `application/jsonlines`, // https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html#cm-batch
     `application/geo+json-seq`,
@@ -43,7 +42,7 @@ export const NDJSONLoader = {
   parse: async (arrayBuffer: ArrayBuffer) => parseNDJSONSync(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseNDJSONSync,
   parseInBatches: parseNDJSONInBatches,
-  options: {}
+  options: DEFAULT_NDGEOJSON_LOADER_OPTIONS
 };
 
 export const _typecheckNDJSONLoader: LoaderWithParser = NDJSONLoader;

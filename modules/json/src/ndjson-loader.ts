@@ -1,5 +1,3 @@
-import type {Batch} from '@loaders.gl/schema';
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import parseNDJSONSync from './lib/parse-ndjson';
 import parseNDJSONInBatches from './lib/parse-ndjson-in-batches';
 
