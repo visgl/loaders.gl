@@ -14,7 +14,9 @@ import {
   Int8,
   Int16,
   Float32,
-  Binary
+  Binary,
+  Tables,
+  ObjectRowTable
 } from '@loaders.gl/schema';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -64,7 +66,7 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
 export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-) {
+): Promise<Tables<ObjectRowTable>> {
   const {sqlJsCDN = 'https://sql.js.org/dist/'} = options?.geopackage || {};
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
 
@@ -73,16 +75,21 @@ export default async function parseGeoPackage(
   const projections = getProjections(db);
 
   // Mapping from tableName to geojson feature collection
-  const result = {};
+  const outputTables: ObjectRowTable[] = [];
   for (const table of tables) {
     const {table_name: tableName} = table;
-    result[tableName] = getVectorTable(db, tableName, projections, {
-      reproject,
-      _targetCrs
-    });
+    outputTables.push(
+      getVectorTable(db, tableName, projections, {
+        reproject,
+        _targetCrs
+      })
+    );
   }
 
-  return result;
+  return {
+    shape: 'tables',
+    tables: outputTables
+  };
 }
 
 /**
@@ -147,7 +154,7 @@ function getVectorTable(
   tableName: string,
   projections: ProjectionMapping,
   {reproject, _targetCrs}: {reproject: boolean; _targetCrs: string}
-): object {
+): ObjectRowTable {
   const dataColumns = getDataColumns(db, tableName);
   const geomColumn = getGeometryColumn(db, tableName);
   const featureIdColumn = getFeatureIdName(db, tableName);
@@ -180,10 +187,15 @@ function getVectorTable(
 
   const schema = getArrowSchema(db, tableName);
   if (projection) {
-    return {geojsonFeatures: transformGeoJsonCoords(geojsonFeatures, projection.project), schema};
+    return {
+      data: transformGeoJsonCoords(geojsonFeatures, projection.project),
+      schema,
+      shape: 'object-row-table',
+      name: tableName
+    };
   }
 
-  return {geojsonFeatures, schema};
+  return {data: geojsonFeatures, schema, shape: 'object-row-table', name: tableName};
 }
 
 /**
