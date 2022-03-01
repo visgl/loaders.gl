@@ -34,13 +34,17 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap",
-    "build-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-loader-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-writer-worker": "esbuild src/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-writer-nodejs-worker": "esbuild src/workers/draco-writer-nodejs-worker.ts --outfile=dist/draco-writer-nodejs-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker": "yarn build-loader-worker && yarn build-writer-worker && yarn build-writer-nodejs-worker"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
     "@loaders.gl/loader-utils": "4.0.0-alpha.5",
     "@loaders.gl/schema": "4.0.0-alpha.5",
     "@loaders.gl/worker-utils": "4.0.0-alpha.5",
+    "@loaders.gl/polyfills": "4.0.0-alpha.5",
     "draco3d": "1.4.1"
   }
 }
