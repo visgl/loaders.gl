@@ -46,7 +46,7 @@ import '@loaders.gl/tiles/test/index.js';
 
 // Geospatial Formats
 import '@loaders.gl/flatgeobuf/test/index.js';
-import '@loaders.gl/geopackage/test/index.js';
+import '@loaders.gl/geopackage/test/index.ts';
 import '@loaders.gl/gis/test/index.js';
 import '@loaders.gl/kml/test/index.js';
 import '@loaders.gl/mvt/test/index.js';
