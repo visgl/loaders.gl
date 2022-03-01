@@ -35,19 +35,6 @@ export const JSONLoader: LoaderWithParser = {
   version: VERSION,
   extensions: ['json', 'geojson'],
   mimeTypes: ['application/json'],
-  // TODO - support various line based JSON formats
-  /*
-  extensions: {
-    json: null,
-    jsonl: {stream: true},
-    ndjson: {stream: true}
-  },
-  mimeTypes: {
-    'application/json': null,
-    'application/json-seq': {stream: true},
-    'application/x-ndjson': {stream: true}
-  },
-  */
   category: 'table',
   text: true,
   parse,
