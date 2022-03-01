@@ -196,7 +196,7 @@ function getVectorTable(
     };
   }
 
-  return {data: geojsonFeatures, schema, shape: 'object-row-table';
+  return {data: geojsonFeatures, schema, shape: 'object-row-table'};
 }
 
 /**
