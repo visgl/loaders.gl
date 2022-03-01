@@ -12,8 +12,12 @@ export const NDJSONLoader = {
   id: 'ndjson',
   module: 'json',
   version: VERSION,
-  extensions: ['ndjson'],
-  mimeTypes: ['application/x-ndjson'],
+  extensions: ['ndjson', 'jsonl'],
+  mimeTypes: [
+    'application/x-ndjson',
+    'application/jsonlines', // https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html#cm-batch
+    'application/json-seq'
+  ],
   category: 'table',
   text: true,
   parse: async (arrayBuffer: ArrayBuffer) => parseNDJSONSync(new TextDecoder().decode(arrayBuffer)),

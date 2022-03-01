@@ -32,9 +32,17 @@ Target Release Date: Q1 2022.
 
 **@loaders.gl/json**
 
-- `GeoJSONLoader` - The [GeoJSONLoader](modules/json/docs/api-reference/geojson-loader) is now officially documented.
-- `NDJSONLoader` - Now supports JSONL, JSONSeq etc.
-- `NDGeoJSONLoader` - Now supports JSONL, JSONSeq etc.
+- [`GeoJSONLoader`](modules/json/docs/api-reference/geojson-loader)
+- [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader) - Now supports JSONL, JSONSeq etc.
+- [`NDGeoJSONLoader`](modules/json/docs/api-reference/ndgeojson-loader) - Now supports JSONL, JSONSeq etc.
+
+**@loaders.gl/terrain**
+
+- Fix winding order of "skirt" geometries, to prevent them from being incorrectly hidden by GPU face culling during rendering.
+
+**@loaders.gl/worker-utils**
+
+- Experimental support for Node.js workers.
 
 ## v3.1
 

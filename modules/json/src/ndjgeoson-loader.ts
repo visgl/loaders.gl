@@ -30,8 +30,14 @@ export const NDJSONLoader = {
   id: 'ndjson',
   module: 'json',
   version: VERSION,
-  extensions: ['ndjson'],
-  mimeTypes: ['application/x-ndjson'],
+  extensions: ['ndjson', 'ndgeojson'],
+  mimeTypes: [
+    `application/geo+x-ndjson`, 
+    `application/geo+x-ldjson`,
+    `application/jsonlines`, // https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html#cm-batch
+    `application/geo+json-seq`,
+    'application/x-ndjson'
+  ],
   category: 'table',
   text: true,
   parse: async (arrayBuffer: ArrayBuffer) => parseNDJSONSync(new TextDecoder().decode(arrayBuffer)),
