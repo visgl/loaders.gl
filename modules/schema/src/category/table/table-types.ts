@@ -43,7 +43,7 @@ export interface ArrowTable extends Table {
 
 /** A collection of tables */
 export type Tables<TableType extends Table = Table> = {
-  shape: 'tables',
+  shape: 'tables';
   tables: TableType[];
 };
 
