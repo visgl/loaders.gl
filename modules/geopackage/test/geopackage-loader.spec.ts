@@ -16,15 +16,12 @@ test('GeoPackageLoader#load file', async (t) => {
   const response = await fetchFile(GPKG_RIVERS_GEOJSON);
   const json = await response.json();
 
-  const table = result.tables[0];
+  const tableName = result.tables[0].name;
+  const table = result.tables[0].table;
 
-  t.equal(table.name, 'FEATURESriversds', 'loaded correct table name');
+  t.equal(tableName, 'FEATURESriversds', 'loaded correct table name');
   t.equal(table.data.length, 1, 'Correct number of rows received');
-  t.deepEqual(
-    table.data[0],
-    json.features[0],
-    'GeoPackage matches GeoJSON from OGR'
-  );
+  t.deepEqual(table.data[0], json.features[0], 'GeoPackage matches GeoJSON from OGR');
 
   t.ok(table.schema);
   t.equal(table.schema?.fields.length, 5);
@@ -38,13 +35,12 @@ test('GeoPackageLoader#load file and reproject to WGS84', async (t) => {
     gis: {reproject: true, _targetCrs: 'WGS84'}
   });
 
-  const table = result.tables[0];
+  const tableName = result.tables[0].name;
+  const table = result.tables[0].table;
 
-  t.equal(table.name, 'FEATURESriversds', 'loaded correct table name');
+  t.equal(tableName, 'FEATURESriversds', 'loaded correct table name');
   t.ok(
-    table.data[0].geometry.coordinates.every((coord) =>
-      insideBbox(coord, [-180, -90, 180, 90])
-    ),
+    table.data[0].geometry.coordinates.every((coord) => insideBbox(coord, [-180, -90, 180, 90])),
     'All coordinates in WGS84 lon-lat bounding box'
   );
 

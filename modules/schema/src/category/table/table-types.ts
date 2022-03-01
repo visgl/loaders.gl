@@ -5,7 +5,6 @@ import type {Batch} from '../common';
 
 /** A general table */
 export interface Table {
-  name?: string;
   shape: 'row-table' | 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
   schema?: Schema;
   schemaType?: 'explicit' | 'deduced';
@@ -44,7 +43,7 @@ export interface ArrowTable extends Table {
 /** A collection of tables */
 export type Tables<TableType extends Table = Table> = {
   shape: 'tables';
-  tables: TableType[];
+  tables: {name: string, table: TableType}[];
 };
 
 // Batches

@@ -75,21 +75,23 @@ export default async function parseGeoPackage(
   const projections = getProjections(db);
 
   // Mapping from tableName to geojson feature collection
-  const outputTables: ObjectRowTable[] = [];
+  const outputTables: Tables<ObjectRowTable> = {
+    shape: 'tables',
+    tables: []
+  };
+
   for (const table of tables) {
     const {table_name: tableName} = table;
-    outputTables.push(
-      getVectorTable(db, tableName, projections, {
+    outputTables.tables.push({
+      name: tableName,
+      table: getVectorTable(db, tableName, projections, {
         reproject,
         _targetCrs
       })
-    );
+    });
   }
 
-  return {
-    shape: 'tables',
-    tables: outputTables
-  };
+  return outputTables;
 }
 
 /**
@@ -190,12 +192,11 @@ function getVectorTable(
     return {
       data: transformGeoJsonCoords(geojsonFeatures, projection.project),
       schema,
-      shape: 'object-row-table',
-      name: tableName
+      shape: 'object-row-table'
     };
   }
 
-  return {data: geojsonFeatures, schema, shape: 'object-row-table', name: tableName};
+  return {data: geojsonFeatures, schema, shape: 'object-row-table';
 }
 
 /**
