@@ -4,13 +4,16 @@ Streaming loader for JSON encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
-| File Extension | `.json`,                                             |
+| File Extension | `.json`                                              |
+| Media Type     | `application/json`
 | File Type      | Text                                                 |
 | File Format    | [JSON](https://www.json.org/json-en.html)            |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
 
 ## Usage
+
+For simple usage, you can load and parse a JSON file atomically:
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';
@@ -19,7 +22,8 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, JSONLoader, {json: options});
 ```
 
-The JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array. To e.g. parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` to stream the `features` array.
+For larger files, JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
+To parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` to stream the `features` array.
 
 ```js
 import {JSONLoader} from '@loaders.gl/json';

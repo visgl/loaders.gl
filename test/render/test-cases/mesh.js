@@ -3,7 +3,7 @@ import {PLYLoader} from '@loaders.gl/ply';
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
 
 const PLY_BINARY_URL =
-  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/ply/test/data/bun_zipper.ply';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/ply/test/data/bun_zipper.ply';
 
 export default [
   {

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "4.0.0-alpha.4",
+  "version": "4.0.0-alpha.5",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -24,9 +24,11 @@
   "browser": {
     "fs": false,
     "stream": false,
-    "./src/iterators/make-stream/make-node-stream.ts": false,
-    "./src/iterators/make-stream/make-node-stream.js": false,
-    "./dist/iterators/make-stream/make-node-stream.js": false
+    "./src/iterators/make-stream/make-node-stream.ts": "./src/iterators/make-stream/make-dom-stream.ts",
+    "./src/iterators/make-stream/make-node-stream.js": "./src/iterators/make-stream/make-dom-stream.js",
+    "./dist/iterators/make-stream/make-node-stream.js": "./dist/iterators/make-stream/make-dom-stream.js",
+    "./dist/es5/iterators/make-stream/make-node-stream.js": "./dist/es5/iterators/make-stream/make-dom-stream.js",
+    "./dist/esm/iterators/make-stream/make-node-stream.js": "./dist/esm/iterators/make-stream/make-dom-stream.js"
   },
   "files": [
     "src",
@@ -36,12 +38,13 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/null-worker.ts --bundle --outfile=dist/null-worker.js"
+    "build-worker": "esbuild src/workers/null-worker.ts --bundle --outfile=dist/null-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.5",
+    "@loaders.gl/worker-utils": "4.0.0-alpha.5",
+    "@probe.gl/log": "^3.5.0",
     "probe.gl": "^3.4.0"
   }
 }

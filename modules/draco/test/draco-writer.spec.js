@@ -1,10 +1,17 @@
 import test from 'tape-promise/tape';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 
-import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
+import {
+  DracoWriter,
+  DracoLoader,
+  DracoWriterNodeJSWorker,
+  DracoWriterWorker
+} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
 import {getMeshSize} from '@loaders.gl/schema';
 import draco3d from 'draco3d';
+import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
+import {cloneTypeArray} from './test-utils/copyTypedArray';
 
 const TEST_CASES = [
   {
@@ -81,6 +88,110 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
         `${tc.title} decoded POSITION length matched`
       );
     }
+  }
+
+  t.end();
+});
+
+/**
+ * Cannot import draco_encoder module:
+ * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
+ */
+test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+  const data = await loadBunny();
+  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
+
+  const MESH = {
+    attributes: {
+      POSITION: data.attributes.POSITION.value
+    },
+    indices: data.indices.value
+  };
+  const POINTCLOUD = {
+    attributes: {
+      POSITION: data.attributes.POSITION.value
+    }
+  };
+
+  for (const tc of TEST_CASES) {
+    const mesh = tc.options.draco.pointcloud ? POINTCLOUD : MESH;
+    const meshSize = getMeshSize(mesh.attributes);
+
+    const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
+      ...tc.options,
+      _workerType: 'test'
+    });
+    const ratio = meshSize / compressedMesh.byteLength;
+    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+
+    if (!tc.options.pointcloud) {
+      // Decode the mesh
+      const data2 = await parse(compressedMesh, DracoLoader);
+      validateMeshCategoryData(t, data2);
+
+      // t.comment(JSON.stringify(data));
+      t.equal(
+        data2.attributes.POSITION.value.length,
+        data.attributes.POSITION.value.length,
+        `${tc.title} decoded POSITION length matched`
+      );
+    }
+  }
+
+  t.end();
+});
+
+test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
+  const data = await loadBunny();
+  t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
+
+  for (const tc of TEST_CASES) {
+    // Copy position buffer because it won't be available after being sent to the worker
+    const mesh = {
+      attributes: {
+        POSITION: cloneTypeArray(data.attributes.POSITION.value)
+      }
+    };
+    if (!tc.options.draco.pointcloud) {
+      // Copy indices buffer because it won't be available after being sent to the worker
+      mesh.indices = cloneTypeArray(data.indices.value);
+    }
+    const meshSize = getMeshSize(mesh.attributes);
+
+    const compressedMesh = await processOnWorker(DracoWriterNodeJSWorker, mesh, {
+      ...tc.options,
+      _workerType: 'test'
+    });
+    // const compressedMesh = await encode(mesh, DracoWriter, tc.options);
+    const ratio = meshSize / compressedMesh.byteLength;
+    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+
+    if (!tc.options.pointcloud) {
+      // Decode the mesh
+      const data2 = await parse(compressedMesh, DracoLoader);
+      validateMeshCategoryData(t, data2);
+
+      // t.comment(JSON.stringify(data));
+      t.equal(
+        data2.attributes.POSITION.value.length,
+        data.attributes.POSITION.value.length,
+        `${tc.title} decoded POSITION length matched`
+      );
+    }
+  }
+
+  // Destroy all workers in NodeJS
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
   }
 
   t.end();

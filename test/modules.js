@@ -63,7 +63,7 @@ import '@loaders.gl/parquet/test/index.js';
 
 // Archive Formats
 import '@loaders.gl/compression/test/index.js';
-// import '@loaders.gl/crypto/test/index.js';
+import '@loaders.gl/crypto/test/index.js';
 import '@loaders.gl/zip/test/index.js';
 
 // Cli

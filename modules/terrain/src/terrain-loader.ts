@@ -2,7 +2,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 
 /**
- * Worker loader for quantized meshes
+ * Worker loader for color-encoded images
  */
 export const TerrainLoader = {
   name: 'Terrain',
@@ -10,8 +10,8 @@ export const TerrainLoader = {
   module: 'terrain',
   version: VERSION,
   worker: true,
-  extensions: ['png', 'pngraw'],
-  mimeTypes: ['image/png'],
+  extensions: ['png', 'pngraw', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'],
+  mimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'],
   options: {
     terrain: {
       tesselator: 'auto',
@@ -29,6 +29,6 @@ export const TerrainLoader = {
 };
 
 /**
- * Loader for quantized meshes
+ * Loader for color-encoded images
  */
 export const _typecheckTerrainWorkerLoader: Loader = TerrainLoader;

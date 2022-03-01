@@ -1,11 +1,9 @@
-import type {ReadableOptions, Readable} from 'stream';
-// Indirection to make things work under "problematic" bundlers like vite and rollup
-import {ReadableStream} from './node-stream-polyfill';
+import {Readable, ReadableOptions} from 'stream';
 
-export type MakeNodeStreamOptions = ReadableOptions;
+export type MakeStreamOptions = ReadableOptions;
 
 /** Builds a node stream from an iterator */
-function makeNodeStream<ArrayBuffer>(
+export function makeStream<ArrayBuffer>(
   source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   options?: ReadableOptions
 ): Readable {
@@ -14,7 +12,8 @@ function makeNodeStream<ArrayBuffer>(
     : source[Symbol.iterator]();
   return new AsyncIterableReadable(iterator, options);
 }
-class AsyncIterableReadable extends ReadableStream {
+
+class AsyncIterableReadable extends Readable {
   private _pulling: boolean;
   private _bytesMode: boolean;
   private _iterator: AsyncIterator<ArrayBuffer>;
@@ -64,8 +63,3 @@ class AsyncIterableReadable extends ReadableStream {
     return !this.readable;
   }
 }
-
-// This module is marked `false` in the the "browser" field of the `package.json` for
-// `@loaders.gl/core`. We avoid using named exports so that bundlers have an easier
-// time resolving this "empty" module.
-export default makeNodeStream;

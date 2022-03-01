@@ -907,7 +907,7 @@ function NeuQuant() {
 function workerCode() {
   const self = this;
   try {
-    self.onmessage = function (ev) {
+    globalThis.onmessage = function (ev) {
       const data = ev.data || {};
       let response;
       if (data.gifshot) {

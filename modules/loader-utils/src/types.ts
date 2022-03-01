@@ -19,7 +19,9 @@ export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
 
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
-// Core Loader Options
+/**
+ * Core Loader Options
+ */
 export type LoaderOptions = {
   /** fetch options or a custom fetch function */
   fetch?: typeof fetch | FetchLike | RequestInit | null;
@@ -64,7 +66,9 @@ export type LoaderOptions = {
   maxMobileConcurrency?: number;
   /** Set to `false` to prevent reuse workers */
   reuseWorkers?: boolean;
-  /** set to 'test' to run worker type */
+  /** Whether to use workers under Node.js (experimental) */
+  _nodeWorkers?: boolean;
+  /** set to 'test' to run local worker */
   _workerType?: string;
 
   /** @deprecated `options.batchType` removed, Use `options.<loader>.type` instead */

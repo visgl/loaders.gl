@@ -189,6 +189,11 @@ export default class VectorTileFeature {
     if (typeof options === 'function') {
       return this._toBinaryCoordinates(options);
     }
-    return this._toBinaryCoordinates(project);
+    const {x, y, z} = options;
+    const size = this.extent * Math.pow(2, z);
+    const x0 = this.extent * x;
+    const y0 = this.extent * y;
+
+    return this._toBinaryCoordinates((data: number[]) => project(data, x0, y0, size));
   }
 }

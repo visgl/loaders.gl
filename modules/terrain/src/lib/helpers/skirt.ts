@@ -70,12 +70,12 @@ function getOutsideEdgesFromTriangles(triangles) {
   edges.sort((a, b) => Math.min(...a) - Math.min(...b) || Math.max(...a) - Math.max(...b));
 
   const outsideEdges: number[][] = [];
-  let index = 1;
+  let index = 0;
   while (index < edges.length) {
-    if (edges[index][0] === edges[index - 1][1] && edges[index][1] === edges[index - 1][0]) {
+    if (edges[index][0] === edges[index + 1]?.[1] && edges[index][1] === edges[index + 1]?.[0]) {
       index += 2;
     } else {
-      outsideEdges.push(edges[index - 1]);
+      outsideEdges.push(edges[index]);
       index++;
     }
   }
@@ -159,10 +159,10 @@ function updateAttributesForNewEdge({
   // Define new triangles
   const triangle1Offset = edgeIndex * 2 * 3;
   newTriangles[triangle1Offset] = edge[0];
-  newTriangles[triangle1Offset + 1] = edge[1];
-  newTriangles[triangle1Offset + 2] = positionsLength / 3 + vertex2Offset;
+  newTriangles[triangle1Offset + 1] = positionsLength / 3 + vertex2Offset;
+  newTriangles[triangle1Offset + 2] = edge[1];
 
   newTriangles[triangle1Offset + 3] = positionsLength / 3 + vertex2Offset;
-  newTriangles[triangle1Offset + 4] = positionsLength / 3 + vertex1Offset;
-  newTriangles[triangle1Offset + 5] = edge[0];
+  newTriangles[triangle1Offset + 4] = edge[0];
+  newTriangles[triangle1Offset + 5] = positionsLength / 3 + vertex1Offset;
 }

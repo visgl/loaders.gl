@@ -12,3 +12,31 @@ export type I3SConvertedResources = {
   geometryBuffer?: ArrayBuffer;
   boundingVolumes: BoundingVolumes | null;
 };
+
+export type AttributesData = {
+  positions: Float32Array;
+  normals: Float32Array;
+  texCoords: Float32Array;
+  colors: Uint8Array;
+  featureIndices: number[];
+  triangleCount: number;
+  boundingVolumes?: BoundingVolumes | null;
+};
+
+export type GeometryAttributes = {
+  positions: Float32Array;
+  normals: Float32Array;
+  texCoords: Float32Array;
+  colors: Uint8Array;
+  faceRange: Uint32Array;
+  featureIds: number[];
+  featureCount: number;
+};
+
+export type GroupedByFeatureIdAttributes = {
+  featureId: number;
+  positions: Float32Array;
+  normals: Float32Array;
+  colors: Uint8Array;
+  texCoords: Float32Array;
+};

@@ -11,7 +11,7 @@ let requestId = 0;
  */
 export function createLoaderWorker(loader: LoaderWithParser) {
   // Check that we are actually in a worker thread
-  if (typeof self === 'undefined') {
+  if (!WorkerBody.inWorkerThread()) {
     return;
   }
 

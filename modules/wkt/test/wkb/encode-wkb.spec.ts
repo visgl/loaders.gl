@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
+import {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 import encodeWKB from '../../src/lib/encode-wkb';
 import {parseTestCases} from './utils';
 

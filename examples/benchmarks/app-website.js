@@ -6,7 +6,7 @@ import App from './app';
 import {setPathPrefix} from '@loaders.gl/core';
 
 // TODO - for gatsby website. Naybe we could do this in website/src/html.js
-setPathPrefix('https://raw.githubusercontent.com/uber-web/loaders.gl/master');
+setPathPrefix('https://raw.githubusercontent.com/visgl/loaders.gl/master');
 
 export default function WebSiteApp(props) {
   return <App {...props} />;

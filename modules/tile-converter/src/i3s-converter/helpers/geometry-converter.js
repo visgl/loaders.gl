@@ -8,6 +8,10 @@ import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
 import {createBoundingVolumesFromGeometry} from './coordinate-converter';
 
+// Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
+const DEFAULT_ROUGHNESS_FACTOR = 1;
+const DEFAULT_METALLIC_FACTOR = 1;
+
 const VALUES_PER_VERTEX = 3;
 const VALUES_PER_TEX_COORD = 2;
 const VALUES_PER_COLOR_ELEMENT = 4;
@@ -244,6 +248,36 @@ function convertNodes(
 }
 
 /**
+ * Generate transformation matrix for node
+ * Aapply all gltf transformations to initial transformation matrix.
+ * @param node
+ * @param matrix
+ */
+function getCompositeTransformationMatrix(node, matrix) {
+  let transformationMatrix = matrix;
+
+  const {matrix: nodeMatrix, rotation, scale, translation} = node;
+
+  if (nodeMatrix) {
+    transformationMatrix = matrix.multiplyRight(nodeMatrix);
+  }
+
+  if (rotation) {
+    transformationMatrix = transformationMatrix.rotateXYZ(rotation);
+  }
+
+  if (scale) {
+    transformationMatrix = transformationMatrix.scale(scale);
+  }
+
+  if (translation) {
+    transformationMatrix = transformationMatrix.translate(translation);
+  }
+
+  return transformationMatrix;
+}
+
+/**
  * Convert all primitives of node and all children nodes
  * @param {Object} node - gltf node
  * @param {Object} tileContent - 3d tile content
@@ -259,15 +293,20 @@ function convertNode(
   useCartesianPositions,
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
-  const nodeMatrix = node.matrix;
-  const compositeMatrix = nodeMatrix ? matrix.multiplyRight(nodeMatrix) : matrix;
+  const transformationMatrix = getCompositeTransformationMatrix(node, matrix);
 
   const mesh = node.mesh;
   if (mesh) {
-    convertMesh(mesh, tileContent, attributesMap, useCartesianPositions, compositeMatrix);
+    convertMesh(mesh, tileContent, attributesMap, useCartesianPositions, transformationMatrix);
   }
 
-  convertNodes(node.children, tileContent, attributesMap, useCartesianPositions, compositeMatrix);
+  convertNodes(
+    node.children,
+    tileContent,
+    attributesMap,
+    useCartesianPositions,
+    transformationMatrix
+  );
 }
 
 /**
@@ -514,13 +553,15 @@ function convertMaterial(sourceMaterial) {
     // But it is in lower case in I3S: https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
     alphaMode: (sourceMaterial.alphaMode || 'OPAQUE').toLowerCase(),
     pbrMetallicRoughness: {
-      roughnessFactor: sourceMaterial.pbrMetallicRoughness.roughnessFactor,
-      metallicFactor: sourceMaterial.pbrMetallicRoughness.metallicFactor
+      roughnessFactor:
+        sourceMaterial?.pbrMetallicRoughness?.roughnessFactor || DEFAULT_ROUGHNESS_FACTOR,
+      metallicFactor:
+        sourceMaterial?.pbrMetallicRoughness?.metallicFactor || DEFAULT_METALLIC_FACTOR
     }
   };
 
   let texture;
-  if (sourceMaterial.pbrMetallicRoughness.baseColorTexture) {
+  if (sourceMaterial?.pbrMetallicRoughness?.baseColorTexture) {
     texture = sourceMaterial.pbrMetallicRoughness.baseColorTexture.texture.source;
     material.pbrMetallicRoughness.baseColorTexture = {
       textureSetDefinitionId: 0
@@ -536,7 +577,7 @@ function convertMaterial(sourceMaterial) {
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
-    const baseColorFactor = sourceMaterial.pbrMetallicRoughness.baseColorFactor;
+    const baseColorFactor = sourceMaterial?.pbrMetallicRoughness?.baseColorFactor;
     material.pbrMetallicRoughness.baseColorFactor =
       (baseColorFactor && baseColorFactor.map((c) => Math.round(c * 255))) || undefined;
   }
@@ -587,12 +628,12 @@ function getSharedResources(tileContent, nodeId) {
  */
 function convertGLTFMaterialToI3sSharedResources(gltfMaterial, nodeId) {
   const texture =
-    gltfMaterial.pbrMetallicRoughness.baseColorTexture || gltfMaterial.emissiveTexture;
+    gltfMaterial?.pbrMetallicRoughness?.baseColorTexture || gltfMaterial.emissiveTexture;
   let textureDefinitionInfo = null;
   if (texture) {
     textureDefinitionInfo = extractSharedResourcesTextureInfo(texture.texture, nodeId);
   }
-  const {baseColorFactor, metallicFactor} = gltfMaterial.pbrMetallicRoughness;
+  const {baseColorFactor, metallicFactor} = gltfMaterial?.pbrMetallicRoughness || {};
   let colorFactor = baseColorFactor;
   // If alpha channel is 0 try to get emissive factor from gltf material.
   if ((!baseColorFactor || baseColorFactor[3] === 0) && gltfMaterial.emissiveFactor) {
@@ -621,7 +662,7 @@ function convertGLTFMaterialToI3sSharedResources(gltfMaterial, nodeId) {
  * @param {number} metallicFactor - "metallicFactor" attribute of gltf material object
  * @returns {Object}
  */
-function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor = 0) {
+function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor = 1) {
   const matDielectricColorComponent = 0.04 / 255; // Color from rgb (255) to 0..1 resolution
   // All color resolutions are 0..1
   const black = new Vector4(0, 0, 0, 1);

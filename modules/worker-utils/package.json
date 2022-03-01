@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "4.0.0-alpha.4",
+  "version": "4.0.0-alpha.5",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "publishConfig": {
@@ -27,6 +27,7 @@
   "browser": {
     "child_process": false,
     "fs": false,
+    "worker_threads": "./src/lib/node/worker_threads-browser.js",
     "./src/lib/node/require-utils.node.ts": false,
     "./dist/lib/node/require-utils.node.js": false,
     "./dist/es5/lib/node/require-utils.node.js": false,
@@ -40,7 +41,7 @@
     "pre-build": "npm run build-workers",
     "pre-build-disabled": "npm run build-bundle && npm run build-workers",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js",
-    "build-workers": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --sourcemap"
+    "build-workers": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1"
