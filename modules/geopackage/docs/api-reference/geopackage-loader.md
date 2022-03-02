@@ -19,10 +19,11 @@ GeoPackage loader
 ## Usage
 
 ```js
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
+import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
 import {load} from '@loaders.gl/core';
+import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
 
-const options = {
+const optionsAsTable: GeoPackageLoaderOptions = {
   geopackage: {
     sqlJsCDN: 'https://sql.js.org/dist/'
   },
@@ -30,7 +31,17 @@ const options = {
     format: 'tables'
   }
 };
-const data = await load(url, GeoPackageLoader, options);
+const tablesData: Tables<ObjectRowTable> = await load(url, GeoPackageLoader, optionsAsTable);
+
+const optionsAsGeoJson: GeoPackageLoaderOptions = {
+  geopackage: {
+    sqlJsCDN: 'https://sql.js.org/dist/'
+  },
+  gis: {
+    format: 'geojson'
+  }
+};
+const geoJsonData: Record<string, Feature[]> = await load(url, GeoPackageLoader, optionsAsGeoJson);
 ```
 
 ## Options
