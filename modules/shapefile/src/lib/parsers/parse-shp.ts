@@ -23,6 +23,7 @@ type SHPResult = {
   geometries: [];
   header?: {};
   error?: string;
+  progress: {bytesUsed?: number; totalBytes?: number};
 };
 
 class SHPParser {
@@ -30,7 +31,8 @@ class SHPParser {
   binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
   state = STATE.EXPECTING_HEADER;
   result: SHPResult = {
-    geometries: []
+    geometries: [],
+    progress: {}
   };
 
   constructor(options?: LoaderOptions) {
@@ -45,7 +47,6 @@ class SHPParser {
   end() {
     this.binaryReader.end();
     this.state = parseState(this.state, this.result, this.binaryReader, this.options);
-    // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
     if (this.state !== STATE.END) {
       this.state = STATE.ERROR;
       this.result.error = 'SHP incomplete file';
@@ -81,13 +82,19 @@ export async function* parseSHPInBatches(
     }
 
     if (parser.result.geometries.length > 0) {
-      yield parser.result.geometries;
+      yield {
+        data: parser.result.geometries,
+        progress: parser.result.progress
+      };
       parser.result.geometries = [];
     }
   }
   parser.end();
   if (parser.result.geometries.length > 0) {
-    yield parser.result.geometries;
+    yield {
+      data: parser.result.geometries,
+      progress: parser.result.progress
+    };
   }
 
   return;
@@ -130,7 +137,7 @@ function parseState(
 
           result.header = parseSHPHeader(dataView);
           result.progress = {
-            bytesUsed: 0,
+            bytesUsed: SHP_HEADER_SIZE,
             bytesTotal: result.header.length,
             rows: 0
           };
@@ -178,6 +185,9 @@ function parseState(
 
               result.currentIndex++;
               result.progress.rows = result.currentIndex - 1;
+              // +8 because the content length field in the record's header
+              // excludes the 8-byte record header itself
+              result.progress.bytesUsed += recordHeader.byteLength + 8;
             }
           }
 

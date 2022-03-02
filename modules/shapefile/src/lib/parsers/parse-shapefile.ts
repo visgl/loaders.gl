@@ -17,6 +17,8 @@ interface ShapefileOutput {
   shx?: SHXOutput;
   header: SHPHeader;
   data: object[];
+  bytesUsed?: number;
+  bytesTotal?: number;
 }
 /**
  * Parsing of file in batches
@@ -77,10 +79,11 @@ export async function* parseShapefileInBatches(
   for await (const item of iterator) {
     let geometries: any;
     let properties: any;
+    const {bytesUsed, bytesTotal} = item.progress;
     if (!propertyIterable) {
-      geometries = item;
+      geometries = item.data;
     } else {
-      [geometries, properties] = item;
+      [geometries, properties] = item.data;
     }
 
     const geojsonGeometries = parseGeometries(geometries);
@@ -94,7 +97,9 @@ export async function* parseShapefileInBatches(
       prj,
       shx,
       header: shapeHeader,
-      data: features
+      data: features,
+      bytesUsed,
+      bytesTotal
     };
   }
 }
