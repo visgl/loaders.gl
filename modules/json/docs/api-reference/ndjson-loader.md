@@ -1,14 +1,20 @@
 # NDJSONLoader
 
-Streaming loader for NDJSON encoded files.
+Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL).
+
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
-| File Extension | `.ndjson`,                                             |
+| File Extension | `.ndjson`, `.jsonl`, `.ldjson`                       |
+| Media Type     | `application/x-ndjson`, `application/x-ldjson`, `application/json-seq` |
 | File Type      | Text                                                 |
-| File Format    | [NDJSON](http://ndjson.org/)            |
+| File Format    | [NDJSON][format_ndjson], [LDJSON][format_], [][format_] |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
+
+[format_ndjson]: http://ndjson.org/
+[format_ldjson]: http://ndjson.org/
+[format_jsonjson]: http://ndjson.org/
 
 ## Usage
 
@@ -54,4 +60,3 @@ Each element in the `data` array corresponds to a line (Object) in the NDJSON da
 ## Options
 
 Supports the table category options such as `batchSize`.
-

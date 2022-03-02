@@ -30,10 +30,23 @@ Target Release Date: Q1 2022.
 
 - ArrowLoader now recognizes recommended Arrow MIME types `application/vnd.apache.arrow.file`, `application/vnd.apache.arrow.stream`.
 
-
 **loaders.gl/geopackage**
 
 - The `GeopackageLoader` now supports `tables` as well as `geojson` output data shapes, defaulting to `tables`. This is configurable via `options.gis.format`.
+
+**@loaders.gl/json**
+
+- [`GeoJSONLoader`](modules/json/docs/api-reference/geojson-loader)
+- [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader) - Now supports JSONL, JSONSeq etc.
+- [`NDGeoJSONLoader`](modules/json/docs/api-reference/ndgeojson-loader) - Now supports JSONL, JSONSeq etc.
+
+**@loaders.gl/terrain**
+
+- Fix winding order of "skirt" geometries, to prevent them from being incorrectly hidden by GPU face culling during rendering.
+
+**@loaders.gl/worker-utils**
+
+- Experimental support for Node.js workers.
 
 ## v3.1
 

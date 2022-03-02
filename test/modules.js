@@ -11,60 +11,60 @@ _addAliases(ALIASES);
 installFilePolyfills();
 
 // base
-import '@loaders.gl/polyfills/test/index.js';
-import '@loaders.gl/worker-utils/test/index.js';
-import '@loaders.gl/math/test/index.js';
+import '@loaders.gl/polyfills/test';
+import '@loaders.gl/worker-utils/test';
+import '@loaders.gl/math/test';
 
 // Core
-import '@loaders.gl/loader-utils/test/index.js';
-import '@loaders.gl/core/test/index.js';
+import '@loaders.gl/loader-utils/test';
+import '@loaders.gl/core/test';
 
 // Image Formats
-import '@loaders.gl/images/test/index.js';
-import '@loaders.gl/textures/test/index.js';
-// import '@loaders.gl/video/test/index.js';
-// import '@loaders.gl/geotiff/test/index.js';
-// import '@loaders.gl/zarr/test/index.js';
-import '@loaders.gl/netcdf/test/index.js';
+import '@loaders.gl/images/test';
+import '@loaders.gl/textures/test';
+// import '@loaders.gl/video/test';
+// import '@loaders.gl/geotiff/test';
+// import '@loaders.gl/zarr/test';
+import '@loaders.gl/netcdf/test';
 
 // Pointcloud/Mesh Formats
-import '@loaders.gl/draco/test/index.js';
-import '@loaders.gl/las/test/index.js';
-import '@loaders.gl/obj/test/index.js';
-import '@loaders.gl/pcd/test/index.js';
-import '@loaders.gl/ply/test/index.js';
-import '@loaders.gl/terrain/test/index.js';
+import '@loaders.gl/draco/test';
+import '@loaders.gl/las/test';
+import '@loaders.gl/obj/test';
+import '@loaders.gl/pcd/test';
+import '@loaders.gl/ply/test';
+import '@loaders.gl/terrain/test';
 
 // Scenegraph Formats
-import '@loaders.gl/gltf/test/index.js';
+import '@loaders.gl/gltf/test';
 
 // 3D Tile Formats
-import '@loaders.gl/3d-tiles/test/index.js';
-import '@loaders.gl/i3s/test/index.js';
-import '@loaders.gl/potree/test/index.js';
-import '@loaders.gl/tiles/test/index.js';
+import '@loaders.gl/3d-tiles/test';
+import '@loaders.gl/i3s/test';
+import '@loaders.gl/potree/test';
+import '@loaders.gl/tiles/test';
 
 // Geospatial Formats
-import '@loaders.gl/flatgeobuf/test/index.js';
-import '@loaders.gl/geopackage/test/index.js';
-import '@loaders.gl/gis/test/index.js';
-import '@loaders.gl/kml/test/index.js';
-import '@loaders.gl/mvt/test/index.js';
-import '@loaders.gl/shapefile/test/index.js';
-import '@loaders.gl/wkt/test/index.js';
+import '@loaders.gl/flatgeobuf/test';
+import '@loaders.gl/geopackage/test';
+import '@loaders.gl/gis/test';
+import '@loaders.gl/kml/test';
+import '@loaders.gl/mvt/test';
+import '@loaders.gl/shapefile/test';
+import '@loaders.gl/wkt/test';
 
 // Table Formats
-import '@loaders.gl/schema/test/index.js';
-import '@loaders.gl/arrow/test/index.js';
-import '@loaders.gl/csv/test/index.js';
-import '@loaders.gl/json/test/index.js';
-import '@loaders.gl/excel/test/index.js';
-import '@loaders.gl/parquet/test/index.js';
+import '@loaders.gl/schema/test';
+import '@loaders.gl/arrow/test';
+import '@loaders.gl/csv/test';
+import '@loaders.gl/json/test';
+import '@loaders.gl/excel/test';
+import '@loaders.gl/parquet/test';
 
 // Archive Formats
-import '@loaders.gl/compression/test/index.js';
-import '@loaders.gl/crypto/test/index.js';
-import '@loaders.gl/zip/test/index.js';
+import '@loaders.gl/compression/test';
+import '@loaders.gl/crypto/test';
+import '@loaders.gl/zip/test';
 
 // Cli
 export const isBrowser =

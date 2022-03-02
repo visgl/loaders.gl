@@ -1,7 +1,7 @@
 export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 
 export const INITIAL_EXAMPLE_NAME = 'Vancouver';
-export const INITIAL_LOADER_NAME = 'GeoPackage';
+export const INITIAL_LOADER_NAME = 'GeoJSON';
 
 export const INITIAL_MAP_STYLE =
   'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
@@ -18,7 +18,7 @@ const VIEW_STATE = {
 };
 
 export const EXAMPLES = {
-  GeoPackage: {
+  GeoJSON: {
     Vancouver: {
       data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/geojson/vancouver-blocks.json',
       viewState: {
