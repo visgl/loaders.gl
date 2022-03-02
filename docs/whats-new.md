@@ -30,21 +30,26 @@ Target Release Date: Q1 2022.
 
 - ArrowLoader now recognizes recommended Arrow MIME types `application/vnd.apache.arrow.file`, `application/vnd.apache.arrow.stream`.
 
+
+**loaders.gl/geopackage**
+
+- The `GeopackageLoader` now supports `tables` as well as `geojson` output data shapes, defaulting to `tables`. This is configurable via `options.gis.format`.
+
 ## v3.1
 
 Release Date: Dec 7, 2021.
 
-**@loaders.gl/textures** 
+**@loaders.gl/textures**
 
 - Parse KTX2 with BasisLoader.
 - New `KTX2BasisWriter` enables transcoding textures to basis (works both in browser and Node).
 - Upgrade `basis_universal` libraries to [v1.15](https://github.com/BinomialLLC/basis_universal/releases/tag/v1_15).
 
-**@loaders.gl/gltf** 
+**@loaders.gl/gltf**
 
 - `GTLTLoader` now decodes Basis super compressed textures if present (via the [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension).
 
-**@loaders.gl/i3s** 
+**@loaders.gl/i3s**
 
 - Support KTX2-Basis textures.
 

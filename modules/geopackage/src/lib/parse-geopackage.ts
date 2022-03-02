@@ -16,7 +16,8 @@ import {
   Float32,
   Binary,
   Tables,
-  ObjectRowTable
+  ObjectRowTable,
+  Feature
 } from '@loaders.gl/schema';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -66,7 +67,7 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
 export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<Tables<ObjectRowTable> | Record<string, object[]>> {
+): Promise<Tables<ObjectRowTable> | Record<string, Feature[]>> {
   const {sqlJsCDN = 'https://sql.js.org/dist/'} = options?.geopackage || {};
   const {reproject = false, _targetCrs = 'WGS84', format = 'tables'} = options?.gis || {};
 
@@ -237,7 +238,7 @@ function constructGeoJsonFeature(
   geomColumn: GeometryColumnsRow,
   dataColumns: DataColumnsMapping,
   featureIdColumn: string
-) {
+): Feature<Geometry | null> {
   // Find feature id
   const idIdx = columns.indexOf(featureIdColumn);
   const id = row[idIdx];
@@ -345,7 +346,7 @@ function getFeatureIdName(db: Database, tableName: string): string | null {
  * See: https://www.geopackage.org/spec121/#gpb_format
  *
  * @param arrayBuffer geometry buffer
- * @return {object} GeoJSON geometry (in original CRS)
+ * @return GeoJSON geometry (in original CRS)
  */
 function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
   const view = new DataView(arrayBuffer);
@@ -469,7 +470,7 @@ function getArrowSchema(db: Database, tableName: string): Schema {
   return new Schema(fields);
 }
 
-function formatTablesAsGeojson(tables: Tables<ObjectRowTable>): Record<string, object[]> {
+function formatTablesAsGeojson(tables: Tables<ObjectRowTable>): Record<string, Feature[]> {
   const geojsonMap = {};
   for (const table of tables.tables) {
     geojsonMap[table.name] = table.table.data;
