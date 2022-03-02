@@ -40,6 +40,12 @@ export interface ArrowTable extends Table {
   data: ApacheArrowTable;
 }
 
+/** A collection of tables */
+export type Tables<TableType extends Table = Table> = {
+  shape: 'tables';
+  tables: {name: string; table: TableType}[];
+};
+
 // Batches
 
 /** Batch for a general table */

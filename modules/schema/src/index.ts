@@ -9,7 +9,8 @@ export type {
   ArrayRowTable,
   ObjectRowTable,
   ColumnarTable,
-  ArrowTable
+  ArrowTable,
+  Tables
 } from './category/table/table-types';
 export type {
   TableBatch,

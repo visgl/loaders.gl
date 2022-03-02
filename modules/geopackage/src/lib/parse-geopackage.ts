@@ -14,7 +14,10 @@ import {
   Int8,
   Int16,
   Float32,
-  Binary
+  Binary,
+  Tables,
+  ObjectRowTable,
+  Feature
 } from '@loaders.gl/schema';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -64,25 +67,36 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
 export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-) {
+): Promise<Tables<ObjectRowTable> | Record<string, Feature[]>> {
   const {sqlJsCDN = 'https://sql.js.org/dist/'} = options?.geopackage || {};
-  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+  const {reproject = false, _targetCrs = 'WGS84', format = 'tables'} = options?.gis || {};
 
   const db = await loadDatabase(arrayBuffer, sqlJsCDN);
   const tables = listVectorTables(db);
   const projections = getProjections(db);
 
   // Mapping from tableName to geojson feature collection
-  const result = {};
+  const outputTables: Tables<ObjectRowTable> = {
+    shape: 'tables',
+    tables: []
+  };
+
   for (const table of tables) {
     const {table_name: tableName} = table;
-    result[tableName] = getVectorTable(db, tableName, projections, {
-      reproject,
-      _targetCrs
+    outputTables.tables.push({
+      name: tableName,
+      table: getVectorTable(db, tableName, projections, {
+        reproject,
+        _targetCrs
+      })
     });
   }
 
-  return result;
+  if (format === 'geojson') {
+    return formatTablesAsGeojson(outputTables);
+  }
+
+  return outputTables;
 }
 
 /**
@@ -147,7 +161,7 @@ function getVectorTable(
   tableName: string,
   projections: ProjectionMapping,
   {reproject, _targetCrs}: {reproject: boolean; _targetCrs: string}
-): object {
+): ObjectRowTable {
   const dataColumns = getDataColumns(db, tableName);
   const geomColumn = getGeometryColumn(db, tableName);
   const featureIdColumn = getFeatureIdName(db, tableName);
@@ -180,10 +194,14 @@ function getVectorTable(
 
   const schema = getArrowSchema(db, tableName);
   if (projection) {
-    return {geojsonFeatures: transformGeoJsonCoords(geojsonFeatures, projection.project), schema};
+    return {
+      data: transformGeoJsonCoords(geojsonFeatures, projection.project),
+      schema,
+      shape: 'object-row-table'
+    };
   }
 
-  return {geojsonFeatures, schema};
+  return {data: geojsonFeatures, schema, shape: 'object-row-table'};
 }
 
 /**
@@ -220,7 +238,7 @@ function constructGeoJsonFeature(
   geomColumn: GeometryColumnsRow,
   dataColumns: DataColumnsMapping,
   featureIdColumn: string
-) {
+): Feature<Geometry | null> {
   // Find feature id
   const idIdx = columns.indexOf(featureIdColumn);
   const id = row[idIdx];
@@ -328,7 +346,7 @@ function getFeatureIdName(db: Database, tableName: string): string | null {
  * See: https://www.geopackage.org/spec121/#gpb_format
  *
  * @param arrayBuffer geometry buffer
- * @return {object} GeoJSON geometry (in original CRS)
+ * @return GeoJSON geometry (in original CRS)
  */
 function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
   const view = new DataView(arrayBuffer);
@@ -450,4 +468,13 @@ function getArrowSchema(db: Database, tableName: string): Schema {
   }
 
   return new Schema(fields);
+}
+
+function formatTablesAsGeojson(tables: Tables<ObjectRowTable>): Record<string, Feature[]> {
+  const geojsonMap = {};
+  for (const table of tables.tables) {
+    geojsonMap[table.name] = table.table.data;
+  }
+
+  return geojsonMap;
 }

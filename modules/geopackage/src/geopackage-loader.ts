@@ -14,6 +14,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
   gis?: {
     reproject?: boolean;
     _targetCrs?: string;
+    format?: 'geojson' | 'tables';
   };
 };
 
@@ -30,6 +31,9 @@ export const GeoPackageLoader: LoaderWithParser = {
   options: {
     geopackage: {
       sqlJsCDN: 'https://sql.js.org/dist/'
+    },
+    gis: {
+      format: 'tables'
     }
   }
 };
