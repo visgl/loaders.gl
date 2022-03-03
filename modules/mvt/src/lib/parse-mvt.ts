@@ -21,6 +21,13 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: LoaderOptio
   options = normalizeOptions(options);
   const features: (FlatFeature | MvtMapboxCoordinates)[] = [];
 
+  switch (options?.mvt?.shape) {
+    case 'columnar-table': // binary + some JS arrays
+      return {shape: 'columnar-table', data: getBinaryTable()};
+    case 'geojson-table':
+      return {shape: 'geojson-table', data: getGeojsonTable()};
+  }
+
   if (options) {
     const binary = options.gis.format === 'binary';
     const geometryInfo = {
