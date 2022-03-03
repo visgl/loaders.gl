@@ -33,6 +33,10 @@ import {
   SQLiteTypes
 } from './types';
 
+// We pin to the same version as sql.js that we use.
+// As of March 2022, versions 1.6.0, 1.6.1, and 1.6.2 of sql.js appeared not to work.
+export const DEFAULT_SQLJS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/';
+
 // https://www.geopackage.org/spec121/#flags_layout
 const ENVELOPE_BYTE_LENGTHS = {
   0: 0,
@@ -68,7 +72,7 @@ export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
 ): Promise<Tables<ObjectRowTable> | Record<string, Feature[]>> {
-  const {sqlJsCDN = 'https://sql.js.org/dist/'} = options?.geopackage || {};
+  const {sqlJsCDN = DEFAULT_SQLJS_CDN} = options?.geopackage || {};
   const {reproject = false, _targetCrs = 'WGS84', format = 'tables'} = options?.gis || {};
 
   const db = await loadDatabase(arrayBuffer, sqlJsCDN);

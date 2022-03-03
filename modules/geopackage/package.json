@@ -30,6 +30,6 @@
     "@loaders.gl/wkt": "4.0.0-alpha.5",
     "@math.gl/proj4": "^3.5.1",
     "@types/sql.js": "^1.4.2",
-    "sql.js": "^1.5.0"
+    "sql.js": "1.5.0"
   }
 }
