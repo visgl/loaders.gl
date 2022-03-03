@@ -25,7 +25,7 @@ import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
 
 const optionsAsTable: GeoPackageLoaderOptions = {
   geopackage: {
-    sqlJsCDN: 'https://sql.js.org/dist/'
+    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
   },
   gis: {
     format: 'tables'
@@ -35,7 +35,7 @@ const tablesData: Tables<ObjectRowTable> = await load(url, GeoPackageLoader, opt
 
 const optionsAsGeoJson: GeoPackageLoaderOptions = {
   geopackage: {
-    sqlJsCDN: 'https://sql.js.org/dist/'
+    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
   },
   gis: {
     format: 'geojson'
@@ -46,10 +46,12 @@ const geoJsonData: Record<string, Feature[]> = await load(url, GeoPackageLoader,
 
 ## Options
 
-| Option                | Type   | Default                      | Description                                                                                                            |
-| --------------------- | ------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `geopackage.sqlJsCDN` | String | `'https://sql.js.org/dist/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackageLoader is called on a file. |
-| `options.gis.format`  | String | `'tables'`                   | Output format for data. If set to `geojson`                                                                            |
+| Option                | Type   | Default                                                  | Description                                                                                                            |
+| --------------------- | ------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `geopackage.sqlJsCDN` | String | `'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackageLoader is called on a file. |
+| `options.gis.format`  | String | `'tables'`                                               | Output format for data. If set to `geojson`                                                                            |
+
+- `geopackage.sqlJsCDN`: As of March 2022, SQL.js versions 1.6.0, 1.6.1, and 1.6.2 were tested as not working. Therefore this library pins to use of SQL.js version 1.5.0, and requires the WASM bundle from the same version.
 
 ## Output
 
