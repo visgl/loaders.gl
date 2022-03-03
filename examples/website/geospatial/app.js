@@ -80,22 +80,49 @@ export default class App extends PureComponent {
 
   _renderLayer() {
     const {selectedExample, selectedLoader, uploadedFile} = this.state;
+
+    let layerData;
+    if (uploadedFile) {
+      layerData = uploadedFile;
+    } else if (EXAMPLES[selectedLoader][selectedExample]) {
+      layerData = EXAMPLES[selectedLoader][selectedExample].data;
+    } else {
+      layerData = EXAMPLES[INITIAL_LOADER_NAME][INITIAL_EXAMPLE_NAME].data;
+    }
+
     return [
       new GeoJsonLayer({
         id: `geojson-${selectedExample}(${selectedLoader})`,
-        data: uploadedFile
-          ? uploadedFile
-          : EXAMPLES[selectedLoader][selectedExample]
-          ? EXAMPLES[selectedLoader][selectedExample].data
-          : EXAMPLES[INITIAL_LOADER_NAME][INITIAL_EXAMPLE_NAME].data,
+        data: layerData,
         opacity: 0.8,
         stroked: false,
         filled: true,
         extruded: true,
         wireframe: true,
         getElevation: (f) => Math.sqrt(f.properties.valuePerSqm) * 10,
-        getLineColor: [255, 255, 255],
-        pickable: true
+        getFillColor: [255, 255, 255],
+        getLineColor: [0, 0, 0],
+        getLineWidth: 3,
+        lineWidthUnits: 'pixels',
+        pickable: true,
+        // TODO: Why aren't these loadOptions aren't passed for an uploaded file???
+        loadOptions: {
+          geopackage: {
+            sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
+          },
+          gis: {
+            format: 'geojson',
+            reproject: true,
+            _targetCrs: 'WGS84'
+          }
+        },
+        dataTransform: (data, previousData) => {
+          if (typeof data === 'object' && !Array.isArray(data) && !data.type) {
+            return Object.values(data).flat();
+          }
+
+          return data;
+        }
       })
     ];
   }

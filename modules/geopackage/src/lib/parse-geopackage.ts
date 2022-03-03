@@ -30,7 +30,8 @@ import {
   DataColumnsRow,
   DataColumnsMapping,
   PragmaTableInfoRow,
-  SQLiteTypes
+  SQLiteTypes,
+  GeoPackageGeometryTypes
 } from './types';
 
 // We pin to the same version as sql.js that we use.
@@ -51,7 +52,7 @@ const ENVELOPE_BYTE_LENGTHS = {
 };
 
 // Documentation: https://www.geopackage.org/spec130/index.html#table_column_data_types
-const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
+const SQL_TYPE_MAPPING: {[type in SQLiteTypes | GeoPackageGeometryTypes]: typeof DataType} = {
   BOOLEAN: Bool,
   TINYINT: Int8,
   SMALLINT: Int16,
@@ -65,7 +66,14 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
   BLOB: Binary,
   DATE: Utf8,
   DATETIME: Utf8,
-  GEOMETRY: Binary
+  GEOMETRY: Binary,
+  POINT: Binary,
+  LINESTRING: Binary,
+  POLYGON: Binary,
+  MULTIPOINT: Binary,
+  MULTILINESTRING: Binary,
+  MULTIPOLYGON: Binary,
+  GEOMETRYCOLLECTION: Binary
 };
 
 export default async function parseGeoPackage(
@@ -467,7 +475,8 @@ function getArrowSchema(db: Database, tableName: string): Schema {
   while (stmt.step()) {
     const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
     const {name, type, notnull} = pragmaTableInfo;
-    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull);
+    const schemaType = SQL_TYPE_MAPPING[type] && new SQL_TYPE_MAPPING[type]();
+    const field = new Field(name, schemaType, !notnull);
     fields.push(field);
   }
 

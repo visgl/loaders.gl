@@ -18,6 +18,17 @@ const VIEW_STATE = {
 };
 
 export const EXAMPLES = {
+  GeoPackage: {
+    Rivers: {
+      data: 'https://raw.githubusercontent.com/ngageoint/geopackage-js/master/test/fixtures/rivers.gpkg',
+      viewState: {
+        ...VIEW_STATE,
+        longitude: -4.65,
+        latitude: 0,
+        zoom: 1.76
+      }
+    }
+  },
   GeoJSON: {
     Vancouver: {
       data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/geojson/vancouver-blocks.json',
