@@ -31,26 +31,35 @@ function binaryFromFeature(feature, header) {
  * @return A GeoJSON geometry object
  */
 export function parseFlatGeobuf(arrayBuffer, options) {
-  if (arrayBuffer.byteLength === 0) {
-    return [];
-  }
+  let shape = option?.gis?.format || options?.flatgeobuf?.shape;
 
-  if (options && options.gis && options.gis.format === 'binary') {
-    return parseFlatGeobufToBinary(arrayBuffer, options);
+  switch (shape) {
+    case 'geojson-table':
+      return {shape: 'geojson-table', data: parseFlatGeobufToGeoJSON(arrayBuffer, options)};
+    case 'columnar-table': // binary + some JS arrays
+      return {shape: 'columnar-table', data: parseFlatGeobufToBinary(arrayBuffer, options)};
+    case 'geojson':
+      return parseFlatGeobufToGeoJSON(arrayBuffer, options);
+    case 'binary':
+      return parseFlatGeobufToBinary(arrayBuffer, options);
+    default:
+      throw new Error(shape);
   }
-
-  return parseFlatGeobufToGeoJSON(arrayBuffer, options);
 }
 
 function parseFlatGeobufToBinary(arrayBuffer, options) {
   // TODO: reproject binary features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
-  const arr = new Uint8Array(arrayBuffer);
-  return deserializeGeneric(arr, binaryFromFeature);
+  const array = new Uint8Array(arrayBuffer);
+  return deserializeGeneric(array, binaryFromFeature);
 }
 
 function parseFlatGeobufToGeoJSON(arrayBuffer, options) {
+  if (arrayBuffer.byteLength === 0) {
+    return [];
+  }
+
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
   const arr = new Uint8Array(arrayBuffer);

@@ -7,7 +7,9 @@ import {kml} from '@tmcw/togeojson';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMLLoaderOptions = LoaderOptions & {
-  kml?: {};
+  kml?: {
+    shape: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'raw';
+  };
 };
 
 const KML_HEADER = `\
@@ -39,21 +41,19 @@ function parseTextSync(text: string, options: any) {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson = kml(doc);
 
-  switch (options?.kml?.type) {
-    case 'object-row-table':
-      return geojson.features;
-    default:
-  }
-
-  switch (options?.gis?.format) {
+  // backwards compatibility
+  const shape = options?.gis?.format || options?.kml?.type || options?.kml?.shape;
+  switch (shape) {
     case 'geojson':
       return geojson;
     case 'binary':
       return geojsonToBinary(geojson.features);
     case 'raw':
       return doc;
+    case 'object-row-table':
+      return geojson.features;
     default:
-      throw new Error();
+      throw new Error(shape);
   }
 }
 

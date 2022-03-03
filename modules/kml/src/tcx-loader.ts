@@ -39,21 +39,20 @@ function parseTextSync(text: string, options: any = {}) {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson = tcx(doc);
 
-  switch (options?.tcx?.type) {
-    case 'object-row-table':
-      return geojson.features;
-    default:
-  }
+  // backwards compatibility
+  const shape = options?.gis?.format || options?.tcx?.type || options?.tcx?.shape;
 
-  switch (options?.gis?.format) {
+  switch (shape) {
     case 'geojson':
       return geojson;
     case 'binary':
       return geojsonToBinary(geojson.features);
     case 'raw':
       return doc;
+    case 'object-row-table':
+      return geojson.features;
     default:
-      throw new Error();
+      throw new Error(shape);
   }
 }
 
