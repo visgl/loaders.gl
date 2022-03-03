@@ -69,7 +69,7 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes | GeoPackageGeometryTypes]: typeof
   MULTIPOINT: Binary,
   MULTILINESTRING: Binary,
   MULTIPOLYGON: Binary,
-  GEOMETRYCOLLECTION: Binary,
+  GEOMETRYCOLLECTION: Binary
 };
 
 export default async function parseGeoPackage(

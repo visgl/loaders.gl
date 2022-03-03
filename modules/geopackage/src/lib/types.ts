@@ -37,7 +37,7 @@ export type GeoPackageGeometryTypes =
   | 'MULTIPOINT'
   | 'MULTILINESTRING'
   | 'MULTIPOLYGON'
-  | 'GEOMETRYCOLLECTION'
+  | 'GEOMETRYCOLLECTION';
 
 /**
  * https://www.geopackage.org/spec121/#spatial_ref_sys
