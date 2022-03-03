@@ -107,9 +107,6 @@ export default class App extends PureComponent {
         pickable: true,
         // TODO: Why aren't these loadOptions aren't passed for an uploaded file???
         loadOptions: {
-          geopackage: {
-            sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
-          },
           gis: {
             format: 'geojson',
             reproject: true,
