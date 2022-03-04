@@ -7,6 +7,8 @@ import {deserialize as deserializeGeneric} from 'flatgeobuf/lib/cjs/generic';
 import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/cjs/generic/feature';
 
 import {fromGeometry as binaryFromGeometry} from './binary-geometries';
+import {FlatGeobufLoaderOptions} from './types';
+import {GeoJSONRowTable, Feature} from '@loaders.gl/schema';
 
 // TODO: reproject binary features
 function binaryFromFeature(feature, header) {
@@ -30,12 +32,17 @@ function binaryFromFeature(feature, header) {
  * @param arrayBuffer  A FlatGeobuf arrayBuffer
  * @return A GeoJSON geometry object
  */
-export function parseFlatGeobuf(arrayBuffer, options) {
-  let shape = option?.gis?.format || options?.flatgeobuf?.shape;
+export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions) {
+  const shape = options?.gis?.format || options?.flatgeobuf?.shape;
 
   switch (shape) {
-    case 'geojson-table':
-      return {shape: 'geojson-table', data: parseFlatGeobufToGeoJSON(arrayBuffer, options)};
+    case 'geojson-row-table': {
+      const table: GeoJSONRowTable = {
+        shape: 'geojson-row-table',
+        data: parseFlatGeobufToGeoJSON(arrayBuffer, options)
+      };
+      return table;
+    }
     case 'columnar-table': // binary + some JS arrays
       return {shape: 'columnar-table', data: parseFlatGeobufToBinary(arrayBuffer, options)};
     case 'geojson':
@@ -47,7 +54,7 @@ export function parseFlatGeobuf(arrayBuffer, options) {
   }
 }
 
-function parseFlatGeobufToBinary(arrayBuffer, options) {
+function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions) {
   // TODO: reproject binary features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
@@ -55,7 +62,10 @@ function parseFlatGeobufToBinary(arrayBuffer, options) {
   return deserializeGeneric(array, binaryFromFeature);
 }
 
-function parseFlatGeobufToGeoJSON(arrayBuffer, options) {
+function parseFlatGeobufToGeoJSON(
+  arrayBuffer: ArrayBuffer,
+  options: FlatGeobufLoaderOptions
+): Feature[] {
   if (arrayBuffer.byteLength === 0) {
     return [];
   }
@@ -94,7 +104,7 @@ function parseFlatGeobufToGeoJSON(arrayBuffer, options) {
  * @return  A GeoJSON geometry object iterator
  */
 // eslint-disable-next-line complexity
-export function parseFlatGeobufInBatches(stream, options) {
+export function parseFlatGeobufInBatches(stream, options: FlatGeobufLoaderOptions) {
   if (options && options.gis && options.gis.format === 'binary') {
     return parseFlatGeobufInBatchesToBinary(stream, options);
   }
@@ -102,7 +112,7 @@ export function parseFlatGeobufInBatches(stream, options) {
   return parseFlatGeobufInBatchesToGeoJSON(stream, options);
 }
 
-function parseFlatGeobufInBatchesToBinary(stream, options) {
+function parseFlatGeobufInBatchesToBinary(stream, options: FlatGeobufLoaderOptions) {
   // TODO: reproject binary streaming features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
@@ -111,7 +121,7 @@ function parseFlatGeobufInBatchesToBinary(stream, options) {
 }
 
 // eslint-disable-next-line complexity
-async function* parseFlatGeobufInBatchesToGeoJSON(stream, options) {
+async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: FlatGeobufLoaderOptions) {
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
   let headerMeta;

@@ -1,14 +1,22 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {kml} from '@tmcw/togeojson';
+import {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+type KMLSupportedShapes = 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+// 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'raw';
+
 export type KMLLoaderOptions = LoaderOptions & {
   kml?: {
-    shape: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'raw';
+    shape?: KMLSupportedShapes;
+    type?: KMLSupportedShapes;
+  };
+  gis?: {
+    format?: KMLSupportedShapes;
   };
 };
 
@@ -28,7 +36,7 @@ export const KMLLoader = {
   mimeTypes: ['application/vnd.google-earth.kml+xml'],
   text: true,
   tests: [KML_HEADER],
-  parse: async (arrayBuffer, options) =>
+  parse: async (arrayBuffer, options?: KMLLoaderOptions) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
@@ -37,21 +45,33 @@ export const KMLLoader = {
   }
 };
 
-function parseTextSync(text: string, options: any) {
+function parseTextSync(text: string, options?: KMLLoaderOptions) {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = kml(doc);
+  const geojson: FeatureCollection = kml(doc);
 
   // backwards compatibility
   const shape = options?.gis?.format || options?.kml?.type || options?.kml?.shape;
   switch (shape) {
+    case 'object-row-table': {
+      const table: ObjectRowTable = {
+        shape: 'object-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
+    case 'geojson-row-table': {
+      const table: GeoJSONRowTable = {
+        shape: 'geojson-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
     case 'geojson':
       return geojson;
     case 'binary':
       return geojsonToBinary(geojson.features);
     case 'raw':
       return doc;
-    case 'object-row-table':
-      return geojson.features;
     default:
       throw new Error(shape);
   }

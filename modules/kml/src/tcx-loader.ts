@@ -1,13 +1,22 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {tcx} from '@tmcw/togeojson';
+import type {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+type TCXSupportedShapes = 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+
 export type TCXLoaderOptions = LoaderOptions & {
-  tcx?: {};
+  tcx?: {
+    shape?: TCXSupportedShapes;
+    type?: TCXSupportedShapes;
+  };
+  gis?: {
+    format?: TCXSupportedShapes;
+  };
 };
 
 const TCX_HEADER = `\
@@ -26,7 +35,7 @@ export const TCXLoader = {
   mimeTypes: ['application/vnd.garmin.tcx+xml'],
   text: true,
   tests: [TCX_HEADER],
-  parse: async (arrayBuffer, options) =>
+  parse: async (arrayBuffer, options?: TCXLoaderOptions) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
@@ -35,22 +44,34 @@ export const TCXLoader = {
   }
 };
 
-function parseTextSync(text: string, options: any = {}) {
+function parseTextSync(text: string, options?: TCXLoaderOptions) {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = tcx(doc);
+  const geojson: FeatureCollection = tcx(doc);
 
   // backwards compatibility
   const shape = options?.gis?.format || options?.tcx?.type || options?.tcx?.shape;
 
   switch (shape) {
+    case 'object-row-table': {
+      const table: ObjectRowTable = {
+        shape: 'object-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
+    case 'geojson-row-table': {
+      const table: GeoJSONRowTable = {
+        shape: 'geojson-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
     case 'geojson':
       return geojson;
     case 'binary':
       return geojsonToBinary(geojson.features);
     case 'raw':
       return doc;
-    case 'object-row-table':
-      return geojson.features;
     default:
       throw new Error(shape);
   }

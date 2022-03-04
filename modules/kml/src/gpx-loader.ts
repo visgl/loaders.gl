@@ -1,13 +1,22 @@
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {gpx} from '@tmcw/togeojson';
+import type {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+type GPXSupportedShapes = 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+
 export type GPXLoaderOptions = LoaderOptions & {
-  gpx?: {};
+  gpx?: {
+    shape?: GPXSupportedShapes;
+    type?: GPXSupportedShapes;
+  };
+  gis?: {
+    format?: GPXSupportedShapes;
+  };
 };
 
 const GPX_HEADER = `\
@@ -26,7 +35,7 @@ export const GPXLoader = {
   mimeTypes: ['application/gpx+xml'],
   text: true,
   tests: [GPX_HEADER],
-  parse: async (arrayBuffer, options) =>
+  parse: async (arrayBuffer, options?: GPXLoaderOptions) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
@@ -35,17 +44,27 @@ export const GPXLoader = {
   }
 };
 
-function parseTextSync(text: string, options: any) {
+function parseTextSync(text: string, options?: GPXLoaderOptions) {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = gpx(doc);
+  const geojson: FeatureCollection = gpx(doc);
 
-  switch (options?.gpx?.type) {
-    case 'object-row-table':
-      return geojson.features;
-    default:
-  }
+  const shape = options?.gis?.format || options?.gpx?.type || options?.gpx?.shape;
 
-  switch (options?.gis?.format) {
+  switch (shape) {
+    case 'object-row-table': {
+      const table: ObjectRowTable = {
+        shape: 'object-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
+    case 'geojson-row-table': {
+      const table: GeoJSONRowTable = {
+        shape: 'geojson-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
     case 'geojson':
       return geojson;
     case 'binary':
@@ -53,8 +72,8 @@ function parseTextSync(text: string, options: any) {
     case 'raw':
       return doc;
     default:
-      throw new Error();
+      throw new Error(shape);
   }
 }
 
-export const _typecheckGPXLoader = GPXLoader;
+export const _typecheckGPXLoader: LoaderWithParser = GPXLoader;
