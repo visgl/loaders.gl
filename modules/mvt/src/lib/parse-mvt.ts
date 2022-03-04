@@ -1,9 +1,14 @@
 import {flatGeojsonToBinary} from '@loaders.gl/gis';
-import type {FlatFeature} from '@loaders.gl/schema';
+import type {
+  FlatFeature,
+  Feature,
+  GeojsonGeometryInfo,
+  BinaryFeatures,
+  GeoJSONRowTable
+} from '@loaders.gl/schema';
 import Protobuf from 'pbf';
 
-import type { MVTLoaderOptions } from '../mvt-loader';
-import type {MVTMapboxCoordinates, MVTOptions} from '../lib/types';
+import type {MVTMapboxCoordinates, MVTOptions, MVTLoaderOptions} from '../lib/types';
 
 import VectorTile from './mapbox-vector-tile/vector-tile';
 import BinaryVectorTile from './binary-vector-tile/vector-tile';
@@ -18,30 +23,45 @@ import VectorTileFeatureMapBox from './mapbox-vector-tile/vector-tile-feature';
  * @returns A GeoJSON geometry object or a binary representation
  */
 export default function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
-  options = normalizeOptions(options);
+  const mvtOptions = normalizeOptions(options);
 
-  let shape = options?.mvt?.shape;
-
-  function geojson = parseToGeojson()
-
+  const shape = options?.gis?.format || options?.mvt?.shape;
   switch (shape) {
     case 'columnar-table': // binary + some JS arrays
-      return {shape: 'columnar-table', data: parseToBinary()};
-    case 'geojson-table':
-      return {shape: 'geojson-table', data: parseToGeojson()};
+      return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions)};
+    case 'geojson-row-table': {
+      const table: GeoJSONRowTable = {
+        shape: 'geojson-row-table',
+        data: parseToGeojson(arrayBuffer, mvtOptions)
+      };
+      return table;
+    }
     case 'geojson':
-      return parseToGeojson();
+      return parseToGeojson(arrayBuffer, mvtOptions);
     case 'binary-geometry':
-      return parseToBinary();
+      return parseToBinary(arrayBuffer, mvtOptions);
     default:
-      throw new Error(shape)
+      throw new Error(shape);
   }
 }
 
-function parseToGeojson(arrayBuffer: ArrayBuffer, options: MVTLoaderOptions, binary: boolean = false) {
-  const features: (FlatFeature | MVTMapboxCoordinates)[] = [];
+function parseToBinary(arrayBuffer: ArrayBuffer, options: MVTOptions): BinaryFeatures {
+  const [flatGeoJsonFeatures, geometryInfo] = parseToFlatGeoJson(arrayBuffer, options);
 
-  const geometryInfo = {
+  const binaryData = flatGeojsonToBinary(flatGeoJsonFeatures, geometryInfo);
+  // Add the original byteLength (as a reasonable approximation of the size of the binary data)
+  // TODO decide where to store extra fields like byteLength (header etc) and document
+  // @ts-ignore
+  binaryData.byteLength = arrayBuffer.byteLength;
+  return binaryData;
+}
+
+function parseToFlatGeoJson(
+  arrayBuffer: ArrayBuffer,
+  options: MVTOptions
+): [FlatFeature[], GeojsonGeometryInfo] {
+  const features: FlatFeature[] = [];
+  const geometryInfo: GeojsonGeometryInfo = {
     coordLength: 2,
     pointPositionsCount: 0,
     pointFeaturesCount: 0,
@@ -54,63 +74,64 @@ function parseToGeojson(arrayBuffer: ArrayBuffer, options: MVTLoaderOptions, bin
     polygonFeaturesCount: 0
   };
 
-  if (arrayBuffer.byteLength > 0) {
-    const tile = binary
-      ? new BinaryVectorTile(new Protobuf(arrayBuffer))
-      : new VectorTile(new Protobuf(arrayBuffer));
-    const loaderOptions = options.mvt;
-
-    const selectedLayers = Array.isArray(loaderOptions.layers)
-      ? loaderOptions.layers
-      : Object.keys(tile.layers);
-
-    selectedLayers.forEach((layerName: string) => {
-      const vectorTileLayer = tile.layers[layerName];
-      const featureOptions = {...loaderOptions, layerName};
-
-      if (!vectorTileLayer) {
-        return;
-      }
-
-      for (let i = 0; i < vectorTileLayer.length; i++) {
-        const vectorTileFeature = vectorTileLayer.feature(i, geometryInfo);
-
-        const decodedFeature = binary
-          ? getDecodedFeatureBinary(vectorTileFeature as VectorTileFeatureBinary, featureOptions)
-          : getDecodedFeature(vectorTileFeature as VectorTileFeatureMapBox, featureOptions);
-        features.push(decodedFeature);
-      }
-    });
+  if (arrayBuffer.byteLength <= 0) {
+    return [features, geometryInfo];
   }
 
-  return features;
+  const tile = new BinaryVectorTile(new Protobuf(arrayBuffer));
+
+  const selectedLayers =
+    options && Array.isArray(options.layers) ? options.layers : Object.keys(tile.layers);
+
+  selectedLayers.forEach((layerName: string) => {
+    const vectorTileLayer = tile.layers[layerName];
+    if (!vectorTileLayer) {
+      return;
+    }
+
+    for (let i = 0; i < vectorTileLayer.length; i++) {
+      const vectorTileFeature = vectorTileLayer.feature(i, geometryInfo);
+      const decodedFeature = getDecodedFeatureBinary(vectorTileFeature, options, layerName);
+      features.push(decodedFeature);
+    }
+  });
+
+  return [features, geometryInfo];
 }
 
-function parseToBinary(arrayBuffer: ArrayBuffer, options: MVTLoaderOptions) {
-  const features = parseToGeojson(arrayBuffer, options, true)  as FlatFeature[];
-
-const data = flatGeojsonToBinary(features, geometryInfo);
-    // Add the original byteLength (as a reasonable approximation of the size of the binary data)
-    // TODO decide where to store extra fields like byteLength (header etc) and document
-    // @ts-ignore
-    data.byteLength = arrayBuffer.byteLength;
-    return data;
+function parseToGeojson(arrayBuffer: ArrayBuffer, options: MVTOptions): Feature[] {
+  if (arrayBuffer.byteLength <= 0) {
+    return [];
   }
+
+  const features: MVTMapboxCoordinates[] = [];
+  const tile = new VectorTile(new Protobuf(arrayBuffer));
+
+  const selectedLayers = Array.isArray(options.layers) ? options.layers : Object.keys(tile.layers);
+
+  selectedLayers.forEach((layerName: string) => {
+    const vectorTileLayer = tile.layers[layerName];
+    if (!vectorTileLayer) {
+      return;
+    }
+
+    for (let i = 0; i < vectorTileLayer.length; i++) {
+      const vectorTileFeature = vectorTileLayer.feature(i);
+      const decodedFeature = getDecodedFeature(vectorTileFeature, options, layerName);
+      features.push(decodedFeature);
+    }
+  });
+
+  return features as Feature[];
 }
 
-/**
- * @param options
- * @returns options
- */
-function normalizeOptions(options?: MVTLoaderOptions): MVTLoaderOptions {
-  options = {
-    ...options,
-    mvt: options?.mvt || {},
-    gis: options?.gis || {}
-  };
+function normalizeOptions(options?: MVTLoaderOptions): MVTOptions {
+  if (!options?.mvt) {
+    throw new Error('mvt options required');
+  }
 
   // Validate
-  const wgs84Coordinates = options.coordinates === 'wgs84';
+  const wgs84Coordinates = options.mvt?.coordinates === 'wgs84';
   const {tileIndex} = options;
   const hasTileIndex =
     tileIndex &&
@@ -119,12 +140,10 @@ function normalizeOptions(options?: MVTLoaderOptions): MVTLoaderOptions {
     Number.isFinite(tileIndex.z);
 
   if (wgs84Coordinates && !hasTileIndex) {
-    throw new Error(
-      'MVT Loader: WGS84 coordinates need tileIndex property. Check documentation.'
-    );
+    throw new Error('MVT Loader: WGS84 coordinates need tileIndex property');
   }
 
-  return options;
+  return options.mvt;
 }
 
 /**
@@ -134,7 +153,8 @@ function normalizeOptions(options?: MVTLoaderOptions): MVTLoaderOptions {
  */
 function getDecodedFeature(
   feature: VectorTileFeatureMapBox,
-  options: MVTOptions
+  options: MVTOptions,
+  layerName: string
 ): MVTMapboxCoordinates {
   const decodedFeature = feature.toGeoJSON(
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinates
@@ -142,7 +162,7 @@ function getDecodedFeature(
 
   // Add layer name to GeoJSON properties
   if (options.layerProperty) {
-    decodedFeature.properties[options.layerProperty] = options.layerName;
+    decodedFeature.properties[options.layerProperty] = layerName;
   }
 
   return decodedFeature;
@@ -155,7 +175,8 @@ function getDecodedFeature(
  */
 function getDecodedFeatureBinary(
   feature: VectorTileFeatureBinary,
-  options: MVTOptions
+  options: MVTOptions,
+  layerName: string
 ): FlatFeature {
   const decodedFeature = feature.toBinaryCoordinates(
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinatesBinary
@@ -163,7 +184,7 @@ function getDecodedFeatureBinary(
 
   // Add layer name to GeoJSON properties
   if (options.layerProperty && decodedFeature.properties) {
-    decodedFeature.properties[options.layerProperty] = options.layerName;
+    decodedFeature.properties[options.layerProperty] = layerName;
   }
 
   return decodedFeature;

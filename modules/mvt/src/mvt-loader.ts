@@ -1,14 +1,10 @@
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {MVTOptions} from './lib/types';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {MVTLoaderOptions} from './lib/types';
 import parseMVT from './lib/parse-mvt';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-export type MVTLoaderOptions = LoaderOptions & {
-  mvt: MVTOptions & {shape: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary-geometry' };
-}
 
 const DEFAULT_MVT_LOADER_OPTIONS: MVTLoaderOptions = {
   mvt: {
@@ -16,8 +12,7 @@ const DEFAULT_MVT_LOADER_OPTIONS: MVTLoaderOptions = {
     coordinates: 'local',
     layerProperty: 'layerName',
     layers: undefined,
-    // @ts-expect-error Is this a required param?
-    tileIndex: undefined
+    tileIndex: null
   }
 }
 
@@ -46,7 +41,7 @@ export const MVTWorkerLoader: Loader = {
  */
 export const MVTLoader: LoaderWithParser = {
   ...MVTWorkerLoader,
-  parse: async (arrayBuffer, options) => parseMVT(arrayBuffer, options),
+  parse: async (arrayBuffer, options?: MVTLoaderOptions) => parseMVT(arrayBuffer, options),
   parseSync: parseMVT,
   binary: true
 };

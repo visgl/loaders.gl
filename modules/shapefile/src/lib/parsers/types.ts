@@ -1,4 +1,4 @@
-import {Schema} from '@loaders.gl/schema';
+import {Schema, ObjectRowTable} from '@loaders.gl/schema';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 
 export type ShapefileSupportedShapes = 'geojson';
@@ -27,14 +27,18 @@ export type ShapefileLoaderOptions = LoaderOptions & SHPLoaderOptions & {
   };
 };
 
-type DBFRowsOutput = object[];
+export type DBFRowsOutput = ObjectRowTable['data'];
 
-interface DBFTableOutput {
+/**
+ * DBF Table output. Deprecated in favor of ObjectRowTable
+ * @deprecated
+ */
+export interface DBFTableOutput {
   schema?: Schema;
   rows: DBFRowsOutput;
 }
 
-type DBFHeader = {
+export type DBFHeader = {
   // Last updated date
   year: number;
   month: number;
@@ -49,7 +53,7 @@ type DBFHeader = {
   languageDriver: number;
 };
 
-type DBFField = {
+export type DBFField = {
   name: string;
   dataType: string;
   fieldLength: number;
