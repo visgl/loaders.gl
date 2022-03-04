@@ -8,6 +8,20 @@ import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-co
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
+// Signature: parse(data, options, context | url)
+export async function parse(
+  data: DataType | Promise<DataType>,
+  loaders?: LoaderOptions,
+  options?: LoaderContext
+): Promise<any>
+
+export async function parse<T>(
+  data: DataType | Promise<DataType>,
+  loaders?: Loader<T> | Loader<T>[],
+  options?: LoaderOptions,
+  context?: LoaderContext
+): Promise<T>
+
 /**
  * Parses `data` using a specified loader
  * @param data
