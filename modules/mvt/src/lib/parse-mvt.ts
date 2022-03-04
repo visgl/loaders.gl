@@ -40,6 +40,8 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOp
       return parseToGeojson(arrayBuffer, mvtOptions);
     case 'binary-geometry':
       return parseToBinary(arrayBuffer, mvtOptions);
+    case 'binary':
+      return parseToBinary(arrayBuffer, mvtOptions);
     default:
       throw new Error(shape);
   }
@@ -132,7 +134,7 @@ function normalizeOptions(options?: MVTLoaderOptions): MVTOptions {
 
   // Validate
   const wgs84Coordinates = options.mvt?.coordinates === 'wgs84';
-  const {tileIndex} = options;
+  const {tileIndex} = options.mvt;
   const hasTileIndex =
     tileIndex &&
     Number.isFinite(tileIndex.x) &&

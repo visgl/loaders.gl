@@ -14,7 +14,7 @@ const DEFAULT_MVT_LOADER_OPTIONS: MVTLoaderOptions = {
     layers: undefined,
     tileIndex: null
   }
-}
+};
 
 /**
  * Worker loader for the Mapbox Vector Tile format
