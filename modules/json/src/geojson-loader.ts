@@ -13,7 +13,7 @@ export type GeoJSONLoaderOptions = JSONLoaderOptions & {
     shape?: 'object-row-table';
   };
   gis?: {
-    format: 'geojson';
+    format?: 'geojson' | 'binary';
   };
 };
 
