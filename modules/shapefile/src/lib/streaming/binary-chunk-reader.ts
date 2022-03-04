@@ -1,6 +1,6 @@
 type BinaryChunkReaderOptions = {
   maxRewindBytes: number;
-}
+};
 
 export default class BinaryChunkReader {
   offset: number;

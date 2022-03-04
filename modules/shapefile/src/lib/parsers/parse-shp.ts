@@ -27,7 +27,7 @@ type SHPResult = {
     bytesUsed: number;
     bytesTotal: number;
     rows: number;
-  }
+  };
   currentIndex: number;
 };
 
@@ -42,7 +42,7 @@ class SHPParser {
     progress: {
       bytesTotal: NaN,
       bytesUsed: NaN,
-      rows: NaN,
+      rows: NaN
     },
     currentIndex: NaN
   };

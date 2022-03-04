@@ -6,26 +6,27 @@ export type ShapefileSupportedShapes = 'geojson';
 export type SHPLoaderOptions = LoaderOptions & {
   shp?: {
     _maxDimensions?: number;
-  }
-}
+  };
+};
 
 export type DBFLoaderOptions = LoaderOptions & {
   dbf?: {
     encoding?: string;
     shape?: 'rows' | 'table' | 'object-row-table';
-  }
-}
-
-export type ShapefileLoaderOptions = LoaderOptions & SHPLoaderOptions & {
-  shapefile?: {
-    shape?: ShapefileSupportedShapes;
-  };
-  gis?: {
-    reproject?: boolean;
-    _targetCrs?: string;
-    format?: ShapefileSupportedShapes;
   };
 };
+
+export type ShapefileLoaderOptions = LoaderOptions &
+  SHPLoaderOptions & {
+    shapefile?: {
+      shape?: ShapefileSupportedShapes;
+    };
+    gis?: {
+      reproject?: boolean;
+      _targetCrs?: string;
+      format?: ShapefileSupportedShapes;
+    };
+  };
 
 export type DBFRowsOutput = ObjectRowTable['data'];
 
@@ -72,4 +73,3 @@ export type DBFResult = {
     rows: number;
   };
 };
-

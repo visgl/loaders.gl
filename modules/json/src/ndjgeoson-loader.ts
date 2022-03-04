@@ -31,10 +31,10 @@ export const NDJSONLoader = {
   version: VERSION,
   extensions: ['ndjson', 'ndgeojson'],
   mimeTypes: [
-    `application/geo+x-ndjson`,
-    `application/geo+x-ldjson`,
-    `application/jsonlines`, // https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html#cm-batch
-    `application/geo+json-seq`,
+    'application/geo+x-ndjson',
+    'application/geo+x-ldjson',
+    'application/jsonlines', // https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html#cm-batch
+    'application/geo+json-seq',
     'application/x-ndjson'
   ],
   category: 'table',
