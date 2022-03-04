@@ -1,4 +1,5 @@
 import {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
+import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
 
@@ -9,8 +10,8 @@ const LITTLE_ENDIAN = true;
  * @return Binary Geometry Object
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view: DataView, options?: {shp?: any}): BinaryGeometry | null {
-  const {_maxDimensions} = options?.shp || {};
+export function parseRecord(view: DataView, options?: SHPLoaderOptions): BinaryGeometry | null {
+  const {_maxDimensions = 4} = options?.shp || {};
 
   let offset = 0;
   const type: number = view.getInt32(offset, LITTLE_ENDIAN);

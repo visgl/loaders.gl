@@ -20,10 +20,6 @@ interface ShapefileOutput {
 }
 /**
  * Parsing of file in batches
- *
- * @param asyncIterator
- * @param options
- * @param context
  */
 // eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(
