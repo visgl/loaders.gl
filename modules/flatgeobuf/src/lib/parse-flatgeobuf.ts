@@ -32,7 +32,7 @@ function binaryFromFeature(feature, header) {
  * @param arrayBuffer  A FlatGeobuf arrayBuffer
  * @return A GeoJSON geometry object
  */
-export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions) {
+export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options?: FlatGeobufLoaderOptions) {
   const shape = options?.gis?.format || options?.flatgeobuf?.shape;
 
   switch (shape) {
