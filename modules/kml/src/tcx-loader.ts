@@ -40,7 +40,7 @@ export const TCXLoader = {
   parseTextSync,
   options: {
     tcx: {},
-    gis: {format: 'geojson'}
+    gis: {}
   }
 };
 
@@ -73,7 +73,8 @@ function parseTextSync(text: string, options?: TCXLoaderOptions) {
     case 'raw':
       return doc;
     default:
-      throw new Error(shape);
+      // Default to geojson for backwards compatibility
+      return geojson;
   }
 }
 

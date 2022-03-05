@@ -40,7 +40,7 @@ export const GPXLoader = {
   parseTextSync,
   options: {
     gpx: {},
-    gis: {format: 'geojson'}
+    gis: {}
   }
 };
 
@@ -72,7 +72,8 @@ function parseTextSync(text: string, options?: GPXLoaderOptions) {
     case 'raw':
       return doc;
     default:
-      throw new Error(shape);
+      // Default to geojson for backwards compatibility
+      return geojson;
   }
 }
 
