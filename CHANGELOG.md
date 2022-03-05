@@ -1,5 +1,43 @@
 # CHANGELOG for loaders.gl
 
+## v3.2 Prerelease
+
+## v3.2.0-alpha-1
+
+- Pin sql.js 1.5.0 in GeoPackageLoader (#2101)
+- Add Geopackage to geospatial example (#2100)
+- Return tables from geopackage loader (#2098)
+- chore: Remove spurious JS files (#2032)
+- chore: Update master to 3.2.0 alpha track (#2099)
+- feat(json): Support more streaming JSON formats (WIP) (#2016)
+- fix(examples): vancouver data is geojson not geopackage (#2097)
+- feat(draco): writer worker (#2090)
+- fix(examples): 3d-tiles-with-three Tileset3D import (#2094)
+- perf(tiles): traversal debounce, i3s-lod optimization (#2086)
+- chore(compression): unblock tests (#2088)
+- feat(arrow): Add arrow MIME types (#2082)
+- fix(terrain): swap winding order of skirts to match winding order of terrain (#2085)
+- test(crypto): nodejs worker (#2079)
+- fix(crypto): switch tests on (#2077)
+- chore(worker-utils): Additional node worker prep (#2076)
+- chore(worker-utils): Initial prep for node workers (#2075)
+- fix(tile-converter): simultaneous file writing (#2074)
+- feat(core): Add debug logging for selectLoader (#2069)
+- fix(parse-i3s-tile-content): I3S conversion issue without draco (#2064)
+- Replased uber links (#2056)
+- chore(tile-converter): update docs (#2055)
+- fix(terrain): skirting misses last edge (#2045)
+- fix(tiles): init zoom calculation (#2046)
+- fix(tile-converter,i3s-app): default value of pbr + app picking (#2044)
+- fix(examples): 3d-tiles Tileset Demos URLs (#2051)
+- Fix MVTLoader bug when WGS84 is used (#2052)
+- fix(tile-converter): duplicated texture output (#2048)
+- chore(i3s-loader): add fetch option (#2050)
+- TerrainLoader support for more image formats (#2040)
+- chore(tile-converter): add ts to node-debug file (#2038)
+- chore(tile-converter): add ts to geometry-attributes file (#2037)
+- chore(i3s-converter): add ts for helper function (#2036)
+
 ## v4.0 Prerelease
 
 ## v4.0.0-alpha.5

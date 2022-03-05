@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/csv",
-  "version": "4.0.0-alpha.5",
+  "version": "3.2.0-alpha.1",
   "description": "Framework-independent loader for CSV and DSV table formats",
   "license": "MIT",
   "publishConfig": {
@@ -30,8 +30,8 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.0.0-alpha.5",
-    "@loaders.gl/schema": "4.0.0-alpha.5"
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1",
+    "@loaders.gl/schema": "3.2.0-alpha.1"
   },
   "devDependencies": {
     "d3-dsv": "^1.2.0"
