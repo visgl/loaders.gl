@@ -23,13 +23,6 @@ type MVTWgs84CoordinatesOptions = {
   tileIndex: {x: number; y: number; z: number};
 };
 
-export type MVTSupportedShapes =
-  | 'geojson-row-table'
-  | 'columnar-table'
-  | 'geojson'
-  | 'binary'
-  | 'binary-geometry';
-
 export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOptions) & {
   /**
    * When non-`null`, the layer name of each feature is added to
@@ -43,7 +36,7 @@ export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOption
    * be included in the output. If `null`, features from all layers are returned.
    */
   layers?: string[];
-  shape?: MVTSupportedShapes;
+  shape?: 'geojson-row-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
 };
 
 export type MVTMapboxGeometry = {
@@ -70,6 +63,7 @@ export type MVTLoaderOptions = LoaderOptions & {
      * When set to `true`, the parser will output the data in binary format. This is equivalent to loading the data as GeoJSON and then applying [geojsonToBinary](https://loaders.gl/modules/gis/docs/api-reference/geojson-to-binary).
      */
     binary?: boolean;
-    format?: MVTSupportedShapes;
+    /** @deprecated. Use options.mvt.shape */
+    format?: 'geojson-row-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
   };
 };

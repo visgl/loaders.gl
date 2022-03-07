@@ -1,18 +1,13 @@
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 
-export type FlatGeobufSupportedShapes =
-  | 'geojson-row-table'
-  | 'columnar-table'
-  | 'geojson'
-  | 'binary';
-
 export type FlatGeobufLoaderOptions = LoaderOptions & {
   flatgeobuf?: {
-    shape?: FlatGeobufSupportedShapes;
+    shape?: 'geojson-row-table' | 'columnar-table' | 'geojson' | 'binary';
   };
   gis?: {
     reproject?: boolean;
     _targetCrs?: string;
-    format?: FlatGeobufSupportedShapes;
+    /** @deprecated Use options.flatgeobuf.shape */
+    format?: 'geojson-row-table' | 'columnar-table' | 'geojson' | 'binary';
   };
 };

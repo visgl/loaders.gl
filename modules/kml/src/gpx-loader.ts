@@ -7,15 +7,15 @@ import type {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-type GPXSupportedShapes = 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
-
 export type GPXLoaderOptions = LoaderOptions & {
   gpx?: {
-    shape?: GPXSupportedShapes;
-    type?: GPXSupportedShapes;
+    shape?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    /** @deprecated. Use options.gpx.shape */
+    type?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
   };
   gis?: {
-    format?: GPXSupportedShapes;
+    /** @deprecated. Use options.gpx.shape */
+    format?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
   };
 };
 

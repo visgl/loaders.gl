@@ -7,15 +7,15 @@ import type {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-type TCXSupportedShapes = 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
-
 export type TCXLoaderOptions = LoaderOptions & {
   tcx?: {
-    shape?: TCXSupportedShapes;
-    type?: TCXSupportedShapes;
+    shape?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    /** @deprecated. Use options.tcx.shape */
+    type?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
   };
   gis?: {
-    format?: TCXSupportedShapes;
+    /** @deprecated. Use options.tcx.shape */
+    format?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
   };
 };
 

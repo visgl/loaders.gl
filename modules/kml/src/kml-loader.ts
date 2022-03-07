@@ -7,16 +7,15 @@ import {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/sc
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-type KMLSupportedShapes = 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
-// 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'raw';
-
 export type KMLLoaderOptions = LoaderOptions & {
   kml?: {
-    shape?: KMLSupportedShapes;
-    type?: KMLSupportedShapes;
+    shape?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    /** @deprecated. Use options.kml.shape */
+    type?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
   };
   gis?: {
-    format?: KMLSupportedShapes;
+    /** @deprecated. Use options.kml.shape */
+    format?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
   };
 };
 
