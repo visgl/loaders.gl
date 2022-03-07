@@ -1,8 +1,6 @@
 import {Schema, ObjectRowTable} from '@loaders.gl/schema';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 
-export type ShapefileSupportedShapes = 'geojson';
-
 export type SHPLoaderOptions = LoaderOptions & {
   shp?: {
     _maxDimensions?: number;
@@ -19,12 +17,13 @@ export type DBFLoaderOptions = LoaderOptions & {
 export type ShapefileLoaderOptions = LoaderOptions &
   SHPLoaderOptions & {
     shapefile?: {
-      shape?: ShapefileSupportedShapes;
+      shape?: 'geojson';
     };
     gis?: {
       reproject?: boolean;
       _targetCrs?: string;
-      format?: ShapefileSupportedShapes;
+      /** @deprecated. Use options.shapefile.shape */
+      format?: 'geojson';
     };
   };
 
