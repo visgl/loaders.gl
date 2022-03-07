@@ -15,8 +15,8 @@ export type {
 } from './category/table/table-types';
 export type {
   TableBatch,
-  RowArrayTableBatch,
-  RowObjectTableBatch,
+  ArrayRowTableBatch,
+  ObjectRowTableBatch,
   GeoJSONRowTableBatch,
   ColumnarTableBatch,
   ArrowTableBatch

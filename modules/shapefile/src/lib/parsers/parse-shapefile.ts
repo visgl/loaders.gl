@@ -10,6 +10,7 @@ import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
+import {ObjectRowTable} from '@loaders.gl/schema';
 
 type Feature = any;
 interface ShapefileOutput {
@@ -25,25 +26,26 @@ interface ShapefileOutput {
 // eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: ShapefileLoaderOptions,
-  context?: LoaderContext
+  options: ShapefileLoaderOptions,
+  context: LoaderContext
 ): AsyncIterable<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
+  const shape = options?.gis?.format || options?.shapefile?.shape || 'geojson';
 
   // parse geometries
   // @ts-ignore context must be defined
   const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, options);
 
   // parse properties
-  let propertyIterable: any;
+  let propertyIterable: AsyncIterator<ObjectRowTable> | undefined;
   // @ts-ignore context must be defined
   const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
   if (dbfResponse.ok) {
     // @ts-ignore context must be defined
     propertyIterable = await context.parseInBatches(dbfResponse, DBFLoader, {
       ...options,
-      dbf: {encoding: cpg || 'latin1'}
+      dbf: {encoding: cpg || options?.dbf?.encoding || 'latin1', shape: 'object-row-table'}
     });
   }
 
@@ -106,8 +108,8 @@ export async function* parseShapefileInBatches(
  */
 export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
-  options?: ShapefileLoaderOptions,
-  context?: LoaderContext
+  options: ShapefileLoaderOptions,
+  context: LoaderContext
 ): Promise<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
@@ -119,13 +121,18 @@ export async function parseShapefile(
   const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
-  let properties = [];
+  let properties: ObjectRowTable | undefined;
 
   // @ts-ignore context must be defined
   const dbfResponse = await context.fetch(replaceExtension(context.url, 'dbf'));
   if (dbfResponse.ok) {
     // @ts-ignore context must be defined
-    properties = await context.parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
+    properties = await context.parse(dbfResponse, DBFLoader, {
+      dbf: {
+        encoding: cpg || options?.dbf?.encoding || 'latin1',
+        shape: 'object-row-table'
+      }
+    });
   }
 
   let features = joinProperties(geojsonGeometries, properties);
@@ -196,15 +203,9 @@ function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: 
   return transformGeoJsonCoords(features, (coord) => projection.project(coord));
 }
 
-/**
- *
- * @param options
- * @param context
- * @returns Promise
- */
 // eslint-disable-next-line max-statements
 export async function loadShapefileSidecarFiles(
-  options?: object,
+  options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): Promise<{
   shx?: SHXOutput;

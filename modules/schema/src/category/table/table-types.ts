@@ -76,13 +76,13 @@ export type RowTableBatch = TableBatch & {
 };
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type RowArrayTableBatch = RowTableBatch & {
+export type ArrayRowTableBatch = RowTableBatch & {
   shape: 'array-row-table';
   data: any[][];
 };
 
 /** Batch for a table organized as an array of rows, each row is an object mapping columns to values */
-export type RowObjectTableBatch = RowTableBatch & {
+export type ObjectRowTableBatch = RowTableBatch & {
   shape: 'object-row-table';
   data: {[columnName: string]: any}[];
 };
