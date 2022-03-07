@@ -28,3 +28,12 @@ To encode and save data
 - [`save`](modules/core/docs/api-reference/save)
 
 As well as some utility functions.
+
+## Micro-Loaders
+
+Loaders with limited functionality but with minimal bundle size impact:
+
+| Loader       | Description                                                                           |
+| ------------ | ------------------------------------------------------------------------------------- |
+| `JSONLoader` | A minimal non-streaming JSON loader that uses the built-in `JSON.parse` function      |
+| `XMLLoader`  | A non-streaming, browser-only XML loader that uses the browser's built-in DOM parser. |

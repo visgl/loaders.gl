@@ -8,6 +8,7 @@ export type {
   Table,
   ArrayRowTable,
   ObjectRowTable,
+  GeoJSONRowTable,
   ColumnarTable,
   ArrowTable,
   Tables
@@ -16,6 +17,7 @@ export type {
   TableBatch,
   RowArrayTableBatch,
   RowObjectTableBatch,
+  GeoJSONRowTableBatch,
   ColumnarTableBatch,
   ArrowTableBatch
 } from './category/table/table-types';
@@ -54,8 +56,13 @@ export type {ImageDataType, ImageType, ImageTypeEnum} from './category/image/ima
 
 // TYPES
 // GIS CATEGORY - GEOJSON
-export type {GeoJSON, Feature, Geometry, Position, GeoJsonProperties} from './category/gis';
 export type {
+  GeoJSON,
+  Feature,
+  FeatureCollection,
+  Geometry,
+  Position,
+  GeoJsonProperties,
   Point,
   MultiPoint,
   LineString,

@@ -2,17 +2,24 @@ import type {Schema} from '../../lib/schema/schema';
 import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow/Arrow.dom';
 import type {AnyArray} from '../../types';
 import type {Batch} from '../common';
+import type {Feature} from '../gis';
 
 /** A general table */
 export interface Table {
-  shape: 'row-table' | 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
+  shape:
+    | 'row-table'
+    | 'array-row-table'
+    | 'object-row-table'
+    | 'geojson-row-table'
+    | 'columnar-table'
+    | 'arrow-table';
   schema?: Schema;
   schemaType?: 'explicit' | 'deduced';
 }
 
 /** A table organized as an array of rows */
 export interface RowTable extends Table {
-  shape: 'row-table' | 'array-row-table' | 'object-row-table';
+  shape: 'row-table' | 'array-row-table' | 'object-row-table' | 'geojson-row-table';
   data: any[];
 }
 
@@ -26,6 +33,12 @@ export interface ArrayRowTable extends RowTable {
 export interface ObjectRowTable extends RowTable {
   shape: 'object-row-table';
   data: {[columnName: string]: any}[];
+}
+
+/** A table organized as an array of rows, each row is a GeoJSON Feature */
+export interface GeoJSONRowTable extends RowTable {
+  shape: 'geojson-row-table';
+  data: Feature[];
 }
 
 /** A table organized as a map of columns, each column is an array of value */
@@ -72,6 +85,12 @@ export type RowArrayTableBatch = RowTableBatch & {
 export type RowObjectTableBatch = RowTableBatch & {
   shape: 'object-row-table';
   data: {[columnName: string]: any}[];
+};
+
+/** Batch for a table organized as an array of rows, each row is an array of values */
+export type GeoJSONRowTableBatch = RowTableBatch & {
+  shape: 'geojson-row-table';
+  data: Feature[];
 };
 
 /** Batch for a table organized as a map of columns, each column is an array of value */
