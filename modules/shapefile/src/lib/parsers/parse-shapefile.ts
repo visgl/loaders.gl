@@ -33,7 +33,8 @@ export async function* parseShapefileInBatches(
 ): AsyncIterable<ShapefileBatchOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
-  const shape = options?.gis?.format || options?.shapefile?.shape || 'geojson';
+  // We don't use shape yet
+  // const shape = options?.gis?.format || options?.shapefile?.shape || 'geojson';
 
   // parse geometries
   // @ts-ignore context must be defined
