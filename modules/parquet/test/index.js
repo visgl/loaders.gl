@@ -16,4 +16,4 @@
 // import './parquet-loader.spec.js';
 // import './parquet-writer.spec.js';
 
-import './geo-parquet-loader.spec';
+import './parquet-wasm-loader.spec';

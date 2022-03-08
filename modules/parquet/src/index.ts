@@ -7,7 +7,7 @@ import {ParquetLoader as ParquetWorkerLoader} from './parquet-loader';
 import {parseParquet, parseParquetFileInBatches} from './lib/parse-parquet';
 import {parseParquet as parseParquetWasm} from './lib/parse-parquet-wasm';
 
-export {ParquetWorkerLoader};
+export {ParquetWorkerLoader, ParquetWasmWorkerLoader};
 
 /** ParquetJS table loader */
 export const ParquetLoader = {

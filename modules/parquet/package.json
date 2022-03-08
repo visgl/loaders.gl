@@ -65,6 +65,6 @@
     "@types/node-int64": "^0.4.29",
     "@types/thrift": "^0.10.8",
     "@types/varint": "^5.0.0",
-    "apache-arrow": "^7.0.0"
+    "apache-arrow": "^4.0.0"
   }
 }
