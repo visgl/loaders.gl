@@ -8,8 +8,8 @@ export async function* zipBatchIterators(
   iterator1: AsyncIterator<any[]>,
   iterator2: AsyncIterator<any[]>
 ): AsyncGenerator<number[][], void, unknown> {
-  let batch1 = [];
-  let batch2 = [];
+  let batch1: number[] = [];
+  let batch2: number[] = [];
   let iterator1Done: boolean = false;
   let iterator2Done: boolean = false;
 
