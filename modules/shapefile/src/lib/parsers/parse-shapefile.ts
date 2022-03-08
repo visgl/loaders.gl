@@ -1,3 +1,10 @@
+import type {
+  ObjectRowTable,
+  Feature,
+  BinaryGeometry,
+  Geometry,
+  ObjectRowTableBatch
+} from '@loaders.gl/schema';
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {
   ShapefileLoaderOptions,
@@ -7,13 +14,6 @@ import type {
   ShapefileBatchOutput,
   ShapefileOutput
 } from './types';
-import type {
-  ObjectRowTable,
-  Feature,
-  BinaryGeometry,
-  Geometry,
-  ObjectRowTableBatch
-} from '@loaders.gl/schema';
 
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -49,7 +49,10 @@ export async function* parseShapefileInBatches(
     // @ts-ignore context must be defined
     propertyIterable = await context.parseInBatches(dbfResponse, DBFLoader, {
       ...options,
-      dbf: {encoding: cpg || options?.dbf?.encoding || 'latin1', shape: 'object-row-table'}
+      dbf: {
+        encoding: cpg || options?.dbf?.encoding || 'latin1',
+        shape: 'object-row-table'
+      }
     });
   }
 

@@ -18,27 +18,18 @@ export type Batch = {
   /** Bytes processed in all batches up to and including this batch */
   bytesUsed?: number;
 
-  /**
-   * Total number of bytes in all batches
-   *
-   * This field is not always available, for instance when fetching compressed data
-   */
+  /** Total number of bytes in all batches. This field is not always available, for instance when fetching compressed data. */
   bytesTotal?: number;
 
-  /**
-   * Total number of rows parsed up to and including this batch
-   */
+  /** Total number of rows parsed up to and including this batch */
   rowsUsed?: number;
 
-  /** Total number of rows in all batches
-   *
-   * This field is not always available
-   */
+  /** Total number of rows in all batches. This field is not always available. */
   rowsTotal?: number;
 
   /** @deprecated Use bytesUsed or rowsUsed */
   count?: number;
 
-  /** @deprecated */
+  /** @deprecated Use bytesUsed */
   cursor?: number;
 };
