@@ -37,21 +37,21 @@ However a number of traditional return formats do not include such a wrapper.
 Loaders are encouraged to provide a `shape` option to allow applications to control the return format. Since different loaders offer different selection of shapes, the option is set per loader.
 
 ```typescript
-const tile = await load(url, MVTLoader, {mvt: {shape: 'geojson-table', ...}});
-assert(tile.shape === 'geojson-table');
+const tile = await load(url, MVTLoader, {mvt: {shape: 'geojson-row-table', ...}});
+assert(tile.shape === 'geojson-row-table');
 processTile(tile.data);
 ```
 
 ### Table Category
 
-| Shape | Category | Types / Description | 
+| Shape | Category | Types / Description |
 | --- | --- | --- |
 | `table` | `Table` |
 | `array-row-table` | `ArrayRowTable` |
 | `object-row-table` | `ObjectRowTable` |
 | `columnar-table` | `ColumnarTable` |
 
-- Tables can be 
+- Tables can be
 - row-oriented, i.e. organized as an array of rows
 - columnar, containing one array per column
 
@@ -61,18 +61,18 @@ Rows can contain either
 
 ```json
 {
-  "shape": , 
-  "data": 
+  "shape": ,
+  "data":
 }
 ```
 
 ## GIS Category
 
 
-| Shape | Category | Types / Description | 
+| Shape | Category | Types / Description |
 | --- | --- | --- |
-| `geojson` | `GeoJSON` | GeoJSON is a `features` array wrapped at the top level  | 
+| `geojson` | `GeoJSON` | GeoJSON is a `features` array wrapped at the top level  |
 | `array-row-table` | `ArrayRowTable` |
 | `object-row-table` | `ObjectRowTable` |
-| `geojson-table` | `GeojsonTable` | GeoJSON table essentially contains the `features` array from the 
+| `geojson-row-table` | `GeojsonTable` | GeoJSON table essentially contains the `features` array from the
 
