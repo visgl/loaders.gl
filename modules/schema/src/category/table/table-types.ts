@@ -71,7 +71,7 @@ export type TableBatch = Batch & {
 
 /** Batch for a table organized as an array of rows */
 export type RowTableBatch = TableBatch & {
-  shape: 'row-table';
+  shape: 'row-table' | 'array-row-table' | 'object-row-table' | 'geojson-row-table';
   data: any[];
 };
 

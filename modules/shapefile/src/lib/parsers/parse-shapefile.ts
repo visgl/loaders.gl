@@ -1,8 +1,19 @@
-// import type {Feature} from '@loaders.gl/gis';
-import type {SHXOutput} from './parse-shx';
-import type {SHPHeader} from './parse-shp-header';
 import type {LoaderContext} from '@loaders.gl/loader-utils';
-import type {ShapefileLoaderOptions} from './types';
+import type {
+  ShapefileLoaderOptions,
+  SHXOutput,
+  SHPHeader,
+  SHPResult,
+  ShapefileBatchOutput,
+  ShapefileOutput
+} from './types';
+import type {
+  ObjectRowTable,
+  Feature,
+  BinaryGeometry,
+  Geometry,
+  ObjectRowTableBatch
+} from '@loaders.gl/schema';
 
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -10,21 +21,7 @@ import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
-import {ObjectRowTable} from '@loaders.gl/schema';
 
-type Feature = any;
-type ShapefileOutput = ObjectRowTableBatch & {
-  _metadata: {
-    encoding?: string;
-    prj?: string;
-    shx?: SHXOutput;
-    header: SHPHeader;
-  };
-  shapefile: {};
-};
-// interface ShapefileOutput {
-//   data: object[];
-// }
 /**
  * Parsing of file in batches
  */
@@ -33,17 +30,18 @@ export async function* parseShapefileInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options: ShapefileLoaderOptions,
   context: LoaderContext
-): AsyncIterable<ShapefileOutput> {
+): AsyncIterable<ShapefileBatchOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
   const shape = options?.gis?.format || options?.shapefile?.shape || 'geojson';
 
   // parse geometries
   // @ts-ignore context must be defined
-  const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, options);
+  const shapeIterable: AsyncIterator<(BinaryGeometry | null)[] | SHPHeader> =
+    await context.parseInBatches(asyncIterator, SHPLoader, options);
 
   // parse properties
-  let propertyIterable: AsyncIterator<ObjectRowTable> | undefined;
+  let propertyIterable: AsyncIterator<ObjectRowTableBatch> | undefined;
   // @ts-ignore context must be defined
   const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
   if (dbfResponse.ok) {
@@ -71,7 +69,8 @@ export async function* parseShapefileInBatches(
     }
   }
 
-  let iterator: any;
+  // TODO: fix type here
+  let iterator;
   if (propertyIterable) {
     iterator = zipBatchIterators(shapeIterable, propertyIterable);
   } else {
@@ -79,37 +78,41 @@ export async function* parseShapefileInBatches(
   }
 
   for await (const item of iterator) {
-    let geometries: any;
-    let properties: any;
+    let geometries: BinaryGeometry[];
+    let properties: ObjectRowTable | undefined;
     if (!propertyIterable) {
       geometries = item;
     } else {
       [geometries, properties] = item;
     }
 
-    const geojsonGeometries = parseGeometries(geometries);
+    const geojsonGeometries = parseBinaryGeometriesToGeoJSON(geometries);
     let features = joinProperties(geojsonGeometries, properties);
     if (reproject) {
       // @ts-ignore
       features = reprojectFeatures(features, prj, _targetCrs);
     }
-    yield {
+
+    const shapefileMetadata = {
       encoding: cpg,
       prj,
       shx,
-      header: shapeHeader,
-      data: features
+      header: shapeHeader
+    };
+    yield {
+      batchType: 'data',
+      shape: 'geojson-row-table',
+      length: features.length,
+      data: features,
+      _metadata: {
+        shapefile: shapefileMetadata
+      }
     };
   }
 }
 
 /**
  * Parse shapefile
- *
- * @param arrayBuffer
- * @param options
- * @param context
- * @returns output of shapefile
  */
 export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
@@ -121,9 +124,11 @@ export async function parseShapefile(
 
   // parse geometries
   // @ts-ignore context must be defined
-  const {header, geometries} = await context.parse(arrayBuffer, SHPLoader, options); // {shp: shx}
+  const {header, geometries}: SHPResult = await context.parse(arrayBuffer, SHPLoader, options); // {shp: shx}
 
-  const geojsonGeometries = parseGeometries(geometries);
+  // @ts-expect-error Argument of type '(BinaryGeometry | null)[]' is not assignable to parameter of type 'BinaryGeometry[]'.
+  // We should ideally have a null geometry representation within BinaryGeometry
+  const geojsonGeometries = parseBinaryGeometriesToGeoJSON(geometries);
 
   // parse properties
   let properties: ObjectRowTable | undefined;
@@ -145,12 +150,19 @@ export async function parseShapefile(
     features = reprojectFeatures(features, prj, _targetCrs);
   }
 
-  return {
+  const shapefileMetadata = {
     encoding: cpg,
     prj,
     shx,
-    header,
-    data: features
+    header
+  };
+
+  return {
+    shape: 'geojson-row-table',
+    data: features,
+    _metadata: {
+      shapefile: shapefileMetadata
+    }
   };
 }
 
@@ -160,8 +172,8 @@ export async function parseShapefile(
  * @param geometries
  * @returns geometries as an array
  */
-function parseGeometries(geometries: any[]): any[] {
-  const geojsonGeometries: any[] = [];
+function parseBinaryGeometriesToGeoJSON(geometries: BinaryGeometry[]): Geometry[] {
+  const geojsonGeometries: Geometry[] = [];
   for (const geom of geometries) {
     geojsonGeometries.push(binaryToGeometry(geom));
   }
@@ -170,12 +182,8 @@ function parseGeometries(geometries: any[]): any[] {
 
 /**
  * Join properties and geometries into features
- *
- * @param geometries [description]
- * @param  properties [description]
- * @return [description]
  */
-function joinProperties(geometries: object[], properties: object[]): Feature[] {
+function joinProperties(geometries: Geometry[], properties: ObjectRowTable | undefined): Feature[] {
   const features: Feature[] = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];
@@ -183,7 +191,7 @@ function joinProperties(geometries: object[], properties: object[]): Feature[] {
       type: 'Feature',
       geometry,
       // properties can be undefined if dbfResponse above was empty
-      properties: (properties && properties[i]) || {}
+      properties: properties?.data[i] || {}
     };
     features.push(feature);
   }

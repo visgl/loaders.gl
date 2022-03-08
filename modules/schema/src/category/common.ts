@@ -42,16 +42,3 @@ export type Batch = {
   /** @deprecated */
   cursor?: number;
 };
-
-type ArrowBatch = Batch & {
-  recordBatch: RecordBatch
-}
-
-/*
-export type Batch = {
-  bytesUsed?: number;
-  count?: number;
-  cursor?: number;
-  [key: string]: any;
-}
-*/

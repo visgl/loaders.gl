@@ -1,9 +1,5 @@
+import type {SHXOutput} from './types';
 import {parseSHPHeader} from './parse-shp-header';
-
-export interface SHXOutput {
-  offsets: Int32Array;
-  lengths: Int32Array;
-}
 
 const SHX_HEADER_SIZE = 100;
 const BIG_ENDIAN = false;

@@ -3,12 +3,15 @@ import {Batch} from '@loaders.gl/schema';
 /**
  * Zip two iterators together
  */
-export async function* zipBatchIterators<BatchType extends Batch = Batch>(
-  iterator1: AsyncIterator<BatchType[]>,
-  iterator2: AsyncIterator<BatchType[]>
-): AsyncGenerator<BatchType, void, unknown> {
-  let batch1: BatchType | undefined;
-  let batch2: BatchType | undefined;
+export async function* zipBatchIterators<
+  BatchType1 extends Batch = Batch,
+  BatchType2 extends Batch = Batch
+>(
+  iterator1: AsyncIterator<BatchType1[]>,
+  iterator2: AsyncIterator<BatchType2[]>
+): AsyncGenerator<BatchType1, void, unknown> {
+  let batch1: BatchType1 | undefined;
+  let batch2: BatchType2 | undefined;
   let iterator1Done: boolean = false;
   let iterator2Done: boolean = false;
 
@@ -31,7 +34,7 @@ export async function* zipBatchIterators<BatchType extends Batch = Batch>(
       }
     }
 
-    const batch = extractBatch<BatchType>(batch1, batch2);
+    const batch = extractBatch<BatchType1, BatchType2>(batch1, batch2);
     if (batch) {
       yield batch;
     }
@@ -41,10 +44,10 @@ export async function* zipBatchIterators<BatchType extends Batch = Batch>(
 /**
  * Extract batch of same length from two batches
  */
-function extractBatch<BatchType extends Batch = Batch>(
-  batch1: BatchType | undefined,
-  batch2: BatchType | undefined
-): BatchType | null {
+function extractBatch<BatchType1 extends Batch = Batch, BatchType2 extends Batch = Batch>(
+  batch1: BatchType1 | undefined,
+  batch2: BatchType2 | undefined
+): BatchType1 | null {
   if (!batch1 || !batch2) {
     return null;
   }
@@ -59,7 +62,7 @@ function extractBatch<BatchType extends Batch = Batch>(
 
   // Non interleaved arrays
   // Note that this discards progress information from the second batch
-  const result: BatchType = {
+  const result: BatchType1 = {
     ...batch1,
     length: dataLength,
     data: [data1.slice(0, dataLength), data2.slice(0, dataLength)]
