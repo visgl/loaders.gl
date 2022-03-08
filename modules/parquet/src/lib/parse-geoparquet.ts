@@ -1,7 +1,9 @@
+// eslint-disable
 import type {Table} from 'apache-arrow';
 
-import initWasm, {readParquet} from 'parquet-wasm/node';
+import initWasm, {readParquet} from 'parquet-wasm';
 import {tableFromIPC} from 'apache-arrow';
+import { assert } from 'console';
 
 let INIT_CALLED = false;
 
@@ -9,6 +11,10 @@ export async function parseGeoParquet(arrayBuffer: ArrayBuffer, options) {
   // await initialize(options?.geoparquet?.cdn);
 
   const table = parseParquetToArrow(arrayBuffer);
+
+  const geoMeta = JSON.parse(table?.schema?.metadata?.get('geo'))
+  const geoCol = geoMeta.primaryColumn;
+
   return table;
 }
 
@@ -25,6 +31,22 @@ export async function parseGeoParquet(arrayBuffer: ArrayBuffer, options) {
 
 //   INIT_CALLED = true;
 // }
+
+function reproject(table: Table, geoColumn: string, geoMeta): Table {
+  const sourceCrs = geoMeta.columns[geoColumn]
+  for (const row of table[geoColumn]) {
+    reproj(row[geoColumn], sourceCrs, destCRS);
+  }
+
+}
+
+function decodeWKB(table: Table, geoColumn: string, geoMeta) {
+  assert(geoMeta.columns[geoColumn].encoding === 'WKB');
+
+  for (const row of table[geoColumn]) {
+    context.parse(row[geoColumn], WKBLoader);
+  }
+}
 
 function parseParquetToArrow(arrayBuffer: ArrayBuffer): Table {
   const arr = new Uint8Array(arrayBuffer);
