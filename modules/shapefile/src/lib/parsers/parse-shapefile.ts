@@ -3,13 +3,11 @@ import type {
   Feature,
   BinaryGeometry,
   Geometry,
-  ObjectRowTableBatch
 } from '@loaders.gl/schema';
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {
   ShapefileLoaderOptions,
   SHXOutput,
-  SHPHeader,
   SHPResult,
   ShapefileBatchOutput,
   ShapefileOutput
@@ -28,8 +26,8 @@ import {DBFLoader} from '../../dbf-loader';
 // eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options: ShapefileLoaderOptions,
-  context: LoaderContext
+  options?: ShapefileLoaderOptions,
+  context?: LoaderContext
 ): AsyncIterable<ShapefileBatchOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
@@ -37,12 +35,14 @@ export async function* parseShapefileInBatches(
   // const shape = options?.gis?.format || options?.shapefile?.shape || 'geojson';
 
   // parse geometries
+  // const shapeIterable: AsyncIterator<(BinaryGeometry | null)[] | SHPHeader> =
+  //   await context.parseInBatches(asyncIterator, SHPLoader, options);
   // @ts-ignore context must be defined
-  const shapeIterable: AsyncIterator<(BinaryGeometry | null)[] | SHPHeader> =
-    await context.parseInBatches(asyncIterator, SHPLoader, options);
+  const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, options);
 
   // parse properties
-  let propertyIterable: AsyncIterator<ObjectRowTableBatch> | undefined;
+  // let propertyIterable: AsyncIterator<ObjectRowTableBatch> | undefined;
+  let propertyIterable: any | undefined;
   // @ts-ignore context must be defined
   const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
   if (dbfResponse.ok) {
@@ -120,8 +120,8 @@ export async function* parseShapefileInBatches(
  */
 export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
-  options: ShapefileLoaderOptions,
-  context: LoaderContext
+  options?: ShapefileLoaderOptions,
+  context?: LoaderContext
 ): Promise<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
