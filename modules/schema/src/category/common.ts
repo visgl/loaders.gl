@@ -15,9 +15,9 @@ export type Batch = {
   length: number;
   schema?: Schema;
   bytesUsed?: number;
+  bytesTotal?: number;
   count?: number;
   cursor?: number;
-  [key: string]: any;
 };
 
 /*

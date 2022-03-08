@@ -13,13 +13,18 @@ import {DBFLoader} from '../../dbf-loader';
 import {ObjectRowTable} from '@loaders.gl/schema';
 
 type Feature = any;
-interface ShapefileOutput {
-  encoding?: string;
-  prj?: string;
-  shx?: SHXOutput;
-  header: SHPHeader;
-  data: object[];
-}
+type ShapefileOutput = ObjectRowTableBatch & {
+  _metadata: {
+    encoding?: string;
+    prj?: string;
+    shx?: SHXOutput;
+    header: SHPHeader;
+  };
+  shapefile: {};
+};
+// interface ShapefileOutput {
+//   data: object[];
+// }
 /**
  * Parsing of file in batches
  */
