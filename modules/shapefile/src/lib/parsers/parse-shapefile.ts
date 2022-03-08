@@ -1,9 +1,4 @@
-import type {
-  ObjectRowTable,
-  Feature,
-  BinaryGeometry,
-  Geometry,
-} from '@loaders.gl/schema';
+import type {ObjectRowTable, Feature, BinaryGeometry, Geometry} from '@loaders.gl/schema';
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {
   ShapefileLoaderOptions,

@@ -4,7 +4,7 @@ import type {
   GeoJSONRowTable,
   GeoJSONRowTableBatch,
   ObjectRowTable,
-  BinaryGeometry,
+  BinaryGeometry
 } from '@loaders.gl/schema';
 
 export type SHPLoaderOptions = LoaderOptions & {
