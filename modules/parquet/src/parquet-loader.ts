@@ -34,3 +34,32 @@ export const ParquetLoader = {
 };
 
 export const _typecheckParquetLoader: Loader = ParquetLoader;
+
+export type GeoParquetLoaderOptions = LoaderOptions & {
+  geoparquet?: {
+    type?: 'object-row-table' | 'geojson-row-table';
+  };
+};
+
+const DEFAULT_GEO_PARQUET_LOADER_OPTIONS: ParquetLoaderOptions = {
+  parquet: {
+    type: 'object-row-table'
+  }
+};
+
+/** ParquetJS table loader */
+export const GeoParquetLoader = {
+  name: 'Geo Apache Parquet',
+  id: 'geoparquet',
+  module: 'parquet',
+  version: VERSION,
+  worker: true,
+  category: 'table',
+  extensions: ['parquet'],
+  mimeTypes: ['application/octet-stream'],
+  binary: true,
+  tests: ['PAR1', 'PARE'],
+  options: DEFAULT_GEO_PARQUET_LOADER_OPTIONS
+};
+
+export const _typecheckGeoParquetLoader: Loader = GeoParquetLoader;
