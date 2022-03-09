@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "4.0.0-alpha.4",
+  "version": "3.2.0-alpha.1",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "publishConfig": {
@@ -20,8 +20,8 @@
     "glTF"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -34,9 +34,9 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/draco": "4.0.0-alpha.4",
-    "@loaders.gl/images": "4.0.0-alpha.4",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/textures": "4.0.0-alpha.4"
+    "@loaders.gl/draco": "3.2.0-alpha.1",
+    "@loaders.gl/images": "3.2.0-alpha.1",
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1",
+    "@loaders.gl/textures": "3.2.0-alpha.1"
   }
 }

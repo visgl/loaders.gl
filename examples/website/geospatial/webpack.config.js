@@ -1,6 +1,11 @@
 const CONFIG = {
   mode: 'development',
 
+  // Necessary for sql.js
+  externals: {
+    fs: 'fs'
+  },
+
   entry: {
     app: './app.js'
   },

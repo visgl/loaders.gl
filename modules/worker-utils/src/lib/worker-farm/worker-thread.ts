@@ -1,3 +1,5 @@
+import {Worker as NodeWorker} from 'worker_threads';
+import {isBrowser} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import {getLoadableWorkerURL} from '../worker-utils/get-loadable-worker-url';
 import {getTransferList} from '../worker-utils/get-transfer-list';
@@ -18,14 +20,16 @@ export default class WorkerThread {
   readonly source: string | undefined;
   readonly url: string | undefined;
   terminated: boolean = false;
-  worker: Worker;
+  worker: Worker | NodeWorker;
   onMessage: (message: any) => void;
   onError: (error: Error) => void;
 
   private _loadableURL: string = '';
 
+  /** Checks if workers are supported on this platform */
   static isSupported(): boolean {
-    return typeof Worker !== 'undefined';
+    return typeof Worker !== 'undefined' && isBrowser;
+    // || typeof NodeWorker !== undefined;
   }
 
   constructor(props: WorkerThreadProps) {
@@ -37,7 +41,7 @@ export default class WorkerThread {
     this.onMessage = NOOP;
     this.onError = (error) => console.log(error); // eslint-disable-line
 
-    this.worker = this._createBrowserWorker();
+    this.worker = isBrowser ? this._createBrowserWorker() : this._createNodeWorker();
   }
 
   /**
@@ -47,8 +51,7 @@ export default class WorkerThread {
   destroy(): void {
     this.onMessage = NOOP;
     this.onError = NOOP;
-    // @ts-ignore
-    this.worker.terminate();
+    this.worker.terminate(); // eslint-disable-line @typescript-eslint/no-floating-promises
     this.terminated = true;
   }
 
@@ -71,7 +74,7 @@ export default class WorkerThread {
 
   /**
    * Generate a standard Error from an ErrorEvent
-   * @param {ErrorEvent} event
+   * @param event
    */
   _getErrorFromErrorEvent(event: ErrorEvent): Error {
     // Note Error object does not have the expected fields if loading failed completely
@@ -93,7 +96,7 @@ export default class WorkerThread {
   /**
    * Creates a worker thread on the browser
    */
-  _createBrowserWorker() {
+  _createBrowserWorker(): Worker {
     this._loadableURL = getLoadableWorkerURL({source: this.source, url: this.url});
     const worker = new Worker(this._loadableURL, {name: this.name});
 
@@ -112,6 +115,37 @@ export default class WorkerThread {
     // TODO - not clear when this would be called, for now just log in case it happens
     worker.onmessageerror = (event) => console.error(event); // eslint-disable-line
 
+    return worker;
+  }
+
+  /**
+   * Creates a worker thread in node.js
+   * @todo https://nodejs.org/api/async_hooks.html#async-resource-worker-pool
+   */
+  _createNodeWorker(): NodeWorker {
+    let worker: NodeWorker;
+    if (this.url) {
+      // Make sure relative URLs start with './'
+      const absolute = this.url.includes(':/') || this.url.startsWith('/');
+      const url = absolute ? this.url : `./${this.url}`;
+      // console.log('Starting work from', url);
+      worker = new NodeWorker(url, {eval: false});
+    } else if (this.source) {
+      worker = new NodeWorker(this.source, {eval: true});
+    } else {
+      throw new Error('no worker');
+    }
+    worker.on('message', (data) => {
+      // console.error('message', data);
+      this.onMessage(data);
+    });
+    worker.on('error', (error) => {
+      // console.error('error', error);
+      this.onError(error);
+    });
+    worker.on('exit', (code) => {
+      // console.error('exit', code);
+    });
     return worker;
   }
 }

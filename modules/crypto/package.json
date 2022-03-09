@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/crypto",
-  "version": "4.0.0-alpha.4",
+  "version": "3.2.0-alpha.1",
   "description": "Cryptographic/hashing plugins for loaders.gl",
   "license": "MIT",
   "publishConfig": {
@@ -18,8 +18,8 @@
     "point cloud"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -29,12 +29,12 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap",
-    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/worker.js --bundle --minify --sourcemap"
+    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker.js --target=esnext,node12 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1",
+    "@loaders.gl/worker-utils": "3.2.0-alpha.1",
     "@types/crypto-js": "^4.0.1"
   },
   "devDependencies": {

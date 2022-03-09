@@ -1,6 +1,7 @@
 import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import {compareArrayBuffers, path} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
+import {log} from '../utils/log';
 import {getResourceUrlAndType} from '../utils/resource-utils';
 import {getRegisteredLoaders} from './register-loaders';
 import {isBlob} from '../../javascript-utils/is-type';
@@ -103,6 +104,7 @@ export function selectLoaderSync(
 }
 
 /** Implements loaders selection logic */
+// eslint-disable-next-line complexity
 function selectLoaderInternal(
   data: Response | Blob | ArrayBuffer | string,
   loaders: Loader[],
@@ -114,19 +116,33 @@ function selectLoaderInternal(
   const testUrl = url || context?.url;
 
   let loader: Loader | null = null;
+  let reason: string = '';
 
   // if options.mimeType is supplied, it takes precedence
   if (options?.mimeType) {
     loader = findLoaderByMIMEType(loaders, options?.mimeType);
+    reason = `match forced by supplied MIME type ${options?.mimeType}`;
   }
+
   // Look up loader by url
   loader = loader || findLoaderByUrl(loaders, testUrl);
+  reason = reason || (loader ? `matched url ${testUrl}` : '');
+
   // Look up loader by mime type
   loader = loader || findLoaderByMIMEType(loaders, type);
+  reason = reason || (loader ? `matched MIME type ${type}` : '');
+
   // Look for loader via initial bytes (Note: not always accessible (e.g. Response, stream, async iterator)
   loader = loader || findLoaderByInitialBytes(loaders, data);
+  reason = reason || (loader ? `matched initial data ${getFirstCharacters(data)}` : '');
+
   // Look up loader by fallback mime type
   loader = loader || findLoaderByMIMEType(loaders, options?.fallbackMimeType);
+  reason = reason || (loader ? `matched fallback MIME type ${type}` : '');
+
+  if (reason) {
+    log.log(1, `selectLoader selected ${loader?.name}: ${reason}.`);
+  }
 
   return loader;
 }

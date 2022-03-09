@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/schema",
-  "version": "4.0.0-alpha.4",
+  "version": "3.2.0-alpha.1",
   "description": "Table format APIs for JSON, CSV, etc...",
   "license": "MIT",
   "publishConfig": {
@@ -19,8 +19,8 @@
     "PLY"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",

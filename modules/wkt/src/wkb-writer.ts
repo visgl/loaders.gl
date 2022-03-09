@@ -3,7 +3,7 @@ import {VERSION} from './lib/utils/version';
 import encodeWKB from './lib/encode-wkb';
 
 /**
- * WKT exporter
+ * WKB exporter
  */
 export const WKBWriter: Writer = {
   name: 'WKB (Well Known Binary)',
@@ -14,7 +14,7 @@ export const WKBWriter: Writer = {
   // @ts-ignore
   encodeSync: encodeWKB,
   options: {
-    wkt: {
+    wkb: {
       hasZ: false,
       hasM: false
     }

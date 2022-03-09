@@ -1,5 +1,5 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseGeoPackage from './lib/parse-geopackage';
+import parseGeoPackage, {DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -14,6 +14,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
   gis?: {
     reproject?: boolean;
     _targetCrs?: string;
+    format?: 'geojson' | 'tables';
   };
 };
 
@@ -29,7 +30,10 @@ export const GeoPackageLoader: LoaderWithParser = {
   parse: parseGeoPackage,
   options: {
     geopackage: {
-      sqlJsCDN: 'https://sql.js.org/dist/'
+      sqlJsCDN: DEFAULT_SQLJS_CDN
+    },
+    gis: {
+      format: 'tables'
     }
   }
 };

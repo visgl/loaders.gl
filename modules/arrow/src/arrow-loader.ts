@@ -25,7 +25,11 @@ export const ArrowLoader = {
   worker: true,
   category: 'table',
   extensions: ['arrow', 'feather'],
-  mimeTypes: ['application/octet-stream'],
+  mimeTypes: [
+    'application/vnd.apache.arrow.file',
+    'application/vnd.apache.arrow.stream',
+    'application/octet-stream'
+  ],
   binary: true,
   tests: ['ARROW'],
   options: DEFAULT_ARROW_LOADER_OPTIONS

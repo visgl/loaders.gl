@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "4.0.0-alpha.4",
+  "version": "3.2.0-alpha.1",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -19,8 +19,8 @@
     "PLY"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -32,6 +32,6 @@
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4"
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1"
   }
 }

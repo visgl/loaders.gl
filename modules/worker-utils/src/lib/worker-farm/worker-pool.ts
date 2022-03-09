@@ -53,6 +53,11 @@ export default class WorkerPool {
   private count = 0;
   private isDestroyed = false;
 
+  /** Checks if workers are supported on this platform */
+  static isSupported(): boolean {
+    return WorkerThread.isSupported();
+  }
+
   /**
    * @param processor - worker function
    * @param maxConcurrency - max count of workers

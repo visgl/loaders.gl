@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/compression",
-  "version": "4.0.0-alpha.4",
+  "version": "3.2.0-alpha.1",
   "description": "Decompression and compression plugins for loaders.gl",
   "license": "MIT",
   "publishConfig": {
@@ -18,8 +18,8 @@
     "point cloud"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -34,12 +34,12 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap --external:{fs,path,crypto}",
-    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/compression-worker.js --bundle --minify --sourcemap --external:{fs,path,crypto}"
+    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/compression-worker.js --target=esnext,node12 --bundle --minify --sourcemap --external:{fs,path,crypto} --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.4",
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1",
+    "@loaders.gl/worker-utils": "3.2.0-alpha.1",
     "@types/brotli": "^1.3.0",
     "@types/pako": "^1.0.1",
     "lzo-wasm": "^0.0.4",

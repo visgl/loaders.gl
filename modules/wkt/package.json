@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/wkt",
   "description": "Loader and Writer for the WKT (Well Known Text) Format",
-  "version": "4.0.0-alpha.4",
+  "version": "3.2.0-alpha.1",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -18,8 +18,8 @@
     "Well Known Text"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -29,13 +29,13 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/wkt-worker.ts --bundle --outfile=dist/wkt-worker.js"
+    "build-worker": "esbuild src/workers/wkt-worker.ts --bundle --outfile=dist/wkt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "devDependencies": {
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/schema": "4.0.0-alpha.4"
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1",
+    "@loaders.gl/schema": "3.2.0-alpha.1"
   }
 }

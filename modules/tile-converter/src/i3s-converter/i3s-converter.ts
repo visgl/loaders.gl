@@ -96,6 +96,7 @@ export default class I3SConverter {
   Loader: LoaderWithParser = Tiles3DLoader;
   generateTextures: boolean;
   generateBoundingVolumes: boolean;
+  layersHasTexture: boolean;
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
@@ -114,6 +115,7 @@ export default class I3SConverter {
     this.validate = false;
     this.generateTextures = false;
     this.generateBoundingVolumes = false;
+    this.layersHasTexture = false;
   }
 
   /**
@@ -226,8 +228,16 @@ export default class I3SConverter {
     await this._convertNodesTree(root0, sourceRootTile, parentId, boundingVolumes);
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
+
+    if (this.layersHasTexture === false) {
+      this.layers0!.store.defaultGeometrySchema.ordering =
+        this.layers0!.store.defaultGeometrySchema.ordering.filter(
+          (attribute) => attribute !== 'uv0'
+        );
+    }
+
     await this._writeLayers0();
-    createSceneServerPath(tilesetName, this.layers0, tilesetPath);
+    createSceneServerPath(tilesetName, this.layers0!, tilesetPath);
     await this._writeNodeIndexDocument(root0, 'root', join(this.layers0Path, 'nodes', 'root'));
     await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
     await this._createSlpk(tilesetPath);
@@ -556,6 +566,8 @@ export default class I3SConverter {
     };
 
     for (const resources of resourcesData || [emptyResources]) {
+      this.layersHasTexture = this.layersHasTexture || Boolean(resources.texture);
+
       if (this.generateBoundingVolumes && resources.boundingVolumes) {
         boundingVolumes = resources.boundingVolumes;
       }
@@ -942,9 +954,6 @@ export default class I3SConverter {
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
-    const texturePath = join(childPath, `textures/${name}/`);
-    await writeFile(texturePath, textureData, `index.${format}`);
-
     if (this.options.slpk) {
       const slpkTexturePath = join(childPath, 'textures');
       const compress = false;
@@ -955,6 +964,9 @@ export default class I3SConverter {
         `${name}.${format}`,
         compress
       );
+    } else {
+      const texturePath = join(childPath, `textures/${name}/`);
+      await writeFile(texturePath, textureData, `index.${format}`);
     }
   }
 

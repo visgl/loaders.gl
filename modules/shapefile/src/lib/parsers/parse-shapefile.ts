@@ -2,6 +2,7 @@
 import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
 import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {ShapefileLoaderOptions} from './types';
 
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -20,15 +21,11 @@ interface ShapefileOutput {
 }
 /**
  * Parsing of file in batches
- *
- * @param asyncIterator
- * @param options
- * @param context
  */
 // eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: any,
+  options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): AsyncIterable<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
@@ -109,7 +106,7 @@ export async function* parseShapefileInBatches(
  */
 export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
-  options?: {[key: string]: any},
+  options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): Promise<ShapefileOutput> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};

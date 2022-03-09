@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "4.0.0-alpha.4",
+  "version": "3.2.0-alpha.1",
   "description": "i3s .",
   "license": "MIT",
   "publishConfig": {
@@ -18,8 +18,8 @@
     "mesh"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -29,15 +29,15 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/i3s-content-worker.ts --bundle --outfile=dist/i3s-content-worker.js"
+    "build-worker": "esbuild src/workers/i3s-content-worker.ts --bundle --outfile=dist/i3s-content-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/draco": "4.0.0-alpha.4",
-    "@loaders.gl/images": "4.0.0-alpha.4",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/schema": "4.0.0-alpha.4",
-    "@loaders.gl/textures": "4.0.0-alpha.4",
-    "@loaders.gl/tiles": "4.0.0-alpha.4",
+    "@loaders.gl/draco": "3.2.0-alpha.1",
+    "@loaders.gl/images": "3.2.0-alpha.1",
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1",
+    "@loaders.gl/schema": "3.2.0-alpha.1",
+    "@loaders.gl/textures": "3.2.0-alpha.1",
+    "@loaders.gl/tiles": "3.2.0-alpha.1",
     "@luma.gl/constants": "^8.5.4",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",

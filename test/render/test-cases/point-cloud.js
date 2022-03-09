@@ -9,16 +9,16 @@ const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 
 // Raw point cloud data URLS
 const KITTI_POSITIONS_URL =
-  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const KITTI_COLORS_URL =
-  'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 
 // Load big cloud only once...
 let kittiPointCloud;
 
 async function loadKittiPointCloud() {
-  const KITTI_POSITIONS = await fetchFile(KITTI_POSITIONS_URL).then(res => res.arrayBuffer());
-  const KITTI_COLORS = await fetchFile(KITTI_COLORS_URL).then(res => res.arrayBuffer());
+  const KITTI_POSITIONS = await fetchFile(KITTI_POSITIONS_URL).then((res) => res.arrayBuffer());
+  const KITTI_COLORS = await fetchFile(KITTI_COLORS_URL).then((res) => res.arrayBuffer());
 
   if (!kittiPointCloud) {
     kittiPointCloud = {

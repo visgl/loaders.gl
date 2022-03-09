@@ -38,7 +38,7 @@ test('loadInBatches#non-batched loader (gis)', async (t) => {
   const batches = await loadInBatches(KML_URL, KMLLoader, {kml: {type: 'object-row-table'}});
   for await (const batch of batches) {
     // Just the one batch...
-    t.equal(batch.data.length, 20, 'KML length of data features table is correct');
+    t.equal(batch.data.data.length, 20, 'KML length of data features table is correct');
   }
   t.end();
 });

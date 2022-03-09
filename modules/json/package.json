@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/json",
-  "version": "4.0.0-alpha.4",
+  "version": "3.2.0-alpha.1",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
   "publishConfig": {
@@ -21,8 +21,8 @@
     "JSON async iterator"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -32,11 +32,11 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-worker",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js"
+    "build-worker": "esbuild src/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.0-alpha.4",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/schema": "4.0.0-alpha.4"
+    "@loaders.gl/gis": "3.2.0-alpha.1",
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1",
+    "@loaders.gl/schema": "3.2.0-alpha.1"
   }
 }

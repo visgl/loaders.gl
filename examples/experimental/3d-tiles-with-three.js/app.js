@@ -4,7 +4,7 @@ import Mapbox3DTilesLayer from './mapbox-3d-tiles-layer/mapbox-3d-tiles-layer';
 // TODO - Add your mapbox token here
 mapboxgl.accessToken = process.env.MapboxAccessToken; // eslint-disable-line
 
-const BASE_TILESET_URL = 'https://raw.githubusercontent.com/uber-common/deck.gl-data/master';
+const BASE_TILESET_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const ROTTERDAM_TILESET_URL = `${BASE_TILESET_URL}/3d-tiles/geodan/rotterdam/tileset.json`;
 const AHN_TILESET_URL = `${BASE_TILESET_URL}/3d-tiles/geodan/ahn/tileset.json`;
 

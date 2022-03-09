@@ -1,6 +1,13 @@
 # Overview
 
-The `@loaders.gl/json` module handles tabular data stored in the [JSON file format](https://www.json.org/json-en.html).
+The `@loaders.gl/json` module parses JSON. It can parse arbitrary JSON data but is optimized for:
+
+- loading tabular data stored in JSON arrays.
+- loading tabular geospatial data stored in GeoJSON.
+- loading tabular data from various streaming JSON and GeoJSON formats, such as new-line delimited JSON.
+
+The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
+to avoid blocking for tens of seconds.
 
 ## Installation
 
@@ -10,44 +17,48 @@ npm install @loaders.gl/core @loaders.gl/json
 
 ## Loaders and Writers
 
-| Loader                                                          |
-| --------------------------------------------------------------- |
-| [`JSONLoader`](modules/json/docs/api-reference/json-loader)     |
-| [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader) |
+| Loader                                                                |
+| --------------------------------------------------------------------- |
+| [`JSONLoader`](modules/json/docs/api-reference/json-loader)           |
+| [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader)       |
+| [`GeoJSONLoader`](modules/json/docs/api-reference/geojson-loader)     |
+| [`NDGeoJSONLoader`](modules/json/docs/api-reference/ndgeojson-loader) |
 
 ## Additional APIs
 
-See table category.
+- See [table category](/docs/specifications/category-table).
+- See [GIS category](/docs/specifications/category-gis).
 
-## Module Roadmap
+## JSON Format Notes
 
-### General Improvements
+The classic JSON format was designed for simplicity and is supported by standard libraries in many programming languages.
 
-Error messages: `JSON.parse` tends to have unhelpful error messages
+Several [JSON Streaming Formats](https://en.wikipedia.org/wiki/JSON_streaming) (Wikipedia) have emerged, that typically
+place one JSON object on each line of a file. These are convenient to use when streaming data and are 
+supported by via the `NDJSONLoader` and `NDGeoJSONLoader`.
 
-### Support More Streaming JSON Formats
+At the moment, auto-detection between streaming and classic JSON based on file contents 
+is not implemented, so two separate loaders are provided. 
+The two loaders look for different file extensions or MIME types as specified in the table below, 
+allowing correct distinctions to be made in usage.
 
-- Overview of [JSON Streaming Formats](https://en.wikipedia.org/wiki/JSON_streaming) (Wikipedia).
+| Format                                            | Extension    | MIME Media Type            | Support                                                      |
+| ------------------------------------------------- | ------------ | -------------------------- | ------------------------------------------------------------ | --- |
+| [JSON][format_json]                               | `.json`      | `application/json`         | `JSONLoader`                                               |
+| [NewLine Delimited JSON][format_ndjson]           | `.ndjson`    | `application/x-ndjson`     | `NDJSONLoader`                                             |
+| [JSON Lines][format_jsonlines]                    | `.jsonl`     | `application/x-ldjson`     | `NDJSONLoader`                                             |
+| [JSON Text Sequences][format_json_seq]            |              | `application/json-seq`     | `NDJSONLoader`. Partial records must not span multiple lines. |     |
+| [GeoJSON][format_geojson]                         | `.json`      | `application/geo+json`     | `JSONLoader`                                               |
+| [Newline Delimited GeoJSON][format_ndgeojson]     | `.ndgeojson` |                            | `NDJSONLoader`                                             |
+| [GeoJSON Lines][format_geojson]                   | `.geojsonl`  |                            | `NDJSONLoader`                                             |
+| [GeoJSON Text Sequences][format_geojson_text_seq] |              | `application/geo+json-seq` | `NDJSONLoader`                                             |
 
-- [Line-delimited JSON](http://jsonlines.org/) (LDJSON) (aka JSON lines) (JSONL).
-
-### Autodetection of streaming JSON
-
-A number of hints can be used to determine if the data is formatted using a streaming JSON format
-
-- if the filename extension is `.jsonl`
-- if the MIMETYPE is `application/json-seq`
-- if the first value in the file is a number, assume the file is length prefixed.
-
-For data in non-streaming JSON format, the presence of a top-level array will start streaming of objects.
-
-For embedded arrays, a path specifier may need to be supplied (or could look for first array).
-
-### MIME Types and File Extensions
-
-| Format                          | Extension | MIME Media Type [RFC4288](https://www.ietf.org/rfc/rfc4288.txt) |
-| ------------------------------- | --------- | --------------------------------------------------------------- |
-| Standard JSON                   | `.json`   | `application/json`                                              |
-| Line-delimited JSON             | `.jsonl`  | -                                                               |
-| NewLine delimited JSON          | `.ndjson` | `application/x-ndjson`                                          |
-| Record separator-delimited JSON | -         | `application/json-seq`                                          |
+[format_json]: https://www.json.org/json-en.html
+[format_ndjson]: http://ndjson.org/
+[format_jsonlines]: http://jsonlines.org/
+[format_json_seq]: https://datatracker.ietf.org/doc/html/rfc7464
+[format_geojson]: https://geojson.org/
+[format_ndgeojson]: https://stevage.github.io/ndgeojson/
+[format_geojsonl]: https://www.placemark.io/documentation/geojsonl
+[format_geojson_text_seq]: https://datatracker.ietf.org/doc/html/rfc8142
+[rfc4288]: https://www.ietf.org/rfc/rfc4288.txt

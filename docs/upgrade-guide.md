@@ -1,5 +1,11 @@
 # Upgrade Guide
 
+## Upgrading to v3.2
+
+**@loaders.gl/geopackage**
+
+- The default data format returned is now `options.gis.format: 'tables'`, which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.gis.format: 'geojson'` to return an object mapping table names to an array of GeoJSON features.
+
 ## Upgrading to v3.0
 
 **Platform Support Updates**
