@@ -48,6 +48,10 @@ Target Release Date: Q1 2022.
 
 - Experimental support for Node.js workers.
 
+**@loaders.gl/wkb**
+
+- The `WKBWriter` supports options within a `wkb` key, instead of at the top level.
+
 ## v3.1
 
 Release Date: Dec 7, 2021.

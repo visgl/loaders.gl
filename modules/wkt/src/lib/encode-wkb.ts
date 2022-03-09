@@ -57,6 +57,8 @@ export default function encodeWKB(
     geometry = geometry.geometry;
   }
 
+  // Options should be wrapped in a `wkb` key, but we allow top-level options here for backwards
+  // compatibility
   if ('wkb' in options) {
     options = options.wkb;
   }
