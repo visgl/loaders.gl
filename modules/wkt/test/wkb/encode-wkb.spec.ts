@@ -1,9 +1,7 @@
 import test from 'tape-promise/tape';
-import {fetchFile} from '@loaders.gl/core';
-import {Geometry, BinaryGeometry} from '@loaders.gl/schema';
-import encodeWKB from '../../src/lib/encode-wkb';
+import {fetchFile, encodeSync} from '@loaders.gl/core';
+import {WKBWriter} from '@loaders.gl/wkt';
 import {parseTestCases} from './utils';
-import hexStringToArrayBuffer from './hex-string-to-array-buffer';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
 const WKB_2D_NAN_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d-nan.json';
@@ -16,7 +14,7 @@ test('encodeWKB 2D', async (t) => {
 
   for (const testCase of Object.values(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
-    const encoded = encodeWKB(geoJSON, {hasZ: false, hasM: false});
+    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: false, hasM: false}});
     t.deepEqual(encoded, wkb);
   }
 
@@ -29,8 +27,7 @@ test('encodeWKB 2D NaN', async (t) => {
 
   for (const testCase of Object.values(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
-
-    const encoded = encodeWKB(geoJSON, {hasZ: false, hasM: false});
+    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: false, hasM: false}});
     t.deepEqual(encoded, wkb);
   }
 
@@ -43,7 +40,7 @@ test('encodeWKB Z', async (t) => {
 
   for (const testCase of Object.values(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
-    const encoded = encodeWKB(geoJSON, {hasZ: true});
+    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: true, hasM: false}});
     t.deepEqual(encoded, wkb);
   }
 
@@ -56,7 +53,7 @@ test('encodeWKB Z NaN', async (t) => {
 
   for (const testCase of Object.values(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
-    const encoded = encodeWKB(geoJSON, {hasZ: true});
+    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: true, hasM: false}});
     t.deepEqual(encoded, wkb);
   }
 
