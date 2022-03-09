@@ -46,6 +46,15 @@ export function setGlobalOptions(options: object): void {
 }
 
 /**
+ * Get global loaders options
+ * @returns global loaders options
+ */
+export function getGlobalOptions(): {[key: string]: any} {
+  const state = getGlobalLoaderState();
+  return state.globalOptions;
+}
+
+/**
  * Merges options with global opts and loader defaults, also injects baseUri
  * @param options
  * @param loader

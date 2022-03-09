@@ -26,7 +26,8 @@ export const DracoWriterWorker = {
   module: 'draco',
   version: VERSION,
   options: {
-    draco: {}
+    draco: {},
+    source: null
   }
 };
 

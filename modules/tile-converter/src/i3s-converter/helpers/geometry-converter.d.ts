@@ -28,7 +28,8 @@ export default function convertB3dmToI3sGeometry(
   attributeStorageInfo: any,
   draco: boolean,
   generateBoundingVolumes: boolean,
-  geoidHeightModel: GeoidHeightModel
+  geoidHeightModel: GeoidHeightModel,
+  workerSource: {[key: string]: string}
 ): Promise<
   {
     geometry: ArrayBuffer;

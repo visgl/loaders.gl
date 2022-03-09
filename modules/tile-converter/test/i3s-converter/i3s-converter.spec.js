@@ -1,9 +1,10 @@
 import test from 'tape-promise/tape';
 import {I3SConverter} from '@loaders.gl/tile-converter';
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser, setGlobalOptions} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 import {cleanUpPath} from '../utils/file-utils';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
@@ -24,6 +25,10 @@ const TEST_TEXTURE_MATERIAL = {
   }
 };
 
+setGlobalOptions({
+  _worker: 'test'
+});
+
 test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
@@ -41,6 +46,35 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
     t.ok(tilesetJson);
   }
   await cleanUpPath('data/BatchedColors');
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+  t.end();
+});
+
+test('tile-converter - Converters#should create Draco compressed geometry', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    const tilesetJson = await converter.convert({
+      inputUrl: TILESET_URL,
+      outputPath: 'data',
+      tilesetName: 'BatchedColors',
+      slpk: false,
+      draco: true,
+      inputType: '3dtiles',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH,
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+    });
+    t.ok(tilesetJson);
+  }
+  await cleanUpPath('data/BatchedColors');
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
   t.end();
 });
 
