@@ -5,7 +5,14 @@ import type {Feature, Geometry, Point, LineString, Polygon} from 'geojson';
 // GEOJSON FORMAT GEOMETRY
 
 // eslint-disable-next-line import/no-unresolved
-export type {GeoJSON, Feature, Geometry, Position, GeoJsonProperties} from 'geojson';
+export type {
+  GeoJSON,
+  Feature,
+  FeatureCollection,
+  Geometry,
+  Position,
+  GeoJsonProperties
+} from 'geojson';
 // eslint-disable-next-line import/no-unresolved
 export type {
   Point,

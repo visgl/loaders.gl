@@ -19,27 +19,50 @@
   </tbody>
 </table>
 
-## v4.0 (In development)
 
-Target Release Date: Q1 2022. Alpha releases available.
+See [roadmap](./roadmap) for more details on planned development.
 
-See [roadmap](./roadmap) for more details.
+## v3.2 (In development)
+
+Target Release Date: Q1 2022.
+
+**loaders.gl/arrow**
+
+- ArrowLoader now recognizes recommended Arrow MIME types `application/vnd.apache.arrow.file`, `application/vnd.apache.arrow.stream`.
+
+**loaders.gl/geopackage**
+
+- The `GeopackageLoader` now supports `tables` as well as `geojson` output data shapes, defaulting to `tables`. This is configurable via `options.gis.format`.
+
+**@loaders.gl/json**
+
+- [`GeoJSONLoader`](modules/json/docs/api-reference/geojson-loader)
+- [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader) - Now supports JSONL, JSONSeq etc.
+- [`NDGeoJSONLoader`](modules/json/docs/api-reference/ndgeojson-loader) - Now supports JSONL, JSONSeq etc.
+
+**@loaders.gl/terrain**
+
+- Fix winding order of "skirt" geometries, to prevent them from being incorrectly hidden by GPU face culling during rendering.
+
+**@loaders.gl/worker-utils**
+
+- Experimental support for Node.js workers.
 
 ## v3.1
 
 Release Date: Dec 7, 2021.
 
-**@loaders.gl/textures** 
+**@loaders.gl/textures**
 
 - Parse KTX2 with BasisLoader.
 - New `KTX2BasisWriter` enables transcoding textures to basis (works both in browser and Node).
 - Upgrade `basis_universal` libraries to [v1.15](https://github.com/BinomialLLC/basis_universal/releases/tag/v1_15).
 
-**@loaders.gl/gltf** 
+**@loaders.gl/gltf**
 
 - `GTLTLoader` now decodes Basis super compressed textures if present (via the [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension).
 
-**@loaders.gl/i3s** 
+**@loaders.gl/i3s**
 
 - Support KTX2-Basis textures.
 

@@ -48,7 +48,7 @@ import {
 } from '@loaders.gl/loader-utils';
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
-import {FrameState, getFrameState} from './helpers/frame-state';
+import {FrameState, getFrameState, limitSelectedTiles} from './helpers/frame-state';
 import {getZoomFromBoundingVolume} from './helpers/zoom';
 import Tile3D from './tile-3d';
 import Tileset3DTraverser from './traversers/tileset-3d-traverser';
@@ -64,6 +64,8 @@ export type Tileset3DProps = {
   loadTiles?: boolean;
   basePath?: string;
   maximumMemoryUsage?: number;
+  maximumTilesSelected?: number;
+  debounceTime?: number;
 
   // Metadata
   description?: string;
@@ -93,6 +95,8 @@ type Props = {
   modelMatrix: Matrix4;
   throttleRequests: boolean;
   maximumMemoryUsage: number;
+  maximumTilesSelected: number;
+  debounceTime: number;
   onTileLoad: (tile: Tile3D) => any;
   onTileUnload: (tile: Tile3D) => any;
   onTileError: (tile: Tile3D, message: string, url: string) => any;
@@ -124,6 +128,10 @@ const DEFAULT_PROPS: Props = {
   maxRequests: 64,
 
   maximumMemoryUsage: 32,
+  /** Maximum number limit of tiles selected for show. 0 means no limit */
+  maximumTilesSelected: 0,
+  /** Delay time before the tileset traversal. It prevents traversal requests spam.*/
+  debounceTime: 0,
 
   /**
    * Callback. Indicates this a tile's content was loaded
@@ -207,6 +215,7 @@ export default class Tileset3D {
   traverseCounter: number;
   geometricError: number;
   selectedTiles: Tile3D[];
+  private updatePromise: Promise<number> | null = null;
 
   cartographicCenter: Vector3 | null;
   cartesianCenter: Vector3 | null;
@@ -382,19 +391,50 @@ export default class Tileset3D {
   /**
    * Update visible tiles relying on a list of viewports
    * @param viewports - list of viewports
+   * @deprecated
+   */
+  update(viewports: any[] | null = null) {
+    if (!viewports && this.lastUpdatedVieports) {
+      viewports = this.lastUpdatedVieports;
+    } else {
+      this.lastUpdatedVieports = viewports;
+    }
+    this.doUpdate(viewports);
+  }
+
+  /**
+   * Update visible tiles relying on a list of viewports.
+   * Do it with debounce delay to prevent update spam
+   * @param viewports viewports
+   * @returns Promise of new frameNumber
+   */
+  async selectTiles(viewports: any[] | null = null): Promise<number> {
+    if (viewports) {
+      this.lastUpdatedVieports = viewports;
+    }
+    if (!this.updatePromise) {
+      this.updatePromise = new Promise<number>((resolve) => {
+        setTimeout(() => {
+          this.doUpdate(this.lastUpdatedVieports);
+          resolve(this._frameNumber);
+          this.updatePromise = null;
+        }, this.options.debounceTime);
+      });
+    }
+    return this.updatePromise;
+  }
+
+  /**
+   * Update visible tiles relying on a list of viewports
+   * @param viewports viewports
    */
   // eslint-disable-next-line max-statements, complexity
-  update(viewports: any[]): void {
+  private doUpdate(viewports: any[] | null = null): void {
     if ('loadTiles' in this.options && !this.options.loadTiles) {
       return;
     }
     if (this.traverseCounter > 0) {
       return;
-    }
-    if (!viewports && this.lastUpdatedVieports) {
-      viewports = this.lastUpdatedVieports;
-    } else {
-      this.lastUpdatedVieports = viewports;
     }
     if (!(viewports instanceof Array)) {
       viewports = [viewports];
@@ -457,7 +497,16 @@ export default class Tileset3D {
     }
     const currentFrameStateData = this.frameStateData[id];
     const selectedTiles = Object.values(this._traverser.selectedTiles);
-    currentFrameStateData.selectedTiles = selectedTiles;
+    const [filteredSelectedTiles, unselectedTiles] = limitSelectedTiles(
+      selectedTiles,
+      frameState,
+      this.options.maximumTilesSelected
+    );
+    currentFrameStateData.selectedTiles = filteredSelectedTiles;
+    for (const tile of unselectedTiles) {
+      tile.unselect();
+    }
+
     currentFrameStateData._requestedTiles = Object.values(this._traverser.requestedTiles);
     currentFrameStateData._emptyTiles = Object.values(this._traverser.emptyTiles);
 

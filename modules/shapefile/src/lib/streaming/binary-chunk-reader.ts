@@ -1,10 +1,14 @@
+type BinaryChunkReaderOptions = {
+  maxRewindBytes: number;
+};
+
 export default class BinaryChunkReader {
   offset: number;
   arrayBuffers: ArrayBuffer[];
   ended: boolean;
   maxRewindBytes: number;
 
-  constructor(options?: {[key: string]: any}) {
+  constructor(options?: BinaryChunkReaderOptions) {
     const {maxRewindBytes = 0} = options || {};
 
     /** current global offset into current array buffer*/

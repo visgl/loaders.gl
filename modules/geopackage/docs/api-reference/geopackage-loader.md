@@ -8,7 +8,7 @@ GeoPackage loader
 
 | Loader                | Characteristic                                |
 | --------------------- | --------------------------------------------- |
-| File Extension        | `.gpkg`,                                      |
+| File Extension        | `.gpkg`                                       |
 | File Type             | Binary                                        |
 | File Format           | [GeoPackage](https://www.geopackage.org/)     |
 | Data Format           | [Geometry](/docs/specifications/category-gis) |
@@ -19,21 +19,51 @@ GeoPackage loader
 ## Usage
 
 ```js
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
+import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
 import {load} from '@loaders.gl/core';
+import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
 
-const data = await load(url, GeoPackageLoader);
+const optionsAsTable: GeoPackageLoaderOptions = {
+  geopackage: {
+    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
+  },
+  gis: {
+    format: 'tables'
+  }
+};
+const tablesData: Tables<ObjectRowTable> = await load(url, GeoPackageLoader, optionsAsTable);
+
+const optionsAsGeoJson: GeoPackageLoaderOptions = {
+  geopackage: {
+    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
+  },
+  gis: {
+    format: 'geojson'
+  }
+};
+const geoJsonData: Record<string, Feature[]> = await load(url, GeoPackageLoader, optionsAsGeoJson);
 ```
 
 ## Options
 
-| Option                | Type   | Default                      | Description                                                                                                            |
-| --------------------- | ------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `geopackage.sqlJsCDN` | String | `'https://sql.js.org/dist/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackageLoader is called on a file. |
+| Option                | Type   | Default                                                  | Description                                                                                                            |
+| --------------------- | ------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `geopackage.sqlJsCDN` | String | `'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackageLoader is called on a file. |
+| `options.gis.format`  | String | `'tables'`                                               | Output format for data. If set to `geojson`                                                                            |
+
+- `geopackage.sqlJsCDN`: As of March 2022, SQL.js versions 1.6.0, 1.6.1, and 1.6.2 were tested as not working. Therefore this library pins to use of SQL.js version 1.5.0, and requires the WASM bundle from the same version.
 
 ## Output
 
-The `GeoPackageLoader`'s output is a mapping from table name to an array of GeoJSON features. It currently loads all features from all vector tables.
+The `GeoPackageLoader` currently loads all features from all vector tables.
+
+- If `options.gis.format` is `'tables'` (the default):
+
+  Returns `Tables<ObjectRowTable>`, an object whose `.tables` member is an array of objects with `name` and `table` keys. Each `name` member holds the name of the GeoPackage table name, and each `.table` member holds a `Table` instance. The `Table.data` member is an array of GeoJSON features, while `Table.schema` describes the schema types of the original Sqlite3 table.
+
+- If `options.gis.format` is `'geojson'`:
+
+  Returns `Record<string, Feature[]>`, an object mapping from table name to an array of GeoJSON features. The `Feature` type is defined in `@loaders.gl/schema`.
 
 ## Future Work
 

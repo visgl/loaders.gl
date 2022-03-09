@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/flatgeobuf",
   "description": "Loader for FlatGeobuf",
-  "version": "4.0.0-alpha.5",
+  "version": "3.2.0-alpha.1",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -18,8 +18,8 @@
     "Mapbox Vector Tiles"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "sideEffects": false,
   "files": [
     "src",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@loaders.gl/gis": "4.0.0-alpha.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.5",
+    "@loaders.gl/loader-utils": "3.2.0-alpha.1",
     "@math.gl/proj4": "^3.3.1",
     "flatgeobuf": "3.6.5"
   }

@@ -1,5 +1,5 @@
 import Protobuf from 'pbf';
-import {MvtMapboxGeometry} from '../lib/types';
+import {MVTMapboxGeometry} from '../lib/types';
 import VectorTileFeature from '../lib/mapbox-vector-tile/vector-tile-feature';
 
 /**
@@ -7,7 +7,7 @@ import VectorTileFeature from '../lib/mapbox-vector-tile/vector-tile-feature';
  * @param rings
  * @returns polygons
  */
-export function classifyRings(rings: MvtMapboxGeometry) {
+export function classifyRings(rings: MVTMapboxGeometry) {
   const len = rings.length;
 
   if (len <= 1) return [rings];

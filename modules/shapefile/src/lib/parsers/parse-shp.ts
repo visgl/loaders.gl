@@ -1,8 +1,8 @@
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {BinaryGeometry} from '@loaders.gl/schema';
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
-import {parseSHPHeader} from './parse-shp-header';
+import {parseSHPHeader, SHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
+import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
 const BIG_ENDIAN = false;
@@ -20,20 +20,34 @@ const STATE = {
 };
 
 type SHPResult = {
-  geometries: [];
-  header?: {};
+  geometries: (BinaryGeometry | null)[];
+  header?: SHPHeader;
   error?: string;
+  progress: {
+    bytesUsed: number;
+    bytesTotal: number;
+    rows: number;
+  };
+  currentIndex: number;
 };
 
 class SHPParser {
-  options?: any = {};
+  options?: SHPLoaderOptions = {};
   binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
   state = STATE.EXPECTING_HEADER;
   result: SHPResult = {
-    geometries: []
+    geometries: [],
+    // Initialize with number values to make TS happy
+    // These are initialized for real in STATE.EXPECTING_HEADER
+    progress: {
+      bytesTotal: NaN,
+      bytesUsed: NaN,
+      rows: NaN
+    },
+    currentIndex: NaN
   };
 
-  constructor(options?: LoaderOptions) {
+  constructor(options?: SHPLoaderOptions) {
     this.options = options;
   }
 
@@ -109,9 +123,9 @@ export async function* parseSHPInBatches(
 /* eslint-disable complexity, max-depth */
 function parseState(
   state: number,
-  result: {[key: string]: any},
+  result: SHPResult,
   binaryReader: BinaryChunkReader,
-  options: {shp?: any}
+  options?: SHPLoaderOptions
 ): number {
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -157,7 +171,7 @@ function parseState(
 
             const invalidRecord =
               recordHeader.byteLength < 4 ||
-              recordHeader.type !== result.header.type ||
+              recordHeader.type !== result.header?.type ||
               recordHeader.recordNumber !== result.currentIndex;
 
             // All records must have at least four bytes (for the record shape type)

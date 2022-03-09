@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/polyfills",
-  "version": "4.0.0-alpha.5",
+  "version": "3.2.0-alpha.1",
   "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
   "publishConfig": {
@@ -18,8 +18,8 @@
     "TextDecoder"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
   "files": [
     "src",
     "dist",

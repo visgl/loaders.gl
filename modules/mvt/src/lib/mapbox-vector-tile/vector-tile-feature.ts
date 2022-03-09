@@ -1,6 +1,6 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 import Protobuf from 'pbf';
-import {MvtMapboxCoordinates, MvtMapboxGeometry} from '../types';
+import {MVTMapboxCoordinates, MVTMapboxGeometry} from '../types';
 import {readFeature, classifyRings} from '../../helpers/mapbox-util-functions';
 
 export default class VectorTileFeature {
@@ -39,7 +39,7 @@ export default class VectorTileFeature {
   }
 
   // eslint-disable-next-line complexity, max-statements
-  loadGeometry(): MvtMapboxGeometry {
+  loadGeometry(): MVTMapboxGeometry {
     const pbf = this._pbf;
     pbf.pos = this._geometry;
 
@@ -163,7 +163,7 @@ export default class VectorTileFeature {
       type = `Multi${type}`;
     }
 
-    const result: MvtMapboxCoordinates = {
+    const result: MVTMapboxCoordinates = {
       type: 'Feature',
       geometry: {
         type,
@@ -181,7 +181,7 @@ export default class VectorTileFeature {
 
   toGeoJSON(
     options: {x: number; y: number; z: number} | ((data: number[], feature: {extent: any}) => void)
-  ): MvtMapboxCoordinates {
+  ): MVTMapboxCoordinates {
     if (typeof options === 'function') {
       return this._toGeoJSON(options);
     }
