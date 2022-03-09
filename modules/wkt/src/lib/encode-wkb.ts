@@ -34,8 +34,13 @@ enum WKB {
  * Options for encodeWKB
  */
 interface WKBOptions {
+  /** Does the GeoJSON input have Z values? */
   hasZ?: boolean;
+
+  /** Does the GeoJSON input have M values? */
   hasM?: boolean;
+
+  /** Spatial reference for input GeoJSON */
   srid?: any;
 }
 
@@ -46,10 +51,16 @@ interface WKBOptions {
  */
 export default function encodeWKB(
   geometry: Geometry | Feature,
-  options: WKBOptions = {hasZ: false, hasM: false}
+  options: WKBOptions | {wkb: WKBOptions}
 ): ArrayBuffer {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
+  }
+
+  // Options should be wrapped in a `wkb` key, but we allow top-level options here for backwards
+  // compatibility
+  if ('wkb' in options) {
+    options = options.wkb;
   }
 
   switch (geometry.type) {
