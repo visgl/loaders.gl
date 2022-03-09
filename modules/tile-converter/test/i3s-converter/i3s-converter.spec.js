@@ -71,10 +71,6 @@ test('tile-converter - Converters#should create Draco compressed geometry', asyn
     t.ok(tilesetJson);
   }
   await cleanUpPath('data/BatchedColors');
-  if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
-  }
   t.end();
 });
 

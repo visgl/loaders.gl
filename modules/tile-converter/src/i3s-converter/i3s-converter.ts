@@ -55,7 +55,7 @@ import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {I3SConvertedResources} from './types';
-import {getWorkerURL} from '@loaders.gl/worker-utils';
+import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
 
 const ION_DEFAULT_TOKEN =
@@ -194,6 +194,11 @@ export default class I3SConverter {
 
     await this._createAndSaveTileset(outputPath, tilesetName);
     await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+
     return sourceTilesetJson;
   }
 
