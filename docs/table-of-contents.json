@@ -93,6 +93,7 @@
         {"entry": "modules/textures/docs/api-reference/npy-loader"},
         {"entry": "modules/video/docs/api-reference/video-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkb-loader"},
+        {"entry": "modules/wkt/docs/api-reference/wkb-writer"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},

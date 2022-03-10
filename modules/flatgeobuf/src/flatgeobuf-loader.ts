@@ -14,7 +14,10 @@ export const FlatGeobufLoader = {
   mimeTypes: ['application/octet-stream'],
   category: 'geometry',
   options: {
-    flatgeobuf: {}
+    flatgeobuf: {
+      // Set to GeoJSON for backwards compatibility
+      shape: 'geojson'
+    }
   }
 };
 

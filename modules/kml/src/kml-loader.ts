@@ -1,13 +1,22 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {kml} from '@tmcw/togeojson';
+import {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMLLoaderOptions = LoaderOptions & {
-  kml?: {};
+  kml?: {
+    shape?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    /** @deprecated. Use options.kml.shape */
+    type?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+  };
+  gis?: {
+    /** @deprecated. Use options.kml.shape */
+    format?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+  };
 };
 
 const KML_HEADER = `\
@@ -26,26 +35,36 @@ export const KMLLoader = {
   mimeTypes: ['application/vnd.google-earth.kml+xml'],
   text: true,
   tests: [KML_HEADER],
-  parse: async (arrayBuffer, options) =>
+  parse: async (arrayBuffer, options?: KMLLoaderOptions) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
     kml: {},
-    gis: {format: 'geojson'}
+    gis: {}
   }
 };
 
-function parseTextSync(text: string, options: any) {
+function parseTextSync(text: string, options?: KMLLoaderOptions) {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = kml(doc);
+  const geojson: FeatureCollection = kml(doc);
 
-  switch (options?.kml?.type) {
-    case 'object-row-table':
-      return geojson.features;
-    default:
-  }
-
-  switch (options?.gis?.format) {
+  // backwards compatibility
+  const shape = options?.gis?.format || options?.kml?.type || options?.kml?.shape;
+  switch (shape) {
+    case 'object-row-table': {
+      const table: ObjectRowTable = {
+        shape: 'object-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
+    case 'geojson-row-table': {
+      const table: GeoJSONRowTable = {
+        shape: 'geojson-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
     case 'geojson':
       return geojson;
     case 'binary':
@@ -53,7 +72,8 @@ function parseTextSync(text: string, options: any) {
     case 'raw':
       return doc;
     default:
-      throw new Error();
+      // Default to geojson for backwards compatibility
+      return geojson;
   }
 }
 
