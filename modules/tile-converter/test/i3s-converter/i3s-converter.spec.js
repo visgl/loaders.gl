@@ -4,7 +4,6 @@ import {isBrowser, setGlobalOptions} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 import {cleanUpPath} from '../utils/file-utils';
-import {WorkerFarm} from '@loaders.gl/worker-utils';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
@@ -46,10 +45,6 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
     t.ok(tilesetJson);
   }
   await cleanUpPath('data/BatchedColors');
-  if (!isBrowser) {
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
-  }
   t.end();
 });
 
