@@ -15,7 +15,7 @@ const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;
  * to make child maxError bigger than his parent maxError.
  */
 export function convertGeometricErrorToScreenThreshold(tile, coordinates) {
-  const lodSelection = [];
+  const lodSelection: {metricType: string; maxError: number}[] = [];
   const boundingVolume = tile.boundingVolume;
   const lodMetricValue = tile.lodMetricValue || 0.1;
   const maxScreenThreshold = {

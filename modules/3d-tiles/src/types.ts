@@ -1,4 +1,4 @@
-import type {GLTFObject} from '@loaders.gl/gltf';
+import type {GLTFPostprocessed} from '@loaders.gl/gltf';
 import {Matrix4, Vector3} from '@math.gl/core';
 
 export type BatchTableJson = {
@@ -16,7 +16,7 @@ export type B3DMContent = {
   featureIds?: number[] | null;
   featureTableBinary?: Uint8Array;
   featureTableJson?: BatchTableJson;
-  gltf?: GLTFObject;
+  gltf?: GLTFPostprocessed;
   gltfUpAxis: string;
   header: GLTFHeader;
   magic: number;

@@ -14,6 +14,9 @@ export type {
   GLTFSkin,
   GLTFTexture,
   GLTFImage,
+  GLTFPostprocessed,
+  GLTFNodePostprocessed,
+  GLTFMaterialPostprocessed,
   GLTFImagePostprocessed,
   // The following extensions are handled by the GLTFLoader and removed from the parsed glTF (disable via options.gltf.excludeExtensions)
   GLTF_KHR_binary_glTF,

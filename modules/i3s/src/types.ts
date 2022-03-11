@@ -1,4 +1,3 @@
-import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 
@@ -222,34 +221,34 @@ export type I3SMaterialDefinition = {
   /** A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology. When not specified, all the default values of pbrMetallicRoughness apply. */
   pbrMetallicRoughness: I3SPbrMetallicRoughness;
   /** The normal texture map. */
-  normalTexture: I3SMaterialTexture;
+  normalTexture?: I3SMaterialTexture;
   /** The occlusion texture map. */
-  occlusionTexture: I3SMaterialTexture;
+  occlusionTexture?: I3SMaterialTexture;
   /** The emissive texture map. */
-  emissiveTexture: I3SMaterialTexture;
+  emissiveTexture?: I3SMaterialTexture;
   /** The emissive color of the material. */
-  emissiveFactor: [number, number, number];
+  emissiveFactor?: [number, number, number];
   /** Defines the meaning of the alpha-channel/alpha-mask. */
   alphaMode: 'opaque' | 'mask' | 'blend';
   /** The alpha cutoff value of the material. */
-  alphaCutoff: number;
+  alphaCutoff?: number;
   /** Specifies whether the material is double sided. */
-  doubleSided: boolean;
+  doubleSided?: boolean;
   /** Winding order is counterclockwise. */
-  cullFace: 'none' | 'front' | 'back';
+  cullFace?: 'none' | 'front' | 'back';
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md */
 export type I3SPbrMetallicRoughness = {
   /** The material's base color factor. default=[1,1,1,1] */
-  baseColorFactor: [number, number, number, number];
+  baseColorFactor?: [number, number, number, number];
   /** The base color texture. */
-  baseColorTexture: I3SMaterialTexture;
+  baseColorTexture?: I3SMaterialTexture;
   /** the metalness of the material. default=1.0 */
   metallicFactor: number;
   /** the roughness of the material. default=1.0 */
   roughnessFactor: number;
   /** the metallic-roughness texture. */
-  metallicRoughnessTexture: I3SMaterialTexture;
+  metallicRoughnessTexture?: I3SMaterialTexture;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialTexture.cmn.md */
 export type I3SMaterialTexture = {
@@ -398,10 +397,30 @@ export type NodeInPage = {
   mesh?: NodeMesh;
 };
 
+export type MaterialDefinitionInfo = {
+  name?: string;
+  type?: string;
+  $ref?: string;
+  params: {
+    transparency?: number;
+    reflectivity?: number;
+    shininess?: number;
+    ambient?: number[];
+    diffuse?: number[];
+    specular?: number[];
+    renderMode: 'textured' | 'solid' | 'untextured' | 'wireframe';
+    castShadows?: boolean;
+    receiveShadows?: boolean;
+    cullFace?: string;
+    vertexColors?: boolean;
+    vertexRegions?: boolean;
+    useVertexColorAlpha?: boolean;
+  };
+};
+
 export type SharedResources = {
-  materialDefinitions?: GLTFMaterial[];
-  textureDefinitions?: TextureDefinitionInfo[];
-  nodePath: string;
+  materialDefinitions?: {[key: string]: MaterialDefinitionInfo};
+  textureDefinitions?: {[key: string]: TextureDefinitionInfo};
 };
 
 type TextureImage = {
@@ -543,8 +562,8 @@ type FullExtent = {
   spatialReference?: SpatialReference;
 };
 
-type TextureDefinitionInfo = {
-  encoding: string[];
+export type TextureDefinitionInfo = {
+  encoding?: string[];
   wrap?: string[];
   atlas?: boolean;
   uvSet?: string;

@@ -9,7 +9,7 @@ import {MD5Hash} from '@loaders.gl/crypto';
 import crypt from 'crypt';
 import {getAbsoluteFilePath} from './file-utils';
 
-export function compressFileWithGzip(pathFile) {
+export function compressFileWithGzip(pathFile): Promise<string> {
   const compressedPathFile = `${pathFile}.gz`;
   const gzip = createGzip();
   const input = createReadStream(pathFile);
@@ -82,12 +82,18 @@ export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
   });
 }
 
-export async function compressWithChildProcess() {
+export async function compressWithChildProcess(
+  inputFolder: string,
+  outputFile: string,
+  level: number,
+  inputFiles: string,
+  sevenZipExe?: string
+) {
   // eslint-disable-next-line no-undef
   if (process.platform === 'win32') {
-    await compressWithChildProcessWindows(...arguments);
+    await compressWithChildProcessWindows(inputFolder, outputFile, level, inputFiles, sevenZipExe);
   } else {
-    await compressWithChildProcessUnix(...arguments);
+    await compressWithChildProcessUnix(inputFolder, outputFile, level, inputFiles);
   }
 }
 
@@ -134,7 +140,7 @@ async function compressWithChildProcessWindows(
 export async function generateHash128FromZip(inputZipFile, outputFile) {
   const input = await fs.readFile(inputZipFile);
   const zip = await JSZip.loadAsync(input);
-  const hashTable = [];
+  const hashTable: {key: string; value: string}[] = [];
   const zipFiles = zip.files;
   for (const relativePath in zipFiles) {
     const zipEntry = zipFiles[relativePath];

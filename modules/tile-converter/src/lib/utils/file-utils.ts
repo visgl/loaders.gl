@@ -2,7 +2,7 @@ import {promises as fs} from 'fs';
 import {isAbsolute, join} from 'path';
 import {compressFileWithGzip} from './compress-util';
 
-export async function writeFile(path, data, fileName = 'index.json') {
+export async function writeFile(path, data, fileName = 'index.json'): Promise<string> {
   await fs.mkdir(path, {recursive: true});
   const pathFile = join(path, fileName);
   try {
@@ -14,7 +14,7 @@ export async function writeFile(path, data, fileName = 'index.json') {
   return pathFile;
 }
 
-export async function writeFileForSlpk(path, data, fileName = 'index.json', compress = true) {
+export async function writeFileForSlpk(path, data, fileName = 'index.json', compress = true): Promise<string> {
   const pathFile = await writeFile(path, data, fileName);
   if (compress) {
     const pathGzFile = await compressFileWithGzip(pathFile);
