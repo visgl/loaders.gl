@@ -29,7 +29,7 @@ import type {
   Mesh as GLTFMeshPostprocessed,
   Material as GLTFMaterialPostprocessed,
   Node as GLTFNodePostprocessed,
-  Texture as GLTFTexturePostprocessed,
+  Texture as GLTFTexturePostprocessed
 } from './gltf-postprocessed-schema';
 
 export type {

@@ -14,7 +14,12 @@ export async function writeFile(path, data, fileName = 'index.json'): Promise<st
   return pathFile;
 }
 
-export async function writeFileForSlpk(path, data, fileName = 'index.json', compress = true): Promise<string> {
+export async function writeFileForSlpk(
+  path,
+  data,
+  fileName = 'index.json',
+  compress = true
+): Promise<string> {
   const pathFile = await writeFile(path, data, fileName);
   if (compress) {
     const pathGzFile = await compressFileWithGzip(pathFile);
