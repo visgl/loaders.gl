@@ -11,6 +11,7 @@
     {"path": "../images"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
-    {"path": "../worker-utils"}
+    {"path": "../worker-utils"},
+    {"path": "../polyfills"}
   ]
 }

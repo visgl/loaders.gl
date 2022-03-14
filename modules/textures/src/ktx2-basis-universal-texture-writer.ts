@@ -8,7 +8,7 @@ import {encodeKTX2BasisTexture} from './lib/encoders/encode-ktx2-basis-texture';
  */
 export const KTX2BasisUniversalTextureWriter = {
   name: 'Basis Universal Supercompressed GPU Texture',
-  id: 'ktx2-basis-supercompressed-texture',
+  id: 'ktx2-basis-universal-texture-writer',
   module: 'textures',
   version: VERSION,
 
