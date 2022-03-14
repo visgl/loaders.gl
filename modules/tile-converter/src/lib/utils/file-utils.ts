@@ -2,11 +2,28 @@ import {promises as fs} from 'fs';
 import {isAbsolute, join} from 'path';
 import {compressFileWithGzip} from './compress-util';
 
-export async function writeFile(path, data, fileName = 'index.json'): Promise<string> {
+/**
+ * Write a file with data and name fileName to path
+ *
+ * @param path - output path
+ * @param data - file content
+ * @param fileName - name of output file (default: index.json)
+ */
+export async function writeFile(
+  path: string,
+  data: string | Uint8Array | ArrayBuffer,
+  fileName: string = 'index.json'
+): Promise<string> {
+  let toWriteData: string | Uint8Array;
+  if (data instanceof ArrayBuffer) {
+    toWriteData = new Uint8Array(data as ArrayBuffer);
+  } else {
+    toWriteData = data;
+  }
   await fs.mkdir(path, {recursive: true});
   const pathFile = join(path, fileName);
   try {
-    await fs.writeFile(pathFile, data);
+    await fs.writeFile(pathFile, toWriteData);
   } catch (err) {
     throw err;
   }
@@ -14,11 +31,19 @@ export async function writeFile(path, data, fileName = 'index.json'): Promise<st
   return pathFile;
 }
 
+/**
+ * Write a file with data and name fileName to path - specific one for further packaging into slpk
+ *
+ * @param path - output path
+ * @param data - file content
+ * @param fileName - name of output file (default: index.json)
+ * @param compress - if need to compress file with gzip (default: true)
+ */
 export async function writeFileForSlpk(
-  path,
-  data,
-  fileName = 'index.json',
-  compress = true
+  path: string,
+  data: string | Uint8Array | ArrayBuffer,
+  fileName: string = 'index.json',
+  compress: boolean = true
 ): Promise<string> {
   const pathFile = await writeFile(path, data, fileName);
   if (compress) {
@@ -30,14 +55,28 @@ export async function writeFileForSlpk(
   return pathFile;
 }
 
-export function removeDir(path) {
+/**
+ * Remove dir with path
+ *
+ * @param path
+ */
+export function removeDir(path: string) {
   return fs.rmdir(path, {recursive: true});
 }
 
-export function removeFile(path) {
+/**
+ * Remove file with path
+ *
+ * @param path
+ */
+export function removeFile(path: string) {
   return fs.unlink(path);
 }
 
-export function getAbsoluteFilePath(filePath) {
+/**
+ * Generates absolute file path
+ * @param filePath
+ */
+export function getAbsoluteFilePath(filePath: string) {
   return isAbsolute(filePath) ? filePath : join(process.cwd(), filePath); // eslint-disable-line no-undef
 }
