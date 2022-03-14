@@ -1,4 +1,4 @@
-import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {DataType, Loader, LoaderWithParser, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -9,18 +9,34 @@ import {getResourceUrlAndType} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
 // Signature: parse(data, options, context | url)
+// Uses registered loaders; unable to infer return types
 export async function parse(
   data: DataType | Promise<DataType>,
   loaders?: LoaderOptions,
   options?: LoaderContext
 ): Promise<any>
 
-export async function parse<T>(
-  data: DataType | Promise<DataType>,
-  loaders?: Loader<T> | Loader<T>[],
-  options?: LoaderOptions,
+export async function parse<
+  Options extends LoaderOptions,
+  LoaderType extends LoaderWithParser,
+>(
+  data: ArrayBuffer,
+  loaders: LoaderType,
+  options?: Options,
   context?: LoaderContext
-): Promise<T>
+): Promise<ReturnType<LoaderType['parse']>>;
+
+// Signature: parse(data, loaders, options, context | url)
+// Using an array of loaders. Return type is the union of the return types of each loader's `parse` function
+export async function parse<
+  Options extends LoaderOptions,
+  ArrayOfLoaders extends Array<LoaderWithParser>
+>(
+  data: ArrayBuffer,
+  loaders: ArrayOfLoaders,
+  options?: Options,
+  context?: LoaderContext
+): Promise<ReturnType<ArrayOfLoaders[number]['parse']>>;
 
 /**
  * Parses `data` using a specified loader

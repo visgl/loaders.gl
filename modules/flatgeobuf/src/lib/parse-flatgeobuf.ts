@@ -7,8 +7,21 @@ import {deserialize as deserializeGeneric} from 'flatgeobuf/lib/cjs/generic';
 import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/cjs/generic/feature';
 
 import {fromGeometry as binaryFromGeometry} from './binary-geometries';
-import {FlatGeobufLoaderOptions} from './types';
-import {GeoJSONRowTable, Feature} from '@loaders.gl/schema';
+import {
+  FlatGeobufLoaderOptions,
+  GeoJSONRowTableOptions,
+  ColumnarTableOptions,
+  GeoJSONOptions,
+  BinaryOptions,
+  ReturnTypes
+} from './types';
+import {
+  GeoJSONRowTable,
+  Feature,
+  FeatureCollection,
+  ColumnarTable,
+  BinaryFeatures
+} from '@loaders.gl/schema';
 
 // TODO: reproject binary features
 function binaryFromFeature(feature, header) {
@@ -32,7 +45,29 @@ function binaryFromFeature(feature, header) {
  * @param arrayBuffer  A FlatGeobuf arrayBuffer
  * @return A GeoJSON geometry object
  */
-export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options?: FlatGeobufLoaderOptions) {
+// Specific overloads
+export function parseFlatGeobuf(
+  arrayBuffer: ArrayBuffer,
+  options?: FlatGeobufLoaderOptions & GeoJSONOptions
+): FeatureCollection;
+export function parseFlatGeobuf(
+  arrayBuffer: ArrayBuffer,
+  options?: FlatGeobufLoaderOptions & GeoJSONRowTableOptions
+): GeoJSONRowTable;
+export function parseFlatGeobuf(
+  arrayBuffer: ArrayBuffer,
+  options?: FlatGeobufLoaderOptions & ColumnarTableOptions
+): ColumnarTable;
+export function parseFlatGeobuf(
+  arrayBuffer: ArrayBuffer,
+  options?: FlatGeobufLoaderOptions & BinaryOptions
+): BinaryFeatures;
+// Default overload
+export function parseFlatGeobuf(
+  arrayBuffer: ArrayBuffer,
+  options?: FlatGeobufLoaderOptions
+): ReturnTypes;
+export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options?: FlatGeobufLoaderOptions): any {
   const shape = options?.gis?.format || options?.flatgeobuf?.shape;
 
   switch (shape) {

@@ -105,8 +105,7 @@ export type LoaderOptions = {
   signal?: any;
 
   // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
-  // Feels like this should be defined on the options subclasses
-  // [loaderId: string]: any;
+  [loaderId: string]: any;
 };
 
 type PreloadOptions = {
@@ -116,14 +115,14 @@ type PreloadOptions = {
 /**
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
-export type Loader = {
+export type Loader<Options extends LoaderOptions = LoaderOptions> = {
   // Worker
   name: string;
   id: string;
   module: string;
   version: string;
   worker?: string | boolean;
-  options: object;
+  options: Options;
   deprecatedOptions?: object;
   // end Worker
 
@@ -148,7 +147,7 @@ export type Loader = {
 export type LoaderWithParser<
   Options extends LoaderOptions = LoaderOptions,
   ReturnType extends any = any
-> = Loader & {
+> = Loader<Options> & {
   // TODO - deprecated
   testText?: (string) => boolean;
 
@@ -242,135 +241,6 @@ type ParseFileInBatches<
   Options extends LoaderOptions = LoaderOptions,
   ReturnType extends any = any
 > = (file: Blob, options?: Options, context?: LoaderContext) => AsyncIterable<ReturnType>;
-
-import {Feature} from 'geojson';
-
-type FlatGeobufLoaderOptions = LoaderOptions & {
-  flatgeobuf?: {
-    shape?: 'geojson-row-table' | 'binary-table' | 'geojson' | 'binary';
-  };
-};
-
-async function parseFlatGeobuf(
-  arrayBuffer: ArrayBuffer,
-  options?: FlatGeobufLoaderOptions,
-  context?: LoaderContext
-): Promise<Feature> {
-  return {
-    type: 'Feature',
-    properties: {},
-    geometry: {type: 'Point', coordinates: [0, 0]}
-  };
-}
-
-export const FlatGeobufLoader: LoaderWithParser<FlatGeobufLoaderOptions, Feature> = {
-  id: 'flatgeobuf',
-  name: 'FlatGeobuf',
-  module: 'flatgeobuf',
-  version: 'latest',
-  worker: true,
-  extensions: ['fgb'],
-  mimeTypes: ['application/octet-stream'],
-  category: 'geometry',
-  options: {
-    flatgeobuf: {
-      // Set to GeoJSON for backwards compatibility
-      shape: 'geojson'
-    }
-  },
-  parse: parseFlatGeobuf
-};
-
-async function parseShapefile(
-  arrayBuffer: ArrayBuffer,
-  options?: LoaderOptions,
-  context?: LoaderContext
-): Promise<boolean> {
-  return true;
-}
-
-export const ShapefileLoader: LoaderWithParser<LoaderOptions, boolean> = {
-  id: 'shapefile',
-  name: 'FlatGeobuf',
-  module: 'flatgeobuf',
-  version: 'latest',
-  worker: true,
-  extensions: ['fgb'],
-  mimeTypes: ['application/octet-stream'],
-  category: 'geometry',
-  options: {
-    flatgeobuf: {
-      // Set to GeoJSON for backwards compatibility
-      shape: 'geojson'
-    }
-  },
-  parse: parseShapefile
-};
-
-interface Wrapper<T> {
-  value: T;
-}
-
-function getOne<T extends ReadonlyArray<Wrapper<any>>>(...args: T): Wrapper<T[number]['value']> {
-  return args[0];
-}
-
-const z = getOne(
-  {
-    value: {a: 'a'}
-  },
-  {
-    value: {b: 1}
-  }
-);
-z;
-
-export async function parse<Options extends LoaderOptions, ReturnType extends any>(
-  data: ArrayBuffer,
-  loaders: LoaderWithParser<Options, ReturnType>,
-  options?: Options,
-  context?: LoaderContext
-): Promise<ReturnType>;
-export async function parse<Options extends LoaderOptions, ReturnType extends any>(
-  data: ArrayBuffer,
-  loaders: LoaderWithParser<Options, ReturnType>[],
-  options?: Options,
-  context?: LoaderContext
-): Promise<ReturnType>;
-export async function parse<
-  Options extends LoaderOptions,
-  Tmp extends any,
-  T extends Array<LoaderWithParser<Options, Tmp>>
->(data: ArrayBuffer, loaders: T, options?: Options, context?: LoaderContext): Promise<ReturnType<T[number]['parse']>>;
-export async function parse<
-  Options extends LoaderOptions,
-  T extends any,
-  ReturnTypeT extends ReturnType<any>
->(
-  data: ArrayBuffer,
-  loaders: LoaderWithParser<Options, ReturnTypeT> | LoaderWithParser<Options, ReturnTypeT>[],
-  options?: Options,
-  context?: LoaderContext
-): Promise<ReturnTypeT<T>> {
-  if (Array.isArray(loaders)) {
-    return loaders[0].parse(data, options, context);
-  }
-
-  return loaders.parse(data, options, context);
-}
-
-const a = await parse(new ArrayBuffer(100), FlatGeobufLoader);
-a;
-const b = await parse(new ArrayBuffer(100), ShapefileLoader);
-b;
-
-const y = await parse(new ArrayBuffer(100), [FlatGeobufLoader, ShapefileLoader]);
-y;
-
-// https://stackoverflow.com/a/66204664
-// function getOne<T extends ReadonlyArray<LoaderWithParser<any>>>(args: T): LoaderWithParser<T[number]['id']> {
-//   return args[0];
-// }
 
 type Encode = (data: any, options?: WriterOptions) => Promise<ArrayBuffer>;
 type EncodeSync = (data: any, options?: WriterOptions) => ArrayBuffer;
