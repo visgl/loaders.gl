@@ -12,8 +12,11 @@ export const WKBWriter: Writer = {
   version: VERSION,
   extensions: ['wkb'],
   // @ts-ignore
-  encode: encodeWKB,
+  encodeSync: encodeWKB,
   options: {
-    wkb: {}
+    wkb: {
+      hasZ: false,
+      hasM: false
+    }
   }
 };

@@ -22,7 +22,15 @@ import type {
   GLTF_EXT_texture_webp
 } from './gltf-json-schema';
 
-import type {Image as GLTFImagePostprocessed} from './gltf-postprocessed-schema';
+import type {
+  GLTF as GLTFPostprocessed,
+  Accessor as GLTFAccessorPostprocessed,
+  Image as GLTFImagePostprocessed,
+  Mesh as GLTFMeshPostprocessed,
+  Material as GLTFMaterialPostprocessed,
+  Node as GLTFNodePostprocessed,
+  Texture as GLTFTexturePostprocessed
+} from './gltf-postprocessed-schema';
 
 export type {
   GLTF,
@@ -43,7 +51,13 @@ export type {
   GLTF_KHR_texture_basisu,
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp,
-  GLTFImagePostprocessed
+  GLTFPostprocessed,
+  GLTFAccessorPostprocessed,
+  GLTFImagePostprocessed,
+  GLTFNodePostprocessed,
+  GLTFMeshPostprocessed,
+  GLTFMaterialPostprocessed,
+  GLTFTexturePostprocessed
 };
 
 export type GLTFObject =
