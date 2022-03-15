@@ -10,6 +10,7 @@ import type {
 export type SHPLoaderOptions = LoaderOptions & {
   shp?: {
     _maxDimensions?: number;
+    shape?: string;
   };
 };
 

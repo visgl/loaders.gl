@@ -5,7 +5,9 @@ import {
   Utf8,
   Float64,
   TimestampMillisecond,
-  ObjectRowTable
+  ObjectRowTable,
+  ObjectRowTableBatch,
+  Batch
 } from '@loaders.gl/schema';
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
 import {
@@ -102,31 +104,70 @@ export function parseDBF(
  * @param asyncIterator
  * @param options
  */
+// eslint-disable-next-line complexity
 export async function* parseDBFInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options: DBFLoaderOptions = {}
-): AsyncIterable<DBFHeader | DBFRowsOutput | DBFTableOutput> {
+): AsyncIterable<DBFHeader | DBFRowsOutput | DBFTableOutput | ObjectRowTableBatch | Batch> {
   const {encoding = 'latin1'} = options.dbf || {};
+  const shape = options?.tables?.format || options?.dbf?.shape;
 
   const parser = new DBFParser({encoding});
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
     parser.write(arrayBuffer);
-    if (!headerReturned && parser.result.dbfHeader) {
+    // Return DBF header in a batch first
+    if (!headerReturned && parser.result.dbfHeader && parser.result.schema) {
       headerReturned = true;
-      yield parser.result.dbfHeader;
+      if (shape === 'object-row-table') {
+        const headerBatch: Batch = {
+          batchType: 'metadata',
+          shape: 'object-row-table',
+          length: 0,
+          bytesUsed: 0,
+          rowsTotal: parser.result.dbfHeader.nRecords,
+          schema: parser.result.schema,
+          data: null
+        };
+        yield headerBatch;
+      } else {
+        yield parser.result.dbfHeader;
+      }
     }
 
     if (parser.result.data.length > 0) {
-      yield parser.result.data;
+      if (shape === 'object-row-table') {
+        yield formObjectRowTableBatch(parser.result);
+      } else {
+        yield parser.result.data;
+      }
       parser.result.data = [];
     }
   }
   parser.end();
   if (parser.result.data.length > 0) {
-    yield parser.result.data;
+    if (shape === 'object-row-table') {
+      yield formObjectRowTableBatch(parser.result);
+    } else {
+      yield parser.result.data;
+    }
   }
 }
+
+/** Form ObjectRowTableBatch from DBFResult */
+function formObjectRowTableBatch(result: DBFResult): ObjectRowTableBatch {
+  const {data, schema, progress} = result;
+  return {
+    batchType: 'data',
+    schema,
+    shape: 'object-row-table',
+    length: data.length,
+    data,
+    bytesUsed: progress?.bytesUsed,
+    rowsTotal: progress?.rowsTotal
+  };
+}
+
 /**
  * https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
  * @param state

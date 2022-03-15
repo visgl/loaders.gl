@@ -30,10 +30,15 @@ export async function* parseShapefileInBatches(
   // const shape = options?.gis?.format || options?.shapefile?.shape || 'geojson';
 
   // parse geometries
-  // const shapeIterable: AsyncIterator<(BinaryGeometry | null)[] | SHPHeader> =
-  //   await context.parseInBatches(asyncIterator, SHPLoader, options);
+  // TODO: type the iterable as AsyncIterator<(BinaryGeometry | null)[] | SHPHeader>
   // @ts-ignore context must be defined
-  const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, options);
+  const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, {
+    ...options,
+    shp: {
+      ...options?.shp,
+      shape: 'batch'
+    }
+  });
 
   // parse properties
   // let propertyIterable: AsyncIterator<ObjectRowTableBatch> | undefined;

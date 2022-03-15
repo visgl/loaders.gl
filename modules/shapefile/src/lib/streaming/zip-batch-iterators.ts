@@ -7,30 +7,30 @@ export async function* zipBatchIterators<
   BatchType1 extends Batch = Batch,
   BatchType2 extends Batch = Batch
 >(
-  iterator1: AsyncIterator<BatchType1[]>,
-  iterator2: AsyncIterator<BatchType2[]>
+  iterator1: AsyncIterator<BatchType1>,
+  iterator2: AsyncIterator<BatchType2>
 ): AsyncGenerator<BatchType1, void, unknown> {
-  let batch1: BatchType1 | undefined;
-  let batch2: BatchType2 | undefined;
+  const batch1: BatchType1[] = [];
+  const batch2: BatchType2[] = [];
   let iterator1Done: boolean = false;
   let iterator2Done: boolean = false;
 
   // TODO - one could let all iterators flow at full speed using `Promise.race`
   // however we might end up with a big temporary buffer
   while (!iterator1Done && !iterator2Done) {
-    if (batch1?.length === 0 && !iterator1Done) {
+    if (batch1.length === 0 && !iterator1Done) {
       const {value, done} = await iterator1.next();
       if (done) {
         iterator1Done = true;
       } else {
-        batch1 = value;
+        batch1.push(value);
       }
-    } else if (batch2?.length === 0 && !iterator2Done) {
+    } else if (batch2.length === 0 && !iterator2Done) {
       const {value, done} = await iterator2.next();
       if (done) {
         iterator2Done = true;
       } else {
-        batch2 = value;
+        batch2.push(value);
       }
     }
 
@@ -45,8 +45,8 @@ export async function* zipBatchIterators<
  * Extract batch of same length from two batches
  */
 function extractBatch<BatchType1 extends Batch = Batch, BatchType2 extends Batch = Batch>(
-  batch1: BatchType1 | undefined,
-  batch2: BatchType2 | undefined
+  batch1: BatchType1[],
+  batch2: BatchType2[]
 ): BatchType1 | null {
   if (!batch1 || !batch2) {
     return null;

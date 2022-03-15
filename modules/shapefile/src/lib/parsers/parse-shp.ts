@@ -1,4 +1,4 @@
-import type {BinaryGeometry} from '@loaders.gl/schema';
+import type {Batch, BinaryGeometry} from '@loaders.gl/schema';
 import type {SHPHeader, SHPResult, SHPLoaderOptions} from './types';
 
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
@@ -71,28 +71,63 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): SHPResult 
  */
 export async function* parseSHPInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: object
-): AsyncIterable<(BinaryGeometry | null)[] | SHPHeader> {
+  options?: SHPLoaderOptions
+): AsyncIterable<(BinaryGeometry | null)[] | SHPHeader | Batch> {
+  const shape = options?.shp?.shape;
+
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.header) {
       headerReturned = true;
-      yield parser.result.header;
+      // TODO: what should the shape name be for a binary geometry batch?
+      if (shape === 'batch') {
+        const headerBatch: Batch = {
+          batchType: 'metadata',
+          shape: 'binary-geometry-batch',
+          length: 0,
+          bytesUsed: 0,
+          bytesTotal: parser.result.header.length,
+          data: null
+        };
+        yield headerBatch;
+      } else {
+        yield parser.result.header;
+      }
     }
 
     if (parser.result.geometries.length > 0) {
-      yield parser.result.geometries;
+      if (shape === 'batch') {
+        yield formBinaryTableBatch(parser.result);
+      } else {
+        yield parser.result.geometries;
+      }
       parser.result.geometries = [];
     }
   }
   parser.end();
   if (parser.result.geometries.length > 0) {
-    yield parser.result.geometries;
+    if (shape === 'batch') {
+      yield formBinaryTableBatch(parser.result);
+    } else {
+      yield parser.result.geometries;
+    }
   }
 
   return;
+}
+
+function formBinaryTableBatch(result: SHPResult): Batch {
+  const {geometries, progress} = result;
+  return {
+    batchType: 'data',
+    shape: 'batch',
+    length: geometries.length,
+    data: geometries,
+    bytesUsed: progress.bytesUsed,
+    bytesTotal: progress.bytesTotal
+  };
 }
 
 /**
