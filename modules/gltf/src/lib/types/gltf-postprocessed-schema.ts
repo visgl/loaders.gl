@@ -451,16 +451,16 @@ export interface MeshPrimitive {
    * A dictionary object, where each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
    */
   attributes: {
-    [k: string]: GlTfId;
+    [k: string]: Accessor;
   };
   /**
    * The index of the accessor that contains the indices.
    */
-  indices?: GlTfId;
+  indices?: Accessor;
   /**
    * The index of the material to apply to this primitive when rendering.
    */
-  material?: GlTfId;
+  material?: Material;
   /**
    * The type of primitives to render.
    */
@@ -503,7 +503,7 @@ export interface Node {
   /**
    * The indices of this node's children.
    */
-  children?: GlTfId[];
+  children?: Node[];
   /**
    * The index of the skin referenced by this node.
    */
@@ -515,7 +515,7 @@ export interface Node {
   /**
    * The index of the mesh in this node.
    */
-  mesh?: GlTfId;
+  mesh?: Mesh;
   /**
    * The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
    */
@@ -569,7 +569,7 @@ export interface Scene {
   /**
    * The indices of each root node.
    */
-  nodes?: GlTfId[];
+  nodes?: Node[];
   name?: any;
   extensions?: any;
   extras?: any;
@@ -607,7 +607,7 @@ export interface Texture {
   /**
    * The index of the image used by this texture.
    */
-  source?: GlTfId;
+  source?: Image;
   name?: any;
   extensions?: any;
   extras?: any;
@@ -616,7 +616,7 @@ export interface Texture {
 /**
  * The root object for a glTF asset.
  */
-export interface GlTf {
+export interface GLTF {
   /**
    * Names of glTF extensions used somewhere in this asset.
    */
@@ -672,7 +672,7 @@ export interface GlTf {
   /**
    * The index of the default scene.
    */
-  scene?: GlTfId;
+  scene?: Scene;
   /**
    * An array of scenes.
    */
