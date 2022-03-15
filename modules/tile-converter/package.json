@@ -47,6 +47,7 @@
     "@loaders.gl/images": "3.2.0-alpha.1",
     "@loaders.gl/loader-utils": "3.2.0-alpha.1",
     "@loaders.gl/polyfills": "3.2.0-alpha.1",
+    "@loaders.gl/schema": "3.2.0-alpha.1",
     "@loaders.gl/textures": "3.2.0-alpha.1",
     "@loaders.gl/tiles": "3.2.0-alpha.1",
     "@loaders.gl/worker-utils": "3.2.0-alpha.1",
@@ -67,10 +68,7 @@
     "morgan": "~1.9.1",
     "uuid": "^8.1.0"
   },
-  "devDependencies": {
-    "@loaders.gl/schema": "4.0.0-alpha.4"
-  },
   "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-alpha.4"
+    "@loaders.gl/core": "3.2.0-alpha.1"
   }
 }
