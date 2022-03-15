@@ -19,7 +19,6 @@
   </tbody>
 </table>
 
-
 See [roadmap](./roadmap) for more details on planned development.
 
 ## v3.2 (In development)
@@ -53,10 +52,7 @@ Target Release Date: Q1 2022.
 - The `WKBWriter` supports options within a `wkb` key, instead of at the top level.
 
 **@loaders.gl/textures**
-- Fixed issues:
-  - Overflow issue on extreme colors in color_distance().
-  - Explicitly disabling unaligned addressing in miniz and transcoder when UBSAN is enabled
-  - Disabling a needless optimization in transcoder causing ubsan issues 
+
 - Upgrade `basis_universal` libraries to [v1.16.3](https://github.com/BinomialLLC/basis_universal/releases/tag/1.16.3).
 
 ## v3.1
