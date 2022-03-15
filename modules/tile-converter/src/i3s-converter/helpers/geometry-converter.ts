@@ -190,9 +190,8 @@ async function _makeNodeResources({
 }): Promise<I3SConvertedResources> {
   const boundingVolumes = convertedAttributes.boundingVolumes;
   const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
-  const triangleCount = vertexCount / 3;
   const {faceRange, featureIds, positions, normals, colors, texCoords, featureCount} =
-    generateAttributes({triangleCount, ...convertedAttributes});
+    generateAttributes(convertedAttributes);
 
   if (tileContent.batchTableJson) {
     makeFeatureIdsUnique(

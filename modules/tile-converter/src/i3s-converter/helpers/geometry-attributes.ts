@@ -1,4 +1,4 @@
-import type {GeometryAttributes, AttributesData, GroupedByFeatureIdAttributes} from '../types';
+import type {GeometryAttributes, ConvertedAttributes, GroupedByFeatureIdAttributes} from '../types';
 import {concatenateTypedArrays} from '@loaders.gl/loader-utils';
 
 const VALUES_PER_VERTEX = 3;
@@ -9,8 +9,9 @@ const POSITIONS_AND_NORMALS_PER_TRIANGLE = 9;
  * @param attributes
  * @returns attirbutes with featureCount, featureIds and changed faceRange.
  */
-export function generateAttributes(attributes: AttributesData): GeometryAttributes {
-  const {positions, normals, texCoords, colors, featureIndices, triangleCount} = attributes;
+export function generateAttributes(attributes: ConvertedAttributes): GeometryAttributes {
+  const {positions, normals, texCoords, colors, featureIndices} = attributes;
+  const triangleCount = positions.length / POSITIONS_AND_NORMALS_PER_TRIANGLE;
 
   if (!featureIndices.length) {
     return {

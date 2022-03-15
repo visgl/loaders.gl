@@ -397,47 +397,83 @@ export type NodeInPage = {
   mesh?: NodeMesh;
 };
 
+/**
+ * https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialDefinitionInfo.cmn.md
+ */
 export type MaterialDefinitionInfo = {
+  /** A name for the material as assigned in the creating application. */
   name?: string;
-  type?: string;
+  /** Indicates the material type, chosen from the supported values. */
+  type?: 'standard' | 'water' | 'billboard' | 'leafcard' | 'reference';
+  /** The href that resolves to the shared resource bundle in which the material definition is contained. */
   $ref?: string;
+  /** Parameter defined for the material.
+   * https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialParams.cmn.md
+   */
   params: {
+    /** Indicates transparency of this material; 0 = opaque, 1 = fully transparent. */
     transparency?: number;
+    /** Indicates reflectivity of this material. */
     reflectivity?: number;
+    /** Indicates shininess of this material. */
     shininess?: number;
+    /** Ambient color of this material. Ambient color is the color of an object where it is in shadow.
+     * This color is what the object reflects when illuminated by ambient light rather than direct light. */
     ambient?: number[];
+    /** Diffuse color of this material. Diffuse color is the most instinctive meaning of the color of an object.
+     * It is that essential color that the object reveals under pure white light. It is perceived as the color
+     * of the object itself rather than a reflection of the light. */
     diffuse?: number[];
+    /** Specular color of this material. Specular color is the color of the light of a specular reflection
+     * (specular reflection is the type of reflection that is characteristic of light reflected from a shiny
+     * surface). */
     specular?: number[];
+    /** Rendering mode. */
     renderMode: 'textured' | 'solid' | 'untextured' | 'wireframe';
+    /** TRUE if features with this material should cast shadows. */
     castShadows?: boolean;
+    /** TRUE if features with this material should receive shadows */
     receiveShadows?: boolean;
+    /** Indicates the material culling options {back, front, none}. */
     cullFace?: string;
+    /** This flag indicates that the vertex color attribute of the geometry should be used to color the geometry
+     * for rendering. If texture is present, the vertex colors are multiplied by this color.
+     * e.g. pixel_color = [interpolated]vertex_color * texel_color. Default is false. */
     vertexColors?: boolean;
+    /** This flag indicates that the geometry has uv region vertex attributes. These are used for adressing
+     * subtextures in a texture atlas. The uv coordinates are relative to this subtexture in this case.
+     * This is mostly useful for repeated textures in a texture atlas. Default is false. */
     vertexRegions?: boolean;
+    /** Indicates whether Vertex Colors also contain a transparency channel. Default is false. */
     useVertexColorAlpha?: boolean;
   };
 };
 
+/** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/sharedResource.cmn.md */
 export type SharedResources = {
+  /** Materials describe how a Feature or a set of Features is to be rendered. */
   materialDefinitions?: {[key: string]: MaterialDefinitionInfo};
+  /** A Texture is a set of images, with some parameters specific to the texture/uv mapping to geometries. */
   textureDefinitions?: {[key: string]: TextureDefinitionInfo};
 };
 
+/** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/image.cmn.md */
 type TextureImage = {
+  /** A unique ID for each image. Generated using the BuildID function. */
   id: string;
+  /** width of this image, in pixels. */
   size?: number;
+  /** The maximum size of a single pixel in world units.
+   * This property is used by the client to pick the image to load and render. */
   pixelInWorldUnits?: number;
+  /** The href to the image(s), one per encoding, in the same order as the encodings. */
   href?: string[];
+  /** The byte offset of this image's encodings. There is one per encoding,
+   * in the same order as the encodings, in the block in which this texture image resides. */
   byteOffset?: string[];
+  /** The length in bytes of this image's encodings. There is one per encoding,
+   * in the same order as the encodings. */
   length?: number[];
-  mimeType?: string;
-  bufferView?: {
-    data: ArrayBuffer;
-  };
-  image?: {
-    height: number;
-    width: number;
-  };
 };
 
 export type Attribute = 'OBJECTID' | 'string' | 'double' | 'Int32' | string;
@@ -562,12 +598,21 @@ type FullExtent = {
   spatialReference?: SpatialReference;
 };
 
+/**
+ * https://github.com/Esri/i3s-spec/blob/master/docs/1.8/textureDefinitionInfo.cmn.md
+ */
 export type TextureDefinitionInfo = {
+  /** MIMEtype - The encoding/content type that is used by all images in this map */
   encoding?: string[];
+  /** UV wrapping modes, from {none, repeat, mirror}. */
   wrap?: string[];
+  /** TRUE if the Map represents a texture atlas. */
   atlas?: boolean;
+  /** The name of the UV set to be used as texture coordinates. */
   uvSet?: string;
+  /** Indicates channels description. */
   channels?: 'rbg' | 'rgba' | string;
+  /** An image is a binary resource, containing a single raster that can be used to texture a feature or symbol. */
   images: TextureImage[];
 };
 
