@@ -68,6 +68,9 @@
     "morgan": "~1.9.1",
     "uuid": "^8.1.0"
   },
+  "devDependencies": {
+    "@loaders.gl/schema": "4.0.0-alpha.4"
+  },
   "peerDependencies": {
     "@loaders.gl/core": "4.0.0-alpha.4"
   }

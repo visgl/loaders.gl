@@ -2001,6 +2001,14 @@
     "@types/geojson" "^7946.0.7"
     apache-arrow "^4.0.0"
 
+"@loaders.gl/schema@4.0.0-alpha.4":
+  version "4.0.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-4.0.0-alpha.4.tgz#ce3a9d95be8c4b4bdae8d9402bb935a95b40e03b"
+  integrity sha512-+zBwjjkRkVbGQMr+7Y0NgGjWmHNy9JqS+b8E18+L9L5bocIoLqj5FK8GS2LIpnqeVsM1hThwRQhh17QUQPYfSg==
+  dependencies:
+    "@types/geojson" "^7946.0.7"
+    apache-arrow "^4.0.0"
+
 "@loaders.gl/textures@^3.0":
   version "3.0.11"
   resolved "https://registry.yarnpkg.com/@loaders.gl/textures/-/textures-3.0.11.tgz#132d9ee0ded3460f04d016ec869e41f103a86456"
