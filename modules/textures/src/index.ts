@@ -13,13 +13,11 @@ export {NPYLoader, NPYWorkerLoader} from './npy-loader';
 
 // Writers
 export {CompressedTextureWriter} from './compressed-texture-writer';
-export {KTX2BasisUniversalTextureWriter} from './ktx2-basis-universal-texture-writer';
+export {KTX2BasisWriter} from './ktx2-basis-writer';
 
-export const KTX2BasisUniversalTextureWriterWorker = {
+export const KTX2BasisWriterWorker = {
   name: 'Basis Universal Supercompressed GPU Texture',
-  id: isBrowser
-    ? 'ktx2-basis-universal-texture-writer'
-    : 'ktx2-basis-universal-texture-writer-nodejs',
+  id: isBrowser ? 'ktx2-basis-writer' : 'ktx2-basis-writer-nodejs',
   module: 'textures',
   version: VERSION,
   extensions: ['ktx2'],

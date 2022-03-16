@@ -48,7 +48,7 @@ import {NODE as nodeTemplate} from './json-templates/node';
 import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
-import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
+import {KTX2BasisWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
 import {ImageWriter} from '@loaders.gl/images';
@@ -905,9 +905,7 @@ export default class I3SConverter {
 
           if (this.generateTextures) {
             formats.push({name: '1', format: 'ktx2'});
-            const ktx2TextureData = new Uint8Array(
-              await encode(texture.image, KTX2BasisUniversalTextureWriter)
-            );
+            const ktx2TextureData = new Uint8Array(await encode(texture.image, KTX2BasisWriter));
             await this.writeTextureFile(ktx2TextureData, '1', 'ktx2', childPath, slpkChildPath);
           }
 
