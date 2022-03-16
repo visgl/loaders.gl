@@ -65,7 +65,7 @@ export async function checkResponse(response: Response): Promise<void> {
 export function checkResponseSync(response: Response): void {
   if (!response.ok) {
     let message = `${response.status} ${response.statusText}`;
-    message = message.length > 60 ? `${message.slice(60)}...` : message;
+    message = message.length > 60 ? `${message.slice(0, 60)}...` : message;
     throw new Error(message);
   }
 }
@@ -81,7 +81,7 @@ async function getResponseError(response): Promise<string> {
       text += ` ${await response.text()}`;
     }
     message += text;
-    message = message.length > 60 ? `${message.slice(60)}...` : message;
+    message = message.length > 60 ? `${message.slice(0, 60)}...` : message;
   } catch (error) {
     // eslint forbids return in a finally statement, so we just catch here
   }
