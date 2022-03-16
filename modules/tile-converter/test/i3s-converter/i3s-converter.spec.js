@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {I3SConverter} from '@loaders.gl/tile-converter';
-import {isBrowser, setGlobalOptions} from '@loaders.gl/core';
+import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 import {cleanUpPath} from '../utils/file-utils';
@@ -24,7 +24,7 @@ const TEST_TEXTURE_MATERIAL = {
   }
 };
 
-setGlobalOptions({
+setLoaderOptions({
   _worker: 'test'
 });
 

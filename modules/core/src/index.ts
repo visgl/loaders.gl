@@ -6,10 +6,9 @@ export {readFileSync} from './lib/fetch/read-file';
 export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // CONFIGURATION
-export {setLoaderOptions} from './lib/api/set-loader-options';
+export {setLoaderOptions, getLoaderOptions} from './lib/api/loader-options';
 export {registerLoaders} from './lib/api/register-loaders';
 export {selectLoader, selectLoaderSync} from './lib/api/select-loader';
-export {setGlobalOptions, getGlobalOptions} from './lib/loader-utils/option-utils';
 
 // LOADING (READING + PARSING)
 export {parse} from './lib/api/parse';

@@ -25,6 +25,7 @@ export const DracoWriterWorker = {
   name: 'Draco compressed geometry writer',
   module: 'draco',
   version: VERSION,
+  worker: true,
   options: {
     draco: {},
     source: null

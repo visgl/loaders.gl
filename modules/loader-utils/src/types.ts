@@ -158,7 +158,7 @@ export type LoaderWithParser = Loader & {
 };
 
 /** Options for writers */
-export type WriterOptions = {};
+export type WriterOptions = {[key: string]: any};
 
 /**
  * A writer definition that can be used with `@loaders.gl/core` functions
@@ -169,6 +169,7 @@ export type Writer = {
   id: string;
   module: string;
   version: string;
+  worker?: string | boolean;
 
   options: object;
   deprecatedOptions?: object;

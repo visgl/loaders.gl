@@ -1,8 +1,10 @@
-import type {Writer, LoaderOptions} from '@loaders.gl/loader-utils';
+import {Writer, LoaderOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
+import {processOnWorker} from '@loaders.gl/worker-utils';
 import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
 import {writeFile} from '../fetch/write-file';
 import {fetchFile} from '../fetch/fetch-file';
+import {getLoaderOptions} from './loader-options';
 
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
@@ -12,6 +14,12 @@ export async function encode(
   writer: Writer,
   options?: LoaderOptions
 ): Promise<ArrayBuffer> {
+  const globalOptions = getLoaderOptions();
+  options = {...globalOptions, ...options};
+  if (canEncodeWithWorker(writer, options)) {
+    return await processOnWorker(writer, data, options);
+  }
+
   // TODO Merge default writer options with options argument like it is done in load module.
   if (writer.encode) {
     return await writer.encode(data, options);

@@ -43,7 +43,7 @@ export async function processOnWorker(
   const name = getWorkerName(worker);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
-  const {source} = worker.options;
+  const {source} = options;
   const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
   if (!source) {
     workerPoolProps.url = getWorkerURL(worker, options);

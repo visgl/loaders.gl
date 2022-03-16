@@ -2,12 +2,11 @@ import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 import {DracoWriterWorker} from '@loaders.gl/draco';
-import {assert} from '@loaders.gl/core';
+import {assert, encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
 import {createBoundingVolumesFromGeometry} from './coordinate-converter';
-import {processOnWorker} from '@loaders.gl/worker-utils';
 import {
   ConvertedAttributes,
   I3SConvertedResources,
@@ -1177,16 +1176,15 @@ async function generateCompressedGeometry(
   };
 
   return new Uint8Array(
-    await processOnWorker(
-      {...DracoWriterWorker, options: {...DracoWriterWorker.options, source: dracoWorkerSoure}},
-      {attributes: compressedAttributes, indices},
-      {
-        draco: {
-          method: 'MESH_SEQUENTIAL_ENCODING',
-          attributesMetadata
-        }
+    await encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
+      ...DracoWriterWorker.options,
+      source: dracoWorkerSoure,
+      _nodeWorkers: true,
+      draco: {
+        method: 'MESH_SEQUENTIAL_ENCODING',
+        attributesMetadata
       }
-    )
+    })
   );
 }
 

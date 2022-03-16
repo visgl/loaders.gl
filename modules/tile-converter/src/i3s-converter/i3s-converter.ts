@@ -16,7 +16,7 @@ import type {
   PopupInfo,
   FieldInfo
 } from '@loaders.gl/i3s';
-import {load, encode, fetchFile, getGlobalOptions} from '@loaders.gl/core';
+import {load, encode, fetchFile, getLoaderOptions} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
@@ -1325,7 +1325,7 @@ export default class I3SConverter {
   private async loadWorkers(): Promise<void> {
     console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
     if (this.options.draco) {
-      const url = getWorkerURL(DracoWriterWorker, {...getGlobalOptions()});
+      const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
       const sourceResponse = await fetchFile(url);
       const source = await sourceResponse.text();
       this.workerSource.draco = source;
