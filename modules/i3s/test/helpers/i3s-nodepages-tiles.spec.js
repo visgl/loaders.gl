@@ -218,3 +218,13 @@ test('I3SNodePagesTiles#Should load DRACO geometry', async (t) => {
 
   t.end();
 });
+
+test('I3SNodePagesTiles#Root tile should calculate nodesInNodePages metric', async (t) => {
+  // @ts-expect-error
+  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
+  await i3SNodePagesTiles.formTileFromNodePages(0);
+
+  const nodesInNodePages = i3SNodePagesTiles.nodesInNodePages;
+  t.equal(nodesInNodePages, 16);
+  t.end();
+});
