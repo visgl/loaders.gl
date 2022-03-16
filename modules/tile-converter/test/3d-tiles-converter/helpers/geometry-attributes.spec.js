@@ -5,19 +5,19 @@ import {generateAttributes} from '../../../src/i3s-converter/helpers/geometry-at
 test('tile-converter - geometry-attributes#should return the same attributes with faceRange from 0 to triangleCount - 1 and 0 feature id', async (t) => {
   if (!isBrowser) {
     const oldAttributes = {
-      positions: new Float32Array([0]),
+      positions: new Float32Array(90),
       normals: new Float32Array([0]),
       texCoords: new Float32Array([0]),
       colors: new Uint8Array([0]),
       featureIndices: [],
-      triangleCount: 1000
+      boundingVolumes: null
     };
 
     const resultAttributes = {
       featureIds: [0],
-      faceRange: new Uint32Array([0, 999]),
+      faceRange: new Uint32Array([0, 9]),
       featureCount: 1,
-      positions: new Float32Array([0]),
+      positions: new Float32Array(90),
       normals: new Float32Array([0]),
       texCoords: new Float32Array([0]),
       colors: new Uint8Array([0])
@@ -38,7 +38,7 @@ test('tile-converter - geometry-attributes#should return the same attributes if 
       texCoords: new Float32Array([1, 2, 3, 4, 5, 6]),
       colors: new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]),
       featureIndices: [0, 0, 0],
-      triangleCount: 1
+      boundingVolumes: null
     };
 
     const resultAttributes = {
@@ -71,7 +71,7 @@ test('tile-converter - geometry-attributes#should return reordered attributes', 
       colors: new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
       ]),
       featureIndices: [0, 0, 0, 1, 1, 1, 0, 0, 0],
-      triangleCount: 3
+      boundingVolumes: null
     };
 
     const resultAttributes = {

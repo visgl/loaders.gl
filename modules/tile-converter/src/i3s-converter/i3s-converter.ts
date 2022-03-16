@@ -10,7 +10,6 @@ import type {
   MaxScreenThresholdSQ,
   NodeInPage,
   LodSelection,
-  SharedResources,
   Attribute,
   ESRIField,
   Field,
@@ -54,7 +53,7 @@ import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
-import {I3SConvertedResources} from './types';
+import {I3SConvertedResources, SharedResourcesArrays} from './types';
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
 
@@ -394,7 +393,6 @@ export default class I3SConverter {
         slpkFileName,
         0,
         '.',
-        // @ts-expect-error
         this.options.sevenZipExe
       );
 
@@ -817,7 +815,7 @@ export default class I3SConverter {
     const slpkChildPath = join('nodes', nodePath);
 
     await this._writeGeometries(geometryBuffer!, compressedGeometry!, childPath, slpkChildPath);
-    await this._writeShared(sharedResources!, childPath, slpkChildPath, nodePath);
+    await this._writeShared(sharedResources, childPath, slpkChildPath, nodePath);
     await this._writeTexture(texture, childPath, slpkChildPath);
     await this._writeAttributes(attributes, childPath, slpkChildPath);
   }
@@ -870,11 +868,14 @@ export default class I3SConverter {
    * @param nodePath - a node path
    */
   private async _writeShared(
-    sharedResources: SharedResources,
+    sharedResources: SharedResourcesArrays | null,
     childPath: string,
     slpkChildPath: string,
     nodePath: string
   ): Promise<void> {
+    if (!sharedResources) {
+      return;
+    }
     sharedResources.nodePath = nodePath;
     const sharedData = transform(sharedResources, sharedResourcesTemplate());
     const sharedDataStr = JSON.stringify(sharedData);
@@ -988,11 +989,11 @@ export default class I3SConverter {
    * @param slpkChildPath - the resource path inside *slpk file
    */
   private async _writeAttributes(
-    attributes: ArrayBuffer[],
+    attributes: ArrayBuffer[] | null = [],
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
-    if (attributes.length && this.layers0?.attributeStorageInfo?.length) {
+    if (attributes?.length && this.layers0?.attributeStorageInfo?.length) {
       for (let index = 0; index < attributes.length; index++) {
         const folderName = this.layers0.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
