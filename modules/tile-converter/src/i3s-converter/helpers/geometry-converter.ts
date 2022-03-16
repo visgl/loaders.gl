@@ -7,6 +7,27 @@ import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loade
 import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
 import {createBoundingVolumesFromGeometry} from './coordinate-converter';
+import {
+  ConvertedAttributes,
+  I3SConvertedResources,
+  I3SMaterialWithTexture,
+  SharedResourcesArrays
+} from '../types';
+import {B3DMContent} from '@loaders.gl/3d-tiles';
+import {GLTFMaterialPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
+import {
+  AttributeStorageInfo,
+  I3SMaterialDefinition,
+  MaterialDefinitionInfo,
+  TextureDefinitionInfo
+} from '@loaders.gl/i3s';
+import {TypedArray} from '@loaders.gl/schema';
+import {Geoid} from '@math.gl/geoid';
+import {
+  GLTFAccessorPostprocessed,
+  GLTFMeshPostprocessed,
+  GLTFTexturePostprocessed
+} from 'modules/gltf/src/lib/types/gltf-types';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -29,18 +50,35 @@ const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', '
 
 let scratchVector = new Vector3();
 
+/**
+ * Convert binary data from b3dm file to i3s resources
+ *
+ * @param tileContent - 3d tile content
+ * @param nodeId - target nodeId. If a few nodes will be created - ids will be nodeId+n where n - index in the resulting array
+ * @param featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
+ * @param attributeStorageInfo - attributes metadata from 3DSceneLayer json
+ * @param draco - is converter should create draco compressed geometry
+ * @param generateBoundingVolumes - is converter should create accurate bounding voulmes from geometry attributes
+ * @param geoidHeightModel - model to convert elevation from elipsoidal to geoid
+ * @returns Array of node resources to create one or more i3s nodes
+ */
 export default async function convertB3dmToI3sGeometry(
-  tileContent,
-  nodeId,
-  featuresHashArray,
-  attributeStorageInfo,
-  draco,
-  generateBoundingVolumes,
-  geoidHeightModel
+  tileContent: B3DMContent,
+  nodeId: number,
+  featuresHashArray: string[],
+  attributeStorageInfo: AttributeStorageInfo[] | undefined,
+  draco: boolean,
+  generateBoundingVolumes: boolean,
+  geoidHeightModel: Geoid
 ) {
   const useCartesianPositions = generateBoundingVolumes;
-  const materialAndTextureList = convertMaterials(tileContent);
-  const convertedAttributesMap = convertAttributes(tileContent, useCartesianPositions);
+  const materialAndTextureList: I3SMaterialWithTexture[] = convertMaterials(
+    tileContent.gltf?.materials
+  );
+  const convertedAttributesMap: Map<string, ConvertedAttributes> = convertAttributes(
+    tileContent,
+    useCartesianPositions
+  );
 
   if (generateBoundingVolumes) {
     _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel);
@@ -52,9 +90,9 @@ export default async function convertB3dmToI3sGeometry(
     });
   }
 
-  const result = [];
+  const result: I3SConvertedResources[] = [];
   let nodesCounter = nodeId;
-  let {materials = []} = tileContent.gltf;
+  let {materials = []} = tileContent.gltf || {materials: []};
   if (!materials?.length) {
     materials.push({id: 'default'});
   }
@@ -64,6 +102,9 @@ export default async function convertB3dmToI3sGeometry(
       continue; // eslint-disable-line no-continue
     }
     const convertedAttributes = convertedAttributesMap.get(sourceMaterial.id);
+    if (!convertedAttributes) {
+      continue;
+    }
     const {material, texture} = materialAndTextureList[i];
     result.push(
       await _makeNodeResources({
@@ -88,10 +129,13 @@ export default async function convertB3dmToI3sGeometry(
 
 /**
  * Create bounding volumes based on positions
- * @param convertedAttributesMap
- * @param geoidHeightModel
+ * @param convertedAttributesMap - geometry attributes map
+ * @param geoidHeightModel - geoid height model to convert elevation from elipsoidal to geoid
  */
-function _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel) {
+function _generateBoundingVolumesFromGeometry(
+  convertedAttributesMap: Map<string, ConvertedAttributes>,
+  geoidHeightModel: Geoid
+) {
   for (const attributes of convertedAttributesMap.values()) {
     const boundingVolumes = createBoundingVolumesFromGeometry(
       attributes.positions,
@@ -112,6 +156,19 @@ function _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeigh
   }
 }
 
+/**
+ *
+ * @param params
+ * @param params.convertedAttributes - Converted geometry attributes
+ * @param params.material - I3S PBR-like material definition
+ * @param params.texture - texture content
+ * @param params.tileContent - B3DM decoded content
+ * @param params.nodeId - new node ID
+ * @param params.featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
+ * @param params.attributesStorageInfo - attributes metadata from 3DSceneLayer json
+ * @param params.draco - is converter should create draco compressed geometry
+ * @returns Array of I3S node resources
+ */
 async function _makeNodeResources({
   convertedAttributes,
   material,
@@ -121,12 +178,20 @@ async function _makeNodeResources({
   featuresHashArray,
   attributeStorageInfo,
   draco
-}) {
+}: {
+  convertedAttributes: ConvertedAttributes;
+  material: I3SMaterialDefinition;
+  texture?: {};
+  tileContent: B3DMContent;
+  nodeId: number;
+  featuresHashArray: string[];
+  attributeStorageInfo?: AttributeStorageInfo[];
+  draco: boolean;
+}): Promise<I3SConvertedResources> {
   const boundingVolumes = convertedAttributes.boundingVolumes;
   const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
-  const triangleCount = vertexCount / 3;
   const {faceRange, featureIds, positions, normals, colors, texCoords, featureCount} =
-    generateAttributes({triangleCount, ...convertedAttributes});
+    generateAttributes(convertedAttributes);
 
   if (tileContent.batchTableJson) {
     makeFeatureIdsUnique(
@@ -173,7 +238,7 @@ async function _makeNodeResources({
     geometry: fileBuffer,
     compressedGeometry,
     texture,
-    sharedResources: getSharedResources(tileContent, nodeId),
+    sharedResources: getSharedResources(tileContent.gltf?.materials || [], nodeId),
     meshMaterial: material,
     vertexCount,
     attributes,
@@ -184,40 +249,51 @@ async function _makeNodeResources({
 
 /**
  * Convert attributes from the gltf nodes tree to i3s plain geometry
- * @param {Object} tileContent - 3d tile content
- * @returns {Map}
- * Map<{
- *   positions: Float32Array,
- *   normals: Float32Array,
- *   colors: Uint8Array,
- *   texCoords: Float32Array
- * }>
- * @todo implement colors support (if applicable for gltf format)
+ * @param tileContent - 3d tile content
+ * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
+ * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
+ * @returns map of converted geometry attributes
  */
-function convertAttributes(tileContent, useCartesianPositions) {
-  const attributesMap = new Map();
+function convertAttributes(
+  tileContent: B3DMContent,
+  useCartesianPositions: boolean
+): Map<string, ConvertedAttributes> {
+  const attributesMap = new Map<string, ConvertedAttributes>();
 
-  for (const material of tileContent.gltf.materials || [{id: 'default'}]) {
+  for (const material of tileContent.gltf?.materials || [{id: 'default'}]) {
     attributesMap.set(material.id, {
       positions: new Float32Array(0),
       normals: new Float32Array(0),
       texCoords: new Float32Array(0),
       colors: new Uint8Array(0),
+      featureIndicesGroups: [],
       featureIndices: [],
       boundingVolumes: null
     });
   }
 
-  const nodes = (tileContent.gltf.scene || tileContent.gltf.scenes?.[0] || tileContent.gltf).nodes;
+  const nodes =
+    tileContent.gltf?.scene?.nodes ||
+    tileContent.gltf?.scenes?.[0]?.nodes ||
+    tileContent.gltf?.nodes ||
+    [];
   convertNodes(nodes, tileContent, attributesMap, useCartesianPositions);
 
   for (const attrKey of attributesMap.keys()) {
     const attributes = attributesMap.get(attrKey);
+    if (!attributes) {
+      continue;
+    }
     if (attributes.positions.length === 0) {
       attributesMap.delete(attrKey);
       continue; // eslint-disable-line no-continue
     }
-    attributes.featureIndices = attributes.featureIndices.reduce((acc, value) => acc.concat(value));
+    if (attributes.featureIndicesGroups) {
+      attributes.featureIndices = attributes.featureIndicesGroups.reduce((acc, value) =>
+        acc.concat(value)
+      );
+      delete attributes.featureIndicesGroups;
+    }
   }
 
   return attributesMap;
@@ -226,19 +302,20 @@ function convertAttributes(tileContent, useCartesianPositions) {
 /**
  * Gltf has hierarchical structure of nodes. This function converts nodes starting from those which are in gltf scene object.
  *   The goal is applying tranformation matrix for all children. Functions "convertNodes" and "convertNode" work together recursively.
- * @param {Object[]} nodes - gltf nodes array
- * @param {Object} tileContent - 3d tile content
- * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: UInt8Array, featureIndices: Array}> - for recursive concatenation of
- *   attributes
- * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param nodes - gltf nodes array
+ * @param tileContent - 3d tile content
+ * @param attributesMap - for recursive concatenation of attributes
+ * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
+ * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
+ * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
  * @returns {void}
  */
 function convertNodes(
-  nodes,
-  tileContent,
-  attributesMap,
-  useCartesianPositions,
-  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  nodes: GLTFNodePostprocessed[],
+  tileContent: B3DMContent,
+  attributesMap: Map<string, ConvertedAttributes>,
+  useCartesianPositions: boolean,
+  matrix: Matrix4 = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
   if (nodes) {
     for (const node of nodes) {
@@ -279,17 +356,18 @@ function getCompositeTransformationMatrix(node, matrix) {
 
 /**
  * Convert all primitives of node and all children nodes
- * @param {Object} node - gltf node
+ * @param node - gltf node
  * @param {Object} tileContent - 3d tile content
  * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
+ * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
+ * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
- * @todo: optimize arrays concatenation
  */
 function convertNode(
-  node,
-  tileContent,
-  attributesMap,
+  node: GLTFNodePostprocessed,
+  tileContent: B3DMContent,
+  attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions,
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
@@ -301,7 +379,7 @@ function convertNode(
   }
 
   convertNodes(
-    node.children,
+    node.children || [],
     tileContent,
     attributesMap,
     useCartesianPositions,
@@ -311,22 +389,24 @@ function convertNode(
 
 /**
  * Convert all primitives of node and all children nodes
- * @param {Object} mesh - gltf node
- * @param {Object} content - 3d tile content
- * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
+ * @param mesh - gltf node
+ * @param content - 3d tile content
+ * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets. 
+ * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
+ * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
+ 
  * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
- * @todo: optimize arrays concatenation
  */
 function convertMesh(
-  mesh,
-  content,
-  attributesMap,
+  mesh: GLTFMeshPostprocessed,
+  content: B3DMContent,
+  attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions = false,
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
   for (const primitive of mesh.primitives) {
-    let outputAttributes = null;
+    let outputAttributes: ConvertedAttributes | null | undefined = null;
     if (primitive.material) {
       outputAttributes = attributesMap.get(primitive.material.id);
     } else if (attributesMap.has('default')) {
@@ -334,7 +414,9 @@ function convertMesh(
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
     const attributes = primitive.attributes;
-
+    if (!outputAttributes) {
+      continue;
+    }
     outputAttributes.positions = concatenateTypedArrays(
       outputAttributes.positions,
       transformVertexArray({
@@ -342,7 +424,7 @@ function convertMesh(
         cartographicOrigin: content.cartographicOrigin,
         cartesianModelMatrix: content.cartesianModelMatrix,
         nodeMatrix: matrix,
-        indices: primitive.indices.value,
+        indices: primitive.indices?.value,
         attributeSpecificTransformation: transformVertexPositions,
         useCartesianPositions
       })
@@ -354,7 +436,7 @@ function convertMesh(
         cartographicOrigin: content.cartographicOrigin,
         cartesianModelMatrix: content.cartesianModelMatrix,
         nodeMatrix: matrix,
-        indices: primitive.indices.value,
+        indices: primitive.indices?.value,
         attributeSpecificTransformation: transformVertexNormals,
         useCartesianPositions: false
       })
@@ -363,34 +445,43 @@ function convertMesh(
       outputAttributes.texCoords,
       flattenTexCoords(
         attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
-        primitive.indices.value
+        primitive.indices?.value
       )
     );
 
     outputAttributes.colors = concatenateTypedArrays(
       outputAttributes.colors,
-      flattenColors(attributes.COLOR_0, primitive.indices.value)
+      flattenColors(attributes.COLOR_0, primitive.indices?.value)
     );
 
-    outputAttributes.featureIndices.push(
-      flattenBatchIds(getBatchIdsByAttributeName(attributes), primitive.indices.value)
+    outputAttributes.featureIndicesGroups = outputAttributes.featureIndicesGroups || [];
+    outputAttributes.featureIndicesGroups.push(
+      flattenBatchIds(getBatchIdsByAttributeName(attributes), primitive.indices?.value)
     );
   }
 }
 
 /**
  * Convert vertices attributes (POSITIONS or NORMALS) to i3s compatible format
- * @param {object} args - source tile (3DTile)
- * @param {Float32Array} args.vertices - gltf primitive POSITION or NORMAL attribute
- * @param {Object} args.cartographicOrigin - cartographic origin coordinates
- * @param {Object} args.cartesianModelMatrix - a cartesian model matrix to transform coordnates from cartesian to cartographic format
- * @param {Matrix4} args.nodeMatrix - a gltf node transformation matrix - cumulative transformation matrix formed from all parent node matrices
- * @param {Uint8Array} args.indices - gltf primitive indices
- * @param {Function} args.attributeSpecificTransformation - function to do attribute - specific transformations
- * @param {Boolean} args.useCartesianPositions - use coordinates as it is.
+ * @param args
+ * @param args.vertices - gltf primitive POSITION or NORMAL attribute
+ * @param args.cartographicOrigin - cartographic origin coordinates
+ * @param args.cartesianModelMatrix - a cartesian model matrix to transform coordnates from cartesian to cartographic format
+ * @param args.nodeMatrix - a gltf node transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param args.indices - gltf primitive indices
+ * @param args.attributeSpecificTransformation - function to do attribute - specific transformations
+ * @param args.useCartesianPositions - use coordinates as it is.
  * @returns {Float32Array}
  */
-function transformVertexArray(args) {
+function transformVertexArray(args: {
+  vertices: Float32Array;
+  cartographicOrigin: number[];
+  cartesianModelMatrix: number[];
+  nodeMatrix: Matrix4;
+  indices: Uint8Array;
+  attributeSpecificTransformation: Function;
+  useCartesianPositions: boolean;
+}) {
   const {vertices, indices, attributeSpecificTransformation} = args;
   const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
   if (!vertices) {
@@ -410,7 +501,17 @@ function transformVertexArray(args) {
   return newVertices;
 }
 
-function transformVertexPositions(vertexVector, calleeArgs) {
+/**
+ * Trasform positions vector with the attribute specific transformations
+ * @param vertexVector - source positions vector to transform
+ * @param calleeArgs
+ * @param calleeArgs.cartesianModelMatrix - a cartesian model matrix to transform coordnates from cartesian to cartographic format
+ * @param calleeArgs.cartographicOrigin - cartographic origin coordinates
+ * @param calleeArgs.nodeMatrix - a gltf node transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param calleeArgs.useCartesianPositions - use coordinates as it is.
+ * @returns transformed positions vector
+ */
+function transformVertexPositions(vertexVector, calleeArgs): number[] {
   const {cartesianModelMatrix, cartographicOrigin, nodeMatrix, useCartesianPositions} = calleeArgs;
 
   if (nodeMatrix) {
@@ -431,7 +532,15 @@ function transformVertexPositions(vertexVector, calleeArgs) {
   return vertexVector;
 }
 
-function transformVertexNormals(vertexVector, calleeArgs) {
+/**
+ * Trasform normals vector with the attribute specific transformations
+ * @param vertexVector - source normals vector to transform
+ * @param calleeArgs
+ * @param calleeArgs.cartesianModelMatrix - a cartesian model matrix to transform coordnates from cartesian to cartographic format
+ * @param calleeArgs.nodeMatrix - a gltf node transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @returns transformed normals vector
+ */
+function transformVertexNormals(vertexVector, calleeArgs): number[] {
   const {cartesianModelMatrix, nodeMatrix} = calleeArgs;
 
   if (nodeMatrix) {
@@ -444,11 +553,11 @@ function transformVertexNormals(vertexVector, calleeArgs) {
 
 /**
  * Convert uv0 (texture coordinates) from coords based on indices to plain arrays, compatible with i3s
- * @param {Float32Array} texCoords - gltf primitive TEXCOORD_0 attribute
- * @param {Uint8Array} indices - gltf primitive indices
- * @returns {Float32Array}
+ * @param texCoords - gltf primitive TEXCOORD_0 attribute
+ * @param indices - gltf primitive indices
+ * @returns flattened texture coordinates
  */
-function flattenTexCoords(texCoords, indices) {
+function flattenTexCoords(texCoords: Float32Array, indices: Uint8Array): Float32Array {
   const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
   if (!texCoords) {
     // We need dummy UV0s because it is required in 1.6
@@ -467,11 +576,14 @@ function flattenTexCoords(texCoords, indices) {
 
 /**
  * Convert color from COLOR_0 based on indices to plain arrays, compatible with i3s
- * @param {object} colorsAttribute - gltf primitive COLOR_0 attribute
- * @param {Uint8Array} indices - gltf primitive indices
- * @returns {Uint8Array}
+ * @param colorsAttribute - gltf primitive COLOR_0 attribute
+ * @param indices - gltf primitive indices
+ * @returns flattened colors attribute
  */
-function flattenColors(colorsAttribute, indices) {
+function flattenColors(
+  colorsAttribute: GLTFAccessorPostprocessed,
+  indices: Uint8Array
+): Uint8Array {
   const components = colorsAttribute?.components || VALUES_PER_COLOR_ELEMENT;
   const newColors = new Uint8Array(indices.length * components);
   if (!colorsAttribute) {
@@ -494,28 +606,31 @@ function flattenColors(colorsAttribute, indices) {
 
 /**
  * Flatten batchedIds list based on indices to right ordered array, compatible with i3s
- * @param {Array} batchedIds - gltf primitive
- * @param {Uint8Array} indices - gltf primitive indices
- * @returns {Array}
+ * @param batchedIds - gltf primitive
+ * @param indices - gltf primitive indices
+ * @returns flattened batch ids
  */
-function flattenBatchIds(batchedIds, indices) {
+function flattenBatchIds(batchedIds: number[], indices: Uint8Array): number[] {
   if (!batchedIds.length || !indices.length) {
     return [];
   }
-  const newBatchIds = [];
+  const newBatchIds: number[] = [];
   for (let i = 0; i < indices.length; i++) {
     const coordIndex = indices[i];
     newBatchIds.push(batchedIds[coordIndex]);
   }
   return newBatchIds;
 }
+
 /**
  * Return batchIds based on possible attribute names for different kind of maps.
- * @param {Object} attributes {attributeName: Float32Array}
- * @returns {Array}
+ * @param attributes - the gltf primitive attributes
+ * @returns batch ids attribute
  */
-function getBatchIdsByAttributeName(attributes) {
-  let batchIds = [];
+function getBatchIdsByAttributeName(attributes: {
+  [key: string]: GLTFAccessorPostprocessed;
+}): number[] {
+  let batchIds: number[] = [];
 
   for (let index = 0; index < BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES.length; index++) {
     const possibleBatchIdAttributeName = BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES[index];
@@ -531,9 +646,15 @@ function getBatchIdsByAttributeName(attributes) {
   return batchIds;
 }
 
-function convertMaterials(tileContent) {
-  const result = [];
-  const sourceMaterials = tileContent.gltf.materials || [];
+/**
+ * Convert GLTF material to I3S material definitions and textures
+ * @param sourceMaterials Source GLTF materials
+ * @returns Array of Couples I3SMaterialDefinition + texture content
+ */
+function convertMaterials(
+  sourceMaterials: GLTFMaterialPostprocessed[] = []
+): I3SMaterialWithTexture[] {
+  const result: I3SMaterialWithTexture[] = [];
   for (const sourceMaterial of sourceMaterials) {
     result.push(convertMaterial(sourceMaterial));
   }
@@ -542,16 +663,20 @@ function convertMaterials(tileContent) {
 
 /**
  * Convert texture and material from gltf 2.0 material object
- * @param {Object} sourceMaterial - material object
- * @returns {Object}
+ * @param sourceMaterial - material object
+ * @returns I3S material definition and texture
  */
-function convertMaterial(sourceMaterial) {
-  const material = {
+function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterialWithTexture {
+  const material: I3SMaterialDefinition = {
     doubleSided: sourceMaterial.doubleSided,
-    emissiveFactor: sourceMaterial.emissiveFactor.map((c) => Math.round(c * 255)),
+    emissiveFactor: sourceMaterial.emissiveFactor?.map((c) => Math.round(c * 255)) as [
+      number,
+      number,
+      number
+    ],
     // It is in upper case in GLTF: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#alpha-coverage
     // But it is in lower case in I3S: https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
-    alphaMode: (sourceMaterial.alphaMode || 'OPAQUE').toLowerCase(),
+    alphaMode: convertAlphaMode(sourceMaterial.alphaMode),
     pbrMetallicRoughness: {
       roughnessFactor:
         sourceMaterial?.pbrMetallicRoughness?.roughnessFactor || DEFAULT_ROUGHNESS_FACTOR,
@@ -579,28 +704,63 @@ function convertMaterial(sourceMaterial) {
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
     const baseColorFactor = sourceMaterial?.pbrMetallicRoughness?.baseColorFactor;
     material.pbrMetallicRoughness.baseColorFactor =
-      (baseColorFactor && baseColorFactor.map((c) => Math.round(c * 255))) || undefined;
+      ((baseColorFactor && baseColorFactor.map((c) => Math.round(c * 255))) as [
+        number,
+        number,
+        number,
+        number
+      ]) || undefined;
   }
 
   return {material, texture};
 }
 
-function getDefaultMaterial() {
+/**
+ * Converts from `alphaMode` material property from GLTF to I3S format
+ * @param gltfAlphaMode Gltf material `alphaMode` property
+ * @returns I3SMaterialDefinition.alphaMode property
+ */
+function convertAlphaMode(
+  gltfAlphaMode?: 'OPAQUE' | 'MASK' | 'BLEND' | string
+): 'opaque' | 'mask' | 'blend' {
+  switch (gltfAlphaMode) {
+    case 'OPAQUE':
+      return 'opaque';
+    case 'MASK':
+      return 'mask';
+    case 'BLEND':
+      return 'blend';
+    default:
+      return 'opaque';
+  }
+}
+
+/**
+ * Form default I3SMaterialDefinition
+ * @returns I3S material definition
+ */
+function getDefaultMaterial(): I3SMaterialDefinition {
   return {
     alphaMode: 'opaque',
-    pbrMetallicRoughness: {}
+    pbrMetallicRoughness: {
+      metallicFactor: 1,
+      roughnessFactor: 1
+    }
   };
 }
 
 /**
  * Form "sharedResources" from gltf materials array
- * @param {Object} tileContent - 3d tile content
- * @returns {Object} {materialDefinitionInfos: Object[], textureDefinitionInfos: Object[]} -
+ * @param gltfMaterials - GLTF materials array
+ * @param nodeId - I3S node ID
+ * @returns {materialDefinitionInfos: Object[], textureDefinitionInfos: Object[]} -
  * 2 arrays in format of i3s sharedResources data https://github.com/Esri/i3s-spec/blob/master/docs/1.7/sharedResource.cmn.md
  */
-function getSharedResources(tileContent, nodeId) {
-  const gltfMaterials = tileContent.gltf.materials;
-  const i3sResources = {};
+function getSharedResources(
+  gltfMaterials: GLTFMaterialPostprocessed[],
+  nodeId: number
+): SharedResourcesArrays {
+  const i3sResources: SharedResourcesArrays = {};
 
   if (!gltfMaterials || !gltfMaterials.length) {
     return i3sResources;
@@ -623,13 +783,20 @@ function getSharedResources(tileContent, nodeId) {
 
 /**
  * Convert gltf material into I3S sharedResources data
- * @param {Object} gltfMaterial - gltf material data
- * @returns {Object} - Couple {materialDefinitionInfo, textureDefinitionInfo} extracted from gltf material data
+ * @param gltfMaterial - gltf material data
+ * @param nodeId - I3S node ID
+ * @returns - Couple {materialDefinitionInfo, textureDefinitionInfo} extracted from gltf material data
  */
-function convertGLTFMaterialToI3sSharedResources(gltfMaterial, nodeId) {
+function convertGLTFMaterialToI3sSharedResources(
+  gltfMaterial: GLTFMaterialPostprocessed,
+  nodeId: number
+): {
+  materialDefinitionInfo: MaterialDefinitionInfo;
+  textureDefinitionInfo: TextureDefinitionInfo | null;
+} {
   const texture =
     gltfMaterial?.pbrMetallicRoughness?.baseColorTexture || gltfMaterial.emissiveTexture;
-  let textureDefinitionInfo = null;
+  let textureDefinitionInfo: TextureDefinitionInfo | null = null;
   if (texture) {
     textureDefinitionInfo = extractSharedResourcesTextureInfo(texture.texture, nodeId);
   }
@@ -642,7 +809,10 @@ function convertGLTFMaterialToI3sSharedResources(gltfMaterial, nodeId) {
   }
 
   return {
-    materialDefinitionInfo: extractSharedResourcesMaterialInfo(colorFactor, metallicFactor),
+    materialDefinitionInfo: extractSharedResourcesMaterialInfo(
+      colorFactor || [1, 1, 1, 1],
+      metallicFactor
+    ),
     textureDefinitionInfo
   };
 }
@@ -658,11 +828,14 @@ function convertGLTFMaterialToI3sSharedResources(gltfMaterial, nodeId) {
  *
  * Assumption: F0 - specular in i3s ("specular reflection" <-> "reflectance value at normal incidence")
  * cdiff - diffuse in i3s ("Diffuse color" <-> "'c' diffuse" (c means color?))
- * @param {number[]} baseColorFactor - RGBA color in 0..1 format
- * @param {number} metallicFactor - "metallicFactor" attribute of gltf material object
- * @returns {Object}
+ * @param baseColorFactor - RGBA color in 0..1 format
+ * @param metallicFactor - "metallicFactor" attribute of gltf material object
+ * @returns material definition info for I3S shared resource
  */
-function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor = 1) {
+function extractSharedResourcesMaterialInfo(
+  baseColorFactor: number[],
+  metallicFactor: number = 1
+): MaterialDefinitionInfo {
   const matDielectricColorComponent = 0.04 / 255; // Color from rgb (255) to 0..1 resolution
   // All color resolutions are 0..1
   const black = new Vector4(0, 0, 0, 1);
@@ -681,38 +854,47 @@ function extractSharedResourcesMaterialInfo(baseColorFactor, metallicFactor = 1)
   dielectricSpecular[3] = 1;
   const specular = dielectricSpecular.lerp(dielectricSpecular, baseColorVector, metallicFactor);
   return {
-    diffuse: diffuse.toArray(),
-    specular: specular.toArray()
+    params: {
+      diffuse: diffuse.toArray(),
+      specular: specular.toArray(),
+      renderMode: 'solid'
+    }
   };
 }
 
 /**
  * Form "textureDefinition" which is part of "sharedResouces"
- * @param {Object} texture - texture image info
- * @returns {Object}
+ * @param texture - texture image info
+ * @param nodeId - I3S node ID
+ * @returns texture definition infor for shared resource
  */
-function extractSharedResourcesTextureInfo(texture, nodeId) {
+function extractSharedResourcesTextureInfo(
+  texture: GLTFTexturePostprocessed,
+  nodeId: number
+): TextureDefinitionInfo {
   return {
-    encoding: [texture.source.mimeType],
+    encoding: texture?.source?.mimeType ? [texture.source.mimeType] : undefined,
     images: [
       {
         // 'i3s' has just size which is width of the image. Images are supposed to be square.
         // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/image.cmn.md
         id: generateImageId(texture, nodeId),
-        size: texture.source.image.width,
-        length: [texture.source.image.data.length]
+        size: texture.source?.image.width,
+        length: [texture.source?.image.data.length]
       }
     ]
   };
 }
-/*
+
+/**
  * Formula for counting imageId:
  * https://github.com/Esri/i3s-spec/blob/0a6366a9249b831db8436c322f8d27521e86cf07/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#generating-image-ids
- * @param {Object} texture - texture image info
- * @returns {string}
+ * @param texture - texture image info
+ * @param nodeId - I3S node ID
+ * @returns calculate image ID according to the spec
  */
-function generateImageId(texture, nodeId) {
-  const {width, height} = texture.source.image;
+function generateImageId(texture: GLTFTexturePostprocessed, nodeId) {
+  const {width, height} = texture.source?.image;
   const levelCountOfTexture = 1;
   const indexOfLevel = 0;
   const indexOfTextureInStore = nodeId + 1;
@@ -732,13 +914,18 @@ function generateImageId(texture, nodeId) {
 
 /**
  * Make all feature ids unique through all nodes in layout.
- * @param {Array} featureIds
- * @param {Array} featureIndices
- * @param {Array} featuresHashArray
- * @param {Object} batchTable
+ * @param featureIds
+ * @param featureIndices
+ * @param featuresHashArray
+ * @param batchTable
  * @returns {void}
  */
-function makeFeatureIdsUnique(featureIds, featureIndices, featuresHashArray, batchTable) {
+function makeFeatureIdsUnique(
+  featureIds: number[],
+  featureIndices: number[],
+  featuresHashArray: string[],
+  batchTable: {[key: string]: any}
+) {
   const replaceMap = getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray);
   replaceIndicesByUnique(featureIndices, replaceMap);
   replaceIndicesByUnique(featureIds, replaceMap);
@@ -814,7 +1001,7 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
  * @returns {Array} - Array of file buffers.
  */
 function convertBatchTableToAttributeBuffers(batchTable, featureIds, attributeStorageInfo) {
-  const attributeBuffers = [];
+  const attributeBuffers: ArrayBuffer[] = [];
 
   if (batchTable) {
     const batchTableWithFeatureIds = {
@@ -825,7 +1012,7 @@ function convertBatchTableToAttributeBuffers(batchTable, featureIds, attributeSt
     for (const key in batchTableWithFeatureIds) {
       const type = getAttributeType(key, attributeStorageInfo);
 
-      let attributeBuffer = null;
+      let attributeBuffer: ArrayBuffer | null = null;
 
       switch (type) {
         case OBJECT_ID_TYPE:
@@ -842,7 +1029,9 @@ function convertBatchTableToAttributeBuffers(batchTable, featureIds, attributeSt
           attributeBuffer = generateStringAttributeBuffer(batchTableWithFeatureIds[key]);
       }
 
-      attributeBuffers.push(attributeBuffer);
+      if (attributeBuffer) {
+        attributeBuffers.push(attributeBuffer);
+      }
     }
   }
 
@@ -864,7 +1053,7 @@ function getAttributeType(key, attributeStorageInfo) {
  * @param {Array} featureIds
  * @returns {ArrayBuffer} - Buffer with objectId data.
  */
-function generateShortIntegerAttributeBuffer(featureIds) {
+function generateShortIntegerAttributeBuffer(featureIds): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const valuesArray = new Uint32Array(featureIds);
   return concatenateArrayBuffers(count.buffer, valuesArray.buffer);
@@ -875,7 +1064,7 @@ function generateShortIntegerAttributeBuffer(featureIds) {
  * @param {Array} featureIds
  * @returns {ArrayBuffer} - Buffer with objectId data.
  */
-function generateDoubleAttributeBuffer(featureIds) {
+function generateDoubleAttributeBuffer(featureIds): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const padding = new Uint8Array(4);
   const valuesArray = new Float64Array(featureIds);
@@ -888,11 +1077,11 @@ function generateDoubleAttributeBuffer(featureIds) {
  * @param {Array} batchAttributes
  * @returns {ArrayBuffer} - Buffer with batch table data.
  */
-function generateStringAttributeBuffer(batchAttributes) {
+function generateStringAttributeBuffer(batchAttributes): ArrayBuffer {
   const stringCountArray = new Uint32Array([batchAttributes.length]);
   let totalNumberOfBytes = 0;
   const stringSizesArray = new Uint32Array(batchAttributes.length);
-  const stringBufferArray = [];
+  const stringBufferArray: ArrayBuffer[] = [];
 
   for (let index = 0; index < batchAttributes.length; index++) {
     const currentString = `${String(batchAttributes[index])}\0`;
@@ -946,7 +1135,13 @@ async function generateCompressedGeometry(vertexCount, convertedAttributes, attr
 
   const featureIndex = generateFeatureIndexAttribute(featureIndices, faceRange);
 
-  const compressedAttributes = {
+  const compressedAttributes: {
+    positions: TypedArray;
+    normals: TypedArray;
+    colors: TypedArray;
+    'feature-index': TypedArray;
+    texCoords?: TypedArray;
+  } = {
     positions,
     normals,
     colors,

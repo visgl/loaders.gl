@@ -32,7 +32,7 @@
     "build-worker": "esbuild src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.0-alpha.1",
+    "@loaders.gl/gis": "3.2.0-alpha.1",
     "@loaders.gl/loader-utils": "3.2.0-alpha.1",
     "@math.gl/proj4": "^3.3.1",
     "flatgeobuf": "3.6.5"
