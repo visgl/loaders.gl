@@ -978,11 +978,11 @@ export default class I3SConverter {
    * @param slpkChildPath - the resource path inside *slpk file
    */
   private async _writeAttributes(
-    attributes: ArrayBuffer[],
+    attributes: ArrayBuffer[] | null = [],
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
-    if (attributes.length && this.layers0?.attributeStorageInfo?.length) {
+    if (attributes?.length && this.layers0?.attributeStorageInfo?.length) {
       for (let index = 0; index < attributes.length; index++) {
         const folderName = this.layers0.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
