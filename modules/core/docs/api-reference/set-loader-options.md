@@ -1,6 +1,6 @@
-# setLoaderOptions
+# Loader Options
 
-Set the supplied options onto the current global options object
+Set or get the supplied options onto the current global options object
 
 ## Usage
 
@@ -23,6 +23,11 @@ setLoaderOptions({
 Merges the supplied options into the current global options
 
 - `options`: See [`LoaderOptions`](./loader-options).
+
+### getLoaderOptions() : LoadeOptions
+
+Returns current global options
+
 ## Options
 
 A loader object, that can contain a mix of options:

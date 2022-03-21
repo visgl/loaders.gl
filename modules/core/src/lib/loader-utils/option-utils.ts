@@ -28,7 +28,7 @@ export function getGlobalLoaderState(): GlobalLoaderState {
 
 // Store global loader options on the global object to increase chances of cross loaders-version interoperability
 // NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
-const getGlobalLoaderOptions = () => {
+export const getGlobalLoaderOptions = () => {
   const state = getGlobalLoaderState();
   // Ensure all default loader options from this library are mentioned
   state.globalOptions = state.globalOptions || {...DEFAULT_LOADER_OPTIONS};
