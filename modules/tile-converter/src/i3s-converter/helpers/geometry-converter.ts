@@ -222,7 +222,7 @@ async function _makeNodeResources({
     )
   );
   const compressedGeometry = draco
-    ? await generateCompressedGeometry(
+    ? generateCompressedGeometry(
         vertexCount,
         convertedAttributes,
         {
@@ -1175,17 +1175,16 @@ async function generateCompressedGeometry(
     }
   };
 
-  return new Uint8Array(
-    await encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
-      ...DracoWriterWorker.options,
-      source: dracoWorkerSoure,
-      _nodeWorkers: true,
-      draco: {
-        method: 'MESH_SEQUENTIAL_ENCODING',
-        attributesMetadata
-      }
-    })
-  );
+  return encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
+    ...DracoWriterWorker.options,
+    source: dracoWorkerSoure,
+    reuseWorkers: true,
+    _nodeWorkers: true,
+    draco: {
+      method: 'MESH_SEQUENTIAL_ENCODING',
+      attributesMetadata
+    }
+  });
 }
 
 /**

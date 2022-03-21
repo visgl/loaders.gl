@@ -829,7 +829,7 @@ export default class I3SConverter {
    */
   private async _writeGeometries(
     geometryBuffer: ArrayBuffer,
-    compressedGeometry: ArrayBuffer,
+    compressedGeometry: Promise<ArrayBuffer>,
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {

@@ -16,7 +16,7 @@ export type I3SConvertedResources = {
   /**
    * Draco compressed geometry
    */
-  compressedGeometry?: ArrayBuffer | null;
+  compressedGeometry?: Promise<ArrayBuffer> | null;
   /**
    * Texture image content
    */
