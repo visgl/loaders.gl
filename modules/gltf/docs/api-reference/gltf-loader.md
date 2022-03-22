@@ -38,9 +38,9 @@ The `GLTFLoader` aims to take care of as much processing as possible, while rema
 
 The GLTF Loader returns an object with a `json` field containing the glTF Scenegraph. In its basic mode, the `GLTFLoader` does not modify the loaded JSON in any way. Instead, the results of additional processing are placed in parallel top-level fields such as `buffers` and `images`. This ensures that applications that want to work with the standard glTF data structure can do so.
 
-Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](docs/api-reference/gltf-loaders/gltf-extensions.md) for details.
+Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
 
-In addition, certain glTF extensions, in particular Draco mesh encoding, can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations. See [glTF Extensions](docs/api-reference/gltf-loaders/gltf-extensions.md) for more information.
+In addition, certain glTF extensions, in particular Draco mesh encoding, can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations. See [glTF Extensions](gltf-extensions) for more information.
 
 Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) has significant limitations. When parsed asynchronously (using `await parse()` or `await load()`), the following additional capabilities are enabled:
 
@@ -61,13 +61,13 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 
 Remarks:
 
-- The `gltf.postProcess` option activates additional [post processing](docs/api-reference/post-process-gltf) that transforms parts of JSON structure in the loaded glTF data, to make glTF data easier use in applications and WebGL libraries (e.g replacing indices with links to the indexed objects). However, the data structure returned by the `GLTFLoader` will no longer be fully glTF compatible.
+- The `gltf.postProcess` option activates additional [post processing](post-process-gltf) that transforms parts of JSON structure in the loaded glTF data, to make glTF data easier use in applications and WebGL libraries (e.g replacing indices with links to the indexed objects). However, the data structure returned by the `GLTFLoader` will no longer be fully glTF compatible.
 
 ## Data Format
 
 ### With Post Processing
 
-When the `GLTFLoader` is called with `gltf.postProcess` option set to `true` (the default),the parsed JSON chunk will be returned, and [post processing](docs/api-reference/post-process-gltf) will have been performed, which will link data from binary buffers into the parsed JSON structure using non-standard fields, and also modify the data in other ways to make it easier to use.
+When the `GLTFLoader` is called with `gltf.postProcess` option set to `true` (the default),the parsed JSON chunk will be returned, and [post processing](post-process-gltf) will have been performed, which will link data from binary buffers into the parsed JSON structure using non-standard fields, and also modify the data in other ways to make it easier to use.
 
 At the top level, this will look like a standard glTF JSON structure:
 
@@ -80,7 +80,7 @@ At the top level, this will look like a standard glTF JSON structure:
 }
 ```
 
-However, the objects inside these arrays will have been pre-processed to simplify usage. For details on changes and extra fields added to the various glTF objects, see [post processing](docs/api-reference/post-process-gltf).
+However, the objects inside these arrays will have been pre-processed to simplify usage. For details on changes and extra fields added to the various glTF objects, see [post processing](post-process-gltf).
 
 ### Without Post Processing
 
