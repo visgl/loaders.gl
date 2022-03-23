@@ -24,7 +24,7 @@ Merges the supplied options into the current global options
 
 - `options`: See [`LoaderOptions`](./loader-options).
 
-### getLoaderOptions() : LoadeOptions
+### getLoaderOptions() : LoaderOptions
 
 Returns current global options
 
