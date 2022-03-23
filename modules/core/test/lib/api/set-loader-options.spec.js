@@ -8,11 +8,11 @@ test('setLoaderOptions', (t) => {
 
 test('getLoaderOptions', (t) => {
   const options1 = getLoaderOptions();
-  t.notOk(options1._worker);
+  t.notOk(options1.customOption);
   setLoaderOptions({
-    _worker: 'test'
+    customOption: 'customValue'
   });
   const options2 = getLoaderOptions();
-  t.equals(options2._worker, 'test');
+  t.equals(options2.customOption, 'customValue');
   t.end();
 });
