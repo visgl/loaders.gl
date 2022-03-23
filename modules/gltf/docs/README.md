@@ -37,7 +37,7 @@ const arrayBuffer = encode(gltfScenegraph, GLTFWriter);
 
 ## GLTF Post Processing
 
-The [`postProcessGLTF`](docs/api-reference/gltf/post-process-gltf) function implements a number of transformations on the loaded glTF data that would typically need to be performed by the application after loading the data, and is provided as an optional function that applications can call after loading glTF data. Refer to the reference page for details on what transformations are performed.
+The [`postProcessGLTF`](api-reference/post-process-gltf) function implements a number of transformations on the loaded glTF data that would typically need to be performed by the application after loading the data, and is provided as an optional function that applications can call after loading glTF data. Refer to the reference page for details on what transformations are performed.
 
 Context: the glTF data object returned by the GLTF loader contains the "raw" glTF JSON structure (to ensure generality and "data fidelity" reasons). However, most applications that are going to use the glTF data to visualize it in (typically in WebGL) will need to do some processing of the loaded data before using it.
 
@@ -49,7 +49,7 @@ To allow for this (and also to generally improve the glTF code structure), the `
 
 ## glTF Extension Support
 
-Certain glTF extensions are fully or partially supported by the glTF classes. For details on which extensions are supported, see [glTF Extensions](docs/api-reference/gltf-loaders/gltf-extensions).
+Certain glTF extensions are fully or partially supported by the glTF classes. For details on which extensions are supported, see [glTF Extensions](api-reference/gltf-extensions).
 
 ## Draco Mesh and Point Cloud Compression
 
