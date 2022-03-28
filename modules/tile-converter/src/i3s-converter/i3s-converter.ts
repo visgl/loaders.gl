@@ -16,7 +16,7 @@ import type {
   PopupInfo,
   FieldInfo
 } from '@loaders.gl/i3s';
-import {load, encode} from '@loaders.gl/core';
+import {load, encode, fetchFile, getLoaderOptions} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
@@ -54,6 +54,8 @@ import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {I3SConvertedResources, SharedResourcesArrays} from './types';
+import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
+import {DracoWriterWorker} from '@loaders.gl/draco';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -96,6 +98,7 @@ export default class I3SConverter {
   generateTextures: boolean;
   generateBoundingVolumes: boolean;
   layersHasTexture: boolean;
+  workerSource: {[key: string]: string} = {};
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
@@ -176,6 +179,8 @@ export default class I3SConverter {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
 
+    await this.loadWorkers();
+
     const preloadOptions = await this._fetchPreloadOptions();
     const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
     if (preloadOptions.headers) {
@@ -188,6 +193,11 @@ export default class I3SConverter {
 
     await this._createAndSaveTileset(outputPath, tilesetName);
     await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+
     return sourceTilesetJson;
   }
 
@@ -654,7 +664,8 @@ export default class I3SConverter {
       this.layers0?.attributeStorageInfo,
       this.options.draco,
       this.generateBoundingVolumes,
-      this.geoidHeightModel!
+      this.geoidHeightModel!,
+      this.workerSource
     );
     return resourcesData;
   }
@@ -818,7 +829,7 @@ export default class I3SConverter {
    */
   private async _writeGeometries(
     geometryBuffer: ArrayBuffer,
-    compressedGeometry: ArrayBuffer,
+    compressedGeometry: Promise<ArrayBuffer>,
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
@@ -1307,5 +1318,16 @@ export default class I3SConverter {
    */
   private isContentSupported(sourceRootTile: Tile3D): boolean {
     return ['b3dm', 'glTF'].includes(sourceRootTile?.content?.type);
+  }
+
+  private async loadWorkers(): Promise<void> {
+    console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
+    if (this.options.draco) {
+      const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
+      const sourceResponse = await fetchFile(url);
+      const source = await sourceResponse.text();
+      this.workerSource.draco = source;
+    }
+    console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }

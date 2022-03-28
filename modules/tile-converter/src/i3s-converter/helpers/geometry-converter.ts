@@ -1,8 +1,8 @@
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
-import {DracoWriter} from '@loaders.gl/draco';
-import {encode, assert} from '@loaders.gl/core';
+import {DracoWriterWorker} from '@loaders.gl/draco';
+import {assert, encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
@@ -69,7 +69,8 @@ export default async function convertB3dmToI3sGeometry(
   attributeStorageInfo: AttributeStorageInfo[] | undefined,
   draco: boolean,
   generateBoundingVolumes: boolean,
-  geoidHeightModel: Geoid
+  geoidHeightModel: Geoid,
+  workerSource: {[key: string]: string}
 ) {
   const useCartesianPositions = generateBoundingVolumes;
   const materialAndTextureList: I3SMaterialWithTexture[] = convertMaterials(
@@ -115,7 +116,8 @@ export default async function convertB3dmToI3sGeometry(
         nodeId: nodesCounter,
         featuresHashArray,
         attributeStorageInfo,
-        draco
+        draco,
+        workerSource
       })
     );
     nodesCounter++;
@@ -177,7 +179,8 @@ async function _makeNodeResources({
   nodeId,
   featuresHashArray,
   attributeStorageInfo,
-  draco
+  draco,
+  workerSource
 }: {
   convertedAttributes: ConvertedAttributes;
   material: I3SMaterialDefinition;
@@ -187,6 +190,7 @@ async function _makeNodeResources({
   featuresHashArray: string[];
   attributeStorageInfo?: AttributeStorageInfo[];
   draco: boolean;
+  workerSource: {[key: string]: string};
 }): Promise<I3SConvertedResources> {
   const boundingVolumes = convertedAttributes.boundingVolumes;
   const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
@@ -218,14 +222,19 @@ async function _makeNodeResources({
     )
   );
   const compressedGeometry = draco
-    ? await generateCompressedGeometry(vertexCount, convertedAttributes, {
-        positions,
-        normals,
-        texCoords: texture ? texCoords : new Float32Array(0),
-        colors,
-        featureIds,
-        faceRange
-      })
+    ? generateCompressedGeometry(
+        vertexCount,
+        convertedAttributes,
+        {
+          positions,
+          normals,
+          texCoords: texture ? texCoords : new Float32Array(0),
+          colors,
+          featureIds,
+          faceRange
+        },
+        workerSource.draco
+      )
     : null;
 
   const attributes = convertBatchTableToAttributeBuffers(
@@ -1118,10 +1127,17 @@ function generateBigUint64Array(featureIds) {
 /**
  * Generates draco compressed geometry
  * @param {Number} vertexCount
- * @param {Object} convertedAttributes
+ * @param {Object} convertedAttributes - get rid of this argument here
+ * @param {Object} attributes - geometry attributes to compress
+ * @param {string} dracoWorkerSoure - draco worker source code
  * @returns {Promise<object>} - COmpressed geometry.
  */
-async function generateCompressedGeometry(vertexCount, convertedAttributes, attributes) {
+async function generateCompressedGeometry(
+  vertexCount,
+  convertedAttributes,
+  attributes,
+  dracoWorkerSoure
+) {
   const {positions, normals, texCoords, colors, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
 
@@ -1159,14 +1175,16 @@ async function generateCompressedGeometry(vertexCount, convertedAttributes, attr
     }
   };
 
-  return new Uint8Array(
-    await encode({attributes: compressedAttributes, indices}, DracoWriter, {
-      draco: {
-        method: 'MESH_SEQUENTIAL_ENCODING',
-        attributesMetadata
-      }
-    })
-  );
+  return encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
+    ...DracoWriterWorker.options,
+    source: dracoWorkerSoure,
+    reuseWorkers: true,
+    _nodeWorkers: true,
+    draco: {
+      method: 'MESH_SEQUENTIAL_ENCODING',
+      attributesMetadata
+    }
+  });
 }
 
 /**

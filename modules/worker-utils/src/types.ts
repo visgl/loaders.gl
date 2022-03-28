@@ -35,7 +35,7 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
-  options: object;
+  options: {[key: string]: any};
   deprecatedOptions?: object;
 
   process?: Process;

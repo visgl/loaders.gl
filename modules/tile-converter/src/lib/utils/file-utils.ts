@@ -11,11 +11,13 @@ import {compressFileWithGzip} from './compress-util';
  */
 export async function writeFile(
   path: string,
-  data: string | Uint8Array | ArrayBuffer,
+  data: string | Uint8Array | ArrayBuffer | Promise<ArrayBuffer>,
   fileName: string = 'index.json'
 ): Promise<string> {
   let toWriteData: string | Uint8Array;
-  if (data instanceof ArrayBuffer) {
+  if (data instanceof Promise) {
+    toWriteData = new Uint8Array(await data);
+  } else if (data instanceof ArrayBuffer) {
     toWriteData = new Uint8Array(data as ArrayBuffer);
   } else {
     toWriteData = data;
@@ -41,7 +43,7 @@ export async function writeFile(
  */
 export async function writeFileForSlpk(
   path: string,
-  data: string | Uint8Array | ArrayBuffer,
+  data: string | Uint8Array | ArrayBuffer | Promise<ArrayBuffer>,
   fileName: string = 'index.json',
   compress: boolean = true
 ): Promise<string> {

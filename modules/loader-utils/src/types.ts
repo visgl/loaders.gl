@@ -158,7 +158,12 @@ export type LoaderWithParser = Loader & {
 };
 
 /** Options for writers */
-export type WriterOptions = {};
+export type WriterOptions = {
+  /** worker source. If is set will be used instead of loading worker from the Internet */
+  souce?: string | null;
+  /** writer-specific options */
+  [writerId: string]: any;
+};
 
 /**
  * A writer definition that can be used with `@loaders.gl/core` functions
@@ -169,8 +174,9 @@ export type Writer = {
   id: string;
   module: string;
   version: string;
+  worker?: string | boolean;
 
-  options: object;
+  options: WriterOptions;
   deprecatedOptions?: object;
 
   // TODO - are these are needed?
