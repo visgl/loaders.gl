@@ -53,6 +53,32 @@ test('load#auto detect loader', (t) => {
   load('package.json', {JSON: {option: true}});
 });
 
+test('load#load retrieve Response', async (t) => {
+  const TEST_LOADER = {
+    name: 'JSON',
+    extensions: ['json'],
+    parse: async (arrayBuffer, options, context) => {
+      t.ok(arrayBuffer instanceof ArrayBuffer, 'Got ArrayBuffer');
+      const data = await context.parse(arrayBuffer, JSONLoader);
+      t.ok(data, 'Read response data');
+
+      const {response} = context;
+      t.ok(response, 'response is populated');
+      t.equals(response.url, resolvePath(JSON_URL), 'response URL is set');
+      t.equals(response.status, 200, 'response status is 200');
+      t.equals(
+        response.headers.get('content-length'),
+        '4590',
+        'response content-length is correct'
+      );
+      t.end();
+    }
+  };
+
+  load(JSON_URL, TEST_LOADER);
+  t.end();
+});
+
 test('load#Blob(text) - BROWSER ONLY', async (t) => {
   if (!isBrowser) {
     t.comment('Skipping load(Blob) tests in Node.js');
