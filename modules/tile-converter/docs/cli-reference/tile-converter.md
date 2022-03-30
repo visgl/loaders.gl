@@ -40,6 +40,10 @@ Alternatively, to download the `tile-converter` docker image, run:
 $ docker pull visgl/tile-converter
 ```
 
+## Supported Platforms
+
+Works only on NodeJS.
+
 ## Options
 
 | Option                    | 3DTiles to I3S conversion | I3S to 3DTiles conversion | Description                                                                                                                                                                                                                                          |
@@ -57,7 +61,8 @@ $ docker pull visgl/tile-converter
 | no-draco                  | \*                        |                           | Disable draco compression for geometry. Default: not set                                                                                                                                                                                             |
 | generate-textures         | \*                        |                           | Enable KTX2 textures generation if only one of (JPG, PNG) texture is provided or generate JPG texture if only KTX2 is provided                                                                                                                       |
 | generate-bounding-volumes | \*                        |                           | Will generate obb and mbs bounding volumes from geometry                                                                                                                                                                                             |
-| help                      | \*                        | \*                        | Show the converter tool options list                                                                                                                                                                                                                 |
+| help                      | \*                        | \*                        | Show the converter tool options list        
+| validate                      | \*                        | \*                        | Enable validation                                                                                                                                                                                                                                 |
 
 ## Running local server to handle i3s layer.
 
