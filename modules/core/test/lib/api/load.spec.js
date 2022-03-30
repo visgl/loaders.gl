@@ -64,7 +64,7 @@ test('load#load retrieve Response', async (t) => {
 
       const {response} = context;
       t.ok(response, 'response is populated');
-      t.equals(response.url, resolvePath(JSON_URL), 'response URL is set');
+      t.ok(response.url.indexOf(resolvePath(JSON_URL)) !== -1, 'response URL is set');
       t.equals(response.status, 200, 'response status is 200');
       t.equals(
         response.headers.get('content-length'),
