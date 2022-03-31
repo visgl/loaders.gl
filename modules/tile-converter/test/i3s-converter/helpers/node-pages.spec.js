@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
 import {NodePages} from '@loaders.gl/tile-converter';
 import {isBrowser} from '@loaders.gl/core';
+import WritingQueue from '../../../src/lib/utils/writing-queue';
 
 /** @type {import('@loaders.gl/i3s').NodeInPage} */
 const newNodeStub = {
@@ -158,6 +159,7 @@ test('tile-converter - Converters#NodePages', async (t) => {
 
   t.test('Should save node pages', async (st) => {
     const savedNodePages = [];
+    const writingQueue = new WritingQueue();
     const writeFileFunc = (layerPath, data, slpk) => {
       savedNodePages.push(data);
     };
@@ -165,7 +167,7 @@ test('tile-converter - Converters#NodePages', async (t) => {
     for (let i = 0; i <= 65; i++) {
       nodePages.push(newNodeStub);
     }
-    await nodePages.save('/layer/0', {}, false);
+    await nodePages.save('/layer/0', writingQueue, false);
     st.equal(typeof savedNodePages[1], 'string');
     st.equal(savedNodePages.length, 2);
     st.end();
@@ -173,6 +175,7 @@ test('tile-converter - Converters#NodePages', async (t) => {
 
   t.test('Should save node pages for slpk packaging', async (st) => {
     const savedNodePages = [];
+    const writingQueue = new WritingQueue();
     const writeFileFuncForSlpk = (layerPath, data, slpk) => {
       savedNodePages.push(data);
     };
@@ -180,7 +183,7 @@ test('tile-converter - Converters#NodePages', async (t) => {
     for (let i = 0; i <= 65; i++) {
       nodePages.push(newNodeStub);
     }
-    await nodePages.save('/layer/0', {}, true);
+    await nodePages.save('/layer/0', writingQueue, true);
     st.equal(typeof savedNodePages[1], 'string');
     st.equal(savedNodePages.length, 3);
     st.end();

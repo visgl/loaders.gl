@@ -1,7 +1,10 @@
+import type {WritingQueueItem} from '../../lib/utils/writing-queue';
+
 import {join} from 'path';
 import transform from 'json-map-transform';
 import {METADATA as metadataTemplate} from '../json-templates/metadata';
 import {NodeInPage} from '@loaders.gl/i3s';
+import WritingQueue from '../../lib/utils/writing-queue';
 
 // @ts-nocheck
 /**
@@ -188,35 +191,40 @@ export default class NodePages {
   /**
    * Save all the node pages
    * Run this method when all nodes is pushed in nodePages
-   * @param {string} layers0Path - path of layer
-   * @param {Object} fileMap - fileMap which keep info for slpk archive
-   * @param {boolean} slpk
-   * @return {promise}
+   * @param layers0Path - path of layer
+   * @param writingQueue - writing queue that controlls files writing concurrency
+   * @param slpk
    */
-  async save(layers0Path: string, fileMap: Object, slpk: boolean = false): Promise<void> {
+  async save(
+    layers0Path: string,
+    writingQueue: WritingQueue<WritingQueueItem>,
+    slpk: boolean = false
+  ): Promise<void> {
     if (slpk) {
       for (const [index, nodePage] of this.nodePages.entries()) {
         const nodePageStr = JSON.stringify(nodePage);
         const slpkPath = join(layers0Path, 'nodepages');
-        fileMap[`nodePages/${index.toString()}.json.gz`] = await this.writeFile(
-          slpkPath,
-          nodePageStr,
-          `${index.toString()}.json`
-        );
+        writingQueue.enqueue({
+          archiveKey: `nodePages/${index.toString()}.json.gz`,
+          writePromise: this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`)
+        });
       }
       const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate());
       const compress = false;
-      fileMap['metadata.json'] = await this.writeFile(
-        layers0Path,
-        JSON.stringify(metadata),
-        'metadata.json',
-        compress
-      );
+      writingQueue.enqueue({
+        archiveKey: 'metadata.json',
+        writePromise: this.writeFile(
+          layers0Path,
+          JSON.stringify(metadata),
+          'metadata.json',
+          compress
+        )
+      });
     } else {
       for (const [index, nodePage] of this.nodePages.entries()) {
         const nodePageStr = JSON.stringify(nodePage);
         const nodePagePath = join(layers0Path, 'nodepages', index.toString());
-        await this.writeFile(nodePagePath, nodePageStr);
+        writingQueue.enqueue({writePromise: this.writeFile(nodePagePath, nodePageStr)});
       }
     }
   }
