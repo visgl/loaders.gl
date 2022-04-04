@@ -35,13 +35,13 @@ export async function load(
   let data = url;
   // url is a string, fetch the url
   if (typeof url === 'string') {
-    data = await fetch(url);
+    data = await fetch(url, options);
     // URL is Blob or File, fetchFile handles it (alt: we could generate ObjectURL here)
   }
 
   if (isBlob(url)) {
     // The fetch response object will contain blob.name
-    data = await fetch(url);
+    data = await fetch(url, options);
   }
 
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
