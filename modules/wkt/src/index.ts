@@ -11,5 +11,10 @@ export {WKTWriter} from './wkt-writer';
 export {WKTCRSLoader} from './wkt-crs-loader';
 export {WKTCRSWriter} from './wkt-crs-writer';
 
-// EXPERIMENTAL EXPORTS
+// EXPERIMENTAL APIs
+export type {WKBHeader} from './lib/parse-wkb-header';
+export {isWKB, parseWKBHeader} from './lib/parse-wkb-header';
+
+export {isWKT} from './lib/parse-wkt';
+
 export {encodeHex, decodeHex} from './lib/utils/hex-transcoder';

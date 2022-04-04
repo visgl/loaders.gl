@@ -1,9 +1,10 @@
 // loaders.gl, MIT license
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import {BinaryGeometry, Geometry} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
 import {parseWKB} from './lib/parse-wkb';
-import {BinaryGeometry, Geometry} from '@loaders.gl/schema';
+import {isWKB} from './lib/parse-wkb-header';
 
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
@@ -23,6 +24,8 @@ export const WKBWorkerLoader: Loader<BinaryGeometry | Geometry, never, WKBLoader
   category: 'geometry',
   extensions: ['wkb'],
   mimeTypes: [],
+  // TODO can we define static, serializable tests, eg. some binary strings?
+  tests: [isWKB],
   options: {
     wkb: {
       shape: 'binary-geometry'
