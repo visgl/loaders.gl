@@ -37,7 +37,7 @@
     "build-bundle": "esbuild ./src/index.ts --bundle --outfile=dist/dist.min.js --platform=node",
     "build-converter-bundle": "webpack --display errors-only --config ./converter-webpack/bundle.js",
     "build-bin": "BABEL_ENV=es5 babel scripts --config-file ../../babel.config.js --out-dir dist/scripts",
-    "build-worker": "esbuild src/workers/i3s-attribute-transformation-nodejs-worker.ts --outfile=dist/i3s-attribute-transformation-nodejs-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/i3s-attributes-worker.ts --outfile=dist/i3s-attributes-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/3d-tiles": "3.2.0-alpha.1",

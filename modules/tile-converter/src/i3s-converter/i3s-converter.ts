@@ -56,7 +56,7 @@ import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {I3SConvertedResources, SharedResourcesArrays} from './types';
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
-import {I3SAttributesWorker} from '@loaders.gl/tile-converter';
+import {I3SAttributesWorker} from '../i3s-attributes-worker';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -1333,7 +1333,7 @@ export default class I3SConverter {
     const i3sAttributesWorkerUrl = getWorkerURL(I3SAttributesWorker, {...getLoaderOptions()});
     const sourceResponse = await fetchFile(i3sAttributesWorkerUrl);
     const source = await sourceResponse.text();
-    this.workerSource.I3SAttributesTransformation = source;
+    this.workerSource.I3SAttributes = source;
     console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }

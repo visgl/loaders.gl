@@ -2,7 +2,6 @@ import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 import {DracoWriterWorker} from '@loaders.gl/draco';
-import {I3SAttributesWorker} from '@loaders.gl/tile-converter';
 import {assert, encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
@@ -29,6 +28,7 @@ import {
   GLTFMeshPostprocessed,
   GLTFTexturePostprocessed
 } from 'modules/gltf/src/lib/types/gltf-types';
+import {transformI3SAttributesOnWorker} from '../../i3s-attributes-worker';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -73,26 +73,16 @@ export default async function convertB3dmToI3sGeometry(
   geoidHeightModel: Geoid,
   workerSource: {[key: string]: string}
 ) {
-  const I3SAttributesTransformer = workerSource.I3SAttributesTransformation;
   const useCartesianPositions = generateBoundingVolumes;
   const materialAndTextureList: I3SMaterialWithTexture[] = convertMaterials(
     tileContent.gltf?.materials
   );
 
-  // @ts-expect-error
-  const convertedAttributesMap: Map<string, ConvertedAttributes> = await encode(
-    tileContent,
-    I3SAttributesWorker,
-    {
-      ...I3SAttributesWorker.options,
-      source: I3SAttributesTransformer,
-      reuseWorkers: true,
-      _nodeWorkers: true,
-      attributesTransformations: {
-        useCartesianPositions
-      }
-    }
-  );
+  const convertedAttributesMap: Map<string, ConvertedAttributes> =
+    await transformI3SAttributesOnWorker(tileContent, {
+      useCartesianPositions,
+      source: workerSource.I3SAttributes
+    });
 
   if (generateBoundingVolumes) {
     _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel);
@@ -276,10 +266,10 @@ async function _makeNodeResources({
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @returns map of converted geometry attributes
  */
-export function convertAttributes(
+export async function convertAttributes(
   tileContent: B3DMContent,
   useCartesianPositions: boolean
-): Map<string, ConvertedAttributes> {
+): Promise<Map<string, ConvertedAttributes>> {
   const attributesMap = new Map<string, ConvertedAttributes>();
 
   for (const material of tileContent.gltf?.materials || [{id: 'default'}]) {
