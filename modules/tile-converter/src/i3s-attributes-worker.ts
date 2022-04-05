@@ -1,6 +1,10 @@
-import type {B3DMContent} from '@loaders.gl/3d-tiles';
 import type {WorkerObject} from '@loaders.gl/worker-utils';
 import type {ConvertedAttributes} from './i3s-converter/types';
+import type {
+  GLTFMaterialPostprocessed,
+  GLTFNodePostprocessed
+} from 'modules/gltf/src/lib/types/gltf-types';
+import type {Matrix4, Vector3} from '@math.gl/core';
 
 import {processOnWorker} from '@loaders.gl/worker-utils';
 
@@ -11,6 +15,13 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type I3SAttributesWorkerOptions = {
   useCartesianPositions: boolean;
   source: string;
+};
+
+export type I3SAttributesData = {
+  gltfMaterials?: GLTFMaterialPostprocessed[];
+  nodes: GLTFNodePostprocessed[];
+  cartographicOrigin: Vector3;
+  cartesianModelMatrix: Matrix4;
 };
 
 /**
@@ -30,10 +41,10 @@ export const I3SAttributesWorker = {
  * Performs I3S attributes transformation
  */
 export function transformI3SAttributesOnWorker(
-  tileContent: B3DMContent,
+  attributesData: I3SAttributesData,
   options: I3SAttributesWorkerOptions
 ): Promise<Map<string, ConvertedAttributes>> {
-  return processOnWorker(I3SAttributesWorker, tileContent, options);
+  return processOnWorker(I3SAttributesWorker, attributesData, options);
 }
 
 export const _typecheckI3SAttributesWorker: WorkerObject = I3SAttributesWorker;
