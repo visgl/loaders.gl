@@ -1,10 +1,16 @@
 import type {B3DMContent} from '@loaders.gl/3d-tiles';
+import type {Accessor} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
+import type {B3DMAttributesData} from '../../i3s-attributes-worker';
+
+type AttributesObject = {
+  [k: string]: Accessor;
+};
 
 /**
  * Keep only values for B3DM attributes to pass data to worker thread.
  * @param attributes
  */
-function getB3DMAttributesWithoutBufferView(attributes) {
+function getB3DMAttributesWithoutBufferView(attributes: AttributesObject): AttributesObject {
   const attributesWithoutBufferView = {};
 
   for (const attributeName in attributes) {
@@ -21,7 +27,7 @@ function getB3DMAttributesWithoutBufferView(attributes) {
  * @param tileContent
  * @returns
  */
-export function prepareDataForAttributesConversion(tileContent: B3DMContent) {
+export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3DMAttributesData {
   const gltfMaterials = tileContent.gltf?.materials?.map((material) => ({id: material.id}));
   let nodes =
     tileContent.gltf?.scene?.nodes ||

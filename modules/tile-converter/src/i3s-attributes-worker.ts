@@ -1,9 +1,5 @@
 import type {WorkerObject} from '@loaders.gl/worker-utils';
 import type {ConvertedAttributes} from './i3s-converter/types';
-import type {
-  GLTFMaterialPostprocessed,
-  GLTFNodePostprocessed
-} from 'modules/gltf/src/lib/types/gltf-types';
 import type {Matrix4, Vector3} from '@math.gl/core';
 
 import {processOnWorker} from '@loaders.gl/worker-utils';
@@ -17,9 +13,9 @@ export type I3SAttributesWorkerOptions = {
   source: string;
 };
 
-export type I3SAttributesData = {
-  gltfMaterials?: GLTFMaterialPostprocessed[];
-  nodes: GLTFNodePostprocessed[];
+export type B3DMAttributesData = {
+  gltfMaterials?: {id: string}[];
+  nodes: any;
   cartographicOrigin: Vector3;
   cartesianModelMatrix: Matrix4;
 };
@@ -41,7 +37,7 @@ export const I3SAttributesWorker = {
  * Performs I3S attributes transformation
  */
 export function transformI3SAttributesOnWorker(
-  attributesData: I3SAttributesData,
+  attributesData: B3DMAttributesData,
   options: I3SAttributesWorkerOptions
 ): Promise<Map<string, ConvertedAttributes>> {
   return processOnWorker(I3SAttributesWorker, attributesData, options);

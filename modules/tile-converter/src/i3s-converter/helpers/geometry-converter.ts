@@ -28,7 +28,7 @@ import {
   GLTFMeshPostprocessed,
   GLTFTexturePostprocessed
 } from 'modules/gltf/src/lib/types/gltf-types';
-import {I3SAttributesData, transformI3SAttributesOnWorker} from '../../i3s-attributes-worker';
+import {B3DMAttributesData, transformI3SAttributesOnWorker} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
@@ -82,14 +82,10 @@ export default async function convertB3dmToI3sGeometry(
   const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
 
   const convertedAttributesMap: Map<string, ConvertedAttributes> =
-    await transformI3SAttributesOnWorker(
-      // @ts-expect-error
-      dataForAttributesConversion,
-      {
-        useCartesianPositions,
-        source: workerSource.I3SAttributes
-      }
-    );
+    await transformI3SAttributesOnWorker(dataForAttributesConversion, {
+      useCartesianPositions,
+      source: workerSource.I3SAttributes
+    });
 
   if (generateBoundingVolumes) {
     _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel);
@@ -274,7 +270,7 @@ async function _makeNodeResources({
  * @returns map of converted geometry attributes
  */
 export async function convertAttributes(
-  attributesData: I3SAttributesData,
+  attributesData: B3DMAttributesData,
   useCartesianPositions: boolean
 ): Promise<Map<string, ConvertedAttributes>> {
   const {gltfMaterials, nodes, cartographicOrigin, cartesianModelMatrix} = attributesData;
