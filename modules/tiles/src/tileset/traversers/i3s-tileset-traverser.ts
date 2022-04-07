@@ -4,21 +4,26 @@ import TilesetTraverser from './tileset-traverser';
 import {getLodStatus} from '../helpers/i3s-lod';
 import TileHeader from '../tile-3d';
 import I3STileManager from './i3s-tile-manager';
+import {FrameState} from '../helpers/frame-state';
 
 export default class I3STilesetTraverser extends TilesetTraverser {
   private _tileManager: I3STileManager;
+
+  protected get traversalFinished(): boolean {
+    return !this._tileManager.hasWithFrameState(this._frameNumber);
+  }
 
   constructor(options) {
     super(options);
     this._tileManager = new I3STileManager();
   }
 
-  shouldRefine(tile, frameState) {
+  shouldRefine(tile, frameState: FrameState) {
     tile._lodJudge = getLodStatus(tile, frameState);
     return tile._lodJudge === 'DIG';
   }
 
-  updateChildTiles(tile, frameState): boolean {
+  updateChildTiles(tile, frameState: FrameState): boolean {
     const children = tile.header.children || [];
     // children which are already fetched and constructed as Tile3D instances
     const childTiles = tile.children;
@@ -86,7 +91,10 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     this.updateTile(childTile, frameState);
 
     // after tile fetched, resume traversal if still in current update/traversal frame
-    if (this._frameNumber === frameState.frameNumber) {
+    if (
+      this._frameNumber === frameState.frameNumber &&
+      (this.traversalFinished || new Date().getTime() - this.lastUpdate > this.updateDebounceTime)
+    ) {
       this.executeTraversal(childTile, frameState);
     }
   }
