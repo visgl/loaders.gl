@@ -28,7 +28,7 @@ import {
   GLTFMeshPostprocessed,
   GLTFTexturePostprocessed
 } from 'modules/gltf/src/lib/types/gltf-types';
-import {B3DMAttributesData, transformI3SAttributesOnWorker} from '../../i3s-attributes-worker';
+import {B3DMAttributesData /*transformI3SAttributesOnWorker */} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
@@ -81,11 +81,18 @@ export default async function convertB3dmToI3sGeometry(
 
   const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
 
+  const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
+    dataForAttributesConversion,
+    useCartesianPositions
+  );
+  // TODO uncomment it when worker will be published on CDN.
+  /*
   const convertedAttributesMap: Map<string, ConvertedAttributes> =
     await transformI3SAttributesOnWorker(dataForAttributesConversion, {
       useCartesianPositions,
       source: workerSource.I3SAttributes
     });
+  */
 
   if (generateBoundingVolumes) {
     _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel);
