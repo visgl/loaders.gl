@@ -1,20 +1,18 @@
+/**
+ * frameNumber counter to register tile headers that are in loading progress
+ * Until all tiles are loaded we won't call `onTraversalEnd` callback
+ */
 export default class FrameCounter {
   private frameNumberMap: Map<number, number> = new Map();
 
   increase(frameNumber: number) {
-    if (this.frameNumberMap.has(frameNumber)) {
-      const oldCount = this.frameNumberMap.get(frameNumber);
-      this.frameNumberMap.set(frameNumber, oldCount || 0 + 1);
-    } else {
-      this.frameNumberMap.set(frameNumber, 1);
-    }
+    const oldCount = this.frameNumberMap.get(frameNumber) || 0;
+    this.frameNumberMap.set(frameNumber, (oldCount || 0) + 1);
   }
 
   decrease(frameNumber: number) {
-    if (this.frameNumberMap.has(frameNumber)) {
-      const oldCount = this.frameNumberMap.get(frameNumber);
-      this.frameNumberMap.set(frameNumber, oldCount || 0 - 1);
-    }
+    const oldCount = this.frameNumberMap.get(frameNumber) || 1;
+    this.frameNumberMap.set(frameNumber, (oldCount || 0) - 1);
   }
 
   isZero(frameNumber: number) {

@@ -24,8 +24,8 @@ export default class I3STileManager {
       request()
         .then((data) => {
           this._statusMap[key].status = STATUS.COMPLETED;
-          this._statusMap[key].callback(data, frameState);
           this.frameCounter.decrease(frameNumber);
+          this._statusMap[key].callback(data, frameState);
         })
         .catch((error) => {
           this._statusMap[key].status = STATUS.ERROR;
