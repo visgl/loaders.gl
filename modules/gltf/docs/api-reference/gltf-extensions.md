@@ -6,12 +6,13 @@ loaders.gl aims to provide support for glTF extensions that can be handled compl
 
 Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
-| Extension                                                                                                                        | Description |
-| -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression) |             |
-| [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)               |             |
-| [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)               |             |
-| [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)                   |             |
+| Extension                                                                                                                         | Description |
+| --------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)  |             |
+| [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)                |             |
+| [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)                |             |
+| [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)                    |             |
+| [EXT_meshopt_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md) |             |
 
 ## Official Extensions
 
@@ -60,6 +61,12 @@ This extension adds the ability to specify textures using KTX v2 images with Bas
 [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)
 
 ## Custom Extensions
+
+### EXT_meshopt_compression
+
+This extension provides a generic option for compressing binary data that is tailored to the common types of data seen in glTF buffers.
+
+[EXT_meshopt_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)
 
 ### UBER_draco_point_cloud_compression
 
