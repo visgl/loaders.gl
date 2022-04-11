@@ -73,7 +73,7 @@ Loaders will often use the [fetch API](https://developer.mozilla.org/en-US/docs/
 An example of accessing a HTTP header.
 
 ```js
-export async function parseWithHeader(arrayBuffer, option, context) {
+export async function parseWithHeader(arrayBuffer, options, context) {
   const {parse, response} = context;
   const contentLength = response.headers.get('content-length');
   const data = await parse(arrayBuffer, JSONLoader);
