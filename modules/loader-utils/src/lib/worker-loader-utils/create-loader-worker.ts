@@ -29,7 +29,7 @@ export function createLoaderWorker(loader: LoaderWithParser) {
             options,
             context: {
               ...context,
-              parse: parseOnMainThread,
+              parse: parseOnMainThread
             }
           });
           WorkerBody.postMessage('done', {result});
