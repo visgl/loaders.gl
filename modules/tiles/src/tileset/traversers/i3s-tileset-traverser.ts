@@ -9,8 +9,13 @@ import {FrameState} from '../helpers/frame-state';
 export default class I3STilesetTraverser extends TilesetTraverser {
   private _tileManager: I3STileManager;
 
+  /**
+   * Check if there are no penging tile header requests,
+   * that means the traversal is finished and we can call
+   * following-up callbacks.
+   */
   protected get traversalFinished(): boolean {
-    return !this._tileManager.hasWithFrameState(this._frameNumber);
+    return !this._tileManager.hasPendingTiles(this._frameNumber || 0);
   }
 
   constructor(options) {

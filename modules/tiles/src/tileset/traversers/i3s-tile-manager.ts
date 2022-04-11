@@ -1,5 +1,5 @@
 import {FrameState} from '../helpers/frame-state';
-import FrameCounter from './i3s-frame-counter';
+import I3SPendingTilesRegister from './i3s-frame-counter';
 
 const STATUS = {
   REQUESTED: 'REQUESTED',
@@ -10,7 +10,7 @@ const STATUS = {
 // A helper class to manage tile metadata fetching
 export default class I3STileManager {
   private _statusMap: object;
-  private frameCounter = new FrameCounter();
+  private pendingTilesRegister = new I3SPendingTilesRegister();
 
   constructor() {
     this._statusMap = {};
@@ -20,16 +20,19 @@ export default class I3STileManager {
     if (!this._statusMap[key]) {
       const {frameNumber} = frameState;
       this._statusMap[key] = {request, callback, key, frameState, status: STATUS.REQUESTED};
-      this.frameCounter.increase(frameNumber);
+      // Register pending request for the frameNumber
+      this.pendingTilesRegister.register(frameNumber);
       request()
         .then((data) => {
           this._statusMap[key].status = STATUS.COMPLETED;
-          this.frameCounter.decrease(frameNumber);
+          // Deregister pending request for the frameNumber
+          this.pendingTilesRegister.deregister(frameNumber);
           this._statusMap[key].callback(data, frameState);
         })
         .catch((error) => {
           this._statusMap[key].status = STATUS.ERROR;
-          this.frameCounter.decrease(frameNumber);
+          // Deregister pending request for the frameNumber
+          this.pendingTilesRegister.deregister(frameNumber);
           callback(error);
         });
     }
@@ -37,8 +40,10 @@ export default class I3STileManager {
 
   update(key, frameState: FrameState) {
     if (this._statusMap[key]) {
-      this.frameCounter.decrease(this._statusMap[key].frameState.frameNumber);
-      this.frameCounter.increase(frameState.frameNumber);
+      // Deregister pending request for the old frameNumber
+      this.pendingTilesRegister.deregister(this._statusMap[key].frameState.frameNumber);
+      // Register pending request for the new frameNumber
+      this.pendingTilesRegister.register(frameState.frameNumber);
       this._statusMap[key].frameState = frameState;
     }
   }
@@ -47,7 +52,12 @@ export default class I3STileManager {
     return this._statusMap[key];
   }
 
-  hasWithFrameState(frameNumber): boolean {
-    return !this.frameCounter.isZero(frameNumber);
+  /**
+   * Check it there are pending tile headers for the particular frameNumber
+   * @param frameNumber
+   * @returns
+   */
+  hasPendingTiles(frameNumber: number): boolean {
+    return !this.pendingTilesRegister.isZero(frameNumber);
   }
 }
