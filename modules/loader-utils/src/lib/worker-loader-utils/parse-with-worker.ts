@@ -45,6 +45,7 @@ export async function parseWithWorker(
   // options.log object contains functions which cannot be transferred
   // TODO - decide how to handle logging on workers
   options = JSON.parse(JSON.stringify(options));
+  context = JSON.parse(JSON.stringify(context));
 
   const job = await workerPool.startJob(
     'process-on-worker',
@@ -55,7 +56,8 @@ export async function parseWithWorker(
   job.postMessage('process', {
     // @ts-ignore
     input: data,
-    options
+    options,
+    context
   });
 
   const result = await job.result;

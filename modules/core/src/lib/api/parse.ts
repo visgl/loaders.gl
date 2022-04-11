@@ -65,7 +65,9 @@ async function parseWithLoader(loader, data, options, context) {
 
   if (isResponse(data)) {
     const response = data as Response;
-    context.response = response;
+    const {ok, redirected, status, statusText, type, url} = response;
+    const headers = Object.fromEntries(response.headers.entries());
+    context.response = {headers, ok, redirected, status, statusText, type, url};
   }
 
   data = await getArrayBufferOrStringFromData(data, loader, options);
