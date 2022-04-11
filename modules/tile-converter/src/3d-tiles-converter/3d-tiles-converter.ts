@@ -4,7 +4,7 @@ import type {Node3D} from '@loaders.gl/3d-tiles';
 import {join} from 'path';
 import process from 'process';
 import transform from 'json-map-transform';
-import {load} from '@loaders.gl/core';
+import {fetchFile, getLoaderOptions, load} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 import {Geoid} from '@math.gl/geoid';
@@ -17,6 +17,12 @@ import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import B3dmConverter from './helpers/b3dm-converter';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
+import {
+  I3SAttributesData,
+  Tile3dAttributesWorker
+  /*transform3DTilesAttributesOnWorker*/
+} from '../3d-tiles-attributes-worker';
+import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 
 const I3S = 'I3S';
 
@@ -31,6 +37,7 @@ export default class Tiles3DConverter {
   geoidHeightModel: Geoid | null;
   sourceTileset: Tileset3D | null;
   attributeStorageInfo: AttributeStorageInfo | null;
+  workerSource: {[key: string]: string} = {};
 
   constructor() {
     this.options = {};
@@ -40,6 +47,7 @@ export default class Tiles3DConverter {
     this.geoidHeightModel = null;
     this.sourceTileset = null;
     this.attributeStorageInfo = null;
+    this.workerSource = {};
   }
 
   /**
@@ -65,6 +73,8 @@ export default class Tiles3DConverter {
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
     console.log('Loading egm file completed!'); // eslint-disable-line
+
+    await this.loadWorkers();
 
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
 
@@ -102,6 +112,10 @@ export default class Tiles3DConverter {
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
 
     this._finishConversion({slpk: false, outputPath, tilesetName});
+
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
   }
 
   /**
@@ -125,9 +139,12 @@ export default class Tiles3DConverter {
         await this.sourceTileset!._loadTile(sourceChild);
         this.vertexCounter += sourceChild.content.vertexCount;
 
-        let attributes: FeatureAttribute | null = null;
+        let featureAttributes: FeatureAttribute | null = null;
         if (this.attributeStorageInfo) {
-          attributes = await this._loadChildAttributes(sourceChild, this.attributeStorageInfo);
+          featureAttributes = await this._loadChildAttributes(
+            sourceChild,
+            this.attributeStorageInfo
+          );
         }
 
         if (!sourceChild.header.obb) {
@@ -143,7 +160,19 @@ export default class Tiles3DConverter {
           children: []
         };
 
-        const b3dm = await new B3dmConverter().convert(sourceChild, attributes);
+        const i3sAttributesData: I3SAttributesData = {
+          tileContent: sourceChild.content,
+          textureFormat: sourceChild?.header?.textureFormat
+        };
+
+        // TODO Uncomment when 3d-tiles-attributes-worker will be published on CDN.
+        // const b3dm = await transform3DTilesAttributesOnWorker(i3sAttributesData, {
+        //   source: this.workerSource.tile3dWorkerSource,
+        //   featureAttributes
+        // });
+
+        const b3dm = await new B3dmConverter().convert(i3sAttributesData, featureAttributes);
+
         child.content = {
           uri: `${sourceChild.id}.b3dm`,
           boundingVolume
@@ -289,5 +318,15 @@ export default class Tiles3DConverter {
     console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line
     console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line
     console.log(`------------------------------------------------`); // eslint-disable-line
+  }
+
+  private async loadWorkers(): Promise<void> {
+    console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
+    const tile3dAttributesWorkerUrl = getWorkerURL(Tile3dAttributesWorker, {...getLoaderOptions()});
+    const sourceResponse = await fetchFile(tile3dAttributesWorkerUrl);
+    const source = await sourceResponse.text();
+
+    this.workerSource.tile3dWorkerSource = source;
+    console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }
