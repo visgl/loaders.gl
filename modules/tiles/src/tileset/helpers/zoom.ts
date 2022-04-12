@@ -43,6 +43,20 @@ export function getZoomFromBoundingVolume(
   return 1;
 }
 
+/**
+ * Calculate initial zoom for the tileset from 3D `fullExtent` defined in
+ * the tileset metadata
+ * @param fullExtent - 3D extent of the tileset
+ * @param fullExtent.xmin - minimal longitude in decimal degrees
+ * @param fullExtent.xmax - maximal longitude in decimal degrees
+ * @param fullExtent.ymin - minimal latitude in decimal degrees
+ * @param fullExtent.ymax - maximal latitude in decimal degrees
+ * @param fullExtent.zmin - minimal elevation in meters
+ * @param fullExtent.zmax - maximal elevation in meters
+ * @param cartorgraphicCenter - tileset center in cartographic coordinate system
+ * @param cartesianCenter - tileset center in cartesian coordinate system
+ * @returns - initial zoom for the tileset
+ */
 export function getZoomFromFullExtent(
   fullExtent: {
     xmin: number;
@@ -67,6 +81,18 @@ export function getZoomFromFullExtent(
   return Math.log2(WGS84_RADIUS_Z / (extentSize + cartorgraphicCenter[2]));
 }
 
+/**
+ * Calculate initial zoom for the tileset from 2D `extent` defined in
+ * the tileset metadata
+ * @param extent - 2D extent of the tileset. It is array of 4 elements [xmin, ymin, xmax, ymax]
+ * @param extent[0] - minimal longitude in decimal degrees
+ * @param extent[1] - minimal latitude in decimal degrees
+ * @param extent[2] - maximal longitude in decimal degrees
+ * @param extent[3] - maximal latitude in decimal degrees
+ * @param cartorgraphicCenter - tileset center in cartographic coordinate system
+ * @param cartesianCenter - tileset center in cartesian coordinate system
+ * @returns - initial zoom for the tileset
+ */
 export function getZoomFromExtent(
   extent: [number, number, number, number],
   cartorgraphicCenter: Vector3,

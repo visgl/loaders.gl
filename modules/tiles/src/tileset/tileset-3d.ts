@@ -157,7 +157,6 @@ const DEFAULT_PROPS: Props = {
   // View distance scale modifier
   viewDistanceScale: 1.0,
 
-  // TODO CESIUM
   // The maximum screen space error used to drive level of detail refinement.
   maximumScreenSpaceError: 8,
 
@@ -596,16 +595,14 @@ export default class Tileset3D {
 
   async _initializeTileSet(tilesetJson) {
     if (this.type === TILESET_TYPE.I3S) {
-      // Calculate cartographicCenter & zoom props to help apps center view on tileset
       this.calculateViewPropsI3S();
       tilesetJson.root = await tilesetJson.root;
     }
     this.root = this._initializeTileHeaders(tilesetJson, null);
 
     if (this.type === TILESET_TYPE.TILES3D) {
-      this._initializeCesiumTileset(tilesetJson);
-      // Calculate cartographicCenter & zoom props to help apps center view on tileset
-      this.calculateViewPropsCesium();
+      this._initializeTiles3DTileset(tilesetJson);
+      this.calculateViewPropsTiles3D();
     }
 
     if (this.type === TILESET_TYPE.I3S) {
@@ -613,6 +610,12 @@ export default class Tileset3D {
     }
   }
 
+  /**
+   * Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
+   * These metrics help apps center view on tileset
+   * For I3S there is extent (<1.8 version) or fullExtent (>=1.8 version) to calculate view props
+   * @returns
+   */
   private calculateViewPropsI3S() {
     // for I3S 1.8 try to calculate with fullExtent
     const fullExtent = this.tileset.fullExtent;
@@ -649,8 +652,13 @@ export default class Tileset3D {
     return;
   }
 
-  // Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
-  private calculateViewPropsCesium() {
+  /**
+   * Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
+   * These metrics help apps center view on tileset.
+   * For 3DTiles the root tile data is used to calculate view props.
+   * @returns
+   */
+  private calculateViewPropsTiles3D() {
     const root = this.root as Tile3D;
     assert(root);
     const {center} = root.boundingVolume;
@@ -694,7 +702,7 @@ export default class Tileset3D {
       rootTile.depth = parentTileHeader.depth + 1;
     }
 
-    // Cesium 3d tiles knows the hierarchy beforehand
+    // 3DTiles knows the hierarchy beforehand
     if (this.type === TILESET_TYPE.TILES3D) {
       const stack: Tile3D[] = [];
       stack.push(rootTile);
@@ -853,7 +861,7 @@ export default class Tileset3D {
     tile.destroy();
   }
 
-  _initializeCesiumTileset(tilesetJson) {
+  _initializeTiles3DTileset(tilesetJson) {
     this.asset = tilesetJson.asset;
     if (!this.asset) {
       throw new Error('Tileset must have an asset property.');
