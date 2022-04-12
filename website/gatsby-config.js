@@ -61,6 +61,7 @@ module.exports = {
         ],
 
         ADDITIONAL_LINKS: [
+          {name: 'Showcase', href: '/showcase', index: 2},
           {name: 'Blog', href: 'http://medium.com/vis-gl', index: 4}
         ],
 
@@ -84,6 +85,11 @@ module.exports = {
             path: '/',
             componentUrl: resolve(__dirname, './templates/index.jsx'),
             content: ''
+          },
+          {
+            title: 'Showcase',
+            path: '/showcase',
+            componentUrl: resolve('./src/showcase.js'),
           }
         ],
 

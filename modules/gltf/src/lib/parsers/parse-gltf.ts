@@ -144,6 +144,12 @@ async function loadBuffers(gltf: GLTFWithBuffers, options, context: LoaderContex
       };
 
       delete buffer.uri;
+    } else if (gltf.buffers[i] === null) {
+      gltf.buffers[i] = {
+        arrayBuffer: new ArrayBuffer(buffer.byteLength),
+        byteOffset: 0,
+        byteLength: buffer.byteLength
+      };
     }
   }
 }
