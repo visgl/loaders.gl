@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {NodePages} from '@loaders.gl/tile-converter';
 import {isBrowser} from '@loaders.gl/core';
-import WritingQueue from '../../../src/lib/utils/writing-queue';
+import WritingQueue from '../../../src/lib/utils/write-queue';
 
 /** @type {import('@loaders.gl/i3s').NodeInPage} */
 const newNodeStub = {

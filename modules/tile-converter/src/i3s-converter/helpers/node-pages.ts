@@ -1,10 +1,10 @@
-import type {WritingQueueItem} from '../../lib/utils/writing-queue';
+import type {WriteQueueItem} from '../../lib/utils/write-queue';
 
 import {join} from 'path';
 import transform from 'json-map-transform';
 import {METADATA as metadataTemplate} from '../json-templates/metadata';
 import {NodeInPage} from '@loaders.gl/i3s';
-import WritingQueue from '../../lib/utils/writing-queue';
+import WriteQueue from '../../lib/utils/write-queue';
 
 // @ts-nocheck
 /**
@@ -192,26 +192,26 @@ export default class NodePages {
    * Save all the node pages
    * Run this method when all nodes is pushed in nodePages
    * @param layers0Path - path of layer
-   * @param writingQueue - writing queue that controlls files writing concurrency
+   * @param writeQueue - write queue that controlls files write concurrency
    * @param slpk
    */
   async save(
     layers0Path: string,
-    writingQueue: WritingQueue<WritingQueueItem>,
+    writeQueue: WriteQueue<WriteQueueItem>,
     slpk: boolean = false
   ): Promise<void> {
     if (slpk) {
       for (const [index, nodePage] of this.nodePages.entries()) {
         const nodePageStr = JSON.stringify(nodePage);
         const slpkPath = join(layers0Path, 'nodepages');
-        writingQueue.enqueue({
+        writeQueue.enqueue({
           archiveKey: `nodePages/${index.toString()}.json.gz`,
           writePromise: this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`)
         });
       }
       const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate());
       const compress = false;
-      writingQueue.enqueue({
+      writeQueue.enqueue({
         archiveKey: 'metadata.json',
         writePromise: this.writeFile(
           layers0Path,
@@ -224,7 +224,7 @@ export default class NodePages {
       for (const [index, nodePage] of this.nodePages.entries()) {
         const nodePageStr = JSON.stringify(nodePage);
         const nodePagePath = join(layers0Path, 'nodepages', index.toString());
-        writingQueue.enqueue({writePromise: this.writeFile(nodePagePath, nodePageStr)});
+        writeQueue.enqueue({writePromise: this.writeFile(nodePagePath, nodePageStr)});
       }
     }
   }

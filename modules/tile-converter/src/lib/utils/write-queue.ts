@@ -1,25 +1,25 @@
 import {Queue} from './queue';
 
-export type WritingQueueItem = {
+export type WriteQueueItem = {
   archiveKey?: string;
   writePromise: Promise<string>;
 };
 
-export default class WritingQueue<T extends WritingQueueItem> extends Queue<T> {
+export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   private intervalId?: NodeJS.Timeout;
-  public writingPromise: Promise<void> | null = null;
+  public writePromise: Promise<void> | null = null;
   public fileMap: {[key: string]: string} = {};
   public listeningInterval: number;
-  public writingConcurrency: number;
+  public writeConcurrency: number;
 
-  constructor(listeningInterval: number = 2000, writingConcurrency: number = 400) {
+  constructor(listeningInterval: number = 2000, writeConcurrency: number = 400) {
     super();
     this.listeningInterval = listeningInterval;
-    this.writingConcurrency = writingConcurrency;
+    this.writeConcurrency = writeConcurrency;
   }
 
   startListening() {
-    this.intervalId = setInterval(this.startWriting.bind(this), this.listeningInterval);
+    this.intervalId = setInterval(this.startWrite.bind(this), this.listeningInterval);
   }
 
   stopListening() {
@@ -28,39 +28,39 @@ export default class WritingQueue<T extends WritingQueueItem> extends Queue<T> {
     }
   }
 
-  async startWriting(): Promise<void> {
-    if (this.writingPromise) {
-      await this.writingPromise;
-      this.writingPromise = null;
+  async startWrite(): Promise<void> {
+    if (this.writePromise) {
+      await this.writePromise;
+      this.writePromise = null;
       return;
     }
-    this.writingPromise = this.doWriting();
-    await this.writingPromise;
-    this.writingPromise = null;
+    this.writePromise = this.doWrite();
+    await this.writePromise;
+    this.writePromise = null;
   }
 
   async finalize(): Promise<void> {
     this.stopListening();
-    await this.startWriting();
+    await this.startWrite();
   }
 
-  private async doWriting(): Promise<void> {
+  private async doWrite(): Promise<void> {
     while (this.length) {
       const promises: Promise<string>[] = [];
       const archiveKeys: (string | undefined)[] = [];
-      for (let i = 0; i < this.writingConcurrency; i++) {
+      for (let i = 0; i < this.writeConcurrency; i++) {
         const item = this.dequeue();
         if (!item) {
           break;
         }
-        const {archiveKey, writePromise} = item as WritingQueueItem;
+        const {archiveKey, writePromise} = item as WriteQueueItem;
         archiveKeys.push(archiveKey);
         promises.push(writePromise);
       }
       const writeResults = await Promise.all(promises);
       this.updateFileMap(archiveKeys, writeResults);
     }
-    this.writingPromise = null;
+    this.writePromise = null;
   }
 
   private updateFileMap(archiveKeys: (string | undefined)[], writeResults: string[]) {
