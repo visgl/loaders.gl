@@ -2,7 +2,7 @@
 import type {GLTF, GLTFBufferView, GLTF_EXT_meshopt_compression} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import GLTFScenegraph from '../api/gltf-scenegraph';
-import {isMeshoptSupported, meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
+import {meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
 // @ts-ignore
 // eslint-disable-next-line
@@ -15,16 +15,6 @@ const DEFAULT_MESHOPT_OPTIONS = {
 const EXT_MESHOPT_COMPRESSION = 'EXT_meshopt_compression';
 
 export const name = EXT_MESHOPT_COMPRESSION;
-
-export function preprocess(gltfData: {json: GLTF}) {
-  const scenegraph = new GLTFScenegraph(gltfData);
-  if (
-    scenegraph.getRequiredExtensions().includes(EXT_MESHOPT_COMPRESSION) &&
-    !isMeshoptSupported()
-  ) {
-    throw new Error(`gltf: Required extension ${EXT_MESHOPT_COMPRESSION} not supported by browser`);
-  }
-}
 
 export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions) {
   const scenegraph = new GLTFScenegraph(gltfData);
@@ -55,21 +45,24 @@ async function decodeMeshoptBufferView(
     EXT_MESHOPT_COMPRESSION
   );
   if (meshoptExtension) {
-    const buffer = bufferView.buffer;
-
     const {
       byteOffset = 0,
       byteLength = 0,
       byteStride,
       count,
       mode,
-      filter = 'NONE'
+      filter = 'NONE',
+      buffer: bufferIndex
     } = meshoptExtension;
+    const buffer = scenegraph.gltf.buffers[bufferIndex];
 
-    // @ts-expect-error TODO - fix buffer handling
-    const source = new Uint8Array(buffer, byteOffset, byteLength);
-    const result = new ArrayBuffer(count * byteStride);
-    await meshoptDecodeGltfBuffer(new Uint8Array(result), count, byteStride, source, mode, filter);
+    const source = new Uint8Array(buffer.arrayBuffer, buffer.byteOffset + byteOffset, byteLength);
+    const result = new Uint8Array(
+      scenegraph.gltf.buffers[bufferView.buffer].arrayBuffer,
+      bufferView.byteOffset,
+      bufferView.byteLength
+    );
+    await meshoptDecodeGltfBuffer(result, count, byteStride, source, mode, filter);
     return result;
   }
 

@@ -28,6 +28,8 @@ import {
   GLTFMeshPostprocessed,
   GLTFTexturePostprocessed
 } from 'modules/gltf/src/lib/types/gltf-types';
+import {B3DMAttributesData /*transformI3SAttributesOnWorker */} from '../../i3s-attributes-worker';
+import {prepareDataForAttributesConversion} from './gltf-attributes';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -76,10 +78,21 @@ export default async function convertB3dmToI3sGeometry(
   const materialAndTextureList: I3SMaterialWithTexture[] = convertMaterials(
     tileContent.gltf?.materials
   );
-  const convertedAttributesMap: Map<string, ConvertedAttributes> = convertAttributes(
-    tileContent,
+
+  const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
+
+  const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
+    dataForAttributesConversion,
     useCartesianPositions
   );
+  // TODO uncomment it when worker will be published on CDN.
+  /*
+  const convertedAttributesMap: Map<string, ConvertedAttributes> =
+    await transformI3SAttributesOnWorker(dataForAttributesConversion, {
+      useCartesianPositions,
+      source: workerSource.I3SAttributes
+    });
+  */
 
   if (generateBoundingVolumes) {
     _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel);
@@ -263,13 +276,14 @@ async function _makeNodeResources({
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @returns map of converted geometry attributes
  */
-function convertAttributes(
-  tileContent: B3DMContent,
+export async function convertAttributes(
+  attributesData: B3DMAttributesData,
   useCartesianPositions: boolean
-): Map<string, ConvertedAttributes> {
+): Promise<Map<string, ConvertedAttributes>> {
+  const {gltfMaterials, nodes, cartographicOrigin, cartesianModelMatrix} = attributesData;
   const attributesMap = new Map<string, ConvertedAttributes>();
 
-  for (const material of tileContent.gltf?.materials || [{id: 'default'}]) {
+  for (const material of gltfMaterials || [{id: 'default'}]) {
     attributesMap.set(material.id, {
       positions: new Float32Array(0),
       normals: new Float32Array(0),
@@ -281,12 +295,13 @@ function convertAttributes(
     });
   }
 
-  const nodes =
-    tileContent.gltf?.scene?.nodes ||
-    tileContent.gltf?.scenes?.[0]?.nodes ||
-    tileContent.gltf?.nodes ||
-    [];
-  convertNodes(nodes, tileContent, attributesMap, useCartesianPositions);
+  convertNodes(
+    nodes,
+    cartographicOrigin,
+    cartesianModelMatrix,
+    attributesMap,
+    useCartesianPositions
+  );
 
   for (const attrKey of attributesMap.keys()) {
     const attributes = attributesMap.get(attrKey);
@@ -321,14 +336,22 @@ function convertAttributes(
  */
 function convertNodes(
   nodes: GLTFNodePostprocessed[],
-  tileContent: B3DMContent,
+  cartographicOrigin: Vector3,
+  cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions: boolean,
   matrix: Matrix4 = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
 ) {
   if (nodes) {
     for (const node of nodes) {
-      convertNode(node, tileContent, attributesMap, useCartesianPositions, matrix);
+      convertNode(
+        node,
+        cartographicOrigin,
+        cartesianModelMatrix,
+        attributesMap,
+        useCartesianPositions,
+        matrix
+      );
     }
   }
 }
@@ -375,7 +398,8 @@ function getCompositeTransformationMatrix(node, matrix) {
  */
 function convertNode(
   node: GLTFNodePostprocessed,
-  tileContent: B3DMContent,
+  cartographicOrigin: Vector3,
+  cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions,
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
@@ -384,12 +408,20 @@ function convertNode(
 
   const mesh = node.mesh;
   if (mesh) {
-    convertMesh(mesh, tileContent, attributesMap, useCartesianPositions, transformationMatrix);
+    convertMesh(
+      mesh,
+      cartographicOrigin,
+      cartesianModelMatrix,
+      attributesMap,
+      useCartesianPositions,
+      transformationMatrix
+    );
   }
 
   convertNodes(
     node.children || [],
-    tileContent,
+    cartographicOrigin,
+    cartesianModelMatrix,
     attributesMap,
     useCartesianPositions,
     transformationMatrix
@@ -409,7 +441,8 @@ function convertNode(
  */
 function convertMesh(
   mesh: GLTFMeshPostprocessed,
-  content: B3DMContent,
+  cartographicOrigin: Vector3,
+  cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions = false,
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
@@ -430,8 +463,8 @@ function convertMesh(
       outputAttributes.positions,
       transformVertexArray({
         vertices: attributes.POSITION.value,
-        cartographicOrigin: content.cartographicOrigin,
-        cartesianModelMatrix: content.cartesianModelMatrix,
+        cartographicOrigin,
+        cartesianModelMatrix,
         nodeMatrix: matrix,
         indices: primitive.indices?.value,
         attributeSpecificTransformation: transformVertexPositions,
@@ -442,8 +475,8 @@ function convertMesh(
       outputAttributes.normals,
       transformVertexArray({
         vertices: attributes.NORMAL && attributes.NORMAL.value,
-        cartographicOrigin: content.cartographicOrigin,
-        cartesianModelMatrix: content.cartesianModelMatrix,
+        cartographicOrigin,
+        cartesianModelMatrix,
         nodeMatrix: matrix,
         indices: primitive.indices?.value,
         attributeSpecificTransformation: transformVertexNormals,

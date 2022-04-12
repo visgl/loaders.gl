@@ -94,7 +94,8 @@ function getRequestOptions(url: string, options?: {fetch?: typeof fetch; headers
     ...options,
     ...options?.fetch,
     // Override with updated headers with accepted encodings:
-    headers
+    headers,
+    port: urlObject.port
   };
 }
 
