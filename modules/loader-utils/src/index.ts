@@ -28,6 +28,7 @@ export {
 // LOADERS.GL-SPECIFIC WORKER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
 export {parseWithWorker, canParseWithWorker} from './lib/worker-loader-utils/parse-with-worker';
+export {canEncodeWithWorker} from './lib/worker-loader-utils/encode-with-worker';
 
 // PARSER UTILS
 export {parseJSON} from './lib/parser-utils/parse-json';

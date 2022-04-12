@@ -9,7 +9,13 @@ import {MD5Hash} from '@loaders.gl/crypto';
 import crypt from 'crypt';
 import {getAbsoluteFilePath} from './file-utils';
 
-export function compressFileWithGzip(pathFile) {
+/**
+ * Compress file to gzip file
+ *
+ * @param pathFile - the path to the file
+ * @return the path to the gzip file
+ */
+export function compressFileWithGzip(pathFile: string): Promise<string> {
   const compressedPathFile = `${pathFile}.gz`;
   const gzip = createGzip();
   const input = createReadStream(pathFile);
@@ -28,7 +34,18 @@ export function compressFileWithGzip(pathFile) {
   });
 }
 
-export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
+/**
+ * Compress files from map into slpk file
+ *
+ * @param fileMap - map with file paths (key: output path, value: input path)
+ * @param outputFile - output slpk file
+ * @param level - compression level
+ */
+export async function compressFilesWithZip(
+  fileMap: {[key: string]: string},
+  outputFile: string,
+  level: number = 0
+) {
   // Before creating a new file, we need to delete the old file
   try {
     await removeFile(outputFile);
@@ -82,16 +99,44 @@ export async function compressFilesWithZip(fileMap, outputFile, level = 0) {
   });
 }
 
-export async function compressWithChildProcess() {
+/**
+ * Compress files using external tool 'zip'/'7z'
+ *
+ * @param inputFolder - folder to archive - for cwd option
+ * @param outputFile - output slpk file
+ * @param level - compression level
+ * @param inputFiles - input files path to pass to the executable as option
+ * @param sevenZipExe - path to 7z.exe executable
+ */
+export async function compressWithChildProcess(
+  inputFolder: string,
+  outputFile: string,
+  level: number,
+  inputFiles: string,
+  sevenZipExe: string
+) {
   // eslint-disable-next-line no-undef
   if (process.platform === 'win32') {
-    await compressWithChildProcessWindows(...arguments);
+    await compressWithChildProcessWindows(inputFolder, outputFile, level, inputFiles, sevenZipExe);
   } else {
-    await compressWithChildProcessUnix(...arguments);
+    await compressWithChildProcessUnix(inputFolder, outputFile, level, inputFiles);
   }
 }
 
-async function compressWithChildProcessUnix(inputFolder, outputFile, level = 0, inputFiles = '.') {
+/**
+ * Compress files using external linux tool 'zip'
+ *
+ * @param inputFolder - folder to archive - for cwd option
+ * @param outputFile - output slpk file
+ * @param level - compression level
+ * @param inputFiles - input files path to pass to the executable as option
+ */
+async function compressWithChildProcessUnix(
+  inputFolder: string,
+  outputFile: string,
+  level: number = 0,
+  inputFiles: string = '.'
+) {
   const fullOutputFile = getAbsoluteFilePath(outputFile);
   const args = [`-${level}`, '-r', fullOutputFile, inputFiles];
   const childProcess = new ChildProcessProxy();
@@ -105,12 +150,21 @@ async function compressWithChildProcessUnix(inputFolder, outputFile, level = 0, 
   });
 }
 
+/**
+ * Compress files using windows external tool '7z'
+ *
+ * @param inputFolder - folder to archive - for cwd option
+ * @param outputFile - output slpk file
+ * @param level - compression level
+ * @param inputFiles - input files path to pass to the executable as option
+ * @param sevenZipExe - path to 7z.exe executable
+ */
 async function compressWithChildProcessWindows(
-  inputFolder,
-  outputFile,
-  level = 0,
-  inputFiles = join('.', '*'),
-  sevenZipExe
+  inputFolder: string,
+  outputFile: string,
+  level: number = 0,
+  inputFiles: string = join('.', '*'),
+  sevenZipExe: string
 ) {
   // Workaround for @listfile issue. In 7z.exe @-leading files are handled as listfiles
   // https://sevenzip.osdn.jp/chm/cmdline/syntax.htm
@@ -131,10 +185,17 @@ async function compressWithChildProcessWindows(
   });
 }
 
-export async function generateHash128FromZip(inputZipFile, outputFile) {
+/**
+ * Generate hash file from zip archive
+ * https://github.com/Esri/i3s-spec/blob/master/docs/1.7/slpk_hashtable.cmn.md
+ *
+ * @param inputZipFile
+ * @param outputFile
+ */
+export async function generateHash128FromZip(inputZipFile: string, outputFile: string) {
   const input = await fs.readFile(inputZipFile);
   const zip = await JSZip.loadAsync(input);
-  const hashTable = [];
+  const hashTable: {key: string; value: string}[] = [];
   const zipFiles = zip.files;
   for (const relativePath in zipFiles) {
     const zipEntry = zipFiles[relativePath];
@@ -169,7 +230,7 @@ export async function generateHash128FromZip(inputZipFile, outputFile) {
     });
     for (const key in hashTable) {
       const item = hashTable[key];
-      const value = _longToByteArray(item.value);
+      const value = longToByteArray(item.value);
       // TODO: perhaps you need to wait for the 'drain' event if the write returns 'false'
       // eslint-disable-next-line no-undef
       output.write(Buffer.from(crypt.hexToBytes(item.key).concat(value)));
@@ -178,19 +239,45 @@ export async function generateHash128FromZip(inputZipFile, outputFile) {
   });
 }
 
-function _longToByteArray(long) {
+/**
+ * Encode 64 bit value to byte array
+ *
+ * @param long - stringified number
+ * @returns
+ */
+function longToByteArray(long: string): number[] {
   const buffer = new ArrayBuffer(8); // JS numbers are 8 bytes long, or 64 bits
   const longNum = new Float64Array(buffer); // so equivalent to Float64
-  longNum[0] = long;
+  longNum[0] = parseInt(long);
   return Array.from(new Uint8Array(buffer)).reverse(); // reverse to get little endian
 }
 
-export async function addFileToZip(inputFolder, fileName, zipFile, sevenZipExe) {
+/**
+ * Add file to zip archive
+ *
+ * @param inputFile
+ * @param fileName
+ * @param zipFile
+ * @param sevenZipExe
+ */
+export async function addFileToZip(
+  inputFolder: string,
+  fileName: string,
+  zipFile: string,
+  sevenZipExe: string
+) {
   await compressWithChildProcess(inputFolder, zipFile, 0, fileName, sevenZipExe);
   console.log(`${fileName} added to ${zipFile}.`); // eslint-disable-line
 }
 
-function appendFileToArchive(archive, subFileName, subFileData) {
+/**
+ *
+ * @param archive zip archive instance
+ * @param subFileName file path inside archive
+ * @param subFileData source file path
+ * @returns
+ */
+function appendFileToArchive(archive: any, subFileName: string, subFileData: string) {
   return new Promise((resolve) => {
     const fileStream = createReadStream(subFileData);
     console.log(`Compression start: ${subFileName}`); // eslint-disable-line no-undef,no-console

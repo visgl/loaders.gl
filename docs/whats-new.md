@@ -19,7 +19,6 @@
   </tbody>
 </table>
 
-
 See [roadmap](./roadmap) for more details on planned development.
 
 ## v3.2 (In development)
@@ -47,6 +46,14 @@ Target Release Date: Q1 2022.
 **@loaders.gl/worker-utils**
 
 - Experimental support for Node.js workers.
+
+**@loaders.gl/wkb**
+
+- The `WKBWriter` supports options within a `wkb` key, instead of at the top level.
+
+**@loaders.gl/textures**
+
+- Upgrade `basis_universal` libraries to [v1.16.3](https://github.com/BinomialLLC/basis_universal/releases/tag/1.16.3).
 
 ## v3.1
 
@@ -83,7 +90,12 @@ Release Date: Dec 7, 2021.
 - New experimental [`ParquetLoader`](modules/parquet/docs/api-reference/parquet-loader)
 
 **@loaders.gl/pcd**
+
 - `PCDLoader` now supports compressed binary data.
+
+**@loaders.gl/wkt**
+
+- New `WKBWriter` for encoding GeoJSON geometries to WKB.
 
 ## v3.0
 

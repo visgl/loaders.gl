@@ -1,6 +1,6 @@
 import type {Tile3D, Tileset3DProps} from '@loaders.gl/tiles';
 import type {BatchTableJson, B3DMContent} from '@loaders.gl/3d-tiles';
-
+import type {WriteQueueItem} from '../lib/utils/write-queue';
 import type {
   AttributeStorageInfo,
   SceneLayer3D,
@@ -10,14 +10,13 @@ import type {
   MaxScreenThresholdSQ,
   NodeInPage,
   LodSelection,
-  SharedResources,
   Attribute,
   ESRIField,
   Field,
   PopupInfo,
   FieldInfo
 } from '@loaders.gl/i3s';
-import {load, encode} from '@loaders.gl/core';
+import {load, encode, fetchFile, getLoaderOptions} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
@@ -49,12 +48,16 @@ import {NODE as nodeTemplate} from './json-templates/node';
 import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
-import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
+import {KTX2BasisWriter} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
-import {I3SConvertedResources} from './types';
+import {I3SConvertedResources, SharedResourcesArrays} from './types';
+import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
+import {DracoWriterWorker} from '@loaders.gl/draco';
+import WriteQueue from '../lib/utils/write-queue';
+import {I3SAttributesWorker} from '../i3s-attributes-worker';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -75,7 +78,6 @@ const CESIUM_DATASET_PREFIX = 'https://';
  */
 export default class I3SConverter {
   nodePages: NodePages;
-  fileMap: {[key: string]: string};
   options: any;
   layers0Path: string;
   materialMap: Map<any, any>;
@@ -97,10 +99,11 @@ export default class I3SConverter {
   generateTextures: boolean;
   generateBoundingVolumes: boolean;
   layersHasTexture: boolean;
+  workerSource: {[key: string]: string} = {};
+  writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
-    this.fileMap = {};
     this.options = {};
     this.layers0Path = '';
     this.materialMap = new Map();
@@ -169,6 +172,9 @@ export default class I3SConverter {
     this.generateTextures = Boolean(generateTextures);
     this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
 
+    this.writeQueue = new WriteQueue();
+    this.writeQueue.startListening();
+
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
     console.log('Loading egm file completed!'); // eslint-disable-line
@@ -176,6 +182,8 @@ export default class I3SConverter {
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
+
+    await this.loadWorkers();
 
     const preloadOptions = await this._fetchPreloadOptions();
     const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
@@ -189,6 +197,11 @@ export default class I3SConverter {
 
     await this._createAndSaveTileset(outputPath, tilesetName);
     await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+
     return sourceTilesetJson;
   }
 
@@ -239,7 +252,8 @@ export default class I3SConverter {
     await this._writeLayers0();
     createSceneServerPath(tilesetName, this.layers0!, tilesetPath);
     await this._writeNodeIndexDocument(root0, 'root', join(this.layers0Path, 'nodes', 'root'));
-    await this.nodePages.save(this.layers0Path, this.fileMap, isCreateSlpk);
+    await this.nodePages.save(this.layers0Path, this.writeQueue, isCreateSlpk);
+    await this.writeQueue.finalize();
     await this._createSlpk(tilesetPath);
   }
 
@@ -318,13 +332,16 @@ export default class I3SConverter {
       const childPath = join(this.layers0Path, 'nodes', child.path!);
 
       if (this.options.slpk) {
-        this.fileMap['nodes/1/3dNodeIndexDocument.json.gz'] = await writeFileForSlpk(
-          childPath,
-          JSON.stringify(child),
-          '3dNodeIndexDocument.json'
-        );
+        this.writeQueue.enqueue({
+          archiveKey: 'nodes/1/3dNodeIndexDocument.json.gz',
+          writePromise: writeFileForSlpk(
+            childPath,
+            JSON.stringify(child),
+            '3dNodeIndexDocument.json'
+          )
+        });
       } else {
-        await writeFile(childPath, JSON.stringify(child));
+        this.writeQueue.enqueue({writePromise: writeFile(childPath, JSON.stringify(child))});
       }
     } else {
       await this._addChildrenWithNeighborsAndWriteFile({
@@ -342,13 +359,18 @@ export default class I3SConverter {
    */
   private async _writeLayers0(): Promise<void> {
     if (this.options.slpk) {
-      this.fileMap['3dSceneLayer.json.gz'] = await writeFileForSlpk(
-        this.layers0Path,
-        JSON.stringify(this.layers0),
-        '3dSceneLayer.json'
-      );
+      this.writeQueue.enqueue({
+        archiveKey: '3dSceneLayer.json.gz',
+        writePromise: writeFileForSlpk(
+          this.layers0Path,
+          JSON.stringify(this.layers0),
+          '3dSceneLayer.json'
+        )
+      });
     } else {
-      await writeFile(this.layers0Path, JSON.stringify(this.layers0));
+      this.writeQueue.enqueue({
+        writePromise: writeFile(this.layers0Path, JSON.stringify(this.layers0))
+      });
     }
   }
 
@@ -361,13 +383,12 @@ export default class I3SConverter {
     rootPath: string
   ): Promise<void> {
     if (this.options.slpk) {
-      this.fileMap[`nodes/${nodePath}/3dNodeIndexDocument.json.gz`] = await writeFileForSlpk(
-        rootPath,
-        JSON.stringify(root0),
-        '3dNodeIndexDocument.json'
-      );
+      this.writeQueue.enqueue({
+        archiveKey: `nodes/${nodePath}/3dNodeIndexDocument.json.gz`,
+        writePromise: writeFileForSlpk(rootPath, JSON.stringify(root0), '3dNodeIndexDocument.json')
+      });
     } else {
-      await writeFile(rootPath, JSON.stringify(root0));
+      this.writeQueue.enqueue({writePromise: writeFile(rootPath, JSON.stringify(root0))});
     }
   }
 
@@ -384,7 +405,6 @@ export default class I3SConverter {
         slpkFileName,
         0,
         '.',
-        // @ts-expect-error
         this.options.sevenZipExe
       );
 
@@ -656,7 +676,8 @@ export default class I3SConverter {
       this.layers0?.attributeStorageInfo,
       this.options.draco,
       this.generateBoundingVolumes,
-      this.geoidHeightModel!
+      this.geoidHeightModel!,
+      this.workerSource
     );
     return resourcesData;
   }
@@ -806,7 +827,7 @@ export default class I3SConverter {
     const slpkChildPath = join('nodes', nodePath);
 
     await this._writeGeometries(geometryBuffer!, compressedGeometry!, childPath, slpkChildPath);
-    await this._writeShared(sharedResources!, childPath, slpkChildPath, nodePath);
+    await this._writeShared(sharedResources, childPath, slpkChildPath, nodePath);
     await this._writeTexture(texture, childPath, slpkChildPath);
     await this._writeAttributes(attributes, childPath, slpkChildPath);
   }
@@ -820,33 +841,35 @@ export default class I3SConverter {
    */
   private async _writeGeometries(
     geometryBuffer: ArrayBuffer,
-    compressedGeometry: ArrayBuffer,
+    compressedGeometry: Promise<ArrayBuffer>,
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
     if (this.options.slpk) {
       const slpkGeometryPath = join(childPath, 'geometries');
-      this.fileMap[`${slpkChildPath}/geometries/0.bin.gz`] = await writeFileForSlpk(
-        slpkGeometryPath,
-        geometryBuffer,
-        '0.bin'
-      );
+      this.writeQueue.enqueue({
+        archiveKey: `${slpkChildPath}/geometries/0.bin.gz`,
+        writePromise: writeFileForSlpk(slpkGeometryPath, geometryBuffer, '0.bin')
+      });
     } else {
       const geometryPath = join(childPath, 'geometries/0/');
-      await writeFile(geometryPath, geometryBuffer, 'index.bin');
+      this.writeQueue.enqueue({
+        writePromise: writeFile(geometryPath, geometryBuffer, 'index.bin')
+      });
     }
 
     if (this.options.draco) {
       if (this.options.slpk) {
         const slpkCompressedGeometryPath = join(childPath, 'geometries');
-        this.fileMap[`${slpkChildPath}/geometries/1.bin.gz`] = await writeFileForSlpk(
-          slpkCompressedGeometryPath,
-          compressedGeometry,
-          '1.bin'
-        );
+        this.writeQueue.enqueue({
+          archiveKey: `${slpkChildPath}/geometries/1.bin.gz`,
+          writePromise: writeFileForSlpk(slpkCompressedGeometryPath, compressedGeometry, '1.bin')
+        });
       } else {
         const compressedGeometryPath = join(childPath, 'geometries/1/');
-        await writeFile(compressedGeometryPath, compressedGeometry, 'index.bin');
+        this.writeQueue.enqueue({
+          writePromise: writeFile(compressedGeometryPath, compressedGeometry, 'index.bin')
+        });
       }
     }
   }
@@ -859,24 +882,26 @@ export default class I3SConverter {
    * @param nodePath - a node path
    */
   private async _writeShared(
-    sharedResources: SharedResources,
+    sharedResources: SharedResourcesArrays | null,
     childPath: string,
     slpkChildPath: string,
     nodePath: string
   ): Promise<void> {
+    if (!sharedResources) {
+      return;
+    }
     sharedResources.nodePath = nodePath;
     const sharedData = transform(sharedResources, sharedResourcesTemplate());
     const sharedDataStr = JSON.stringify(sharedData);
     if (this.options.slpk) {
       const slpkSharedPath = join(childPath, 'shared');
-      this.fileMap[`${slpkChildPath}/shared/sharedResource.json.gz`] = await writeFileForSlpk(
-        slpkSharedPath,
-        sharedDataStr,
-        'sharedResource.json'
-      );
+      this.writeQueue.enqueue({
+        archiveKey: `${slpkChildPath}/shared/sharedResource.json.gz`,
+        writePromise: writeFileForSlpk(slpkSharedPath, sharedDataStr, 'sharedResource.json')
+      });
     } else {
       const sharedPath = join(childPath, 'shared/');
-      await writeFile(sharedPath, sharedDataStr);
+      this.writeQueue.enqueue({writePromise: writeFile(sharedPath, sharedDataStr)});
     }
   }
 
@@ -904,9 +929,7 @@ export default class I3SConverter {
 
           if (this.generateTextures) {
             formats.push({name: '1', format: 'ktx2'});
-            const ktx2TextureData = new Uint8Array(
-              await encode(texture.image, KTX2BasisUniversalTextureWriter)
-            );
+            const ktx2TextureData = new Uint8Array(await encode(texture.image, KTX2BasisWriter));
             await this.writeTextureFile(ktx2TextureData, '1', 'ktx2', childPath, slpkChildPath);
           }
 
@@ -958,15 +981,15 @@ export default class I3SConverter {
       const slpkTexturePath = join(childPath, 'textures');
       const compress = false;
 
-      this.fileMap[`${slpkChildPath}/textures/${name}.${format}`] = await writeFileForSlpk(
-        slpkTexturePath,
-        textureData,
-        `${name}.${format}`,
-        compress
-      );
+      this.writeQueue.enqueue({
+        archiveKey: `${slpkChildPath}/textures/${name}.${format}`,
+        writePromise: writeFileForSlpk(slpkTexturePath, textureData, `${name}.${format}`, compress)
+      });
     } else {
       const texturePath = join(childPath, `textures/${name}/`);
-      await writeFile(texturePath, textureData, `index.${format}`);
+      this.writeQueue.enqueue({
+        writePromise: writeFile(texturePath, textureData, `index.${format}`)
+      });
     }
   }
 
@@ -977,25 +1000,26 @@ export default class I3SConverter {
    * @param slpkChildPath - the resource path inside *slpk file
    */
   private async _writeAttributes(
-    attributes: ArrayBuffer[],
+    attributes: ArrayBuffer[] | null = [],
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
-    if (attributes.length && this.layers0?.attributeStorageInfo?.length) {
+    if (attributes?.length && this.layers0?.attributeStorageInfo?.length) {
       for (let index = 0; index < attributes.length; index++) {
         const folderName = this.layers0.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
 
         if (this.options.slpk) {
           const slpkAttributesPath = join(childPath, 'attributes', folderName);
-          this.fileMap[`${slpkChildPath}/attributes/${folderName}.bin.gz`] = await writeFileForSlpk(
-            slpkAttributesPath,
-            fileBuffer,
-            '0.bin'
-          );
+          this.writeQueue.enqueue({
+            archiveKey: `${slpkChildPath}/attributes/${folderName}.bin.gz`,
+            writePromise: writeFileForSlpk(slpkAttributesPath, fileBuffer, '0.bin')
+          });
         } else {
           const attributesPath = join(childPath, `attributes/${folderName}/0`);
-          await writeFile(attributesPath, fileBuffer, 'index.bin');
+          this.writeQueue.enqueue({
+            writePromise: writeFile(attributesPath, fileBuffer, 'index.bin')
+          });
         }
       }
     }
@@ -1308,5 +1332,21 @@ export default class I3SConverter {
    */
   private isContentSupported(sourceRootTile: Tile3D): boolean {
     return ['b3dm', 'glTF'].includes(sourceRootTile?.content?.type);
+  }
+
+  private async loadWorkers(): Promise<void> {
+    console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
+    if (this.options.draco) {
+      const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
+      const sourceResponse = await fetchFile(url);
+      const source = await sourceResponse.text();
+      this.workerSource.draco = source;
+    }
+
+    const i3sAttributesWorkerUrl = getWorkerURL(I3SAttributesWorker, {...getLoaderOptions()});
+    const sourceResponse = await fetchFile(i3sAttributesWorkerUrl);
+    const source = await sourceResponse.text();
+    this.workerSource.I3SAttributes = source;
+    console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }

@@ -1,4 +1,5 @@
 import {ChildProcessProxy} from '@loaders.gl/worker-utils';
+import {CompressedTextureWriterOptions} from '../../compressed-texture-writer';
 
 /*
  * @see https://github.com/TimvanScherpenzeel/texture-compressor
@@ -6,7 +7,7 @@ import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 export async function encodeImageURLToCompressedTextureURL(
   inputUrl: string,
   outputUrl: string,
-  options?: {cwd?: string}
+  options?: CompressedTextureWriterOptions
 ): Promise<string> {
   // prettier-ignore
   const args = [

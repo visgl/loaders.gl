@@ -1,11 +1,15 @@
-import type {Writer} from '@loaders.gl/loader-utils';
+import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
 import {loadDracoEncoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
 
-export type DracoWriterOptions = DracoBuildOptions & {};
+export type DracoWriterOptions = WriterOptions & {
+  draco?: DracoBuildOptions & {
+    attributeNameEntry: string;
+  };
+};
 
 const DEFAULT_DRACO_OPTIONS = {
   pointcloud: false, // Set to true if pointcloud (mode: 0, no indices)
@@ -33,10 +37,7 @@ export const DracoWriter: Writer = {
   }
 };
 
-async function encode(
-  data: DracoMesh,
-  options: {draco?: DracoWriterOptions} = {}
-): Promise<ArrayBuffer> {
+async function encode(data: DracoMesh, options: DracoWriterOptions = {}): Promise<ArrayBuffer> {
   // Dynamically load draco
   const {draco} = await loadDracoEncoderModule(options);
   const dracoBuilder = new DRACOBuilder(draco);

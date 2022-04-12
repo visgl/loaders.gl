@@ -1,4 +1,3 @@
-import type {GLTFMaterial} from '@loaders.gl/gltf';
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 
@@ -222,34 +221,34 @@ export type I3SMaterialDefinition = {
   /** A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology. When not specified, all the default values of pbrMetallicRoughness apply. */
   pbrMetallicRoughness: I3SPbrMetallicRoughness;
   /** The normal texture map. */
-  normalTexture: I3SMaterialTexture;
+  normalTexture?: I3SMaterialTexture;
   /** The occlusion texture map. */
-  occlusionTexture: I3SMaterialTexture;
+  occlusionTexture?: I3SMaterialTexture;
   /** The emissive texture map. */
-  emissiveTexture: I3SMaterialTexture;
+  emissiveTexture?: I3SMaterialTexture;
   /** The emissive color of the material. */
-  emissiveFactor: [number, number, number];
+  emissiveFactor?: [number, number, number];
   /** Defines the meaning of the alpha-channel/alpha-mask. */
   alphaMode: 'opaque' | 'mask' | 'blend';
   /** The alpha cutoff value of the material. */
-  alphaCutoff: number;
+  alphaCutoff?: number;
   /** Specifies whether the material is double sided. */
-  doubleSided: boolean;
+  doubleSided?: boolean;
   /** Winding order is counterclockwise. */
-  cullFace: 'none' | 'front' | 'back';
+  cullFace?: 'none' | 'front' | 'back';
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md */
 export type I3SPbrMetallicRoughness = {
   /** The material's base color factor. default=[1,1,1,1] */
-  baseColorFactor: [number, number, number, number];
+  baseColorFactor?: [number, number, number, number];
   /** The base color texture. */
-  baseColorTexture: I3SMaterialTexture;
+  baseColorTexture?: I3SMaterialTexture;
   /** the metalness of the material. default=1.0 */
   metallicFactor: number;
   /** the roughness of the material. default=1.0 */
   roughnessFactor: number;
   /** the metallic-roughness texture. */
-  metallicRoughnessTexture: I3SMaterialTexture;
+  metallicRoughnessTexture?: I3SMaterialTexture;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialTexture.cmn.md */
 export type I3SMaterialTexture = {
@@ -398,27 +397,83 @@ export type NodeInPage = {
   mesh?: NodeMesh;
 };
 
-export type SharedResources = {
-  materialDefinitions?: GLTFMaterial[];
-  textureDefinitions?: TextureDefinitionInfo[];
-  nodePath: string;
+/**
+ * https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialDefinitionInfo.cmn.md
+ */
+export type MaterialDefinitionInfo = {
+  /** A name for the material as assigned in the creating application. */
+  name?: string;
+  /** Indicates the material type, chosen from the supported values. */
+  type?: 'standard' | 'water' | 'billboard' | 'leafcard' | 'reference';
+  /** The href that resolves to the shared resource bundle in which the material definition is contained. */
+  $ref?: string;
+  /** Parameter defined for the material.
+   * https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialParams.cmn.md
+   */
+  params: {
+    /** Indicates transparency of this material; 0 = opaque, 1 = fully transparent. */
+    transparency?: number;
+    /** Indicates reflectivity of this material. */
+    reflectivity?: number;
+    /** Indicates shininess of this material. */
+    shininess?: number;
+    /** Ambient color of this material. Ambient color is the color of an object where it is in shadow.
+     * This color is what the object reflects when illuminated by ambient light rather than direct light. */
+    ambient?: number[];
+    /** Diffuse color of this material. Diffuse color is the most instinctive meaning of the color of an object.
+     * It is that essential color that the object reveals under pure white light. It is perceived as the color
+     * of the object itself rather than a reflection of the light. */
+    diffuse?: number[];
+    /** Specular color of this material. Specular color is the color of the light of a specular reflection
+     * (specular reflection is the type of reflection that is characteristic of light reflected from a shiny
+     * surface). */
+    specular?: number[];
+    /** Rendering mode. */
+    renderMode: 'textured' | 'solid' | 'untextured' | 'wireframe';
+    /** TRUE if features with this material should cast shadows. */
+    castShadows?: boolean;
+    /** TRUE if features with this material should receive shadows */
+    receiveShadows?: boolean;
+    /** Indicates the material culling options {back, front, none}. */
+    cullFace?: string;
+    /** This flag indicates that the vertex color attribute of the geometry should be used to color the geometry
+     * for rendering. If texture is present, the vertex colors are multiplied by this color.
+     * e.g. pixel_color = [interpolated]vertex_color * texel_color. Default is false. */
+    vertexColors?: boolean;
+    /** This flag indicates that the geometry has uv region vertex attributes. These are used for adressing
+     * subtextures in a texture atlas. The uv coordinates are relative to this subtexture in this case.
+     * This is mostly useful for repeated textures in a texture atlas. Default is false. */
+    vertexRegions?: boolean;
+    /** Indicates whether Vertex Colors also contain a transparency channel. Default is false. */
+    useVertexColorAlpha?: boolean;
+  };
 };
 
+/** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/sharedResource.cmn.md */
+export type SharedResources = {
+  /** Materials describe how a Feature or a set of Features is to be rendered. */
+  materialDefinitions?: {[key: string]: MaterialDefinitionInfo};
+  /** A Texture is a set of images, with some parameters specific to the texture/uv mapping to geometries. */
+  textureDefinitions?: {[key: string]: TextureDefinitionInfo};
+};
+
+/** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/image.cmn.md */
 type TextureImage = {
+  /** A unique ID for each image. Generated using the BuildID function. */
   id: string;
+  /** width of this image, in pixels. */
   size?: number;
+  /** The maximum size of a single pixel in world units.
+   * This property is used by the client to pick the image to load and render. */
   pixelInWorldUnits?: number;
+  /** The href to the image(s), one per encoding, in the same order as the encodings. */
   href?: string[];
+  /** The byte offset of this image's encodings. There is one per encoding,
+   * in the same order as the encodings, in the block in which this texture image resides. */
   byteOffset?: string[];
+  /** The length in bytes of this image's encodings. There is one per encoding,
+   * in the same order as the encodings. */
   length?: number[];
-  mimeType?: string;
-  bufferView?: {
-    data: ArrayBuffer;
-  };
-  image?: {
-    height: number;
-    width: number;
-  };
 };
 
 export type Attribute = 'OBJECTID' | 'string' | 'double' | 'Int32' | string;
@@ -543,12 +598,21 @@ type FullExtent = {
   spatialReference?: SpatialReference;
 };
 
-type TextureDefinitionInfo = {
-  encoding: string[];
+/**
+ * https://github.com/Esri/i3s-spec/blob/master/docs/1.8/textureDefinitionInfo.cmn.md
+ */
+export type TextureDefinitionInfo = {
+  /** MIMEtype - The encoding/content type that is used by all images in this map */
+  encoding?: string[];
+  /** UV wrapping modes, from {none, repeat, mirror}. */
   wrap?: string[];
+  /** TRUE if the Map represents a texture atlas. */
   atlas?: boolean;
+  /** The name of the UV set to be used as texture coordinates. */
   uvSet?: string;
+  /** Indicates channels description. */
   channels?: 'rbg' | 'rgba' | string;
+  /** An image is a binary resource, containing a single raster that can be used to texture a feature or symbol. */
   images: TextureImage[];
 };
 

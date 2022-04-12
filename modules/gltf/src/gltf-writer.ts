@@ -1,8 +1,8 @@
-import type {Writer} from '@loaders.gl/loader-utils';
+import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encoders/encode-gltf';
 
-export type GLTFWriterOptions = {
+export type GLTFWriterOptions = WriterOptions & {
   gltf?: {};
   byteOffset?: number;
 };

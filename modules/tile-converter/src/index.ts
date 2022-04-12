@@ -4,3 +4,4 @@ export {default as NodePages} from './i3s-converter/helpers/node-pages';
 export {default as Tiles3DConverter} from './3d-tiles-converter/3d-tiles-converter';
 
 export {DepsInstaller} from './deps-installer/deps-installer';
+export {prepareDataForAttributesConversion} from './i3s-converter/helpers/gltf-attributes';
