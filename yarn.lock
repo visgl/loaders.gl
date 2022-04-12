@@ -10012,10 +10012,10 @@ parenthesis@^3.0.0:
   resolved "https://registry.yarnpkg.com/parenthesis/-/parenthesis-3.1.7.tgz#01c89b603a2a6a262ec47554e74ed154a9be2aa6"
   integrity sha512-iMtu+HCbLXVrpf6Ys/4YKhcFxbux3xK4ZVB9r+a2kMSqeeQWQoDNYlXIsOjwlT2ldYXZ3k5PVeBnYn7fbAo/Bg==
 
-parquet-wasm@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/parquet-wasm/-/parquet-wasm-0.1.1.tgz#bcfea93ebf3e9e5cef6206ef43e31642b15a42ae"
-  integrity sha512-Unc+V15f7V+urdMepHZtvamnQ2qP952tJVUBtTDPSBRpuzQWZYXtioAOItk/NdJxtY7cTA9PxakBnl85mU8szg==
+parquet-wasm@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/parquet-wasm/-/parquet-wasm-0.3.0.tgz#f5cf1eedf1e48593e6e6158ab30a74eb21ace7fd"
+  integrity sha512-JprknfGt+Qo4QrAf0AxhOAL2iaN0EMwkeIRAQLyd8Kmy6UOskjL24qnQLE2821X5zMGSMfyV1atJVteUPZER2A==
 
 parse-asn1@^5.0.0, parse-asn1@^5.1.5:
   version "5.1.6"

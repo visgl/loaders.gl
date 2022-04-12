@@ -1,5 +1,5 @@
 // eslint-disable
-import {readParquet} from 'parquet-wasm/node';
+import {readParquet} from 'parquet-wasm/node/arrow1';
 import type {RecordBatch} from 'apache-arrow';
 import {Table, RecordBatchStreamReader} from 'apache-arrow';
 

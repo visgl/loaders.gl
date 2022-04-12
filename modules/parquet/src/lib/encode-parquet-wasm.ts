@@ -1,6 +1,6 @@
 import type {Table} from 'apache-arrow';
 
-import {writeParquet} from 'parquet-wasm/node';
+import {writeParquet, WriterPropertiesBuilder} from 'parquet-wasm/node/arrow1';
 import {RecordBatchFileWriter} from 'apache-arrow';
 
 /**
@@ -8,7 +8,9 @@ import {RecordBatchFileWriter} from 'apache-arrow';
  */
 export function encodeSync(table: Table): ArrayBuffer {
   const arrowIPCBytes = tableToIPC(table);
-  const parquetBytes = writeParquet(arrowIPCBytes);
+  // TODO: provide options for how to write table.
+  const writerProperties = new WriterPropertiesBuilder().build();
+  const parquetBytes = writeParquet(arrowIPCBytes, writerProperties);
   return parquetBytes.buffer.slice(
     parquetBytes.byteOffset,
     parquetBytes.byteLength + parquetBytes.byteOffset
