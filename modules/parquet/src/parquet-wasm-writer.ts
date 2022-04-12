@@ -1,5 +1,5 @@
 import type {Writer} from '@loaders.gl/loader-utils';
-import {encodeSync} from './lib/encode-parquet-wasm'
+import {encode} from './lib/encode-parquet-wasm';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -16,7 +16,7 @@ export const ParquetWasmWriter: Writer = {
   version: VERSION,
   extensions: ['parquet'],
   mimeTypes: ['application/octet-stream'],
-  encodeSync,
+  encode,
   binary: true,
   options: DEFAULT_PARQUET_LOADER_OPTIONS
 };
