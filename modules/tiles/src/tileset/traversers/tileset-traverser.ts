@@ -1,5 +1,6 @@
 import ManagedArray from '../../utils/managed-array';
 import {TILE_REFINEMENT} from '../../constants';
+import {FrameState} from '../helpers/frame-state';
 
 export type TilesetTraverserProps = {
   loadSiblings?: boolean;
@@ -38,9 +39,15 @@ export default class TilesetTraverser {
   selectedTiles: object;
   emptyTiles: object;
 
+  protected lastUpdate: number = new Date().getTime();
+  protected readonly updateDebounceTime = 1000;
   protected _traversalStack: ManagedArray;
   protected _emptyTraversalStack: ManagedArray;
   protected _frameNumber: number | null;
+
+  protected get traversalFinished(): boolean {
+    return true;
+  }
 
   // TODO nested props
   constructor(options: TilesetTraverserProps) {
@@ -96,7 +103,7 @@ export default class TilesetTraverser {
   // all other tiles are part of the skip traversal. The skip traversal allows for skipping levels of the tree
   // and rendering children and parent tiles simultaneously.
   /* eslint-disable-next-line complexity, max-statements */
-  executeTraversal(root, frameState) {
+  executeTraversal(root, frameState: FrameState) {
     // stack to store traversed tiles, only visible tiles should be added to stack
     // visible: visible in the current view frustum
     const stack = this._traversalStack;
@@ -156,7 +163,11 @@ export default class TilesetTraverser {
       tile._shouldRefine = shouldRefine && parentRefines;
     }
 
-    this.options.onTraversalEnd(frameState);
+    const newTime = new Date().getTime();
+    if (this.traversalFinished || newTime - this.lastUpdate > this.updateDebounceTime) {
+      this.lastUpdate = newTime;
+      this.options.onTraversalEnd(frameState);
+    }
   }
 
   updateChildTiles(tile, frameState) {
