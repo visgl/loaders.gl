@@ -1,3 +1,5 @@
+import type {I3SAttributesData} from '../../3d-tiles-attributes-worker';
+
 import {encodeSync} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
@@ -21,15 +23,17 @@ export default class B3dmConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded content
    */
-  async convert(i3sTile: Object, attributes: any = null): Promise<ArrayBuffer> {
-    this.i3sTile = i3sTile;
-    const gltf = await this.buildGltf(i3sTile);
+  async convert(
+    i3sAttributesData: I3SAttributesData,
+    featureAttributes: any = null
+  ): Promise<ArrayBuffer> {
+    const gltf = await this.buildGltf(i3sAttributesData);
     const b3dm = encodeSync(
       {
         gltfEncoded: new Uint8Array(gltf),
         type: 'b3dm',
-        featuresLength: this._getFeaturesLength(attributes),
-        batchTable: attributes
+        featuresLength: this._getFeaturesLength(featureAttributes),
+        batchTable: featureAttributes
       },
       Tile3DWriter
     );
@@ -41,7 +45,8 @@ export default class B3dmConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded glb content
    */
-  async buildGltf(i3sTile): Promise<ArrayBuffer> {
+  async buildGltf(i3sAttributesData: I3SAttributesData): Promise<ArrayBuffer> {
+    const {tileContent, textureFormat} = i3sAttributesData;
     const {
       material,
       attributes,
@@ -49,10 +54,10 @@ export default class B3dmConverter {
       cartesianOrigin,
       cartographicOrigin,
       modelMatrix
-    } = i3sTile.content;
+    } = tileContent;
     const gltfBuilder = new GLTFScenegraph();
 
-    const textureIndex = await this._addI3sTextureToGltf(i3sTile, gltfBuilder);
+    const textureIndex = await this._addI3sTextureToGltf(tileContent, textureFormat, gltfBuilder);
     const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(material, textureIndex);
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
 
@@ -101,11 +106,8 @@ export default class B3dmConverter {
    * @param {GLTFScenegraph} gltfBuilder - gltfScenegraph instance to construct GLTF
    * @returns {Promise<number | null>} - GLTF texture index
    */
-  async _addI3sTextureToGltf(i3sTile, gltfBuilder) {
-    const {
-      content: {texture, material, attributes},
-      header: {textureFormat}
-    } = i3sTile;
+  async _addI3sTextureToGltf(tileContent, textureFormat, gltfBuilder) {
+    const {texture, material, attributes} = tileContent;
     let textureIndex = null;
     let selectedTexture = texture;
     if (!texture && material) {
