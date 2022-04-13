@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
 import {isBrowser, load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
+import {NullWorkerLoader} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
@@ -53,6 +54,13 @@ test('load#auto detect loader', (t) => {
   load('package.json', {JSON: {option: true}});
 });
 
+function checkResponse(t, response) {
+  t.ok(response, 'response is populated');
+  t.ok(response.url.indexOf(resolvePath(JSON_URL)) !== -1, 'response URL is set');
+  t.equals(response.status, 200, 'response status is 200');
+  t.equals(response.headers['content-length'], '4590', 'response content-length is correct');
+}
+
 test('load#load retrieve Response', async (t) => {
   const TEST_LOADER = {
     name: 'JSON',
@@ -63,19 +71,33 @@ test('load#load retrieve Response', async (t) => {
       t.ok(data, 'Read response data');
 
       const {response} = context;
-      t.ok(response, 'response is populated');
-      t.ok(response.url.indexOf(resolvePath(JSON_URL)) !== -1, 'response URL is set');
-      t.equals(response.status, 200, 'response status is 200');
-      t.equals(
-        response.headers.get('content-length'),
-        '4590',
-        'response content-length is correct'
-      );
-      t.end();
+      checkResponse(t, response);
+
+      return response;
     }
   };
 
-  load(JSON_URL, TEST_LOADER);
+  const response = await load(JSON_URL, TEST_LOADER);
+  checkResponse(t, response);
+
+  t.end();
+});
+
+test('load#load retrieve Response from worker - BROWSER ONLY', async (t) => {
+  if (!isBrowser) {
+    t.comment('Workers not supported, skipping tests');
+    t.end();
+    return;
+  }
+
+  const {context} = await load(JSON_URL, NullWorkerLoader, {
+    _workerType: 'test',
+    reuseWorkers: false
+  });
+
+  t.ok(context, 'Context passed through by NullWorkerLoader');
+  checkResponse(t, context.response);
+
   t.end();
 });
 
