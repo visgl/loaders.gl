@@ -82,7 +82,7 @@ export async function normalizeTilesetData(tileset : I3STilesetHeader, options :
 
   if (tileset.nodePages) {
     tileset.nodePagesTile = new I3SNodePagesTiles(tileset, options);
-    tileset.root = await tileset.nodePagesTile.formTileFromNodePages(0);
+    tileset.root = tileset.nodePagesTile.formTileFromNodePages(0);
   } else {
     const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.i3s?.token);
     // eslint-disable-next-line no-use-before-define

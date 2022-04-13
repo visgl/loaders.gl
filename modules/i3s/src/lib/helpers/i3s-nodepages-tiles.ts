@@ -74,14 +74,19 @@ export default class I3SNodePagesTiles {
    * Forms tile header using node and tileset data
    * @param id - id of node through all node pages
    */
-  // eslint-disable-next-line complexity
+  // eslint-disable-next-line complexity, max-statements
   async formTileFromNodePages(id: number): Promise<I3STileHeader> {
     const node: NodeInPage = await this.getNodeById(id);
     const children: {id: string; obb: Obb}[] = [];
+    const childNodesPromises: Promise<NodeInPage>[] = [];
     for (const child of node.children || []) {
-      const childNode = await this.getNodeById(child);
+      childNodesPromises.push(this.getNodeById(child));
+    }
+
+    const childNodes = await Promise.all(childNodesPromises);
+    for (const childNode of childNodes) {
       children.push({
-        id: child.toString(),
+        id: childNode.index.toString(),
         obb: childNode.obb
       });
     }
