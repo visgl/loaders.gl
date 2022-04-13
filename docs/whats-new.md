@@ -33,6 +33,10 @@ Target Release Date: Q1 2022.
 
 - The `GeopackageLoader` now supports `tables` as well as `geojson` output data shapes, defaulting to `tables`. This is configurable via `options.gis.format`.
 
+**loaders.gl/gltf**
+
+- `EXT_meshopt_compression` extension support.
+
 **@loaders.gl/json**
 
 - [`GeoJSONLoader`](modules/json/docs/api-reference/geojson-loader)
