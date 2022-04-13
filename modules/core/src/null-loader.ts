@@ -21,6 +21,11 @@ export const NullWorkerLoader: Loader = {
   }
 };
 
+function passthrough(arrayBuffer, options, context) {
+  context = context && JSON.parse(JSON.stringify(context));
+  return {arrayBuffer, options, context};
+}
+
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
@@ -31,11 +36,11 @@ export const NullLoader: LoaderWithParser = {
   version: VERSION,
   mimeTypes: ['application/x.empty'],
   extensions: ['null'],
-  parse: async (arrayBuffer) => arrayBuffer,
-  parseSync: (arrayBuffer) => arrayBuffer,
-  parseInBatches: async function* generator(asyncIterator) {
+  parse: async (arrayBuffer, options, context) => passthrough(arrayBuffer, options, context),
+  parseSync: passthrough,
+  parseInBatches: async function* generator(asyncIterator, options, context) {
     for await (const batch of asyncIterator) {
-      yield batch;
+      yield passthrough(batch, options, context);
     }
   },
   tests: [() => false],
