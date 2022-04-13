@@ -582,7 +582,7 @@ export type SpatialReference = {
 };
 
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/fullExtent.cmn.md */
-type FullExtent = {
+export type FullExtent = {
   /** left */
   xmin: number;
   /** right */

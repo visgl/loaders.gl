@@ -24,6 +24,7 @@ export type {
   FieldInfo,
   I3SMaterialDefinition,
   TextureDefinitionInfo,
-  MaterialDefinitionInfo
+  MaterialDefinitionInfo,
+  FullExtent
 } from './types';
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
