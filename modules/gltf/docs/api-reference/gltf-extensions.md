@@ -20,6 +20,8 @@ Note that many glTF extensions affect aspects that are firmly outside of the sco
 
 Supports compression of mesh attributes (geometry).
 
+The `GLTFLoader` by default fully decompresses draco compressed geometries, removing the draco extension and the compressed data from the parsed glTF data structure.
+
 Specification: [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression).
 
 Parsing Support:
@@ -58,6 +60,8 @@ Specifies that a material should not be affected by light. Useful for pre-lit ma
 
 This extension adds the ability to specify textures using KTX v2 images with Basis Universal supercompression.
 
+The `GLTFLoader` by default fully decompresses compressed textures, removing the basisu extension and the compressed data from the parsed glTF data structure.
+
 [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)
 
 ## Custom Extensions
@@ -65,6 +69,6 @@ This extension adds the ability to specify textures using KTX v2 images with Bas
 ### EXT_meshopt_compression
 
 This extension provides a support for the meshopt binary geometry data compression format that is tailored to the common types of data seen in glTF buffers.
-The `GLTFLoader` by default fully decompresses meshopt compressed geometries, removing the meshopt extension and the compressed data from the parses glTF data structure.
+The `GLTFLoader` by default fully decompresses meshopt compressed geometries, removing the meshopt extension and the compressed data from the parsed glTF data structure.
 
 [EXT_meshopt_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)
