@@ -84,6 +84,7 @@ export default class Tiles3DConverter {
       }
     });
 
+    await this.sourceTileset.tilesetInitialization;
     const rootNode = this.sourceTileset.root!;
     if (!rootNode.header.obb) {
       rootNode.header.obb = createObbFromMbs(rootNode.header.mbs);
