@@ -2,7 +2,7 @@
 import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../las-loader';
 import type {LASMesh, LASHeader} from './las-types';
-import {Schema, getMeshBoundingBox, convertMesh} from '@loaders.gl/schema';
+import {Schema, getMeshBoundingBox /* , convertMesh */} from '@loaders.gl/schema';
 import {LASFile} from './laslaz-decoder';
 import {getLASSchema} from './get-las-schema';
 
@@ -24,8 +24,10 @@ export default function parseLAS(
   arrayBuffer: ArrayBuffer,
   options?: LASLoaderOptions
 ): LASMesh | ArrowTable | ColumnarTable {
-  const mesh = parseLASMesh(arrayBuffer, options);
-  return convertMesh(mesh, options?.las?.shape || 'mesh') as LASMesh | ArrowTable | ColumnarTable;
+  return parseLASMesh(arrayBuffer, options);
+  // This code breaks pointcloud example on the website
+  // const mesh = parseLASMesh(arrayBuffer, options);
+  // return convertMesh(mesh, options?.las?.shape || 'mesh') as LASMesh | ArrowTable | ColumnarTable;
 }
 
 /**

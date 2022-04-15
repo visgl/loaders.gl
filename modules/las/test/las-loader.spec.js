@@ -94,7 +94,8 @@ test('LASLoader#shape="mesh"', async (t) => {
   t.end();
 });
 
-test('LASLoader#shape="columnar-table"', async (t) => {
+// Related code was commented due to breaking pointcloud example on the website
+test.skip('LASLoader#shape="columnar-table"', async (t) => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'columnar-table'}
   });
@@ -102,7 +103,8 @@ test('LASLoader#shape="columnar-table"', async (t) => {
   t.end();
 });
 
-test('LAS#shape="arrow-table"', async (t) => {
+// Related code was commented due to breaking pointcloud example on the website
+test.skip('LAS#shape="arrow-table"', async (t) => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'arrow-table', skip: 10},
     worker: false
