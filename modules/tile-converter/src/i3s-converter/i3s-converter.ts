@@ -37,7 +37,7 @@ import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import convertB3dmToI3sGeometry from './helpers/geometry-converter';
 import {
   createBoundingVolumes,
-  convertCommonToI3SExtentCoordinate
+  convertBoundingVolumeToI3SFullExtent
 } from './helpers/coordinate-converter';
 import {createSceneServerPath} from './helpers/create-scene-server-path';
 import {convertGeometricErrorToScreenThreshold} from '../lib/utils/lod-conversion-utils';
@@ -262,7 +262,10 @@ export default class I3SConverter {
    * @param  tilesetName - Name of layer
    */
   private _formLayers0(tilesetName: string): void {
-    const extent = convertCommonToI3SExtentCoordinate(this.sourceTileset);
+    const fullExtent = convertBoundingVolumeToI3SFullExtent(
+      this.sourceTileset?.boundingVolume || this.sourceTileset?.root?.boundingVolume
+    );
+    const extent = [fullExtent.xmin, fullExtent.ymin, fullExtent.xmax, fullExtent.ymax];
     const layers0data = {
       version: `{${uuidv4().toUpperCase()}}`,
       id: 0,
