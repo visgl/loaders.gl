@@ -215,7 +215,7 @@ export default class Tileset3D {
   geometricError: number;
   selectedTiles: Tile3D[];
   private updatePromise: Promise<number> | null = null;
-  tilesetInitialization: Promise<void>;
+  tilesetInitializationPromise: Promise<void>;
 
   cartographicCenter: Vector3 | null;
   cartesianCenter: Vector3 | null;
@@ -333,7 +333,7 @@ export default class Tileset3D {
     this.credits = {};
     this.description = this.options.description || '';
 
-    this.tilesetInitialization = this._initializeTileSet(json);
+    this.tilesetInitializationPromise = this._initializeTileSet(json);
   }
 
   /** Release resources */
@@ -395,7 +395,7 @@ export default class Tileset3D {
    */
   update(viewports: any[] | null = null) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.tilesetInitialization.then(() => {
+    this.tilesetInitializationPromise.then(() => {
       if (!viewports && this.lastUpdatedVieports) {
         viewports = this.lastUpdatedVieports;
       } else {
@@ -412,7 +412,7 @@ export default class Tileset3D {
    * @returns Promise of new frameNumber
    */
   async selectTiles(viewports: any[] | null = null): Promise<number> {
-    await this.tilesetInitialization;
+    await this.tilesetInitializationPromise;
     if (viewports) {
       this.lastUpdatedVieports = viewports;
     }
