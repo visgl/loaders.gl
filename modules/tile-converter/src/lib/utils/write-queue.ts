@@ -12,7 +12,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   public listeningInterval: number;
   public writeConcurrency: number;
 
-  constructor(listeningInterval: number = 1000, writeConcurrency: number = 50) {
+  constructor(listeningInterval: number = 50, writeConcurrency: number = 10) {
     super();
     this.listeningInterval = listeningInterval;
     this.writeConcurrency = writeConcurrency;
