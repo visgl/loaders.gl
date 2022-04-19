@@ -371,16 +371,16 @@ function getCompositeTransformationMatrix(node, matrix) {
     transformationMatrix = matrix.multiplyRight(nodeMatrix);
   }
 
+  if (translation) {
+    transformationMatrix = transformationMatrix.translate(translation);
+  }
+
   if (rotation) {
     transformationMatrix = transformationMatrix.rotateXYZ(rotation);
   }
 
   if (scale) {
     transformationMatrix = transformationMatrix.scale(scale);
-  }
-
-  if (translation) {
-    transformationMatrix = transformationMatrix.translate(translation);
   }
 
   return transformationMatrix;
