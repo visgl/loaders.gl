@@ -48,7 +48,7 @@ import {NODE as nodeTemplate} from './json-templates/node';
 import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
-import {KTX2BasisWriter} from '@loaders.gl/textures';
+import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
 import {ImageWriter} from '@loaders.gl/images';
@@ -185,24 +185,27 @@ export default class I3SConverter {
 
     await this.loadWorkers();
 
-    const preloadOptions = await this._fetchPreloadOptions();
-    const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
-    if (preloadOptions.headers) {
-      tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
+    try {
+      const preloadOptions = await this._fetchPreloadOptions();
+      const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
+      if (preloadOptions.headers) {
+        tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
+      }
+      Object.assign(tilesetOptions, preloadOptions);
+      const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
+      // console.log(tilesetJson); // eslint-disable-line
+      this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
+
+      await this._createAndSaveTileset(outputPath, tilesetName);
+      await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+      return sourceTilesetJson;
+    } catch (error) {
+      throw error;
+    } finally {
+      // Clean up worker pools
+      const workerFarm = WorkerFarm.getWorkerFarm({});
+      workerFarm.destroy();
     }
-    Object.assign(tilesetOptions, preloadOptions);
-    const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
-    // console.log(tilesetJson); // eslint-disable-line
-    this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
-
-    await this._createAndSaveTileset(outputPath, tilesetName);
-    await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
-
-    // Clean up worker pools
-    const workerFarm = WorkerFarm.getWorkerFarm({});
-    workerFarm.destroy();
-
-    return sourceTilesetJson;
   }
 
   /**
@@ -932,7 +935,13 @@ export default class I3SConverter {
 
           if (this.generateTextures) {
             formats.push({name: '1', format: 'ktx2'});
-            const ktx2TextureData = new Uint8Array(await encode(texture.image, KTX2BasisWriter));
+            const ktx2TextureData = encode(texture.image, KTX2BasisWriterWorker, {
+              ...KTX2BasisWriterWorker.options,
+              source: this.workerSource.ktx2,
+              reuseWorkers: true,
+              _nodeWorkers: true
+            });
+
             await this.writeTextureFile(ktx2TextureData, '1', 'ktx2', childPath, slpkChildPath);
           }
 
@@ -945,9 +954,7 @@ export default class I3SConverter {
 
           if (this.generateTextures) {
             formats.push({name: '0', format: 'jpg'});
-            const decodedFromKTX2TextureData = new Uint8Array(
-              await encode(texture.image!.data[0], ImageWriter)
-            );
+            const decodedFromKTX2TextureData = encode(texture.image!.data[0], ImageWriter);
             await this.writeTextureFile(
               decodedFromKTX2TextureData,
               '0',
@@ -974,7 +981,7 @@ export default class I3SConverter {
    * @param slpkChildPath
    */
   private async writeTextureFile(
-    textureData: ArrayBuffer,
+    textureData: Promise<ArrayBuffer>,
     name: string,
     format: 'jpg' | 'png' | 'ktx2',
     childPath: string,
@@ -1344,6 +1351,13 @@ export default class I3SConverter {
       const sourceResponse = await fetchFile(url);
       const source = await sourceResponse.text();
       this.workerSource.draco = source;
+    }
+
+    if (this.generateTextures) {
+      const url = getWorkerURL(KTX2BasisWriterWorker, {...getLoaderOptions()});
+      const sourceResponse = await fetchFile(url);
+      const source = await sourceResponse.text();
+      this.workerSource.ktx2 = source;
     }
 
     const i3sAttributesWorkerUrl = getWorkerURL(I3SAttributesWorker, {...getLoaderOptions()});
