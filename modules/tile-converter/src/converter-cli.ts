@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import {join} from 'path';
-const {I3SConverter, Tiles3DConverter, DepsInstaller} = require('@loaders.gl/tile-converter');
+import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
+import {DepsInstaller} from './deps-installer/deps-installer';
 import '@loaders.gl/polyfills';
 
 const TILESET_TYPE = {
@@ -42,13 +43,15 @@ function printHelp() {
 }
 
 function validateOptions(options) {
-  const mandatoryOptionsWithExceptions = {
+  const mandatoryOptionsWithExceptions: {
+    [key: string]: () => void;
+  } = {
     name: () => console.log('Missed: --name [Tileset name]'),
     tileset: () => console.log('Missed: --tileset [tileset.json file]'),
     inputType: () =>
       console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]')
   };
-  const exceptions = [];
+  const exceptions: (() => void)[] = [];
   for (const mandatoryOption in mandatoryOptionsWithExceptions) {
     const optionValue = options[mandatoryOption];
     const isWrongInputType =
@@ -132,7 +135,22 @@ async function convert(options) {
 // OPTIONS
 
 function parseOptions(args) {
-  const opts = {
+  const opts: {
+    inputType: string | null;
+    tileset: string | null;
+    name: string | null;
+    output: string;
+    sevenZipExe: string;
+    egm: string;
+    token: string | null;
+    draco: boolean;
+    installDependencies: boolean;
+    generateTextures: boolean;
+    generateBoundingVolumes: boolean;
+    validate: boolean;
+    maxDepth?: number;
+    slpk?: boolean;
+  } = {
     inputType: null,
     tileset: null,
     name: null,
