@@ -16,7 +16,7 @@ import type {
   PopupInfo,
   FieldInfo
 } from '@loaders.gl/i3s';
-import {load, encode, fetchFile, getLoaderOptions} from '@loaders.gl/core';
+import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
@@ -101,6 +101,7 @@ export default class I3SConverter {
   layersHasTexture: boolean;
   workerSource: {[key: string]: string} = {};
   writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
+  message: string;
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
@@ -119,6 +120,7 @@ export default class I3SConverter {
     this.generateTextures = false;
     this.generateBoundingVolumes = false;
     this.layersHasTexture = false;
+    this.message = 'Tile converter does not work in browser, only in node js environment';
   }
 
   /**
@@ -151,60 +153,66 @@ export default class I3SConverter {
     /** @deprecated */
     inputType?: string;
   }): Promise<any> {
-    this.conversionStartTime = process.hrtime();
-    const {
-      tilesetName,
-      slpk,
-      egmFilePath,
-      inputUrl,
-      validate,
-      outputPath,
-      draco,
-      sevenZipExe,
-      maxDepth,
-      token,
-      generateTextures,
-      generateBoundingVolumes
-    } = options;
-    this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
-    this.validate = Boolean(validate);
-    this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
-    this.generateTextures = Boolean(generateTextures);
-    this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
+    if (!isBrowser) {
+      this.conversionStartTime = process.hrtime();
+      const {
+        tilesetName,
+        slpk,
+        egmFilePath,
+        inputUrl,
+        validate,
+        outputPath,
+        draco,
+        sevenZipExe,
+        maxDepth,
+        token,
+        generateTextures,
+        generateBoundingVolumes
+      } = options;
+      this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
+      this.validate = Boolean(validate);
+      this.Loader =
+        inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
+      this.generateTextures = Boolean(generateTextures);
+      this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
 
-    this.writeQueue = new WriteQueue();
-    this.writeQueue.startListening();
+      this.writeQueue = new WriteQueue();
+      this.writeQueue.startListening();
 
-    console.log('Loading egm file...'); // eslint-disable-line
-    this.geoidHeightModel = await load(egmFilePath, PGMLoader);
-    console.log('Loading egm file completed!'); // eslint-disable-line
+      console.log('Loading egm file...'); // eslint-disable-line
+      this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+      console.log('Loading egm file completed!'); // eslint-disable-line
 
-    if (slpk) {
-      this.nodePages.useWriteFunction(writeFileForSlpk);
-    }
-
-    await this.loadWorkers();
-
-    try {
-      const preloadOptions = await this._fetchPreloadOptions();
-      const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
-      if (preloadOptions.headers) {
-        tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
+      if (slpk) {
+        this.nodePages.useWriteFunction(writeFileForSlpk);
       }
-      Object.assign(tilesetOptions, preloadOptions);
-      const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
-      // console.log(tilesetJson); // eslint-disable-line
-      this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
 
-      await this._createAndSaveTileset(outputPath, tilesetName);
-      await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
-      return sourceTilesetJson;
-    } catch (error) {
-      throw error;
-    } finally {
-      // Clean up worker pools
-      const workerFarm = WorkerFarm.getWorkerFarm({});
-      workerFarm.destroy();
+      await this.loadWorkers();
+
+      try {
+        const preloadOptions = await this._fetchPreloadOptions();
+        const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
+        if (preloadOptions.headers) {
+          tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
+        }
+        Object.assign(tilesetOptions, preloadOptions);
+        const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
+        // console.log(tilesetJson); // eslint-disable-line
+        this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
+
+        await this._createAndSaveTileset(outputPath, tilesetName);
+        await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+        return sourceTilesetJson;
+      } catch (error) {
+        throw error;
+      } finally {
+        // Clean up worker pools
+        const workerFarm = WorkerFarm.getWorkerFarm({});
+        workerFarm.destroy();
+      }
+    } else {
+      console.log(this.message);
+      return this.message;
     }
   }
 

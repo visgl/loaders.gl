@@ -66,9 +66,5 @@ import '@loaders.gl/compression/test';
 import '@loaders.gl/crypto/test';
 import '@loaders.gl/zip/test';
 
-// Cli
-export const isBrowser =
-  typeof process !== 'object' || String(process) !== '[object process]' || process.browser;
-if (!isBrowser) {
-  require('@loaders.gl/tile-converter/test');
-}
+// Tile converter
+import '@loaders.gl/tile-converter/test'
