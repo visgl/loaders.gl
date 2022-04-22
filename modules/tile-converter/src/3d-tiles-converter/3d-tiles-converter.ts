@@ -25,6 +25,7 @@ import {
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 
 const I3S = 'I3S';
+const ERROR_MESSAGE = 'Tile converter does not work in browser, only in node js environment';
 
 /**
  * Converter from i3s to 3d-tiles
@@ -38,7 +39,6 @@ export default class Tiles3DConverter {
   sourceTileset: Tileset3D | null;
   attributeStorageInfo: AttributeStorageInfo | null;
   workerSource: {[key: string]: string} = {};
-  message: string;
 
   constructor() {
     this.options = {};
@@ -49,7 +49,6 @@ export default class Tiles3DConverter {
     this.sourceTileset = null;
     this.attributeStorageInfo = null;
     this.workerSource = {};
-    this.message = 'Tile converter does not work in browser, only in node js environment';
   }
 
   /**
@@ -121,8 +120,8 @@ export default class Tiles3DConverter {
       const workerFarm = WorkerFarm.getWorkerFarm({});
       workerFarm.destroy();
     } else {
-      console.log(this.message);
-      return this.message;
+      console.log(ERROR_MESSAGE);
+      return ERROR_MESSAGE;
     }
   }
 

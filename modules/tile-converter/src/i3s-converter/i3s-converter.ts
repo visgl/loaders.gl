@@ -72,6 +72,7 @@ const OBJECT_ID_TYPE = 'OBJECTID';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
 const CESIUM_DATASET_PREFIX = 'https://';
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
+const ERROR_MESSAGE = 'Tile converter does not work in browser, only in node js environment';
 
 /**
  * Converter from 3d-tiles tileset to i3s layer
@@ -101,7 +102,6 @@ export default class I3SConverter {
   layersHasTexture: boolean;
   workerSource: {[key: string]: string} = {};
   writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
-  message: string;
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
@@ -120,7 +120,6 @@ export default class I3SConverter {
     this.generateTextures = false;
     this.generateBoundingVolumes = false;
     this.layersHasTexture = false;
-    this.message = 'Tile converter does not work in browser, only in node js environment';
   }
 
   /**
@@ -211,8 +210,8 @@ export default class I3SConverter {
         workerFarm.destroy();
       }
     } else {
-      console.log(this.message);
-      return this.message;
+      console.log(ERROR_MESSAGE);
+      return ERROR_MESSAGE;
     }
   }
 
