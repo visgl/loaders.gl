@@ -16,7 +16,12 @@ test('parseWithWorker', async (t) => {
 
   const testResponse = new Response();
   const testData = [{chunk: 0}, {chunk: 1}, {chunk: 2}];
-  const testOptions = {_workerType: 'test', reuseWorkers: false, custom: 'custom'};
+  const testOptions = {
+    _workerType: 'test',
+    reuseWorkers: false,
+    null: {echoParameters: true},
+    custom: 'custom'
+  };
   const testContext = {response: testResponse, fetch, parse: async (arrayBuffer) => arrayBuffer};
   const {arrayBuffer, options, context} = await parseWithWorker(
     NullWorkerLoader,

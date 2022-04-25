@@ -91,6 +91,7 @@ test('load#load retrieve Response from worker - BROWSER ONLY', async (t) => {
   }
 
   const {context} = await load(JSON_URL, NullWorkerLoader, {
+    null: {echoParameters: true},
     _workerType: 'test',
     reuseWorkers: false
   });
