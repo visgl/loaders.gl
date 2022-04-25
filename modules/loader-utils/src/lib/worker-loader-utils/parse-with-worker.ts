@@ -43,6 +43,7 @@ export async function parseWithWorker(
   const workerPool = workerFarm.getWorkerPool({name, url});
 
   // options.log object contains functions which cannot be transferred
+  // context.fetch & context.parse functions cannot be transferred
   // TODO - decide how to handle logging on workers
   options = JSON.parse(JSON.stringify(options));
   context = JSON.parse(JSON.stringify(context || {}));

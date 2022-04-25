@@ -64,6 +64,7 @@ async function parseWithLoader(loader, data, options, context) {
   validateWorkerVersion(loader);
 
   if (isResponse(data)) {
+    // Serialize to support passing the response to web worker
     const response = data as Response;
     const {ok, redirected, status, statusText, type, url} = response;
     const headers = Object.fromEntries(response.headers.entries());

@@ -21,6 +21,10 @@ export const NullWorkerLoader: Loader = {
   }
 };
 
+/**
+ * Returns arguments passed to the parse API in a format that can be transfered to a
+ * web worker. The `context` parameter is stripped using JSON.stringify & parse.
+ */
 function passthrough(arrayBuffer, options, context) {
   context = context && JSON.parse(JSON.stringify(context));
   return {arrayBuffer, options, context};
