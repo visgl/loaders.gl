@@ -771,3 +771,141 @@ export type FieldInfo = {
   isEditable: boolean;
   label: string;
 };
+
+export type I3SWebScene = {
+  header: I3SWebSceneLayer;
+  layers: I3SWebSceneOperationalLayer[];
+};
+
+export type I3SWebSceneLayer = {
+  operationalLayers: I3SWebSceneOperationalLayer[];
+  baseMap: I3SWebSceneBaseMap;
+  ground: I3SWEbSceneGround;
+  heightModelInfo: HeightModelInfo;
+  version: string;
+  authoringApp: string;
+  authoringAppVersion: string;
+  // TODO Add presentation type. This data allows to add multiple viewes for particular web scene.
+  presentation: any;
+  initialState: I3SWebSceneInitialState;
+  spatialReference: SpatialReference;
+  viewingMode: string;
+};
+
+export type I3SWebSceneOperationalLayer = {
+  id: string;
+  opacity: number;
+  title: string;
+  url: string;
+  visibility: boolean;
+  itemId: string;
+  layerType: string;
+  layerDefinition: I3SWebSceneOperationalLayerDefinition;
+  screenSizePerspective: boolean;
+  showLabels?: boolean;
+  disablePopup?: boolean;
+  showLegend?: boolean;
+  layers?: I3SWebSceneOperationalLayer[];
+};
+
+type I3SWebSceneOperationalLayerDefinition = {
+  elevationInfo: I3SWebSceneOperationalLayerElevationInfo;
+  drawingInfo: I3SWebSceneOperationalLayerDrawingInfo;
+};
+
+type I3SWebSceneOperationalLayerElevationInfo = {
+  mode: string;
+};
+
+type I3SWebSceneOperationalLayerDrawingInfo = {
+  renderer: I3SWebSceneOperationalLayerDrawingInfoRenderer;
+};
+
+type I3SWebSceneOperationalLayerDrawingInfoRenderer = {
+  type: string;
+  symbol: I3SWebSceneOperationalLayerSymbol;
+};
+
+type I3SWebSceneOperationalLayerSymbol = {
+  type: string;
+  symbolLayers: I3SWebSceneSymbolLayer[];
+};
+
+type I3SWebSceneSymbolLayer = {
+  type: string;
+  material: I3SWebSceneSymbolLayerMaterial;
+  width: number;
+  height: number;
+};
+
+type I3SWebSceneSymbolLayerMaterial = {
+  color: [number, number, number];
+};
+
+type I3SWebSceneBaseMap = {
+  id: string;
+  title: string;
+  baseMapLayers: I3SWebSceneBaseMapLayer[];
+  elevationLayers: I3SWebSceneElevationLayer[];
+};
+
+type I3SWebSceneBaseMapLayer = {
+  id: string;
+  opacity: number;
+  title: string;
+  url: string;
+  visibility: boolean;
+  layerType: string;
+};
+
+type I3SWebSceneElevationLayer = {
+  id: string;
+  listMode: string;
+  title: string;
+  url: string;
+  visibility: boolean;
+  layerType: string;
+};
+
+type I3SWEbSceneGround = {
+  layers: I3SWebSceneElevationLayer[];
+  transparency: number;
+  navigationConstraint: I3SWebSceneNavigationConstraint;
+};
+
+type I3SWebSceneNavigationConstraint = {
+  type: string;
+};
+
+type I3SWebSceneInitialState = {
+  environment: I3SWebSceneInitialStateEnviroment;
+  viewpoint: I3SWebSceneInitialStateViewPoint;
+};
+
+type I3SWebSceneInitialStateEnviroment = {
+  lighting: I3SWEbSceneLighting;
+  atmosphereEnabled?: string;
+  starsEnabled?: string;
+};
+
+type I3SWEbSceneLighting = {
+  datetime?: number;
+  displayUTCOffset?: number;
+};
+
+type I3SWebSceneInitialStateViewPoint = {
+  camera: I3SWebSceneCamera;
+};
+
+type I3SWebSceneCamera = {
+  position: I3SWebSceneCameraPosition;
+  heading: number;
+  tilt: number;
+};
+
+type I3SWebSceneCameraPosition = {
+  spatialReference: SpatialReference;
+  x: number;
+  y: number;
+  z: number;
+};
