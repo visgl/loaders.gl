@@ -26,7 +26,7 @@ export const NullWorkerLoader: Loader = {
  * web worker. The `context` parameter is stripped using JSON.stringify & parse.
  */
 function parseSync(arrayBuffer, options, context) {
-  if (!options?.null?.echoParameters) return null;
+  if (!options.null.echoParameters) return null;
   context = context && JSON.parse(JSON.stringify(context));
   return {arrayBuffer, options, context};
 }
