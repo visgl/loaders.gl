@@ -197,6 +197,7 @@ export type LoaderContext = {
   url?: string;
 
   fetch: typeof fetch;
+  response?: Response;
   parse: (
     arrayBuffer: ArrayBuffer,
     loaders?,
