@@ -44,7 +44,7 @@ test('ParquetWasmLoader#load', async (t) => {
   t.end();
 })
 
-test.only('ParquetWasmWriterLoader round trip', async (t) => {
+test('ParquetWasmWriterLoader round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWasmWriter, {worker: false});
