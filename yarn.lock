@@ -4103,9 +4103,9 @@ camelize@^1.0.0:
   integrity sha1-FkpUg+Yw+kMh5a8HAg5TGDGyYJs=
 
 caniuse-lite@^1.0.30001219:
-  version "1.0.30001328"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001328.tgz"
-  integrity sha512-Ue55jHkR/s4r00FLNiX+hGMMuwml/QGqqzVeMQ5thUewznU2EdULFvI3JR7JJid6OrjJNfFvHY2G2dIjmRaDDQ==
+  version "1.0.30001332"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001332.tgz"
+  integrity sha512-10T30NYOEQtN6C11YGg411yebhvpnC6Z102+B95eAsN0oB6KUs01ivE8u+G6FMIRtIrVlYXhL+LUwQ3/hXwDWw==
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -10012,10 +10012,10 @@ parenthesis@^3.0.0:
   resolved "https://registry.yarnpkg.com/parenthesis/-/parenthesis-3.1.7.tgz#01c89b603a2a6a262ec47554e74ed154a9be2aa6"
   integrity sha512-iMtu+HCbLXVrpf6Ys/4YKhcFxbux3xK4ZVB9r+a2kMSqeeQWQoDNYlXIsOjwlT2ldYXZ3k5PVeBnYn7fbAo/Bg==
 
-parquet-wasm@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/parquet-wasm/-/parquet-wasm-0.3.0.tgz#f5cf1eedf1e48593e6e6158ab30a74eb21ace7fd"
-  integrity sha512-JprknfGt+Qo4QrAf0AxhOAL2iaN0EMwkeIRAQLyd8Kmy6UOskjL24qnQLE2821X5zMGSMfyV1atJVteUPZER2A==
+parquet-wasm@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/parquet-wasm/-/parquet-wasm-0.3.1.tgz#4c7306cac00e1bfacb00ee9e395a9ef8a4c8623f"
+  integrity sha512-8OMYwh7N+IcQBeKTuDgpvJR7xh/YKPgnQcs29CQW0Q4ziwroRu7N6tQmmsjiCaQ/W7enBNppquj6VAe2fA1yYQ==
 
 parse-asn1@^5.0.0, parse-asn1@^5.1.5:
   version "5.1.6"
