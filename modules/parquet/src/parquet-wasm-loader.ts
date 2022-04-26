@@ -12,7 +12,7 @@ export type ParquetLoaderOptions = LoaderOptions & {
 
 const DEFAULT_PARQUET_LOADER_OPTIONS: ParquetLoaderOptions = {
   parquet: {
-    type: 'arrow-table',
+    type: 'arrow-table'
   }
 };
 
