@@ -5,8 +5,18 @@ import {join} from 'path';
 
 const PGM_LINK = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/egm/egm2008-5.zip';
 
+/**
+ * Install external dependencies for converter:
+ * * PGM file (implemented);
+ * * Draco library (not implemented);
+ * * 7z archiver (not implemented);
+ */
 export class DepsInstaller {
-  async install(path = '') {
+  /**
+   * Run instalation
+   * @param path destination folder
+   */
+  async install(path: string = ''): Promise<void> {
     console.log('Installing "EGM2008-5" model...'); // eslint-disable-line no-console
     const fileMap = await load(PGM_LINK, ZipLoader, {});
 

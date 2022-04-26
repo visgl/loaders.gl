@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {NodePages} from '@loaders.gl/tile-converter';
+import {default as NodePages} from '../../../src/i3s-converter/helpers/node-pages';
 import {isBrowser} from '@loaders.gl/core';
 import WritingQueue from '../../../src/lib/utils/write-queue';
 
