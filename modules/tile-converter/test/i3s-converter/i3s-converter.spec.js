@@ -4,6 +4,7 @@ import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 import {cleanUpPath} from '../utils/file-utils';
+import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
@@ -45,8 +46,9 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
     t.ok(tilesetJson);
     await cleanUpPath('data/BatchedColors');
   } else {
-    t.equals(tilesetJson, 'Tile converter does not work in browser, only in node js environment');
+    t.equals(tilesetJson, BROWSER_ERROR_MESSAGE);
   }
+  t.end();
 });
 
 test('tile-converter - Converters#should create Draco compressed geometry', async (t) => {

@@ -58,6 +58,7 @@ import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import WriteQueue from '../lib/utils/write-queue';
 import {I3SAttributesWorker} from '../i3s-attributes-worker';
+import {BROWSER_ERROR_MESSAGE} from '../constants';
 
 const ION_DEFAULT_TOKEN =
   process.env.IonToken || // eslint-disable-line
@@ -72,7 +73,6 @@ const OBJECT_ID_TYPE = 'OBJECTID';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
 const CESIUM_DATASET_PREFIX = 'https://';
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
-const ERROR_MESSAGE = 'Tile converter does not work in browser, only in node js environment';
 
 /**
  * Converter from 3d-tiles tileset to i3s layer
@@ -152,66 +152,64 @@ export default class I3SConverter {
     /** @deprecated */
     inputType?: string;
   }): Promise<any> {
-    if (!isBrowser) {
-      this.conversionStartTime = process.hrtime();
-      const {
-        tilesetName,
-        slpk,
-        egmFilePath,
-        inputUrl,
-        validate,
-        outputPath,
-        draco,
-        sevenZipExe,
-        maxDepth,
-        token,
-        generateTextures,
-        generateBoundingVolumes
-      } = options;
-      this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
-      this.validate = Boolean(validate);
-      this.Loader =
-        inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
-      this.generateTextures = Boolean(generateTextures);
-      this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
+    if (isBrowser) {
+      console.log(BROWSER_ERROR_MESSAGE);
+      return BROWSER_ERROR_MESSAGE;
+    }
+    this.conversionStartTime = process.hrtime();
+    const {
+      tilesetName,
+      slpk,
+      egmFilePath,
+      inputUrl,
+      validate,
+      outputPath,
+      draco,
+      sevenZipExe,
+      maxDepth,
+      token,
+      generateTextures,
+      generateBoundingVolumes
+    } = options;
+    this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
+    this.validate = Boolean(validate);
+    this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
+    this.generateTextures = Boolean(generateTextures);
+    this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
 
-      this.writeQueue = new WriteQueue();
-      this.writeQueue.startListening();
+    this.writeQueue = new WriteQueue();
+    this.writeQueue.startListening();
 
-      console.log('Loading egm file...'); // eslint-disable-line
-      this.geoidHeightModel = await load(egmFilePath, PGMLoader);
-      console.log('Loading egm file completed!'); // eslint-disable-line
+    console.log('Loading egm file...'); // eslint-disable-line
+    this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+    console.log('Loading egm file completed!'); // eslint-disable-line
 
-      if (slpk) {
-        this.nodePages.useWriteFunction(writeFileForSlpk);
+    if (slpk) {
+      this.nodePages.useWriteFunction(writeFileForSlpk);
+    }
+
+    await this.loadWorkers();
+
+    try {
+      const preloadOptions = await this._fetchPreloadOptions();
+      const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
+      if (preloadOptions.headers) {
+        tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
       }
+      Object.assign(tilesetOptions, preloadOptions);
+      const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
+      // console.log(tilesetJson); // eslint-disable-line
+      this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
 
-      await this.loadWorkers();
-
-      try {
-        const preloadOptions = await this._fetchPreloadOptions();
-        const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
-        if (preloadOptions.headers) {
-          tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
-        }
-        Object.assign(tilesetOptions, preloadOptions);
-        const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
-        // console.log(tilesetJson); // eslint-disable-line
-        this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
-
-        await this._createAndSaveTileset(outputPath, tilesetName);
-        await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
-        return sourceTilesetJson;
-      } catch (error) {
-        throw error;
-      } finally {
-        // Clean up worker pools
-        const workerFarm = WorkerFarm.getWorkerFarm({});
-        workerFarm.destroy();
-      }
-    } else {
-      console.log(ERROR_MESSAGE);
-      return ERROR_MESSAGE;
+      await this._createAndSaveTileset(outputPath, tilesetName);
+      await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+      return sourceTilesetJson;
+    } catch (error) {
+      throw error;
+    } finally {
+      // Clean up worker pools
+      const workerFarm = WorkerFarm.getWorkerFarm({});
+      workerFarm.destroy();
     }
   }
 

@@ -23,9 +23,9 @@ import {
   /*transform3DTilesAttributesOnWorker*/
 } from '../3d-tiles-attributes-worker';
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
+import {BROWSER_ERROR_MESSAGE} from '../constants';
 
 const I3S = 'I3S';
-const ERROR_MESSAGE = 'Tile converter does not work in browser, only in node js environment';
 
 /**
  * Converter from i3s to 3d-tiles
@@ -67,62 +67,61 @@ export default class Tiles3DConverter {
     maxDepth: number;
     egmFilePath: string;
   }): Promise<any> {
-    if (!isBrowser) {
-      const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath} = options;
-      this.conversionStartTime = process.hrtime();
-      this.options = {maxDepth};
-
-      console.log('Loading egm file...'); // eslint-disable-line
-      this.geoidHeightModel = await load(egmFilePath, PGMLoader);
-      console.log('Loading egm file completed!'); // eslint-disable-line
-
-      await this.loadWorkers();
-
-      const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
-
-      this.sourceTileset = new Tileset3D(sourceTilesetJson, {
-        loadOptions: {
-          i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
-        }
-      });
-
-      await this.sourceTileset.tilesetInitializationPromise;
-      const rootNode = this.sourceTileset.root!;
-      if (!rootNode.header.obb) {
-        rootNode.header.obb = createObbFromMbs(rootNode.header.mbs);
-      }
-
-      this.tilesetPath = join(`${outputPath}`, `${tilesetName}`);
-      this.attributeStorageInfo = sourceTilesetJson.attributeStorageInfo;
-      // Removing the tilesetPath needed to exclude erroneous files after conversion
-      try {
-        await removeDir(this.tilesetPath);
-      } catch (e) {
-        // do nothing
-      }
-
-      const rootTile: Node3D = {
-        boundingVolume: {
-          box: i3sObbTo3dTilesObb(rootNode.header.obb, this.geoidHeightModel)
-        },
-        geometricError: convertScreenThresholdToGeometricError(rootNode),
-        children: []
-      };
-
-      await this._addChildren(rootNode, rootTile, 1);
-
-      const tileset = transform({root: rootTile}, tilesetTemplate());
-      await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
-
-      this._finishConversion({slpk: false, outputPath, tilesetName});
-
-      // Clean up worker pools
-      const workerFarm = WorkerFarm.getWorkerFarm({});
-      workerFarm.destroy();
-    } else {
-      console.log(ERROR_MESSAGE);
-      return ERROR_MESSAGE;
+    if (isBrowser) {
+      console.log(BROWSER_ERROR_MESSAGE);
+      return BROWSER_ERROR_MESSAGE;
     }
+    const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath} = options;
+    this.conversionStartTime = process.hrtime();
+    this.options = {maxDepth};
+
+    console.log('Loading egm file...'); // eslint-disable-line
+    this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+    console.log('Loading egm file completed!'); // eslint-disable-line
+
+    await this.loadWorkers();
+
+    const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
+
+    this.sourceTileset = new Tileset3D(sourceTilesetJson, {
+      loadOptions: {
+        i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
+      }
+    });
+
+    await this.sourceTileset.tilesetInitializationPromise;
+    const rootNode = this.sourceTileset.root!;
+    if (!rootNode.header.obb) {
+      rootNode.header.obb = createObbFromMbs(rootNode.header.mbs);
+    }
+
+    this.tilesetPath = join(`${outputPath}`, `${tilesetName}`);
+    this.attributeStorageInfo = sourceTilesetJson.attributeStorageInfo;
+    // Removing the tilesetPath needed to exclude erroneous files after conversion
+    try {
+      await removeDir(this.tilesetPath);
+    } catch (e) {
+      // do nothing
+    }
+
+    const rootTile: Node3D = {
+      boundingVolume: {
+        box: i3sObbTo3dTilesObb(rootNode.header.obb, this.geoidHeightModel)
+      },
+      geometricError: convertScreenThresholdToGeometricError(rootNode),
+      children: []
+    };
+
+    await this._addChildren(rootNode, rootTile, 1);
+
+    const tileset = transform({root: rootTile}, tilesetTemplate());
+    await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
+
+    this._finishConversion({slpk: false, outputPath, tilesetName});
+
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
   }
 
   /**
