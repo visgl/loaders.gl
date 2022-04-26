@@ -1,13 +1,15 @@
 import type {Writer} from '@loaders.gl/loader-utils';
-import {encode} from './lib/wasm/encode-parquet-wasm';
+import {encode, ParquetWriterOptions} from './lib/wasm/encode-parquet-wasm';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type ParquetWriterOptions = {};
-
-const DEFAULT_PARQUET_LOADER_OPTIONS = {};
+const DEFAULT_PARQUET_WRITER_OPTIONS: ParquetWriterOptions = {
+  parquet: {
+    wasmUrl: 'https://unpkg.com/parquet-wasm@0.3.1/esm2/arrow1_bg.wasm'
+  }
+};
 
 export const ParquetWasmWriter: Writer = {
   name: 'Apache Parquet',
@@ -18,5 +20,5 @@ export const ParquetWasmWriter: Writer = {
   mimeTypes: ['application/octet-stream'],
   encode,
   binary: true,
-  options: DEFAULT_PARQUET_LOADER_OPTIONS
+  options: DEFAULT_PARQUET_WRITER_OPTIONS
 };

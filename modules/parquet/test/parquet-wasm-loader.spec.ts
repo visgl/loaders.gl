@@ -7,6 +7,7 @@ import {Table, Int32Vector, Utf8Vector, BoolVector, Uint8Vector} from 'apache-ar
 import {WASM_SUPPORTED_FILES} from './data/files';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
+const wasmUrl = 'http://localhost:5000/node_modules/parquet-wasm/arrow1/esm_bg.wasm';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -25,6 +26,9 @@ test('Load Parquet file', async (t) => {
     geoparquet: {
       cdn: null
     },
+    parquet: {
+      wasmUrl
+    }
   });
 
   t.equal(table.length, 5);
@@ -37,7 +41,11 @@ test('ParquetWasmLoader#load', async (t) => {
   t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/${path}`;
-    const data = await load(url, ParquetWasmLoader, {});
+    const data = await load(url, ParquetWasmLoader, {
+      parquet: {
+        wasmUrl
+      }
+    });
     t.ok(data, `GOOD(${title})`);
   }
 
@@ -47,8 +55,16 @@ test('ParquetWasmLoader#load', async (t) => {
 test('ParquetWasmWriterLoader round trip', async (t) => {
   const table = createArrowTable();
 
-  const parquetBuffer = await encode(table, ParquetWasmWriter, {worker: false});
-  const newTable = await load(parquetBuffer, ParquetWasmLoader, {worker: false});
+  const parquetBuffer = await encode(table, ParquetWasmWriter, {worker: false,
+    parquet: {
+      wasmUrl
+    }
+  });
+  const newTable = await load(parquetBuffer, ParquetWasmLoader, {worker: false,
+    parquet: {
+      wasmUrl
+    }
+  });
 
   t.deepEqual(table.schema, newTable.schema);
   t.end();

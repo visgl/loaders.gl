@@ -7,12 +7,14 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type ParquetLoaderOptions = LoaderOptions & {
   parquet?: {
     type?: 'arrow-table';
+    wasmUrl?: string;
   };
 };
 
 const DEFAULT_PARQUET_LOADER_OPTIONS: ParquetLoaderOptions = {
   parquet: {
-    type: 'arrow-table'
+    type: 'arrow-table',
+    wasmUrl: 'https://unpkg.com/parquet-wasm@0.3.1/esm2/arrow1_bg.wasm'
   }
 };
 

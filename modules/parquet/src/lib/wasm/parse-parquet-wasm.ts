@@ -1,10 +1,22 @@
 // eslint-disable
 import type {RecordBatch} from 'apache-arrow';
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {Table, RecordBatchStreamReader} from 'apache-arrow';
 import {loadWasm} from './load-wasm/load-wasm-node';
 
-export async function parseParquet(arrayBuffer: ArrayBuffer, options): Promise<Table> {
-  const wasm = await loadWasm();
+export type ParquetLoaderOptions = LoaderOptions & {
+  parquet?: {
+    type?: 'arrow-table';
+    wasmUrl?: string;
+  };
+};
+
+export async function parseParquet(
+  arrayBuffer: ArrayBuffer,
+  options?: ParquetLoaderOptions
+): Promise<Table> {
+  const wasmUrl = options?.parquet?.wasmUrl;
+  const wasm = await loadWasm(wasmUrl);
 
   const arr = new Uint8Array(arrayBuffer);
   const arrowIPCUint8Arr = wasm.readParquet(arr);
