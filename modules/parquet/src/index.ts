@@ -5,7 +5,7 @@ import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
 import {ParquetLoader as ParquetWorkerLoader} from './parquet-loader';
 import {parseParquet, parseParquetFileInBatches} from './lib/parse-parquet';
-import {parseParquet as parseParquetWasm} from './lib/parse-parquet-wasm';
+import {parseParquet as parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
 
 export {ParquetWorkerLoader, ParquetWasmWorkerLoader};
 

@@ -37,7 +37,7 @@
     "net": false,
     "tls": false,
     "lzo": false,
-    "./src/lib/load-wasm/load-wasm-node.ts": "./src/lib/load-wasm/load-wasm-browser.ts"
+    "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts"
   },
   "dependencies": {
     "@loaders.gl/compression": "3.2.0-alpha.2",
