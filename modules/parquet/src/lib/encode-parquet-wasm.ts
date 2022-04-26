@@ -1,16 +1,18 @@
 import type {Table} from 'apache-arrow';
 
-import {writeParquet, WriterPropertiesBuilder} from 'parquet-wasm';
 import {RecordBatchStreamWriter} from 'apache-arrow';
+import {loadWasm} from './load-wasm';
 
 /**
  * Encode Arrow Table to Parquet buffer
  */
 export async function encode(table: Table): Promise<ArrayBuffer> {
+  const wasm = await loadWasm();
+
   const arrowIPCBytes = tableToIPC(table);
   // TODO: provide options for how to write table.
-  const writerProperties = new WriterPropertiesBuilder().build();
-  const parquetBytes = writeParquet(arrowIPCBytes, writerProperties);
+  const writerProperties = new wasm.WriterPropertiesBuilder().build();
+  const parquetBytes = wasm.writeParquet(arrowIPCBytes, writerProperties);
   return parquetBytes.buffer.slice(
     parquetBytes.byteOffset,
     parquetBytes.byteLength + parquetBytes.byteOffset
