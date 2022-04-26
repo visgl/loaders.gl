@@ -1,13 +1,9 @@
 // eslint-disable
-// import {readParquet} from 'parquet-wasm/esm/arrow1';
+import {readParquet} from 'parquet-wasm';
 import type {RecordBatch} from 'apache-arrow';
 import {Table, RecordBatchStreamReader} from 'apache-arrow';
 
 export async function parseParquet(arrayBuffer: ArrayBuffer, options): Promise<Table> {
-  const module = await import('parquet-wasm/esm/arrow1');
-  console.log('module', module);
-
-  const {readParquet} = module;
   const arr = new Uint8Array(arrayBuffer);
   const arrowIPCUint8Arr = readParquet(arr);
   const arrowIPCBuffer = arrowIPCUint8Arr.buffer.slice(
