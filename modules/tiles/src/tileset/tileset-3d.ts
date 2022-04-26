@@ -49,7 +49,7 @@ import {
 import TilesetCache from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
 import {FrameState, getFrameState, limitSelectedTiles} from './helpers/frame-state';
-import {getZoomFromBoundingVolume} from './helpers/zoom';
+import {getZoomFromBoundingVolume, getZoomFromExtent, getZoomFromFullExtent} from './helpers/zoom';
 import Tile3D from './tile-3d';
 import Tileset3DTraverser from './traversers/tileset-3d-traverser';
 import TilesetTraverser from './traversers/tileset-traverser';
@@ -157,7 +157,6 @@ const DEFAULT_PROPS: Props = {
   // View distance scale modifier
   viewDistanceScale: 1.0,
 
-  // TODO CESIUM
   // The maximum screen space error used to drive level of detail refinement.
   maximumScreenSpaceError: 8,
 
@@ -216,6 +215,7 @@ export default class Tileset3D {
   geometricError: number;
   selectedTiles: Tile3D[];
   private updatePromise: Promise<number> | null = null;
+  tilesetInitializationPromise: Promise<void>;
 
   cartographicCenter: Vector3 | null;
   cartesianCenter: Vector3 | null;
@@ -333,7 +333,7 @@ export default class Tileset3D {
     this.credits = {};
     this.description = this.options.description || '';
 
-    this._initializeTileSet(json);
+    this.tilesetInitializationPromise = this._initializeTileSet(json);
   }
 
   /** Release resources */
@@ -394,12 +394,15 @@ export default class Tileset3D {
    * @deprecated
    */
   update(viewports: any[] | null = null) {
-    if (!viewports && this.lastUpdatedVieports) {
-      viewports = this.lastUpdatedVieports;
-    } else {
-      this.lastUpdatedVieports = viewports;
-    }
-    this.doUpdate(viewports);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.tilesetInitializationPromise.then(() => {
+      if (!viewports && this.lastUpdatedVieports) {
+        viewports = this.lastUpdatedVieports;
+      } else {
+        this.lastUpdatedVieports = viewports;
+      }
+      this.doUpdate(viewports);
+    });
   }
 
   /**
@@ -409,6 +412,7 @@ export default class Tileset3D {
    * @returns Promise of new frameNumber
    */
   async selectTiles(viewports: any[] | null = null): Promise<number> {
+    await this.tilesetInitializationPromise;
     if (viewports) {
       this.lastUpdatedVieports = viewports;
     }
@@ -589,29 +593,78 @@ export default class Tileset3D {
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
   }
 
-  _initializeTileSet(tilesetJson) {
+  async _initializeTileSet(tilesetJson) {
+    if (this.type === TILESET_TYPE.I3S) {
+      this.calculateViewPropsI3S();
+      tilesetJson.root = await tilesetJson.root;
+    }
     this.root = this._initializeTileHeaders(tilesetJson, null);
 
-    // TODO CESIUM Specific
     if (this.type === TILESET_TYPE.TILES3D) {
-      this._initializeCesiumTileset(tilesetJson);
+      this._initializeTiles3DTileset(tilesetJson);
+      this.calculateViewPropsTiles3D();
     }
 
     if (this.type === TILESET_TYPE.I3S) {
       this._initializeI3STileset();
     }
-    // Calculate cartographicCenter & zoom props to help apps center view on tileset
-    this._calculateViewProps();
   }
 
-  // Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
-  _calculateViewProps() {
+  /**
+   * Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
+   * These metrics help apps center view on tileset
+   * For I3S there is extent (<1.8 version) or fullExtent (>=1.8 version) to calculate view props
+   * @returns
+   */
+  private calculateViewPropsI3S() {
+    // for I3S 1.8 try to calculate with fullExtent
+    const fullExtent = this.tileset.fullExtent;
+    if (fullExtent) {
+      const {xmin, xmax, ymin, ymax, zmin, zmax} = fullExtent;
+      this.cartographicCenter = new Vector3(
+        xmin + (xmax - xmin) / 2,
+        ymin + (ymax - ymin) / 2,
+        zmin + (zmax - zmin) / 2
+      );
+      this.cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(
+        this.cartographicCenter,
+        new Vector3()
+      );
+      this.zoom = getZoomFromFullExtent(fullExtent, this.cartographicCenter, this.cartesianCenter);
+      return;
+    }
+    // for I3S 1.6-1.7 try to calculate with extent
+    const extent = this.tileset.store?.extent;
+    if (extent) {
+      const [xmin, ymin, xmax, ymax] = extent;
+      this.cartographicCenter = new Vector3(xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2, 0);
+      this.cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(
+        this.cartographicCenter,
+        new Vector3()
+      );
+      this.zoom = getZoomFromExtent(extent, this.cartographicCenter, this.cartesianCenter);
+      return;
+    }
+    // eslint-disable-next-line no-console
+    console.warn('Extent is not defined in the tileset header');
+    this.cartographicCenter = new Vector3();
+    this.zoom = 1;
+    return;
+  }
+
+  /**
+   * Called during initialize Tileset to initialize the tileset's cartographic center (longitude, latitude) and zoom.
+   * These metrics help apps center view on tileset.
+   * For 3DTiles the root tile data is used to calculate view props.
+   * @returns
+   */
+  private calculateViewPropsTiles3D() {
     const root = this.root as Tile3D;
     assert(root);
     const {center} = root.boundingVolume;
     // TODO - handle all cases
     if (!center) {
-      // eslint-disable-next-line
+      // eslint-disable-next-line no-console
       console.warn('center was not pre-calculated for the root tile');
       this.cartographicCenter = new Vector3();
       this.zoom = 1;
@@ -649,7 +702,7 @@ export default class Tileset3D {
       rootTile.depth = parentTileHeader.depth + 1;
     }
 
-    // Cesium 3d tiles knows the hierarchy beforehand
+    // 3DTiles knows the hierarchy beforehand
     if (this.type === TILESET_TYPE.TILES3D) {
       const stack: Tile3D[] = [];
       stack.push(rootTile);
@@ -808,7 +861,7 @@ export default class Tileset3D {
     tile.destroy();
   }
 
-  _initializeCesiumTileset(tilesetJson) {
+  _initializeTiles3DTileset(tilesetJson) {
     this.asset = tilesetJson.asset;
     if (!this.asset) {
       throw new Error('Tileset must have an asset property.');

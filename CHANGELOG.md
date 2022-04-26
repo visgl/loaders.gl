@@ -2,6 +2,39 @@
 
 ## v3.2 Prerelease
 
+## v3.2.0-alpha-2
+
+- fix(website): broken examples (#2132)
+- fix(tile-converter): extent calculation (#2148)
+- fix(tile-converter): async root node loading (#2149)
+- fix(gltf-attributes): node mesh issue (#2147)
+- docs(gltf): EXT_meshopt_compression (#2145)
+- feat(i3s): async root node loading (#2138)
+- feat(tile-converter): writing queue (#2133)
+- chore(deps): bump moment from 2.29.1 to 2.29.2 in /website (#2143)
+- feat(showcase): add new page for website (#2130)
+- feat(tile-converter): add 3d-tiles attributes worker (#2146)
+- feat(tiles): execute traversal optimization (#2139)
+- fix(tile-converter): fetch data from server on a specific port (#2135)
+- fix(gltf): meshopt compression extension (#2140)
+- chore(deps): bump minimist from 1.2.5 to 1.2.6 in /test/apps/typescript-test (#2141)
+- chore(deps): bump minimist from 1.2.5 to 1.2.6 (#2142)
+- feat(tile-converter): add i3s attributes worker (#2136)
+- chore: refinement-tile-converter-documentation (#2134)
+- feat(tile-converter): draco writer worker (#2107)
+- feat(core): getLoaderOptions (#2123)
+- fix some postProcessGLTF and glTF Extensions urls (#2121)
+- fix: error message truncation in checkResponse (#2119)
+- feat(textures): worker for ktx2 basis writer (#2115)
+- chore(textures): update what's new in basis_universal (#2112)
+- chore(tile-converter): ts and refactoring (#2116)
+- chore: sync loaders version (#2117)
+- chore(tile-converter): typescript (#2113)
+- chore(basis): update basis libs (#2111)
+- WKB encoder follow up (#2022)
+- feat(draco): writer worker (#2106)
+- Update loaders to accept shape option (#2102)
+
 ## v3.2.0-alpha-1
 
 - Pin sql.js 1.5.0 in GeoPackageLoader (#2101)

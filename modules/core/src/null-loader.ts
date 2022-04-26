@@ -22,6 +22,16 @@ export const NullWorkerLoader: Loader = {
 };
 
 /**
+ * Returns arguments passed to the parse API in a format that can be transfered to a
+ * web worker. The `context` parameter is stripped using JSON.stringify & parse.
+ */
+function parseSync(arrayBuffer, options, context) {
+  if (!options.null.echoParameters) return null;
+  context = context && JSON.parse(JSON.stringify(context));
+  return {arrayBuffer, options, context};
+}
+
+/**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
 export const NullLoader: LoaderWithParser = {
@@ -31,15 +41,17 @@ export const NullLoader: LoaderWithParser = {
   version: VERSION,
   mimeTypes: ['application/x.empty'],
   extensions: ['null'],
-  parse: async (arrayBuffer) => arrayBuffer,
-  parseSync: (arrayBuffer) => arrayBuffer,
-  parseInBatches: async function* generator(asyncIterator) {
+  parse: async (arrayBuffer, options, context) => parseSync(arrayBuffer, options, context),
+  parseSync,
+  parseInBatches: async function* generator(asyncIterator, options, context) {
     for await (const batch of asyncIterator) {
-      yield batch;
+      yield parseSync(batch, options, context);
     }
   },
   tests: [() => false],
   options: {
-    null: {}
+    null: {
+      echoParameters: false
+    }
   }
 };

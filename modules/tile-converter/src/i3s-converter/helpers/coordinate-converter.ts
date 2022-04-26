@@ -1,15 +1,15 @@
-import type {BoundingVolumes, Extent, Mbs, Obb} from '@loaders.gl/i3s';
+import type {BoundingVolumes, FullExtent, Mbs, Obb} from '@loaders.gl/i3s';
 
 import {Matrix3, Quaternion, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {
   OrientedBoundingBox,
   makeOrientedBoundingBoxFromPoints,
-  makeBoundingSphereFromPoints
+  makeBoundingSphereFromPoints,
+  BoundingSphere
 } from '@math.gl/culling';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 import {Geoid} from '@math.gl/geoid';
-import {Tileset3D} from '@loaders.gl/tiles';
 
 /**
  * Create bounding volumes object from tile and geoid height model.
@@ -101,34 +101,39 @@ export function convertPositionsToVectors(positions: Float32Array): Vector3[] {
 }
 
 /**
- * Convert common coordinate to extent coordinate
- * @param tileset
- * @returns - Extent
- * @todo why lodMetricValue is radius? need to check this function
+ * Convert common coordinate to fullExtent https://github.com/Esri/i3s-spec/blob/master/docs/1.8/fullExtent.cmn.md
+ * @param
+ * @param boundingVolume
+ * @returns - fullExtent object
  */
-export function convertCommonToI3SExtentCoordinate(tileset: Tileset3D | null): Extent | null {
-  const cartesianCenter = tileset?.cartesianCenter;
-  if (!cartesianCenter) {
-    return null;
+export function convertBoundingVolumeToI3SFullExtent(
+  boundingVolume: OrientedBoundingBox | BoundingSphere
+): FullExtent {
+  let sphere: BoundingSphere;
+  if (boundingVolume instanceof BoundingSphere) {
+    sphere = boundingVolume;
+  } else {
+    sphere = boundingVolume.getBoundingSphere();
   }
-  const radius = tileset?.lodMetricValue;
-  const rightTop = Ellipsoid.WGS84.cartesianToCartographic(
-    new Vector3(cartesianCenter[0] + radius, cartesianCenter[1] + radius, cartesianCenter[2]),
+  const center: Vector3 = sphere.center;
+  const radius: number = sphere.radius;
+  const vertexMax = Ellipsoid.WGS84.cartesianToCartographic(
+    new Vector3(center[0] + radius, center[1] + radius, center[2] + radius),
     new Vector3()
   );
-  const leftBottom = Ellipsoid.WGS84.cartesianToCartographic(
-    new Vector3(cartesianCenter[0] - radius, cartesianCenter[1] - radius, cartesianCenter[2]),
+  const vertexMin = Ellipsoid.WGS84.cartesianToCartographic(
+    new Vector3(center[0] - radius, center[1] - radius, center[2] - radius),
     new Vector3()
   );
-  const isFirstRight = rightTop[0] < leftBottom[0];
-  const isFirstTop = rightTop[1] < leftBottom[1];
 
-  return [
-    isFirstRight ? rightTop[0] : leftBottom[0],
-    isFirstTop ? rightTop[1] : leftBottom[1],
-    isFirstRight ? leftBottom[0] : rightTop[0],
-    isFirstTop ? leftBottom[1] : rightTop[1]
-  ];
+  return {
+    xmin: vertexMin[0],
+    xmax: vertexMax[0],
+    ymin: vertexMin[1],
+    ymax: vertexMax[1],
+    zmin: vertexMin[2],
+    zmax: vertexMax[2]
+  };
 }
 
 /**

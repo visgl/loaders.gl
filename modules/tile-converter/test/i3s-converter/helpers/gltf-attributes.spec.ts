@@ -1,4 +1,4 @@
-import {prepareDataForAttributesConversion} from '@loaders.gl/tile-converter';
+import {prepareDataForAttributesConversion} from '../../../src/i3s-converter/helpers/gltf-attributes';
 import test from 'tape-promise/tape';
 
 test('gltf-attributes - Should generate attributes object from tileContent', async (t) => {

@@ -298,7 +298,7 @@ class GLTFV1Normalizer {
         roughnessFactor: 1
       };
 
-      const textureId = material.values && material.values.tex;
+      const textureId = material.values?.tex || material.values?.texture2d_0;
       const textureIndex = json.textures.findIndex((texture) => texture.id === textureId);
       if (textureIndex !== -1) {
         material.pbrMetallicRoughness.baseColorTexture = {index: textureIndex};

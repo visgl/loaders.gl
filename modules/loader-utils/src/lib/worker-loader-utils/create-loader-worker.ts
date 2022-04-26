@@ -21,13 +21,14 @@ export function createLoaderWorker(loader: LoaderWithParser) {
         try {
           // validateLoaderVersion(loader, data.source.split('@')[1]);
 
-          const {input, options = {}} = payload;
+          const {input, options = {}, context = {}} = payload;
 
           const result = await parseData({
             loader,
             arrayBuffer: input,
             options,
             context: {
+              ...context,
               parse: parseOnMainThread
             }
           });

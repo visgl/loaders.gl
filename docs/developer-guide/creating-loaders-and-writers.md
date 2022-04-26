@@ -65,3 +65,17 @@ export async function parse3DTile(arrayBuffer, options, context) {
 Remarks:
 
 - While a loader could potentially import `parse` from `@loaders.gl/core` to invoke a sub-loader, it is discouraged, not only from a dependency management reasons, but it prevents loaders.gl from properly handling parameters and allow worker-loaders to call other loaders.
+
+## Accessing the Response object
+
+Loaders will often use the [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) to retrieve data. In most cases, a loader will only be concerned with the data payload, but in some cases it may be desirable to access the underlying [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) object, available on the `context` parameter.
+
+An example of accessing a HTTP header.
+
+```js
+export async function parseWithHeader(arrayBuffer, options, context) {
+  const {parse, response} = context;
+  const contentLength = response.headers.get('content-length');
+  const data = await parse(arrayBuffer, JSONLoader);
+}
+```

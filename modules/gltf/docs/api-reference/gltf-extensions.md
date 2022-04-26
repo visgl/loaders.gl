@@ -6,18 +6,21 @@ loaders.gl aims to provide support for glTF extensions that can be handled compl
 
 Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
-| Extension                                                                                                                        | Description |
-| -------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression) |             |
-| [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)               |             |
-| [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)               |             |
-| [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)                   |             |
+| Extension                                                                                                                         | Description                                |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)  |                                            |
+| [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)                |                                            |
+| [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)                |                                            |
+| [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)                    |                                            |
+| [EXT_meshopt_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md) | Decompresses meshopt-compressed geometries |
 
 ## Official Extensions
 
 ### KHR_draco_mesh_compression
 
 Supports compression of mesh attributes (geometry).
+
+The `GLTFLoader` by default fully decompresses draco compressed geometries, removing the draco extension and the compressed data from the parsed glTF data structure.
 
 Specification: [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression).
 
@@ -57,19 +60,15 @@ Specifies that a material should not be affected by light. Useful for pre-lit ma
 
 This extension adds the ability to specify textures using KTX v2 images with Basis Universal supercompression.
 
+The `GLTFLoader` by default fully decompresses compressed textures, removing the basisu extension and the compressed data from the parsed glTF data structure.
+
 [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)
 
 ## Custom Extensions
 
-### UBER_draco_point_cloud_compression
+### EXT_meshopt_compression
 
-Specification: Similar to `KHR_draco_mesh_compression`, but supports point clouds (draw mode 0). Also does not support any fallback or non-compressed accessors/attributes.
+This extension provides a support for the meshopt binary geometry data compression format that is tailored to the common types of data seen in glTF buffers.
+The `GLTFLoader` by default fully decompresses meshopt compressed geometries, removing the meshopt extension and the compressed data from the parsed glTF data structure.
 
-Parsing support:
-
-- The primitive's accessors field will be populated after decompression.
-- After decompression, the extension will be removed (as if the point cloud was never compressed).
-
-Encoding support:
-
-- Point clouds can be compressed as they are added to the `GLTFBuilder` and decompressed by the `GLTFParser`.
+[EXT_meshopt_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)

@@ -21,6 +21,7 @@ export const KTX2BasisWriterWorker = {
   module: 'textures',
   version: VERSION,
   extensions: ['ktx2'],
+  worker: true,
   options: {
     useSRGB: false,
     qualityLevel: 10,

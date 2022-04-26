@@ -2,6 +2,7 @@ import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/l
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
+import {isResponse} from '../../javascript-utils/is-type';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
@@ -61,6 +62,14 @@ export async function parse(
 // TODO - should accept loader.parseAsyncIterator and concatenate.
 async function parseWithLoader(loader, data, options, context) {
   validateWorkerVersion(loader);
+
+  if (isResponse(data)) {
+    // Serialize to support passing the response to web worker
+    const response = data as Response;
+    const {ok, redirected, status, statusText, type, url} = response;
+    const headers = Object.fromEntries(response.headers.entries());
+    context.response = {headers, ok, redirected, status, statusText, type, url};
+  }
 
   data = await getArrayBufferOrStringFromData(data, loader, options);
 

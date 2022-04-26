@@ -582,18 +582,18 @@ export type SpatialReference = {
 };
 
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/fullExtent.cmn.md */
-type FullExtent = {
-  /** left */
+export type FullExtent = {
+  /** left longitude in decimal degrees */
   xmin: number;
-  /** right */
+  /** right longitude in decimal degrees */
   xmax: number;
-  /** bottom */
+  /** bottom latitude in decimal degrees*/
   ymin: number;
-  /** top */
+  /** top latitude in decimal degrees*/
   ymax: number;
-  /** lowest elevation */
+  /** lowest elevation in meters */
   zmin: number;
-  /** highest elevation */
+  /** highest elevation in meters */
   zmax: number;
   spatialReference?: SpatialReference;
 };

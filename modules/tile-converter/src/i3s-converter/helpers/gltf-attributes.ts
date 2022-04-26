@@ -35,20 +35,26 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
     tileContent.gltf?.nodes ||
     [];
 
-  const prepearedNodes = nodes.map((node) => ({
-    ...node,
-    mesh: {
-      ...node.mesh,
-      primitives: node.mesh?.primitives.map((primitive) => ({
-        ...primitive,
-        indices: {value: primitive?.indices?.value},
-        attributes: getB3DMAttributesWithoutBufferView(primitive.attributes),
-        material: {
-          id: primitive?.material?.id
-        }
-      }))
+  const prepearedNodes = nodes.map((node) => {
+    if (!node.mesh) {
+      return node;
     }
-  }));
+
+    return {
+      ...node,
+      mesh: {
+        ...node.mesh,
+        primitives: node.mesh?.primitives.map((primitive) => ({
+          ...primitive,
+          indices: {value: primitive?.indices?.value},
+          attributes: getB3DMAttributesWithoutBufferView(primitive.attributes),
+          material: {
+            id: primitive?.material?.id
+          }
+        }))
+      }
+    };
+  });
 
   const cartographicOrigin = tileContent.cartographicOrigin;
   const cartesianModelMatrix = tileContent.cartesianModelMatrix;
