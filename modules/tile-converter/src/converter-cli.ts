@@ -41,7 +41,7 @@ type TileConversionOptions = {
 };
 
 /* During validation we check that particular options are defined so they can't be undefined */
-type TileConversionOptionsValidated = TileConversionOptions & {
+type ValidatedTileConversionOptions = TileConversionOptions & {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
   inputType: string;
   /** "tileset.json" file (3DTiles) / "http://..../SceneServer/layers/0" resource (I3S) */
@@ -74,7 +74,7 @@ async function main() {
     return;
   }
 
-  const validatedOptions: TileConversionOptionsValidated = validateOptions(options);
+  const validatedOptions: ValidatedTileConversionOptions = validateOptions(options);
 
   await convert(validatedOptions);
 }
@@ -124,7 +124,7 @@ function printHelp(): void {
  * Run conversion process
  * @param options validated tile-converter options
  */
-async function convert(options: TileConversionOptionsValidated) {
+async function convert(options: ValidatedTileConversionOptions) {
   console.log(`------------------------------------------------`); // eslint-disable-line
   console.log(`Starting conversion of ${options.inputType}`); // eslint-disable-line
   console.log(`------------------------------------------------`); // eslint-disable-line
@@ -168,7 +168,7 @@ async function convert(options: TileConversionOptionsValidated) {
  * @param options - input options of the CLI command
  * @returns validated options
  */
-function validateOptions(options: TileConversionOptions): TileConversionOptionsValidated {
+function validateOptions(options: TileConversionOptions): ValidatedTileConversionOptions {
   const mandatoryOptionsWithExceptions: {
     [key: string]: () => void;
   } = {
@@ -196,7 +196,7 @@ function validateOptions(options: TileConversionOptions): TileConversionOptionsV
     exceptions.forEach((exeption) => exeption());
     process.exit(0); // eslint-disable-line
   }
-  return <TileConversionOptionsValidated>options;
+  return <ValidatedTileConversionOptions>options;
 }
 
 /**
