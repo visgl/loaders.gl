@@ -21,10 +21,10 @@ const DEFAULT_PARQUET_LOADER_OPTIONS: ParquetLoaderOptions = {
 /** ParquetJS table loader */
 export const ParquetWasmLoader = {
   name: 'Apache Parquet',
-  id: 'parquet',
+  id: 'parquet-wasm',
   module: 'parquet',
   version: VERSION,
-  worker: true,
+  worker: false,
   category: 'table',
   extensions: ['parquet'],
   mimeTypes: ['application/octet-stream'],

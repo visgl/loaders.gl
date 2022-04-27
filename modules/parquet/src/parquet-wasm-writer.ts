@@ -13,7 +13,7 @@ const DEFAULT_PARQUET_WRITER_OPTIONS: ParquetWriterOptions = {
 
 export const ParquetWasmWriter: Writer = {
   name: 'Apache Parquet',
-  id: 'parquet',
+  id: 'parquet-wasm',
   module: 'parquet',
   version: VERSION,
   extensions: ['parquet'],
