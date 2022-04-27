@@ -4,7 +4,7 @@ import {join} from 'path';
 import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {DepsInstaller} from './deps-installer/deps-installer';
 
-interface TileConversionOptions {
+type TileConversionOptions = {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
   inputType?: string;
   /** "tileset.json" file (3DTiles) / "http://..../SceneServer/layers/0" resource (I3S) */
@@ -38,17 +38,17 @@ interface TileConversionOptions {
   maxDepth?: number;
   /** 3DTiles->I3S only. Whether the converter generates *.slpk (Scene Layer Package) I3S output file */
   slpk: boolean;
-}
+};
 
 /* During validation we check that particular options are defined so they can't be undefined */
-interface TileConversionOptionsValidated extends TileConversionOptions {
+type TileConversionOptionsValidated = TileConversionOptions & {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
   inputType: string;
   /** "tileset.json" file (3DTiles) / "http://..../SceneServer/layers/0" resource (I3S) */
   tileset: string;
   /** Tileset name. This option is used for naming in resulting json resouces and for resulting path/*.slpk file naming */
   name: string;
-}
+};
 
 const TILESET_TYPE = {
   I3S: 'I3S',
