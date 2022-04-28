@@ -25,7 +25,7 @@ const ES6_BABEL_CONFIG = {
 
 module.exports = {
   mode: 'production',
-  entry: './scripts/converter.js',
+  entry: './src/converter-cli.ts',
   node: {
     fs: 'empty',
     process: false

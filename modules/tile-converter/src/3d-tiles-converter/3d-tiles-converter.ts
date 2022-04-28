@@ -64,7 +64,7 @@ export default class Tiles3DConverter {
     inputUrl: string;
     outputPath: string;
     tilesetName: string;
-    maxDepth: number;
+    maxDepth?: number;
     egmFilePath: string;
   }): Promise<any> {
     if (isBrowser) {

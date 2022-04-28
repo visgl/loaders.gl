@@ -109,6 +109,7 @@ async function parseI3SNodeGeometry(
   }
 
   const content = tile.content;
+  const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
   let vertexCount: number;
   let byteOffset: number = 0;
@@ -216,7 +217,7 @@ async function parseI3SNodeGeometry(
   }
 
   content.vertexCount = vertexCount;
-  content.byteLength = arrayBuffer.byteLength;
+  content.byteLength = contentByteLength;
 
   return tile;
 }

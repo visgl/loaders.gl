@@ -60,7 +60,6 @@ test('tile-converter - Converters#should create Draco compressed geometry', asyn
       tilesetName: 'BatchedColors',
       slpk: false,
       draco: true,
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH,
       token:
@@ -80,7 +79,6 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
       outputPath: 'data',
       tilesetName: 'BatchedColors',
       slpk: true,
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH,
       validate: true,
@@ -100,7 +98,6 @@ test('tile-converter - Converters#root node should not contain geometry and text
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -125,7 +122,6 @@ test('tile-converter - Converters#should create SceneServer path', async (t) => 
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -145,7 +141,6 @@ test('tile-converter - Converters#should create sharedResources json file', asyn
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -177,7 +172,6 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
-      inputType: '3dtiles',
       generateTextures: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
@@ -211,7 +205,6 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
       inputUrl: TILESET_WITH_KTX_2_TEXTURE,
       outputPath: 'data',
       tilesetName: 'ktx2_only',
-      inputType: '3dtiles',
       generateTextures: false,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
@@ -249,7 +242,6 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
       inputUrl: TILESET_WITH_KTX_2_TEXTURE,
       outputPath: 'data',
       tilesetName: 'jpg_and_ktx2',
-      inputType: '3dtiles',
       generateTextures: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
@@ -278,7 +270,6 @@ test('tile-converter - Converters#should create only unique materials', async (t
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -304,7 +295,6 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
       tilesetName: 'BatchedColors',
       generateBoundingVolumes: true,
       slpk: false,
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH,
       token:

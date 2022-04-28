@@ -71,6 +71,7 @@ export type WorkerMessageType =
 export type WorkerMessagePayload = {
   id?: number;
   options?: {[key: string]: any};
+  context?: {[key: string]: any};
   input?: any; // Transferable;
   result?: any; // Transferable
   error?: string;

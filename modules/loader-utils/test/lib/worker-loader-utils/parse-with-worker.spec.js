@@ -14,20 +14,26 @@ test('parseWithWorker', async (t) => {
     return;
   }
 
+  const testResponse = new Response();
   const testData = [{chunk: 0}, {chunk: 1}, {chunk: 2}];
-  let parsedData = await parseWithWorker(NullWorkerLoader, testData, {
+  const testOptions = {
     _workerType: 'test',
-    reuseWorkers: false
-  });
+    reuseWorkers: false,
+    null: {echoParameters: true},
+    custom: 'custom'
+  };
+  const testContext = {response: testResponse, fetch, parse: async (arrayBuffer) => arrayBuffer};
+  const {arrayBuffer, options, context} = await parseWithWorker(
+    NullWorkerLoader,
+    testData,
+    testOptions,
+    testContext
+  );
 
-  t.deepEquals(parsedData, testData, 'data parsed with relative worker url');
-
-  parsedData = await parseWithWorker(NullWorkerLoader, testData, {
-    _workerType: 'test',
-    reuseWorkers: false
-  });
-
-  t.deepEquals(parsedData, testData, 'data parsed with absolute worker url');
+  t.deepEquals(arrayBuffer, testData, 'data parsed with relative worker url');
+  t.equals(options.custom, 'custom', 'options parsed with relative worker url');
+  t.ok(context, 'context parsed with relative worker url');
+  t.ok(context.response, 'context response parsed with relative worker url');
 
   t.end();
 });
