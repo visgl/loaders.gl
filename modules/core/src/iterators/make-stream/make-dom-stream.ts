@@ -34,7 +34,6 @@ export function makeStream<ArrayBuffer>(
             controller.close();
           } else {
             // TODO - ignores controller.desiredSize
-            // @ts-ignore
             controller.enqueue(new Uint8Array(value));
           }
         } catch (error) {
