@@ -772,27 +772,113 @@ export type FieldInfo = {
   label: string;
 };
 
-export type I3SWebScene = {
-  header: I3SWebSceneLayer;
-  layers: I3SWebSceneOperationalLayer[];
+export type ArcGisWebSceneData = {
+  header: ArcGisWebScene;
+  layers: OperationalLayer[];
 };
 
-export type I3SWebSceneLayer = {
-  operationalLayers: I3SWebSceneOperationalLayer[];
-  baseMap: I3SWebSceneBaseMap;
-  ground: I3SWEbSceneGround;
+/**
+ * ArcGis WebScene spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
+ */
+export type ArcGisWebScene = {
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/applicationProperties/
+   * Configuration of application and UI elements.
+   */
+  applicationProperties?: any;
+  /**
+   * Operational layers contain business data which are used to make thematic scenes.
+   */
+  operationalLayers: OperationalLayer[];
+  /**
+   * Basemaps give the web scene a geographic context.
+   */
+  baseMap: BaseMap;
+  /**
+   * Ground defines the main surface of the web scene, based on elevation layers.
+   */
+  ground: Ground;
+  /**
+   * An object that defines the characteristics of the vertical coordinate system used by the web scene.
+   */
   heightModelInfo: HeightModelInfo;
+  /**
+   * Root element in the web scene specifying a string value indicating the web scene version.
+   * Valid values: 1.8, 1.9, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15, 1.16, 1.17, 1.18, 1.19, 1.20, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27
+   */
   version: string;
+  /**
+   * String value indicating the application which authored the webmap
+   */
   authoringApp: string;
+  /**
+   * String value indicating the authoring App's version number.
+   */
   authoringAppVersion: string;
-  // TODO Add presentation type. This data allows to add multiple viewes for particular web scene.
+  /**
+   * A presentation consists of multiple slides, where each slide is a specific view into the web scene.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/presentation/
+   * @todo Add presentation type.
+   */
   presentation: any;
-  initialState: I3SWebSceneInitialState;
+  /**
+   * An object that provides information about the initial environment settings and viewpoint of the web scene.
+   */
+  initialState: InitialState;
+  /**
+   * An object used to specify the spatial reference of the given geometry.
+   */
   spatialReference: SpatialReference;
+  /**
+   * Type: String
+   * Valid values:
+   * global
+   * local
+   */
   viewingMode: string;
+  /**
+   * @todo add type.
+   * Defines area to be clipped for display.
+   */
+  clippingArea?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/mapFloorInfo/
+   * Contains floor-awareness information for the web scene.
+   */
+  mapFloorInfo?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/mapRangeInfo/
+   * Map Range Information
+   */
+  mapRangeInfo?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/table/
+   * An array of table objects.
+   */
+  tables?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/transportationNetwork/
+   * Used to specify the transportation networks of the scene.
+   */
+  transportationNetworks?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/widgets/
+   * The widgets object contains widgets that should be exposed to the user.
+   */
+  widgets?: any;
 };
 
-export type I3SWebSceneOperationalLayer = {
+/**
+ * Operational layers contain your data. Usually, a basemap sits beneath your operational layers to give them geographic context.
+ * Spec- https://developers.arcgis.com/web-scene-specification/objects/operationalLayers/
+ */
+export type OperationalLayer = {
   id: string;
   opacity: number;
   title: string;
@@ -800,56 +886,27 @@ export type I3SWebSceneOperationalLayer = {
   visibility: boolean;
   itemId: string;
   layerType: string;
-  layerDefinition: I3SWebSceneOperationalLayerDefinition;
+  LayerDefinition: LayerDefinition;
   screenSizePerspective: boolean;
   showLabels?: boolean;
   disablePopup?: boolean;
   showLegend?: boolean;
-  layers?: I3SWebSceneOperationalLayer[];
+  layers?: OperationalLayer[];
 };
 
-type I3SWebSceneOperationalLayerDefinition = {
-  elevationInfo: I3SWebSceneOperationalLayerElevationInfo;
-  drawingInfo: I3SWebSceneOperationalLayerDrawingInfo;
+type LayerDefinition = {
+  elevationInfo: ElevationInfo;
+  drawingInfo: DrawingInfo;
 };
 
-type I3SWebSceneOperationalLayerElevationInfo = {
-  mode: string;
-};
-
-type I3SWebSceneOperationalLayerDrawingInfo = {
-  renderer: I3SWebSceneOperationalLayerDrawingInfoRenderer;
-};
-
-type I3SWebSceneOperationalLayerDrawingInfoRenderer = {
-  type: string;
-  symbol: I3SWebSceneOperationalLayerSymbol;
-};
-
-type I3SWebSceneOperationalLayerSymbol = {
-  type: string;
-  symbolLayers: I3SWebSceneSymbolLayer[];
-};
-
-type I3SWebSceneSymbolLayer = {
-  type: string;
-  material: I3SWebSceneSymbolLayerMaterial;
-  width: number;
-  height: number;
-};
-
-type I3SWebSceneSymbolLayerMaterial = {
-  color: [number, number, number];
-};
-
-type I3SWebSceneBaseMap = {
+type BaseMap = {
   id: string;
   title: string;
-  baseMapLayers: I3SWebSceneBaseMapLayer[];
-  elevationLayers: I3SWebSceneElevationLayer[];
+  baseMapLayers: BaseMapLayer[];
+  elevationLayers: ElevationLayer[];
 };
 
-type I3SWebSceneBaseMapLayer = {
+type BaseMapLayer = {
   id: string;
   opacity: number;
   title: string;
@@ -858,7 +915,7 @@ type I3SWebSceneBaseMapLayer = {
   layerType: string;
 };
 
-type I3SWebSceneElevationLayer = {
+type ElevationLayer = {
   id: string;
   listMode: string;
   title: string;
@@ -867,43 +924,43 @@ type I3SWebSceneElevationLayer = {
   layerType: string;
 };
 
-type I3SWEbSceneGround = {
-  layers: I3SWebSceneElevationLayer[];
+type Ground = {
+  layers: ElevationLayer[];
   transparency: number;
-  navigationConstraint: I3SWebSceneNavigationConstraint;
+  navigationConstraint: NavigationConstraint;
 };
 
-type I3SWebSceneNavigationConstraint = {
+type NavigationConstraint = {
   type: string;
 };
 
-type I3SWebSceneInitialState = {
-  environment: I3SWebSceneInitialStateEnviroment;
-  viewpoint: I3SWebSceneInitialStateViewPoint;
+type InitialState = {
+  environment: Enviroment;
+  viewpoint: ViewPoint;
 };
 
-type I3SWebSceneInitialStateEnviroment = {
-  lighting: I3SWEbSceneLighting;
+type Enviroment = {
+  lighting: Lighting;
   atmosphereEnabled?: string;
   starsEnabled?: string;
 };
 
-type I3SWEbSceneLighting = {
+type Lighting = {
   datetime?: number;
   displayUTCOffset?: number;
 };
 
-type I3SWebSceneInitialStateViewPoint = {
-  camera: I3SWebSceneCamera;
+type ViewPoint = {
+  camera: Camera;
 };
 
-type I3SWebSceneCamera = {
-  position: I3SWebSceneCameraPosition;
+type Camera = {
+  position: CameraPosition;
   heading: number;
   tilt: number;
 };
 
-type I3SWebSceneCameraPosition = {
+type CameraPosition = {
   spatialReference: SpatialReference;
   x: number;
   y: number;

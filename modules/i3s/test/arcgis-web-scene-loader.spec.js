@@ -1,8 +1,8 @@
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
-import {I3SWebSceneLoader} from '@loaders.gl/i3s';
+import {ArcGisWebSceneLoader} from '@loaders.gl/i3s';
 
-const WEB_SCENE_FIRST_LAYER_EXPECTED = {
+const WEB_SCENE_FIRST_OPERATIONAL_LAYER_EXPECTED = {
   id: '15f2fe08c8d-layer-0',
   showLegend: true,
   opacity: 1,
@@ -39,10 +39,10 @@ const WEB_SCENE_FIRST_LAYER_EXPECTED = {
   }
 };
 
-const I3S_WEB_SCENE_URL = '@loaders.gl/i3s/test/data/I3SWebScene/I3SWebScene.json';
+const ARCGIS_WEB_SCENE_URL = '@loaders.gl/i3s/test/data/ArcGisWebScene/arcGisWebScene.json';
 
-test('I3SWebSceneLoader#should load WebScene', async (t) => {
-  const webScene = await load(I3S_WEB_SCENE_URL, I3SWebSceneLoader);
+test('ArcGisWebSceneLoader#should load WebScene', async (t) => {
+  const webScene = await load(ARCGIS_WEB_SCENE_URL, ArcGisWebSceneLoader);
 
   t.ok(webScene);
   t.ok(webScene.header);
@@ -54,7 +54,7 @@ test('I3SWebSceneLoader#should load WebScene', async (t) => {
 
   t.ok(url);
   t.equal(webScene.layers.length, 6);
-  t.deepEqual(dataWithoutUrl, WEB_SCENE_FIRST_LAYER_EXPECTED);
+  t.deepEqual(dataWithoutUrl, WEB_SCENE_FIRST_OPERATIONAL_LAYER_EXPECTED);
 
   t.end();
 });

@@ -6,4 +6,4 @@ import './i3s-node-page-loader.spec';
 import './i3s-attribute-loader.spec';
 import './i3s-content-loader.spec';
 import './i3s-building-scene-layer-loader.spec';
-import './i3s-web-scene-layer.spec';
+import './arcgis-web-scene-loader.spec';
