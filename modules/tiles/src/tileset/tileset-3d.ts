@@ -181,7 +181,7 @@ const TILES_LOADED = 'Tiles Loaded';
 const TILES_LOADING = 'Tiles Loading';
 const TILES_UNLOADED = 'Tiles Unloaded';
 const TILES_LOAD_FAILED = 'Failed Tile Loads';
-const POINTS_COUNT = 'Points';
+const POINTS_COUNT = 'Points/Vertices';
 const TILES_GPU_MEMORY = 'Tile Memory Use';
 
 export default class Tileset3D {
@@ -584,6 +584,9 @@ export default class Tileset3D {
         tilesRenderable++;
         if (tile.content.pointCount) {
           pointsRenderable += tile.content.pointCount;
+        } else {
+          // Calculate vertices for non point cloud tiles.
+          pointsRenderable += tile.content.vertexCount;
         }
       }
     }
