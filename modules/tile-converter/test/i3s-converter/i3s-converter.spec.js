@@ -36,7 +36,6 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
     outputPath: 'data',
     tilesetName: 'BatchedColors',
     slpk: false,
-    inputType: '3dtiles',
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
     egmFilePath: PGM_FILE_PATH,
     token:

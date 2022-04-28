@@ -67,4 +67,4 @@ import '@loaders.gl/crypto/test';
 import '@loaders.gl/zip/test';
 
 // Tile converter
-import '@loaders.gl/tile-converter/test'
+import '@loaders.gl/tile-converter/test';
