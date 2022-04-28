@@ -34,6 +34,11 @@ export function makeStream<ArrayBuffer>(
             controller.close();
           } else {
             // TODO - ignores controller.desiredSize
+            // @ts-expect-error
+            // No overload matches this call.
+            // The last overload gave the following error.
+            // Argument of type 'ArrayBuffer' is not assignable to parameter of type 'ArrayBufferLike'.
+            // Type 'ArrayBuffer' is not assignable to type 'SharedArrayBuffer'.ts(2769)
             controller.enqueue(new Uint8Array(value));
           }
         } catch (error) {
