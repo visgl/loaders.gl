@@ -41,7 +41,8 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/wkt/test': path.resolve(basename, '../modules/wkt/test'),
     '@loaders.gl/worker-utils/test': path.resolve(basename, '../modules/worker-utils/test'),
     '@loaders.gl/zarr/test': path.resolve(basename, '../modules/zarr/test'),
-    '@loaders.gl/zip/test': path.resolve(basename, '../modules/zip/test')
+    '@loaders.gl/zip/test': path.resolve(basename, '../modules/zip/test'),
+    'node_modules': path.resolve(basename, '../node_modules')
   };
 }
 

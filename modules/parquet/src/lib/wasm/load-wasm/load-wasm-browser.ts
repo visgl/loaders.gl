@@ -1,14 +1,15 @@
-import type {InitOutput} from 'parquet-wasm/esm2/arrow1';
 import * as wasmEsm from 'parquet-wasm/esm2/arrow1';
 
-let bundle: InitOutput | null = null;
+let cached: typeof wasmEsm | null = null;
 
 export async function loadWasm(wasmUrl?: string) {
-  if (bundle !== null) {
-    return bundle;
+  if (cached !== null) {
+    return cached;
   }
 
-  bundle = await wasmEsm.default(wasmUrl);
+  // For ESM bundles, need to await the default export, which loads the WASM
+  await wasmEsm.default(wasmUrl);
+  cached = wasmEsm;
 
   return wasmEsm;
 }
