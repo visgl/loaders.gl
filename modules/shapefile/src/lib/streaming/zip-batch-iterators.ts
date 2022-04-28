@@ -1,15 +1,17 @@
+import {Batch} from '@loaders.gl/schema';
+
 /**
  * Zip two iterators together
- *
- * @param iterator1
- * @param iterator2
  */
-export async function* zipBatchIterators(
-  iterator1: AsyncIterator<any[]>,
-  iterator2: AsyncIterator<any[]>
-): AsyncGenerator<number[][], void, unknown> {
-  let batch1 = [];
-  let batch2 = [];
+export async function* zipBatchIterators<
+  BatchType1 extends Batch = Batch,
+  BatchType2 extends Batch = Batch
+>(
+  iterator1: AsyncIterator<BatchType1>,
+  iterator2: AsyncIterator<BatchType2>
+): AsyncGenerator<BatchType1, void, unknown> {
+  const batch1: BatchType1[] = [];
+  const batch2: BatchType2[] = [];
   let iterator1Done: boolean = false;
   let iterator2Done: boolean = false;
 
@@ -21,18 +23,18 @@ export async function* zipBatchIterators(
       if (done) {
         iterator1Done = true;
       } else {
-        batch1 = value;
+        batch1.push(value);
       }
     } else if (batch2.length === 0 && !iterator2Done) {
       const {value, done} = await iterator2.next();
       if (done) {
         iterator2Done = true;
       } else {
-        batch2 = value;
+        batch2.push(value);
       }
     }
 
-    const batch = extractBatch(batch1, batch2);
+    const batch = extractBatch<BatchType1, BatchType2>(batch1, batch2);
     if (batch) {
       yield batch;
     }
@@ -41,22 +43,34 @@ export async function* zipBatchIterators(
 
 /**
  * Extract batch of same length from two batches
- *
- * @param batch1
- * @param batch2
- * @return array | null
  */
-function extractBatch(batch1: number[], batch2: number[]): number[][] | null {
-  const batchLength: number = Math.min(batch1.length, batch2.length);
-  if (batchLength === 0) {
+function extractBatch<BatchType1 extends Batch = Batch, BatchType2 extends Batch = Batch>(
+  batch1: BatchType1[],
+  batch2: BatchType2[]
+): BatchType1 | null {
+  if (!batch1 || !batch2) {
+    return null;
+  }
+
+  const {data: data1} = batch1;
+  const {data: data2} = batch2;
+
+  const dataLength: number = Math.min(data1.length, data2.length);
+  if (dataLength === 0) {
     return null;
   }
 
   // Non interleaved arrays
-  const batch: number[][] = [batch1.slice(0, batchLength), batch2.slice(0, batchLength)];
+  // Note that this discards progress information from the second batch
+  const result: BatchType1 = {
+    ...batch1,
+    length: dataLength,
+    data: [data1.slice(0, dataLength), data2.slice(0, dataLength)]
+  };
 
-  // Modify the 2 batches
-  batch1.splice(0, batchLength);
-  batch2.splice(0, batchLength);
-  return batch;
+  // Modify the 2 data arrays
+  data1.splice(0, dataLength);
+  data2.splice(0, dataLength);
+
+  return result;
 }

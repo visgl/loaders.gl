@@ -1,8 +1,9 @@
-import type {BinaryGeometry} from '@loaders.gl/schema';
+import type {Batch, BinaryGeometry} from '@loaders.gl/schema';
+import type {SHPHeader, SHPResult, SHPLoaderOptions} from './types';
+
 import BinaryChunkReader from '../streaming/binary-chunk-reader';
-import {parseSHPHeader, SHPHeader} from './parse-shp-header';
+import {parseSHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
-import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
 const BIG_ENDIAN = false;
@@ -12,24 +13,12 @@ const SHP_HEADER_SIZE = 100;
 // to 12 so that we can also access the record's type
 const SHP_RECORD_HEADER_SIZE = 12;
 
-const STATE = {
-  EXPECTING_HEADER: 0,
-  EXPECTING_RECORD: 1,
-  END: 2,
-  ERROR: 3
-};
-
-type SHPResult = {
-  geometries: (BinaryGeometry | null)[];
-  header?: SHPHeader;
-  error?: string;
-  progress: {
-    bytesUsed: number;
-    bytesTotal: number;
-    rows: number;
-  };
-  currentIndex: number;
-};
+enum STATE {
+  EXPECTING_HEADER = 0,
+  EXPECTING_RECORD = 1,
+  END = 2,
+  ERROR = 3
+}
 
 class SHPParser {
   options?: SHPLoaderOptions = {};
@@ -67,12 +56,11 @@ class SHPParser {
   }
 }
 
-export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeometry[] {
+export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): SHPResult {
   const shpParser = new SHPParser(options);
   shpParser.write(arrayBuffer);
   shpParser.end();
 
-  // @ts-ignore
   return shpParser.result;
 }
 
@@ -83,28 +71,63 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeom
  */
 export async function* parseSHPInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: object
-): AsyncIterable<BinaryGeometry | object> {
+  options?: SHPLoaderOptions
+): AsyncIterable<(BinaryGeometry | null)[] | SHPHeader | Batch> {
+  const shape = options?.shp?.shape;
+
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.header) {
       headerReturned = true;
-      yield parser.result.header;
+      // TODO: what should the shape name be for a binary geometry batch?
+      if (shape === 'batch') {
+        const headerBatch: Batch = {
+          batchType: 'metadata',
+          shape: 'binary-geometry-batch',
+          length: 0,
+          bytesUsed: 0,
+          bytesTotal: parser.result.header.length,
+          data: null
+        };
+        yield headerBatch;
+      } else {
+        yield parser.result.header;
+      }
     }
 
     if (parser.result.geometries.length > 0) {
-      yield parser.result.geometries;
+      if (shape === 'batch') {
+        yield formBinaryTableBatch(parser.result);
+      } else {
+        yield parser.result.geometries;
+      }
       parser.result.geometries = [];
     }
   }
   parser.end();
   if (parser.result.geometries.length > 0) {
-    yield parser.result.geometries;
+    if (shape === 'batch') {
+      yield formBinaryTableBatch(parser.result);
+    } else {
+      yield parser.result.geometries;
+    }
   }
 
   return;
+}
+
+function formBinaryTableBatch(result: SHPResult): Batch {
+  const {geometries, progress} = result;
+  return {
+    batchType: 'data',
+    shape: 'batch',
+    length: geometries.length,
+    data: geometries,
+    bytesUsed: progress.bytesUsed,
+    bytesTotal: progress.bytesTotal
+  };
 }
 
 /**

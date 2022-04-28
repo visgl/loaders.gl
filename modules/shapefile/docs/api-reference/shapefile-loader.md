@@ -27,9 +27,10 @@ const data = await load(url, ShapefileLoader);
 
 ## Options
 
-| Option              | Type    | Default | Description                                                                                                                                                                                                                                                                |
-| ------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| shp.\_maxDimensions | Integer | `4`     | Shapefiles can hold up to 4 dimensions (XYZM). By default all dimensions are parsed; when set to `2` only the X and Y dimensions are parsed. Note that for some Shapefiles, the third dimension is M, not Z. `header.type` in the output designates the stored dimensions. |
+| Option               | Type    | Default  | Description                                                                                                                                                                                                                                                                |
+| -------------------- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shp._maxDimensions` | Integer | `4`      | Shapefiles can hold up to 4 dimensions (XYZM). By default all dimensions are parsed; when set to `2` only the X and Y dimensions are parsed. Note that for some Shapefiles, the third dimension is M, not Z. `header.type` in the output designates the stored dimensions. |
+| `dbf.encoding`       | String  | `latin1` | Text encoding of the DBF file: usually either `utf8`, or `ascii`/`windows-1252`. Shapefiles usually include a `.cpg` file designating the encoding used. If a `.cpg` file exists and is found, the text stored in that file will take precedence over this option.         |
 
 ## Output
 

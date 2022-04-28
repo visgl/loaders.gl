@@ -71,18 +71,18 @@ export type TableBatch = Batch & {
 
 /** Batch for a table organized as an array of rows */
 export type RowTableBatch = TableBatch & {
-  shape: 'row-table';
+  shape: 'row-table' | 'array-row-table' | 'object-row-table' | 'geojson-row-table';
   data: any[];
 };
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type RowArrayTableBatch = RowTableBatch & {
+export type ArrayRowTableBatch = RowTableBatch & {
   shape: 'array-row-table';
   data: any[][];
 };
 
 /** Batch for a table organized as an array of rows, each row is an object mapping columns to values */
-export type RowObjectTableBatch = RowTableBatch & {
+export type ObjectRowTableBatch = RowTableBatch & {
   shape: 'object-row-table';
   data: {[columnName: string]: any}[];
 };

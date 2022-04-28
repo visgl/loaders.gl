@@ -1,27 +1,6 @@
 /* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
 import type {GeoPackageLoaderOptions} from '../geopackage-loader';
-import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
-import {WKBLoader} from '@loaders.gl/wkt';
-import {
-  Schema,
-  Field,
-  Geometry,
-  DataType,
-  Bool,
-  Utf8,
-  Float64,
-  Int32,
-  Int8,
-  Int16,
-  Float32,
-  Binary,
-  Tables,
-  ObjectRowTable,
-  Feature
-} from '@loaders.gl/schema';
-import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
-import {Proj4Projection} from '@math.gl/proj4';
-import {
+import type {
   GeometryColumnsRow,
   ContentsRow,
   SpatialRefSysRow,
@@ -33,6 +12,25 @@ import {
   SQLiteTypes,
   GeoPackageGeometryTypes
 } from './types';
+import type {Tables, Feature, Geometry, GeoJSONRowTable} from '@loaders.gl/schema';
+
+import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
+import {WKBLoader} from '@loaders.gl/wkt';
+import {
+  Schema,
+  Field,
+  DataType,
+  Bool,
+  Utf8,
+  Float64,
+  Int32,
+  Int8,
+  Int16,
+  Float32,
+  Binary
+} from '@loaders.gl/schema';
+import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {Proj4Projection} from '@math.gl/proj4';
 
 // We pin to the same version as sql.js that we use.
 // As of March 2022, versions 1.6.0, 1.6.1, and 1.6.2 of sql.js appeared not to work.
@@ -79,7 +77,7 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes | GeoPackageGeometryTypes]: typeof
 export default async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<Tables<ObjectRowTable> | Record<string, Feature[]>> {
+): Promise<Tables<GeoJSONRowTable> | Record<string, Feature[]>> {
   const {sqlJsCDN = DEFAULT_SQLJS_CDN} = options?.geopackage || {};
   const {reproject = false, _targetCrs = 'WGS84', format = 'tables'} = options?.gis || {};
 
@@ -88,7 +86,7 @@ export default async function parseGeoPackage(
   const projections = getProjections(db);
 
   // Mapping from tableName to geojson feature collection
-  const outputTables: Tables<ObjectRowTable> = {
+  const outputTables: Tables<GeoJSONRowTable> = {
     shape: 'tables',
     tables: []
   };
@@ -173,7 +171,7 @@ function getVectorTable(
   tableName: string,
   projections: ProjectionMapping,
   {reproject, _targetCrs}: {reproject: boolean; _targetCrs: string}
-): ObjectRowTable {
+): GeoJSONRowTable {
   const dataColumns = getDataColumns(db, tableName);
   const geomColumn = getGeometryColumn(db, tableName);
   const featureIdColumn = getFeatureIdName(db, tableName);
@@ -191,7 +189,7 @@ function getVectorTable(
     });
   }
 
-  const geojsonFeatures: object[] = [];
+  const geojsonFeatures: Feature[] = [];
   for (const row of values) {
     const geojsonFeature = constructGeoJsonFeature(
       columns,
@@ -209,11 +207,11 @@ function getVectorTable(
     return {
       data: transformGeoJsonCoords(geojsonFeatures, projection.project),
       schema,
-      shape: 'object-row-table'
+      shape: 'geojson-row-table'
     };
   }
 
-  return {data: geojsonFeatures, schema, shape: 'object-row-table'};
+  return {data: geojsonFeatures, schema, shape: 'geojson-row-table'};
 }
 
 /**
@@ -250,14 +248,15 @@ function constructGeoJsonFeature(
   geomColumn: GeometryColumnsRow,
   dataColumns: DataColumnsMapping,
   featureIdColumn: string
-): Feature<Geometry | null> {
+): Feature {
   // Find feature id
   const idIdx = columns.indexOf(featureIdColumn);
   const id = row[idIdx];
 
   // Parse geometry columns to geojson
   const geomColumnIdx = columns.indexOf(geomColumn.column_name);
-  const geometry = parseGeometry(row[geomColumnIdx].buffer);
+  // TODO: the return type from parseGeometry is Geometry | null
+  const geometry = parseGeometry(row[geomColumnIdx].buffer) as Geometry;
 
   const properties = {};
   if (dataColumns) {
@@ -483,8 +482,8 @@ function getArrowSchema(db: Database, tableName: string): Schema {
   return new Schema(fields);
 }
 
-function formatTablesAsGeojson(tables: Tables<ObjectRowTable>): Record<string, Feature[]> {
-  const geojsonMap = {};
+function formatTablesAsGeojson(tables: Tables<GeoJSONRowTable>): Record<string, Feature[]> {
+  const geojsonMap: Record<string, Feature[]> = {};
   for (const table of tables.tables) {
     geojsonMap[table.name] = table.table.data;
   }

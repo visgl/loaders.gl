@@ -44,6 +44,7 @@ export default async function* parseJSONInBatches(
           length: 0,
           bytesUsed: 0,
           // JSON additions
+          // @ts-expect-error Not yet updated for new Batch typing; had used additional properties on the Batch type
           container: parser.getPartialResult(),
           jsonpath
         };
@@ -81,6 +82,7 @@ export default async function* parseJSONInBatches(
     const finalBatch: Batch = {
       shape,
       batchType: 'final-result',
+      // @ts-expect-error Not yet updated for new Batch typing; had used additional properties on the Batch type
       container: parser.getPartialResult(),
       jsonpath: parser.getStreamingJsonPathAsString(),
       data: [],

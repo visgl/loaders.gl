@@ -43,34 +43,22 @@ export type GeoPackageGeometryTypes =
  * https://www.geopackage.org/spec121/#spatial_ref_sys
  */
 export interface SpatialRefSysRow {
-  /**
-   * Human readable name of this SRS
-   */
+  /** Human readable name of this SRS */
   srs_name: string;
 
-  /**
-   * Unique identifier for each Spatial Reference System within a GeoPackage
-   */
+  /** Unique identifier for each Spatial Reference System within a GeoPackage */
   srs_id: number;
 
-  /**
-   * Case-insensitive name of the defining organization e.g. EPSG or epsg
-   */
+  /** Case-insensitive name of the defining organization e.g. EPSG or epsg */
   organization: string;
 
-  /**
-   * Numeric ID of the Spatial Reference System assigned by the organization
-   */
+  /** Numeric ID of the Spatial Reference System assigned by the organization */
   organization_coordsys_id: number;
 
-  /**
-   * Well-known Text [A32] Representation of the Spatial Reference System
-   */
+  /** Well-known Text [A32] Representation of the Spatial Reference System */
   definition: string;
 
-  /**
-   * Human readable description of this SRS
-   */
+  /** Human readable description of this SRS */
   description?: string;
 }
 
@@ -78,29 +66,19 @@ export interface SpatialRefSysRow {
  * https://www.geopackage.org/spec121/#_contents
  */
 export interface ContentsRow {
-  /**
-   * The name of the actual content (e.g., tiles, features, or attributes) table
-   */
+  /** The name of the actual content (e.g., tiles, features, or attributes) table */
   table_name: string;
 
-  /**
-   * Type of data stored in the table
-   */
+  /** Type of data stored in the table */
   data_type: 'features' | 'attributes' | 'tiles';
 
-  /**
-   * A human-readable identifier (e.g. short name) for the table_name content
-   */
+  /** A human-readable identifier (e.g. short name) for the table_name content */
   identifier?: string;
 
-  /**
-   * A human-readable description for the table_name content
-   */
+  /** A human-readable description for the table_name content */
   description?: string;
 
-  /**
-   * timestamp of last change to content, in ISO 8601 format
-   */
+  /** timestamp of last change to content, in ISO 8601 format */
   last_change: string;
 
   /**
@@ -150,34 +128,22 @@ type GeometryType =
  * https://www.geopackage.org/spec121/#_geometry_columns
  */
 export interface GeometryColumnsRow {
-  /**
-   * Name of the table containing the geometry column
-   */
+  /** Name of the table containing the geometry column */
   table_name: string;
 
-  /**
-   * Name of a column in the feature table that is a Geometry Column
-   */
+  /** Name of a column in the feature table that is a Geometry Column */
   column_name: string;
 
-  /**
-   * Name from Geometry Type Codes (Core) or Geometry Type Codes (Extension) in Geometry Types (Normative)
-   */
+  /** Name from Geometry Type Codes (Core) or Geometry Type Codes (Extension) in Geometry Types (Normative) */
   geometry_type_name: GeometryType;
 
-  /**
-   * Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id
-   */
+  /** Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id */
   srs_id: number;
 
-  /**
-   * 0: z values prohibited; 1: z values mandatory; 2: z values optional
-   */
+  /** 0: z values prohibited; 1: z values mandatory; 2: z values optional */
   z: 0 | 1 | 2;
 
-  /**
-   * 0: m values prohibited; 1: m values mandatory; 2: m values optional
-   */
+  /** 0: m values prohibited; 1: m values mandatory; 2: m values optional */
   m: 0 | 1 | 2;
 }
 
@@ -215,39 +181,25 @@ export interface ExtensionsRow {
  * https://www.geopackage.org/spec121/#gpkg_data_columns_cols
  */
 export interface DataColumnsRow {
-  /**
-   * Name of the tiles or feature table
-   */
+  /** Name of the tiles or feature table */
   table_name: string;
 
-  /**
-   * Name of the table column
-   */
+  /** Name of the table column */
   column_name: string;
 
-  /**
-   * A human-readable identifier (e.g. short name) for the column_name content
-   */
+  /** A human-readable identifier (e.g. short name) for the column_name content */
   name?: string;
 
-  /**
-   * A human-readable formal title for the column_name content
-   */
+  /** A human-readable formal title for the column_name content */
   title?: string;
 
-  /**
-   * A human-readable description for the column_name content
-   */
+  /** A human-readable description for the column_name content */
   description?: string;
 
-  /**
-   * MIME [A21] type of column_name if BLOB type, or NULL for other types
-   */
+  /** MIME [A21] type of column_name if BLOB type, or NULL for other types */
   mime_type?: string;
 
-  /**
-   * Column value constraint name (lowercase) specified by reference to gpkg_data_column_constraints.constraint name
-   */
+  /** Column value constraint name (lowercase) specified by reference to  gpkg_data_column_constraints.constraint name */
   constraint_name?: string;
 }
 
