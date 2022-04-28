@@ -134,7 +134,6 @@ const FULL_EXTENT = () => ({
   zmax: {
     path: 'zmax'
   }
-
 });
 
 export const LAYERS = () => ({

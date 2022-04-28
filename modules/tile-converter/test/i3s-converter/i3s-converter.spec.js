@@ -318,7 +318,6 @@ test('tile-converter - Converters#layer json should contain fullExtent field', a
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
