@@ -6,7 +6,7 @@ import {load, encode, setLoaderOptions} from '@loaders.gl/core';
 import {Table, Int32Vector, Utf8Vector, BoolVector, Uint8Vector} from 'apache-arrow';
 import {WASM_SUPPORTED_FILES} from './data/files';
 
-const PARQUET_DIR = '@loaders.gl/parquet/test/data/apache';
+const PARQUET_DIR = '@loaders.gl/parquet/test/data';
 const WASM_URL = 'node_modules/parquet-wasm/esm2/arrow1_bg.wasm';
 
 setLoaderOptions({
@@ -21,7 +21,7 @@ test('ParquetLoader#loader objects', (t) => {
 });
 
 test('Load Parquet file', async (t) => {
-  const url = '@loaders.gl/modules/parquet/test/data/geoparquet/example.parquet';
+  const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const table: Table = await load(url, ParquetWasmLoader, {
     parquet: {
       wasmUrl: WASM_URL
@@ -37,7 +37,7 @@ test('Load Parquet file', async (t) => {
 test('ParquetWasmLoader#load', async (t) => {
   t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
-    const url = `${PARQUET_DIR}/${path}`;
+    const url = `${PARQUET_DIR}/apache/${path}`;
     const data = await load(url, ParquetWasmLoader, {
       parquet: {
         wasmUrl: WASM_URL
