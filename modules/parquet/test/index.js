@@ -15,3 +15,5 @@ import './parquetjs/thrift.spec';
 // loader/writer
 import './parquet-loader.spec.js';
 import './parquet-writer.spec.js';
+
+import './parquet-wasm-loader.spec';

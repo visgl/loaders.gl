@@ -36,7 +36,8 @@
     "child_process": false,
     "net": false,
     "tls": false,
-    "lzo": false
+    "lzo": false,
+    "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts"
   },
   "dependencies": {
     "@loaders.gl/compression": "3.2.0-alpha.2",
@@ -50,16 +51,21 @@
     "lzo": "^0.4.11",
     "node-int64": "^0.4.0",
     "object-stream": "0.0.1",
+    "parquet-wasm": "^0.3.1",
     "snappyjs": "^0.6.0",
     "thrift": "^0.14.2",
     "varint": "^5.0.0",
     "zstd-codec": "^0.1"
+  },
+  "peerDependencies": {
+    "apache-arrow": "*"
   },
   "devDependencies": {
     "@types/bson": "^4.0.0",
     "@types/node": "^10.14.15",
     "@types/node-int64": "^0.4.29",
     "@types/thrift": "^0.10.8",
-    "@types/varint": "^5.0.0"
+    "@types/varint": "^5.0.0",
+    "apache-arrow": "^4.0.0"
   }
 }

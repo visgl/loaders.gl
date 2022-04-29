@@ -2,10 +2,12 @@ import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 // ParquetLoader
 
+import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
 import {ParquetLoader as ParquetWorkerLoader} from './parquet-loader';
 import {parseParquet, parseParquetFileInBatches} from './lib/parse-parquet';
+import {parseParquet as parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
 
-export {ParquetWorkerLoader};
+export {ParquetWorkerLoader, ParquetWasmWorkerLoader};
 
 /** ParquetJS table loader */
 export const ParquetLoader = {
@@ -14,9 +16,15 @@ export const ParquetLoader = {
   parseFileInBatches: parseParquetFileInBatches
 };
 
+export const ParquetWasmLoader = {
+  ...ParquetWasmWorkerLoader,
+  parse: parseParquetWasm
+};
+
 // ParquetWriter
 
 export {ParquetWriter as _ParquetWriter} from './parquet-writer';
+export {ParquetWasmWriter} from './parquet-wasm-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 
