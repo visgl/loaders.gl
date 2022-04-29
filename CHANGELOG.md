@@ -2,7 +2,21 @@
 
 ## v3.2 Prerelease
 
-## v3.2.0-alpha-2
+## v3.2.0-alpha.3
+
+- WASM-based parquet (#2103)
+- chore(statistics): add vertex count statistics (#2163)
+- fix(parse-i3s-content): calculate content length properly (#2162)
+- chore(tile-converter): cli refactoring (#2160)
+- fix(tile-converter): import polyfills (#2159)
+- chore(tile-converter): refactoring (#2157)
+- Append Response to context when parsing (#2128)
+- fix(tile-converter): node transformation order (#2153)
+- feature(tile-converter): ktx2 writer worker (#2154)
+- fix(gltf): v1 texture normalization (#2155)
+- chore(deps): bump async from 2.6.3 to 2.6.4 (#2151)
+
+## v3.2.0-alpha.2
 
 - fix(website): broken examples (#2132)
 - fix(tile-converter): extent calculation (#2148)
