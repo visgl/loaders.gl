@@ -17,8 +17,6 @@ const SUPPORTED_LAYERS_TYPES = [
 /**
  * Parses ArcGIS WebScene
  * @param data
- * @param options
- * @param context
  */
 export async function parseWebscene(data: ArrayBuffer): Promise<ArcGisWebSceneData> {
   const layer0 = JSON.parse(new TextDecoder().decode(data));
@@ -32,8 +30,7 @@ export async function parseWebscene(data: ArrayBuffer): Promise<ArcGisWebSceneDa
 
 /**
  * Recursively parses WebScene operational layers.
- * @param sublayers
- * @param url
+ * @param layersList
  */
 function parseOperationalLayers(layersList: OperationalLayer[]): OperationalLayer[] {
   let layers: OperationalLayer[] = [];

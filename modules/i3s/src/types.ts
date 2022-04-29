@@ -830,13 +830,7 @@ export type ArcGisWebScene = {
    * An object used to specify the spatial reference of the given geometry.
    */
   spatialReference: SpatialReference;
-  /**
-   * Type: String
-   * Valid values:
-   * global
-   * local
-   */
-  viewingMode: string;
+  viewingMode: 'global' | 'local';
   /**
    * @todo add type.
    * Defines area to be clipped for display.

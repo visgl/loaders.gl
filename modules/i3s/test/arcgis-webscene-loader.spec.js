@@ -39,7 +39,7 @@ const WEB_SCENE_FIRST_OPERATIONAL_LAYER_EXPECTED = {
   }
 };
 
-const ARCGIS_WEB_SCENE_URL = '@loaders.gl/i3s/test/data/ArcGisWebScene/arcGisWebScene.json';
+const ARCGIS_WEB_SCENE_URL = '@loaders.gl/i3s/test/data/arcgis-webscenes/arcgis-webscene.json';
 
 test('ArcGisWebSceneLoader#should load WebScene', async (t) => {
   const webScene = await load(ARCGIS_WEB_SCENE_URL, ArcGisWebSceneLoader);
