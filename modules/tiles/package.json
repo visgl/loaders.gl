@@ -42,6 +42,6 @@
     "@probe.gl/stats": "^3.5.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "3.2.0-alpha.3"
+    "@loaders.gl/core": "^3.0.0"
   }
 }
