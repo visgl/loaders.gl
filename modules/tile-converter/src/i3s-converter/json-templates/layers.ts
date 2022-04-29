@@ -115,6 +115,27 @@ const NODE_PAGES = () => ({
   }
 });
 
+const FULL_EXTENT = () => ({
+  xmin: {
+    path: 'xmin'
+  },
+  ymin: {
+    path: 'ymin'
+  },
+  xmax: {
+    path: 'xmax'
+  },
+  ymax: {
+    path: 'ymax'
+  },
+  zmin: {
+    path: 'zmin'
+  },
+  zmax: {
+    path: 'zmax'
+  }
+});
+
 export const LAYERS = () => ({
   version: {
     path: 'version',
@@ -146,6 +167,10 @@ export const LAYERS = () => ({
   store: {
     path: 'store',
     transform: (val) => transform(val, STORE)
+  },
+  fullExtent: {
+    path: 'fullExtent',
+    transform: (val) => transform(val, FULL_EXTENT())
   },
   heightModelInfo: {
     path: 'heightModelInfo',

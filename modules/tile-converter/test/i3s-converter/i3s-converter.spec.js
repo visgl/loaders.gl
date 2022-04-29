@@ -24,6 +24,15 @@ const TEST_TEXTURE_MATERIAL = {
   }
 };
 
+const TEST_FULL_EXTENT = {
+  xmin: -75.61412212128346,
+  ymin: 40.04095693133301,
+  xmax: -75.6100663747417,
+  ymax: 40.04410425830655,
+  zmin: -3.0828418561956057,
+  zmax: 23.089174197650973
+};
+
 setLoaderOptions({
   _worker: 'test'
 });
@@ -299,5 +308,27 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
     t.ok(tilesetJson);
   }
   await cleanUpPath('data/BatchedColors');
+  t.end();
+});
+
+test('tile-converter - Converters#layer json should contain fullExtent field', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_TEXTURES,
+      outputPath: 'data',
+      tilesetName: 'BatchedTextured',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const layerJson = await fs.readFile(
+      'data/BatchedTextured/SceneServer/layers/0/index.json',
+      'utf8'
+    );
+    const layer = JSON.parse(layerJson);
+    t.ok(layer.fullExtent);
+    t.deepEqual(layer.fullExtent, TEST_FULL_EXTENT);
+  }
+  await cleanUpPath('data/BatchedTextured');
   t.end();
 });

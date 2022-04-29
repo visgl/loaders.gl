@@ -279,9 +279,9 @@ export default class I3SConverter {
       nodePages: {
         nodesPerPage: HARDCODED_NODES_PER_PAGE
       },
-      compressGeometry: this.options.draco
+      compressGeometry: this.options.draco,
+      fullExtent
     };
-
     this.layers0 = transform(layers0data, layersTemplate());
   }
 
