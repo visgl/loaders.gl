@@ -61,7 +61,7 @@ import {I3SAttributesWorker} from '../i3s-attributes-worker';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 
 const ION_DEFAULT_TOKEN =
-  process.env.IonToken || // eslint-disable-line
+  process.env?.IonToken || // eslint-disable-line
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';
