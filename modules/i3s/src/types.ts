@@ -771,3 +771,192 @@ export type FieldInfo = {
   isEditable: boolean;
   label: string;
 };
+
+export type ArcGisWebSceneData = {
+  header: ArcGisWebScene;
+  layers: OperationalLayer[];
+};
+
+/**
+ * ArcGis WebScene spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
+ */
+export type ArcGisWebScene = {
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/applicationProperties/
+   * Configuration of application and UI elements.
+   */
+  applicationProperties?: any;
+  /**
+   * Operational layers contain business data which are used to make thematic scenes.
+   */
+  operationalLayers: OperationalLayer[];
+  /**
+   * Basemaps give the web scene a geographic context.
+   */
+  baseMap: BaseMap;
+  /**
+   * Ground defines the main surface of the web scene, based on elevation layers.
+   */
+  ground: Ground;
+  /**
+   * An object that defines the characteristics of the vertical coordinate system used by the web scene.
+   */
+  heightModelInfo: HeightModelInfo;
+  /**
+   * Root element in the web scene specifying a string value indicating the web scene version.
+   * Valid values: 1.8, 1.9, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15, 1.16, 1.17, 1.18, 1.19, 1.20, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27
+   */
+  version: string;
+  /**
+   * String value indicating the application which authored the webmap
+   */
+  authoringApp: string;
+  /**
+   * String value indicating the authoring App's version number.
+   */
+  authoringAppVersion: string;
+  /**
+   * A presentation consists of multiple slides, where each slide is a specific view into the web scene.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/presentation/
+   * @todo Add presentation type.
+   */
+  presentation: any;
+  /**
+   * An object that provides information about the initial environment settings and viewpoint of the web scene.
+   */
+  initialState: InitialState;
+  /**
+   * An object used to specify the spatial reference of the given geometry.
+   */
+  spatialReference: SpatialReference;
+  viewingMode: 'global' | 'local';
+  /**
+   * @todo add type.
+   * Defines area to be clipped for display.
+   */
+  clippingArea?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/mapFloorInfo/
+   * Contains floor-awareness information for the web scene.
+   */
+  mapFloorInfo?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/mapRangeInfo/
+   * Map Range Information
+   */
+  mapRangeInfo?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/table/
+   * An array of table objects.
+   */
+  tables?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/transportationNetwork/
+   * Used to specify the transportation networks of the scene.
+   */
+  transportationNetworks?: any;
+  /**
+   * @todo add type.
+   * Spec - https://developers.arcgis.com/web-scene-specification/objects/widgets/
+   * The widgets object contains widgets that should be exposed to the user.
+   */
+  widgets?: any;
+};
+
+/**
+ * Operational layers contain your data. Usually, a basemap sits beneath your operational layers to give them geographic context.
+ * Spec- https://developers.arcgis.com/web-scene-specification/objects/operationalLayers/
+ */
+export type OperationalLayer = {
+  id: string;
+  opacity: number;
+  title: string;
+  url: string;
+  visibility: boolean;
+  itemId: string;
+  layerType: string;
+  LayerDefinition: LayerDefinition;
+  screenSizePerspective: boolean;
+  showLabels?: boolean;
+  disablePopup?: boolean;
+  showLegend?: boolean;
+  layers?: OperationalLayer[];
+};
+
+type LayerDefinition = {
+  elevationInfo: ElevationInfo;
+  drawingInfo: DrawingInfo;
+};
+
+type BaseMap = {
+  id: string;
+  title: string;
+  baseMapLayers: BaseMapLayer[];
+  elevationLayers: ElevationLayer[];
+};
+
+type BaseMapLayer = {
+  id: string;
+  opacity: number;
+  title: string;
+  url: string;
+  visibility: boolean;
+  layerType: string;
+};
+
+type ElevationLayer = {
+  id: string;
+  listMode: string;
+  title: string;
+  url: string;
+  visibility: boolean;
+  layerType: string;
+};
+
+type Ground = {
+  layers: ElevationLayer[];
+  transparency: number;
+  navigationConstraint: NavigationConstraint;
+};
+
+type NavigationConstraint = {
+  type: string;
+};
+
+type InitialState = {
+  environment: Enviroment;
+  viewpoint: ViewPoint;
+};
+
+type Enviroment = {
+  lighting: Lighting;
+  atmosphereEnabled?: string;
+  starsEnabled?: string;
+};
+
+type Lighting = {
+  datetime?: number;
+  displayUTCOffset?: number;
+};
+
+type ViewPoint = {
+  camera: Camera;
+};
+
+type Camera = {
+  position: CameraPosition;
+  heading: number;
+  tilt: number;
+};
+
+type CameraPosition = {
+  spatialReference: SpatialReference;
+  x: number;
+  y: number;
+  z: number;
+};
