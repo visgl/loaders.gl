@@ -4,6 +4,7 @@ import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 import {cleanUpPath} from '../utils/file-utils';
+import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
@@ -38,21 +39,23 @@ setLoaderOptions({
 });
 
 test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', async (t) => {
+  const converter = new I3SConverter();
+  const tilesetJson = await converter.convert({
+    inputUrl: TILESET_URL,
+    outputPath: 'data',
+    tilesetName: 'BatchedColors',
+    slpk: false,
+    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+    egmFilePath: PGM_FILE_PATH,
+    token:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+  });
   if (!isBrowser) {
-    const converter = new I3SConverter();
-    const tilesetJson = await converter.convert({
-      inputUrl: TILESET_URL,
-      outputPath: 'data',
-      tilesetName: 'BatchedColors',
-      slpk: false,
-      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-      egmFilePath: PGM_FILE_PATH,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
-    });
     t.ok(tilesetJson);
+    await cleanUpPath('data/BatchedColors');
+  } else {
+    t.equals(tilesetJson, BROWSER_ERROR_MESSAGE);
   }
-  await cleanUpPath('data/BatchedColors');
   t.end();
 });
 

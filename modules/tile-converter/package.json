@@ -30,7 +30,10 @@
     "README.md"
   ],
   "browser": {
-    "fs": false
+    "fs": false,
+    "path": false,
+    "process": false,
+    "archiver": false
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-converter-bundle && npm run build-i3s-attributes-worker && npm run build-3d-tiles-attributes-worker",
