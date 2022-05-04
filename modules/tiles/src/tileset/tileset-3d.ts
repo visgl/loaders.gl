@@ -344,7 +344,7 @@ export default class Tileset3D {
   /** Is the tileset loaded (update needs to have been called at least once) */
   isLoaded(): boolean {
     // Check that `_frameNumber !== 0` which means that update was called at least once
-    return this._pendingCount === 0 && this._frameNumber !== 0;
+    return this._pendingCount === 0 && this._frameNumber !== 0 && this._requestedTiles.length === 0;
   }
 
   get tiles(): object[] {
