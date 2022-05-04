@@ -778,6 +778,13 @@ export default class Tileset3D {
       return;
     }
 
+    if (this.type === TILESET_TYPE.I3S) {
+      // We can't calculate tiles total in I3S in advance so we calculate it dynamically.
+      const nodesInNodePages = this.tileset.nodePagesTile.nodesInNodePages || 0;
+      this.stats.get(TILES_TOTAL).reset();
+      this.stats.get(TILES_TOTAL).addCount(nodesInNodePages);
+    }
+
     // add coordinateOrigin and modelMatrix to tile
     if (tile && tile.content) {
       calculateTransformProps(tile, tile.content);

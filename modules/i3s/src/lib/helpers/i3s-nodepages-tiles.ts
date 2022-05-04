@@ -28,6 +28,7 @@ export default class I3SNodePagesTiles {
   options: LoaderOptions;
   lodSelectionMetricType?: string;
   textureDefinitionsSelectedFormats: ({format: I3STextureFormat; name: string} | null)[] = [];
+  nodesInNodePages: number;
   private textureLoaderOptions: {[key: string]: any} = {};
 
   /**
@@ -41,6 +42,7 @@ export default class I3SNodePagesTiles {
     this.nodesPerPage = tileset.nodePages?.nodesPerPage || 64;
     this.lodSelectionMetricType = tileset.nodePages?.lodSelectionMetricType;
     this.options = options;
+    this.nodesInNodePages = 0;
 
     this.initSelectedFormatsForTextureDefinitions(tileset);
   }
@@ -61,6 +63,7 @@ export default class I3SNodePagesTiles {
         promise: load(nodePageUrl, I3SNodePageLoader, this.options)
       };
       this.nodePages[pageIndex] = await this.pendingNodePages[pageIndex].promise;
+      this.nodesInNodePages += this.nodePages[pageIndex].nodes.length;
       this.pendingNodePages[pageIndex].status = 'Done';
     }
     if (this.pendingNodePages[pageIndex].status === 'Pending') {
