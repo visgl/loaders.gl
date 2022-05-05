@@ -21,7 +21,7 @@ test('RequestScheduler#scheduleRequest', async (t) => {
     requestToken.done();
     t.is(requestScheduler.activeRequestCount, 0, 'active request count');
 
-    requestToken = await requestScheduler.scheduleRequest({id: 2}, () => -1);
+    requestToken = await requestScheduler.scheduleRequest({id: -1}, (x) => x.id);
     t.notOk(requestToken, 'should not issue request with negative priority');
     t.is(requestScheduler.activeRequestCount, 0, 'active request count');
   }

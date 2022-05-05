@@ -2,7 +2,7 @@ import {Stats} from '@probe.gl/stats';
 
 type Handle = any;
 type DoneFunction = () => any;
-type GetPriorityFunction = () => number;
+type GetPriorityFunction<T = Handle> = (handle: T) => number;
 type RequestResult = {
   done: DoneFunction;
 } | null;
@@ -78,9 +78,9 @@ export default class RequestScheduler {
    *   - resolves to `null` if the request has been cancelled (by the callback return < 0).
    *     In this case the application should not issue the request
    */
-  scheduleRequest(
-    handle: Handle,
-    getPriority: GetPriorityFunction = () => 0
+  scheduleRequest<T extends Handle = Handle>(
+    handle: T,
+    getPriority: GetPriorityFunction<T> = () => 0
   ): Promise<RequestResult> {
     // Allows throttling to be disabled
     if (!this.props.throttleRequests) {
