@@ -105,6 +105,8 @@ export interface Accessor {
   name?: any;
   extensions?: any;
   extras?: any;
+  value?: any;
+  size?: number;
   // [k: string]: any;
 }
 
