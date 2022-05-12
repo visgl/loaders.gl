@@ -2,7 +2,7 @@
 // __VERSION__ is injected by babel-plugin-version-inline
 
 // Change to `latest` on production branches
-const DEFAULT_VERSION = 'beta';
+const DEFAULT_VERSION = 'latest';
 declare let __VERSION__: string;
 export const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : DEFAULT_VERSION;
 if (typeof __VERSION__ === 'undefined') {
