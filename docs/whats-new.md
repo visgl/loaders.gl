@@ -21,9 +21,7 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-## v3.2 (In development)
-
-Target Release Date: Q1 2022.
+## v3.2
 
 **loaders.gl/arrow**
 
