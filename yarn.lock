@@ -1922,83 +1922,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@^3.0":
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.0.11.tgz#ad8bf8b7da4e73957a9f68f97851926ed5d8ff36"
-  integrity sha512-yOoUPGDBr6r57ktUT2kzmINM4lFmuN+pP2DsbZ5uc7upq8BEp5EIX14X4Nrh4b9HDWLN424zby4xOsncSHofpQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.0.11"
-    "@loaders.gl/worker-utils" "3.0.11"
-    probe.gl "^3.4.0"
-
-"@loaders.gl/core@^3.0.6":
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.0.6.tgz#6d22d0618edf4bb3df53ea631a437d01fa270d5e"
-  integrity sha512-my1qpSguc6dcxAIxbCHNmi5QTVgBt7Z/PJ/6AWVqZPrq/OPucxN3apU39vnz18kZUgznTEDkjaS2uW22CLk9lw==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.0.6"
-    "@loaders.gl/worker-utils" "3.0.6"
-    probe.gl "^3.4.0"
-
-"@loaders.gl/images@3.0.11", "@loaders.gl/images@^3.0":
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-3.0.11.tgz#5a7fe814da4995cd5df5bfec90b2815132eb6eca"
-  integrity sha512-uCRvZTtyWkAPAt0+b8bcGVy3s31nnlJAIxbe1c94yHPQbiQT2GD3NGuRwgIaLTXU9Y96zAw+WPUG9F74g34w2g==
-  dependencies:
-    "@loaders.gl/loader-utils" "3.0.11"
-
-"@loaders.gl/images@^3.0.6":
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-3.0.6.tgz#038fad37e0ee0c8319cbd440481f92576891c6d0"
-  integrity sha512-vRNayX5X4VNG+hVCE7u2nMwqpe0uu0YVOfxFduOs2XfS3Cqp7v9R7OBtYQbJ2B2yhVSk6Hz1LW1mzS4jJrmyrA==
-  dependencies:
-    "@loaders.gl/loader-utils" "3.0.6"
-
-"@loaders.gl/loader-utils@3.0.11":
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.11.tgz#99a3ad8dae57747a85f36825388da958cc508dc9"
-  integrity sha512-AdaEIfkOsUQZFPp6EbdZLxzXadiBESXvP8sMWwCZuPqQuBeq8YvwBHk58YtiKII8LRpbq75zT9CGdsB1ruCN5g==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.0.11"
-    "@probe.gl/stats" "^3.4.0"
-
-"@loaders.gl/loader-utils@3.0.6":
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.0.6.tgz#bef5d09a026c0855db0f509117a6e68ab5517150"
-  integrity sha512-0kbBz3kIrx7BBWmTwVEhLA081S/043NCdahgxqrzanpB2o7BDeNZ+HLPybfBWGhUwbgbm77OpvUT7ALbZLFx4w==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.0.6"
-    "@probe.gl/stats" "^3.4.0"
-
-"@loaders.gl/textures@^3.0":
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/textures/-/textures-3.0.11.tgz#132d9ee0ded3460f04d016ec869e41f103a86456"
-  integrity sha512-KXMB949YTrFz/LHHhs0pezhp0Er85uQJ+JIZuXPcar8OdOBNwMUXEhSDlyQkLjEkRmn7y0lhApvodM4Wxnt79w==
-  dependencies:
-    "@loaders.gl/images" "3.0.11"
-    "@loaders.gl/loader-utils" "3.0.11"
-    "@loaders.gl/worker-utils" "3.0.11"
-    ktx-parse "^0.0.4"
-    texture-compressor "^1.0.2"
-
-"@loaders.gl/worker-utils@3.0.11":
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.11.tgz#6418032e0a0a89d6988ab8a822eaa2e6f8ea56c5"
-  integrity sha512-zJZtc+EQUKDRL+Xz7uMWfFLARn9gAgG38GZXdPJAGOKD+H7QQ9f72csPqb6/cxrjDyF7ryv02tMF3Ry/40a8fw==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
-"@loaders.gl/worker-utils@3.0.6":
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.0.6.tgz#c7fdeae5c74c6fd83daf76bdeaf34d4b9e9f72a0"
-  integrity sha512-fEWXC/ImKqfwhAQW/EGN+UAk/FkH8nEZ8BoWRmkfNwUZ1ZeQHTItpVgZp9F0WYdN7Pz1j2KIqTa27W10afnhmQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
 "@luma.gl/constants@8.5.4", "@luma.gl/constants@^8.5.4":
   version "8.5.4"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.5.4.tgz#f7be8146bd60f9426c5a72ef6773ff134cb85bf5"
@@ -2387,7 +2310,7 @@
   dependencies:
     "@babel/runtime" "^7.0.0"
 
-"@probe.gl/stats@^3.4.0", "@probe.gl/stats@^3.5.0":
+"@probe.gl/stats@^3.5.0":
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.5.0.tgz#774495772f06e898aae28c1d315c9edac07f3425"
   integrity sha512-IH2M+F3c8HR1DTroBARePUFG7wIewumtKA0UFqx51Z7S4hKrD60wFbpMmg0AcF4FvHAXMBoC+kYi1UKW9XbAOw==
