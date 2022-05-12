@@ -7,7 +7,6 @@ import type {GLTF, GLTFMaterial, GLTFMeshPrimitive} from '../types/gltf-types';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import {BYTES, COMPONENTS} from '../api/post-process-gltf';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
-import {TypedArray} from '@loaders.gl/schema';
 
 /** Extension name */
 const EXT_MESHOPT_TRANSFORM = 'KHR_texture_transform';
@@ -15,7 +14,8 @@ const EXT_MESHOPT_TRANSFORM = 'KHR_texture_transform';
 export const name = EXT_MESHOPT_TRANSFORM;
 
 const scratchVector = new Vector3();
-const scratchMatrix = new Matrix3();
+const scratchRotationMatrix = new Matrix3();
+const scratchScaleMatrix = new Matrix3();
 
 export async function decode(
   gltfData: {
@@ -94,17 +94,15 @@ function transformPrimitive(
       const bufferView = gltfData.json.bufferViews?.[accessor.bufferView];
       if (bufferView) {
         const components = COMPONENTS[accessor.type];
-        const arrayLength = accessor.count * components;
         const buffer = gltfData.buffers[bufferView.buffer].arrayBuffer;
         const byteOffset = bufferView.byteOffset || 0;
         const bytes = BYTES[accessor.componentType];
-        const {ArrayType} = getAccessorArrayTypeAndLength(accessor, bufferView);
+        const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
         const elementAddressScale = bufferView.byteStride || bytes * components;
-        const normalizationParams = getNormalizationParams(accessor.componentType, bytes);
-        const result = new Float32Array(arrayLength);
-        for (let i = 0; i < arrayLength; i += 2) {
+        const result = new Float32Array(length);
+        for (let i = 0; i < length; i += 2) {
           const uv = new ArrayType(buffer, byteOffset + i * elementAddressScale, 2);
-          scratchVector.set(...normalize(uv, normalizationParams), 1);
+          scratchVector.set(uv[0], uv[1], 1);
           scratchVector.transformByMatrix3(transformationMatrix);
           result.set([scratchVector[0], scratchVector[1]], i);
         }
@@ -118,46 +116,10 @@ function transformPrimitive(
         bufferView.buffer = gltfData.buffers.length - 1;
         bufferView.byteLength = result.buffer.byteLength;
         bufferView.byteOffset = 0;
+        delete bufferView.byteStride;
       }
     }
   }
-}
-
-function normalize(
-  data: TypedArray,
-  normalizationParams: {normalizationNumber: number; signed: boolean}
-): [number, number] {
-  const {normalizationNumber, signed} = normalizationParams;
-  const result: number[] = [];
-  for (const number of data) {
-    let normalized = number / normalizationNumber;
-    if (signed) {
-      normalized = Math.max(normalized, -1);
-    }
-    result.push(normalized);
-  }
-  return [result[0], result[1]];
-}
-
-function getNormalizationParams(
-  componentType: number,
-  bytes: number
-): {normalizationNumber: number; signed: boolean} {
-  let signed;
-  const normalizationNumber = Math.pow(2, bytes * 8) - 1;
-  switch (componentType) {
-    case 5120:
-    case 5122:
-      signed = true;
-      break;
-    case 5121:
-    case 5123:
-    case 5125:
-    case 5126:
-    default:
-      signed = false;
-  }
-  return {normalizationNumber, signed};
 }
 
 function makeTransformationMatrix(extensionData: {
@@ -166,8 +128,8 @@ function makeTransformationMatrix(extensionData: {
   scale: [number, number];
 }) {
   const {offset = [0, 0], rotation = 0, scale = [1, 1]} = extensionData;
-  const translationMatirx = scratchMatrix.set(1, 0, 0, 0, 1, 0, offset[0], offset[1], 1);
-  const rotationMatirx = new Matrix3().set(
+  const translationMatirx = new Matrix3().set(1, 0, 0, 0, 1, 0, offset[0], offset[1], 1);
+  const rotationMatirx = scratchRotationMatrix.set(
     Math.cos(rotation),
     Math.sin(rotation),
     0,
@@ -178,6 +140,6 @@ function makeTransformationMatrix(extensionData: {
     0,
     1
   );
-  const scaleMatrix = new Matrix3().set(scale[0], 0, 0, 0, scale[1], 0, 0, 0, 1);
+  const scaleMatrix = scratchScaleMatrix.set(scale[0], 0, 0, 0, scale[1], 0, 0, 0, 1);
   return translationMatirx.multiplyRight(rotationMatirx).multiplyRight(scaleMatrix);
 }
