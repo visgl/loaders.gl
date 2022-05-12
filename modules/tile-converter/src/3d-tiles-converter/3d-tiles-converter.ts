@@ -4,7 +4,7 @@ import type {Node3D} from '@loaders.gl/3d-tiles';
 import {join} from 'path';
 import process from 'process';
 import transform from 'json-map-transform';
-import {fetchFile, getLoaderOptions, load} from '@loaders.gl/core';
+import {fetchFile, getLoaderOptions, load, isBrowser} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 import {Geoid} from '@math.gl/geoid';
@@ -23,6 +23,7 @@ import {
   /*transform3DTilesAttributesOnWorker*/
 } from '../3d-tiles-attributes-worker';
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
+import {BROWSER_ERROR_MESSAGE} from '../constants';
 
 const I3S = 'I3S';
 
@@ -66,6 +67,10 @@ export default class Tiles3DConverter {
     maxDepth?: number;
     egmFilePath: string;
   }): Promise<any> {
+    if (isBrowser) {
+      console.log(BROWSER_ERROR_MESSAGE);
+      return BROWSER_ERROR_MESSAGE;
+    }
     const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath} = options;
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth};

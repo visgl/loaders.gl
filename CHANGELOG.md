@@ -2,6 +2,14 @@
 
 ## v3.2 Prerelease
 
+## v3.2.0-alpha.4
+
+- feat(i3s-stats): add tiles total metric to i3s (#2118)
+- feat(webscene): ArcGIS WebScene loader (#2158)
+- chore(tile-converter): improve tile converter error message (#2156)
+- fix(tiles): isLoaded criteria (#2167)
+- chore(tile-converter): full extent appears in json file (#2165)
+
 ## v3.2.0-alpha.3
 
 - WASM-based parquet (#2103)

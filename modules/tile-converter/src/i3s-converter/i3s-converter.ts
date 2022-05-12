@@ -16,7 +16,7 @@ import type {
   PopupInfo,
   FieldInfo
 } from '@loaders.gl/i3s';
-import {load, encode, fetchFile, getLoaderOptions} from '@loaders.gl/core';
+import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
@@ -58,9 +58,10 @@ import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import WriteQueue from '../lib/utils/write-queue';
 import {I3SAttributesWorker} from '../i3s-attributes-worker';
+import {BROWSER_ERROR_MESSAGE} from '../constants';
 
 const ION_DEFAULT_TOKEN =
-  process.env.IonToken || // eslint-disable-line
+  process.env?.IonToken || // eslint-disable-line
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';
@@ -149,6 +150,10 @@ export default class I3SConverter {
     generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
   }): Promise<any> {
+    if (isBrowser) {
+      console.log(BROWSER_ERROR_MESSAGE);
+      return BROWSER_ERROR_MESSAGE;
+    }
     this.conversionStartTime = process.hrtime();
     const {
       tilesetName,
