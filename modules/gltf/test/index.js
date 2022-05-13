@@ -14,6 +14,7 @@ import './lib/api/gltf-roundtrip.spec';
 import './lib/extensions/KHR_draco_mesh_compression.spec';
 import './lib/extensions/KHR_lights_punctual.spec';
 import './lib/extensions/KHR_materials_unlit.spec';
+import './lib/extensions/KHR_texture_transform.spec';
 
 import './glb-loader.spec';
 import './glb-writer.spec';

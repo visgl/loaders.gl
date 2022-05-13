@@ -78,7 +78,6 @@ function transformPrimitives(
   }
 }
 
-// eslint-disable-next-line max-statements
 function transformPrimitive(
   gltfData: {
     json: GLTF;
@@ -93,18 +92,19 @@ function transformPrimitive(
     if (accessor && accessor.bufferView) {
       const bufferView = gltfData.json.bufferViews?.[accessor.bufferView];
       if (bufferView) {
-        const components = COMPONENTS[accessor.type];
-        const buffer = gltfData.buffers[bufferView.buffer].arrayBuffer;
-        const byteOffset = bufferView.byteOffset || 0;
-        const bytes = BYTES[accessor.componentType];
+        const {arrayBuffer, byteOffset: bufferByteOffset} = gltfData.buffers[bufferView.buffer];
+        const byteOffset =
+          (bufferByteOffset || 0) + (accessor.byteOffset || 0) + (bufferView.byteOffset || 0);
         const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
+        const bytes = BYTES[accessor.componentType];
+        const components = COMPONENTS[accessor.type];
         const elementAddressScale = bufferView.byteStride || bytes * components;
         const result = new Float32Array(length);
-        for (let i = 0; i < length; i += 2) {
-          const uv = new ArrayType(buffer, byteOffset + i * elementAddressScale, 2);
+        for (let i = 0; i < accessor.count; i++) {
+          const uv = new ArrayType(arrayBuffer, byteOffset + i * elementAddressScale, 2);
           scratchVector.set(uv[0], uv[1], 1);
           scratchVector.transformByMatrix3(transformationMatrix);
-          result.set([scratchVector[0], scratchVector[1]], i);
+          result.set([scratchVector[0], scratchVector[1]], i * components);
         }
         accessor.value = result;
         accessor.componentType = 5126;
