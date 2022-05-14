@@ -13,7 +13,7 @@ import {BufferView as BufferViewPostprocessed} from '../types/gltf-postprocessed
 
 // ENUM LOOKUP
 
-export const COMPONENTS = {
+const COMPONENTS = {
   SCALAR: 1,
   VEC2: 2,
   VEC3: 3,
@@ -23,7 +23,7 @@ export const COMPONENTS = {
   MAT4: 16
 };
 
-export const BYTES = {
+const BYTES = {
   5120: 1, // BYTE
   5121: 1, // UNSIGNED_BYTE
   5122: 2, // SHORT
@@ -305,10 +305,7 @@ class GLTFPostProcessor {
     // Create TypedArray for the accessor
     // Note: The canonical way to instantiate is to ignore this array and create
     // WebGLBuffer's using the bufferViews.
-    // TypedArray can be already created by an extension
-    if (accessor.value) {
-      console.log('value');
-    } else if (!accessor.value && accessor.bufferView) {
+    if (accessor.bufferView) {
       const buffer = accessor.bufferView.buffer;
       const {ArrayType, byteLength} = getAccessorArrayTypeAndLength(accessor, accessor.bufferView);
       const byteOffset =

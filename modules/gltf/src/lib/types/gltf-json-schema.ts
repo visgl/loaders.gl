@@ -105,8 +105,6 @@ export interface Accessor {
   name?: any;
   extensions?: any;
   extras?: any;
-  value?: any;
-  size?: number;
   // [k: string]: any;
 }
 
@@ -396,7 +394,7 @@ export interface MaterialPbrMetallicRoughness {
   // [k: string]: any;
 }
 export interface MaterialNormalTextureInfo {
-  index?: any;
+  index: any;
   texCoord?: any;
   /**
    * The scalar multiplier applied to each normal vector of the normal texture.
@@ -407,7 +405,7 @@ export interface MaterialNormalTextureInfo {
   // [k: string]: any;
 }
 export interface MaterialOcclusionTextureInfo {
-  index?: any;
+  index: any;
   texCoord?: any;
   /**
    * A scalar multiplier controlling the amount of occlusion applied.
