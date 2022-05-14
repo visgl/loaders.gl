@@ -14,6 +14,7 @@ import {
   MaterialOcclusionTextureInfo,
   TextureInfo as GLTFTextureInfo
 } from '../types/gltf-json-schema';
+import GLTFScenegraph from '../api/gltf-scenegraph';
 
 /** Extension name */
 const EXT_MESHOPT_TRANSFORM = 'KHR_texture_transform';
@@ -55,6 +56,11 @@ type TransformParameters = {
  * @param options GLTFLoader options
  */
 export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions) {
+  const gltfScenegraph = new GLTFScenegraph(gltfData);
+  const extension = gltfScenegraph.getExtension(EXT_MESHOPT_TRANSFORM);
+  if (!extension) {
+    return;
+  }
   const materials = gltfData.json.materials || [];
   for (let i = 0; i < materials.length; i++) {
     transformTexCoords(i, gltfData);
