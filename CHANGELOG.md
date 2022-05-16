@@ -1,5 +1,11 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.1
+
+- fix(worker-utils): Vite build(#2178)
+- chore: load workers of latest version (#2172)
+- fix(ci): remove node12 from workflows (#2173)
+
 ## v3.2 Prerelease
 
 ## v3.2.0-alpha.4

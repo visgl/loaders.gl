@@ -1,7 +1,7 @@
 {
   "name": "loaders.gl-example-textures-tester",
   "private": true,
-  "version": "3.2.0",
+  "version": "3.2.1",
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
@@ -9,9 +9,9 @@
     "start-local-luma": "webpack-dev-server --env.local --env.esnext --env.luma --progress --hot --open"
   },
   "dependencies": {
-    "@loaders.gl/core": "^3.0",
-    "@loaders.gl/images": "^3.0",
-    "@loaders.gl/textures": "^3.0",
+    "@loaders.gl/core": "3.2.1",
+    "@loaders.gl/images": "3.2.1",
+    "@loaders.gl/textures": "3.2.1",
     "@luma.gl/core": "^8.5.4",
     "prop-types": "^15.7.2",
     "react": "^16.3.0",
