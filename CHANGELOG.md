@@ -1,5 +1,9 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.2
+
+- fix(schema): failing imports from apache-arrow (#2179)
+
 ## v3.2.1
 
 - fix(worker-utils): Vite build(#2178)
