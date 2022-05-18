@@ -41,7 +41,8 @@ export type {
 } from './category/mesh/mesh-types';
 
 export {getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
-export {convertMesh} from './category/mesh/convert-mesh';
+// Commented out due to https://github.com/visgl/deck.gl/issues/6906 and https://github.com/visgl/loaders.gl/issues/2177
+// export {convertMesh} from './category/mesh/convert-mesh';
 export {
   deduceMeshSchema,
   deduceMeshField,
