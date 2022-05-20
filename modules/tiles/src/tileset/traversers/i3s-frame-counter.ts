@@ -11,7 +11,7 @@ export default class I3SPendingTilesRegister {
    */
   register(frameNumber: number) {
     const oldCount = this.frameNumberMap.get(frameNumber) || 0;
-    this.frameNumberMap.set(frameNumber, (oldCount || 0) + 1);
+    this.frameNumberMap.set(frameNumber, oldCount + 1);
   }
 
   /**
@@ -20,7 +20,7 @@ export default class I3SPendingTilesRegister {
    */
   deregister(frameNumber: number) {
     const oldCount = this.frameNumberMap.get(frameNumber) || 1;
-    this.frameNumberMap.set(frameNumber, (oldCount || 0) - 1);
+    this.frameNumberMap.set(frameNumber, oldCount - 1);
   }
 
   /**
