@@ -1,6 +1,6 @@
 {
   "lerna": "2.9.1",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "command": {
     "publish": {},
     "bootstrap": {}
