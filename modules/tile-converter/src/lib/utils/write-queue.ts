@@ -57,19 +57,21 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
         archiveKeys.push(archiveKey);
         promises.push(writePromise);
       }
-      const writeResults = await Promise.all(promises);
+      const writeResults = await Promise.allSettled(promises);
       this.updateFileMap(archiveKeys, writeResults);
     }
     this.writePromise = null;
   }
 
-  private updateFileMap(archiveKeys: (string | undefined)[], writeResults: string[]) {
+  private updateFileMap(
+    archiveKeys: (string | undefined)[],
+    writeResults: PromiseSettledResult<string>[]
+  ) {
     for (let i = 0; i < archiveKeys.length; i++) {
       const archiveKey = archiveKeys[i];
-      if (!archiveKey) {
-        continue;
+      if (archiveKey && 'value' in writeResults[i]) {
+        this.fileMap[archiveKey] = (<PromiseFulfilledResult<string>>writeResults[i]).value;
       }
-      this.fileMap[archiveKey] = writeResults[i];
     }
   }
 }
