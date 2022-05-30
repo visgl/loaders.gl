@@ -938,12 +938,19 @@ export default class I3SConverter {
 
           if (this.generateTextures) {
             formats.push({name: '1', format: 'ktx2'});
-            const ktx2TextureData = encode(texture.image, KTX2BasisWriterWorker, {
-              ...KTX2BasisWriterWorker.options,
-              source: this.workerSource.ktx2,
-              reuseWorkers: true,
-              _nodeWorkers: true
-            });
+            // For Node.js texture.image.data is type of Buffer
+            const copyArrayBuffer = texture.image.data.subarray();
+            const arrayToEncode = new Uint8Array(copyArrayBuffer);
+            const ktx2TextureData = encode(
+              {...texture.image, data: arrayToEncode},
+              KTX2BasisWriterWorker,
+              {
+                ...KTX2BasisWriterWorker.options,
+                source: this.workerSource.ktx2,
+                reuseWorkers: true,
+                _nodeWorkers: true
+              }
+            );
 
             await this.writeTextureFile(ktx2TextureData, '1', 'ktx2', childPath, slpkChildPath);
           }
