@@ -55,7 +55,7 @@ export async function parseI3STileContent(
   if (tile.textureUrl) {
     const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
     const loader = getLoaderForTextureFormat(tile.textureFormat);
-    const response = await fetch(url);
+    const response = await fetch(url, options?.fetch as RequestInit);
     const arrayBuffer = await response.arrayBuffer();
 
     if (options?.i3s.decodeTextures) {
