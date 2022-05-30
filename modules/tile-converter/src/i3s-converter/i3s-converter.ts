@@ -938,9 +938,9 @@ export default class I3SConverter {
 
           if (this.generateTextures) {
             formats.push({name: '1', format: 'ktx2'});
-            const copyArrayBuffer = new ArrayBuffer(texture.image.data.length);
+            // For Node.js texture.image.data is type of Buffer
+            const copyArrayBuffer = texture.image.data.subarray();
             const arrayToEncode = new Uint8Array(copyArrayBuffer);
-            arrayToEncode.set(texture.image.data);
             const ktx2TextureData = encode(
               {...texture.image, data: arrayToEncode},
               KTX2BasisWriterWorker,

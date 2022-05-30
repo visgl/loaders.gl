@@ -70,7 +70,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
     for (let i = 0; i < archiveKeys.length; i++) {
       const archiveKey = archiveKeys[i];
       if (archiveKey && 'value' in writeResults[i]) {
-        this.fileMap[archiveKey] = (<PromiseFulfilledResult<string>>writeResults[i]).value;
+        this.fileMap[archiveKey] = (writeResults[i] as PromiseFulfilledResult<string>).value;
       }
     }
   }
