@@ -344,7 +344,7 @@ export default class Tileset3D {
   /** Is the tileset loaded (update needs to have been called at least once) */
   isLoaded(): boolean {
     // Check that `_frameNumber !== 0` which means that update was called at least once
-    return this._pendingCount === 0 && this._frameNumber !== 0;
+    return this._pendingCount === 0 && this._frameNumber !== 0 && this._requestedTiles.length === 0;
   }
 
   get tiles(): object[] {
@@ -776,6 +776,13 @@ export default class Tileset3D {
   _onTileLoad(tile, loaded) {
     if (!loaded) {
       return;
+    }
+
+    if (this.type === TILESET_TYPE.I3S) {
+      // We can't calculate tiles total in I3S in advance so we calculate it dynamically.
+      const nodesInNodePages = this.tileset?.nodePagesTile?.nodesInNodePages || 0;
+      this.stats.get(TILES_TOTAL).reset();
+      this.stats.get(TILES_TOTAL).addCount(nodesInNodePages);
     }
 
     // add coordinateOrigin and modelMatrix to tile

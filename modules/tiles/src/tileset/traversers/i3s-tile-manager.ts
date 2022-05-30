@@ -25,14 +25,16 @@ export default class I3STileManager {
       request()
         .then((data) => {
           this._statusMap[key].status = STATUS.COMPLETED;
+          const {frameNumber: actualFrameNumber} = this._statusMap[key].frameState;
           // Deregister pending request for the frameNumber
-          this.pendingTilesRegister.deregister(frameNumber);
+          this.pendingTilesRegister.deregister(actualFrameNumber);
           this._statusMap[key].callback(data, frameState);
         })
         .catch((error) => {
           this._statusMap[key].status = STATUS.ERROR;
+          const {frameNumber: actualFrameNumber} = this._statusMap[key].frameState;
           // Deregister pending request for the frameNumber
-          this.pendingTilesRegister.deregister(frameNumber);
+          this.pendingTilesRegister.deregister(actualFrameNumber);
           callback(error);
         });
     }
