@@ -66,7 +66,9 @@ async function main() {
     printHelp();
   }
 
-  const options: TileConversionOptions = parseOptions(args);
+  const validatedOptionsArr = validateOptionsWithEqual(args);
+
+  const options: TileConversionOptions = parseOptions(validatedOptionsArr);
 
   if (options.installDependencies) {
     const depthInstaller = new DepsInstaller();
@@ -199,6 +201,19 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
   return <ValidatedTileConversionOptions>options;
 }
 
+function validateOptionsWithEqual(args: string[]): string[] {
+  return args.reduce((acc: string[], curr) => {
+    const equalSignIndex = curr.indexOf('=');
+    const beforeEqual = curr.slice(0, equalSignIndex);
+    const afterEqual = curr.slice(equalSignIndex + 1, curr.length);
+    const condition = curr.includes('=') && curr.startsWith('--') && afterEqual;
+    if (condition) {
+      return acc.concat(beforeEqual, afterEqual);
+    }
+    return acc.concat(curr);
+  }, []);
+}
+
 /**
  * Parse option from the cli arguments array
  * @param args
@@ -237,7 +252,7 @@ function parseOptions(args: string[]): TileConversionOptions {
           opts.maxDepth = getIntegerValue(index, args);
           break;
         case '--slpk':
-          opts.slpk = true;
+          opts.slpk = getBooleanValue(index, args);
           break;
         case '--7zExe':
           opts.sevenZipExe = getStringValue(index, args);
@@ -249,19 +264,19 @@ function parseOptions(args: string[]): TileConversionOptions {
           opts.token = getStringValue(index, args);
           break;
         case '--no-draco':
-          opts.draco = false;
+          opts.draco = getBooleanValue(index, args);
           break;
         case '--validate':
-          opts.validate = true;
+          opts.validate = getBooleanValue(index, args);
           break;
         case '--install-dependencies':
-          opts.installDependencies = true;
+          opts.installDependencies = getBooleanValue(index, args);
           break;
         case '--generate-textures':
-          opts.generateTextures = true;
+          opts.generateTextures = getBooleanValue(index, args);
           break;
         case '--generate-bounding-volumes':
-          opts.generateBoundingVolumes = true;
+          opts.generateBoundingVolumes = getBooleanValue(index, args);
           break;
         case '--help':
           printHelp();
@@ -307,4 +322,15 @@ function getIntegerValue(index: number, args: string[]): number {
     return result;
   }
   return NaN;
+}
+
+function getBooleanValue(index: number, args: string[]): boolean {
+  const stringValue: string = getStringValue(index, args).toLowerCase().trim();
+  if (args[index] === '--no-draco' && !stringValue) {
+    return false;
+  }
+  if (!stringValue || stringValue === 'true') {
+    return true;
+  }
+  return false;
 }
