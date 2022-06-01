@@ -8,15 +8,16 @@ import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
 import {
-  I3STilesetHeader,
-  I3STileHeader,
   FeatureAttribute,
   VertexAttribute,
   I3SMeshAttributes,
   I3SMeshAttribute,
   TileContentTexture,
   HeaderAttributeProperty,
-  I3SMaterialDefinition
+  I3SMaterialDefinition,
+  I3STileContent,
+  I3STileOptions,
+  I3STilesetOptions
 } from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
@@ -40,17 +41,28 @@ function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
+const defaultContent: I3STileContent = {
+  attributes: {},
+  indices: null,
+  featureIds: [],
+  vertexCount: 0,
+  modelMatrix: new Matrix4(),
+  coordinateSystem: 0,
+  byteLength: 0,
+  texture: null
+};
+
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
-  tile: I3STileHeader,
-  tileset: I3STilesetHeader,
+  tile: I3STileOptions,
+  tileset: I3STilesetOptions,
   options?: LoaderOptions,
   context?: LoaderContext
 ) {
-  tile.content = tile.content || {};
-  tile.content.featureIds = tile.content.featureIds || null;
+  const content: I3STileContent = defaultContent;
+  content.featureIds = tile.content.featureIds || null;
 
-  tile.content.attributes = {};
+  content.attributes = {};
 
   if (tile.textureUrl) {
     const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
@@ -65,18 +77,18 @@ export async function parseI3STileContent(
           // @ts-ignore context must be defined
           // Image constructor is not supported in worker thread.
           // Do parsing image data on the main thread by using context to avoid worker issues.
-          tile.content.texture = await context.parse(arrayBuffer, options);
+          content.texture = await context.parse(arrayBuffer, options);
         } catch (e) {
           // context object is different between worker and node.js conversion script.
           // To prevent error we parse data in ordinary way if it is not parsed by using context.
-          tile.content.texture = await parse(arrayBuffer, loader, options);
+          content.texture = await parse(arrayBuffer, loader, options);
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
         let texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
         if (loader === BasisLoader) {
           texture = texture[0];
         }
-        tile.content.texture = {
+        content.texture = {
           compressed: true,
           mipmaps: false,
           width: texture[0].width,
@@ -85,13 +97,13 @@ export async function parseI3STileContent(
         };
       }
     } else {
-      tile.content.texture = arrayBuffer;
+      content.texture = arrayBuffer;
     }
   }
 
-  tile.content.material = makePbrMaterial(tile.materialDefinition, tile.content.texture);
-  if (tile.content.material) {
-    tile.content.texture = null;
+  content.material = makePbrMaterial(tile.materialDefinition, content.texture);
+  if (content.material) {
+    content.texture = null;
   }
 
   return await parseI3SNodeGeometry(arrayBuffer, tile, tileset, options);
@@ -100,8 +112,8 @@ export async function parseI3STileContent(
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
-  tile: I3STileHeader,
-  tileset: I3STilesetHeader,
+  tile: I3STileOptions,
+  tileset: I3STilesetOptions,
   options?: LoaderOptions
 ) {
   if (!tile.content) {
@@ -219,7 +231,7 @@ async function parseI3SNodeGeometry(
   content.vertexCount = vertexCount;
   content.byteLength = contentByteLength;
 
-  return tile;
+  return content;
 }
 
 /**
@@ -274,7 +286,7 @@ function normalizeAttribute(attribute: I3SMeshAttribute): I3SMeshAttribute {
   return attribute;
 }
 
-function parseHeaders(tileset: I3STilesetHeader, arrayBuffer: ArrayBuffer) {
+function parseHeaders(tileset: I3STilesetOptions, arrayBuffer: ArrayBuffer) {
   let byteOffset = 0;
   // First 8 bytes reserved for header (vertexCount and featurecount)
   let vertexCount = 0;
@@ -394,7 +406,7 @@ function parseUint64Values(
   return new Uint32Array(values);
 }
 
-function parsePositions(attribute: I3SMeshAttribute, tile: I3STileHeader): Matrix4 {
+function parsePositions(attribute: I3SMeshAttribute, tile: I3STileOptions): Matrix4 {
   const mbs = tile.mbs;
   const value = attribute.value;
   const metadata = attribute.metadata;

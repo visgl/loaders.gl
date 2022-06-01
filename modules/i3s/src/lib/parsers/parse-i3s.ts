@@ -13,7 +13,7 @@ import {
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 
-export function normalizeTileData(tile : Node3DIndexDocument, options : LoaderOptions, context: LoaderContext): I3STileHeader {
+export function normalizeTileData(tile : Node3DIndexDocument, context: LoaderContext): I3STileHeader {
   const url: string = context.url || '';
   let contentUrl: string | undefined;
   if (tile.geometryData) {

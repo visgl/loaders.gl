@@ -24,6 +24,6 @@ export const I3SContentLoader: LoaderWithParser = {
 
 async function parse(data, options?: LoaderOptions, context?: LoaderContext) {
   const {tile, tileset} = options?.i3s || {};
-  await parseI3STileContent(data, tile, tileset, options, context);
-  return tile.content;
+  const content = await parseI3STileContent(data, tile, tileset, options, context);
+  return content;
 }
