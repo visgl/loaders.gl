@@ -291,6 +291,13 @@ export default class TileHeader {
     return this._distanceToCamera;
   }
 
+  /**
+   * Screen space error for LOD selection
+   */
+  get screenSpaceError(): number {
+    return this._screenSpaceError;
+  }
+
   /** Get the tile's screen space error. */
   getScreenSpaceError(frameState, useParentLodMetric) {
     switch (this.tileset.type) {

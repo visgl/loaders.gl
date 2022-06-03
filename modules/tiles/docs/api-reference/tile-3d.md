@@ -73,6 +73,10 @@ Whether this tile is selected for rendering in current update frame and viewport
 
 Distance from the tile's bounding volume center to the camera
 
+###### `screenSpaceError` (Number)
+
+Screen space error for LOD selection
+
 ###### `tileset` (Tileset3D)
 
 The `Tileset3D` instance containing this tile.
