@@ -83,8 +83,7 @@ export default class TileHeader {
   private _shouldRefine: boolean;
 
   // Members this are updated every frame for tree traversal and rendering optimizations:
-  // @ts-ignore
-  private _distanceToCamera: number;
+  public _distanceToCamera: number;
   // @ts-ignore
   private _centerZDepth: number;
   private _screenSpaceError: number;
@@ -283,6 +282,13 @@ export default class TileHeader {
   // content failed to load; otherwise, `false`.
   get contentFailed() {
     return this.contentState === TILE_CONTENT_STATE.FAILED;
+  }
+
+  /**
+   * Distance from the tile's bounding volume center to the camera
+   */
+  get distanceToCamera(): number {
+    return this._distanceToCamera;
   }
 
   /** Get the tile's screen space error. */
