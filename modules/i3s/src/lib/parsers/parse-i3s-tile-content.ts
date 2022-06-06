@@ -170,7 +170,7 @@ async function parseI3SNodeGeometry(
       featureAttributeOrder
     } = tileset.store.defaultGeometrySchema;
     // First 8 bytes reserved for header (vertexCount and featureCount)
-    const headers = parseHeaders(tileset, arrayBuffer);
+    const headers = parseHeaders(arrayBuffer, tileset);
     byteOffset = headers.byteOffset;
     vertexCount = headers.vertexCount;
     featureCount = headers.featureCount;
@@ -286,12 +286,12 @@ function normalizeAttribute(attribute: I3SMeshAttribute): I3SMeshAttribute {
   return attribute;
 }
 
-function parseHeaders(tileset: I3STilesetOptions, arrayBuffer: ArrayBuffer) {
+function parseHeaders(arrayBuffer: ArrayBuffer, options: I3STilesetOptions) {
   let byteOffset = 0;
   // First 8 bytes reserved for header (vertexCount and featurecount)
   let vertexCount = 0;
   let featureCount = 0;
-  for (const {property, type} of tileset.store.defaultGeometrySchema.header) {
+  for (const {property, type} of options.store.defaultGeometrySchema.header) {
     const TypedArrayTypeHeader = getConstructorForDataFormat(type);
     switch (property) {
       case HeaderAttributeProperty.vertexCount:
@@ -406,8 +406,8 @@ function parseUint64Values(
   return new Uint32Array(values);
 }
 
-function parsePositions(attribute: I3SMeshAttribute, tile: I3STileOptions): Matrix4 {
-  const mbs = tile.mbs;
+function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): Matrix4 {
+  const mbs = options.mbs;
   const value = attribute.value;
   const metadata = attribute.metadata;
   const enuMatrix = new Matrix4();
