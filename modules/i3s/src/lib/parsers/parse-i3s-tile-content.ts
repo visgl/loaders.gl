@@ -60,9 +60,6 @@ export async function parseI3STileContent(
   context?: LoaderContext
 ) {
   const content: I3STileContent = defaultContent;
-  content.featureIds = tile.content.featureIds || null;
-
-  content.attributes = {};
 
   if (tile.textureUrl) {
     const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
@@ -106,21 +103,17 @@ export async function parseI3STileContent(
     content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, tileset, options);
+  return await parseI3SNodeGeometry(arrayBuffer, tile, content, tileset, options);
 }
 
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
   tile: I3STileOptions,
+  content: I3STileContent,
   tileset: I3STilesetOptions,
   options?: LoaderOptions
 ) {
-  if (!tile.content) {
-    return tile;
-  }
-
-  const content = tile.content;
   const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
   let vertexCount: number;
@@ -218,7 +211,7 @@ async function parseI3SNodeGeometry(
   content.indices = indices || null;
 
   if (attributes.id && attributes.id.value) {
-    tile.content.featureIds = attributes.id.value;
+    content.featureIds = attributes.id.value;
   }
 
   // Remove undefined attributes
