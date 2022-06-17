@@ -30,8 +30,8 @@ for (const frame of frames) {
   videoBuilder.addFrame(buffer);
 }
 
-const url = await videoBuilder.finalize()
-video.src =
+const url = await videoBuilder.finalize();
+video.src = url;
 ```
 
 ## Options
@@ -40,7 +40,13 @@ video.src =
 | ------ | ---- | ------- | ----------- |
 
 
-## Alternatives considered:
+## Open questions and alternatives considered:
 
+Questions:
+* Should this be a completely agnostic API to RGB pixel data (i.e. a wrapper around webm-wasm) or should it attempt to infer context types from a passed in canvas - it's easy to imagine use cases for DOM, Canvas2D, or WebGL, but it would be nice if these Just Worked.
+*
+
+Alternatives:
 * MediaRecorder + canvas.getStream - only realtime
+* WebMWriter - uses canvas.toDataUrl() which incurrs costly serialization
 * VideoFrame - not supported in FireFox

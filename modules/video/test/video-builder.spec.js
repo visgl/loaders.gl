@@ -1,7 +1,6 @@
 import test from 'tape-promise/tape';
 
 import {AnimationLoop, Model, CubeGeometry} from '@luma.gl/engine';
-import {Matrix4} from '@math.gl/core';
 
 // import {SnapshotTestRunner} from '@luma.gl/test-utils';
 import {clear} from '@luma.gl/webgl';
@@ -20,14 +19,14 @@ test('VideoBuilder#addFrame from canvas2d', async (t) => {
     return;
   }
   const canvas = document.createElement('canvas');
-  const width = canvas.width = 512;
-  const height = canvas.height = 512;
+  const width = (canvas.width = 512);
+  const height = (canvas.height = 512);
 
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#ff0000';
 
   const videoBuilder = new VideoBuilder();
-  videoBuilder.initialize({width, height});
+  await videoBuilder.initialize({width, height});
 
   for (let i = 0; i < 60; i++) {
     ctx.clearRect(0, 0, width, height);
@@ -57,72 +56,68 @@ test('VideoBuilder#addFrame from webgl', async (t) => {
     return;
   }
 
-  const eyePosition = [0, 0, 5];
-  const mvpMatrix  = new Matrix4();
-  const viewMatrix = new Matrix4().lookAt({eye: eyePosition});
-
-  let buffer;
-  let width;
-  let height;
+  let model;
   const videoBuilder = new VideoBuilder();
+  await videoBuilder.initialize({width: 800, height: 600});
 
   const loop = new AnimationLoop({
+    // @ts-ignore
     onInitialize({gl}) {
       const vs = `\
         attribute vec3 positions;
-        attribute vec2 texCoords;
+        uniform float aspect;
+        uniform float scale;
         uniform mat4 uMVP;
-        varying vec2 vUV;
         void main(void) {
-          gl_Position = uMVP * vec4(positions, 1.0);
-          vUV = texCoords;
+          gl_Position = vec4(
+            positions.x * scale,
+            positions.y * aspect,
+            1.0,
+            positions.y < 0.5 ? scale : 1.0
+          );
         }
       `;
 
       const fs = `\
         precision highp float;
-        uniform sampler2D uTexture;
-        varying vec2 vUV;
         void main(void) {
-          gl_FragColor = texture2D(uTexture, vec2(vUV.x, 1.0 - vUV.y));
+          gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
         }
       `;
 
-      const model = new Model(gl, {
+      model = new Model(gl, {
         vs,
         fs,
         geometry: new CubeGeometry(),
         // @ts-ignore
         parameters: {
           depthWriteEnabled: true,
-          depthCompare: 'less-equal',
+          depthCompare: 'less-equal'
         }
       });
 
-      [, , width, height] = gl.getParameter(gl.VIEWPORT);
 
-      buffer = new Uint8Array(width * height * 4);
+      // Ideally we should initialize the videoBuilder with the same width and height as the canvas
+      // but since `onInitialize` is async we need to set it up earlier
 
-      videoBuilder.initialize({width, height});
+      // const [, , width, height] = gl.getParameter(gl.VIEWPORT);
+      // videoBuilder.initialize({width, height});
 
-      return {model};
+      return {};
     },
 
-    onRender({gl, model, aspect, tick}) {
-      mvpMatrix
-        .perspective({fov: Math.PI / 3, aspect})
-        .multiplyRight(viewMatrix)
-        .rotateX(tick * 0.01)
-        .rotateY(tick * 0.013);
-      model.setUniforms({uMVP: mvpMatrix});
+    onRender({gl, framebuffer, aspect, tick}) {
+      // eslint-disable-next-line camelcase
+      model.setUniforms({scale: 2 + Math.cos(tick * 0.001), aspect});
 
       clear(gl, {color: [0, 0, 0, 1], depth: true});
       model.draw();
 
-      // To @ibgreen: Should this use the framebuffer instead?
-      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+      const [, , width, height] = gl.getParameter(gl.VIEWPORT);
 
-      videoBuilder.addFrame(buffer);
+      const data = new Uint8Array(width * height * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+      videoBuilder.addFrame(data.buffer);
     },
 
     async onFinalize({gl}) {
