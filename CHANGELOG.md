@@ -1,6 +1,11 @@
 # CHANGELOG for loaders.gl
 
-## v3.3.3
+## v3.2.4
+
+- chore: peer dependency major version only (#2166)
+- fix(i3s): textures - no headers in Request (#2183)
+
+## v3.2.3
 
 - fix(tiles): i3s tile register (#2181)
 
