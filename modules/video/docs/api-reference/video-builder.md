@@ -1,7 +1,7 @@
 # VideoBuilder
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" />
+  <img src="https://img.shields.io/badge/From-v3.2-blue.svg?style=flat-square" alt="From-v3.2" />
 </p>
 
 > The `VideoBuilder` is experimental.
@@ -10,11 +10,11 @@ A basic WebM Video encoder. Only works in the browser.
 
 | Encoder        | Characteristic                                          |
 | -------------- | ------------------------------------------------------- |
-| File Extension | `.webm`                                                  |
+| File Extension | `.webm`                                                 |
 | File Type      | Binary                                                  |
-| File Format    | Image                                                   |
+| File Format    | WebM                                                    |
 | Data Format    | `Video` (browsers) (Not currently supported on node.js) |
-| Supported APIs | `load`, `parse`                                         |
+| Supported APIs | `addFrame`, `finalize`                                  |
 
 ## Usage
 
@@ -25,9 +25,7 @@ const videoBuilder = new VideoBuilder({ source: canvas, frameRate: 24 });
 
 for (const frame of frames) {
   ctx.drawImage(frame);
-  const imageData = ctx.getImageData(0, 0, width, height);
-  const buffer = imageData.data.buffer;
-  videoBuilder.addFrame(buffer);
+  videoBuilder.addFrame(ctx);
 }
 
 const url = await videoBuilder.finalize();
@@ -38,15 +36,8 @@ video.src = url;
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-
-
-## Open questions and alternatives considered:
-
-Questions:
-* Should this be a completely agnostic API to RGB pixel data (i.e. a wrapper around webm-wasm) or should it attempt to infer context types from a passed in canvas - it's easy to imagine use cases for DOM, Canvas2D, or WebGL, but it would be nice if these Just Worked.
-*
-
-Alternatives:
-* MediaRecorder + canvas.getStream - only realtime
-* WebMWriter - uses canvas.toDataUrl() which incurrs costly serialization
-* VideoFrame - not supported in FireFox
+| `width` | number | 512 | The height of the output video
+| `height` | number | 512 | The width of the output video
+| `framerate` | number | 24 | How many frames per second the final container should hold
+| `bitrate` | number | 200 | The bitrate (in kbps) to record the
+| `realtime` | boolean | false | Whether to record in realtime. Used for streaming videos, for instance.

@@ -1,5 +1,3 @@
-import webmWasm from 'webm-wasm/dist/webm-wasm';
-
 const VIDEO_BUILDER_OPTIONS = {
   width: 512,
   height: 512,
@@ -10,9 +8,14 @@ const VIDEO_BUILDER_OPTIONS = {
 
 type VideoBuilderOptions = Partial<typeof VIDEO_BUILDER_OPTIONS>;
 
+function nextEvent(target, name): Promise<{data: any}> {
+  return new Promise((resolve) => {
+    target.addEventListener(name, resolve, {once: true});
+  });
+}
+
 export default class VideoBuilder {
-  encoder: webmWasm;
-  url: Promise<string>;
+  worker: Worker = new Worker('node_modules/webm-wasm/dist/webm-worker.js');
 
   static get properties() {
     return {
@@ -26,64 +29,47 @@ export default class VideoBuilder {
   }
 
   async initialize(options: VideoBuilderOptions): Promise<void> {
-    const {WebmEncoder} = await new Promise((resolve) => {
-      const module = webmWasm({
-        // Just to be safe, don't automatically invoke any wasm functions
-        noInitialRun: true,
-        locateFile(url) {
-          if (url.endsWith('.wasm')) {
-            return './node_modules/webm-wasm/dist/webm-wasm.wasm';
-            // return 'https://unpkg.com/webm-wasm@0.4.1/dist/webm-wasm.wasm';
-            // return wasmUrl;
-          }
-          return url;
-        },
-        onRuntimeInitialized() {
-          // An Emscripten is a then-able that resolves with itself, causing an infite loop when you
-          // wrap it in a real promise. Delete the `then` prop solves this for now.
-          // https://github.com/kripken/emscripten/issues/5820
-          delete module.then;
-          resolve(module);
-        }
-      });
-    });
-
     const {bitrate, framerate, height, width, realtime} = {...VIDEO_BUILDER_OPTIONS, ...options};
 
-    const numerator = 1;
-    const kLive = realtime;
+    this.worker.postMessage('./webm-wasm.wasm');
+    await nextEvent(this.worker, 'message');
 
-    let resolve;
-    this.url = new Promise((res) => {
-      resolve = res;
-    });
-    const onFinished = (chunk) => {
-      debugger;
-      const blob = new Blob([chunk], {type: 'video/webm'});
-      const url = URL.createObjectURL(blob);
-      resolve(url);
-    };
-
-    this.encoder = new WebmEncoder(
-      numerator,
-      framerate,
-      width,
-      height,
-      bitrate,
-      realtime,
-      kLive,
-      onFinished
-    );
+    this.worker.postMessage({timebaseDen: framerate, width, height, bitrate, realtime});
   }
 
-  async addFrame(buffer): Promise<void> {
-    this.encoder.addRGBAFrame(buffer);
+  addFrame(source): void {
+    let buffer = source;
+
+    if (Buffer.isBuffer(source)) {
+      buffer = source;
+    } else if (source instanceof ImageData) {
+      buffer = source.data;
+    } else if (source instanceof HTMLCanvasElement) {
+      buffer = source.getContext('2d')!.getImageData(0, 0, source.width, source.height).data;
+    } else if (source instanceof CanvasRenderingContext2D) {
+      buffer = source.getImageData(0, 0, source.canvas.width, source.canvas.height).data;
+    } else if (
+      source instanceof WebGLRenderingContext ||
+      source instanceof WebGL2RenderingContext
+    ) {
+      const gl = source;
+      // const {width, height} = gl.canvas;
+      const [, , width, height] = gl.getParameter(gl.VIEWPORT);
+      const data = new Uint8Array(width * height * 4);
+      source.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+      buffer = data.buffer;
+    }
+
+    this.worker.postMessage(buffer, [buffer]);
   }
 
   async finalize(): Promise<string> {
-    this.encoder.finalize();
-    this.encoder.delete();
+    this.worker.postMessage(null);
 
-    return await this.url;
+    const webm = (await nextEvent(this.worker, 'message')).data;
+    const blob = new Blob([webm], {type: 'video/webm'});
+    const url = URL.createObjectURL(blob);
+
+    return url;
   }
 }

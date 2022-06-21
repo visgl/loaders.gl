@@ -1,8 +1,8 @@
 import test from 'tape-promise/tape';
 
 import {AnimationLoop, Model, CubeGeometry} from '@luma.gl/engine';
+import {Matrix4} from '@math.gl/core';
 
-// import {SnapshotTestRunner} from '@luma.gl/test-utils';
 import {clear} from '@luma.gl/webgl';
 
 import {isBrowser} from '@loaders.gl/core';
@@ -23,6 +23,10 @@ test('VideoBuilder#addFrame from canvas2d', async (t) => {
   const height = (canvas.height = 512);
 
   const ctx = canvas.getContext('2d');
+
+  // Appease Typescript
+  if (!ctx) return;
+
   ctx.fillStyle = '#ff0000';
 
   const videoBuilder = new VideoBuilder();
@@ -33,19 +37,11 @@ test('VideoBuilder#addFrame from canvas2d', async (t) => {
     ctx.rect(i, i, 50, 50);
     ctx.fill();
 
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const buffer = imageData.data.buffer;
-
-    await videoBuilder.addFrame(buffer);
+    await videoBuilder.addFrame(ctx);
   }
 
   const videoDataUrl = await videoBuilder.finalize();
   t.ok(videoDataUrl, 'finalize() returns WebM video URL');
-
-  // use Luma testUtils to check the video
-  // const runner = new SnapshotTestRunner(t);
-  // await runner.loadVideo(videoDataUrl);
-  // await runner.takeSnapshot();
 
   t.end();
 });
@@ -56,25 +52,22 @@ test('VideoBuilder#addFrame from webgl', async (t) => {
     return;
   }
 
+  const eyePosition = [0, 0, 5];
+  const mvpMatrix  = new Matrix4();
+  const viewMatrix = new Matrix4().lookAt({eye: eyePosition});
+
   let model;
   const videoBuilder = new VideoBuilder();
   await videoBuilder.initialize({width: 800, height: 600});
 
   const loop = new AnimationLoop({
-    // @ts-ignore
-    onInitialize({gl}) {
+    onInitialize(props) {
+      const {gl} = props;
       const vs = `\
         attribute vec3 positions;
-        uniform float aspect;
-        uniform float scale;
         uniform mat4 uMVP;
         void main(void) {
-          gl_Position = vec4(
-            positions.x * scale,
-            positions.y * aspect,
-            1.0,
-            positions.y < 0.5 ? scale : 1.0
-          );
+          gl_Position = uMVP * vec4(positions, 1.0);
         }
       `;
 
@@ -88,41 +81,32 @@ test('VideoBuilder#addFrame from webgl', async (t) => {
       model = new Model(gl, {
         vs,
         fs,
-        geometry: new CubeGeometry(),
-        // @ts-ignore
-        parameters: {
-          depthWriteEnabled: true,
-          depthCompare: 'less-equal'
-        }
+        geometry: new CubeGeometry()
       });
 
-
-      // Ideally we should initialize the videoBuilder with the same width and height as the canvas
-      // but since `onInitialize` is async we need to set it up earlier
-
-      // const [, , width, height] = gl.getParameter(gl.VIEWPORT);
-      // videoBuilder.initialize({width, height});
-
-      return {};
+      return props;
     },
 
-    onRender({gl, framebuffer, aspect, tick}) {
-      // eslint-disable-next-line camelcase
-      model.setUniforms({scale: 2 + Math.cos(tick * 0.001), aspect});
+    onRender({gl, aspect, tick}) {
+      mvpMatrix
+        .perspective({fov: Math.PI / 3, aspect})
+        .multiplyRight(viewMatrix)
+        .rotateX(tick * 0.01)
+        .rotateY(tick * 0.013);
+      model.setUniforms({uMVP: mvpMatrix});
 
       clear(gl, {color: [0, 0, 0, 1], depth: true});
       model.draw();
 
-      const [, , width, height] = gl.getParameter(gl.VIEWPORT);
+      videoBuilder.addFrame(gl);
 
-      const data = new Uint8Array(width * height * 4);
-      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
-      videoBuilder.addFrame(data.buffer);
+      if (tick > 120) {
+        loop.delete();
+      }
     },
 
     async onFinalize({gl}) {
       const videoDataUrl = await videoBuilder.finalize();
-      model.destroy();
       t.ok(videoDataUrl, 'finalize() returns WebM video URL');
     }
   });
