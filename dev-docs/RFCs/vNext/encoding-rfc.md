@@ -10,6 +10,10 @@ This RFC proposes enhancements to the loaders.gl encode API.
 
 - **Video Encoding** Video encoding is obviously a very complex topic and loaders.gl very intentionally does not aspire to be even a remotely complete solution for this. That said, some basic ability to load and generate videos does make sense.
 
+Browsers support native canvas recording using `canvas.captureStream()` and the MediaRecorder API. This API is relatively straightforward to use, and outputs a webm-encoded video recorded in real-time.
+
+For more complex use cases, namely frame-by-frame non-realtime rendering, MediaRecorder doesn't have great support. An alternative is to use the webm-wasm package which allows for adding single frames to the webm container.
+
 ## Encoder APIs
 
 ## encode
