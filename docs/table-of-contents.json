@@ -301,7 +301,8 @@
           "title": "@loaders.gl/video",
           "entries": [
             {"entry": "modules/video/docs"},
-            {"entry": "modules/video/docs/api-reference/gif-builder"}
+            {"entry": "modules/video/docs/api-reference/gif-builder"},
+            {"entry": "modules/video/docs/api-reference/webm-video-builder"}
           ]
         },
         {

@@ -1,10 +1,10 @@
-# VideoBuilder
+# WebMVideoBuilder
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.2-blue.svg?style=flat-square" alt="From-v3.2" />
 </p>
 
-> The `VideoBuilder` is experimental.
+> The `WebMVideoBuilder` is experimental.
 
 A basic WebM Video encoder. Only works in the browser.
 
@@ -19,9 +19,9 @@ A basic WebM Video encoder. Only works in the browser.
 ## Usage
 
 ```js
-import {VideoBuilder} from '@loaders.gl/video';
+import {WebMVideoBuilder} from '@loaders.gl/video';
 
-const videoBuilder = new VideoBuilder({ source: canvas, frameRate: 24 });
+const videoBuilder = new WebMVideoBuilder({ source: canvas, frameRate: 24 });
 
 for (const frame of frames) {
   ctx.drawImage(frame);
@@ -41,3 +41,6 @@ video.src = url;
 | `framerate` | number | 24 | How many frames per second the final container should hold
 | `bitrate` | number | 200 | The bitrate (in kbps) to record the
 | `realtime` | boolean | false | Whether to record in realtime. Used for streaming videos, for instance.
+
+## Attribution
+`WebMVideoBuilder` uses code from Google Chrome Labs' incredible [webm-wasm](https://github.com/GoogleChromeLabs/webm-wasm) package which is Apache 2.0 licensed.

@@ -6,14 +6,14 @@ import {Matrix4} from '@math.gl/core';
 import {clear} from '@luma.gl/webgl';
 
 import {isBrowser} from '@loaders.gl/core';
-import {VideoBuilder} from '@loaders.gl/video';
+import {WebMVideoBuilder} from '@loaders.gl/video';
 
-test('VideoBuilder#imports', (t) => {
-  t.ok(VideoBuilder, 'VideoBuilder defined');
+test('WebMVideoBuilder#imports', (t) => {
+  t.ok(WebMVideoBuilder, 'WebMVideoBuilder defined');
   t.end();
 });
 
-test('VideoBuilder#addFrame from canvas2d', async (t) => {
+test('WebMVideoBuilder#addFrame from canvas2d', async (t) => {
   if (!isBrowser) {
     t.end();
     return;
@@ -29,7 +29,7 @@ test('VideoBuilder#addFrame from canvas2d', async (t) => {
 
   ctx.fillStyle = '#ff0000';
 
-  const videoBuilder = new VideoBuilder();
+  const videoBuilder = new WebMVideoBuilder();
   await videoBuilder.initialize({width, height});
 
   for (let i = 0; i < 60; i++) {
@@ -46,7 +46,7 @@ test('VideoBuilder#addFrame from canvas2d', async (t) => {
   t.end();
 });
 
-test('VideoBuilder#addFrame from webgl', async (t) => {
+test('WebMVideoBuilder#addFrame from webgl', async (t) => {
   if (!isBrowser) {
     t.end();
     return;
@@ -57,7 +57,7 @@ test('VideoBuilder#addFrame from webgl', async (t) => {
   const viewMatrix = new Matrix4().lookAt({eye: eyePosition});
 
   let model;
-  const videoBuilder = new VideoBuilder();
+  const videoBuilder = new WebMVideoBuilder();
   await videoBuilder.initialize({width: 800, height: 600});
 
   const loop = new AnimationLoop({
