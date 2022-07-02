@@ -1,4 +1,4 @@
-import {TypedArray} from '../types';
+import type {TypedArray} from '@math.gl/core';
 import {GL_TYPE as GL} from '../constants';
 
 const GL_TYPE_TO_ARRAY_TYPE = {
