@@ -35,6 +35,13 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
     tileContent.gltf?.nodes ||
     [];
 
+  const images = tileContent.gltf?.images?.map((imageObject) => ({
+    data: imageObject.image.data.subarray(),
+    height: imageObject.image.height,
+    width: imageObject.image.width,
+    components: imageObject.image.components
+  }));
+
   const prepearedNodes = nodes.map((node) => {
     if (!node.mesh) {
       return node;
@@ -42,6 +49,7 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
 
     return {
       ...node,
+      images,
       mesh: {
         ...node.mesh,
         primitives: node.mesh?.primitives.map((primitive) => ({
