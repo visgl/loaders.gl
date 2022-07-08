@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "3.2.0-alpha.4",
+  "version": "3.3.0-alpha.1",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
   "publishConfig": {
@@ -32,6 +32,6 @@
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.2.0-alpha.4"
+    "@loaders.gl/loader-utils": "3.3.0-alpha.1"
   }
 }
