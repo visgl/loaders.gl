@@ -1,5 +1,10 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.5
+
+- Fix type imports in math module (#2204)
+- fix(video): `window` undefined (#2198)
+
 ## v3.2.4
 
 - chore: peer dependency major version only (#2166)
