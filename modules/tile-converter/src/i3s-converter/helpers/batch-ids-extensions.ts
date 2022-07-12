@@ -42,21 +42,6 @@ export function handleBatchIdsExtensions(
   }
 
   return [];
-
-  // switch (true) {
-  //   case Boolean(extensions.EXT_feature_metadata): {
-  //     return handleExtFeatureMetadataExtension(attributes, extensions.EXT_feature_metadata, images);
-  //   }
-  //   case Boolean(extensions.EXT_mesh_features): {
-  //     // TODO Add support for EXT_mesh_features extension.
-  //     console.warn('EXT_mesh_features extension is not supported yet');
-  //     return [];
-  //   }
-  //   default: {
-  //     console.warn("Can't handle unsupported batchIds extensions");
-  //     return [];
-  //   }
-  // }
 }
 
 /**
@@ -173,8 +158,8 @@ function generateBatchIdsFromTexture(
       const u = textureCoordinates[index];
       const v = textureCoordinates[index + 1];
 
-      const tx = Math.min((emod(u, 1) * image.width) | 0, image.width - 1);
-      const ty = Math.min((emod(v, 1) * image.height) | 0, image.height - 1);
+      const tx = Math.min((emod(u) * image.width) | 0, image.width - 1);
+      const ty = Math.min((emod(v) * image.height) | 0, image.height - 1);
 
       const offset = (ty * image.width + tx) * image.components + channels;
       const batchId = new Uint8Array(image.data)[offset];
@@ -189,10 +174,10 @@ function generateBatchIdsFromTexture(
 }
 
 /**
- * Handle UVs if they are < 0 or > 1
+ * Handle UVs if they are out of range [0,1].
  * @param n
  * @param m
  */
-function emod(n: number, m: number): number {
-  return ((n % m) + m) % m;
+function emod(n: number): number {
+  return ((n % 1) + 1) % 1;
 }
