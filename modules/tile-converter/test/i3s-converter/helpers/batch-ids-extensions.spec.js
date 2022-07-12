@@ -161,7 +161,7 @@ test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should retur
   t.deepEqual(batchIds, expectedResult);
 });
 
-test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return implicit batchIds for divisor = 1', async (t) => {
+test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return implicit batchIds for divisor = 2', async (t) => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])}
   };

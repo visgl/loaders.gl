@@ -2,6 +2,9 @@ import type {GLTFAccessorPostprocessed} from 'modules/gltf/src/lib/types/gltf-ty
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import type {ExtFeatureMetadata, ExtFeatureMetadataAttribute} from 'modules/3d-tiles/src/types';
 
+const EXT_MESH_FEATURES = 'EXT_mesh_features';
+const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
+
 /**
  * Getting batchIds from 3DTilesNext extensions.
  * @param attributes
@@ -21,20 +24,39 @@ export function handleBatchIdsExtensions(
     return [];
   }
 
-  switch (true) {
-    case Boolean(extensions.EXT_feature_metadata): {
-      return handleExtFeatureMetadataExtension(attributes, extensions.EXT_feature_metadata, images);
-    }
-    case Boolean(extensions.EXT_mesh_features): {
-      // TODO Add support for EXT_mesh_features extension.
-      console.warn('EXT_mesh_features extension is not supported yet');
-      return [];
-    }
-    default: {
-      console.warn("Can't handle unsupported batchIds extensions");
-      return [];
+  for (const [extensionName, extensionData] of Object.entries(extensions || {})) {
+    switch (extensionName) {
+      case EXT_FEATURE_METADATA:
+        return handleExtFeatureMetadataExtension(
+          attributes,
+          extensionData as ExtFeatureMetadata,
+          images
+        );
+      case EXT_MESH_FEATURES:
+        console.warn('EXT_mesh_features extension is not supported yet');
+        return [];
+      default:
+        console.warn(`Can't handle unsupported batchIds '${extensionName}' extension`);
+        return [];
     }
   }
+
+  return [];
+
+  // switch (true) {
+  //   case Boolean(extensions.EXT_feature_metadata): {
+  //     return handleExtFeatureMetadataExtension(attributes, extensions.EXT_feature_metadata, images);
+  //   }
+  //   case Boolean(extensions.EXT_mesh_features): {
+  //     // TODO Add support for EXT_mesh_features extension.
+  //     console.warn('EXT_mesh_features extension is not supported yet');
+  //     return [];
+  //   }
+  //   default: {
+  //     console.warn("Can't handle unsupported batchIds extensions");
+  //     return [];
+  //   }
+  // }
 }
 
 /**
@@ -52,8 +74,7 @@ function handleExtFeatureMetadataExtension(
   images: Image[]
 ): number[] {
   // Take only first extension object to get batchIds attribute name.
-  const featureIdAttribute =
-    extFeatureMetadata?.featureIdAttributes && extFeatureMetadata?.featureIdAttributes[0];
+  const featureIdAttribute = extFeatureMetadata?.featureIdAttributes?.[0];
 
   if (featureIdAttribute?.featureIds?.attribute) {
     const batchIdsAttribute = attributes[featureIdAttribute.featureIds.attribute];
