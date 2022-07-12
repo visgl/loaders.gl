@@ -35,12 +35,19 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
     tileContent.gltf?.nodes ||
     [];
 
-  const images = tileContent.gltf?.images?.map((imageObject) => ({
-    data: imageObject.image.data.subarray(),
-    height: imageObject.image.height,
-    width: imageObject.image.width,
-    components: imageObject.image.components
-  }));
+  const images =
+    tileContent.gltf?.images?.map((imageObject) => {
+      // Need data only for uncompressed images because we can't get batchIds from compressed textures.
+      const data = imageObject?.image?.compressed ? null : imageObject?.image?.data.subarray();
+      return {
+        data,
+        compressed: Boolean(imageObject?.image?.compressed),
+        height: imageObject.image.height,
+        width: imageObject.image.width,
+        components: imageObject.image.components,
+        mimeType: imageObject.mimeType
+      };
+    }) || [];
 
   const prepearedNodes = nodes.map((node) => {
     if (!node.mesh) {

@@ -188,6 +188,50 @@ test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should retur
   t.deepEqual(batchIds, expectedResult);
 });
 
+test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return empty batchIds for compressed texture', async (t) => {
+  const attributes = {
+    POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])},
+    TEXCOORD_0: {
+      value: new Float32Array([0.1, 0.1, 0.9, 0.9, 0.1, 0.9])
+    }
+  };
+  const primitive = {
+    extensions: {
+      EXT_feature_metadata: {
+        featureIdTextures: [
+          {
+            featureIds: {
+              texture: {
+                index: 0
+              },
+              channels: 'r'
+            }
+          }
+        ]
+      }
+    }
+  };
+  const images = [
+    {
+      name: 'first',
+      compressed: true,
+      data: [
+        {
+          components: 4,
+          width: 2,
+          height: 2,
+          data: new Uint8Array([1, 2, 3, 255])
+        }
+      ]
+    }
+  ];
+
+  // @ts-ignore
+  const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
+
+  t.deepEqual(batchIds, []);
+});
+
 test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return batchIds for texture', async (t) => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])},

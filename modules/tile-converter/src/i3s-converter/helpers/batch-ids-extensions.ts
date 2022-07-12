@@ -147,17 +147,21 @@ function generateBatchIdsFromTexture(
   const batchIds: number[] = [];
   const channels = CHANNELS_MAP[featureChannel];
 
-  for (let index = 0; index < textureCoordinates.length; index += 2) {
-    const u = textureCoordinates[index];
-    const v = textureCoordinates[index + 1];
+  if (!image.compressed) {
+    for (let index = 0; index < textureCoordinates.length; index += 2) {
+      const u = textureCoordinates[index];
+      const v = textureCoordinates[index + 1];
 
-    const tx = Math.min((emod(u, 1) * image.width) | 0, image.width - 1);
-    const ty = Math.min((emod(v, 1) * image.height) | 0, image.height - 1);
+      const tx = Math.min((emod(u, 1) * image.width) | 0, image.width - 1);
+      const ty = Math.min((emod(v, 1) * image.height) | 0, image.height - 1);
 
-    const offset = (ty * image.width + tx) * image.components + channels;
-    const batchId = new Uint8Array(image.data)[offset];
+      const offset = (ty * image.width + tx) * image.components + channels;
+      const batchId = new Uint8Array(image.data)[offset];
 
-    batchIds.push(batchId);
+      batchIds.push(batchId);
+    }
+  } else {
+    console.warn(`Can't get batch Ids from ${image.mimeType} compressed texture`);
   }
 
   return batchIds;
