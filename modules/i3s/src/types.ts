@@ -95,7 +95,6 @@ export type I3SParseOptions = {
 };
 
 export type I3STileOptions = {
-  content: I3STileContent;
   isDracoGeometry: boolean;
   textureUrl?: string;
   textureFormat?: I3STextureFormat;
