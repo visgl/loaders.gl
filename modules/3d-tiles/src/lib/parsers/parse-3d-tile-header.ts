@@ -37,13 +37,27 @@ function getRefine(refine) {
   }
 }
 
+function resolveUri(uri, basePath) {
+  // url scheme per RFC3986
+  const urlSchemeRegex = /^[a-z][0-9a-z+.-]*:/i;
+
+  if (urlSchemeRegex.test(basePath)) {
+    const url = new URL(uri, `${basePath}/`);
+    return decodeURI(url.toString());
+  } else if (uri.startsWith('/')) {
+    return uri;
+  }
+
+  return `${basePath}/${uri}`;
+}
+
 export function normalizeTileData(tile, options) {
   if (!tile) {
     return null;
   }
   if (tile.content) {
     const contentUri = tile.content.uri || tile.content.url;
-    tile.contentUrl = `${options.basePath}/${contentUri}`;
+    tile.contentUrl = resolveUri(contentUri, options.basePath);
   }
   tile.id = tile.contentUrl;
   tile.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
@@ -94,9 +108,9 @@ export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
     subtrees: {uri: subtreesUriTemplate}
   } = implicitTilingExtension;
   const subtreeUrl = replaceContentUrlTemplate(subtreesUriTemplate, 0, 0, 0, 0);
-  const rootSubtreeUrl = `${basePath}/${subtreeUrl}`;
+  const rootSubtreeUrl = resolveUri(subtreeUrl, basePath);
   const rootSubtree = await load(rootSubtreeUrl, Tile3DSubtreeLoader);
-  const contentUrlTemplate = `${basePath}/${tileset.root.content.uri}`;
+  const contentUrlTemplate = resolveUri(tileset.root.content.uri, basePath);
   const refine = tileset.root.refine;
   // @ts-ignore
   const rootLodMetricValue = tileset.root.geometricError;
