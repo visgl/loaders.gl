@@ -758,7 +758,6 @@ export default class TileHeader {
         return {
           ...this.tileset.options.i3s,
           tile: {
-            content: this.header.content,
             textureUrl: this.header.textureUrl,
             textureFormat: this.header.textureFormat,
             textureLoaderOptions: this.header.textureLoaderOptions,
