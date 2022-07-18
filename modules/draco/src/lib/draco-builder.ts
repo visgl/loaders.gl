@@ -416,14 +416,6 @@ export default class DracoBuilder {
         case 'object':
           if (value instanceof Int32Array) {
             this.dracoMetadataBuilder.AddIntEntryArray(dracoMetadata, key, value, value.length);
-          } else {
-            const arrayValue: number[] = Object.values(value);
-            this.dracoMetadataBuilder.AddIntEntryArray(
-              dracoMetadata,
-              key,
-              new Int32Array(arrayValue),
-              arrayValue.length
-            );
           }
           break;
         case 'string':
