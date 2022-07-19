@@ -1,3 +1,5 @@
+import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
+
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -30,6 +32,7 @@ import {
 } from 'modules/gltf/src/lib/types/gltf-types';
 import {B3DMAttributesData /*transformI3SAttributesOnWorker */} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
+import {handleBatchIdsExtensions} from './batch-ids-extensions';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -407,9 +410,12 @@ function convertNode(
   const transformationMatrix = getCompositeTransformationMatrix(node, matrix);
 
   const mesh = node.mesh;
+  const images = node.images;
+
   if (mesh) {
     convertMesh(
       mesh,
+      images,
       cartographicOrigin,
       cartesianModelMatrix,
       attributesMap,
@@ -441,6 +447,7 @@ function convertNode(
  */
 function convertMesh(
   mesh: GLTFMeshPostprocessed,
+  images: Image[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -498,7 +505,7 @@ function convertMesh(
 
     outputAttributes.featureIndicesGroups = outputAttributes.featureIndicesGroups || [];
     outputAttributes.featureIndicesGroups.push(
-      flattenBatchIds(getBatchIdsByAttributeName(attributes), primitive.indices?.value)
+      flattenBatchIds(getBatchIds(attributes, primitive, images), primitive.indices?.value)
     );
   }
 }
@@ -665,14 +672,23 @@ function flattenBatchIds(batchedIds: number[], indices: Uint8Array): number[] {
 }
 
 /**
- * Return batchIds based on possible attribute names for different kind of maps.
- * @param attributes - the gltf primitive attributes
- * @returns batch ids attribute
+ * Get batchIds for featureIds creation
+ * @param attributes
+ * @param primitive
+ * @param textures
  */
-function getBatchIdsByAttributeName(attributes: {
-  [key: string]: GLTFAccessorPostprocessed;
-}): number[] {
-  let batchIds: number[] = [];
+function getBatchIds(
+  attributes: {
+    [key: string]: GLTFAccessorPostprocessed;
+  },
+  primitive: MeshPrimitive,
+  images: Image[]
+): number[] {
+  const batchIds: number[] = handleBatchIdsExtensions(attributes, primitive, images);
+
+  if (batchIds.length) {
+    return batchIds;
+  }
 
   for (let index = 0; index < BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES.length; index++) {
     const possibleBatchIdAttributeName = BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES[index];
@@ -680,12 +696,11 @@ function getBatchIdsByAttributeName(attributes: {
       attributes[possibleBatchIdAttributeName] &&
       attributes[possibleBatchIdAttributeName].value
     ) {
-      batchIds = attributes[possibleBatchIdAttributeName].value;
-      break;
+      return attributes[possibleBatchIdAttributeName].value;
     }
   }
 
-  return batchIds;
+  return [];
 }
 
 /**
