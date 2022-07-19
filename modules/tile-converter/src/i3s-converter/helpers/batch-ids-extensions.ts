@@ -1,6 +1,6 @@
 import type {GLTFAccessorPostprocessed} from 'modules/gltf/src/lib/types/gltf-types';
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
-import type {ExtFeatureMetadata, ExtFeatureMetadataAttribute} from 'modules/3d-tiles/src/types';
+import type {ExtFeatureMetadata, ExtFeatureMetadataAttribute} from '../types';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';

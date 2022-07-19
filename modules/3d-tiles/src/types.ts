@@ -88,30 +88,3 @@ type BufferView = {
   byteOffset: number;
   byteLength: number;
 };
-
-/**
- * 3DTilesNext EXT_feature_metadata extension
- * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata
- */
-export type ExtFeatureMetadata = {
-  featureIdAttributes?: ExtFeatureMetadataAttribute[];
-  featureIdTextures?: ExtFeatureMetadataAttribute[];
-};
-
-export type ExtFeatureMetadataAttribute = {
-  featureTable: string;
-  featureIds: ExtFeatureMetadataFeatureIds;
-};
-
-type ExtFeatureMetadataFeatureIds = {
-  attribute?: string;
-  constant?: number;
-  divisor?: number;
-  texture?: ExtFeatureMetadataTexture;
-  channels?: string;
-};
-
-type ExtFeatureMetadataTexture = {
-  texCoord: number;
-  index: number;
-};
