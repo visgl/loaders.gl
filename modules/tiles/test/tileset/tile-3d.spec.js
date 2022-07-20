@@ -297,6 +297,40 @@ test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume
   t.end();
 });
 
+test('Tile3D#screenSpaceError is calculated correctly', (t) => {
+  const tileset = {
+    ...MOCK_TILESET,
+    type: 'TILES3D',
+    _traverser: {options: {}},
+    options: {viewDistanceScale: 1}
+  };
+  const tileHeaderWithViewerRequestVolume = {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    viewerRequestVolume: {
+      sphere: [2, 2, -2, 1]
+    },
+    content: {}
+  };
+
+  // @ts-ignore
+  const tile = new Tile3D(tileset, tileHeaderWithViewerRequestVolume);
+
+  tile.updateVisibility(
+    {
+      frameNumber: 100,
+      camera: {position: [10, 10, -10]},
+      cullingVolume: {
+        computeVisibilityWithPlaneMask: () => false
+      },
+      height: 500,
+      sseDenominator: 11
+    },
+    ['test']
+  );
+  t.equal(tile.screenSpaceError, 2.7410122234342147);
+  t.end();
+});
+
 /*
 test('Tile3D#bounding volumes', tt => {
   test('Tile3D#returns the tile bounding volume if the content bounding volume is undefined', t => {

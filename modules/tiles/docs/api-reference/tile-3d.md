@@ -69,6 +69,14 @@ Specifies the type of refine that is used when traversing this tile for renderin
 
 Whether this tile is selected for rendering in current update frame and viewport. A selected tile should has its content loaded and satifies current viewport.
 
+###### `distanceToCamera` (Number)
+
+Distance from the tile's bounding volume center to the camera
+
+###### `screenSpaceError` (Number)
+
+Screen space error for LOD selection
+
 ###### `tileset` (Tileset3D)
 
 The `Tileset3D` instance containing this tile.
