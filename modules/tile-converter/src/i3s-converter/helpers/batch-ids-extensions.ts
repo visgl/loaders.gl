@@ -36,7 +36,6 @@ export function handleBatchIdsExtensions(
         console.warn('EXT_mesh_features extension is not supported yet');
         return [];
       default:
-        console.warn(`Can't handle unsupported batchIds '${extensionName}' extension`);
         return [];
     }
   }
