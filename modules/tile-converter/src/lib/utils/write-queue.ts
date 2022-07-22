@@ -1,4 +1,7 @@
 import {Queue} from './queue';
+import process from 'process';
+
+const MEMORY_LIMIT = 4 * 1024 * 1024 * 1024; // 4Gb
 
 export type WriteQueueItem = {
   archiveKey?: string;
@@ -16,6 +19,13 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
     super();
     this.listeningInterval = listeningInterval;
     this.writeConcurrency = writeConcurrency;
+  }
+
+  async enqueue(val: T) {
+    super.enqueue(val);
+    if (process.memoryUsage().rss > MEMORY_LIMIT) {
+      await this.startWrite();
+    }
   }
 
   startListening() {
