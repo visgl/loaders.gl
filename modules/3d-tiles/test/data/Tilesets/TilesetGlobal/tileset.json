@@ -1,0 +1,11 @@
+{
+  "asset": {"version": "1.0"},
+  "geometricError": 1e6,
+  "root": {
+    "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    "boundingVolume": {
+      "box": [0, 0, 0, 8000000, 0, 0, 0, 8000000, 0, 0, 0, 8000000]
+    },
+    "geometricError": 1e6
+  }
+}
