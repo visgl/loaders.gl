@@ -10,6 +10,7 @@ import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/Tileset/tileset.json';
+const TILESET_GLOBAL_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetGlobal/tileset.json';
 
 /*
 // Parent tile with no content and four child tiles with content
@@ -228,6 +229,24 @@ test('Tileset3D#gets root tile', async (t) => {
   const tileset = new Tileset3D(tilesetJson);
 
   t.ok(tileset.root);
+  t.end();
+});
+
+test('Tileset3D#handles global tilesets without error', async (t) => {
+  const tilesetJson = await load(TILESET_GLOBAL_URL, Tiles3DLoader);
+
+  try {
+    const tileset = new Tileset3D(tilesetJson);
+    await tileset.tilesetInitializationPromise;
+
+    t.deepEqual(
+      tileset.cartographicCenter ? tileset.cartographicCenter.toArray() : null,
+      [0, 0, -6378137]
+    );
+  } catch (e) {
+    t.fail('exception thrown when loading tileset with bbox-center at [0,0,0]');
+  }
+
   t.end();
 });
 

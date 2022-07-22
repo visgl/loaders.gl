@@ -676,7 +676,13 @@ export default class Tileset3D {
       this.zoom = 1;
       return;
     }
-    this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+
+    // cartographic coordinates are undefined at the center of the ellipsoid
+    if (center[0] !== 0 || center[1] !== 0 || center[2] !== 0) {
+      this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+    } else {
+      this.cartographicCenter = new Vector3(0, 0, -Ellipsoid.WGS84.radii[0]);
+    }
     this.cartesianCenter = center;
     this.zoom = getZoomFromBoundingVolume(root.boundingVolume, this.cartographicCenter);
   }
