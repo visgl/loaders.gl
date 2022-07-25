@@ -3,14 +3,14 @@
  * Until all tiles are loaded we won't call `onTraversalEnd` callback
  */
 export default class I3SPendingTilesRegister {
-  private frameNumberMap: Map<number, Map<number, number>> = new Map();
+  private frameNumberMap: Map<string, Map<number, number>> = new Map();
 
   /**
    * Register a new pending tile header for the particular frameNumber
    * @param viewportId
    * @param frameNumber
    */
-  register(viewportId: number, frameNumber: number) {
+  register(viewportId: string, frameNumber: number) {
     const viewportMap = this.frameNumberMap.get(viewportId) || new Map();
     const oldCount = viewportMap.get(frameNumber) || 0;
     viewportMap.set(frameNumber, oldCount + 1);
@@ -22,7 +22,7 @@ export default class I3SPendingTilesRegister {
    * @param viewportId
    * @param frameNumber
    */
-  deregister(viewportId: number, frameNumber: number) {
+  deregister(viewportId: string, frameNumber: number) {
     const viewportMap = this.frameNumberMap.get(viewportId);
     if (!viewportMap) {
       return;
@@ -37,7 +37,7 @@ export default class I3SPendingTilesRegister {
    * @param frameNumber
    * @returns
    */
-  isZero(viewportId: number, frameNumber: number) {
+  isZero(viewportId: string, frameNumber: number) {
     const count = this.frameNumberMap.get(viewportId)?.get(frameNumber) || 0;
     return count === 0;
   }

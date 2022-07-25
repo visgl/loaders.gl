@@ -16,6 +16,13 @@ export default class I3STileManager {
     this._statusMap = {};
   }
 
+  /**
+   * Add request to map
+   * @param request - node metadata request
+   * @param key - unique key
+   * @param callback - callback after request completed
+   * @param frameState - frameState data
+   */
   add(request, key, callback, frameState: FrameState) {
     if (!this._statusMap[key]) {
       const {
@@ -49,6 +56,11 @@ export default class I3STileManager {
     }
   }
 
+  /**
+   * Update request if it is still actual for the new frameState
+   * @param key - unique key
+   * @param frameState - frameState data
+   */
   update(key, frameState: FrameState) {
     if (this._statusMap[key]) {
       // Deregister pending request for the old frameNumber
@@ -68,6 +80,11 @@ export default class I3STileManager {
     }
   }
 
+  /**
+   * Find request in the map
+   * @param key - unique key
+   * @returns
+   */
   find(key) {
     return this._statusMap[key];
   }
@@ -78,7 +95,7 @@ export default class I3STileManager {
    * @param frameNumber
    * @returns
    */
-  hasPendingTiles(viewportId: number, frameNumber: number): boolean {
+  hasPendingTiles(viewportId: string, frameNumber: number): boolean {
     return !this.pendingTilesRegister.isZero(viewportId, frameNumber);
   }
 }
