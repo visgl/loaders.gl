@@ -20,7 +20,7 @@ export {BlobPolyfill} from './node/file/blob';
 export {FileReaderPolyfill} from './node/file/file-reader';
 export {FilePolyfill} from './node/file/file';
 export {installFilePolyfills} from './node/file/install-file-polyfills';
-export {default as fetchNode} from './node/fetch/fetch.node';
+export {default as _fetchNode} from './node/fetch/fetch.node';
 
 // POLYFILLS: TextEncoder, TextDecoder
 // - Recent Node versions have these classes but virtually no encodings unless special build.
