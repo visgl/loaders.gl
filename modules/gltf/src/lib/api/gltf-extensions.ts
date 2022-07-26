@@ -16,6 +16,7 @@ import * as KHR_texture_transform from '../extensions/KHR_texture_transform';
 import * as KHR_lights_punctual from '../extensions/deprecated/KHR_lights_punctual';
 import * as KHR_materials_unlit from '../extensions/deprecated/KHR_materials_unlit';
 import * as KHR_techniques_webgl from '../extensions/deprecated/KHR_techniques_webgl';
+import * as EXT_feature_metadata from '../extensions/deprecated/EXT_feature_metadata';
 
 // Vendor extensions
 
@@ -52,7 +53,8 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   KHR_lights_punctual,
   KHR_materials_unlit,
   KHR_techniques_webgl,
-  KHR_texture_transform
+  KHR_texture_transform,
+  EXT_feature_metadata
 ];
 
 /** Call before any resource loading starts */

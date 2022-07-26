@@ -796,8 +796,8 @@ export type GLTF_EXT_feature_metadata = {
   statistics?: Statistics;
   /** A dictionary, where each key is a feature table ID and each value is an object defining the feature table. */
   featureTables?: {
-    [key: string]: FeatureTable;
-  }
+    [key: string]: EXT_feature_metadata_feature_table;
+  };
   /** A dictionary, where each key is a feature texture ID and each value is an object defining the feature texture. */
   featureTextures?: {
     [key: string]: FeatureTexture;
@@ -805,7 +805,7 @@ export type GLTF_EXT_feature_metadata = {
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#schema
@@ -819,11 +819,11 @@ type ExtFeatureMetadataSchema = {
   version?: string;
   /** A dictionary, where each key is a class ID and each value is an object defining the class. */
   classes?: {
-    [key: string]: ClassObject
+    [key: string]: EXR_feature_metadata_class_object;
   };
   /** A dictionary, where each key is an enum ID and each value is an object defining the values for the enum. */
   enums?: {
-    [key: string]: ExtFeatureMetadataEnum
+    [key: string]: ExtFeatureMetadataEnum;
   };
   extensions?: any;
   extras?: any;
@@ -833,24 +833,24 @@ type ExtFeatureMetadataSchema = {
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class
  */
-type ClassObject = {
+export type EXR_feature_metadata_class_object = {
   /** The name of the class, e.g. for display purposes. */
   name?: string;
   /** The description of the class. */
   description?: string;
   /** A dictionary, where each key is a property ID and each value is an object defining the property. */
   properties: {
-    [key: string]: ClassProperty
+    [key: string]: ClassProperty;
   };
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class-property
  */
-type ClassProperty = {
+export type ClassProperty = {
   /** The name of the property, e.g. for display purposes. */
   name?: string;
   /** The description of the property. */
@@ -860,7 +860,7 @@ type ClassProperty = {
    * If ARRAY is used, then componentType must also be specified.
    * ARRAY is a fixed-length array when componentCount is defined, and variable-length otherwise.
    */
-  type: 'INT8' | 'UINT8' | 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'INT64' | 'UINT64' | 'FLOAT32' | 'FLOAT64' | 'BOOLEAN' | 'STRING' | 'ENUM' | 'ARRAY';
+  type: ClassPropertyType;
   /**
    * An enum ID as declared in the enums dictionary.
    * This value must be specified when type or componentType is ENUM.
@@ -870,17 +870,30 @@ type ClassProperty = {
    * When type is ARRAY this indicates the type of each component of the array.
    * If ENUM is used, then enumType must also be specified.
    */
-  componentType?: 'INT8' | 'UINT8' | 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'INT64' | 'UINT64' | 'FLOAT32' | 'FLOAT64' | 'BOOLEAN' | 'STRING' | 'ENUM';
+  componentType?:
+    | 'INT8'
+    | 'UINT8'
+    | 'INT16'
+    | 'UINT16'
+    | 'INT32'
+    | 'UINT32'
+    | 'INT64'
+    | 'UINT64'
+    | 'FLOAT32'
+    | 'FLOAT64'
+    | 'BOOLEAN'
+    | 'STRING'
+    | 'ENUM';
   /** The number of components per element for ARRAY elements. */
   componentCount?: number;
-  /** 
+  /**
    * Specifies whether integer values are normalized.
    * This applies both when type is an integer type, or when type is ARRAY with a componentType that is an integer type.
    * For unsigned integer types, values are normalized between [0.0, 1.0].
    * For signed integer types, values are normalized between [-1.0, 1.0].
    * For all other types, this property is ignored.
    */
-  normalized: boolean
+  normalized: boolean;
   /**
    * Maximum allowed values for property values.
    * Only applicable for numeric types and fixed-length arrays of numeric types.
@@ -908,7 +921,7 @@ type ClassProperty = {
    */
   default?: boolean | number | string | number[];
   /** If true, this property is optional. */
-  optional?: boolean // default false;
+  optional?: boolean; // default false;
   /**
    * An identifier that describes how this property should be interpreted.
    * The semantic cannot be used by other properties in the class.
@@ -917,7 +930,26 @@ type ClassProperty = {
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#classpropertytype
+ */
+type ClassPropertyType =
+  | 'INT8'
+  | 'UINT8'
+  | 'INT16'
+  | 'UINT16'
+  | 'INT32'
+  | 'UINT32'
+  | 'INT64'
+  | 'UINT64'
+  | 'FLOAT32'
+  | 'FLOAT64'
+  | 'BOOLEAN'
+  | 'STRING'
+  | 'ENUM'
+  | 'ARRAY';
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#enum
@@ -934,7 +966,7 @@ type ExtFeatureMetadataEnum = {
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#enum-value
@@ -949,12 +981,13 @@ type EnumValue = {
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-table
  */
-type FeatureTable = {
+export type EXT_feature_metadata_feature_table = {
+  featureTable: any;
   /** The class that property values conform to. The value must be a class ID declared in the classes dictionary. */
   class?: string;
   /** The number of features, as well as the number of elements in each property array. */
@@ -965,8 +998,8 @@ type FeatureTable = {
    * Optional properties may be excluded from this dictionary.
    */
   properties?: {
-    [key: string]: FeatureTableProperty
-  }
+    [key: string]: FeatureTableProperty;
+  };
   extensions?: any;
   extras?: any;
   [key: string]: any;
@@ -975,8 +1008,8 @@ type FeatureTable = {
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-table-property
  */
-type FeatureTableProperty = {
-  /** 
+export type FeatureTableProperty = {
+  /**
    * The index of the buffer view containing property values.
    * The data type of property values is determined by the property definition:
    * When type is BOOLEAN values are packed into a bitfield.
@@ -1018,7 +1051,7 @@ type FeatureTableProperty = {
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-texture
@@ -1026,17 +1059,17 @@ type FeatureTableProperty = {
 type FeatureTexture = {
   /** The class this feature texture conforms to. The value must be a class ID declared in the classes dictionary. */
   class: string;
-  /** 
+  /**
    * A dictionary, where each key corresponds to a property ID in the class properties dictionary
-   * and each value describes the texture channels containing property values. 
+   * and each value describes the texture channels containing property values.
    */
   properties: {
     [key: string]: TextureAccessor;
-  }
+  };
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#texture-accessor
@@ -1049,7 +1082,7 @@ type TextureAccessor = {
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#statistics-1
@@ -1061,11 +1094,11 @@ type Statistics = {
    */
   classes?: {
     [key: string]: ClassStatistics;
-  }
+  };
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class-statistics
@@ -1074,16 +1107,16 @@ type ClassStatistics = {
   /** The number of features that conform to the class. */
   count?: number;
   /**
-  * A dictionary, where each key is a class ID declared in the classes dictionary
-  * and each value is an object containing statistics about property values.
-  */
+   * A dictionary, where each key is a class ID declared in the classes dictionary
+   * and each value is an object containing statistics about property values.
+   */
   properties?: {
     [key: string]: StatisticsClassProperty;
-  }
+  };
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#property-statistics
@@ -1115,11 +1148,11 @@ type StatisticsClassProperty = {
    */
   occurrences: {
     [key: string]: number | number[];
-  }
+  };
   extensions?: any;
   extras?: any;
   [key: string]: any;
-}
+};
 
 /**
  * 3DTilesNext EXT_feature_metadata primitive extension
@@ -1131,7 +1164,7 @@ export type GLTF_EXT_feature_metadata_primitive = {
   /** Feature ids definition in textures */
   featureIdTextures?: GLTF_EXT_feature_metadata_attribute[];
   /** An array of IDs of feature textures from the root EXT_feature_metadata object. */
-  featureTextures?: string[]
+  featureTextures?: string[];
   extensions?: any;
   extras?: any;
   [key: string]: any;

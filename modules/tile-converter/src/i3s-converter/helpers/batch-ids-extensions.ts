@@ -1,6 +1,9 @@
 import type {GLTFAccessorPostprocessed} from 'modules/gltf/src/lib/types/gltf-types';
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
-import type {GLTF_EXT_feature_metadata_attribute, GLTF_EXT_feature_metadata_primitive} from 'modules/gltf/src/lib/types/gltf-json-schema';
+import type {
+  GLTF_EXT_feature_metadata_attribute,
+  GLTF_EXT_feature_metadata_primitive
+} from 'modules/gltf/src/lib/types/gltf-json-schema';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
