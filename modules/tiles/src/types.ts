@@ -22,6 +22,6 @@ export type Viewport = {
     metersPerUnit: number;
   };
   center: [number, number, number];
-  unprojectPosition: (position: [number, number, number]) => Vector3;
-  project: (coorinates: [number, number, number]) => Vector3;
+  unprojectPosition: (position: [number, number, number] | Vector3) => Vector3;
+  project: (coorinates: [number, number, number] | Vector3) => Vector3;
 };

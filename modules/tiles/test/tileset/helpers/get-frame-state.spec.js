@@ -20,7 +20,7 @@
 
 import test from 'tape-promise/tape';
 import {getFrameState} from '@loaders.gl/tiles';
-import {Viewport} from '@deck.gl/core';
+import {Viewport, FirstPersonView} from '@deck.gl/core';
 import {equals, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -71,6 +71,33 @@ test('getFrameState', (t) => {
       plane.getPointDistance(viewportCenterCartesian) >= 0,
       'viewport center is on the inside of the frustum plane'
     );
+  }
+
+  t.end();
+});
+
+test('getFrameState#cullingVolume', (t) => {
+  const viewport = new FirstPersonView({near: 1, far: 100}).makeViewport({
+    width: 800,
+    height: 500,
+    viewState: {
+      longitude: -122.45,
+      latitude: 37.78,
+      position: [0, 0, 200],
+      pitch: 0,
+      bearing: 0
+    }
+  });
+
+  const results = getFrameState(viewport, 1);
+
+  for (let i = 0; i < 5; i++) {
+    for (let j = i + 1; j < 6; j++) {
+      t.notOk(
+        results.cullingVolume.planes[i].equals(results.cullingVolume.planes[j]),
+        `Culling planes are different: ${i}/${j}`
+      );
+    }
   }
 
   t.end();
