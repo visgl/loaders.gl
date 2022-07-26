@@ -20,14 +20,14 @@
 
 import test from 'tape-promise/tape';
 import {getFrameState} from '@loaders.gl/tiles';
-import {Viewport, FirstPersonView} from '@deck.gl/core';
+import {WebMercatorViewport, FirstPersonView} from '@deck.gl/core';
 import {equals, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 const EPSILON = 1e-5;
 const expected = {
   camera: {
-    position: [2984642.2356970147, 2727927.6428344236, 4916103.380280777],
+    position: [2984602.959018632, 2728622.046790103, 4917131.9689617995],
     direction: [0, 0, 0],
     up: [0, 0, 0]
   },
@@ -37,7 +37,7 @@ const expected = {
 };
 
 test('getFrameState', (t) => {
-  const viewport = new Viewport({
+  const viewport = new WebMercatorViewport({
     width: 793,
     height: 775,
     latitude: 50.751537058389985,
