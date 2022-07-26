@@ -4,7 +4,7 @@ import type {GLTF} from '../../types/gltf-types';
 import GLTFScenegraph from '../../api/gltf-scenegraph';
 import {
   ClassProperty,
-  EXR_feature_metadata_class_object,
+  EXT_feature_metadata_class_object,
   EXT_feature_metadata_feature_table,
   FeatureTableProperty,
   GLTF_EXT_feature_metadata
@@ -20,7 +20,10 @@ export async function decode(gltfData: {json: GLTF}): Promise<void> {
   decodeExtFeatureMetadata(scenegraph);
 }
 
-/** Decode one meshopt buffer view */
+/**
+ * Decodes feature metadata from extension
+ * @param scenegraph
+ */
 function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph): void {
   const extension: GLTF_EXT_feature_metadata | null = scenegraph.getExtension(EXT_FEATURE_METADATA);
   const schemaClasses = extension?.schema?.classes;
@@ -48,10 +51,16 @@ function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph): void {
   }
 }
 
+/**
+ * Navigate throw all properies in feature table and gets properties data.
+ * @param scenegraph
+ * @param featureTable
+ * @param schemaClass
+ */
 function handleFeatureTableProperties(
   scenegraph: GLTFScenegraph,
   featureTable: EXT_feature_metadata_feature_table,
-  schemaClass: EXR_feature_metadata_class_object
+  schemaClass: EXT_feature_metadata_class_object
 ): void {
   for (const propertyName in schemaClass.properties) {
     const schemaProperty = schemaClass.properties[propertyName];
@@ -70,6 +79,13 @@ function handleFeatureTableProperties(
   }
 }
 
+/**
+ * Decode properties from binary sourse based on property type.
+ * @param scenegraph
+ * @param schemaProperty
+ * @param numberOfFeatures
+ * @param featureTableProperty
+ */
 function getPropertyDataFromBinarySource(
   scenegraph: GLTFScenegraph,
   schemaProperty: ClassProperty,
@@ -94,6 +110,11 @@ function getPropertyDataFromBinarySource(
   return data;
 }
 
+/**
+ * Find the feature table by class name.
+ * @param featureTables
+ * @param schemaClassName
+ */
 function findFeatureTableByName(
   featureTables: {[key: string]: EXT_feature_metadata_feature_table},
   schemaClassName: string
@@ -110,7 +131,7 @@ function findFeatureTableByName(
 }
 
 /**
- * Handling string attributes from binary data.
+ * Getting string attributes from binary data.
  * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#strings
  * @param data
  * @param offsetsData

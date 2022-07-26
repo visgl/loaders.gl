@@ -819,7 +819,7 @@ type ExtFeatureMetadataSchema = {
   version?: string;
   /** A dictionary, where each key is a class ID and each value is an object defining the class. */
   classes?: {
-    [key: string]: EXR_feature_metadata_class_object;
+    [key: string]: EXT_feature_metadata_class_object;
   };
   /** A dictionary, where each key is an enum ID and each value is an object defining the values for the enum. */
   enums?: {
@@ -833,7 +833,7 @@ type ExtFeatureMetadataSchema = {
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class
  */
-export type EXR_feature_metadata_class_object = {
+export type EXT_feature_metadata_class_object = {
   /** The name of the class, e.g. for display purposes. */
   name?: string;
   /** The description of the class. */
