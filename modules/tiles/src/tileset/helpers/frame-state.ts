@@ -2,6 +2,7 @@ import {Tile3D} from '@loaders.gl/tiles';
 import {Vector3} from '@math.gl/core';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
+import {Viewport} from '../../types';
 
 export type FrameState = {
   camera: {
@@ -9,8 +10,8 @@ export type FrameState = {
     direction: number[];
     up: number[];
   };
-  viewport: {[key: string]: any};
-  topDownViewport: {[key: string]: any}; // Use it to calculate projected radius for a tile
+  viewport: Viewport;
+  topDownViewport: Viewport; // Use it to calculate projected radius for a tile
   height: number;
   cullingVolume: CullingVolume;
   frameNumber: number; // TODO: This can be the same between updates, what number is unique for between updates?
@@ -30,7 +31,7 @@ const cullingVolume = new CullingVolume([
 
 // Extracts a frame state appropriate for tile culling from a deck.gl viewport
 // TODO - this could likely be generalized and merged back into deck.gl for other culling scenarios
-export function getFrameState(viewport, frameNumber: number): FrameState {
+export function getFrameState(viewport: Viewport, frameNumber: number): FrameState {
   // Traverse and and request. Update _selectedTiles so that we know what to render.
   const {cameraDirection, cameraUp, height} = viewport;
   const {metersPerUnit} = viewport.distanceScales;
