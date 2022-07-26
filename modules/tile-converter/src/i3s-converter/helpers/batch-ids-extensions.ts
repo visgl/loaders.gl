@@ -1,6 +1,6 @@
 import type {GLTFAccessorPostprocessed} from 'modules/gltf/src/lib/types/gltf-types';
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
-import type {ExtFeatureMetadata, ExtFeatureMetadataAttribute} from '../types';
+import type {GLTF_EXT_feature_metadata_attribute, GLTF_EXT_feature_metadata_primitive} from 'modules/gltf/src/lib/types/gltf-json-schema';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
@@ -29,7 +29,7 @@ export function handleBatchIdsExtensions(
       case EXT_FEATURE_METADATA:
         return handleExtFeatureMetadataExtension(
           attributes,
-          extensionData as ExtFeatureMetadata,
+          extensionData as GLTF_EXT_feature_metadata_primitive,
           images
         );
       case EXT_MESH_FEATURES:
@@ -54,7 +54,7 @@ function handleExtFeatureMetadataExtension(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
-  extFeatureMetadata: ExtFeatureMetadata,
+  extFeatureMetadata: GLTF_EXT_feature_metadata_primitive,
   images: Image[]
 ): number[] {
   // Take only first extension object to get batchIds attribute name.
@@ -130,7 +130,7 @@ function generateImplicitFeatureIds(
  * @param featureIdTextures
  */
 function generateBatchIdsFromTexture(
-  featureIdTexture: ExtFeatureMetadataAttribute,
+  featureIdTexture: GLTF_EXT_feature_metadata_attribute,
   textureCoordinates: Float32Array,
   images: Image[]
 ) {
