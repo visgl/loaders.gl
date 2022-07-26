@@ -1,4 +1,8 @@
 import {Queue} from './queue';
+import process from 'process';
+
+/** Memory limit size is based on testing */
+const MEMORY_LIMIT = 4 * 1024 * 1024 * 1024; // 4GB
 
 export type WriteQueueItem = {
   archiveKey?: string;
@@ -16,6 +20,14 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
     super();
     this.listeningInterval = listeningInterval;
     this.writeConcurrency = writeConcurrency;
+  }
+
+  async enqueue(val: T) {
+    super.enqueue(val);
+    /** https://nodejs.org/docs/latest-v14.x/api/process.html#process_process_memoryusage */
+    if (process.memoryUsage().rss > MEMORY_LIMIT) {
+      await this.startWrite();
+    }
   }
 
   startListening() {
