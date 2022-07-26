@@ -1,5 +1,5 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {load, parse} from '@loaders.gl/core';
+import {parse} from '@loaders.gl/core';
 import {I3SContentLoader} from './i3s-content-loader';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {COORDINATE_SYSTEM} from './lib/parsers/constants';
@@ -31,12 +31,11 @@ export const I3SLoader: LoaderWithParser = {
   extensions: ['bin'],
   options: {
     i3s: {
-      loadContent: true,
       token: null,
       isTileset: 'auto',
       isTileHeader: 'auto',
-      tile: null,
-      tileset: null,
+      tileOptions: null,
+      tilesetOptions: null,
       useDracoGeometry: true,
       useCompressedTextures: true,
       decodeTextures: true,
@@ -74,10 +73,6 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
     data = await parseTileset(data, options, context);
   } else if (isTileHeader) {
     data = await parseTile(data, context);
-    if (options.i3s.loadContent) {
-      options.i3s.tile = data;
-      await load(data.contentUrl, I3SLoader, options);
-    }
   } else {
     data = await parseTileContent(data, options);
   }
@@ -86,7 +81,7 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
 }
 
 async function parseTileContent(arrayBuffer, options: I3SLoaderOptions) {
-  return await parse(arrayBuffer, I3SContentLoader, options);
+  return await parse(arrayBuffer, I3SContentLoader, {...options, _workerType: 'test'});
 }
 
 async function parseTileset(data, options: I3SLoaderOptions, context) {

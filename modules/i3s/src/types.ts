@@ -82,12 +82,11 @@ export type I3STileHeader = {
 };
 
 export type I3SParseOptions = {
-  loadContent?: boolean;
   token?: string;
   isTileset?: string;
   isTileHeader?: string;
-  tile?: I3STileOptions;
-  tileset?: I3STilesetOptions;
+  tileOptions?: I3STileOptions;
+  tilesetOptions?: I3STilesetOptions;
   useDracoGeometry?: boolean;
   useCompressedTextures?: boolean;
   decodeTextures?: boolean;
