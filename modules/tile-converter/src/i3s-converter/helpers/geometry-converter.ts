@@ -1,4 +1,5 @@
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
+import type {B3DMContent, PropertyTableJson} from '@loaders.gl/3d-tiles';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -15,7 +16,6 @@ import {
   I3SMaterialWithTexture,
   SharedResourcesArrays
 } from '../types';
-import {B3DMContent} from '@loaders.gl/3d-tiles';
 import {GLTFMaterialPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import {
   AttributeStorageInfo,
@@ -70,6 +70,7 @@ let scratchVector = new Vector3();
 export default async function convertB3dmToI3sGeometry(
   tileContent: B3DMContent,
   nodeId: number,
+  propertyTable: PropertyTableJson | null,
   featuresHashArray: string[],
   attributeStorageInfo: AttributeStorageInfo[] | undefined,
   draco: boolean,
@@ -131,6 +132,7 @@ export default async function convertB3dmToI3sGeometry(
         tileContent,
         nodeId: nodesCounter,
         featuresHashArray,
+        propertyTable,
         attributeStorageInfo,
         draco,
         workerSource
@@ -194,6 +196,7 @@ async function _makeNodeResources({
   tileContent,
   nodeId,
   featuresHashArray,
+  propertyTable,
   attributeStorageInfo,
   draco,
   workerSource
@@ -204,6 +207,7 @@ async function _makeNodeResources({
   tileContent: B3DMContent;
   nodeId: number;
   featuresHashArray: string[];
+  propertyTable: PropertyTableJson | null;
   attributeStorageInfo?: AttributeStorageInfo[];
   draco: boolean;
   workerSource: {[key: string]: string};
@@ -253,11 +257,15 @@ async function _makeNodeResources({
       )
     : null;
 
-  const attributes = convertBatchTableToAttributeBuffers(
-    tileContent.batchTableJson,
-    featureIds,
-    attributeStorageInfo
-  );
+  let attributes: ArrayBuffer[] = [];
+
+  if (attributeStorageInfo && propertyTable) {
+    attributes = convertPropertyTableToAttributeBuffers(
+      featureIds,
+      propertyTable,
+      attributeStorageInfo
+    );
+  }
 
   return {
     geometry: fileBuffer,
@@ -1052,48 +1060,55 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
 
 /**
  * Convert batch table data to attribute buffers.
- * @param {Object} batchTable - table with metadata for particular feature.
+ * @param {Object} propertyTable - table with metadata for particular feature.
  * @param {Array} featureIds
  * @param {Array} attributeStorageInfo
  * @returns {Array} - Array of file buffers.
  */
-function convertBatchTableToAttributeBuffers(batchTable, featureIds, attributeStorageInfo) {
+function convertPropertyTableToAttributeBuffers(
+  featureIds: number[],
+  propertyTable: PropertyTableJson,
+  attributeStorageInfo: AttributeStorageInfo[]
+) {
   const attributeBuffers: ArrayBuffer[] = [];
 
-  if (batchTable) {
-    const batchTableWithFeatureIds = {
-      OBJECTID: featureIds,
-      ...batchTable
-    };
+  const propertyTableWithObjectIds = {
+    OBJECTID: featureIds,
+    ...propertyTable
+  };
 
-    for (const key in batchTableWithFeatureIds) {
-      const type = getAttributeType(key, attributeStorageInfo);
+  for (const key in propertyTableWithObjectIds) {
+    const type = getAttributeType(key, attributeStorageInfo);
+    const value = propertyTableWithObjectIds[key];
+    const attributeBuffer = generateAttributeBuffer(type, value);
 
-      let attributeBuffer: ArrayBuffer | null = null;
-
-      switch (type) {
-        case OBJECT_ID_TYPE:
-        case SHORT_INT_TYPE:
-          attributeBuffer = generateShortIntegerAttributeBuffer(batchTableWithFeatureIds[key]);
-          break;
-        case DOUBLE_TYPE:
-          attributeBuffer = generateDoubleAttributeBuffer(batchTableWithFeatureIds[key]);
-          break;
-        case STRING_TYPE:
-          attributeBuffer = generateStringAttributeBuffer(batchTableWithFeatureIds[key]);
-          break;
-        default:
-          attributeBuffer = generateStringAttributeBuffer(batchTableWithFeatureIds[key]);
-      }
-
-      if (attributeBuffer) {
-        attributeBuffers.push(attributeBuffer);
-      }
-    }
+    attributeBuffers.push(attributeBuffer);
   }
 
   return attributeBuffers;
 }
+
+function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
+  let attributeBuffer: ArrayBuffer;
+
+  switch (type) {
+    case OBJECT_ID_TYPE:
+    case SHORT_INT_TYPE:
+      attributeBuffer = generateShortIntegerAttributeBuffer(value);
+      break;
+    case DOUBLE_TYPE:
+      attributeBuffer = generateDoubleAttributeBuffer(value);
+      break;
+    case STRING_TYPE:
+      attributeBuffer = generateStringAttributeBuffer(value);
+      break;
+    default:
+      attributeBuffer = generateStringAttributeBuffer(value);
+  }
+
+  return attributeBuffer;
+}
+
 /**
  * Return attribute type.
  * @param {String} key
