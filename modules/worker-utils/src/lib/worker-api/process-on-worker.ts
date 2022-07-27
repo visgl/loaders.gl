@@ -7,8 +7,8 @@ import type {
 } from '../../types';
 import type WorkerJob from '../worker-farm/worker-job';
 import WorkerFarm from '../worker-farm/worker-farm';
-import {removeNontransferableOptions} from '../worker-utils/remove-nontransferable-options';
 import {getWorkerURL, getWorkerName} from './get-worker-url';
+import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
 
 type ProcessOnWorkerOptions = WorkerOptions & {
   jobName?: string;
@@ -58,7 +58,7 @@ export async function processOnWorker(
   );
 
   // Kick off the processing in the worker
-  const transferableOptions = removeNontransferableOptions(options);
+  const transferableOptions = getTransferListForWriter(options);
   job.postMessage('process', {input: data, options: transferableOptions});
 
   const result = await job.result;
