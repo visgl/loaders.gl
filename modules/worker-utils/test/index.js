@@ -5,7 +5,6 @@ import './lib/library-utils/library-utils.spec';
 
 import './lib/worker-utils/get-transfer-list.spec';
 import './lib/worker-utils/get-loadable-worker-url.spec';
-import './lib/worker-utils/remove-nontransferable-options.spec';
 
 import './lib/worker-farm/worker-thread.spec';
 import './lib/worker-farm/worker-pool.spec';

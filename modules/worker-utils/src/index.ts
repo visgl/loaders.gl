@@ -31,8 +31,7 @@ export {createWorker} from './lib/worker-api/create-worker';
 // WORKER UTILS - EXPORTS
 export {getWorkerURL} from './lib/worker-api/get-worker-url';
 export {validateWorkerVersion} from './lib/worker-api/validate-worker-version';
-export {getTransferList} from './lib/worker-utils/get-transfer-list';
-export {removeNontransferableOptions} from './lib/worker-utils/remove-nontransferable-options';
+export {getTransferList, getTransferListForWriter} from './lib/worker-utils/get-transfer-list';
 
 // LIBRARY UTILS
 export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
