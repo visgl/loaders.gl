@@ -1,5 +1,30 @@
 # CHANGELOG for loaders.gl
 
+## v3.3 Prerelease
+
+## v3.3.0-alpha.1
+
+- fix(3d-tiles): prevent crash when cartographic center is undefined (#2212)
+- fix(3d-tiles): add support for absolute content-uris (#2211)
+- chore(deps): bump gatsby-plugin-mdx from 2.14.0 to 2.14.1 in /website (#2192)
+- chore(deps): bump terser from 4.8.0 to 4.8.1 (#2214)
+- fix(tile-converter): remove batchIds extensions warning (#2215)
+- chore(tiles): distanceToCamera & screenSpaceError getters (#2190)
+- feat(tile-converter): add EXT_feature_metadata extension support (#2208)
+- Fix type imports in math module (#2204)
+- fix(video): window undefined (#2198)
+- chore: peer dependency major version only (#2166)
+- chore(deps-dev): bump sharp from 0.27.1 to 0.30.5 in /website (#2189) 
+- chore(deps): bump eventsource from 1.1.0 to 1.1.1 (#2187)
+- feat(converter-cli): support equal sign in the converter options (#2171)
+- fix(i3s): textures - no headers in Request (#2183)
+- fix(tile-converter): worker receives corrupted buffer (#2185)
+- fix(tiles): i3s tile register (#2181)
+- fix(schema): failing imports from apache-arrow (#2179)
+- feat(gltf): KHR_texture_transform (#2175)
+- fix(worker-utils): Vite build(#2178)
+- fix(ci): remove node12 from workflows (#2173)
+
 ## v3.2 Prerelease
 
 ## v3.2.0-alpha.4

@@ -83,8 +83,7 @@ export default class TileHeader {
   private _shouldRefine: boolean;
 
   // Members this are updated every frame for tree traversal and rendering optimizations:
-  // @ts-ignore
-  private _distanceToCamera: number;
+  public _distanceToCamera: number;
   // @ts-ignore
   private _centerZDepth: number;
   private _screenSpaceError: number;
@@ -283,6 +282,20 @@ export default class TileHeader {
   // content failed to load; otherwise, `false`.
   get contentFailed() {
     return this.contentState === TILE_CONTENT_STATE.FAILED;
+  }
+
+  /**
+   * Distance from the tile's bounding volume center to the camera
+   */
+  get distanceToCamera(): number {
+    return this._distanceToCamera;
+  }
+
+  /**
+   * Screen space error for LOD selection
+   */
+  get screenSpaceError(): number {
+    return this._screenSpaceError;
   }
 
   /** Get the tile's screen space error. */
@@ -757,8 +770,17 @@ export default class TileHeader {
       case 'i3s':
         return {
           ...this.tileset.options.i3s,
-          tile: this.header,
-          tileset: this.tileset.tileset,
+          tile: {
+            textureUrl: this.header.textureUrl,
+            textureFormat: this.header.textureFormat,
+            textureLoaderOptions: this.header.textureLoaderOptions,
+            materialDefinition: this.header.materialDefinition,
+            isDracoGeometry: this.header.isDracoGeometry,
+            mbs: this.header.mbs
+          },
+          tileset: {
+            store: this.tileset.tileset.store
+          },
           isTileHeader: false
         };
       case '3d-tiles':

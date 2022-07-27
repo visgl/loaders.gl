@@ -55,6 +55,7 @@ import Tileset3DTraverser from './traversers/tileset-3d-traverser';
 import TilesetTraverser from './traversers/tileset-traverser';
 import I3SetTraverser from './traversers/i3s-tileset-traverser';
 import {TILESET_TYPE} from '../constants';
+import {Viewport} from '../types';
 
 export type Tileset3DProps = {
   // loading
@@ -244,7 +245,7 @@ export default class Tileset3D {
   private _pendingCount: any;
 
   // HOLD TRAVERSAL RESULTS
-  private lastUpdatedVieports: any[] | null;
+  private lastUpdatedVieports: Viewport[] | Viewport | null;
   private _requestedTiles: any;
   private _emptyTiles: any;
   private frameStateData: any;
@@ -393,7 +394,7 @@ export default class Tileset3D {
    * @param viewports - list of viewports
    * @deprecated
    */
-  update(viewports: any[] | null = null) {
+  update(viewports: Viewport[] | Viewport | null = null) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.tilesetInitializationPromise.then(() => {
       if (!viewports && this.lastUpdatedVieports) {
@@ -401,7 +402,9 @@ export default class Tileset3D {
       } else {
         this.lastUpdatedVieports = viewports;
       }
-      this.doUpdate(viewports);
+      if (viewports) {
+        this.doUpdate(viewports);
+      }
     });
   }
 
@@ -411,7 +414,7 @@ export default class Tileset3D {
    * @param viewports viewports
    * @returns Promise of new frameNumber
    */
-  async selectTiles(viewports: any[] | null = null): Promise<number> {
+  async selectTiles(viewports: Viewport[] | Viewport | null = null): Promise<number> {
     await this.tilesetInitializationPromise;
     if (viewports) {
       this.lastUpdatedVieports = viewports;
@@ -419,7 +422,9 @@ export default class Tileset3D {
     if (!this.updatePromise) {
       this.updatePromise = new Promise<number>((resolve) => {
         setTimeout(() => {
-          this.doUpdate(this.lastUpdatedVieports);
+          if (this.lastUpdatedVieports) {
+            this.doUpdate(this.lastUpdatedVieports);
+          }
           resolve(this._frameNumber);
           this.updatePromise = null;
         }, this.options.debounceTime);
@@ -433,24 +438,22 @@ export default class Tileset3D {
    * @param viewports viewports
    */
   // eslint-disable-next-line max-statements, complexity
-  private doUpdate(viewports: any[] | null = null): void {
+  private doUpdate(viewports: Viewport[] | Viewport): void {
     if ('loadTiles' in this.options && !this.options.loadTiles) {
       return;
     }
     if (this.traverseCounter > 0) {
       return;
     }
-    if (!(viewports instanceof Array)) {
-      viewports = [viewports];
-    }
+    const preparedViewports = viewports instanceof Array ? viewports : [viewports];
 
     this._cache.reset();
     this._frameNumber++;
-    this.traverseCounter = viewports.length;
+    this.traverseCounter = preparedViewports.length;
     const viewportsToTraverse: string[] = [];
     // First loop to decrement traverseCounter
-    for (const viewport of viewports) {
-      const id = viewport.id as string;
+    for (const viewport of preparedViewports) {
+      const id = viewport.id;
       if (this._needTraverse(id)) {
         viewportsToTraverse.push(id);
       } else {
@@ -459,8 +462,8 @@ export default class Tileset3D {
     }
 
     // Second loop to traverse
-    for (const viewport of viewports) {
-      const id = viewport.id as string;
+    for (const viewport of preparedViewports) {
+      const id = viewport.id;
       if (!this.roots[id]) {
         this.roots[id] = this._initializeTileHeaders(this.tileset, null);
       }
@@ -673,7 +676,13 @@ export default class Tileset3D {
       this.zoom = 1;
       return;
     }
-    this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+
+    // cartographic coordinates are undefined at the center of the ellipsoid
+    if (center[0] !== 0 || center[1] !== 0 || center[2] !== 0) {
+      this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+    } else {
+      this.cartographicCenter = new Vector3(0, 0, -Ellipsoid.WGS84.radii[0]);
+    }
     this.cartesianCenter = center;
     this.zoom = getZoomFromBoundingVolume(root.boundingVolume, this.cartographicCenter);
   }

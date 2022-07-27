@@ -45,7 +45,7 @@ export default class TilesetTraverser {
   protected _emptyTraversalStack: ManagedArray;
   protected _frameNumber: number | null;
 
-  protected get traversalFinished(): boolean {
+  protected traversalFinished(frameState: FrameState): boolean {
     return true;
   }
 
@@ -164,7 +164,7 @@ export default class TilesetTraverser {
     }
 
     const newTime = new Date().getTime();
-    if (this.traversalFinished || newTime - this.lastUpdate > this.updateDebounceTime) {
+    if (this.traversalFinished(frameState) || newTime - this.lastUpdate > this.updateDebounceTime) {
       this.lastUpdate = newTime;
       this.options.onTraversalEnd(frameState);
     }

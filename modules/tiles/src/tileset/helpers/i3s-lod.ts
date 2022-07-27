@@ -80,7 +80,9 @@ export function getProjectedRadius(tile: Tile3D, frameState: FrameState): number
 
   // Project center vertex and border vertex and calculate projected radius of MBS
   const projectedOrigin = viewport.project([mbsLon, mbsLat, mbsZ]);
-  const projectedMbsBorderVertex = viewport.project(sphereMbsBorderVertexCartographic);
+  const projectedMbsBorderVertex = viewport.project(
+    sphereMbsBorderVertexCartographic as [number, number, number]
+  );
   const projectedRadius = projectedOriginVector
     .copy(projectedOrigin)
     .subtract(projectedMbsBorderVertex)
