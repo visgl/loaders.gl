@@ -553,6 +553,11 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Find property table in tile
+   * For example it can be batchTable for b3dm files or property table in gLTF extension.
+   * @param sourceTile
+   */
   private getPropertyTable(sourceTile: TileHeader): PropertyTableJson | null {
     const batchTableJson = sourceTile?.content?.batchTableJson;
 
@@ -592,6 +597,10 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Check extensions which can be with property table inside.
+   * @param sourceTile
+   */
   private getPropertyTableExtension(sourceTile: TileHeader) {
     const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
     const extensionsUsed = sourceTile?.content?.gltf?.extensionsUsed;

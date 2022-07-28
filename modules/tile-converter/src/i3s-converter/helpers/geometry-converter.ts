@@ -1059,7 +1059,7 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
 }
 
 /**
- * Convert batch table data to attribute buffers.
+ * Convert property table data to attribute buffers.
  * @param {Object} propertyTable - table with metadata for particular feature.
  * @param {Array} featureIds
  * @param {Array} attributeStorageInfo
@@ -1077,9 +1077,9 @@ function convertPropertyTableToAttributeBuffers(
     ...propertyTable
   };
 
-  for (const key in propertyTableWithObjectIds) {
-    const type = getAttributeType(key, attributeStorageInfo);
-    const value = propertyTableWithObjectIds[key];
+  for (const propertyName in propertyTableWithObjectIds) {
+    const type = getAttributeType(propertyName, attributeStorageInfo);
+    const value = propertyTableWithObjectIds[propertyName];
     const attributeBuffer = generateAttributeBuffer(type, value);
 
     attributeBuffers.push(attributeBuffer);
@@ -1088,6 +1088,11 @@ function convertPropertyTableToAttributeBuffers(
   return attributeBuffers;
 }
 
+/**
+ * Generates attribute buffer based on attribute type
+ * @param type
+ * @param value
+ */
 function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
   let attributeBuffer: ArrayBuffer;
 
