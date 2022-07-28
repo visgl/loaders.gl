@@ -80,6 +80,33 @@ export type I3STileHeader = {
   lodSelection?: LodSelection[];
   [key: string]: any;
 };
+
+export type I3SParseOptions = {
+  loadContent?: boolean;
+  token?: string;
+  isTileset?: string;
+  isTileHeader?: string;
+  tile?: I3STileOptions;
+  tileset?: I3STilesetOptions;
+  useDracoGeometry?: boolean;
+  useCompressedTextures?: boolean;
+  decodeTextures?: boolean;
+  coordinateSystem?: number;
+};
+
+export type I3STileOptions = {
+  isDracoGeometry: boolean;
+  textureUrl?: string;
+  textureFormat?: I3STextureFormat;
+  textureLoaderOptions?: any;
+  materialDefinition?: I3SMaterialDefinition;
+  mbs: Mbs;
+};
+
+export type I3STilesetOptions = {
+  store: Store;
+};
+
 // TODO Replace "[key: string]: any" with actual defenition
 export type I3STileContent = {
   attributes: I3SMeshAttributes;
