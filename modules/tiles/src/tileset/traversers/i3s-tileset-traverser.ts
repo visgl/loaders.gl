@@ -14,8 +14,8 @@ export default class I3STilesetTraverser extends TilesetTraverser {
    * that means the traversal is finished and we can call
    * following-up callbacks.
    */
-  protected get traversalFinished(): boolean {
-    return !this._tileManager.hasPendingTiles(this._frameNumber || 0);
+  protected traversalFinished(frameState: FrameState): boolean {
+    return !this._tileManager.hasPendingTiles(frameState.viewport.id, this._frameNumber || 0);
   }
 
   constructor(options) {
@@ -98,7 +98,8 @@ export default class I3STilesetTraverser extends TilesetTraverser {
     // after tile fetched, resume traversal if still in current update/traversal frame
     if (
       this._frameNumber === frameState.frameNumber &&
-      (this.traversalFinished || new Date().getTime() - this.lastUpdate > this.updateDebounceTime)
+      (this.traversalFinished(frameState) ||
+        new Date().getTime() - this.lastUpdate > this.updateDebounceTime)
     ) {
       this.executeTraversal(childTile, frameState);
     }
