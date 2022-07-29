@@ -16,6 +16,7 @@ import type {
   PopupInfo,
   FieldInfo
 } from '@loaders.gl/i3s';
+import type {GLTF_EXT_feature_metadata} from 'modules/gltf/src/lib/types/gltf-json-schema';
 import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -573,28 +574,51 @@ export default class I3SConverter {
         return null;
       }
       case EXT_FEATURE_METADATA: {
-        /**
-         * Take only first feature table to generate attributes storage info object.
-         * TODO: Think about getting data from all feature tables?
-         * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
-         * In I3S we should decide which featureIds attribute will be passed to geometry data.
-         */
-        const firstFeatureTableName = Object.keys(extension?.featureTables)?.[0];
-
-        if (firstFeatureTableName) {
-          const featureTable = extension?.featureTables[firstFeatureTableName];
-          const propertyTable = {};
-
-          for (const propertyName in featureTable.properties) {
-            propertyTable[propertyName] = featureTable.properties[propertyName].data;
-          }
-
-          return propertyTable;
-        }
+        return this.getPropertyTableFromExtFeatureMetadata(extension);
       }
       default:
         return null;
     }
+  }
+
+  /**
+   * Handle EXT_feature_metadata to get property table
+   * @param extension
+   * TODO add EXT_feature_metadata feature textures support.
+   */
+  private getPropertyTableFromExtFeatureMetadata(
+    extension: GLTF_EXT_feature_metadata
+  ): PropertyTableJson | null {
+    if (extension?.featureTextures) {
+      console.warn(
+        'The I3S converter does not yet support the EXT_feature_metadata feature textures'
+      );
+      return null;
+    }
+
+    if (extension?.featureTables) {
+      /**
+       * Take only first feature table to generate attributes storage info object.
+       * TODO: Think about getting data from all feature tables?
+       * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+       * In I3S we should decide which featureIds attribute will be passed to geometry data.
+       */
+      const firstFeatureTableName = Object.keys(extension.featureTables)?.[0];
+
+      if (firstFeatureTableName) {
+        const featureTable = extension?.featureTables[firstFeatureTableName];
+        const propertyTable = {};
+
+        for (const propertyName in featureTable.properties) {
+          propertyTable[propertyName] = featureTable.properties[propertyName].data;
+        }
+
+        return propertyTable;
+      }
+    }
+
+    console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
+    return null;
   }
 
   /**
