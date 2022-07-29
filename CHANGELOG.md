@@ -1,5 +1,12 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.6
+
+- [tiles] Fix culling volume calculation from viewport (#2223)
+- fix(draco-builder): handle object metadata properly (#2209)
+- fix(tiles): i3s traverser for multiple viewports (#2213)
+- fix(tile-converter): memory overflow (#2217)
+
 ## v3.2.5
 
 - Fix type imports in math module (#2204)
