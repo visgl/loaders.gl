@@ -20,7 +20,7 @@ Note: Currently supports `ascii`, `binary` and compressed binary files.
 import {PCDLoader} from '@loaders.gl/pcd';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, PCSLoader, options);
+const data = await load(url, PCDLoader, options);
 ```
 
 ## Options
