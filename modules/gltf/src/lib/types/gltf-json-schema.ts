@@ -783,3 +783,432 @@ export type GLTF_MSFT_texture_dds = {
   source: GLTFId;
   extras?: any;
 };
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
+ */
+export type GLTF_EXT_feature_metadata = {
+  /** An object defining classes and enums. */
+  schema?: ExtFeatureMetadataSchema;
+  /** A uri to an external schema file. */
+  schemaUri?: string;
+  /** An object containing statistics about features. */
+  statistics?: Statistics;
+  /** A dictionary, where each key is a feature table ID and each value is an object defining the feature table. */
+  featureTables?: {
+    [key: string]: EXT_feature_metadata_feature_table;
+  };
+  /** A dictionary, where each key is a feature texture ID and each value is an object defining the feature texture. */
+  featureTextures?: {
+    [key: string]: FeatureTexture;
+  };
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#schema
+ */
+type ExtFeatureMetadataSchema = {
+  /** The name of the schema. */
+  name?: string;
+  /** The description of the schema. */
+  description?: string;
+  /** Application-specific version of the schema. */
+  version?: string;
+  /** A dictionary, where each key is a class ID and each value is an object defining the class. */
+  classes?: {
+    [key: string]: EXT_feature_metadata_class_object;
+  };
+  /** A dictionary, where each key is an enum ID and each value is an object defining the values for the enum. */
+  enums?: {
+    [key: string]: ExtFeatureMetadataEnum;
+  };
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class
+ */
+export type EXT_feature_metadata_class_object = {
+  /** The name of the class, e.g. for display purposes. */
+  name?: string;
+  /** The description of the class. */
+  description?: string;
+  /** A dictionary, where each key is a property ID and each value is an object defining the property. */
+  properties: {
+    [key: string]: ClassProperty;
+  };
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class-property
+ */
+export type ClassProperty = {
+  /** The name of the property, e.g. for display purposes. */
+  name?: string;
+  /** The description of the property. */
+  description?: string;
+  /**
+   * The property type. If ENUM is used, then enumType must also be specified.
+   * If ARRAY is used, then componentType must also be specified.
+   * ARRAY is a fixed-length array when componentCount is defined, and variable-length otherwise.
+   */
+  type: ClassPropertyType;
+  /**
+   * An enum ID as declared in the enums dictionary.
+   * This value must be specified when type or componentType is ENUM.
+   */
+  enumType?: string;
+  /**
+   * When type is ARRAY this indicates the type of each component of the array.
+   * If ENUM is used, then enumType must also be specified.
+   */
+  componentType?:
+    | 'INT8'
+    | 'UINT8'
+    | 'INT16'
+    | 'UINT16'
+    | 'INT32'
+    | 'UINT32'
+    | 'INT64'
+    | 'UINT64'
+    | 'FLOAT32'
+    | 'FLOAT64'
+    | 'BOOLEAN'
+    | 'STRING'
+    | 'ENUM';
+  /** The number of components per element for ARRAY elements. */
+  componentCount?: number;
+  /**
+   * Specifies whether integer values are normalized.
+   * This applies both when type is an integer type, or when type is ARRAY with a componentType that is an integer type.
+   * For unsigned integer types, values are normalized between [0.0, 1.0].
+   * For signed integer types, values are normalized between [-1.0, 1.0].
+   * For all other types, this property is ignored.
+   */
+  normalized: boolean;
+  /**
+   * Maximum allowed values for property values.
+   * Only applicable for numeric types and fixed-length arrays of numeric types.
+   * For numeric types this is a single number.
+   * For fixed-length arrays this is an array with componentCount number of elements.
+   * The normalized property has no effect on these values: they always correspond to the integer values.
+   */
+  max?: number | number[];
+  /**
+   * Minimum allowed values for property values.
+   * Only applicable for numeric types and fixed-length arrays of numeric types.
+   * For numeric types this is a single number.
+   * For fixed-length arrays this is an array with componentCount number of elements.
+   * The normalized property has no effect on these values: they always correspond to the integer values.
+   */
+  min?: number | number[];
+
+  /**
+   * A default value to use when the property value is not defined.
+   * If used, optional must be set to true.
+   * The type of the default value must match the property definition: For BOOLEAN use true or false.
+   * For STRING use a JSON string. For a numeric type use a JSON number.
+   * For ENUM use the enum name, not the integer value.
+   * For ARRAY use a JSON array containing values matching the componentType.
+   */
+  default?: boolean | number | string | number[];
+  /** If true, this property is optional. */
+  optional?: boolean; // default false;
+  /**
+   * An identifier that describes how this property should be interpreted.
+   * The semantic cannot be used by other properties in the class.
+   */
+  semantic?: string;
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#classpropertytype
+ */
+type ClassPropertyType =
+  | 'INT8'
+  | 'UINT8'
+  | 'INT16'
+  | 'UINT16'
+  | 'INT32'
+  | 'UINT32'
+  | 'INT64'
+  | 'UINT64'
+  | 'FLOAT32'
+  | 'FLOAT64'
+  | 'BOOLEAN'
+  | 'STRING'
+  | 'ENUM'
+  | 'ARRAY';
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#enum
+ */
+type ExtFeatureMetadataEnum = {
+  /** The name of the enum, e.g. for display purposes. */
+  name?: string;
+  /** The description of the enum. */
+  description?: string;
+  /** The type of the integer enum value. */
+  valueType?: 'INT8' | 'UINT8' | 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'INT64' | 'UINT64'; // default: "UINT16"
+  /** An array of enum values. Duplicate names or duplicate integer values are not allowed. */
+  values: EnumValue[];
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#enum-value
+ */
+type EnumValue = {
+  /** The name of the enum value. */
+  name: string;
+  /** The description of the enum value. */
+  description?: string;
+  /** The integer enum value. */
+  value: number; // default: "UINT16"
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-table
+ */
+export type EXT_feature_metadata_feature_table = {
+  featureTable: any;
+  /** The class that property values conform to. The value must be a class ID declared in the classes dictionary. */
+  class?: string;
+  /** The number of features, as well as the number of elements in each property array. */
+  count: number;
+  /**
+   * A dictionary, where each key corresponds to a property ID in the class properties dictionary
+   * and each value is an object describing where property values are stored.
+   * Optional properties may be excluded from this dictionary.
+   */
+  properties?: {
+    [key: string]: FeatureTableProperty;
+  };
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-table-property
+ */
+export type FeatureTableProperty = {
+  /**
+   * The index of the buffer view containing property values.
+   * The data type of property values is determined by the property definition:
+   * When type is BOOLEAN values are packed into a bitfield.
+   * When type is STRING values are stored as byte sequences and decoded as UTF-8 strings.
+   * When type is a numeric type values are stored as the provided type.
+   * When type is ENUM values are stored as the enum's valueType.
+   * Each enum value in the buffer must match one of the allowed values in the enum definition.
+   * When type is ARRAY elements are packed tightly together and the data type is based on the componentType following the same rules as above.
+   * arrayOffsetBufferView is required for variable-size arrays
+   * and stringOffsetBufferView is required for strings (for variable-length arrays of strings, both are required)
+   * The buffer view byteOffset must be aligned to a multiple of 8 bytes.
+   * If the buffer view's buffer is the GLB-stored BIN chunk the byte offset is measured relative to the beginning of the GLB.
+   * Otherwise it is measured relative to the beginning of the buffer.
+   */
+  bufferView: number;
+  /** The type of values in arrayOffsetBufferView and stringOffsetBufferView. */
+  offsetType?: string; // default: "UINT32"
+  /**
+   * The index of the buffer view containing offsets for variable-length arrays.
+   * The number of offsets is equal to the feature table count plus one.
+   * The offsets represent the start positions of each array, with the last offset representing the position after the last array.
+   * The array length is computed using the difference between the current offset and the subsequent offset.
+   * If componentType is STRING the offsets index into the string offsets array (stored in stringOffsetBufferView),
+   * otherwise they index into the property array (stored in bufferView).
+   * The data type of these offsets is determined by offsetType.
+   * The buffer view byteOffset must be aligned to a multiple of 8 bytes in the same manner as the main bufferView
+   */
+  arrayOffsetBufferView?: number;
+  /**
+   * The index of the buffer view containing offsets for strings.
+   * The number of offsets is equal to the number of string components plus one.
+   * The offsets represent the byte offsets of each string in the main bufferView,
+   * with the last offset representing the byte offset after the last string.
+   * The string byte length is computed using the difference between the current offset and the subsequent offset.
+   * The data type of these offsets is determined by offsetType.
+   * The buffer view byteOffset must be aligned to a multiple of 8 bytes in the same manner as the main bufferView.
+   */
+  stringOffsetBufferView?: number;
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-texture
+ */
+type FeatureTexture = {
+  /** The class this feature texture conforms to. The value must be a class ID declared in the classes dictionary. */
+  class: string;
+  /**
+   * A dictionary, where each key corresponds to a property ID in the class properties dictionary
+   * and each value describes the texture channels containing property values.
+   */
+  properties: {
+    [key: string]: TextureAccessor;
+  };
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#texture-accessor
+ */
+type TextureAccessor = {
+  /** Texture channels containing property values. Channels are labeled by rgba and are swizzled with a string of 1-4 characters. */
+  channels: string;
+  /** The glTF texture and texture coordinates to use. */
+  texture: TextureInfo;
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#statistics-1
+ */
+type Statistics = {
+  /**
+   * A dictionary, where each key is a class ID declared in the classes dictionary
+   * and each value is an object containing statistics about features that conform to the class.
+   */
+  classes?: {
+    [key: string]: ClassStatistics;
+  };
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class-statistics
+ */
+type ClassStatistics = {
+  /** The number of features that conform to the class. */
+  count?: number;
+  /**
+   * A dictionary, where each key is a class ID declared in the classes dictionary
+   * and each value is an object containing statistics about property values.
+   */
+  properties?: {
+    [key: string]: StatisticsClassProperty;
+  };
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#property-statistics
+ * min, max, mean, median, standardDeviation, variance, sum are
+ * only applicable for numeric types and fixed-length arrays of numeric types.
+ * For numeric types this is a single number.
+ * For fixed-length arrays this is an array with componentCount number of elements.
+ * The normalized property has no effect on these values.
+ */
+type StatisticsClassProperty = {
+  /** The minimum property value. */
+  min?: number | number[];
+  /** The maximum property value. */
+  max?: number | number[];
+  /** The arithmetic mean of the property values. */
+  mean?: number | number[];
+  /** The median of the property values. */
+  median?: number | number[];
+  /** The standard deviation of the property values. */
+  standardDeviation?: number | number[];
+  /** The variance of the property values. */
+  variance?: number | number[];
+  /** The sum of the property values. */
+  sum?: number | number[];
+  /**
+   * A dictionary, where each key corresponds to an enum name and each value is the number of occurrences of that enum.
+   * Only applicable when type or componentType is ENUM.
+   * For fixed-length arrays, this is an array with componentCount number of elements.
+   */
+  occurrences: {
+    [key: string]: number | number[];
+  };
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * 3DTilesNext EXT_feature_metadata primitive extension
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#primitive-extension
+ */
+export type GLTF_EXT_feature_metadata_primitive = {
+  /** Feature ids definition in attributes */
+  featureIdAttributes?: GLTF_EXT_feature_metadata_attribute[];
+  /** Feature ids definition in textures */
+  featureIdTextures?: GLTF_EXT_feature_metadata_attribute[];
+  /** An array of IDs of feature textures from the root EXT_feature_metadata object. */
+  featureTextures?: string[];
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Attribute which described featureIds definition.
+ */
+export type GLTF_EXT_feature_metadata_attribute = {
+  /** Name of feature table */
+  featureTable: string;
+  /** Described how feature ids are defined */
+  featureIds: ExtFeatureMetadataFeatureIds;
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Defining featureIds by attributes or implicitly.
+ */
+type ExtFeatureMetadataFeatureIds = {
+  /** Name of attribute where featureIds are defined */
+  attribute?: string;
+  /** Sets a constant feature ID for each vertex. The default is 0. */
+  constant?: number;
+  /** Sets the rate at which feature IDs increment.
+   * If divisor is zero then constant is used.
+   * If divisor is greater than zero the feature ID increments once per divisor sets of vertices, starting at constant.
+   * The default is 0
+   */
+  divisor?: number;
+  /** gLTF textureInfo object - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/specification/2.0/schema/textureInfo.schema.json */
+  texture?: ExtFeatureMetadataTexture;
+  /** Must be a single channel ("r", "g", "b", or "a") */
+  channels?: 'r' | 'g' | 'b' | 'a';
+};
+
+/**
+ * Reference to a texture.
+ */
+type ExtFeatureMetadataTexture = {
+  /** The set index of texture's TEXCOORD attribute used for texture coordinate mapping.*/
+  texCoord: number;
+  /** The index of the texture. */
+  index: number;
+};
