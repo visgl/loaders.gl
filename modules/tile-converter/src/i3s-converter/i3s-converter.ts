@@ -1,5 +1,5 @@
 import type {Tile3D, Tileset3DProps} from '@loaders.gl/tiles';
-import type {PropertyTableJson} from '@loaders.gl/3d-tiles';
+import type {FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {WriteQueueItem} from '../lib/utils/write-queue';
 import type {
   AttributeStorageInfo,
@@ -16,7 +16,7 @@ import type {
   PopupInfo,
   FieldInfo
 } from '@loaders.gl/i3s';
-import type {GLTF_EXT_feature_metadata} from 'modules/gltf/src/lib/types/gltf-json-schema';
+import type {GLTF_EXT_feature_metadata} from '@loaders.gl/gltf';
 import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -559,7 +559,7 @@ export default class I3SConverter {
    * For example it can be batchTable for b3dm files or property table in gLTF extension.
    * @param sourceTile
    */
-  private getPropertyTable(sourceTile: TileHeader): PropertyTableJson | null {
+  private getPropertyTable(sourceTile: TileHeader): FeatureTableJson | null {
     const batchTableJson = sourceTile?.content?.batchTableJson;
 
     if (batchTableJson) {
@@ -588,7 +588,7 @@ export default class I3SConverter {
    */
   private getPropertyTableFromExtFeatureMetadata(
     extension: GLTF_EXT_feature_metadata
-  ): PropertyTableJson | null {
+  ): FeatureTableJson | null {
     if (extension?.featureTextures) {
       console.warn(
         'The I3S converter does not yet support the EXT_feature_metadata feature textures'
@@ -759,7 +759,7 @@ export default class I3SConverter {
    */
   private async _convertResources(
     sourceTile: TileHeader,
-    propertyTable: PropertyTableJson | null
+    propertyTable: FeatureTableJson | null
   ): Promise<I3SConvertedResources[] | null> {
     if (!this.isContentSupported(sourceTile)) {
       return null;
@@ -1277,7 +1277,7 @@ export default class I3SConverter {
    * Do conversion of 3DTiles property table to I3s node attributes.
    * @param propertyTable - Table with layer meta data.
    */
-  private _convertPropertyTableToNodeAttributes(propertyTable: PropertyTableJson): void {
+  private _convertPropertyTableToNodeAttributes(propertyTable: FeatureTableJson): void {
     let attributeIndex = 0;
     const propertyTableWithObjectId = {
       OBJECTID: [0],
@@ -1326,7 +1326,7 @@ export default class I3SConverter {
    * @param propertyTable - table data with OBJECTID.
    * @return data for correct rendering of popup.
    */
-  private _createPopupInfo(propertyTable: PropertyTableJson): PopupInfo {
+  private _createPopupInfo(propertyTable: FeatureTableJson): PopupInfo {
     const title = '{OBJECTID}';
     const mediaInfos = [];
     const fieldInfos: FieldInfo[] = [];

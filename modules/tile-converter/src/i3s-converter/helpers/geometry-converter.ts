@@ -1,5 +1,5 @@
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
-import type {B3DMContent, PropertyTableJson} from '@loaders.gl/3d-tiles';
+import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -70,7 +70,7 @@ let scratchVector = new Vector3();
 export default async function convertB3dmToI3sGeometry(
   tileContent: B3DMContent,
   nodeId: number,
-  propertyTable: PropertyTableJson | null,
+  propertyTable: FeatureTableJson | null,
   featuresHashArray: string[],
   attributeStorageInfo: AttributeStorageInfo[] | undefined,
   draco: boolean,
@@ -207,7 +207,7 @@ async function _makeNodeResources({
   tileContent: B3DMContent;
   nodeId: number;
   featuresHashArray: string[];
-  propertyTable: PropertyTableJson | null;
+  propertyTable: FeatureTableJson | null;
   attributeStorageInfo?: AttributeStorageInfo[];
   draco: boolean;
   workerSource: {[key: string]: string};
@@ -1067,7 +1067,7 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
  */
 function convertPropertyTableToAttributeBuffers(
   featureIds: number[],
-  propertyTable: PropertyTableJson,
+  propertyTable: FeatureTableJson,
   attributeStorageInfo: AttributeStorageInfo[]
 ) {
   const attributeBuffers: ArrayBuffer[] = [];

@@ -13,4 +13,4 @@ export {default as Tile3DBatchTable} from './lib/classes/tile-3d-batch-table';
 // EXPERIMENTAL
 export {TILE3D_TYPE} from './lib/constants';
 export {getIonTilesetMetadata as _getIonTilesetMetadata} from './lib/ion/ion';
-export type {PropertyTableJson, B3DMContent, Node3D} from './types';
+export type {FeatureTableJson, B3DMContent, Node3D} from './types';
