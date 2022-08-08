@@ -1,4 +1,5 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/worker-utils';
 import {VERSION} from './lib/utils/version';
 import parseBasis from './lib/parsers/parse-basis';
 
@@ -7,7 +8,7 @@ import parseBasis from './lib/parsers/parse-basis';
  */
 export const BasisWorkerLoader = {
   name: 'Basis',
-  id: 'basis',
+  id: isBrowser ? 'basis' : 'basis-nodejs',
   module: 'textures',
   version: VERSION,
   worker: true,
