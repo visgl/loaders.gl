@@ -1,4 +1,5 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/worker-utils';
 import type {DracoParseOptions} from './lib/draco-parser';
 // import type {DracoMeshData} from './types';
 import {VERSION} from './lib/utils/version';
@@ -26,7 +27,7 @@ const DEFAULT_DRACO_OPTIONS: DracoLoaderOptions = {
  */
 export const DracoLoader = {
   name: 'Draco',
-  id: 'draco',
+  id: isBrowser ? 'draco' : 'draco-nodejs',
   module: 'draco',
   shapes: ['mesh'],
   version: VERSION,
