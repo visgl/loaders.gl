@@ -85,8 +85,22 @@ function handleExtFeatureMetadataExtension(
     extFeatureMetadata?.featureIdTextures && extFeatureMetadata?.featureIdTextures[0];
 
   if (featureIdTexture) {
-    const textureCoordinates = attributes.TEXCOORD_0.value;
+    const textureAttributeIndex = featureIdTexture?.featureIds?.texture?.texCoord || 0;
+    const textCoordAttribute = `TEXCOORD_${textureAttributeIndex}`;
+    const textureCoordinates = attributes[textCoordAttribute].value;
     return generateBatchIdsFromTexture(featureIdTexture, textureCoordinates, images);
+  }
+
+  // Take only first extension texture to get batchIds from the root EXT_feature_metadata object.
+  const featureTexture =
+    extFeatureMetadata?.featureTextures && extFeatureMetadata?.featureTextures[0];
+
+  /**
+   * TODO need to get batchIds from root extension
+   */
+  if (featureTexture) {
+    console.warn("EXT_feature_metadata doesn't yet support featureTextures in primitive");
+    return [];
   }
 
   return [];
