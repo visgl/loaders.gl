@@ -1,5 +1,10 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.7
+
+- fix(3d-tiles): prevent crash when cartographic center is undefined (#2212)
+- fix(3d-tiles): add support for absolute content-uris (#2211)
+
 ## v3.2.6
 
 - [tiles] Fix culling volume calculation from viewport (#2223)
