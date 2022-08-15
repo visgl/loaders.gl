@@ -47,7 +47,7 @@ function calculateFaceRangesAndFeaturesCount(featureIndices: number[]): {
 } {
   let rangeIndex = 1;
   let featureIndex = 1;
-  let currentFeatureId = featureIndices[0];
+  let currentFeatureId = getFrequentValue(featureIndices.slice(0, 3));
   const faceRangeList: any[] = [];
   const featureIds: any[] = [];
   const uniqueFeatureIds = [currentFeatureId];
@@ -55,20 +55,21 @@ function calculateFaceRangesAndFeaturesCount(featureIndices: number[]): {
   faceRangeList[0] = 0;
   featureIds[0] = currentFeatureId;
 
-  for (let index = 1; index < featureIndices.length; index++) {
-    if (currentFeatureId !== featureIndices[index]) {
+  for (let index = 3; index < featureIndices.length; index += 3) {
+    const newFeatureId = getFrequentValue(featureIndices.slice(index, index + 3));
+    if (currentFeatureId !== newFeatureId) {
       faceRangeList[rangeIndex] = index / VALUES_PER_VERTEX - 1;
       faceRangeList[rangeIndex + 1] = index / VALUES_PER_VERTEX;
-      featureIds[featureIndex] = featureIndices[index];
+      featureIds[featureIndex] = newFeatureId;
 
-      if (!uniqueFeatureIds.includes(featureIndices[index])) {
-        uniqueFeatureIds.push(featureIndices[index]);
+      if (!uniqueFeatureIds.includes(newFeatureId)) {
+        uniqueFeatureIds.push(newFeatureId);
       }
 
       rangeIndex += 2;
       featureIndex += 1;
     }
-    currentFeatureId = featureIndices[index];
+    currentFeatureId = newFeatureId;
   }
 
   faceRangeList[rangeIndex] = featureIndices.length / VALUES_PER_VERTEX - 1;
@@ -77,6 +78,19 @@ function calculateFaceRangesAndFeaturesCount(featureIndices: number[]): {
   const featureCount = uniqueFeatureIds.length;
 
   return {faceRange, featureCount, featureIds};
+}
+
+/**
+ * Find most frequent value to avoid situation where one vertex can be part of multiple features (objects).
+ * @param values
+ */
+function getFrequentValue(values: number[]): number {
+  const map: {[key: number]: number} = {};
+  for (const value of values) {
+    map[value] = (map[value] || 0) + 1;
+  }
+  const sorted: [string, number][] = Object.entries(map).sort((a, b) => b[1] - a[1]);
+  return parseInt(sorted[0][0]);
 }
 
 /**
