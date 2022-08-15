@@ -1,5 +1,7 @@
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
+import type {GLTF_EXT_feature_metadata} from '@loaders.gl/gltf';
+import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -52,6 +54,9 @@ const OBJECT_ID_TYPE = 'Oid32';
  * BATCHID - Legacy attribute name which includes batch info.
  */
 const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', 'BATCHID'];
+
+const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
+const EXT_MESH_FEATURES = 'EXT_mesh_features';
 
 let scratchVector = new Vector3();
 
@@ -1342,4 +1347,97 @@ function generateFeatureIndexAttribute(featureIndex, faceRange) {
   }
 
   return orderedFeatureIndices;
+}
+
+/**
+ * Find property table in tile
+ * For example it can be batchTable for b3dm files or property table in gLTF extension.
+ * @param sourceTile
+ */
+export function getPropertyTable(sourceTile: TileHeader): FeatureTableJson | null {
+  const batchTableJson = sourceTile?.content?.batchTableJson;
+
+  if (batchTableJson) {
+    return batchTableJson;
+  }
+
+  const {extensionName, extension} = getPropertyTableExtension(sourceTile);
+
+  switch (extensionName) {
+    case EXT_MESH_FEATURES: {
+      console.warn('The I3S converter does not yet support the EXT_mesh_features extension');
+      return null;
+    }
+    case EXT_FEATURE_METADATA: {
+      return getPropertyTableFromExtFeatureMetadata(extension);
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * Check extensions which can be with property table inside.
+ * @param sourceTile
+ */
+function getPropertyTableExtension(sourceTile: TileHeader) {
+  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
+  const extensionsUsed = sourceTile?.content?.gltf?.extensionsUsed;
+
+  if (!extensionsUsed) {
+    return {extensionName: null, extension: null};
+  }
+
+  let extensionName: string = '';
+
+  for (const extensionItem of sourceTile?.content?.gltf?.extensionsUsed) {
+    if (extensionsWithPropertyTables.includes(extensionItem)) {
+      extensionName = extensionItem;
+      break;
+    }
+  }
+
+  const extension = sourceTile?.content?.gltf?.extensions?.[extensionName];
+
+  return {extensionName, extension};
+}
+
+/**
+ * Handle EXT_feature_metadata to get property table
+ * @param extension
+ * TODO add EXT_feature_metadata feature textures support.
+ */
+function getPropertyTableFromExtFeatureMetadata(
+  extension: GLTF_EXT_feature_metadata
+): FeatureTableJson | null {
+  if (extension?.featureTextures) {
+    console.warn(
+      'The I3S converter does not yet support the EXT_feature_metadata feature textures'
+    );
+    return null;
+  }
+
+  if (extension?.featureTables) {
+    /**
+     * Take only first feature table to generate attributes storage info object.
+     * TODO: Think about getting data from all feature tables?
+     * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+     * In I3S we should decide which featureIds attribute will be passed to geometry data.
+     */
+    const firstFeatureTableName = Object.keys(extension.featureTables)?.[0];
+
+    if (firstFeatureTableName) {
+      const featureTable = extension?.featureTables[firstFeatureTableName];
+      const propertyTable = {};
+
+      for (const propertyName in featureTable.properties) {
+        propertyTable[propertyName] = featureTable.properties[propertyName].data;
+      }
+
+      return propertyTable;
+    }
+  }
+
+  console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
+  return null;
 }
