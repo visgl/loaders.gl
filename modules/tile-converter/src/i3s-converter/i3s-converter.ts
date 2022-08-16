@@ -1,5 +1,5 @@
 import type {Tile3D, Tileset3DProps} from '@loaders.gl/tiles';
-import type {BatchTableJson, B3DMContent} from '@loaders.gl/3d-tiles';
+import type {FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {WriteQueueItem} from '../lib/utils/write-queue';
 import type {
   AttributeStorageInfo,
@@ -34,7 +34,7 @@ import {
   // addFileToZip
 } from '../lib/utils/compress-util';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
-import convertB3dmToI3sGeometry from './helpers/geometry-converter';
+import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
 import {
   createBoundingVolumes,
   convertBoundingVolumeToI3SFullExtent
@@ -572,13 +572,13 @@ export default class I3SConverter {
 
     let boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel!);
 
-    const batchTable = sourceTile?.content?.batchTableJson;
+    const propertyTable = getPropertyTable(sourceTile);
 
-    if (batchTable) {
-      this._convertAttributeStorageInfo(sourceTile.content);
+    if (propertyTable && !this.layers0?.attributeStorageInfo?.length) {
+      this._convertPropertyTableToNodeAttributes(propertyTable);
     }
 
-    const resourcesData = await this._convertResources(sourceTile);
+    const resourcesData = await this._convertResources(sourceTile, propertyTable);
 
     const nodes: Node3DIndexDocument[] = [];
     const nodesInPage: NodeInPage[] = [];
@@ -649,20 +649,6 @@ export default class I3SConverter {
   }
 
   /**
-   * Convert attributesStorageInfo https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
-   * from B3DM batch table
-   * @param sourceTileContent - tile content of 3DTile
-   * @return {void}
-   */
-  private _convertAttributeStorageInfo(sourceTileContent: B3DMContent): void {
-    // In legacy b3dm files sometimes sourceTileContent is null.
-    const batchTable = sourceTileContent && sourceTileContent.batchTableJson;
-    if (batchTable && !this.layers0?.attributeStorageInfo?.length) {
-      this._convertBatchTableInfoToNodeAttributes(batchTable);
-    }
-  }
-
-  /**
    * Convert tile to one or more I3S nodes
    * @param sourceTile - source tile (3DTile)
    * result.geometry - ArrayBuffer with geometry attributes
@@ -674,13 +660,17 @@ export default class I3SConverter {
    * result.attributes - feature attributes
    * result.featureCount - number of features
    */
-  private async _convertResources(sourceTile: TileHeader): Promise<I3SConvertedResources[] | null> {
+  private async _convertResources(
+    sourceTile: TileHeader,
+    propertyTable: FeatureTableJson | null
+  ): Promise<I3SConvertedResources[] | null> {
     if (!this.isContentSupported(sourceTile)) {
       return null;
     }
     const resourcesData = await convertB3dmToI3sGeometry(
       sourceTile.content,
       Number(this.nodePages.nodesCounter),
+      propertyTable,
       this.featuresHashArray,
       this.layers0?.attributeStorageInfo,
       this.options.draco,
@@ -1080,7 +1070,7 @@ export default class I3SConverter {
   /**
    * Generate storage attribute for map segmentation.
    * @param attributeIndex - order index of attribute (f_0, f_1 ...).
-   * @param key - attribute key from batch table.\
+   * @param key - attribute key from propertyTable.
    * @param attributeType - attribute type.
    * @return Updated storageAttribute.
    */
@@ -1119,7 +1109,7 @@ export default class I3SConverter {
   /**
    * Get the attribute type for attributeStorageInfo https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
    * @param key - attribute's key
-   * @param attribute - attribute's type in batchTable
+   * @param attribute - attribute's type in propertyTable
    */
   private getAttributeType(key: string, attribute: string): string {
     if (key === OBJECT_ID_TYPE) {
@@ -1187,24 +1177,24 @@ export default class I3SConverter {
   }
 
   /**
-   * Do conversion of 3DTiles batch table to I3s node attributes.
-   * @param batchTable - Table with layer meta data.
+   * Do conversion of 3DTiles property table to I3s node attributes.
+   * @param propertyTable - Table with layer meta data.
    */
-  private _convertBatchTableInfoToNodeAttributes(batchTable: BatchTableJson): void {
+  private _convertPropertyTableToNodeAttributes(propertyTable: FeatureTableJson): void {
     let attributeIndex = 0;
-    const batchTableWithObjectId = {
+    const propertyTableWithObjectId = {
       OBJECTID: [0],
-      ...batchTable
+      ...propertyTable
     };
 
-    for (const key in batchTableWithObjectId) {
-      const firstAttribute = batchTableWithObjectId[key][0];
+    for (const key in propertyTableWithObjectId) {
+      const firstAttribute = propertyTableWithObjectId[key][0];
       const attributeType = this.getAttributeType(key, firstAttribute);
 
       const storageAttribute = this._createdStorageAttribute(attributeIndex, key, attributeType);
       const fieldAttributeType = this._getFieldAttributeType(attributeType);
       const fieldAttribute = this._createFieldAttribute(key, fieldAttributeType);
-      const popupInfo = this._createPopupInfo(batchTableWithObjectId);
+      const popupInfo = this._createPopupInfo(propertyTableWithObjectId);
 
       this.layers0!.attributeStorageInfo!.push(storageAttribute);
       this.layers0!.fields!.push(fieldAttribute);
@@ -1216,7 +1206,7 @@ export default class I3SConverter {
   }
 
   /**
-   * Find and return attribute type based on key form Batch table.
+   * Find and return attribute type based on key form propertyTable.
    * @param attributeType
    */
   private _getFieldAttributeType(attributeType: Attribute): ESRIField {
@@ -1236,10 +1226,10 @@ export default class I3SConverter {
 
   /**
    * Generate popup info to show metadata on the map.
-   * @param batchTable - Batch table data with OBJECTID.
+   * @param propertyTable - table data with OBJECTID.
    * @return data for correct rendering of popup.
    */
-  private _createPopupInfo(batchTable: BatchTableJson): PopupInfo {
+  private _createPopupInfo(propertyTable: FeatureTableJson): PopupInfo {
     const title = '{OBJECTID}';
     const mediaInfos = [];
     const fieldInfos: FieldInfo[] = [];
@@ -1249,7 +1239,7 @@ export default class I3SConverter {
     }[] = [];
     const expressionInfos = [];
 
-    for (const key in batchTable) {
+    for (const key in propertyTable) {
       fieldInfos.push({
         fieldName: key,
         visible: true,
