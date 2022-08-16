@@ -1,13 +1,13 @@
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {GLTF_EXT_feature_metadata} from '@loaders.gl/gltf';
-import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import {assert, encode} from '@loaders.gl/core';
+import {Tile3D} from '@loaders.gl/tiles';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
@@ -1354,7 +1354,7 @@ function generateFeatureIndexAttribute(featureIndex, faceRange) {
  * For example it can be batchTable for b3dm files or property table in gLTF extension.
  * @param sourceTile
  */
-export function getPropertyTable(sourceTile: TileHeader): FeatureTableJson | null {
+export function getPropertyTable(sourceTile: Tile3D): FeatureTableJson | null {
   const batchTableJson = sourceTile?.content?.batchTableJson;
 
   if (batchTableJson) {
@@ -1380,7 +1380,7 @@ export function getPropertyTable(sourceTile: TileHeader): FeatureTableJson | nul
  * Check extensions which can be with property table inside.
  * @param sourceTile
  */
-function getPropertyTableExtension(sourceTile: TileHeader) {
+function getPropertyTableExtension(sourceTile: Tile3D) {
   const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
   const extensionsUsed = sourceTile?.content?.gltf?.extensionsUsed;
 
