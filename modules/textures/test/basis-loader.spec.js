@@ -40,7 +40,7 @@ test('BasisLoader#load(URL, worker: false)', async (t) => {
 });
 
 test('BasisLoader#load(URL, worker: true)', async (t) => {
-  const images = await load(BASIS_TEST_URL, BasisLoader, {worker: true});
+  const images = await load(BASIS_TEST_URL, BasisLoader, {worker: true, _nodeWorkers: true});
 
   const image = images[0][0];
 
@@ -86,6 +86,7 @@ test('BasisLoader#auto-select a target format', async (t) => {
 test('BasisLoader#transcode to explicit format', async (t) => {
   const images = await load(BASIS_TEST_URL, BasisLoader, {
     worker: true,
+    _nodeWorkers: true,
     basis: {
       format: {
         alpha: 'BC3',
@@ -119,6 +120,7 @@ test('BasisLoader#auto-select a decoder format', async (t) => {
 
   const ktx2Images = await load(KTX2_BASIS_TEST_URL, BasisLoader, {
     worker: true,
+    _nodeWorkers: true,
     basis: {
       format: 'astc-4x4',
       containerFormat: 'auto'
