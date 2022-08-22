@@ -54,22 +54,22 @@ const defaultContent: I3STileContent = {
 
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
-  tile: I3STileOptions,
-  tileset: I3STilesetOptions,
+  tileOptions: I3STileOptions,
+  tilesetOptions: I3STilesetOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-) {
+): Promise<I3STileContent> {
   const content: I3STileContent = defaultContent;
 
-  if (tile.textureUrl) {
-    const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
-    const loader = getLoaderForTextureFormat(tile.textureFormat);
+  if (tileOptions.textureUrl) {
+    const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
+    const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
     const response = await fetch(url, options?.fetch as RequestInit);
     const arrayBuffer = await response.arrayBuffer();
 
     if (options?.i3s.decodeTextures) {
       if (loader === ImageLoader) {
-        const options = {...tile.textureLoaderOptions, image: {type: 'data'}};
+        const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
         try {
           // @ts-ignore context must be defined
           // Image constructor is not supported in worker thread.
@@ -81,7 +81,7 @@ export async function parseI3STileContent(
           content.texture = await parse(arrayBuffer, loader, options);
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        let texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
+        let texture = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
         if (loader === BasisLoader) {
           texture = texture[0];
         }
@@ -98,22 +98,22 @@ export async function parseI3STileContent(
     }
   }
 
-  content.material = makePbrMaterial(tile.materialDefinition, content.texture);
+  content.material = makePbrMaterial(tileOptions.materialDefinition, content.texture);
   if (content.material) {
     content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, content, tileset, options);
+  return await parseI3SNodeGeometry(arrayBuffer, content, tileOptions, tilesetOptions, options);
 }
 
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
-  tile: I3STileOptions,
   content: I3STileContent,
-  tileset: I3STilesetOptions,
+  tileOptions: I3STileOptions,
+  tilesetOptions: I3STilesetOptions,
   options?: LoaderOptions
-) {
+): Promise<I3STileContent> {
   const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
   let vertexCount: number;
@@ -121,7 +121,7 @@ async function parseI3SNodeGeometry(
   let featureCount: number = 0;
   let indices: TypedArray | undefined;
 
-  if (tile.isDracoGeometry) {
+  if (tileOptions.isDracoGeometry) {
     const decompressedGeometry: DracoMesh = await parse(arrayBuffer, DracoLoader, {
       draco: {
         attributeNameEntry: I3S_ATTRIBUTE_TYPE
@@ -161,9 +161,9 @@ async function parseI3SNodeGeometry(
       ordering: attributesOrder,
       featureAttributes,
       featureAttributeOrder
-    } = tileset.store.defaultGeometrySchema;
+    } = tilesetOptions.store.defaultGeometrySchema;
     // First 8 bytes reserved for header (vertexCount and featureCount)
-    const headers = parseHeaders(arrayBuffer, tileset);
+    const headers = parseHeaders(arrayBuffer, tilesetOptions);
     byteOffset = headers.byteOffset;
     vertexCount = headers.vertexCount;
     featureCount = headers.featureCount;
@@ -193,7 +193,7 @@ async function parseI3SNodeGeometry(
     !options?.i3s?.coordinateSystem ||
     options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
   ) {
-    const enuMatrix = parsePositions(attributes.position, tile);
+    const enuMatrix = parsePositions(attributes.position, tileOptions);
     content.modelMatrix = enuMatrix.invert();
     content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
   } else {
