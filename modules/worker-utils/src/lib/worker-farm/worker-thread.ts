@@ -28,7 +28,10 @@ export default class WorkerThread {
 
   /** Checks if workers are supported on this platform */
   static isSupported(): boolean {
-    return (typeof Worker !== 'undefined' && isBrowser) || typeof NodeWorker !== undefined;
+    return (
+      (typeof Worker !== 'undefined' && isBrowser) ||
+      (typeof NodeWorker !== 'undefined' && !isBrowser)
+    );
   }
 
   constructor(props: WorkerThreadProps) {

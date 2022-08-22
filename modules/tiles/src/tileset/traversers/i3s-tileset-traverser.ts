@@ -72,8 +72,7 @@ export default class I3STilesetTraverser extends TilesetTraverser {
       ...tileset.loadOptions,
       i3s: {
         ...tileset.loadOptions.i3s,
-        isTileHeader: true,
-        loadContent: false
+        isTileHeader: true
       }
     };
 

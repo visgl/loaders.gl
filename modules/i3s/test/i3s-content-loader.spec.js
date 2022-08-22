@@ -18,8 +18,7 @@ test('ParseI3sTileContent#should parse tile content', async (t) => {
   const data = await response.arrayBuffer();
   const content = await parse(data, I3SContentLoader, {
     i3s: {
-      tile,
-      tileset,
+      ...getI3SOptions(tile, tileset),
       useDracoGeometry: false
     }
   });
@@ -35,8 +34,7 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
   const data = await response.arrayBuffer();
   const content = await parse(data, I3SContentLoader, {
     i3s: {
-      tile,
-      tileset,
+      ...getI3SOptions(tile, tileset),
       useDracoGeometry: false,
       decodeTextures: true
     }
@@ -70,8 +68,7 @@ test('ParseI3sTileContent#should make PBR material', async (t) => {
   const data = await response.arrayBuffer();
   const content = await parse(data, I3SContentLoader, {
     i3s: {
-      tile,
-      tileset,
+      ...getI3SOptions(tile, tileset),
       useDracoGeometry: false,
       decodeTextures: true
     }
@@ -108,8 +105,7 @@ test('ParseI3sTileContent#should have featureIds', async (t) => {
   const data = await response.arrayBuffer();
   const content = await parse(data, I3SContentLoader, {
     i3s: {
-      tile,
-      tileset,
+      ...getI3SOptions(tile, tileset),
       useDracoGeometry: false,
       decodeTextures: true
     }
@@ -138,8 +134,7 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
   const data = await response.arrayBuffer();
   const content = await parse(data, I3SContentLoader, {
     i3s: {
-      tile,
-      tileset,
+      ...getI3SOptions(tile, tileset),
       useDracoGeometry: false,
       decodeTextures: false
     }
@@ -163,8 +158,7 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
   const data2 = await response2.arrayBuffer();
   const content2 = await parse(data2, I3SContentLoader, {
     i3s: {
-      tile: tile2,
-      tileset,
+      ...getI3SOptions(tile2, tileset),
       useDracoGeometry: false,
       decodeTextures: false
     }
@@ -175,3 +169,19 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
 
   t.end();
 });
+
+function getI3SOptions(tile, tileset) {
+  return {
+    _tileOptions: {
+      textureUrl: tile.textureUrl,
+      textureFormat: tile.textureFormat,
+      textureLoaderOptions: tile.textureLoaderOptions,
+      materialDefinition: tile.materialDefinition,
+      isDracoGeometry: tile.isDracoGeometry,
+      mbs: tile.mbs
+    },
+    _tilesetOptions: {
+      store: tileset.store
+    }
+  };
+}

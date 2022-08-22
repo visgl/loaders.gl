@@ -4,6 +4,7 @@ import './i3s-converter/helpers/json-templates.spec';
 import './i3s-converter/helpers/gltf-attributes.spec';
 import './i3s-converter/helpers/coordinate-converter.spec';
 import './i3s-converter/helpers/batch-ids-extensions.spec';
+import './i3s-converter/helpers/feature-attributes.spec';
 
 import './i3s-converter/i3s-converter.spec';
 
