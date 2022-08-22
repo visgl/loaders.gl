@@ -1,12 +1,12 @@
 import type {GLTFPostprocessed} from '@loaders.gl/gltf';
 import {Matrix4, Vector3} from '@math.gl/core';
 
-export type BatchTableJson = {
+export type FeatureTableJson = {
   [key: string]: any[];
 };
 
 export type B3DMContent = {
-  batchTableJson?: BatchTableJson;
+  batchTableJson?: FeatureTableJson;
   byteLength: number;
   byteOffset: number;
   cartesianModelMatrix: Matrix4;
@@ -15,7 +15,7 @@ export type B3DMContent = {
   cartographicOrigin: Vector3;
   featureIds?: number[] | null;
   featureTableBinary?: Uint8Array;
-  featureTableJson?: BatchTableJson;
+  featureTableJson?: FeatureTableJson;
   gltf?: GLTFPostprocessed;
   gltfUpAxis: string;
   header: GLTFHeader;

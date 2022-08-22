@@ -1,6 +1,9 @@
 import type {GLTFAccessorPostprocessed} from 'modules/gltf/src/lib/types/gltf-types';
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
-import type {ExtFeatureMetadata, ExtFeatureMetadataAttribute} from '../types';
+import type {
+  GLTF_EXT_feature_metadata_attribute,
+  GLTF_EXT_feature_metadata_primitive
+} from 'modules/gltf/src/lib/types/gltf-json-schema';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
@@ -29,7 +32,7 @@ export function handleBatchIdsExtensions(
       case EXT_FEATURE_METADATA:
         return handleExtFeatureMetadataExtension(
           attributes,
-          extensionData as ExtFeatureMetadata,
+          extensionData as GLTF_EXT_feature_metadata_primitive,
           images
         );
       case EXT_MESH_FEATURES:
@@ -54,7 +57,7 @@ function handleExtFeatureMetadataExtension(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
-  extFeatureMetadata: ExtFeatureMetadata,
+  extFeatureMetadata: GLTF_EXT_feature_metadata_primitive,
   images: Image[]
 ): number[] {
   // Take only first extension object to get batchIds attribute name.
@@ -82,8 +85,22 @@ function handleExtFeatureMetadataExtension(
     extFeatureMetadata?.featureIdTextures && extFeatureMetadata?.featureIdTextures[0];
 
   if (featureIdTexture) {
-    const textureCoordinates = attributes.TEXCOORD_0.value;
+    const textureAttributeIndex = featureIdTexture?.featureIds?.texture?.texCoord || 0;
+    const textCoordAttribute = `TEXCOORD_${textureAttributeIndex}`;
+    const textureCoordinates = attributes[textCoordAttribute].value;
     return generateBatchIdsFromTexture(featureIdTexture, textureCoordinates, images);
+  }
+
+  // Take only first extension texture to get batchIds from the root EXT_feature_metadata object.
+  const featureTexture =
+    extFeatureMetadata?.featureTextures && extFeatureMetadata?.featureTextures[0];
+
+  /**
+   * TODO need to get batchIds from root extension
+   */
+  if (featureTexture) {
+    console.warn("EXT_feature_metadata doesn't yet support featureTextures in primitive");
+    return [];
   }
 
   return [];
@@ -130,7 +147,7 @@ function generateImplicitFeatureIds(
  * @param featureIdTextures
  */
 function generateBatchIdsFromTexture(
-  featureIdTexture: ExtFeatureMetadataAttribute,
+  featureIdTexture: GLTF_EXT_feature_metadata_attribute,
   textureCoordinates: Float32Array,
   images: Image[]
 ) {

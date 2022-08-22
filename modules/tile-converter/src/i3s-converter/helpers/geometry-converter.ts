@@ -1,10 +1,13 @@
 import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
+import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
+import type {GLTF_EXT_feature_metadata} from '@loaders.gl/gltf';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import {assert, encode} from '@loaders.gl/core';
+import {Tile3D} from '@loaders.gl/tiles';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
@@ -15,7 +18,6 @@ import {
   I3SMaterialWithTexture,
   SharedResourcesArrays
 } from '../types';
-import {B3DMContent} from '@loaders.gl/3d-tiles';
 import {GLTFMaterialPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import {
   AttributeStorageInfo,
@@ -33,6 +35,7 @@ import {
 import {B3DMAttributesData /*transformI3SAttributesOnWorker */} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
+import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -53,6 +56,9 @@ const OBJECT_ID_TYPE = 'Oid32';
  */
 const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', 'BATCHID'];
 
+const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
+const EXT_MESH_FEATURES = 'EXT_mesh_features';
+
 let scratchVector = new Vector3();
 
 /**
@@ -70,6 +76,7 @@ let scratchVector = new Vector3();
 export default async function convertB3dmToI3sGeometry(
   tileContent: B3DMContent,
   nodeId: number,
+  propertyTable: FeatureTableJson | null,
   featuresHashArray: string[],
   attributeStorageInfo: AttributeStorageInfo[] | undefined,
   draco: boolean,
@@ -131,6 +138,7 @@ export default async function convertB3dmToI3sGeometry(
         tileContent,
         nodeId: nodesCounter,
         featuresHashArray,
+        propertyTable,
         attributeStorageInfo,
         draco,
         workerSource
@@ -194,6 +202,7 @@ async function _makeNodeResources({
   tileContent,
   nodeId,
   featuresHashArray,
+  propertyTable,
   attributeStorageInfo,
   draco,
   workerSource
@@ -204,6 +213,7 @@ async function _makeNodeResources({
   tileContent: B3DMContent;
   nodeId: number;
   featuresHashArray: string[];
+  propertyTable: FeatureTableJson | null;
   attributeStorageInfo?: AttributeStorageInfo[];
   draco: boolean;
   workerSource: {[key: string]: string};
@@ -253,11 +263,15 @@ async function _makeNodeResources({
       )
     : null;
 
-  const attributes = convertBatchTableToAttributeBuffers(
-    tileContent.batchTableJson,
-    featureIds,
-    attributeStorageInfo
-  );
+  let attributes: ArrayBuffer[] = [];
+
+  if (attributeStorageInfo && propertyTable) {
+    attributes = convertPropertyTableToAttributeBuffers(
+      featureIds,
+      propertyTable,
+      attributeStorageInfo
+    );
+  }
 
   return {
     geometry: fileBuffer,
@@ -1051,49 +1065,66 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
 }
 
 /**
- * Convert batch table data to attribute buffers.
- * @param {Object} batchTable - table with metadata for particular feature.
+ * Convert property table data to attribute buffers.
+ * @param {Object} propertyTable - table with metadata for particular feature.
  * @param {Array} featureIds
  * @param {Array} attributeStorageInfo
  * @returns {Array} - Array of file buffers.
  */
-function convertBatchTableToAttributeBuffers(batchTable, featureIds, attributeStorageInfo) {
+function convertPropertyTableToAttributeBuffers(
+  featureIds: number[],
+  propertyTable: FeatureTableJson,
+  attributeStorageInfo: AttributeStorageInfo[]
+) {
   const attributeBuffers: ArrayBuffer[] = [];
 
-  if (batchTable) {
-    const batchTableWithFeatureIds = {
-      OBJECTID: featureIds,
-      ...batchTable
-    };
+  const needFlattenPropertyTable = checkPropertiesLength(featureIds, propertyTable);
+  const properties = needFlattenPropertyTable
+    ? flattenPropertyTableByFeatureIds(featureIds, propertyTable)
+    : propertyTable;
 
-    for (const key in batchTableWithFeatureIds) {
-      const type = getAttributeType(key, attributeStorageInfo);
+  const propertyTableWithObjectIds = {
+    OBJECTID: featureIds,
+    ...properties
+  };
 
-      let attributeBuffer: ArrayBuffer | null = null;
+  for (const propertyName in propertyTableWithObjectIds) {
+    const type = getAttributeType(propertyName, attributeStorageInfo);
+    const value = propertyTableWithObjectIds[propertyName];
+    const attributeBuffer = generateAttributeBuffer(type, value);
 
-      switch (type) {
-        case OBJECT_ID_TYPE:
-        case SHORT_INT_TYPE:
-          attributeBuffer = generateShortIntegerAttributeBuffer(batchTableWithFeatureIds[key]);
-          break;
-        case DOUBLE_TYPE:
-          attributeBuffer = generateDoubleAttributeBuffer(batchTableWithFeatureIds[key]);
-          break;
-        case STRING_TYPE:
-          attributeBuffer = generateStringAttributeBuffer(batchTableWithFeatureIds[key]);
-          break;
-        default:
-          attributeBuffer = generateStringAttributeBuffer(batchTableWithFeatureIds[key]);
-      }
-
-      if (attributeBuffer) {
-        attributeBuffers.push(attributeBuffer);
-      }
-    }
+    attributeBuffers.push(attributeBuffer);
   }
 
   return attributeBuffers;
 }
+
+/**
+ * Generates attribute buffer based on attribute type
+ * @param type
+ * @param value
+ */
+function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
+  let attributeBuffer: ArrayBuffer;
+
+  switch (type) {
+    case OBJECT_ID_TYPE:
+    case SHORT_INT_TYPE:
+      attributeBuffer = generateShortIntegerAttributeBuffer(value);
+      break;
+    case DOUBLE_TYPE:
+      attributeBuffer = generateDoubleAttributeBuffer(value);
+      break;
+    case STRING_TYPE:
+      attributeBuffer = generateStringAttributeBuffer(value);
+      break;
+    default:
+      attributeBuffer = generateStringAttributeBuffer(value);
+  }
+
+  return attributeBuffer;
+}
+
 /**
  * Return attribute type.
  * @param {String} key
@@ -1256,4 +1287,97 @@ function generateFeatureIndexAttribute(featureIndex, faceRange) {
   }
 
   return orderedFeatureIndices;
+}
+
+/**
+ * Find property table in tile
+ * For example it can be batchTable for b3dm files or property table in gLTF extension.
+ * @param sourceTile
+ */
+export function getPropertyTable(sourceTile: Tile3D): FeatureTableJson | null {
+  const batchTableJson = sourceTile?.content?.batchTableJson;
+
+  if (batchTableJson) {
+    return batchTableJson;
+  }
+
+  const {extensionName, extension} = getPropertyTableExtension(sourceTile);
+
+  switch (extensionName) {
+    case EXT_MESH_FEATURES: {
+      console.warn('The I3S converter does not yet support the EXT_mesh_features extension');
+      return null;
+    }
+    case EXT_FEATURE_METADATA: {
+      return getPropertyTableFromExtFeatureMetadata(extension);
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * Check extensions which can be with property table inside.
+ * @param sourceTile
+ */
+function getPropertyTableExtension(sourceTile: Tile3D) {
+  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
+  const extensionsUsed = sourceTile?.content?.gltf?.extensionsUsed;
+
+  if (!extensionsUsed) {
+    return {extensionName: null, extension: null};
+  }
+
+  let extensionName: string = '';
+
+  for (const extensionItem of sourceTile?.content?.gltf?.extensionsUsed) {
+    if (extensionsWithPropertyTables.includes(extensionItem)) {
+      extensionName = extensionItem;
+      break;
+    }
+  }
+
+  const extension = sourceTile?.content?.gltf?.extensions?.[extensionName];
+
+  return {extensionName, extension};
+}
+
+/**
+ * Handle EXT_feature_metadata to get property table
+ * @param extension
+ * TODO add EXT_feature_metadata feature textures support.
+ */
+function getPropertyTableFromExtFeatureMetadata(
+  extension: GLTF_EXT_feature_metadata
+): FeatureTableJson | null {
+  if (extension?.featureTextures) {
+    console.warn(
+      'The I3S converter does not yet support the EXT_feature_metadata feature textures'
+    );
+    return null;
+  }
+
+  if (extension?.featureTables) {
+    /**
+     * Take only first feature table to generate attributes storage info object.
+     * TODO: Think about getting data from all feature tables?
+     * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+     * In I3S we should decide which featureIds attribute will be passed to geometry data.
+     */
+    const firstFeatureTableName = Object.keys(extension.featureTables)?.[0];
+
+    if (firstFeatureTableName) {
+      const featureTable = extension?.featureTables[firstFeatureTableName];
+      const propertyTable = {};
+
+      for (const propertyName in featureTable.properties) {
+        propertyTable[propertyName] = featureTable.properties[propertyName].data;
+      }
+
+      return propertyTable;
+    }
+  }
+
+  console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
+  return null;
 }

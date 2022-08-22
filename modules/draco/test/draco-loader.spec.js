@@ -74,13 +74,7 @@ test('DracoLoader#parse custom attributes(mainthread)', async (t) => {
 });
 
 test('DracoWorkerLoader#parse', async (t) => {
-  if (typeof Worker === 'undefined') {
-    t.comment('Worker is not usable in non-browser environments');
-    t.end();
-    return;
-  }
-
-  const data = await load(BUNNY_DRC_URL, DracoWorkerLoader);
+  const data = await load(BUNNY_DRC_URL, DracoWorkerLoader, {_nodeWorkers: true});
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 

@@ -36,13 +36,9 @@ export function getFrameState(viewport: Viewport, frameNumber: number): FrameSta
   const {cameraDirection, cameraUp, height} = viewport;
   const {metersPerUnit} = viewport.distanceScales;
 
-  const viewportCenterCartographic = viewport.unprojectPosition(viewport.center);
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
-  const viewportCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(
-    viewportCenterCartographic,
-    new Vector3()
-  );
+  const viewportCenterCartesian = worldToCartesian(viewport, viewport.center);
   const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
   const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
@@ -61,7 +57,7 @@ export function getFrameState(viewport: Viewport, frameNumber: number): FrameSta
     enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerUnit))
   ).normalize();
 
-  commonSpacePlanesToWGS84(viewport, viewportCenterCartesian);
+  commonSpacePlanesToWGS84(viewport);
 
   const ViewportClass = viewport.constructor;
   const {longitude, latitude, width, bearing, zoom} = viewport;
@@ -132,25 +128,55 @@ export function limitSelectedTiles(
   return [selectedTiles, unselectedTiles];
 }
 
-function commonSpacePlanesToWGS84(viewport, viewportCenterCartesian) {
+function commonSpacePlanesToWGS84(viewport) {
   // Extract frustum planes based on current view.
   const frustumPlanes = viewport.getFrustumPlanes();
-  let i = 0;
-  for (const dir in frustumPlanes) {
-    const plane = frustumPlanes[dir];
-    const distanceToCenter = plane.normal.dot(viewport.center);
-    scratchPosition
-      .copy(plane.normal)
-      .scale(plane.distance - distanceToCenter)
-      .add(viewport.center);
-    const cartographicPos = viewport.unprojectPosition(scratchPosition);
 
-    const cartesianPos = Ellipsoid.WGS84.cartographicToCartesian(cartographicPos, new Vector3());
+  // Get the near/far plane centers
+  const nearCenterCommon = closestPointOnPlane(frustumPlanes.near, viewport.cameraPosition);
+  const nearCenterCartesian = worldToCartesian(viewport, nearCenterCommon);
+  const cameraCartesian = worldToCartesian(viewport, viewport.cameraPosition, scratchPosition);
+
+  let i = 0;
+  cullingVolume.planes[i++].fromPointNormal(
+    nearCenterCartesian,
+    scratchVector.copy(nearCenterCartesian).subtract(cameraCartesian)
+  );
+
+  for (const dir in frustumPlanes) {
+    if (dir === 'near') {
+      continue;
+    }
+    const plane = frustumPlanes[dir];
+    const posCommon = closestPointOnPlane(plane, nearCenterCommon, scratchPosition);
+    const cartesianPos = worldToCartesian(viewport, posCommon, scratchPosition);
 
     cullingVolume.planes[i++].fromPointNormal(
       cartesianPos,
       // Want the normal to point into the frustum since that's what culling expects
-      scratchVector.copy(viewportCenterCartesian).subtract(cartesianPos)
+      scratchVector.copy(nearCenterCartesian).subtract(cartesianPos)
     );
   }
+}
+
+function closestPointOnPlane(
+  plane: {distance: number; normal: Vector3},
+  refPoint: [number, number, number] | Vector3,
+  out: Vector3 = new Vector3()
+): Vector3 {
+  const distanceToRef = plane.normal.dot(refPoint);
+  out
+    .copy(plane.normal)
+    .scale(plane.distance - distanceToRef)
+    .add(refPoint);
+  return out;
+}
+
+function worldToCartesian(
+  viewport: Viewport,
+  point: [number, number, number] | Vector3,
+  out: Vector3 = new Vector3()
+): Vector3 {
+  const cartographicPos = viewport.unprojectPosition(point);
+  return Ellipsoid.WGS84.cartographicToCartesian(cartographicPos, out);
 }

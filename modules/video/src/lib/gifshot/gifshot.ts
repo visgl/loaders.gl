@@ -18,12 +18,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var utils = {
   URL: globalThis.URL || globalThis.webkitURL || globalThis.mozURL || globalThis.msURL,
   getUserMedia: (function () {
+    if (!globalThis.navigator) return globalThis.navigator;
     const getUserMedia =
-      navigator.getUserMedia ||
-      navigator.webkitGetUserMedia ||
-      navigator.mozGetUserMedia ||
-      navigator.msGetUserMedia;
-    return getUserMedia ? getUserMedia.bind(navigator) : getUserMedia;
+      globalThis.navigator.getUserMedia ||
+      globalThis.navigator.webkitGetUserMedia ||
+      globalThis.navigator.mozGetUserMedia ||
+      globalThis.navigator.msGetUserMedia;
+    return getUserMedia ? getUserMedia.bind(globalThis.navigator) : getUserMedia;
   })(),
   requestAnimFrame:
     globalThis.requestAnimationFrame ||
