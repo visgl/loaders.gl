@@ -2,6 +2,25 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.2
+
+- fix(worker-utils): check node worker properly (#2232)
+- chore(i3s): fix naming (#2222)
+- feat(tile-converter): add EXT_feature_metadata initial properties support (#2224)
+- feat(draco): loader worker for NodeJS (#2228)
+- feat(textures): basis loader worker for NodeJS (#2229)
+- fix(video) ReferenceError: navigator is not defined (#2227)
+- feat(gltf): add initial "EXT_feature_metadata" extension support (#2221)
+- docs(pcd): fix pcd-loader example `PCDloader` spelling (#2226)
+- [tiles] Fix culling volume calculation from viewport (#2223)
+- fix(draco-builder): handle object metadata properly (#2209)
+- pass i3s loader only required options (#2188)
+- fix(tiles): i3s traverser for multiple viewports (#2213)
+- fix(tile-converter): memory overflow (#2217)
+- chore(polyfills): add export for \_fetchNode (#2195)
+- chore(deps): bump devcert from 1.1.3 to 1.2.2 in /website (#2220)
+- chore(deps): bump moment from 2.29.2 to 2.29.4 in /website (#2219)
+
 ## v3.3.0-alpha.1
 
 - fix(3d-tiles): prevent crash when cartographic center is undefined (#2212)
@@ -14,7 +33,7 @@
 - Fix type imports in math module (#2204)
 - fix(video): window undefined (#2198)
 - chore: peer dependency major version only (#2166)
-- chore(deps-dev): bump sharp from 0.27.1 to 0.30.5 in /website (#2189) 
+- chore(deps-dev): bump sharp from 0.27.1 to 0.30.5 in /website (#2189)
 - chore(deps): bump eventsource from 1.1.0 to 1.1.1 (#2187)
 - feat(converter-cli): support equal sign in the converter options (#2171)
 - fix(i3s): textures - no headers in Request (#2183)
