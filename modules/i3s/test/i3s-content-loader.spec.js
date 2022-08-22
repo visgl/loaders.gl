@@ -172,7 +172,7 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
 
 function getI3SOptions(tile, tileset) {
   return {
-    tileOptions: {
+    _tileOptions: {
       textureUrl: tile.textureUrl,
       textureFormat: tile.textureFormat,
       textureLoaderOptions: tile.textureLoaderOptions,
@@ -180,7 +180,7 @@ function getI3SOptions(tile, tileset) {
       isDracoGeometry: tile.isDracoGeometry,
       mbs: tile.mbs
     },
-    tilesetOptions: {
+    _tilesetOptions: {
       store: tileset.store
     }
   };
