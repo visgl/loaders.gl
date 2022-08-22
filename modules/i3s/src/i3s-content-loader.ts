@@ -1,6 +1,7 @@
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/loader-utils';
-import {I3SLoaderOptions} from './i3s-loader';
+import type {I3SLoaderOptions} from './i3s-loader';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
+import {I3STileOptions, I3STilesetOptions} from './types';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -24,9 +25,17 @@ export const I3SContentLoader: LoaderWithParser = {
 };
 
 async function parse(data, options?: I3SLoaderOptions, context?: LoaderContext) {
-  const {tileOptions, tilesetOptions} = options?.i3s || {};
+  const {tile, _tileOptions, tileset, _tilesetOptions} = options?.i3s || {};
+  const tileOptions = _tileOptions || tile;
+  const tilesetOptions = _tilesetOptions || tileset;
   if (!tileOptions || !tilesetOptions) {
     return null;
   }
-  return await parseI3STileContent(data, tileOptions, tilesetOptions, options, context);
+  return await parseI3STileContent(
+    data,
+    tileOptions as I3STileOptions,
+    tilesetOptions as I3STilesetOptions,
+    options,
+    context
+  );
 }

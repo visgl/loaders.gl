@@ -58,7 +58,7 @@ export async function parseI3STileContent(
   tilesetOptions: I3STilesetOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-) {
+): Promise<I3STileContent> {
   const content: I3STileContent = defaultContent;
 
   if (tileOptions.textureUrl) {
@@ -103,17 +103,17 @@ export async function parseI3STileContent(
     content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tileOptions, content, tilesetOptions, options);
+  return await parseI3SNodeGeometry(arrayBuffer, content, tileOptions, tilesetOptions, options);
 }
 
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
-  tileOptions: I3STileOptions,
   content: I3STileContent,
+  tileOptions: I3STileOptions,
   tilesetOptions: I3STilesetOptions,
   options?: LoaderOptions
-) {
+): Promise<I3STileContent> {
   const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
   let vertexCount: number;

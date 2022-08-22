@@ -1,5 +1,6 @@
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
+import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
 
 export enum DATA_TYPE {
   UInt8 = 'UInt8',
@@ -82,14 +83,32 @@ export type I3STileHeader = {
 };
 
 export type I3SParseOptions = {
+  /** ArcGIS access token */
   token?: string;
+  /** Is 3DSceneLayer json expected in response */
   isTileset?: string;
+  /** Is 3DNodeIndexDocument json expected in response */
   isTileHeader?: string;
-  tileOptions?: I3STileOptions;
-  tilesetOptions?: I3STilesetOptions;
+  /** Tile3D instance. This property used only to load tile content */
+  /** @deprecated */
+  tile?: Tile3D | I3STileOptions;
+  /** Tileset3D instance. This property used only to load tile content */
+  /** @deprecated */
+  tileset?: Tileset3D | I3STilesetOptions;
+  /** Tile-specific options */
+  _tileOptions?: I3STileOptions;
+  /** Tileset-specific options */
+  _tilesetOptions?: I3STilesetOptions;
+  /** Load Draco Compressed geometry if available */
   useDracoGeometry?: boolean;
+  /** Load compressed textures if available */
   useCompressedTextures?: boolean;
+  /** Set false if don't need to parse textures */
   decodeTextures?: boolean;
+  /** deck.gl compatible coordinate system.
+   * https://github.com/visgl/deck.gl/blob/master/docs/developer-guide/coordinate-systems.md
+   * Supported coordinate systems: METER_OFFSETS, LNGLAT_OFFSETS
+   */
   coordinateSystem?: number;
 };
 

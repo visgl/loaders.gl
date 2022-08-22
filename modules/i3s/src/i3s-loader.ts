@@ -34,8 +34,10 @@ export const I3SLoader: LoaderWithParser = {
       token: null,
       isTileset: 'auto',
       isTileHeader: 'auto',
-      tileOptions: null,
-      tilesetOptions: null,
+      tile: null,
+      tileset: null,
+      _tileOptions: null,
+      _tilesetOptions: null,
       useDracoGeometry: true,
       useCompressedTextures: true,
       decodeTextures: true,
@@ -81,7 +83,7 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
 }
 
 async function parseTileContent(arrayBuffer, options: I3SLoaderOptions) {
-  return await parse(arrayBuffer, I3SContentLoader, {...options, _workerType: 'test'});
+  return await parse(arrayBuffer, I3SContentLoader, options);
 }
 
 async function parseTileset(data, options: I3SLoaderOptions, context) {

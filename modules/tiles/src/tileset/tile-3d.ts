@@ -770,7 +770,7 @@ export default class TileHeader {
       case 'i3s':
         return {
           ...this.tileset.options.i3s,
-          tileOptions: {
+          _tileOptions: {
             textureUrl: this.header.textureUrl,
             textureFormat: this.header.textureFormat,
             textureLoaderOptions: this.header.textureLoaderOptions,
@@ -778,7 +778,7 @@ export default class TileHeader {
             isDracoGeometry: this.header.isDracoGeometry,
             mbs: this.header.mbs
           },
-          tilesetOptions: {
+          _tilesetOptions: {
             store: this.tileset.tileset.store
           },
           isTileHeader: false
