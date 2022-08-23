@@ -10,6 +10,7 @@ export type DracoLoaderOptions = LoaderOptions & {
     libraryPath?: string;
     extraAttributes?;
     attributeNameEntry?: string;
+    workerUrl?: string;
   };
 };
 
