@@ -11,7 +11,7 @@ const SUBTREE_FILE_VERSION = 1;
  * @returns
  */
 // eslint-disable-next-line max-statements
-export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Subtree> {
+export default async function parse3DTilesSubtree(data: ArrayBuffer, options): Promise<Subtree> {
   const magic = new Uint32Array(data.slice(0, 4));
 
   if (magic[0] !== SUBTREE_FILE_MAGIC) {
@@ -42,7 +42,8 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Su
     subtree.tileAvailability.explicitBitstream = await getExplicitBitstream(
       subtree,
       'tileAvailability',
-      internalBinaryBuffer
+      internalBinaryBuffer,
+      options.basePath
     );
   }
 
@@ -50,7 +51,8 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Su
     subtree.contentAvailability.explicitBitstream = await getExplicitBitstream(
       subtree,
       'contentAvailability',
-      internalBinaryBuffer
+      internalBinaryBuffer,
+      options.basePath
     );
   }
 
@@ -58,11 +60,29 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Su
     subtree.childSubtreeAvailability.explicitBitstream = await getExplicitBitstream(
       subtree,
       'childSubtreeAvailability',
-      internalBinaryBuffer
+      internalBinaryBuffer,
+      options.basePath
     );
   }
 
   return subtree;
+}
+
+function resolveUri(uri, basePath) {
+  // url scheme per RFC3986
+  const urlSchemeRegex = /^[a-z][0-9a-z+.-]*:/i;
+
+  if (urlSchemeRegex.test(basePath)) {
+    const url = new URL(uri, `${basePath}/`);
+    return decodeURI(url.toString());
+  } else if (uri.startsWith('/')) {
+    return uri;
+  } else if (uri.startsWith('../')) {
+    // Remove all relative paths.
+    return `${basePath}/${uri.replace(/\..\//g, '')}`;
+  }
+
+  return `${basePath}/${uri}`;
 }
 
 /**
@@ -74,7 +94,8 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Su
 async function getExplicitBitstream(
   subtree: Subtree,
   name: string,
-  internalBinaryBuffer: ArrayBuffer
+  internalBinaryBuffer: ArrayBuffer,
+  basePath: string
 ): Promise<ExplicitBitstream> {
   const bufferViewIndex = subtree[name].bufferView;
   const bufferView = subtree.bufferViews[bufferViewIndex];
@@ -82,7 +103,8 @@ async function getExplicitBitstream(
 
   // External bitstream loading
   if (buffer.uri) {
-    const response = await fetchFile(buffer.uri);
+    const bufferUri = resolveUri(buffer.uri, basePath);
+    const response = await fetchFile(bufferUri);
     const data = await response.arrayBuffer();
     // Return view of bitstream.
     return new Uint8Array(data, bufferView.byteOffset, bufferView.byteLength);

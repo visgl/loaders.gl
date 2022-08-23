@@ -61,6 +61,7 @@ export default class TileHeader {
   viewportIds: any[];
   transform: Matrix4;
   extensions: any;
+  implicitTiling?: any;
 
   // Container to store application specific data
   userData: {[key: string]: any};
@@ -205,6 +206,7 @@ export default class TileHeader {
     // TODO Cesium 3d tiles specific
     this._expireDate = null;
     this._expiredContent = null;
+    this.implicitTiling = null;
 
     Object.seal(this);
   }

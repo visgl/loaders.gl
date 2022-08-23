@@ -211,6 +211,8 @@ function formatTileData(
     type: getTileType(tile),
     lodMetricType,
     lodMetricValue,
+    geometricError: lodMetricValue,
+    transform: tile.transform,
     boundingVolume
     // Temp debug values. Remove when real implicit tileset will be tested.
     // x: tile.x,

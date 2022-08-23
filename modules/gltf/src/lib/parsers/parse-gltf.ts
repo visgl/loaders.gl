@@ -201,10 +201,13 @@ async function loadImage(
 
   let arrayBuffer;
 
-  if (image.uri) {
+  if (image.uri && !image.bufferView) {
     const uri = resolveUrl(image.uri, options);
     const response = await fetch(uri);
     arrayBuffer = await response.arrayBuffer();
+    image.bufferView = {
+      data: arrayBuffer
+    };
   }
 
   if (Number.isFinite(image.bufferView)) {

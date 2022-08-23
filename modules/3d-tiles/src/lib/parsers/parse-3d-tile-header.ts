@@ -1,7 +1,7 @@
 import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
-import {Tileset3D, LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
-import {Subtree} from '../../types';
+import {Tileset3D, LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D} from '@loaders.gl/tiles';
+import {ImplicitTilingExtension, Subtree} from '../../types';
 import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-implicit-tiles';
 
 function getTileType(tile) {
@@ -70,9 +70,16 @@ export function normalizeTileData(tile, options) {
 }
 
 // normalize tile headers
-export function normalizeTileHeaders(tileset) {
+export async function normalizeTileHeaders(tileset: Tileset3D) {
   const basePath = tileset.basePath;
-  const root = normalizeTileData(tileset.root, tileset);
+  let root;
+
+  const rootImplicitTilingExtension = getImplicitTilingExtensionData(tileset?.root);
+  if (rootImplicitTilingExtension && tileset.root) {
+    root = await normalizeImplicitTileHeaders(tileset.root, tileset, rootImplicitTilingExtension);
+  } else {
+    root = normalizeTileData(tileset.root, tileset);
+  }
 
   const stack: any[] = [];
   stack.push(root);
@@ -80,8 +87,18 @@ export function normalizeTileHeaders(tileset) {
   while (stack.length > 0) {
     const tile = stack.pop() || {};
     const children = tile.children || [];
-    for (const childHeader of children) {
-      normalizeTileData(childHeader, {basePath});
+    for (let childHeader of children) {
+      const childImplicitTilingExtension = getImplicitTilingExtensionData(childHeader);
+      if (childImplicitTilingExtension) {
+        childHeader = await normalizeImplicitTileHeaders(
+          childHeader,
+          tileset,
+          childImplicitTilingExtension
+        );
+      } else {
+        normalizeTileData(childHeader, {basePath});
+      }
+
       stack.push(childHeader);
     }
   }
@@ -94,13 +111,12 @@ export function normalizeTileHeaders(tileset) {
  * TODO Check if Tile3D class can be a return type here.
  * @param tileset
  */
-export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
-  if (!tileset.root) {
-    return null;
-  }
-
+export async function normalizeImplicitTileHeaders(
+  tile: Tile3D,
+  tileset: Tileset3D,
+  implicitTilingExtension: ImplicitTilingExtension
+) {
   const basePath = tileset.basePath;
-  const implicitTilingExtension = tileset.root.extensions['3DTILES_implicit_tiling'];
   const {
     subdivisionScheme,
     maximumLevel,
@@ -109,12 +125,12 @@ export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
   } = implicitTilingExtension;
   const subtreeUrl = replaceContentUrlTemplate(subtreesUriTemplate, 0, 0, 0, 0);
   const rootSubtreeUrl = resolveUri(subtreeUrl, basePath);
-  const rootSubtree = await load(rootSubtreeUrl, Tile3DSubtreeLoader);
-  const contentUrlTemplate = resolveUri(tileset.root.content.uri, basePath);
-  const refine = tileset.root.refine;
+  const rootSubtree = await load(rootSubtreeUrl, Tile3DSubtreeLoader, {basePath});
+  const contentUrlTemplate = resolveUri(tile.content.uri, basePath);
+  const refine = tileset?.root?.refine;
   // @ts-ignore
-  const rootLodMetricValue = tileset.root.geometricError;
-  const rootBoundingVolume = tileset.root.boundingVolume;
+  const rootLodMetricValue = tile.geometricError;
+  const rootBoundingVolume = tile.boundingVolume;
 
   const options = {
     contentUrlTemplate,
@@ -131,7 +147,7 @@ export async function normalizeImplicitTileHeaders(tileset: Tileset3D) {
     getRefine
   };
 
-  return await normalizeImplicitTileData(tileset.root, rootSubtree, options);
+  return await normalizeImplicitTileData(tile, rootSubtree, options);
 }
 
 /**
@@ -163,4 +179,8 @@ export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, opti
   tile.id = tile.contentUrl;
 
   return tile;
+}
+
+function getImplicitTilingExtensionData(tile: Tile3D | null): ImplicitTilingExtension {
+  return tile?.extensions?.['3DTILES_implicit_tiling'] || tile?.implicitTiling;
 }

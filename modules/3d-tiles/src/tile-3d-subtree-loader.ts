@@ -15,5 +15,5 @@ export const Tile3DSubtreeLoader: LoaderWithParser = {
   mimeTypes: ['application/octet-stream'],
   tests: ['subtree'],
   parse: parse3DTilesSubtree,
-  options: {}
+  options: {basePath: ''}
 };
