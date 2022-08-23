@@ -41,17 +41,6 @@ function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
-const defaultContent: I3STileContent = {
-  attributes: {},
-  indices: null,
-  featureIds: [],
-  vertexCount: 0,
-  modelMatrix: new Matrix4(),
-  coordinateSystem: 0,
-  byteLength: 0,
-  texture: null
-};
-
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
   tileOptions: I3STileOptions,
@@ -59,7 +48,16 @@ export async function parseI3STileContent(
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<I3STileContent> {
-  const content: I3STileContent = defaultContent;
+  const content: I3STileContent = {
+    attributes: {},
+    indices: null,
+    featureIds: [],
+    vertexCount: 0,
+    modelMatrix: new Matrix4(),
+    coordinateSystem: 0,
+    byteLength: 0,
+    texture: null
+  };
 
   if (tileOptions.textureUrl) {
     const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
