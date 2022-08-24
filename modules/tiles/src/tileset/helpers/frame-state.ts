@@ -145,7 +145,7 @@ function commonSpacePlanesToWGS84(viewport) {
 
   for (const dir in frustumPlanes) {
     if (dir === 'near') {
-      continue;
+      continue; // eslint-disable-line no-continue
     }
     const plane = frustumPlanes[dir];
     const posCommon = closestPointOnPlane(plane, nearCenterCommon, scratchPosition);
