@@ -30,6 +30,9 @@ export class DepsInstaller {
 
     await writeFile(depsPath, new Uint8Array(fileMap['geoids/egm2008-5.pgm']), 'egm2008-5.pgm');
 
+    console.log('Installing "I3S Content Loader worker"'); // eslint-disable-line no-console
+    await this.installWorker('i3s', 'i3s-content-nodejs-worker.js');
+
     console.log('Installing "Draco Loader worker"'); // eslint-disable-line no-console
     await this.installWorker('draco', 'draco-nodejs-worker.js');
 
