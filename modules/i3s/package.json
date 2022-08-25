@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "3.3.0-alpha.2",
+  "version": "3.3.0-alpha.3",
   "description": "i3s .",
   "license": "MIT",
   "publishConfig": {
@@ -27,17 +27,18 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker",
+    "pre-build": "npm run build-bundle && npm run build-worker && npm run build-loader-worker-nodejs",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/i3s-content-worker.ts --bundle --outfile=dist/i3s-content-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/i3s-content-worker.ts --bundle --outfile=dist/i3s-content-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-loader-worker-nodejs": "esbuild src/workers/i3s-content-nodejs-worker.ts --outfile=dist/i3s-content-nodejs-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/draco": "3.3.0-alpha.2",
-    "@loaders.gl/images": "3.3.0-alpha.2",
-    "@loaders.gl/loader-utils": "3.3.0-alpha.2",
-    "@loaders.gl/schema": "3.3.0-alpha.2",
-    "@loaders.gl/textures": "3.3.0-alpha.2",
-    "@loaders.gl/tiles": "3.3.0-alpha.2",
+    "@loaders.gl/draco": "3.3.0-alpha.3",
+    "@loaders.gl/images": "3.3.0-alpha.3",
+    "@loaders.gl/loader-utils": "3.3.0-alpha.3",
+    "@loaders.gl/schema": "3.3.0-alpha.3",
+    "@loaders.gl/textures": "3.3.0-alpha.3",
+    "@loaders.gl/tiles": "3.3.0-alpha.3",
     "@luma.gl/constants": "^8.5.4",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
