@@ -2,6 +2,12 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.3
+
+- feat(i3s): content loader worker for Node.js (#2237)
+- chore(tiles): fix lint warning (#2235)
+- fix(parse-i3s-tile-content): move initial value inside function (#2230)
+
 ## v3.3.0-alpha.2
 
 - fix(worker-utils): check node worker properly (#2232)
