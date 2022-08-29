@@ -1,5 +1,9 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.8
+
+- fix(worker-utils): check node worker properly (#2232)
+
 ## v3.2.7
 
 - fix(3d-tiles): prevent crash when cartographic center is undefined (#2212)

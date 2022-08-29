@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/crypto",
-  "version": "3.2.7",
+  "version": "3.2.8",
   "description": "Cryptographic/hashing plugins for loaders.gl",
   "license": "MIT",
   "publishConfig": {
@@ -33,8 +33,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.2.7",
-    "@loaders.gl/worker-utils": "3.2.7",
+    "@loaders.gl/loader-utils": "3.2.8",
+    "@loaders.gl/worker-utils": "3.2.8",
     "@types/crypto-js": "^4.0.1"
   },
   "devDependencies": {
