@@ -15,7 +15,7 @@ export type I3SAttributesWorkerOptions = {
 
 export type B3DMAttributesData = {
   gltfMaterials?: {id: string}[];
-  nodes: any;
+  nodes: any[];
   cartographicOrigin: Vector3;
   cartesianModelMatrix: Matrix4;
 };

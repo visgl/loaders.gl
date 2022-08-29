@@ -1,5 +1,5 @@
 import type {B3DMContent} from '@loaders.gl/3d-tiles';
-import type {Accessor} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
+import type {Accessor, Image, Node} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import type {B3DMAttributesData} from '../../i3s-attributes-worker';
 
 type AttributesObject = {
@@ -49,35 +49,48 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
       };
     }) || [];
 
-  const prepearedNodes = nodes.map((node) => {
-    if (!node.mesh) {
-      return node;
-    }
-
-    return {
-      ...node,
-      images,
-      mesh: {
-        ...node.mesh,
-        primitives: node.mesh?.primitives.map((primitive) => ({
-          ...primitive,
-          indices: {value: primitive?.indices?.value},
-          attributes: getB3DMAttributesWithoutBufferView(primitive.attributes),
-          material: {
-            id: primitive?.material?.id
-          }
-        }))
-      }
-    };
-  });
+  prepareNodes(nodes, images);
 
   const cartographicOrigin = tileContent.cartographicOrigin;
   const cartesianModelMatrix = tileContent.cartesianModelMatrix;
 
   return {
     gltfMaterials,
-    nodes: prepearedNodes,
+    nodes,
     cartographicOrigin,
     cartesianModelMatrix
   };
+}
+
+/**
+ * Traverse all nodes to replace all sensible data with copy.
+ * @param nodes
+ * @param images
+ */
+function prepareNodes(nodes: Node[], images: Image[]): void {
+  for (let index = 0; index < nodes.length; index++) {
+    const node = nodes[index] as any;
+
+    if (node.mesh) {
+      nodes[index] = {
+        ...node,
+        images,
+        mesh: {
+          ...node.mesh,
+          primitives: node.mesh?.primitives.map((primitive) => ({
+            ...primitive,
+            indices: {value: primitive?.indices?.value},
+            attributes: getB3DMAttributesWithoutBufferView(primitive.attributes),
+            material: {
+              id: primitive?.material?.id
+            }
+          }))
+        }
+      };
+    }
+
+    if (node.children) {
+      prepareNodes(node.children, images);
+    }
+  }
 }
