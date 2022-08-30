@@ -70,9 +70,9 @@ export function normalizeTileData(tile, options) {
 }
 
 // normalize tile headers
-export async function normalizeTileHeaders(tileset: Tileset3D) {
+export async function normalizeTileHeaders(tileset: Tileset3D): Promise<Tileset3D> {
   const basePath = tileset.basePath;
-  let root;
+  let root: Tileset3D;
 
   const rootImplicitTilingExtension = getImplicitTilingExtensionData(tileset?.root);
   if (rootImplicitTilingExtension && tileset.root) {
@@ -123,9 +123,9 @@ export async function normalizeImplicitTileHeaders(
     subtreeLevels,
     subtrees: {uri: subtreesUriTemplate}
   } = implicitTilingExtension;
-  const subtreeUrl = replaceContentUrlTemplate(subtreesUriTemplate, 0, 0, 0, 0);
-  const rootSubtreeUrl = resolveUri(subtreeUrl, basePath);
-  const rootSubtree = await load(rootSubtreeUrl, Tile3DSubtreeLoader, {basePath});
+  const replacedUrlTemplate = replaceContentUrlTemplate(subtreesUriTemplate, 0, 0, 0, 0);
+  const subtreeUrl = resolveUri(replacedUrlTemplate, basePath);
+  const subtree = await load(subtreeUrl, Tile3DSubtreeLoader);
   const contentUrlTemplate = resolveUri(tile.content.uri, basePath);
   const refine = tileset?.root?.refine;
   // @ts-ignore
@@ -147,7 +147,7 @@ export async function normalizeImplicitTileHeaders(
     getRefine
   };
 
-  return await normalizeImplicitTileData(tile, rootSubtree, options);
+  return await normalizeImplicitTileData(tile, subtree, options);
 }
 
 /**
@@ -181,6 +181,13 @@ export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, opti
   return tile;
 }
 
+/**
+ * Implicit Tiling data can be in 3DTILES_implicit_tiling for 3DTiles v.Next or directly in implicitTiling object for 3DTiles v1.1.
+ * Spec 3DTiles v.Next - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling
+ * Spec 3DTiles v.1.1 - https://github.com/CesiumGS/3d-tiles/tree/draft-1.1/specification/ImplicitTiling
+ * @param tile
+ * @returns
+ */
 function getImplicitTilingExtensionData(tile: Tile3D | null): ImplicitTilingExtension {
   return tile?.extensions?.['3DTILES_implicit_tiling'] || tile?.implicitTiling;
 }

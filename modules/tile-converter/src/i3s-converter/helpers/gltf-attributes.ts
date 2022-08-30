@@ -1,5 +1,5 @@
 import type {B3DMContent} from '@loaders.gl/3d-tiles';
-import type {Accessor, Image, Node} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
+import type {Accessor, Image, Node} from '@loaders.gl/gltf';
 import type {B3DMAttributesData} from '../../i3s-attributes-worker';
 
 type AttributesObject = {
@@ -63,7 +63,7 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
 }
 
 /**
- * Traverse all nodes to replace all sensible data with copy.
+ * Traverse all nodes to replace all sensible data with copy to avoid data corruption in worker.
  * @param nodes
  * @param images
  */

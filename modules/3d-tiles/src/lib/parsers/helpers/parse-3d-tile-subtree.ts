@@ -1,5 +1,5 @@
 import type {Subtree, ExplicitBitstream} from '../../../types';
-import {fetchFile} from '@loaders.gl/core';
+import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 
 const SUBTREE_FILE_MAGIC = 0x74627573;
 const SUBTREE_FILE_VERSION = 1;
@@ -11,7 +11,11 @@ const SUBTREE_FILE_VERSION = 1;
  * @returns
  */
 // eslint-disable-next-line max-statements
-export default async function parse3DTilesSubtree(data: ArrayBuffer, options): Promise<Subtree> {
+export default async function parse3DTilesSubtree(
+  data: ArrayBuffer,
+  options: LoaderOptions | undefined,
+  context: LoaderContext | undefined
+): Promise<Subtree> {
   const magic = new Uint32Array(data.slice(0, 4));
 
   if (magic[0] !== SUBTREE_FILE_MAGIC) {
@@ -43,7 +47,7 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer, options): P
       subtree,
       'tileAvailability',
       internalBinaryBuffer,
-      options.basePath
+      context
     );
   }
 
@@ -52,7 +56,7 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer, options): P
       subtree,
       'contentAvailability',
       internalBinaryBuffer,
-      options.basePath
+      context
     );
   }
 
@@ -61,28 +65,37 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer, options): P
       subtree,
       'childSubtreeAvailability',
       internalBinaryBuffer,
-      options.basePath
+      context
     );
   }
 
   return subtree;
 }
 
-function resolveUri(uri, basePath) {
-  // url scheme per RFC3986
-  const urlSchemeRegex = /^[a-z][0-9a-z+.-]*:/i;
+/**
+ * Get url for bitstream downloading
+ * @param bitstreamRelativeUri
+ * @param baseUri
+ * @returns
+ */
+function resolveBufferUri(bitstreamRelativeUri: string, basePath: string): string {
+  const hasProtocol = basePath.startsWith('http');
 
-  if (urlSchemeRegex.test(basePath)) {
-    const url = new URL(uri, `${basePath}/`);
-    return decodeURI(url.toString());
-  } else if (uri.startsWith('/')) {
-    return uri;
-  } else if (uri.startsWith('../')) {
-    // Remove all relative paths.
-    return `${basePath}/${uri.replace(/\..\//g, '')}`;
+  if (hasProtocol) {
+    const resolvedUri = new URL(bitstreamRelativeUri, basePath);
+    return decodeURI(resolvedUri.toString());
   }
 
-  return `${basePath}/${uri}`;
+  /**
+   * Adding http protocol only for new URL constructor usage.
+   * It allows to resolve relative paths like ../../example with basePath.
+   */
+  const basePathWithProtocol = `http://${basePath}`;
+  const resolvedUri = new URL(bitstreamRelativeUri, basePathWithProtocol);
+  /**
+   * Drop protocol and use just relative path.
+   */
+  return `/${resolvedUri.host}${resolvedUri.pathname}`;
 }
 
 /**
@@ -95,16 +108,24 @@ async function getExplicitBitstream(
   subtree: Subtree,
   name: string,
   internalBinaryBuffer: ArrayBuffer,
-  basePath: string
+  context: LoaderContext | undefined
 ): Promise<ExplicitBitstream> {
   const bufferViewIndex = subtree[name].bufferView;
   const bufferView = subtree.bufferViews[bufferViewIndex];
   const buffer = subtree.buffers[bufferView.buffer];
 
+  if (!context?.url || !context.fetch) {
+    throw new Error('Url is not provided');
+  }
+
+  if (!context.fetch) {
+    throw new Error('fetch is not provided');
+  }
+
   // External bitstream loading
   if (buffer.uri) {
-    const bufferUri = resolveUri(buffer.uri, basePath);
-    const response = await fetchFile(bufferUri);
+    const bufferUri = resolveBufferUri(buffer.uri, context?.url);
+    const response = await context.fetch(bufferUri);
     const data = await response.arrayBuffer();
     // Return view of bitstream.
     return new Uint8Array(data, bufferView.byteOffset, bufferView.byteLength);
