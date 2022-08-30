@@ -190,7 +190,18 @@ export default class I3SConverter {
 
     try {
       const preloadOptions = await this._fetchPreloadOptions();
-      const tilesetOptions: Tileset3DProps = {loadOptions: {basis: {format: 'rgba32'}}};
+      const tilesetOptions: Tileset3DProps = {
+        loadOptions: {
+          _nodeWorkers: true,
+          reuseWorkers: true,
+          basis: {format: 'rgba32'},
+          'basis-nodejs': {
+            format: 'rgba32',
+            workerUrl: './modules/textures/dist/basis-nodejs-worker.js'
+          },
+          'draco-nodejs': {workerUrl: './modules/draco/dist/draco-nodejs-worker.js'}
+        }
+      };
       if (preloadOptions.headers) {
         tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
       }

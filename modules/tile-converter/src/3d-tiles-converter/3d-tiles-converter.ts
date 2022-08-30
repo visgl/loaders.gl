@@ -85,6 +85,11 @@ export default class Tiles3DConverter {
 
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {
       loadOptions: {
+        _nodeWorkers: true,
+        reuseWorkers: true,
+        'i3s-content-nodejs': {
+          workerUrl: './modules/i3s/dist/i3s-content-nodejs-worker.js'
+        },
         i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
       }
     });
