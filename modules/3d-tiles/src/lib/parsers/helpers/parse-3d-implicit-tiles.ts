@@ -75,15 +75,6 @@ export async function parseImplicitTiles(params: {
   let childTileY = concatBits(parentData.y, childY);
   let childTileZ = concatBits(parentData.z, childZ);
 
-  // TODO Remove after real implicit tileset will be tested.
-  // Degug data
-  // tile.level = level + globalData.level;
-  // tile.x = concatBits(globalData.x, childTileX);
-  // tile.y = concatBits(globalData.y, childTileY);
-  // tile.z = concatBits(globalData.z, childTileZ);
-  // tile.mortonIndex = childTileMortonIndex;
-  // End of debug data
-
   let isChildSubtreeAvailable = false;
 
   if (level + 1 > subtreeLevels) {
@@ -214,11 +205,6 @@ function formatTileData(
     geometricError: lodMetricValue,
     transform: tile.transform,
     boundingVolume
-    // Temp debug values. Remove when real implicit tileset will be tested.
-    // x: tile.x,
-    // y: tile.y,
-    // z: tile.z,
-    // level: tile.level
   };
 }
 
