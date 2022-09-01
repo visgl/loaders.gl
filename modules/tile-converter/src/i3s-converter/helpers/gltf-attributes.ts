@@ -22,6 +22,12 @@ function getB3DMAttributesWithoutBufferView(attributes: AttributesObject): Attri
   return attributesWithoutBufferView;
 }
 
+function copyBuffer(sourceBuffer): Buffer {
+  const newBuffer = Buffer.allocUnsafe(sourceBuffer.length);
+  sourceBuffer.copy(newBuffer);
+  return newBuffer;
+}
+
 /**
  * Prepare attributes for conversion to avoid binary data breaking in worker thread.
  * @param tileContent
@@ -38,7 +44,7 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
   const images =
     tileContent.gltf?.images?.map((imageObject) => {
       // Need data only for uncompressed images because we can't get batchIds from compressed textures.
-      const data = imageObject?.image?.compressed ? null : imageObject?.image?.data.subarray();
+      const data = imageObject?.image?.compressed ? null : copyBuffer(imageObject?.image?.data);
       return {
         data,
         compressed: Boolean(imageObject?.image?.compressed),

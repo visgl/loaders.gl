@@ -4,7 +4,7 @@ import {writeFile} from '../lib/utils/file-utils';
 import {join} from 'path';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
 
 const PGM_LINK = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/egm/egm2008-5.zip';
 

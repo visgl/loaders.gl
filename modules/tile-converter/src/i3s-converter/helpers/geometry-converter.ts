@@ -34,9 +34,7 @@ import {
 } from '@loaders.gl/i3s';
 import {TypedArray} from '@loaders.gl/schema';
 import {Geoid} from '@math.gl/geoid';
-import {
-  B3DMAttributesData /* , transformI3SAttributesOnWorker  */
-} from '../../i3s-attributes-worker';
+import {B3DMAttributesData, transformI3SAttributesOnWorker} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
@@ -69,7 +67,7 @@ let scratchVector = new Vector3();
  * Convert binary data from b3dm file to i3s resources
  *
  * @param tileContent - 3d tile content
- * @param nodeId - target nodeId. If a few nodes will be created - ids will be nodeId+n where n - index in the resulting array
+ * @param addNodeToNodePage - function to add new node to node pages
  * @param featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
  * @param attributeStorageInfo - attributes metadata from 3DSceneLayer json
  * @param draco - is converter should create draco compressed geometry
@@ -79,7 +77,7 @@ let scratchVector = new Vector3();
  */
 export default async function convertB3dmToI3sGeometry(
   tileContent: B3DMContent,
-  nodeId: number,
+  addNodeToNodePage: () => number,
   propertyTable: FeatureTableJson | null,
   featuresHashArray: string[],
   attributeStorageInfo: AttributeStorageInfo[] | undefined,
@@ -87,7 +85,7 @@ export default async function convertB3dmToI3sGeometry(
   generateBoundingVolumes: boolean,
   geoidHeightModel: Geoid,
   workerSource: {[key: string]: string}
-) {
+): Promise<I3SConvertedResources[] | null> {
   const useCartesianPositions = generateBoundingVolumes;
   const materialAndTextureList: I3SMaterialWithTexture[] = convertMaterials(
     tileContent.gltf?.materials
@@ -95,18 +93,18 @@ export default async function convertB3dmToI3sGeometry(
 
   const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
 
-  const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
-    dataForAttributesConversion,
-    useCartesianPositions
-  );
-  // TODO uncomment it when worker will be published on CDN.
-  /*
+  // const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
+  //   dataForAttributesConversion,
+  //   useCartesianPositions
+  // );
+
   const convertedAttributesMap: Map<string, ConvertedAttributes> =
     await transformI3SAttributesOnWorker(dataForAttributesConversion, {
+      reuseWorkers: true,
+      _nodeWorkers: true,
       useCartesianPositions,
       source: workerSource.I3SAttributes
     });
-  */
 
   if (generateBoundingVolumes) {
     _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel);
@@ -119,7 +117,6 @@ export default async function convertB3dmToI3sGeometry(
   }
 
   const result: I3SConvertedResources[] = [];
-  let nodesCounter = nodeId;
   let {materials = []} = tileContent.gltf || {materials: []};
   if (!materials?.length) {
     materials.push({id: 'default'});
@@ -134,13 +131,14 @@ export default async function convertB3dmToI3sGeometry(
       continue;
     }
     const {material, texture} = materialAndTextureList[i];
+    const nodeId = addNodeToNodePage();
     result.push(
       await _makeNodeResources({
         convertedAttributes,
         material,
         texture,
         tileContent,
-        nodeId: nodesCounter,
+        nodeId,
         featuresHashArray,
         propertyTable,
         attributeStorageInfo,
@@ -148,7 +146,6 @@ export default async function convertB3dmToI3sGeometry(
         workerSource
       })
     );
-    nodesCounter++;
   }
 
   if (!result.length) {
@@ -278,6 +275,7 @@ async function _makeNodeResources({
   }
 
   return {
+    nodeId,
     geometry: fileBuffer,
     compressedGeometry,
     texture,
@@ -1303,6 +1301,7 @@ function generateFeatureIndexAttribute(featureIndex, faceRange) {
  * Find property table in tile
  * For example it can be batchTable for b3dm files or property table in gLTF extension.
  * @param sourceTile
+ * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA
  */
 export function getPropertyTable(sourceTile: Tile3D): FeatureTableJson | null {
   const batchTableJson = sourceTile?.content?.batchTableJson;

@@ -8,6 +8,10 @@ import {ImageDataType} from '@loaders.gl/images';
 
 /** Converted resources for specific node */
 export type I3SConvertedResources = {
+  /**
+   * Node id
+   */
+  nodeId?: number;
   /** Non-compressed geometry buffer that have structure met
    * https://github.com/Esri/i3s-spec/blob/master/docs/1.8/defaultGeometrySchema.cmn.md
    * (Geometry buffer)
