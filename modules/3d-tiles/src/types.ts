@@ -88,3 +88,18 @@ type BufferView = {
   byteOffset: number;
   byteLength: number;
 };
+
+/**
+ * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling
+ */
+export type ImplicitTilingExtension = {
+  subdivisionScheme: 'QUADTREE' | 'OCTREE';
+  maximumLevel?: number;
+  availableLevels: number;
+  subtreeLevels: number;
+  subtrees: SubtreeUri;
+};
+
+type SubtreeUri = {
+  uri: string;
+};

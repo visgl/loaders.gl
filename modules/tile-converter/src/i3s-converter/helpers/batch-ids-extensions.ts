@@ -151,6 +151,10 @@ function generateBatchIdsFromTexture(
   textureCoordinates: Float32Array,
   images: Image[]
 ) {
+  if (!images?.length) {
+    return [];
+  }
+
   const CHANNELS_MAP = {
     r: 0,
     g: 1,
