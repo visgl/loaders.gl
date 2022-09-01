@@ -28,6 +28,7 @@ import type {
   Accessor as GLTFAccessorPostprocessed,
   Image as GLTFImagePostprocessed,
   Mesh as GLTFMeshPostprocessed,
+  MeshPrimitive as GLTFMeshPrimitivePostprocessed,
   Material as GLTFMaterialPostprocessed,
   Node as GLTFNodePostprocessed,
   Texture as GLTFTexturePostprocessed
@@ -57,6 +58,7 @@ export type {
   GLTFImagePostprocessed,
   GLTFNodePostprocessed,
   GLTFMeshPostprocessed,
+  GLTFMeshPrimitivePostprocessed,
   GLTFMaterialPostprocessed,
   GLTFTexturePostprocessed,
   GLTF_EXT_feature_metadata

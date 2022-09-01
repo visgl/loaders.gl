@@ -15,9 +15,13 @@ export type {
   GLTFTexture,
   GLTFImage,
   GLTFPostprocessed,
+  GLTFAccessorPostprocessed,
   GLTFNodePostprocessed,
   GLTFMaterialPostprocessed,
+  GLTFMeshPostprocessed,
+  GLTFMeshPrimitivePostprocessed,
   GLTFImagePostprocessed,
+  GLTFTexturePostprocessed,
   // The following extensions are handled by the GLTFLoader and removed from the parsed glTF (disable via options.gltf.excludeExtensions)
   GLTF_KHR_binary_glTF,
   GLTF_KHR_draco_mesh_compression,
