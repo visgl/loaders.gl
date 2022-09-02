@@ -25,11 +25,12 @@ export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string)
 
   const shape = [...ndarray.shape];
   const layers = ndarray.shape.length === 4 ? ndarray.shape.shift() : 1;
+  const data = ndarray.data instanceof Buffer ? new Uint8Array(ndarray.data) : ndarray.data;
 
   // extract width/height etc
   return {
     shape,
-    data: ndarray.data,
+    data,
     width: ndarray.shape[0],
     height: ndarray.shape[1],
     components: ndarray.shape[2],
