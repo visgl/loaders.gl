@@ -18,7 +18,9 @@ export class DepsInstaller {
   /**
    * Run instalation
    * @param path destination folder
-   * @param workersPath destination folder for workers
+   * @param workersPath destination folder for workers.
+   *    This path is '' by default and is not used by tile-converter.
+   *    It is used in tests to prevent rewriting actual workers during tests running
    */
   async install(path: string = '', workersPath: string = ''): Promise<void> {
     console.log('Installing "EGM2008-5" model...'); // eslint-disable-line no-console
