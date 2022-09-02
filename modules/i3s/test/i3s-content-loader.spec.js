@@ -50,7 +50,7 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
     }
   } else {
     t.ok(texture instanceof Object);
-    t.ok(texture.data instanceof Buffer);
+    t.ok(texture.data instanceof Uint8Array);
   }
   t.end();
 });
@@ -92,7 +92,7 @@ test('ParseI3sTileContent#should make PBR material', async (t) => {
     }
   } else {
     t.ok(texture.source.image instanceof Object);
-    t.ok(texture.source.image.data instanceof Buffer);
+    t.ok(texture.source.image.data instanceof Uint8Array);
   }
   t.end();
 });
