@@ -1,6 +1,14 @@
-import type {Image, MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
-import type {GLTF_EXT_feature_metadata} from '@loaders.gl/gltf';
+import type {
+  GLTF_EXT_feature_metadata,
+  GLTFAccessorPostprocessed,
+  GLTFMaterialPostprocessed,
+  GLTFNodePostprocessed,
+  GLTFImagePostprocessed,
+  GLTFMeshPrimitivePostprocessed,
+  GLTFMeshPostprocessed,
+  GLTFTexturePostprocessed
+} from '@loaders.gl/gltf';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -18,7 +26,6 @@ import {
   I3SMaterialWithTexture,
   SharedResourcesArrays
 } from '../types';
-import {GLTFMaterialPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import {
   AttributeStorageInfo,
   I3SMaterialDefinition,
@@ -28,11 +35,8 @@ import {
 import {TypedArray} from '@loaders.gl/schema';
 import {Geoid} from '@math.gl/geoid';
 import {
-  GLTFAccessorPostprocessed,
-  GLTFMeshPostprocessed,
-  GLTFTexturePostprocessed
-} from 'modules/gltf/src/lib/types/gltf-types';
-import {B3DMAttributesData /*transformI3SAttributesOnWorker */} from '../../i3s-attributes-worker';
+  B3DMAttributesData /* , transformI3SAttributesOnWorker  */
+} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
@@ -297,7 +301,7 @@ export async function convertAttributes(
   attributesData: B3DMAttributesData,
   useCartesianPositions: boolean
 ): Promise<Map<string, ConvertedAttributes>> {
-  const {gltfMaterials, nodes, cartographicOrigin, cartesianModelMatrix} = attributesData;
+  const {gltfMaterials, nodes, images, cartographicOrigin, cartesianModelMatrix} = attributesData;
   const attributesMap = new Map<string, ConvertedAttributes>();
 
   for (const material of gltfMaterials || [{id: 'default'}]) {
@@ -314,6 +318,7 @@ export async function convertAttributes(
 
   convertNodes(
     nodes,
+    images,
     cartographicOrigin,
     cartesianModelMatrix,
     attributesMap,
@@ -344,6 +349,7 @@ export async function convertAttributes(
  * Gltf has hierarchical structure of nodes. This function converts nodes starting from those which are in gltf scene object.
  *   The goal is applying tranformation matrix for all children. Functions "convertNodes" and "convertNode" work together recursively.
  * @param nodes - gltf nodes array
+ * @param images - gltf images array
  * @param tileContent - 3d tile content
  * @param attributesMap - for recursive concatenation of attributes
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
@@ -353,6 +359,7 @@ export async function convertAttributes(
  */
 function convertNodes(
   nodes: GLTFNodePostprocessed[],
+  images: GLTFImagePostprocessed[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -363,6 +370,7 @@ function convertNodes(
     for (const node of nodes) {
       convertNode(
         node,
+        images,
         cartographicOrigin,
         cartesianModelMatrix,
         attributesMap,
@@ -406,6 +414,7 @@ function getCompositeTransformationMatrix(node, matrix) {
 /**
  * Convert all primitives of node and all children nodes
  * @param node - gltf node
+ * @param images - gltf images array
  * @param {Object} tileContent - 3d tile content
  * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
@@ -415,6 +424,7 @@ function getCompositeTransformationMatrix(node, matrix) {
  */
 function convertNode(
   node: GLTFNodePostprocessed,
+  images: GLTFImagePostprocessed[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -424,7 +434,6 @@ function convertNode(
   const transformationMatrix = getCompositeTransformationMatrix(node, matrix);
 
   const mesh = node.mesh;
-  const images = node.images;
 
   if (mesh) {
     convertMesh(
@@ -440,6 +449,7 @@ function convertNode(
 
   convertNodes(
     node.children || [],
+    images,
     cartographicOrigin,
     cartesianModelMatrix,
     attributesMap,
@@ -461,7 +471,7 @@ function convertNode(
  */
 function convertMesh(
   mesh: GLTFMeshPostprocessed,
-  images: Image[],
+  images: GLTFImagePostprocessed[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -695,8 +705,8 @@ function getBatchIds(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
-  primitive: MeshPrimitive,
-  images: Image[]
+  primitive: GLTFMeshPrimitivePostprocessed,
+  images: GLTFImagePostprocessed[]
 ): number[] {
   const batchIds: number[] = handleBatchIdsExtensions(attributes, primitive, images);
 

@@ -57,7 +57,6 @@ test('gltf-attributes - Should generate attributes object from tileContent witho
       {
         id: 'node-one',
         name: 'nodeName',
-        images: [],
         mesh: {
           primitives: [
             {
@@ -77,6 +76,7 @@ test('gltf-attributes - Should generate attributes object from tileContent witho
         }
       }
     ],
+    images: [],
     cartographicOrigin: [1, 2, 3],
     cartesianModelMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
   };
@@ -112,8 +112,8 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
           name: 'test2',
           mimeType: 'image/jpeg',
           image: {
-            width: 3,
-            height: 3,
+            width: 2,
+            height: 1,
             components: 4,
             data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255]),
             shape: [2, 2, 4]
@@ -172,24 +172,6 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
       {
         id: 'node-one',
         name: 'nodeName',
-        images: [
-          {
-            width: undefined,
-            height: undefined,
-            components: undefined,
-            mimeType: 'image/ktx2',
-            compressed: true,
-            data: null
-          },
-          {
-            width: 3,
-            height: 3,
-            components: 4,
-            mimeType: 'image/jpeg',
-            compressed: false,
-            data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255])
-          }
-        ],
         mesh: {
           primitives: [
             {
@@ -207,6 +189,20 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
             }
           ]
         }
+      }
+    ],
+    images: [
+      {
+        compressed: true,
+        data: null
+      },
+      {
+        width: 2,
+        height: 1,
+        components: 4,
+        mimeType: 'image/jpeg',
+        compressed: false,
+        data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255])
       }
     ],
     cartographicOrigin: [1, 2, 3],

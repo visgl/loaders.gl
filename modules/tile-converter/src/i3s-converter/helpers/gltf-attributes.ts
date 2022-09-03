@@ -1,9 +1,9 @@
 import type {B3DMContent} from '@loaders.gl/3d-tiles';
-import type {Accessor, Image, Node} from '@loaders.gl/gltf';
+import type {GLTFAccessorPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import type {B3DMAttributesData} from '../../i3s-attributes-worker';
 
 type AttributesObject = {
-  [k: string]: Accessor;
+  [k: string]: GLTFAccessorPostprocessed;
 };
 
 /**
@@ -38,18 +38,24 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
   const images =
     tileContent.gltf?.images?.map((imageObject) => {
       // Need data only for uncompressed images because we can't get batchIds from compressed textures.
-      const data = imageObject?.image?.compressed ? null : imageObject?.image?.data.subarray();
-      return {
-        data,
-        compressed: Boolean(imageObject?.image?.compressed),
-        height: imageObject.image.height,
-        width: imageObject.image.width,
-        components: imageObject.image.components,
-        mimeType: imageObject.mimeType
-      };
+      if (imageObject?.image?.compressed) {
+        return {
+          data: null,
+          compressed: true
+        };
+      } else {
+        return {
+          data: imageObject?.image?.data.subarray(),
+          compressed: false,
+          height: imageObject.image.height,
+          width: imageObject.image.width,
+          components: imageObject.image.components,
+          mimeType: imageObject.mimeType
+        };
+      }
     }) || [];
 
-  prepareNodes(nodes, images);
+  prepareNodes(nodes);
 
   const cartographicOrigin = tileContent.cartographicOrigin;
   const cartesianModelMatrix = tileContent.cartesianModelMatrix;
@@ -57,6 +63,7 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
   return {
     gltfMaterials,
     nodes,
+    images,
     cartographicOrigin,
     cartesianModelMatrix
   };
@@ -65,16 +72,14 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
 /**
  * Traverse all nodes to replace all sensible data with copy to avoid data corruption in worker.
  * @param nodes
- * @param images
  */
-function prepareNodes(nodes: Node[], images: Image[]): void {
+function prepareNodes(nodes: GLTFNodePostprocessed[]): void {
   for (let index = 0; index < nodes.length; index++) {
     const node = nodes[index] as any;
 
     if (node.mesh) {
       nodes[index] = {
         ...node,
-        images,
         mesh: {
           ...node.mesh,
           primitives: node.mesh?.primitives.map((primitive) => ({
@@ -90,7 +95,7 @@ function prepareNodes(nodes: Node[], images: Image[]): void {
     }
 
     if (node.children) {
-      prepareNodes(node.children, images);
+      prepareNodes(node.children);
     }
   }
 }

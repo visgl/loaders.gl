@@ -8,7 +8,7 @@ import {
   makeBoundingSphereFromPoints,
   BoundingSphere
 } from '@math.gl/culling';
-import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
+import {Tile3D} from '@loaders.gl/tiles';
 import {Geoid} from '@math.gl/geoid';
 
 /**
@@ -17,7 +17,7 @@ import {Geoid} from '@math.gl/geoid';
  * @param geoidHeightModel
  * @returns - Bounding volumes object
  */
-export function createBoundingVolumes(tile: TileHeader, geoidHeightModel: Geoid): BoundingVolumes {
+export function createBoundingVolumes(tile: Tile3D, geoidHeightModel: Geoid): BoundingVolumes {
   let radius;
   let halfSize;
   let quaternion;
