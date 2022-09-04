@@ -112,8 +112,8 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
           name: 'test2',
           mimeType: 'image/jpeg',
           image: {
-            width: 3,
-            height: 3,
+            width: 2,
+            height: 1,
             components: 4,
             data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255]),
             shape: [2, 2, 4]
@@ -193,16 +193,12 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
     ],
     images: [
       {
-        width: undefined,
-        height: undefined,
-        components: undefined,
-        mimeType: 'image/ktx2',
         compressed: true,
         data: null
       },
       {
-        width: 3,
-        height: 3,
+        width: 2,
+        height: 1,
         components: 4,
         mimeType: 'image/jpeg',
         compressed: false,

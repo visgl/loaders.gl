@@ -18,8 +18,11 @@ export class DepsInstaller {
   /**
    * Run instalation
    * @param path destination folder
+   * @param workersPath destination folder for workers.
+   *    This path is '' by default and is not used by tile-converter.
+   *    It is used in tests to prevent rewriting actual workers during tests running
    */
-  async install(path: string = ''): Promise<void> {
+  async install(path: string = '', workersPath: string = ''): Promise<void> {
     console.log('Installing "EGM2008-5" model...'); // eslint-disable-line no-console
     const fileMap = await load(PGM_LINK, ZipLoader, {});
 
@@ -31,18 +34,18 @@ export class DepsInstaller {
     await writeFile(depsPath, new Uint8Array(fileMap['geoids/egm2008-5.pgm']), 'egm2008-5.pgm');
 
     console.log('Installing "I3S Content Loader worker"'); // eslint-disable-line no-console
-    await this.installWorker('i3s', 'i3s-content-nodejs-worker.js');
+    await this.installWorker('i3s', 'i3s-content-nodejs-worker.js', workersPath);
 
     console.log('Installing "Draco Loader worker"'); // eslint-disable-line no-console
-    await this.installWorker('draco', 'draco-nodejs-worker.js');
+    await this.installWorker('draco', 'draco-nodejs-worker.js', workersPath);
 
     console.log('Installing "Basis Loader worker"'); // eslint-disable-line no-console
-    await this.installWorker('textures', 'basis-nodejs-worker.js');
+    await this.installWorker('textures', 'basis-nodejs-worker.js', workersPath);
 
     console.log('All dependencies were installed succesfully.'); // eslint-disable-line no-console
   }
 
-  private async installWorker(module: string, name: string) {
+  private async installWorker(module: string, name: string, extraPath: string) {
     const fileResponse = await fetchFile(
       `https://unpkg.com/@loaders.gl/${module}@${VERSION}/dist/${name}`
     );
@@ -50,7 +53,7 @@ export class DepsInstaller {
     if (!fileData) {
       return;
     }
-    const path = join(process.cwd(), 'modules', module, 'dist');
+    const path = join(process.cwd(), extraPath, 'modules', module, 'dist');
     await writeFile(path, fileData, name);
   }
 }
