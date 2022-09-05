@@ -93,11 +93,6 @@ export default async function convertB3dmToI3sGeometry(
 
   const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
 
-  // const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
-  //   dataForAttributesConversion,
-  //   useCartesianPositions
-  // );
-
   const convertedAttributesMap: Map<string, ConvertedAttributes> =
     await transformI3SAttributesOnWorker(dataForAttributesConversion, {
       reuseWorkers: true,

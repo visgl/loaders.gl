@@ -473,6 +473,15 @@ export default class I3SConverter {
     await this._addNeighborsAndWriteFile(data.parentNode, childNodes);
   }
 
+  /**
+   * Convert nested subtree of 3DTiles dataset
+   * @param param0
+   * @param param0.sourceTile - source 3DTile data
+   * @param param0.parentNode - parent I3S node
+   * @param param0.childNodes - child I3S nodes
+   * @param param0.parentId - parent node ID
+   * @param param0.level - tree level
+   */
   private async convertNestedTileset({
     sourceTile,
     parentNode,
@@ -497,6 +506,15 @@ export default class I3SConverter {
     await sourceTile.unloadContent();
   }
 
+  /**
+   * Convert 3DTiles tile to I3S node
+   * @param param0
+   * @param param0.sourceTile - source 3DTile data
+   * @param param0.parentNode - parent I3S node
+   * @param param0.childNodes - child I3S nodes
+   * @param param0.parentId - parent node ID
+   * @param param0.level - tree level
+   */
   private async convertNode({
     sourceTile,
     parentNode,
@@ -548,30 +566,10 @@ export default class I3SConverter {
 
     for (const sourceTile of sourceTiles) {
       if (sourceTile.type === 'json') {
-        // await this.sourceTileset!._loadTile(sourceTile);
-        // await this._addChildren({
-        //   parentNode,
-        //   sourceTiles: sourceTile.children,
-        //   childNodes,
-        //   parentId,
-        //   level: level + 1
-        // });
-        // await sourceTile.unloadContent();
         promises.push(
           this.convertNestedTileset({sourceTile, parentNode, childNodes, parentId, level})
         );
       } else {
-        // const children = await this._createNode(parentNode, sourceTile, parentId, level);
-        // parentNode.children = parentNode.children || [];
-        // for (const child of children) {
-        //   parentNode.children.push({
-        //     id: child.id,
-        //     href: `../${child.path}`,
-        //     obb: child.obb,
-        //     mbs: child.mbs
-        //   });
-        //   childNodes.push(child);
-        // }
         promises.push(this.convertNode({sourceTile, parentNode, childNodes, parentId, level}));
       }
       await Promise.all(promises);
