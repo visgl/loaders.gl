@@ -172,7 +172,7 @@ export default class NodePages {
    * @param node - node object
    */
   updateResourceInMesh(node: NodeInPage): void {
-    if (node.mesh && node.index) {
+    if (node.mesh && isFinite(node.index)) {
       node.mesh.geometry.resource = node.index;
     }
   }
