@@ -251,6 +251,8 @@ export type StatisticsInfo = {
   name: string;
   /** The URL to the statistics information. */
   href: string;
+  /** Parsed statistics data. */
+  stats?: any;
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePageDefinition.cmn.md */
 export type NodePageDefinition = {

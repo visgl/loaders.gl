@@ -1,5 +1,6 @@
 import './helpers/i3s-nodepages-tiles.spec';
 import './lib/parsers/url-utils.spec';
+import './lib/parsers/parse-i3s-statistics.spec';
 
 import './i3s-loader.spec';
 import './i3s-node-page-loader.spec';
