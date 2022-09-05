@@ -1033,7 +1033,7 @@ export type StatsInfo = {
 };
 
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/histogram.cmn.md */
-type Histogram = {
+export type Histogram = {
   /** Minimum attribute value for the entire layer. */
   minimum: number;
   /** Maximum attribute value for the entire layer. Maximum array size for stats.histo.counts is 256. */
@@ -1042,7 +1042,7 @@ type Histogram = {
   counts: number;
 };
 
-type ValueCount = {
+export type ValueCount = {
   /** Type of the attribute values after decompression, if applicable. Please note that string is not supported for point cloud scene layer attributes. */
   value: number | string;
   /** Count of the number of values. May exceed 32 bits. */
