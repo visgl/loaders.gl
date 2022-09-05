@@ -1029,7 +1029,7 @@ export type StatsInfo = {
   /** Represents the histogram. */
   histogram?: Histogram;
   /** An array of most frequently used values within the point cloud scene layer. */
-  mostFrequentValues?: ValueCount;
+  mostFrequentValues?: ValueCount[];
 };
 
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/histogram.cmn.md */
