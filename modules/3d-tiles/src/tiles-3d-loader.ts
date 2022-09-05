@@ -49,7 +49,7 @@ async function parseTileset(data, options, context) {
   tilesetJson.url = context.url;
   // base path that non-absolute paths in tileset are relative to.
   tilesetJson.basePath = getBaseUri(tilesetJson);
-  tilesetJson.root = await normalizeTileHeaders(tilesetJson);
+  tilesetJson.root = await normalizeTileHeaders(tilesetJson, options);
 
   tilesetJson.type = TILESET_TYPE.TILES3D;
 
