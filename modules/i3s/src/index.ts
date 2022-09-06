@@ -26,6 +26,8 @@ export type {
   I3SMaterialDefinition,
   TextureDefinitionInfo,
   MaterialDefinitionInfo,
-  FullExtent
+  FullExtent,
+  StatisticsInfo,
+  StatsInfo
 } from './types';
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';

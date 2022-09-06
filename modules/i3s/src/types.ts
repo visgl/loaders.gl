@@ -960,3 +960,46 @@ type CameraPosition = {
   y: number;
   z: number;
 };
+
+/**
+ * Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/statsInfo.cmn.md
+ */
+export type StatsInfo = {
+  /** Represents the count of the value. */
+  totalValuesCount?: number;
+  /** Minimum attribute value for the entire layer. */
+  min?: number;
+  /** Maximum attribute value for the entire layer. */
+  max?: number;
+  /** Count for the entire layer. */
+  count?: number;
+  /** Sum of the attribute values over the entire layer. */
+  sum?: number;
+  /** Representing average or mean value. For example, sum/count. */
+  avg?: number;
+  /** Representing the standard deviation. */
+  stddev?: number;
+  /**	Representing variance. For example, stats.stddev *stats.stddev. */
+  variance?: number;
+  /** Represents the histogram. */
+  histogram?: Histogram;
+  /** An array of most frequently used values within the point cloud scene layer. */
+  mostFrequentValues?: ValueCount[];
+};
+
+/** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/histogram.cmn.md */
+export type Histogram = {
+  /** Minimum attribute value for the entire layer. */
+  minimum: number;
+  /** Maximum attribute value for the entire layer. Maximum array size for stats.histo.counts is 256. */
+  maximum: number;
+  /** Count for the entire layer. */
+  counts: number;
+};
+
+export type ValueCount = {
+  /** Type of the attribute values after decompression, if applicable. Please note that string is not supported for point cloud scene layer attributes. */
+  value: number | string;
+  /** Count of the number of values. May exceed 32 bits. */
+  count: number;
+};
