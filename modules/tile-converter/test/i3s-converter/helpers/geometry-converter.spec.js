@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {load, fetchFile, setLoaderOptions, getLoaderOptions} from '@loaders.gl/core';
+import {load, fetchFile, setLoaderOptions, getLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import convertB3dmToI3sGeometry, {
@@ -23,6 +23,10 @@ setLoaderOptions({
 });
 
 test('tile-converter - I3S Geometry converter # should convert Frankfurt tile content', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
   async function testTileContent(draco, generateBoundingVolumes) {
     const nodeId = 1;
     const featuresHashArray = [];
@@ -101,6 +105,10 @@ test('tile-converter - I3S Geometry converter # should convert Frankfurt tile co
 });
 
 test('tile-converter - I3S Geometry converter # should convert Berlin tile content', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
   const nodeId = 1;
   const featuresHashArray = [];
   const draco = true;
@@ -172,6 +180,10 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
 });
 
 test('tile-converter - I3S Geometry converter # should convert New York tile content', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
   const nodeId = 1;
   const featuresHashArray = [];
   const draco = true;
@@ -228,6 +240,10 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
 });
 
 test('tile-converter - I3S Geometry converter # should convert Ferry tile content', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
   const nodeId = 1;
   const featuresHashArray = [];
   const draco = true;
