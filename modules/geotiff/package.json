@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geotiff",
-  "version": "3.2.8",
+  "version": "3.2.9",
   "description": "Framework-independent loaders for tiff and geotiff",
   "license": "MIT",
   "publishConfig": {

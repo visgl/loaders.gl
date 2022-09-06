@@ -1,5 +1,9 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.9
+
+- chore(i3s): add statistic types (#2247)
+
 ## v3.2.8
 
 - fix(worker-utils): check node worker properly (#2232)
