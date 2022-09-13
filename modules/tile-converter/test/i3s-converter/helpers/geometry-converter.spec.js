@@ -9,6 +9,7 @@ import convertB3dmToI3sGeometry, {
 import {PGMLoader} from '../../../src/pgm-loader';
 import {calculateTransformProps} from '../../../../tiles/src/tileset/helpers/transform-utils';
 import {createdStorageAttribute} from '../../../src/i3s-converter/helpers/feature-attributes';
+import {I3SAttributesWorker} from '../../../src/i3s-attributes-worker';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 const FRANKFURT_B3DM_FILE_PATH =
@@ -28,7 +29,8 @@ test('tile-converter - I3S Geometry converter # should convert Frankfurt tile co
     return;
   }
   async function testTileContent(draco, generateBoundingVolumes) {
-    const nodeId = 1;
+    let nodeId = 1;
+    const addNodeToNodePage = () => nodeId++;
     const featuresHashArray = [];
     const tileHeaderRequiredProps = {
       computedTransform: [
@@ -45,7 +47,7 @@ test('tile-converter - I3S Geometry converter # should convert Frankfurt tile co
     try {
       const convertedResources = await convertB3dmToI3sGeometry(
         tileContent,
-        nodeId,
+        addNodeToNodePage,
         propertyTable,
         featuresHashArray,
         attributeStorageInfo,
@@ -109,7 +111,8 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
     t.end();
     return;
   }
-  const nodeId = 1;
+  let nodeId = 1;
+  const addNodeToNodePage = () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;
@@ -126,7 +129,7 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
       tileContent,
-      nodeId,
+      addNodeToNodePage,
       propertyTable,
       featuresHashArray,
       attributeStorageInfo,
@@ -184,7 +187,8 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
     t.end();
     return;
   }
-  const nodeId = 1;
+  let nodeId = 1;
+  const addNodeToNodePage = () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;
@@ -203,7 +207,7 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
       tileContent,
-      nodeId,
+      addNodeToNodePage,
       propertyTable,
       featuresHashArray,
       attributeStorageInfo,
@@ -244,7 +248,8 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
     t.end();
     return;
   }
-  const nodeId = 1;
+  let nodeId = 1;
+  const addNodeToNodePage = () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;
@@ -265,7 +270,7 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
       tileContent,
-      nodeId,
+      addNodeToNodePage,
       propertyTable,
       featuresHashArray,
       attributeStorageInfo,
@@ -308,11 +313,17 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
 });
 
 async function getWorkersSource() {
-  const result = {draco: ''};
+  const result = {draco: '', I3SAttributes: ''};
   const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
-  const sourceResponse = await fetchFile(url);
-  const source = await sourceResponse.text();
+  let sourceResponse = await fetchFile(url);
+  let source = await sourceResponse.text();
   result.draco = source;
+
+  const i3sAttributesWorkerUrl = getWorkerURL(I3SAttributesWorker, {...getLoaderOptions()});
+  sourceResponse = await fetchFile(i3sAttributesWorkerUrl);
+  source = await sourceResponse.text();
+  result.I3SAttributes = source;
+
   return result;
 }
 
