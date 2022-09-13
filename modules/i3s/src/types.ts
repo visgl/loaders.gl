@@ -157,7 +157,7 @@ export type BoundingVolumes = {
 export type Obb = {
   center: number[] | Vector3;
   halfSize: number[] | Vector3;
-  quaternion: Quaternion;
+  quaternion: number[] | Quaternion;
 };
 
 export type Mbs = [number, number, number, number];

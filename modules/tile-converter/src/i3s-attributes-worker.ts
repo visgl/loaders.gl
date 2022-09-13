@@ -10,6 +10,8 @@ import {processOnWorker} from '@loaders.gl/worker-utils';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type I3SAttributesWorkerOptions = {
+  _nodeWorkers: boolean;
+  reuseWorkers: boolean;
   useCartesianPositions: boolean;
   source: string;
 };

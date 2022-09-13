@@ -474,6 +474,74 @@ export default class I3SConverter {
   }
 
   /**
+   * Convert nested subtree of 3DTiles dataset
+   * @param param0
+   * @param param0.sourceTile - source 3DTile data
+   * @param param0.parentNode - parent I3S node
+   * @param param0.childNodes - child I3S nodes
+   * @param param0.parentId - parent node ID
+   * @param param0.level - tree level
+   */
+  private async convertNestedTileset({
+    sourceTile,
+    parentNode,
+    childNodes,
+    parentId,
+    level
+  }: {
+    childNodes: NodeReference[];
+    sourceTile: TileHeader;
+    parentNode: Node3DIndexDocument;
+    parentId: number;
+    level: number;
+  }) {
+    await this.sourceTileset!._loadTile(sourceTile);
+    await this._addChildren({
+      parentNode,
+      sourceTiles: sourceTile.children,
+      childNodes,
+      parentId,
+      level: level + 1
+    });
+    await sourceTile.unloadContent();
+  }
+
+  /**
+   * Convert 3DTiles tile to I3S node
+   * @param param0
+   * @param param0.sourceTile - source 3DTile data
+   * @param param0.parentNode - parent I3S node
+   * @param param0.childNodes - child I3S nodes
+   * @param param0.parentId - parent node ID
+   * @param param0.level - tree level
+   */
+  private async convertNode({
+    sourceTile,
+    parentNode,
+    childNodes,
+    parentId,
+    level
+  }: {
+    childNodes: NodeReference[];
+    sourceTile: TileHeader;
+    parentNode: Node3DIndexDocument;
+    parentId: number;
+    level: number;
+  }) {
+    const children = await this._createNode(parentNode, sourceTile, parentId, level);
+    parentNode.children = parentNode.children || [];
+    for (const child of children) {
+      parentNode.children.push({
+        id: child.id,
+        href: `../${child.path}`,
+        obb: child.obb,
+        mbs: child.mbs
+      });
+      childNodes.push(child);
+    }
+  }
+
+  /**
    * Add child nodes recursively and write them to files
    * @param data - arguments
    * @param data.childNodes - array of target child nodes
@@ -493,30 +561,18 @@ export default class I3SConverter {
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
+
+    const promises: Promise<void>[] = [];
+
     for (const sourceTile of sourceTiles) {
       if (sourceTile.type === 'json') {
-        await this.sourceTileset!._loadTile(sourceTile);
-        await this._addChildren({
-          parentNode,
-          sourceTiles: sourceTile.children,
-          childNodes,
-          parentId,
-          level: level + 1
-        });
-        await sourceTile.unloadContent();
+        promises.push(
+          this.convertNestedTileset({sourceTile, parentNode, childNodes, parentId, level})
+        );
       } else {
-        const children = await this._createNode(parentNode, sourceTile, parentId, level);
-        parentNode.children = parentNode.children || [];
-        for (const child of children) {
-          parentNode.children.push({
-            id: child.id,
-            href: `../${child.path}`,
-            obb: child.obb,
-            mbs: child.mbs
-          });
-          childNodes.push(child);
-        }
+        promises.push(this.convertNode({sourceTile, parentNode, childNodes, parentId, level}));
       }
+      await Promise.all(promises);
       if (sourceTile.id) {
         console.log(sourceTile.id); // eslint-disable-line
       }
@@ -589,7 +645,7 @@ export default class I3SConverter {
       this._convertPropertyTableToNodeAttributes(propertyTable);
     }
 
-    const resourcesData = await this._convertResources(sourceTile, propertyTable);
+    const resourcesData = await this._convertResources(sourceTile, parentId, propertyTable);
 
     const nodes: Node3DIndexDocument[] = [];
     const nodesInPage: NodeInPage[] = [];
@@ -617,7 +673,7 @@ export default class I3SConverter {
         (val) => val.metricType === 'maxScreenThresholdSQ'
       ) || {maxError: 0};
 
-      const nodeInPage = this._createNodeInNodePages(
+      const nodeInPage = this._updateNodeInNodePages(
         maxScreenThresholdSQ,
         boundingVolumes,
         sourceTile,
@@ -662,6 +718,8 @@ export default class I3SConverter {
   /**
    * Convert tile to one or more I3S nodes
    * @param sourceTile - source tile (3DTile)
+   * @param parentId - id of parent node in node pages
+   * @param propertyTable - batch table from b3dm / feature properties from EXT_FEATURE_METADATA
    * result.geometry - ArrayBuffer with geometry attributes
    * result.compressedGeometry - ArrayBuffer with compressed (draco) geometry
    * result.texture - texture image
@@ -673,14 +731,20 @@ export default class I3SConverter {
    */
   private async _convertResources(
     sourceTile: TileHeader,
+    parentId: number,
     propertyTable: FeatureTableJson | null
   ): Promise<I3SConvertedResources[] | null> {
     if (!this.isContentSupported(sourceTile)) {
       return null;
     }
+    const draftObb = {
+      center: [],
+      halfSize: [],
+      quaternion: []
+    };
     const resourcesData = await convertB3dmToI3sGeometry(
       sourceTile.content,
-      Number(this.nodePages.nodesCounter),
+      () => this.nodePages.push({index: 0, obb: draftObb}, parentId),
       propertyTable,
       this.featuresHashArray,
       this.layers0?.attributeStorageInfo,
@@ -693,7 +757,7 @@ export default class I3SConverter {
   }
 
   /**
-   * Create a new node object (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/node.cmn.md)
+   * Update node object (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/node.cmn.md)
    * in node pages (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodePage.cmn.md)
    * @param maxScreenThresholdSQ - Level of Details (LOD) metric
    * @param boundingVolumes - Bounding volumes
@@ -706,7 +770,7 @@ export default class I3SConverter {
    * @param resources.featureCount - number of features
    * @return the node object in node pages
    */
-  private _createNodeInNodePages(
+  private _updateNodeInNodePages(
     maxScreenThresholdSQ: MaxScreenThresholdSQ,
     boundingVolumes: BoundingVolumes,
     sourceTile: TileHeader,
@@ -734,7 +798,15 @@ export default class I3SConverter {
         }
       };
     }
-    const nodeId = this.nodePages.push(nodeInPage, parentId);
+
+    let nodeId = resources.nodeId;
+    if (nodeId) {
+      this.nodePages.updateAll(nodeId, nodeInPage);
+      const node = this.nodePages.getNodeById(nodeId);
+      this.nodePages.updateResourceInMesh(node);
+    } else {
+      nodeId = this.nodePages.push(nodeInPage, parentId);
+    }
 
     if (meshMaterial) {
       this.nodePages.updateMaterialByNodeId(nodeId, this._findOrCreateMaterial(meshMaterial));
@@ -754,7 +826,7 @@ export default class I3SConverter {
       this.nodePages.updateFeatureCountByNodeId(nodeId, featureCount);
     }
 
-    return nodeInPage;
+    return this.nodePages.getNodeById(nodeId);
   }
 
   /**

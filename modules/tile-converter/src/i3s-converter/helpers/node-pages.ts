@@ -80,6 +80,14 @@ export default class NodePages {
   }
 
   /**
+   * Update all fields in the node excluding id
+   */
+  updateAll(id: number, data: NodeInPage): void {
+    const node = this.getNodeById(id);
+    Object.assign(node, data, {index: node.index});
+  }
+
+  /**
    * Update material in node.mesh object by node id
    * @param id - end-to-end index of the node
    * @param materialId - id from scene layer materialDefinitions
@@ -114,7 +122,7 @@ export default class NodePages {
    */
   updateNodeAttributeByNodeId(id: number): void {
     const node = this.getNodeById(id);
-    if (!node.mesh) {
+    if (!node.mesh || !node.index) {
       return;
     }
     node.mesh.attribute.resource = node.index;
@@ -164,7 +172,7 @@ export default class NodePages {
    * @param node - node object
    */
   updateResourceInMesh(node: NodeInPage): void {
-    if (node.mesh) {
+    if (node.mesh && isFinite(node.index)) {
       node.mesh.geometry.resource = node.index;
     }
   }

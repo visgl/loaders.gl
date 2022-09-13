@@ -44,8 +44,11 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
           compressed: true
         };
       } else {
+        const data = imageObject?.image?.data;
+        const dataCopy = new Uint8Array(data.length);
+        dataCopy.set(data);
         return {
-          data: imageObject?.image?.data.subarray(),
+          data: dataCopy,
           compressed: false,
           height: imageObject.image.height,
           width: imageObject.image.width,

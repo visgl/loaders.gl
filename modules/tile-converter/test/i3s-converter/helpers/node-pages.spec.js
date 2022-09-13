@@ -5,11 +5,11 @@ import WritingQueue from '../../../src/lib/utils/write-queue';
 
 /** @type {import('@loaders.gl/i3s').NodeInPage} */
 const newNodeStub = {
+  index: 0,
   lodThreshold: 123.123,
   obb: {
     center: [-75.61326768454079, 40.0434352648084, 9.998422015481468],
     halfSize: [142.18765285081892, 142.18765285081892, 142.18765285081892],
-    // @ts-expect-error
     quaternion: [0, 0, 0, 1]
   },
   children: []
