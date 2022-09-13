@@ -15,7 +15,6 @@ import {Ellipsoid} from '@math.gl/geospatial';
 
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import {assert, encode} from '@loaders.gl/core';
-import {Tile3D} from '@loaders.gl/tiles';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
 import {generateAttributes} from './geometry-attributes';
@@ -1298,14 +1297,14 @@ function generateFeatureIndexAttribute(featureIndex, faceRange) {
  * @param sourceTile
  * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA
  */
-export function getPropertyTable(sourceTile: Tile3D): FeatureTableJson | null {
-  const batchTableJson = sourceTile?.content?.batchTableJson;
+export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | null {
+  const batchTableJson = tileContent?.batchTableJson;
 
   if (batchTableJson) {
     return batchTableJson;
   }
 
-  const {extensionName, extension} = getPropertyTableExtension(sourceTile);
+  const {extensionName, extension} = getPropertyTableExtension(tileContent);
 
   switch (extensionName) {
     case EXT_MESH_FEATURES: {
@@ -1324,9 +1323,9 @@ export function getPropertyTable(sourceTile: Tile3D): FeatureTableJson | null {
  * Check extensions which can be with property table inside.
  * @param sourceTile
  */
-function getPropertyTableExtension(sourceTile: Tile3D) {
+function getPropertyTableExtension(tileContent: B3DMContent) {
   const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
-  const extensionsUsed = sourceTile?.content?.gltf?.extensionsUsed;
+  const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
   if (!extensionsUsed) {
     return {extensionName: null, extension: null};
@@ -1334,14 +1333,14 @@ function getPropertyTableExtension(sourceTile: Tile3D) {
 
   let extensionName: string = '';
 
-  for (const extensionItem of sourceTile?.content?.gltf?.extensionsUsed) {
+  for (const extensionItem of tileContent?.gltf?.extensionsUsed || []) {
     if (extensionsWithPropertyTables.includes(extensionItem)) {
       extensionName = extensionItem;
       break;
     }
   }
 
-  const extension = sourceTile?.content?.gltf?.extensions?.[extensionName];
+  const extension = tileContent?.gltf?.extensions?.[extensionName];
 
   return {extensionName, extension};
 }

@@ -2,19 +2,13 @@ import type {Tile3D, Tileset3DProps} from '@loaders.gl/tiles';
 import type {FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {WriteQueueItem} from '../lib/utils/write-queue';
 import type {
-  AttributeStorageInfo,
   SceneLayer3D,
   BoundingVolumes,
   Node3DIndexDocument,
   NodeReference,
   MaxScreenThresholdSQ,
   NodeInPage,
-  LodSelection,
-  Attribute,
-  ESRIField,
-  Field,
-  PopupInfo,
-  FieldInfo
+  LodSelection
 } from '@loaders.gl/i3s';
 import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
@@ -59,6 +53,13 @@ import {DracoWriterWorker} from '@loaders.gl/draco';
 import WriteQueue from '../lib/utils/write-queue';
 import {I3SAttributesWorker} from '../i3s-attributes-worker';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
+import {
+  createdStorageAttribute,
+  createFieldAttribute,
+  createPopupInfo,
+  getAttributeType,
+  getFieldAttributeType
+} from './helpers/feature-attributes';
 
 const ION_DEFAULT_TOKEN =
   process.env?.IonToken || // eslint-disable-line
@@ -66,10 +67,6 @@ const ION_DEFAULT_TOKEN =
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';
 const _3D_OBJECT_LAYER_TYPE = '3DObject';
-const STRING_TYPE = 'string';
-const SHORT_INT_TYPE = 'Int32';
-const DOUBLE_TYPE = 'double';
-const OBJECT_ID_TYPE = 'OBJECTID';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
 const CESIUM_DATASET_PREFIX = 'https://';
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
@@ -639,7 +636,7 @@ export default class I3SConverter {
 
     let boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel!);
 
-    const propertyTable = getPropertyTable(sourceTile);
+    const propertyTable = getPropertyTable(sourceTile.content);
 
     if (propertyTable && !this.layers0?.attributeStorageInfo?.length) {
       this._convertPropertyTableToNodeAttributes(propertyTable);
@@ -1151,115 +1148,6 @@ export default class I3SConverter {
   }
 
   /**
-   * Generate storage attribute for map segmentation.
-   * @param attributeIndex - order index of attribute (f_0, f_1 ...).
-   * @param key - attribute key from propertyTable.
-   * @param attributeType - attribute type.
-   * @return Updated storageAttribute.
-   */
-  private _createdStorageAttribute(
-    attributeIndex: number,
-    key: string,
-    attributeType: Attribute
-  ): AttributeStorageInfo {
-    const storageAttribute = {
-      key: `f_${attributeIndex}`,
-      name: key,
-      ordering: ['attributeValues'],
-      header: [{property: 'count', valueType: 'UInt32'}],
-      attributeValues: {valueType: 'Int32', valuesPerElement: 1}
-    };
-
-    switch (attributeType) {
-      case OBJECT_ID_TYPE:
-        this._setupIdAttribute(storageAttribute);
-        break;
-      case STRING_TYPE:
-        this._setupStringAttribute(storageAttribute);
-        break;
-      case DOUBLE_TYPE:
-        this._setupDoubleAttribute(storageAttribute);
-        break;
-      case SHORT_INT_TYPE:
-        break;
-      default:
-        this._setupStringAttribute(storageAttribute);
-    }
-
-    return storageAttribute;
-  }
-
-  /**
-   * Get the attribute type for attributeStorageInfo https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
-   * @param key - attribute's key
-   * @param attribute - attribute's type in propertyTable
-   */
-  private getAttributeType(key: string, attribute: string): string {
-    if (key === OBJECT_ID_TYPE) {
-      return OBJECT_ID_TYPE;
-    }
-    if (typeof attribute === STRING_TYPE) {
-      return STRING_TYPE;
-    } else if (typeof attribute === 'number') {
-      return Number.isInteger(attribute) ? SHORT_INT_TYPE : DOUBLE_TYPE;
-    }
-    return STRING_TYPE;
-  }
-
-  /**
-   * Setup storage attribute as string.
-   * @param storageAttribute - attribute for map segmentation.
-   */
-  private _setupStringAttribute(storageAttribute: AttributeStorageInfo): void {
-    storageAttribute.ordering!.unshift('attributeByteCounts');
-    storageAttribute.header.push({property: 'attributeValuesByteCount', valueType: 'UInt32'});
-    storageAttribute.attributeValues = {
-      valueType: 'String',
-      encoding: 'UTF-8',
-      valuesPerElement: 1
-    };
-    storageAttribute.attributeByteCounts = {
-      valueType: 'UInt32',
-      valuesPerElement: 1
-    };
-  }
-
-  /**
-   * Setup Id attribute for map segmentation.
-   * @param storageAttribute - attribute for map segmentation .
-   */
-  private _setupIdAttribute(storageAttribute: AttributeStorageInfo): void {
-    storageAttribute.attributeValues = {
-      valueType: 'Oid32',
-      valuesPerElement: 1
-    };
-  }
-
-  /**
-   * Setup double attribute for map segmentation.
-   * @param storageAttribute - attribute for map segmentation .
-   */
-  private _setupDoubleAttribute(storageAttribute: AttributeStorageInfo): void {
-    storageAttribute.attributeValues = {
-      valueType: 'Float64',
-      valuesPerElement: 1
-    };
-  }
-
-  /**
-   * Setup field attribute for map segmentation.
-   * @param key - attribute for map segmentation.
-   * @param fieldAttributeType - esri attribute type ('esriFieldTypeString' or 'esriFieldTypeOID').
-   */
-  private _createFieldAttribute(key: string, fieldAttributeType: ESRIField): Field {
-    return {
-      name: key,
-      type: fieldAttributeType,
-      alias: key
-    };
-  }
-
-  /**
    * Do conversion of 3DTiles property table to I3s node attributes.
    * @param propertyTable - Table with layer meta data.
    */
@@ -1272,12 +1160,12 @@ export default class I3SConverter {
 
     for (const key in propertyTableWithObjectId) {
       const firstAttribute = propertyTableWithObjectId[key][0];
-      const attributeType = this.getAttributeType(key, firstAttribute);
+      const attributeType = getAttributeType(key, firstAttribute);
 
-      const storageAttribute = this._createdStorageAttribute(attributeIndex, key, attributeType);
-      const fieldAttributeType = this._getFieldAttributeType(attributeType);
-      const fieldAttribute = this._createFieldAttribute(key, fieldAttributeType);
-      const popupInfo = this._createPopupInfo(propertyTableWithObjectId);
+      const storageAttribute = createdStorageAttribute(attributeIndex, key, attributeType);
+      const fieldAttributeType = getFieldAttributeType(attributeType);
+      const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
+      const popupInfo = createPopupInfo(propertyTableWithObjectId);
 
       this.layers0!.attributeStorageInfo!.push(storageAttribute);
       this.layers0!.fields!.push(fieldAttribute);
@@ -1286,62 +1174,6 @@ export default class I3SConverter {
 
       attributeIndex += 1;
     }
-  }
-
-  /**
-   * Find and return attribute type based on key form propertyTable.
-   * @param attributeType
-   */
-  private _getFieldAttributeType(attributeType: Attribute): ESRIField {
-    switch (attributeType) {
-      case OBJECT_ID_TYPE:
-        return 'esriFieldTypeOID';
-      case STRING_TYPE:
-        return 'esriFieldTypeString';
-      case SHORT_INT_TYPE:
-        return 'esriFieldTypeInteger';
-      case DOUBLE_TYPE:
-        return 'esriFieldTypeDouble';
-      default:
-        return 'esriFieldTypeString';
-    }
-  }
-
-  /**
-   * Generate popup info to show metadata on the map.
-   * @param propertyTable - table data with OBJECTID.
-   * @return data for correct rendering of popup.
-   */
-  private _createPopupInfo(propertyTable: FeatureTableJson): PopupInfo {
-    const title = '{OBJECTID}';
-    const mediaInfos = [];
-    const fieldInfos: FieldInfo[] = [];
-    const popupElements: {
-      fieldInfos: FieldInfo[];
-      type: string;
-    }[] = [];
-    const expressionInfos = [];
-
-    for (const key in propertyTable) {
-      fieldInfos.push({
-        fieldName: key,
-        visible: true,
-        isEditable: false,
-        label: key
-      });
-    }
-    popupElements.push({
-      fieldInfos,
-      type: 'fields'
-    });
-
-    return {
-      title,
-      mediaInfos,
-      popupElements,
-      fieldInfos,
-      expressionInfos
-    };
   }
 
   /**
