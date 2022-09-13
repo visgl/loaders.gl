@@ -72,15 +72,19 @@ export function checkPropertiesLength(
   return needFlatten;
 }
 
+/** String data type name for feature attributes */
+const STRING_TYPE = 'string';
+/** Integer data type name for feature attributes */
+const SHORT_INT_TYPE = 'Int32';
+/** Double data type name for feature attributes */
+const DOUBLE_TYPE = 'double';
+/** Type of attribute that is linked with feature ids */
+const OBJECT_ID_TYPE = 'OBJECTID';
 /**
  * Get the attribute type for attributeStorageInfo https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
  * @param key - attribute's key
  * @param attribute - attribute's type in propertyTable
  */
-const STRING_TYPE = 'string';
-const SHORT_INT_TYPE = 'Int32';
-const DOUBLE_TYPE = 'double';
-const OBJECT_ID_TYPE = 'OBJECTID';
 export function getAttributeType(key: string, attribute: string): string {
   if (key === OBJECT_ID_TYPE) {
     return OBJECT_ID_TYPE;
