@@ -205,59 +205,70 @@ export class Tileset3D {
   lodMetricType: string;
   lodMetricValue: number;
   refine: string;
-  root: Tile3D | null;
-  roots: {[key: string]: Tile3D};
-  asset: {[key: string]: any};
+  root: Tile3D | null = null;
+  roots: Record<string, Tile3D> = {};
+  /** @todo any->unknown */
+  asset: Record<string, any> = {};
 
-  description: string;
+  // Metadata for the entire tileset
+  description: string = '';
   properties: any;
-  extras: any;
-  attributions: any;
-  credits: any;
+
+  extras: any = null;
+  attributions: any = {};
+  credits: any = {};
 
   stats: Stats;
 
   /** flags that contain information about data types in nested tiles */
   contentFormats = {draco: false, meshopt: false, dds: false, ktx2: false};
 
-  traverseCounter: number;
-  geometricError: number;
-  selectedTiles: Tile3D[];
-  private updatePromise: Promise<number> | null = null;
-  tilesetInitializationPromise: Promise<void>;
+  // view props
+  cartographicCenter: Vector3 | null = null;
+  cartesianCenter: Vector3 | null = null;
+  zoom: number = 1;
+  boundingVolume: any = null;
 
-  cartographicCenter: Vector3 | null;
-  cartesianCenter: Vector3 | null;
-  zoom: number;
-  boundingVolume: any;
+  /** Updated based on the camera position and direction */
+  dynamicScreenSpaceErrorComputedDensity: number = 0.0;
 
   // METRICS
-  // The maximum amount of GPU memory (in MB) that may be used to cache tiles.
-  // Tiles not in view are unloaded to enforce private
-  // The total amount of GPU memory in bytes used by the tileset.
-  gpuMemoryUsageInBytes: any;
-  dynamicScreenSpaceErrorComputedDensity: any;
+
+  /**
+   * The maximum amount of GPU memory (in MB) that may be used to cache tiles
+   * Tiles not in view are unloaded to enforce private
+   */
+  maximumMemoryUsage: number = 32;
+
+  /** The total amount of GPU memory in bytes used by the tileset. */
+  gpuMemoryUsageInBytes: number = 0;
+
+  /** Update tracker. increase in each update cycle. */
+  _frameNumber: number = 0;
+  private _queryParams: Record<string, string> = {};
+  private _extensionsUsed: string[] = [];
+  private _tiles: Record<string, Tile3D> = {};
+
+  /** counter for tracking tiles requests */
+  private _pendingCount: number = 0;
+
+  /** Hold traversal results */
+  selectedTiles: Tile3D[] = [];
 
   // TRAVERSAL
+  traverseCounter: number = 0;
+  geometricError: number = 0;
+  private lastUpdatedVieports: Viewport[] | Viewport | null = null;
+  private _requestedTiles: Tile3D[] = [];
+  private _emptyTiles: Tile3D[] = [];
+  private frameStateData: any = {};
   _traverser: TilesetTraverser;
-  private _cache: TilesetCache;
+  private _cache = new TilesetCache();
   _requestScheduler: RequestScheduler;
 
-  _frameNumber: number;
-  private _queryParams: Record<string, string> = {};
-  private _extensionsUsed: any;
-  private _tiles: {[id: string]: Tile3D};
-
-  // counter for tracking tiles requests
-  private _pendingCount: any;
-
-  // HOLD TRAVERSAL RESULTS
-  private lastUpdatedVieports: Viewport[] | Viewport | null;
-  private _requestedTiles: any;
-  private _emptyTiles: any;
-  private frameStateData: any;
-
-  maximumMemoryUsage: number;
+  // Promise tracking
+  private updatePromise: Promise<number> | null = null;
+  tilesetInitializationPromise: Promise<void>;
 
   /**
    * Create a new Tileset3D
@@ -288,55 +299,17 @@ export class Tileset3D {
 
     this.loadOptions = this.options.loadOptions || {};
 
-    this.root = null;
-    this.roots = {};
-    // view props
-    this.cartographicCenter = null;
-    this.cartesianCenter = null;
-    this.zoom = 1;
-    this.boundingVolume = null;
-
     // TRAVERSAL
-    this.traverseCounter = 0;
-    this.geometricError = 0;
     this._traverser = this._initializeTraverser();
-    this._cache = new TilesetCache();
     this._requestScheduler = new RequestScheduler({
       throttleRequests: this.options.throttleRequests,
       maxRequests: this.options.maxRequests
     });
-    // update tracker
-    // increase in each update cycle
-    this._frameNumber = 0;
-
-    // counter for tracking tiles requests
-    this._pendingCount = 0;
-
-    // HOLD TRAVERSAL RESULTS
-    this._tiles = {};
-    this.selectedTiles = [];
-    this._emptyTiles = [];
-    this._requestedTiles = [];
-    this.frameStateData = {};
-    this.lastUpdatedVieports = null;
 
     // METRICS
-    // The maximum amount of GPU memory (in MB) that may be used to cache tiles.
-    // Tiles not in view are unloaded to enforce this.
-    this.maximumMemoryUsage = this.options.maximumMemoryUsage || 32;
     // The total amount of GPU memory in bytes used by the tileset.
-    this.gpuMemoryUsageInBytes = 0;
     this.stats = new Stats({id: this.url});
     this._initializeStats();
-
-    // EXTRACTED FROM TILESET
-    this._extensionsUsed = undefined;
-    this.dynamicScreenSpaceErrorComputedDensity = 0.0; // Updated based on the camera position and direction
-    // Metadata for the entire tileset
-    this.extras = null;
-    this.asset = {};
-    this.credits = {};
-    this.description = this.options.description || '';
 
     this.tilesetInitializationPromise = this._initializeTileSet(json);
   }
@@ -362,7 +335,7 @@ export class Tileset3D {
 
   get queryParams(): string {
     const search = new URLSearchParams(this._queryParams).toString();
-    return search ? `?${search}` : search;
+    return search ? `?${search}` : '';
   }
 
   setProps(props: Tileset3DProps): void {
@@ -388,7 +361,7 @@ export class Tileset3D {
 
   // TODO CESIUM specific
   hasExtension(extensionName: string): boolean {
-    return Boolean(this._extensionsUsed && this._extensionsUsed.indexOf(extensionName) > -1);
+    return Boolean(this._extensionsUsed.indexOf(extensionName) > -1);
   }
 
   /**
@@ -748,7 +721,7 @@ export class Tileset3D {
     return rootTile;
   }
 
-  _initializeTraverser() {
+  _initializeTraverser(): TilesetTraverser {
     let TraverserClass;
     const type = this.type;
     switch (type) {
@@ -956,7 +929,7 @@ export class Tileset3D {
     // Gets the tileset's properties dictionary object, which contains metadata about per-feature properties.
     this.properties = tilesetJson.properties;
     this.geometricError = tilesetJson.geometricError;
-    this._extensionsUsed = tilesetJson.extensionsUsed;
+    this._extensionsUsed = tilesetJson.extensionsUsed || [];
     // Returns the extras property at the top of the tileset JSON (application specific metadata).
     this.extras = tilesetJson.extras;
   }
