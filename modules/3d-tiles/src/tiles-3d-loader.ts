@@ -47,6 +47,8 @@ async function parseTileset(data, options, context) {
   // eslint-disable-next-line no-use-before-define
   tilesetJson.loader = options.loader || Tiles3DLoader;
   tilesetJson.url = context.url;
+  tilesetJson.queryString = context.queryString;
+
   // base path that non-absolute paths in tileset are relative to.
   tilesetJson.basePath = getBaseUri(tilesetJson);
   tilesetJson.root = await normalizeTileHeaders(tilesetJson, options);

@@ -244,8 +244,7 @@ export class Tileset3D {
   _requestScheduler: RequestScheduler;
 
   _frameNumber: number;
-  private _queryParamsString: string;
-  private _queryParams: any;
+  private _queryParams: Record<string, string> = {};
   private _extensionsUsed: any;
   private _tiles: {[id: string]: Tile3D};
 
@@ -321,9 +320,6 @@ export class Tileset3D {
     this.frameStateData = {};
     this.lastUpdatedVieports = null;
 
-    this._queryParams = {};
-    this._queryParamsString = '';
-
     // METRICS
     // The maximum amount of GPU memory (in MB) that may be used to cache tiles.
     // Tiles not in view are unloaded to enforce this.
@@ -365,10 +361,8 @@ export class Tileset3D {
   }
 
   get queryParams(): string {
-    if (!this._queryParamsString) {
-      this._queryParamsString = new URLSearchParams(this._queryParams).toString();
-    }
-    return this._queryParamsString;
+    const search = new URLSearchParams(this._queryParams).toString()
+    return search ? `?${search}` : search;
   }
 
   setProps(props: Tileset3DProps): void {
@@ -930,6 +924,12 @@ export class Tileset3D {
   }
 
   _initializeTiles3DTileset(tilesetJson) {
+    if (tilesetJson.queryString) {
+      const searchParams = new URLSearchParams(tilesetJson.queryString);
+      const queryParams = Object.fromEntries(searchParams.entries());
+      this._queryParams = {...this._queryParams, ...queryParams};
+    }
+
     this.asset = tilesetJson.asset;
     if (!this.asset) {
       throw new Error('Tileset must have an asset property.');
@@ -960,7 +960,7 @@ export class Tileset3D {
 
   _initializeI3STileset() {
     if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
-      this._queryParams.token = this.loadOptions.i3s.token;
+      this._queryParams.token = this.loadOptions.i3s.token
     }
   }
 }

@@ -113,6 +113,14 @@ Target Release Date: April, 2023.
 
 - Support TRIANGLE_STRIP mesh topology type during 3DTiles -> I3S conversion
 
+**@loaders.gl/tiles**
+
+-  Now passes "query string" parameters from the URL passed to `Tiles3DLoader` etc to subloaders, enabling query string based authentication of 3D tilesets (`https://tileset-url?apiToken=...`).
+
+**@loaders.gl/core**
+
+- `LoaderContext` now provides a `queryString` field, primarily intended to make it easier for subloaders to access query string based authentication paramets.
+
 ## v3.3
 
 Release Date: February 17, 2023.

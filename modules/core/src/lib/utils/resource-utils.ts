@@ -1,51 +1,73 @@
+// loaders.gl, MIT license
+
 import {isResponse, isBlob} from '../../javascript-utils/is-type';
 import {parseMIMEType, parseMIMETypeFromURL} from './mime-type-utils';
-
-const QUERY_STRING_PATTERN = /\?.*/;
+import {stripQueryString} from './url-utils';
 
 /**
- * Returns an object with `url` and (MIME) `type` fields
- * If it cannot determine url or type, the corresponding value will be an empty string
- *
- * @param resource Any type, but only Responses, string URLs and data URLs are processed
+ * A loadable resource. Includes:
+ * `Response`, `Blob` (`File` is a subclass), string URLs and data URLs
+ */
+export type Resource = Response | Blob | string;
+
+/**
+ * Returns the URL associated with this resource.
+ * The returned value may include a query string and need further processing.
+ * If it cannot determine url, the corresponding value will be an empty string
  *
  * @todo string parameters are assumed to be URLs
  */
-export function getResourceUrlAndType(resource: any): {url: string; type: string} {
-  // If resource is a response, it contains the information directly
+export function getResourceUrl(resource: unknown): string {
+  // If resource is a `Response`, it contains the information directly as a field
   if (isResponse(resource)) {
-    const url = stripQueryString(resource.url || '');
-    const contentTypeHeader = resource.headers.get('content-type') || '';
-    return {
-      url,
-      type: parseMIMEType(contentTypeHeader) || parseMIMETypeFromURL(url)
-    };
+    const response = resource as Response;
+    return response.url;
   }
 
   // If the resource is a Blob or a File (subclass of Blob)
   if (isBlob(resource)) {
-    return {
-      // File objects have a "name" property. Blob objects don't have any
-      // url (name) information
-      url: stripQueryString(resource.name || ''),
-      type: resource.type || ''
-    };
+    const blob = resource as Blob;
+    // File objects have a "name" property. Blob objects don't have any
+    // url (name) information
+    return blob.name || '';
   }
 
   if (typeof resource === 'string') {
-    return {
-      // TODO this could mess up data URL but it doesn't matter as it is just used for inference
-      url: stripQueryString(resource),
-      // If a data url
-      type: parseMIMETypeFromURL(resource)
-    };
+    return resource;
   }
 
   // Unknown
-  return {
-    url: '',
-    type: ''
-  };
+  return '';
+}
+
+/**
+ * Returns the URL associated with this resource.
+ * The returned value may include a query string and need further processing.
+ * If it cannot determine url, the corresponding value will be an empty string
+ *
+ * @todo string parameters are assumed to be URLs
+ */
+export function getResourceMIMEType(resource: unknown): string {
+  // If resource is a response, it contains the information directly
+  if (isResponse(resource)) {
+    const response = resource as Response;
+    const contentTypeHeader = response.headers.get('content-type') || '';
+    const noQueryUrl = stripQueryString(response.url);
+    return parseMIMEType(contentTypeHeader) || parseMIMETypeFromURL(noQueryUrl);
+  }
+
+  // If the resource is a Blob or a File (subclass of Blob)
+  if (isBlob(resource)) {
+    const blob = resource as Blob;
+    return blob.type || '';
+  }
+
+  if (typeof resource === 'string') {
+    return parseMIMETypeFromURL(resource);
+  }
+
+  // Unknown
+  return '';
 }
 
 /**
@@ -55,12 +77,14 @@ export function getResourceUrlAndType(resource: any): {url: string; type: string
 
   * @note string parameters are NOT assumed to be URLs
   */
-export function getResourceContentLength(resource: any): number {
+export function getResourceContentLength(resource: unknown): number {
   if (isResponse(resource)) {
-    return resource.headers['content-length'] || -1;
+    const response = resource as Response;
+    return response.headers['content-length'] || -1;
   }
   if (isBlob(resource)) {
-    return resource.size;
+    const blob = resource as Blob;
+    return blob.size;
   }
   if (typeof resource === 'string') {
     // TODO - handle data URL?
@@ -73,8 +97,4 @@ export function getResourceContentLength(resource: any): number {
     return resource.byteLength;
   }
   return -1;
-}
-
-function stripQueryString(url) {
-  return url.replace(QUERY_STRING_PATTERN, '');
 }

@@ -11,7 +11,7 @@ import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromDataSync} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
-import {getResourceUrlAndType} from '../utils/resource-utils';
+import {getResourceUrl} from '../utils/resource-utils';
 
 /**
  * Parses `data` synchronously using a specified loader
@@ -52,12 +52,16 @@ export function parseSync(
   options = normalizeOptions(options, loader, candidateLoaders);
 
   // Extract a url for auto detection
-  const {url} = getResourceUrlAndType(data);
+  const url = getResourceUrl(data);
 
   const parse = () => {
-    throw new Error('parseSync called parse');
+    throw new Error('parseSync called parse (which is async');
   };
-  context = getLoaderContext({url, parseSync, parse, loaders: loaders as Loader[]}, options);
+  context = getLoaderContext(
+    {url, parseSync, parse, loaders: loaders as Loader[]},
+    options,
+    context || null
+  );
 
   return parseWithLoaderSync(loader as LoaderWithParser, data, options, context);
 }

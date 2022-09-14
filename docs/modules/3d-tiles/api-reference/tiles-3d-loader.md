@@ -73,7 +73,7 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 | Option               | Type             | Default | Description                                                                                                                                                           |
 | -------------------- | ---------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `3d-tiles.isTileset` | `Bool` or `auto` | `auto`  | Whether to load a `Tileset` file. If `auto`, will infer based on url extension.                                                                                       |
-| `3d-tiles.headers`   | Object           | null    | Used to load data from server                                                                                                                                         |
+| `3d-tiles.headers`   | `Object`         | `null`  | Used to load data from server                                                                                                                                         |
 | `3d-tiles.tileset`   | `Object`         | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](#tileset-object). It is required when loading i3s geometry content |
 | `3d-tiles.tile`      | `Object`         | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](#tile-object). It is required when loading i3s geometry content                       |
 

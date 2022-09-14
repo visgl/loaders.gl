@@ -216,6 +216,13 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
   t.end();
 });
 
+test('Tileset3D#passes query parameters onto child requests', async (t) => {
+  const queryString = '?a=123&b=abc';
+  const tilesetJson = await load(TILESET_URL + queryString, Tiles3DLoader);
+  const tileset = new Tileset3D(tilesetJson);
+  t.equals(tileset.queryParams, '?a=123&b=abc&v=1.2.3');
+  t.end();
+});
 /*
 test('Tileset3D#passes version in query string to tiles', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);

@@ -118,15 +118,22 @@ type PreloadOptions = {
 export type Loader = {
   // Worker
   name: string;
+  /** id should be the same as the field used in LoaderOptions */
   id: string;
+  /** module is used to generate worker threads, need to be the module directory name */
   module: string;
+  /** Version should be injected by build tools */
   version: string;
+  /** A boolean, or a URL */
   worker?: string | boolean;
+  /** Default Options */
   options: LoaderOptions;
+  /** Deprecated Options */
   deprecatedOptions?: object;
-  // end Worker
 
+  /** Which category does this loader belong to */
   category?: string;
+  /** What extensions does this loader generate */
   extensions: string[];
   mimeTypes: string[];
 
@@ -192,24 +199,48 @@ export type Writer = {
   encodeText?: EncodeText;
 };
 
+/**
+ * A Loader context is provided as a third parameters to a loader object's
+ * parse functions when that loader is called by other loaders rather then
+ * directly by the application.
+ *
+ * - The context object allows the subloaders to be aware of the parameters and
+ *   options that the application provided in the top level call.
+ * - The context also providedsaccess to parse functions so that the subloader
+ *   does not need to include the core module.
+ * - In addition, the context's parse functions may also redirect loads from worker
+ *   threads back to main thread.
+ */
 export type LoaderContext = {
   loaders?: Loader[] | null;
+  /** If URL is available.  */
   url?: string;
+  /** the file name component of the URL (leading path and query string removed) */
+  filename?: string;
+  /** the directory name component of the URL (leading path excluding file name and query string) */
+  baseUrl?: string;
+  /** Query string (characters after `?`) */
+  queryString?: string;
 
+  /** Provides access to any application overrides of fetch() */
   fetch: typeof fetch | FetchLike;
+  /** TBD */
   response?: Response;
+  /** Parse function. Use instead of importing `core`. In workers, may redirect to main thread */
   parse: (
     arrayBuffer: ArrayBuffer,
     loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
   ) => Promise<any>;
+  /** ParseSync function. Use instead of importing `core`. In workers, may redirect to main thread */
   parseSync?: (
     arrayBuffer: ArrayBuffer,
     loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
   ) => any;
+  /** ParseInBatches function. Use instead of importing `core`.  */
   parseInBatches?: (
     iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
     loaders?: Loader | Loader[] | LoaderOptions,
