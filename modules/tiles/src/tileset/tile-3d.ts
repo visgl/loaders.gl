@@ -773,6 +773,7 @@ export default class TileHeader {
         return {
           ...this.tileset.options.i3s,
           _tileOptions: {
+            attributeUrls: this.header.attributeUrls,
             textureUrl: this.header.textureUrl,
             textureFormat: this.header.textureFormat,
             textureLoaderOptions: this.header.textureLoaderOptions,
@@ -781,7 +782,9 @@ export default class TileHeader {
             mbs: this.header.mbs
           },
           _tilesetOptions: {
-            store: this.tileset.tileset.store
+            store: this.tileset.tileset.store,
+            attributeStorageInfo: this.tileset.tileset.attributeStorageInfo,
+            fields: this.tileset.tileset.fields
           },
           isTileHeader: false
         };

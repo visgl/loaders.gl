@@ -110,6 +110,13 @@ export type I3SParseOptions = {
    * Supported coordinate systems: METER_OFFSETS, LNGLAT_OFFSETS
    */
   coordinateSystem?: number;
+  colorsByAttribute?: {
+    attributeName: string;
+    minValue: number;
+    maxValue: number;
+    minColor: [number, number, number, number];
+    maxColor: [number, number, number, number];
+  };
 };
 
 export type I3STileOptions = {
@@ -118,11 +125,14 @@ export type I3STileOptions = {
   textureFormat?: I3STextureFormat;
   textureLoaderOptions?: any;
   materialDefinition?: I3SMaterialDefinition;
+  attributeUrls: string[];
   mbs: Mbs;
 };
 
 export type I3STilesetOptions = {
   store: Store;
+  attributeStorageInfo: AttributeStorageInfo[];
+  fields: Field[];
 };
 
 // TODO Replace "[key: string]: any" with actual defenition

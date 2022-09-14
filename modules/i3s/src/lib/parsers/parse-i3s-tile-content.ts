@@ -1,4 +1,4 @@
-import type {TypedArray} from '@loaders.gl/schema';
+import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -22,6 +22,8 @@ import {
 import {getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
+import {I3SLoaderOptions} from '../../i3s-loader';
+import {getAttributeValueType, I3SAttributeLoader} from '../../i3s-attribute-loader';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -110,7 +112,7 @@ async function parseI3SNodeGeometry(
   content: I3STileContent,
   tileOptions: I3STileOptions,
   tilesetOptions: I3STilesetOptions,
-  options?: LoaderOptions
+  options?: I3SLoaderOptions
 ): Promise<I3STileContent> {
   const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
@@ -198,6 +200,8 @@ async function parseI3SNodeGeometry(
     content.modelMatrix = getModelMatrix(attributes.position);
     content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
   }
+
+  attributes.color = await customizeColors(attributes.color, tileOptions, tilesetOptions, options);
 
   content.attributes = {
     positions: attributes.position,
@@ -409,6 +413,65 @@ function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): M
   attribute.value = offsetsToCartesians(value, metadata, cartographicOrigin);
 
   return enuMatrix;
+}
+
+async function customizeColors(
+  colors: MeshAttribute,
+  tileOptions: I3STileOptions,
+  tilesetOptions: I3STilesetOptions,
+  options?: I3SLoaderOptions
+): Promise<MeshAttribute> {
+  const colorizeAttributeField = tilesetOptions.fields.find(
+    ({name}) => name === options?.i3s?.colorsByAttribute?.attributeName
+  );
+  if (
+    !colorizeAttributeField ||
+    !['esriFieldTypeDouble', 'esriFieldTypeInteger', 'esriFieldTypeSmallInteger'].includes(
+      colorizeAttributeField.type
+    )
+  ) {
+    return colors;
+  }
+  const colorizeAttributeData = await loadFeatureAttributeData(
+    colorizeAttributeField.name,
+    tileOptions,
+    tilesetOptions,
+    options
+  );
+
+  const objectIdField = tilesetOptions.fields.find(({type}) => type === 'esriFieldTypeOID');
+  if (!objectIdField) {
+    return colors;
+  }
+  const objectIdAttributeData = await loadFeatureAttributeData(
+    objectIdField.name,
+    tileOptions,
+    tilesetOptions,
+    options
+  );
+  for (let i = 0; i < colors.value.length; i += 4) {
+    colors.value.set([150, 150, 0, 255], i);
+  }
+  return colors;
+}
+
+async function loadFeatureAttributeData(
+  attributeName: string,
+  {attributeUrls}: I3STileOptions,
+  {attributeStorageInfo}: I3STilesetOptions,
+  options?: I3SLoaderOptions
+): Promise<{[key: string]: string[] | Uint32Array | Uint16Array | Float64Array} | null> {
+  const attributeIndex = attributeStorageInfo.findIndex(({name}) => attributeName === name);
+  if (attributeIndex === -1) {
+    return null;
+  }
+  const objectIdAttributeUrl = getUrlWithToken(attributeUrls[attributeIndex], options?.i3s?.token);
+  const attributeType = getAttributeValueType(attributeStorageInfo[attributeIndex]);
+  const objectIdAttributeData = await load(objectIdAttributeUrl, I3SAttributeLoader, {
+    attributeName,
+    attributeType
+  });
+  return objectIdAttributeData;
 }
 
 /**

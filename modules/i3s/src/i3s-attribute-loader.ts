@@ -87,7 +87,7 @@ function getAttributesData(tile) {
  * @param {Object} attribute
  * @returns {String}
  */
-function getAttributeValueType(attribute) {
+export function getAttributeValueType(attribute) {
   if (attribute.hasOwnProperty('objectIds')) {
     return 'Oid32';
   } else if (attribute.hasOwnProperty('attributeValues')) {
