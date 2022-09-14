@@ -33,7 +33,8 @@ import {
 } from '@loaders.gl/i3s';
 import {TypedArray} from '@loaders.gl/schema';
 import {Geoid} from '@math.gl/geoid';
-import {B3DMAttributesData, transformI3SAttributesOnWorker} from '../../i3s-attributes-worker';
+/** Usage of worker here brings more overhead than advantage */
+import {B3DMAttributesData /*, transformI3SAttributesOnWorker*/} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
@@ -92,13 +93,18 @@ export default async function convertB3dmToI3sGeometry(
 
   const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
 
-  const convertedAttributesMap: Map<string, ConvertedAttributes> =
-    await transformI3SAttributesOnWorker(dataForAttributesConversion, {
-      reuseWorkers: true,
-      _nodeWorkers: true,
-      useCartesianPositions,
-      source: workerSource.I3SAttributes
-    });
+  const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
+    dataForAttributesConversion,
+    useCartesianPositions
+  );
+  /** Usage of worker here brings more overhead than advantage */
+  // const convertedAttributesMap: Map<string, ConvertedAttributes> =
+  //   await transformI3SAttributesOnWorker(dataForAttributesConversion, {
+  //     reuseWorkers: true,
+  //     _nodeWorkers: true,
+  //     useCartesianPositions,
+  //     source: workerSource.I3SAttributes
+  //   });
 
   if (generateBoundingVolumes) {
     _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel);
