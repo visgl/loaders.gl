@@ -17,7 +17,8 @@ import {
   I3SMaterialDefinition,
   I3STileContent,
   I3STileOptions,
-  I3STilesetOptions
+  I3STilesetOptions,
+  COLOR
 } from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
@@ -201,7 +202,13 @@ async function parseI3SNodeGeometry(
     content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
   }
 
-  attributes.color = await customizeColors(attributes.color, tileOptions, tilesetOptions, options);
+  attributes.color = await customizeColors(
+    attributes.color,
+    attributes.id,
+    tileOptions,
+    tilesetOptions,
+    options
+  );
 
   content.attributes = {
     positions: attributes.position,
@@ -415,8 +422,10 @@ function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): M
   return enuMatrix;
 }
 
+// eslint-disable-next-line
 async function customizeColors(
   colors: MeshAttribute,
+  featureIds: MeshAttribute,
   tileOptions: I3STileOptions,
   tilesetOptions: I3STilesetOptions,
   options?: I3SLoaderOptions
@@ -438,6 +447,9 @@ async function customizeColors(
     tilesetOptions,
     options
   );
+  if (!colorizeAttributeData) {
+    return colors;
+  }
 
   const objectIdField = tilesetOptions.fields.find(({type}) => type === 'esriFieldTypeOID');
   if (!objectIdField) {
@@ -449,10 +461,40 @@ async function customizeColors(
     tilesetOptions,
     options
   );
-  for (let i = 0; i < colors.value.length; i += 4) {
-    colors.value.set([150, 150, 0, 255], i);
+  if (!objectIdAttributeData) {
+    return colors;
   }
+
+  const attributeValuesMap: {[key: number]: COLOR} = {};
+  for (let i = 0; i < objectIdAttributeData[objectIdField.name].length; i++) {
+    attributeValuesMap[objectIdAttributeData[objectIdField.name][i]] = calculateColorForAttribute(
+      colorizeAttributeData[colorizeAttributeField.name][i] as number,
+      options
+    );
+  }
+
+  for (let i = 0; i < featureIds.value.length; i++) {
+    const color = attributeValuesMap[featureIds.value[i]];
+    if (!color) {
+      continue; // eslint-disable-line no-continue
+    }
+    colors.value.set(color, i * 4);
+  }
+
   return colors;
+}
+
+function calculateColorForAttribute(attributeValue: number, options?: I3SLoaderOptions): COLOR {
+  if (!options?.i3s?.colorsByAttribute) {
+    return [255, 255, 255, 255];
+  }
+  const {minValue, maxValue, minColor, maxColor} = options.i3s.colorsByAttribute;
+  const rate = (attributeValue - minValue) / (maxValue - minValue);
+  const color: COLOR = [255, 255, 255, 255];
+  for (let i = 0; i < minColor.length; i++) {
+    color[i] = Math.round((maxColor[i] - minColor[i]) * rate + minColor[i]);
+  }
+  return color;
 }
 
 async function loadFeatureAttributeData(

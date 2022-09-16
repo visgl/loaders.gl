@@ -13,6 +13,9 @@ export enum DATA_TYPE {
   Float32 = 'Float32',
   Float64 = 'Float64'
 }
+
+export type COLOR = [number, number, number, number];
+
 /**
  * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DSceneLayer.cmn.md
  */
