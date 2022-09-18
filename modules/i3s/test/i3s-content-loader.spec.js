@@ -198,7 +198,8 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
   t.end();
 });
 
-test('ParseI3sTileContent#should colorize by attribute', async (t) => {
+// TODO: Enable this test after test data is merged in master branch
+test.skip('ParseI3sTileContent#should colorize by attribute', async (t) => {
   const response = await fetchFile(NEW_YORK_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);
