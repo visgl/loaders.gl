@@ -150,6 +150,18 @@ export const TILESET_STUB = () => ({
       }
     }
   ],
+  fields: [
+    {
+      name: 'OBJECTID',
+      type: 'esriFieldTypeOID',
+      alias: 'OBJECTID'
+    },
+    {
+      name: 'NAME',
+      type: 'esriFieldTypeString',
+      alias: 'NAME'
+    }
+  ],
   type: 'I3S',
   loader: I3SLoader
 });

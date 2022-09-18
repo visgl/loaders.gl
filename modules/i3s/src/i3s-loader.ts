@@ -42,13 +42,7 @@ export const I3SLoader: LoaderWithParser = {
       useCompressedTextures: true,
       decodeTextures: true,
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-      colorsByAttribute: {
-        attributeName: 'HEIGHTROOF',
-        minValue: 0,
-        maxValue: 1400,
-        minColor: [146, 146, 252, 255],
-        maxColor: [44, 44, 175, 255]
-      }
+      colorsByAttribute: null
     }
   }
 };

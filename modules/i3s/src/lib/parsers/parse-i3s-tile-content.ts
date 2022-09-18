@@ -1,4 +1,4 @@
-import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
+import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -17,14 +17,13 @@ import {
   I3SMaterialDefinition,
   I3STileContent,
   I3STileOptions,
-  I3STilesetOptions,
-  COLOR
+  I3STilesetOptions
 } from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 import {I3SLoaderOptions} from '../../i3s-loader';
-import {getAttributeValueType, I3SAttributeLoader} from '../../i3s-attribute-loader';
+import {customizeColors} from '../utils/customizeColors';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -420,100 +419,6 @@ function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): M
   attribute.value = offsetsToCartesians(value, metadata, cartographicOrigin);
 
   return enuMatrix;
-}
-
-// eslint-disable-next-line
-async function customizeColors(
-  colors: MeshAttribute,
-  featureIds: MeshAttribute,
-  tileOptions: I3STileOptions,
-  tilesetOptions: I3STilesetOptions,
-  options?: I3SLoaderOptions
-): Promise<MeshAttribute> {
-  const colorizeAttributeField = tilesetOptions.fields.find(
-    ({name}) => name === options?.i3s?.colorsByAttribute?.attributeName
-  );
-  if (
-    !colorizeAttributeField ||
-    !['esriFieldTypeDouble', 'esriFieldTypeInteger', 'esriFieldTypeSmallInteger'].includes(
-      colorizeAttributeField.type
-    )
-  ) {
-    return colors;
-  }
-  const colorizeAttributeData = await loadFeatureAttributeData(
-    colorizeAttributeField.name,
-    tileOptions,
-    tilesetOptions,
-    options
-  );
-  if (!colorizeAttributeData) {
-    return colors;
-  }
-
-  const objectIdField = tilesetOptions.fields.find(({type}) => type === 'esriFieldTypeOID');
-  if (!objectIdField) {
-    return colors;
-  }
-  const objectIdAttributeData = await loadFeatureAttributeData(
-    objectIdField.name,
-    tileOptions,
-    tilesetOptions,
-    options
-  );
-  if (!objectIdAttributeData) {
-    return colors;
-  }
-
-  const attributeValuesMap: {[key: number]: COLOR} = {};
-  for (let i = 0; i < objectIdAttributeData[objectIdField.name].length; i++) {
-    attributeValuesMap[objectIdAttributeData[objectIdField.name][i]] = calculateColorForAttribute(
-      colorizeAttributeData[colorizeAttributeField.name][i] as number,
-      options
-    );
-  }
-
-  for (let i = 0; i < featureIds.value.length; i++) {
-    const color = attributeValuesMap[featureIds.value[i]];
-    if (!color) {
-      continue; // eslint-disable-line no-continue
-    }
-    colors.value.set(color, i * 4);
-  }
-
-  return colors;
-}
-
-function calculateColorForAttribute(attributeValue: number, options?: I3SLoaderOptions): COLOR {
-  if (!options?.i3s?.colorsByAttribute) {
-    return [255, 255, 255, 255];
-  }
-  const {minValue, maxValue, minColor, maxColor} = options.i3s.colorsByAttribute;
-  const rate = (attributeValue - minValue) / (maxValue - minValue);
-  const color: COLOR = [255, 255, 255, 255];
-  for (let i = 0; i < minColor.length; i++) {
-    color[i] = Math.round((maxColor[i] - minColor[i]) * rate + minColor[i]);
-  }
-  return color;
-}
-
-async function loadFeatureAttributeData(
-  attributeName: string,
-  {attributeUrls}: I3STileOptions,
-  {attributeStorageInfo}: I3STilesetOptions,
-  options?: I3SLoaderOptions
-): Promise<{[key: string]: string[] | Uint32Array | Uint16Array | Float64Array} | null> {
-  const attributeIndex = attributeStorageInfo.findIndex(({name}) => attributeName === name);
-  if (attributeIndex === -1) {
-    return null;
-  }
-  const objectIdAttributeUrl = getUrlWithToken(attributeUrls[attributeIndex], options?.i3s?.token);
-  const attributeType = getAttributeValueType(attributeStorageInfo[attributeIndex]);
-  const objectIdAttributeData = await load(objectIdAttributeUrl, I3SAttributeLoader, {
-    attributeName,
-    attributeType
-  });
-  return objectIdAttributeData;
 }
 
 /**
