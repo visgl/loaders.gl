@@ -2,6 +2,23 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.4
+
+- feat(i3s): colorize by attribute (#2254)
+- fix(gltf): add diffuseTex support to v1.0 (#2250)
+- fix(tile-converter): comment out transform attributes worker (#2253)
+- fix: tests (#2251)
+- chore(tile-conveter): i3s - geometry conversion tests (#2249)
+- feat(tile-converter): parallel siblings conversion (#2246)
+- fix(website): revert breaking commit (#2248)
+- chore(i3s): add statistic types (#2247)
+- fix(3d-tiles): add options to normalizeTileHeaders (#2241)
+- fix(tile-converter): types (#2242)
+- fix(tile-converter): install deps test (#2243)
+- fix(polyfills): jpeg parser returns Buffer (#2244)
+- fix(implicit-tiling): handle child tiles (#2240)
+- feat(tile-converter): enable loader workers (#2234)
+
 ## v3.3.0-alpha.3
 
 - feat(i3s): content loader worker for Node.js (#2237)
