@@ -9,6 +9,14 @@ import {I3SContentLoader} from '@loaders.gl/i3s';
 
 const I3S_TILE_CONTENT =
   '@loaders.gl/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/1/geometries/0';
+const NEW_YORK_TILE_CONTENT =
+  '@loaders.gl/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/geometries/1';
+const NEW_YORK_CONTENT_LOADER_OPTIONS =
+  '@loaders.gl/i3s/test/data/Buildings_NewYork_17/i3s-content-loader-options.json';
+const MONTREAL_TILE_CONTENT =
+  '@loaders.gl/i3s/test/data/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/1/geometries/1';
+const MONTREAL_CONTENT_LOADER_OPTIONS =
+  '@loaders.gl/i3s/test/data/Montreal_3DObjects_subset_1_v17_ktx2/i3s-content-loader-options.json';
 
 test('ParseI3sTileContent#should parse tile content', async (t) => {
   const tileset = TILESET_STUB();
@@ -23,6 +31,16 @@ test('ParseI3sTileContent#should parse tile content', async (t) => {
     }
   });
   t.ok(content);
+
+  // color array should be colorized by attribute
+  const colorsArray = content.attributes.colors.value;
+  const testArray = new Uint8Array(9);
+  testArray.fill(255);
+  t.deepEquals(colorsArray.subarray(0, 9), testArray);
+  const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
+  t.deepEquals(colorsArray.subarray(arrayMiddle, arrayMiddle + 9), testArray);
+  t.deepEquals(colorsArray.subarray(colorsArray.length - 9), testArray);
+
   t.end();
 });
 
@@ -55,8 +73,18 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
   t.end();
 });
 
-// TODO: implement test after test data 'Montreal_3DObjects_subset_1_v17_ktx2' is published on github
 test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async (t) => {
+  const response = await fetchFile(MONTREAL_TILE_CONTENT);
+  const data = await response.arrayBuffer();
+  const responseOptions = await fetchFile(MONTREAL_CONTENT_LOADER_OPTIONS);
+  const i3sLoaderOptions = await responseOptions.json();
+  const content = await parse(data, I3SContentLoader, {
+    i3s: i3sLoaderOptions
+  });
+  const texture =
+    content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image.data[0];
+  t.ok(texture instanceof Object);
+  t.ok(texture.data instanceof Uint8Array);
   t.end();
 });
 
@@ -170,9 +198,37 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
   t.end();
 });
 
+// TODO: Enable this test after test data is merged in master branch
+test.skip('ParseI3sTileContent#should colorize by attribute', async (t) => {
+  const response = await fetchFile(NEW_YORK_TILE_CONTENT);
+  const data = await response.arrayBuffer();
+  const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);
+  const i3sLoaderOptions = await responseOptions.json();
+  const content = await parse(data, I3SContentLoader, {
+    i3s: i3sLoaderOptions
+  });
+  t.ok(content);
+
+  // color array should be colorized by attribute
+  const colorsArray = content.attributes.colors.value;
+  t.deepEquals(colorsArray.subarray(0, 9), [139, 139, 247, 255, 139, 139, 247, 255, 139]);
+  const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
+  t.deepEquals(
+    colorsArray.subarray(arrayMiddle, arrayMiddle + 9),
+    [244, 255, 135, 135, 244, 255, 135, 135, 244]
+  );
+  t.deepEquals(
+    colorsArray.subarray(colorsArray.length - 9),
+    [255, 141, 141, 248, 255, 141, 141, 248, 255]
+  );
+
+  t.end();
+});
+
 function getI3SOptions(tile, tileset) {
   return {
     _tileOptions: {
+      attributeUrls: tile.attributeUrls,
       textureUrl: tile.textureUrl,
       textureFormat: tile.textureFormat,
       textureLoaderOptions: tile.textureLoaderOptions,
@@ -181,7 +237,9 @@ function getI3SOptions(tile, tileset) {
       mbs: tile.mbs
     },
     _tilesetOptions: {
-      store: tileset.store
+      store: tileset.store,
+      attributeStorageInfo: tileset.attributeStorageInfo,
+      fields: tileset.fields
     }
   };
 }

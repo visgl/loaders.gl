@@ -22,6 +22,8 @@ import {
 import {getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
+import {I3SLoaderOptions} from '../../i3s-loader';
+import {customizeColors} from '../utils/customizeColors';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -110,7 +112,7 @@ async function parseI3SNodeGeometry(
   content: I3STileContent,
   tileOptions: I3STileOptions,
   tilesetOptions: I3STilesetOptions,
-  options?: LoaderOptions
+  options?: I3SLoaderOptions
 ): Promise<I3STileContent> {
   const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
@@ -198,6 +200,14 @@ async function parseI3SNodeGeometry(
     content.modelMatrix = getModelMatrix(attributes.position);
     content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
   }
+
+  attributes.color = await customizeColors(
+    attributes.color,
+    attributes.id,
+    tileOptions,
+    tilesetOptions,
+    options
+  );
 
   content.attributes = {
     positions: attributes.position,

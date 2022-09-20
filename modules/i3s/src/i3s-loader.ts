@@ -41,7 +41,8 @@ export const I3SLoader: LoaderWithParser = {
       useDracoGeometry: true,
       useCompressedTextures: true,
       decodeTextures: true,
-      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+      colorsByAttribute: null
     }
   }
 };
