@@ -117,8 +117,8 @@ export type I3SParseOptions = {
     attributeName: string;
     minValue: number;
     maxValue: number;
-    minColor: [number, number, number, number];
-    maxColor: [number, number, number, number];
+    minColor: COLOR;
+    maxColor: COLOR;
   };
 };
 
