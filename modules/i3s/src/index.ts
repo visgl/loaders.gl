@@ -28,6 +28,10 @@ export type {
   MaterialDefinitionInfo,
   FullExtent,
   StatisticsInfo,
-  StatsInfo
+  StatsInfo,
+  Histogram,
+  ValueCount,
+  BuildingSceneSublayer,
+  DATA_TYPE
 } from './types';
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
