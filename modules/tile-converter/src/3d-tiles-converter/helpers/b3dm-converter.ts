@@ -173,7 +173,7 @@ export default class B3dmConverter {
    */
   _createBatchIds(i3sContent, featureAttributes) {
     const {featureIds} = i3sContent;
-    const {OBJECTID: objectIds} = featureAttributes;
+    const {OBJECTID: objectIds} = featureAttributes || {};
     if (!featureIds || !objectIds) {
       return;
     }
