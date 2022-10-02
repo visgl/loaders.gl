@@ -26,7 +26,7 @@ export const Tile3dAttributesWorker = {
   module: 'tile-converter',
   version: VERSION,
   options: {
-    attributes: null
+    featureAttributes: null
   }
 };
 
