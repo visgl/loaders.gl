@@ -994,7 +994,7 @@ export type Histogram = {
   /** Maximum attribute value for the entire layer. Maximum array size for stats.histo.counts is 256. */
   maximum: number;
   /** Count for the entire layer. */
-  counts: number;
+  counts: number[];
 };
 
 export type ValueCount = {
