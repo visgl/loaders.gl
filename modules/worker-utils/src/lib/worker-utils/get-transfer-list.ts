@@ -71,8 +71,12 @@ export function getTransferListForWriter(object: object | null): object {
   const clone = Object.assign({}, object);
 
   Object.keys(clone).forEach((key) => {
-    // Checking if it is an object and not a typed array.
-    if (typeof object[key] === 'object' && !ArrayBuffer.isView(object[key])) {
+    // Typed Arrays and Arrays are passed with no change
+    if (
+      typeof object[key] === 'object' &&
+      !ArrayBuffer.isView(object[key]) &&
+      !(object[key] instanceof Array)
+    ) {
       clone[key] = getTransferListForWriter(object[key]);
     } else if (typeof clone[key] === 'function' || clone[key] instanceof RegExp) {
       clone[key] = {};

@@ -27,7 +27,7 @@ export default class B3dmConverter {
     i3sAttributesData: I3SAttributesData,
     featureAttributes: any = null
   ): Promise<ArrayBuffer> {
-    const gltf = await this.buildGltf(i3sAttributesData);
+    const gltf = await this.buildGltf(i3sAttributesData, featureAttributes);
     const b3dm = encodeSync(
       {
         gltfEncoded: new Uint8Array(gltf),
@@ -45,7 +45,10 @@ export default class B3dmConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded glb content
    */
-  async buildGltf(i3sAttributesData: I3SAttributesData): Promise<ArrayBuffer> {
+  async buildGltf(
+    i3sAttributesData: I3SAttributesData,
+    featureAttributes: any
+  ): Promise<ArrayBuffer> {
     const {tileContent, textureFormat} = i3sAttributesData;
     const {
       material,
@@ -77,6 +80,7 @@ export default class B3dmConverter {
       cartographicOrigin,
       modelMatrix
     );
+    this._createBatchIds(tileContent, featureAttributes);
     if (attributes.normals && !this._checkNormals(attributes.normals.value)) {
       delete attributes.normals;
     }
@@ -163,25 +167,28 @@ export default class B3dmConverter {
   }
 
   /**
-   * Generate batchId attribute from faceRanges.
-   * @param {Uint32Array} faceRanges - the source array
-   * @returns {Float32Array} batchId list.
+   * Create _BATCHID attribute
+   * @param {Object} i3sContent - the source object
+   * @returns {void}
    */
-  _generateBatchId(faceRanges) {
-    const batchIdArraySize = (faceRanges[faceRanges.length - 1] + 1) * 3;
-    const batchId = new Float32Array(batchIdArraySize);
-    let rangeIndex = 0;
-    let currentBatchId = 0;
-
-    for (let index = 0; index < faceRanges.length / 2; index++) {
-      const fromIndex = faceRanges[rangeIndex] * 3;
-      const untilPosition = (faceRanges[rangeIndex + 1] + 1) * 3;
-
-      batchId.fill(currentBatchId, fromIndex, untilPosition);
-      rangeIndex += 2;
-      currentBatchId += 1;
+  _createBatchIds(i3sContent, featureAttributes) {
+    const {featureIds} = i3sContent;
+    const {OBJECTID: objectIds} = featureAttributes || {};
+    if (!featureIds || !objectIds) {
+      return;
     }
-    return batchId;
+
+    for (let i = 0; i < featureIds.length; i++) {
+      const featureId = featureIds[i];
+      const batchId = objectIds.indexOf(featureId);
+      featureIds[i] = batchId;
+    }
+
+    i3sContent.attributes._BATCHID = {
+      size: 1,
+      byteOffset: 0,
+      value: featureIds
+    };
   }
 
   /**
