@@ -55,7 +55,7 @@ import Tileset3DTraverser from './traversers/tileset-3d-traverser';
 import TilesetTraverser from './traversers/tileset-traverser';
 import I3SetTraverser from './traversers/i3s-tileset-traverser';
 import {TILESET_TYPE} from '../constants';
-import {Viewport} from '../types';
+import {GeospatialViewport, Viewport} from '../types';
 
 export type Tileset3DProps = {
   // loading
@@ -471,7 +471,7 @@ export default class Tileset3D {
       if (!viewportsToTraverse.includes(id)) {
         continue; // eslint-disable-line no-continue
       }
-      const frameState = getFrameState(viewport, this._frameNumber);
+      const frameState = getFrameState(viewport as GeospatialViewport, this._frameNumber);
       this._traverser.traverse(this.roots[id], frameState, this.options);
     }
   }
