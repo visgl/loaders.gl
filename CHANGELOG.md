@@ -2,6 +2,10 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.5
+- fix(tile-converter): 3DTiles - generage batchIds (#2257)
+- chore(i3s): export more types (#2255)
+
 ## v3.3.0-alpha.4
 
 - feat(i3s): colorize by attribute (#2254)
