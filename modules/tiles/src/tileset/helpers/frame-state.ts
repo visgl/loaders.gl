@@ -175,7 +175,7 @@ function closestPointOnPlane(
 
 function worldToCartesian(
   viewport: Viewport,
-  point: [number, number, number] | Vector3,
+  point: number[] | Vector3,
   out: Vector3 = new Vector3()
 ): Vector3 {
   const cartographicPos = viewport.unprojectPosition(point);
