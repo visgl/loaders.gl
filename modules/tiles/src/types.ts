@@ -9,14 +9,9 @@ export type BoundingRectangle = {
  * We can't import it from Deck.gl to avoid circular reference */
 export type Viewport = {
   id: string;
-  longitude: number;
-  latitude: number;
   cameraPosition: [number, number, number];
-  cameraDirection: [number, number, number];
-  cameraUp: [number, number, number];
   height: number;
   width: number;
-  bearing: number;
   zoom: number;
   distanceScales: {
     metersPerUnit: number;
@@ -24,4 +19,17 @@ export type Viewport = {
   center: [number, number, number];
   unprojectPosition: (position: [number, number, number] | Vector3) => Vector3;
   project: (coorinates: [number, number, number] | Vector3) => Vector3;
+};
+
+/**
+ * Contain extra fields from WebMercatorViewport and FirstPersonViewport
+ */
+export type GeospatialViewport = Viewport & {
+  /** @todo This field is not represented in Deck.gl viewports. Can be removed in the next version */
+  cameraDirection: [number, number, number];
+  /** @todo This field is not represented in Deck.gl viewports. Can be removed in the next version */
+  cameraUp: [number, number, number];
+  longitude: number;
+  latitude: number;
+  bearing: number;
 };
