@@ -9,16 +9,17 @@ export type BoundingRectangle = {
  * We can't import it from Deck.gl to avoid circular reference */
 export type Viewport = {
   id: string;
-  cameraPosition: [number, number, number];
+  cameraPosition: number[] | Vector3;
   height: number;
   width: number;
   zoom: number;
   distanceScales: {
-    metersPerUnit: number;
+    unitsPerMeter: number[];
+    metersPerUnit: number[];
   };
-  center: [number, number, number];
-  unprojectPosition: (position: [number, number, number] | Vector3) => Vector3;
-  project: (coorinates: [number, number, number] | Vector3) => Vector3;
+  center: number[] | Vector3;
+  unprojectPosition: (position: number[] | Vector3) => [number, number, number];
+  project: (coorinates: number[] | Vector3) => number[];
 };
 
 /**
