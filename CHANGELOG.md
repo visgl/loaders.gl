@@ -1,5 +1,12 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.10
+
+- deck.gl compatible Viewport type (#2259)
+- fix(tiles): Viewport type (#2258)
+- chore(i3s): export more types (#2255)
+- fix(gltf): add diffuseTex support to v1.0 (#2250)
+
 ## v3.2.9
 
 - chore(i3s): add statistic types (#2247)
