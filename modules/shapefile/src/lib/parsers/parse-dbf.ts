@@ -296,6 +296,7 @@ function parseRow(
     const text = textDecoder.decode(
       new Uint8Array(view.buffer, view.byteOffset + offset, field.fieldLength)
     );
+    // @ts-ignore
     out[field.name] = parseField(text, field.dataType);
     offset += field.fieldLength;
   }
