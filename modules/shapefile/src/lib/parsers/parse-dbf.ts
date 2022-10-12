@@ -290,13 +290,14 @@ function parseRow(
   fields: DBFField[],
   textDecoder: TextDecoder
 ): {[key: string]: any} {
-  const out = {};
+  const out = {} as {
+		[key: string]: string | number | boolean | null;
+	};
   let offset = 0;
   for (const field of fields) {
     const text = textDecoder.decode(
       new Uint8Array(view.buffer, view.byteOffset + offset, field.fieldLength)
     );
-    // @ts-ignore
     out[field.name] = parseField(text, field.dataType);
     offset += field.fieldLength;
   }
