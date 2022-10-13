@@ -100,7 +100,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 ## JSONPaths
 
-A minimal subset of the JSONPath syntax is supported, to specify which array in a JSON object should be streamed as batchs.
+A minimal subset of the [JSONPath](https://jsonpath.com/) syntax is supported, to specify which array in a JSON object should be streamed as batches.
 
 `$.component1.component2.component3`
 
