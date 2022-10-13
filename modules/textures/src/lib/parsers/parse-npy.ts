@@ -1,7 +1,7 @@
 // import type {TextureLevel} from '@loaders.gl/schema';
 
 type NumpyHeader = {descr: string; shape: number[]};
-type ArrayTypes =
+type TypedArrayConstructor =
   | typeof Int8Array
   | typeof Uint8Array
   | typeof Int16Array
@@ -29,7 +29,7 @@ const LITTLE_ENDIAN_OS = systemIsLittleEndian();
 //
 // Here I only include the second and third characters, and check endianness
 // separately
-const DTYPES: Record<string, ArrayTypes> = {
+const DTYPES: Record<string, TypedArrayConstructor> = {
   u1: Uint8Array,
   i1: Int8Array,
   u2: Uint16Array,
