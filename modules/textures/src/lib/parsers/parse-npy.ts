@@ -1,6 +1,17 @@
 // import type {TextureLevel} from '@loaders.gl/schema';
 
 type NumpyHeader = {descr: string; shape: number[]};
+type ArrayTypes =
+  | typeof Int8Array
+  | typeof Uint8Array
+  | typeof Int16Array
+  | typeof Uint16Array
+  | typeof Int32Array
+  | typeof Uint32Array
+  | typeof Int32Array
+  | typeof Uint32Array
+  | typeof Float32Array
+  | typeof Float64Array;
 
 function systemIsLittleEndian() {
   const a = new Uint32Array([0x12345678]);
@@ -18,7 +29,7 @@ const LITTLE_ENDIAN_OS = systemIsLittleEndian();
 //
 // Here I only include the second and third characters, and check endianness
 // separately
-const DTYPES: Record<string, any> = {
+const DTYPES: Record<string, ArrayTypes> = {
   u1: Uint8Array,
   i1: Int8Array,
   u2: Uint16Array,
@@ -48,6 +59,13 @@ export function parseNPY(arrayBuffer: ArrayBuffer, options?: unknown) {
   const nArrayElements = header.shape?.reduce((a: number, b: number): number => a * b);
   const arrayByteLength = nArrayElements * ArrayType.BYTES_PER_ELEMENT;
 
+  if (arrayBuffer.byteLength < headerEndOffset + arrayByteLength) {
+    // eslint-disable-next-line no-console, no-undef
+    console.warn(
+      `Buffer not long enough for slice: ${headerEndOffset}-${headerEndOffset + arrayByteLength}`
+    );
+    return null;
+  }
   const data = new ArrayType(arrayBuffer.slice(headerEndOffset, headerEndOffset + arrayByteLength));
 
   // Swap endianness if needed
