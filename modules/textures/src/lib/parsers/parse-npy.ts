@@ -51,27 +51,20 @@ export function parseNPY(arrayBuffer: ArrayBuffer, options?: unknown) {
   const numpyType = header.descr;
   const ArrayType = DTYPES[numpyType.slice(1, 3)];
   if (!ArrayType) {
-    // eslint-disable-next-line no-console, no-undef
-    console.warn(`Decoding of npy dtype not implemented: ${numpyType}`);
-    return null;
+    throw new Error(`Unimplemented type ${numpyType}`);
   }
 
   const nArrayElements = header.shape?.reduce((a: number, b: number): number => a * b);
   const arrayByteLength = nArrayElements * ArrayType.BYTES_PER_ELEMENT;
 
   if (arrayBuffer.byteLength < headerEndOffset + arrayByteLength) {
-    // eslint-disable-next-line no-console, no-undef
-    console.warn(
-      `Buffer not long enough for slice: ${headerEndOffset}-${headerEndOffset + arrayByteLength}`
-    );
-    return null;
+    throw new Error('Buffer not long enough');
   }
   const data = new ArrayType(arrayBuffer.slice(headerEndOffset, headerEndOffset + arrayByteLength));
 
   // Swap endianness if needed
   if ((numpyType[0] === '>' && LITTLE_ENDIAN_OS) || (numpyType[0] === '<' && !LITTLE_ENDIAN_OS)) {
-    // eslint-disable-next-line no-console, no-undef
-    console.warn('Data is wrong endianness, byte swapping not yet implemented.');
+    throw new Error('Incorrect endianness');
   }
 
   return {
@@ -91,12 +84,12 @@ function parseHeader(view: DataView): {header: NumpyHeader; headerEndOffset: num
   // const minorVersion = view.getUint8(7);
 
   let offset = 8;
-  let headerLength;
+  let headerLength: number;
   if (majorVersion >= 2) {
-    headerLength = view.getUint32(8, true);
+    headerLength = view.getUint32(offset, true);
     offset += 4;
   } else {
-    headerLength = view.getUint16(8, true);
+    headerLength = view.getUint16(offset, true);
     offset += 2;
   }
 
