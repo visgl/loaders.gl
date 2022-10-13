@@ -58,7 +58,7 @@ export function parseNPY(arrayBuffer: ArrayBuffer, options?: unknown) {
   const arrayByteLength = nArrayElements * ArrayType.BYTES_PER_ELEMENT;
 
   if (arrayBuffer.byteLength < headerEndOffset + arrayByteLength) {
-    throw new Error('Buffer not long enough');
+    throw new Error('Buffer overflow');
   }
   const data = new ArrayType(arrayBuffer.slice(headerEndOffset, headerEndOffset + arrayByteLength));
 
