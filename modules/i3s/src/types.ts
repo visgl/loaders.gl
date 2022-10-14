@@ -833,6 +833,7 @@ export type FieldInfo = {
 export type ArcGisWebSceneData = {
   header: ArcGisWebScene;
   layers: OperationalLayer[];
+  unsupportedLayers: OperationalLayer[];
 };
 
 /**
