@@ -434,6 +434,7 @@ function triangulatePolygon(
   const holes = indices.slice(1).map((n: number) => (n - offset) / coordLength);
 
   // Compute triangulation
+  // @ts-expect-error TODO can earcut handle binary arrays? Add tests?
   const triangles = earcut(polygonPositions, holes, coordLength, areas);
 
   // Indices returned by triangulation are relative to start

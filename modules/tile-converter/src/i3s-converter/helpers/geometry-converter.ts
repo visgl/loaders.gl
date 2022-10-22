@@ -934,7 +934,9 @@ function extractSharedResourcesMaterialInfo(
   const specular = dielectricSpecular.lerp(dielectricSpecular, baseColorVector, metallicFactor);
   return {
     params: {
+      // @ts-expect-error NumericArray
       diffuse: diffuse.toArray(),
+      // @ts-expect-error NumericArray
       specular: specular.toArray(),
       renderMode: 'solid'
     }
