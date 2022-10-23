@@ -22,7 +22,7 @@ export const ArrowLoader = {
   id: 'arrow',
   module: 'arrow',
   version: VERSION,
-  worker: true,
+  // worker: true,
   category: 'table',
   extensions: ['arrow', 'feather'],
   mimeTypes: [
