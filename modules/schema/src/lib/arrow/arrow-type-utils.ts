@@ -1,3 +1,4 @@
+/*
 import type {TypedArray} from '../../types';
 import {
   DataType,
@@ -17,7 +18,7 @@ import {
   Uint32Vector,
   Float32Vector,
   Float64Vector
-} from 'apache-arrow/Arrow.dom';
+} from 'apache-arrow';
 import {AbstractVector} from 'apache-arrow/vector';
 
 export function getArrowType(array: TypedArray): DataType {
@@ -65,3 +66,4 @@ export function getArrowVector(array: TypedArray): AbstractVector {
       throw new Error('array type not supported');
   }
 }
+*/
