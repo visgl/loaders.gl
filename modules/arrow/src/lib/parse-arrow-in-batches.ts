@@ -26,7 +26,6 @@ export function parseArrowInBatches(
   */
 
   async function* makeArrowAsyncIterator() {
-    // @ts-expect-error Fixed in arrow 9
     const readers = RecordBatchReader.readAll(asyncIterator);
     for await (const reader of readers) {
       for await (const batch of reader) {

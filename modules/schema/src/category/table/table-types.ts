@@ -1,8 +1,13 @@
 import type {Schema} from '../../lib/schema/schema';
-import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow/Arrow.dom';
 import type {AnyArray} from '../../types';
 import type {Batch} from '../common';
 import type {Feature} from '../gis';
+
+// Idea was to just import types, but it seems
+// Seems this triggers more bundling and build issues than it is worth...
+// import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow';
+type ApacheArrowTable = any;
+type RecordBatch = any;
 
 /** A general table */
 export interface Table {
