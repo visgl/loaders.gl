@@ -1,3 +1,4 @@
+/* Problem with arrow dependency...
 import {
   Table,
   Schema,
@@ -6,7 +7,7 @@ import {
   Field,
   Data,
   FixedSizeListVector
-} from 'apache-arrow/Arrow.dom';
+} from 'apache-arrow';
 import {AbstractVector} from 'apache-arrow/vector';
 import {getArrowType, getArrowVector} from '../../lib/arrow/arrow-type-utils';
 import type {Mesh} from './mesh-types';
@@ -18,7 +19,7 @@ import {makeMeshAttributeMetadata} from './deduce-mesh-schema';
  * @param metadata
  * @param batchSize
  * @returns
- */
+ *
 export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): Table {
   const vectors: AbstractVector[] = [];
   const fields: Field[] = [];
@@ -39,3 +40,4 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): Table {
   const table = new Table(schema, recordBatch);
   return table;
 }
+*/

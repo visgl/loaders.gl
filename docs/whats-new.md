@@ -21,7 +21,15 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-## v3.3 (In development)
+## v4.0 (In development)
+
+Release Date: TBD, Q1-2022
+
+**@loaders.gl/arrow**
+
+- Now uses `apache-arrow` v9
+
+## v3.3 (In Development)
 
 Target Release Date: Q4 2022.
 
@@ -79,7 +87,6 @@ Target Release Date: May 2022.
 **@loaders.gl/textures**
 
 - Upgrade `basis_universal` libraries to [v1.16.3](https://github.com/BinomialLLC/basis_universal/releases/tag/1.16.3).
-
 ## v3.1
 
 Release Date: Dec 7, 2021.
