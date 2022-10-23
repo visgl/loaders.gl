@@ -58,7 +58,7 @@
     "zstd-codec": "^0.1"
   },
   "peerDependencies": {
-    "apache-arrow": "^4.0.0"
+    "apache-arrow": "^9.0.0"
   },
   "devDependencies": {
     "@types/bson": "^4.0.0",
@@ -66,6 +66,6 @@
     "@types/node-int64": "^0.4.29",
     "@types/thrift": "^0.10.8",
     "@types/varint": "^5.0.0",
-    "apache-arrow": "^4.0.0"
+    "apache-arrow": "^9.0.0"
   }
 }
