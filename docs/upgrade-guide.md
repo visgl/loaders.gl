@@ -2,9 +2,15 @@
 
 ## Upgrading to v4.0
 
-**Apache Arrow** 
+**Apache Arrow JS** 
 
-loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 is a breaking change compared with v4 which is used by loaders.gl v3. 
+loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_. 
+
+If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes. 
+
+On the upside, the new Apache Arrow API is more modular and "tree shakeable" (meaning that only the Apache Arrow functionality your application is actually using is included in your application bundle). 
+
+Unfortunately, Apache Arrow JS does yet not come with great release or upgrade notes, however the changes are fairly superficial and relatively easy to work through.
 
 **Table Schemas** 
 
