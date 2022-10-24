@@ -1,7 +1,6 @@
 // eslint-disable
-import type {RecordBatch} from 'apache-arrow';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
-import {Table, RecordBatchStreamReader} from 'apache-arrow';
+import {Table, tableFromIPC} from 'apache-arrow';
 import {loadWasm} from './load-wasm/load-wasm-node';
 
 export type ParquetLoaderOptions = LoaderOptions & {
@@ -26,17 +25,4 @@ export async function parseParquet(
   );
   const arrowTable = tableFromIPC(arrowIPCBuffer);
   return arrowTable;
-}
-
-/**
- * Deserialize the IPC format into a {@link Table}. This function is a
- * convenience wrapper for {@link RecordBatchReader}. Opposite of {@link tableToIPC}.
- */
-function tableFromIPC(input: ArrayBuffer): Table {
-  const reader = RecordBatchStreamReader.from(input);
-  const recordBatches: RecordBatch[] = [];
-  for (const recordBatch of reader) {
-    recordBatches.push(recordBatch);
-  }
-  return new Table(recordBatches);
 }
