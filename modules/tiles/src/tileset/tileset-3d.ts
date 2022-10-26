@@ -696,7 +696,7 @@ export default class Tileset3D {
     this.stats.get(TILES_LOADED);
     this.stats.get(TILES_UNLOADED);
     this.stats.get(TILES_LOAD_FAILED);
-    this.stats.get(POINTS_COUNT, 'memory');
+    this.stats.get(POINTS_COUNT);
     this.stats.get(TILES_GPU_MEMORY, 'memory');
   }
 
