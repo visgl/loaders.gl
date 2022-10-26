@@ -2,7 +2,16 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.6
+
+- chore(arcgis-webscene-loader): handle usupported layers (#2273)
+- chore: typescript 4.8.4 (#2275)
+- NPY: Add check that buffer is long enough (#2271)
+- deck.gl compatible Viewport type (#2259)
+- fix(tiles): Viewport type (#2258)
+
 ## v3.3.0-alpha.5
+
 - fix(tile-converter): 3DTiles - generage batchIds (#2257)
 - chore(i3s): export more types (#2255)
 
