@@ -30,8 +30,8 @@ const TEST_FULL_EXTENT = {
   ymin: 40.04095693133301,
   xmax: -75.6100663747417,
   ymax: 40.04410425830655,
-  zmin: -3.0828418561956057,
-  zmax: 23.089174197650973
+  zmin: 0,
+  zmax: 20
 };
 
 setLoaderOptions({
