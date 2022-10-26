@@ -32,6 +32,7 @@ export type {
   Histogram,
   ValueCount,
   BuildingSceneSublayer,
-  DATA_TYPE
+  DATA_TYPE,
+  OperationalLayer
 } from './types';
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';

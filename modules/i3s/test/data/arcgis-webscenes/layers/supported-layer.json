@@ -1,0 +1,229 @@
+{
+  "id": 0,
+  "version": "7B8B6A30-00E3-4A31-A3C1-B130BC8AFE63",
+  "name": "BuildingShell",
+  "href": "./layers/0",
+  "layerType": "3DObject",
+  "ZFactor": 0.30480000000000002,
+  "spatialReference": {"wkid": 4326, "latestWkid": 4326},
+  "alias": "",
+  "description": "",
+  "copyrightText": "",
+  "capabilities": ["View", "Query"],
+  "cachedDrawingInfo": {"color": false},
+  "drawingInfo": {
+    "renderer": {
+      "type": "simple",
+      "symbol": {
+        "type": "MeshSymbol3D",
+        "symbolLayers": [
+          {"type": "Fill", "material": {"color": [255, 255, 255], "transparency": 0}}
+        ]
+      },
+      "label": "",
+      "description": ""
+    }
+  },
+  "popupInfo": {
+    "title": "{name}",
+    "mediaInfos": [],
+    "fieldInfos": [
+      {"fieldName": "OBJECTID", "label": "OBJECTID", "visible": true},
+      {"fieldName": "beginLifespan_date", "label": "beginLifespan_date", "visible": true},
+      {"fieldName": "status", "label": "Construction status", "visible": true},
+      {"fieldName": "description", "label": "description", "visible": true},
+      {"fieldName": "name", "label": "name", "visible": true},
+      {"fieldName": "subtype", "label": "subtype", "visible": true},
+      {"fieldName": "BuildingFID", "label": "Building Feature ID", "visible": true},
+      {"fieldName": "usage", "label": "usage", "visible": true},
+      {"fieldName": "attribution", "label": "Attribution/Source", "visible": true},
+      {"fieldName": "roofForm", "label": "Roof form", "visible": true},
+      {"fieldName": "BuildDate", "label": "BuildDate", "visible": true},
+      {"fieldName": "levelsAboveGround", "label": "Levels above ground", "visible": true},
+      {"fieldName": "totalHeight", "label": "Total height", "visible": true}
+    ],
+    "popupElements": [{"type": "fields"}]
+  },
+  "disablePopup": false,
+  "store": {
+    "id": "76456D8E-3E88-4755-A054-9D5F18A136E3",
+    "profile": "meshpyramids",
+    "resourcePattern": ["3dNodeIndexDocument", "SharedResource", "Geometry", "Attributes"],
+    "rootNode": "./nodes/root",
+    "version": "1.5",
+    "extent": [-122.701992202935, 45.48858459576082, -122.64338178957617, 45.543652667455653],
+    "indexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+    "vertexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+    "nidEncoding": "application/vnd.esri.i3s.json+gzip; version=1.5",
+    "featureEncoding": "application/vnd.esri.i3s.json+gzip; version=1.5",
+    "geometryEncoding": "application/octet-stream; version=1.5",
+    "attributeEncoding": "application/octet-stream; version=1.5",
+    "textureEncoding": ["image/jpeg", "image/vnd-ms.dds"],
+    "lodType": "MeshPyramid",
+    "lodModel": "node-switching",
+    "defaultGeometrySchema": {
+      "geometryType": "triangles",
+      "header": [
+        {"property": "vertexCount", "type": "UInt32"},
+        {"property": "featureCount", "type": "UInt32"}
+      ],
+      "topology": "PerAttributeArray",
+      "ordering": ["position", "normal", "uv0", "color"],
+      "vertexAttributes": {
+        "position": {"valueType": "Float32", "valuesPerElement": 3},
+        "normal": {"valueType": "Float32", "valuesPerElement": 3},
+        "uv0": {"valueType": "Float32", "valuesPerElement": 2},
+        "color": {"valueType": "UInt8", "valuesPerElement": 4}
+      },
+      "featureAttributeOrder": ["id", "faceRange"],
+      "featureAttributes": {
+        "id": {"valueType": "UInt64", "valuesPerElement": 1},
+        "faceRange": {"valueType": "UInt32", "valuesPerElement": 2}
+      }
+    }
+  },
+  "fields": [
+    {"name": "OBJECTID", "type": "esriFieldTypeOID", "alias": "OBJECTID"},
+    {"name": "beginLifespan_date", "type": "esriFieldTypeString", "alias": "beginLifespan_date"},
+    {"name": "status", "type": "esriFieldTypeString", "alias": "Construction status"},
+    {"name": "description", "type": "esriFieldTypeString", "alias": "description"},
+    {"name": "name", "type": "esriFieldTypeString", "alias": "name"},
+    {"name": "subtype", "type": "esriFieldTypeString", "alias": "subtype"},
+    {"name": "BuildingFID", "type": "esriFieldTypeString", "alias": "Building Feature ID"},
+    {"name": "usage", "type": "esriFieldTypeString", "alias": "usage"},
+    {"name": "attribution", "type": "esriFieldTypeString", "alias": "Attribution/Source"},
+    {"name": "roofForm", "type": "esriFieldTypeString", "alias": "Roof form"},
+    {"name": "BuildDate", "type": "esriFieldTypeDouble", "alias": "BuildDate"},
+    {"name": "levelsAboveGround", "type": "esriFieldTypeDouble", "alias": "Levels above ground"},
+    {"name": "totalHeight", "type": "esriFieldTypeDouble", "alias": "Total height"}
+  ],
+  "attributeStorageInfo": [
+    {
+      "key": "f_0",
+      "name": "OBJECTID",
+      "header": [{"property": "count", "valueType": "UInt32"}],
+      "ordering": ["ObjectIds"],
+      "objectIds": {"valueType": "UInt32", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_1",
+      "name": "beginLifespan_date",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_2",
+      "name": "status",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_3",
+      "name": "description",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_4",
+      "name": "name",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_5",
+      "name": "subtype",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_6",
+      "name": "BuildingFID",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_7",
+      "name": "usage",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_8",
+      "name": "attribution",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_9",
+      "name": "roofForm",
+      "header": [
+        {"property": "count", "valueType": "UInt32"},
+        {"property": "attributeValuesByteCount", "valueType": "UInt32"}
+      ],
+      "ordering": ["attributeByteCounts", "attributeValues"],
+      "attributeByteCounts": {"valueType": "UInt32", "valuesPerElement": 1},
+      "attributeValues": {"valueType": "String", "encoding": "UTF-8", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_10",
+      "name": "BuildDate",
+      "header": [{"property": "count", "valueType": "UInt32"}],
+      "ordering": ["attributeValues"],
+      "attributeValues": {"valueType": "Float64", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_11",
+      "name": "levelsAboveGround",
+      "header": [{"property": "count", "valueType": "UInt32"}],
+      "ordering": ["attributeValues"],
+      "attributeValues": {"valueType": "Float64", "valuesPerElement": 1}
+    },
+    {
+      "key": "f_12",
+      "name": "totalHeight",
+      "header": [{"property": "count", "valueType": "UInt32"}],
+      "ordering": ["attributeValues"],
+      "attributeValues": {"valueType": "Float64", "valuesPerElement": 1}
+    }
+  ]
+}

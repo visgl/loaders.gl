@@ -6,7 +6,7 @@
       "opacity": 1,
       "disablePopup": true,
       "title": "Non-Project Buildings",
-      "url": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/BuildingShells_Existing/SceneServer/layers/0",
+      "url": "@loaders.gl/i3s/test/data/arcgis-webscenes/layers/supported-layer.json",
       "visibility": true,
       "layerType": "ArcGISSceneServiceLayer",
       "itemId": "01f432dabdc845bb899cdd27143e1ea6",
@@ -38,7 +38,7 @@
       "opacity": 0.696969696969697,
       "disablePopup": true,
       "title": "Planned for Demolition",
-      "url": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/BuildingShells_PlannedDemo/SceneServer/layers/0",
+      "url": "@loaders.gl/i3s/test/data/arcgis-webscenes/layers/supported-layer.json",
       "visibility": false,
       "layerType": "ArcGISSceneServiceLayer",
       "itemId": "92a41da913484354bb51791247f06ed6",
@@ -74,9 +74,9 @@
           "opacity": 1,
           "disablePopup": true,
           "title": "Project Area",
-          "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/DevelopmentProjectArea/FeatureServer/0",
+          "url": "@loaders.gl/i3s/test/data/arcgis-webscenes/layers/supported-layer.json",
           "visibility": true,
-          "layerType": "ArcGISFeatureLayer",
+          "layerType": "ArcGISSceneServiceLayer",
           "itemId": "6e613156d2f14692b03cb94f0ddd5ec5",
           "layerDefinition": {"elevationInfo": {"mode": "onTheGround"}}
         },
@@ -85,9 +85,9 @@
           "opacity": 1,
           "disablePopup": true,
           "title": "DevB Pathways",
-          "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/DevB_Pathways/FeatureServer/1",
+          "url": "@loaders.gl/i3s/test/data/arcgis-webscenes/layers/supported-layer.json",
           "visibility": true,
-          "layerType": "ArcGISFeatureLayer",
+          "layerType": "ArcGISSceneServiceLayer",
           "layerDefinition": {"elevationInfo": {"mode": "onTheGround"}},
           "screenSizePerspective": true
         },
@@ -97,7 +97,7 @@
           "opacity": 1,
           "disablePopup": true,
           "title": "DevB Trees",
-          "url": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/DevB_Trees/SceneServer/layers/0",
+          "url": "@loaders.gl/i3s/test/data/arcgis-webscenes/layers/supported-layer.json",
           "visibility": true,
           "layerType": "ArcGISSceneServiceLayer",
           "itemId": "bdb116a14c064d1d98db959939574d15",
@@ -121,7 +121,7 @@
           "opacity": 1,
           "disablePopup": true,
           "title": "DevB Buildings",
-          "url": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/DevB_BuildingShells/SceneServer/layers/0",
+          "url": "@loaders.gl/i3s/test/data/arcgis-webscenes/layers/supported-layer.json",
           "visibility": true,
           "layerType": "ArcGISSceneServiceLayer",
           "itemId": "f417297982df4177b5f5ef061fc4ebeb",
@@ -137,89 +137,6 @@
               }
             }
           }
-        }
-      ],
-      "layerType": "GroupLayer",
-      "visibilityMode": "independent"
-    },
-    {
-      "id": "14e909fb03f-layer-48",
-      "listMode": "show",
-      "opacity": 1,
-      "title": "Development Scenario A",
-      "visibility": false,
-      "layers": [
-        {
-          "id": "14a38a1c894-layer9",
-          "showLegend": true,
-          "opacity": 1,
-          "disablePopup": true,
-          "title": "Project Area",
-          "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/DevelopmentProjectArea/FeatureServer/0",
-          "visibility": false,
-          "layerType": "ArcGISFeatureLayer",
-          "itemId": "6e613156d2f14692b03cb94f0ddd5ec5",
-          "layerDefinition": {"elevationInfo": {"mode": "onTheGround"}}
-        },
-        {
-          "id": "15f2ff20cf3-layer-2",
-          "opacity": 1,
-          "disablePopup": true,
-          "title": "DevA Pathways",
-          "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/DevA_Pathways/FeatureServer/1",
-          "visibility": false,
-          "layerType": "ArcGISFeatureLayer",
-          "layerDefinition": {"elevationInfo": {"mode": "onTheGround"}},
-          "screenSizePerspective": true
-        },
-        {
-          "id": "15a14243388-layer-1",
-          "showLegend": true,
-          "opacity": 1,
-          "disablePopup": true,
-          "title": "DevA Trees",
-          "url": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/DevA_Trees/SceneServer/layers/0",
-          "visibility": false,
-          "layerType": "ArcGISSceneServiceLayer",
-          "itemId": "19a61a37c3bb465eb908f85a89b5afb7",
-          "layerDefinition": {
-            "elevationInfo": {"mode": "absoluteHeight"},
-            "drawingInfo": {
-              "renderer": {
-                "authoringInfo": {},
-                "type": "simple",
-                "symbol": {
-                  "type": "MeshSymbol3D",
-                  "symbolLayers": [{"material": {"color": [255, 255, 255]}, "type": "Fill"}]
-                }
-              }
-            }
-          }
-        },
-        {
-          "id": "15a14241ac8-layer-0",
-          "showLegend": true,
-          "opacity": 1,
-          "disablePopup": true,
-          "title": "DevA Buildings",
-          "url": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/DevA_BuildingShells/SceneServer/layers/0",
-          "visibility": false,
-          "layerType": "ArcGISSceneServiceLayer",
-          "itemId": "5745b74e26f2484e9d333b0b0bc241b4",
-          "layerDefinition": {
-            "elevationInfo": {"mode": "absoluteHeight"},
-            "drawingInfo": {
-              "renderer": {
-                "authoringInfo": {},
-                "type": "simple",
-                "symbol": {
-                  "type": "MeshSymbol3D",
-                  "symbolLayers": [{"material": {"color": [255, 255, 255]}, "type": "Fill"}]
-                }
-              }
-            }
-          },
-          "showLabels": false
         }
       ],
       "layerType": "GroupLayer",
