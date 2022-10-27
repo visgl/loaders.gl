@@ -196,7 +196,7 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
   }
   if (exceptions.length) {
     exceptions.forEach((exeption) => exeption());
-    process.exit(0); // eslint-disable-line
+    process.exit(1);
   }
   return <ValidatedTileConversionOptions>options;
 }
@@ -240,7 +240,7 @@ function parseOptions(args: string[]): TileConversionOptions {
           opts.inputType = getStringValue(index, args);
           break;
         case '--tileset':
-          opts.tileset = getStringValue(index, args);
+          opts.tileset = getTilesetValue(index, args);
           break;
         case '--name':
           opts.name = getStringValue(index, args);
@@ -306,6 +306,20 @@ function getStringValue(index: number, args: string[]): string {
     return '';
   }
   return value;
+}
+
+/**
+ * Modyfy input tileset path to be compatible with fetch
+ * @param index - option's name index in the argument's array.
+ *                The value of the option should be next to name of the option.
+ * @param args - cli arguments array
+ * @returns - string value of the option
+ */
+function getTilesetValue(index: number, args: string[]): string {
+  const value = getStringValue(index, args);
+  console.log(`Input tileset value: ${value}`);
+  console.log(`Modified tileset value: ${value.replace(/\\/g, '/')}`);
+  return value.replace(/\\/g, '/');
 }
 
 /**
