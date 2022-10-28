@@ -240,7 +240,7 @@ function parseOptions(args: string[]): TileConversionOptions {
           opts.inputType = getStringValue(index, args);
           break;
         case '--tileset':
-          opts.tileset = getTilesetValue(index, args);
+          opts.tileset = getURLValue(index, args);
           break;
         case '--name':
           opts.name = getStringValue(index, args);
@@ -309,13 +309,13 @@ function getStringValue(index: number, args: string[]): string {
 }
 
 /**
- * Modyfy input tileset path to be compatible with fetch
+ * Modyfy URL path to be compatible with fetch
  * @param index - option's name index in the argument's array.
  *                The value of the option should be next to name of the option.
  * @param args - cli arguments array
  * @returns - string value of the option
  */
-function getTilesetValue(index: number, args: string[]): string {
+function getURLValue(index: number, args: string[]): string {
   const value = getStringValue(index, args);
   console.log(`Input tileset value: ${value}`);
   console.log(`Modified tileset value: ${value.replace(/\\/g, '/')}`);
