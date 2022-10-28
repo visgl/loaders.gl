@@ -13,8 +13,8 @@ test('#tile-converter#i3s-converter#coordinate-converter#convertBoundingVolumeTo
     xmax: -122.39761505291817,
     ymin: 37.620194593759,
     ymax: 37.90522864642682,
-    zmin: 4754.999977323874,
-    zmax: -4505.453647678357
+    zmin: -4505.453647678357,
+    zmax: 4754.999977323874
   });
 
   const obb = new OrientedBoundingBox().fromCenterHalfSizeQuaternion(
@@ -28,7 +28,7 @@ test('#tile-converter#i3s-converter#coordinate-converter#convertBoundingVolumeTo
     xmax: -122.39672756380504,
     ymin: 37.61647458074144,
     ymax: 37.908958954561705,
-    zmin: 4877.104767145071,
-    zmax: -4625.401184284537
+    zmin: -4625.401184284537,
+    zmax: 4877.104767145071
   });
 });
