@@ -126,6 +126,8 @@ export function convertBoundingVolumeToI3SFullExtent(
     new Vector3()
   );
 
+  // Converter sometimes returns min values that are bigger then max,
+  // so we should check and take bigger value from max and smaller for nim
   return {
     xmin: Math.min(vertexMin[0], vertexMax[0]),
     xmax: Math.max(vertexMin[0], vertexMax[0]),
