@@ -199,7 +199,11 @@ export default class I3SConverter {
       // console.log(tilesetJson); // eslint-disable-line
       this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
 
-      await this._createAndSaveTileset(outputPath, tilesetName);
+      await this._createAndSaveTileset(
+        outputPath,
+        tilesetName,
+        sourceTilesetJson?.root?.boundingVolume?.region
+      );
       await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
       return sourceTilesetJson;
     } catch (error) {
@@ -216,7 +220,11 @@ export default class I3SConverter {
    * @param outputPath - path to save output data
    * @param tilesetName - new tileset path
    */
-  private async _createAndSaveTileset(outputPath: string, tilesetName: string): Promise<void> {
+  private async _createAndSaveTileset(
+    outputPath: string,
+    tilesetName: string,
+    boundingVolumeRegion?: number[]
+  ): Promise<void> {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
     // Removing the tilesetPath needed to exclude erroneous files after conversion
     try {
@@ -227,7 +235,7 @@ export default class I3SConverter {
 
     this.layers0Path = join(tilesetPath, 'SceneServer', 'layers', '0');
 
-    this._formLayers0(tilesetName);
+    this._formLayers0(tilesetName, boundingVolumeRegion);
 
     this.materialDefinitions = [];
     this.materialMap = new Map();
@@ -267,10 +275,14 @@ export default class I3SConverter {
    * Form object of 3DSceneLayer https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DSceneLayer.cmn.md
    * @param  tilesetName - Name of layer
    */
-  private _formLayers0(tilesetName: string): void {
+  private _formLayers0(tilesetName: string, boundingVolumeRegion?: number[]): void {
     const fullExtent = convertBoundingVolumeToI3SFullExtent(
       this.sourceTileset?.boundingVolume || this.sourceTileset?.root?.boundingVolume
     );
+    if (boundingVolumeRegion) {
+      fullExtent.zmin = boundingVolumeRegion[4];
+      fullExtent.zmax = boundingVolumeRegion[5];
+    }
     const extent = [fullExtent.xmin, fullExtent.ymin, fullExtent.xmax, fullExtent.ymax];
     const layers0data = {
       version: `{${uuidv4().toUpperCase()}}`,
