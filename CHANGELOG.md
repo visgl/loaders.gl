@@ -1,5 +1,11 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.11
+
+- fix(tile-converter): i3s - handle file path with "\" (#2283)
+- fix(tile-converter): i3s - fix fullExtent calculation (#2281)
+- fix(Shapefile): Ignore TS7053 in parseRow function (#2264)
+
 ## v3.2.10
 
 - deck.gl compatible Viewport type (#2259)
