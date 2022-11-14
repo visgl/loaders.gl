@@ -639,9 +639,7 @@ export default class I3SConverter {
     parentId: number,
     level: number
   ): Promise<Node3DIndexDocument[]> {
-    if (this.validate) {
-      this._checkAddRefinementTypeForTile(sourceTile);
-    }
+    this._checkAddRefinementTypeForTile(sourceTile);
 
     await this._updateTilesetOptions();
     await this.sourceTileset!._loadTile(sourceTile);
