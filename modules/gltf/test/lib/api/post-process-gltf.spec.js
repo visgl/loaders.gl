@@ -31,7 +31,40 @@ const TEST_CASES = [
         {mesh: {id: 'mesh-0'}, id: 'node-0'},
         {mesh: {id: 'mesh-1'}, id: 'node-1'}
       ],
-      meshes: [{id: 'mesh-0'}, {id: 'mesh-1'}]
+      meshes: [{id: 'mesh-0'}, {id: 'mesh-1'}],
+      contentFormats: {draco: false, meshopt: false, ktx2: false}
+    }
+  },
+  {
+    name: 'With detected content formats',
+    input: {
+      json: {
+        scenes: [
+          {
+            nodes: [0, 1]
+          }
+        ],
+        nodes: [{mesh: 0}, {mesh: 1}],
+        meshes: [{}, {}]
+      },
+      contentFormats: {draco: true, meshopt: false, ktx2: true}
+    },
+    output: {
+      scenes: [
+        {
+          nodes: [
+            {mesh: {id: 'mesh-0'}, id: 'node-0'},
+            {mesh: {id: 'mesh-1'}, id: 'node-1'}
+          ],
+          id: 'scene-0'
+        }
+      ],
+      nodes: [
+        {mesh: {id: 'mesh-0'}, id: 'node-0'},
+        {mesh: {id: 'mesh-1'}, id: 'node-1'}
+      ],
+      meshes: [{id: 'mesh-0'}, {id: 'mesh-1'}],
+      contentFormats: {draco: true, meshopt: false, ktx2: true}
     }
   }
 ];

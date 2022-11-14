@@ -21,11 +21,19 @@ import {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
+import {name as dracoExtensionName} from '../extensions/KHR_draco_mesh_compression';
+import {name as meshoptExtensionName} from '../extensions/EXT_meshopt_compression';
+import {name as ktx2ExtensionName} from '../extensions/KHR_texture_basisu';
 
 type GLTFWithBuffers = {
   json: GLTF;
   buffers: any[];
   binary?: ArrayBuffer;
+  contentFormats?: {
+    draco: boolean;
+    meshopt: boolean;
+    ktx2: boolean;
+  };
 };
 
 const DEFAULT_GLTF_JSON: GLTF = {
@@ -59,6 +67,22 @@ export default class GLTFScenegraph {
     if (this.gltf.buffers && this.gltf.buffers[0]) {
       this.byteLength = this.gltf.buffers[0].byteLength;
       this.sourceBuffers = [this.gltf.buffers[0]];
+    }
+
+    // set content formats
+    this.gltf.contentFormats = this.gltf.contentFormats || {
+      draco: false,
+      meshopt: false,
+      ktx2: false
+    };
+    if (this.gltf.contentFormats && this.getExtension(dracoExtensionName)) {
+      this.gltf.contentFormats.draco = true;
+    }
+    if (this.gltf.contentFormats && this.getExtension(meshoptExtensionName)) {
+      this.gltf.contentFormats.meshopt = true;
+    }
+    if (this.gltf.contentFormats && this.getExtension(ktx2ExtensionName)) {
+      this.gltf.contentFormats.ktx2 = true;
     }
   }
 

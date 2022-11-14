@@ -9,9 +9,33 @@ import {load} from '@loaders.gl/core';
 // Extracted from Cesium 3D Tiles
 const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 
+const GLB_MESHOPT_GEOMETRY_URL = '@loaders.gl/gltf/test/data/meshopt/pirate.glb';
+const GLB_KTX2_GEOMETRY_URL = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/0/0.glb';
+
 test('GLTFScenegraph#ctor', (t) => {
   const gltfScenegraph = new GLTFScenegraph();
   t.ok(gltfScenegraph);
+  t.deepEquals(gltfScenegraph.gltf.contentFormats, {draco: false, meshopt: false, ktx2: false});
+  t.end();
+});
+
+test('GLTFScenegraph#should detect meshopt content', async (t) => {
+  const gltf = await load(GLB_MESHOPT_GEOMETRY_URL, [GLTFLoader], {
+    gltf: {decompressMeshes: false, postProcess: false}
+  });
+  const gltfScenegraph = new GLTFScenegraph(gltf);
+  t.ok(gltfScenegraph);
+  t.deepEquals(gltfScenegraph.gltf.contentFormats, {draco: false, meshopt: true, ktx2: false});
+  t.end();
+});
+
+test('GLTFScenegraph#should detect meshopt and ktx2 content', async (t) => {
+  const gltf = await load(GLB_KTX2_GEOMETRY_URL, [GLTFLoader], {
+    gltf: {decompressMeshes: false, postProcess: false}
+  });
+  const gltfScenegraph = new GLTFScenegraph(gltf);
+  t.ok(gltfScenegraph);
+  t.deepEquals(gltfScenegraph.gltf.contentFormats, {draco: false, meshopt: false, ktx2: true});
   t.end();
 });
 
@@ -21,6 +45,8 @@ test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
   });
 
   const gltfScenegraph = new GLTFScenegraph(gltf);
+
+  t.deepEquals(gltfScenegraph.gltf.contentFormats, {draco: true, meshopt: false, ktx2: false});
 
   // @ts-expect-error
   t.equals(gltfScenegraph.json.bufferViews.length, 4, 'gltf bufferView count as expected');
