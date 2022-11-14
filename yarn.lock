@@ -2920,9 +2920,9 @@
     "@xtuc/long" "4.2.2"
 
 "@xmldom/xmldom@^0.7.5":
-  version "0.7.6"
-  resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.7.6.tgz#6f55073fa73e65776bd85826958b98c8cd1457b5"
-  integrity sha512-HHXP9hskkFQHy8QxxUXkS7946FFIhYVfGqsk0WLwllmexN9x/+R4UBLvurHEuyXRfVEObVR8APuQehykLviwSQ==
+  version "0.7.7"
+  resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.7.7.tgz#16bd8a4e5c953018b8168e5d0a7d26b117cd7fa9"
+  integrity sha512-RwEdIYho2kjbSZ7fpvhkHy5wk1Y3x0O6e/EHL3/SoiAfFWH+yhV2/XZQvsBoAeGRNFwgScJS/gRZv+uIwoj7yA==
 
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
