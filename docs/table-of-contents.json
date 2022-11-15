@@ -96,6 +96,8 @@
         {"entry": "modules/wkt/docs/api-reference/wkb-writer"},
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
+        {"entry": "modules/wms/docs/api-reference/wms-capabilities-loader"},
+        {"entry": "modules/xml/docs/api-reference/xml-loader"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
         {"entry": "modules/zip/docs/api-reference/zip-writer"}
       ]
@@ -308,6 +310,18 @@
           "title": "@loaders.gl/wkt",
           "entries": [
             {"entry": "modules/wkt/docs"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/wms",
+          "entries": [
+            {"entry": "modules/wms/docs"}
+          ]
+        },
+        {
+          "title": "@loaders.gl/xml",
+          "entries": [
+            {"entry": "modules/xml/docs"}
           ]
         },
         {

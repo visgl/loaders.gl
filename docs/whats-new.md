@@ -21,19 +21,33 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-## v3.2 (In development)
+## v3.3 (In development)
 
-Target Release Date: Q1 2022.
+Target Release Date: Q4 2022.
 
-**loaders.gl/arrow**
+**@loaders.gl/wms**
+
+- New module for parsing WMS (Web Management Service)
+- [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
+
+**@loaders.gl/xml**
+
+- New module for parsing XML (eXtensible Markup Language)
+- [`XMLLoader`](modules/json/docs/api-reference/xml-loader)
+
+## v3.2 
+
+Target Release Date: May 2022.
+
+**@loaders.gl/arrow**
 
 - ArrowLoader now recognizes recommended Arrow MIME types `application/vnd.apache.arrow.file`, `application/vnd.apache.arrow.stream`.
 
-**loaders.gl/geopackage**
+**@loaders.gl/geopackage**
 
 - The `GeopackageLoader` now supports `tables` as well as `geojson` output data shapes, defaulting to `tables`. This is configurable via `options.gis.format`.
 
-**loaders.gl/gltf**
+**@loaders.gl/gltf**
 
 - `EXT_meshopt_compression` extension support.
 
