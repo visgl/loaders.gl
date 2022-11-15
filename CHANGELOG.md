@@ -1,5 +1,10 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.12
+
+- fix(tile-converter): always calculate refinement percentage (#2286)
+- Stat type changed to default 'count' (#2262)
+
 ## v3.2.11
 
 - fix(tile-converter): i3s - handle file path with "\" (#2283)
