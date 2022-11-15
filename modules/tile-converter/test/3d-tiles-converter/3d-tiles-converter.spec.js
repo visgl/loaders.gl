@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import {Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
-import {cleanUpPath} from '../utils/file-utils';
+// import {cleanUpPath} from '../utils/file-utils';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0';
