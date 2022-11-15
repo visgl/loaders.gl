@@ -60,6 +60,7 @@ import '@loaders.gl/csv/test';
 import '@loaders.gl/json/test';
 import '@loaders.gl/excel/test';
 import '@loaders.gl/parquet/test';
+import '@loaders.gl/xml/test';
 
 // Archive Formats
 import '@loaders.gl/compression/test';

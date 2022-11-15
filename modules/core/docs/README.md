@@ -33,7 +33,7 @@ As well as some utility functions.
 
 Loaders with limited functionality but with minimal bundle size impact:
 
-| Loader       | Description                                                                           |
-| ------------ | ------------------------------------------------------------------------------------- |
-| `JSONLoader` | A minimal non-streaming JSON loader that uses the built-in `JSON.parse` function      |
-| `XMLLoader`  | A non-streaming, browser-only XML loader that uses the browser's built-in DOM parser. |
+| Loader       | Description                                                                      |
+| ------------ | -------------------------------------------------------------------------------- |
+| `JSONLoader` | A minimal non-streaming JSON loader that uses the built-in `JSON.parse` function |
+| `NullLoader` | A loader-object that ignores input data and always returns `null`.               |
