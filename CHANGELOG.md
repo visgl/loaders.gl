@@ -2,6 +2,16 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.7
+
+- fix(tile-converter): always calculate refinement percentage (#2286)
+- chore(deps): bump socket.io-parser from 3.3.2 to 3.3.3 in /website (#2285)
+- chore(deps): bump loader-utils from 1.4.0 to 1.4.1 in /website (#2284)
+- fix(Shapefile): Ignore TS7053 in parseRow function (#2264)
+- fix(tile-converter): i3s - fix fullExtent calculation (#2281)
+- fix(tile-converter): i3s - handle file path with "\" (#2283)
+- Stat type changed to default 'count' (#2262)
+
 ## v3.3.0-alpha.6
 
 - chore(arcgis-webscene-loader): handle usupported layers (#2273)
