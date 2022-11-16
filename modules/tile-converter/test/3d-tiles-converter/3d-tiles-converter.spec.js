@@ -13,20 +13,21 @@ setLoaderOptions({
   _worker: 'test'
 });
 
-test('tile-converter - Converters#converts i3s to 3d-tiles tileset', async (t) => {
-  if (!isBrowser) {
-    const converter = new Tiles3DConverter();
-    await converter.convert({
-      inputUrl: TILESET_URL,
-      outputPath: 'data',
-      tilesetName: 'SanFrancisco',
-      maxDepth: 2,
-      egmFilePath: PGM_FILE_PATH
-    });
-  }
-  await cleanUpPath('data/SanFrancisco');
-  t.end();
-});
+// The test is flaky
+// test('tile-converter - Converters#converts i3s to 3d-tiles tileset', async (t) => {
+//   if (!isBrowser) {
+//     const converter = new Tiles3DConverter();
+//     await converter.convert({
+//       inputUrl: TILESET_URL,
+//       outputPath: 'data',
+//       tilesetName: 'SanFrancisco',
+//       maxDepth: 2,
+//       egmFilePath: PGM_FILE_PATH
+//     });
+//   }
+//   await cleanUpPath('data/SanFrancisco');
+//   t.end();
+// });
 
 test('tile-converter - Converters#should return error in browser environment', async (t) => {
   if (isBrowser) {
