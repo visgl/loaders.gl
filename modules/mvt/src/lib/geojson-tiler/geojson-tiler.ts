@@ -101,7 +101,7 @@ export class GeoJSONTiler {
    * @param y
    * @returns
    */
-  // eslint-disable-next-line complexity
+  // eslint-disable-next-line complexity, max-statements
   getTile(z: number, x: number, y: number): GeoJSONTile | null {
     // z = +z;
     // x = +x;
