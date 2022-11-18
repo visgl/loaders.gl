@@ -3,7 +3,7 @@
 
 import test from 'tape-promise/tape';
 // @ts-ignore-error
-import {clip} from '@loaders.gl/mvt/lib/geojson-vt/clip';
+import {clip} from '@loaders.gl/mvt/lib/geojson-tiler/clip';
 
 /* eslint comma-spacing:0*/
 

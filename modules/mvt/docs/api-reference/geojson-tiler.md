@@ -18,9 +18,21 @@ retain the minimum level of detail appropriate for each zoom level
 There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to test out **GeoJSONTiler** on different data. Just drag any GeoJSON on the page, watching the console.
 --->
 
+### Install
+
+Install using NPM (`npm install @loaders.gl/mvt`) or Yarn (`yarn install @loaders.gl/mvt`).
+
+TBD - Or use a browser build directly:
+
+```html
+<script src="https://unpkg.com/@loaders.gl/mvt/dist.min.js"></script>
+```
+
 ### Usage
 
-```js
+```typescript
+import {GeoJSONTiler} from '@loaders.gl/mvt';
+
 // build an initial index of tiles
 const tileSource = new GeoJSONTiler(geoJSON);
 
@@ -29,21 +41,6 @@ const features = tileSource.getTile(z, x, y).features;
 
 // show an array of tile coordinates created so far
 console.log(tileSource.tileCoords); // [{z: 0, x: 0, y: 0}, ...]
-```
-
-### Install
-
-Install using NPM (`npm install @loaders.gl/mvt`) or Yarn (`yarn install @loaders.gl/mvt`).
-
-```typescript
-// import as a ES module
-import {GeoJSONTiler} from '@loaders.gl/mvt';
-```
-
-TBD - Or use a browser build directly:
-
-```html
-<script src="https://unpkg.com/@loaders.gl/mvt/dist.min.js"></script>
 ```
 
 ### Options
@@ -94,21 +91,3 @@ Remarks:
 This class is a fork of Mapbox / Vladimir Agafonkin's amazing [geojson-vt]() module.
 
 This directory is forked from Mapbox's https://github.com/mapbox/geojson-vt under ISC License.
-
-```
-ISC License
-
-Copyright (c) 2015, Mapbox
-
-Permission to use, copy, modify, and/or distribute this software for any purpose
-with or without fee is hereby granted, provided that the above copyright notice
-and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
-THIS SOFTWARE.
-```

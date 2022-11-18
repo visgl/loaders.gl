@@ -27,3 +27,5 @@ modules/xml/test/sax-ts/testcases/xmlns-unbound.spec.ts
 modules/xml/test/sax-ts/testcases/xmlns-xml-default-ns.spec.ts
 modules/xml/test/sax-ts/testcases/xmlns-xml-default-prefix-attribute.spec.ts
 modules/xml/test/sax-ts/testcases/xmlns-xml-default-redefine.spec.ts
+
+modules/mvt/src/lib/geojson-tiler/tile.ts

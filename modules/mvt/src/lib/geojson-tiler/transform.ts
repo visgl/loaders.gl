@@ -1,12 +1,16 @@
 // loaders.gl, MIT license
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
+import type {GeoJSONTile} from './tile';
+
 /**
  * Transforms the coordinates of each feature in the given tile from
  * mercator-projected space into (extent x extent) tile space.
  */
-export function transformTile(tile, extent) {
-  if (tile.transformed) return tile;
+export function transformTile(tile: GeoJSONTile, extent: number): GeoJSONTile {
+  if (tile.transformed) {
+    return tile;
+  }
 
   const z2 = 1 << tile.z;
   const tx = tile.x;
@@ -24,7 +28,7 @@ export function transformTile(tile, extent) {
       }
     } else {
       for (let j = 0; j < geom.length; j++) {
-        const ring = [];
+        const ring: number[][] = [];
         for (let k = 0; k < geom[j].length; k += 2) {
           ring.push(transformPoint(geom[j][k], geom[j][k + 1], extent, z2, tx, ty));
         }
@@ -39,6 +43,13 @@ export function transformTile(tile, extent) {
 }
 
 // eslint-disable-next-line max-params
-function transformPoint(x, y, extent, z2, tx, ty) {
+function transformPoint(
+  x: number,
+  y: number,
+  extent: number,
+  z2: number,
+  tx: number,
+  ty: number
+): number[] {
   return [Math.round(extent * (x * z2 - tx)), Math.round(extent * (y * z2 - ty))];
 }

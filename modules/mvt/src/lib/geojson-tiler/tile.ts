@@ -1,12 +1,59 @@
 // loaders.gl, MIT license
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
+// import type {Feature} from '@loaders.gl/schema';
+
+export type GeoJSONTileFeature = {
+  type: any;
+  geometry: any;
+
+  // book keeping
+  id?: string;
+  tags?: string[];
+
+  // spatial extents
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
+export type GeoJSONTile = {
+  features: GeoJSONTileFeature[]; // Feature[]; Doesn't seem JSON compatible??
+  type?: number;
+  tags?: Record<string, string>;
+
+  // tile coordinates
+  x: number;
+  y: number;
+  z: number;
+
+  // spatial extents
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+
+  transformed: boolean;
+  numPoints: number;
+  numSimplified: number;
+  numFeatures: number;
+  source: any | null;
+};
+
+export type CreateTileOptions = {
+  maxZoom?: number;
+  tolerance: number;
+  extent: number;
+  lineMetrics: boolean;
+};
+
 /**
  * Create a tile from features and tile index
  */
-export function createTile(features, z, tx, ty, options) {
+export function createTile(features: any[], z, tx, ty, options: CreateTileOptions): GeoJSONTile {
   const tolerance = z === options.maxZoom ? 0 : options.tolerance / ((1 << z) * options.extent);
-  const tile = {
+  const tile: GeoJSONTile = {
     features: [],
     numPoints: 0,
     numSimplified: 0,
@@ -28,10 +75,10 @@ export function createTile(features, z, tx, ty, options) {
 }
 
 // eslint-disable-next-line complexity, max-statements
-function addFeature(tile, feature, tolerance, options) {
+function addFeature(tile: GeoJSONTile, feature, tolerance: number, options: CreateTileOptions) {
   const geom = feature.geometry;
   const type = feature.type;
-  const simplified = [];
+  const simplified: number[] = [];
 
   tile.minX = Math.min(tile.minX, feature.minX);
   tile.minY = Math.min(tile.minY, feature.minY);
@@ -71,14 +118,15 @@ function addFeature(tile, feature, tolerance, options) {
       tags.mapbox_clip_end = geom.end / geom.size;
     }
 
-    const tileFeature = {
+    // @ts-expect-error TODO - create sub type?
+    const tileFeature: GeoJSONTileFeature = {
       geometry: simplified,
       type:
         type === 'Polygon' || type === 'MultiPolygon'
           ? 3
           : type === 'LineString' || type === 'MultiLineString'
-          ? 2
-          : 1,
+            ? 2
+            : 1,
       tags
     };
     if (feature.id !== null) {
@@ -89,7 +137,14 @@ function addFeature(tile, feature, tolerance, options) {
 }
 
 // eslint-disable-next-line max-params, max-statements
-function addLine(result, geom, tile, tolerance, isPolygon, isOuter) {
+function addLine(
+  result,
+  geom,
+  tile: GeoJSONTile,
+  tolerance: number,
+  isPolygon: boolean,
+  isOuter: boolean
+): void {
   const sqTolerance = tolerance * tolerance;
 
   if (tolerance > 0 && geom.size < (isPolygon ? sqTolerance : tolerance)) {
@@ -97,7 +152,7 @@ function addLine(result, geom, tile, tolerance, isPolygon, isOuter) {
     return;
   }
 
-  const ring = [];
+  const ring: number[] = [];
 
   for (let i = 0; i < geom.length; i += 3) {
     if (tolerance === 0 || geom[i + 2] > sqTolerance) {
@@ -112,7 +167,7 @@ function addLine(result, geom, tile, tolerance, isPolygon, isOuter) {
   result.push(ring);
 }
 
-function rewind(ring, clockwise) {
+function rewind(ring: number[], clockwise?: boolean): void {
   let area = 0;
   for (let i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
     area += (ring[i] - ring[j]) * (ring[i + 1] + ring[j + 1]);

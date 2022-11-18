@@ -3,6 +3,8 @@
 
 /* eslint-disable no-console, no-continue */
 
+import type {GeoJSONTile, GeoJSONTileFeature} from './tile';
+
 import {convert} from './convert'; // GeoJSON conversion and preprocessing
 import {clip} from './clip'; // stripe clipping algorithm
 import {wrap} from './wrap'; // date line processing
@@ -23,7 +25,7 @@ export type GeoJSONTilerOptions = {
   debug?: number /** logging level (0, 1 or 2) */;
 };
 
-const defaultOptions: Required<GeoJSONTilerOptions> = {
+const DEFAULT_OPTIONS: Required<GeoJSONTilerOptions> = {
   maxZoom: 14, // max zoom to preserve detail on
   indexMaxZoom: 5, // max zoom in the tile index
   indexMaxPoints: 100000, // max number of points per tile in the tile index
@@ -41,14 +43,15 @@ export class GeoJSONTiler {
   options: Required<GeoJSONTilerOptions>;
 
   // tiles and tileCoords are part of the public API
-  tiles: Record<string, any> = {};
-  tileCoords: any[] = [];
+  tiles: Record<string, GeoJSONTile> = {};
+  tileCoords: {x: number; y: number; z: number}[] = [];
 
-  stats = {};
-  total = 0;
+  stats: Record<string, number> = {};
+  total: number = 0;
 
   constructor(data, options?: GeoJSONTilerOptions) {
-    options = this.options = {...defaultOptions, ...options};
+    this.options = {...DEFAULT_OPTIONS, ...options};
+    options = this.options;
 
     const debug = options.debug;
 
@@ -57,7 +60,7 @@ export class GeoJSONTiler {
     if (this.options.maxZoom < 0 || this.options.maxZoom > 24) {
       throw new Error('maxZoom should be in the 0-24 range');
     }
-    if (options.promoteId && options.generateId) {
+    if (options.promoteId && this.options.generateId) {
       throw new Error('promoteId and generateId cannot be used together.');
     }
 
@@ -75,7 +78,7 @@ export class GeoJSONTiler {
     }
 
     // wraps features (ie extreme west and extreme east)
-    features = wrap(features, options);
+    features = wrap(features, this.options);
 
     // start slicing from the top tile down
     if (features.length) {
@@ -91,15 +94,24 @@ export class GeoJSONTiler {
     }
   }
 
-  // eslint-disable-next-line complexity
-  getTile(z: number, x: number, y: number) {
+  /**
+   * Get a tile at the specified index
+   * @param z
+   * @param x
+   * @param y
+   * @returns
+   */
+  // eslint-disable-next-line complexity, max-statements
+  getTile(z: number, x: number, y: number): GeoJSONTile | null {
     // z = +z;
     // x = +x;
     // y = +y;
 
     const {extent, debug} = this.options;
 
-    if (z < 0 || z > 24) return null;
+    if (z < 0 || z > 24) {
+      return null;
+    }
 
     const z2 = 1 << z;
     x = (x + z2) & (z2 - 1); // wrap tile x coordinate
@@ -123,7 +135,9 @@ export class GeoJSONTiler {
       parent = this.tiles[toID(z0, x0, y0)];
     }
 
-    if (!parent || !parent.source) return null;
+    if (!parent || !parent.source) {
+      return null;
+    }
 
     // if we found a parent tile containing the original geometry, we can drill down from it
     if (debug > 1) {
@@ -131,7 +145,9 @@ export class GeoJSONTiler {
       console.time('drilling down');
     }
     this.splitTile(parent.source, z0, x0, y0, z, x, y);
-    if (debug > 1) console.timeEnd('drilling down');
+    if (debug > 1) {
+      console.timeEnd('drilling down');
+    }
 
     return this.tiles[id] ? transformTile(this.tiles[id], extent) : null;
   }
@@ -145,8 +161,16 @@ export class GeoJSONTiler {
    * zoom or the number of points is low as specified in the options.
    */
   // eslint-disable-next-line max-params, max-statements, complexity
-  splitTile(features, z: number, x: number, y: number, cz?: number, cx?: number, cy?: number) {
-    const stack = [features, z, x, y];
+  splitTile(
+    features: GeoJSONTileFeature[],
+    z: number,
+    x: number,
+    y: number,
+    cz?: number,
+    cx?: number,
+    cy?: number
+  ): void {
+    const stack: any[] = [features, z, x, y];
     const options = this.options;
     const debug = options.debug;
 
@@ -162,7 +186,9 @@ export class GeoJSONTiler {
       let tile = this.tiles[id];
 
       if (!tile) {
-        if (debug > 1) console.time('creation');
+        if (debug > 1) {
+          console.time('creation');
+        }
 
         tile = this.tiles[id] = createTile(features, z, x, y, options);
         this.tileCoords.push({z, x, y});
@@ -217,13 +243,15 @@ export class GeoJSONTiler {
       const k3 = 0.5 + k1;
       const k4 = 1 + k1;
 
-      let tl = null;
-      let bl = null;
-      let tr = null;
-      let br = null;
+      let tl: GeoJSONTileFeature[] | null = null;
+      let bl: GeoJSONTileFeature[] | null = null;
+      let tr: GeoJSONTileFeature[] | null = null;
+      let br: GeoJSONTileFeature[] | null = null;
 
       let left = clip(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, options);
       let right = clip(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, options);
+
+      // @ts-expect-error - unclear why this is needed?
       features = null;
 
       if (left) {

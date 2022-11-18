@@ -3,7 +3,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {GeoJSONTiler} from '@loaders.gl/mvt';
+import {GeoJSONTiler, GeoJSONTilerOptions} from '@loaders.gl/mvt';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
 
@@ -54,7 +54,8 @@ async function getJSON(name) {
   return json;
 }
 
-function genTiles(data, options) {
+/** Generate tiles for a GeoJSON files */
+function genTiles(data, options?: GeoJSONTilerOptions) {
   const index = new GeoJSONTiler(
     data,
     Object.assign(
@@ -71,7 +72,7 @@ function genTiles(data, options) {
   for (const id in index.tiles) {
     const tile = index.tiles[id];
     const z = tile.z;
-    output[`z${z}-${tile.x}-${tile.y}`] = index.getTile(z, tile.x, tile.y).features;
+    output[`z${z}-${tile.x}-${tile.y}`] = index.getTile(z, tile.x, tile.y)?.features;
   }
 
   return output;
