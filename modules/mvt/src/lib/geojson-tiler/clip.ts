@@ -1,30 +1,45 @@
 // loaders.gl, MIT license
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-/* eslint-disable */
-// @ts-nocheck
-
+import type {GeoJSONTileFeature} from './tile';
 import {createFeature} from './feature';
 
-/* clip features between two vertical or horizontal axis-parallel lines:
+/* eslint-disable no-continue */
+
+/**
+ * Clip features between two vertical or horizontal axis-parallel lines:
  *     |        |
  *  ___|___     |     /
  * /   |   \____|____/
  *     |        |
  *
- * k1 and k2 are the line coordinates
- * axis: 0 for x, 1 for y
- * minAll and maxAll: minimum and maximum coordinate value for all features
+ * @param k1 and k2 are the line coordinates
+ * @param axis: 0 for x, 1 for y
+ * @param minAll and maxAll: minimum and maximum coordinate value for all features
  */
-export function clip(features, scale, k1, k2, axis, minAll, maxAll, options) {
+// eslint-disable-next-line max-params, complexity, max-statements
+export function clip(
+  features: GeoJSONTileFeature[],
+  scale: number,
+  k1: number,
+  k2: number,
+  axis,
+  minAll: number,
+  maxAll: number,
+  options: {lineMetrics: boolean}
+): GeoJSONTileFeature[] | null {
   k1 /= scale;
   k2 /= scale;
 
-  if (minAll >= k1 && maxAll < k2) return features;
+  if (minAll >= k1 && maxAll < k2) {
+    return features;
+  }
   // trivial accept
-  else if (maxAll < k1 || minAll >= k2) return null; // trivial reject
+  else if (maxAll < k1 || minAll >= k2) {
+    return null; // trivial reject
+  }
 
-  const clipped = [];
+  const clipped: GeoJSONTileFeature[] = [];
 
   for (const feature of features) {
     const geometry = feature.geometry;
@@ -42,7 +57,7 @@ export function clip(features, scale, k1, k2, axis, minAll, maxAll, options) {
       continue;
     }
 
-    let newGeometry = [];
+    let newGeometry: number[][][] | number[][] = [];
 
     if (type === 'Point' || type === 'MultiPoint') {
       clipPoints(geometry, newGeometry, k1, k2, axis);
@@ -73,6 +88,7 @@ export function clip(features, scale, k1, k2, axis, minAll, maxAll, options) {
       if (type === 'LineString' || type === 'MultiLineString') {
         if (newGeometry.length === 1) {
           type = 'LineString';
+          // @ts-expect-error TODO - use proper GeoJSON geometry types
           newGeometry = newGeometry[0];
         } else {
           type = 'MultiLineString';
@@ -89,7 +105,7 @@ export function clip(features, scale, k1, k2, axis, minAll, maxAll, options) {
   return clipped.length ? clipped : null;
 }
 
-function clipPoints(geom, newGeom, k1, k2, axis) {
+function clipPoints(geom, newGeom, k1: number, k2: number, axis): void {
   for (let i = 0; i < geom.length; i += 3) {
     const a = geom[i + axis];
 
@@ -99,11 +115,21 @@ function clipPoints(geom, newGeom, k1, k2, axis) {
   }
 }
 
-function clipLine(geom, newGeom, k1, k2, axis, isPolygon, trackMetrics) {
+// eslint-disable-next-line max-params, complexity, max-statements
+function clipLine(
+  geom,
+  newGeom,
+  k1: number,
+  k2: number,
+  axis,
+  isPolygon: boolean,
+  trackMetrics: boolean
+): void {
   let slice = newSlice(geom);
   const intersect = axis === 0 ? intersectX : intersectY;
   let len = geom.start;
-  let segLen, t;
+  let segLen;
+  let t;
 
   for (let i = 0; i < geom.length - 3; i += 3) {
     const ax = geom[i];
@@ -115,19 +141,25 @@ function clipLine(geom, newGeom, k1, k2, axis, isPolygon, trackMetrics) {
     const b = axis === 0 ? bx : by;
     let exited = false;
 
-    if (trackMetrics) segLen = Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
+    if (trackMetrics) {
+      segLen = Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
+    }
 
     if (a < k1) {
       // ---|-->  | (line enters the clip region from the left)
       if (b > k1) {
         t = intersect(slice, ax, ay, bx, by, k1);
-        if (trackMetrics) slice.start = len + segLen * t;
+        if (trackMetrics) {
+          slice.start = len + segLen * t;
+        }
       }
     } else if (a > k2) {
       // |  <--|--- (line enters the clip region from the right)
       if (b < k2) {
         t = intersect(slice, ax, ay, bx, by, k2);
-        if (trackMetrics) slice.start = len + segLen * t;
+        if (trackMetrics) {
+          slice.start = len + segLen * t;
+        }
       }
     } else {
       addPoint(slice, ax, ay, az);
@@ -144,12 +176,16 @@ function clipLine(geom, newGeom, k1, k2, axis, isPolygon, trackMetrics) {
     }
 
     if (!isPolygon && exited) {
-      if (trackMetrics) slice.end = len + segLen * t;
+      if (trackMetrics) {
+        slice.end = len + segLen * t;
+      }
       newGeom.push(slice);
       slice = newSlice(geom);
     }
 
-    if (trackMetrics) len += segLen;
+    if (trackMetrics) {
+      len += segLen;
+    }
   }
 
   // add the last point
@@ -172,31 +208,40 @@ function clipLine(geom, newGeom, k1, k2, axis, isPolygon, trackMetrics) {
   }
 }
 
-function newSlice(line) {
-  const slice = [];
+class Slice extends Array<number> {
+  size?: number;
+  start?: number;
+  end?: number;
+}
+
+function newSlice(line: {size: number; start: number; end: number}): Slice {
+  const slice: Slice = [];
   slice.size = line.size;
   slice.start = line.start;
   slice.end = line.end;
   return slice;
 }
 
-function clipLines(geom, newGeom, k1, k2, axis, isPolygon) {
+// eslint-disable-next-line max-params
+function clipLines(geom, newGeom, k1: number, k2: number, axis, isPolygon: boolean): void {
   for (const line of geom) {
     clipLine(line, newGeom, k1, k2, axis, isPolygon, false);
   }
 }
 
-function addPoint(out, x, y, z) {
+function addPoint(out: number[], x: number, y: number, z: number): void {
   out.push(x, y, z);
 }
 
-function intersectX(out, ax, ay, bx, by, x) {
+// eslint-disable-next-line max-params
+function intersectX(out, ax: number, ay: number, bx: number, by: number, x: number): number {
   const t = (x - ax) / (bx - ax);
   addPoint(out, x, ay + (by - ay) * t, 1);
   return t;
 }
 
-function intersectY(out, ax, ay, bx, by, y) {
+// eslint-disable-next-line max-params
+function intersectY(out, ax: number, ay: number, bx: number, by: number, y): number {
   const t = (y - ay) / (by - ay);
   addPoint(out, ax + (bx - ax) * t, y, 1);
   return t;

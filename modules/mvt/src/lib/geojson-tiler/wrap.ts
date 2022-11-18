@@ -1,30 +1,53 @@
 // loaders.gl, MIT license
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-/** eslint-disable */
-// @ts-nocheck
+import type {GeoJSONTileFeature} from './tile';
+import {clip} from './clip';
+import {createFeature} from './feature';
 
-import {clip} from './clip.js';
-import {createFeature} from './feature.js';
+/**
+ * Options for wrap()
+ */
+export type WrapOptions = {
+  buffer: number /** number of pixels of buffer for the tile */;
+  extent: number /** extent of each tile */;
+  lineMetrics: boolean;
+};
 
-export function wrap(features, options) {
+/**
+ * Wrap across antemeridian, by clipping into two tiles, shifting the overflowing x coordinates
+ * @param features list of features to be wrapped
+ * @param options buffer and extent
+ * @returns
+ */
+export function wrap(features: GeoJSONTileFeature[], options: WrapOptions) {
   const buffer = options.buffer / options.extent;
-  let merged = features;
+  let merged: GeoJSONTileFeature[] = features;
   const left = clip(features, 1, -1 - buffer, buffer, 0, -1, 2, options); // left world copy
   const right = clip(features, 1, 1 - buffer, 2 + buffer, 0, -1, 2, options); // right world copy
 
   if (left || right) {
     merged = clip(features, 1, -buffer, 1 + buffer, 0, -1, 2, options) || []; // center world copy
 
-    if (left) merged = shiftFeatureCoords(left, 1).concat(merged); // merge left into center
-    if (right) merged = merged.concat(shiftFeatureCoords(right, -1)); // merge right into center
+    if (left) {
+      merged = shiftFeatureCoords(left, 1).concat(merged); // merge left into center
+    }
+    if (right) {
+      merged = merged.concat(shiftFeatureCoords(right, -1)); // merge right into center
+    }
   }
 
   return merged;
 }
 
-function shiftFeatureCoords(features, offset) {
-  const newFeatures = [];
+/**
+ * Shift the x coordinates of a list of features
+ * @param features list of features to shift x coordinates for
+ * @param offset
+ * @returns
+ */
+function shiftFeatureCoords(features: GeoJSONTileFeature[], offset: number): GeoJSONTileFeature[] {
+  const newFeatures: GeoJSONTileFeature[] = [];
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];
@@ -42,8 +65,9 @@ function shiftFeatureCoords(features, offset) {
     } else if (type === 'MultiPolygon') {
       newGeometry = [];
       for (const polygon of feature.geometry) {
-        const newPolygon = [];
+        const newPolygon: Points = [];
         for (const line of polygon) {
+          // @ts-expect-error TODO
           newPolygon.push(shiftCoords(line, offset));
         }
         newGeometry.push(newPolygon);
@@ -56,8 +80,20 @@ function shiftFeatureCoords(features, offset) {
   return newFeatures;
 }
 
-function shiftCoords(points, offset) {
-  const newPoints = [];
+class Points extends Array<number> {
+  size?: number;
+  start?: number;
+  end?: number;
+}
+
+/**
+ * Shift the x coordinate of every point
+ * @param points
+ * @param offset
+ * @returns
+ */
+function shiftCoords(points: Points, offset: number): Points {
+  const newPoints: Points = [];
   newPoints.size = points.size;
 
   if (points.start !== undefined) {

@@ -4,12 +4,15 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import type {Feature} from '@loaders.gl/schema';
+import type {GeoJSONTileFeature} from './tile';
+
 import {simplify} from './simplify';
 import {createFeature} from './feature';
 
 // converts GeoJSON feature into an intermediate projected JSON vector format with simplification data
 
-export function convert(data, options) {
+export function convert(data: Feature, options): GeoJSONTileFeature[] {
   const features = [];
   if (data.type === 'FeatureCollection') {
     for (let i = 0; i < data.features.length; i++) {
@@ -25,8 +28,22 @@ export function convert(data, options) {
   return features;
 }
 
-function convertFeature(features, geojson, options, index) {
-  if (!geojson.geometry) return;
+export type ConvertFeatureOptions = {
+  maxZoom?: number;
+  tolerance: number;
+  extent: number;
+  lineMetrics: boolean;
+};
+
+function convertFeature(
+  features: GeoJSONTileFeature[],
+  geojson: Feature,
+  options: ConvertFeatureOptions,
+  index: number
+): void {
+  if (!geojson.geometry) {
+    return;
+  }
 
   const coords = geojson.geometry.coordinates;
   const type = geojson.geometry.type;
@@ -87,11 +104,11 @@ function convertFeature(features, geojson, options, index) {
   features.push(createFeature(id, type, geometry, geojson.properties));
 }
 
-function convertPoint(coords, out) {
+function convertPoint(coords, out): void {
   out.push(projectX(coords[0]), projectY(coords[1]), 0);
 }
 
-function convertLine(ring, out, tolerance, isPolygon) {
+function convertLine(ring: number[], out, tolerance: number, isPolygon: boolean): void {
   let x0, y0;
   let size = 0;
 
@@ -122,7 +139,7 @@ function convertLine(ring, out, tolerance, isPolygon) {
   out.end = out.size;
 }
 
-function convertLines(rings, out, tolerance, isPolygon) {
+function convertLines(rings: number[][], out, tolerance: number, isPolygon: boolean): void {
   for (let i = 0; i < rings.length; i++) {
     const geom = [];
     convertLine(rings[i], geom, tolerance, isPolygon);
@@ -130,11 +147,11 @@ function convertLines(rings, out, tolerance, isPolygon) {
   }
 }
 
-function projectX(x) {
+function projectX(x: number): number {
   return x / 360 + 0.5;
 }
 
-function projectY(y) {
+function projectY(y: number): number {
   const sin = Math.sin((y * Math.PI) / 180);
   const y2 = 0.5 - (0.25 * Math.log((1 + sin) / (1 - sin))) / Math.PI;
   return y2 < 0 ? 0 : y2 > 1 ? 1 : y2;

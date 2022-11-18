@@ -3,4 +3,4 @@
 import './mvt-loader.spec';
 
 // geojson-vt
-import './lib/geojson-vt';
+import './lib/geojson-tiler';

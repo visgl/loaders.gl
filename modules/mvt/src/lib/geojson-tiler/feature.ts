@@ -1,8 +1,10 @@
 // loaders.gl, MIT license
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-export function createFeature(id, type, geom, tags) {
-  const feature = {
+import {GeoJSONTileFeature} from './tile';
+
+export function createFeature(id, type, geom, tags): GeoJSONTileFeature {
+  const feature: GeoJSONTileFeature = {
     // eslint-disable-next-line
     id: id == null ? null : id,
     type,

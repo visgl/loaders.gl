@@ -3,8 +3,13 @@
 
 /**
  * Calculate simplification data using optimized Douglas-Peucker algorithm
+ *
+ * @param coords contiguous list of coordinates
+ * @param first first coord to simplify
+ * @param last last coord to simplify
+ * @param sqTolerance tolerance (square distance)
  */
-export function simplify(coords, first, last, sqTolerance) {
+export function simplify(coords: number[], first: number, last: number, sqTolerance: number): void {
   let maxSqDist = sqTolerance;
   const mid = (last - first) >> 1;
   let minPosToMid = last - first;
@@ -42,7 +47,14 @@ export function simplify(coords, first, last, sqTolerance) {
 
 /** square distance from a point to a segment */
 // eslint-disable-next-line max-params
-function getSqSegDist(px, py, x, y, bx, by) {
+function getSqSegDist(
+  px: number,
+  py: number,
+  x: number,
+  y: number,
+  bx: number,
+  by: number
+): number {
   let dx = bx - x;
   let dy = by - y;
 
