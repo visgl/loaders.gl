@@ -4,7 +4,7 @@
 
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
-const DRACO_VERSION = '1.4.1';
+const DRACO_VERSION = '1.5.5';
 const DRACO_JS_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_decoder.js`;
 const DRACO_WASM_WRAPPER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_wasm_wrapper.js`;
 const DRACO_WASM_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_decoder.wasm`;
