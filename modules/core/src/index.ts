@@ -36,6 +36,7 @@ export {load} from './lib/api/load';
 export {loadInBatches} from './lib/api/load-in-batches';
 
 // ENCODING (ENCODING AND WRITING)
+export {encodeTable, encodeTableAsText, encodeTableInBatches} from './lib/api/encode-table';
 export {encode, encodeSync, encodeInBatches, encodeText, encodeURLtoURL} from './lib/api/encode';
 export {save, saveSync} from './lib/api/save';
 
