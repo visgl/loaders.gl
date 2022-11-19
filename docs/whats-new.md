@@ -35,6 +35,11 @@ Target Release Date: Q4 2022.
 - New module for parsing XML (eXtensible Markup Language)
 - [`XMLLoader`](modules/json/docs/api-reference/xml-loader)
 
+**@loaders.gl/draco**
+
+- Now uses the [draco3d `v1.5.5`](https://github.com/google/draco#version-155-release) _decoders_
+- Still uses the draco3d `v1.4.1` _encoder_ to avoid performance regression.
+
 ## v3.2 
 
 Target Release Date: May 2022.
