@@ -4,12 +4,16 @@
 
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
-const DRACO_VERSION = '1.5.5';
-const DRACO_JS_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_decoder.js`;
-const DRACO_WASM_WRAPPER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_wasm_wrapper.js`;
-const DRACO_WASM_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_VERSION}/draco_decoder.wasm`;
+const DRACO_DECODER_VERSION = '1.5.5';
+const DRACO_ENCODER_VERSION = '1.4.1';
 
-const DRACO_ENCODER_URL = `https://raw.githubusercontent.com/google/draco/${DRACO_VERSION}/javascript/draco_encoder.js`;
+const STATIC_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_DECODER_VERSION}`;
+
+const DRACO_JS_DECODER_URL = `${STATIC_DECODER_URL}/draco_decoder.js`;
+const DRACO_WASM_WRAPPER_URL = `${STATIC_DECODER_URL}/draco_wasm_wrapper.js`;
+const DRACO_WASM_DECODER_URL = `${STATIC_DECODER_URL}/draco_decoder.wasm`;
+
+const DRACO_ENCODER_URL = `https://raw.githubusercontent.com/google/draco/${DRACO_ENCODER_VERSION}/javascript/draco_encoder.js`;
 
 let loadDecoderPromise;
 let loadEncoderPromise;
