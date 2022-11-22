@@ -11,7 +11,7 @@ const getGlobalLoaderRegistry = () => {
 };
 
 /** Register a list of global loaders */
-export function registerLoaders(loaders: Loader[]) {
+export function registerLoaders(loaders: Loader[] | Loader) {
   const loaderRegistry = getGlobalLoaderRegistry();
 
   loaders = Array.isArray(loaders) ? loaders : [loaders];

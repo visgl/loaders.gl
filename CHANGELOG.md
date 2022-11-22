@@ -2,6 +2,8 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.8
+
 ## v3.3.0-alpha.7
 
 - fix(tile-converter): always calculate refinement percentage (#2286)

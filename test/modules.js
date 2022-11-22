@@ -52,6 +52,7 @@ import '@loaders.gl/kml/test';
 import '@loaders.gl/mvt/test';
 import '@loaders.gl/shapefile/test';
 import '@loaders.gl/wkt/test';
+import '@loaders.gl/wms/test';
 
 // Table Formats
 import '@loaders.gl/schema/test';
@@ -60,6 +61,7 @@ import '@loaders.gl/csv/test';
 import '@loaders.gl/json/test';
 import '@loaders.gl/excel/test';
 import '@loaders.gl/parquet/test';
+import '@loaders.gl/xml/test';
 
 // Archive Formats
 import '@loaders.gl/compression/test';

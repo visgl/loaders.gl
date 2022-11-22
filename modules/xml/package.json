@@ -1,0 +1,43 @@
+{
+  "name": "@loaders.gl/xml",
+  "version": "3.3.0-alpha.7",
+  "description": "Framework-independent loaders for the XML (eXtensible Markup Language) format",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "WMS",
+    "web map service",
+    "loader",
+    "geospatial",
+    "webgl",
+    "OGC"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle",
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.3.1",
+    "@loaders.gl/loader-utils": "3.3.0-alpha.7",
+    "@loaders.gl/schema": "3.3.0-alpha.7",
+    "fast-xml-parser": "^4.0.11"
+  },
+  "devDependencies": {
+    "xmldom": "0.6.0"
+  }
+}

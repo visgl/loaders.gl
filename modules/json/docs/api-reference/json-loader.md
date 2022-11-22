@@ -60,7 +60,7 @@ for await (const batch of batches) {
     case 'final-result': // contains all fields except the streamed array
       console.log(batch.container);
       break;
-    case 'data:
+    case 'data':
       // batch.data will contain a number of rows
       for (const feature of batch.data) {
         switch (feature.geometry.type) {
