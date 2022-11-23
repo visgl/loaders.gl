@@ -709,9 +709,9 @@ export interface GLTF {
    * An array of textures.
    */
   textures?: Texture[];
-  extensions?: any;
-  extras?: any;
-  // [k: string]: any;
+  extensions?: unknown;
+  extras?: unknown;
+  [k: string]: unknown;
 }
 
 // GLTF Extensions

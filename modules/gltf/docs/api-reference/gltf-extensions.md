@@ -6,13 +6,14 @@ loaders.gl aims to provide support for glTF extensions that can be handled compl
 
 Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
-| Extension                                                                                                                         | Description                                |
-| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)  |                                            |
-| [KHR_lights_punctual](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual)                |                                            |
-| [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)                |                                            |
-| [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu)                    |                                            |
-| [EXT_meshopt_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md) | Decompresses meshopt-compressed geometries |
+| Extension                                               | Preprocessed | Description                                |
+| ------------------------------------------------------- | ------------ | ------------------------------------------ |
+| [KHR_draco_mesh_compression][KHR_draco_mesh_compression] | Y            | Decompresses draco-compressed geometries   |
+| [EXT_meshopt_compression][EXT_meshopt_compression])      | Y            | Decompresses meshopt-compressed geometries |
+| [KHR_texture_basisu][KHR_texture_basisu])                | Y            |
+| [KHR_texture_webp][KHR_texture_webp])                  | Y            |
+| [KHR_lights_punctual][KHR_lights_punctual])              | Y\*          | Deprecated                                 |
+| [KHR_materials_unlit][KHR_materials_unlit])              | Y\*             | Deprecated                                 |
 
 ## Official Extensions
 
@@ -72,3 +73,9 @@ This extension provides a support for the meshopt binary geometry data compressi
 The `GLTFLoader` by default fully decompresses meshopt compressed geometries, removing the meshopt extension and the compressed data from the parsed glTF data structure.
 
 [EXT_meshopt_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)
+
+KHR_draco_mesh_compression: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
+KHR_lights_punctual: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_lights_punctual  
+KHR_materials_unlit: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit  
+KHR_texture_basisu: https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu  
+EXT_meshopt_compression: https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)

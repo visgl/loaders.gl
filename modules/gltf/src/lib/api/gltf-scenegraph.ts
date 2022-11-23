@@ -1,5 +1,5 @@
 import type {
-  GLTFJsonWithExtensionsProcessed,
+  GLTF,
   GLTFScene,
   GLTFNode,
   GLTFMesh,
@@ -23,7 +23,7 @@ import {
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
 
-const DEFAULT_GLTF_JSON: GLTFJsonWithExtensionsProcessed = {
+const DEFAULT_GLTF_JSON: GLTF = {
   asset: {
     version: '2.0',
     generator: 'loaders.gl'
@@ -41,7 +41,7 @@ export default class GLTFScenegraph {
   sourceBuffers: any[];
   byteLength: number;
 
-  constructor(gltf?: {json: GLTFJsonWithExtensionsProcessed; buffers?: any[]}) {
+  constructor(gltf?: {json: GLTF; buffers?: any[]}) {
     // @ts-ignore
     this.gltf = gltf || {
       json: {...DEFAULT_GLTF_JSON},
@@ -55,23 +55,21 @@ export default class GLTFScenegraph {
       this.byteLength = this.gltf.buffers[0].byteLength;
       this.sourceBuffers = [this.gltf.buffers[0]];
     }
-
-    this.gltf.json.extensionsProcessed = this.gltf.json.extensionsProcessed || [];
   }
 
   // Accessors
 
-  get json(): GLTFJsonWithExtensionsProcessed {
+  get json(): GLTF {
     return this.gltf.json;
   }
 
-  getApplicationData(key: string): {[key: string]: any} {
+  getApplicationData(key: string): unknown {
     // TODO - Data is already unpacked by GLBParser
     const data = this.json[key];
     return data;
   }
 
-  getExtraData(key: string): {[key: string]: any} {
+  getExtraData(key: string): {[key: string]: unknown} {
     // TODO - Data is already unpacked by GLBParser
     const extras = this.json.extras || {};
     return extras[key];
@@ -94,6 +92,10 @@ export default class GLTFScenegraph {
 
   getUsedExtensions(): string[] {
     return this.json.extensionsUsed || [];
+  }
+
+  getRemovedExtensions(): string[] {
+    return (this.json.extensionsRemoved || []) as string[];
   }
 
   getObjectExtension<T = Extension>(object: {[key: string]: any}, extensionName: string): T | null {
@@ -154,7 +156,7 @@ export default class GLTFScenegraph {
     if (typeof index === 'object') {
       return index;
     }
-    const object = this.json[array] && this.json[array][index];
+    const object = this.json[array] && (this.json[array] as {}[])[index];
     if (!object) {
       throw new Error(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
     }
@@ -231,7 +233,7 @@ export default class GLTFScenegraph {
    */
   addExtraData(key: string, data: object): GLTFScenegraph {
     this.json.extras = this.json.extras || {};
-    this.json.extras[key] = data;
+    (this.json.extras as Record<string, unknown>)[key] = data;
     return this;
   }
 
@@ -266,7 +268,7 @@ export default class GLTFScenegraph {
   addExtension(extensionName: string, extensionData: object = {}): object {
     assert(extensionData);
     this.json.extensions = this.json.extensions || {};
-    this.json.extensions[extensionName] = extensionData;
+    (this.json.extensions as Record<string, unknown>)[extensionName] = extensionData;
     this.registerUsedExtension(extensionName);
     return extensionData;
   }
@@ -315,18 +317,13 @@ export default class GLTFScenegraph {
     if (this.json.extensions) {
       delete this.json.extensions[extensionName];
     }
-  }
-
-  /**
-   * Set extension has been processed
-   */
-  setExtensionProcessed(extensionName: string): void {
-    if (!this.getExtension(extensionName)) {
-      return;
+    if (!Array.isArray(this.json.extensionsRemoved)) {
+      this.json.extensionsRemoved = [];
     }
-    this.gltf.json.extensionsProcessed = this.gltf.json.extensionsProcessed || [];
-    this.gltf.json.extensionsProcessed.push(extensionName);
-    this.removeExtension(extensionName);
+    const extensionsRemoved = this.json.extensionsRemoved as string[];
+    if (!extensionsRemoved.includes(extensionName)) {
+      extensionsRemoved.push(extensionName);
+    }
   }
 
   /**

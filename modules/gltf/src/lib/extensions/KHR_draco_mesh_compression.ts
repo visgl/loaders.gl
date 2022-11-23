@@ -56,8 +56,8 @@ export async function decode(
   // Decompress meshes in parallel
   await Promise.all(promises);
 
-  // We have now decompressed all primitives, so set the top-level extensions processed
-  scenegraph.setExtensionProcessed(KHR_DRACO_MESH_COMPRESSION);
+  // We have now decompressed all primitives, so remove the top-level extension
+  scenegraph.removeExtension(KHR_DRACO_MESH_COMPRESSION);
 }
 
 export function encode(gltfData, options: GLTFLoaderOptions = {}): void {

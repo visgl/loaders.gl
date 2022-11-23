@@ -15,7 +15,6 @@ const GLB_KTX2_GEOMETRY_URL = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/0/0
 test('GLTFScenegraph#ctor', (t) => {
   const gltfScenegraph = new GLTFScenegraph();
   t.ok(gltfScenegraph);
-  t.deepEquals(gltfScenegraph.gltf.json.extensionsProcessed, []);
   t.end();
 });
 
@@ -25,8 +24,8 @@ test('GLTFScenegraph#should detect meshopt content', async (t) => {
   });
   const gltfScenegraph = new GLTFScenegraph(gltf);
   t.ok(gltfScenegraph);
-  t.deepEquals(gltfScenegraph.gltf.json.extensionsProcessed, ['EXT_meshopt_compression']);
-  t.deepEquals(gltfScenegraph.gltf.json.extensionsUsed, ['KHR_mesh_quantization']);
+  t.deepEquals(gltfScenegraph.getRemovedExtensions(), ['EXT_meshopt_compression']);
+  t.deepEquals(gltfScenegraph.getUsedExtensions(), ['KHR_mesh_quantization']);
   t.end();
 });
 
@@ -36,7 +35,7 @@ test('GLTFScenegraph#should detect meshopt and ktx2 content', async (t) => {
   });
   const gltfScenegraph = new GLTFScenegraph(gltf);
   t.ok(gltfScenegraph);
-  t.deepEquals(gltfScenegraph.gltf.json.extensionsProcessed, [
+  t.deepEquals(gltfScenegraph.getRemovedExtensions(), [
     'KHR_texture_basisu',
     'KHR_materials_unlit'
   ]);
@@ -51,7 +50,7 @@ test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
 
   const gltfScenegraph = new GLTFScenegraph(gltf);
 
-  t.deepEquals(gltfScenegraph.gltf.json.extensionsProcessed, [
+  t.deepEquals(gltfScenegraph.getRemovedExtensions(), [
     'KHR_draco_mesh_compression',
     'KHR_materials_unlit'
   ]);

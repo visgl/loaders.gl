@@ -31,8 +31,8 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
   // Decompress meshes in parallel
   await Promise.all(promises);
 
-  // We have now decompressed all primitives, so set the top-level extensions processed
-  scenegraph.setExtensionProcessed(EXT_MESHOPT_COMPRESSION);
+  // We have now decompressed all primitives, so remove the top-level extension
+  scenegraph.removeExtension(EXT_MESHOPT_COMPRESSION);
 }
 
 /** Decode one meshopt buffer view */

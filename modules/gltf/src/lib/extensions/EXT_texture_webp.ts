@@ -35,11 +35,12 @@ export function preprocess(gltfData: {json: GLTF}, options: GLTFLoaderOptions): 
       EXT_TEXTURE_WEBP
     );
     if (extension) {
+      // TODO - if multiple texture extensions are present which one wins?
       texture.source = extension.source;
     }
     scenegraph.removeObjectExtension(texture, EXT_TEXTURE_WEBP);
   }
 
-  // Set the top-level extension processed
-  scenegraph.setExtensionProcessed(EXT_TEXTURE_WEBP);
+  // Remove the top-level extension
+  scenegraph.removeExtension(EXT_TEXTURE_WEBP);
 }
