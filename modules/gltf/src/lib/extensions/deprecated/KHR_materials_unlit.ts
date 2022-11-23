@@ -13,8 +13,8 @@ export async function decode(gltfData: {json: GLTF}): Promise<void> {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
   const {json} = gltfScenegraph;
 
-  // Remove the top-level extension
-  gltfScenegraph.removeExtension(KHR_MATERIALS_UNLIT);
+  // Set the top-level extension processed
+  gltfScenegraph.setExtensionProcessed(KHR_MATERIALS_UNLIT);
 
   // Any nodes that have the extension, add lights field pointing to light object
   // and remove the extension

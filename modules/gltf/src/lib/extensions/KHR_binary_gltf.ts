@@ -40,8 +40,8 @@ export function preprocess(gltfData: {json: GLTF}): void {
     delete json.buffers[0].uri;
   }
 
-  // Remove the top-level extension as it has now been removed from all nodes
-  gltfScenegraph.removeExtension(KHR_BINARY_GLTF);
+  // Set the top-level extension as it has now been processed
+  gltfScenegraph.setExtensionProcessed(KHR_BINARY_GLTF);
 }
 
 // KHR_binary_gltf is a 1.0 extension that is supported natively by 2.0

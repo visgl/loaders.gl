@@ -19,7 +19,7 @@ export async function decode(gltfData: {json: GLTF}): Promise<void> {
   if (extension) {
     // @ts-ignore
     gltfScenegraph.json.lights = extension.lights;
-    gltfScenegraph.removeExtension(KHR_LIGHTS_PUNCTUAL);
+    gltfScenegraph.setExtensionProcessed(KHR_LIGHTS_PUNCTUAL);
   }
 
   // Any nodes that have the extension, add lights field pointing to light object

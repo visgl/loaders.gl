@@ -15,17 +15,18 @@ const GLB_KTX2_GEOMETRY_URL = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/0/0
 test('GLTFScenegraph#ctor', (t) => {
   const gltfScenegraph = new GLTFScenegraph();
   t.ok(gltfScenegraph);
-  t.deepEquals(gltfScenegraph.gltf.contentFormats, {draco: false, meshopt: false, ktx2: false});
+  t.deepEquals(gltfScenegraph.gltf.json.extensionsProcessed, []);
   t.end();
 });
 
 test('GLTFScenegraph#should detect meshopt content', async (t) => {
   const gltf = await load(GLB_MESHOPT_GEOMETRY_URL, [GLTFLoader], {
-    gltf: {decompressMeshes: false, postProcess: false}
+    gltf: {decompressMeshes: true, postProcess: false}
   });
   const gltfScenegraph = new GLTFScenegraph(gltf);
   t.ok(gltfScenegraph);
-  t.deepEquals(gltfScenegraph.gltf.contentFormats, {draco: false, meshopt: true, ktx2: false});
+  t.deepEquals(gltfScenegraph.gltf.json.extensionsProcessed, ['EXT_meshopt_compression']);
+  t.deepEquals(gltfScenegraph.gltf.json.extensionsUsed, ['KHR_mesh_quantization']);
   t.end();
 });
 
@@ -35,18 +36,26 @@ test('GLTFScenegraph#should detect meshopt and ktx2 content', async (t) => {
   });
   const gltfScenegraph = new GLTFScenegraph(gltf);
   t.ok(gltfScenegraph);
-  t.deepEquals(gltfScenegraph.gltf.contentFormats, {draco: false, meshopt: false, ktx2: true});
+  t.deepEquals(gltfScenegraph.gltf.json.extensionsProcessed, [
+    'KHR_texture_basisu',
+    'KHR_materials_unlit'
+  ]);
+  t.deepEquals(gltfScenegraph.gltf.json.extensionsUsed, []);
   t.end();
 });
 
 test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
   const gltf = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader], {
-    gltf: {decompressMeshes: false, postProcess: false}
+    gltf: {decompressMeshes: true, postProcess: false}
   });
 
   const gltfScenegraph = new GLTFScenegraph(gltf);
 
-  t.deepEquals(gltfScenegraph.gltf.contentFormats, {draco: true, meshopt: false, ktx2: false});
+  t.deepEquals(gltfScenegraph.gltf.json.extensionsProcessed, [
+    'KHR_draco_mesh_compression',
+    'KHR_materials_unlit'
+  ]);
+  t.deepEquals(gltfScenegraph.gltf.json.extensionsUsed, []);
 
   // @ts-expect-error
   t.equals(gltfScenegraph.json.bufferViews.length, 4, 'gltf bufferView count as expected');

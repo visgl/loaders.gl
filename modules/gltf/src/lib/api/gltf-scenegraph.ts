@@ -1,5 +1,5 @@
 import type {
-  GLTF,
+  GLTFJsonWithExtensionsProcessed,
   GLTFScene,
   GLTFNode,
   GLTFMesh,
@@ -10,7 +10,8 @@ import type {
   GLTFTexture,
   GLTFImage,
   GLTFBuffer,
-  GLTFBufferView
+  GLTFBufferView,
+  GLTFWithBuffers
 } from '../types/gltf-types';
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
@@ -21,22 +22,8 @@ import {
   getAccessorTypeFromSize,
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
-import {name as DRACO_EXTENSION_NAME} from '../extensions/KHR_draco_mesh_compression';
-import {name as MESHOPT_EXTENSION_NAME} from '../extensions/EXT_meshopt_compression';
-import {name as KTX2_EXTENSION_NAME} from '../extensions/KHR_texture_basisu';
 
-type GLTFWithBuffers = {
-  json: GLTF;
-  buffers: any[];
-  binary?: ArrayBuffer;
-  contentFormats?: {
-    draco: boolean;
-    meshopt: boolean;
-    ktx2: boolean;
-  };
-};
-
-const DEFAULT_GLTF_JSON: GLTF = {
+const DEFAULT_GLTF_JSON: GLTFJsonWithExtensionsProcessed = {
   asset: {
     version: '2.0',
     generator: 'loaders.gl'
@@ -54,7 +41,7 @@ export default class GLTFScenegraph {
   sourceBuffers: any[];
   byteLength: number;
 
-  constructor(gltf?: {json: GLTF; buffers?: any[]}) {
+  constructor(gltf?: {json: GLTFJsonWithExtensionsProcessed; buffers?: any[]}) {
     // @ts-ignore
     this.gltf = gltf || {
       json: {...DEFAULT_GLTF_JSON},
@@ -69,26 +56,12 @@ export default class GLTFScenegraph {
       this.sourceBuffers = [this.gltf.buffers[0]];
     }
 
-    // set content formats
-    this.gltf.contentFormats = this.gltf.contentFormats || {
-      draco: false,
-      meshopt: false,
-      ktx2: false
-    };
-    if (this.gltf.contentFormats && this.getExtension(DRACO_EXTENSION_NAME)) {
-      this.gltf.contentFormats.draco = true;
-    }
-    if (this.gltf.contentFormats && this.getExtension(MESHOPT_EXTENSION_NAME)) {
-      this.gltf.contentFormats.meshopt = true;
-    }
-    if (this.gltf.contentFormats && this.getExtension(KTX2_EXTENSION_NAME)) {
-      this.gltf.contentFormats.ktx2 = true;
-    }
+    this.gltf.json.extensionsProcessed = this.gltf.json.extensionsProcessed || [];
   }
 
   // Accessors
 
-  get json(): GLTF {
+  get json(): GLTFJsonWithExtensionsProcessed {
     return this.gltf.json;
   }
 
@@ -342,6 +315,18 @@ export default class GLTFScenegraph {
     if (this.json.extensions) {
       delete this.json.extensions[extensionName];
     }
+  }
+
+  /**
+   * Set extension has been processed
+   */
+  setExtensionProcessed(extensionName: string): void {
+    if (!this.getExtension(extensionName)) {
+      return;
+    }
+    this.gltf.json.extensionsProcessed = this.gltf.json.extensionsProcessed || [];
+    this.gltf.json.extensionsProcessed.push(extensionName);
+    this.removeExtension(extensionName);
   }
 
   /**

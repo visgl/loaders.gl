@@ -31,6 +31,6 @@ export function preprocess(gltfData: {json: GLTF}, options: GLTFLoaderOptions): 
     scene.removeObjectExtension(texture, KHR_TEXTURE_BASISU);
   }
 
-  // Remove the top-level extension
-  scene.removeExtension(KHR_TEXTURE_BASISU);
+  // Set the top-level extension processed
+  scene.setExtensionProcessed(KHR_TEXTURE_BASISU);
 }

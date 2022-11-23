@@ -17,6 +17,7 @@ test('gltf#EXT_feature_metadata - Should do nothing if no "EXT_feature_metadata"
   const expectedResult = {
     json: {
       extensionsUsed: ['EXT_feature_metadata'],
+      extensionsProcessed: [],
       extensions: {}
     }
   };
@@ -56,6 +57,7 @@ test('gltf#EXT_feature_metadata - Should do nothing for extension with feature t
   const expectedResult = {
     json: {
       extensionsUsed: ['EXT_feature_metadata'],
+      extensionsProcessed: [],
       extensions: {
         EXT_feature_metadata: {
           schema: {
@@ -146,6 +148,7 @@ test('gltf#EXT_feature_metadata - Should handle String feature attributes', asyn
         {buffer: 0, byteOffset: 14, byteLength: 16}
       ],
       extensionsUsed: ['EXT_feature_metadata'],
+      extensionsProcessed: [],
       extensions: {
         EXT_feature_metadata: {
           schema: {
