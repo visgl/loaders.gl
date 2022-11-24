@@ -10,6 +10,7 @@ import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/Tileset/tileset.json';
+const KTX2_TILESET_URL = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
 const TILESET_GLOBAL_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetGlobal/tileset.json';
 
 /*
@@ -574,6 +575,17 @@ test('Tileset3D#loads tiles in tileset', async (t) => {
   const content = tileset.root?.content;
 
   t.ok(content);
+  t.deepEquals(tileset.contentFormats, {draco: false, meshopt: false, dds: false, ktx2: false});
+  t.end();
+});
+
+test('Tileset3D#should detect ktx2 texture', async (t) => {
+  const tilesetJson = await load(KTX2_TILESET_URL, Tiles3DLoader);
+  const tileset = new Tileset3D(tilesetJson);
+
+  await tileset._loadTile(tileset.root?.children?.[0]);
+
+  t.deepEquals(tileset.contentFormats, {draco: false, meshopt: false, dds: false, ktx2: true});
   t.end();
 });
 

@@ -212,6 +212,9 @@ export default class Tileset3D {
 
   stats: Stats;
 
+  /** flags that contain information about data types in nested tiles */
+  contentFormats = {draco: false, meshopt: false, dds: false, ktx2: false};
+
   traverseCounter: number;
   geometricError: number;
   selectedTiles: Tile3D[];
@@ -799,8 +802,41 @@ export default class Tileset3D {
       calculateTransformProps(tile, tile.content);
     }
 
+    this.updateContentTypes(tile);
     this._addTileToCache(tile);
     this.options.onTileLoad(tile);
+  }
+
+  /**
+   * Update information about data types in nested tiles
+   * @param tile instance of a nested Tile3D
+   */
+  private updateContentTypes(tile: Tile3D) {
+    if (this.type === TILESET_TYPE.I3S) {
+      if (tile.header.isDracoGeometry) {
+        this.contentFormats.draco = true;
+      }
+      switch (tile.header.textureFormat) {
+        case 'dds':
+          this.contentFormats.dds = true;
+          break;
+        case 'ktx2':
+          this.contentFormats.ktx2 = true;
+          break;
+        default:
+      }
+    } else if (this.type === TILESET_TYPE.TILES3D) {
+      const {extensionsRemoved = []} = tile.content?.gltf || {};
+      if (extensionsRemoved.includes('KHR_draco_mesh_compression')) {
+        this.contentFormats.draco = true;
+      }
+      if (extensionsRemoved.includes('EXT_meshopt_compression')) {
+        this.contentFormats.meshopt = true;
+      }
+      if (extensionsRemoved.includes('KHR_texture_basisu')) {
+        this.contentFormats.ktx2 = true;
+      }
+    }
   }
 
   _onStartTileLoading() {

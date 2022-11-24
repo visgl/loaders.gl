@@ -33,6 +33,7 @@ export async function decode(gltfData: {json: GLTF}): Promise<void> {
       gltfScenegraph.removeObjectExtension(material, KHR_TECHNIQUES_WEBGL);
     }
 
+    // Remove the top-level extension
     gltfScenegraph.removeExtension(KHR_TECHNIQUES_WEBGL);
   }
 }
