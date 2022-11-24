@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tiles",
-  "version": "3.3.0-alpha.7",
+  "version": "3.3.0-alpha.8",
   "description": "Common components for different tiles loaders.",
   "license": "MIT",
   "publishConfig": {
@@ -33,8 +33,8 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.3.0-alpha.7",
-    "@loaders.gl/math": "3.3.0-alpha.7",
+    "@loaders.gl/loader-utils": "3.3.0-alpha.8",
+    "@loaders.gl/math": "3.3.0-alpha.8",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
