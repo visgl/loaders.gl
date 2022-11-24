@@ -826,14 +826,14 @@ export default class Tileset3D {
         default:
       }
     } else if (this.type === TILESET_TYPE.TILES3D) {
-      const {extensionsProcessed = []} = tile.content?.gltf || {};
-      if (extensionsProcessed.includes('KHR_draco_mesh_compression')) {
+      const {extensionsRemoved = []} = tile.content?.gltf || {};
+      if (extensionsRemoved.includes('KHR_draco_mesh_compression')) {
         this.contentFormats.draco = true;
       }
-      if (extensionsProcessed.includes('EXT_meshopt_compression')) {
+      if (extensionsRemoved.includes('EXT_meshopt_compression')) {
         this.contentFormats.meshopt = true;
       }
-      if (extensionsProcessed.includes('KHR_texture_basisu')) {
+      if (extensionsRemoved.includes('KHR_texture_basisu')) {
         this.contentFormats.ktx2 = true;
       }
     }

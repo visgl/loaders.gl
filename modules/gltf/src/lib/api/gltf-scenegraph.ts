@@ -308,6 +308,9 @@ export default class GLTFScenegraph {
    * Removes an extension from the top-level list
    */
   removeExtension(extensionName: string): void {
+    if (!this.getExtension(extensionName)) {
+      return;
+    }
     if (this.json.extensionsRequired) {
       this._removeStringFromArray(this.json.extensionsRequired, extensionName);
     }
