@@ -15,15 +15,15 @@ const MATERIAL_DEFINITION_INFO_PARAMS = () => ({
   },
   ambient: {
     path: 'ambient',
-    default: [1, 1, 1, 1]
+    default: [1, 1, 1]
   },
   diffuse: {
     path: 'diffuse',
-    default: [1, 1, 1, 1]
+    default: [1, 1, 1]
   },
   specular: {
     path: 'specular',
-    default: [0, 0, 0, 0]
+    default: [0, 0, 0]
   },
   useVertexColorAlpha: {
     path: 'useVertexColorAlpha',
