@@ -6,6 +6,7 @@ import './i3s-converter/helpers/coordinate-converter.spec';
 import './i3s-converter/helpers/batch-ids-extensions.spec';
 import './i3s-converter/helpers/feature-attributes.spec';
 import './i3s-converter/helpers/geometry-converter.spec';
+import './i3s-converter/helpers/shared-resources.spec';
 
 import './i3s-converter/i3s-converter.spec';
 
