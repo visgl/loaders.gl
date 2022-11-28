@@ -3,7 +3,7 @@ import transform from 'json-map-transform';
 
 import {SHARED_RESOURCES as sharedResourcesTemplate} from '../../../src/i3s-converter/json-templates/shared-resources';
 
-test('#SHARED_RESOURCES - Should have arrays with three elements like [1, 1, 1]', async (t) => {
+test('#tile-converter#i3s-converter#json-templates#shared-resources#default-data - Verify the default shared data', async (t) => {
   const SHARED_RESOURCES_ENTRY = {
     materialDefinitionInfos: [
       {
@@ -12,24 +12,26 @@ test('#SHARED_RESOURCES - Should have arrays with three elements like [1, 1, 1]'
     ],
     nodePath: '1'
   };
-  const PARAM_NAMES = ['ambient', 'diffuse', 'specular'];
-  const EXPECTED_LENGTH = 3;
 
-  const checkParam = (val) => !!val && val.length === EXPECTED_LENGTH;
-
-  let r = false;
-  const sharedData = transform(SHARED_RESOURCES_ENTRY, sharedResourcesTemplate());
-  for (const [_i1, materialDefinitionInfo] of Object.entries(sharedData || {})) {
-    for (const [_i2, info] of Object.entries(materialDefinitionInfo || {})) {
-      const params = info.params || {};
-      for (const p of PARAM_NAMES) {
-        r = checkParam(params[p]);
-        if (!r) break;
+  const EXPECTED_DATA = {
+    Mat10: {
+      name: 'standard',
+      type: 'standard',
+      params: {
+        renderMode: 'solid',
+        shininess: 1,
+        reflectivity: 0,
+        ambient: [1, 1, 1],
+        diffuse: [1, 1, 1],
+        specular: [0, 0, 0],
+        useVertexColorAlpha: false,
+        vertexRegions: false,
+        vertexColors: true
       }
-      if (!r) break;
     }
-    if (!r) break;
-  }
-  t.ok(r);
+  };
+
+  const sharedData = transform(SHARED_RESOURCES_ENTRY, sharedResourcesTemplate());
+  t.deepEquals(sharedData ? sharedData.materialDefinitions : {}, EXPECTED_DATA);
   t.end();
 });
