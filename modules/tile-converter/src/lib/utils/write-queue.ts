@@ -1,4 +1,4 @@
-import { Queue } from './queue';
+import {Queue} from './queue';
 import process from 'process';
 
 /** Memory limit size is based on testing */
@@ -12,7 +12,7 @@ export type WriteQueueItem = {
 export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   private intervalId?: NodeJS.Timeout;
   public writePromise: Promise<void> | null = null;
-  public fileMap: { [key: string]: string } = {};
+  public fileMap: {[key: string]: string} = {};
   public listeningInterval: number;
   public writeConcurrency: number;
 
@@ -62,7 +62,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
         if (!item) {
           break;
         }
-        const { archiveKey, writePromise } = item as WriteQueueItem;
+        const {archiveKey, writePromise} = item as WriteQueueItem;
         archiveKeys.push(archiveKey);
         const promise = writePromise();
         // writePromise() returns a Promise that will be awaited in Promise.allSettled(promises);
@@ -77,7 +77,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
         // It will be done for ALL items in the queue, which is not supposed to happen.
         // That's why the function should be passed as
         //   writePromise: () => writeFileForSlpk(slpkPath, content, `xxx.json`)
-        // instead of 
+        // instead of
         //   writePromise: writeFileForSlpk(slpkPath, content, `xxx.json`) // INCORRECT !
         promises.push(promise);
       }
