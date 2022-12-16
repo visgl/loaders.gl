@@ -168,6 +168,7 @@ test('tile-converter - Converters#NodePages', async (t) => {
       nodePages.push(newNodeStub);
     }
     await nodePages.save('/layer/0', writingQueue, false);
+    await writingQueue.finalize();
     st.equal(typeof savedNodePages[1], 'string');
     st.equal(savedNodePages.length, 2);
     st.end();
@@ -184,6 +185,7 @@ test('tile-converter - Converters#NodePages', async (t) => {
       nodePages.push(newNodeStub);
     }
     await nodePages.save('/layer/0', writingQueue, true);
+    await writingQueue.finalize();
     st.equal(typeof savedNodePages[1], 'string');
     st.equal(savedNodePages.length, 3);
     st.end();
