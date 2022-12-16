@@ -1,4 +1,4 @@
-import {Queue} from './queue';
+import { Queue } from './queue';
 import process from 'process';
 
 /** Memory limit size is based on testing */
@@ -6,13 +6,13 @@ const MEMORY_LIMIT = 4 * 1024 * 1024 * 1024; // 4GB
 
 export type WriteQueueItem = {
   archiveKey?: string;
-  writePromise: Promise<string>;
+  writePromise: () => Promise<string>;
 };
 
 export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   private intervalId?: NodeJS.Timeout;
   public writePromise: Promise<void> | null = null;
-  public fileMap: {[key: string]: string} = {};
+  public fileMap: { [key: string]: string } = {};
   public listeningInterval: number;
   public writeConcurrency: number;
 
@@ -41,12 +41,9 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   }
 
   async startWrite(): Promise<void> {
-    if (this.writePromise) {
-      await this.writePromise;
-      this.writePromise = null;
-      return;
+    if (!this.writePromise) {
+      this.writePromise = this.doWrite();
     }
-    this.writePromise = this.doWrite();
     await this.writePromise;
     this.writePromise = null;
   }
@@ -65,14 +62,28 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
         if (!item) {
           break;
         }
-        const {archiveKey, writePromise} = item as WriteQueueItem;
+        const { archiveKey, writePromise } = item as WriteQueueItem;
         archiveKeys.push(archiveKey);
-        promises.push(writePromise);
+        const promise = writePromise();
+        // writePromise() returns a Promise that will be awaited in Promise.allSettled(promises);
+        // Arguments for this call are specified in writeQueue.enqueue call like this:
+        // await writeQueue.enqueue({
+        //   archiveKey: `nodePages/xxx.json.gz`,
+        //   writePromise: () => writeFileForSlpk(slpkPath, data, `xxx.json`)
+        // });
+        // Note, a function like writeFileForSlpk should NOT be called when initializing the object for enqueue().
+        // If he function is called, the promise will be created
+        // and the function will allocate resources (file descriptors) for file writing.
+        // It will be done for ALL items in the queue, which is not supposed to happen.
+        // That's why the function should be passed as
+        //   writePromise: () => writeFileForSlpk(slpkPath, content, `xxx.json`)
+        // instead of 
+        //   writePromise: writeFileForSlpk(slpkPath, content, `xxx.json`) // INCORRECT !
+        promises.push(promise);
       }
       const writeResults = await Promise.allSettled(promises);
       this.updateFileMap(archiveKeys, writeResults);
     }
-    this.writePromise = null;
   }
 
   private updateFileMap(
