@@ -2,6 +2,7 @@
 
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import type {FieldDefinition, ParquetField, ParquetType} from '../../parquetjs/schema/declare';
+import {FileMetaData} from '@loaders.gl/parquet/parquetjs/parquet-thrift';
 
 import {
   Schema,
@@ -55,11 +56,10 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: typeof DataType} = {
   DECIMAL_FIXED_LEN_BYTE_ARRAY: Float64
 };
 
-export function convertSchemaFromParquet(parquetSchema: ParquetSchema): Schema {
+export function convertSchemaFromParquet(parquetSchema: ParquetSchema, parquetMetadata?: FileMetaData): Schema {
   const fields = getFields(parquetSchema.schema);
-
-  // TODO add metadata if needed.
-  return new Schema(fields);
+  const metadata = parquetMetadata && getSchemaMetadata(parquetMetadata);
+  return new Schema(fields, metadata);
 }
 
 function getFields(schema: FieldDefinition): Field[] {
@@ -89,6 +89,19 @@ function getFieldMetadata(field: ParquetField): Map<string, string> {
   for (const key in field) {
     if (key !== 'name') {
       const value = typeof field[key] !== 'string' ? JSON.stringify(field[key]) : field[key];
+      metadata.set(key, value);
+    }
+  }
+
+  return metadata;
+}
+
+function getSchemaMetadata(parquetMetadata: FileMetaData): Map<string, string> {
+  const metadata = new Map();
+
+  const keyValueList = parquetMetadata.key_value_metadata || [];
+  for (const {key, value} of keyValueList) {
+    if (typeof value === 'string') {
       metadata.set(key, value);
     }
   }
