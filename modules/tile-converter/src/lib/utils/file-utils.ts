@@ -1,3 +1,5 @@
+import {load} from '@loaders.gl/core';
+import {JSONLoader} from '@loaders.gl/loader-utils';
 import {promises as fs} from 'fs';
 import {isAbsolute, join} from 'path';
 import {compressFileWithGzip} from './compress-util';
@@ -40,21 +42,41 @@ export async function writeFile(
  * @param data - file content
  * @param fileName - name of output file (default: index.json)
  * @param compress - if need to compress file with gzip (default: true)
+ * @param compressList - if set - the file should be added to this list and compressed in the end of conversion
  */
 export async function writeFileForSlpk(
   path: string,
   data: string | Uint8Array | ArrayBuffer | Promise<ArrayBuffer>,
   fileName: string = 'index.json',
-  compress: boolean = true
-): Promise<string> {
+  compress: boolean = true,
+  compressList?: string[] | null
+): Promise<string | null> {
   const pathFile = await writeFile(path, data, fileName);
   if (compress) {
-    const pathGzFile = await compressFileWithGzip(pathFile);
-    // After compression, we don't need an uncompressed file
-    await removeFile(pathFile);
-    return pathGzFile;
+    if (compressList) {
+      if (!compressList.includes(pathFile)) {
+        compressList.push(pathFile);
+        return `${pathFile}.gz`;
+      } else {
+        return null;
+      }
+    } else {
+      const pathGzFile = await compressFileWithGzip(pathFile);
+      // After compression, we don't need an uncompressed file
+      await removeFile(pathFile);
+      return pathGzFile;
+    }
   }
   return pathFile;
+}
+
+export async function openJson(path: string, fileName: string): Promise<{[key: string]: any}> {
+  const pathFile = join(path, fileName);
+  try {
+    return await load(pathFile, JSONLoader);
+  } catch (err) {
+    throw err;
+  }
 }
 
 /**

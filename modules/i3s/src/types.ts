@@ -363,7 +363,6 @@ export type PopupInfo = {
 export type Node3DIndexDocument = {
   id: string;
   version?: string;
-  path?: string;
   level?: number;
   mbs?: Mbs;
   obb?: Obb;

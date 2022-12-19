@@ -6,7 +6,6 @@ import {METADATA as metadataTemplate} from '../json-templates/metadata';
 import {NodeInPage} from '@loaders.gl/i3s';
 import WriteQueue from '../../lib/utils/write-queue';
 
-// @ts-nocheck
 /**
  * class NodePages - wrapper of nodePages array
  *

@@ -6,7 +6,7 @@ const MEMORY_LIMIT = 4 * 1024 * 1024 * 1024; // 4GB
 
 export type WriteQueueItem = {
   archiveKey?: string;
-  writePromise: Promise<string>;
+  writePromise: Promise<string | null>;
 };
 
 export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
@@ -22,11 +22,19 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
     this.writeConcurrency = writeConcurrency;
   }
 
-  async enqueue(val: T) {
-    super.enqueue(val);
-    /** https://nodejs.org/docs/latest-v14.x/api/process.html#process_process_memoryusage */
-    if (process.memoryUsage().rss > MEMORY_LIMIT) {
-      await this.startWrite();
+  async enqueue(val: T, writeImmediately: boolean = false) {
+    if (writeImmediately) {
+      const {archiveKey, writePromise} = val as WriteQueueItem;
+      const result = await writePromise;
+      if (archiveKey && result) {
+        this.fileMap[archiveKey] = result;
+      }
+    } else {
+      super.enqueue(val);
+      /** https://nodejs.org/docs/latest-v14.x/api/process.html#process_process_memoryusage */
+      if (process.memoryUsage().rss > MEMORY_LIMIT) {
+        await this.startWrite();
+      }
     }
   }
 
@@ -58,7 +66,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
 
   private async doWrite(): Promise<void> {
     while (this.length) {
-      const promises: Promise<string>[] = [];
+      const promises: Promise<string | null>[] = [];
       const archiveKeys: (string | undefined)[] = [];
       for (let i = 0; i < this.writeConcurrency; i++) {
         const item = this.dequeue();
@@ -77,7 +85,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
 
   private updateFileMap(
     archiveKeys: (string | undefined)[],
-    writeResults: PromiseSettledResult<string>[]
+    writeResults: PromiseSettledResult<string | null>[]
   ) {
     for (let i = 0; i < archiveKeys.length; i++) {
       const archiveKey = archiveKeys[i];
