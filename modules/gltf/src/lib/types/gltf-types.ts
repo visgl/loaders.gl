@@ -78,6 +78,9 @@ export type GLTFObject =
   | GLTFTexture
   | GLTFImage;
 
+/** GLTFLoader removes processed extensions from `extensionsUsed` and `extensionsUsed`
+ * `processedExtensions` is used to track those extensions
+ */
 export type GLTFWithBuffers = {
   json: GLTF;
   buffers: any[];

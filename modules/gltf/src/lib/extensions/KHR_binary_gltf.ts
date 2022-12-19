@@ -40,7 +40,7 @@ export function preprocess(gltfData: {json: GLTF}): void {
     delete json.buffers[0].uri;
   }
 
-  // Remove the top-level extension as it has now been removed from all nodes
+  // Remove the top-level extension as it has now been processed
   gltfScenegraph.removeExtension(KHR_BINARY_GLTF);
 }
 

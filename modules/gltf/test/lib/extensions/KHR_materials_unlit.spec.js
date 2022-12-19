@@ -33,6 +33,7 @@ const TEST_CASES = [
     },
     output: {
       extensionsUsed: [],
+      extensionsRemoved: ['KHR_materials_unlit'],
       extensions: {},
       materials: [
         {

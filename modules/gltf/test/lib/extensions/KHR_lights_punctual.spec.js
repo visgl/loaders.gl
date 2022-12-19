@@ -33,6 +33,7 @@ const TEST_CASES = [
     },
     output: {
       extensionsUsed: [],
+      extensionsRemoved: ['KHR_lights_punctual'],
       extensions: {},
       nodes: [
         {

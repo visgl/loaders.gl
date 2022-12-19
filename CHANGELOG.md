@@ -4,6 +4,19 @@
 
 ## v3.3.0-alpha.8
 
+- feat(tiles): detect content formats (#2288)
+- chore: Replace probe.gl with @probe.gl (#2297)
+- chore: Run coveralls on Node 16 (#2295)
+- fix(json): Syntax fix in JSONLoader docs (#2270)
+- fix(core): Update type for registerLoaders to accept a single Loader (#2261)
+- feat(wms): New WMS loader module (#2292)
+- chore(deps): bump @xmldom/xmldom from 0.7.6 to 0.7.7 (#2287)
+- chore(deps): bump loader-utils from 1.4.1 to 1.4.2 in /website (#2290)
+- chore(mvt): convert GeoJSONTiler to TypeScript (#2294)
+- feat(mvt): automatic tile generation from GeoJSON (geojson-vt fork). (#2293)
+- fix(tile-converter): lint error (#2289)
+- feat(xml): New XML loader module (#2291)
+
 ## v3.3.0-alpha.7
 
 - fix(tile-converter): always calculate refinement percentage (#2286)

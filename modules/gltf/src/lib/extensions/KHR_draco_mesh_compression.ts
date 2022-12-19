@@ -56,7 +56,7 @@ export async function decode(
   // Decompress meshes in parallel
   await Promise.all(promises);
 
-  // We have now decompressed all primitives, so remove the top-level extensions
+  // We have now decompressed all primitives, so remove the top-level extension
   scenegraph.removeExtension(KHR_DRACO_MESH_COMPRESSION);
 }
 

@@ -31,7 +31,7 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
   // Decompress meshes in parallel
   await Promise.all(promises);
 
-  // We have now decompressed all primitives, so remove the top-level extensions
+  // We have now decompressed all primitives, so remove the top-level extension
   scenegraph.removeExtension(EXT_MESHOPT_COMPRESSION);
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "3.3.0-alpha.7",
+  "version": "3.3.0-alpha.8",
   "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
   "publishConfig": {
@@ -42,9 +42,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.3.0-alpha.7",
-    "@loaders.gl/worker-utils": "3.3.0-alpha.7",
-    "@probe.gl/log": "^3.5.0",
-    "probe.gl": "^3.4.0"
+    "@loaders.gl/loader-utils": "3.3.0-alpha.8",
+    "@loaders.gl/worker-utils": "3.3.0-alpha.8",
+    "@probe.gl/log": "^3.5.0"
   }
 }
