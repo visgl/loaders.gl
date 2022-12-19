@@ -45,7 +45,7 @@
     "@loaders.gl/loader-utils": "3.3.0-alpha.8",
     "@loaders.gl/schema": "3.3.0-alpha.8",
     "@loaders.gl/worker-utils": "3.3.0-alpha.8",
-    "draco3d": "1.4.1"
+    "draco3d": "1.5.5"
   },
   "devDependencies": {
     "@loaders.gl/polyfills": "3.3.0-alpha.8"
