@@ -214,25 +214,21 @@ export default class NodePages {
         const slpkPath = join(layers0Path, 'nodepages');
         await writeQueue.enqueue({
           archiveKey: `nodePages/${index.toString()}.json.gz`,
-          writePromise: this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`)
+          writePromise: () => this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`)
         });
       }
       const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate());
       const compress = false;
       await writeQueue.enqueue({
         archiveKey: 'metadata.json',
-        writePromise: this.writeFile(
-          layers0Path,
-          JSON.stringify(metadata),
-          'metadata.json',
-          compress
-        )
+        writePromise: () =>
+          this.writeFile(layers0Path, JSON.stringify(metadata), 'metadata.json', compress)
       });
     } else {
       for (const [index, nodePage] of this.nodePages.entries()) {
         const nodePageStr = JSON.stringify(nodePage);
         const nodePagePath = join(layers0Path, 'nodepages', index.toString());
-        await writeQueue.enqueue({writePromise: this.writeFile(nodePagePath, nodePageStr)});
+        await writeQueue.enqueue({writePromise: () => this.writeFile(nodePagePath, nodePageStr)});
       }
     }
   }
