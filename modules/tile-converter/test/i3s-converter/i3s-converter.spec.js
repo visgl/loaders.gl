@@ -44,7 +44,7 @@ test.only('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset'
   const tilesetJson = await converter.convert({
     inputUrl: TILESET_URL,
     outputPath: 'data',
-    tilesetName: 'Frankfurt-md5-slpk-2',
+    tilesetName: 'Frankfurt-md5-slpk-10',
     slpk: true,
     draco: true,
     maxDepth: 5,

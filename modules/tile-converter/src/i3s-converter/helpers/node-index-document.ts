@@ -20,14 +20,14 @@ export class NodeIndexDocument {
   public children: NodeIndexDocument[] = [];
   private converter: I3SConverter;
 
-  constructor(id: number, converter: I3SConverter, perisitent: boolean = false) {
+  constructor(id: number, converter: I3SConverter) {
     this.inPageId = id;
     this.id = id === 0 ? 'root' : id.toString();
     this.converter = converter;
   }
 
   public async addData(data: Node3DIndexDocument): Promise<NodeIndexDocument> {
-    if (this.converter.options.persistent) {
+    if (this.converter.options.instantNodesWriting) {
       await this.write(data);
     } else {
       this.data = data;
@@ -49,14 +49,14 @@ export class NodeIndexDocument {
     this.children = this.children.concat(childNodes);
 
     let data: Node3DIndexDocument | null = this.data;
-    if (this.converter.options.persistent) {
+    if (this.converter.options.instantNodesWriting) {
       data = (await this.load()) as Node3DIndexDocument;
     }
     if (data) {
       data.children = data.children ?? [];
       data.children = data.children.concat(newChildren);
     }
-    if (this.converter.options.persistent && data) {
+    if (this.converter.options.instantNodesWriting && data) {
       await this.write(data);
     }
     return this;
@@ -91,7 +91,7 @@ export class NodeIndexDocument {
         delete childNodeData.neighbors;
       }
 
-      if (this.converter.options.persistent && childNodeData) {
+      if (this.converter.options.instantNodesWriting && childNodeData) {
         await childNode.write(childNodeData);
       }
       childNode.save();

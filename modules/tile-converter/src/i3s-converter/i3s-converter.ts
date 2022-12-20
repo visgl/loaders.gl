@@ -18,8 +18,9 @@ import transform from 'json-map-transform';
 import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
-import {writeFile, removeDir, writeFileForSlpk} from '../lib/utils/file-utils';
+import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
 import {
+  compressFileWithGzip,
   compressWithChildProcess
   // generateHash128FromZip,
   // addFileToZip
@@ -131,6 +132,9 @@ export default class I3SConverter {
    * @param options.token Token for Cesium ION tilesets authentication
    * @param options.draco Generate I3S 1.7 draco compressed geometries
    * @param options.validate -enable validation
+   * @param options.generateTextures - generate alternative type of textures (to have non-compressed jpeg/png and compressed ktx2)
+   * @param options.generateBoundingVolumes - generate bounding volumes from vertices coordinates instead of source tiles bounding volumes
+   * @param options.instantNodesWriting - Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed
    */
   async convert(options: {
     inputUrl: string;
@@ -145,6 +149,7 @@ export default class I3SConverter {
     validate?: boolean;
     generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
+    instantNodesWriting?: boolean;
   }): Promise<any> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE);
@@ -158,16 +163,25 @@ export default class I3SConverter {
       inputUrl,
       validate,
       outputPath,
-      draco,
+      draco = true,
       sevenZipExe,
       maxDepth,
       token,
       generateTextures,
-      generateBoundingVolumes
+      generateBoundingVolumes,
+      instantNodesWriting = false
     } = options;
-    this.options = {maxDepth, slpk, sevenZipExe, egmFilePath, draco, token, inputUrl};
-    this.options.persistent = true;
-    this.compressList = (this.options.persistent && []) || null;
+    this.options = {
+      maxDepth,
+      slpk,
+      sevenZipExe,
+      egmFilePath,
+      draco,
+      token,
+      inputUrl,
+      instantNodesWriting
+    };
+    this.compressList = (this.options.instantNodesWriting && []) || null;
     this.validate = Boolean(validate);
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
     this.generateTextures = Boolean(generateTextures);
@@ -258,8 +272,6 @@ export default class I3SConverter {
       children: []
     });
 
-    // TODO: get rid of thid const
-    const isCreateSlpk = this.options.slpk;
     const rootNode = await NodeIndexDocument.createRootNode(boundingVolumes, this);
     await this._convertNodesTree(rootNode, sourceRootTile, parentId, boundingVolumes);
 
@@ -274,8 +286,11 @@ export default class I3SConverter {
 
     await this._writeLayers0();
     createSceneServerPath(tilesetName, this.layers0!, tilesetPath);
-    console.log(this.compressList);
-    await this.nodePages.save(this.layers0Path, this.writeQueue, isCreateSlpk);
+    for (const filePath of this.compressList || []) {
+      await compressFileWithGzip(filePath);
+      await removeFile(filePath);
+    }
+    await this.nodePages.save(this.layers0Path, this.writeQueue, this.options.slpk);
     await this.writeQueue.finalize();
     await this._createSlpk(tilesetPath);
   }
@@ -486,16 +501,26 @@ export default class I3SConverter {
       return;
     }
 
+    const promises: Promise<void>[] = [];
     for (const sourceTile of sourceTiles) {
       if (sourceTile.type === 'json') {
-        await this.convertNestedTileset({parentNode, sourceTile, level});
+        if (this.options.instantNodesWriting) {
+          await this.convertNestedTileset({parentNode, sourceTile, level});
+        } else {
+          promises.push(this.convertNestedTileset({parentNode, sourceTile, level}));
+        }
       } else {
-        await this.convertNode({parentNode, sourceTile, level});
+        if (this.options.instantNodesWriting) {
+          await this.convertNode({parentNode, sourceTile, level});
+        } else {
+          promises.push(this.convertNode({parentNode, sourceTile, level}));
+        }
       }
       if (sourceTile.id) {
         console.log(sourceTile.id); // eslint-disable-line
       }
     }
+    await Promise.all(promises);
   }
 
   /**
