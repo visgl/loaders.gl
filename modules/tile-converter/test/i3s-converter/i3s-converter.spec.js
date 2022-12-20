@@ -6,8 +6,7 @@ import {promises as fs} from 'fs';
 import {cleanUpPath} from '../utils/file-utils';
 import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 
-// const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
-const TILESET_URL = '../../tilesets/3d-tiles/Frankfurt/unarchived/cesiumJpg/tileset.json';
+const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
 
@@ -39,15 +38,13 @@ setLoaderOptions({
   _worker: 'test'
 });
 
-test.only('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', async (t) => {
+test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', async (t) => {
   const converter = new I3SConverter();
   const tilesetJson = await converter.convert({
     inputUrl: TILESET_URL,
     outputPath: 'data',
-    tilesetName: 'Frankfurt-md5-slpk-10',
-    slpk: true,
-    draco: true,
-    maxDepth: 5,
+    tilesetName: 'BatchedColors',
+    slpk: false,
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
     egmFilePath: PGM_FILE_PATH,
     token:
