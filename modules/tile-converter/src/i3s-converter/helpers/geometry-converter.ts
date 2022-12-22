@@ -77,7 +77,7 @@ let scratchVector = new Vector3();
  */
 export default async function convertB3dmToI3sGeometry(
   tileContent: B3DMContent,
-  addNodeToNodePage: () => number,
+  addNodeToNodePage: () => Promise<number>,
   propertyTable: FeatureTableJson | null,
   featuresHashArray: string[],
   attributeStorageInfo: AttributeStorageInfo[] | undefined,
@@ -131,7 +131,7 @@ export default async function convertB3dmToI3sGeometry(
       continue;
     }
     const {material, texture} = materialAndTextureList[i];
-    const nodeId = addNodeToNodePage();
+    const nodeId = await addNodeToNodePage();
     result.push(
       await _makeNodeResources({
         convertedAttributes,

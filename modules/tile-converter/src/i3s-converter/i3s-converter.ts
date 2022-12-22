@@ -100,7 +100,7 @@ export default class I3SConverter {
   compressList: string[] | null = null;
 
   constructor() {
-    this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
+    this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE, this);
     this.options = {};
     this.layers0Path = '';
     this.materialMap = new Map();
@@ -265,7 +265,7 @@ export default class I3SConverter {
 
     const sourceRootTile: TileHeader = this.sourceTileset!.root!;
     const boundingVolumes = createBoundingVolumes(sourceRootTile, this.geoidHeightModel!);
-    const parentId = this.nodePages.push({
+    const node = await this.nodePages.push({
       index: 0,
       lodThreshold: 0,
       obb: boundingVolumes.obb,
@@ -273,7 +273,7 @@ export default class I3SConverter {
     });
 
     const rootNode = await NodeIndexDocument.createRootNode(boundingVolumes, this);
-    await this._convertNodesTree(rootNode, sourceRootTile, parentId, boundingVolumes);
+    await this._convertNodesTree(rootNode, sourceRootTile, node.index, boundingVolumes);
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
 
@@ -290,7 +290,7 @@ export default class I3SConverter {
       await compressFileWithGzip(filePath);
       await removeFile(filePath);
     }
-    await this.nodePages.save(this.layers0Path, this.writeQueue, this.options.slpk);
+    await this.nodePages.save();
     await this.writeQueue.finalize();
     await this._createSlpk(tilesetPath);
   }
@@ -580,7 +580,7 @@ export default class I3SConverter {
         (val) => val.metricType === 'maxScreenThresholdSQ'
       ) || {maxError: 0};
 
-      const nodeInPage = this._updateNodeInNodePages(
+      const nodeInPage = await this._updateNodeInNodePages(
         maxScreenThresholdSQ,
         boundingVolumes,
         sourceTile,
@@ -653,7 +653,7 @@ export default class I3SConverter {
     };
     const resourcesData = await convertB3dmToI3sGeometry(
       sourceTile.content,
-      () => this.nodePages.push({index: 0, obb: draftObb}, parentId),
+      async () => (await this.nodePages.push({index: 0, obb: draftObb}, parentId)).index,
       propertyTable,
       this.featuresHashArray,
       this.layers0?.attributeStorageInfo,
@@ -679,13 +679,13 @@ export default class I3SConverter {
    * @param resources.featureCount - number of features
    * @return the node object in node pages
    */
-  private _updateNodeInNodePages(
+  private async _updateNodeInNodePages(
     maxScreenThresholdSQ: MaxScreenThresholdSQ,
     boundingVolumes: BoundingVolumes,
     sourceTile: TileHeader,
     parentId: number,
     resources: I3SConvertedResources
-  ): NodeInPage {
+  ): Promise<NodeInPage> {
     const {meshMaterial, texture, vertexCount, featureCount, geometry} = resources;
     const nodeInPage: NodeInPage = {
       index: 0,
@@ -709,33 +709,33 @@ export default class I3SConverter {
     }
 
     let nodeId = resources.nodeId;
-    if (nodeId) {
-      this.nodePages.updateAll(nodeId, nodeInPage);
-      const node = this.nodePages.getNodeById(nodeId);
-      this.nodePages.updateResourceInMesh(node);
+    let node;
+    if (!nodeId) {
+      node = await this.nodePages.push(nodeInPage, parentId);
     } else {
-      nodeId = this.nodePages.push(nodeInPage, parentId);
+      node = await this.nodePages.getNodeById(nodeId);
     }
 
+    NodePages.updateAll(node, nodeInPage);
     if (meshMaterial) {
-      this.nodePages.updateMaterialByNodeId(nodeId, this._findOrCreateMaterial(meshMaterial));
+      NodePages.updateMaterialByNodeId(node, this._findOrCreateMaterial(meshMaterial));
     }
-
     if (texture) {
       const texelCountHint = texture.image.height * texture.image.width;
-      this.nodePages.updateTexelCountHintByNodeId(nodeId, texelCountHint);
+      NodePages.updateTexelCountHintByNodeId(node, texelCountHint);
     }
-
     if (vertexCount) {
       this.vertexCounter += vertexCount;
-      this.nodePages.updateVertexCountByNodeId(nodeId, vertexCount);
+      NodePages.updateVertexCountByNodeId(node, vertexCount);
     }
-    this.nodePages.updateNodeAttributeByNodeId(nodeId);
+    NodePages.updateNodeAttributeByNodeId(node);
     if (featureCount) {
-      this.nodePages.updateFeatureCountByNodeId(nodeId, featureCount);
+      NodePages.updateFeatureCountByNodeId(node, featureCount);
     }
 
-    return this.nodePages.getNodeById(nodeId);
+    this.nodePages.saveNode(node);
+
+    return node;
   }
 
   /**

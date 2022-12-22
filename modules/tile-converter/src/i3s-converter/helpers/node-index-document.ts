@@ -141,24 +141,7 @@ export class NodeIndexDocument {
     if (this.converter.options.slpk) {
       parentNodeFileName = '3dNodeIndexDocument.json';
     }
-    return new Promise((resolve, reject) => {
-      let count = 0;
-      console.log(`load ${parentNodePath}/${parentNodeFileName}.`); // eslint-disable-line
-      const intervalId = setInterval(() => {
-        openJson(parentNodePath, parentNodeFileName)
-          .then((result) => {
-            clearInterval(intervalId);
-            resolve(result as Node3DIndexDocument);
-          })
-          .catch(() => {
-            count++;
-            if (count > 100) {
-              clearInterval(intervalId);
-              reject(new Error(`Cannon load node ${this.id}`));
-            }
-          });
-      }, 200);
-    });
+    return (await openJson(parentNodePath, parentNodeFileName)) as Node3DIndexDocument;
   }
 
   static async createRootNode(boundingVolumes, converter): Promise<NodeIndexDocument> {

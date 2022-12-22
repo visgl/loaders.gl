@@ -71,11 +71,33 @@ export async function writeFileForSlpk(
 }
 
 export async function openJson(path: string, fileName: string): Promise<{[key: string]: any}> {
-  const pathFile = join(path, fileName);
+  return new Promise((resolve, reject) => {
+    let count = 0;
+    console.log(`load ${path}/${fileName}.`); // eslint-disable-line
+    const intervalId = setInterval(() => {
+      const pathFile = join(path, fileName);
+      load(pathFile, JSONLoader)
+        .then((result) => {
+          clearInterval(intervalId);
+          resolve(result);
+        })
+        .catch(() => {
+          count++;
+          if (count > 100) {
+            clearInterval(intervalId);
+            reject(new Error(`Cannon load ${path}/${fileName}.`));
+          }
+        });
+    }, 200);
+  });
+}
+
+export async function isFileExists(fileName: string): Promise<boolean> {
   try {
-    return await load(pathFile, JSONLoader);
-  } catch (err) {
-    throw err;
+    await fs.stat(fileName);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -102,5 +124,5 @@ export function removeFile(path: string) {
  * @param filePath
  */
 export function getAbsoluteFilePath(filePath: string) {
-  return isAbsolute(filePath) ? filePath : join(process.cwd(), filePath); // eslint-disable-line no-undef
+  return isAbsolute(filePath) ? filePath : join(process.cwd(), filePath);
 }
