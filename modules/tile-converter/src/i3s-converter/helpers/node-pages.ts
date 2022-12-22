@@ -118,7 +118,7 @@ export default class NodePages {
    * @param id node id
    * @returns node page data
    */
-  async getPageByNodeId(id: number): Promise<{nodes: NodeInPage[]}> {
+  private async getPageByNodeId(id: number): Promise<{nodes: NodeInPage[]}> {
     const pageIndex = this.getPageIndexByNodeId(id);
     if (this.converter.options.instantNodeWriting) {
       return await this.loadNodePage(pageIndex);
@@ -142,7 +142,7 @@ export default class NodePages {
    * @param parentId - end-to-end parent node index
    * @param childId - end-to-end child node index
    */
-  async addChildRelation(parentId: number | undefined, childId: number): Promise<void> {
+  private async addChildRelation(parentId: number | undefined, childId: number): Promise<void> {
     if (parentId === null || parentId === undefined) {
       return;
     }
