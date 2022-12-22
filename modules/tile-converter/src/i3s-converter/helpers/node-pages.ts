@@ -15,7 +15,7 @@ import I3SConverter from '../i3s-converter';
  * const nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE);
  * ...
  * // push root node
- * const parentId = nodePages.push({
+ * const parent = await nodePages.push({
       lodThreshold: HARDCODED_MAX_SCREEN_THRESHOLD_SQ,
       obb: coordinates.obb,
       children: []
@@ -32,7 +32,7 @@ import I3SConverter from '../i3s-converter';
         }
       }
     };
- * const nodeId = this.nodePages.push(nodeInPage, parentId);
+ * const node = await this.nodePages.push(nodeInPage, parent.index);
  * ...
  * // save all the nodePages in the end of pushing all the nodes
  * await this.nodePages.save(layers0path);
@@ -70,7 +70,12 @@ export default class NodePages {
     this.writeFile = func;
   }
 
-  getNodePageFileName(nodePageId): {filePath: string; fileName: string} {
+  /**
+   * Get file path and file name of the node page with the particular id
+   * @param nodePageId - node page id
+   * @returns file path and file name
+   */
+  private getNodePageFileName(nodePageId): {filePath: string; fileName: string} {
     let filePath;
     let fileName;
     if (this.converter.options.slpk) {
@@ -83,7 +88,12 @@ export default class NodePages {
     return {filePath, fileName};
   }
 
-  async loadNodePage(nodePageId: number): Promise<{nodes: NodeInPage[]}> {
+  /**
+   * Load node page from a file on the disk
+   * @param nodePageId - node page id
+   * @returns - node page data
+   */
+  private async loadNodePage(nodePageId: number): Promise<{nodes: NodeInPage[]}> {
     const {filePath, fileName} = this.getNodePageFileName(nodePageId);
     const fullName = join(filePath, fileName);
     if (await isFileExists(fullName)) {
@@ -94,13 +104,23 @@ export default class NodePages {
     }
   }
 
-  getPageIndexByNodeId(id: number): number {
+  /**
+   * Get nodepage id by node id
+   * @param id node id
+   * @returns node page id
+   */
+  private getPageIndexByNodeId(id: number): number {
     return Math.floor(id / this.nodesPerPage);
   }
 
+  /**
+   * Get node page data by node id
+   * @param id node id
+   * @returns node page data
+   */
   async getPageByNodeId(id: number): Promise<{nodes: NodeInPage[]}> {
     const pageIndex = this.getPageIndexByNodeId(id);
-    if (this.converter.options.instantNodesWriting) {
+    if (this.converter.options.instantNodeWriting) {
       return await this.loadNodePage(pageIndex);
     }
     return this.nodePages[pageIndex];
@@ -139,7 +159,7 @@ export default class NodePages {
    */
   async push(node: NodeInPage, parentId?: number): Promise<NodeInPage> {
     node.index = this.nodesCounter++;
-    if (!this.converter.options.instantNodesWriting) {
+    if (!this.converter.options.instantNodeWriting) {
       let currentNodePage = this.nodePages[this.nodePages.length - 1];
       if (currentNodePage.nodes.length === this.nodesPerPage) {
         currentNodePage = {nodes: []};
@@ -153,8 +173,12 @@ export default class NodePages {
     return node;
   }
 
+  /**
+   * Save node to the file on the disk
+   * @param node - node data
+   */
   async saveNode(node: NodeInPage): Promise<void> {
-    if (!this.converter.options.instantNodesWriting) {
+    if (!this.converter.options.instantNodeWriting) {
       return;
     } else {
       const nodePageIndex = this.getPageIndexByNodeId(node.index);
@@ -187,6 +211,9 @@ export default class NodePages {
     }
   }
 
+  /**
+   * Save metadata file (for slpk only)
+   */
   async saveMetadata(): Promise<void> {
     const metadata = transform({nodeCount: this.nodesCounter}, metadataTemplate());
     const compress = false;
@@ -207,7 +234,7 @@ export default class NodePages {
    * Run this method when all nodes is pushed in nodePages
    */
   async save(): Promise<void> {
-    if (this.converter.options.instantNodesWriting) {
+    if (this.converter.options.instantNodeWriting) {
       await this.saveMetadata();
       return;
     }
@@ -244,6 +271,8 @@ export default class NodePages {
 
   /**
    * Update all fields in the node excluding id
+   * @param node - node object
+   * @param data - NodeInPage data to replace original data
    */
   static updateAll(node: NodeInPage, data: NodeInPage): NodeInPage {
     Object.assign(node, data, {index: node.index});
@@ -280,7 +309,7 @@ export default class NodePages {
 
   /**
    * Update resource in node.mesh.attribute object by node id
-   * @param id - end-to-end index of the node
+   * @param node - node object
    */
   static updateNodeAttributeByNodeId(node: NodeInPage): void {
     if (!node.mesh || !node.index) {
@@ -291,7 +320,7 @@ export default class NodePages {
 
   /**
    * Update featureCount in node.mesh.geometry object by node id
-   * @param id - end-to-end index of the node
+   * @param node - node object
    * @param featureCount - features count of the node
    */
   static updateFeatureCountByNodeId(node: NodeInPage, featureCount: number): void {
@@ -303,7 +332,7 @@ export default class NodePages {
 
   /**
    * Update texelCountHint in node.mesh.material object by node id
-   * @param id - end-to-end index of the node
+   * @param node - node object
    * @param texelCountHint - texelCountHint of particular node
    */
   static updateTexelCountHintByNodeId(node: NodeInPage, texelCountHint: number): void {

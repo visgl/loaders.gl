@@ -70,6 +70,12 @@ export async function writeFileForSlpk(
   return pathFile;
 }
 
+/**
+ * Open json file
+ * @param path - path to the file
+ * @param fileName - file name
+ * @returns object
+ */
 export async function openJson(path: string, fileName: string): Promise<{[key: string]: any}> {
   return new Promise((resolve, reject) => {
     let count = 0;
@@ -92,6 +98,11 @@ export async function openJson(path: string, fileName: string): Promise<{[key: s
   });
 }
 
+/**
+ * Check if the file exists
+ * @param fileName - full name of file
+ * @returns true if file exists, otherwise - false
+ */
 export async function isFileExists(fileName: string): Promise<boolean> {
   try {
     await fs.stat(fileName);

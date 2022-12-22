@@ -15,7 +15,7 @@ type TileConversionOptions = {
    * Default: "data" folder */
   output: string;
   /** Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed */
-  instantNodesWriting: boolean;
+  instantNodeWriting: boolean;
   /** 3DTiles->I3S only. location of 7z.exe archiver to create slpk on Windows OS, default: "C:\Program Files\7-Zip\7z.exe" */
   sevenZipExe: string;
   /** location of the Earth Gravity Model (*.pgm) file to convert heights from ellipsoidal to gravity-related format,
@@ -162,7 +162,7 @@ async function convert(options: ValidatedTileConversionOptions) {
         generateTextures: options.generateTextures,
         generateBoundingVolumes: options.generateBoundingVolumes,
         validate: options.validate,
-        instantNodesWriting: options.instantNodesWriting
+        instantNodeWriting: options.instantNodeWriting
       });
       break;
     default:
@@ -236,7 +236,7 @@ function parseOptions(args: string[]): TileConversionOptions {
     generateBoundingVolumes: false,
     validate: false,
     slpk: false,
-    instantNodesWriting: false
+    instantNodeWriting: false
   };
 
   // eslint-disable-next-line complexity
@@ -255,8 +255,8 @@ function parseOptions(args: string[]): TileConversionOptions {
         case '--output':
           opts.output = getStringValue(index, args);
           break;
-        case '--instant-nodes-writing':
-          opts.instantNodesWriting = getBooleanValue(index, args);
+        case '--instant-node-writing':
+          opts.instantNodeWriting = getBooleanValue(index, args);
           break;
         case '--max-depth':
           opts.maxDepth = getIntegerValue(index, args);

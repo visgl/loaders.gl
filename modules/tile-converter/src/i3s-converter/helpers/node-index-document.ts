@@ -13,21 +13,42 @@ import I3SConverter from '../i3s-converter';
 import {NODE as nodeTemplate} from '../json-templates/node';
 import {I3SConvertedResources} from '../types';
 
+/**
+ * Wrapper for https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md data
+ * The class allows working with 3DNodeIndexDocument in 2 modes:
+ * in memory: the data is stored in `data` field
+ * on disk: the data is written on disk in a file. The file can be rewritten when new childrend or neighbors have to be added
+ */
 export class NodeIndexDocument {
+  /** Node id */
   public id: string;
+  /** Id in node pages */
   public inPageId: number;
+  /** 3DNodeIndexDocument data */
   public data: Node3DIndexDocument | null = null;
+  /** children */
   public children: NodeIndexDocument[] = [];
+  /** converter instance */
   private converter: I3SConverter;
 
+  /**
+   * Constructor
+   * @param id - id of the node in node pages
+   * @param converter - converter instance
+   */
   constructor(id: number, converter: I3SConverter) {
     this.inPageId = id;
     this.id = id === 0 ? 'root' : id.toString();
     this.converter = converter;
   }
 
+  /**
+   * Add Node3DIndexDocument data to the node
+   * @param data Node3DIndexDocument data
+   * @returns this NodeIndexDocument instance (to recurring with constructor)
+   */
   public async addData(data: Node3DIndexDocument): Promise<NodeIndexDocument> {
-    if (this.converter.options.instantNodesWriting) {
+    if (this.converter.options.instantNodeWriting) {
       await this.write(data);
     } else {
       this.data = data;
@@ -35,7 +56,11 @@ export class NodeIndexDocument {
     return this;
   }
 
-  public async addChildren(childNodes: NodeIndexDocument[]): Promise<NodeIndexDocument> {
+  /**
+   * Add child node references
+   * @param childNodes - child NodeIndexDocument instances
+   */
+  public async addChildren(childNodes: NodeIndexDocument[]): Promise<void> {
     const newChildren: NodeReference[] = [];
     for (const node of childNodes) {
       const nodeData = await node.load();
@@ -49,23 +74,20 @@ export class NodeIndexDocument {
     this.children = this.children.concat(childNodes);
 
     let data: Node3DIndexDocument | null = this.data;
-    if (this.converter.options.instantNodesWriting) {
+    if (this.converter.options.instantNodeWriting) {
       data = (await this.load()) as Node3DIndexDocument;
     }
     if (data) {
       data.children = data.children ?? [];
       data.children = data.children.concat(newChildren);
     }
-    if (this.converter.options.instantNodesWriting && data) {
+    if (this.converter.options.instantNodeWriting && data) {
       await this.write(data);
     }
-    return this;
   }
 
   /**
-   * Add neightbors to 3DNodeIndexDocument and write it in a file
-   * @param parentNode - arguments
-   * @param childNodes - array of target child nodes
+   * Add neighbors to child nodes of this node
    */
   public async addNeighbors(): Promise<void> {
     const nodeData = await this.load();
@@ -76,7 +98,6 @@ export class NodeIndexDocument {
       // Don't do large amount of "neightbors" to avoid big memory consumption
       if (Number(nodeData?.children?.length) < 1000) {
         for (const neighbor of nodeData.children || []) {
-          // eslint-disable-next-line max-depth
           if (childNode.id === neighbor.id) {
             continue; // eslint-disable-line
           }
@@ -91,13 +112,14 @@ export class NodeIndexDocument {
         delete childNodeData.neighbors;
       }
 
-      if (this.converter.options.instantNodesWriting && childNodeData) {
+      if (this.converter.options.instantNodeWriting && childNodeData) {
         await childNode.write(childNodeData);
       }
       childNode.save();
     }
   }
 
+  /** Save 3DNodeIndexDocument in file on disk */
   public async save(): Promise<void> {
     if (this.data) {
       await this.write(this.data);
@@ -106,6 +128,7 @@ export class NodeIndexDocument {
 
   /**
    * Write 3DNodeIndexDocument https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
+   * @param node - Node3DIndexDocument object
    */
   private async write(node: Node3DIndexDocument): Promise<void> {
     const path = join(this.converter.layers0Path, 'nodes', this.id);
@@ -132,6 +155,10 @@ export class NodeIndexDocument {
     }
   }
 
+  /**
+   * Load 3DNodeIndexDocument data from file on disk
+   * @returns 3DNodeIndexDocument object
+   */
   private async load(): Promise<Node3DIndexDocument> {
     if (this.data) {
       return this.data;
@@ -145,12 +172,31 @@ export class NodeIndexDocument {
     return (await openJson(parentNodePath, parentNodeFileName)) as Node3DIndexDocument;
   }
 
-  static async createRootNode(boundingVolumes, converter): Promise<NodeIndexDocument> {
+  /**
+   * Create root node of the tree
+   * @param boundingVolumes - MBS and OOB bounding volumes data
+   * @param converter - I3SConverter instance
+   * @returns instance of NodeIndexDocument
+   */
+  static async createRootNode(
+    boundingVolumes: BoundingVolumes,
+    converter: I3SConverter
+  ): Promise<NodeIndexDocument> {
     const rootData = NodeIndexDocument.createRootNodeIndexDocument(boundingVolumes);
     const rootNode = await new NodeIndexDocument(0, converter).addData(rootData);
     return rootNode;
   }
 
+  /**
+   * Create NodeIndexDocument instance
+   * @param parentNode - parent NodeIndexDocument
+   * @param boundingVolumes - MBS and OOB bounding volumes data
+   * @param lodSelection - LOD metrics data
+   * @param nodeInPage - node data in node pages
+   * @param resources - resources extracted from gltf/b3dm file
+   * @param converter - I3SConverter instance
+   * @returns NodeIndexDocument instance
+   */
   static async createNode(
     parentNode: NodeIndexDocument,
     boundingVolumes: BoundingVolumes,
@@ -171,7 +217,7 @@ export class NodeIndexDocument {
   }
 
   /**
-   * Convert and save the layer and embedded tiles
+   * Form 3DNodeIndexDocument data for the root node
    * @param boundingVolumes - mbs and obb data about node's bounding volume
    * @return 3DNodeIndexDocument data https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
    */
@@ -197,7 +243,7 @@ export class NodeIndexDocument {
   }
 
   /**
-   * Create a new node page object in node pages
+   * Create a new Node3DIndexDocument
    * @param parentNode - 3DNodeIndexDocument https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md object of the parent node
    * @param boundingVolumes - Bounding volumes
    * @param lodSelection - Level of Details (LOD) metrics
