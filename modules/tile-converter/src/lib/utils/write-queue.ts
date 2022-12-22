@@ -6,7 +6,23 @@ const MEMORY_LIMIT = 4 * 1024 * 1024 * 1024; // 4GB
 
 export type WriteQueueItem = {
   archiveKey?: string;
-  writePromise: Promise<string | null>;
+  /**
+   * writePromise() returns a Promise that will be awaited in Promise.allSettled(promises);
+   * Arguments for this call are specified in writeQueue.enqueue call like this:
+   * await writeQueue.enqueue({
+   *     archiveKey: `nodePages/xxx.json.gz`,
+   *     writePromise: () => writeFileForSlpk(slpkPath, data, `xxx.json`)
+   * });
+   * Note, a function like writeFileForSlpk should NOT be called when initializing the object for enqueue().
+   * If he function is called, the promise will be created
+   * and the function will allocate resources (file descriptors) for file writing.
+   * It will be done for ALL items in the queue, which is not supposed to happen.
+   * That's why the function should be passed as
+   *   writePromise: () => writeFileForSlpk(slpkPath, content, `xxx.json`)
+   * instead of
+   *  writePromise: writeFileForSlpk(slpkPath, content, `xxx.json`) // INCORRECT !
+   */
+  writePromise: () => Promise<string | null>;
 };
 
 export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
@@ -25,7 +41,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   async enqueue(val: T, writeImmediately: boolean = false) {
     if (writeImmediately) {
       const {archiveKey, writePromise} = val as WriteQueueItem;
-      const result = await writePromise;
+      const result = await writePromise();
       if (archiveKey && result) {
         this.fileMap[archiveKey] = result;
       }
@@ -49,12 +65,9 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   }
 
   async startWrite(): Promise<void> {
-    if (this.writePromise) {
-      await this.writePromise;
-      this.writePromise = null;
-      return;
+    if (!this.writePromise) {
+      this.writePromise = this.doWrite();
     }
-    this.writePromise = this.doWrite();
     await this.writePromise;
     this.writePromise = null;
   }
@@ -75,12 +88,12 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
         }
         const {archiveKey, writePromise} = item as WriteQueueItem;
         archiveKeys.push(archiveKey);
-        promises.push(writePromise);
+        const promise = writePromise();
+        promises.push(promise);
       }
       const writeResults = await Promise.allSettled(promises);
       this.updateFileMap(archiveKeys, writeResults);
     }
-    this.writePromise = null;
   }
 
   private updateFileMap(

@@ -40,7 +40,7 @@ import I3SConverter from '../i3s-converter';
 export default class NodePages {
   readonly nodesPerPage: number;
   nodesCounter: number;
-  writeFile: Function;
+  writeFile: (...args) => Promise<null | string>;
   converter: I3SConverter;
   readonly nodePages: {nodes: NodeInPage[]}[];
   readonly length: number = 0;
@@ -66,7 +66,7 @@ export default class NodePages {
    * Setup function to save node pages
    * @param func - function which should be used to save node pages
    */
-  useWriteFunction(func: Function): void {
+  useWriteFunction(func: (...args) => Promise<null | string>): void {
     this.writeFile = func;
   }
 
@@ -171,20 +171,15 @@ export default class NodePages {
         await this.converter.writeQueue.enqueue(
           {
             archiveKey: `nodePages/${nodePageIndex.toString()}.json.gz`,
-            writePromise: this.writeFile(
-              filePath,
-              nodePageStr,
-              fileName,
-              true,
-              this.converter.compressList
-            )
+            writePromise: () =>
+              this.writeFile(filePath, nodePageStr, fileName, true, this.converter.compressList)
           },
           true
         );
       } else {
         await this.converter.writeQueue.enqueue(
           {
-            writePromise: this.writeFile(filePath, nodePageStr)
+            writePromise: () => this.writeFile(filePath, nodePageStr)
           },
           true
         );
@@ -197,12 +192,13 @@ export default class NodePages {
     const compress = false;
     await this.converter.writeQueue.enqueue({
       archiveKey: 'metadata.json',
-      writePromise: this.writeFile(
-        this.converter.layers0Path,
-        JSON.stringify(metadata),
-        'metadata.json',
-        compress
-      )
+      writePromise: () =>
+        this.writeFile(
+          this.converter.layers0Path,
+          JSON.stringify(metadata),
+          'metadata.json',
+          compress
+        )
     });
   }
 
@@ -221,7 +217,7 @@ export default class NodePages {
         const slpkPath = join(this.converter.layers0Path, 'nodepages');
         await this.converter.writeQueue.enqueue({
           archiveKey: `nodePages/${index.toString()}.json.gz`,
-          writePromise: this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`)
+          writePromise: () => this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`)
         });
       }
       await this.saveMetadata();
@@ -230,7 +226,7 @@ export default class NodePages {
         const nodePageStr = JSON.stringify(nodePage);
         const nodePagePath = join(this.converter.layers0Path, 'nodepages', index.toString());
         await this.converter.writeQueue.enqueue({
-          writePromise: this.writeFile(nodePagePath, nodePageStr)
+          writePromise: () => this.writeFile(nodePagePath, nodePageStr)
         });
       }
     }

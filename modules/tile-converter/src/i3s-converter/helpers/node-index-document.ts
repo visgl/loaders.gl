@@ -113,19 +113,20 @@ export class NodeIndexDocument {
       await this.converter.writeQueue.enqueue(
         {
           archiveKey: `nodes/${this.id}/3dNodeIndexDocument.json.gz`,
-          writePromise: writeFileForSlpk(
-            path,
-            JSON.stringify(node),
-            '3dNodeIndexDocument.json',
-            true,
-            this.converter.compressList
-          )
+          writePromise: () =>
+            writeFileForSlpk(
+              path,
+              JSON.stringify(node),
+              '3dNodeIndexDocument.json',
+              true,
+              this.converter.compressList
+            )
         },
         true
       );
     } else {
       await this.converter.writeQueue.enqueue(
-        {writePromise: writeFile(path, JSON.stringify(node))},
+        {writePromise: () => writeFile(path, JSON.stringify(node))},
         true
       );
     }

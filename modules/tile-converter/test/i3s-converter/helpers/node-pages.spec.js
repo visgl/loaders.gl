@@ -188,6 +188,39 @@
 //     st.equal(savedNodePages.length, 3);
 //     st.end();
 //   });
+//   t.test('Should save node pages', async (st) => {
+//     const savedNodePages = [];
+//     const writingQueue = new WritingQueue();
+//     const writeFileFunc = (layerPath, data, slpk) => {
+//       savedNodePages.push(data);
+//     };
+//     const nodePages = new NodePages(writeFileFunc, 64);
+//     for (let i = 0; i <= 65; i++) {
+//       nodePages.push(newNodeStub);
+//     }
+//     await nodePages.save('/layer/0', writingQueue, false);
+//     await writingQueue.finalize();
+//     st.equal(typeof savedNodePages[1], 'string');
+//     st.equal(savedNodePages.length, 2);
+//     st.end();
+//   });
+
+//   t.test('Should save node pages for slpk packaging', async (st) => {
+//     const savedNodePages = [];
+//     const writingQueue = new WritingQueue();
+//     const writeFileFuncForSlpk = (layerPath, data, slpk) => {
+//       savedNodePages.push(data);
+//     };
+//     const nodePages = new NodePages(writeFileFuncForSlpk, 64);
+//     for (let i = 0; i <= 65; i++) {
+//       nodePages.push(newNodeStub);
+//     }
+//     await nodePages.save('/layer/0', writingQueue, true);
+//     await writingQueue.finalize();
+//     st.equal(typeof savedNodePages[1], 'string');
+//     st.equal(savedNodePages.length, 3);
+//     st.end();
+//   });
 
 //   t.end();
 // });

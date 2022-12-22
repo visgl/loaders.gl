@@ -364,15 +364,12 @@ export default class I3SConverter {
     if (this.options.slpk) {
       await this.writeQueue.enqueue({
         archiveKey: '3dSceneLayer.json.gz',
-        writePromise: writeFileForSlpk(
-          this.layers0Path,
-          JSON.stringify(this.layers0),
-          '3dSceneLayer.json'
-        )
+        writePromise: () =>
+          writeFileForSlpk(this.layers0Path, JSON.stringify(this.layers0), '3dSceneLayer.json')
       });
     } else {
       await this.writeQueue.enqueue({
-        writePromise: writeFile(this.layers0Path, JSON.stringify(this.layers0))
+        writePromise: () => writeFile(this.layers0Path, JSON.stringify(this.layers0))
       });
     }
   }
@@ -782,12 +779,12 @@ export default class I3SConverter {
       const slpkGeometryPath = join(childPath, 'geometries');
       await this.writeQueue.enqueue({
         archiveKey: `${slpkChildPath}/geometries/0.bin.gz`,
-        writePromise: writeFileForSlpk(slpkGeometryPath, geometryBuffer, '0.bin')
+        writePromise: () => writeFileForSlpk(slpkGeometryPath, geometryBuffer, '0.bin')
       });
     } else {
       const geometryPath = join(childPath, 'geometries/0/');
       await this.writeQueue.enqueue({
-        writePromise: writeFile(geometryPath, geometryBuffer, 'index.bin')
+        writePromise: () => writeFile(geometryPath, geometryBuffer, 'index.bin')
       });
     }
 
@@ -796,12 +793,13 @@ export default class I3SConverter {
         const slpkCompressedGeometryPath = join(childPath, 'geometries');
         await this.writeQueue.enqueue({
           archiveKey: `${slpkChildPath}/geometries/1.bin.gz`,
-          writePromise: writeFileForSlpk(slpkCompressedGeometryPath, compressedGeometry, '1.bin')
+          writePromise: () =>
+            writeFileForSlpk(slpkCompressedGeometryPath, compressedGeometry, '1.bin')
         });
       } else {
         const compressedGeometryPath = join(childPath, 'geometries/1/');
         await this.writeQueue.enqueue({
-          writePromise: writeFile(compressedGeometryPath, compressedGeometry, 'index.bin')
+          writePromise: () => writeFile(compressedGeometryPath, compressedGeometry, 'index.bin')
         });
       }
     }
@@ -830,11 +828,11 @@ export default class I3SConverter {
       const slpkSharedPath = join(childPath, 'shared');
       await this.writeQueue.enqueue({
         archiveKey: `${slpkChildPath}/shared/sharedResource.json.gz`,
-        writePromise: writeFileForSlpk(slpkSharedPath, sharedDataStr, 'sharedResource.json')
+        writePromise: () => writeFileForSlpk(slpkSharedPath, sharedDataStr, 'sharedResource.json')
       });
     } else {
       const sharedPath = join(childPath, 'shared/');
-      await this.writeQueue.enqueue({writePromise: writeFile(sharedPath, sharedDataStr)});
+      await this.writeQueue.enqueue({writePromise: () => writeFile(sharedPath, sharedDataStr)});
     }
   }
 
@@ -927,12 +925,13 @@ export default class I3SConverter {
 
       await this.writeQueue.enqueue({
         archiveKey: `${slpkChildPath}/textures/${name}.${format}`,
-        writePromise: writeFileForSlpk(slpkTexturePath, textureData, `${name}.${format}`, compress)
+        writePromise: () =>
+          writeFileForSlpk(slpkTexturePath, textureData, `${name}.${format}`, compress)
       });
     } else {
       const texturePath = join(childPath, `textures/${name}/`);
       await this.writeQueue.enqueue({
-        writePromise: writeFile(texturePath, textureData, `index.${format}`)
+        writePromise: () => writeFile(texturePath, textureData, `index.${format}`)
       });
     }
   }
@@ -957,12 +956,12 @@ export default class I3SConverter {
           const slpkAttributesPath = join(childPath, 'attributes', folderName);
           await this.writeQueue.enqueue({
             archiveKey: `${slpkChildPath}/attributes/${folderName}.bin.gz`,
-            writePromise: writeFileForSlpk(slpkAttributesPath, fileBuffer, '0.bin')
+            writePromise: () => writeFileForSlpk(slpkAttributesPath, fileBuffer, '0.bin')
           });
         } else {
           const attributesPath = join(childPath, `attributes/${folderName}/0`);
           await this.writeQueue.enqueue({
-            writePromise: writeFile(attributesPath, fileBuffer, 'index.bin')
+            writePromise: () => writeFile(attributesPath, fileBuffer, 'index.bin')
           });
         }
       }
