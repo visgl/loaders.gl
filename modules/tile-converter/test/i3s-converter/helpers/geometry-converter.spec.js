@@ -31,7 +31,7 @@ test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt ti
   }
   async function testTileContent(draco, generateBoundingVolumes) {
     let nodeId = 1;
-    const addNodeToNodePage = () => nodeId++;
+    const addNodeToNodePage = async () => nodeId++;
     const featuresHashArray = [];
     const tileHeaderRequiredProps = {
       computedTransform: [
@@ -113,7 +113,7 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
     return;
   }
   let nodeId = 1;
-  const addNodeToNodePage = () => nodeId++;
+  const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;
@@ -189,7 +189,7 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
     return;
   }
   let nodeId = 1;
-  const addNodeToNodePage = () => nodeId++;
+  const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;
@@ -250,7 +250,7 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
     return;
   }
   let nodeId = 1;
-  const addNodeToNodePage = () => nodeId++;
+  const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;

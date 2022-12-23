@@ -1,5 +1,6 @@
 import './i3s-converter/helpers/draco-compression.spec';
 import './i3s-converter/helpers/node-pages.spec';
+import './i3s-converter/helpers/node-index-document.spec';
 import './i3s-converter/helpers/json-templates.spec';
 import './i3s-converter/helpers/gltf-attributes.spec';
 import './i3s-converter/helpers/coordinate-converter.spec';

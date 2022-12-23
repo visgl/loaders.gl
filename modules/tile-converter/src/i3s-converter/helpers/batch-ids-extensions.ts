@@ -13,9 +13,9 @@ const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
 
 /**
  * Getting batchIds from 3DTilesNext extensions.
- * @param attributes
- * @param primitive
- * @param textures
+ * @param attributes - gltf accessors
+ * @param primitive - gltf primitive data
+ * @param images - gltf texture images
  */
 export function handleBatchIdsExtensions(
   attributes: {

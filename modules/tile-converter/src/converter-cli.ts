@@ -14,6 +14,8 @@ type TileConversionOptions = {
   /** Output folder. This folder will be created by converter if doesn't exist. It is relative to the converter path.
    * Default: "data" folder */
   output: string;
+  /** Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed */
+  instantNodeWriting: boolean;
   /** 3DTiles->I3S only. location of 7z.exe archiver to create slpk on Windows OS, default: "C:\Program Files\7-Zip\7z.exe" */
   sevenZipExe: string;
   /** location of the Earth Gravity Model (*.pgm) file to convert heights from ellipsoidal to gravity-related format,
@@ -99,6 +101,9 @@ function printHelp(): void {
   );
   console.log('--name [Tileset name]');
   console.log('--output [Output folder, default: "data" folder]');
+  console.log(
+    '--instant-nodes-writing [Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed]'
+  );
   console.log('--slpk [Generate slpk (Scene Layer Packages) I3S output file]');
   console.log(
     '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
@@ -156,7 +161,8 @@ async function convert(options: ValidatedTileConversionOptions) {
         draco: options.draco,
         generateTextures: options.generateTextures,
         generateBoundingVolumes: options.generateBoundingVolumes,
-        validate: options.validate
+        validate: options.validate,
+        instantNodeWriting: options.instantNodeWriting
       });
       break;
     default:
@@ -229,7 +235,8 @@ function parseOptions(args: string[]): TileConversionOptions {
     generateTextures: false,
     generateBoundingVolumes: false,
     validate: false,
-    slpk: false
+    slpk: false,
+    instantNodeWriting: false
   };
 
   // eslint-disable-next-line complexity
@@ -247,6 +254,9 @@ function parseOptions(args: string[]): TileConversionOptions {
           break;
         case '--output':
           opts.output = getStringValue(index, args);
+          break;
+        case '--instant-node-writing':
+          opts.instantNodeWriting = getBooleanValue(index, args);
           break;
         case '--max-depth':
           opts.maxDepth = getIntegerValue(index, args);

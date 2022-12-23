@@ -68,16 +68,18 @@ let scratchVector = new Vector3();
  *
  * @param tileContent - 3d tile content
  * @param addNodeToNodePage - function to add new node to node pages
+ * @param propertyTable - batch table (corresponding to feature attributes data)
  * @param featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
  * @param attributeStorageInfo - attributes metadata from 3DSceneLayer json
  * @param draco - is converter should create draco compressed geometry
  * @param generateBoundingVolumes - is converter should create accurate bounding voulmes from geometry attributes
  * @param geoidHeightModel - model to convert elevation from elipsoidal to geoid
+ * @param workerSource - source code of used workers
  * @returns Array of node resources to create one or more i3s nodes
  */
 export default async function convertB3dmToI3sGeometry(
   tileContent: B3DMContent,
-  addNodeToNodePage: () => number,
+  addNodeToNodePage: () => Promise<number>,
   propertyTable: FeatureTableJson | null,
   featuresHashArray: string[],
   attributeStorageInfo: AttributeStorageInfo[] | undefined,
@@ -131,7 +133,7 @@ export default async function convertB3dmToI3sGeometry(
       continue;
     }
     const {material, texture} = materialAndTextureList[i];
-    const nodeId = addNodeToNodePage();
+    const nodeId = await addNodeToNodePage();
     result.push(
       await _makeNodeResources({
         convertedAttributes,
@@ -192,8 +194,10 @@ function _generateBoundingVolumesFromGeometry(
  * @param params.tileContent - B3DM decoded content
  * @param params.nodeId - new node ID
  * @param params.featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
- * @param params.attributesStorageInfo - attributes metadata from 3DSceneLayer json
+ * @param params.propertyTable - batch table (corresponding to feature attributes data)
+ * @param params.attributeStorageInfo - attributes metadata from 3DSceneLayer json
  * @param params.draco - is converter should create draco compressed geometry
+ * @param params.workerSource - source code of used workers
  * @returns Array of I3S node resources
  */
 async function _makeNodeResources({
@@ -290,7 +294,7 @@ async function _makeNodeResources({
 
 /**
  * Convert attributes from the gltf nodes tree to i3s plain geometry
- * @param tileContent - 3d tile content
+ * @param attributesData - geometry attributes from gltf
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @returns map of converted geometry attributes
@@ -348,7 +352,8 @@ export async function convertAttributes(
  *   The goal is applying tranformation matrix for all children. Functions "convertNodes" and "convertNode" work together recursively.
  * @param nodes - gltf nodes array
  * @param images - gltf images array
- * @param tileContent - 3d tile content
+ * @param cartographicOrigin - cartographic origin of bounding volume
+ * @param cartesianModelMatrix - cartesian model matrix to convert coordinates to cartographic
  * @param attributesMap - for recursive concatenation of attributes
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
@@ -385,7 +390,7 @@ function convertNodes(
  * @param node
  * @param matrix
  */
-function getCompositeTransformationMatrix(node, matrix) {
+function getCompositeTransformationMatrix(node: GLTFNodePostprocessed, matrix: Matrix4) {
   let transformationMatrix = matrix;
 
   const {matrix: nodeMatrix, rotation, scale, translation} = node;
@@ -413,7 +418,8 @@ function getCompositeTransformationMatrix(node, matrix) {
  * Convert all primitives of node and all children nodes
  * @param node - gltf node
  * @param images - gltf images array
- * @param {Object} tileContent - 3d tile content
+ * @param cartographicOrigin - cartographic origin of bounding volume
+ * @param cartesianModelMatrix - cartesian model matrix to convert coordinates to cartographic
  * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
@@ -457,9 +463,13 @@ function convertNode(
 }
 
 /**
- * Convert all primitives of node and all children nodes
- * @param mesh - gltf node
- * @param content - 3d tile content
+ * Convert all primitives of the mesh
+ * @param mesh - gltf mesh data
+ * @param images - gltf images array
+ * @param cartographicOrigin - cartographic origin of bounding volume
+ * @param cartesianModelMatrix - cartesian model matrix to convert coordinates to cartographic
+ * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
+ *   attributes
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets. 
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
@@ -695,9 +705,9 @@ function flattenBatchIds(batchedIds: number[], indices: Uint8Array): number[] {
 
 /**
  * Get batchIds for featureIds creation
- * @param attributes
- * @param primitive
- * @param textures
+ * @param attributes - gltf accessors
+ * @param primitive - gltf primitive data
+ * @param images - gltf texture images
  */
 function getBatchIds(
   attributes: {
@@ -968,13 +978,13 @@ function extractSharedResourcesTextureInfo(
 }
 
 /**
- * Formula for counting imageId:
+ * Formula for calculating imageId:
  * https://github.com/Esri/i3s-spec/blob/0a6366a9249b831db8436c322f8d27521e86cf07/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#generating-image-ids
  * @param texture - texture image info
  * @param nodeId - I3S node ID
  * @returns calculate image ID according to the spec
  */
-function generateImageId(texture: GLTFTexturePostprocessed, nodeId) {
+function generateImageId(texture: GLTFTexturePostprocessed, nodeId: number) {
   const {width, height} = texture.source?.image;
   const levelCountOfTexture = 1;
   const indexOfLevel = 0;
@@ -1076,8 +1086,8 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
 
 /**
  * Convert property table data to attribute buffers.
- * @param {Object} propertyTable - table with metadata for particular feature.
  * @param {Array} featureIds
+ * @param {Object} propertyTable - table with metadata for particular feature.
  * @param {Array} attributeStorageInfo
  * @returns {Array} - Array of file buffers.
  */
