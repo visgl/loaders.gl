@@ -1,10 +1,10 @@
+import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {
   BoundingVolumes,
   I3SMaterialDefinition,
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/i3s';
-import {ImageDataType} from '@loaders.gl/images';
 
 /** Converted resources for specific node */
 export type I3SConvertedResources = {
@@ -25,6 +25,10 @@ export type I3SConvertedResources = {
    * Texture image content
    */
   texture: any | null;
+  /**
+   * If the resource has uvRegions geometry attribute
+   */
+  hasUvRegions: boolean;
   /**
    * Shared resources built from GLTF material
    */
@@ -63,6 +67,8 @@ export type ConvertedAttributes = {
   texCoords: Float32Array;
   /** COLOR_0 attribute value */
   colors: Uint8Array;
+  /** uvRegion attribute for a texture atlas */
+  uvRegions: Uint16Array;
   /** Feature indices grouped by ...
    * converted from "batch ids" of GLTF
    */
@@ -73,6 +79,8 @@ export type ConvertedAttributes = {
    * MBS and/or OBB bounding volumes of the node
    */
   boundingVolumes: null | BoundingVolumes;
+  /** merged materials data */
+  mergedMaterials: MergedMaterial[];
 };
 
 /** Postprocessed geometry and feature attributes
@@ -87,6 +95,8 @@ export type GeometryAttributes = {
   texCoords: Float32Array;
   /** COLOR_0 attribute value */
   colors: Uint8Array;
+  /** uvRegion attribute for a texture atlas */
+  uvRegions: Uint16Array;
   /** faceRanges attribute value  */
   faceRange: Uint32Array;
   /** feature Ids attribute value */
@@ -105,6 +115,8 @@ export type GroupedByFeatureIdAttributes = {
   normals: Float32Array;
   /** COLOR_0 attribute value */
   colors: Uint8Array;
+  /** uvRegion attribute for a texture atlas */
+  uvRegions: Uint16Array;
   /** TEXCOORD_0 attribute value */
   texCoords: Float32Array;
 };
@@ -124,5 +136,20 @@ export type I3SMaterialWithTexture = {
   /** Material definition https://github.com/Esri/i3s-spec/blob/master/docs/1.8/materialDefinitions.cmn.md */
   material: I3SMaterialDefinition;
   /** Texture content (image) */
-  texture?: ImageDataType;
+  texture?: GLTFImagePostprocessed;
+  /** Metadata of all merged materials */
+  mergedMaterials: MergedMaterial[];
+};
+
+/** Metadata of some original texture */
+export type MergedMaterial = {
+  /** Gltf material Id */
+  originalMaterialId: string;
+  /** Original texture size */
+  textureSize?: {
+    width: number;
+    height: number;
+  };
+  /** Uint16Array of 4 elements https://github.com/Esri/i3s-spec/blob/master/docs/1.7/geometryUVRegion.cmn.md */
+  uvRegion?: Uint16Array;
 };

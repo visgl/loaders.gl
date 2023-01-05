@@ -36,6 +36,7 @@ import {convertGeometricErrorToScreenThreshold} from '../lib/utils/lod-conversio
 import {PGMLoader} from '../pgm-loader';
 
 import {LAYERS as layersTemplate} from './json-templates/layers';
+import {GEOMETRY_DEFINITION as geometryDefinitionTemlate} from './json-templates/geometry-definitions';
 import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
@@ -76,8 +77,10 @@ export default class I3SConverter {
   nodePages: NodePages;
   options: any;
   layers0Path: string;
-  materialMap: Map<any, any>;
+  materialMap: Map<string, number>;
   materialDefinitions: I3SMaterialDefinition[];
+  geometryMap: Map<string, number>;
+  geometryConfigs: {hasTexture: boolean; hasUvRegions: boolean}[];
   vertexCounter: number;
   layers0: SceneLayer3D | null;
   featuresHashArray: string[];
@@ -105,6 +108,8 @@ export default class I3SConverter {
     this.layers0Path = '';
     this.materialMap = new Map();
     this.materialDefinitions = [];
+    this.geometryMap = new Map();
+    this.geometryConfigs = [];
     this.vertexCounter = 0;
     this.layers0 = null;
     this.featuresHashArray = [];
@@ -146,6 +151,7 @@ export default class I3SConverter {
     slpk?: boolean;
     token?: string;
     draco?: boolean;
+    mergeMaterials?: boolean;
     validate?: boolean;
     generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
@@ -169,7 +175,8 @@ export default class I3SConverter {
       token,
       generateTextures,
       generateBoundingVolumes,
-      instantNodeWriting = false
+      instantNodeWriting = false,
+      mergeMaterials = false
     } = options;
     this.options = {
       maxDepth,
@@ -179,7 +186,8 @@ export default class I3SConverter {
       draco,
       token,
       inputUrl,
-      instantNodeWriting
+      instantNodeWriting,
+      mergeMaterials
     };
     this.compressList = (this.options.instantNodeWriting && []) || null;
     this.validate = Boolean(validate);
@@ -276,6 +284,13 @@ export default class I3SConverter {
     await this._convertNodesTree(rootNode, sourceRootTile);
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
+    // @ts-ignore
+    this.layers0.geometryDefinitions = transform(
+      this.geometryConfigs.map((config) => ({
+        geometryConfig: {...config, draco: this.options.draco}
+      })),
+      geometryDefinitionTemlate()
+    );
 
     if (this.layersHasTexture === false) {
       this.layers0!.store.defaultGeometrySchema.ordering =
@@ -549,6 +564,7 @@ export default class I3SConverter {
       geometry: null,
       compressedGeometry: null,
       texture: null,
+      hasUvRegions: false,
       sharedResources: null,
       meshMaterial: null,
       vertexCount: null,
@@ -641,6 +657,7 @@ export default class I3SConverter {
       this.layers0?.attributeStorageInfo,
       this.options.draco,
       this.generateBoundingVolumes,
+      this.options.mergeMaterials,
       this.geoidHeightModel!,
       this.workerSource
     );
@@ -669,7 +686,7 @@ export default class I3SConverter {
     parentId: number,
     resources: I3SConvertedResources
   ): Promise<NodeInPage> {
-    const {meshMaterial, texture, vertexCount, featureCount, geometry} = resources;
+    const {meshMaterial, texture, vertexCount, featureCount, geometry, hasUvRegions} = resources;
     const nodeInPage: NodeInPage = {
       index: 0,
       lodThreshold: maxScreenThresholdSQ.maxError,
@@ -679,7 +696,7 @@ export default class I3SConverter {
     if (geometry && this.isContentSupported(sourceTile)) {
       nodeInPage.mesh = {
         geometry: {
-          definition: texture ? 0 : 1,
+          definition: this.findOrCreateGeometryDefinition(Boolean(texture), hasUvRegions),
           resource: 0
         },
         attribute: {
@@ -886,6 +903,7 @@ export default class I3SConverter {
 
       if (!this.layers0!.textureSetDefinitions!.length) {
         this.layers0!.textureSetDefinitions!.push({formats});
+        this.layers0!.textureSetDefinitions!.push({formats, atlas: true});
       }
     }
   }
@@ -979,11 +997,29 @@ export default class I3SConverter {
   private _findOrCreateMaterial(material: I3SMaterialDefinition): number {
     const hash = md5(JSON.stringify(material));
     if (this.materialMap.has(hash)) {
-      return this.materialMap.get(hash);
+      return this.materialMap.get(hash) || 0;
     }
     const newMaterialId = this.materialDefinitions.push(material) - 1;
     this.materialMap.set(hash, newMaterialId);
     return newMaterialId;
+  }
+
+  /**
+   * Get unique geometry configuration index
+   * In the end of conversion configurations will be transformed to geometryDefinitions array
+   * @param hasTexture
+   * @param hasUvRegions
+   * @returns
+   */
+  private findOrCreateGeometryDefinition(hasTexture: boolean, hasUvRegions: boolean): number {
+    const geometryConfig = {hasTexture, hasUvRegions};
+    const hash = md5(JSON.stringify(geometryConfig));
+    if (this.geometryMap.has(hash)) {
+      return this.geometryMap.get(hash) || 0;
+    }
+    const newGeometryId = this.geometryConfigs.push(geometryConfig) - 1;
+    this.geometryMap.set(hash, newGeometryId);
+    return newGeometryId;
   }
 
   /**

@@ -45,6 +45,7 @@ test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt ti
     const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
     const workerSource = await getWorkersSource();
     const attributeStorageInfo = [];
+    const shouldMergeMaterials = false;
     try {
       const convertedResources = await convertB3dmToI3sGeometry(
         tileContent,
@@ -54,6 +55,7 @@ test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt ti
         attributeStorageInfo,
         draco,
         generateBoundingVolumes,
+        shouldMergeMaterials,
         geoidHeightModel,
         workerSource
       );
@@ -117,6 +119,7 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;
+  const shouldMergeMaterials = false;
   const tileHeaderRequiredProps = {
     computedTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
     boundingVolume: {center: [3781178.760596639, 902182.0936989671, 5039803.738586299]}
@@ -136,6 +139,7 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
       attributeStorageInfo,
       draco,
       generageBoundingVolumes,
+      shouldMergeMaterials,
       geoidHeightModel,
       workerSource
     );
@@ -193,6 +197,7 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;
+  const shouldMergeMaterials = false;
   const tileHeaderRequiredProps = {
     computedTransform: [
       1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4055182.44018, 615965.038498, 4867494.346586, 1
@@ -214,6 +219,7 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
       attributeStorageInfo,
       draco,
       generageBoundingVolumes,
+      shouldMergeMaterials,
       geoidHeightModel,
       workerSource
     );
@@ -254,6 +260,7 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
   const featuresHashArray = [];
   const draco = true;
   const generageBoundingVolumes = false;
+  const shouldMergeMaterials = false;
   const tileHeaderRequiredProps = {
     computedTransform: [
       0.8443837640659682, -0.5357387973460459, 0, 0, 0.32832660036003297, 0.5174791372742712,
@@ -277,6 +284,7 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
       attributeStorageInfo,
       draco,
       generageBoundingVolumes,
+      shouldMergeMaterials,
       geoidHeightModel,
       workerSource
     );

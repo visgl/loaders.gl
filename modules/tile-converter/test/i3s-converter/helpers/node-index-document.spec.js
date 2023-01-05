@@ -56,7 +56,8 @@ test('tile-converter - I3SConverter#NodePages', async (t) => {
       vertexCount: null,
       attributes: null,
       featureCount: null,
-      boundingVolumes: null
+      boundingVolumes: null,
+      hasUvRegions: false
     };
     const node = await NodeIndexDocument.createNode(
       parentNode,

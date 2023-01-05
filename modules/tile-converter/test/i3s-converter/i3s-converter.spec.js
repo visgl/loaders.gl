@@ -172,6 +172,13 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
           {name: '0', format: 'jpg'},
           {name: '1', format: 'ktx2'}
         ]
+      },
+      {
+        formats: [
+          {name: '0', format: 'jpg'},
+          {name: '1', format: 'ktx2'}
+        ],
+        atlas: true
       }
     ];
 
@@ -203,9 +210,8 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
 test('tile-converter - Converters#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
-      {
-        formats: [{name: '1', format: 'ktx2'}]
-      }
+      {formats: [{name: '1', format: 'ktx2'}]},
+      {formats: [{name: '1', format: 'ktx2'}], atlas: true}
     ];
 
     const converter = new I3SConverter();
@@ -242,6 +248,13 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
           {name: '1', format: 'ktx2'},
           {name: '0', format: 'jpg'}
         ]
+      },
+      {
+        formats: [
+          {name: '1', format: 'ktx2'},
+          {name: '0', format: 'jpg'}
+        ],
+        atlas: true
       }
     ];
 

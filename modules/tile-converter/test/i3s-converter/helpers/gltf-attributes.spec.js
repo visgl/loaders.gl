@@ -52,7 +52,6 @@ test('gltf-attributes - Should generate attributes object from tileContent witho
   };
 
   const expectedResult = {
-    gltfMaterials: [{id: 'one'}],
     nodes: [
       {
         id: 'node-one',
@@ -68,9 +67,7 @@ test('gltf-attributes - Should generate attributes object from tileContent witho
               indices: {
                 value: new Uint16Array([1, 2, 3, 4, 5])
               },
-              material: {
-                id: 'material-0'
-              }
+              material: {id: 'material-0'}
             }
           ]
         }
@@ -84,6 +81,8 @@ test('gltf-attributes - Should generate attributes object from tileContent witho
   const result = prepareDataForAttributesConversion(tileContent);
 
   t.ok(result);
+  // @ts-expect-error
+  delete result.nodes[0].mesh.primitives[0].material.uniqueId;
   t.deepEqual(result, expectedResult);
   t.end();
 });
@@ -167,7 +166,6 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
   };
 
   const expectedResult = {
-    gltfMaterials: [{id: 'one'}],
     nodes: [
       {
         id: 'node-one',
@@ -212,6 +210,8 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
   const result = prepareDataForAttributesConversion(tileContent);
 
   t.ok(result);
+  // @ts-expect-error
+  delete result.nodes[0].mesh.primitives[0].material.uniqueId;
   t.deepEqual(result, expectedResult);
   t.end();
 });

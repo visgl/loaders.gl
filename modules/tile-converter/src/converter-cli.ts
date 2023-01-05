@@ -16,6 +16,8 @@ type TileConversionOptions = {
   output: string;
   /** Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed */
   instantNodeWriting: boolean;
+  /** Try to merge similar materials to be able to merge meshes into one node (I3S to 3DTiles conversion only) */
+  mergeMaterials: boolean;
   /** 3DTiles->I3S only. location of 7z.exe archiver to create slpk on Windows OS, default: "C:\Program Files\7-Zip\7z.exe" */
   sevenZipExe: string;
   /** location of the Earth Gravity Model (*.pgm) file to convert heights from ellipsoidal to gravity-related format,
@@ -104,6 +106,9 @@ function printHelp(): void {
   console.log(
     '--instant-nodes-writing [Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed]'
   );
+  console.log(
+    '--merge-materials [Try to merge similar materials to be able to merge meshes into one node (I3S to 3DTiles conversion only)]'
+  );
   console.log('--slpk [Generate slpk (Scene Layer Packages) I3S output file]');
   console.log(
     '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
@@ -159,6 +164,7 @@ async function convert(options: ValidatedTileConversionOptions) {
         egmFilePath: options.egm,
         token: options.token,
         draco: options.draco,
+        mergeMaterials: options.mergeMaterials,
         generateTextures: options.generateTextures,
         generateBoundingVolumes: options.generateBoundingVolumes,
         validate: options.validate,
@@ -236,7 +242,8 @@ function parseOptions(args: string[]): TileConversionOptions {
     generateBoundingVolumes: false,
     validate: false,
     slpk: false,
-    instantNodeWriting: false
+    instantNodeWriting: false,
+    mergeMaterials: false
   };
 
   // eslint-disable-next-line complexity
@@ -257,6 +264,9 @@ function parseOptions(args: string[]): TileConversionOptions {
           break;
         case '--instant-node-writing':
           opts.instantNodeWriting = getBooleanValue(index, args);
+          break;
+        case '--merge-materials':
+          opts.mergeMaterials = getBooleanValue(index, args);
           break;
         case '--max-depth':
           opts.maxDepth = getIntegerValue(index, args);
