@@ -201,7 +201,7 @@ async function parseI3SNodeGeometry(
     normals: attributes.normal,
     colors: normalizeAttribute(attributes.color), // Normalize from UInt8
     texCoords: attributes.uv0,
-    uvRegions: normalizeAttribute(attributes.uvRegion) // Normalize from UInt16
+    uvRegions: normalizeAttribute(attributes.uvRegion || attributes.region) // Normalize from UInt16
   };
   content.indices = indices || null;
 
