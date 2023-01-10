@@ -65,7 +65,7 @@
     "cors": "^2.8.5",
     "crypt": "^0.0.2",
     "debug": "~2.6.9",
-    "express": "~4.16.1",
+    "express": "~4.17.3",
     "join-images": "^1.1.3",
     "json-map-transform": "^1.2.6",
     "jszip": "^3.5.0",
