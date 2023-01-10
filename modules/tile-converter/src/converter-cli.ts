@@ -107,7 +107,7 @@ function printHelp(): void {
     '--instant-nodes-writing [Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed]'
   );
   console.log(
-    '--merge-materials [Try to merge similar materials to be able to merge meshes into one node (I3S to 3DTiles conversion only)]'
+    '--split-nodes [Prevent to merge similar materials that could lead to incorrect visualization (I3S to 3DTiles conversion only)]'
   );
   console.log('--slpk [Generate slpk (Scene Layer Packages) I3S output file]');
   console.log(
@@ -243,7 +243,7 @@ function parseOptions(args: string[]): TileConversionOptions {
     validate: false,
     slpk: false,
     instantNodeWriting: false,
-    mergeMaterials: false
+    mergeMaterials: true
   };
 
   // eslint-disable-next-line complexity
@@ -265,7 +265,7 @@ function parseOptions(args: string[]): TileConversionOptions {
         case '--instant-node-writing':
           opts.instantNodeWriting = getBooleanValue(index, args);
           break;
-        case '--merge-materials':
+        case '--split-nodes':
           opts.mergeMaterials = getBooleanValue(index, args);
           break;
         case '--max-depth':
@@ -360,7 +360,7 @@ function getIntegerValue(index: number, args: string[]): number {
 
 function getBooleanValue(index: number, args: string[]): boolean {
   const stringValue: string = getStringValue(index, args).toLowerCase().trim();
-  if (args[index] === '--no-draco' && !stringValue) {
+  if (['--no-draco', '--split-nodes'].includes(args[index]) && !stringValue) {
     return false;
   }
   if (!stringValue || stringValue === 'true') {

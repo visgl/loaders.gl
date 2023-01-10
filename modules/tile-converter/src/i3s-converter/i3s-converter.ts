@@ -176,7 +176,7 @@ export default class I3SConverter {
       generateTextures,
       generateBoundingVolumes,
       instantNodeWriting = false,
-      mergeMaterials = false
+      mergeMaterials = true
     } = options;
     this.options = {
       maxDepth,
