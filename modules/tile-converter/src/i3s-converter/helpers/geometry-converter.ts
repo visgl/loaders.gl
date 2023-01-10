@@ -18,7 +18,6 @@ import {assert, encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
 import {v4 as uuidv4} from 'uuid';
-import joinImages from 'join-images';
 import {generateAttributes} from './geometry-attributes';
 import {createBoundingVolumesFromGeometry} from './coordinate-converter';
 import {
@@ -867,6 +866,8 @@ async function mergeMaterials(
   ) {
     const buffer1 = Buffer.from(material1.texture.bufferView.data);
     const buffer2 = Buffer.from(material2.texture.bufferView.data);
+    // @ts-ignore
+    const {joinImages} = await import('join-images');
     const sharpData = await joinImages([buffer1, buffer2], {direction: 'horizontal'});
     material1.texture.bufferView.data = await sharpData
       .toFormat(material1.texture.mimeType === 'image/png' ? 'png' : 'jpeg')

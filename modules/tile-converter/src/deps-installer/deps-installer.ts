@@ -2,6 +2,7 @@ import {load, fetchFile} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 import {writeFile} from '../lib/utils/file-utils';
 import {join} from 'path';
+import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
@@ -41,6 +42,14 @@ export class DepsInstaller {
 
     console.log('Installing "Basis Loader worker"'); // eslint-disable-line no-console
     await this.installWorker('textures', 'basis-nodejs-worker.js', workersPath);
+
+    console.log('Installing "join-images" npm package');
+    const childProcess = new ChildProcessProxy();
+    await childProcess.start({
+      command: 'npm',
+      arguments: ['install', 'sharp', 'join-images'],
+      wait: 0
+    });
 
     console.log('All dependencies were installed succesfully.'); // eslint-disable-line no-console
   }
