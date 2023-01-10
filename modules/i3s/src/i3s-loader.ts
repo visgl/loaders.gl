@@ -11,6 +11,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const TILESET_REGEX = /layers\/[0-9]+$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
 const SLPK_HEX = '504b0304';
+const POINT_CLOUD = 'PointCloud';
 
 /**
  * Loader for I3S - Indexed 3D Scene Layer
@@ -85,6 +86,10 @@ async function parseTileContent(arrayBuffer, options) {
 
 async function parseTileset(data, options, context) {
   const tilesetJson = JSON.parse(new TextDecoder().decode(data));
+
+  if (tilesetJson?.layerType === POINT_CLOUD) {
+    throw new Error('Point Cloud layers currently are not supported by I3SLoader');
+  }
   // eslint-disable-next-line no-use-before-define
   tilesetJson.loader = I3SLoader;
   await normalizeTilesetData(tilesetJson, options, context);
