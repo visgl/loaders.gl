@@ -1,5 +1,9 @@
 # Overview
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
+</p>
+
 The `@loaders.gl/wms` module handles the [WMS](https://en.wikipedia.org/wiki/Web_Map_Service) (Web Map Service) standard. WMS was standardized in 1999 as a way to serve geo-referenced web map images over the internet.
 
 ## WMS Format Overview

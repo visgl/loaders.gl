@@ -1,7 +1,11 @@
 // loaders.gl, MIT license
 
 import type {WMSCapabilities, WMSFeatureInfo, WMSLayerDescription} from '@loaders.gl/wms';
-import {WMSCapabilitiesLoader, WMSFeatureInfoLoader, WMSLayerDescriptionLoader} from '@loaders.gl/wms';
+import {
+  WMSCapabilitiesLoader,
+  WMSFeatureInfoLoader,
+  WMSLayerDescriptionLoader
+} from '@loaders.gl/wms';
 import {ImageLoader, ImageType} from '@loaders.gl/images';
 import {LoaderOptions} from '@loaders.gl/loader-utils';
 
@@ -15,7 +19,8 @@ export type WMSDataSourceProps = {
   fetch?: typeof fetch | FetchLike;
 };
 
-export class WMSDataSource { // implements ImageDataSource {
+export class WMSDataSource {
+  // implements ImageDataSource {
   url: string;
   loadOptions: LoaderOptions;
   fetch: typeof fetch | FetchLike;
@@ -33,39 +38,58 @@ export class WMSDataSource { // implements ImageDataSource {
     return await WMSCapabilitiesLoader.parse(arrayBuffer, this.loadOptions);
   }
 
-  async getImage(options: {boundingBox, width, height, layers: string[], parameters?: Record<string, unknown>}): Promise<ImageType> {
+  async getImage(options: {
+    boundingBox;
+    width;
+    height;
+    layers: string[];
+    parameters?: Record<string, unknown>;
+  }): Promise<ImageType> {
     const url = this.getUrl({request: 'GetMap', ...options});
     const response = await this.fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
     return await ImageLoader.parse(arrayBuffer, this.loadOptions);
   }
 
-  async getFeatureInfo(options: {layers: string[], parameters?: Record<string, unknown>}): Promise<WMSFeatureInfo> {
+  async getFeatureInfo(options: {
+    layers: string[];
+    parameters?: Record<string, unknown>;
+  }): Promise<WMSFeatureInfo> {
     const url = this.getUrl({request: 'GetFeatureInfo', ...options});
     const response = await this.fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
     return await WMSFeatureInfoLoader.parse(arrayBuffer, this.loadOptions);
   }
 
-  async getLayerInfo(options: {layers: string[], parameters?: Record<string, unknown>}): Promise<WMSLayerDescription> {
-    const url = this.getUrl({request: 'GetLayerInfo', ...options})
+  async getLayerInfo(options: {
+    layers: string[];
+    parameters?: Record<string, unknown>;
+  }): Promise<WMSLayerDescription> {
+    const url = this.getUrl({request: 'GetLayerInfo', ...options});
     const response = await this.fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
     return await WMSLayerDescriptionLoader.parse(arrayBuffer, this.loadOptions);
   }
 
-  async getLegendImage(options: {layers: string[], parameters?: Record<string, unknown>}): Promise<ImageType> {
+  async getLegendImage(options: {
+    layers: string[];
+    parameters?: Record<string, unknown>;
+  }): Promise<ImageType> {
     const url = this.getUrl({request: 'GetLegendImage', ...options});
     const response = await this.fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
     return await ImageLoader.parse(arrayBuffer, this.loadOptions);
   }
 
-  /** 
-   * @note protected, since perhaps getUrl may need to be overridden to handle certain backends? 
+  /**
+   * @note protected, since perhaps getUrl may need to be overridden to handle certain backends?
    * @note if override is common, maybe add a callback prop?
    * */
-  protected getUrl(options: {request: string; layers?: string[], parameters?: Record<string, unknown>}): string {
+  protected getUrl(options: {
+    request: string;
+    layers?: string[];
+    parameters?: Record<string, unknown>;
+  }): string {
     let url = `${this.url}?REQUEST=${options.request}`;
     if (options.layers?.length) {
       url += `&LAYERS=[${options.layers.join(',')}]`;

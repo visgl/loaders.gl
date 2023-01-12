@@ -28,7 +28,11 @@ test.skip('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
   featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
   t.equal(featureInfo.features.length, 1, 'Parsed 1 feature in total');
 
-  t.equal(featureInfo.features[0].attributes.OBJECTID, '1188', 'Attribute OBJECTID contains the right value');
+  t.equal(
+    featureInfo.features[0].attributes.OBJECTID,
+    '1188',
+    'Attribute OBJECTID contains the right value'
+  );
 
   // read multiple features
   text =
@@ -96,7 +100,11 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
 
   t.equal(featureInfo.features.length, 1, 'Parsed 1 feature in total');
 
-  t.equal(featureInfo.features[0].attributes.OBJECTID, '109', 'Attribute OBJECTID contains the right value');
+  t.equal(
+    featureInfo.features[0].attributes.OBJECTID,
+    '109',
+    'Attribute OBJECTID contains the right value'
+  );
 
   t.equal(featureInfo.features[0].type, 'AAA64', 'Parsed the layer name correctly');
 
@@ -162,7 +170,7 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
   t.equal(featureInfo.features.length, 2, 'Parsed 2 features in total');
 
   t.equal(
-    featureInfo.features[0].type == featureInfo.features[1].type,
+    featureInfo.features[0].type === featureInfo.features[1].type,
     false,
     'The layer name differs for the two features'
   );
@@ -211,7 +219,7 @@ test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async (t) => {
   // url used:
   /* http://webservices.ionicsoft.com/ionicweb/wfs/BOSTON_ORA?service=WMS&request=GetFeatureInfo&layers=roads&version=1.1.1&bbox=-71.1,42.25,-71.05,42.3&width=500&height=500&format=image/png&SRS=EPSG:4326&styles=&x=174&y=252&query_layers=roads&info_format=application/vnd.ogc.gml */
   let text =
-    "<?xml version='1.0' encoding='utf-8' ?>" +
+    '<?xml version=\'1.0\' encoding=\'utf-8\' ?>' +
     '  <ogcwfs:FeatureCollection xsi:schemaLocation="http://www.ionicsoft.com/wfs http://webservices.ionicsoft.com/ionicweb/wfs/BOSTON_ORA?REQUEST=DescribeAllFeatureType&amp;SERVICE=WFS http://www.opengis.net/wfs http://webservices.ionicsoft.com/ionicweb/wfs/BOSTON_ORA/REQUEST/get/DATA/LPR/wfs/1.0.0/WFS-basic.xsd" xmlns:wfs="http://www.ionicsoft.com/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ogcwfs="http://www.opengis.net/wfs">' +
     '    <gml:boundedBy>' +
     '      <gml:Box srsName="EPSG:4326">' +
@@ -246,9 +254,17 @@ test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async (t) => {
 
   let featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
 
-  t.equal(featureInfo.features.length, 1, 'Parsing GML GetFeatureInfo response from Ionic succesfull');
+  t.equal(
+    featureInfo.features.length,
+    1,
+    'Parsing GML GetFeatureInfo response from Ionic succesfull'
+  );
 
-  t.equal(featureInfo.features[0].attributes.TILE_NAME, '126', 'Attribute TILE_NAME contains the right value');
+  t.equal(
+    featureInfo.features[0].attributes.TILE_NAME,
+    '126',
+    'Attribute TILE_NAME contains the right value'
+  );
 
   // read Geoserver response
   // taken from:
@@ -259,7 +275,11 @@ test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async (t) => {
 
   featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
 
-  t.equal(featureInfo.features.length, 1, 'Parsing GML GetFeatureInfo response from Geoserver succesfull');
+  t.equal(
+    featureInfo.features.length,
+    1,
+    'Parsing GML GetFeatureInfo response from Geoserver succesfull'
+  );
 
   t.equal(featureInfo.features[0].attributes.cat, '3', 'Attribute cat contains the right value');
 

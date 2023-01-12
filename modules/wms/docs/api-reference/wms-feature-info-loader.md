@@ -1,5 +1,9 @@
 # WMSFeatureInfoLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
+</p>
+
 The `WMSFeatureInfoLoader` parses the XML-formatted response from the 
 the [OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/wms) (Web Map Service) standard `GetFeatureInfo` request into a typed JavaScript data structure.
 

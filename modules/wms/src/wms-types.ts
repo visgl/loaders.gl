@@ -7,12 +7,12 @@ export type WMSCapabilities = {
   abstract?: string;
   keywords: string[];
   layer: {
-		name: string;
-		title?: string;
-		srs?: string[];
-		boundingBox?: [number, number, number, number];
-		layers: WMSLayer[];
-	};
+    name: string;
+    title?: string;
+    srs?: string[];
+    boundingBox?: [number, number, number, number];
+    layers: WMSLayer[];
+  };
   requests: Record<string, WMSRequest>;
   raw: Record<string, unknown>;
 };

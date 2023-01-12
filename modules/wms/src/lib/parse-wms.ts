@@ -13,13 +13,14 @@ import {XMLLoader} from '@loaders.gl/xml';
 
 // GetCapabilities
 
-/** 
+/**
  * Parses a typed data structure from raw XML for `GetCapabilities` response
  * @note Error handlings is fairly weak
  */
 export function parseWMSCapabilities(text: string, options): WMSCapabilities {
   const parsedXML = XMLLoader.parseTextSync(text, options);
-  let xmlCapabilities: any = parsedXML.WMT_MS_Capabilities || parsedXML.WMS_Capabilities || parsedXML;  
+  const xmlCapabilities: any =
+    parsedXML.WMT_MS_Capabilities || parsedXML.WMS_Capabilities || parsedXML;
   return extractCapabilities(xmlCapabilities);
 }
 
@@ -70,18 +71,18 @@ function extractLayer(xmlLayer: any): WMSLayer {
 
 // GetFeatureInfo
 
-/** 
+/**
  * Parses a typed data structure from raw XML for `GetFeatureInfo` response
  * @note Error handlings is fairly weak
  */
 export function parseWMSFeatureInfo(text: string, options): WMSFeatureInfo {
   const parsedXML = XMLLoader.parseTextSync(text, options);
-  let xmlFeatureInfo: any = parsedXML.FeatureInfoResponse?.FIELDS || [];
+  const xmlFeatureInfo: any = parsedXML.FeatureInfoResponse?.FIELDS || [];
 
   const xmlFeatures = Array.isArray(xmlFeatureInfo) ? xmlFeatureInfo : [xmlFeatureInfo];
 
   return {
-    features: xmlFeatures.map(xmlFeature => extractFeature(xmlFeature))
+    features: xmlFeatures.map((xmlFeature) => extractFeature(xmlFeature))
   };
 }
 

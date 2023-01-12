@@ -29,8 +29,7 @@ export const WMSCapabilitiesLoader = {
   },
   parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
     parseWMSCapabilities(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSLoaderOptions) =>
-    parseWMSCapabilities(text, options)
+  parseTextSync: (text: string, options?: WMSLoaderOptions) => parseWMSCapabilities(text, options)
 };
 
 function testXMLFile(text: string): boolean {

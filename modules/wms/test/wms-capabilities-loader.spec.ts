@@ -13,7 +13,7 @@ const WMS_OBS_URL = '@loaders.gl/wms/test/data/get-capabilities/obs.xml';
 const WMS_WWA_URL = '@loaders.gl/wms/test/data/get-capabilities/wwa.xml';
 
 test('WMSCapabilitiesLoader#forecasts.xml', async (t) => {
-  const capabilities = await load(WMS_FORECASTS_URL, WMSCapabilitiesLoader) as WMSCapabilities;
+  const capabilities = (await load(WMS_FORECASTS_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
   t.equal(capabilities.layer.layers[2]?.name, 'world_rivers', 'contents');
@@ -22,7 +22,7 @@ test('WMSCapabilitiesLoader#forecasts.xml', async (t) => {
 });
 
 test('WMSCapabilitiesLoader#obs.xml', async (t) => {
-  const capabilities = await load(WMS_OBS_URL, WMSCapabilitiesLoader) as WMSCapabilities;
+  const capabilities = (await load(WMS_OBS_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
   t.equal(capabilities.layer.layers[2].name, 'world_rivers', 'contents');
@@ -30,7 +30,7 @@ test('WMSCapabilitiesLoader#obs.xml', async (t) => {
 });
 
 test('WMSCapabilitiesLoader#wwa.xml', async (t) => {
-  const capabilities = await load(WMS_WWA_URL, WMSCapabilitiesLoader) as WMSCapabilities;
+  const capabilities = (await load(WMS_WWA_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
   t.equal(capabilities.layer.layers[2].name, 'world_rivers', 'contents');
@@ -39,7 +39,7 @@ test('WMSCapabilitiesLoader#wwa.xml', async (t) => {
 });
 
 test('WMSCapabilitiesLoader#analyses.xml', async (t) => {
-  const capabilities = await load(WMS_ANALYSES_URL, WMSCapabilitiesLoader) as WMSCapabilities;
+  const capabilities = (await load(WMS_ANALYSES_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
   t.equal(capabilities.layer.layers[2].name, 'world_countries_label', 'contents');
@@ -48,7 +48,7 @@ test('WMSCapabilitiesLoader#analyses.xml', async (t) => {
 });
 
 test('WMSCapabilitiesLoader#dmsp.xml', async (t) => {
-  const capabilities = await load(WMS_DMSP_URL, WMSCapabilitiesLoader) as WMSCapabilities;
+  const capabilities = (await load(WMS_DMSP_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
   t.equal(capabilities.layer.layers[2].name, 'eez', 'contents');
