@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 // @ts-nocheck
 const moduleExports = require('./index');
 globalThis.loaders = globalThis.loaders || {};

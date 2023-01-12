@@ -4,7 +4,12 @@ import {XMLParser} from '../lib/parser/xml-parser';
 import {XMLParser as FastXMLParser} from 'fast-xml-parser';
 
 export function parseXML(text: string, options): any {
-  const parser = new FastXMLParser({...options});
+  const parser = new FastXMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+    // parseAttributeValue: true,
+    ...options
+  });
 
   const parsedXML = parser.parse(text);
 

@@ -1,20 +1,23 @@
+// loaders.gl, MIT license
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parseWMSCapabilities} from './lib/parse-wms-capabilities';
+import {parseWMSCapabilities} from './lib/parse-wms';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type WMSCapabilitiesLoaderOptions = LoaderOptions & {
+export type WMSLoaderOptions = LoaderOptions & {
   wms?: {};
 };
 
 /**
- * Worker loader for the OBJ geometry format
+ * Loader for the response to the WMS GetCapability request
  */
 export const WMSCapabilitiesLoader = {
   name: 'WMS Capabilities',
-  id: 'wms',
+  id: 'wms-capabilities',
+
   module: 'wms',
   version: VERSION,
   worker: false,
@@ -22,11 +25,11 @@ export const WMSCapabilitiesLoader = {
   mimeTypes: ['application/vnd.ogc.wms_xml', 'application/xml', 'text/xml'],
   testText: testXMLFile,
   options: {
-    obj: {}
+    wms: {}
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMSCapabilitiesLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
     parseWMSCapabilities(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSCapabilitiesLoaderOptions) =>
+  parseTextSync: (text: string, options?: WMSLoaderOptions) =>
     parseWMSCapabilities(text, options)
 };
 

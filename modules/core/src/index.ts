@@ -1,3 +1,20 @@
+// loaders.gl, MIT license
+
+// TYPES
+export type {
+  Loader,
+  LoaderWithParser,
+  LoaderContext,
+  LoaderOptions,
+  Writer,
+  WriterOptions,
+  DataType,
+  SyncDataType,
+  BatchableDataType,
+  IFileSystem,
+  IRandomAccessReadFileSystem
+} from '@loaders.gl/loader-utils';
+
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
 
