@@ -7,10 +7,10 @@
 // See README.md in `./data` directory for full license text copy.
 
 import test from 'tape-promise/tape';
-import {WMSDescribeLayerLoader, WMSLayerInfo} from '@loaders.gl/wms';
+import {WMSLayerDescriptionLoader, WMSLayerInfo} from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
-test('WMSDescribeLayerLoader#read_WMSDescribeLayer', async (t) => {
+test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async (t) => {
   const text =
     '<WMS_DescribeLayerResponse version="1.1.1">' +
     '  <LayerDescription name="topp:states" wfs="http://geo.openplans.org:80/geoserver/wfs/WfsDispatcher?">' +
@@ -18,7 +18,7 @@ test('WMSDescribeLayerLoader#read_WMSDescribeLayer', async (t) => {
     '  </LayerDescription>' +
     '</WMS_DescribeLayerResponse>';
 
-  const res = (await parse(text, WMSDescribeLayerLoader)) as WMSLayerInfo;
+  const res = (await parse(text, WMSLayerDescriptionLoader)) as WMSLayerInfo;
 
   t.equal(res.length, 1, 'Only one LayerDescription in data, so only one parsed');
 

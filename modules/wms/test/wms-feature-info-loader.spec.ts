@@ -10,7 +10,7 @@ import test from 'tape-promise/tape';
 import {WMSFeatureInfoLoader, WMSFeatureInfo} from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
-test.skip('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
+test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
   // read empty response
   let text =
     '<?xml version="1.0" encoding="UTF-8" ?>' + '<FeatureInfoResponse>' + '</FeatureInfoResponse>';
