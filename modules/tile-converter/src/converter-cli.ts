@@ -104,7 +104,7 @@ function printHelp(): void {
   console.log('--name [Tileset name]');
   console.log('--output [Output folder, default: "data" folder]');
   console.log(
-    '--instant-nodes-writing [Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed]'
+    '--instant-node-writing [Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed]'
   );
   console.log(
     '--split-nodes [Prevent to merge similar materials that could lead to incorrect visualization (I3S to 3DTiles conversion only)]'
@@ -234,6 +234,8 @@ function validateOptionsWithEqual(args: string[]): string[] {
 function parseOptions(args: string[]): TileConversionOptions {
   const opts: TileConversionOptions = {
     output: 'data',
+    instantNodeWriting: false,
+    mergeMaterials: true,
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
     egm: join(process.cwd(), 'deps', 'egm2008-5.pgm'),
     draco: true,
@@ -241,9 +243,7 @@ function parseOptions(args: string[]): TileConversionOptions {
     generateTextures: false,
     generateBoundingVolumes: false,
     validate: false,
-    slpk: false,
-    instantNodeWriting: false,
-    mergeMaterials: true
+    slpk: false
   };
 
   // eslint-disable-next-line complexity

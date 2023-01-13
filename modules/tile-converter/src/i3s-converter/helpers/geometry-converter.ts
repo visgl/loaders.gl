@@ -776,15 +776,26 @@ async function convertMaterials(
   sourceMaterials: GLTFMaterialPostprocessed[] = [],
   shouldMergeMaterials: boolean
 ): Promise<I3SMaterialWithTexture[]> {
-  const materials: I3SMaterialWithTexture[] = [];
+  let materials: I3SMaterialWithTexture[] = [];
   for (const sourceMaterial of sourceMaterials) {
     materials.push(convertMaterial(sourceMaterial));
   }
 
-  if (!shouldMergeMaterials) {
-    return materials;
+  if (shouldMergeMaterials) {
+    materials = await mergeAllMaterials(materials);
   }
 
+  return materials;
+}
+
+/**
+ * Merge materials when possible
+ * @param materials materials array
+ * @returns merged materials array
+ */
+async function mergeAllMaterials(
+  materials: I3SMaterialWithTexture[]
+): Promise<I3SMaterialWithTexture[]> {
   const result: I3SMaterialWithTexture[] = [];
   while (materials.length > 0) {
     let newMaterial = materials.splice(0, 1)[0];
@@ -844,7 +855,6 @@ async function convertMaterials(
       mergedMaterials: [{originalMaterialId: 'default'}]
     });
   }
-
   return result;
 }
 
