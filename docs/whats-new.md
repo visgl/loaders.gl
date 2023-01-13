@@ -27,8 +27,10 @@ Target Release Date: Q4 2022.
 
 **@loaders.gl/wms**
 
-- New module for parsing WMS (Web Management Service)
+- New module for parsing WMS (Web Management Service) server responses:
 - [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
+- [`WMSFeatureInfoLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+- [`WMSLayerDescriptionLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
 
 **@loaders.gl/xml**
 
