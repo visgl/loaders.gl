@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/geopackage",
   "description": "GeoPackage data loaders",
-  "version": "3.3.0-alpha.8",
+  "version": "3.3.0-alpha.9",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -25,11 +25,12 @@
   ],
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/gis": "3.3.0-alpha.8",
-    "@loaders.gl/schema": "3.3.0-alpha.8",
-    "@loaders.gl/wkt": "3.3.0-alpha.8",
+    "@loaders.gl/gis": "3.3.0-alpha.9",
+    "@loaders.gl/schema": "3.3.0-alpha.9",
+    "@loaders.gl/wkt": "3.3.0-alpha.9",
     "@math.gl/proj4": "^3.5.1",
     "@types/sql.js": "^1.4.2",
     "sql.js": "1.5.0"
-  }
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

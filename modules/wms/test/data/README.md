@@ -1,8 +1,20 @@
 # Data Attribution
 
-## analyses.xml, dmsp.xml, forecasts.xml, obs.xml, wwa.xml
 
-Copied from from https://github.com/w8r/wms-capabilities under  OpenLayers license:
+## WMTS
+
+- `get-capabilities-response.xml` OGC example data taken from
+http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response.xml
+
+OGC license: https://www.ogc.org/license
+
+## WMS 
+
+- get-capabilities `analyses.xml`, `dmsp.xml`, `forecasts.xml`, `obs.xml`, `wwa.xml` were copied from from https://github.com/w8r/wms-capabilities under  OpenLayers license:
+
+## OpenLayers license
+
+> The OpenLayers license requires attribution not only in text but also in binary form, potentially making it contagious to applications built on loaders.gl. Therefore, loaders.gl will only ever use OpenLayers licensed files for test cases and other auxillary code that does not become part of the published application libraries.
 
 ```
 Copyright 2005-2016 OpenLayers Contributors. All rights reserved.

@@ -315,7 +315,10 @@
         {
           "title": "@loaders.gl/wms",
           "entries": [
-            {"entry": "modules/wms/docs"}
+            {"entry": "modules/wms/docs"},
+            {"entry": "modules/wms/docs/api-reference/wms-capabilities-loader"},
+            {"entry": "modules/wms/docs/api-reference/wms-feature-info-loader"},
+            {"entry": "modules/wms/docs/api-reference/wms-layer-description-loader"}
           ]
         },
         {

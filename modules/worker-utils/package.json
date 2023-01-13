@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "3.3.0-alpha.8",
+  "version": "3.3.0-alpha.9",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "publishConfig": {
@@ -48,5 +48,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1"
-  }
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

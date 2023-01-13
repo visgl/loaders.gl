@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/xml",
-  "version": "3.3.0-alpha.8",
+  "version": "3.3.0-alpha.9",
   "description": "Framework-independent loaders for the XML (eXtensible Markup Language) format",
   "license": "MIT",
   "publishConfig": {
@@ -33,11 +33,12 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.3.0-alpha.8",
-    "@loaders.gl/schema": "3.3.0-alpha.8",
+    "@loaders.gl/loader-utils": "3.3.0-alpha.9",
+    "@loaders.gl/schema": "3.3.0-alpha.9",
     "fast-xml-parser": "^4.0.11"
   },
   "devDependencies": {
     "xmldom": "0.6.0"
-  }
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

@@ -1,34 +1,84 @@
 // loaders.gl, MIT licenses
 
-export type GetCapabilities = {
-  request: 'GetCapabilities';
-  format: string[];
-  dcpType: unknown;
+/** All capabilities of a WMS service - response to a WMS `GetCapabilities` data structure extracted from XML */
+export type WMSCapabilities = {
+  name: string;
+  title?: string;
+  abstract?: string;
+  keywords: string[];
+  layer: {
+    name: string;
+    title?: string;
+    srs?: string[];
+    boundingBox?: [number, number, number, number];
+    layers: WMSLayer[];
+  };
+  requests: Record<string, WMSRequest>;
+  raw: Record<string, unknown>;
 };
 
-export type GetMap = {
-  request: 'GetMap';
-  format: string[];
-  dcpType: unknown;
+export type WMSLayer = {
+  name: string;
+  title?: string;
+  srs?: string[];
+  boundingBox?: [number, number, number, number];
+  layers: WMSLayer[];
 };
 
-export type GetFeatureInfo = {
-  request: 'GetFeatureInfo';
-  format: string[];
-  dcpType: unknown;
+export type WMSRequest = {
+  name: string;
+  mimeTypes: string[];
 };
 
-export type GetLegendGraphic = {
-  request: 'GetLegendGraphic';
-  format: string[];
-  dcpType: unknown;
+// GetFeatureInfo
+
+/** WMS Feature info - response to a WMS `GetFeatureInfo` request */
+export type WMSFeatureInfo = {
+  features: WMSFeature[];
 };
 
-export type GetStyles = {
-  request: 'GetStyles';
-  format: string[];
-  dcpType: unknown;
+export type WMSFeature = {
+  attributes: Record<string, number | string>;
 };
+
+// DescribeLayer
+
+/** Layer description - response to a WMS `DescribeLayer` request  */
+export type WMSLayerDescription = {
+  // layers: {}[];
+};
+
+// // WIP
+
+// export type GetCapabilities = {
+//   request: 'GetCapabilities';
+//   format: string[];
+//   dcpType: unknown;
+// };
+
+// export type GetMap = {
+//   request: 'GetMap';
+//   format: string[];
+//   dcpType: unknown;
+// };
+
+// export type GetFeatureInfo = {
+//   request: 'GetFeatureInfo';
+//   format: string[];
+//   dcpType: unknown;
+// };
+
+// export type GetLegendGraphic = {
+//   request: 'GetLegendGraphic';
+//   format: string[];
+//   dcpType: unknown;
+// };
+
+// export type GetStyles = {
+//   request: 'GetStyles';
+//   format: string[];
+//   dcpType: unknown;
+// };
 
 /**
  * <EX_GeographicBoundingBox>
@@ -75,7 +125,7 @@ export type Style = {
   };
 };
 
-export type Capability = GetCapabilities | GetMap;
+// export type Capability = GetCapabilities | GetMap;
 
 export type WMSService = {
   rawData: unknown;
@@ -86,9 +136,9 @@ export type WMSService = {
   maxWidth?: number;
   maxHeight?: number;
   capabilities: {
-    getCapabilities: GetCapabilities;
-    getMap: GetMap;
-    getFeatureInfo?: GetFeatureInfo;
+    // getCapabilities: GetCapabilities;
+    // getMap: GetMap;
+    // getFeatureInfo?: GetFeatureInfo;
   };
 
   untypedData: unknown; // The raw, untyped JSON converted from XML
