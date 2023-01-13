@@ -17,12 +17,14 @@ import {DracoWriterWorker} from '@loaders.gl/draco';
 import {assert, encode} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
+import {v4 as uuidv4} from 'uuid';
 import {generateAttributes} from './geometry-attributes';
 import {createBoundingVolumesFromGeometry} from './coordinate-converter';
 import {
   ConvertedAttributes,
   I3SConvertedResources,
   I3SMaterialWithTexture,
+  MergedMaterial,
   SharedResourcesArrays
 } from '../types';
 import {
@@ -73,6 +75,7 @@ let scratchVector = new Vector3();
  * @param attributeStorageInfo - attributes metadata from 3DSceneLayer json
  * @param draco - is converter should create draco compressed geometry
  * @param generateBoundingVolumes - is converter should create accurate bounding voulmes from geometry attributes
+ * @param shouldMergeMaterials - Try to merge similar materials to be able to merge meshes into one node
  * @param geoidHeightModel - model to convert elevation from elipsoidal to geoid
  * @param workerSource - source code of used workers
  * @returns Array of node resources to create one or more i3s nodes
@@ -85,18 +88,20 @@ export default async function convertB3dmToI3sGeometry(
   attributeStorageInfo: AttributeStorageInfo[] | undefined,
   draco: boolean,
   generateBoundingVolumes: boolean,
+  shouldMergeMaterials: boolean,
   geoidHeightModel: Geoid,
   workerSource: {[key: string]: string}
 ): Promise<I3SConvertedResources[] | null> {
   const useCartesianPositions = generateBoundingVolumes;
-  const materialAndTextureList: I3SMaterialWithTexture[] = convertMaterials(
-    tileContent.gltf?.materials
+  const materialAndTextureList: I3SMaterialWithTexture[] = await convertMaterials(
+    tileContent.gltf?.materials,
+    shouldMergeMaterials
   );
 
   const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
-
   const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
     dataForAttributesConversion,
+    materialAndTextureList,
     useCartesianPositions
   );
   /** Usage of worker here brings more overhead than advantage */
@@ -112,27 +117,17 @@ export default async function convertB3dmToI3sGeometry(
     _generateBoundingVolumesFromGeometry(convertedAttributesMap, geoidHeightModel);
   }
 
-  if (convertedAttributesMap.has('default')) {
-    materialAndTextureList.push({
-      material: getDefaultMaterial()
-    });
-  }
-
   const result: I3SConvertedResources[] = [];
-  let {materials = []} = tileContent.gltf || {materials: []};
-  if (!materials?.length) {
-    materials.push({id: 'default'});
-  }
-  for (let i = 0; i < materials.length; i++) {
-    const sourceMaterial = materials[i];
-    if (!convertedAttributesMap.has(sourceMaterial.id)) {
+  for (const materialAndTexture of materialAndTextureList) {
+    const originarMaterialId = materialAndTexture.mergedMaterials[0].originalMaterialId;
+    if (!convertedAttributesMap.has(originarMaterialId)) {
       continue; // eslint-disable-line no-continue
     }
-    const convertedAttributes = convertedAttributesMap.get(sourceMaterial.id);
+    const convertedAttributes = convertedAttributesMap.get(originarMaterialId);
     if (!convertedAttributes) {
       continue;
     }
-    const {material, texture} = materialAndTextureList[i];
+    const {material, texture} = materialAndTexture;
     const nodeId = await addNodeToNodePage();
     result.push(
       await _makeNodeResources({
@@ -225,7 +220,7 @@ async function _makeNodeResources({
 }): Promise<I3SConvertedResources> {
   const boundingVolumes = convertedAttributes.boundingVolumes;
   const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
-  const {faceRange, featureIds, positions, normals, colors, texCoords, featureCount} =
+  const {faceRange, featureIds, positions, normals, colors, uvRegions, texCoords, featureCount} =
     generateAttributes(convertedAttributes);
 
   if (tileContent.batchTableJson) {
@@ -248,6 +243,7 @@ async function _makeNodeResources({
       normals.buffer,
       texture ? texCoords.buffer : new ArrayBuffer(0),
       colors.buffer,
+      uvRegions,
       typedFeatureIds.buffer,
       faceRange.buffer
     )
@@ -261,6 +257,7 @@ async function _makeNodeResources({
           normals,
           texCoords: texture ? texCoords : new Float32Array(0),
           colors,
+          uvRegions,
           featureIds,
           faceRange
         },
@@ -283,6 +280,7 @@ async function _makeNodeResources({
     geometry: fileBuffer,
     compressedGeometry,
     texture,
+    hasUvRegions: Boolean(uvRegions.length),
     sharedResources: getSharedResources(tileContent.gltf?.materials || [], nodeId),
     meshMaterial: material,
     vertexCount,
@@ -295,27 +293,34 @@ async function _makeNodeResources({
 /**
  * Convert attributes from the gltf nodes tree to i3s plain geometry
  * @param attributesData - geometry attributes from gltf
+ * @param materialAndTextureList - array of data about materials and textures of the content
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @returns map of converted geometry attributes
  */
 export async function convertAttributes(
   attributesData: B3DMAttributesData,
+  materialAndTextureList: I3SMaterialWithTexture[],
   useCartesianPositions: boolean
 ): Promise<Map<string, ConvertedAttributes>> {
-  const {gltfMaterials, nodes, images, cartographicOrigin, cartesianModelMatrix} = attributesData;
+  const {nodes, images, cartographicOrigin, cartesianModelMatrix} = attributesData;
   const attributesMap = new Map<string, ConvertedAttributes>();
 
-  for (const material of gltfMaterials || [{id: 'default'}]) {
-    attributesMap.set(material.id, {
+  for (const materialAndTexture of materialAndTextureList) {
+    const attributes = {
       positions: new Float32Array(0),
       normals: new Float32Array(0),
       texCoords: new Float32Array(0),
       colors: new Uint8Array(0),
+      uvRegions: new Uint16Array(0),
       featureIndicesGroups: [],
       featureIndices: [],
-      boundingVolumes: null
-    });
+      boundingVolumes: null,
+      mergedMaterials: materialAndTexture.mergedMaterials
+    };
+    for (const mergedMaterial of materialAndTexture.mergedMaterials) {
+      attributesMap.set(mergedMaterial.originalMaterialId, attributes);
+    }
   }
 
   convertNodes(
@@ -488,8 +493,12 @@ function convertMesh(
 ) {
   for (const primitive of mesh.primitives) {
     let outputAttributes: ConvertedAttributes | null | undefined = null;
+    let materialUvRegion: Uint16Array | undefined;
     if (primitive.material) {
-      outputAttributes = attributesMap.get(primitive.material.id);
+      outputAttributes = attributesMap.get(primitive.material.uniqueId);
+      materialUvRegion = outputAttributes?.mergedMaterials.find(
+        ({originalMaterialId}) => originalMaterialId === primitive.material?.uniqueId
+      )?.uvRegion;
     } else if (attributesMap.has('default')) {
       outputAttributes = attributesMap.get('default');
     }
@@ -534,6 +543,13 @@ function convertMesh(
       outputAttributes.colors,
       flattenColors(attributes.COLOR_0, primitive.indices?.value)
     );
+
+    if (materialUvRegion) {
+      outputAttributes.uvRegions = concatenateTypedArrays(
+        outputAttributes.uvRegions,
+        createUvRegion(materialUvRegion, primitive.indices?.value)
+      );
+    }
 
     outputAttributes.featureIndicesGroups = outputAttributes.featureIndicesGroups || [];
     outputAttributes.featureIndicesGroups.push(
@@ -686,6 +702,20 @@ function flattenColors(
 }
 
 /**
+ * Create per-vertex uv-region array
+ * @param materialUvRegion - uv-region fragment for a single vertex
+ * @param indices - geometry indices data
+ * @returns - uv-region array
+ */
+function createUvRegion(materialUvRegion: Uint16Array, indices: Uint8Array): Uint16Array {
+  const result = new Uint16Array(indices.length * 4);
+  for (let i = 0; i < result.length; i += 4) {
+    result.set(materialUvRegion, i);
+  }
+  return result;
+}
+
+/**
  * Flatten batchedIds list based on indices to right ordered array, compatible with i3s
  * @param batchedIds - gltf primitive
  * @param indices - gltf primitive indices
@@ -738,16 +768,125 @@ function getBatchIds(
 /**
  * Convert GLTF material to I3S material definitions and textures
  * @param sourceMaterials Source GLTF materials
+ * @param shouldMergeMaterials - if true - the converter will try to merge similar materials
+ *                               to be able to merge primitives having those materials
  * @returns Array of Couples I3SMaterialDefinition + texture content
  */
-function convertMaterials(
-  sourceMaterials: GLTFMaterialPostprocessed[] = []
-): I3SMaterialWithTexture[] {
-  const result: I3SMaterialWithTexture[] = [];
+async function convertMaterials(
+  sourceMaterials: GLTFMaterialPostprocessed[] = [],
+  shouldMergeMaterials: boolean
+): Promise<I3SMaterialWithTexture[]> {
+  let materials: I3SMaterialWithTexture[] = [];
   for (const sourceMaterial of sourceMaterials) {
-    result.push(convertMaterial(sourceMaterial));
+    materials.push(convertMaterial(sourceMaterial));
+  }
+
+  if (shouldMergeMaterials) {
+    materials = await mergeAllMaterials(materials);
+  }
+
+  return materials;
+}
+
+/**
+ * Merge materials when possible
+ * @param materials materials array
+ * @returns merged materials array
+ */
+async function mergeAllMaterials(
+  materials: I3SMaterialWithTexture[]
+): Promise<I3SMaterialWithTexture[]> {
+  const result: I3SMaterialWithTexture[] = [];
+  while (materials.length > 0) {
+    let newMaterial = materials.splice(0, 1)[0];
+    const mergedIndices: number[] = [];
+    for (let i = 0; i < materials.length; i++) {
+      const material = materials[i];
+      if (
+        (newMaterial.texture && material.texture) ||
+        (!newMaterial.texture && !material.texture)
+      ) {
+        newMaterial = await mergeMaterials(newMaterial, material);
+        mergedIndices.push(i);
+      }
+    }
+    if (newMaterial.texture && mergedIndices.length) {
+      const newWidth = newMaterial.mergedMaterials?.reduce(
+        (accum, {textureSize}) => accum + (textureSize?.width || 0),
+        0
+      );
+      const newHeight = newMaterial.mergedMaterials?.reduce(
+        (accum, {textureSize}) => Math.max(accum, textureSize?.height || 0),
+        0
+      );
+      let currentX = -1;
+      for (const aTextureMetadata of newMaterial.mergedMaterials) {
+        if (aTextureMetadata.textureSize) {
+          const newX =
+            currentX +
+            1 +
+            (aTextureMetadata.textureSize.width / newWidth) *
+              2 ** (Uint16Array.BYTES_PER_ELEMENT * 8) -
+            1;
+          aTextureMetadata.uvRegion = new Uint16Array([
+            currentX + 1,
+            0,
+            newX,
+            (aTextureMetadata.textureSize.height / newHeight) *
+              2 ** (Uint16Array.BYTES_PER_ELEMENT * 8) -
+              1
+          ]);
+          currentX = newX;
+        }
+      }
+
+      newMaterial.texture.image.width = newWidth;
+      newMaterial.texture.image.height = newHeight;
+    }
+    for (const index of mergedIndices.reverse()) {
+      materials.splice(index, 1);
+    }
+    result.push(newMaterial);
+  }
+
+  if (!result.length) {
+    result.push({
+      material: getDefaultMaterial(),
+      mergedMaterials: [{originalMaterialId: 'default'}]
+    });
   }
   return result;
+}
+
+/**
+ * Merge 2 materials including texture
+ * @param material1
+ * @param material2
+ * @returns
+ */
+async function mergeMaterials(
+  material1: I3SMaterialWithTexture,
+  material2: I3SMaterialWithTexture
+): Promise<I3SMaterialWithTexture> {
+  if (
+    material1.texture?.bufferView &&
+    material2.texture?.bufferView &&
+    material1.mergedMaterials &&
+    material2.mergedMaterials
+  ) {
+    const buffer1 = Buffer.from(material1.texture.bufferView.data);
+    const buffer2 = Buffer.from(material2.texture.bufferView.data);
+    // @ts-ignore
+    const {joinImages} = await import('join-images');
+    const sharpData = await joinImages([buffer1, buffer2], {direction: 'horizontal'});
+    material1.texture.bufferView.data = await sharpData
+      .toFormat(material1.texture.mimeType === 'image/png' ? 'png' : 'jpeg')
+      .toBuffer();
+    // @ts-ignore
+    material1.material.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId = 1;
+  }
+  material1.mergedMaterials = material1.mergedMaterials.concat(material2.mergedMaterials);
+  return material1;
 }
 
 /**
@@ -788,6 +927,9 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
     };
   }
 
+  const uniqueId = uuidv4();
+  sourceMaterial.uniqueId = uniqueId;
+  let mergedMaterials: MergedMaterial[] = [{originalMaterialId: uniqueId}];
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
@@ -799,9 +941,11 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
         number,
         number
       ]) || undefined;
+  } else {
+    mergedMaterials[0].textureSize = {width: texture.image.width, height: texture.image.height};
   }
 
-  return {material, texture};
+  return {material, texture, mergedMaterials};
 }
 
 /**
@@ -1237,7 +1381,7 @@ async function generateCompressedGeometry(
   attributes,
   dracoWorkerSoure
 ) {
-  const {positions, normals, texCoords, colors, featureIds, faceRange} = attributes;
+  const {positions, normals, texCoords, colors, uvRegions, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
 
   for (let index = 0; index < indices.length; index++) {
@@ -1256,6 +1400,7 @@ async function generateCompressedGeometry(
     colors: TypedArray;
     'feature-index': TypedArray;
     texCoords?: TypedArray;
+    'uv-region'?: TypedArray;
   } = {
     positions,
     normals,
@@ -1273,6 +1418,13 @@ async function generateCompressedGeometry(
       'i3s-feature-ids': new Int32Array(featureIds)
     }
   };
+
+  if (uvRegions.length) {
+    compressedAttributes['uv-region'] = uvRegions;
+    attributesMetadata['uv-region'] = {
+      'i3s-attribute-type': 'uv-region'
+    };
+  }
 
   return encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
     ...DracoWriterWorker.options,

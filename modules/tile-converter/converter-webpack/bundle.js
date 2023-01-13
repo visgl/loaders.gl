@@ -51,5 +51,8 @@ module.exports = {
         options: ES6_BABEL_CONFIG
       }
     ]
+  },
+  externals: {
+    'join-images': 'join-images'
   }
 };

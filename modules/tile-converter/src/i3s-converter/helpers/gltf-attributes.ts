@@ -28,7 +28,6 @@ function getB3DMAttributesWithoutBufferView(attributes: AttributesObject): Attri
  * @returns
  */
 export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3DMAttributesData {
-  const gltfMaterials = tileContent.gltf?.materials?.map((material) => ({id: material.id}));
   let nodes =
     tileContent.gltf?.scene?.nodes ||
     tileContent.gltf?.scenes?.[0]?.nodes ||
@@ -64,7 +63,6 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
   const cartesianModelMatrix = tileContent.cartesianModelMatrix;
 
   return {
-    gltfMaterials,
     nodes,
     images,
     cartographicOrigin,
@@ -90,7 +88,8 @@ function prepareNodes(nodes: GLTFNodePostprocessed[]): void {
             indices: {value: primitive?.indices?.value},
             attributes: getB3DMAttributesWithoutBufferView(primitive.attributes),
             material: {
-              id: primitive?.material?.id
+              id: primitive?.material?.id,
+              uniqueId: primitive?.material?.uniqueId
             }
           }))
         }

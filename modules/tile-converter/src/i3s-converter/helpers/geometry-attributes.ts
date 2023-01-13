@@ -10,7 +10,7 @@ const POSITIONS_AND_NORMALS_PER_TRIANGLE = 9;
  * @returns attirbutes with featureCount, featureIds and changed faceRange.
  */
 export function generateAttributes(attributes: ConvertedAttributes): GeometryAttributes {
-  const {positions, normals, texCoords, colors, featureIndices} = attributes;
+  const {positions, normals, texCoords, colors, uvRegions, featureIndices} = attributes;
   const triangleCount = positions.length / POSITIONS_AND_NORMALS_PER_TRIANGLE;
 
   if (!featureIndices.length) {
@@ -21,7 +21,8 @@ export function generateAttributes(attributes: ConvertedAttributes): GeometryAtt
       positions,
       normals,
       texCoords,
-      colors
+      colors,
+      uvRegions
     };
   }
 
@@ -113,6 +114,7 @@ function makeAttributeObjects(attributes: GeometryAttributes): GroupedByFeatureI
     positions,
     normals,
     colors,
+    uvRegions,
     texCoords,
     faceRange = new Uint32Array(0)
   } = attributes;
@@ -122,16 +124,16 @@ function makeAttributeObjects(attributes: GeometryAttributes): GroupedByFeatureI
   let normalsList = new Float32Array(normals);
   let colorsList = new Uint8Array(colors);
   let texCoordsList = new Float32Array(texCoords);
-
-  let faceRangeIndex = 0;
+  let uvRegionsList = new Uint16Array(uvRegions);
 
   for (let index = 0; index < featureIds.length; index++) {
-    const startIndex = faceRange[index + faceRangeIndex];
-    const endIndex = faceRange[index + faceRangeIndex + 1];
+    const startIndex = faceRange[index * 2];
+    const endIndex = faceRange[index * 2 + 1];
 
     const positionsCount = getSliceAttributeCount('positions', startIndex, endIndex);
     const normalsCount = getSliceAttributeCount('normals', startIndex, endIndex);
     const colorsCount = getSliceAttributeCount('colors', startIndex, endIndex);
+    const uvRegionsCount = getSliceAttributeCount('uvRegions', startIndex, endIndex);
     const texCoordsCount = getSliceAttributeCount('texCoords', startIndex, endIndex);
 
     groupedData.push({
@@ -139,15 +141,15 @@ function makeAttributeObjects(attributes: GeometryAttributes): GroupedByFeatureI
       positions: positionsList.slice(0, positionsCount),
       normals: normalsList.slice(0, normalsCount),
       colors: colorsList.slice(0, colorsCount),
+      uvRegions: uvRegionsList.slice(0, uvRegionsCount),
       texCoords: texCoordsList.slice(0, texCoordsCount)
     });
 
     positionsList = positionsList.slice(positionsCount);
     normalsList = normalsList.slice(normalsCount);
     colorsList = colorsList.slice(colorsCount);
+    uvRegionsList = uvRegionsList.slice(uvRegionsCount);
     texCoordsList = texCoordsList.slice(texCoordsCount);
-
-    faceRangeIndex += 1;
   }
 
   return groupedData.sort((first, second) => first.featureId - second.featureId);
@@ -165,7 +167,7 @@ function getSliceAttributeCount(
   startIndex: number,
   endIndex: number
 ): number {
-  const colorsPerVertex = 4;
+  const itemsPerVertex4 = 4;
   const texCoordsPerVertex = 2;
 
   const trianglesCount = endIndex - startIndex + 1;
@@ -176,7 +178,8 @@ function getSliceAttributeCount(
     case 'normals':
       return trianglesCount * POSITIONS_AND_NORMALS_PER_TRIANGLE;
     case 'colors':
-      return vertexCount * colorsPerVertex;
+    case 'uvRegions':
+      return vertexCount * itemsPerVertex4;
     case 'texCoords':
       return vertexCount * texCoordsPerVertex;
     default:
@@ -232,6 +235,7 @@ function groupAttributesAndRangesByFeatureId(
   let positions = new Float32Array(firstAttributeObject.positions);
   let normals = new Float32Array(firstAttributeObject.normals);
   let colors = new Uint8Array(firstAttributeObject.colors);
+  let uvRegions = new Uint16Array(firstAttributeObject.uvRegions);
   let texCoords = new Float32Array(firstAttributeObject.texCoords);
   const range = [0];
 
@@ -245,6 +249,7 @@ function groupAttributesAndRangesByFeatureId(
     positions = concatenateTypedArrays(positions, currentAttributesObject.positions);
     normals = concatenateTypedArrays(normals, currentAttributesObject.normals);
     colors = concatenateTypedArrays(colors, currentAttributesObject.colors);
+    uvRegions = concatenateTypedArrays(uvRegions, currentAttributesObject.uvRegions);
     texCoords = concatenateTypedArrays(texCoords, currentAttributesObject.texCoords);
 
     const groupedObject = unifiedObjects[objIndex];
@@ -258,5 +263,5 @@ function groupAttributesAndRangesByFeatureId(
   range.push(positions.length / POSITIONS_AND_NORMALS_PER_TRIANGLE - 1);
 
   const faceRange = new Uint32Array(range);
-  return {faceRange, featureIds, positions, normals, colors, texCoords, featureCount};
+  return {faceRange, featureIds, positions, normals, colors, uvRegions, texCoords, featureCount};
 }
