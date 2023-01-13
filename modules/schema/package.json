@@ -33,5 +33,6 @@
   },
   "dependencies": {
     "@types/geojson": "^7946.0.7"
-  }
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

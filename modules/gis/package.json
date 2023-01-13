@@ -32,5 +32,6 @@
   },
   "devDependencies": {
     "@math.gl/proj4": "^3.5.1"
-  }
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

@@ -38,5 +38,6 @@
   "dependencies": {
     "fast-xml-parser": "^3.16.0",
     "geotiff": "^1.0.4"
-  }
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
