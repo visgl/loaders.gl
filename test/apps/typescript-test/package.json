@@ -1,7 +1,7 @@
 {
   "name": "loaders.gl-compiler-issue",
   "private": true,
-  "version": "3.3.0-alpha.9",
+  "version": "3.3.0-alpha.10",
   "description": "loaders.gl-compiler-issue demonstration",
   "type": "module",
   "main": "index.js",
@@ -31,7 +31,7 @@
     "typescript": "^4.0.3"
   },
   "dependencies": {
-    "@loaders.gl/shapefile": "3.3.0-alpha.9"
+    "@loaders.gl/shapefile": "3.3.0-alpha.10"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

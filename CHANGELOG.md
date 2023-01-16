@@ -2,6 +2,10 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.10
+
+- feat(tile-converter): i3s - merge materials (#2311)
+
 ## v3.3.0-alpha.9
 
 - feat(wms): Loaders for additional WMS response types. (#2312)
