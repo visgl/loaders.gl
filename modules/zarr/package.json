@@ -31,6 +31,5 @@
   },
   "dependencies": {
     "zarr": "^0.5.0"
-  },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  }
 }

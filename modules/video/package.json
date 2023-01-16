@@ -35,6 +35,5 @@
     "@loaders.gl/loader-utils": "3.3.0-alpha.8",
     "@loaders.gl/worker-utils": "3.3.0-alpha.8",
     "gifshot": "^0.4.5"
-  },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  }
 }

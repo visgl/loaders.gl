@@ -67,6 +67,5 @@
     "@types/thrift": "^0.10.8",
     "@types/varint": "^5.0.0",
     "apache-arrow": "^4.0.0"
-  },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  }
 }

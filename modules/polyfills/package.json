@@ -104,6 +104,5 @@
     "stream-to-async-iterator": "^0.2.0",
     "through": "^2.3.8",
     "web-streams-polyfill": "^3.0.0"
-  },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  }
 }

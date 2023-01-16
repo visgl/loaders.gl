@@ -35,6 +35,5 @@
   },
   "devDependencies": {
     "d3-dsv": "^1.2.0"
-  },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  }
 }
