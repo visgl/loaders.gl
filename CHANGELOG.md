@@ -2,6 +2,18 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.9
+
+- feat(tile-converter): i3s - merge materials (#2311)
+- feat(wms): Loaders for additional WMS response types. (#2312)
+- chore(i3sLoader): Handling unsupported point cloud layer (#2310)
+- fix(i3s): parse not compressed attributes (#2308)
+- feat(tile-converter): save 3DNodeIndexDocument and nodepage (#2307)
+- feat(draco): Upgrade to v1.5.5 (#2296)
+- fix(tile-converter): instant writing in queue (#2306)
+- chore(i3s): add types for arcgis slides (#2299)
+- fix(i3s-converter): fix default arrays in shared-resources.ts (#2298)
+
 ## v3.3.0-alpha.8
 
 - feat(tiles): detect content formats (#2288)
