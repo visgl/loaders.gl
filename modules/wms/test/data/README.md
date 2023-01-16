@@ -1,6 +1,5 @@
 # Data Attribution
 
-
 ## WMTS
 
 - `get-capabilities-response.xml` OGC example data taken from
@@ -14,7 +13,7 @@ OGC license: https://www.ogc.org/license
 
 ## OpenLayers license
 
-> The OpenLayers license requires attribution not only in text but also in binary form, potentially making it contagious to applications built on loaders.gl. Therefore, loaders.gl will only ever use OpenLayers licensed files for test cases and other auxillary code that does not become part of the published application libraries.
+> The OpenLayers license emphasizes attribution not only in text but also in binary form, potentially making this emphasis contagious to applications built on loaders.gl. Therefore, loaders.gl only uses OpenLayers licensed files for test cases and other auxillary code that does not become part of the published application libraries.
 
 ```
 Copyright 2005-2016 OpenLayers Contributors. All rights reserved.

@@ -7,7 +7,7 @@ import type {
   WMSFeatureInfo
   // WMSFeature,
   // WMSLayerDescription
-} from '../wms-types';
+} from './wms-types';
 
 import {XMLLoader} from '@loaders.gl/xml';
 

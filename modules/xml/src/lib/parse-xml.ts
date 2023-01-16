@@ -8,7 +8,7 @@ export function parseXML(text: string, options): any {
     ignoreAttributes: false,
     attributeNamePrefix: '',
     // parseAttributeValue: true,
-    ...options
+    ...options?.xml
   });
 
   const parsedXML = parser.parse(text);

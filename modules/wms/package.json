@@ -13,9 +13,15 @@
   "keywords": [
     "WMS",
     "web map service",
+    "WFS",
+    "web feature service",
+    "WMTS",
+    "web map tile service",
+		"GML",
+		"geographic markup language",
+		"gis",
     "loader",
     "geospatial",
-    "webgl",
     "OGC"
   ],
   "types": "dist/index.d.ts",
@@ -34,7 +40,9 @@
   "dependencies": {
     "@babel/runtime": "^7.3.1",
     "@loaders.gl/loader-utils": "3.3.0-alpha.10",
-    "@loaders.gl/schema": "3.3.0-alpha.10"
+    "@loaders.gl/schema": "3.3.0-alpha.10",
+		"@turf/rewind": "^5.1.5",
+		"deep-strict-equal": "^0.2.0"
   },
   "devDependencies": {
     "xmldom": "0.6.0"
