@@ -11,11 +11,11 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC-standardiz
 > The Open Geospatial Consortium (OGC) has produced a large set of related XML-based standards for web mapping. Some of these standards are not supported by loaders.gl, but are still mentioned here to provide context for the provided functionality (and minimize confusion as the standards have similar names and functionalities):
 
 | OGC Protocol/Format | Supported | Description |
-| --- | --- |
-| [**WMS**](./formats/wms) (Web Map Service) protocol | Y | 
-| [**WFS**](./formats/wfs) (Web Feature Service) protocol | experimental |
-| [**WMTS**](./formats/wmts) (Web Map Tile Service) protocol | experimental |
-| [**GML**](./formats/gml) (Geographic Markup Language) format |  experimental |
+| --- | --- | --- |
+| [**WMS**](./formats/wms.md) (Web Map Service) protocol | Y | 
+| [**WFS**](./formats/wfs.md) (Web Feature Service) protocol | experimental |
+| [**WMTS**](./formats/wmts.md) (Web Map Tile Service) protocol | experimental |
+| [**GML**](./formats/gml.md) (Geographic Markup Language) format |  experimental |
 | [**WCS**] (Web Coverage Service) | N | Load coverage data (e.g. geotiff images for satellite data) from a server. |
 | [**WMC**] (Web Map Context) | No | WMC is used in WMS clients to save the configuration of the currently displayed maps and to load them again later. Depending on the application, the files can also be exchanged between different clients. URL and other information, for example on the individual layers of the map, are stored in the WMC documents |
 | [**OWS Context**] (OGC Web Services Context) | No | Allows configured information resources (service set) to be passed between applications primarily as a collection of services. Supports in-line content as well. |
