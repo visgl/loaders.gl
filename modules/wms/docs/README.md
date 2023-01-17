@@ -4,19 +4,33 @@
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
 </p>
 
-The `@loaders.gl/wms` module provides support for a group of related OGC-standardized web mapping standards:
+# Supported Standards
 
-- [**WMS**](./formats/wms) (Web Map Service) protocol. 
-- [**WFS**](./formats/wfs) (Web Feature Service) protocol. 
-- [**WMTS**](./formats/wmts) (Web Map Tile Service) protocol.
-- [**GML**](./formats/gml) (Geographic Markup Language). 
+The `@loaders.gl/wms` module provides support for a subset of the OGC-standardized XML-based web mapping standards.
+
+> The Open Geospatial Consortium (OGC) has produced a large set of related XML-based standards for web mapping. Some of these standards are not supported by loaders.gl, but are still mentioned here to provide context for the provided functionality (and minimize confusion as the standards have similar names and functionalities):
+
+| OGC Protocol/Format | Supported | Description |
+| --- | --- |
+| [**WMS**](./formats/wms) (Web Map Service) protocol | Y | 
+| [**WFS**](./formats/wfs) (Web Feature Service) protocol | experimental |
+| [**WMTS**](./formats/wmts) (Web Map Tile Service) protocol | experimental |
+| [**GML**](./formats/gml) (Geographic Markup Language) format |  experimental |
+| [**WCS**] (Web Coverage Service) | N | Load coverage data (e.g. geotiff images for satellite data) from a server. |
+| [**WMC**] (Web Map Context) | No | WMC is used in WMS clients to save the configuration of the currently displayed maps and to load them again later. Depending on the application, the files can also be exchanged between different clients. URL and other information, for example on the individual layers of the map, are stored in the WMC documents |
+| [**OWS Context**] (OGC Web Services Context) | No | Allows configured information resources (service set) to be passed between applications primarily as a collection of services. Supports in-line content as well. |
 
 Support for the protocols is provided in the form of:
-- a complement of parsers for the XML responses to the various requests in these protocols.
+- a small collection of parsers for the XML responses from the various requests in these protocols.
 - a short write-up on each protocol to indicate how to use loaders.gl to parse responses
 
 Support for the GML format is provided as
 - A standard "geospatial category" loader that converts the data into GeoJSON format.
+
+## Related Standards
+
+| OGC Protocol/Format | Description |
+| --- | --- |
 
 ## Installation
 

@@ -39,13 +39,15 @@ export type WMSFeatureInfo = {
 
 export type WMSFeature = {
   attributes: Record<string, number | string>;
+  type: string;
+  bounds: {top: number; bottom: number; left: number; right: number};
 };
 
 // DescribeLayer
 
 /** Layer description - response to a WMS `DescribeLayer` request  */
 export type WMSLayerDescription = {
-  // layers: {}[];
+  layers: {}[];
 };
 
 // // WIP

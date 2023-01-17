@@ -2,10 +2,10 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {WMSCapabilitiesLoader, WMSLoaderOptions} from './wms-capabilities-loader';
-import {parseWMSFeatureInfo} from './lib/wms/parse-wms';
+import {parseWMSLayerDescription} from './lib/wms/parse-wms';
 
 /**
- * Loader for the response to the WMS GetFeatureInfo request
+ * Loader for the response to the WMS DescribeLayer request
  */
 export const WMSLayerDescriptionLoader = {
   ...WMSCapabilitiesLoader,
@@ -14,8 +14,8 @@ export const WMSLayerDescriptionLoader = {
   id: 'wms-layer-description',
 
   parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
-    parseWMSFeatureInfo(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSLoaderOptions) => parseWMSFeatureInfo(text, options)
+    parseWMSLayerDescription(new TextDecoder().decode(arrayBuffer), options),
+  parseTextSync: (text: string, options?: WMSLoaderOptions) => parseWMSLayerDescription(text, options)
 };
 
 export const _typecheckWMSFeatureInfoLoader: LoaderWithParser = WMSLayerDescriptionLoader;

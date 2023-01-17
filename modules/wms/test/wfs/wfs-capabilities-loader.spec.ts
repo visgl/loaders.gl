@@ -1,13 +1,13 @@
 // loaders.gl, MIT license
 
-// @ts-nocheck
-
 // Forked from https://github.com/chrelad/openlayers/blob/master/tests/Format/WFSCapabilities/v1_0_0.html
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
 
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
+
+// @ts-nocheck
 
 import {WFSCapabilitiesLoader, WFSCapabilities} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
@@ -47,7 +47,7 @@ test.skip('WFSCapabilitiesLoader#response.xml#OWS', async (t) => {
     'ows:ServiceIdentification serviceTypeVersion is correct'
   );
   t.equal(
-    serviceIdentification.serviceType.value,
+    serviceIdentification.serviceType,
     'OGC WFS',
     'ows:ServiceIdentification serviceType is correct'
   );
@@ -171,50 +171,3 @@ test.skip('WFSCapabilitiesLoader#response.xml#layers', async (t) => {
   t.end();
 });
 
-test.skip('WFSCapabilitiesLoader#response.xml#test_tileMatrixSets', async (t) => {
-  const capabilities = (await load(
-    WFS_CAPABILITIES_RESPONSE_URL,
-    WFSCapabilitiesLoader
-  )) as WFSCapabilities;
-
-  const tileMatrixSets = capabilities.contents.tileMatrixSets;
-  t.ok(tileMatrixSets.BigWorld, 'tileMatrixSets \'BigWorld\' found');
-  const bigWorld = tileMatrixSets.BigWorld;
-  t.equal(bigWorld.identifier, 'BigWorld', 'tileMatrixSets identifier is correct');
-  t.equal(bigWorld.matrixIds.length, 2, 'tileMatrix count is correct');
-  t.equal(bigWorld.matrixIds[0].identifier, '1e6', 'tileMatrix 0 identifier is correct');
-  t.equal(bigWorld.matrixIds[0].matrixHeight, 50000, 'tileMatrix 0 matrixHeight is correct');
-  t.equal(bigWorld.matrixIds[0].matrixWidth, 60000, 'tileMatrix 0 matrixWidth is correct');
-  t.equal(
-    bigWorld.matrixIds[0].scaleDenominator,
-    1000000,
-    'tileMatrix 0 scaleDenominator is correct'
-  );
-  t.equal(bigWorld.matrixIds[0].tileWidth, 256, 'tileMatrix 0 tileWidth is correct');
-  t.equal(bigWorld.matrixIds[0].tileHeight, 256, 'tileMatrix 0 tileHeight is correct');
-  t.equal(
-    bigWorld.matrixIds[0].topLeftCorner.lon,
-    -180,
-    'tileMatrix 0 topLeftCorner.lon is correct'
-  );
-  t.equal(bigWorld.matrixIds[0].topLeftCorner.lat, 84, 'tileMatrix 0 topLeftCorner.lat is correct');
-
-  t.equal(bigWorld.matrixIds[1].identifier, '2.5e6', 'tileMatrix 1 identifier is correct');
-  t.equal(bigWorld.matrixIds[1].matrixHeight, 7000, 'tileMatrix 1 matrixHeight is correct');
-  t.equal(bigWorld.matrixIds[1].matrixWidth, 9000, 'tileMatrix 1 matrixWidth is correct');
-  t.equal(
-    bigWorld.matrixIds[1].scaleDenominator,
-    2500000,
-    'tileMatrix 1 scaleDenominator is correct'
-  );
-  t.equal(bigWorld.matrixIds[1].tileWidth, 256, 'tileMatrix 1 tileWidth is correct');
-  t.equal(bigWorld.matrixIds[1].tileHeight, 256, 'tileMatrix 1 tileHeight is correct');
-  t.equal(
-    bigWorld.matrixIds[1].topLeftCorner.lon,
-    -180,
-    'tileMatrix 1 topLeftCorner.lon is correct'
-  );
-  t.equal(bigWorld.matrixIds[1].topLeftCorner.lat, 84, 'tileMatrix 1 topLeftCorner.lat is correct');
-
-  t.end();
-});

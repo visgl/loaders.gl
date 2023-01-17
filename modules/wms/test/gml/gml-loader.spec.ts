@@ -1,7 +1,5 @@
 // loaders.gl, MIT license
 
-// @ts-nocheck
-
 // Forked from https://github.com/chrelad/openlayers/blob/master/tests/Format/GML/v3.html
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
