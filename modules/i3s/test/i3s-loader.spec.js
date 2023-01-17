@@ -57,7 +57,7 @@ test('I3SLoader#slpk is not supported', async (t) => {
   t.end();
 });
 
-test.only('I3SLoader#point cloud is not supported', async (t) => {
+test('I3SLoader#point cloud is not supported', async (t) => {
   const pointCloudUrl = '@loaders.gl/i3s/test/data/point-cloud/SceneServer/layers/0';
   const message = 'Point Cloud layers currently are not supported by I3SLoader';
 
