@@ -4,26 +4,33 @@
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
 </p>
 
-The `@loaders.gl/wms` module handles the [WMS](https://en.wikipedia.org/wiki/Web_Map_Service) (Web Map Service) standard. WMS was standardized in 1999 as a way to serve geo-referenced web map images over the internet.
+# Supported Standards
 
-## WMS Format Overview
+The `@loaders.gl/wms` module provides support for a subset of the OGC-standardized XML-based web mapping standards.
 
-### Request Types
+> The Open Geospatial Consortium (OGC) has produced a large set of related XML-based standards for web mapping. Some of these standards are not supported by loaders.gl, but are still mentioned here to provide context for the provided functionality (and minimize confusion as the standards have similar names and functionalities):
 
-The WMS standard specifies a number of "request types" that a standards-compliant WMS server should support. loaders.gl provides loaders for all WMS request responses: 
+| OGC Protocol/Format | Supported | Description |
+| --- | --- |
+| [**WMS**](./formats/wms) (Web Map Service) protocol | Y | 
+| [**WFS**](./formats/wfs) (Web Feature Service) protocol | experimental |
+| [**WMTS**](./formats/wmts) (Web Map Tile Service) protocol | experimental |
+| [**GML**](./formats/gml) (Geographic Markup Language) format |  experimental |
+| [**WCS**] (Web Coverage Service) | N | Load coverage data (e.g. geotiff images for satellite data) from a server. |
+| [**WMC**] (Web Map Context) | No | WMC is used in WMS clients to save the configuration of the currently displayed maps and to load them again later. Depending on the application, the files can also be exchanged between different clients. URL and other information, for example on the individual layers of the map, are stored in the WMC documents |
+| [**OWS Context**] (OGC Web Services Context) | No | Allows configured information resources (service set) to be passed between applications primarily as a collection of services. Supports in-line content as well. |
 
-| **WMS Request**        | **Response Loader**         | **Description**                                                                                                                                                                                                                    |
-| ------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GetCapabilities`  | `WMSCapabilitiesLoader`     | Returns parameters about the WMS (such as map image format and WMS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
-| `GetMap`           | `ImageLoader`               | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                                   |
-| `GetFeatureInfo`   | `WMSFeatureInfoLoader`      | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                                 |
-| `DescribeLayer`    | `WMSLayerDescriptionLoader` | gets feature types of the specified layer or layers, which can be further described using WFS or WCS requests. This request is dependent on the Styled Layer Descriptor (SLD) Profile of WMS.                                      |
-| `GetLegendGraphic` | `ImageLoader`               | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                               |
-Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server. The response to `GetCapabilities` contains information about which request types are supported
+Support for the protocols is provided in the form of:
+- a small collection of parsers for the XML responses from the various requests in these protocols.
+- a short write-up on each protocol to indicate how to use loaders.gl to parse responses
 
-## Map images
+Support for the GML format is provided as
+- A standard "geospatial category" loader that converts the data into GeoJSON format.
 
-A WMS server usually serves the map in a bitmap format, e.g. PNG, GIF, JPEG. In addition, vector graphics can be included, such as points, lines, curves and text, expressed in SVG or WebCGM format. The MIME types of the `GetMap` request can be inspected in the response to the `GetCapabilities` request.
+## Related Standards
+
+| OGC Protocol/Format | Description |
+| --- | --- |
 
 ## Installation
 
@@ -32,6 +39,11 @@ npm install @loaders.gl/wms
 npm install @loaders.gl/core
 ```
 
-## Attribution
+## Attributions
 
-...
+`@loaders.gl/wms` relies heavily on `@loaders.gl/xml` to parse the XML heavy OGC standards.
+
+Some test cases are forked from open layers, see license in test directory, 
+however no openlayers code is included in the published module, in order to 
+avoid downstream "binary attribution" requirements on loaders.gl users.
+

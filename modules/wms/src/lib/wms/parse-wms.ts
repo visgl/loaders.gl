@@ -4,10 +4,11 @@ import type {
   WMSCapabilities,
   WMSLayer,
   WMSRequest,
-  WMSFeatureInfo
+  WMSFeatureInfo,
+  WMSLayerDescription
   // WMSFeature,
   // WMSLayerDescription
-} from '../wms-types';
+} from './wms-types';
 
 import {XMLLoader} from '@loaders.gl/xml';
 
@@ -88,5 +89,22 @@ export function parseWMSFeatureInfo(text: string, options): WMSFeatureInfo {
 
 function extractFeature(xmlFeature: any) {
   const xmlFields = xmlFeature || {};
-  return {attributes: xmlFields};
+  // TODO - not correct
+  return {
+    attributes: xmlFields,
+    type: '',
+    bounds: {bottom: 0, top: 0, left: 0, right: 0}
+  };
+}
+
+// GetFeatureInfo
+
+/**
+ * Parses a typed data structure from raw XML for `GetFeatureInfo` response
+ * @note Error handlings is fairly weak
+ */
+export function parseWMSLayerDescription(text: string, options): WMSLayerDescription {
+  const parsedXML = XMLLoader.parseTextSync(text, options);
+  // TODO - implement parser
+  return parsedXML as unknown as WMSLayerDescription;
 }
