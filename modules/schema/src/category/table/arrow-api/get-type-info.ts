@@ -1,5 +1,7 @@
-import {Type} from '../schema/schema';
-import {AnyArray} from '../../types';
+// loaders.gl, MIT license
+
+import {Type} from './arrow-like-type';
+import {AnyArray} from '../../../types';
 
 /**
  * Gets type information from an Arrow type object or "mock" Arrow type object
