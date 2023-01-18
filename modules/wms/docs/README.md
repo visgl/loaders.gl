@@ -16,9 +16,9 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC-standardiz
 | [**WFS**](./formats/wfs.md) (Web Feature Service) protocol | experimental | protocol for serving geo-referenced map features (geometries) over the internet. |
 | [**WMTS**](./formats/wmts.md) (Web Map Tile Service) protocol | experimental | protocol for serving pre-rendered or run-time computed georeferenced map tiles over the Internet. |
 | [**GML**](./formats/gml.md) (Geographic Markup Language) format |  experimental | an XML grammar that describes geographical features. |
-| [**WCS**] (Web Coverage Service) | N | Load coverage data (e.g. geotiff images for satellite data) from a server. |
-| [**WMC**] (Web Map Context) | No | WMC is used in WMS clients to save the configuration of the currently displayed maps and to load them again later. Depending on the application, the files can also be exchanged between different clients. URL and other information, for example on the individual layers of the map, are stored in the WMC documents |
-| [**OWS Context**] (OGC Web Services Context) | No | Allows configured information resources (service set) to be passed between applications primarily as a collection of services. Supports in-line content as well. |
+| [**WCS**](./formats/wcs.md) (Web Coverage Service) | N | Load coverage data (e.g. geotiff images for satellite data) from a server. |
+| [**WMC**](./formats/wmc.md) (Web Map Context) | No | WMC is used in WMS clients to save the configuration of the currently displayed maps and to load them again later. Depending on the application, the files can also be exchanged between different clients. URL and other information, for example on the individual layers of the map, are stored in the WMC documents |
+| [**OWS Context**](./formats/ows-context.md) (OGC Web Services Context) | No | Allows configured information resources (service set) to be passed between applications primarily as a collection of services. Supports in-line content as well. |
 
 Support for the protocols is provided in the form of:
 - a small collection of parsers for the XML responses from the various requests in these protocols.
