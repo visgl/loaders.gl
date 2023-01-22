@@ -18,6 +18,9 @@ export function getTableLength(table: Table): number {
 
     case 'arrow-table':
       return table.data.numRows;
+
+    default:
+      throw new Error('length');
   }
 }
 
