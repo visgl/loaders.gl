@@ -1,9 +1,11 @@
-import type {Schema} from '../schema/schema';
-import type {TableBatch} from '../../category/table/table-types';
+// loaders.gl, MIT license
+
+import type {Schema} from '../../common-types';
+import type {TableBatch} from '../table-types';
 import type {TableBatchAggregator, TableBatchConstructor} from './table-batch-aggregator';
-import BaseTableBatchAggregator from './base-table-batch-aggregator';
-import RowTableBatchAggregator from './row-table-batch-aggregator';
-import ColumnarTableBatchAggregator from './columnar-table-batch-aggregator';
+import {BaseTableBatchAggregator} from './base-table-batch-aggregator';
+import {RowTableBatchAggregator} from './row-table-batch-aggregator';
+import {ColumnarTableBatchAggregator} from './columnar-table-batch-aggregator';
 
 // TODO define interface instead
 type TableBatchBuilderOptions = {
@@ -30,7 +32,7 @@ const DEFAULT_OPTIONS: Required<TableBatchBuilderOptions> = {
 const ERR_MESSAGE = 'TableBatchBuilder';
 
 /** Incrementally builds batches from a stream of rows */
-export default class TableBatchBuilder {
+export class TableBatchBuilder {
   schema: Schema;
   options: Required<TableBatchBuilderOptions>;
 

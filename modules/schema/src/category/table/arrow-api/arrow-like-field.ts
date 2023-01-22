@@ -1,4 +1,6 @@
-import {DataType} from './type';
+// loaders.gl, MIT license
+
+import {DataType} from './arrow-like-type';
 
 /**
  * ArrowJS `Field` API-compatible class for row-based tables
@@ -6,7 +8,7 @@ import {DataType} from './type';
  * A field holds name, nullable, and metadata information about a table "column"
  * A Schema is essentially a list of fields
  */
-export default class Field {
+export class ArrowLikeField {
   name: string;
   type: DataType;
   nullable: boolean;
@@ -28,8 +30,8 @@ export default class Field {
     return this.type && this.type.typeId;
   }
 
-  clone(): Field {
-    return new Field(this.name, this.type, this.nullable, this.metadata);
+  clone(): ArrowLikeField {
+    return new ArrowLikeField(this.name, this.type, this.nullable, this.metadata);
   }
 
   compareTo(other: this): boolean {

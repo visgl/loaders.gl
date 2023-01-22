@@ -1,6 +1,8 @@
+// loaders.gl, MIT license
+
 import {MeshAttribute, MeshAttributes} from './mesh-types';
-import {Schema, Field, FixedSizeList} from '../../lib/schema/schema';
-import {getArrowTypeFromTypedArray} from '../../lib/arrow/arrow-like-type-utils';
+import {Schema, Field} from '../common-types';
+import {getArrowType} from '../table/utilities/arrow-type-utils';
 
 /**
  * Create a schema for mesh attributes data
@@ -10,10 +12,10 @@ import {getArrowTypeFromTypedArray} from '../../lib/arrow/arrow-like-type-utils'
  */
 export function deduceMeshSchema(
   attributes: MeshAttributes,
-  metadata?: Map<string, string>
+  metadata: Map<string, string> = new Map()
 ): Schema {
   const fields = deduceMeshFields(attributes);
-  return new Schema(fields, metadata);
+  return {fields, metadata};
 }
 
 /**
@@ -24,19 +26,18 @@ export function deduceMeshSchema(
  * @returns
  */
 export function deduceMeshField(
-  attributeName: string,
+  name: string,
   attribute: MeshAttribute,
   optionalMetadata?: Map<string, string>
 ): Field {
-  const type = getArrowTypeFromTypedArray(attribute.value);
+  const type = getArrowType(attribute.value);
   const metadata = optionalMetadata ? optionalMetadata : makeMeshAttributeMetadata(attribute);
-  const field = new Field(
-    attributeName,
-    new FixedSizeList(attribute.size, new Field('value', type)),
-    false,
+  return {
+    name,
+    type: {type: 'fixed-size-list', listSize: attribute.size, children: [{name: 'value', type}]},
+    nullable: false,
     metadata
-  );
-  return field;
+  };
 }
 
 /**

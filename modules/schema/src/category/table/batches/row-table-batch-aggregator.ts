@@ -1,12 +1,14 @@
-import type {Schema} from '../schema/schema';
-import type {TableBatch} from '../../category/table/table-types';
+// loaders.gl, MIT license
+
+import type {Schema} from '../../common-types';
+import type {TableBatch} from '../table-types';
 // import type {ArrayRowTableBatch, ObjectRowTableBatch} from '../../category/table';
-import {convertToArrayRow, convertToObjectRow} from '../utils/row-utils';
+import {convertToArrayRow, convertToObjectRow} from '../utilities/row-utils';
 import {TableBatchAggregator, TableBatchOptions} from './table-batch-aggregator';
 
 const DEFAULT_ROW_COUNT = 100;
 
-export default class RowTableBatchAggregator implements TableBatchAggregator {
+export class RowTableBatchAggregator implements TableBatchAggregator {
   schema: Schema;
   options: TableBatchOptions;
 
