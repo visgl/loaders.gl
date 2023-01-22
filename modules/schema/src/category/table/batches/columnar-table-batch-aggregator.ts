@@ -1,12 +1,14 @@
-import type {Schema} from '../schema/schema';
-import type {ColumnarTableBatch, ArrowTableBatch} from '../../category/table/table-types';
+// loaders.gl, MIT license
+
+import type {Schema} from '../../common-types';
+import type {ColumnarTableBatch, ArrowTableBatch} from '../table-types';
 import {TableBatchAggregator} from './table-batch-aggregator';
 
 type ColumnarTableBatchOptions = {};
 
 const DEFAULT_ROW_COUNT = 100;
 
-export default class ColumnarTableBatchAggregator implements TableBatchAggregator {
+export class ColumnarTableBatchAggregator implements TableBatchAggregator {
   schema: Schema;
   length: number = 0;
   allocated: number = 0;

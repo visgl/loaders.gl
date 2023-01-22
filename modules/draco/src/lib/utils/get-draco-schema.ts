@@ -8,7 +8,7 @@ export function getDracoSchema(
   loaderData: DracoLoaderData,
   indices?: MeshAttribute
 ): Schema {
-  const metadataMap = makeMetadata(loaderData.metadata);
+  const metadata = makeMetadata(loaderData.metadata);
   const fields: Field[] = [];
   const namedLoaderDataAttributes = transformAttributesLoaderData(loaderData.attributes);
   for (const attributeName in attributes) {
@@ -24,7 +24,7 @@ export function getDracoSchema(
     const indicesField = getArrowFieldFromAttribute('indices', indices);
     fields.push(indicesField);
   }
-  return new Schema(fields, metadataMap);
+  return {fields, metadata};
 }
 
 function transformAttributesLoaderData(loaderData: {[key: number]: DracoAttribute}): {

@@ -67,6 +67,6 @@ test('DracoLoader#getDracoSchema', (t) => {
   t.ok(schema, 'Makes schema from attributes');
   t.equals(schema.metadata.size, 2, 'Metadata size');
   t.equals(schema.fields.length, 2, 'Number of fields');
-  t.equals(schema.fields[0].metadata.size, 2, 'Attribute metadata size');
+  t.equals(schema.fields[0]?.metadata?.size, 2, 'Attribute metadata size');
   t.end();
 });

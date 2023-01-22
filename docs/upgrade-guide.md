@@ -1,5 +1,15 @@
 # Upgrade Guide
 
+## Upgrading to v4.0
+
+**Schemas** - If you are referencing table schemas returned by parsers, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" loaders.gl schemas. You can recover an Arrow schema as follows
+
+```typescript
+import {deserializeArrowSchema} from '@loaders.gl/schema-utils`;
+const table = load(url, ParquetLoader);
+const arrowSchema = deserializeArrowSchema(table.schema);
+```
+
 ## Upgrading to v3.2
 
 **@loaders.gl/geopackage**

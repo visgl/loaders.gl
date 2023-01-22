@@ -1,6 +1,6 @@
-import {Schema, Field, FixedSizeList, getArrowTypeFromTypedArray} from '@loaders.gl/schema';
+import {Schema, Field, getArrowType} from '@loaders.gl/schema';
 
-export function getOBJSchema(attributes, metadata = {}) {
+export function getOBJSchema(attributes, metadata = {}): Schema {
   let metadataMap;
   for (const key in metadata) {
     metadataMap = metadataMap || new Map();
@@ -15,25 +15,25 @@ export function getOBJSchema(attributes, metadata = {}) {
     const field = getArrowFieldFromAttribute(attributeName, attribute);
     fields.push(field);
   }
-  return new Schema(fields, metadataMap);
+  return {fields, metadata: metadataMap};
 }
 
-function getArrowFieldFromAttribute(attributeName, attribute) {
-  const metadataMap = new Map();
+function getArrowFieldFromAttribute(name: string, attribute): Field {
+  const metadata = new Map();
   for (const key in attribute) {
     if (key !== 'value') {
-      metadataMap.set(key, JSON.stringify(attribute[key]));
+      metadata.set(key, JSON.stringify(attribute[key]));
     }
   }
 
-  const type = getArrowTypeFromTypedArray(attribute.value);
+  const type = getArrowType(attribute.value);
   const isSingleValue = !('size' in attribute) || attribute.size === 1;
   return isSingleValue
-    ? new Field(attributeName, type, false, metadataMap)
-    : new Field(
-      attributeName,
-      new FixedSizeList(attribute.size, new Field('value', type)),
-      false,
-      metadataMap
-    );
+    ? {name, type, nullable: false, metadata}
+    : {
+      name, 
+      type: {type: 'fixed-size-list', listSize: attribute.size, children: [{name: 'values', type}]},
+      nullable: false, 
+      metadata
+    };
 }
