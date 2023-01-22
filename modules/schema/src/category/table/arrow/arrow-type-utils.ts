@@ -1,5 +1,7 @@
+// loaders.gl, MIT license
+
 /*
-import type {TypedArray} from '../../types';
+import type {TypedArray} from '../../../types';
 import {
   DataType,
   Float32,
