@@ -3,7 +3,7 @@
 
 import {Type} from './enum';
 
-import Field from './field';
+import {ArrowLikeField as Field} from './arrow-like-field';
 
 export {Type} from './enum';
 
@@ -24,6 +24,7 @@ export type TypedArray = TypedIntArray | TypedFloatArray;
 
 export type AnyArrayType = Array<any> | TypedIntArray | TypedFloatArray;
 
+/** ArrowLike DataType class */
 export class DataType {
   static isNull(x: any): boolean {
     return x && x.typeId === Type.Null;

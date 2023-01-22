@@ -1,4 +1,4 @@
-import {Schema, Field, Float32, Int32, Uint8, FixedSizeList} from '@loaders.gl/schema';
+import {Schema, Field} from '@loaders.gl/schema';
 import type {PCDHeader} from './pcd-types';
 
 type SchemaMetadata = Map<string, any>;
@@ -15,26 +15,25 @@ export function getPCDSchema(PCDheader: PCDHeader, metadata: SchemaMetadata): Sc
   const fields: Field[] = [];
 
   if (offset.x !== undefined) {
-    fields.push(
-      new Field('POSITION', new FixedSizeList(3, new Field('xyz', new Float32())), false)
-    );
+    fields.push({
+      name: 'POSITION',
+      type: {type: 'fixed-size-list', listSize: 3, children: [{name: 'xyz', type: 'float32'}]}
+    });
   }
 
   if (offset.normal_x !== undefined) {
-    fields.push(new Field('NORMAL', new FixedSizeList(3, new Field('xyz', new Float32())), false));
+    fields.push({
+      name: 'NORMAL',
+      type: {type: 'fixed-size-list', listSize: 3, children: [{name: 'xyz', type: 'float32'}]}
+    });
   }
 
   if (offset.rgb !== undefined) {
-    fields.push(new Field('COLOR_0', new FixedSizeList(3, new Field('rgb', new Uint8())), false));
+    fields.push({
+      name: 'COLOR_0',
+      type: {type: 'fixed-size-list', listSize: 3, children: [{name: 'rgb', type: 'uint8'}]}
+    });
   }
 
-  if (offset.intensity !== undefined) {
-    fields.push(new Field('intensity', new Field('intensity', new Float32()), false));
-  }
-
-  if (offset.label !== undefined) {
-    fields.push(new Field('label', new Field('label', new Int32()), false));
-  }
-
-  return new Schema(fields, metadata);
+  return {fields, metadata};
 }
