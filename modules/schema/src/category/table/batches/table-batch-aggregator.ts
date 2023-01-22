@@ -1,5 +1,7 @@
-import type {Schema} from '../schema/schema';
-import type {TableBatch} from '../../category/table/table-types';
+// loaders.gl, MIT license
+
+import type {Schema} from '../../common-types';
+import type {TableBatch} from '../table-types';
 
 export interface TableBatchOptions {
   batchSize: number | string;

@@ -1,6 +1,6 @@
 /* eslint-disable max-statements */
 import test from 'tape-promise/tape';
-import {ParquetSchema, convertParquetToArrowSchema} from '@loaders.gl/parquet';
+import {ParquetSchema, convertParquetSchema} from '@loaders.gl/parquet';
 
 // tslint:disable:ter-prefer-arrow-callback
 
@@ -478,7 +478,7 @@ test('ParquetSchema#should assign correct defaults in a nested schema with repea
   assert.end();
 });
 
-test('ParquetSchema#should convet to arrow schema', assert => {
+test('ParquetSchema#should convert to arrow schema', assert => {
   const schema = new ParquetSchema({
     name: { type: 'UTF8' },
     stock: {
@@ -491,13 +491,11 @@ test('ParquetSchema#should convet to arrow schema', assert => {
     price: { type: 'DOUBLE' }
   });
 
-  const arrowSchema = convertParquetToArrowSchema(schema);
+  const arrowSchema = convertParquetSchema(schema);
 
-  assert.ok(arrowSchema);
-  assert.ok(arrowSchema.fields);
-  assert.ok(arrowSchema.fields[0].name === 'name');
-  assert.ok(arrowSchema.fields[0].nullable === false);
-  assert.equal(arrowSchema.fields[0].metadata.get('encoding'), 'PLAIN');
+  assert.ok(arrowSchema.fields[0].name === 'name', 'field name set');
+  assert.ok(!arrowSchema.fields[0].nullable, 'field.nullable correct');
+  assert.equal(arrowSchema.fields[0]?.metadata?.get('encoding'), 'PLAIN', 'metadata set');
 
   assert.ok(arrowSchema.fields[1]);
   // @ts-ignore
