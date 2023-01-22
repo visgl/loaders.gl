@@ -9,7 +9,7 @@ import {
   FixedSizeListVector
 } from 'apache-arrow';
 import {AbstractVector} from 'apache-arrow/vector';
-import {getArrowType, getArrowVector} from '../../lib/arrow/arrow-type-utils';
+import {getArrowType, getArrowVector} from '../table/arrow/arrow-type-utils';
 import type {Mesh} from './mesh-types';
 import {makeMeshAttributeMetadata} from './deduce-mesh-schema';
 

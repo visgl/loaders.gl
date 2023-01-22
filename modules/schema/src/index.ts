@@ -1,7 +1,7 @@
 // COMMON CATEGORY
 export type {TypedArray, NumberArray, AnyArray} from './types';
 
-export type {Batch} from './category/common';
+export type {Schema, Field, DataType, Batch} from './category/common-types';
 
 // TABLE CATEGORY TYPES
 export type {
@@ -23,12 +23,25 @@ export type {
 } from './category/table/table-types';
 
 // TABLE CATEGORY UTILS
-export {default as TableBatchBuilder} from './lib/batches/table-batch-builder';
-export type {TableBatchAggregator} from './lib/batches/table-batch-aggregator';
-export {default as RowTableBatchAggregator} from './lib/batches/row-table-batch-aggregator';
-export {default as ColumnarTableBatchAggregator} from './lib/batches/columnar-table-batch-aggregator';
+export {TableBatchBuilder} from './category/table/batches/table-batch-builder';
+export type {TableBatchAggregator} from './category/table/batches/table-batch-aggregator';
+export {RowTableBatchAggregator} from './category/table/batches/row-table-batch-aggregator';
+export {ColumnarTableBatchAggregator} from './category/table/batches/columnar-table-batch-aggregator';
 
-export {convertToObjectRow, convertToArrayRow} from './lib/utils/row-utils';
+export {
+  getTableLength,
+  getTableNumCols,
+  getTableCell,
+  getTableRowShape,
+  getTableColumnIndex,
+  getTableColumnName,
+  getTableRowAsObject,
+  getTableRowAsArray
+} from './category/table/utilities/table-accessors';
+
+export {ArrowLikeTable} from './category/table/arrow-api/arrow-like-table';
+
+export {convertToObjectRow, convertToArrayRow} from './category/table/utilities/row-utils';
 
 // MESH CATEGORY
 export type {
@@ -104,9 +117,9 @@ export type {
 
 // SCHEMA
 export {
-  Schema,
-  Field,
-  DataType,
+  Schema as ArrowLikeSchema,
+  Field as ArrowLikeField,
+  DataType as ArrowLikeDataType,
   Null,
   Binary,
   Bool,
@@ -140,13 +153,12 @@ export {
   IntervalYearMonth,
   FixedSizeList,
   Struct
-} from './lib/schema/schema';
+} from './category/table/arrow-api';
 
 // EXPERIMENTAL APIs
 
 // SCHEMA UTILS
-export {deduceTypeFromColumn, deduceTypeFromValue} from './lib/schema-utils/deduce-column-type';
-export {getTypeInfo} from './lib/arrow/get-type-info';
-export {getArrowTypeFromTypedArray} from './lib/arrow/arrow-like-type-utils';
+export {getTypeInfo} from './category/table/arrow-api/get-type-info';
+export {getArrowType} from './category/table/utilities/arrow-type-utils';
 
 export {default as AsyncQueue} from './lib/utils/async-queue';

@@ -1,4 +1,6 @@
-import type {Schema} from '../../lib/schema/schema';
+// loaders.gl, MIT license
+
+import type {Schema} from '../common-types';
 import type {TypedArray} from '../../types';
 import type {ColumnarTable, ArrowTable} from '../table/table-types';
 

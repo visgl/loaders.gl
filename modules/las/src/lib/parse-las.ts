@@ -2,7 +2,7 @@
 import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../las-loader';
 import type {LASMesh, LASHeader} from './las-types';
-import {Schema, getMeshBoundingBox /* , convertMesh */} from '@loaders.gl/schema';
+import {getMeshBoundingBox /* , convertMesh */} from '@loaders.gl/schema';
 import {LASFile} from './laslaz-decoder';
 import {getLASSchema} from './get-las-schema';
 
@@ -49,7 +49,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
     loader: 'las',
     loaderData: {} as LASHeader,
     // shape: 'mesh',
-    schema: new Schema([]),
+    schema: {fields: [], metadata: new Map()},
     header: {
       vertexCount: 0,
       boundingBox: [
