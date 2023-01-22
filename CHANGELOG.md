@@ -1,5 +1,12 @@
 # CHANGELOG for loaders.gl
 
+## v3.2.13
+
+- chore(i3sLoader): Handling unsupported point cloud layer (#2310)
+- fix(i3s): parse not compressed attributes (#2308)
+- chore(i3s): add types for arcgis slides (#2299)
+- fix(i3s-converter): fix default arrays in shared-resources.ts (#2298)
+
 ## v3.2.12
 
 - fix(tile-converter): always calculate refinement percentage (#2286)
