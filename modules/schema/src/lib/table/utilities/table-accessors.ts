@@ -167,8 +167,8 @@ export function getTableRowAsObject(
             table.data[table.schema.fields[i].name][rowIndex];
         }
         return objectRow;
-      } else {
         // @eslint-disable-line no-else-return
+      } else {
         const objectRow: {[columnName: string]: unknown} = target || {};
         for (const [name, column] of Object.entries(table.data)) {
           objectRow[name] = column[rowIndex];
@@ -225,8 +225,8 @@ export function getTableRowAsArray(
           arrayRow[i] = table.data[table.schema.fields[i].name][rowIndex];
         }
         return arrayRow;
+        // @eslint-disable-next-line no-else-return
       } else {
-        // @eslint-disable-line no-else-return
         const arrayRow: unknown[] = target || [];
         let i = 0;
         for (const column of Object.values(table.data)) {
