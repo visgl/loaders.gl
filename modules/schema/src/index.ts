@@ -1,7 +1,7 @@
 // COMMON CATEGORY
-export type {TypedArray, NumberArray, AnyArray} from './types';
+export type {TypedArray, NumberArray, AnyArray} from './types/types';
 
-export type {Schema, Field, DataType, Batch} from './category/common-types';
+export type {Schema, Field, DataType, Batch} from './types/schema';
 
 // TABLE CATEGORY TYPES
 export type {
@@ -12,7 +12,7 @@ export type {
   ColumnarTable,
   ArrowTable,
   Tables
-} from './category/table/table-types';
+} from './types/category-table';
 export type {
   TableBatch,
   RowArrayTableBatch,
@@ -20,13 +20,13 @@ export type {
   GeoJSONRowTableBatch,
   ColumnarTableBatch,
   ArrowTableBatch
-} from './category/table/table-types';
+} from './types/category-table';
 
 // TABLE CATEGORY UTILS
-export {TableBatchBuilder} from './category/table/batches/table-batch-builder';
-export type {TableBatchAggregator} from './category/table/batches/table-batch-aggregator';
-export {RowTableBatchAggregator} from './category/table/batches/row-table-batch-aggregator';
-export {ColumnarTableBatchAggregator} from './category/table/batches/columnar-table-batch-aggregator';
+export {TableBatchBuilder} from './lib/table/batches/table-batch-builder';
+export type {TableBatchAggregator} from './lib/table/batches/table-batch-aggregator';
+export {RowTableBatchAggregator} from './lib/table/batches/row-table-batch-aggregator';
+export {ColumnarTableBatchAggregator} from './lib/table/batches/columnar-table-batch-aggregator';
 
 export {
   getTableLength,
@@ -37,11 +37,11 @@ export {
   getTableColumnName,
   getTableRowAsObject,
   getTableRowAsArray
-} from './category/table/utilities/table-accessors';
+} from './lib/table/utilities/table-accessors';
 
-export {ArrowLikeTable} from './category/table/arrow-api/arrow-like-table';
+export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 
-export {convertToObjectRow, convertToArrayRow} from './category/table/utilities/row-utils';
+export {convertToObjectRow, convertToArrayRow} from './lib/table/utilities/row-utils';
 
 // MESH CATEGORY
 export type {
@@ -51,22 +51,22 @@ export type {
   MeshGeometry,
   MeshAttribute,
   MeshAttributes
-} from './category/mesh/mesh-types';
+} from './types/category-mesh';
 
-export {getMeshSize, getMeshBoundingBox} from './category/mesh/mesh-utils';
+export {getMeshSize, getMeshBoundingBox} from './lib/mesh/mesh-utils';
 // Commented out due to https://github.com/visgl/deck.gl/issues/6906 and https://github.com/visgl/loaders.gl/issues/2177
 // export {convertMesh} from './category/mesh/convert-mesh';
 export {
   deduceMeshSchema,
   deduceMeshField,
   makeMeshAttributeMetadata
-} from './category/mesh/deduce-mesh-schema';
+} from './lib/mesh/deduce-mesh-schema';
 
 // TEXTURES
-export type {TextureLevel, GPUTextureFormat} from './category/texture/texture';
+export type {TextureLevel, GPUTextureFormat} from './types/category-texture';
 
 // IMAGES
-export type {ImageDataType, ImageType, ImageTypeEnum} from './category/image/image';
+export type {ImageDataType, ImageType, ImageTypeEnum} from './types/category-image';
 
 // TYPES
 // GIS CATEGORY - GEOJSON
@@ -84,9 +84,9 @@ export type {
   Polygon,
   MultiPolygon,
   GeometryCollection
-} from './category/gis';
+} from './types/category-gis';
 
-export type {GeojsonGeometryInfo} from './category/gis';
+export type {GeojsonGeometryInfo} from './types/category-gis';
 
 // GIS CATEGORY - FLAT GEOJSON
 export type {
@@ -97,7 +97,7 @@ export type {
   FlatPoint,
   FlatLineString,
   FlatPolygon
-} from './category/gis';
+} from './types/category-gis';
 
 // GIS CATEGORY - BINARY
 export type {
@@ -107,13 +107,13 @@ export type {
   BinaryLineGeometry,
   BinaryPolygonGeometry,
   BinaryAttribute
-} from './category/gis';
+} from './types/category-gis';
 export type {
   BinaryFeatures,
   BinaryPointFeatures,
   BinaryLineFeatures,
   BinaryPolygonFeatures
-} from './category/gis';
+} from './types/category-gis';
 
 // SCHEMA
 export {
@@ -153,12 +153,12 @@ export {
   IntervalYearMonth,
   FixedSizeList,
   Struct
-} from './category/table/arrow-api';
+} from './lib/table/arrow-api';
 
 // EXPERIMENTAL APIs
 
 // SCHEMA UTILS
-export {getTypeInfo} from './category/table/arrow-api/get-type-info';
-export {getArrowType} from './category/table/utilities/arrow-type-utils';
+export {getTypeInfo} from './lib/table/arrow-api/get-type-info';
+export {getArrowType} from './lib/table/utilities/arrow-type-utils';
 
 export {default as AsyncQueue} from './lib/utils/async-queue';
