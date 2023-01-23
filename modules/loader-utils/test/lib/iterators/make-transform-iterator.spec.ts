@@ -34,7 +34,7 @@ test('byteLengthTransform', async (t) => {
     }
   });
 
-  const transformedChunks = [];
+  const transformedChunks: ArrayBuffer[] = [];
   for await (const chunk of transformIterator) {
     transformedChunks.push(chunk);
   }

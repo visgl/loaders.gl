@@ -2,7 +2,7 @@
 
 import type {JSONLoaderOptions} from '../../json-loader';
 
-export default function parseJSONSync(jsonText: string, options: JSONLoaderOptions) {
+export function parseJSONSync(jsonText: string, options: JSONLoaderOptions) {
   try {
     const json = JSON.parse(jsonText);
     if (options.json?.table) {

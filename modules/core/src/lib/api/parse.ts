@@ -1,13 +1,7 @@
 // loaders.gl, MIT license
 
-import type {
-  DataType,
-  Loader,
-  LoaderContext,
-  LoaderOptions,
-  LoaderOptionsType
-} from '@loaders.gl/loader-utils';
-// import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
+import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -28,7 +22,7 @@ export async function parse<
   loader: LoaderT,
   options?: OptionsT,
   context?: LoaderContext
-): Promise<any>; // Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT>>;
 
 export async function parse(
   data: DataType | Promise<DataType>,

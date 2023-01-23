@@ -1,6 +1,6 @@
 // LASER (LAS) FILE FORMAT
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parseLAS} from './lib/parse-las';
+import type {LASMesh} from './lib/las-types';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -24,13 +24,10 @@ const DEFAULT_LAS_OPTIONS: LASLoaderOptions = {
   }
 };
 
-type PromiseType<T> = T extends Promise<infer Return> ? Return : T;
-type Type = PromiseType<ReturnType<typeof parseLAS>>;
-
 /**
  * Loader for the LAS (LASer) point cloud format
  */
-export const LASLoader: Loader<Type, never, LASLoaderOptions> = {
+export const LASLoader: Loader<LASMesh, never, LASLoaderOptions> = {
   name: 'LAS',
   id: 'las',
   module: 'las',

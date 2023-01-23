@@ -6,8 +6,8 @@ const NDJSON_PATH = '@loaders.gl/json/test/data/ndjson.ndjson';
 const NDJSON_INVALID_PATH = '@loaders.gl/json/test/data/ndjson-invalid.ndjson';
 
 test('NDJSONLoader#load(ndjson.ndjson)', async (t) => {
-  const data = await load(NDJSON_PATH, NDJSONLoader);
-  t.equal(data.length, 11, 'Correct number of rows received');
+  const table = await load(NDJSON_PATH, NDJSONLoader);
+  t.equal(table.data.length, 11, 'Correct number of rows received');
   t.end();
 });
 

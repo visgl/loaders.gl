@@ -60,7 +60,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
     attributes: {
       POSITION: data.attributes.POSITION.value
     },
-    indices: data.indices.value
+    indices: data.indices?.value
   };
   const POINTCLOUD = {
     attributes: {
@@ -109,7 +109,7 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
     attributes: {
       POSITION: data.attributes.POSITION.value
     },
-    indices: data.indices.value
+    indices: data.indices?.value
   };
   const POINTCLOUD = {
     attributes: {
@@ -163,7 +163,7 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
     if (!tc.options.draco?.pointcloud) {
       // Copy indices buffer because it won't be available after being sent to the worker
       // @ts-expect-error
-      mesh.indices = cloneTypeArray(data.indices.value);
+      mesh.indices = cloneTypeArray(data.indices?.value);
     }
     const meshSize = getMeshSize(mesh.attributes);
 
@@ -206,7 +206,7 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
     attributes: {
       POSITION: data.attributes.POSITION.value
     },
-    indices: data.indices.value
+    indices: data.indices?.value
   };
   const POINTCLOUD = {
     attributes: {
@@ -255,7 +255,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 
   const meshAttributes = {
     POSITION: data.attributes.POSITION.value,
-    indices: data.indices.value
+    indices: data.indices?.value
   };
   const pointCloudAttributes = {
     POSITION: data.attributes.POSITION.value
@@ -299,7 +299,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
   const meshAttributes = {
     POSITION: data.attributes.POSITION.value,
     texCoord,
-    indices: data.indices.value
+    indices: data.indices?.value
   };
 
   const compressedMesh = await encode(meshAttributes, DracoWriter);
@@ -314,7 +314,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
   const meshAttributes2 = {
     POSITION: data.attributes.POSITION.value,
     texCoords: texCoord,
-    indices: data.indices.value
+    indices: data.indices?.value
   };
 
   const compressedMesh2 = await encode(meshAttributes2, DracoWriter);
@@ -336,7 +336,7 @@ test('DracoWriter#geometry metadata', async (t) => {
 
   const attributes = {
     POSITION: data.attributes.POSITION.value,
-    indices: data.indices.value
+    indices: data.indices?.value
   };
 
   let compressedMesh = await encode(attributes, DracoWriter, {
@@ -396,7 +396,7 @@ test('DracoWriter#attributes metadata', async (t) => {
 
   const attributes = {
     POSITION: data.attributes.POSITION.value,
-    indices: data.indices.value
+    indices: data.indices?.value
   };
 
   let compressedMesh = await encode(attributes, DracoWriter, {
@@ -431,7 +431,7 @@ test('DracoWriter#attributes metadata', async (t) => {
   validateMeshCategoryData(t, data2);
   validatePositionMetadata(t, data2);
   t.equals(
-    Object.keys(data2.schema.fields[0].metadata).length,
+    Object.keys(data2.schema.fields[0]?.metadata || {}).length,
     7,
     'Schema: Attribute metadata correct number of keys'
   );
@@ -449,7 +449,7 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
   const attributes = {
     POSITION: data.attributes.POSITION.value,
     featureId: data.attributes.POSITION.value,
-    indices: data.indices.value
+    indices: data.indices?.value
   };
   const compressedMesh = await encode(attributes, DracoWriter, {
     draco: {

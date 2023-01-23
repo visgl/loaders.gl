@@ -3,8 +3,8 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {JSONLoaderOptions} from './json-loader';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import parseJSONSync from './lib/parsers/parse-json';
-import parseJSONInBatches from './lib/parsers/parse-json-in-batches';
+import {parseJSONSync} from './lib/parsers/parse-json';
+import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

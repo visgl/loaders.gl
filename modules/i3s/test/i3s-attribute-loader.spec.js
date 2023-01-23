@@ -1,7 +1,9 @@
 import test from 'tape-promise/tape';
-// @ts-expect-error
-import {I3SAttributeLoader, loadFeatureAttributes} from '@loaders.gl/i3s/i3s-attribute-loader';
+
 import {load} from '@loaders.gl/core';
+import {I3SAttributeLoader} from '@loaders.gl/i3s';
+// @ts-expect-error
+import {loadFeatureAttributes} from '@loaders.gl/i3s/i3s-attribute-loader';
 
 const objectIdsUrl = '@loaders.gl/i3s/test/data/attributes/f_0/0/index.bin';
 const namesUrl = '@loaders.gl/i3s/test/data/attributes/f_1/0/index.bin';
@@ -180,7 +182,7 @@ test('I3SAttributeLoader# should load OBJECTID attribute', async (t) => {
   const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
   t.ok(attributes);
   t.ok(attributes.OBJECTID);
-  t.equal(attributes.OBJECTID[0], objecId0);
+  t.equal(attributes.OBJECTID?.[0], objecId0);
   t.end();
 });
 
@@ -192,7 +194,7 @@ test('I3SAttributeLoader# should load string attribute', async (t) => {
   const attributes = await load(namesUrl, I3SAttributeLoader, options);
   t.ok(attributes);
   t.ok(attributes.NAME);
-  t.equal(attributes.NAME[602], name602);
+  t.equal(attributes.NAME?.[602], name602);
   t.end();
 });
 
@@ -204,7 +206,7 @@ test('I3SAttributeLoader# should load float attribute', async (t) => {
   const attributes = await load(heightRoofUrl, I3SAttributeLoader, options);
   t.ok(attributes);
   t.ok(attributes.HEIGHTROOF);
-  t.equal(attributes.HEIGHTROOF[0], heightRoof0);
+  t.equal(attributes.HEIGHTROOF?.[0], heightRoof0);
   t.end();
 });
 
