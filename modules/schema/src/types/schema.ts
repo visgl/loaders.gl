@@ -61,13 +61,14 @@ export type DataType =
 /**
  * SchemaMetadata
  */
-export type SchemaMetadata = Map<string, string>;
+export type SchemaMetadata = Record<string, string>;
+export type FieldMetadata = Record<string, string>;
 
 export type Field = {
   name: string;
   type: DataType;
   nullable?: boolean;
-  metadata?: Map<string, string>;
+  metadata?: FieldMetadata;
 };
 
 /**
