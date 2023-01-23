@@ -21,10 +21,11 @@ export function encodeTableAsCSV(
   table: Table,
   options: CSVWriterOptions = {csv: {useDisplayNames: true}}
 ): string {
+  const useDisplayNames = options.useDisplayNames || options.csv?.useDisplayNames;
+
   const fields = table.schema?.fields || [];
 
   const columnNames = fields.map((f) => {
-    const useDisplayNames = options.useDisplayNames || options.csv?.useDisplayNames;
     // This is a leaky abstraction, assuming Kepler metadata
     const displayName = f.metadata?.displayName;
     return useDisplayNames && typeof displayName === 'string' ? displayName : f.name;

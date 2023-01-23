@@ -26,5 +26,6 @@ export function encodeTableAsJSON(table: Table, options: JSONWriterOptions = {})
     // const wrappedRow = options.wrapper ? options.wrapper(row) : row;
     strings.push(JSON.stringify(row));
   }
-  return `{${strings.join(',')}}`;
+  return `[${strings.join(',')}]`;
 }
+

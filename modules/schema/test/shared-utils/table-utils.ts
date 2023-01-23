@@ -30,13 +30,15 @@ export function makeTestTable(columns: TestTableColumn[]): Table {
 
 export function makeTestTableFromSchemaAndColumns(options: {
   schema: Schema;
-  columns: ArrayLike<any>;
-}) {
-  const table: Table = {
-    shape: 'columnar-table',
-    schema: {fields: [], metadata: {}},
-    data: {}
-  };
+  columns: ArrayLike<any>[];
+}): Table {
+  const {schema, columns} = options;
 
-  return table;
+  const data: {[key: string]: ArrayLike<any>} = {};
+  for (let i = 0; i < schema.fields.length; ++i) {
+    const columnName = schema.fields[i].name;
+    data[columnName] = columns[i]
+  }
+
+  return {shape: 'columnar-table', schema, data};
 }
