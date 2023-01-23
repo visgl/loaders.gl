@@ -45,7 +45,7 @@ export type ParseGMLContext = {
  */
 export function parseGML(text: string, options) {
   // GeoJSON | null {
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
 
   options = {transformCoords: noTransform, stride: 2, ...options};
   const context = createChildContext(parsedXML, options, {});
