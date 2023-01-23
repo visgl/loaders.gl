@@ -43,8 +43,7 @@ export function convertParquetSchema(parquetSchema: ParquetSchema): Schema {
   const fields = getFields(parquetSchema.schema);
 
   // const metadata = parquetMetadata && getSchemaMetadata(parquetMetadata);
-  // return {fields, metadata: metadata);  
-  return {fields, metadata: new Map()};
+  return {fields, metadata: {}};
 }
 
 function getFields(schema: FieldDefinition): Field[] {
@@ -81,6 +80,7 @@ function getFieldMetadata(field: ParquetField): Map<string, string> {
   return metadata;
 }
 
+/*
 function getSchemaMetadata(parquetMetadata: FileMetaData): Map<string, string> {
   const metadata = new Map();
 
@@ -93,3 +93,4 @@ function getSchemaMetadata(parquetMetadata: FileMetaData): Map<string, string> {
 
   return metadata;
 }
+*/

@@ -22,9 +22,9 @@ test('PCDLoader#parse(text)', async (t) => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {worker: false});
   validateMeshCategoryData(t, data);
 
-  t.equal(data.schema.fields.length, 2, 'schema field count is correct');
-  t.equal(data.schema.metadata.get('mode'), '0', 'schema metadata is correct');
-  t.ok(data.schema.metadata.get('boundingBox'), 'schema metadata is correct');
+  t.equal(Object.keys(data.schema.fields).length, 2, 'schema field count is correct');
+  t.equal(data.schema.metadata.mode, '0', 'schema metadata is correct');
+  t.ok(data.schema.metadata.boundingBox, 'schema metadata is correct');
 
   const positionField = data.schema.fields.find((field) => field.name === 'POSITION');
   t.equal(positionField.type.listSize, 3, 'schema size correct');
