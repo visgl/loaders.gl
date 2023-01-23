@@ -32,7 +32,7 @@ function deduceSchemaForColumnarTable(columnarTable: {[key: string]: unknown}): 
     const field = deduceFieldFromColumn(column, columnName);
     fields.push(field);
   }
-  return {fields, metadata: new Map()};
+  return {fields, metadata: {}};
 }
 
 function deduceSchemaForRowTable(rowTable: unknown[][] | {[key: string]: unknown}[]): Schema {
@@ -48,7 +48,7 @@ function deduceSchemaForRowTable(rowTable: unknown[][] | {[key: string]: unknown
     fields.push(deduceFieldFromValue(value, columnName));
   }
 
-  return {fields, metadata: new Map()};
+  return {fields, metadata: {}};
 }
 
 function deduceFieldFromColumn(column: unknown, name: string): Field {
@@ -58,7 +58,7 @@ function deduceFieldFromColumn(column: unknown, name: string): Field {
       name,
       type,
       nullable: false,
-      metadata: new Map()
+      metadata: {}
     };
   }
 
@@ -70,7 +70,7 @@ function deduceFieldFromColumn(column: unknown, name: string): Field {
       name,
       type,
       nullable: true,
-      metadata: new Map()
+      metadata: {}
     };
   }
 
@@ -83,6 +83,6 @@ function deduceFieldFromValue(value: unknown, name: string) {
     name,
     type,
     nullable: true,
-    metadata: new Map()
+    metadata: {}
   };
 }

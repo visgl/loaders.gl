@@ -49,7 +49,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
     loader: 'las',
     loaderData: {} as LASHeader,
     // shape: 'mesh',
-    schema: {fields: [], metadata: new Map()},
+    schema: {fields: [], metadata: {}},
     header: {
       vertexCount: 0,
       boundingBox: [

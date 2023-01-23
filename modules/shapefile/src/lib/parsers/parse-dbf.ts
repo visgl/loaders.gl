@@ -171,7 +171,7 @@ function parseState(
           result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
           result.schema = {
             fields: result.dbfFields.map((dbfField) => makeField(dbfField)),
-            metadata: new Map()
+            metadata: {}
           };
 
           state = STATE.FIELD_PROPERTIES;
@@ -375,19 +375,19 @@ function parseCharacter(text: string): string | null {
 function makeField({name, dataType, fieldLength, decimal}: DBFField): Field {
   switch (dataType) {
     case 'B':
-      return {name, type: 'float64', nullable: true, metadata: new Map()};
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'C':
-      return {name, type: 'utf8', nullable: true, metadata: new Map()};
+      return {name, type: 'utf8', nullable: true, metadata: {}};
     case 'F':
-      return {name, type: 'float64', nullable: true, metadata: new Map()};
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'N':
-      return {name, type: 'float64', nullable: true, metadata: new Map()};
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'O':
-      return {name, type: 'float64', nullable: true, metadata: new Map()};
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'D':
-      return {name, type: 'timestamp-millisecond', nullable: true, metadata: new Map()};
+      return {name, type: 'timestamp-millisecond', nullable: true, metadata: {}};
     case 'L':
-      return {name, type: 'bool', nullable: true, metadata: new Map()};
+      return {name, type: 'bool', nullable: true, metadata: {}};
     default:
       throw new Error('Unsupported data type');
   }

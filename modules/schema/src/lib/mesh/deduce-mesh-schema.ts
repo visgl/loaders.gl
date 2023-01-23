@@ -12,7 +12,7 @@ import {getArrowType} from '../table/utilities/arrow-type-utils';
  */
 export function deduceMeshSchema(
   attributes: MeshAttributes,
-  metadata: Map<string, string> = new Map()
+  metadata: Record<string, string> = {}
 ): Schema {
   const fields = deduceMeshFields(attributes);
   return {fields, metadata};
@@ -28,7 +28,7 @@ export function deduceMeshSchema(
 export function deduceMeshField(
   name: string,
   attribute: MeshAttribute,
-  optionalMetadata?: Map<string, string>
+  optionalMetadata?: Record<string, string>
 ): Field {
   const type = getArrowType(attribute.value);
   const metadata = optionalMetadata ? optionalMetadata : makeMeshAttributeMetadata(attribute);
@@ -59,16 +59,16 @@ function deduceMeshFields(attributes: MeshAttributes): Field[] {
  * @param attribute
  * @returns
  */
-export function makeMeshAttributeMetadata(attribute: MeshAttribute): Map<string, string> {
-  const result = new Map();
+export function makeMeshAttributeMetadata(attribute: MeshAttribute): Record<string, string> {
+  const result: Record<string, string> = {};
   if ('byteOffset' in attribute) {
-    result.set('byteOffset', attribute.byteOffset!.toString(10));
+    result.byteOffset = attribute.byteOffset!.toString(10);
   }
   if ('byteStride' in attribute) {
-    result.set('byteStride', attribute.byteStride!.toString(10));
+    result.byteStride = attribute.byteStride!.toString(10);
   }
   if ('normalized' in attribute) {
-    result.set('normalized', attribute.normalized!.toString());
+    result.normalized = attribute.normalized!.toString();
   }
   return result;
 }
