@@ -479,7 +479,7 @@ test('ParquetSchema#should assign correct defaults in a nested schema with repea
 });
 
 test('ParquetSchema#should convert to arrow schema', assert => {
-  const schema = new ParquetSchema({
+  const parquetSchema = new ParquetSchema({
     name: { type: 'UTF8' },
     stock: {
       repeated: true,
@@ -491,21 +491,21 @@ test('ParquetSchema#should convert to arrow schema', assert => {
     price: { type: 'DOUBLE' }
   });
 
-  const arrowSchema = convertParquetSchema(schema);
+  const schema = convertParquetSchema(parquetSchema);
 
-  assert.ok(arrowSchema.fields[0].name === 'name', 'field name set');
-  assert.ok(!arrowSchema.fields[0].nullable, 'field.nullable correct');
-  assert.equal(arrowSchema.fields[0]?.metadata?.get('encoding'), 'PLAIN', 'metadata set');
+  assert.ok(schema.fields[0].name === 'name', 'field name set');
+  assert.ok(!schema.fields[0].nullable, 'field.nullable correct');
+  assert.equal(schema.fields[0]?.metadata?.encoding, 'PLAIN', 'metadata set');
 
-  assert.ok(arrowSchema.fields[1]);
+  assert.ok(schema.fields[1]);
   // @ts-ignore
-  assert.ok(arrowSchema.fields[1].type.children);
+  assert.ok(schema.fields[1].type.children);
   // @ts-ignore
-  assert.equal(arrowSchema.fields[1].type.children.length, 2);
+  assert.equal(schema.fields[1].type.children.length, 2);
   // @ts-ignore
-  assert.equal(arrowSchema.fields[1].type.children[0].name, 'quantity');
+  assert.equal(schema.fields[1].type.children[0].name, 'quantity');
   // @ts-ignore
-  assert.equal(arrowSchema.fields[1].type.children[1].name, 'warehouse');
+  assert.equal(schema.fields[1].type.children[1].name, 'warehouse');
 
   assert.end();
 });
