@@ -19,10 +19,10 @@ export function getOBJSchema(attributes, metadata = {}): Schema {
 }
 
 function getArrowFieldFromAttribute(name: string, attribute): Field {
-  const metadata = new Map();
+  const metadata: Record<string, string> = {};
   for (const key in attribute) {
     if (key !== 'value') {
-      metadata.set(key, JSON.stringify(attribute[key]));
+      metadata[key] = JSON.stringify(attribute[key]);
     }
   }
 

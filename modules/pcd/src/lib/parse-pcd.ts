@@ -67,7 +67,7 @@ export default function parsePCD(data: ArrayBufferLike) {
 
   const header = getMeshHeader(pcdHeader, attributes);
 
-  const metadata = new Map([
+  const metadata = Object.fromEntries([
     ['mode', '0'],
     ['boundingBox', JSON.stringify(header.boundingBox)]
   ]);

@@ -1,14 +1,19 @@
 import test from 'tape-promise/tape';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 
-import {DracoWriter, DracoLoader, DracoWriterWorker} from '@loaders.gl/draco';
+import {DracoLoader, DracoWriterOptions, DracoWriter, DracoWriterWorker} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
 import {getMeshSize} from '@loaders.gl/schema';
 import draco3d from 'draco3d';
 import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
 import {cloneTypeArray} from './test-utils/copyTypedArray';
 
-const TEST_CASES = [
+export type TestCase = {
+  title: string;
+  options: DracoWriterOptions;
+};
+
+const TEST_CASES: TestCase[] = [
   {
     title: 'Encoding Draco Mesh: SEQUENTIAL',
     options: {
@@ -64,7 +69,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
   };
 
   for (const tc of TEST_CASES) {
-    const mesh = tc.options.draco.pointcloud ? POINTCLOUD : MESH;
+    const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
     const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
@@ -113,7 +118,7 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
   };
 
   for (const tc of TEST_CASES) {
-    const mesh = tc.options.draco.pointcloud ? POINTCLOUD : MESH;
+    const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
     const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
@@ -155,8 +160,9 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
         POSITION: cloneTypeArray(data.attributes.POSITION.value)
       }
     };
-    if (!tc.options.draco.pointcloud) {
+    if (!tc.options.draco?.pointcloud) {
       // Copy indices buffer because it won't be available after being sent to the worker
+      // @ts-expect-error
       mesh.indices = cloneTypeArray(data.indices.value);
     }
     const meshSize = getMeshSize(mesh.attributes);
@@ -209,7 +215,7 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
   };
 
   for (const tc of TEST_CASES) {
-    const mesh = tc.options.draco.pointcloud ? POINTCLOUD : MESH;
+    const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
     const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, {
@@ -256,7 +262,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
   };
 
   for (const tc of TEST_CASES) {
-    const attributes = tc.options.draco.pointcloud ? pointCloudAttributes : meshAttributes;
+    const attributes = tc.options.draco?.pointcloud ? pointCloudAttributes : meshAttributes;
     const meshSize = getMeshSize(attributes);
 
     const compressedMesh = await encode(attributes, DracoWriter, tc.options);
@@ -302,7 +308,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
   t.equal(
     data2.attributes.TEXCOORD_0.value.length,
     texCoord.length,
-    `Decoded texCoord length matched`
+    'Decoded texCoord length matched'
   );
 
   const meshAttributes2 = {
@@ -317,7 +323,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
   t.equal(
     data3.attributes.TEXCOORD_0.value.length,
     texCoord.length,
-    `Decoded texCoords length matched`
+    'Decoded texCoords length matched'
   );
 
   t.end();
@@ -378,7 +384,7 @@ test('DracoWriter#geometry metadata', async (t) => {
   t.equal(
     data2.attributes.POSITION.value.length,
     data.attributes.POSITION.value.length,
-    `decoded POSITION length matched`
+    'decoded POSITION length matched'
   );
   t.end();
 });
@@ -424,12 +430,16 @@ test('DracoWriter#attributes metadata', async (t) => {
   });
   validateMeshCategoryData(t, data2);
   validatePositionMetadata(t, data2);
-  t.equals(data2.schema.fields[0].metadata.size, 7, 'Schema: Attribute metadata size');
+  t.equals(
+    Object.keys(data2.schema.fields[0].metadata).length,
+    7,
+    'Schema: Attribute metadata correct number of keys'
+  );
 
   t.equal(
     data2.attributes.POSITION.value.length,
     data.attributes.POSITION.value.length,
-    `decoded POSITION length matched`
+    'decoded POSITION length matched'
   );
   t.end();
 });
@@ -461,7 +471,7 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
   t.equal(
     data2.attributes.POSITION.value.length,
     data.attributes.POSITION.value.length,
-    `decoded POSITION length matched`
+    'decoded POSITION length matched'
   );
   t.end();
 });
