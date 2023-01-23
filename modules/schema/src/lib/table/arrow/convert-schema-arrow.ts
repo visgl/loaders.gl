@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import type {DataType, Field, Schema} from '../../../types/schema';
+import type {DataType, Field, Schema, SchemaMetadata} from '../../../types/schema';
 import {
   Field as ArrowField,
   Schema as ArrowSchema,
@@ -54,12 +54,12 @@ export function deserializeArrowSchema(schema: Schema): ArrowSchema {
   );
 }
 
-export function serializeArrowMetadata(arrowMetadata: Map<string, string>): Map<string, string> {
-  return arrowMetadata;
+export function serializeArrowMetadata(arrowMetadata: Map<string, string>): SchemaMetadata {
+  return Object.fromEntries(arrowMetadata);
 }
 
-export function deserializeArrowMetadata(metadata?: Map<string, string>): Map<string, string> {
-  return metadata || new Map<string, string>();
+export function deserializeArrowMetadata(metadata?: SchemaMetadata): Map<string, string> {
+  return metadata ? new Map(Object.entries(metadata)) : new Map<string, string>();
 }
 
 export function serializeArrowField(field: ArrowField): Field {
@@ -146,8 +146,8 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
         listSize: (arrowType as FixedSizeList).listSize,
         children: [serializeArrowField((arrowType as FixedSizeList).children[0])]
       };
-    case Struct:
-      return {type: 'struct', children: (arrowType as Struct).children};
+    // case Struct:
+    //   return {type: 'struct', children: (arrowType as Struct).children};
     default:
       throw new Error('array type not supported');
   }

@@ -18,27 +18,28 @@ export function getLASSchema(lasHeader: LASHeader, attributes: MeshAttributes): 
  * @param lasHeader
  * @returns
  */
-export function makeMetadataFromLasHeader(lasHeader: LASHeader): Map<string, string> {
-  const metadataMap = new Map();
-  metadataMap.set('las_pointsOffset', lasHeader.pointsOffset.toString(10));
-  metadataMap.set('las_pointsFormatId', lasHeader.pointsFormatId.toString(10));
-  metadataMap.set('las_pointsStructSize', lasHeader.pointsStructSize.toString(10));
-  metadataMap.set('las_pointsCount', lasHeader.pointsCount.toString(10));
-  metadataMap.set('las_scale', JSON.stringify(lasHeader.scale));
-  metadataMap.set('las_offset', JSON.stringify(lasHeader.offset));
+export function makeMetadataFromLasHeader(lasHeader: LASHeader): Record<string, string> {
+  const metadata: Record<string, string> = {};
+  /* eslint-disable camelcase */
+  metadata.las_pointsOffset = lasHeader.pointsOffset.toString(10);
+  metadata.las_pointsFormatId = lasHeader.pointsFormatId.toString(10);
+  metadata.las_pointsStructSize = lasHeader.pointsStructSize.toString(10);
+  metadata.las_pointsCount = lasHeader.pointsCount.toString(10);
+  metadata.las_scale = JSON.stringify(lasHeader.scale);
+  metadata.las_offset = JSON.stringify(lasHeader.offset);
   if (lasHeader.maxs !== undefined) {
-    metadataMap.set('las_maxs', JSON.stringify(lasHeader.maxs));
+    metadata.las_maxs = JSON.stringify(lasHeader.maxs);
   }
   if (lasHeader.mins !== undefined) {
-    metadataMap.set('las_mins', JSON.stringify(lasHeader.mins));
+    metadata.las_mins = JSON.stringify(lasHeader.mins);
   }
-  metadataMap.set('las_totalToRead', lasHeader.totalToRead.toString(10));
-  metadataMap.set('las_pointsFortotalReadmatId', lasHeader.totalRead.toString(10));
+  metadata.las_totalToRead = lasHeader.totalToRead.toString(10);
+  metadata.las_pointsFortotalReadmatId = lasHeader.totalRead.toString(10);
   if (lasHeader.versionAsString !== undefined) {
-    metadataMap.set('las_versionAsString', lasHeader.versionAsString);
+    metadata.las_versionAsString = lasHeader.versionAsString;
   }
   if (lasHeader.isCompressed !== undefined) {
-    metadataMap.set('las_isCompressed', lasHeader.isCompressed.toString());
+    metadata.las_isCompressed = lasHeader.isCompressed.toString();
   }
-  return metadataMap;
+  return metadata;
 }
