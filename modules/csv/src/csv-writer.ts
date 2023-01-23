@@ -13,7 +13,7 @@ const DEFAULT_WRITER_OPTIONS: Required<CSVWriterOptions> = {
     useDisplayNames: false
   },
   useDisplayNames: false
-}
+};
 
 export const CSVWriter: DataWriter<Table, TableBatch, CSVWriterOptions> = {
   id: 'csv',

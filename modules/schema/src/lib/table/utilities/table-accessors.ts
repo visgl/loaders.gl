@@ -146,7 +146,7 @@ export function getTableRowAsObject(
   switch (table.shape) {
     case 'object-row-table':
       return copy ? Object.fromEntries(Object.entries(table.data[rowIndex])) : table.data[rowIndex];
-      
+
     case 'array-row-table':
     case 'geojson-row-table':
       if (table.schema) {
@@ -162,7 +162,8 @@ export function getTableRowAsObject(
       if (table.schema) {
         const objectRow: {[columnName: string]: unknown} = target || {};
         for (let i = 0; i < table.schema.fields.length; i++) {
-          objectRow[table.schema.fields[i].name] = table.data[table.schema.fields[i].name][rowIndex];
+          objectRow[table.schema.fields[i].name] =
+            table.data[table.schema.fields[i].name][rowIndex];
         }
         return objectRow;
       } else {
@@ -181,9 +182,9 @@ export function getTableRowAsObject(
         objectRow[schema.fields[i].name] = row?.[schema.fields[i].name];
       }
       return objectRow;
-  
-      default:
-        throw new Error('shape');
+
+    default:
+      throw new Error('shape');
   }
 }
 
@@ -198,8 +199,6 @@ export function getTableRowAsArray(
   target?: unknown[],
   copy?: 'copy'
 ): unknown[] {
-  ;
-
   switch (table.shape) {
     case 'array-row-table':
       return copy ? Array.from(table.data[rowIndex]) : table.data[rowIndex];

@@ -52,7 +52,7 @@ test('JSONWriter#encodeTableAsText - data table, row arrays', async (t) => {
 });
 
 test.skip('JSONWriter#encodeTableAsText - data table, wrapper', async (t) => {
-  debugger
+  debugger;
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
     wrapper: (table) => ({wrapped: true, table}),
     shape: 'array-row-table'

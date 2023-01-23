@@ -37,7 +37,7 @@ export function makeTestTableFromSchemaAndColumns(options: {
   const data: {[key: string]: ArrayLike<any>} = {};
   for (let i = 0; i < schema.fields.length; ++i) {
     const columnName = schema.fields[i].name;
-    data[columnName] = columns[i]
+    data[columnName] = columns[i];
   }
 
   return {shape: 'columnar-table', schema, data};

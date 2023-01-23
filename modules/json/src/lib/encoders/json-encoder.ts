@@ -28,4 +28,3 @@ export function encodeTableAsJSON(table: Table, options: JSONWriterOptions = {})
   }
   return `[${strings.join(',')}]`;
 }
-
