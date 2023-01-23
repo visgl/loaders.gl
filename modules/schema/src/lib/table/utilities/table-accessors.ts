@@ -137,6 +137,7 @@ export function getTableColumnName(table: Table, columnIndex: number): string {
  * @param target Optional parameter will be used if needed to store the row. Can be reused between calls to improve performance
  * @returns an array representing the row. May be the original array in the row, a new object, or the target parameter
  */
+// eslint-disable-next-line complexity
 export function getTableRowAsObject(
   table: Table,
   rowIndex: number,
@@ -167,6 +168,7 @@ export function getTableRowAsObject(
         }
         return objectRow;
       } else {
+        // @eslint-disable-line no-else-return
         const objectRow: {[columnName: string]: unknown} = target || {};
         for (const [name, column] of Object.entries(table.data)) {
           objectRow[name] = column[rowIndex];
@@ -193,6 +195,7 @@ export function getTableRowAsObject(
  * @param target Optional parameter will be used if needed to store the row. Can be reused between calls to improve performance.
  * @returns an array representing the row. May be the original array in the row, a new object, or the target parameter
  */
+// eslint-disable-next-line complexity
 export function getTableRowAsArray(
   table: Table,
   rowIndex: number,
@@ -223,6 +226,7 @@ export function getTableRowAsArray(
         }
         return arrayRow;
       } else {
+        // @eslint-disable-line no-else-return
         const arrayRow: unknown[] = target || [];
         let i = 0;
         for (const column of Object.values(table.data)) {
