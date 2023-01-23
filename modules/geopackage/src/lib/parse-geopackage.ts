@@ -472,7 +472,7 @@ function getSchema(db: Database, tableName: string): Schema {
     fields.push(field);
   }
 
-  return {fields, metadata: new Map()};
+  return {fields, metadata: {}};
 }
 
 function formatTablesAsGeojson(tables: Tables<ObjectRowTable>): Record<string, Feature[]> {

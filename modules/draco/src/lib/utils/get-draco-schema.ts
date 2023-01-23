@@ -48,10 +48,11 @@ function getArrowFieldFromAttribute(
   return field;
 }
 
-function makeMetadata(metadata: {[key: string]: DracoMetadataEntry}): Map<string, string> {
-  const metadataMap = new Map();
+function makeMetadata(metadata: {[key: string]: DracoMetadataEntry}): Record<string, string> {
+  Object.entries(metadata);
+  const serializedMetadata: Record<string, string> = {};
   for (const key in metadata) {
-    metadataMap.set(`${key}.string`, JSON.stringify(metadata[key]));
+    serializedMetadata[`${key}.string`] = JSON.stringify(metadata[key]);
   }
-  return metadataMap;
+  return serializedMetadata;
 }

@@ -5,15 +5,19 @@ import {ArrowLikeField} from './arrow-like-field';
 
 export class ArrowLikeSchema {
   fields: ArrowLikeField[];
-  metadata: SchemaMetadata;
+  metadata: Map<string, string>;
 
-  constructor(fields: ArrowLikeField[] | Field[], metadata?: SchemaMetadata) {
+  constructor(
+    fields: ArrowLikeField[] | Field[],
+    metadata: SchemaMetadata | Map<string, string> = new Map<string, string>()
+  ) {
     // checkNames(fields);
     // For kepler fields, create arrow compatible `Fields` that have kepler fields as `metadata`
     this.fields = fields.map(
       (field) => new ArrowLikeField(field.name, field.type, field.nullable, field.metadata)
     );
-    this.metadata = metadata || new Map();
+    this.metadata =
+      metadata instanceof Map ? metadata : new Map<string, string>(Object.entries(metadata));
   }
 
   // TODO - arrow only seems to compare fields, not metadata
@@ -50,7 +54,7 @@ export class ArrowLikeSchema {
 
   assign(schemaOrFields: ArrowLikeSchema | ArrowLikeField[]): ArrowLikeSchema {
     let fields: ArrowLikeField[];
-    let metadata: SchemaMetadata = this.metadata;
+    let metadata = this.metadata;
 
     if (schemaOrFields instanceof ArrowLikeSchema) {
       const otherArrowLikeSchema = schemaOrFields;

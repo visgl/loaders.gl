@@ -40,16 +40,16 @@ export function convertParquetSchema(parquetSchema: ParquetSchema): Schema {
   const fields = getFields(parquetSchema.schema);
 
   // TODO add metadata if needed.
-  return {fields, metadata: new Map()};
+  return {fields, metadata: {}};
 }
 
-function getFieldMetadata(field: ParquetField): Map<string, string> {
-  const metadata = new Map();
+function getFieldMetadata(field: ParquetField): Record<string, string> {
+  const metadata = {};
 
   for (const key in field) {
     if (key !== 'name') {
       const value = typeof field[key] !== 'string' ? JSON.stringify(field[key]) : field[key];
-      metadata.set(key, value);
+      metadata[key] = value;
     }
   }
 

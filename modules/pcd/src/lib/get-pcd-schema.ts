@@ -1,15 +1,13 @@
 import {Schema, Field} from '@loaders.gl/schema';
 import type {PCDHeader} from './pcd-types';
 
-type SchemaMetadata = Map<string, any>;
-
 /**
  * Gets schema from PCD header
  * @param PCDheader
  * @param metadata
  * @returns Schema
  */
-export function getPCDSchema(PCDheader: PCDHeader, metadata: SchemaMetadata): Schema {
+export function getPCDSchema(PCDheader: PCDHeader, metadata: Record<string, string>): Schema {
   const offset = PCDheader.offset;
 
   const fields: Field[] = [];
