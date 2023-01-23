@@ -308,7 +308,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
   t.equal(
     data2.attributes.TEXCOORD_0.value.length,
     texCoord.length,
-    `Decoded texCoord length matched`
+    'Decoded texCoord length matched'
   );
 
   const meshAttributes2 = {
@@ -323,7 +323,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
   t.equal(
     data3.attributes.TEXCOORD_0.value.length,
     texCoord.length,
-    `Decoded texCoords length matched`
+    'Decoded texCoords length matched'
   );
 
   t.end();
@@ -384,7 +384,7 @@ test('DracoWriter#geometry metadata', async (t) => {
   t.equal(
     data2.attributes.POSITION.value.length,
     data.attributes.POSITION.value.length,
-    `decoded POSITION length matched`
+    'decoded POSITION length matched'
   );
   t.end();
 });
@@ -430,12 +430,16 @@ test('DracoWriter#attributes metadata', async (t) => {
   });
   validateMeshCategoryData(t, data2);
   validatePositionMetadata(t, data2);
-  t.equals(Object.keys(data2.schema.fields[0].metadata).length, 7, 'Schema: Attribute metadata correct number of keys');
+  t.equals(
+    Object.keys(data2.schema.fields[0].metadata).length,
+    7,
+    'Schema: Attribute metadata correct number of keys'
+  );
 
   t.equal(
     data2.attributes.POSITION.value.length,
     data.attributes.POSITION.value.length,
-    `decoded POSITION length matched`
+    'decoded POSITION length matched'
   );
   t.end();
 });
@@ -467,7 +471,7 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
   t.equal(
     data2.attributes.POSITION.value.length,
     data.attributes.POSITION.value.length,
-    `decoded POSITION length matched`
+    'decoded POSITION length matched'
   );
   t.end();
 });
