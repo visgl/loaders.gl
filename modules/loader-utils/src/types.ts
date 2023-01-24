@@ -200,6 +200,27 @@ export type Writer = {
 };
 
 /**
+ * @todo Consolidate with Writer type (above)
+ */
+export type DataWriter<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOptions> = Omit<
+  Writer,
+  'encode'
+> & {
+  name: string;
+  extensions: string[];
+  mimeType: string;
+  text: boolean;
+  options: WriterOptionsT;
+
+  encode?(data: DataT, options?: WriterOptionsT): Promise<ArrayBuffer>;
+  encodeText?(table: DataT, options?: WriterOptionsT): Promise<string> | string;
+  encodeInBatches?(
+    table: AsyncIterable<BatchT>,
+    options?: WriterOptionsT
+  ): AsyncIterable<ArrayBuffer>;
+};
+
+/**
  * A Loader context is provided as a third parameters to a loader object's
  * parse functions when that loader is called by other loaders rather then
  * directly by the application.

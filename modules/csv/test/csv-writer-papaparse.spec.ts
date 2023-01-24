@@ -13,7 +13,7 @@ License: MIT
 
 /* eslint-disable quotes */
 import test from 'tape-promise/tape';
-import Papa from '@loaders.gl/csv/libs/papaparse';
+import Papa from '@loaders.gl/csv/papaparse/papaparse';
 
 // import {isBrowser, load} from '@loaders.gl/core';
 // import {parseAsIterator, parseAsAsyncIterator} from '@loaders.gl/core';

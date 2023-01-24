@@ -1,4 +1,6 @@
-import type {JSONLoaderOptions} from '../json-loader';
+// loaders.gl, MIT license
+
+import type {JSONLoaderOptions} from '../../json-loader';
 
 export default function parseJSONSync(jsonText: string, options: JSONLoaderOptions) {
   try {

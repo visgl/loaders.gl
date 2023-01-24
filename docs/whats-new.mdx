@@ -128,14 +128,25 @@ Target Release Date: April, 2023.
 
 Release Date: TBD, Q1-2022
 
+**@loaders.gl/arrow**
+
+- Now uses `apache-arrow` v9. Be aware that Apache Arrow JS v9 is a major breaking change compared with v4 which is used by loaders.gl v3, so if you are using the Arrow API directly you will need to upgrade.
+
 **@loaders.gl/schema**
 
 - The loaders.gl schema and type system is now a fully serializable counterpart to the Apache Arrow schema and type system. 
-- This is a slight breaking change that simplifies worker parsing etc.
+- This is a breaking change that e.g. simplifies transferring schemas between workers.
 
-**@loaders.gl/arrow**
+**@loaders.gl/csv**
 
-- Now uses `apache-arrow` v9
+- New `CSVWriter` allows export of any table in CSV format.
+
+**@loaders.gl/csv**
+
+- New `JSONWriter` allows export of any table in JSON format.
+- New `NDJSONWriter` allows export of any table in NDJSON format.
+- New `GeoJSONWriter` allows export of any table in GeoJSON format.
+- New `NDGeoJSONWriter` allows export of any table in NDGeoJSON format.
 
 ## v3.3 (In Development)
 >>>>>>> 880c64709 (chore(arrow): bump apache-arrow to 9.0.0. Temporarily disable arrow workers. (#2276))
