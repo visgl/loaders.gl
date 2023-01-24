@@ -12,6 +12,12 @@ import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
 import type {PCDHeader, PCDMesh} from './pcd-types';
 
+type MeshHeader = {
+  vertexCount: number;
+  boundingBox: [[number, number, number], [number, number, number]];
+};
+
+
 type NormalizedAttributes = {
   POSITION: {
     value: Float32Array;
@@ -77,7 +83,7 @@ export default function parsePCD(data: ArrayBufferLike): PCDMesh {
   return {
     loader: 'pcd',
     loaderData: pcdHeader,
-    header: header as any,
+    header,
     schema,
     mode: 0, // POINTS
     topology: 'point-list',
@@ -86,7 +92,7 @@ export default function parsePCD(data: ArrayBufferLike): PCDMesh {
 }
 
 // Create a header that contains common data for PointCloud category loaders
-function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): Partial<PCDHeader> {
+function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): MeshHeader {
   if (typeof pcdHeader.width === 'number' && typeof pcdHeader.height === 'number') {
     const pointCount = pcdHeader.width * pcdHeader.height; // Supports "organized" point sets
     return {
@@ -94,7 +100,10 @@ function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): 
       boundingBox: getMeshBoundingBox(attributes)
     };
   }
-  return pcdHeader;
+  return {
+    vertexCount: pcdHeader.vertexCount,
+    boundingBox: pcdHeader.boundingBox
+  };
 }
 
 /**
