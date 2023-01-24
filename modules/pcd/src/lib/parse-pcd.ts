@@ -17,7 +17,6 @@ type MeshHeader = {
   boundingBox: [[number, number, number], [number, number, number]];
 };
 
-
 type NormalizedAttributes = {
   POSITION: {
     value: Float32Array;
