@@ -20,7 +20,7 @@ type LASChunk = {
  * @param options
  * @returns LASHeader
  */
-export default function parseLAS(
+export function parseLAS(
   arrayBuffer: ArrayBuffer,
   options?: LASLoaderOptions
 ): LASMesh | ArrowTable | ColumnarTable {

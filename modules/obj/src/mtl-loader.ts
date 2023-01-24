@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ParseMTLOptions} from './lib/parse-mtl';
+import type {MTLMaterial, ParseMTLOptions} from './lib/parse-mtl';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -14,7 +14,7 @@ export type MTLLoaderOptions = LoaderOptions & {
  * Loader for the MTL material format
  * Parses a Wavefront .mtl file specifying materials
  */
-export const MTLLoader = {
+export const MTLLoader: Loader<MTLMaterial[], never, LoaderOptions> = {
   name: 'MTL',
   id: 'mtl',
   module: 'mtl',

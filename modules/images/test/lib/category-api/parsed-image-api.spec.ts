@@ -4,6 +4,7 @@ import {ImageLoader} from '@loaders.gl/images';
 
 // PARSED IMAGE API
 import {
+  ImageType,
   getDefaultImageType,
   isImageTypeSupported,
   isImage,
@@ -12,13 +13,15 @@ import {
   getImageData
 } from '@loaders.gl/images';
 
-const IMAGE_TYPES = ['auto', 'image', 'imagebitmap', 'data'];
+type ImageT = 'auto' | 'image' | 'imagebitmap' | 'data';
+
+const IMAGE_TYPES: ImageT[] = ['auto', 'image', 'imagebitmap', 'data'];
 
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
-let imagesPromise = null;
+let imagesPromise: Promise<ImageType[]> | null = null;
 
-async function loadImages() {
+async function loadImages(): Promise<ImageType[]> {
   imagesPromise =
     imagesPromise ||
     Promise.all(

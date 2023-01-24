@@ -1,4 +1,4 @@
-import type {Batch} from '@loaders.gl/schema';
+import type {TableBatch} from '@loaders.gl/schema';
 import type {JSONLoaderOptions} from '../../json-loader';
 import {TableBatchBuilder} from '@loaders.gl/schema';
 import {assert, makeTextDecoderIterator} from '@loaders.gl/loader-utils';
@@ -10,7 +10,7 @@ import JSONPath from '../jsonpath/jsonpath';
 export default async function* parseJSONInBatches(
   binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options: JSONLoaderOptions
-): AsyncIterable<Batch> {
+): AsyncIterable<TableBatch> {
   const asyncIterator = makeTextDecoderIterator(binaryAsyncIterator);
 
   const {metadata} = options;
@@ -36,7 +36,7 @@ export default async function* parseJSONInBatches(
 
     if (rows.length > 0 && isFirstChunk) {
       if (metadata) {
-        const initialBatch: Batch = {
+        const initialBatch: TableBatch = {
           // Common fields
           shape,
           batchType: 'partial-result',
@@ -78,7 +78,7 @@ export default async function* parseJSONInBatches(
   }
 
   if (metadata) {
-    const finalBatch: Batch = {
+    const finalBatch: TableBatch = {
       shape,
       batchType: 'final-result',
       container: parser.getPartialResult(),

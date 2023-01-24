@@ -1,7 +1,9 @@
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+//
+
 import {isBrowser} from '@loaders.gl/worker-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
-// import type {DracoMeshData} from './types';
 import {VERSION} from './lib/utils/version';
 
 export type DracoLoaderOptions = LoaderOptions & {
@@ -26,11 +28,11 @@ const DEFAULT_DRACO_OPTIONS: DracoLoaderOptions = {
 /**
  * Worker loader for Draco3D compressed geometries
  */
-export const DracoLoader = {
+export const DracoLoader: Loader<DracoMesh, never, DracoLoaderOptions> = {
   name: 'Draco',
   id: isBrowser ? 'draco' : 'draco-nodejs',
   module: 'draco',
-  shapes: ['mesh'],
+  // shapes: ['mesh'],
   version: VERSION,
   worker: true,
   extensions: ['drc'],
