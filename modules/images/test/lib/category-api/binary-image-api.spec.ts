@@ -8,8 +8,8 @@ import {getBinaryImageMetadata} from '@loaders.gl/images';
 
 const readFile = (url) => fetchFile(url).then((response) => response.arrayBuffer());
 
-let imagesPromise = null;
-const imageMap = {};
+let imagesPromise: Promise<ArrayBuffer[]> | null = null;
+const imageMap: Record<string, ArrayBuffer> = {};
 
 export async function loadImages() {
   imagesPromise =

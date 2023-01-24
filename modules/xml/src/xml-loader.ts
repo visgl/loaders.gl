@@ -13,7 +13,7 @@ export type XMLLoaderOptions = LoaderOptions & {
 /**
  * Worker loader for the OBJ geometry format
  */
-export const XMLLoader = {
+export const XMLLoader: LoaderWithParser<any, never, XMLLoaderOptions> = {
   name: 'XML',
   id: 'xml',
   module: 'xml',

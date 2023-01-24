@@ -170,6 +170,7 @@ export function getTableRowAsObject(
         }
         return objectRow;
       } else {
+        // eslint-disable-line no-else-return
         const objectRow: {[columnName: string]: unknown} = target || {};
         for (const [name, column] of Object.entries(table.data)) {
           objectRow[name] = column[rowIndex];
@@ -227,6 +228,7 @@ export function getTableRowAsArray(
         }
         return arrayRow;
       } else {
+        // eslint-disable-line no-else-return
         const arrayRow: unknown[] = target || [];
         let i = 0;
         for (const column of Object.values(table.data)) {
