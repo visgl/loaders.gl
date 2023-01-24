@@ -12,7 +12,7 @@ import {KTX2BasisWriterNodeJS} from '../ktx2-basis-writer-nodejs';
       case 'process':
         try {
           const {input, options} = payload;
-          const result = await KTX2BasisWriterNodeJS.encode(input, options);
+          const result = await KTX2BasisWriterNodeJS.encode?.(input, options);
           WorkerBody.postMessage('done', {result});
         } catch (error) {
           const message = error instanceof Error ? error.message : '';

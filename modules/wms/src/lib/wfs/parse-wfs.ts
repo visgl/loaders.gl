@@ -13,11 +13,12 @@ import {XMLLoader} from '@loaders.gl/xml';
 export function parseWFSCapabilities(text: string, options): WFSCapabilities {
   // Remove namespaces in XML
   options = {...options, xml: {...options?.xml, removeNSPrefix: true}};
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
   const xmlCapabilities: any = parsedXML.Capabilities || parsedXML;
   return uncapitalizeKeys(xmlCapabilities);
 }
 
+/** Uncapitalize all keys of an object */
 function uncapitalizeKeys(object: any): any {
   if (object && typeof object === 'object') {
     const newObject = {};
@@ -29,11 +30,7 @@ function uncapitalizeKeys(object: any): any {
   return object;
 }
 
-/**
- * Uncapitalize first letter of a string
- * @param {string} str
- * @returns {string}
- */
+/** Uncapitalize first letter of a string */
 function uncapitalize(str: string): string {
   return typeof str === 'string' ? str.charAt(0).toLowerCase() + str.slice(1) : str;
 }

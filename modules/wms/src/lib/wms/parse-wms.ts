@@ -19,7 +19,7 @@ import {XMLLoader} from '@loaders.gl/xml';
  * @note Error handlings is fairly weak
  */
 export function parseWMSCapabilities(text: string, options): WMSCapabilities {
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
   const xmlCapabilities: any =
     parsedXML.WMT_MS_Capabilities || parsedXML.WMS_Capabilities || parsedXML;
   return extractCapabilities(xmlCapabilities);
@@ -90,7 +90,7 @@ function getXMLArray(xmlValue: any) {
  * @note Error handlings is fairly weak
  */
 export function parseWMSFeatureInfo(text: string, options): WMSFeatureInfo {
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
   const xmlFeatureInfo: any = parsedXML.FeatureInfoResponse?.FIELDS || [];
 
   const xmlFeatures = Array.isArray(xmlFeatureInfo) ? xmlFeatureInfo : [xmlFeatureInfo];
@@ -117,7 +117,7 @@ function extractFeature(xmlFeature: any) {
  * @note Error handlings is fairly weak
  */
 export function parseWMSLayerDescription(text: string, options): WMSLayerDescription {
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
   // TODO - implement parser
   return parsedXML as unknown as WMSLayerDescription;
 }

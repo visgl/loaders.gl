@@ -27,13 +27,13 @@ test('PCDLoader#parse(text)', async (t) => {
   t.ok(data.schema.metadata.boundingBox, 'schema metadata is correct');
 
   const positionField = data.schema.fields.find((field) => field.name === 'POSITION');
-  t.equal(positionField.type.listSize, 3, 'schema size correct');
-  t.equal(positionField.type.children[0].type, 'float32', 'schema type correct');
+  t.equal(positionField?.type?.listSize, 3, 'schema size correct');
+  t.equal(positionField?.type?.children[0]?.type, 'float32', 'schema type correct');
   // t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
 
   const colorField = data.schema.fields.find((field) => field.name === 'COLOR_0');
-  t.equal(colorField.type.listSize, 3, 'schema size correct');
-  t.equal(colorField.type.children[0].type, 'uint8', 'schema type correct');
+  t.equal(colorField?.type?.listSize, 3, 'schema size correct');
+  t.equal(colorField?.type?.children[0]?.type, 'uint8', 'schema type correct');
   // t.equal(colorField.type.valueType.bitWidth, 8, 'schema type correct');
   // t.equal(colorField.type.valueType.isSigned, false, 'schema type correct');
 

@@ -1,4 +1,7 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+// loaders.gl, MIT license
+
+import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {TextureLevel} from '@loaders.gl/schema';
 import {isBrowser} from '@loaders.gl/worker-utils';
 import {VERSION} from './lib/utils/version';
 import parseBasis from './lib/parsers/parse-basis';
@@ -6,7 +9,7 @@ import parseBasis from './lib/parsers/parse-basis';
 /**
  * Worker loader for Basis super compressed textures
  */
-export const BasisWorkerLoader = {
+export const BasisWorkerLoader: Loader<TextureLevel[][], never, LoaderOptions> = {
   name: 'Basis',
   id: isBrowser ? 'basis' : 'basis-nodejs',
   module: 'textures',
@@ -29,11 +32,7 @@ export const BasisWorkerLoader = {
 /**
  * Loader for Basis super compressed textures
  */
-export const BasisLoader = {
+export const BasisLoader: LoaderWithParser<TextureLevel[][], never, LoaderOptions> = {
   ...BasisWorkerLoader,
   parse: parseBasis
 };
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckBasisWorkerLoader: Loader = BasisWorkerLoader;
-export const _TypecheckBasisLoader: LoaderWithParser = BasisLoader;
