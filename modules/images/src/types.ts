@@ -11,7 +11,7 @@ export type ImageDataType = {
 /**
  * Supported Image Types
  */
-export type ImageType = ImageBitmap | typeof Image | ImageDataType;
+export type ImageType = ImageBitmap | ImageDataType | typeof Image;
 
 /**
  * Image type string used to control or determine the type of images returned from ImageLoader

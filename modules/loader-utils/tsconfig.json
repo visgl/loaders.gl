@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
-    {"path": "../worker-utils"}
+    {"path": "../worker-utils"},
+    {"path": "../schema"}
   ]
 }

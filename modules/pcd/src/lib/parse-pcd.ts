@@ -10,7 +10,12 @@ import {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
-import type {PCDHeader} from './pcd-types';
+import type {PCDHeader, PCDMesh} from './pcd-types';
+
+type MeshHeader = {
+  vertexCount: number;
+  boundingBox: [[number, number, number], [number, number, number]];
+};
 
 type NormalizedAttributes = {
   POSITION: {
@@ -38,7 +43,7 @@ const LITTLE_ENDIAN: boolean = true;
  * @param data
  * @returns
  */
-export default function parsePCD(data: ArrayBufferLike) {
+export default function parsePCD(data: ArrayBufferLike): PCDMesh {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
   const pcdHeader = parsePCDHeader(textData);
@@ -75,19 +80,18 @@ export default function parsePCD(data: ArrayBufferLike) {
   const schema = getPCDSchema(pcdHeader, metadata);
 
   return {
-    loaderData: {
-      header: pcdHeader
-    },
+    loader: 'pcd',
+    loaderData: pcdHeader,
     header,
     schema,
     mode: 0, // POINTS
-    indices: null,
+    topology: 'point-list',
     attributes
   };
 }
 
 // Create a header that contains common data for PointCloud category loaders
-function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): Partial<PCDHeader> {
+function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): MeshHeader {
   if (typeof pcdHeader.width === 'number' && typeof pcdHeader.height === 'number') {
     const pointCount = pcdHeader.width * pcdHeader.height; // Supports "organized" point sets
     return {
@@ -95,7 +99,10 @@ function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): 
       boundingBox: getMeshBoundingBox(attributes)
     };
   }
-  return pcdHeader;
+  return {
+    vertexCount: pcdHeader.vertexCount,
+    boundingBox: pcdHeader.boundingBox
+  };
 }
 
 /**

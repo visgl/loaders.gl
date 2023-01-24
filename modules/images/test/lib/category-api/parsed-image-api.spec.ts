@@ -12,21 +12,22 @@ import {
   getImageData
 } from '@loaders.gl/images';
 
-const IMAGE_TYPES = ['auto', 'image', 'imagebitmap', 'data'];
+type ImageT = 'auto' | 'image' | 'imagebitmap' | 'data';
+
+const IMAGE_TYPES: ImageT[] = ['auto', 'image', 'imagebitmap', 'data'];
 
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
 let imagesPromise: Promise<ImageType[]> | null = null;
 
-async function loadImages() {
-  if (!imagesPromise) {
-    const supportedImageTypes = IMAGE_TYPES.filter(isImageTypeSupported);
-    imagesPromise = Promise.all(
-      supportedImageTypes.map(
-        (type) => load(IMAGE_URL, ImageLoader, {image: {type}}) as Promise<ImageType>
+async function loadImages(): Promise<ImageType[]> {
+  imagesPromise =
+    imagesPromise ||
+    Promise.all(
+      IMAGE_TYPES.filter(isImageTypeSupported).map((type) =>
+        load(IMAGE_URL, ImageLoader, {image: {type}})
       )
     );
-  }
   return await imagesPromise;
 }
 

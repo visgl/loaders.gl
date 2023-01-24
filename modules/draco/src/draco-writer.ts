@@ -29,7 +29,7 @@ const DEFAULT_DRACO_WRITER_OPTIONS = {
 /**
  * Exporter for Draco3D compressed geometries
  */
-export const DracoWriter: Writer = {
+export const DracoWriter: Writer<DracoMesh, unknown, DracoWriterOptions> = {
   name: 'DRACO',
   id: 'draco',
   module: 'draco',
