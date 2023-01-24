@@ -6,6 +6,7 @@ export type {
   LoaderOptions,
   Writer,
   WriterOptions,
+  DataWriter,
   DataType,
   SyncDataType,
   BatchableDataType,
