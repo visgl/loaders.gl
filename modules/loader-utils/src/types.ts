@@ -192,6 +192,27 @@ export type Writer = {
   encodeText?: EncodeText;
 };
 
+/**
+ * @todo Consolidate with Writer type (above)
+ */
+export type DataWriter<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOptions> = Omit<
+  Writer,
+  'encode'
+> & {
+  name: string;
+  extensions: string[];
+  mimeType: string;
+  text: boolean;
+  options: WriterOptionsT;
+
+  encode?(data: DataT, options?: WriterOptionsT): Promise<ArrayBuffer>;
+  encodeText?(table: DataT, options?: WriterOptionsT): Promise<string> | string;
+  encodeInBatches?(
+    table: AsyncIterable<BatchT>,
+    options?: WriterOptionsT
+  ): AsyncIterable<ArrayBuffer>;
+};
+
 export type LoaderContext = {
   loaders?: Loader[] | null;
   url?: string;

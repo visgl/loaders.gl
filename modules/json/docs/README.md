@@ -17,12 +17,16 @@ npm install @loaders.gl/core @loaders.gl/json
 
 ## Loaders and Writers
 
-| Loader                                                                |
+| Exports                                                               |
 | --------------------------------------------------------------------- |
 | [`JSONLoader`](modules/json/docs/api-reference/json-loader)           |
 | [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader)       |
 | [`GeoJSONLoader`](modules/json/docs/api-reference/geojson-loader)     |
 | [`NDGeoJSONLoader`](modules/json/docs/api-reference/ndgeojson-loader) |
+| [`JSONWriter`](modules/json/docs/api-reference/json-writer)           |
+| [`NDJSONWriter`](modules/json/docs/api-reference/ndjson-writer)       |
+| [`GeoJSONWriter`](modules/json/docs/api-reference/geojson-writer)     |
+| [`NDGeoJSONWriter`](modules/json/docs/api-reference/ndgeojson-writer) |
 
 ## Additional APIs
 

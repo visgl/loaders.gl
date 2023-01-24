@@ -2,7 +2,13 @@
 
 ## Upgrading to v4.0
 
-**Schemas** - If you are referencing table schemas returned by parsers, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" loaders.gl schemas. You can recover an Arrow schema as follows
+**Apache Arrow** 
+
+loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 is a major breaking change compared with v4 which is used by loaders.gl v3.
+
+**Table Schemas** 
+
+If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" loaders.gl schemas. You can recover an Arrow schema as follows
 
 ```typescript
 import {deserializeArrowSchema} from '@loaders.gl/schema-utils`;
