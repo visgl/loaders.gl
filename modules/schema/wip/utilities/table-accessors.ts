@@ -224,3 +224,54 @@ export function makeObjectRowTable(table: Table): ObjectRowTable {
     data
   };
 }
+
+// Row Iterators
+
+/**
+ * Iterate over table rows
+ * @param table
+ * @param shape
+ */
+export function* makeRowIterator(
+  table: Table,
+  shape: 'object-row-table' | 'array-row-table'
+): Iterable<unknown[] | {[key: string]: unknown}> {
+  switch (shape) {
+    case 'array-row-table':
+      yield* makeArrayRowIterator(table);
+      break;
+    case 'object-row-table':
+      yield* makeObjectRowIterator(table);
+      break;
+
+    default:
+      throw new Error(`Unknown row type ${shape}`);
+  }
+}
+
+/**
+ * Streaming processing: Iterate over table, yielding array rows
+ * @param table
+ * @param shape
+ */
+export function* makeArrayRowIterator(table: Table, target: unknown[] = []): Iterable<unknown[]> {
+  const length = getTableLength(table);
+  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
+    yield getTableRowAsArray(table, rowIndex, target);
+  }
+}
+
+/**
+ * Streaming processing: Iterate over table, yielding object rows
+ * @param table
+ * @param shape
+ */
+export function* makeObjectRowIterator(
+  table: Table,
+  target: {[key: string]: unknown} = {}
+): Iterable<{[key: string]: unknown}> {
+  const length = getTableLength(table);
+  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
+    yield getTableRowAsObject(table, rowIndex, target);
+  }
+}

@@ -11,3 +11,6 @@ import './lib/parser/streaming-json-parser.spec';
 // Loaders
 import './json-loader.spec';
 import './ndjson-loader.spec';
+
+import './json-writer.spec';
+import './geojson-writer.spec';
