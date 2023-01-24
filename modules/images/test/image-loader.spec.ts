@@ -11,7 +11,12 @@ import {
   SVG_DATA_URL_NOT_LATIN
 } from './lib/test-cases';
 
-const TYPES = ['auto', 'imagebitmap', 'image', 'data'].filter(isImageTypeSupported);
+const TYPES = new Set<'auto' | 'imagebitmap' | 'image' | 'data'>();
+
+if (isImageTypeSupported('auto')) TYPES.add('auto');
+if (isImageTypeSupported('imagebitmap')) TYPES.add('imagebitmap');
+if (isImageTypeSupported('image')) TYPES.add('image');
+if (isImageTypeSupported('data')) TYPES.add('data');
 
 test('image loaders#imports', (t) => {
   t.ok(ImageLoader, 'ImageLoader defined');
@@ -19,7 +24,7 @@ test('image loaders#imports', (t) => {
 });
 
 test('ImageLoader#load(URL)', async (t) => {
-  for (const type of TYPES) {
+  for (const type of TYPES.values()) {
     const image = await load(IMAGE_URL, ImageLoader, {image: {type}});
     t.ok(image, `image of type ${type} loaded successfully from data URL`);
   }
@@ -27,7 +32,7 @@ test('ImageLoader#load(URL)', async (t) => {
 });
 
 test('ImageLoader#load(data URL)', async (t) => {
-  for (const type of TYPES) {
+  for (const type of TYPES.values()) {
     const image = await load(IMAGE_DATA_URL, ImageLoader, {image: {type}});
     t.ok(image, `image of type ${type} loaded successfully from data URL`);
 

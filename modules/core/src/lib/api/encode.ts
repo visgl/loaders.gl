@@ -112,6 +112,7 @@ export function encodeInBatches(
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);
+    // @ts-expect-error
     return writer.encodeInBatches(dataIterator, options);
   }
   // TODO -fall back to atomic encode?

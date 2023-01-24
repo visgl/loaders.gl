@@ -1,4 +1,5 @@
 // Image loading/saving for browser and Node.js
+import {ImageDataType} from '../../types';
 import {getImageSize} from '../category-api/parsed-image-api';
 
 // @ts-ignore TS2339: Property does not exist on type
@@ -13,7 +14,7 @@ const {_encodeImageNode} = globalThis;
  * param mimeType= - Whether to include a data URI header
  */
 export async function encodeImage(
-  image: any,
+  image: ImageDataType,
   options?: {[key: string]: any}
 ): Promise<ArrayBuffer> {
   options = options || {};

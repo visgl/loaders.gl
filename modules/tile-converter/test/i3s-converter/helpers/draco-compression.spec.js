@@ -52,7 +52,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
     attributes: {
       POSITION: data.attributes.POSITION.value
     },
-    indices: data.indices.value
+    indices: data.indices?.value
   };
   const POINTCLOUD = {
     attributes: {
@@ -92,7 +92,7 @@ test('DracoParser#encode(bunny.drc)', async (t) => {
 
   const meshAttributes = {
     POSITION: data.attributes.POSITION.value,
-    indices: data.indices.value
+    indices: data.indices?.value
   };
   const pointCloudAttributes = {
     POSITION: data.attributes.POSITION.value
