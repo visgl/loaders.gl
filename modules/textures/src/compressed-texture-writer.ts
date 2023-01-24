@@ -17,7 +17,7 @@ export type CompressedTextureWriterOptions = WriterOptions & {
 /**
  * DDS Texture Container Exporter
  */
-export const CompressedTextureWriter = {
+export const CompressedTextureWriter: Writer<unknown, unknown, CompressedTextureWriterOptions> = {
   name: 'DDS Texture Container',
   id: 'dds',
   module: 'textures',
@@ -40,10 +40,10 @@ export const CompressedTextureWriter = {
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCompressedTextureWriter: Writer & {
-  encodeURLtoURL: (
-    inputUrl: string,
-    outputUrl: string,
-    options?: CompressedTextureWriterOptions
-  ) => Promise<string>;
-} = CompressedTextureWriter;
+// export const _TypecheckCompressedTextureWriter: typeof CompressedTextureWriter & {
+//   encodeURLtoURL: (
+//     inputUrl: string,
+//     outputUrl: string,
+//     options?: CompressedTextureWriterOptions
+//   ) => Promise<string>;
+// } = CompressedTextureWriter;

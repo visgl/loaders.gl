@@ -1,14 +1,17 @@
-import type {LoaderWithParser} from './types';
+import type {LoaderWithParser, LoaderOptions} from './types';
+import type {Table, TableBatch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+export type JSONLoaderOptions = LoaderOptions;
+
 /**
  * A JSON Micro loader (minimal bundle size)
  * Alternative to `@loaders.gl/json`
  */
-export const JSONLoader = {
+export const JSONLoader: LoaderWithParser<Table, TableBatch, JSONLoaderOptions> = {
   name: 'JSON',
   id: 'json',
   module: 'json',
@@ -26,5 +29,3 @@ export const JSONLoader = {
 function parseTextSync(text) {
   return JSON.parse(text);
 }
-
-export const _typecheckJSONLoader: LoaderWithParser = JSONLoader;
