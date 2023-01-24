@@ -14,7 +14,7 @@ export {
   GeoJSONWorkerLoader as _GeoJSONWorkerLoader
 } from './geojson-loader';
 
-export {GeoJSONWriterOptions as _GeoJSONWriterOptions} from './geojson-writer';
+export type {GeoJSONWriterOptions as _GeoJSONWriterOptions} from './geojson-writer';
 export {GeoJSONWriter as _GeoJSONWriter} from './geojson-writer';
 
 export {default as _JSONPath} from './lib/jsonpath/jsonpath';
