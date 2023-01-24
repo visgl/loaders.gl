@@ -19,6 +19,7 @@ export type GeoJSONWriterOptions = {
 /**
  * Encode a table as GeoJSON
  */
+// eslint-disable-next-line max-statements
 export async function* encodeTableAsGeojsonInBatches(
   batchIterator: AsyncIterable<TableBatch>, // | Iterable<TableBatch>,
   inputOpts: GeoJSONWriterOptions = {}

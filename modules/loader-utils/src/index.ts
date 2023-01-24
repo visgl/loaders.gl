@@ -1,12 +1,18 @@
 // TYPES
 export type {
+  // loaders
   Loader,
   LoaderWithParser,
   LoaderContext,
   LoaderOptions,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderBatchType,
+  // writers
   Writer,
   WriterOptions,
-  DataWriter,
+  WriterOptionsType,
+  // misc
   DataType,
   SyncDataType,
   BatchableDataType,

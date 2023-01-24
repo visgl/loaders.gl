@@ -31,6 +31,8 @@ modules/obj/src/lib/get-obj-schema.ts
 
 modules/mvt/src/lib/geojson-tiler/tile.ts
 
+modules/parquet/test
+
 modules/xml/test/sax-ts/testcases/attribute-name.spec.ts
 modules/xml/test/sax-ts/testcases/opentagstart.spec.ts
 modules/xml/test/sax-ts/testcases/script-close-better.spec.ts

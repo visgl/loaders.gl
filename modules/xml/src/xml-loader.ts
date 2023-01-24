@@ -26,7 +26,7 @@ export type XMLLoaderOptions = LoaderOptions & {
 /**
  * Loader for XML files
  */
-export const XMLLoader = {
+export const XMLLoader: LoaderWithParser<any, never, XMLLoaderOptions> = {
   name: 'XML',
   id: 'xml',
   module: 'xml',

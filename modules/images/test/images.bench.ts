@@ -3,7 +3,7 @@ import {fetchFile, parse} from '@loaders.gl/core';
 
 const TEST_URL = '@loaders.gl/images/test/data/tiles/colortile-256x256.png';
 
-const OPTIONS = [
+const OPTIONS: {type: 'imagebitmap' | 'image' | 'data'; decode?: boolean; worker?: boolean}[] = [
   {type: 'imagebitmap'},
   {type: 'image', decode: false},
   {type: 'image', decode: true},

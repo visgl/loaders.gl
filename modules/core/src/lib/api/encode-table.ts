@@ -2,21 +2,13 @@
 // Copyright 2022 Foursquare Labs, Inc
 
 /* global TextEncoder, TextDecoder */
-import {concatenateArrayBuffers, DataWriter} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers, Writer, WriterOptionsType} from '@loaders.gl/loader-utils';
 import {Table} from '@loaders.gl/schema';
 
-/** Crazy typescript helper to extract the writer options type from a generic writer type */
-type extractWriterOptions<T = DataWriter<any, any, any> | {writer: DataWriter<any, any, any>}> =
-  T extends DataWriter<any, any, infer Options>
-    ? Options
-    : T extends {writer: DataWriter<any, any, infer Options>}
-    ? Options
-    : never;
-
-export async function encodeTable<WriterT extends DataWriter = DataWriter>(
+export async function encodeTable<WriterT extends Writer = Writer>(
   data: Table,
   writer: WriterT,
-  options?: extractWriterOptions<WriterT>
+  options?: WriterOptionsType<WriterT>
 ): Promise<ArrayBuffer> {
   if (writer.encode) {
     return await writer.encode(data, options);
@@ -43,10 +35,10 @@ export async function encodeTable<WriterT extends DataWriter = DataWriter>(
   throw new Error('Writer could not encode data');
 }
 
-export async function encodeTableAsText<WriterT extends DataWriter = DataWriter>(
+export async function encodeTableAsText<WriterT extends Writer = Writer>(
   data: Table,
   writer: WriterT,
-  options?: extractWriterOptions<WriterT>
+  options?: WriterOptionsType<WriterT>
 ): Promise<string> {
   if (writer.text && writer.encodeText) {
     return await writer.encodeText(data, options);
@@ -59,14 +51,14 @@ export async function encodeTableAsText<WriterT extends DataWriter = DataWriter>
   throw new Error('Writer could not encode data as text');
 }
 
-export function encodeTableInBatches<WriterOptions>(
+export function encodeTableInBatches<WriterT extends Writer = Writer>(
   data: Table,
-  writer: DataWriter<WriterOptions>,
-  options?: WriterOptions
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);
-    // @ts-expect-error - TODO: the data iterator shape is not what's expected here
+    // @ts-expect-error
     return writer.encodeInBatches(dataIterator, options);
   }
   // TODO -fall back to atomic encode?

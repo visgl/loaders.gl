@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 /* global TextEncoder */
-import type {DataWriter} from '@loaders.gl/loader-utils';
+import type {Writer} from '@loaders.gl/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import type {CSVWriterOptions} from './lib/encoders/encode-csv';
 import {encodeTableAsCSV} from './lib/encoders/encode-csv';
@@ -15,13 +15,13 @@ const DEFAULT_WRITER_OPTIONS: Required<CSVWriterOptions> = {
   useDisplayNames: false
 };
 
-export const CSVWriter: DataWriter<Table, TableBatch, CSVWriterOptions> = {
+export const CSVWriter: Writer<Table, TableBatch, CSVWriterOptions> = {
   id: 'csv',
   version: 'latest',
   module: 'csv',
   name: 'CSV',
   extensions: ['csv'],
-  mimeType: 'text/csv',
+  mimeTypes: ['text/csv'],
   options: DEFAULT_WRITER_OPTIONS,
   text: true,
   encode: async (table, options) =>
