@@ -1,9 +1,9 @@
 import type {Batch} from '@loaders.gl/schema';
-import type {JSONLoaderOptions} from '../json-loader';
+import type {JSONLoaderOptions} from '../../json-loader';
 import {TableBatchBuilder} from '@loaders.gl/schema';
 import {assert, makeTextDecoderIterator} from '@loaders.gl/loader-utils';
-import StreamingJSONParser from './parser/streaming-json-parser';
-import JSONPath from './jsonpath/jsonpath';
+import StreamingJSONParser from '../json-parser/streaming-json-parser';
+import JSONPath from '../jsonpath/jsonpath';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity

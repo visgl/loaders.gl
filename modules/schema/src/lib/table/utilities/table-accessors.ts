@@ -1,5 +1,7 @@
 // loaders.gl, MIT license
 
+/* eslint-disable no-else-return */
+
 import {Table, ArrayRowTable, ObjectRowTable} from '../../../types/category-table';
 
 /**
@@ -13,8 +15,10 @@ export function getTableLength(table: Table): number {
       return table.data.length;
 
     case 'columnar-table':
-      const firstColumnName = getTableColumnName(table, 0);
-      return table.data[firstColumnName].length || 0;
+      for (const column of Object.values(table.data)) {
+        return column.length || 0;
+      }
+      return 0;
 
     case 'arrow-table':
     default:
@@ -135,6 +139,7 @@ export function getTableColumnName(table: Table, columnIndex: number): string {
  * @param target Optional parameter will be used if needed to store the row. Can be reused between calls to improve performance
  * @returns an array representing the row. May be the original array in the row, a new object, or the target parameter
  */
+// eslint-disable-next-line complexity
 export function getTableRowAsObject(
   table: Table,
   rowIndex: number,
@@ -144,17 +149,45 @@ export function getTableRowAsObject(
   switch (table.shape) {
     case 'object-row-table':
       return copy ? Object.fromEntries(Object.entries(table.data[rowIndex])) : table.data[rowIndex];
+
     case 'array-row-table':
-      if (!table.schema) {
-        throw new Error('no schema');
+    case 'geojson-row-table':
+      if (table.schema) {
+        const objectRow: {[columnName: string]: unknown} = target || {};
+        for (let i = 0; i < table.schema.fields.length; i++) {
+          objectRow[table.schema.fields[i].name] = table.data[rowIndex][i];
+        }
+        return objectRow;
       }
+      throw new Error('no schema');
+
+    case 'columnar-table':
+      if (table.schema) {
+        const objectRow: {[columnName: string]: unknown} = target || {};
+        for (let i = 0; i < table.schema.fields.length; i++) {
+          objectRow[table.schema.fields[i].name] =
+            table.data[table.schema.fields[i].name][rowIndex];
+        }
+        return objectRow;
+      } else {
+        const objectRow: {[columnName: string]: unknown} = target || {};
+        for (const [name, column] of Object.entries(table.data)) {
+          objectRow[name] = column[rowIndex];
+        }
+        return objectRow;
+      }
+
+    case 'arrow-table':
       const objectRow: {[columnName: string]: unknown} = target || {};
-      for (let i = 0; i < table.schema.fields.length; i++) {
-        objectRow[table.schema.fields[i].name] = table.data[rowIndex][i];
+      const row = table.data.get(rowIndex);
+      const schema = table.data.schema;
+      for (let i = 0; i < schema.fields.length; i++) {
+        objectRow[schema.fields[i].name] = row?.[schema.fields[i].name];
       }
       return objectRow;
+
     default:
-      throw new Error(table.shape);
+      throw new Error('shape');
   }
 }
 
@@ -163,6 +196,7 @@ export function getTableRowAsObject(
  * @param target Optional parameter will be used if needed to store the row. Can be reused between calls to improve performance.
  * @returns an array representing the row. May be the original array in the row, a new object, or the target parameter
  */
+// eslint-disable-next-line complexity
 export function getTableRowAsArray(
   table: Table,
   rowIndex: number,
@@ -172,26 +206,47 @@ export function getTableRowAsArray(
   switch (table.shape) {
     case 'array-row-table':
       return copy ? Array.from(table.data[rowIndex]) : table.data[rowIndex];
-    // case 'object-row-table':
-    //   if (!table.schema) {
-    //     throw new Error('no schema');
-    //   }
-    //   const arrayRow: unknown[] = target || [];
-    //   for (let i = 0; i < table.schema.fields.length; i++) {
-    //     arrayRow[i] = table.data[rowIndex][table.schema.fields[i].name];
-    //   }
-    //   return arrayRow;
-    default:
-      if (!table.schema) {
-        throw new Error('no schema');
+
+    case 'object-row-table':
+    case 'geojson-row-table':
+      if (table.schema) {
+        const arrayRow: unknown[] = target || [];
+        for (let i = 0; i < table.schema.fields.length; i++) {
+          arrayRow[i] = table.data[rowIndex][table.schema.fields[i].name];
+        }
+        return arrayRow;
       }
+      // Warning: just slap on the values, this risks mismatches between rows
+      return Object.values(table.data[rowIndex]);
+
+    case 'columnar-table':
+      if (table.schema) {
+        const arrayRow: unknown[] = target || [];
+        for (let i = 0; i < table.schema.fields.length; i++) {
+          arrayRow[i] = table.data[table.schema.fields[i].name][rowIndex];
+        }
+        return arrayRow;
+      } else {
+        const arrayRow: unknown[] = target || [];
+        let i = 0;
+        for (const column of Object.values(table.data)) {
+          arrayRow[i] = column[rowIndex];
+          i++;
+        }
+        return arrayRow;
+      }
+
+    case 'arrow-table':
       const arrayRow: unknown[] = target || [];
-      const numCols = getTableNumCols(table);
-      arrayRow.length = numCols;
-      for (let columnIndex = 0; columnIndex < numCols; ++columnIndex) {
-        arrayRow[columnIndex] = getTableRowAsArray(table, rowIndex, [], 'copy');
+      const row = table.data.get(rowIndex);
+      const schema = table.data.schema;
+      for (let i = 0; i < schema.fields.length; i++) {
+        arrayRow[i] = row?.[schema.fields[i].name];
       }
       return arrayRow;
+
+    default:
+      throw new Error('shape');
   }
 }
 
@@ -221,4 +276,55 @@ export function makeObjectRowTable(table: Table): ObjectRowTable {
     schema: table.schema,
     data
   };
+}
+
+// Row Iterators
+
+/**
+ * Iterate over table rows
+ * @param table
+ * @param shape
+ */
+export function* makeRowIterator(
+  table: Table,
+  shape: 'object-row-table' | 'array-row-table'
+): Iterable<unknown[] | {[key: string]: unknown}> {
+  switch (shape) {
+    case 'array-row-table':
+      yield* makeArrayRowIterator(table);
+      break;
+    case 'object-row-table':
+      yield* makeObjectRowIterator(table);
+      break;
+
+    default:
+      throw new Error(`Unknown row type ${shape}`);
+  }
+}
+
+/**
+ * Streaming processing: Iterate over table, yielding array rows
+ * @param table
+ * @param shape
+ */
+export function* makeArrayRowIterator(table: Table, target: unknown[] = []): Iterable<unknown[]> {
+  const length = getTableLength(table);
+  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
+    yield getTableRowAsArray(table, rowIndex, target);
+  }
+}
+
+/**
+ * Streaming processing: Iterate over table, yielding object rows
+ * @param table
+ * @param shape
+ */
+export function* makeObjectRowIterator(
+  table: Table,
+  target: {[key: string]: unknown} = {}
+): Iterable<{[key: string]: unknown}> {
+  const length = getTableLength(table);
+  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
+    yield getTableRowAsObject(table, rowIndex, target);
+  }
 }

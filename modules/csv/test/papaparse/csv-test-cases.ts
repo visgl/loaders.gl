@@ -35,7 +35,8 @@ export const CORE_PARSER_TESTS = [
     expected: {
       data: [['A', 'b', 'c']],
       errors: []
-    }
+    },
+    disabled: false
   },
   {
     description: 'Two rows',
@@ -673,7 +674,8 @@ export const PARSE_TESTS = [
         ['d', 'E', 'f']
       ],
       errors: []
-    }
+    },
+    disabled: false
   },
   {
     description: 'Two rows, \\r\\n',

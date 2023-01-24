@@ -13,7 +13,7 @@ export default async function jsonLoaderBench(suite) {
   suite.addAsync('loadInBatches(JSONLoader) - Streaming GeoJSON load', options, async () => {
     const asyncIterator = await loadInBatches(GEOJSON_URL, JSONLoader);
     // const asyncIterator = await parseInBatches(STRING, JSONLoader);
-    const data = [];
+    const data: unknown[] = [];
     for await (const batch of asyncIterator) {
       data.push(...batch.data);
     }
@@ -24,5 +24,5 @@ export default async function jsonLoaderBench(suite) {
   });
 
   // Test underlying clarinet library
-  await clarinetBench(suite);
+  clarinetBench(suite);
 }
