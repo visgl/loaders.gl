@@ -2,11 +2,13 @@
 
 [WMS](https://en.wikipedia.org/wiki/Web_Map_Service) (Web Map Service) is a standardized protocol for serving geo-referenced **map images** over the internet. 
 
-WMS was standardized in 1999 as a way to .
+WMS was standardized in 1999 as a way to serve map images over the web.
 
 ## Characteristics
 
-WMS is not a single file format but rather a protocol, specifying a number of required and optional requests. Some requests return binary images, and some return metadata formatted as XML (text) responses. The XML responses are fairly detailed and some variations exists, so when working with WMS it is typically useful to have access to pre-tested parsers for each response type.
+WMS is not a file format but rather a protocol, specifying a set of requests that the server should implement. Some WMS protocol requests return binary images, and some return metadata formatted as XML text responses. 
+
+The XML responses have a fairly detailed structure and some variations exists, so when working with WMS it is typically useful to have access to well-tested parsers for each XML response type.
 
 ## Request Types
 
@@ -20,7 +22,7 @@ The WMS standard specifies a number of "request types" that a standards-complian
 | `DescribeLayer`    | `WMSLayerDescriptionLoader` | gets feature types of the specified layer or layers, which can be further described using WFS or WCS requests. This request is dependent on the Styled Layer Descriptor (SLD) Profile of WMS.                                      |
 | `GetLegendGraphic` | `ImageLoader`               | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                               |
 
-> Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server. The response to `GetCapabilities` contains information about which request types are supported
+> Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server. Information about which request types are supported is available in the response to `GetCapabilities` request.
 
 ## Map images
 

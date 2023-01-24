@@ -2,6 +2,7 @@
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
+	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
 The `WMSLayerDescriptionLoader` parses the XML-formatted response from the 

@@ -53,6 +53,6 @@
     "gatsby-plugin-no-sourcemaps": "^2.1.2",
     "gatsby-theme-ocular": "1.2.5",
     "gh-pages": "2.2.0",
-    "sharp": "^0.30.5"
+    "sharp": "^0.31.3"
   }
 }
