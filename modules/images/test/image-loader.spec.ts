@@ -47,7 +47,7 @@ test('ImageLoader#load(data URL)', async (t) => {
   t.end();
 });
 
-test('ImageLoader#load({type: \'data\'})', async (t) => {
+test("ImageLoader#load({type: 'data'})", async (t) => {
   TEST_CASES.shift();
   TEST_CASES.shift();
   for (const testCase of TEST_CASES) {
