@@ -56,7 +56,7 @@ const CUSTOM_TESTS = [
       ['d', 'E', 'f']
     ],
     run(callback) {
-      var data = [];
+      const data: any[] = [];
       Papa.parse('A,b,c\nd,E,f', {
         step(results) {
           data.push(results.data);
@@ -74,7 +74,7 @@ const CUSTOM_TESTS = [
       {One: 'd', Two: 'E', Three: 'f'}
     ],
     run(callback) {
-      var data = [];
+      const data: any[] = [];
       Papa.parse('One,Two,Three\nA,b,c\nd,E,f', {
         header: true,
         step(results) {
@@ -93,7 +93,7 @@ const CUSTOM_TESTS = [
       {One: 'd', Two: 'E', Three: 'f'}
     ],
     run(callback) {
-      var data = [];
+      const data: any[] = [];
       Papa.parse('One,Two,Three\nA,b,c\nd,E,f', {
         header: true,
         worker: true,
@@ -113,7 +113,7 @@ const CUSTOM_TESTS = [
       ['d', 'E', 'f']
     ],
     run(callback) {
-      var data = [];
+      const data: any[] = [];
       Papa.parse('A,b,c\nd,E,f', {
         worker: true,
         step(results) {
@@ -140,7 +140,7 @@ const CUSTOM_TESTS = [
     description: 'Step is called with the last cursor position',
     expected: [6, 12, 17],
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse('A,b,c\nd,E,f\nG,h,i', {
         step(response) {
           updates.push(response.meta.cursor);
@@ -156,7 +156,7 @@ const CUSTOM_TESTS = [
     expected: [129, 287, 452, 595, 727, 865, 1031, 1209],
     disabled: !XHR_ENABLED,
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse(BASE_PATH + 'long-sample.csv', {
         download: true,
         step(response) {
@@ -173,7 +173,7 @@ const CUSTOM_TESTS = [
     expected: [129, 287, 452, 595, 727, 865, 1031, 1209],
     disabled: !XHR_ENABLED,
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse(BASE_PATH + 'long-sample.csv', {
         download: true,
         chunkSize: 500,
@@ -191,7 +191,7 @@ const CUSTOM_TESTS = [
     expected: [452, 452, 452, 865, 865, 865, 1209, 1209],
     disabled: !XHR_ENABLED,
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse(BASE_PATH + 'long-sample.csv', {
         download: true,
         chunkSize: 500,
@@ -210,7 +210,7 @@ const CUSTOM_TESTS = [
     expected: [3, 3, 2],
     disabled: !XHR_ENABLED,
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse(BASE_PATH + 'long-sample.csv', {
         download: true,
         chunkSize: 500,
@@ -228,7 +228,7 @@ const CUSTOM_TESTS = [
     expected: [452, 865, 1209],
     disabled: !XHR_ENABLED,
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse(BASE_PATH + 'long-sample.csv', {
         download: true,
         chunkSize: 500,
@@ -245,7 +245,7 @@ const CUSTOM_TESTS = [
     description: 'Chunk functions can pause parsing',
     expected: [[['A', 'b', 'c']]],
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse('A,b,c\nd,E,f\nG,h,i', {
         chunkSize: 10,
         chunk(response, handle) {
@@ -269,9 +269,9 @@ const CUSTOM_TESTS = [
       ]
     ],
     run(callback) {
-      var updates = [];
-      var handle = null;
-      var first = true;
+      const updates: any[] = [];
+      let handle: any = null;
+      let first: boolean = true;
       Papa.parse('A,b,c\nd,E,f\nG,h,i', {
         chunkSize: 10,
         chunk(response, h) {
@@ -294,7 +294,7 @@ const CUSTOM_TESTS = [
     description: 'Chunk functions can abort parsing',
     expected: [[['A', 'b', 'c']]],
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse('A,b,c\nd,E,f\nG,h,i', {
         chunkSize: 1,
         chunk(response, handle) {
@@ -314,7 +314,7 @@ const CUSTOM_TESTS = [
     expected: [6, 12, 17],
     disabled: !FILES_ENABLED,
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse(new File(['A,b,c\nd,E,f\nG,h,i'], 'sample.csv'), {
         download: true,
         step(response) {
@@ -331,7 +331,7 @@ const CUSTOM_TESTS = [
     expected: [6, 12, 17],
     disabled: !FILES_ENABLED,
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse(new File(['A,b,c\nd,E,f\nG,h,i'], 'sample.csv'), {
         chunkSize: 3,
         step(response) {
@@ -351,7 +351,7 @@ const CUSTOM_TESTS = [
     ],
     disabled: !FILES_ENABLED,
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse(new File(['A,B,C\nX,"Y\n1\n2\n3",Z'], 'sample.csv'), {
         chunkSize: 3,
         step(response) {
@@ -367,7 +367,7 @@ const CUSTOM_TESTS = [
     description: 'Step functions can abort parsing',
     expected: [['A', 'b', 'c']],
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse('A,b,c\nd,E,f\nG,h,i', {
         step(response, handle) {
           updates.push(response.data);
@@ -397,7 +397,7 @@ const CUSTOM_TESTS = [
     description: 'Step functions can pause parsing',
     expected: [['A', 'b', 'c']],
     run(callback) {
-      var updates = [];
+      const updates: any[] = [];
       Papa.parse('A,b,c\nd,E,f\nG,h,i', {
         step(response, handle) {
           updates.push(response.data);
@@ -418,9 +418,9 @@ const CUSTOM_TESTS = [
       ['G', 'h', 'i']
     ],
     run(callback) {
-      var updates = [];
-      var handle = null;
-      var first = true;
+      const updates: any[] = [];
+      let handle: any = null;
+      let first: boolean = true;
       Papa.parse('A,b,c\nd,E,f\nG,h,i', {
         step(response, h) {
           updates.push(response.data);
@@ -488,6 +488,7 @@ const CUSTOM_TESTS = [
       Papa.parse(BASE_PATH + 'long-sample.csv', {
         download: true,
         chunkSize: 500,
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         beforeFirstChunk(chunk) {},
         step(response) {
           updates++;
@@ -558,7 +559,7 @@ test('papaparse#Parse Tests', (t) => {
 test('Parse Async Tests', (t) => {
   for (const testCase of PARSE_ASYNC_TESTS) {
     if (!testCase.disabled) {
-      var config = testCase.config;
+      const config: any = testCase.config;
 
       config.complete = function (actual) {
         t.deepEqual(
@@ -687,7 +688,7 @@ test('CSVLoader#PapaParse', t => {
   });
 
   it('piped streaming CSV should be correctly parsed', function(done) {
-    var data = [];
+    const data: any[] = [];
     var readStream = fs.createReadStream(__dirname + '/long-sample.csv', 'utf8');
     var csvStream = readStream.pipe(Papa.parse(Papa.NODE_STREAM_INPUT));
     csvStream.on('data', function(item) {
