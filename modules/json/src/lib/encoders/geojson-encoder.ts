@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright 2022 Foursquare Labs, Inc.
 
-import {Feature} from '@loaders.gl/schema';
+import {Feature, getTableLength} from '@loaders.gl/schema';
 import {Table, TableBatch, getTableRowAsObject} from '@loaders.gl/schema';
 import {detectGeometryColumnIndex, getRowPropertyObject} from './encode-utils';
 import {Utf8ArrayBufferEncoder} from './utf8-encoder';
@@ -37,7 +37,7 @@ export async function* encodeTableAsGeojsonInBatches(
   let isFirstLine = true;
 
   for await (const batch of batchIterator) {
-    const {table, start, end} = batch;
+    const {table, start, end = getTableLength(batch.table) - start} = batch;
 
     // Deduce geometry column if not already done
     if (!geometryColumn) {
@@ -58,6 +58,10 @@ export async function* encodeTableAsGeojsonInBatches(
       if (utf8Encoder.isFull()) {
         yield utf8Encoder.getArrayBufferBatch();
       }
+    }
+    const arrayBufferBatch = utf8Encoder.getArrayBufferBatch();
+    if (arrayBufferBatch.byteLength > 0) {
+      yield arrayBufferBatch;
     }
   }
 
@@ -99,7 +103,9 @@ function getFeatureFromRow(table: Table, row: Row, geometryColumnIndex: number):
   const properties = getRowPropertyObject(table, row, [geometryColumnIndex]);
 
   // Extract geometry feature
-  let featureOrGeometry = row[geometryColumnIndex] as {[key: string]: unknown} | string | null;
+  const columnName = table.schema?.fields[geometryColumnIndex].name;
+  let featureOrGeometry =
+    columnName && (row[columnName] as {[key: string]: unknown} | string | null | undefined);
 
   // GeoJSON support null geometries
   if (!featureOrGeometry) {
