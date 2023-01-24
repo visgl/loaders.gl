@@ -77,6 +77,7 @@ export default function parsePCD(data: ArrayBufferLike): PCDMesh {
   return {
     loader: 'pcd',
     loaderData: pcdHeader,
+    header: header as any,
     schema,
     mode: 0, // POINTS
     topology: 'point-list',
