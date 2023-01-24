@@ -36,7 +36,10 @@ export {
   getTableColumnIndex,
   getTableColumnName,
   getTableRowAsObject,
-  getTableRowAsArray
+  getTableRowAsArray,
+  makeRowIterator,
+  makeArrayRowIterator,
+  makeObjectRowIterator
 } from './lib/table/utilities/table-accessors';
 
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';

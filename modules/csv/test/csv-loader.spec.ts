@@ -302,7 +302,7 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
     csv: {shape: 'object-row-table'}
   });
 
-  const rows = [];
+  const rows: any[] = [];
 
   for await (const batch of iterator) {
     rows.push(...batch.data);
@@ -323,7 +323,7 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
     csv: {shape: 'array-row-table'}
   });
 
-  const rows2 = [];
+  const rows2: any[] = [];
 
   for await (const batch of iterator2) {
     rows2.push(...batch.data);
@@ -346,7 +346,7 @@ test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
     csv: {shape: 'object-row-table', skipEmptyLines: true}
   });
 
-  const rows = [];
+  const rows: any[] = [];
 
   for await (const batch of iterator) {
     rows.push(...batch.data);
@@ -369,7 +369,7 @@ test('CSVLoader#loadInBatches(csv with quotes)', async (t) => {
     csv: {shape: 'object-row-table'}
   });
 
-  const rows = [];
+  const rows: any[] = [];
   for await (const batch of iterator) {
     rows.push(...batch.data);
   }
@@ -397,7 +397,7 @@ function validateColumn(column, length, type) {
   if (column.length !== length) {
     return `column length should be ${length}`;
   }
-  let validator = null;
+  let validator: Function | null = null;
   switch (type) {
     case 'string':
       validator = (d) => typeof d === 'string';

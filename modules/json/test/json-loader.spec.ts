@@ -2,8 +2,8 @@ import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
 
-const GEOJSON_PATH = `@loaders.gl/json/test/data/geojson-big.json`;
-const GEOJSON_KEPLER_DATASET_PATH = `@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json`;
+const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
+const GEOJSON_KEPLER_DATASET_PATH = '@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json';
 
 test('JSONLoader#load(geojson.json)', async (t) => {
   const data = await load(GEOJSON_PATH, JSONLoader, {json: {table: true}});
