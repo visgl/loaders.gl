@@ -2,6 +2,8 @@
 
 // WMS
 
+export {WMSErrorLoader} from './wms-error-loader';
+
 export type {WMSCapabilities, WMSFeatureInfo, WMSLayerDescription} from './lib/wms/wms-types';
 export type {WMSLoaderOptions} from './wms-capabilities-loader';
 export {WMSCapabilitiesLoader} from './wms-capabilities-loader';

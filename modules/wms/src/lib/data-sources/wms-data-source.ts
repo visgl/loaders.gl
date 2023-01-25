@@ -4,12 +4,11 @@ import type {WMSCapabilities, WMSFeatureInfo, WMSLayerDescription} from '@loader
 import {
   WMSCapabilitiesLoader,
   WMSFeatureInfoLoader,
-  WMSLayerDescriptionLoader
+  WMSLayerDescriptionLoader,
+  WMSErrorLoader
 } from '@loaders.gl/wms';
 import {ImageLoader, ImageType} from '@loaders.gl/images';
 import {LoaderOptions} from '@loaders.gl/loader-utils';
-
-// import {ImageDataSource} from './image-data-sources';
 
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
@@ -20,7 +19,6 @@ export type WMSDataSourceProps = {
 };
 
 export class WMSDataSource {
-  // implements ImageDataSource {
   url: string;
   loadOptions: LoaderOptions;
   fetch: typeof fetch | FetchLike;
@@ -31,9 +29,40 @@ export class WMSDataSource {
     this.fetch = props.fetch || fetch;
   }
 
+  // URL creators
+
+  getCapabilitiesURL(options: {parameters?: Record<string, unknown>}): string {
+    return this.getWMSUrl({request: 'GetCapabilities', ...options});
+  }
+
+  getImageURL(options: {
+    boundingBox;
+    width;
+    height;
+    layers: string[];
+    parameters?: Record<string, unknown>;
+  }): string {
+    return this.getWMSUrl({request: 'GetMap', ...options});
+  }
+
+  getFeatureInfoURL(options: {layers: string[]; parameters?: Record<string, unknown>}): string {
+    return this.getWMSUrl({request: 'GetFeatureInfo', ...options});
+  }
+
+  getLayerInfoURL(options: {layers: string[]; parameters?: Record<string, unknown>}): string {
+    return this.getWMSUrl({request: 'GetLayerInfo', ...options});
+  }
+
+  getLegendImageURL(options: {layers: string[]; parameters?: Record<string, unknown>}): string {
+    return this.getWMSUrl({request: 'GetLegendImage', ...options});
+  }
+
+  // Request wrappers
+
   async getCapabilities(options: {parameters?: Record<string, unknown>}): Promise<WMSCapabilities> {
-    const url = this.getUrl({request: 'GetCapabilities', ...options});
+    const url = this.getCapabilitiesURL(options);
     const response = await this.fetch(url, this.loadOptions);
+    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return await WMSCapabilitiesLoader.parse(arrayBuffer, this.loadOptions);
   }
@@ -45,8 +74,9 @@ export class WMSDataSource {
     layers: string[];
     parameters?: Record<string, unknown>;
   }): Promise<ImageType> {
-    const url = this.getUrl({request: 'GetMap', ...options});
+    const url = this.getImageURL(options);
     const response = await this.fetch(url, this.loadOptions);
+    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return await ImageLoader.parse(arrayBuffer, this.loadOptions);
   }
@@ -55,8 +85,9 @@ export class WMSDataSource {
     layers: string[];
     parameters?: Record<string, unknown>;
   }): Promise<WMSFeatureInfo> {
-    const url = this.getUrl({request: 'GetFeatureInfo', ...options});
+    const url = this.getFeatureInfoURL(options);
     const response = await this.fetch(url, this.loadOptions);
+    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return await WMSFeatureInfoLoader.parse(arrayBuffer, this.loadOptions);
   }
@@ -65,8 +96,9 @@ export class WMSDataSource {
     layers: string[];
     parameters?: Record<string, unknown>;
   }): Promise<WMSLayerDescription> {
-    const url = this.getUrl({request: 'GetLayerInfo', ...options});
+    const url = this.getLayerInfoURL(options);
     const response = await this.fetch(url, this.loadOptions);
+    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return await WMSLayerDescriptionLoader.parse(arrayBuffer, this.loadOptions);
   }
@@ -75,17 +107,18 @@ export class WMSDataSource {
     layers: string[];
     parameters?: Record<string, unknown>;
   }): Promise<ImageType> {
-    const url = this.getUrl({request: 'GetLegendImage', ...options});
+    const url = this.getLegendImageURL(options);
     const response = await this.fetch(url, this.loadOptions);
+    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return await ImageLoader.parse(arrayBuffer, this.loadOptions);
   }
 
   /**
-   * @note protected, since perhaps getUrl may need to be overridden to handle certain backends?
+   * @note protected, since perhaps getWMSUrl may need to be overridden to handle certain backends?
    * @note if override is common, maybe add a callback prop?
    * */
-  protected getUrl(options: {
+  protected getWMSUrl(options: {
     request: string;
     layers?: string[];
     parameters?: Record<string, unknown>;
@@ -95,5 +128,14 @@ export class WMSDataSource {
       url += `&LAYERS=[${options.layers.join(',')}]`;
     }
     return url;
+  }
+
+  /** Checks for and parses a WMS XML formatted ServiceError and throws an exception */
+  protected async checkResponse(response: Response) {
+    if (!response.ok || response.headers['content-type'] === WMSErrorLoader.mimeTypes[0]) {
+      const arrayBuffer = await response.arrayBuffer();
+      const error = await WMSErrorLoader.parse(arrayBuffer, this.loadOptions);
+      throw new Error(error);
+    }
   }
 }
