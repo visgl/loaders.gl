@@ -63,11 +63,24 @@ function extractLayer(xmlLayer: any): WMSLayer {
     layers: []
   };
 
-  for (const xmlSubLayer of xmlLayer?.Layer || []) {
+  // Single layer is not represented as array in XML
+  const xmlLayers = getXMLArray(xmlLayer?.Layer);
+
+  for (const xmlSubLayer of xmlLayers) {
     layer.layers?.push(extractLayer(xmlSubLayer));
   }
 
   return layer;
+}
+
+function getXMLArray(xmlValue: any) {
+  if (Array.isArray(xmlValue)) {
+    return xmlValue;
+  }
+  if (xmlValue) {
+    return [xmlValue];
+  }
+  return [];
 }
 
 // GetFeatureInfo
@@ -107,4 +120,10 @@ export function parseWMSLayerDescription(text: string, options): WMSLayerDescrip
   const parsedXML = XMLLoader.parseTextSync(text, options);
   // TODO - implement parser
   return parsedXML as unknown as WMSLayerDescription;
+}
+
+export function parseWMSError(text: string, options): string {
+  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const error = parsedXML?.ServiceExceptionReport?.ServiceException || 'Unknown error';
+  return String(error);
 }

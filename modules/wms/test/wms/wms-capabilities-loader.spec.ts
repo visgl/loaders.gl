@@ -12,6 +12,8 @@ const WMS_FORECASTS_URL = '@loaders.gl/wms/test/data/wms/get-capabilities/foreca
 const WMS_OBS_URL = '@loaders.gl/wms/test/data/wms/get-capabilities/obs.xml';
 const WMS_WWA_URL = '@loaders.gl/wms/test/data/wms/get-capabilities/wwa.xml';
 
+const WMS_ADHOC_URL = '@loaders.gl/wms/test/data/wms/get-capabilities/?.xml';
+
 test('WMSCapabilitiesLoader#forecasts.xml', async (t) => {
   const capabilities = (await load(WMS_FORECASTS_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
@@ -49,6 +51,16 @@ test('WMSCapabilitiesLoader#analyses.xml', async (t) => {
 
 test('WMSCapabilitiesLoader#dmsp.xml', async (t) => {
   const capabilities = (await load(WMS_DMSP_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
+
+  t.equal(typeof capabilities, 'object', 'parsed');
+  t.equal(capabilities.layer.layers[2].name, 'eez', 'contents');
+
+  t.end();
+});
+
+// For adhoc testing (non-committed XML files or direct from server)
+test.skip('WMSCapabilitiesLoader#ad-hoc-test', async (t) => {
+  const capabilities = (await load(WMS_ADHOC_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
   t.equal(capabilities.layer.layers[2].name, 'eez', 'contents');
