@@ -32,6 +32,9 @@ modules/xml/test/sax-ts/testcases/xmlns-xml-default-redefine.spec.ts
 modules/wms/src/lib/gml/parse-gml.ts
 modules/wms/src/lib/wfs/wfs-types.ts
 modules/wms/src/wms-layer-description-loader.ts
+
+modules/wms/test/data/wms/errors.ts
+
 modules/wms/test/wfs/wfs-capabilities-loader.spec.ts
 modules/wms/test/wms-feature-info-loader.spec.ts
 modules/wms/test/wms/wms-feature-info-loader.spec.ts
