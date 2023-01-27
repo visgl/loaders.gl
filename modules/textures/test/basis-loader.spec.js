@@ -64,14 +64,15 @@ test('BasisLoader#auto-select a target format', async (t) => {
 
   if (isBrowser) {
     t.ok(
-      [
-        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_4X4_KHR,
-        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
-        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
-        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-        GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_ETC1_WEBGL
-      ].includes(image.format),
+      typeof image.format === 'number' &&
+        [
+          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_4X4_KHR,
+          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
+          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_ETC1_WEBGL
+        ].includes(image.format),
       'Browser supports one of GPU textures formats'
     );
     t.ok(image.compressed, 'Basis transcodes to compressed texture');

@@ -7,7 +7,7 @@ import {
   makeTextDecoderIterator
 } from '@loaders.gl/loader-utils';
 
-export default async function* parseNDJSONInBatches(
+export async function* parseNDJSONInBatches(
   binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: LoaderOptions
 ): AsyncIterable<Batch> {

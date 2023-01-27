@@ -68,21 +68,21 @@ function deduceFieldFromColumn(column: unknown, name: string): Field {
     // TODO - support nested schemas?
     return {
       name,
-      type,
       nullable: true,
-      metadata: {}
+      metadata: {},
+      ...type
     };
   }
 
   throw new Error('empty table');
 }
 
-function deduceFieldFromValue(value: unknown, name: string) {
+function deduceFieldFromValue(value: unknown, name: string): Field {
   const type = getTypeFromValue(value);
   return {
     name,
-    type,
     nullable: true,
-    metadata: {}
+    metadata: {},
+    ...type
   };
 }

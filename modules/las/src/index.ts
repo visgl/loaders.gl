@@ -1,5 +1,6 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {LASLoaderOptions} from './las-loader';
+import type {LASMesh} from './lib/las-types';
 import {LASLoader as LASWorkerLoader} from './las-loader';
 import {parseLAS} from './lib/parse-las';
 
@@ -8,13 +9,10 @@ import {parseLAS} from './lib/parse-las';
 export type {LASLoaderOptions};
 export {LASWorkerLoader};
 
-type PromiseType<T> = T extends Promise<infer Return> ? Return : T;
-type Type = PromiseType<ReturnType<typeof parseLAS>>;
-
 /**
  * Loader for the LAS (LASer) point cloud format
  */
-export const LASLoader: LoaderWithParser<Type, never, LASLoaderOptions> = {
+export const LASLoader: LoaderWithParser<LASMesh, never, LASLoaderOptions> = {
   ...LASWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
     parseLAS(arrayBuffer, options),
