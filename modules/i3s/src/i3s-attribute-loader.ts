@@ -1,5 +1,6 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
+import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {getUrlWithToken} from './lib/utils/url-utils';
 
@@ -8,25 +9,24 @@ import {getUrlWithToken} from './lib/utils/url-utils';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const EMPTY_VALUE = '';
 const REJECTED_STATUS = 'rejected';
+
 /**
  * Loader for I3S attributes
  */
-export const I3SAttributeLoader: LoaderWithParser = {
+export const I3SAttributeLoader: LoaderWithParser<I3STileAttributes, never, LoaderOptions> = {
   name: 'I3S Attribute',
   id: 'i3s-attribute',
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/binary'],
-  parse,
+  parse: async (arrayBuffer: ArrayBuffer, options?: LoaderOptions) => parseI3STileAttribute(arrayBuffer, options),
   extensions: ['bin'],
   options: {},
   binary: true
 };
 
-async function parse(data, options) {
-  data = parseI3STileAttribute(data, options);
-  return data;
-}
+
+// TODO - these seem to use the loader rather than being part of the loader. Move to different file...
 
 /**
  * Load attributes based on feature id

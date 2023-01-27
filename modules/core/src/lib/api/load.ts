@@ -1,13 +1,7 @@
 // loaders.gl, MIT license
 
-import type {
-  DataType,
-  Loader,
-  LoaderContext,
-  LoaderOptions,
-  LoaderOptionsType
-} from '@loaders.gl/loader-utils';
-// import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
+import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
@@ -29,7 +23,7 @@ export async function load<LoaderT extends Loader>(
   loader: LoaderT,
   options?: LoaderOptionsType<LoaderT>,
   context?: LoaderContext
-): Promise<any>; // Promise<LoaderReturnType<LoaderT>>;
+): Promise<LoaderReturnType<LoaderT>>;
 
 export async function load<
   LoaderT extends Loader,

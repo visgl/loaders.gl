@@ -1,12 +1,14 @@
 // loaders.gl, MIT license
-
+import type {RowTable} from '@loaders.gl/schema';
+import {makeTableFromArray} from '@loaders.gl/schema';
 import type {JSONLoaderOptions} from '../../json-loader';
 
-export default function parseJSONSync(jsonText: string, options: JSONLoaderOptions) {
+export function parseJSONSync(jsonText: string, options: JSONLoaderOptions): RowTable {
   try {
     const json = JSON.parse(jsonText);
     if (options.json?.table) {
-      return getFirstArray(json) || json;
+      const data = getFirstArray(json) || json;
+      return makeTableFromArray(data);
     }
     return json;
   } catch (error) {
