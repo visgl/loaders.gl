@@ -5,6 +5,7 @@ import type {JSONLoaderOptions} from './json-loader';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
+import {GeoJSONRowTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -63,12 +64,13 @@ function parseTextSync(text, options) {
   options = {...DEFAULT_GEOJSON_LOADER_OPTIONS, ...options};
   options.json = {...DEFAULT_GEOJSON_LOADER_OPTIONS.geojson, ...options.geojson};
   options.gis = options.gis || {};
-  const json = parseJSONSync(text, options);
+  const table = parseJSONSync(text, options) as GeoJSONRowTable;
+  table.shape = 'geojson-row-table';
   switch (options.gis.format) {
     case 'binary':
-      return geojsonToBinary(json);
+      return geojsonToBinary(table.data);
     default:
-      return json;
+      return table;
   }
 }
 

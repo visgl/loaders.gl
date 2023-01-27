@@ -1,11 +1,11 @@
 import {Table, ArrayRowTable, ObjectRowTable} from '../../../types/category-table';
-import { deduceTableSchema } from './deduce-table-schema';
+import {deduceTableSchema} from './deduce-table-schema';
 
 /** Helper that wraps an array a loaders.gl Table object and deduces shape and schema */
 export function makeTableFromArray(
-  array: unknown[], 
+  array: unknown[],
   defaultShape: 'array-row-table' | 'object-row-table' = 'array-row-table'
-):  ArrayRowTable | ObjectRowTable {
+): ArrayRowTable | ObjectRowTable {
   if (array.length === 0) {
     return {shape: defaultShape, schema: {fields: [], metadata: {}}, data: []};
   }

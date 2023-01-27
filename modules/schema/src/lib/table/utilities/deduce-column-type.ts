@@ -32,7 +32,10 @@ export function getTypeFromTypedArray(arrayBufferView: ArrayBufferView): DataTyp
   // }
 }
 
-export function getTypeFromValue(value: unknown, defaultNumberType: 'float32' = 'float32'): Omit<Field, 'name'> {
+export function getTypeFromValue(
+  value: unknown,
+  defaultNumberType: 'float32' = 'float32'
+): Omit<Field, 'name'> {
   if (value instanceof Date) {
     return {type: 'date-millisecond'};
   }
