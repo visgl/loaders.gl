@@ -43,6 +43,7 @@ test('ImageWriter#write-and-read-image', async (t) => {
   image = await parse(arrayBuffer, ImageLoader, {image: {type: 'data'}});
   t.deepEqual(image.width, IMAGE.width, 'encoded and parsed image widths are same');
   t.deepEqual(image.height, IMAGE.height, 'encoded and parsed image heightsare same');
+  // @ts-expect-error
   t.deepEqual(image.data, IMAGE.data, 'encoded and parsed image data are same');
 
   t.end();

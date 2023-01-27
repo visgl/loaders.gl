@@ -64,8 +64,11 @@ export async function customizeColors(
   }
 
   const attributeValuesMap: {[key: number]: COLOR} = {};
+  // @ts-expect-error
   for (let i = 0; i < objectIdAttributeData[objectIdField.name].length; i++) {
+    // @ts-expect-error
     attributeValuesMap[objectIdAttributeData[objectIdField.name][i]] = calculateColorForAttribute(
+      // @ts-expect-error
       colorizeAttributeData[colorizeAttributeField.name][i] as number,
       options
     );
@@ -114,7 +117,7 @@ async function loadFeatureAttributeData(
   {attributeUrls}: I3STileOptions,
   {attributeStorageInfo}: I3STilesetOptions,
   options?: I3SLoaderOptions
-): Promise<{[key: string]: string[] | Uint32Array | Uint16Array | Float64Array} | null> {
+): Promise<{[key: string]: string[] | Uint32Array | Uint16Array | Float64Array | null} | null> {
   const attributeIndex = attributeStorageInfo.findIndex(({name}) => attributeName === name);
   if (attributeIndex === -1) {
     return null;
@@ -125,5 +128,7 @@ async function loadFeatureAttributeData(
     attributeName,
     attributeType
   });
+
+  // @ts-expect-error TODO action engine
   return objectIdAttributeData;
 }

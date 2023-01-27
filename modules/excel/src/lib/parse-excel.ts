@@ -10,7 +10,10 @@ const dataTableNamesMap = {};
  * @param arrayBuffer Loaded data
  * @param options Data parse options.
  */
-export async function parseExcel(arrayBuffer: ArrayBuffer, options?: ExcelLoaderOptions) {
+export function parseExcel(
+  arrayBuffer: ArrayBuffer,
+  options?: ExcelLoaderOptions
+): {[key: string]: unknown}[] {
   const dataUrl = 'dummy';
   // const dataFileType: string = dataUrl.substr(dataUrl.lastIndexOf('.')); // file extension
 
@@ -21,7 +24,7 @@ export async function parseExcel(arrayBuffer: ArrayBuffer, options?: ExcelLoader
   });
 
   // load data sheets
-  let dataRows = [];
+  let dataRows: {[key: string]: unknown}[] = [];
   dataTableNamesMap[dataUrl] = [];
   if (workbook.SheetNames.length > 0) {
     if (workbook.SheetNames.length > 1) {

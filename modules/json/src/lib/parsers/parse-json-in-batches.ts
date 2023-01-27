@@ -7,7 +7,7 @@ import JSONPath from '../jsonpath/jsonpath';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity
-export default async function* parseJSONInBatches(
+export async function* parseJSONInBatches(
   binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options: JSONLoaderOptions
 ): AsyncIterable<TableBatch> {
