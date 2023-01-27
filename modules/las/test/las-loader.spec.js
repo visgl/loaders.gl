@@ -8,7 +8,7 @@ import {
 
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
-import {ArrowLoader} from '@loaders.gl/arrow';
+// import {ArrowLoader} from '@loaders.gl/arrow';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
@@ -27,7 +27,7 @@ test('LASLoader#parse(binary)', async (t) => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {skip: 10}, worker: false});
   validateMeshCategoryData(t, data);
 
-  t.is(data.header.vertexCount, data.loaderData.totalRead, 'Original header was found');
+  t.is(data.header?.vertexCount, data.loaderData.totalRead, 'Original header was found');
   t.equal(data.mode, 0, 'mode is POINTS (0)');
 
   t.notOk(data.indices, 'INDICES attribute was not preset');
@@ -65,7 +65,7 @@ test('LASWorker#parse(binary) extra bytes', async (t) => {
   });
   validateMeshCategoryData(t, data);
 
-  t.is(data.header.vertexCount, data.loaderData.totalRead, 'Original header was found');
+  t.is(data.header?.vertexCount, data.loaderData.totalRead, 'Original header was found');
   t.equal(data.mode, 0, 'mode is POINTS (0)');
 
   t.notOk(data.indices, 'INDICES attribute was not preset');
@@ -104,6 +104,7 @@ test.skip('LASLoader#shape="columnar-table"', async (t) => {
 });
 
 // Related code was commented due to breaking pointcloud example on the website
+/*
 test.skip('LAS#shape="arrow-table"', async (t) => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'arrow-table', skip: 10},
@@ -143,3 +144,4 @@ test.skip('LAS#shape="arrow-table"', async (t) => {
   t.equals(arrowData.POSITION[0].data.values.length, 3);
   t.end();
 });
+*/

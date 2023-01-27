@@ -1,3 +1,7 @@
+// loaders.gl, MIT license
+
+import {TypedArray} from '@loaders.gl/schema';
+
 import {
   STRING_ATTRIBUTE_TYPE,
   OBJECT_ID_ATTRIBUTE_TYPE,
@@ -5,13 +9,16 @@ import {
   INT_16_ATTRIBUTE_TYPE
 } from './constants';
 
+type Attribute = string[] | TypedArray | null;
+export type I3STileAttributes = Record<string, Attribute>;
+
 /**
  * Get particular tile and creates attribute object inside.
- * @param {ArrayBuffer} arrayBuffer
+ * @param  arrayBuffer
  * @param {Object} options
  * @returns {Promise<object>}
  */
-export async function parseI3STileAttribute(arrayBuffer, options) {
+export function parseI3STileAttribute(arrayBuffer: ArrayBuffer, options): I3STileAttributes {
   const {attributeName, attributeType} = options;
 
   if (!attributeName) {
@@ -25,10 +32,10 @@ export async function parseI3STileAttribute(arrayBuffer, options) {
 /**
  * Parse attributes based on attribute type.
  * @param {String} attributeType
- * @param {ArrayBuffer} arrayBuffer
- * @returns {any}
+ * @param  arrayBuffer
+ * @returns
  */
-function parseAttribute(attributeType, arrayBuffer) {
+function parseAttribute(attributeType, arrayBuffer: ArrayBuffer): Attribute {
   switch (attributeType) {
     case STRING_ATTRIBUTE_TYPE:
       return parseStringsAttribute(arrayBuffer);
@@ -46,10 +53,10 @@ function parseAttribute(attributeType, arrayBuffer) {
 /**
  * Parse short number attribute.
  * Short Integer spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
- * @param {ArrayBuffer} arrayBuffer
- * @returns {Uint32Array}
+ * @param  arrayBuffer
+ * @returns
  */
-function parseShortNumberAttribute(arrayBuffer) {
+function parseShortNumberAttribute(arrayBuffer: ArrayBuffer): Uint32Array {
   const countOffset = 4;
   return new Uint32Array(arrayBuffer, countOffset);
 }
@@ -57,10 +64,10 @@ function parseShortNumberAttribute(arrayBuffer) {
 /**
  * Parse Int16 short number attribute.
  * Parsing of such data is not documented. Added to handle Building Scene Layer Tileset attributes data.
- * @param {ArrayBuffer} arrayBuffer
- * @returns {Int16Array}
+ * @param  arrayBuffer
+ * @returns
  */
-function parseInt16ShortNumberAttribute(arrayBuffer) {
+function parseInt16ShortNumberAttribute(arrayBuffer: ArrayBuffer): Int16Array {
   const countOffset = 4;
   return new Int16Array(arrayBuffer, countOffset);
 }
@@ -68,10 +75,10 @@ function parseInt16ShortNumberAttribute(arrayBuffer) {
 /**
  * Parse float attribute.
  * Double Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
- * @param {ArrayBuffer} arrayBuffer
- * @returns {Float64Array}
+ * @param  arrayBuffer
+ * @returns
  */
-function parseFloatAttribute(arrayBuffer) {
+function parseFloatAttribute(arrayBuffer: ArrayBuffer): Float64Array {
   const countOffset = 8;
   return new Float64Array(arrayBuffer, countOffset);
 }

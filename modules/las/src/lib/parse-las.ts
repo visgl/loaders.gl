@@ -1,5 +1,5 @@
 // ported and es6-ified from https://github.com/verma/plasio/
-import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
+// import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../las-loader';
 import type {LASMesh, LASHeader} from './las-types';
 import {getMeshBoundingBox /* , convertMesh */} from '@loaders.gl/schema';
@@ -20,10 +20,7 @@ type LASChunk = {
  * @param options
  * @returns LASHeader
  */
-export function parseLAS(
-  arrayBuffer: ArrayBuffer,
-  options?: LASLoaderOptions
-): LASMesh | ArrowTable | ColumnarTable {
+export function parseLAS(arrayBuffer: ArrayBuffer, options?: LASLoaderOptions): LASMesh {
   return parseLASMesh(arrayBuffer, options);
   // This code breaks pointcloud example on the website
   // const mesh = parseLASMesh(arrayBuffer, options);

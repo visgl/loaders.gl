@@ -1,11 +1,12 @@
 // COMMON CATEGORY
 export type {TypedArray, NumberArray, AnyArray} from './types/types';
 
-export type {Schema, Field, DataType, Batch} from './types/schema';
+export type {Schema, Field, DataType, Batch, SchemaMetadata, FieldMetadata} from './types/schema';
 
 // TABLE CATEGORY TYPES
 export type {
   Table,
+  RowTable,
   ArrayRowTable,
   ObjectRowTable,
   GeoJSONRowTable,
@@ -45,6 +46,8 @@ export {
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 
 export {convertToObjectRow, convertToArrayRow} from './lib/table/utilities/row-utils';
+
+export {makeTableFromArray} from './lib/table/utilities/make-table';
 
 // MESH CATEGORY
 export type {

@@ -1,13 +1,19 @@
 // loaders.gl, MIT license
 
-import parseNDJSONSync from './lib/parsers/parse-ndjson';
-import parseNDJSONInBatches from './lib/parsers/parse-ndjson-in-batches';
+import {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import {ObjectRowTable, ArrayRowTable, TableBatch} from '@loaders.gl/schema';
+import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
+import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export const NDJSONLoader = {
+export const NDJSONLoader: LoaderWithParser<
+  ObjectRowTable | ArrayRowTable,
+  TableBatch,
+  LoaderOptions
+> = {
   name: 'NDJSON',
   id: 'ndjson',
   module: 'json',
