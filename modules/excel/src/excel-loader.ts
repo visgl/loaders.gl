@@ -1,4 +1,7 @@
+// loaders.gl, MIT license
+
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {ObjectRowTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -21,7 +24,7 @@ const DEFAULT_EXCEL_LOADER_OPTIONS: ExcelLoaderOptions = {
 /**
  * Worker Loader for Excel files
  */
-export const ExcelLoader = {
+export const ExcelLoader: Loader<ObjectRowTable, never, ExcelLoaderOptions> = {
   name: 'Excel',
   id: 'excel',
   module: 'excel',

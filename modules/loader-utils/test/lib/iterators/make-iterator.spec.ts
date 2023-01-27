@@ -18,7 +18,7 @@ function asyncArrayBuffers() {
 }
 
 test('concatenateArrayBuffersAsync', async (t) => {
-  const RESULT = `line 1\nline 2\nline 3\nline 4`;
+  const RESULT = 'line 1\nline 2\nline 3\nline 4';
 
   // const text = await concatenateArrayBuffersAsync(asyncTexts());
   // t.is(text, RESULT, 'returns concatenated string');

@@ -90,6 +90,7 @@ async function parseOperationalLayers(
 async function checkSupportedIndexCRS(layer: OperationalLayer) {
   try {
     const layerJson = await load(layer.url, JSONLoader);
+    // @ts-expect-error
     const wkid = layerJson?.spatialReference?.wkid;
 
     if (wkid !== SUPPORTED_WKID) {

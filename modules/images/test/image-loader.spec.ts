@@ -62,6 +62,7 @@ test('ImageLoader#load({type: \'data\'})', async (t) => {
     t.equal(getImageType(imageData), 'data', `${title} image type is data`);
     t.equal(imageData.width, width, `${title} image has correct width`);
     t.equal(imageData.height, height, `${title} image has correct height`);
+    // @ts-expect-error
     t.ok(ArrayBuffer.isView(imageData.data), `${title} image data is TypedArray`);
   }
 

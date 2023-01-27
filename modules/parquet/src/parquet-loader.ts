@@ -23,7 +23,7 @@ const DEFAULT_PARQUET_LOADER_OPTIONS: ParquetLoaderOptions = {
 };
 
 /** ParquetJS table loader */
-export const ParquetLoader = {
+export const ParquetLoader: Loader<any[][], any[][], ParquetLoaderOptions> = {
   name: 'Apache Parquet',
   id: 'parquet',
   module: 'parquet',
@@ -36,5 +36,3 @@ export const ParquetLoader = {
   tests: ['PAR1', 'PARE'],
   options: DEFAULT_PARQUET_LOADER_OPTIONS
 };
-
-export const _typecheckParquetLoader: Loader = ParquetLoader;
