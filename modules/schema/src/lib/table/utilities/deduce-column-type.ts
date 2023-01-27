@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import {DataType} from '../../../types/schema';
+import {DataType, Field} from '../../../types/schema';
 
 export function getTypeFromTypedArray(arrayBufferView: ArrayBufferView): DataType {
   switch (arrayBufferView.constructor) {
@@ -32,17 +32,20 @@ export function getTypeFromTypedArray(arrayBufferView: ArrayBufferView): DataTyp
   // }
 }
 
-export function getTypeFromValue(value: unknown): DataType {
+export function getTypeFromValue(value: unknown, defaultNumberType: 'float32' = 'float32'): Omit<Field, 'name'> {
   if (value instanceof Date) {
-    return 'date-millisecond';
+    return {type: 'date-millisecond'};
   }
   if (value instanceof Number) {
-    return 'float64';
+    return {type: defaultNumberType};
   }
   if (typeof value === 'string') {
-    return 'utf8';
+    return {type: 'utf8'};
   }
-  return 'null';
+  if (value === null || value === 'undefined') {
+    return {type: 'null'};
+  }
+  return {type: 'null'};
 }
 
 /*

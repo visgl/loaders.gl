@@ -4,7 +4,7 @@
 
 **Apache Arrow** 
 
-loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 is a major breaking change compared with v4 which is used by loaders.gl v3.
+loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 is a breaking change compared with v4 which is used by loaders.gl v3. 
 
 **Table Schemas** 
 
