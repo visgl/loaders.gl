@@ -6,8 +6,12 @@ const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH = '@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json';
 
 test('JSONLoader#load(geojson.json)', async (t) => {
-  const data = await load(GEOJSON_PATH, JSONLoader, {json: {table: true}});
-  t.equal(data.length, 308, 'Correct number of row received');
+  const table = await load(GEOJSON_PATH, JSONLoader, {json: {table: true}});
+  t.equal(
+    table.shape === 'object-row-table' && table.data.length,
+    308,
+    'Correct number of row received'
+  );
   t.end();
 });
 

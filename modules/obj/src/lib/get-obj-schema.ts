@@ -1,11 +1,10 @@
-import {Schema, Field, getArrowType} from '@loaders.gl/schema';
+import {Schema, SchemaMetadata, Field, getArrowType} from '@loaders.gl/schema';
 
-export function getOBJSchema(attributes, metadata = {}): Schema {
-  let metadataMap;
+export function getOBJSchema(attributes, metadata: Record<string, unknown> = {}): Schema {
+  const stringMetadata: SchemaMetadata = {};
   for (const key in metadata) {
-    metadataMap = metadataMap || new Map();
     if (key !== 'value') {
-      metadataMap.set(key, JSON.stringify(metadata[key]));
+      stringMetadata[key] = JSON.stringify(metadata[key]);
     }
   }
 
@@ -15,7 +14,8 @@ export function getOBJSchema(attributes, metadata = {}): Schema {
     const field = getArrowFieldFromAttribute(attributeName, attribute);
     fields.push(field);
   }
-  return {fields, metadata: metadataMap};
+
+  return {fields, metadata: stringMetadata};
 }
 
 function getArrowFieldFromAttribute(name: string, attribute): Field {

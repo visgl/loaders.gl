@@ -4,12 +4,16 @@ import {makeReadableFile} from '@loaders.gl/loader-utils';
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 
-export async function parseParquet(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+export async function parseParquet(
+  arrayBuffer: ArrayBuffer,
+  options?: ParquetLoaderOptions
+): Promise<any[][]> {
   const blob = new Blob([arrayBuffer]);
   for await (const batch of parseParquetFileInBatches(blob, options)) {
+    // we have only one input batch so return
     return batch;
   }
-  return null;
+  return [];
 }
 
 export async function* parseParquetFileInBatches(blob: Blob, options?: ParquetLoaderOptions) {
