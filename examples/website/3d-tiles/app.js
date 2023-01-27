@@ -15,7 +15,7 @@ import ControlPanel from './components/control-panel';
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
 
-const TILESET_SERVER_URL = 'https://assets.cesium.com';
+const TILESET_SERVER_URL = 'https://assets.ion.cesium.com';
 
 const TRANSITION_DURAITON = 4000;
 const EXAMPLES_VIEWSTATE = {
