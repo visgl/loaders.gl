@@ -30,3 +30,7 @@ export {WMTSCapabilitiesLoader} from './wmts-capabilities-loader';
 export type {GeoJSON} from '@loaders.gl/schema';
 export type {GMLLoaderOptions} from './gml-loader';
 export {GMLLoader} from './gml-loader';
+
+// ViewportLoader (TBD - might move to @laoders.gl/tiles)
+export type {ViewportLoaderProps} from './lib/data-sources/viewport-loader';
+export {ViewportLoader} from './lib/data-sources/viewport-loader';

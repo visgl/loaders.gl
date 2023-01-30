@@ -14,3 +14,6 @@ import './gml/gml-loader.spec';
 
 // Services
 import './data-sources/wms-service.spec';
+
+// ViewportLoader
+import './data-sources/viewport-loader.spec';
