@@ -1,7 +1,6 @@
 // loaders.gl, MIT license
 
-/*
-import {ImageType} from '@loaders.gl/images';
+// from '@loaders.gl/images';
 
 /** General data source class *
 export abstract class DataSource {};
