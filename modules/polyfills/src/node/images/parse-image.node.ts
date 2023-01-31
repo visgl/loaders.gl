@@ -1,6 +1,4 @@
 import getPixels from 'get-pixels';
-import {assert} from '../../utils/assert';
-import util from 'util';
 
 // Note: These types are also defined in @loaders.gl/images and need to be kept in sync
 type NDArray = {
@@ -13,11 +11,9 @@ type NDArray = {
 };
 
 export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string): Promise<NDArray> {
-  assert(mimeType, 'MIMEType is required to parse image under Node.js');
-
-  // TODO - check if getPixels callback is asynchronous if provided with buffer input
-  // if not, parseImage can be a sync function
-  const getPixelsAsync = util.promisify(getPixels);
+  if (!mimeType) {
+    throw new Error('MIMEType is required to parse image under Node.js');
+  }
 
   const buffer = arrayBuffer instanceof Buffer ? arrayBuffer : Buffer.from(arrayBuffer);
 
@@ -34,6 +30,18 @@ export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string)
     width: ndarray.shape[0],
     height: ndarray.shape[1],
     components: ndarray.shape[2],
-    layers
+    // TODO - error
+    layers: layers ? [layers] : [] 
   };
+}
+
+// TODO - check if getPixels callback is asynchronous if provided with buffer input
+// if not, parseImage can be a sync function
+function getPixelsAsync(buffer: Buffer, mimeType: string): Promise<NDArray> {
+  return new Promise<NDArray>(resolve => getPixels(buffer, mimeType, (err, pixels) => {
+    if (err) {
+      throw err;
+    }
+    return pixels;
+  }));
 }

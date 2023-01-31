@@ -1,8 +1,9 @@
-import {Worker as NodeWorker} from '../node/worker_threads';
+import {NodeWorker} from '../node/worker_threads';
 import {isBrowser} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import {getLoadableWorkerURL} from '../worker-utils/get-loadable-worker-url';
 import {getTransferList} from '../worker-utils/get-transfer-list';
+
 
 const NOOP = () => {};
 

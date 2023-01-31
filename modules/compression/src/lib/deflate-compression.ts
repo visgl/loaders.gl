@@ -4,7 +4,7 @@ import {Compression} from './compression';
 import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
 import pako from 'pako'; // https://bundlephobia.com/package/pako
 import zlib from 'zlib';
-import {promisify} from '@loaders.gl/loader-utils';
+import {promisify1} from '@loaders.gl/loader-utils';
 
 export type DeflateCompressionOptions = CompressionOptions & {
   deflate?: pako.InflateOptions & pako.DeflateOptions & {useZlib?: boolean};
@@ -32,8 +32,8 @@ export class DeflateCompression extends Compression {
     // On Node.js we can use built-in zlib
     if (!isBrowser && this.options.deflate?.useZlib) {
       const buffer = this.options.deflate?.gzip
-        ? await promisify(zlib.gzip)(input)
-        : await promisify(zlib.deflate)(input);
+        ? await promisify1(zlib.gzip)(input)
+        : await promisify1(zlib.deflate)(input);
       return toArrayBuffer(buffer);
     }
     return this.compressSync(input);
@@ -43,8 +43,8 @@ export class DeflateCompression extends Compression {
     // On Node.js we can use built-in zlib
     if (!isBrowser && this.options.deflate?.useZlib) {
       const buffer = this.options.deflate?.gzip
-        ? await promisify(zlib.gunzip)(input)
-        : await promisify(zlib.inflate)(input);
+        ? await promisify1(zlib.gunzip)(input)
+        : await promisify1(zlib.inflate)(input);
       return toArrayBuffer(buffer);
     }
     return this.decompressSync(input);

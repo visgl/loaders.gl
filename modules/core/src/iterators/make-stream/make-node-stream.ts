@@ -1,4 +1,7 @@
-import {Readable, ReadableOptions} from 'stream';
+import type {ReadableOptions} from 'stream';
+import * as Stream from 'stream';
+
+const Readable = Stream.Readable || class Readable {};
 
 export type MakeStreamOptions = ReadableOptions;
 

@@ -4,7 +4,7 @@ import {StaticMap} from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
-import {GeoJsonLayer} from '@deck.gl/layers';
+import {ImageryLayer} from '@deck.gl/wms';
 
 import ControlPanel from './components/control-panel';
 import FileUploader from './components/file-uploader';
