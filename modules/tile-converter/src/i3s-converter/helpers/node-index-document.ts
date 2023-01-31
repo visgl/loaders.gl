@@ -178,9 +178,7 @@ export class NodeIndexDocument {
    * Unload the Node data
    */
   private flush(): void {
-    if (this.data) {
-      this.data = null;
-    }
+    this.data = null;
   }
 
   /**
