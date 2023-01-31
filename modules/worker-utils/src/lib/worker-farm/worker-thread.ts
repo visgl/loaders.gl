@@ -1,9 +1,10 @@
-import {NodeWorker} from '../node/worker_threads';
+// loaders.gl, MIT license
+
+import {NodeWorker, NodeWorkerType} from '../node/worker_threads';
 import {isBrowser} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import {getLoadableWorkerURL} from '../worker-utils/get-loadable-worker-url';
 import {getTransferList} from '../worker-utils/get-transfer-list';
-
 
 const NOOP = () => {};
 
@@ -21,7 +22,7 @@ export default class WorkerThread {
   readonly source: string | undefined;
   readonly url: string | undefined;
   terminated: boolean = false;
-  worker: Worker | NodeWorker;
+  worker: Worker | NodeWorkerType;
   onMessage: (message: any) => void;
   onError: (error: Error) => void;
 
@@ -125,8 +126,8 @@ export default class WorkerThread {
    * Creates a worker thread in node.js
    * @todo https://nodejs.org/api/async_hooks.html#async-resource-worker-pool
    */
-  _createNodeWorker(): NodeWorker {
-    let worker: NodeWorker;
+  _createNodeWorker(): NodeWorkerType {
+    let worker: NodeWorkerType;
     if (this.url) {
       // Make sure relative URLs start with './'
       const absolute = this.url.includes(':/') || this.url.startsWith('/');

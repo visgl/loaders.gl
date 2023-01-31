@@ -7,5 +7,6 @@ export class Worker {
 }
 
 export {Worker as NodeWorker};
+export {Worker as NodeWorkerType};
 
 export const parentPort = null;

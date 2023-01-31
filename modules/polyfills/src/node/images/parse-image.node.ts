@@ -19,29 +19,32 @@ export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string)
 
   const ndarray = await getPixelsAsync(buffer, mimeType);
 
-  const shape = [...ndarray.shape];
-  const layers = ndarray.shape.length === 4 ? ndarray.shape.shift() : 1;
-  const data = ndarray.data instanceof Buffer ? new Uint8Array(ndarray.data) : ndarray.data;
-
-  // extract width/height etc
-  return {
-    shape,
-    data,
-    width: ndarray.shape[0],
-    height: ndarray.shape[1],
-    components: ndarray.shape[2],
-    // TODO - error
-    layers: layers ? [layers] : [] 
-  };
+  return ndarray;
 }
 
 // TODO - check if getPixels callback is asynchronous if provided with buffer input
 // if not, parseImage can be a sync function
 function getPixelsAsync(buffer: Buffer, mimeType: string): Promise<NDArray> {
-  return new Promise<NDArray>(resolve => getPixels(buffer, mimeType, (err, pixels) => {
-    if (err) {
-      throw err;
-    }
-    return pixels;
-  }));
+  return new Promise<NDArray>((resolve) =>
+    getPixels(buffer, mimeType, (err, ndarray) => {
+      if (err) {
+        throw err;
+      }
+
+      const shape = [...ndarray.shape];
+      const layers = ndarray.shape.length === 4 ? ndarray.shape.shift() : 1;
+      const data = ndarray.data instanceof Buffer ? new Uint8Array(ndarray.data) : ndarray.data;
+
+      // extract width/height etc
+      resolve({
+        shape,
+        data,
+        width: ndarray.shape[0],
+        height: ndarray.shape[1],
+        components: ndarray.shape[2],
+        // TODO - error
+        layers: layers ? [layers] : []
+      });
+    })
+  );
 }
