@@ -115,7 +115,9 @@ export class NodeIndexDocument {
       if (this.converter.options.instantNodeWriting && childNodeData) {
         await childNode.write(childNodeData);
       }
-      childNode.save();
+      await childNode.save();
+      // The save after adding neighbors is the last one. Flush the the node
+      childNode.flush();
     }
   }
 
@@ -170,6 +172,13 @@ export class NodeIndexDocument {
       parentNodeFileName = '3dNodeIndexDocument.json';
     }
     return (await openJson(parentNodePath, parentNodeFileName)) as Node3DIndexDocument;
+  }
+
+  /**
+   * Unload the Node data
+   */
+  private flush(): void {
+    this.data = null;
   }
 
   /**
