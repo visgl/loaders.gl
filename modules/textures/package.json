@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/textures",
-  "version": "3.3.0-alpha.10",
+  "version": "3.3.0-alpha.11",
   "description": "Framework-independent loaders for compressed and super compressed (basis) textures ",
   "license": "MIT",
   "publishConfig": {
@@ -45,15 +45,15 @@
     "build-ktx2-basis-writer-nodejs-worker": "esbuild src/workers/ktx2-basis-writer-nodejs-worker.ts --platform=node --target=esnext,node12 --bundle --outfile=dist/ktx2-basis-writer-nodejs-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/images": "3.3.0-alpha.10",
-    "@loaders.gl/loader-utils": "3.3.0-alpha.10",
-    "@loaders.gl/schema": "3.3.0-alpha.10",
-    "@loaders.gl/worker-utils": "3.3.0-alpha.10",
+    "@loaders.gl/images": "3.3.0-alpha.11",
+    "@loaders.gl/loader-utils": "3.3.0-alpha.11",
+    "@loaders.gl/schema": "3.3.0-alpha.11",
+    "@loaders.gl/worker-utils": "3.3.0-alpha.11",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
   },
   "devDependencies": {
-    "@loaders.gl/polyfills": "3.3.0-alpha.10"
+    "@loaders.gl/polyfills": "3.3.0-alpha.11"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

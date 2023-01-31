@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "3.3.0-alpha.10",
+  "version": "3.3.0-alpha.11",
   "description": "i3s .",
   "license": "MIT",
   "publishConfig": {
@@ -33,12 +33,12 @@
     "build-loader-worker-nodejs": "esbuild src/workers/i3s-content-nodejs-worker.ts --outfile=dist/i3s-content-nodejs-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/draco": "3.3.0-alpha.10",
-    "@loaders.gl/images": "3.3.0-alpha.10",
-    "@loaders.gl/loader-utils": "3.3.0-alpha.10",
-    "@loaders.gl/schema": "3.3.0-alpha.10",
-    "@loaders.gl/textures": "3.3.0-alpha.10",
-    "@loaders.gl/tiles": "3.3.0-alpha.10",
+    "@loaders.gl/draco": "3.3.0-alpha.11",
+    "@loaders.gl/images": "3.3.0-alpha.11",
+    "@loaders.gl/loader-utils": "3.3.0-alpha.11",
+    "@loaders.gl/schema": "3.3.0-alpha.11",
+    "@loaders.gl/textures": "3.3.0-alpha.11",
+    "@loaders.gl/tiles": "3.3.0-alpha.11",
     "@luma.gl/constants": "^8.5.4",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",

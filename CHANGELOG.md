@@ -2,6 +2,22 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.11
+
+- Added link to showcases prod (#2330)
+- examples: Bundle examples with vite (#2331)
+- fix(tile-converter): memory leak (#2329)
+- chore(deps): bump ua-parser-js from 0.7.23 to 0.7.33 in /website (#2322)
+- examples(wms): Add minimal image and tile layer visualizations (#2323)
+- feat(wms): WMSService class (#2327)
+- fix(examples): 3d-tiles CesiumION URL (#2326)
+- feat(wms): WMSErrorLoader plus fixes (#2324)
+- feat(wms): Minor fixes. Improve WFS, WMTS and GML docs. (#2321)
+- Update wms.md
+- Update README.md
+- feat(ogc): Add initial OGC support (WMS, WFS, WMTS and GML) (#2314)
+- chore: enable tests (#2313)
+
 ## v3.3.0-alpha.10
 
 - feat(tile-converter): i3s - merge materials (#2311)
