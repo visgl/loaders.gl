@@ -8,15 +8,18 @@ import {parseWMSError} from './lib/wms/parse-wms';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type WMSLoaderOptions = LoaderOptions & {
-  wms?: {};
+  wms?: {
+    /** By default the error loader will throw an error with the parsed error message */
+    throwOnError?: boolean;
+  };
 };
 
 /**
  * Loader for the response to the WMS GetCapability request
  */
 export const WMSErrorLoader = {
+  id: 'wms-error',
   name: 'WMS Error',
-  id: 'wms-capabilities',
 
   module: 'wms',
   version: VERSION,
@@ -25,16 +28,27 @@ export const WMSErrorLoader = {
   mimeTypes: ['application/vnd.ogc.se_xml', 'application/xml', 'text/xml'],
   testText: testXMLFile,
   options: {
-    wms: {}
+    wms: {
+      throwOnError: false
+    }
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
-    parseWMSError(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSLoaderOptions) => parseWMSError(text, options)
+  parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions): Promise<string> =>
+    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
+  parseTextSync: (text: string, options?: WMSLoaderOptions): string => parseTextSync(text, options)
 };
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.
   return text.startsWith('<?xml');
+}
+
+function parseTextSync(text: string, options?: WMSLoaderOptions): string {
+  const wmsOptions: WMSLoaderOptions['wms'] = {...WMSErrorLoader.options.wms, ...options?.wms};
+  const error = parseWMSError(text, wmsOptions);
+  if (wmsOptions.throwOnError) {
+    throw new Error(error);
+  }
+  return error;
 }
 
 export const _typecheckWMSErrorLoader: LoaderWithParser = WMSErrorLoader;

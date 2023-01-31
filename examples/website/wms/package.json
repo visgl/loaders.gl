@@ -10,12 +10,9 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.5.0",
-    "@deck.gl/layers": "^8.5.0",
-    "@deck.gl/react": "^8.5.0",
-    "@loaders.gl/geopackage": "3.0.1",
-    "@loaders.gl/core": "3.0.0-beta.8",
-    "@loaders.gl/flatgeobuf": "3.0.1",
+    "@deck.gl/core": "^8.8.0",
+    "@deck.gl/layers": "^8.8.0",
+    "@deck.gl/react": "^8.8.0",
     "react": "^16.8.0",
     "react-color": "^2.19.3",
     "react-dom": "^16.8.0",

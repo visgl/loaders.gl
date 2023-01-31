@@ -15,8 +15,8 @@ export type WFSLoaderOptions = LoaderOptions & {
  * Loader for the response to the WFS GetCapability request
  */
 export const WFSCapabilitiesLoader = {
-  name: 'WFS Capabilities',
   id: 'wfs-capabilities',
+  name: 'WFS Capabilities',
 
   module: 'wms',
   version: VERSION,

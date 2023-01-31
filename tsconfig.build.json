@@ -42,7 +42,9 @@
     {"path": "modules/tiles"},
     {"path": "modules/video"},
     {"path": "modules/wkt"},
+    {"path": "modules/wms"},
     {"path": "modules/worker-utils"},
+    {"path": "modules/xml"},
     {"path": "modules/zarr"},
     {"path": "modules/zip"}
   ],

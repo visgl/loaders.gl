@@ -7,21 +7,21 @@
     <style>
       body {
         margin: 0;
-        font-family: sans-serif;
         width: 100vw;
         height: 100vh;
         overflow: hidden;
       }
-      #app {
-        height: 100%;
-      }
+      
+      .deck-tooltip {
+        font-size: 0.8em;
+        font-family: Helvetica, Arial, sans-serif;
+      }  
     </style>
   </head>
   <body>
     <div id="app"></div>
   </body>
   <script type="module">
-    import {renderToDOM} from './app.jsx';
-    renderToDOM(document.getElementById('app'));
+    import './app.ts';
   </script>
   </html>

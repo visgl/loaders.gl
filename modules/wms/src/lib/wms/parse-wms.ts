@@ -122,8 +122,15 @@ export function parseWMSLayerDescription(text: string, options): WMSLayerDescrip
   return parsedXML as unknown as WMSLayerDescription;
 }
 
+/**
+ * Extract an error message from WMS error response XML
+ * @param text
+ * @param options
+ * @returns a string with a human readable message
+ */
 export function parseWMSError(text: string, options): string {
   const parsedXML = XMLLoader.parseTextSync(text, options);
-  const error = parsedXML?.ServiceExceptionReport?.ServiceException || 'Unknown error';
-  return String(error);
+  const serviceExceptionXML = parsedXML?.ServiceExceptionReport?.ServiceException;
+  const message = serviceExceptionXML['#text'] || serviceExceptionXML.code || 'Unknown error';
+  return `WMS Service error: ${message}`;
 }

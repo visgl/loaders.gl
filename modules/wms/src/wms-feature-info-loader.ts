@@ -10,8 +10,8 @@ import {parseWMSFeatureInfo} from './lib/wms/parse-wms';
 export const WMSFeatureInfoLoader = {
   ...WMSCapabilitiesLoader,
 
-  name: 'WMS FeatureInfo',
   id: 'wms-feature-info',
+  name: 'WMS FeatureInfo',
 
   parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
     parseWMSFeatureInfo(new TextDecoder().decode(arrayBuffer), options),

@@ -31,7 +31,7 @@ export type WMSGetMapParameters = {
   /** Request type */
   request?: 'GetMap';
   /** Layers to render */
-  layers: string[];
+  layers: string | string[];
   /** Styling */
   styles?: unknown;
   /** bounding box of the requested map image */
@@ -155,12 +155,25 @@ export type WMSServiceProps = {
 
 export class WMSService {
   url: string;
-  loadOptions: LoaderOptions;
+  loadOptions: LoaderOptions = {
+    wms: {
+      throwOnError: true
+    }
+  };
   fetch: typeof fetch | FetchLike;
+
+  readonly loaders = [
+    ImageLoader,
+    WMSErrorLoader,
+    WMSCapabilitiesLoader,
+    WMSFeatureInfoLoader,
+    WMSLayerDescriptionLoader
+  ];
 
   constructor(props: WMSServiceProps) {
     this.url = props.url;
-    this.loadOptions = props.loadOptions || {};
+    // TODO Need an options merge function from loaders.gl to merge subobjects
+    Object.assign(this.loadOptions, props.loadOptions);
     this.fetch = props.fetch || fetch;
   }
 
@@ -231,7 +244,8 @@ export class WMSService {
     extra?: Record<string, unknown>
   ): Promise<WMSCapabilities> {
     const url = this.getCapabilitiesURL(parameters, extra);
-    const response = await this.fetch(url, this.loadOptions);
+    const {fetch} = this;
+    const response = await fetch(url, this.loadOptions);
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return await WMSCapabilitiesLoader.parse(arrayBuffer, this.loadOptions);
@@ -240,7 +254,8 @@ export class WMSService {
   /** Get a map image */
   async getMap(options: WMSGetMapParameters, extra?: Record<string, unknown>): Promise<ImageType> {
     const url = this.getMapURL(options, extra);
-    const response = await this.fetch(url, this.loadOptions);
+    const {fetch} = this;
+    const response = await fetch(url, this.loadOptions);
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return await ImageLoader.parse(arrayBuffer, this.loadOptions);
@@ -288,16 +303,17 @@ export class WMSService {
    * @note protected, since perhaps getWMSUrl may need to be overridden to handle certain backends?
    * @note if override is common, maybe add a callback prop?
    * */
-  protected getWMSUrl(
-    options: {
-      request: string;
-      layers?: string[];
-    },
-    extra?: Record<string, unknown>
-  ): string {
-    let url = `${this.url}?REQUEST=${options.request}`;
-    if (options.layers?.length) {
-      url += `&LAYERS=[${options.layers.join(',')}]`;
+  protected getWMSUrl(options: Record<string, unknown>, extra?: Record<string, unknown>): string {
+    let url = `${this.url}`;
+    let first = true;
+    for (const [key, value] of Object.entries(options)) {
+      url += first ? '?' : '&';
+      first = false;
+      if (Array.isArray(value)) {
+        url += `${key.toUpperCase()}=${value.join(',')}`;
+      } else {
+        url += `${key.toUpperCase()}=${value ? String(value) : ''}`;
+      }
     }
     return url;
   }
