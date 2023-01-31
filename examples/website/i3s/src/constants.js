@@ -1,4 +1,4 @@
-import {COLORED_BY} from './color-map';
+import {COLORED_BY} from './utils/color-map';
 
 export const MAP_STYLES = {
   Light: 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json',
