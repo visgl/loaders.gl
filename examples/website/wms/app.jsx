@@ -4,7 +4,7 @@ import {StaticMap} from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
-import {ImageryLayer} from '@deck.gl/wms';
+import {WMSService} from '@loaders.gl/wms';
 
 import ControlPanel from './components/control-panel';
 import FileUploader from './components/file-uploader';
@@ -19,7 +19,7 @@ export const INITIAL_VIEW_STATE = {
   bearing: 0
 };
 
-export default class App extends PureComponent {
+export class App extends PureComponent {
   constructor(props) {
     super(props);
 
