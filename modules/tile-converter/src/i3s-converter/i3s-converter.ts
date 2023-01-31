@@ -520,11 +520,11 @@ export default class I3SConverter {
           promises.push(this.convertNode({parentNode, sourceTile, level}));
         }
       }
+      await Promise.all(promises);
       if (sourceTile.id) {
         console.log(sourceTile.id); // eslint-disable-line
       }
     }
-    await Promise.all(promises);
   }
 
   /**
