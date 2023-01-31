@@ -2,6 +2,11 @@
 // These fills are non-functional, and just intended to ensure that
 // `import 'worker_threads` doesn't break browser builds.
 // The replacement is done in package.json browser field
-export class Worker {}
+export class Worker {
+  terminate() {}
+}
+
+export {Worker as NodeWorker};
+export {Worker as NodeWorkerType};
 
 export const parentPort = null;

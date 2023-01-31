@@ -25,6 +25,10 @@ See [roadmap](./roadmap) for more details on planned development.
 
 Target Release Date: Q4 2022.
 
+**Improved support for vite bundler**
+
+- Most examples are now bundled with vite, making vite into the preferred supported bundler for loaders.gl.
+
 **@loaders.gl/wms**
 
 - New module for parsing WMS (Web Management Service) server responses:

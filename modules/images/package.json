@@ -34,5 +34,8 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "3.3.0-alpha.10"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5",
+  "devDependencies": {
+    "@types/get-pixels": "^3.3.2"
+  }
 }

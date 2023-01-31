@@ -27,7 +27,7 @@ const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
 };
 
-export default class AppAnimationLoop extends AnimationLoop {
+export class AppAnimationLoop extends AnimationLoop {
   // TODO - do we need both?
   static getInfo() {
     return INFO_HTML;
@@ -207,15 +207,17 @@ export default class AppAnimationLoop extends AnimationLoop {
   }
 }
 
-if (typeof window !== 'undefined' && !window.website) {
-  try {
-    const animationLoop = new AppAnimationLoop();
-    animationLoop.start();
+export function runApp() {
+  if (typeof window !== 'undefined' && !window.website) {
+    try {
+      const animationLoop = new AppAnimationLoop();
+      animationLoop.start();
 
-    const infoDiv = document.createElement('div');
-    infoDiv.innerHTML = animationLoop.getInfo();
-    document.body.appendChild(infoDiv);
-  } catch (error) {
-    console.error(error);
+      const infoDiv = document.createElement('div');
+      infoDiv.innerHTML = animationLoop.getInfo();
+      document.body.appendChild(infoDiv);
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

@@ -12,7 +12,7 @@ import {StatsWidget} from '@probe.gl/stats-widget';
 
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
-import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
+import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './utils/url-utils';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
@@ -81,7 +81,7 @@ const StatsWidgetContainer = styled.div`
   overflow: auto;
 `;
 
-export default class App extends PureComponent {
+export class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
