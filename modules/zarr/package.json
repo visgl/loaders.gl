@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zarr",
-  "version": "3.3.0-alpha.11",
+  "version": "3.3.0-alpha.12",
   "description": "Framework-independent loaders for Zarr",
   "license": "MIT",
   "publishConfig": {

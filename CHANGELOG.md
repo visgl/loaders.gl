@@ -2,6 +2,10 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.12
+
+- chore(parse-basis): add level size field (#2334)
+
 ## v3.3.0-alpha.11
 
 - Added link to showcases prod (#2330)
