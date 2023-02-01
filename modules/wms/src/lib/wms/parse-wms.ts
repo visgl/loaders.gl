@@ -131,6 +131,10 @@ export function parseWMSLayerDescription(text: string, options): WMSLayerDescrip
 export function parseWMSError(text: string, options): string {
   const parsedXML = XMLLoader.parseTextSync(text, options);
   const serviceExceptionXML = parsedXML?.ServiceExceptionReport?.ServiceException;
-  const message = serviceExceptionXML['#text'] || serviceExceptionXML.code || 'Unknown error';
-  return `WMS Service error: ${message}`;
+  // Sigh, can be either a string or an object
+  const message =
+    typeof serviceExceptionXML === 'string'
+      ? serviceExceptionXML
+      : serviceExceptionXML['#text'] || serviceExceptionXML.code || 'Unknown error';
+  return message;
 }
