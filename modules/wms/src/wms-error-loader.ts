@@ -11,6 +11,8 @@ export type WMSLoaderOptions = LoaderOptions & {
   wms?: {
     /** By default the error loader will throw an error with the parsed error message */
     throwOnError?: boolean;
+    /** Do not add any text to errors */
+    minimalErrors?: boolean;
   };
 };
 
@@ -45,10 +47,11 @@ function testXMLFile(text: string): boolean {
 function parseTextSync(text: string, options?: WMSLoaderOptions): string {
   const wmsOptions: WMSLoaderOptions['wms'] = {...WMSErrorLoader.options.wms, ...options?.wms};
   const error = parseWMSError(text, wmsOptions);
+  const message = wmsOptions.minimalErrors ? error : `WMS Service error: ${error}`;
   if (wmsOptions.throwOnError) {
-    throw new Error(error);
+    throw new Error(message);
   }
-  return error;
+  return message;
 }
 
 export const _typecheckWMSErrorLoader: LoaderWithParser = WMSErrorLoader;
