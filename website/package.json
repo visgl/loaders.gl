@@ -19,12 +19,12 @@
     "build:gallery": "mkdir -p public/gallery; find ../examples/gallery -name \"*.html\" -exec cp -f {} public/gallery \\;"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.7.0-alpha.7",
-    "@deck.gl/extensions": "^8.7.0-alpha.7",
-    "@deck.gl/geo-layers": "^8.7.0-alpha.7",
-    "@deck.gl/layers": "^8.7.0-alpha.7",
-    "@deck.gl/mesh-layers": "^8.7.0-alpha.7",
-    "@deck.gl/react": "^8.7.0-alpha.7",
+    "@deck.gl/core": "^8.8.0",
+    "@deck.gl/extensions": "^8.8.0",
+    "@deck.gl/geo-layers": "^8.8.0",
+    "@deck.gl/layers": "^8.8.0",
+    "@deck.gl/mesh-layers": "^8.8.0",
+    "@deck.gl/react": "^8.8.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
@@ -47,6 +47,7 @@
     "styled-components": "^4.4.1"
   },
   "devDependencies": {
+    "typescript": "^4.9.5",
     "babel-plugin-version-inline": "^1.0.0",
     "gatsby": "^2.32.0",
     "gatsby-plugin-env-variables": "^1.0.1",
@@ -54,5 +55,8 @@
     "gatsby-theme-ocular": "1.2.5",
     "gh-pages": "2.2.0",
     "sharp": "^0.31.3"
+  },
+  "resolutions": {
+    "typescript": "^4.9.5"
   }
 }

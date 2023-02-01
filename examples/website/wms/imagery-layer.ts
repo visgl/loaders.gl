@@ -25,11 +25,11 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   static layerName = 'ImageryLayer';
   static defaultProps: DefaultProps<ImageryLayerProps> = defaultProps;
 
-  override shouldUpdateState(): boolean {
+  /*override*/ shouldUpdateState(): boolean {
     return true;
   }
 
-  override initializeState(): void {
+  /*override*/ initializeState(): void {
     this.state.imageService = new WMSService({url: this.props.serviceUrl});
 
     // Request capabilities
@@ -43,14 +43,14 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     this.buildBitmapLayer('state changed');
   }
 
-  override updateState({changeFlags, props, oldProps}: UpdateParameters<this>): void {
+  /*override*/ updateState({changeFlags, props, oldProps}: UpdateParameters<this>): void {
     console.log('updatestate', changeFlags.viewportChanged);
     if (changeFlags.viewportChanged) {
       debounce(() => this.buildBitmapLayer('state changed'));
     }
   }
 
-  override renderLayers(): Layer {
+  /*override*/ renderLayers(): Layer {
     console.log('renderlayers');
     // TODO - which bitmap layer is rendered should depend on the current viewport
     // Currently Studio only uses one viewport

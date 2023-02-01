@@ -31,6 +31,8 @@ module.exports.onCreateWebpackConfig = function onCreateWebpackConfigOverride(op
 
   // This looks strange but order matters...
   Object.assign(config.resolve.alias, ALIASES, dependencyAliases, ALIASES);
+  config.resolve.mainFields = ['esnext', 'browser', 'module', 'main'];
+
 
   // console.error(JSON.stringify(config.resolve.alias, null, 2));
 
