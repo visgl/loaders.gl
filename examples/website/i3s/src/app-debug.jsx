@@ -38,19 +38,18 @@ import {
   INITIAL_BOUNDING_VOLUME_TYPE
 } from './constants';
 import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
-import {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './color-map';
-import {getFrustumBounds} from './frustum-utils';
+import ColorMap, {COLORED_BY, makeRGBObjectFromColor, getRGBValueFromColorObject} from './utils/color-map';
+import {getFrustumBounds} from './utils/frustum-utils';
 import BoundingVolumeLayer from './bounding-volume-layer';
-import ColorMap from './color-map';
 import AttributesTooltip from './components/attributes-tooltip';
-import {getTileDebugInfo, getShortTileDebugInfo, validateTile} from './tile-debug';
-import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './url-utils';
+import {getTileDebugInfo, getShortTileDebugInfo, validateTile} from './utils/tile-debug';
+import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './utils/url-utils';
 import TileValidator from './components/tile-validator';
 import {
   generateBinaryNormalsDebugData,
   getNormalSourcePosition,
   getNormalTargetPosition
-} from './normals-utils';
+} from './utils/normals-utils';
 import {
   selectDebugTextureForTile,
   selectDebugTextureForTileset,

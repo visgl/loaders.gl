@@ -72,7 +72,7 @@ function convertLoadersMeshToDeckPointCloudData(attributes) {
   };
 }
 
-export class App extends PureComponent {
+export default class App extends PureComponent {
   constructor(props) {
     super(props);
 

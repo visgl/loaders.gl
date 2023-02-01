@@ -27,7 +27,7 @@ const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
 };
 
-export class AppAnimationLoop extends AnimationLoop {
+export default class AppAnimationLoop extends AnimationLoop {
   // TODO - do we need both?
   static getInfo() {
     return INFO_HTML;

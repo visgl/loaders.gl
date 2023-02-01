@@ -5,9 +5,10 @@ import {
   makeBoundingSphereFromPoints
 } from '@math.gl/culling';
 import {CubeGeometry} from '@luma.gl/engine';
-import {BOUNDING_VOLUME_WARNING_TYPE, LOD_WARNING_TYPE, PARENT_LOD_WARNING_TYPE} from './constants';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
+
+import {BOUNDING_VOLUME_WARNING_TYPE, LOD_WARNING_TYPE, PARENT_LOD_WARNING_TYPE} from '../constants';
 
 const NO_DATA = 'No Data';
 const OBB = 'Oriented Bounding Box';
@@ -29,12 +30,12 @@ export function getShortTileDebugInfo(tileHeader) {
   const childrenInfo = getChildrenInfo(tileHeader.header.children);
 
   return {
-    ['Tile Id']: tileHeader.id,
+    'Tile Id': tileHeader.id,
     Type: tileHeader.type || NO_DATA,
-    ['Children Count']: childrenInfo.count,
-    ['Children Ids']: childrenInfo.ids,
-    ['Vertex count']: tileHeader.content.vertexCount || NO_DATA,
-    ['Distance to camera']: `${formatFloatNumber(tileHeader._distanceToCamera)} m` || NO_DATA
+    'Children Count': childrenInfo.count,
+    'Children Ids': childrenInfo.ids,
+    'Vertex count': tileHeader.content.vertexCount || NO_DATA,
+    'Distance to camera': `${formatFloatNumber(tileHeader._distanceToCamera)} m` || NO_DATA
   };
 }
 
@@ -46,13 +47,13 @@ export function getShortTileDebugInfo(tileHeader) {
 export function getTileDebugInfo(tileHeader) {
   return {
     ...getShortTileDebugInfo(tileHeader),
-    ['Refinement Type']: REFINEMENT_TYPES[tileHeader.refine] || NO_DATA,
-    ['Has Texture']: Boolean(tileHeader.content.texture),
-    ['Has Material']: Boolean(tileHeader.content.material),
-    ['Bounding Type']: getBoundingType(tileHeader),
-    ['LOD Metric Type']: tileHeader.lodMetricType || NO_DATA,
-    ['LOD Metric Value']: formatFloatNumber(tileHeader.lodMetricValue) || NO_DATA,
-    ['Screen Space Error']: formatFloatNumber(tileHeader._screenSpaceError) || NO_DATA
+    'Refinement Type': REFINEMENT_TYPES[tileHeader.refine] || NO_DATA,
+    'Has Texture': Boolean(tileHeader.content.texture),
+    'Has Material': Boolean(tileHeader.content.material),
+    'Bounding Type': getBoundingType(tileHeader),
+    'LOD Metric Type': tileHeader.lodMetricType || NO_DATA,
+    'LOD Metric Value': formatFloatNumber(tileHeader.lodMetricValue) || NO_DATA,
+    'Screen Space Error': formatFloatNumber(tileHeader._screenSpaceError) || NO_DATA
   };
 }
 

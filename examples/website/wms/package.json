@@ -13,6 +13,8 @@
     "@deck.gl/core": "^8.8.0",
     "@deck.gl/layers": "^8.8.0",
     "@deck.gl/react": "^8.8.0",
+    "@loaders.gl/core": "^3.3.0-alpha.11",
+    "@loaders.gl/wms": "^3.3.0-alpha.11",
     "react": "^16.8.0",
     "react-color": "^2.19.3",
     "react-dom": "^16.8.0",

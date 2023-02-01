@@ -1,7 +1,7 @@
 export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 
-export const INITIAL_EXAMPLE_NAME = 'Vancouver';
-export const INITIAL_LOADER_NAME = 'GeoJSON';
+export const INITIAL_EXAMPLE_NAME = 'Rivers';
+export const INITIAL_LOADER_NAME = 'WMS';
 
 export const INITIAL_MAP_STYLE =
   'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
