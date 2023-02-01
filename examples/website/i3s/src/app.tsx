@@ -81,7 +81,7 @@ const StatsWidgetContainer = styled.div`
   overflow: auto;
 `;
 
-export class App extends PureComponent {
+export default class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;

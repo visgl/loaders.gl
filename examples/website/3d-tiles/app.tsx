@@ -33,7 +33,7 @@ export const INITIAL_VIEW_STATE = {
   zoom: 3 // Start zoomed out on US, tileset will center via "fly-to" on load
 };
 
-export class App extends PureComponent {
+export default class App extends PureComponent {
   constructor(props) {
     super(props);
 

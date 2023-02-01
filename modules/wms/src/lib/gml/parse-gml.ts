@@ -22,7 +22,7 @@ import type {
 } from '@loaders.gl/schema';
 
 import {XMLLoader} from '@loaders.gl/xml';
-import deepStrictEqual from 'deep-strict-equal';
+import {deepStrictEqual} from './deep-strict-equal';
 import rewind from '@turf/rewind';
 
 function noTransform(...coords) {

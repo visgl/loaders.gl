@@ -5,7 +5,7 @@ import {
   isTileGeometryInsideBoundingVolume,
   getGeometryVsTextureMetrics,
   isGeometryBoundingVolumeMoreSuitable
-} from '../tile-debug';
+} from '../utils/tile-debug';
 import {Checkbox} from './checkbox';
 
 const TileValidatorContainer = styled.div`

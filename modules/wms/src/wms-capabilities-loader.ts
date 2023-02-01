@@ -15,8 +15,8 @@ export type WMSLoaderOptions = LoaderOptions & {
  * Loader for the response to the WMS GetCapability request
  */
 export const WMSCapabilitiesLoader = {
-  name: 'WMS Capabilities',
   id: 'wms-capabilities',
+  name: 'WMS Capabilities',
 
   module: 'wms',
   version: VERSION,

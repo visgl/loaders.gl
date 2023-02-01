@@ -26,16 +26,16 @@ const DropDown = styled.select`
 
 const propTypes = {
   examples: PropTypes.object,
+  selectedCategory: PropTypes.string,
   selectedExample: PropTypes.string,
-  selectedLoader: PropTypes.string,
   onExampleChange: PropTypes.func
 };
 
 const defaultProps = {
   examples: {},
   droppedFile: null,
+  selectedCategory: null,
   selectedExample: null,
-  selectedLoader: null,
   onChange: () => {}
 };
 
@@ -48,29 +48,29 @@ export default class ControlPanel extends PureComponent {
   componentDidMount() {
     const {examples = {}, onExampleChange} = this.props;
 
-    let selectedLoader = this.props.selectedLoader;
+    let selectedCategory = this.props.selectedCategory;
     let selectedExample = this.props.selectedExample;
 
-    if ((!selectedLoader || !selectedExample) && !this._autoSelected) {
-      selectedLoader = INITIAL_LOADER_NAME;
-      selectedExample = examples[selectedLoader][INITIAL_EXAMPLE_NAME];
+    if ((!selectedCategory || !selectedExample) && !this._autoSelected) {
+      selectedCategory = INITIAL_LOADER_NAME;
+      selectedExample = examples[selectedCategory][INITIAL_EXAMPLE_NAME];
       this._autoSelected = true;
     }
 
-    if (selectedLoader && selectedExample) {
-      const example = examples[selectedLoader][selectedExample];
-      onExampleChange({selectedLoader, selectedExample, example});
+    if (selectedCategory && selectedExample) {
+      const example = examples[selectedCategory][selectedExample];
+      onExampleChange({selectedCategory, selectedExample, example});
     }
   }
 
   _renderDropDown() {
-    const {examples = {}, selectedLoader, selectedExample, onExampleChange} = this.props;
+    const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
 
-    if (!selectedLoader || !selectedExample) {
+    if (!selectedCategory || !selectedExample) {
       return false;
     }
 
-    const selectedValue = `${selectedLoader}.${selectedExample}`;
+    const selectedValue = `${selectedCategory}.${selectedExample}`;
 
     return (
       <DropDown
@@ -81,7 +81,7 @@ export default class ControlPanel extends PureComponent {
           const loaderName = value[0];
           const exampleName = value[1];
           const example = examples[loaderName][exampleName];
-          onExampleChange({selectedLoader: loaderName, selectedExample: exampleName, example});
+          onExampleChange({selectedCategory: loaderName, selectedExample: exampleName, example});
         }}
       >
         {Object.keys(examples).map((loaderName, loaderIndex) => {
@@ -104,15 +104,15 @@ export default class ControlPanel extends PureComponent {
   }
 
   _renderHeader() {
-    const {selectedLoader, selectedExample} = this.props;
-    if (!selectedLoader || !selectedExample) {
+    const {selectedCategory, selectedExample} = this.props;
+    if (!selectedCategory || !selectedExample) {
       return null;
     }
 
     return (
       <div>
         <h3>
-          {selectedExample} <b>{selectedLoader}</b>{' '}
+          {selectedExample} <b>{selectedCategory}</b>{' '}
         </h3>
       </div>
     );

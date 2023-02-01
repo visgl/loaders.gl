@@ -10,8 +10,8 @@ import {parseWMSLayerDescription} from './lib/wms/parse-wms';
 export const WMSLayerDescriptionLoader = {
   ...WMSCapabilitiesLoader,
 
-  name: 'WMS DescribeLayer',
   id: 'wms-layer-description',
+  name: 'WMS DescribeLayer',
 
   parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
     parseWMSLayerDescription(new TextDecoder().decode(arrayBuffer), options),
