@@ -9,7 +9,7 @@ import {MapController} from '@deck.gl/core/typed';
 import {ImageryLayer} from './imagery-layer';
 
 import ControlPanel from './components/control-panel';
-import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
+import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
 
 export const INITIAL_VIEW_STATE = {
   latitude: 49.254,
@@ -30,7 +30,7 @@ export default class App extends PureComponent {
 
       // EXAMPLE STATE
       selectedExample: INITIAL_EXAMPLE_NAME,
-      selectedLoader: INITIAL_LOADER_NAME,
+      selectedCategory: INITIAL_CATEGORY_NAME,
       uploadedFile: null
     };
 
@@ -42,19 +42,19 @@ export default class App extends PureComponent {
     this.setState({viewState});
   }
 
-  _onExampleChange({selectedLoader, selectedExample, example}) {
+  _onExampleChange({selectedCategory, selectedExample, example}) {
     const {viewState} = example;
-    this.setState({selectedLoader, selectedExample, viewState});
+    this.setState({selectedCategory, selectedExample, viewState});
   }
 
   _renderControlPanel() {
-    const {selectedExample, viewState, selectedLoader} = this.state;
+    const {selectedExample, viewState, selectedCategory} = this.state;
 
     return (
       <ControlPanel
         examples={EXAMPLES}
         selectedExample={selectedExample}
-        selectedLoader={selectedLoader}
+        selectedCategory={selectedCategory}
         onExampleChange={this._onExampleChange}
       >
         <div style={{textAlign: 'center'}}>
@@ -66,15 +66,15 @@ export default class App extends PureComponent {
   }
 
   _renderLayer() {
-    const {selectedExample, selectedLoader, uploadedFile} = this.state;
+    const {selectedExample, selectedCategory, uploadedFile} = this.state;
 
     let layerData;
     if (uploadedFile) {
       layerData = uploadedFile;
-    } else if (EXAMPLES[selectedLoader][selectedExample]) {
-      layerData = EXAMPLES[selectedLoader][selectedExample].data;
+    } else if (EXAMPLES[selectedCategory][selectedExample]) {
+      layerData = EXAMPLES[selectedCategory][selectedExample].data;
     } else {
-      layerData = EXAMPLES[INITIAL_LOADER_NAME][INITIAL_EXAMPLE_NAME].data;
+      layerData = EXAMPLES[INITIAL_CATEGORY_NAME][INITIAL_EXAMPLE_NAME].data;
     }
 
     return [
