@@ -254,7 +254,7 @@ function transcodeKTX2Image(ktx2File, levelIndex: number, options): TextureLevel
     compressed,
 
     // Additional fields
-    // Add levelSize field.
+    levelSize: decodedSize,
     hasAlpha: alphaFlag,
     format
   };
