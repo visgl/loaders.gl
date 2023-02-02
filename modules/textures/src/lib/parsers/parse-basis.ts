@@ -1,6 +1,6 @@
 /* eslint-disable indent */
 import type {TextureLevel} from '@loaders.gl/schema';
-import {loadBasisEncoderModule, loadBasisTrascoderModule} from './basis-module-loader';
+import {loadBasisEncoderModule, loadBasisTranscoderModule} from './basis-module-loader';
 import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {getSupportedGPUTextureFormats} from '../utils/texture-formats';
 import {isKTX} from './parse-ktx';
@@ -86,7 +86,7 @@ export default async function parseBasis(data: ArrayBuffer, options): Promise<Te
       const fileConstructors = await loadBasisEncoderModule(options);
       return parseKTX2File(fileConstructors.KTX2File, data, options);
     }
-    const {BasisFile} = await loadBasisTrascoderModule(options);
+    const {BasisFile} = await loadBasisTranscoderModule(options);
     return parseBasisFile(BasisFile, data, options);
   }
   switch (options.basis.module) {
@@ -101,7 +101,7 @@ export default async function parseBasis(data: ArrayBuffer, options): Promise<Te
       }
     case 'transcoder':
     default:
-      const {BasisFile} = await loadBasisTrascoderModule(options);
+      const {BasisFile} = await loadBasisTranscoderModule(options);
       return parseBasisFile(BasisFile, data, options);
   }
 }

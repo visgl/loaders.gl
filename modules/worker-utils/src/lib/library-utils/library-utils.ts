@@ -36,7 +36,6 @@ export async function loadLibrary(
   if (moduleName) {
     libraryUrl = getLibraryUrl(libraryUrl, moduleName, options);
   }
-
   // Ensure libraries are only loaded once
 
   loadLibraryPromises[libraryUrl] =
@@ -80,8 +79,7 @@ export function getLibraryUrl(library: string, moduleName?: string, options?: an
 
 async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   if (libraryUrl.endsWith('wasm')) {
-    const response = await fetch(libraryUrl);
-    return await response.arrayBuffer();
+    return await loadAsArrayBuffer(libraryUrl);
   }
 
   if (!isBrowser) {
@@ -99,8 +97,7 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   //   return await loadScriptFromFile(libraryUrl);
   // }
 
-  const response = await fetch(libraryUrl);
-  const scriptSource = await response.text();
+  const scriptSource = await loadAsText(libraryUrl);
   return loadLibraryFromString(scriptSource, libraryUrl);
 }
 
@@ -161,3 +158,24 @@ function combineWorkerWithLibrary(worker, jsContent) {
   this.workerSourceURL = URL.createObjectURL(new Blob([body]));
 }
 */
+
+async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
+  if (!node.readFileAsArrayBuffer || url.startsWith('http')) {
+    const response = await fetch(url);
+    return await response.arrayBuffer();
+  }
+  return await node.readFileAsArrayBuffer(url);
+}
+
+/**
+ * Load a file from local file system
+ * @param filename
+ * @returns
+ */
+async function loadAsText(url: string): Promise<string> {
+  if (!node.readFileAsText || url.startsWith('http')) {
+    const response = await fetch(url);
+    return await response.text();
+  }
+  return await node.readFileAsText(url);
+}

@@ -76,6 +76,10 @@ A major release that brings:
 - Schema types that support cross-worker schema and table exchange (a "serialized Apache Arrow" representation).
 - [File format documentation](/docs/formats?README) - provides additional informationa about the various file formats supported by loaders.gl.
 
+**@loaders.gl/core**
+
+- `fetchFile()` now supports fetching from local filesystem in Node.js (The global fetch function is no longer modified to support this).
+
 **@loaders.gl/arrow**
 
 - Now uses `apache-arrow` v9. 
@@ -88,6 +92,10 @@ A major release that brings:
 **@loaders.gl/gltf**
 
 - Stricter typing (see upgrade-guide)
+
+**loaders.gl/polyfills**
+
+- Polyfills no longer installs a 
 
 ## v3.4
 

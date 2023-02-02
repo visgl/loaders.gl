@@ -3,20 +3,21 @@ import fs from 'fs';
 import {toArrayBuffer} from './buffer';
 import {promisify2, promisify3} from './promisify';
 
-export type {Stats, WriteStream} from 'fs';
+export type {Stats, ReadStream, WriteStream} from 'fs';
 
 export let readdir;
 /** Wrapper for Node.js fs method */
 export let stat;
+export let statSync: typeof fs.statSync;
 
 /** Wrapper for Node.js fs method */
 export let readFile;
 /** Wrapper for Node.js fs method */
-export let readFileSync;
+export let readFileSync: typeof fs.readFileSync;
 /** Wrapper for Node.js fs method */
 export let writeFile;
 /** Wrapper for Node.js fs method */
-export let writeFileSync;
+export let writeFileSync: typeof fs.writeFileSync;
 
 // file descriptors
 
@@ -29,6 +30,7 @@ export let read;
 /** Wrapper for Node.js fs method */
 export let fstat;
 
+export let createReadStream: typeof fs.createReadStream;
 export let createWriteStream: typeof fs.createWriteStream;
 
 export let isSupported = Boolean(fs);
@@ -40,6 +42,7 @@ try {
   readdir = promisify2(fs.readdir);
   /** Wrapper for Node.js fs method */
   stat = promisify2(fs.stat);
+  statSync = fs.statSync;
 
   /** Wrapper for Node.js fs method */
   readFile = fs.readFile;
@@ -62,6 +65,7 @@ try {
   /** Wrapper for Node.js fs method */
   fstat = fs.fstat;
 
+  createReadStream = fs.createReadStream;
   createWriteStream = fs.createWriteStream;
 
   isSupported = Boolean(fs);
