@@ -12,5 +12,8 @@ import './wfs/wfs-capabilities-loader.spec';
 
 import './gml/gml-loader.spec';
 
+import './lerc/lerc-sanity.spec';
+import './lerc/lerc-level2.spec';
+
 // Services
 import './data-sources/wms-service.spec';

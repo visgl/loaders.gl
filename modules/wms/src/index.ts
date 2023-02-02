@@ -30,3 +30,8 @@ export {WMTSCapabilitiesLoader} from './wmts-capabilities-loader';
 export type {GeoJSON} from '@loaders.gl/schema';
 export type {GMLLoaderOptions} from './gml-loader';
 export {GMLLoader} from './gml-loader';
+
+// LERC
+
+export type {LERCData} from './lib/lerc/lerc-types';
+export {LERCLoader} from './lerc-loader';
