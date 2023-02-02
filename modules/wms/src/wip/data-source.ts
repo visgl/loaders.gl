@@ -6,22 +6,10 @@
 
 // ImageSource
 
+// Tile Source
 
 /** Data source that serves data by tile index *
 export abstract class TileDataSource extends DataSource {};
-
-// Vector Tile Source
-
-export type VectorTileDataSourceCapabilities = {
-  // check tile.json
-}
-
-export type VectorTile = Record<string, any>;
-
-export abstract class VectorTileDataSource extends TileDataSource {
-  abstract getCapabilities(): Promise<VectorTileDataSourceCapabilities>;
-  abstract getTile({x, y, z, width, height, layers, parameters}): Promise<VectorTile>;
-}
 
 // Image Tile Data Source
 
@@ -57,4 +45,18 @@ export abstract class ImageTileDataSource extends TileDataSource {
     return [0, 0, 1, 1];
   }
 }
+
+// Vector Tile Source
+
+export type VectorTileDataSourceCapabilities = {
+  // check tile.json
+}
+
+export type VectorTile = Record<string, any>;
+
+export abstract class VectorTileDataSource extends TileDataSource {
+  abstract getCapabilities(): Promise<VectorTileDataSourceCapabilities>;
+  abstract getTile({x, y, z, width, height, layers, parameters}): Promise<VectorTile>;
+}
+
 */

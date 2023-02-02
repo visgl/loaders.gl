@@ -9,14 +9,18 @@ export type {WMSLoaderOptions} from './wms-capabilities-loader';
 export type {WMSCapabilities} from './lib/wms/wms-types';
 export {WMSCapabilitiesLoader} from './wms-capabilities-loader';
 
+// NOTE: Will likely move to tiles module
+export type {ImageSourceMetadata} from './lib/data-sources/image-source';
+export type {ImageType} from '@loaders.gl/images';
+export {ImageSource} from './lib/data-sources/image-source';
+
+export type {ImageServiceType} from './lib/data-sources/create-image-source';
+export {createImageSource} from './lib/data-sources/create-image-source';
+
 export type {WMSServiceProps} from './lib/data-sources/wms-service';
 export {WMSService} from './lib/data-sources/wms-service';
-
-// NOTE: Will likely move to tiles module
-export type {ImageSourceMetadata as _ImageSourceMetadata} from './lib/data-sources/image-source';
-export {ImageSource as _ImageSource} from './lib/data-sources/image-source';
-
 export {AdHocImageService as _AdHocImageService} from './lib/data-sources/adhoc-image-service';
+export {ArcGISImageService as _ArcGISImageService} from './lib/data-sources/arcgis-image-service';
 
 // WIP /////////////////////////////////////////////////////////////////
 // Plumbing set up but details of parsing and typing not yet completed

@@ -3,11 +3,11 @@
 import {Layer, CompositeLayer, CompositeLayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed';
 import {BitmapLayer} from '@deck.gl/layers/typed';
 import {WMSService} from '@loaders.gl/wms';
-import type {_ImageSourceMetadata as ImageSourceMetadata} from '@loaders.gl/wms';
-import {_ImageSource as ImageSource, _AdHocImageService as AdHocImageService} from '@loaders.gl/wms';
+import type {ImageSourceMetadata, ImageData, ImageServiceType} from '@loaders.gl/wms';
+import {ImageSource, createImageSource} from '@loaders.gl/wms';
 
 export type ImageryLayerProps = CompositeLayerProps<string | ImageSource> & {
-  serviceType?: 'wms' | 'template';
+  serviceType?: ImageServiceType | 'auto';
   layers: string[];
   onMetadataLoadStart: () => void;
   onMetadataLoadComplete: (metadata: ImageSourceMetadata) => void;
@@ -26,7 +26,7 @@ type ImageryLayerState = {
 const defaultProps: ImageryLayerProps = {
   id: 'imagery-layer',
   data: undefined!,
-  serviceType: 'wms',
+  serviceType: 'auto',
   layers: undefined!,
   onMetadataLoadStart: () => {},
   onMetadataLoadComplete: () => {},
@@ -64,7 +64,7 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
 
       // Check if data source has changed
       if (dataChanged) {
-        state.imageSource = createImageSource(this.props);
+        state.imageSource = createImageSource(this.props.data, this.props.serviceType);
         this._loadMetadata();
         debounce(() => this.loadImage('image source changed'), 0);
       }
@@ -164,23 +164,6 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
       this.getCurrentLayer()?.props.onImageLoadError(requestId, error);
     }    
   }
-}
-
-/** Creates an image service if appropriate */
-function createImageSource(props: ImageryLayerProps): ImageSource {
-  if (typeof props.data === 'string') {
-    switch (props.serviceType) {
-      case 'template':
-        return new AdHocImageService({templateUrl: props.data});
-      case 'wms':
-      default: // currently only wms service supported
-        return new WMSService({serviceUrl: props.data})
-    }
-  }
-  if (props.data instanceof ImageSource) {
-    return props.data;
-  }
-  throw new Error('data props is not a valid image source');
 }
 
 // HELPERS

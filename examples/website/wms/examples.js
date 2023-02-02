@@ -23,13 +23,13 @@ export const EXAMPLES = {
       // TODO: change in the URL `srs=EPSG:4326` to `srs=EPSG:900913`
       // once we can change the TileLayer bounds from lat/lon to web mercator coordinates
       service: `https://ows.terrestris.de/osm/service`,
-      serviceType: 'wsm',
+      serviceType: 'wms',
       layers: ['OSM-WMS'],
       viewState: {...VIEW_STATE}
     },
     'Canadian Weather': {
       service: 'https://geo.weather.gc.ca/geomet',
-      serviceType: 'wsm',
+      serviceType: 'wms',
       layers: ['GDPS.ETA_TT'], // 'RDPS.CONV_KINDEX.PT3H'],
       viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3},
       opacity: 0.5

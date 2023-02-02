@@ -1,0 +1,169 @@
+<!-- Forked from @jwasilgeo's https://codepen.io/jwasilgeo/pen/BaYwBzX CodePen under MIT license -->
+<!doctype html>
+<style>
+  body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .deck-tooltip {
+    font-size: 0.8em;
+    font-family: Helvetica, Arial, sans-serif;
+  }  
+</style>
+<body>
+</body>
+<script src="https://unpkg.com/@loaders.gl/core@3.3.0-alpha.10/dist/dist.min.js"></script>
+<script src="https://unpkg.com/@loaders.gl/wms@3.3.0-alpha.10/dist/dist.min.js"></script>
+<script src="https://unpkg.com/deck.gl@8.8.1/dist.min.js"></script>
+<script>
+/*
+ * https://deck.gl/docs/api-reference/geo-layers/tile-layer
+ */
+ const { DeckGL, TileLayer, BitmapLayer, GeoJsonLayer } = deck;
+
+const layerGeoJson = new GeoJsonLayer({
+  id: "geojson-layer-bike-trails",
+  data: `https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0/query?returnGeometry=true&where=1%3D1&outSR=4326&outFields=*&inSR=4326&geometry=${-90}%2C+${30}%2C+${-70}%2C+${50}&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&geometryPrecision=6&resultType=tile&f=geojson`,
+  pickable: true,
+  stroked: true,
+  // filled: true,
+  // extruded: true,
+  // pointType: 'circle',
+  lineWidthScale: 20,
+  lineWidthMinPixels: 4,
+  //getFillColor: [160, 160, 180, 200],
+  getLineColor: function (d) {
+    let c;
+    switch (d.properties.D_BI_RT_NAME) {
+      case "Bluegrass Bike Tour":
+        c = [55, 126, 184, 255];
+        break;
+      case "Cave Country Bike Tour":
+        c = [228, 26, 28, 255];
+        break;
+      case "Kentucky's TransAmerica Bike Trail":
+        c = [77, 175, 74, 255];
+        break;
+      case "Ramblin' River Tour":
+        c = [152, 78, 163, 255];
+        break;
+      case "Underground Railroad":
+        c = [255, 127, 0, 255];
+        break;
+      default:
+        c = [192, 192, 192, 255];
+    }
+    return c;
+  },
+  opacity: 0.65,
+  // getPointRadius: 100,
+  getLineWidth: 5
+  // getElevation: 30
+});
+
+const layer = new TileLayer({
+  id: "TileLayer",
+  //data: 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  // data: {width: 256, height: 256},
+
+  /* props from TileLayer class */
+
+  // extent: null,
+  // getTileData: null,
+  // maxCacheByteSize: null,
+  // maxCacheSize: null,
+  // maxRequests: 6,
+  maxZoom: 19,
+  minZoom: 0,
+  // onTileError: null,
+  // onTileLoad: null,
+  // onTileUnload: null,
+  // onViewportLoad: null,
+  // refinementStrategy: 'best-available',
+  renderSubLayers: (props) => {
+    const {
+      bbox: { west, south, east, north }
+    } = props.tile;
+
+    console.log(props);
+
+    // return new BitmapLayer(props, {
+    //   data: null,
+    //   image: props.data,
+    //   bounds: [west, south, east, north]
+    // });
+
+    const bounds = [west, south, east, north];
+    // const {width, height} = props.data;
+    const width = 256;
+    const height = 256;
+
+    const layer = new BitmapLayer({
+      bounds: [west, south, east, north],
+      image: `https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&bboxSR=4326&size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image`
+      // opacity: 0.5
+    });
+
+    // const layer = new GeoJsonLayer({
+    //   // id: 'geojson-layer',
+    //   data: `https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0/query?returnGeometry=true&where=1%3D1&outSR=4326&outFields=*&inSR=4326&geometry=${bounds[0]}%2C+${bounds[1]}%2C+${bounds[2]}%2C+${bounds[3]}&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&geometryPrecision=6&resultType=tile&f=geojson`,
+    //   pickable: true,
+    //   stroked: false,
+    //   filled: true,
+    //   extruded: true,
+    //   pointType: 'circle',
+    //   lineWidthScale: 20,
+    //   lineWidthMinPixels: 2,
+    //   //getFillColor: [160, 160, 180, 200],
+    //   //getLineColor: d => colorToRGBArray(d.properties.color),
+    //   getLineColor: [255, 0, 255, 255],
+    //   getPointRadius: 100,
+    //   getLineWidth: 1,
+    //   getElevation: 30
+    // });
+
+    return layer;
+  },
+  // tileSize: 512,
+  // zRange: null,
+  // zoomOffset: 0,
+
+  /* props inherited from Layer class */
+
+  // autoHighlight: false,
+  // coordinateOrigin: [0, 0, 0],
+  // coordinateSystem: COORDINATE_SYSTEM.LNGLAT,
+  // highlightColor: [0, 0, 128, 128],
+  // modelMatrix: null,
+  // opacity: 1,
+  pickable: true
+  // visible: true,
+  // wrapLongitude: false,
+});
+
+new DeckGL({
+  mapStyle: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  initialViewState: {
+    longitude: -85.75,
+    latitude: 37.75,
+    zoom: 6,
+    maxZoom: 20,
+    pitch: 0,
+    bearing: 0
+  },
+  controller: true,
+  // getTooltip: ({ tile }) => tile && `x:${tile.x}, y:${tile.y}, z:${tile.z}`,
+  getTooltip: ({ object }) =>
+    object &&
+    object.properties.D_BI_RT_NAME +
+      ":  " +
+      JSON.stringify(object.properties, null, 2),
+  layers: [
+    layerGeoJson // try this one for talking to a FeatureServer
+    // layer // try this one for talking to an ImageServer
+  ]
+});
+</script>
