@@ -129,7 +129,7 @@ export function parseWMSLayerDescription(text: string, options): WMSLayerDescrip
  * @returns a string with a human readable message
  */
 export function parseWMSError(text: string, options): string {
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
   const serviceExceptionXML = parsedXML?.ServiceExceptionReport?.ServiceException;
   // Sigh, can be either a string or an object
   const message =
