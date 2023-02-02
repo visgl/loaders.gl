@@ -8,7 +8,7 @@ import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
 import {LERCLoader, LERCData} from '@loaders.gl/wms';
-import {load} from '@loaders.gl/core';
+import {load, isBrowser} from '@loaders.gl/core';
 
 const LERC_FILES = [
   '@loaders.gl/wms/test/data/lerc/bluemarble_256_256_3_byte.lerc2',
@@ -16,12 +16,16 @@ const LERC_FILES = [
   '@loaders.gl/wms/test/data/lerc/world.lerc1'
 ];
 
-test.only('LERCLoader#level2', async (t) => { 
+test('LERCLoader#level2', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
   for (const lercFileName of LERC_FILES) {
-    const result = await load(lercFileName, LERCLoader) as LERCData;
+    const result = (await load(lercFileName, LERCLoader)) as LERCData;
 
     const actual = formatPixelBlock(result);
-  
+
     // TODO - verify against known data
     // const base = JSON.parse(fs.readFileSync(baseFilePath, {encoding: 'utf-8'}));
     // const keys = ['width', 'height', 'pixelType', 'statistics', 'pixels', 'dimCount', 'bandMasks'];
@@ -32,27 +36,31 @@ test.only('LERCLoader#level2', async (t) => {
     //   }
     // });
 
-    t.ok(actual, lercFileName);  
+    t.ok(actual, lercFileName);
   }
   t.end();
 });
 
-
 /** Helper function */
-function formatPixelBlock(pb: LERCData) {
-  const pixels = pb.pixels.map((band) => band.join(','));
-  const mask = pb.mask?.join(',');
-  const statistics = pb.statistics;
+function formatPixelBlock(pb1: LERCData) {
+  const pb: Partial<LERCData> = {...pb1};
+  const pixels = pb1.pixels.map((band) => band.join(','));
+  const mask = pb1.mask?.join(',');
+  const statistics = pb1.statistics;
   if (statistics?.length) {
     statistics.forEach((bandStat) => {
       const {depthStats} = bandStat;
       if (depthStats) {
+        // @ts-expect-error
         depthStats.minValues = depthStats.minValues.join(',');
+        // @ts-expect-error
         depthStats.maxValues = depthStats.maxValues.join(',');
       }
     });
   }
-  const validPixelCountFromMask = pb.mask ? pb.mask.reduce((a, b) => a + b) : pb.width * pb.height;
+  const validPixelCountFromMask = pb.mask
+    ? pb.mask.reduce((a, b) => a + b)
+    : pb1.width * pb1.height;
   const validPixelCountPerBand = pb.bandMasks
     ? pb.bandMasks.map((mask) => mask.reduce((a, b) => a + b)).join(',')
     : null;

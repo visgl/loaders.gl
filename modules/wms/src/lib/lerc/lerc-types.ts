@@ -20,8 +20,7 @@ export type LERCData = {
   bandMasks?: Uint8Array[];
 };
 
-
-export type LercPixelType = "S8" | "U8" | "S16" | "U16" | "S32" | "U32" | "F32" | "F64";
+export type LercPixelType = 'S8' | 'U8' | 'S16' | 'U16' | 'S32' | 'U32' | 'F32' | 'F64';
 
 export interface BandStats {
   minValue: number;
@@ -42,4 +41,3 @@ export type TypedArray =
   | Uint32Array
   | Float32Array
   | Float64Array;
-

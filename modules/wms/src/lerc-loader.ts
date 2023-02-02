@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type { LERCData } from './lib/lerc/lerc-types';
+import type {LERCData} from './lib/lerc/lerc-types';
 import * as Lerc from 'lerc';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -10,11 +10,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type LERCLoaderOptions = LoaderOptions & {
   lerc?: {
-     /**	The number of bytes to skip in the input byte stream. A valid Lerc file is expected at that position. */
+    /**	The number of bytes to skip in the input byte stream. A valid Lerc file is expected at that position. */
     inputOffset?: number;
-     /**	It is recommended to use the returned mask instead of setting this value. */
+    /**	It is recommended to use the returned mask instead of setting this value. */
     noDataValue?: number;
-     /**	(ndepth LERC2 only) If true, returned depth values are pixel-interleaved. */
+    /**	(ndepth LERC2 only) If true, returned depth values are pixel-interleaved. */
     returnInterleaved?: boolean;
   };
 };
