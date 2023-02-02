@@ -130,7 +130,9 @@ export function parseWMSLayerDescription(text: string, options): WMSLayerDescrip
  */
 export function parseWMSError(text: string, options): string {
   const parsedXML = XMLLoader.parseTextSync?.(text, options);
-  const serviceExceptionXML = parsedXML?.ServiceExceptionReport?.ServiceException;
+  const serviceExceptionXML =
+    parsedXML?.ServiceExceptionReport?.ServiceException ||
+    parsedXML?.['ogc:ServiceExceptionReport']?.['ogc:ServiceException'];
   // Sigh, can be either a string or an object
   const message =
     typeof serviceExceptionXML === 'string'

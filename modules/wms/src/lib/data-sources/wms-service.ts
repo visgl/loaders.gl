@@ -246,8 +246,8 @@ export class WMSService {
     const url = this.getCapabilitiesURL(parameters, extra);
     const {fetch} = this;
     const response = await fetch(url, this.loadOptions);
-    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
+    await this.checkResponse(response, arrayBuffer);
     return await WMSCapabilitiesLoader.parse(arrayBuffer, this.loadOptions);
   }
 
@@ -256,9 +256,14 @@ export class WMSService {
     const url = this.getMapURL(options, extra);
     const {fetch} = this;
     const response = await fetch(url, this.loadOptions);
-    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
-    return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+    await this.checkResponse(response, arrayBuffer);
+    try {
+      return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+    } catch {
+      await this.checkResponse(response, arrayBuffer, true);
+      throw new Error('test');
+    }
   }
 
   /** Get Feature Info for a coordinate */
@@ -268,8 +273,8 @@ export class WMSService {
   ): Promise<WMSFeatureInfo> {
     const url = this.getFeatureInfoURL(options, extra);
     const response = await this.fetch(url, this.loadOptions);
-    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
+    await this.checkResponse(response, arrayBuffer);
     return await WMSFeatureInfoLoader.parse(arrayBuffer, this.loadOptions);
   }
 
@@ -280,8 +285,8 @@ export class WMSService {
   ): Promise<WMSLayerDescription> {
     const url = this.describeLayerURL(options, extra);
     const response = await this.fetch(url, this.loadOptions);
-    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
+    await this.checkResponse(response, arrayBuffer);
     return await WMSLayerDescriptionLoader.parse(arrayBuffer, this.loadOptions);
   }
 
@@ -292,9 +297,14 @@ export class WMSService {
   ): Promise<ImageType> {
     const url = this.getLegendGraphicURL(options, extra);
     const response = await this.fetch(url, this.loadOptions);
-    await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
-    return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+    await this.checkResponse(response, arrayBuffer);
+    try {
+      return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+    } catch {
+      await this.checkResponse(response, arrayBuffer, true);
+      throw new Error('test');
+    }
   }
 
   // INTERNAL METHODS
@@ -315,13 +325,13 @@ export class WMSService {
         url += `${key.toUpperCase()}=${value ? String(value) : ''}`;
       }
     }
-    return url;
+    return encodeURI(url);
   }
 
   /** Checks for and parses a WMS XML formatted ServiceError and throws an exception */
-  protected async checkResponse(response: Response) {
-    if (!response.ok || response.headers['content-type'] === WMSErrorLoader.mimeTypes[0]) {
-      const arrayBuffer = await response.arrayBuffer();
+  protected async checkResponse(response: Response, arrayBuffer: ArrayBuffer, error?: boolean) {
+    const contentType = response.headers['content-type'];
+    if (error || !response.ok || WMSErrorLoader.mimeTypes.includes(contentType)) {
       const error = await WMSErrorLoader.parse(arrayBuffer, this.loadOptions);
       throw new Error(error);
     }

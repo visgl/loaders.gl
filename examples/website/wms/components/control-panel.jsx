@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {INITIAL_EXAMPLE_NAME, INITIAL_LOADER_NAME} from '../examples';
+import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from '../examples';
 
 const Container = styled.div`
   display: flex;
@@ -52,7 +52,7 @@ export default class ControlPanel extends PureComponent {
     let selectedExample = this.props.selectedExample;
 
     if ((!selectedCategory || !selectedExample) && !this._autoSelected) {
-      selectedCategory = INITIAL_LOADER_NAME;
+      selectedCategory = INITIAL_CATEGORY_NAME;
       selectedExample = examples[selectedCategory][INITIAL_EXAMPLE_NAME];
       this._autoSelected = true;
     }
@@ -112,7 +112,8 @@ export default class ControlPanel extends PureComponent {
     return (
       <div>
         <h3>
-          {selectedExample} <b>{selectedCategory}</b>{' '}
+          {selectedExample} <b>{selectedCategory}</b>{' '}{this.props.loading ? <span style={{color: 'gray'}}>Loading Image...</span> : ''}  
+
         </h3>
       </div>
     );
@@ -124,6 +125,7 @@ export default class ControlPanel extends PureComponent {
         {this._renderHeader()}
         {this._renderDropDown()}
         {this.props.children}
+        {this.props.capabilities}
       </Container>
     );
   }

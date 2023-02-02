@@ -7,7 +7,10 @@ import {WMSService, WMSCapabilities} from '@loaders.gl/wms';
 export type ImageryLayerProps = CompositeLayerProps<string> & {
   serviceUrl: string;
   layers: string[];
-  onCapabilitiesLoad: (capabilities: WMSCapabilities) => void;
+  onCapabilitiesLoadStart: () => void;
+  onCapabilitiesLoadComplete: (capabilities: WMSCapabilities) => void;
+  onImageLoadStart: () => void;
+  onImageLoadComplete: () => void;
 };
 
 const defaultProps: ImageryLayerProps = {
@@ -15,7 +18,10 @@ const defaultProps: ImageryLayerProps = {
   // TODO - we shouldn't have a random default
   serviceUrl: `https://ows.terrestris.de/osm/service`,
   layers: ['OSM-WMS'],
-  onCapabilitiesLoad: () => {}
+  onCapabilitiesLoadStart: () => {},
+  onCapabilitiesLoadComplete: () => {},
+  onImageLoadStart: () => {}, 
+  onImageLoadComplete: () => {}
 };
 
 /**
@@ -25,28 +31,33 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   static layerName = 'ImageryLayer';
   static defaultProps: DefaultProps<ImageryLayerProps> = defaultProps;
 
+  /** We want resize events etc */
   /*override*/ shouldUpdateState(): boolean {
     return true;
   }
 
   /*override*/ initializeState(): void {
-    this.state.imageService = new WMSService({url: this.props.serviceUrl});
-
     // Request capabilities
-    this.state.imageService.getCapabilities().then(capabilities => {
-      this.state.capabilities = capabilities;
-      document.title = capabilities.title || 'WMS';
-      console.log(capabilities);
-    });
-
-    // TODO this gets repeated in update layer
-    this.buildBitmapLayer('state changed');
+    this.state.imageService = new WMSService({url: this.props.serviceUrl});
   }
 
   /*override*/ updateState({changeFlags, props, oldProps}: UpdateParameters<this>): void {
-    console.log('updatestate', changeFlags.viewportChanged);
-    if (changeFlags.viewportChanged) {
+    if (changeFlags.propsChanged && props.serviceUrl !== oldProps.serviceUrl) {
+      console.log('update props', changeFlags.viewportChanged);
+
+      this.state.imageService = new WMSService({url: this.props.serviceUrl});
+      this.props.onCapabilitiesLoadStart();
+      this.state.imageService.getCapabilities().then(capabilities => {
+        this.state.capabilities = capabilities;
+        this.props.onCapabilitiesLoadComplete(capabilities);
+      });
+      // this.buildBitmapLayer('props changed')
+
+    } else if (changeFlags.viewportChanged) {
+      console.log('update viewport', changeFlags.viewportChanged);
+
       debounce(() => this.buildBitmapLayer('state changed'));
+
     }
   }
 
@@ -57,7 +68,7 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     return this.state.bitmapLayer;
   }
 
-  async buildBitmapLayer(reason: string): void {
+  async buildBitmapLayer(reason: string): Promise<void> {
     // const viewports = deckInstance.getViewports();
     const viewports = this.context.deck?.getViewports() || [];
     if (viewports.length <= 0) {
@@ -68,29 +79,50 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     const bounds = viewport.getBounds();
     const {width, height} = viewport;
 
-    console.log(`Loading new bitmap ${reason}`, bounds, width, height);
+    this.props.onImageLoadStart();
 
     // TODO - need types on the layer state
     const imageService = this.state.imageService as WMSService;
 
-    // const imageUrl = `https://ows.terrestris.de/osm/service?width=${width}&height=${height}&bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&srs=EPSG:4326&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=TRUE&version=1.1.1&layers=OSM-WMS`;
-
-    // TODO: change in the URL `srs=EPSG:4326` to `srs=EPSG:900913`
-    // once we can change the TileLayer bounds from lat/lon to web mercator coordinates
-    const image = await imageService.getMap({width, height, bbox: bounds, layers: this.props.layers});
-
-    console.log(`Creating new bitmap layer`, image);
+    let image;
+    
+    try {
+      image = await imageService.getMap({width, height, bbox: bounds, layers: this.props.layers});
+    } catch (error) {
+      this.context.onError?.(error, this);
+      // throw error;
+    }
+    
+    this.props.onImageLoadComplete();
 
     const layer = new BitmapLayer({
-      id: `${this.props.id}-bitmap`,
+      ...this.getSubLayerProps({id: 'bitmap'}),
       bounds,
       image,
-      opacity: 0.5,
-      loaders: imageService.loaders
+      loaders: imageService.loaders,
+      onClick: ({bitmap, layer}) => {
+        if (bitmap) {
+          const x = bitmap.pixel[0];
+          const y = bitmap.pixel[1];
+          debounce(async () => {
+            const featureInfo = await imageService.getFeatureInfo({
+              layers: this.props.layers,
+              width,
+              height,
+              bbox: bounds,
+              query_layers: this.props.layers,
+              x,
+              y,
+              info_format: 'text/plain'
+            })
+            console.log(featureInfo);
+          }, 0);
+        }
+      }
     });
 
     this.state.bitmapLayer = layer;
-    this.setNeedsUpdate();
+    this.setNeedsRedraw();
   }
 }
 
