@@ -7,6 +7,7 @@ import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react/typed';
 import {MapController} from '@deck.gl/core/typed';
 import {ImageryLayer} from './imagery-layer';
+import type {WMSCapabilities} from '@loaders.gl/wms';
 
 import ControlPanel from './components/control-panel';
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
@@ -21,18 +22,27 @@ export const INITIAL_VIEW_STATE = {
 };
 
 export default class App extends PureComponent {
+  state: {
+    viewState;
+    selectedCategory: string;
+    selectedExample: string;
+    loading: true;
+    capabilities: string | '';
+  } = {
+    // CURRENT VIEW POINT / CAMERA POSITIO
+    viewState: INITIAL_VIEW_STATE,
+
+    // EXAMPLE STATE
+    selectedCategory: INITIAL_CATEGORY_NAME,
+    selectedExample: INITIAL_EXAMPLE_NAME,
+
+    loading: true,
+    capabilities: ''
+  };
+
   constructor(props) {
     super(props);
 
-    this.state = {
-      // CURRENT VIEW POINT / CAMERA POSITIO
-      viewState: INITIAL_VIEW_STATE,
-
-      // EXAMPLE STATE
-      selectedExample: INITIAL_EXAMPLE_NAME,
-      selectedCategory: INITIAL_CATEGORY_NAME,
-      uploadedFile: null
-    };
 
     this._onExampleChange = this._onExampleChange.bind(this);
     this._onViewStateChange = this._onViewStateChange.bind(this);
@@ -48,7 +58,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {selectedExample, viewState, selectedCategory} = this.state;
+    const {selectedExample, viewState, selectedCategory, loading, capabilities} = this.state;
 
     return (
       <ControlPanel
@@ -56,6 +66,8 @@ export default class App extends PureComponent {
         selectedExample={selectedExample}
         selectedCategory={selectedCategory}
         onExampleChange={this._onExampleChange}
+        loading={loading}
+        capabilities={capabilities}
       >
         <div style={{textAlign: 'center'}}>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:
@@ -66,19 +78,55 @@ export default class App extends PureComponent {
   }
 
   _renderLayer() {
-    const {selectedExample, selectedCategory, uploadedFile} = this.state;
+    const {selectedExample, selectedCategory} = this.state;
 
-    let layerData;
-    if (uploadedFile) {
-      layerData = uploadedFile;
-    } else if (EXAMPLES[selectedCategory][selectedExample]) {
-      layerData = EXAMPLES[selectedCategory][selectedExample].data;
-    } else {
-      layerData = EXAMPLES[INITIAL_CATEGORY_NAME][INITIAL_EXAMPLE_NAME].data;
+    const example = EXAMPLES[selectedCategory][selectedExample] || 
+      EXAMPLES[INITIAL_CATEGORY_NAME][INITIAL_EXAMPLE_NAME];
+    if (!example) {;
+      return
     }
 
+    const {serviceUrl, layers} = EXAMPLES[selectedCategory][selectedExample];
+
     return [
-      new ImageryLayer({serviceUrl: 'https://ows.terrestris.de/osm/service'})
+      new ImageryLayer({
+        serviceUrl,
+        layers,
+
+        pickable: true,
+        opacity: 1,
+
+        onImageLoadStart: () => this.setState({loading: true}),
+        onImageLoadComplete: () => this.setState({loading: false}),
+
+        onCapabilitiesLoadStart: () => this.setState({capabilities: 'Loading capabilities...'}),
+        onCapabilitiesLoadComplete: (capabilities: WMSCapabilities) => {
+          globalThis.document.title = capabilities.title || 'WMS';
+          this.setState({capabilities: JSON.stringify(capabilities, null, 2)});
+          console.log(capabilities);
+        },
+
+        onClick: ({bitmap, layer}) => {
+          if (bitmap) {
+            const x = bitmap.pixel[0];
+            const y = bitmap.pixel[1];
+            // debounce(async () => {
+            //   const featureInfo = await imageService.getFeatureInfo({
+            //     layers: this.props.layers,
+            //     width,
+            //     height,
+            //     bbox: bounds,
+            //     query_layers: this.props.layers,
+            //     x,
+            //     y,
+            //     info_format: 'text/plain'
+            //   })
+            console.log(x, y);
+            //}, 0);
+          }
+        }
+  
+      })
     ];
   }
 
@@ -92,7 +140,15 @@ export default class App extends PureComponent {
           layers={this._renderLayer()}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange}
+          onError={(error) => console.error(`deck.gl: ${error}`)}
           controller={{type: MapController, maxPitch: 85}}
+          getTooltip ={({object}) => object && {
+            html: `<h2>${object.name}</h2><div>${object.message}</div>`,
+            style: {
+              backgroundColor: '#f00',
+              fontSize: '0.8em'
+            }
+          }}
         >
           <StaticMap mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
         </DeckGL>
