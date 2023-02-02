@@ -25,6 +25,13 @@ See [roadmap](./roadmap) for more details on planned development.
 
 Target Release Date: February 2023.
 
+**@loaders.gl/wms**
+
+- New module for parsing WMS (Web Management Service) server responses:
+- [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
+- [`WMSFeatureInfoLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+- [`WMSLayerDescriptionLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+
 **Improved support for vite bundler**
 
 - Most examples are now bundled with vite, making vite into the preferred supported bundler for loaders.gl.
@@ -39,13 +46,6 @@ Target Release Date: February 2023.
 
 - [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) extension support. This implementation allows to transform UV coordinates on CPU level.
 
-**@loaders.gl/wms**
-
-- New module for parsing WMS (Web Management Service) server responses:
-- [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
-- [`WMSFeatureInfoLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
-- [`WMSLayerDescriptionLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
-
 **@loaders.gl/xml**
 
 - New module for parsing XML (eXtensible Markup Language)
@@ -59,7 +59,7 @@ Target Release Date: February 2023.
 **@loaders.gl/tile-converter**
 
 - Leverage @loaders.gl workers to increase conversion speed;
-- Restricted support of source tilesets of 3D Tiles Next version:
+- Limited support for  `3D Tiles Next` source tilesets:
   - [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension support. Support of KTX2 textures.
   - [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform) glTF extension support.
   - [EXT_feature_metadata](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata) extension support.
