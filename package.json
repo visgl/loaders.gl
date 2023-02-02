@@ -20,9 +20,7 @@
     "KML"
   ],
   "workspaces": [
-    "examples/website/textures",
-    "modules/*",
-    "test/apps/typescript-test"
+    "modules/*"
   ],
   "scripts": {
     "bootstrap": "yarn install-fast && ocular-bootstrap",
