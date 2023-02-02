@@ -64,14 +64,86 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-## v4.0 (In development)
-
-A major release that brings: 
-- improved typing:`load` and `parse` APIs now infer loader options and return data types from supplied loader. 
-- improved integration with latest Apache Arrow v9.
-- writers for a variety of formats
+## v4.0 (In Development on 4.0-dev branch)
 
 Release Date: TBD, Q1-2022
+
+A major release that brings: 
+
+- Improved typings:`load` and `parse` APIs now infer loader options and the type of the returned data directly from your supplied loader argument. 
+- Integration with latest Apache Arrow JS v9, which now provides significantly improved tree-shaking developed partly based on feedback from loaders.gl
+- New `Writers` for a variety of formats
+- Support for cross-worker schema and table exchange, through a "serialized Apache Arrow" representation.
+
+**@loaders.gl/arrow**
+
+- Now uses `apache-arrow` v9. 
+- Apache Arrow v9 is a breaking change. 
+
+## v3.4 (In Development)
+
+Target Release Date: April, 2023.
+
+**General Improvements**
+
+- New website, built with docusaurus.
+- Typescript upgraded to v5.0.
+- Examples upgraded to React v18, deck.gl v8.9, react-map-gl v7.0.
+
+**@loaders.gl/bson** (NEW)
+
+- New module supporting the [BSON](/docs/modules/bson/formats/bson) (Binary JSON) format.
+- [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) - loads BSON encoded binary data into a "JSON like" JavaScript structure
+- [`BSONWriter`](/docs/modules/bson/api-reference/bson-writer) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
+
+**@loaders.gl/images**
+
+- `ImageLoader` now supports for loading images in the AVIF image format.
+- `isImageFormatSupported()` New function tests if a specific image format is supported in the current environment (mainly required for WebP and AVIF).
+
+**@loaders.gl/pcd**
+
+- `PCDLoader` now supports loading `intensity` and `label` columns if present in the PCD file.
+
+**@loaders.gl/ply**
+
+- `PLYLoader` now supports custom attributes such as `intensity` and `confidence` if present in the PLY file.
+
+**@loaders.gl/xml**
+
+- [`HTMLLoader`](modules/xml/api-reference/html-loader) - New minimal HTML loader, intended for small ad-hoc use cases such as extracting an error message or a link from a short HTML page.
+
+**@loaders.gl/wms**
+
+- `WMSCapabilitiesLoader` 
+  - Now handles version `1.3.0`, and fields and parameters that have changed across WMS versions are automatically remapped to 1.3.0 equivalents (e.g. `CRS` vs `SRS`).
+  - Extracts more information (such as `version`, `abstract` fields, layer bounding boxes and flags (`opaque`, `queryable`, `cascaded`), MIME types for `exceptions`) etc.
+- [`WMSService`](modules/wms/api-reference/wms-service) class improvements:
+  - WMS `1.3.0` is now supported and the default version.
+  - HTTP Authentication: Now correctly uses application supplied `loadOptions`, including fetch overrides and HTTP `Authentication` headers.
+  - Transparent rendering: The `transparent` prop is now included in the exported WMS parameter types enabling requesting images that are transparent where there is no data.
+  - Default WMS parameter support (`layers`, `crs` etc) can be specified during `WMSService` construction, instead of having to repeatedly pass them to `getMap` etc methods.
+- The [**CSW (Catalog Services for the Web)**](modules/wms/formats/csw) protocol is now supported by a new [`CSWService`](modules/wms/api-reference/csw-service) class which enables applications to discover available services (including WMS).
+
+**@loaders.gl/tile-converter**
+
+- Support TRIANGLE_STRIP mesh topology type during 3DTiles -> I3S conversion
+
+**@loaders.gl/tiles**
+
+-  Now passes "query string" parameters from the URL passed to `Tiles3DLoader` etc to subloaders, enabling query string based authentication of 3D tilesets (`https://tileset-url?apiToken=...`).
+
+**@loaders.gl/core**
+
+- `LoaderContext` now provides a `queryString` field, primarily intended to make it easier for subloaders to access query string based authentication paramets.
+
+## v3.3
+
+Release Date: TBD, Feb 2023
+
+## v3.2
+
+Release Date: May 12, 2022.
 
 **@loaders.gl/arrow**
 
