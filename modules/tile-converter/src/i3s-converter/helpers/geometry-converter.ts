@@ -876,12 +876,19 @@ async function mergeMaterials(
   ) {
     const buffer1 = Buffer.from(material1.texture.bufferView.data);
     const buffer2 = Buffer.from(material2.texture.bufferView.data);
-    // @ts-ignore
-    const {joinImages} = await import('join-images');
-    const sharpData = await joinImages([buffer1, buffer2], {direction: 'horizontal'});
-    material1.texture.bufferView.data = await sharpData
-      .toFormat(material1.texture.mimeType === 'image/png' ? 'png' : 'jpeg')
-      .toBuffer();
+    try {
+      // @ts-ignore
+      const {joinImages} = await import('join-images');
+      const sharpData = await joinImages([buffer1, buffer2], {direction: 'horizontal'});
+      material1.texture.bufferView.data = await sharpData
+        .toFormat(material1.texture.mimeType === 'image/png' ? 'png' : 'jpeg')
+        .toBuffer();
+    } catch (error) {
+      console.log(
+        'Join images into a texture atlas has failed. Consider usage `--split-nodes` option. (See documentation https://loaders.gl/modules/tile-converter/docs/cli-reference/tile-converter)'
+      );
+      throw error;
+    }
     // @ts-ignore
     material1.material.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId = 1;
   }
