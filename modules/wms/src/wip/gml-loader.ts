@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parseGML} from './lib/gml/parse-gml';
+import {parseGML} from '../lib/gml/parse-gml';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

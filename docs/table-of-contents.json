@@ -97,6 +97,7 @@
         {"entry": "modules/wkt/docs/api-reference/wkt-loader"},
         {"entry": "modules/wkt/docs/api-reference/wkt-writer"},
         {"entry": "modules/wms/docs/api-reference/wms-capabilities-loader"},
+        {"entry": "modules/wms/docs/api-reference/wms-error-loader"},
         {"entry": "modules/xml/docs/api-reference/xml-loader"},
         {"entry": "modules/zip/docs/api-reference/zip-loader"},
         {"entry": "modules/zip/docs/api-reference/zip-writer"}
@@ -316,9 +317,11 @@
           "title": "@loaders.gl/wms",
           "entries": [
             {"entry": "modules/wms/docs"},
-            {"entry": "modules/wms/docs/api-reference/wms-capabilities-loader"},
-            {"entry": "modules/wms/docs/api-reference/wms-feature-info-loader"},
-            {"entry": "modules/wms/docs/api-reference/wms-layer-description-loader"}
+            {"entry": "modules/wms/docs/api-reference/wms-service"},
+            {"entry": "modules/wms/docs/formats/wms"},
+            {"entry": "modules/wms/docs/formats/wmts"},
+            {"entry": "modules/wms/docs/formats/wfs"},
+            {"entry": "modules/wms/docs/formats/gml"}
           ]
         },
         {

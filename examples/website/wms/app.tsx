@@ -7,7 +7,7 @@ import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react/typed';
 import {MapController} from '@deck.gl/core/typed';
 import {ImageryLayer} from './imagery-layer';
-import type {WMSCapabilities} from '@loaders.gl/wms';
+import type {_ImageSourceMetadata as ImageSourceMetadata} from '@loaders.gl/wms';
 
 import ControlPanel from './components/control-panel';
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
@@ -27,7 +27,7 @@ export default class App extends PureComponent {
     selectedCategory: string;
     selectedExample: string;
     loading: true;
-    capabilities: string | '';
+    metadata: string | '';
   } = {
     // CURRENT VIEW POINT / CAMERA POSITIO
     viewState: INITIAL_VIEW_STATE,
@@ -37,7 +37,7 @@ export default class App extends PureComponent {
     selectedExample: INITIAL_EXAMPLE_NAME,
 
     loading: true,
-    capabilities: ''
+    metadata: ''
   };
 
   constructor(props) {
@@ -58,7 +58,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {selectedExample, viewState, selectedCategory, loading, capabilities} = this.state;
+    const {selectedExample, viewState, selectedCategory, loading, metadata} = this.state;
 
     return (
       <ControlPanel
@@ -67,7 +67,7 @@ export default class App extends PureComponent {
         selectedCategory={selectedCategory}
         onExampleChange={this._onExampleChange}
         loading={loading}
-        capabilities={capabilities}
+        metadata={metadata}
       >
         <div style={{textAlign: 'center'}}>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:
@@ -86,27 +86,28 @@ export default class App extends PureComponent {
       return
     }
 
-    const {serviceUrl, layers} = EXAMPLES[selectedCategory][selectedExample];
+    const {serviceUrl, layers, opacity = 1} = EXAMPLES[selectedCategory][selectedExample];
 
     return [
       new ImageryLayer({
-        serviceUrl,
+        service: serviceUrl,
         layers,
 
         pickable: true,
-        opacity: 1,
+        opacity,
 
         onImageLoadStart: () => this.setState({loading: true}),
         onImageLoadComplete: () => this.setState({loading: false}),
 
-        onCapabilitiesLoadStart: () => this.setState({capabilities: 'Loading capabilities...'}),
-        onCapabilitiesLoadComplete: (capabilities: WMSCapabilities) => {
-          globalThis.document.title = capabilities.title || 'WMS';
-          this.setState({capabilities: JSON.stringify(capabilities, null, 2)});
-          console.log(capabilities);
+        onMetadataLoadStart: () => this.setState({metadata: 'Loading metadata...'}),
+        onMetadataLoadComplete: (metadata: ImageSourceMetadata) => {
+          globalThis.document.title = metadata.title || 'WMS';
+          this.setState({metadata: JSON.stringify(metadata, null, 2)});
+          console.log(metadata);
         },
 
         onClick: ({bitmap, layer}) => {
+          console.log('click in imagery layer');
           if (bitmap) {
             const x = bitmap.pixel[0];
             const y = bitmap.pixel[1];
