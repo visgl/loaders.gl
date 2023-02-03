@@ -22,39 +22,42 @@ export const EXAMPLES = {
       // const imageUrl = `https://ows.terrestris.de/osm/service?width=${width}&height=${height}&bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&srs=EPSG:4326&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=TRUE&version=1.1.1&layers=OSM-WMS`;
       // TODO: change in the URL `srs=EPSG:4326` to `srs=EPSG:900913`
       // once we can change the TileLayer bounds from lat/lon to web mercator coordinates
-      serviceUrl: `https://ows.terrestris.de/osm/service`,
+      service: `https://ows.terrestris.de/osm/service`,
+      serviceType: 'wsm',
       layers: ['OSM-WMS'],
       viewState: {...VIEW_STATE}
     },
     'Canadian Weather': {
-      serviceUrl: 'https://geo.weather.gc.ca/geomet',
+      service: 'https://geo.weather.gc.ca/geomet',
+      serviceType: 'wsm',
       layers: ['GDPS.ETA_TT'], // 'RDPS.CONV_KINDEX.PT3H'],
       viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3},
       opacity: 0.5
     },
     'Deutscher Wetterdienst': {
-      serviceUrl: 'https://maps.dwd.de/geoserver/dwd/wms',
+      service: 'https://maps.dwd.de/geoserver/dwd/wms',
       layers: ['Cwam_reg025_fd_sl_DD10M'],
       viewState: {...VIEW_STATE, longitude: 16, latitude: 54, zoom: 3.6},
       opacity: 0.5
     },
     'Trigger Error (No Layer)': {
-      serviceUrl: 'https://geo.weather.gc.ca/geomet',
+      service: 'https://geo.weather.gc.ca/geomet',
       layers: [],
       viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3}
     },
   },
   ImageServer: {
     NLCDLandCover2001: {
-      serviceUrl: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer',
+      service: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox=${east},${north},${west},${south}&bboxSR=4326&size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image',
+      serviceType: 'template',
       viewState: {...VIEW_STATE}
     },
     ArcGISSampleImageryLayer: {
-      serviceUrl: 'https://developers.arcgis.com/javascript/latest/sample-code/layers-imagerylayer/',
+      service: 'https://developers.arcgis.com/javascript/latest/sample-code/layers-imagerylayer/',
       viewState: {...VIEW_STATE}
     },
     ArcGISExportedImage: {
-      serviceUrl: 'https://developers.arcgis.com/rest/services-reference/enterprise/export-image.htm',
+      service: 'https://developers.arcgis.com/rest/services-reference/enterprise/export-image.htm',
       viewState: {...VIEW_STATE}
     }
   }

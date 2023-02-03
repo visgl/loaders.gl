@@ -1,8 +1,6 @@
 // loaders.gl, MIT license
 
-import {ImageType} from '@loaders.gl/images';
-
-// ImageSource
+import type {ImageType} from '@loaders.gl/images';
 
 /**
  * Normalized capabilities of an Image service
@@ -32,13 +30,37 @@ export type ImageSourceLayer = {
   layers: ImageSourceLayer[];
 };
 
-export type ImageSourceGetImageParameters = {
+export type GetImageParameters = {
   /** Layers to render */
   layers: string | string[];
   /** Styling */
   styles?: unknown;
   /** bounding box of the requested map image */
   bbox: [number, number, number, number];
+  /** pixel width of returned image */
+  width: number;
+  /** pixels */
+  height: number;
+  /** srs for the image (not the bounding box) */
+  srs?: string;
+  /** requested format for the return image */
+  format?: 'image/png';
+};
+
+// Attempt to break down GetImageParameters
+export type ImageFilters = {
+  /** Layers to render */
+  layers: string | string[];
+  /** Styling */
+  styles?: unknown;
+};
+
+export type ImageRegion = {
+  /** bounding box of the requested map image */
+  bbox: [number, number, number, number];
+};
+
+export type ImageFormat = {
   /** pixel width of returned image */
   width: number;
   /** pixels */
@@ -56,5 +78,5 @@ export type ImageSourceGetImageParameters = {
  */
 export abstract class ImageSource {
   abstract getMetadata(): Promise<ImageSourceMetadata>;
-  abstract getImage(parameters: ImageSourceGetImageParameters): Promise<ImageType>;
+  abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
 }
