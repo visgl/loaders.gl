@@ -3,11 +3,12 @@
 import {Layer, CompositeLayer, CompositeLayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed';
 import {BitmapLayer} from '@deck.gl/layers/typed';
 import {WMSService} from '@loaders.gl/wms';
-import {_ImageSource as ImageSource, _ImageSourceMetadata as ImageSourceMetadata} from '@loaders.gl/wms';
+import type {_ImageSourceMetadata as ImageSourceMetadata} from '@loaders.gl/wms';
+import {_ImageSource as ImageSource, _ImageService as ImageService} from '@loaders.gl/wms';
 
 export type ImageryLayerProps = CompositeLayerProps<string> & {
   service: string | ImageSource;
-  serviceType?: 'wms';
+  serviceType?: 'wms' | 'template';
   layers: string[];
   onMetadataLoadStart: () => void;
   onMetadataLoadComplete: (metadata: ImageSourceMetadata) => void;
@@ -97,7 +98,7 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     let image;
     
     try {
-      image = await imageSource.getMap({width, height, bbox: bounds, layers: this.props.layers});
+      image = await imageSource.getImage({width, height, bbox: bounds, layers: this.props.layers});
     } catch (error) {
       this.context.onError?.(error, this);
       // throw error;
@@ -147,6 +148,8 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   _createImageSource(props: ImageryLayerProps): ImageSource {
     if (typeof props.service === 'string') {
       switch (props.serviceType) {
+        case 'template':
+          return new ImageService(props.service);
         case 'wms':
         default: // currently only wms service supported
           return new WMSService({url: props.service})
@@ -160,10 +163,14 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   async _initializeImageSource(): Promise<void> {
     this.props.onMetadataLoadStart();
     const state = this.state as ImageryLayerState;
-    state.metadata = await state.imageSource.getMetadata();
-    // technically we should get the latest layer after an async operation in case props have changed
-    // Although the response might no longer be expected
-    this.getCurrentLayer()?.props.onMetadataLoadComplete(state.metadata);
+    try {
+      state.metadata = await state.imageSource.getMetadata();
+      // technically we should get the latest layer after an async operation in case props have changed
+      // Although the response might no longer be expected
+      this.getCurrentLayer()?.props.onMetadataLoadComplete(state.metadata);
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
 

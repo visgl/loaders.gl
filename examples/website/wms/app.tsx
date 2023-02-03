@@ -28,6 +28,7 @@ export default class App extends PureComponent {
     selectedExample: string;
     loading: true;
     metadata: string | '';
+    error: string | '';
   } = {
     // CURRENT VIEW POINT / CAMERA POSITIO
     viewState: INITIAL_VIEW_STATE,
@@ -58,7 +59,7 @@ export default class App extends PureComponent {
   }
 
   _renderControlPanel() {
-    const {selectedExample, viewState, selectedCategory, loading, metadata} = this.state;
+    const {selectedExample, viewState, selectedCategory, loading, metadata, error} = this.state;
 
     return (
       <ControlPanel
@@ -69,6 +70,9 @@ export default class App extends PureComponent {
         loading={loading}
         metadata={metadata}
       >
+        {
+          error ? <div style={{color: 'red'}}>{error}</div> : ''
+        }
         <div style={{textAlign: 'center'}}>
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:
           {viewState.zoom.toFixed(2)}
@@ -86,11 +90,13 @@ export default class App extends PureComponent {
       return
     }
 
-    const {serviceUrl, layers, opacity = 1} = EXAMPLES[selectedCategory][selectedExample];
+    const {service, serviceType, 
+      layers, opacity = 1} = EXAMPLES[selectedCategory][selectedExample];
 
     return [
       new ImageryLayer({
-        service: serviceUrl,
+        service,
+        serviceType, 
         layers,
 
         pickable: true,
@@ -141,7 +147,7 @@ export default class App extends PureComponent {
           layers={this._renderLayer()}
           viewState={viewState}
           onViewStateChange={this._onViewStateChange}
-          onError={(error) => console.error(`deck.gl: ${error}`)}
+          onError={(error: Error) => this.setState({error: error.message})}
           controller={{type: MapController, maxPitch: 85}}
           getTooltip ={({object}) => object && {
             html: `<h2>${object.name}</h2><div>${object.message}</div>`,

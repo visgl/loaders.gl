@@ -2,21 +2,18 @@
 
 /* eslint-disable camelcase */
 
-import type {
-  WMSCapabilities,
-  _WMSFeatureInfo as WMSFeatureInfo,
-  _WMSLayerDescription as WMSLayerDescription
-} from '@loaders.gl/wms';
-import {
-  WMSCapabilitiesLoader,
-  _WMSFeatureInfoLoader as WMSFeatureInfoLoader,
-  _WMSLayerDescriptionLoader as WMSLayerDescriptionLoader,
-  WMSErrorLoader
-} from '@loaders.gl/wms';
-import {ImageLoader, ImageType} from '@loaders.gl/images';
+import type {ImageType} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import {LoaderOptions} from '@loaders.gl/loader-utils';
 
-import {ImageSource, ImageSourceMetadata, ImageSourceGetImageParameters} from './image-source';
+import type {ImageSourceMetadata, GetImageParameters} from './image-source';
+import {ImageSource} from './image-source';
+
+import type {WMSCapabilities, WMSFeatureInfo, WMSLayerDescription} from '../wms/wms-types';
+import {WMSCapabilitiesLoader} from '../../wms-capabilities-loader';
+import {WMSFeatureInfoLoader} from '../../wip/wms-feature-info-loader';
+import {WMSLayerDescriptionLoader} from '../../wip/wms-layer-description-loader';
+import {WMSErrorLoader} from '../../wms-error-loader';
 
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
@@ -139,8 +136,8 @@ export class WMSService extends ImageSource {
     return this.getCapabilities();
   }
 
-  getImage(parameters: ImageSourceGetImageParameters): Promise<ImageType> {
-    return this.getImage(parameters);
+  getImage(parameters: GetImageParameters): Promise<ImageType> {
+    return this.getMap(parameters);
   }
 
   // WMS Service API Stubs

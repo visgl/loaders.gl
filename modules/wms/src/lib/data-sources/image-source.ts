@@ -1,8 +1,6 @@
 // loaders.gl, MIT license
 
-import {ImageType} from '@loaders.gl/images';
-
-// ImageSource
+import type {ImageType} from '@loaders.gl/images';
 
 /**
  * Normalized capabilities of an Image service
@@ -32,7 +30,7 @@ export type ImageSourceLayer = {
   layers: ImageSourceLayer[];
 };
 
-export type ImageSourceGetImageParameters = {
+export type GetImageParameters = {
   /** Layers to render */
   layers: string | string[];
   /** Styling */
@@ -56,5 +54,5 @@ export type ImageSourceGetImageParameters = {
  */
 export abstract class ImageSource {
   abstract getMetadata(): Promise<ImageSourceMetadata>;
-  abstract getImage(parameters: ImageSourceGetImageParameters): Promise<ImageType>;
+  abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
 }

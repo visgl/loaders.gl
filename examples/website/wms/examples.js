@@ -22,12 +22,14 @@ export const EXAMPLES = {
       // const imageUrl = `https://ows.terrestris.de/osm/service?width=${width}&height=${height}&bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&srs=EPSG:4326&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=TRUE&version=1.1.1&layers=OSM-WMS`;
       // TODO: change in the URL `srs=EPSG:4326` to `srs=EPSG:900913`
       // once we can change the TileLayer bounds from lat/lon to web mercator coordinates
-      serviceUrl: `https://ows.terrestris.de/osm/service`,
+      service: `https://ows.terrestris.de/osm/service`,
+      serviceType: 'wsm',
       layers: ['OSM-WMS'],
       viewState: {...VIEW_STATE}
     },
     'Canadian Weather': {
       serviceUrl: 'https://geo.weather.gc.ca/geomet',
+      serviceType: 'wsm',
       layers: ['GDPS.ETA_TT'], // 'RDPS.CONV_KINDEX.PT3H'],
       viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3},
       opacity: 0.5
@@ -46,7 +48,8 @@ export const EXAMPLES = {
   },
   ImageServer: {
     NLCDLandCover2001: {
-      serviceUrl: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer',
+      service: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer',
+      serviceType: 'template',
       viewState: {...VIEW_STATE}
     },
     ArcGISSampleImageryLayer: {
