@@ -36,6 +36,8 @@ export const WMSErrorLoader = {
   },
   parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions): Promise<string> =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
+  parseSync: (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions): string =>
+    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: WMSLoaderOptions): string => parseTextSync(text, options)
 };
 

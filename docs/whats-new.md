@@ -37,15 +37,15 @@ Target Release Date: February 2023.
 **@loaders.gl/wms** (New module)
 
 - New module for parsing WMS (Web Management Service) server responses:
-- [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
-- [`WMSFeatureInfoLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
-- [`WMSLayerDescriptionLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+  - [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
+  - [`WMSFeatureInfoLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+  - [`WMSLayerDescriptionLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
 
 **@loaders.gl/3d-tiles**
 
 - Limited support for [3D Tiles Next](https://github.com/CesiumGS/3d-tiles/tree/main/next):
-- [3DTILES_content_gltf](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_content_gltf) extension support.
-- [3DTILES_implicit_tiling](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling) extension support.
+  - [3DTILES_content_gltf](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_content_gltf) extension support.
+  - [3DTILES_implicit_tiling](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling) extension support.
 
 **@loaders.gl/gltf**
 
