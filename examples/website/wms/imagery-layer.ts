@@ -1,25 +1,35 @@
 // Copyright 2022 Foursquare Labs, Inc. All Rights Reserved.
 
-import {Layer, CompositeLayer, CompositeLayerProps, UpdateParameters, DefaultProps, LayerProps} from '@deck.gl/core/typed';
+import {Layer, CompositeLayer, CompositeLayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed';
 import {BitmapLayer} from '@deck.gl/layers/typed';
-import {WMSService, WMSCapabilities} from '@loaders.gl/wms';
+import {WMSService} from '@loaders.gl/wms';
+import {_ImageSource as ImageSource, _ImageSourceMetadata as ImageSourceMetadata} from '@loaders.gl/wms';
 
 export type ImageryLayerProps = CompositeLayerProps<string> & {
-  serviceUrl: string;
+  service: string | ImageSource;
+  serviceType?: 'wms';
   layers: string[];
-  onCapabilitiesLoadStart: () => void;
-  onCapabilitiesLoadComplete: (capabilities: WMSCapabilities) => void;
+  onMetadataLoadStart: () => void;
+  onMetadataLoadComplete: (metadata: ImageSourceMetadata) => void;
   onImageLoadStart: () => void;
   onImageLoadComplete: () => void;
 };
 
+type ImageryLayerState = {
+  imageSource: ImageSource;
+  bitmapLayer: BitmapLayer;
+  metadata: ImageSourceMetadata;
+};
+
+
 const defaultProps: ImageryLayerProps = {
   id: 'imagery-layer',
   // TODO - we shouldn't have a random default
-  serviceUrl: `https://ows.terrestris.de/osm/service`,
-  layers: ['OSM-WMS'],
-  onCapabilitiesLoadStart: () => {},
-  onCapabilitiesLoadComplete: () => {},
+  service: undefined!,
+  serviceType: 'wms',
+  layers: undefined!,
+  onMetadataLoadStart: () => {},
+  onMetadataLoadComplete: () => {},
   onImageLoadStart: () => {}, 
   onImageLoadComplete: () => {}
 };
@@ -37,21 +47,19 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   }
 
   /*override*/ initializeState(): void {
-    // Request capabilities
-    this.state.imageService = new WMSService({url: this.props.serviceUrl});
+    const state = this.state as ImageryLayerState;
+    state.imageSource = this._createImageSource(this.props);
+    this._initializeImageSource();
   }
-
+  
   /*override*/ updateState({changeFlags, props, oldProps}: UpdateParameters<this>): void {
-    if (changeFlags.propsChanged && props.serviceUrl !== oldProps.serviceUrl) {
+    if (changeFlags.propsChanged && props.service !== oldProps.service) {
       console.log('update props', changeFlags.viewportChanged);
 
-      this.state.imageService = new WMSService({url: this.props.serviceUrl});
-      this.props.onCapabilitiesLoadStart();
-      this.state.imageService.getCapabilities().then(capabilities => {
-        this.state.capabilities = capabilities;
-        this.props.onCapabilitiesLoadComplete(capabilities);
-      });
-      // this.buildBitmapLayer('props changed')
+      const state = this.state as ImageryLayerState;
+      state.imageSource = this._createImageSource(this.props);
+      this._initializeImageSource();
+        // this.buildBitmapLayer('props changed')
 
     } else if (changeFlags.viewportChanged) {
       console.log('update viewport', changeFlags.viewportChanged);
@@ -65,7 +73,8 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     console.log('renderlayers');
     // TODO - which bitmap layer is rendered should depend on the current viewport
     // Currently Studio only uses one viewport
-    return this.state.bitmapLayer;
+    const state = this.state as ImageryLayerState;
+    return state.bitmapLayer;
   }
 
   async buildBitmapLayer(reason: string): Promise<void> {
@@ -82,12 +91,13 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     this.props.onImageLoadStart();
 
     // TODO - need types on the layer state
-    const imageService = this.state.imageService as WMSService;
+    const state = this.state as ImageryLayerState;
+    const imageSource = state.imageSource;
 
     let image;
     
     try {
-      image = await imageService.getMap({width, height, bbox: bounds, layers: this.props.layers});
+      image = await imageSource.getMap({width, height, bbox: bounds, layers: this.props.layers});
     } catch (error) {
       this.context.onError?.(error, this);
       // throw error;
@@ -99,13 +109,19 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
       ...this.getSubLayerProps({id: 'bitmap'}),
       bounds,
       image,
-      loaders: imageService.loaders,
-      onClick: ({bitmap, layer}) => {
+      loaders: imageSource.loaders,
+      pickable: true, // TODO inherited?
+      onHover: (info) => {
+        console.log('hover in bitmap layer', info);
+      },
+      onClick: (info) => {
+        const {bitmap, layer} = info;
+        console.log('click in bitmap layer', info);
         if (bitmap) {
           const x = bitmap.pixel[0];
           const y = bitmap.pixel[1];
           debounce(async () => {
-            const featureInfo = await imageService.getFeatureInfo({
+            const featureInfo = await imageSource.getFeatureInfo({
               layers: this.props.layers,
               width,
               height,
@@ -121,8 +137,33 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
       }
     });
 
-    this.state.bitmapLayer = layer;
+    state.bitmapLayer = layer;
     this.setNeedsRedraw();
+  }
+
+  // HELPERS
+
+  /** Creates a service if appropriate */
+  _createImageSource(props: ImageryLayerProps): ImageSource {
+    if (typeof props.service === 'string') {
+      switch (props.serviceType) {
+        case 'wms':
+        default: // currently only wms service supported
+          return new WMSService({url: props.service})
+      }
+    } else {
+      return props.service;
+    }
+  }
+
+  /** Run a getMetadata on the image service */
+  async _initializeImageSource(): Promise<void> {
+    this.props.onMetadataLoadStart();
+    const state = this.state as ImageryLayerState;
+    state.metadata = await state.imageSource.getMetadata();
+    // technically we should get the latest layer after an async operation in case props have changed
+    // Although the response might no longer be expected
+    this.getCurrentLayer()?.props.onMetadataLoadComplete(state.metadata);
   }
 }
 
@@ -131,4 +172,3 @@ function debounce(fn: Function, ms = 500): void {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => fn(), ms);
 }
-

@@ -1,39 +1,16 @@
 // loaders.gl, MIT license
 
-// from '@loaders.gl/images';
+/** General data source class */
+// export abstract class DataSource {};
+// export type DataSourceMetadata = {};
 
-/** General data source class *
-export abstract class DataSource {};
+// ImageSource
+
 
 /** Data source that serves data by tile index *
 export abstract class TileDataSource extends DataSource {};
 
-export type ImageFeatureInfo = {};
-
-export type ImageLayerInfo = {};
-
-export type ImageDataSourceCapabilities = {}
-
-/**
- * ImageDataSource - data sources that allow data to be queried by (geospatial) extents
- * @note
- * - If geospatial, bounding box is expected to be in web mercator coordinates
- *
-export abstract class ImageDataSource extends DataSource {
-  abstract getCapabilities(): Promise<ImageDataSourceCapabilities>;
-  abstract getImage({boundingBox, width, height, layers, parameters}): Promise<ImageType>;
-  getFeatureInfo({layers, parameters}): Promise<ImageFeatureInfo> {
-    throw new Error('not implemented');
-  }
-  getLayerInfo({layers, parameters}): Promise<ImageLayerInfo> {
-    throw new Error('not implemented');
-  }
-  getLegendImage({layers, parameters}): Promise<ImageType> {
-    throw new Error('not implemented');
-  }
-}
-
-// Vector Tile Data Source
+// Vector Tile Source
 
 export type VectorTileDataSourceCapabilities = {
   // check tile.json

@@ -9,7 +9,7 @@ import test from 'tape-promise/tape';
 
 // @ts-nocheck
 
-import {WFSCapabilitiesLoader, WFSCapabilities} from '@loaders.gl/wms';
+import {_WFSCapabilitiesLoader as WFSCapabilitiesLoader, _WFSCapabilities as WFSCapabilities} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 
 const WFS_CAPABILITIES_RESPONSE_URL =

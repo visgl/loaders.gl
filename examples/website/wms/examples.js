@@ -29,12 +29,14 @@ export const EXAMPLES = {
     'Canadian Weather': {
       serviceUrl: 'https://geo.weather.gc.ca/geomet',
       layers: ['GDPS.ETA_TT'], // 'RDPS.CONV_KINDEX.PT3H'],
-      viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3}
+      viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3},
+      opacity: 0.5
     },
     'Deutscher Wetterdienst': {
       serviceUrl: 'https://maps.dwd.de/geoserver/dwd/wms',
       layers: ['Cwam_reg025_fd_sl_DD10M'],
-      viewState: {...VIEW_STATE, longitude: 16, latitude: 54, zoom: 3.6}
+      viewState: {...VIEW_STATE, longitude: 16, latitude: 54, zoom: 3.6},
+      opacity: 0.5
     },
     'Trigger Error (No Layer)': {
       serviceUrl: 'https://geo.weather.gc.ca/geomet',

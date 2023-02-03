@@ -2,32 +2,37 @@
 
 /* eslint-disable camelcase */
 
-import type {WMSCapabilities, WMSFeatureInfo, WMSLayerDescription} from '@loaders.gl/wms';
+import type {
+  WMSCapabilities,
+  _WMSFeatureInfo as WMSFeatureInfo,
+  _WMSLayerDescription as WMSLayerDescription
+} from '@loaders.gl/wms';
 import {
   WMSCapabilitiesLoader,
-  WMSFeatureInfoLoader,
-  WMSLayerDescriptionLoader,
+  _WMSFeatureInfoLoader as WMSFeatureInfoLoader,
+  _WMSLayerDescriptionLoader as WMSLayerDescriptionLoader,
   WMSErrorLoader
 } from '@loaders.gl/wms';
 import {ImageLoader, ImageType} from '@loaders.gl/images';
 import {LoaderOptions} from '@loaders.gl/loader-utils';
 
+import {ImageSource, ImageSourceMetadata, ImageSourceGetImageParameters} from './image-source';
+
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
-export type WMSGetCapabilitiesParameters = {
+type WMSCommonParameters = {
   /** In case the endpoint supports multiple services */
   service?: 'WMS';
   /** In case the endpoint supports multiple WMS versions */
   version?: '1.1.1' | '1.3.0';
+};
+
+export type WMSGetCapabilitiesParameters = WMSCommonParameters & {
   /** Request type */
   request?: 'GetCapabilities';
 };
 
-export type WMSGetMapParameters = {
-  /** In case the endpoint supports multiple services */
-  service?: 'WMS';
-  /** In case the endpoint supports multiple WMS versions */
-  version?: '1.1.1' | '1.3.0';
+export type WMSGetMapParameters = WMSCommonParameters & {
   /** Request type */
   request?: 'GetMap';
   /** Layers to render */
@@ -47,11 +52,7 @@ export type WMSGetMapParameters = {
 };
 
 // https://imagery.pasda.psu.edu/arcgis/services/pasda/UrbanTreeCanopy_Landcover/MapServer/WmsServer?SERVICE=WMS&
-export type WMSGetFeatureInfoParameters = {
-  /** In case the endpoint supports multiple services */
-  service?: 'WMS';
-  /** In case the endpoint supports multiple WMS versions */
-  version?: '1.1.1' | '1.3.0';
+export type WMSGetFeatureInfoParameters = WMSCommonParameters & {
   /** Request type */
   request?: 'GetFeatureInfo';
 
@@ -62,7 +63,7 @@ export type WMSGetFeatureInfoParameters = {
   /** list of layers to query (could be different from rendered layers) */
   query_layers: string[];
   /** MIME type of returned feature info */
-  info_format: 'text/plain';
+  info_format?: 'text/plain';
 
   /** Layers to render */
   layers: string[];
@@ -80,88 +81,42 @@ export type WMSGetFeatureInfoParameters = {
   format?: 'image/png';
 };
 
-export type WMSDescribeLayerParameters = {
-  /** In case the endpoint supports multiple services */
-  service?: 'WMS';
-  /** In case the endpoint supports multiple WMS versions */
-  version?: '1.1.1' | '1.3.0';
+export type WMSDescribeLayerParameters = WMSCommonParameters & {
   /** Request type */
   request?: 'DescribeLayer';
 };
 
-export type WMSGetLegendGraphicParameters = {
-  /** In case the endpoint supports multiple services */
-  service?: 'WMS';
-  /** In case the endpoint supports multiple WMS versions */
-  version?: '1.1.1' | '1.3.0';
+export type WMSGetLegendGraphicParameters = WMSCommonParameters & {
   /** Request type */
   request?: 'GetLegendGraphic';
 };
 
-const WMS_GET_CAPABILITIES_DEFAULT_PARAMETERS: Required<WMSGetCapabilitiesParameters> = {
-  service: 'WMS',
-  version: '1.1.1',
-  request: 'GetCapabilities'
-};
-
-const WMS_GET_MAP_DEFAULT_PARAMETERS: Required<WMSGetMapParameters> = {
-  service: 'WMS',
-  version: '1.1.1',
-  request: 'GetMap',
-  layers: [],
-  styles: undefined,
-  bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
-  width: 1200,
-  height: 900,
-  srs: 'EPSG:4326',
-  format: 'image/png'
-};
-
-const WMS_GET_FEATURE_INFO_DEFAULT_PARAMETERS: Required<WMSGetFeatureInfoParameters> = {
-  service: 'WMS',
-  version: '1.1.1',
-  request: 'GetFeatureInfo',
-  layers: [],
-  styles: undefined,
-  bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
-  width: 1200,
-  height: 900,
-  srs: 'EPSG:4326',
-  format: 'image/png',
-
-  x: undefined!,
-  y: undefined!,
-  query_layers: [],
-  info_format: 'text/plain'
-};
-
-const WMS_DESCRIBE_LAYER_DEFAULT_PARAMETERS: Required<WMSDescribeLayerParameters> = {
-  service: 'WMS',
-  version: '1.1.1',
-  request: 'DescribeLayer'
-};
-
-const WMS_GET_LEGEND_GRAPHIC_DEFAULT_PARAMETERS: Required<WMSGetLegendGraphicParameters> = {
-  service: 'WMS',
-  version: '1.1.1',
-  request: 'GetLegendGraphic'
-};
-
+/** Properties that can be specified when creating a new WMS service */
 export type WMSServiceProps = {
+  /** Base URL to the service */
   url: string;
+  /** Any load options to the loaders.gl Loaders used by the WMSService methods */
   loadOptions?: LoaderOptions;
+  /** Override the fetch function if required */
   fetch?: typeof fetch | FetchLike;
 };
 
-export class WMSService {
+/**
+ * The WMSService class provides
+ * - provides type safe methods to form URLs to a WMS service
+ * - provides type safe methods to query and parse results (and errors) from a WMS service
+ * - implements the ImageService interface
+ * @note Only the URL parameter conversion is supported. XML posts are not supported.
+ */
+export class WMSService extends ImageSource {
   url: string;
   loadOptions: LoaderOptions = {
-    wms: {
-      throwOnError: true
-    }
+    // We want error responses to throw exceptions, the WMSErrorLoader can do this
+    wms: {throwOnError: true}
   };
   fetch: typeof fetch | FetchLike;
 
+  /** A list of loaders used by the WMSService methods */
   readonly loaders = [
     ImageLoader,
     WMSErrorLoader,
@@ -170,150 +125,200 @@ export class WMSService {
     WMSLayerDescriptionLoader
   ];
 
+  /** Create a WMSService */
   constructor(props: WMSServiceProps) {
+    super();
     this.url = props.url;
     // TODO Need an options merge function from loaders.gl to merge subobjects
     Object.assign(this.loadOptions, props.loadOptions);
     this.fetch = props.fetch || fetch;
   }
 
-  // Typed URL creators
-
-  getCapabilitiesURL(
-    parameters?: WMSGetCapabilitiesParameters,
-    extra?: Record<string, unknown>
-  ): string {
-    const options: Required<WMSGetCapabilitiesParameters> = {
-      ...WMS_GET_CAPABILITIES_DEFAULT_PARAMETERS,
-      ...parameters,
-      ...extra
-    };
-    return this.getWMSUrl(options, extra);
+  // ImageSource implementation
+  getMetadata(): Promise<ImageSourceMetadata> {
+    return this.getCapabilities();
   }
 
-  getMapURL(parameters: WMSGetMapParameters, extra?: Record<string, unknown>): string {
-    const options: Required<WMSGetMapParameters> = {
-      ...WMS_GET_MAP_DEFAULT_PARAMETERS,
-      ...parameters,
-      ...extra
-    };
-    return this.getWMSUrl(options, extra);
-  }
-
-  getFeatureInfoURL(
-    parameters: WMSGetFeatureInfoParameters,
-    extra?: Record<string, unknown>
-  ): string {
-    const options: Required<WMSGetFeatureInfoParameters> = {
-      ...WMS_GET_FEATURE_INFO_DEFAULT_PARAMETERS,
-      ...parameters,
-      ...extra
-    };
-    return this.getWMSUrl(options, extra);
-  }
-
-  describeLayerURL(
-    parameters: WMSDescribeLayerParameters,
-    extra?: Record<string, unknown>
-  ): string {
-    const options: Required<WMSDescribeLayerParameters> = {
-      ...WMS_DESCRIBE_LAYER_DEFAULT_PARAMETERS,
-      ...parameters,
-      ...extra
-    };
-    return this.getWMSUrl(options, extra);
-  }
-
-  getLegendGraphicURL(
-    parameters: WMSGetLegendGraphicParameters,
-    extra?: Record<string, unknown>
-  ): string {
-    const options: Required<WMSGetLegendGraphicParameters> = {
-      ...WMS_GET_LEGEND_GRAPHIC_DEFAULT_PARAMETERS,
-      ...parameters,
-      ...extra
-    };
-    return this.getWMSUrl(options, extra);
+  getImage(parameters: ImageSourceGetImageParameters): Promise<ImageType> {
+    return this.getImage(parameters);
   }
 
   // WMS Service API Stubs
 
   /** Get Capabilities */
   async getCapabilities(
-    parameters?: WMSGetCapabilitiesParameters,
-    extra?: Record<string, unknown>
+    wmsParameters?: WMSGetCapabilitiesParameters,
+    vendorParameters?: Record<string, unknown>
   ): Promise<WMSCapabilities> {
-    const url = this.getCapabilitiesURL(parameters, extra);
+    const url = this.getCapabilitiesURL(wmsParameters, vendorParameters);
     const {fetch} = this;
     const response = await fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
-    await this.checkResponse(response, arrayBuffer);
+    this._checkResponse(response, arrayBuffer);
     return await WMSCapabilitiesLoader.parse(arrayBuffer, this.loadOptions);
   }
 
   /** Get a map image */
-  async getMap(options: WMSGetMapParameters, extra?: Record<string, unknown>): Promise<ImageType> {
-    const url = this.getMapURL(options, extra);
+  async getMap(
+    options: WMSGetMapParameters,
+    vendorParameters?: Record<string, unknown>
+  ): Promise<ImageType> {
+    const url = this.getMapURL(options, vendorParameters);
     const {fetch} = this;
     const response = await fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
-    await this.checkResponse(response, arrayBuffer);
+    this._checkResponse(response, arrayBuffer);
     try {
       return await ImageLoader.parse(arrayBuffer, this.loadOptions);
     } catch {
-      await this.checkResponse(response, arrayBuffer, true);
-      throw new Error('test');
+      throw this._parseError(arrayBuffer);
     }
   }
 
   /** Get Feature Info for a coordinate */
   async getFeatureInfo(
     options: WMSGetFeatureInfoParameters,
-    extra?: Record<string, unknown>
+    vendorParameters?: Record<string, unknown>
   ): Promise<WMSFeatureInfo> {
-    const url = this.getFeatureInfoURL(options, extra);
+    const url = this.getFeatureInfoURL(options, vendorParameters);
     const response = await this.fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
-    await this.checkResponse(response, arrayBuffer);
+    this._checkResponse(response, arrayBuffer);
     return await WMSFeatureInfoLoader.parse(arrayBuffer, this.loadOptions);
   }
 
   /** Get more information about a layer */
   async describeLayer(
     options: WMSDescribeLayerParameters,
-    extra?: Record<string, unknown>
+    vendorParameters?: Record<string, unknown>
   ): Promise<WMSLayerDescription> {
-    const url = this.describeLayerURL(options, extra);
+    const url = this.describeLayerURL(options, vendorParameters);
     const response = await this.fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
-    await this.checkResponse(response, arrayBuffer);
+    this._checkResponse(response, arrayBuffer);
     return await WMSLayerDescriptionLoader.parse(arrayBuffer, this.loadOptions);
   }
 
   /** Get an image with a semantic legend */
   async getLegendGraphic(
     options: WMSGetLegendGraphicParameters,
-    extra?: Record<string, unknown>
+    vendorParameters?: Record<string, unknown>
   ): Promise<ImageType> {
-    const url = this.getLegendGraphicURL(options, extra);
+    const url = this.getLegendGraphicURL(options, vendorParameters);
     const response = await this.fetch(url, this.loadOptions);
     const arrayBuffer = await response.arrayBuffer();
-    await this.checkResponse(response, arrayBuffer);
+    this._checkResponse(response, arrayBuffer);
     try {
       return await ImageLoader.parse(arrayBuffer, this.loadOptions);
     } catch {
-      await this.checkResponse(response, arrayBuffer, true);
-      throw new Error('test');
+      throw this._parseError(arrayBuffer);
     }
+  }
+
+  // Typed URL creators
+  // For applications that want full control of fetching and parsing
+
+  /** Generate a URL for the GetCapabilities request */
+  getCapabilitiesURL(
+    wmsParameters?: WMSGetCapabilitiesParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMSGetCapabilitiesParameters> = {
+      service: 'WMS',
+      version: '1.1.1',
+      request: 'GetCapabilities',
+      ...wmsParameters,
+      ...vendorParameters
+    };
+    return this._getWMSUrl(options, vendorParameters);
+  }
+
+  /** Generate a URL for the GetMap request */
+  getMapURL(
+    wmsParameters: WMSGetMapParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMSGetMapParameters> = {
+      service: 'WMS',
+      version: '1.1.1',
+      request: 'GetMap',
+      // layers: [],
+      // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
+      // width: 1200,
+      // height: 900,
+      styles: undefined,
+      srs: 'EPSG:4326',
+      format: 'image/png',
+      ...wmsParameters,
+      ...vendorParameters
+    };
+    return this._getWMSUrl(options, vendorParameters);
+  }
+
+  /** Generate a URL for the GetFeatureInfo request */
+  getFeatureInfoURL(
+    wmsParameters: WMSGetFeatureInfoParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMSGetFeatureInfoParameters> = {
+      service: 'WMS',
+      version: '1.1.1',
+      request: 'GetFeatureInfo',
+      // layers: [],
+      // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
+      // width: 1200,
+      // height: 900,
+      // x: undefined!,
+      // y: undefined!,
+      // query_layers: [],
+      srs: 'EPSG:4326',
+      format: 'image/png',
+      info_format: 'text/plain',
+      styles: undefined,
+      ...wmsParameters,
+      ...vendorParameters
+    };
+    return this._getWMSUrl(options, vendorParameters);
+  }
+
+  /** Generate a URL for the GetFeatureInfo request */
+  describeLayerURL(
+    wmsParameters: WMSDescribeLayerParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMSDescribeLayerParameters> = {
+      service: 'WMS',
+      version: '1.1.1',
+      request: 'DescribeLayer',
+      ...wmsParameters,
+      ...vendorParameters
+    };
+    return this._getWMSUrl(options, vendorParameters);
+  }
+
+  getLegendGraphicURL(
+    wmsParameters: WMSGetLegendGraphicParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMSGetLegendGraphicParameters> = {
+      service: 'WMS',
+      version: '1.1.1',
+      request: 'GetLegendGraphic',
+      ...wmsParameters,
+      ...vendorParameters
+    };
+    return this._getWMSUrl(options, vendorParameters);
   }
 
   // INTERNAL METHODS
 
   /**
-   * @note protected, since perhaps getWMSUrl may need to be overridden to handle certain backends?
-   * @note if override is common, maybe add a callback prop?
+   * @note case _getWMSUrl may need to be overridden to handle certain backends?
    * */
-  protected getWMSUrl(options: Record<string, unknown>, extra?: Record<string, unknown>): string {
+  protected _getWMSUrl(
+    options: Record<string, unknown>,
+    vendorParameters?: Record<string, unknown>
+  ): string {
     let url = `${this.url}`;
     let first = true;
     for (const [key, value] of Object.entries(options)) {
@@ -329,11 +334,17 @@ export class WMSService {
   }
 
   /** Checks for and parses a WMS XML formatted ServiceError and throws an exception */
-  protected async checkResponse(response: Response, arrayBuffer: ArrayBuffer, error?: boolean) {
+  protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers['content-type'];
-    if (error || !response.ok || WMSErrorLoader.mimeTypes.includes(contentType)) {
-      const error = await WMSErrorLoader.parse(arrayBuffer, this.loadOptions);
+    if (!response.ok || WMSErrorLoader.mimeTypes.includes(contentType)) {
+      const error = WMSErrorLoader.parseSync(arrayBuffer, this.loadOptions);
       throw new Error(error);
     }
+  }
+
+  /** Error situation detected */
+  protected _parseError(arrayBuffer: ArrayBuffer): Error {
+    const error = WMSErrorLoader.parseSync(arrayBuffer, this.loadOptions);
+    return new Error(error);
   }
 }
