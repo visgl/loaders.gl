@@ -91,7 +91,7 @@ export type WMSGetLegendGraphicParameters = WMSCommonParameters & {
 /** Properties that can be specified when creating a new WMS service */
 export type WMSServiceProps = {
   /** Base URL to the service */
-  url: string;
+  serviceUrl: string;
   /** Any load options to the loaders.gl Loaders used by the WMSService methods */
   loadOptions?: LoaderOptions;
   /** Override the fetch function if required */
@@ -106,7 +106,7 @@ export type WMSServiceProps = {
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
 export class WMSService extends ImageSource {
-  url: string;
+  serviceUrl: string;
   loadOptions: LoaderOptions = {
     // We want error responses to throw exceptions, the WMSErrorLoader can do this
     wms: {throwOnError: true}
@@ -125,7 +125,7 @@ export class WMSService extends ImageSource {
   /** Create a WMSService */
   constructor(props: WMSServiceProps) {
     super();
-    this.url = props.url;
+    this.serviceUrl = props.serviceUrl;
     // TODO Need an options merge function from loaders.gl to merge subobjects
     Object.assign(this.loadOptions, props.loadOptions);
     this.fetch = props.fetch || fetch;
@@ -316,7 +316,7 @@ export class WMSService extends ImageSource {
     options: Record<string, unknown>,
     vendorParameters?: Record<string, unknown>
   ): string {
-    let url = `${this.url}`;
+    let url = `${this.serviceUrl}`;
     let first = true;
     for (const [key, value] of Object.entries(options)) {
       url += first ? '?' : '&';

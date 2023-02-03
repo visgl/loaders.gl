@@ -6,13 +6,22 @@ import {ImageLoader} from '@loaders.gl/images';
 import type {ImageSourceMetadata, GetImageParameters} from './image-source';
 import {ImageSource} from './image-source';
 
-/** Accepts a template string and builds requests URLs */
-export class ImageService extends ImageSource {
-  template: string;
+export type AdHocImageServiceProps = {
+  /** Template URL string should contain `${width}` etc which will be substituted. */
+  templateUrl: string;
+};
 
-  constructor(props: {template: string}) {
+/**
+ * Quickly connect to "ad hoc" image sources without subclassing ImageSource.
+ * ImageSource allows template url strings to be used to ad hoc connect to arbitrary image data sources
+ * Accepts a template url string and builds requests URLs
+ */
+export class AdHocImageService extends ImageSource {
+  templateUrl: string;
+
+  constructor(props: AdHocImageServiceProps) {
     super();
-    this.template = props.template;
+    this.templateUrl = props.templateUrl;
   }
 
   // IMAGE SOURCE API
@@ -33,16 +42,17 @@ export class ImageService extends ImageSource {
 
   /** Break up bounding box in east, north, south, west */
   protected getGranularParameters(parameters: GetImageParameters): Record<string, unknown> {
-    const [east, north, south, west] = parameters.bbox;
+    const [east, north, west, south] = parameters.bbox;
     return {...parameters, east, north, south, west};
   }
 
   protected getURLFromTemplate(parameters: Record<string, unknown>): string {
-    let url = this.template;
-    for (const [key, value] of Object.keys(parameters)) {
-      const regex = new RegExp(`{${key}}`, 'g');
-      url = url.replace(regex, String(value));
+    let url = this.templateUrl;
+    for (const [key, value] of Object.entries(parameters)) {
+      // TODO - parameter could be repeated
+      // const regex = new RegExp(`\${${key}}`, 'g');
+      url = url.replace(`\${${key}}`, String(value));
     }
-    return this.template;
+    return url;
   }
 }

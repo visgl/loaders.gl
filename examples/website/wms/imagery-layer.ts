@@ -4,7 +4,7 @@ import {Layer, CompositeLayer, CompositeLayerProps, UpdateParameters, DefaultPro
 import {BitmapLayer} from '@deck.gl/layers/typed';
 import {WMSService} from '@loaders.gl/wms';
 import type {_ImageSourceMetadata as ImageSourceMetadata} from '@loaders.gl/wms';
-import {_ImageSource as ImageSource, _ImageService as ImageService} from '@loaders.gl/wms';
+import {_ImageSource as ImageSource, _AdHocImageService as AdHocImageService} from '@loaders.gl/wms';
 
 export type ImageryLayerProps = CompositeLayerProps<string> & {
   service: string | ImageSource;
@@ -48,9 +48,6 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   }
 
   /*override*/ initializeState(): void {
-    const state = this.state as ImageryLayerState;
-    state.imageSource = this._createImageSource(this.props);
-    this._initializeImageSource();
   }
   
   /*override*/ updateState({changeFlags, props, oldProps}: UpdateParameters<this>): void {
@@ -58,9 +55,9 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
       console.log('update props', changeFlags.viewportChanged);
 
       const state = this.state as ImageryLayerState;
-      state.imageSource = this._createImageSource(this.props);
+      state.imageSource = createImageSource(this.props);
       this._initializeImageSource();
-        // this.buildBitmapLayer('props changed')
+      debounce(() => this.buildBitmapLayer('props changed'), 0);
 
     } else if (changeFlags.viewportChanged) {
       console.log('update viewport', changeFlags.viewportChanged);
@@ -110,7 +107,6 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
       ...this.getSubLayerProps({id: 'bitmap'}),
       bounds,
       image,
-      loaders: imageSource.loaders,
       pickable: true, // TODO inherited?
       onHover: (info) => {
         console.log('hover in bitmap layer', info);
@@ -144,21 +140,6 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
 
   // HELPERS
 
-  /** Creates a service if appropriate */
-  _createImageSource(props: ImageryLayerProps): ImageSource {
-    if (typeof props.service === 'string') {
-      switch (props.serviceType) {
-        case 'template':
-          return new ImageService(props.service);
-        case 'wms':
-        default: // currently only wms service supported
-          return new WMSService({url: props.service})
-      }
-    } else {
-      return props.service;
-    }
-  }
-
   /** Run a getMetadata on the image service */
   async _initializeImageSource(): Promise<void> {
     this.props.onMetadataLoadStart();
@@ -173,6 +154,23 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     }
   }
 }
+
+/** Creates an image service if appropriate */
+function createImageSource(props: ImageryLayerProps): ImageSource {
+  if (typeof props.service === 'string') {
+    switch (props.serviceType) {
+      case 'template':
+        return new AdHocImageService({templateUrl: props.service});
+      case 'wms':
+      default: // currently only wms service supported
+        return new WMSService({serviceUrl: props.service})
+    }
+  } else {
+    return props.service;
+  }
+}
+
+
 
 let timeoutId;
 function debounce(fn: Function, ms = 500): void {

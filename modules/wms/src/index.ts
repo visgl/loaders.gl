@@ -16,7 +16,7 @@ export {WMSService} from './lib/data-sources/wms-service';
 export type {ImageSourceMetadata as _ImageSourceMetadata} from './lib/data-sources/image-source';
 export {ImageSource as _ImageSource} from './lib/data-sources/image-source';
 
-export {ImageService as _ImageService} from './lib/data-sources/image-service';
+export {AdHocImageService as _AdHocImageService} from './lib/data-sources/adhoc-image-service';
 
 // WIP /////////////////////////////////////////////////////////////////
 // Plumbing set up but details of parsing and typing not yet completed
