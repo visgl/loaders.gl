@@ -44,3 +44,8 @@ export {WFSCapabilitiesLoader as _WFSCapabilitiesLoader} from './wip/wfs-capabil
 export type {GeoJSON as _GeoJSON} from '@loaders.gl/schema';
 export type {GMLLoaderOptions as _GMLLoaderOptions} from './wip/gml-loader';
 export {GMLLoader as _GMLLoader} from './wip/gml-loader';
+
+// LERC
+
+export type {LERCData} from './lib/lerc/lerc-types';
+export {LERCLoader} from './lerc-loader';
