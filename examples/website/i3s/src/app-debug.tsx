@@ -360,7 +360,7 @@ export default class App extends PureComponent {
       const [longitude, latitude] = cartographicCenter;
       let pLongitue = longitude;
       let pLatitude = latitude;
-      const viewport = new VIEWS[0].type(this.state.viewState.main);
+      const viewport = new VIEWS[0].ViewportType(this.state.viewState.main);
       const {
         metadata,
         viewState: {
