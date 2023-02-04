@@ -1,7 +1,8 @@
 // import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+// import {ColumnarTableBatch} from '@loaders.gl/schema';
 import type {ParquetLoaderOptions} from '../parquet-loader';
-
 import {ParquetReader} from '../parquetjs/parser/parquet-reader';
+import {makeReadableFile} from '../parquetjs/parser/readable-file';
 
 export async function parseParquet(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
   const blob = new Blob([arrayBuffer]);
@@ -12,16 +13,28 @@ export async function parseParquet(arrayBuffer: ArrayBuffer, options?: ParquetLo
 }
 
 export async function* parseParquetFileInBatches(blob: Blob, options?: ParquetLoaderOptions) {
-  const reader = await ParquetReader.openBlob(blob);
-  const rows: any[][] = [];
-  try {
-    const cursor = reader.getCursor();
-    let record: any[] | null;
-    while ((record = await cursor.next())) {
-      rows.push(record);
-    }
-  } finally {
-    await reader.close();
+  const file = makeReadableFile(blob);
+  const reader = new ParquetReader(file);
+  const rowBatches = reader.rowBatchIterator(options?.parquet);
+  for await (const rows of rowBatches) {
+    yield rows;
   }
-  yield rows;
 }
+
+// export async function* parseParquetFileInColumnarBatches(blob: Blob, options?: {columnList?: string[][]}): AsyncIterable<ColumnarTableBatch> {
+//   const rowGroupReader = new ParquetRowGroupReader({data: blob, columnList: options?.columnList});
+//   try {
+//     for await (const rowGroup of rowGroupReader) {
+//       yield convertRowGroupToTableBatch(rowGroup);
+//     }
+//   } finally {
+//     await rowGroupReader.close();
+//   }
+// }
+
+// function convertRowGroupToTableBatch(rowGroup): ColumnarTableBatch {
+//   // @ts-expect-error
+//   return {
+//     data: rowGroup
+//   };
+// }

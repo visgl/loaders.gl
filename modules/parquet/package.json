@@ -37,6 +37,8 @@
     "net": false,
     "tls": false,
     "lzo": false,
+    "stream": false,
+    "fs": false,
     "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts"
   },
   "dependencies": {

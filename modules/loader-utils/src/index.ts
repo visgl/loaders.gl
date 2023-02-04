@@ -76,10 +76,6 @@ export {JSONLoader} from './json-loader';
 
 // Node.js emulation (can be used in browser)
 
-// `path` replacement (avoids bundling big path polyfill)
-import * as path from './lib/path-utils/path';
-export {path};
-
 // Avoid direct use of `Buffer` which pulls in 50KB polyfill
 export {isBuffer, toBuffer, bufferToArrayBuffer} from './lib/binary-utils/buffer-utils';
 
@@ -87,6 +83,10 @@ export {isBuffer, toBuffer, bufferToArrayBuffer} from './lib/binary-utils/buffer
 
 // Use instead of importing 'util' to avoid node dependencies
 export {promisify1, promisify2} from './lib/node/util';
+
+// `path` replacement (avoids bundling big path polyfill)
+import * as path from './lib/path-utils/path';
+export {path};
 
 // Use instead of importing 'fs' to avoid node dependencies`
 import * as fs from './lib/node/fs';

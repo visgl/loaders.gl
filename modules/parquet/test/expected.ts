@@ -166,7 +166,7 @@ export const ALL_TYPES_PLAIN_SNAPPY_EXPECTED = [
 ];
 
 export const BINARY_EXPECTED = () => {
-  const result = [];
+  const result: {[key: string]: unknown}[] = [];
 
   for (let index = 0; index < 12; index++) {
     result.push({ foo: Buffer.from([index]) });
@@ -176,7 +176,7 @@ export const BINARY_EXPECTED = () => {
 };
 
 export const DICT_EXPECTED = () => {
-  const result = [];
+  const result: {[key: string]: unknown}[] = [];
 
   for (let index = 0; index < 39; index++) {
     result.push({ l_partkey: 1552 });
@@ -208,23 +208,23 @@ export const NESTED_LIST_EXPECTED = [
             list:
               [{
                 element: {
-                  list: [{ element: "a" },
-                  { element: "b" }]
+                  list: [{ element: 'a' },
+                    { element: 'b' }]
                 }
               },
               {
-                element: { list: [{ element: "c" }] }
+                element: { list: [{ element: 'c' }] }
               }]
           }
         },
         {
           element: {
-            list: [{}, { element: { list: [{ element: "d" }] } }]
+            list: [{}, { element: { list: [{ element: 'd' }] } }]
           }
         }
       ]
     },
-    b: "1"
+    b: '1'
   },
   {
     a:
@@ -235,18 +235,18 @@ export const NESTED_LIST_EXPECTED = [
           {
             list: [{
               element:
-                { list: [{ element: "a" }, { element: "b" }] }
+                { list: [{ element: 'a' }, { element: 'b' }] }
             },
             {
-              element: { list: [{ element: "c" }, { element: "d" }] }
+              element: { list: [{ element: 'c' }, { element: 'd' }] }
             }]
           }
         },
         {
-          element: { list: [{}, { element: { list: [{ element: "e" }] } }] }
+          element: { list: [{}, { element: { list: [{ element: 'e' }] } }] }
         }]
     },
-    b: "1"
+    b: '1'
   },
   {
     a:
@@ -256,17 +256,17 @@ export const NESTED_LIST_EXPECTED = [
           element:
           {
             list: [
-              { element: { list: [{ element: "a" }, { element: "b" }] } },
-              { element: { list: [{ element: "c" }, { element: "d" }] } },
-              { element: { list: [{ element: "e" }] } }
+              { element: { list: [{ element: 'a' }, { element: 'b' }] } },
+              { element: { list: [{ element: 'c' }, { element: 'd' }] } },
+              { element: { list: [{ element: 'e' }] } }
             ]
           }
         },
         {
-          element: { list: [{}, { element: { list: [{ element: "f" }] } }] }
+          element: { list: [{}, { element: { list: [{ element: 'f' }] } }] }
         }]
     },
-    b: "1"
+    b: '1'
   }
 ];
 
@@ -279,15 +279,15 @@ export const NESTED_MAPS_EXPECTED = [
           key: Buffer.from([97]),
           value: {
             key_value: [
-              { key: "1", value: true },
-              { key: "2", value: false }
+              { key: '1', value: true },
+              { key: '2', value: false }
             ]
           }
         }
       ]
     },
-    b: "1",
-    c: "1"
+    b: '1',
+    c: '1'
   },
   {
     a:
@@ -297,14 +297,14 @@ export const NESTED_MAPS_EXPECTED = [
           key: Buffer.from([98]),
           value: {
             key_value: [
-              { key: "1", value: true }
+              { key: '1', value: true }
             ]
           }
         }
       ]
     },
-    b: "1",
-    c: "1"
+    b: '1',
+    c: '1'
   },
   {
     a: {
@@ -312,8 +312,8 @@ export const NESTED_MAPS_EXPECTED = [
         { key: Buffer.from([99]) }
       ]
     },
-    b: "1",
-    c: "1"
+    b: '1',
+    c: '1'
   },
   {
     a: {
@@ -323,8 +323,8 @@ export const NESTED_MAPS_EXPECTED = [
         }
       ]
     },
-    b: "1",
-    c: "1"
+    b: '1',
+    c: '1'
   },
   {
     a:
@@ -334,14 +334,14 @@ export const NESTED_MAPS_EXPECTED = [
           key: Buffer.from([101]),
           value: {
             key_value: [
-              { key: "1", value: true }
+              { key: '1', value: true }
             ]
           }
         }
       ]
     },
-    b: "1",
-    c: "1"
+    b: '1',
+    c: '1'
   },
   {
     a: {
@@ -350,16 +350,16 @@ export const NESTED_MAPS_EXPECTED = [
           key: Buffer.from([102]),
           value: {
             key_value: [
-              { key: "3", value: true },
-              { key: "4", value: false },
-              { key: "5", value: true }
+              { key: '3', value: true },
+              { key: '4', value: false },
+              { key: '5', value: true }
             ]
           }
         }
       ]
     },
-    b: "1",
-    c: "1"
+    b: '1',
+    c: '1'
   }
 ];
 
@@ -403,26 +403,26 @@ export const NULLABLE_EXPECTED = [
     id: 1,
     int_array: {
       list: [
-        { element: "1" },
-        { element: "2" },
-        { element: "3" }
+        { element: '1' },
+        { element: '2' },
+        { element: '3' }
       ]
     },
     int_array_Array: {
       list: [
-        { element: { list: [{ element: "1" }, { element: "2" }] } },
-        { element: { list: [{ element: "3" }, { element: "4" }] } }
+        { element: { list: [{ element: '1' }, { element: '2' }] } },
+        { element: { list: [{ element: '3' }, { element: '4' }] } }
       ]
     },
     int_map: {
       map: [
-        { key: "k1", value: 1 },
-        { key: "k2", value: 100 }
+        { key: 'k1', value: 1 },
+        { key: 'k2', value: 100 }
       ]
     },
     int_Map_Array: {
       list: [
-        { element: { map: [{ key: "k1", value: "1" }] } }
+        { element: { map: [{ key: 'k1', value: '1' }] } }
       ]
     },
     nested_struct: {
@@ -431,14 +431,14 @@ export const NULLABLE_EXPECTED = [
       C: {
         d: {
           list: [
-            { element: { list: [{ element: { E: "10", F: "aaa" } }, { element: { E: "-10", F: "bbb" } }] } },
-            { element: { list: [{ element: { E: "11", F: "c" } }] } }
+            { element: { list: [{ element: { E: '10', F: 'aaa' } }, { element: { E: '-10', F: 'bbb' } }] } },
+            { element: { list: [{ element: { E: '11', F: 'c' } }] } }
           ]
         }
       },
       g: {
         map: [
-          { key: "foo", value: { H: { "i": { list: [{ element: "1.1" }] } } } }
+          { key: 'foo', value: { H: { 'i': { list: [{ element: '1.1' }] } } } }
         ]
       }
     }
@@ -448,24 +448,24 @@ export const NULLABLE_EXPECTED = [
     int_array: {
       list: [
         {},
-        { element: "1" },
-        { element: "2" },
-        {}, { element: "3" },
+        { element: '1' },
+        { element: '2' },
+        {}, { element: '3' },
         {}
       ]
     },
     int_array_Array: {
       list: [
-        { element: { list: [{}, { element: "1" }, { element: "2" }, {}] } },
-        { element: { list: [{ element: "3" }, {}, { element: "4" }] } },
+        { element: { list: [{}, { element: '1' }, { element: '2' }, {}] } },
+        { element: { list: [{ element: '3' }, {}, { element: '4' }] } },
         { element: {} },
         {}
       ]
     },
-    int_map: { map: [{ key: "k1", value: 2 }, { key: "k2" }] },
+    int_map: { map: [{ key: 'k1', value: 2 }, { key: 'k2' }] },
     int_Map_Array: {
       list: [
-        { element: { map: [{ key: "k3" }, { key: "k1", value: "1" }] } },
+        { element: { map: [{ key: 'k3' }, { key: 'k1', value: '1' }] } },
         {},
         { element: {} }
       ]
@@ -478,14 +478,14 @@ export const NULLABLE_EXPECTED = [
             {
               element: {
                 list: [{ element: {} },
-                { element: { E: "10", F: "aaa" } },
-                { element: {} }, { element: { E: "-10", F: "bbb" } }, { element: {} }]
+                  { element: { E: '10', F: 'aaa' } },
+                  { element: {} }, { element: { E: '-10', F: 'bbb' } }, { element: {} }]
               }
             },
             {
               element: {
                 list: [
-                  { element: { E: "11", F: "c" } }, {}]
+                  { element: { E: '11', F: 'c' } }, {}]
               }
             },
             { element: {} },
@@ -495,11 +495,11 @@ export const NULLABLE_EXPECTED = [
       },
       g: {
         map: [
-          { key: "g1", value: { H: { "i": { list: [{ element: "2.2" }, {}] } } } },
-          { key: "g2", value: { H: { "i": {} } } },
-          { key: "g3" },
-          { key: "g4", value: { H: {} } },
-          { key: "g5", value: {} }
+          { key: 'g1', value: { H: { 'i': { list: [{ element: '2.2' }, {}] } } } },
+          { key: 'g2', value: { H: { 'i': {} } } },
+          { key: 'g3' },
+          { key: 'g4', value: { H: {} } },
+          { key: 'g5', value: {} }
         ]
       }
     }
@@ -525,7 +525,7 @@ export const NULLABLE_EXPECTED = [
     nested_struct: {
       g: {
         map: [
-          { key: "foo", value: { H: { i: { list: [{ element: "2.2" }, { element: "3.3" }] } } } }
+          { key: 'foo', value: { H: { i: { list: [{ element: '2.2' }, { element: '3.3' }] } } } }
         ]
       }
     }
@@ -535,8 +535,8 @@ export const NULLABLE_EXPECTED = [
   },
   {
     id: 7,
-    int_array_Array: { list: [{}, { element: { list: [{ element: "5" }, { element: "6" }] } }] },
-    int_map: { map: [{ key: "k1" }, { key: "k3" }] },
+    int_array_Array: { list: [{}, { element: { list: [{ element: '5' }, { element: '6' }] } }] },
+    int_map: { map: [{ key: 'k1' }, { key: 'k3' }] },
     nested_struct: {
       A: 7,
       b: { list: [{ element: 2 }, { element: 3 }, {}] },
@@ -559,39 +559,39 @@ export const NULLS_EXPECTED = [
 ];
 
 export const REPEATED_NO_ANNOTATION_EXPECTED = [
-  { id: "1" },
-  { id: "2" },
-  { id: "3", phoneNumbers: {} },
-  { id: "4", phoneNumbers: { phone: [{ number: "5555555555" }] } },
-  { id: "5", phoneNumbers: { phone: [{ number: "1111111111", kind: "home" }] } },
-  { id: "6", phoneNumbers: { phone: [{ number: "1111111111", kind: "home" }, { number: "2222222222" }, { number: "3333333333", kind: "mobile" }] } }
+  { id: '1' },
+  { id: '2' },
+  { id: '3', phoneNumbers: {} },
+  { id: '4', phoneNumbers: { phone: [{ number: '5555555555' }] } },
+  { id: '5', phoneNumbers: { phone: [{ number: '1111111111', kind: 'home' }] } },
+  { id: '6', phoneNumbers: { phone: [{ number: '1111111111', kind: 'home' }, { number: '2222222222' }, { number: '3333333333', kind: 'mobile' }] } }
 ];
 
 export const DECIMAL_EXPECTED = [
- {value: 1},
- {value: 2},
- {value: 3},
- {value: 4},
- {value: 5},
- {value: 6},
- {value: 7},
- {value: 8},
- {value: 9},
- {value: 10},
- {value: 11},
- {value: 12},
- {value: 13},
- {value: 14},
- {value: 15},
- {value: 16},
- {value: 17},
- {value: 18},
- {value: 19},
- {value: 20},
- {value: 21},
- {value: 22},
- {value: 23},
- {value: 24}
+  {value: 1},
+  {value: 2},
+  {value: 3},
+  {value: 4},
+  {value: 5},
+  {value: 6},
+  {value: 7},
+  {value: 8},
+  {value: 9},
+  {value: 10},
+  {value: 11},
+  {value: 12},
+  {value: 13},
+  {value: 14},
+  {value: 15},
+  {value: 16},
+  {value: 17},
+  {value: 18},
+  {value: 19},
+  {value: 20},
+  {value: 21},
+  {value: 22},
+  {value: 23},
+  {value: 24}
 ];
 
 export const LZ4_RAW_COMPRESSED_LARGER_FIRST_EXPECTED = {

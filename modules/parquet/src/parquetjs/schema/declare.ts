@@ -98,6 +98,7 @@ export interface ParquetField {
   fields?: Record<string, ParquetField>;
 }
 
+/** @todo better name, this is an internal type? */
 export interface ParquetOptions {
   type: ParquetType;
   rLevelMax: number;
@@ -108,20 +109,14 @@ export interface ParquetOptions {
   dictionary?: ParquetDictionary;
 }
 
-export interface ParquetData {
-  dlevels: number[];
-  rlevels: number[];
-  values: any[];
-  count: number;
-  pageHeaders: PageHeader[];
-}
-
 export interface ParquetPageData {
   dlevels: number[];
   rlevels: number[];
-  values: any[];
+  /** Actual column chunks */
+  values: any[]; // ArrayLike<any>;
   count: number;
   dictionary?: ParquetDictionary;
+  /** The "raw" page header from the file */
   pageHeader: PageHeader;
 }
 
@@ -129,11 +124,24 @@ export interface ParquetRecord {
   [key: string]: any;
 }
 
+/** @
+ * Holds data for one row group (column chunks) */
 export class ParquetBuffer {
+  /** Number of rows in this page */
   rowCount: number;
+
   columnData: Record<string, ParquetData>;
   constructor(rowCount: number = 0, columnData: Record<string, ParquetData> = {}) {
     this.rowCount = rowCount;
     this.columnData = columnData;
   }
+}
+
+/** Holds the data for one column chunk */
+export interface ParquetData {
+  dlevels: number[];
+  rlevels: number[];
+  values: any[];
+  count: number;
+  pageHeaders: PageHeader[];
 }
