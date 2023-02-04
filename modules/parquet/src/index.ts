@@ -9,7 +9,7 @@ import {
   parseParquetInColumns,
   parseParquetFileInColumnarBatches
 } from './lib/parsers/parse-parquet-to-columns';
-import {parseParquet as parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
+import {parseParquet as parseParquetWasm} from './lib/parquet-wasm/parse-parquet-wasm';
 
 export {ParquetWorkerLoader, ParquetWasmWorkerLoader};
 

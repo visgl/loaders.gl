@@ -39,7 +39,7 @@
     "lzo": false,
     "stream": false,
     "fs": false,
-    "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts"
+    "./src/lib/parquet-wasm/load-wasm/load-wasm-node.ts": "./src/lib/parquet-wasm/load-wasm/load-wasm-browser.ts"
   },
   "dependencies": {
     "@loaders.gl/compression": "3.4.0-alpha.2",

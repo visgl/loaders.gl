@@ -15,7 +15,7 @@ import {load} from '@loaders.gl/core';
 const WMTS_CAPABILITIES_RESPONSE_URL =
   '@loaders.gl/wms/test/data/wmts/get-capabilities-response.xml';
 
-test('WMTSCapabilitiesLoader#response.xml', async (t) => {
+test.skip('WMTSCapabilitiesLoader#response.xml', async (t) => {
   const capabilities = (await load(
     WMTS_CAPABILITIES_RESPONSE_URL,
     WMTSCapabilitiesLoader

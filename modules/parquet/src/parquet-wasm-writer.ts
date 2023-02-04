@@ -1,5 +1,5 @@
 import type {Writer} from '@loaders.gl/loader-utils';
-import {encode, ParquetWriterOptions} from './lib/wasm/encode-parquet-wasm';
+import {encode, ParquetWriterOptions} from './lib/parquet-wasm/encode-parquet-wasm';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

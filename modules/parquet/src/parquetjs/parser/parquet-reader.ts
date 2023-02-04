@@ -1,6 +1,6 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
-import type {ReadableFile} from '@loaders.gl/loader-utils';
 
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ParquetSchema} from '../schema/schema';
 import {decodeSchema} from './decoders';
 import {materializeRecords} from '../schema/shred';
@@ -14,7 +14,7 @@ import {
   PrimitiveType,
   ParquetOptions
 } from '../schema/declare';
-import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
+import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/thrift-utils';
 import {decodeDataPages, decodePage} from './decoders';
 
 export type ParquetReaderProps = {
