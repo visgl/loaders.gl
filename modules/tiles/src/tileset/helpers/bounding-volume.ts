@@ -6,6 +6,7 @@ import {Quaternion, Vector3, Matrix3, Matrix4, degrees} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {assert} from '@loaders.gl/loader-utils';
+import {S2BoundingVolume, convertS2BVtoOBB} from './s2-bv-obb';
 
 // const scratchProjectedBoundingSphere = new BoundingSphere();
 
@@ -65,7 +66,12 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
     return createSphere(boundingVolumeHeader.sphere, transform, result);
   }
 
-  throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
+  const s2bv: S2BoundingVolume = boundingVolumeHeader.extensions?.['3DTILES_bounding_volume_S2'];
+  if (s2bv) {
+    return convertS2BVtoOBB(s2bv, result);
+  }
+
+  throw new Error('3D Tile: boundingVolume must contain a sphere, region, box or S2BoundingVolume');
 }
 
 function createBox(box, transform, result) {

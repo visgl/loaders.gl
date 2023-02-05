@@ -1,6 +1,7 @@
 import type {Availability, BoundingVolume, Subtree} from '../../../types';
 import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
+import {s2cellToRegion} from '@loaders.gl/tiles';
 
 const QUADTREE_DEVISION_COUNT = 4;
 const OCTREE_DEVISION_COUNT = 8;
@@ -48,6 +49,7 @@ export async function parseImplicitTiles(params: {
       z: 0
     }
   } = params;
+
   let {subtree, level = 0} = params;
   const {
     subdivisionScheme,
@@ -187,9 +189,17 @@ function formatTileData(
   } = options;
   const uri = tile.contentUrl && tile.contentUrl.replace(`${basePath}/`, '');
   const lodMetricValue = rootLodMetricValue / 2 ** level;
+
+  let root = rootBoundingVolume;
+  const s2bv = rootBoundingVolume.extensions?.['3DTILES_bounding_volume_S2'];
+  if (s2bv) {
+    const region = s2cellToRegion(s2bv.token); // array with 4 numbers
+    root = {region: [...region, s2bv.minimumHeight, s2bv.maximumHeight]};
+  }
+
   const boundingVolume = calculateBoundingVolumeForChildTile(
     level,
-    rootBoundingVolume,
+    root,
     childCoordinates
   );
 
