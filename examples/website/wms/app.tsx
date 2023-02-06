@@ -44,7 +44,6 @@ export default class App extends PureComponent {
   constructor(props) {
     super(props);
 
-
     this._onExampleChange = this._onExampleChange.bind(this);
     this._onViewStateChange = this._onViewStateChange.bind(this);
   }
@@ -70,11 +69,9 @@ export default class App extends PureComponent {
         loading={loading}
         metadata={metadata}
       >
-        {
-          error ? <div style={{color: 'red'}}>{error}</div> : ''
-        }
+        {error ? <div style={{color: 'red'}}>{error}</div> : ''}
         <div style={{textAlign: 'center'}}>
-          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:
+          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:{' '}
           {viewState.zoom.toFixed(2)}
         </div>
       </ControlPanel>
@@ -84,19 +81,19 @@ export default class App extends PureComponent {
   _renderLayer() {
     const {selectedExample, selectedCategory} = this.state;
 
-    const example = EXAMPLES[selectedCategory][selectedExample] || 
+    const example =
+      EXAMPLES[selectedCategory][selectedExample] ||
       EXAMPLES[INITIAL_CATEGORY_NAME][INITIAL_EXAMPLE_NAME];
-    if (!example) {;
-      return
+    if (!example) {
+      return;
     }
 
-    const {service, serviceType, 
-      layers, opacity = 1} = EXAMPLES[selectedCategory][selectedExample];
+    const {service, serviceType, layers, opacity = 1} = EXAMPLES[selectedCategory][selectedExample];
 
     return [
       new ImageryLayer({
         service,
-        serviceType, 
+        serviceType,
         layers,
 
         pickable: true,
@@ -132,7 +129,6 @@ export default class App extends PureComponent {
             //}, 0);
           }
         }
-  
       })
     ];
   }
@@ -149,13 +145,15 @@ export default class App extends PureComponent {
           onViewStateChange={this._onViewStateChange}
           onError={(error: Error) => this.setState({error: error.message})}
           controller={{type: MapController, maxPitch: 85}}
-          getTooltip ={({object}) => object && {
-            html: `<h2>${object.name}</h2><div>${object.message}</div>`,
-            style: {
-              backgroundColor: '#f00',
-              fontSize: '0.8em'
+          getTooltip={({object}) =>
+            object && {
+              html: `<h2>${object.name}</h2><div>${object.message}</div>`,
+              style: {
+                backgroundColor: '#f00',
+                fontSize: '0.8em'
+              }
             }
-          }}
+          }
         >
           <StaticMap mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
         </DeckGL>

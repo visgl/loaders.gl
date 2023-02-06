@@ -18,6 +18,21 @@ const Container = styled.div`
   line-height: 2;
   outline: none;
   z-index: 100;
+
+  h3 {
+    margin: 0.5em 0;
+  }
+  
+  .loading-indicator {
+    margin: 0.5em 0;
+    
+    transition: opacity 300ms ease-out;
+  }
+
+  pre {
+    overflow: auto;
+    max-height: calc(100vh - 225px);
+  }
 `;
 
 const DropDown = styled.select`
@@ -110,22 +125,27 @@ export default class ControlPanel extends PureComponent {
     }
 
     return (
-      <div>
+      <>
         <h3>
-          {selectedExample} <b>{selectedCategory}</b>{' '}{this.props.loading ? <span style={{color: 'gray'}}>Loading Image...</span> : ''}  
-
+          {selectedExample} <b>{selectedCategory}</b>
         </h3>
-      </div>
+        <p className='loading-indicator' style={{opacity: this.props.loading? 1 : 0}}>Loading image...</p> 
+      </>
     );
   }
 
+  
+  
   render() {
+    console.log(this.props.loading)
     return (
       <Container>
         {this._renderHeader()}
         {this._renderDropDown()}
         {this.props.children}
-        {this.props.capabilities}
+        <pre>
+          {this.props.metadata}
+        </pre>
       </Container>
     );
   }
