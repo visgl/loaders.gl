@@ -11,11 +11,6 @@ export {calculateTransformProps} from './tileset/helpers/transform-utils';
 export {getFrameState} from './tileset/helpers/frame-state';
 export {getLodStatus} from './tileset/helpers/i3s-lod';
 
-export type {S2BoundingVolume} from './tileset/helpers/s2-bv-obb';
-export {convertS2BVtoOBB} from './tileset/helpers/s2-bv-obb';
-
-export {s2cellToRegion} from './tileset/helpers/s2-utils';
-
 export {
   TILE_CONTENT_STATE,
   TILE_REFINEMENT,

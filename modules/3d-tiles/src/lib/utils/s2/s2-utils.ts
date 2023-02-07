@@ -9,6 +9,7 @@ import {
   XYZToLngLat
 } from './s2-geometry';
 import Long from 'long';
+import {toRadians} from '@math.gl/core';
 
 /**
  * Given an S2 token this function convert the token to 64 bit id
@@ -142,35 +143,34 @@ function getCornerLngLats({
   return result;
 }
 
-function S2CornersToRegion(corners: Float64Array): number[] {
-  const region: number[] = [];
-  let corner: [number, number]; // lng, lat
-
-  const BL = 0;
-  // const UL = 2;
-  const UR = 4;
-  // const BR = 6;
-
-  corner = [corners[BL], corners[BL + 1]];
-  region.push(corner[0]); // lng (west)
-
-  corner = [corners[BL], corners[BL + 1]];
-  region.push(corner[1]); // lat (south)
-
-  corner = [corners[UR], corners[UR + 1]];
-  region.push(corner[0]); // lng (east)
-
-  corner = [corners[UR], corners[UR + 1]];
-  region.push(corner[1]); // lat (north)
-  return region;
+function S2CornersTo2dRegion(corners: Float64Array): number[] {
+  const longitudes: number[] = [];
+  const latitudes: number[] = [];
+  for (let i = 0; i < corners.length; i += 2) {
+    longitudes.push(corners[i]);
+    latitudes.push(corners[i + 1]);
+  }
+  longitudes.sort((a, b) => a - b);
+  latitudes.sort((a, b) => a - b);
+  return [
+    toRadians(longitudes[0]),
+    toRadians(latitudes[0]),
+    toRadians(longitudes[longitudes.length - 1]),
+    toRadians(latitudes[latitudes.length - 1])
+  ];
 }
 
-export function s2cellToRegion(token: string | number): number[] {
+export function s2ToRegion(s2bv: {
+  token: string;
+  minimumHeight: number;
+  maximumHeight: number;
+}): number[] {
+  const {token, minimumHeight, maximumHeight} = s2bv;
   const key = getS2QuadKey(token);
   const s2cell = FromHilbertQuadKey(key);
 
   const corns = getCornerLngLats(s2cell);
-  const region = S2CornersToRegion(corns);
+  const region = S2CornersTo2dRegion(corns);
 
-  return region;
+  return [...region, minimumHeight, maximumHeight];
 }

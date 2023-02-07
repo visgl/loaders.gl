@@ -4,6 +4,7 @@ import {load} from '@loaders.gl/core';
 import {Tileset3D, LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D} from '@loaders.gl/tiles';
 import {ImplicitTilingExtension, Subtree} from '../../types';
 import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-implicit-tiles';
+import {s2ToRegion} from '../utils/s2/s2-utils';
 
 function getTileType(tile) {
   if (!tile.contentUrl) {
@@ -141,6 +142,13 @@ export async function normalizeImplicitTileHeaders(
   const refine = tileset?.root?.refine;
   // @ts-ignore
   const rootLodMetricValue = tile.geometricError;
+
+  const s2bv: {token: string; minimumHeight: number; maximumHeight: number} =
+    tile.boundingVolume.extensions?.['3DTILES_bounding_volume_S2'];
+  if (s2bv) {
+    const region = s2ToRegion(s2bv); // array with 4 numbers
+    tile.boundingVolume = {region};
+  }
   const rootBoundingVolume = tile.boundingVolume;
 
   const implicitOptions = {
