@@ -21,26 +21,52 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-## v3.3 (In development)
+## v3.3
 
-Target Release Date: Q4 2022.
+Target Release Date: February 2023.
 
-**@loaders.gl/wms**
+**General Improvments**
 
-- New module for parsing WMS (Web Management Service) server responses:
-- [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
-- [`WMSFeatureInfoLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
-- [`WMSLayerDescriptionLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+- **Improved support for vite bundler** Most examples are now bundled with vite. vite is now an officially supported bundler for loaders.gl.
 
-**@loaders.gl/xml**
+**@loaders.gl/xml** (New module)
 
 - New module for parsing XML (eXtensible Markup Language)
 - [`XMLLoader`](modules/json/docs/api-reference/xml-loader)
 
+**@loaders.gl/wms** (New module)
+
+- New module for parsing WMS (Web Management Service) server responses:
+  - [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
+  - [`WMSFeatureInfoLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+  - [`WMSLayerDescriptionLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+
+**@loaders.gl/3d-tiles**
+
+- Limited support for [3D Tiles Next](https://github.com/CesiumGS/3d-tiles/tree/main/next):
+  - [3DTILES_content_gltf](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_content_gltf) extension support.
+  - [3DTILES_implicit_tiling](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling) extension support.
+
+**@loaders.gl/gltf**
+
+- The [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) glTF extension is now supported by the `GLTFLoader`, by optionally transforming UV coordinates on CPU level.
+
 **@loaders.gl/draco**
 
 - Now uses the [draco3d `v1.5.5`](https://github.com/google/draco#version-155-release) _decoders_
-- Still uses the draco3d `v1.4.1` _encoder_ to avoid performance regression.
+- Note: Still uses the draco3d `v1.4.1` _encoder_ to avoid performance regression.
+
+**@loaders.gl/tile-converter**
+
+- Now leverages Node.js workers to increase conversion speed.
+- Limited support for converting `3D Tiles Next` source tilesets:
+  - [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension support. Support of KTX2 textures.
+  - [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform) glTF extension support.
+  - [EXT_feature_metadata](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata) extension support.
+  - [EXT_mesh_features](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features) extension support.
+- New conversion options:
+  - `split-nodes` - create multiple I3S nodes from one glTF file when the source glTF has multiple materials.
+  - `instant-node-writing` - memory usage management option. Keep JSON resources on disk instead of memory in cost of conversion speed.
 
 ## v3.2 
 

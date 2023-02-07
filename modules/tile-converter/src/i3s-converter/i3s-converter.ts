@@ -504,27 +504,16 @@ export default class I3SConverter {
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
-
-    const promises: Promise<void>[] = [];
     for (const sourceTile of sourceTiles) {
       if (sourceTile.type === 'json') {
-        if (this.options.instantNodeWriting) {
-          await this.convertNestedTileset({parentNode, sourceTile, level});
-        } else {
-          promises.push(this.convertNestedTileset({parentNode, sourceTile, level}));
-        }
+        await this.convertNestedTileset({parentNode, sourceTile, level});
       } else {
-        if (this.options.instantNodeWriting) {
-          await this.convertNode({parentNode, sourceTile, level});
-        } else {
-          promises.push(this.convertNode({parentNode, sourceTile, level}));
-        }
+        await this.convertNode({parentNode, sourceTile, level});
       }
       if (sourceTile.id) {
         console.log(sourceTile.id); // eslint-disable-line
       }
     }
-    await Promise.all(promises);
   }
 
   /**

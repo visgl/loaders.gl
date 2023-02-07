@@ -83,7 +83,7 @@ module.exports = {
         PAGES: [
           {
             path: '/',
-            componentUrl: resolve(__dirname, './templates/index.jsx'),
+            componentUrl: resolve(__dirname, './templates/index.tsx'),
             content: ''
           },
           {
@@ -98,56 +98,63 @@ module.exports = {
             title: 'glTF Loader',
             category: "Loaders",
             image: 'images/example-gltf.jpg',
-            componentUrl: resolve(__dirname, './templates/example-gltf.jsx'),
+            componentUrl: resolve(__dirname, './templates/example-gltf.tsx'),
             path: 'examples/gltf'
           },
           {
             title: 'Texture Loaders',
             category: "Loaders",
             image: 'images/example-textures.png',
-            componentUrl: resolve(__dirname, '../examples/website/textures/app.js'),
+            componentUrl: resolve(__dirname, '../examples/website/textures/app.tsx'),
             path: 'examples/textures'
           },
           {
             title: 'Point Cloud Loaders',
             category: "Loaders",
             image: 'images/example-pointcloud.jpg',
-            componentUrl: resolve(__dirname, '../examples/website/pointcloud/app.js'),
+            componentUrl: resolve(__dirname, '../examples/website/pointcloud/app.tsx'),
             path: 'examples/pointcloud'
+          },
+          {
+            title: 'Geospatial Loaders',
+            category: "Loaders",
+            image: 'images/example-geospatial.jpg',
+            componentUrl: resolve(__dirname, '../examples/website/geospatial/app.tsx'),
+            path: 'examples/geopkg'
+          },
+          {
+            title: 'WMS Loaders',
+            category: "Loaders",
+            image: 'images/example-geospatial.jpg',
+            componentUrl: resolve(__dirname, '../examples/website/wms/app.tsx'),
+            path: 'examples/wms'
           },
           {
             title: '3D Tiles Loader',
             category: "Loaders",
             image: 'images/example-3d-tiles.png',
-            componentUrl: resolve(__dirname, '../examples/website/3d-tiles/app.js'),
+            componentUrl: resolve(__dirname, '../examples/website/3d-tiles/app.tsx'),
             path: 'examples/3d-tiles'
           },
           {
             title: 'I3S Loader',
             category: "Loaders",
             image: 'images/example-i3s.jpg',
-            componentUrl: resolve(__dirname, '../examples/website/i3s/app.js'),
+            componentUrl: resolve(__dirname, '../examples/website/i3s/src/app.tsx'),
             path: 'examples/i3s'
           },
           {
             title: 'I3S Debug',
             category: "Loaders",
             image: 'images/example-i3s.jpg',
-            componentUrl: resolve(__dirname, '../examples/website/i3s/app-debug.js'),
+            componentUrl: resolve(__dirname, '../examples/website/i3s/src/app-debug.tsx'),
             path: 'examples/i3s-debug'
-          },
-          {
-            title: 'Geospatial Loaders',
-            category: "Loaders",
-            image: 'images/example-geospatial.jpg',
-            componentUrl: resolve(__dirname, '../examples/website/geospatial/app.js'),
-            path: 'examples/geopkg'
           },
           {
             title: 'Benchmarks',
             category: "Benchmarks",
             image: 'images/benchmark.png',
-            componentUrl: resolve(__dirname, '../examples/benchmarks/app-website.js'),
+            componentUrl: resolve(__dirname, '../examples/benchmarks/app-website.tsx'),
             path: 'examples/benchmarks'
           }
         ]

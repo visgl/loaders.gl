@@ -2,6 +2,42 @@
 
 ## v3.3 Prerelease
 
+## v3.3.0-alpha.12
+
+- feat(wms): AdHocImageSource - initial URL template support (#2346)
+- website: bump luma & fix I3S Debug (#2343)
+- feat(wms): LERCLoader (#2342)
+- fix(tile-converter): handle joinImages errors (#2345)
+- feat(wms): ImageSource class, WMS doc cleanup (#2344)
+- docs: fix formatting (#2341)
+- chore(wms): Add more services to WMS example (#2337)
+- chore(deps): bump http-cache-semantics in /test/apps/typescript-test (#2339)
+- fix(tile-converter): Mark join-images as --external to avoid bundling (#2338)
+- Update whats-new.md
+- docs: update release notes (#2336)
+- example: Working WMS website example (#2332)
+- docs(tile-converter): update docs for new options (#2335)
+
+## v3.3.0-alpha.12
+
+- chore(parse-basis): add level size field (#2334)
+
+## v3.3.0-alpha.11
+
+- Added link to showcases prod (#2330)
+- examples: Bundle examples with vite (#2331)
+- fix(tile-converter): memory leak (#2329)
+- chore(deps): bump ua-parser-js from 0.7.23 to 0.7.33 in /website (#2322)
+- examples(wms): Add minimal image and tile layer visualizations (#2323)
+- feat(wms): WMSService class (#2327)
+- fix(examples): 3d-tiles CesiumION URL (#2326)
+- feat(wms): WMSErrorLoader plus fixes (#2324)
+- feat(wms): Minor fixes. Improve WFS, WMTS and GML docs. (#2321)
+- Update wms.md
+- Update README.md
+- feat(ogc): Add initial OGC support (WMS, WFS, WMTS and GML) (#2314)
+- chore: enable tests (#2313)
+
 ## v3.3.0-alpha.10
 
 - feat(tile-converter): i3s - merge materials (#2311)

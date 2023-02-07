@@ -8,7 +8,7 @@ import test from 'tape-promise/tape';
 import {GML_V3_TESTS} from '@loaders.gl/wms/test/data/gml/v3/tests';
 // import {validateLoader} from 'test/common/conformance';
 
-import {GMLLoader} from '@loaders.gl/wms';
+import {_GMLLoader as GMLLoader} from '@loaders.gl/wms';
 import {GeoJSON} from '@loaders.gl/schema';
 import {parse} from '@loaders.gl/core';
 

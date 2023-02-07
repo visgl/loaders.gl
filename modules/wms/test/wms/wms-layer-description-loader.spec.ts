@@ -5,7 +5,10 @@
 // See README.md in `./data` directory for full license text copy.
 
 import test from 'tape-promise/tape';
-import {WMSLayerDescriptionLoader, WMSLayerDescription} from '@loaders.gl/wms';
+import {
+  _WMSLayerDescriptionLoader as WMSLayerDescriptionLoader,
+  _WMSLayerDescription as WMSLayerDescription
+} from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
 test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async (t) => {

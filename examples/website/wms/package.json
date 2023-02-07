@@ -1,0 +1,28 @@
+{
+  "name": "wms-loaders-example",
+  "description": "WMS loaders.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@deck.gl/core": "^8.8.0",
+    "@deck.gl/layers": "^8.8.0",
+    "@deck.gl/react": "^8.8.0",
+    "@loaders.gl/core": "^3.3.0-alpha.11",
+    "@loaders.gl/wms": "^3.3.0-alpha.11",
+    "react": "^16.8.0",
+    "react-color": "^2.19.3",
+    "react-dom": "^16.8.0",
+    "react-map-gl": "^5.0.0",
+    "styled-components": "^4.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.2",
+    "vite": "^2.7.1"
+  }
+}

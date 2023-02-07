@@ -1,26 +1,27 @@
 {
+  "name": "gltf-loaders-example",
   "description": "glTF loader using luma.gl for rendering.",
   "contributors": [
     "Georgios Karnas <georgios@uber.com>"
   ],
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": true,
   "scripts": {
-    "start": "webpack-dev-server --progress --hot --open -d",
-    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open -d",
-    "start-local-luma": "webpack-dev-server --env.local --env.esnext --env.luma --progress --hot --open",
-    "open-vr": "adb reverse tcp:8080 tcp:8080 && adb shell am start -a android.intent.action.VIEW -d http://localhost:8080/"
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/core": "2.2.0",
-    "@loaders.gl/gltf": "2.2.0",
+    "@loaders.gl/core": "^3.2.0",
+    "@loaders.gl/gltf": "^3.2.0",
     "@luma.gl/constants": "^8.5.4",
     "@luma.gl/core": "^8.5.4",
     "@luma.gl/experimental": "^8.5.4",
-    "@math.gl/core": "^3.5.1",
-    "babel-plugin-inline-import": "^3.0.0"
+    "@math.gl/core": "^3.5.1"
   },
   "devDependencies": {
-    "html-webpack-plugin": "^3.2.0",
-    "webpack": "^4.3.0",
-    "webpack-dev-server": "^3.1.1"
+    "typescript": "^4.3.2",
+    "vite": "^2.7.1"
   }
 }

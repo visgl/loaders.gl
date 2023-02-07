@@ -197,11 +197,7 @@ function formatTileData(
     root = {region: [...region, s2bv.minimumHeight, s2bv.maximumHeight]};
   }
 
-  const boundingVolume = calculateBoundingVolumeForChildTile(
-    level,
-    root,
-    childCoordinates
-  );
+  const boundingVolume = calculateBoundingVolumeForChildTile(level, root, childCoordinates);
 
   return {
     children: tile.children,
