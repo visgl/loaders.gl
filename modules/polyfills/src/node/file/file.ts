@@ -1,12 +1,15 @@
 // Forked from @gozala's web-file under MIT license https://github.com/Gozala/web-file
 import {BlobPolyfill} from './blob';
 
+// Make sure we inherit from blob if defined
+const Blobbie = typeof Blob !== undefined ? Blob : BlobPolyfill;
+
 /**
  * Forked from @gozala's web-file under MIT license
  * @see https://github.com/Gozala/web-file
  */
 // @ts-ignore
-export class FilePolyfill extends BlobPolyfill {
+export class FilePolyfill extends Blobbie {
   // implements File {
   // public API
   /** The name of the file referenced by the File object. */

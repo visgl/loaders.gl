@@ -2,6 +2,8 @@ import test from 'tape-promise/tape';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
 import {concatenateArrayBuffersAsync, makeTextEncoderIterator} from '@loaders.gl/loader-utils';
 
+const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
+
 const setTimeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
 async function* asyncTexts() {
@@ -59,8 +61,6 @@ test('makeIterator#arrayBuffer', async (t) => {
 
   t.end();
 });
-
-const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 
 test('makeIterator(fetch)#async iterate', async (t) => {
   const response = await fetchFile(DATA_URL);

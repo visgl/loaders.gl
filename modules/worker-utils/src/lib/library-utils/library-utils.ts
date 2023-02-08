@@ -1,5 +1,6 @@
 /* global importScripts */
 import {global, isBrowser, isWorker} from '../env-utils/globals';
+import * as fs from 'fs';
 import * as node from '../node/require-utils.node';
 import {assert} from '../env-utils/assert';
 import {VERSION as __VERSION__} from '../env-utils/version';
@@ -80,8 +81,7 @@ export function getLibraryUrl(library: string, moduleName?: string, options?: an
 
 async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   if (libraryUrl.endsWith('wasm')) {
-    const response = await fetch(libraryUrl);
-    return await response.arrayBuffer();
+    return await fetchFileAsArrayBuffer(libraryUrl);
   }
 
   if (!isBrowser) {
@@ -99,9 +99,27 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   //   return await loadScriptFromFile(libraryUrl);
   // }
 
-  const response = await fetch(libraryUrl);
-  const scriptSource = await response.text();
+  const scriptSource: string = await fetchFileAsString(libraryUrl);
+
   return loadLibraryFromString(scriptSource, libraryUrl);
+}
+
+// Don't want the full `fetchFile` from core here, so make a simple fetch that can read from fs
+async function fetchFileAsString(url: string): Promise<string> {
+  if (url.startsWith('http')) {
+    const response = await fetch(url);
+    return await response.text();
+  } 
+  return fs.readFileSync(url, 'utf8');
+}
+
+// Don't want the full `fetchFile` from core here, so make a simple fetch that can read from fs
+async function fetchFileAsArrayBuffer(url: string): Promise<ArrayBuffer> {
+  if (url.startsWith('http')) {
+    const response = await fetch(url);
+    return await response.arrayBuffer();
+  } 
+  return fs.readFileSync(url).buffer;
 }
 
 /*

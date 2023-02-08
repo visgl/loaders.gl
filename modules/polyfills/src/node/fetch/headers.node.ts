@@ -3,7 +3,7 @@
  * Based on https://github.com/github/fetch under MIT license
  */
 export class Headers {
-  map: {};
+  map?: {};
 
   constructor(headers) {
     this.map = {};
@@ -20,25 +20,29 @@ export class Headers {
   append(name, value) {
     name = normalizeName(name);
     value = normalizeValue(value);
-    const oldValue = this.map[name];
-    this.map[name] = oldValue ? `${oldValue}, ${value}` : value;
+    if (this.map) {
+      const oldValue = this.map[name];
+      this.map[name] = oldValue ? `${oldValue}, ${value}` : value;
+    }
   }
 
   delete(name) {
-    delete this.map[normalizeName(name)];
+    if (this.map) {
+      delete this.map[normalizeName(name)];
+    }
   }
 
   get(name) {
     name = normalizeName(name);
-    return this.has(name) ? this.map[name] : null;
+    return this.map && this.has(name) ? this.map[name] : null;
   }
 
   has(name) {
-    return this.map.hasOwnProperty(normalizeName(name));
+    return this.map?.hasOwnProperty(normalizeName(name));
   }
 
   set(name, value) {
-    this.map[normalizeName(name)] = normalizeValue(value);
+    if (this.map) this.map[normalizeName(name)] = normalizeValue(value);
   }
 
   forEach(visitor, thisArg = null) {
@@ -54,7 +58,7 @@ export class Headers {
   }
 
   keys() {
-    const items: any[] = [];
+    const items: string[] = [];
     this.forEach(function (value, name) {
       items.push(name);
     });
@@ -101,11 +105,14 @@ function normalizeValue(value) {
 }
 
 // Build a destructive iterator for the value list
-function iteratorFor(items) {
+function iteratorFor<T = any>(items: T[]): Iterator<T> {
   const iterator = {
-    next() {
+    next(): IteratorResult<T, void> {
       const value = items.shift();
-      return {done: value === undefined, value};
+      if (value === undefined) {
+        return {done: true, value: undefined};
+      }
+      return {value};
     }
   };
 

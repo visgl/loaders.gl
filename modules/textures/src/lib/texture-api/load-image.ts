@@ -4,7 +4,11 @@ import type {GetUrl, UrlOptions} from './texture-api-types';
 import {generateUrl} from './generate-url';
 import {deepLoad, shallowLoad} from './deep-load';
 
-export async function loadImageTexture(getUrl: string | GetUrl, options = {}): Promise<any> {
+export type LoadTextureOptions = UrlOptions & {
+  fetch?: typeof fetch;
+}
+
+export async function loadImageTexture(getUrl: string | GetUrl, options: LoadTextureOptions = {}): Promise<any> {
   const imageUrls = await getImageUrls(getUrl, options);
   return await deepLoad(imageUrls, ImageLoader.parse, options);
 }

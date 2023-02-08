@@ -1,6 +1,10 @@
-import {resolvePath} from '@loaders.gl/loader-utils';
+import {isBrowser,resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';
+import {fetchFileNode} from './fetch-file.node';
 // import {getErrorMessageFromResponse} from './fetch-error-message';
+
+const isDataURL = (url: string): boolean => url.startsWith('data:');
+const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.startsWith('https:');
 
 /**
  * fetch compatible function
@@ -18,6 +22,11 @@ export async function fetchFile(
   if (typeof url === 'string') {
     url = resolvePath(url);
 
+    // Support for file URLs in node.js
+    if (!isBrowser && !isRequestURL(url) && !isDataURL(url)) {
+      return await fetchFileNode(url, options);
+    }
+    
     let fetchOptions: RequestInit = options as RequestInit;
     if (options?.fetch && typeof options?.fetch !== 'function') {
       fetchOptions = options.fetch;

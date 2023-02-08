@@ -859,17 +859,11 @@ var big5_index_no_hkscs;
 
 /**
  * @constructor
- * @param {string=} label The label of the encoding;
+ * @param label The label of the encoding;
  *     defaults to 'utf-8'.
- * @param {Object=} options
+ * @param options
  */
-function TextDecoder(label, options) {
-  // Web IDL conventions
-  if (!(this instanceof TextDecoder))
-    throw TypeError("Called as a function. Did you forget 'new'?");
-  label = label !== undefined ? String(label) : DEFAULT_ENCODING;
-  options = ToDictionary(options);
-
+export function TextDecoder(label: string = DEFAULT_ENCODING, options?: {fatal?: boolean; ignoreBOM?: boolean} = {}) {
   // A TextDecoder object has an associated encoding, decoder,
   // stream, ignore BOM flag (initially unset), BOM seen flag
   // (initially unset), error mode (initially replacement), and do
@@ -1084,12 +1078,8 @@ TextDecoder.prototype.decode = function decode(input, options) {
  * @param {string=} label The label of the encoding. NONSTANDARD.
  * @param {Object=} options NONSTANDARD.
  */
-function TextEncoder(label, options) {
-  // Web IDL conventions
-  if (!(this instanceof TextEncoder))
-    throw TypeError("Called as a function. Did you forget 'new'?");
-  options = ToDictionary(options);
 
+export function TextEncoder(label?: string, options?: any = {}) {
   // A TextEncoder object has an associated encoding and encoder.
 
   /** @private */
@@ -1148,7 +1138,7 @@ if (Object.defineProperty) {
  * @param {Object=} options
  * @return {!Uint8Array} Encoded bytes, as a Uint8Array.
  */
-TextEncoder.prototype.encode = function encode(opt_string, options) {
+TextEncoder.prototype.encode = function encode(opt_string = '', options) {
   opt_string = opt_string === undefined ? '' : String(opt_string);
   options = ToDictionary(options);
 
@@ -3075,10 +3065,3 @@ encoders['x-user-defined'] = function (options) {
 decoders['x-user-defined'] = function (options) {
   return new XUserDefinedDecoder(options);
 };
-
-// FORK
-// if (!global['TextEncoder']) global['TextEncoder'] = TextEncoder;
-// if (!global['TextDecoder']) global['TextDecoder'] = TextDecoder;
-// babel.config.js skip transpiling files in `libs/`
-// module.exports = {TextEncoder, TextDecoder};
-export {TextEncoder, TextDecoder};

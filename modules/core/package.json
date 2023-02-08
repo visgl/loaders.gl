@@ -24,6 +24,11 @@
   "browser": {
     "fs": false,
     "stream": false,
+    "./src/lib/fetch/fetch-file-node.ts": false,
+    "./src/lib/fetch/fetch-file-node.js": false,
+    "./dist/lib/fetch/fetch-file-node.js": false,
+    "./dist/es5/lib/fetch/fetch-file-node.js": false,
+    "./dist/esm/lib/fetch/fetch-file-node.js": false,
     "./src/iterators/make-stream/make-node-stream.ts": "./src/iterators/make-stream/make-dom-stream.ts",
     "./src/iterators/make-stream/make-node-stream.js": "./src/iterators/make-stream/make-dom-stream.js",
     "./dist/iterators/make-stream/make-node-stream.js": "./dist/iterators/make-stream/make-dom-stream.js",

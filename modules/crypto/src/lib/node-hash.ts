@@ -36,9 +36,14 @@ export class NodeHash extends Hash {
    */
   async hash(input: ArrayBuffer): Promise<string> {
     await this.preload();
-    const hash = createHash(this.options?.crypto?.algorithm?.toLowerCase());
-    const inputArray = new Uint8Array(input);
-    return hash.update(inputArray).digest('base64');
+    const algorithm = this.options?.crypto?.algorithm?.toLowerCase();
+    try {
+      const hash = createHash(algorithm);
+      const inputArray = new Uint8Array(input);
+      return hash.update(inputArray).digest('base64');
+    } catch (error) {
+      throw Error(`${algorithm} hash not available. ${error}`);
+    }
   }
 
   async *hashBatches(

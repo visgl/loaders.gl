@@ -5,8 +5,10 @@ import {
   // isPromise,
   // isIterable,
   // isAsyncIterable,
-  isIterator
-  // isResponse,
+  isIterator,
+  isResponse,
+  isBlob,
+  isFile,
   // isReadableStream,
   // isWritableStream
 } from '@loaders.gl/core';
@@ -19,6 +21,14 @@ test('isPureObject', (t) => {
   t.equal(isPureObject(new TestClass()), false, 'class instance is not pure');
   t.end();
 });
+
+test('polyilled objects', (t) => {
+  t.equal(isResponse(new Response()), true, 'correct id');
+  t.equal(isBlob(new Blob([])), true, 'correct id');
+  t.equal(isFile(new File([], 'empty.file')), true, 'correct id');
+  t.end();
+});
+
 
 test('isIterator', (t) => {
   const TESTS = [

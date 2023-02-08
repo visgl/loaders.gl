@@ -83,5 +83,7 @@ export {
   isIterator,
   isResponse,
   isReadableStream,
-  isWritableStream
+  isWritableStream,
+  isFile,
+  isBlob
 } from './javascript-utils/is-type';

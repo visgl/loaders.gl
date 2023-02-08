@@ -6,10 +6,7 @@ import {Response} from './response.node';
 import {Headers} from './headers.node';
 import {decodeDataUri} from './utils/decode-data-uri.node';
 
-import {fetchFileNode} from './fetch-file.node';
-
 const isDataURL = (url: string): boolean => url.startsWith('data:');
-const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.startsWith('https:');
 
 /**
  * Emulation of Browser fetch for Node.js
@@ -18,23 +15,18 @@ const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.st
  */
 // eslint-disable-next-line complexity
 export async function fetchNode(url: string, options): Promise<Response> {
+  // Handle data urls in node, to match `fetch``
+  // Note - this loses the MIME type, data URIs are handled directly in fetch
+  if (isDataURL(url)) {
+    const {arrayBuffer, mimeType} = decodeDataUri(url);
+    const response = new Response(arrayBuffer, {
+      headers: {'content-type': mimeType},
+      url
+    });
+    return response;
+  }
+
   try {
-    // Handle file streams in node
-    if (!isRequestURL(url) && !isDataURL(url)) {
-      return await fetchFileNode(url, options);
-    }
-
-    // Handle data urls in node, to match `fetch``
-    // Note - this loses the MIME type, data URIs are handled directly in fetch
-    if (isDataURL(url)) {
-      const {arrayBuffer, mimeType} = decodeDataUri(url);
-      const response = new Response(arrayBuffer, {
-        headers: {'content-type': mimeType},
-        url
-      });
-      return response;
-    }
-
     // Automatically decompress gzipped files with .gz extension
     const syntheticResponseHeaders = {};
     const originalUrl = url;

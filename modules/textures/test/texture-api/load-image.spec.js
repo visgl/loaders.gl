@@ -1,4 +1,5 @@
 import test from 'tape-promise/tape';
+import {fetchFile} from '@loaders.gl/core';
 import {loadImageTexture, loadImageTextureArray, loadImageTextureCube} from '@loaders.gl/textures';
 import {isImage} from '@loaders.gl/images';
 
@@ -6,13 +7,14 @@ const LUT_URL = '@loaders.gl/images/test/data/ibl/brdfLUT.png';
 const PAPERMILL_URL = '@loaders.gl/images/test/data/ibl/papermill';
 
 test('loadImageTexture#mipLevels=0', async (t) => {
-  const image = await loadImageTexture(LUT_URL);
+  const image = await loadImageTexture(LUT_URL, {fetch: fetchFile});
   t.ok(isImage(image));
   t.end();
 });
 
 test('loadImageTexture#mipLevels=auto', async (t) => {
   const mipmappedImage = await loadImageTexture(({lod}) => `specular/specular_back_${lod}.jpg`, {
+    fetch: fetchFile,
     baseUrl: PAPERMILL_URL,
     image: {
       mipLevels: 'auto'
@@ -27,6 +29,7 @@ test('loadImageTextureArray#mipLevels=0', async (t) => {
     10,
     ({index}) => `specular/specular_back_${index}.jpg`,
     {
+      fetch: fetchFile,
       baseUrl: PAPERMILL_URL
     }
   );
@@ -40,6 +43,7 @@ test('loadImageTextureArray#mipLevels=auto', async (t) => {
     1,
     ({index, lod}) => `specular/specular_back_${lod}.jpg`,
     {
+      fetch: fetchFile,
       baseUrl: PAPERMILL_URL,
       image: {
         mipLevels: 'auto'
@@ -58,6 +62,7 @@ test('loadImageTextureCube#mipLevels=0', async (t) => {
   const imageCube = await loadImageTextureCube(
     ({direction}) => `diffuse/diffuse_${direction}_0.jpg`,
     {
+      fetch: fetchFile,
       baseUrl: PAPERMILL_URL
     }
   );
@@ -73,6 +78,7 @@ test('loadImageTextureCube#mipLevels=auto', async (t) => {
   const imageCube = await loadImageTextureCube(
     ({direction, lod}) => `specular/specular_${direction}_${lod}.jpg`,
     {
+      fetch: fetchFile,
       baseUrl: PAPERMILL_URL,
       image: {
         mipLevels: 'auto'

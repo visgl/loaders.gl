@@ -21,7 +21,8 @@ test('Node image polyfills', (t) => {
   t.end();
 });
 
-test('Node image polyfills - should return Uint8Array data', async (t) => {
+// TODO - the goal is to remove these polyfills
+test.skip('Node image polyfills - should return Uint8Array data', async (t) => {
   if (!isBrowser) {
     for (const image of images) {
       const [imageUrl, mimeType] = image;

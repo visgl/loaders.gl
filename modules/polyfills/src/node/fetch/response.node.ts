@@ -29,7 +29,7 @@ export class Response {
   readonly headers: Headers;
   readonly url: string;
   bodyUsed: boolean = false;
-  private readonly _body;
+  private readonly _body?;
 
   // TODO - handle ArrayBuffer, ArrayBufferView, Buffer
   constructor(
