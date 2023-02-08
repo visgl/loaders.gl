@@ -49,5 +49,6 @@ export {GMLLoader as _GMLLoader} from './wip/gml-loader';
 
 // LERC
 
-export type {LERCData} from './lib/lerc/lerc-types';
-export {LERCLoader} from './lerc-loader';
+// TODO - restore once esbuild bundling issues have been resolved
+// export type {LERCData} from './lib/lerc/lerc-types';
+// export {LERCLoader} from './lerc-loader';

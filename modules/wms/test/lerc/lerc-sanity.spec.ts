@@ -7,7 +7,9 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {LERCLoader, LERCData} from '@loaders.gl/wms';
+// import {LERCLoader, LERCData} from '@loaders.gl/wms';
+import type {LERCData} from '../../src/lib/lerc/lerc-types';
+import {LERCLoader} from '../../src/lerc-loader';
 import {parse, isBrowser} from '@loaders.gl/core';
 
 /***************
