@@ -14,7 +14,7 @@ test('ParquetShredder#should shred a single simple record', assert => {
   const buf = new ParquetBuffer();
 
   {
-    const rec = { name: "apple", quantity: 10, price: 23.5 };
+    const rec = { name: 'apple', quantity: 10, price: 23.5 };
     shredRecord(schema, rec, buf);
   }
 
@@ -22,7 +22,7 @@ test('ParquetShredder#should shred a single simple record', assert => {
   assert.equal(buf.rowCount, 1);
   assert.deepEqual(colData.name.dlevels, [0]);
   assert.deepEqual(colData.name.rlevels, [0]);
-  assert.deepEqual(colData.name.values.map((x) => x.toString()), ["apple"]);
+  assert.deepEqual(colData.name.values.map((x) => x.toString()), ['apple']);
   assert.deepEqual(colData.quantity.dlevels, [0]);
   assert.deepEqual(colData.quantity.rlevels, [0]);
   assert.deepEqual(colData.quantity.values, [10]);
@@ -44,17 +44,17 @@ test('ParquetShredder#should shred a list of simple records', assert => {
   const buf = new ParquetBuffer();
 
   {
-    const rec = { name: "apple", quantity: 10, price: 23.5 };
+    const rec = { name: 'apple', quantity: 10, price: 23.5 };
     shredRecord(schema, rec, buf);
   }
 
   {
-    const rec = { name: "orange", quantity: 20, price: 17.1 };
+    const rec = { name: 'orange', quantity: 20, price: 17.1 };
     shredRecord(schema, rec, buf);
   }
 
   {
-    const rec = { name: "banana", quantity: 15, price: 42 };
+    const rec = { name: 'banana', quantity: 15, price: 42 };
     shredRecord(schema, rec, buf);
   }
 
@@ -62,7 +62,7 @@ test('ParquetShredder#should shred a list of simple records', assert => {
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData.name.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.name.rlevels, [0, 0, 0]);
-  assert.deepEqual(colData.name.values.map((x) => x.toString()), ["apple", "orange", "banana"]);
+  assert.deepEqual(colData.name.values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData.quantity.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.quantity.rlevels, [0, 0, 0]);
   assert.deepEqual(colData.quantity.values, [10, 20, 15]);
@@ -82,20 +82,20 @@ test('ParquetShredder#should shred a list of simple records with optional scalar
 
   const buf = new ParquetBuffer();
 
-  const rec1 = { name: "apple", quantity: 10, price: 23.5 };
+  const rec1 = { name: 'apple', quantity: 10, price: 23.5 };
   shredRecord(schema, rec1, buf);
 
-  const rec2 = { name: "orange", price: 17.1 };
+  const rec2 = { name: 'orange', price: 17.1 };
   shredRecord(schema, rec2, buf);
 
-  const rec3 = { name: "banana", quantity: 15, price: 42 };
+  const rec3 = { name: 'banana', quantity: 15, price: 42 };
   shredRecord(schema, rec3, buf);
 
   const colData = buf.columnData;
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData.name.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.name.rlevels, [0, 0, 0]);
-  assert.deepEqual(colData.name.values.map((x) => x.toString()), ["apple", "orange", "banana"]);
+  assert.deepEqual(colData.name.values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData.quantity.dlevels, [1, 0, 1]);
   assert.deepEqual(colData.quantity.rlevels, [0, 0, 0]);
   assert.deepEqual(colData.quantity.values, [10, 15]);
@@ -115,26 +115,26 @@ test('ParquetShredder#should shred a list of simple records with repeated scalar
   });
 
 
-  const rec1 = { name: "apple", price: 23.5, colours: ["red", "green"] };
+  const rec1 = { name: 'apple', price: 23.5, colours: ['red', 'green'] };
   const buf = new ParquetBuffer();
   
   shredRecord(schema, rec1, buf);
 
-  const rec2 = { name: "orange", price: 17.1, colours: ["orange"] };
+  const rec2 = { name: 'orange', price: 17.1, colours: ['orange'] };
   shredRecord(schema, rec2, buf);
 
-  const rec3 = { name: "banana", price: 42, colours: ["yellow"] };
+  const rec3 = { name: 'banana', price: 42, colours: ['yellow'] };
   shredRecord(schema, rec3, buf);
 
   const colData = buf.columnData;
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData.name.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.name.rlevels, [0, 0, 0]);
-  assert.deepEqual(colData.name.values.map((x) => x.toString()), ["apple", "orange", "banana"]);
+  assert.deepEqual(colData.name.values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData.name.count, 3);
   assert.deepEqual(colData.colours.dlevels, [1, 1, 1, 1]);
   assert.deepEqual(colData.colours.rlevels, [0, 1, 0, 0]);
-  assert.deepEqual(colData.colours.values.map((x) => x.toString()), ["red", "green", "orange", "yellow"]);
+  assert.deepEqual(colData.colours.values.map((x) => x.toString()), ['red', 'green', 'orange', 'yellow']);
   assert.deepEqual(colData.colours.count, 4);
   assert.deepEqual(colData.price.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.price.rlevels, [0, 0, 0]);
@@ -158,23 +158,23 @@ test('ParquetShredder#should shred a nested record without repetition modifiers'
 
   const buf = new ParquetBuffer();
 
-  const rec1 = { name: "apple", stock: { quantity: 10, warehouse: "A" }, price: 23.5 };
+  const rec1 = { name: 'apple', stock: { quantity: 10, warehouse: 'A' }, price: 23.5 };
   shredRecord(schema, rec1, buf);
 
-  const rec2 = { name: "banana", stock: { quantity: 20, warehouse: "B" }, price: 42.0 };
+  const rec2 = { name: 'banana', stock: { quantity: 20, warehouse: 'B' }, price: 42.0 };
   shredRecord(schema, rec2, buf);
 
   const colData = buf.columnData;
   assert.equal(buf.rowCount, 2);
   assert.deepEqual(colData[['name']].dlevels, [0, 0]);
   assert.deepEqual(colData[['name']].rlevels, [0, 0]);
-  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ["apple", "banana"]);
+  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ['apple', 'banana']);
   assert.deepEqual(colData[['stock', 'quantity']].dlevels, [0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10, 20]);
   assert.deepEqual(colData[['stock', 'warehouse']].dlevels, [0, 0]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ["A", "B"]);
+  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 42.0]);
@@ -196,10 +196,10 @@ test('ParquetShredder#should shred a nested record with optional fields', assert
 
   const buf = new ParquetBuffer();
 
-  const rec1 = { name: "apple", stock: { quantity: 10, warehouse: "A" }, price: 23.5 };
+  const rec1 = { name: 'apple', stock: { quantity: 10, warehouse: 'A' }, price: 23.5 };
   shredRecord(schema, rec1, buf);
 
-  const rec2 = { name: "banana", stock: { warehouse: "B" }, price: 42.0 };
+  const rec2 = { name: 'banana', stock: { warehouse: 'B' }, price: 42.0 };
   shredRecord(schema, rec2, buf);
 
   const colData = buf.columnData;
@@ -208,7 +208,7 @@ test('ParquetShredder#should shred a nested record with optional fields', assert
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ["A", "B"]);
+  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 42.0]);
@@ -231,25 +231,25 @@ test('ParquetShredder#should shred a nested record with nested optional fields',
 
   const buf = new ParquetBuffer();
 
-  const rec1 = { name: "apple", stock: { quantity: 10, warehouse: "A" }, price: 23.5 };
+  const rec1 = { name: 'apple', stock: { quantity: 10, warehouse: 'A' }, price: 23.5 };
   shredRecord(schema, rec1, buf);
 
-  const rec2 = { name: "orange" , price: 17.0 };
+  const rec2 = { name: 'orange' , price: 17.0 };
   shredRecord(schema, rec2, buf);
 
-  const rec3 = { name: "banana", stock: { warehouse: "B" }, price: 42.0 };
+  const rec3 = { name: 'banana', stock: { warehouse: 'B' }, price: 42.0 };
   shredRecord(schema, rec3, buf);
 
   const colData = buf.columnData;
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData[['name']].dlevels, [0, 0, 0]);
-  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ["apple", "orange", "banana"]);
+  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData[['stock', 'quantity']].dlevels, [2, 0, 1]);
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10]);
   assert.deepEqual(colData[['stock', 'warehouse']].dlevels, [1, 0, 1]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ["A", "B"]);
+  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 17.0, 42.0]);
@@ -271,24 +271,24 @@ test('ParquetShredder#should shred a nested record with repeated fields', assert
 
   const buf = new ParquetBuffer();
 
-  const rec1 = { name: "apple", stock: { quantity: 10, warehouse: "A" }, price: 23.5 };
+  const rec1 = { name: 'apple', stock: { quantity: 10, warehouse: 'A' }, price: 23.5 };
   shredRecord(schema, rec1, buf);
 
-  const rec2 = { name: "orange", stock: { quantity: [50, 75], warehouse: "B" }, price: 17.0 };
+  const rec2 = { name: 'orange', stock: { quantity: [50, 75], warehouse: 'B' }, price: 17.0 };
   shredRecord(schema, rec2, buf);
-  const rec3 = { name: "banana", stock: { warehouse: "C" }, price: 42.0 };
+  const rec3 = { name: 'banana', stock: { warehouse: 'C' }, price: 42.0 };
   shredRecord(schema, rec3, buf);
 
   const colData = buf.columnData;
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData[['name']].dlevels, [0, 0, 0]);
-  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ["apple", "orange", "banana"]);
+  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData[['stock', 'quantity']].dlevels, [1, 1, 1, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 0, 1, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10, 50, 75]);
   assert.deepEqual(colData[['stock', 'warehouse']].dlevels, [0, 0, 0]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ["A", "B", "C"]);
+  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B', 'C']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 17.0, 42.0]);
@@ -311,29 +311,29 @@ test('ParquetShredder#should shred a nested record with nested repeated fields',
 
   const buf = new ParquetBuffer();
 
-  const rec1 = { name: "apple", stock: [{ quantity: 10, warehouse: "A" }, { quantity: 20, warehouse: "B" } ], price: 23.5 };
+  const rec1 = { name: 'apple', stock: [{ quantity: 10, warehouse: 'A' }, { quantity: 20, warehouse: 'B' } ], price: 23.5 };
   shredRecord(schema, rec1, buf);
 
-  const rec2 = { name: "orange", stock: { quantity: [50, 75], warehouse: "X" }, price: 17.0 };
+  const rec2 = { name: 'orange', stock: { quantity: [50, 75], warehouse: 'X' }, price: 17.0 };
   shredRecord(schema, rec2, buf);
 
-  const rec3 = { name: "kiwi", price: 99.0 };
+  const rec3 = { name: 'kiwi', price: 99.0 };
   shredRecord(schema, rec3, buf);
 
-  const rec4 = { name: "banana", stock: { warehouse: "C" }, price: 42.0 };
+  const rec4 = { name: 'banana', stock: { warehouse: 'C' }, price: 42.0 };
   shredRecord(schema, rec4, buf);
 
   const colData = buf.columnData;
   assert.equal(buf.rowCount, 4);
   assert.deepEqual(colData[['name']].dlevels, [0, 0, 0, 0]);
   assert.deepEqual(colData[['name']].rlevels, [0, 0, 0, 0]);
-  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ["apple", "orange", "kiwi", "banana"]);
+  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ['apple', 'orange', 'kiwi', 'banana']);
   assert.deepEqual(colData[['stock', 'quantity']].dlevels, [2, 2, 2, 2, 0, 1]);
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 1, 0, 2, 0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10, 20, 50, 75]);
   assert.deepEqual(colData[['stock', 'warehouse']].dlevels, [1, 1, 1, 0, 1]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 1, 0, 0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ["A", "B", "X", "C"]);
+  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B', 'X', 'C']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0, 0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0, 0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 17.0, 99.0, 42.0]);
@@ -376,23 +376,23 @@ test('ParquetShredder#should materialize a nested record with scalar repeated fi
   assert.equal(records.length, 4);
 
   assert.deepEqual(
-      records[0],
-      { name: "apple", price: [23.5] });
+    records[0],
+    { name: 'apple', price: [23.5] });
 
   assert.deepEqual(
-      records[1],
-      { name: "orange", price: [17, 23] });
+    records[1],
+    { name: 'orange', price: [17, 23] });
 
   assert.deepEqual(
-      records[2],
-      { name: "kiwi", price: [99, 100] });
+    records[2],
+    { name: 'kiwi', price: [99, 100] });
 
   assert.deepEqual(
-      records[3],
-      { name: "banana", price: [42] });
+    records[3],
+    { name: 'banana', price: [42] });
 
-      assert.end();
-    });
+  assert.end();
+});
 
 test('ParquetShredder#should materialize a nested record with nested repeated fields', assert => {
   const schema = new ParquetSchema({
@@ -455,23 +455,23 @@ test('ParquetShredder#should materialize a nested record with nested repeated fi
   assert.equal(records.length, 4);
 
   assert.deepEqual(
-      records[0],
-      { name: "apple", stock: [{ quantity: [10], warehouse: "A" }, { quantity: [20], warehouse: "B" } ], price: 23.5 });
+    records[0],
+    { name: 'apple', stock: [{ quantity: [10], warehouse: 'A' }, { quantity: [20], warehouse: 'B' } ], price: 23.5 });
 
   assert.deepEqual(
-      records[1],
-      { name: "orange", stock: [{ quantity: [50, 75], warehouse: "X" }], price: 17.0 });
+    records[1],
+    { name: 'orange', stock: [{ quantity: [50, 75], warehouse: 'X' }], price: 17.0 });
 
   assert.deepEqual(
-      records[2],
-      { name: "kiwi", price: 99.0 });
+    records[2],
+    { name: 'kiwi', price: 99.0 });
 
   assert.deepEqual(
-      records[3],
-      { name: "banana", stock: [{ warehouse: "C" }], price: 42.0 });
+    records[3],
+    { name: 'banana', stock: [{ warehouse: 'C' }], price: 42.0 });
 
-      assert.end();
-    });
+  assert.end();
+});
 
 test('ParquetShredder#should materialize a static nested record with blank optional value', assert => {
   const schema = new ParquetSchema({
@@ -516,8 +516,8 @@ test('ParquetShredder#should materialize a static nested record with blank optio
   assert.equal(records.length, 1);
 
   assert.deepEqual(
-      records[0],
-      { fruit: { name: "apple" } });
+    records[0],
+    { fruit: { name: 'apple' } });
 
   assert.end();
 });
