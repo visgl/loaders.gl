@@ -1,6 +1,6 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 /* eslint-disable camelcase */
-import {Transform, Writable} from 'stream';
+import {stream} from '@loaders.gl/loader-utils';
 import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs';
 import * as Compression from '../compression';
 import {
@@ -96,7 +96,7 @@ export class ParquetWriter<T> {
    */
   static async openStream<T>(
     schema: ParquetSchema,
-    outputStream: Writable,
+    outputStream: stream.Writable,
     opts?: ParquetWriterOptions
   ): Promise<ParquetWriter<T>> {
     if (!opts) {
@@ -227,7 +227,7 @@ export class ParquetEnvelopeWriter {
    */
   static async openStream(
     schema: ParquetSchema,
-    outputStream: Writable,
+    outputStream: stream.Writable,
     opts: ParquetWriterOptions
   ): Promise<ParquetEnvelopeWriter> {
     const writeFn = oswrite.bind(undefined, outputStream);
@@ -315,7 +315,7 @@ export class ParquetEnvelopeWriter {
 /**
  * Create a parquet transform stream
  */
-export class ParquetTransformer<T> extends Transform {
+export class ParquetTransformer<T> extends stream.Transform {
   public writer: ParquetWriter<T>;
 
   constructor(schema: ParquetSchema, opts: ParquetWriterOptions = {}) {

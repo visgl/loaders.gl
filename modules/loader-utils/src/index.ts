@@ -92,6 +92,10 @@ export {promisify1, promisify2} from './lib/node/util';
 import * as fs from './lib/node/fs';
 export {fs};
 
+// Use instead of importing 'stream' to avoid node dependencies`
+import * as stream from './lib/node/stream';
+export {stream};
+
 // EXPERIMENTAL
 export type {ReadableFile} from './lib/filesystems/readable-file';
 export {makeReadableFile} from './lib/filesystems/readable-file';
