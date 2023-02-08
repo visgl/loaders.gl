@@ -308,7 +308,6 @@ export class ParquetEnvelopeWriter {
 
 /**
  * Create a parquet transform stream
- */
 export class ParquetTransformer<T> extends stream.Transform {
   public writer: ParquetEncoder<T>;
 
@@ -342,6 +341,7 @@ export class ParquetTransformer<T> extends stream.Transform {
     await this.writer.close(callback);
   }
 }
+ */
 
 /**
  * Encode a consecutive array of data using one of the parquet encodings

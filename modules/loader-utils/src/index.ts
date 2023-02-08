@@ -35,7 +35,6 @@ export {parseJSON} from './lib/parser-utils/parse-json';
 
 // MEMORY COPY UTILS
 export {
-  toArrayBuffer,
   sliceArrayBuffer,
   concatenateArrayBuffers,
   concatenateTypedArrays,
@@ -43,14 +42,12 @@ export {
 } from './lib/binary-utils/array-buffer-utils';
 export {padToNBytes, copyToArray, copyArrayBuffer} from './lib/binary-utils/memory-copy-utils';
 export {
-  copyPaddedArrayBufferToDataView,
-  copyPaddedStringToDataView
-} from './lib/binary-utils/binary-copy-utils';
-export {
   padStringToByteAlignment,
   copyStringToDataView,
-  copyBinaryToDataView
-} from './lib/binary-utils/encode-utils';
+  copyBinaryToDataView,
+  copyPaddedArrayBufferToDataView,
+  copyPaddedStringToDataView
+} from './lib/binary-utils/dataview-copy-utils';
 export {getFirstCharacters, getMagicString} from './lib/binary-utils/get-first-characters';
 
 // ITERATOR UTILS
@@ -77,7 +74,7 @@ export {JSONLoader} from './json-loader';
 // Node.js emulation (can be used in browser)
 
 // Avoid direct use of `Buffer` which pulls in 50KB polyfill
-export {isBuffer, toBuffer, bufferToArrayBuffer} from './lib/binary-utils/buffer-utils';
+export {isBuffer, toBuffer, toArrayBuffer} from './lib/binary-utils/memory-conversion-utils';
 
 // Note.js wrappers (can be safely imported, but not used in browser)
 

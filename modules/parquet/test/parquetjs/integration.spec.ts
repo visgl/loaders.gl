@@ -2,14 +2,7 @@
 import test, {Test} from 'tape-promise/tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 import {makeReadableFile} from '@loaders.gl/loader-utils';
-import {
-  ParquetSchema,
-  ParquetReader,
-  ParquetEncoder,
-  // @ts-expect-error
-  ParquetTransformer
-} from '@loaders.gl/parquet';
-
+import {ParquetSchema, ParquetReader, ParquetEncoder} from '@loaders.gl/parquet';
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const TEST_NUM_ROWS = 10000;
@@ -424,11 +417,11 @@ test('Parquet#DataPageHeaderV2#write a test file with BROTLI compression and the
 });
 
 test.skip('Stream/Transform#write a test file', async (t) => {
-  const opts = {useDataPageV2: true, compression: 'GZIP'};
-  const schema = mkTestSchema(opts);
-  const transform = new ParquetTransformer(schema, opts);
-  transform.writer.setMetadata('myuid', '420');
-  transform.writer.setMetadata('fnord', 'dronf');
+  // const opts = {useDataPageV2: true, compression: 'GZIP'};
+  // const schema = mkTestSchema(opts);
+  // const transform = new ParquetTransformer(schema, opts);
+  // transform.writer.setMetadata('myuid', '420');
+  // transform.writer.setMetadata('fnord', 'dronf');
 
   // var ostream = fs.createWriteStream('fruits_stream.parquet');
   // let istream = objectStream.fromArray(mkTestRows());
