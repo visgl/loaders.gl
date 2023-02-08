@@ -48,7 +48,7 @@ export class ParquetReader {
   }
 
   close(): void {
-    // @eslint-disable-next-line @typescript-eslint/no-floating-promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.file.close();
   }
 
