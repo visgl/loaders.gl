@@ -40,7 +40,8 @@
     "./dist/es5/lib/node/util.js": false,
     "./dist/esm/lib/node/util.js": false,
     "fs": false,
-    "util": false
+    "util": false,
+    "stream": false
   },
   "scripts": {},
   "dependencies": {
