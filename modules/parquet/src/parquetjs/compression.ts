@@ -12,9 +12,9 @@ import {
   LZ4Compression,
   ZstdCompression
 } from '@loaders.gl/compression';
+import {toArrayBuffer, toBuffer} from '@loaders.gl/loader-utils';
 
 import {ParquetCompression} from './schema/declare';
-import {toArrayBuffer, toBuffer} from './utils/buffer-utils';
 
 // TODO switch to worker compression to avoid bundling...
 

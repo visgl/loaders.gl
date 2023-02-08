@@ -1,18 +1,15 @@
 /* eslint-disable camelcase */
 import test, {Test} from 'tape-promise/tape';
-import {isBrowser} from '@loaders.gl/core';
-// import fs from 'fs';
-// import objectStream from 'object-stream';
-// eslint-disable-next-line  import/named
+import {isBrowser, fetchFile} from '@loaders.gl/core';
+import {makeReadableFile} from '@loaders.gl/loader-utils';
 import {
   ParquetSchema,
   ParquetReader,
   ParquetEncoder,
   // @ts-expect-error
-  ParquetTransformer,
-  makeReadableFile
+  ParquetTransformer
 } from '@loaders.gl/parquet';
-import {fetchFile} from '@loaders.gl/core';
+
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const TEST_NUM_ROWS = 10000;
@@ -114,7 +111,9 @@ async function writeTestFile(opts) {
 
   const rows = mkTestRows(opts);
 
-  rows.forEach(async (row) => await writer.appendRow(row));
+  for (const row of rows) {
+    await writer.appendRow(row);
+  }
 
   await writer.close();
 }
@@ -123,7 +122,7 @@ async function writeTestFile(opts) {
 async function readTestFile(t: Test) {
   const response = await fetchFile(FRUITS_URL);
   const arrayBuffer = await response.arrayBuffer();
-  const reader = await new ParquetReader(makeReadableFile(arrayBuffer));
+  const reader = new ParquetReader(makeReadableFile(arrayBuffer));
   t.equal(reader.getRowCount(), TEST_NUM_ROWS * 4);
   t.deepEqual(reader.getSchemaMetadata(), {myuid: '420', fnord: 'dronf'});
 

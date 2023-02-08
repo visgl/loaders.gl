@@ -10,7 +10,7 @@ export type WritableFile = {
 
 export interface WriteStreamOptions {
   flags?: string;
-  encoding?: BufferEncoding;
+  encoding?: 'utf8';
   fd?: number;
   mode?: number;
   autoClose?: boolean;

@@ -1,5 +1,5 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
-import {fs} from '@loaders.gl/loader-utils';
+import fs from 'fs';
 import {Writable} from 'stream';
 
 export function load(name: string): any {

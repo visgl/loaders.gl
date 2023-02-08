@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import test from 'tape-promise/tape';
-import {ParquetReader, makeReadableFile} from '@loaders.gl/parquet';
+import {makeReadableFile} from '@loaders.gl/loader-utils';
+import {ParquetReader} from '@loaders.gl/parquet';
 import {fetchFile} from '@loaders.gl/core';
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
