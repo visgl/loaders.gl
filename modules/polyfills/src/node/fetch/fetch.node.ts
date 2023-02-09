@@ -1,19 +1,25 @@
-import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
-import Response from './response.node';
-import Headers from './headers.node';
+// loaders.gl, MIT license
 
+import http from 'http';
+import https from 'https';
+import {Response} from './response.node';
+import {Headers} from './headers.node';
 import {decodeDataUri} from './utils/decode-data-uri.node';
-import {createReadStream} from './utils/stream-utils.node';
 
-const isDataURL = (url) => url.startsWith('data:');
-const isRequestURL = (url) => url.startsWith('http:') || url.startsWith('https:');
+const isDataURL = (url: string): boolean => url.startsWith('data:');
+const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.startsWith('https:');
 
 /**
  * Emulation of Browser fetch for Node.js
  * @param url
  * @param options
  */
-export default async function fetchNode(url, options) {
+export async function fetchNode(url: string, options): Promise<Response> {
+  // Handle file streams in node
+  if (!isRequestURL(url)) {
+    throw new Error(url);
+  }
+
   try {
     // Handle data urls in node, to match `fetch``
     // Note - this loses the MIME type, data URIs are handled directly in fetch
@@ -35,7 +41,7 @@ export default async function fetchNode(url, options) {
     }
 
     // Need to create the stream in advance since Response constructor needs to be sync
-    const body = await createReadStream(originalUrl, options);
+    const body = await createHTTPRequestReadStream(originalUrl, options);
     const headers = getHeaders(url, body, syntheticResponseHeaders);
     const {status, statusText} = getStatus(body);
 
@@ -55,6 +61,23 @@ export default async function fetchNode(url, options) {
   }
 }
 
+/** Returns a promise that resolves to a readable stream */
+export async function createHTTPRequestReadStream(
+  url: string,
+  options
+): Promise<http.IncomingMessage> {
+  // HANDLE HTTP/HTTPS REQUESTS IN NODE
+  // TODO: THIS IS BAD SINCE WE RETURN A PROMISE INSTEAD OF A STREAM
+  return await new Promise((resolve, reject) => {
+    const requestOptions = getRequestOptions(url, options);
+    const req = url.startsWith('https:')
+      ? https.request(requestOptions, (res) => resolve(res))
+      : http.request(requestOptions, (res) => resolve(res));
+    req.on('error', (error) => reject(error));
+    req.end();
+  });
+}
+
 /**
  * Generate redirect url from location without origin and protocol.
  * @param originalUrl
@@ -72,9 +95,33 @@ function generateRedirectUrl(originalUrl: string, location: string): string {
 }
 
 // HELPER FUNCTIONS
-// PRIVATE
 
-function getStatus(httpResponse) {
+function getRequestOptions(url: string, options?: {fetch?: typeof fetch; headers?}) {
+  // Ensure header keys are lower case so that we can merge without duplicates
+  const originalHeaders = options?.headers || {};
+  const headers = {};
+  for (const key of Object.keys(originalHeaders)) {
+    headers[key.toLowerCase()] = originalHeaders[key];
+  }
+
+  // Add default accept-encoding to headers
+  headers['accept-encoding'] = headers['accept-encoding'] || 'gzip,br,deflate';
+
+  const urlObject = new URL(url);
+  return {
+    hostname: urlObject.hostname,
+    path: urlObject.pathname,
+    method: 'GET',
+    // Add options and user provided 'options.fetch' overrides if available
+    ...options,
+    ...options?.fetch,
+    // Override with updated headers with accepted encodings:
+    headers,
+    port: urlObject.port
+  };
+}
+
+function getStatus(httpResponse: http.IncomingMessage): {status: number; statusText: string} {
   if (httpResponse.statusCode) {
     return {status: httpResponse.statusCode, statusText: httpResponse.statusMessage || 'NA'};
   }
@@ -105,24 +152,8 @@ function getHeaders(url, httpResponse, additionalHeaders = {}) {
   return new Headers(headers);
 }
 
-function getContentLength(url) {
-  if (isRequestURL(url)) {
-    // Needs to be read from actual headers
-    return null;
-  } else if (isDataURL(url)) {
-    // TODO - remove media type etc
-    return url.length - 'data:'.length;
-  }
-  // File URL
-  // TODO - how to handle non-existing file, this presumably just throws
-  try {
-    // strip query params from URL
-    const noqueryUrl = url.split('?')[0];
-    const stats = fs.statSync(noqueryUrl);
-    return stats.size;
-  } catch (error) {
-    // ignore for now
-  }
-
-  return null;
+/** Needs to be read from actual headers */
+function getContentLength(url: string): number | null {
+  // TODO - remove media type etc
+  return isDataURL(url) ? url.length - 'data:'.length : null;
 }
