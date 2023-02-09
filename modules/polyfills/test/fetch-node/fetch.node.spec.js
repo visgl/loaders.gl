@@ -36,7 +36,7 @@ test('polyfills#fetch() ignores url query params when loading file (NODE)', asyn
   t.end();
 });
 
-test.only('polyfills#fetch() error handling (NODE)', async (t) => {
+test('polyfills#fetch() error handling (NODE)', async (t) => {
   if (!isBrowser) {
     let response = await fetch('non-existent-file');
     t.comment(response.statusText);
