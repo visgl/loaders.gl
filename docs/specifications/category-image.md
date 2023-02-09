@@ -16,7 +16,7 @@ Core image category support is provided by the `@loaders.gl/images` module:
 
 Individual loaders for specific image formats can be imported for `@loaders.gl/images`:
 
-```js
+```typescript
 import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
 import {ImageLoader} from '@loaders.gl/images';
 import {registerLoaders, load} from '@loaders.gl/core';
@@ -26,7 +26,7 @@ const image = await load('image.jpeg');
 
 However since each image loader is quite small (in terms of code size and bundle size impact), most applications will just install all image loaders in one go:
 
-```js
+```typescript
 import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
 import {ImageLoaders} from '@loaders.gl/images';
 import {registerLoader, load} from '@loaders.gl/core';
@@ -96,7 +96,7 @@ The image category also provides a few utilities:
 
 Image data objects return by image category loaders have the same fields (`width`, `height`, `data`) as the browser's built-in `ImageData` class, but are not actual instances of `ImageData`. However, should you need it, it is easy to create an `ImageData` instance from an image data object:
 
-```js
+```typescript
 const data = load(url, ImageLoader, {image: {type: 'data'}});
 const imageData = new ImageData(data.data, data.width, data.height);
 ```

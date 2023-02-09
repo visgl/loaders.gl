@@ -11,7 +11,7 @@ Writer support is still in development, and have issues. Also not all formats ha
 
 As an example, to Draco-compress a mesh using the `DracoWriter`:
 
-```js
+```typescript
 import {DracoWriter} from '@loaders.gl/draco';
 import {encode} from '@loaders.gl/core';
 

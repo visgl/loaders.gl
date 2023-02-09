@@ -42,7 +42,7 @@ See each loader module for information on its dependencies.
 
 Example: bundling the entire `draco3d` library:
 
-```js
+```typescript
 import draco from 'draco3d';
 import {setLoaderOptions} from '@loaders.gl/core';
 setLoaderOptions({

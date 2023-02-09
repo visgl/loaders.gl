@@ -36,7 +36,7 @@ The `DracoLoader` is an example of a worker enabled loader.
 It parses data on worker threads by default. To load two Draco encoded meshes
 _in parallel_ on worker threads, just use the `DracoLoader` as follows:
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 
@@ -49,7 +49,7 @@ async function loadInParallel(url1, url2) {
 
 Applications can use the `worker: false` option to disable worker loaders, for instance to simplify debugging of parsing issues:
 
-```js
+```typescript
 async function loadWithoutWorker(url1) {
   const data = await load(url1, DracoLoader, {worker: false});
 }
@@ -60,7 +60,7 @@ async function loadWithoutWorker(url1) {
 Applications reuse already created workers by default. To avoid `enlarge memory arrays` error it is really nesessary to disable it if you need to load multiple datasets in a sequence.
 This functionality can be disabled by `reuseWorkers: false` option:
 
-```js
+```typescript
 async function loadwWithoutWorker(url1) {
   const data = await load(url1, DracoLoader, {worker: true, reuseWorkers: false});
 }

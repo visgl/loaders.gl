@@ -16,6 +16,7 @@ const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.st
  * @param url
  * @param options
  */
+// eslint-disable-next-line complexity
 export async function fetchNode(url: string, options): Promise<Response> {
   try {
     // Handle file streams in node
