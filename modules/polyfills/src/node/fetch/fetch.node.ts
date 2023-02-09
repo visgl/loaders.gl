@@ -6,6 +6,8 @@ import {Response} from './response.node';
 import {Headers} from './headers.node';
 import {decodeDataUri} from './utils/decode-data-uri.node';
 
+import {fetchFileNode} from './fetch-file.node';
+
 const isDataURL = (url: string): boolean => url.startsWith('data:');
 const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.startsWith('https:');
 
@@ -15,12 +17,12 @@ const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.st
  * @param options
  */
 export async function fetchNode(url: string, options): Promise<Response> {
-  // Handle file streams in node
-  if (!isRequestURL(url)) {
-    throw new Error(url);
-  }
-
   try {
+    // Handle file streams in node
+    if (!isRequestURL(url) && isDataURL(url)) {
+      return await fetchFileNode(url, options);
+    }
+
     // Handle data urls in node, to match `fetch``
     // Note - this loses the MIME type, data URIs are handled directly in fetch
     if (isDataURL(url)) {
