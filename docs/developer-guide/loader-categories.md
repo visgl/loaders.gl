@@ -14,7 +14,7 @@ For instance, once an application has added support for one loader in a category
 
 Original code
 
-```js
+```typescript
 import {parse, registerLoaders} from '@loaders.gl/core';
 import {PCDLoader} from `@loaders.gl/pcd';
 registerLoaders([PCDLoader]);
@@ -26,7 +26,7 @@ async function loadPointCloud(url) {
 
 Now support for additional point cloud formats can be added to the application without touching the original code:
 
-```js
+```typescript
 import {LASLoader} from `@loaders.gl/las';
 import {DracoLoader} from `@loaders.gl/draco';
 registerLoaders([LASLoader, DracoLoader]);

@@ -8,9 +8,9 @@ import {allSettled} from './promise/all-settled';
 // Node specific
 import * as base64 from './node/buffer/btoa.node';
 
-import HeadersNode from './node/fetch/headers.node';
-import ResponseNode from './node/fetch/response.node';
-import fetchNode from './node/fetch/fetch.node';
+import {Headers as HeadersNode} from './node/fetch/headers.node';
+import {Response as ResponseNode} from './node/fetch/response.node';
+import {fetchNode as fetchNode} from './node/fetch/fetch.node';
 
 import {encodeImageNode} from './node/images/encode-image.node';
 import {parseImageNode} from './node/images/parse-image.node';
@@ -20,7 +20,8 @@ export {BlobPolyfill} from './node/file/blob';
 export {FileReaderPolyfill} from './node/file/file-reader';
 export {FilePolyfill} from './node/file/file';
 export {installFilePolyfills} from './node/file/install-file-polyfills';
-export {default as _fetchNode} from './node/fetch/fetch.node';
+export {fetchNode as _fetchNode} from './node/fetch/fetch.node';
+export {fetchFileNode as _fetchFileNode} from './node/fetch/fetch-file.node';
 
 // POLYFILLS: TextEncoder, TextDecoder
 // - Recent Node versions have these classes but virtually no encodings unless special build.

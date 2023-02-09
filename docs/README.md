@@ -40,7 +40,7 @@ loaders.gl provides a small core API module with common functions to load and sa
 
 A minimal example using the `load` function and the `CSVLoader` to load a CSV formatted table into a JavaScript array:
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
@@ -53,7 +53,7 @@ for (const row of data) {
 
 Streaming parsing is available using ES2018 async iterators, e.g. allowing "larger than memory" files to be incrementally processed:
 
-```js
+```typescript
 import {loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 

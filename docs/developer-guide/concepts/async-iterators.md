@@ -16,7 +16,7 @@ The input and output from streaming loaders and writers can both be expressed in
 
 Remember tyhat an async iterator can be consumed (iterated over) via the for-await construct:
 
-```js
+```typescript
 for await (const x of asyncIterable) {
 }
 ```
@@ -25,7 +25,7 @@ for await (const x of asyncIterable) {
 
 With a little effort, streams in JavaScript can be treated as AsyncIterators. As the section about [Javascript Streams](docs/developer-guide/streams.md) explains, instead of registering callbacks on the stream, you can now work with streams in this way:
 
-```js
+```typescript
 for await (const buf of fs.createReadStream('foo.txt')) {
   // do something
 }
@@ -35,7 +35,7 @@ for await (const buf of fs.createReadStream('foo.txt')) {
 
 Remember that any object in JavaScript that implements the `[Symbol.asyncIterator]()` method is an `AsyncIterable`. And the async generator syntax can be used to generate new async iterators
 
-```js
+```typescript
 async function* asyncIterator() {
   yield new Promise(...)
 }
