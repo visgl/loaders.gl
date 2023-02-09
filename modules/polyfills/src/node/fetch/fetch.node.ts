@@ -19,7 +19,7 @@ const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.st
 export async function fetchNode(url: string, options): Promise<Response> {
   try {
     // Handle file streams in node
-    if (!isRequestURL(url) && isDataURL(url)) {
+    if (!isRequestURL(url) && !isDataURL(url)) {
       return await fetchFileNode(url, options);
     }
 
