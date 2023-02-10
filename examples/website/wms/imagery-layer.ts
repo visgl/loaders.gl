@@ -6,33 +6,34 @@ import {WMSService} from '@loaders.gl/wms';
 import type {_ImageSourceMetadata as ImageSourceMetadata} from '@loaders.gl/wms';
 import {_ImageSource as ImageSource, _AdHocImageService as AdHocImageService} from '@loaders.gl/wms';
 
-export type ImageryLayerProps = CompositeLayerProps<string> & {
-  service: string | ImageSource;
+export type ImageryLayerProps = CompositeLayerProps<string | ImageSource> & {
   serviceType?: 'wms' | 'template';
   layers: string[];
   onMetadataLoadStart: () => void;
   onMetadataLoadComplete: (metadata: ImageSourceMetadata) => void;
-  onImageLoadStart: () => void;
-  onImageLoadComplete: () => void;
+  onMetadataLoadError: (error: Error) => void;
+  onImageLoadStart: (requestId: unknown) => void;
+  onImageLoadComplete: (requestId: unknown) => void;
+  onImageLoadError: (requestId: unknown, error: Error) => void;
 };
 
 type ImageryLayerState = {
   imageSource: ImageSource;
-  bitmapLayer: BitmapLayer;
+  image: ImageType;
   metadata: ImageSourceMetadata;
 };
 
-
 const defaultProps: ImageryLayerProps = {
   id: 'imagery-layer',
-  // TODO - we shouldn't have a random default
-  service: undefined!,
+  data: undefined!,
   serviceType: 'wms',
   layers: undefined!,
   onMetadataLoadStart: () => {},
   onMetadataLoadComplete: () => {},
+  onMetadataLoadError: (error: Error) => console.error(error),
   onImageLoadStart: () => {}, 
-  onImageLoadComplete: () => {}
+  onImageLoadComplete: () => {},
+  onImageLoadError: (requestId: unknown, error: Error) => console.error(error, requestId)
 };
 
 /**
@@ -42,7 +43,7 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   static layerName = 'ImageryLayer';
   static defaultProps: DefaultProps<ImageryLayerProps> = defaultProps;
 
-  /** We want resize events etc */
+  /** Lets deck.gl know that we want viewport change events */
   /*override*/ shouldUpdateState(): boolean {
     return true;
   }
@@ -51,66 +52,52 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   }
   
   /*override*/ updateState({changeFlags, props, oldProps}: UpdateParameters<this>): void {
-    if (changeFlags.propsChanged && props.service !== oldProps.service) {
-      console.log('update props', changeFlags.viewportChanged);
+    const state = this.state as ImageryLayerState;
 
-      const state = this.state as ImageryLayerState;
-      state.imageSource = createImageSource(this.props);
-      this._initializeImageSource();
-      debounce(() => this.buildBitmapLayer('props changed'), 0);
+    if (changeFlags.propsChanged) {
+      const dataChanged =
+        changeFlags.dataChanged ||
+        props.serviceType !== oldProps.serviceType || 
+        (changeFlags.updateTriggersChanged &&
+          (changeFlags.updateTriggersChanged.all || changeFlags.updateTriggersChanged));
 
-    } else if (changeFlags.viewportChanged) {
-      console.log('update viewport', changeFlags.viewportChanged);
 
-      debounce(() => this.buildBitmapLayer('state changed'));
+      // Check if data source has changed
+      if (dataChanged) {
+        state.imageSource = createImageSource(this.props);
+        this._loadMetadata();
+        debounce(() => this.loadImage('image source changed'), 0);
+      }
 
+      // Some sublayer props may have changed
     }
-  }
+    
+    if (changeFlags.viewportChanged) {
+      debounce(() => this.loadImage('viewport changed'));
+    }
 
+    const propsChanged = changeFlags.propsOrDataChanged || changeFlags.updateTriggersChanged;
+  }
+  
+  /*override*/ finalizeState(): void {
+    // TODO - we could cancel outstanding requests
+  }
+  
   /*override*/ renderLayers(): Layer {
-    console.log('renderlayers');
     // TODO - which bitmap layer is rendered should depend on the current viewport
     // Currently Studio only uses one viewport
     const state = this.state as ImageryLayerState;
-    return state.bitmapLayer;
-  }
+    const {imageSource} = this.state;
+    const {bounds, image, width, height} = this.state;
 
-  async buildBitmapLayer(reason: string): Promise<void> {
-    // const viewports = deckInstance.getViewports();
-    const viewports = this.context.deck?.getViewports() || [];
-    if (viewports.length <= 0) {
-      return;
-    }
+    console.log('render', this.state);
 
-    const viewport = viewports[0];
-    const bounds = viewport.getBounds();
-    const {width, height} = viewport;
-
-    this.props.onImageLoadStart();
-
-    // TODO - need types on the layer state
-    const state = this.state as ImageryLayerState;
-    const imageSource = state.imageSource;
-
-    let image;
-    
-    try {
-      image = await imageSource.getImage({width, height, bbox: bounds, layers: this.props.layers});
-    } catch (error) {
-      this.context.onError?.(error, this);
-      // throw error;
-    }
-    
-    this.props.onImageLoadComplete();
-
-    const layer = new BitmapLayer({
+    return image && new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),
       bounds,
       image,
       pickable: true, // TODO inherited?
-      onHover: (info) => {
-        console.log('hover in bitmap layer', info);
-      },
+      onHover: (info) => console.log('hover in bitmap layer', info),
       onClick: (info) => {
         const {bitmap, layer} = info;
         console.log('click in bitmap layer', info);
@@ -120,6 +107,7 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
           debounce(async () => {
             const featureInfo = await imageSource.getFeatureInfo({
               layers: this.props.layers,
+              // todo image width may get out of sync with viewport width
               width,
               height,
               bbox: bounds,
@@ -128,20 +116,15 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
               y,
               info_format: 'text/plain'
             })
-            console.log(featureInfo);
+            // console.log(featureInfo);
           }, 0);
         }
       }
     });
-
-    state.bitmapLayer = layer;
-    this.setNeedsRedraw();
   }
 
-  // HELPERS
-
   /** Run a getMetadata on the image service */
-  async _initializeImageSource(): Promise<void> {
+  async _loadMetadata(): Promise<void> {
     this.props.onMetadataLoadStart();
     const state = this.state as ImageryLayerState;
     try {
@@ -150,29 +133,68 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
       // Although the response might no longer be expected
       this.getCurrentLayer()?.props.onMetadataLoadComplete(state.metadata);
     } catch (error) {
-      console.error(error);
+      this.getCurrentLayer()?.props.onMetadataLoadError(error);
     }
+  }
+  
+  /** Load an image */
+  async loadImage(reason: string): Promise<void> {
+    const viewports = this.context.deck?.getViewports() || [];
+    if (viewports.length <= 0) {
+      return;
+    }
+
+    // TODO - need to handle multiple viewports
+    const viewport = viewports[0];
+    const bounds = viewport.getBounds();
+    const {width, height} = viewport;
+
+    const state = this.state as ImageryLayerState;
+
+    let requestId = getRequestId();
+
+    try {
+      this.props.onImageLoadStart(requestId);
+      const image = await state.imageSource.getImage({width, height, bbox: bounds, layers: this.props.layers});
+      Object.assign(this.state, {image, bounds, width, height});
+      this.getCurrentLayer()?.props.onImageLoadComplete(requestId);
+      this.setNeedsRedraw();
+    } catch (error) {
+      this.context.onError?.(error, this);
+      this.getCurrentLayer()?.props.onImageLoadError(requestId, error);
+    }    
   }
 }
 
 /** Creates an image service if appropriate */
 function createImageSource(props: ImageryLayerProps): ImageSource {
-  if (typeof props.service === 'string') {
+  if (typeof props.data === 'string') {
     switch (props.serviceType) {
       case 'template':
-        return new AdHocImageService({templateUrl: props.service});
+        return new AdHocImageService({templateUrl: props.data});
       case 'wms':
       default: // currently only wms service supported
-        return new WMSService({serviceUrl: props.service})
+        return new WMSService({serviceUrl: props.data})
     }
-  } else {
-    return props.service;
   }
+  if (props.data instanceof ImageSource) {
+    return props.data;
+  }
+  throw new Error('data props is not a valid image source');
 }
 
+// HELPERS
 
+let nextRequestId: number = 0;
+
+/** Global counter for issuing unique request ids */
+function getRequestId() {
+  return nextRequestId++;
+}
 
 let timeoutId;
+
+/** Runs an action in the future, cancels it if the new action is issued before it executes */
 function debounce(fn: Function, ms = 500): void {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => fn(), ms);
