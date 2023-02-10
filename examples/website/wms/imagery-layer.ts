@@ -92,21 +92,7 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     return image && new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),
       bounds,
-      image,
-      pickable: true, // TODO inherited?
-      onHover: (info) => console.log('hover in bitmap layer', info),
-      onClick: (info) => {
-        const {bitmap, layer} = info;
-        console.log('click in Imagerylayer', info);
-        if (bitmap) {
-          const x = bitmap.pixel[0];
-          const y = bitmap.pixel[1];
-          debounce(async () => {
-            const featureInfo = this.getFeatureInfoText(x, y);
-            console.log('GetFeatureInfo', featureInfo);
-          }, 0);
-        }
-      }
+      image
     });
   }
 

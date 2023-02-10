@@ -109,12 +109,15 @@ export default class App extends PureComponent {
         },
 
         onClick: async ({bitmap, layer}) => {
-          if (bitmap) {
+          if (this.state.featureInfo) {
+            this.setState({featureInfo: null});
+          } else if (bitmap) {
             const x = bitmap.pixel[0];
             const y = bitmap.pixel[1];
             // @ts-expect-error
-            const featureInfo = await layer.getFeatureInfo(x, y);
+            const featureInfo = await layer.getFeatureInfoText(x, y);
             console.log('Click in imagery layer', x, y, featureInfo);
+            this.setState({featureInfo});
           }
         }
       })
@@ -134,11 +137,13 @@ export default class App extends PureComponent {
           onError={(error: Error) => this.setState({error: error.message})}
           controller={{type: MapController, maxPitch: 85}}
           getTooltip={({object}) =>
-            object && {
-              html: `<h2>${object.name}</h2><div>${object.message}</div>`,
+            this.state.featureInfo && {
+              html: `<h2>Feature Info</h2><div>${this.state.featureInfo}</div>`,
               style: {
-                backgroundColor: '#f00',
-                fontSize: '0.8em'
+                color: '#EEE',
+                backgroundColor: '#000',
+                fontSize: '0.8em',
+                whiteSpace: 'pre-line'
               }
             }
           }
