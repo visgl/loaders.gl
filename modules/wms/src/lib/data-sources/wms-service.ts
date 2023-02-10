@@ -106,6 +106,9 @@ export type WMSServiceProps = {
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
 export class WMSService extends ImageSource {
+  static type: 'wms' = 'wms';
+  static testURL = (url: string): boolean => url.toLowerCase().includes('wms');
+
   serviceUrl: string;
   loadOptions: LoaderOptions = {
     // We want error responses to throw exceptions, the WMSErrorLoader can do this

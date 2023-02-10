@@ -17,6 +17,9 @@ export type AdHocImageServiceProps = {
  * Accepts a template url string and builds requests URLs
  */
 export class AdHocImageService extends ImageSource {
+  static type: 'template' = 'template';
+  static testURL = (url: string): boolean => url.toLowerCase().includes('{');
+
   templateUrl: string;
 
   constructor(props: AdHocImageServiceProps) {
