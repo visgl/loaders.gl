@@ -2,8 +2,7 @@
 
 import {Layer, CompositeLayer, CompositeLayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed';
 import {BitmapLayer} from '@deck.gl/layers/typed';
-import {WMSService} from '@loaders.gl/wms';
-import type {ImageSourceMetadata, ImageData, ImageServiceType} from '@loaders.gl/wms';
+import type {ImageSourceMetadata, ImageType, ImageServiceType} from '@loaders.gl/wms';
 import {ImageSource, createImageSource} from '@loaders.gl/wms';
 
 export type ImageryLayerProps = CompositeLayerProps<string | ImageSource> & {
@@ -64,7 +63,7 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
 
       // Check if data source has changed
       if (dataChanged) {
-        state.imageSource = createImageSource(this.props.data, this.props.serviceType);
+        state.imageSource = this._createImageSource(this.props);
         this._loadMetadata();
         debounce(() => this.loadImage('image source changed'), 0);
       }
@@ -90,8 +89,6 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     const {imageSource} = this.state;
     const {bounds, image, width, height} = this.state;
 
-    console.log('render', this.state);
-
     return image && new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),
       bounds,
@@ -100,27 +97,55 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
       onHover: (info) => console.log('hover in bitmap layer', info),
       onClick: (info) => {
         const {bitmap, layer} = info;
-        console.log('click in bitmap layer', info);
+        console.log('click in Imagerylayer', info);
         if (bitmap) {
           const x = bitmap.pixel[0];
           const y = bitmap.pixel[1];
           debounce(async () => {
-            const featureInfo = await imageSource.getFeatureInfo({
-              layers: this.props.layers,
-              // todo image width may get out of sync with viewport width
-              width,
-              height,
-              bbox: bounds,
-              query_layers: this.props.layers,
-              x,
-              y,
-              info_format: 'text/plain'
-            })
-            // console.log(featureInfo);
+            const featureInfo = this.getFeatureInfoText(x, y);
+            console.log('GetFeatureInfo', featureInfo);
           }, 0);
         }
       }
     });
+  }
+
+  async getFeatureInfoText(x: number, y: number): Promise<unknown> {
+    const state = this.state as ImageryLayerState;
+    const viewport = this._getViewport();
+    if (viewport) {
+      const bounds = viewport.getBounds();
+      const {width, height} = viewport;
+      // @ts-expect-error
+      const featureInfo = await state.imageSource.getFeatureInfoText?.({
+        layers: this.props.layers,
+        // todo image width may get out of sync with viewport width
+        width,
+        height,
+        bbox: bounds,
+        query_layers: this.props.layers,
+        x,
+        y,
+        info_format: 'application/vnd.ogc.gml'
+      });
+      return featureInfo;
+    }
+  }
+
+  _createImageSource(props: ImageryLayerProps): ImageSource {
+    if (props.data instanceof ImageSource) {
+      return props.data;
+    }
+
+    if (typeof props.data === 'string') {
+      return createImageSource({
+        url: props.data,
+        loadOptions: props.loadOptions,
+        type: props.serviceType
+      });
+    }
+
+    throw new Error('invalid image source in props.data');
   }
 
   /** Run a getMetadata on the image service */
@@ -139,13 +164,11 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   
   /** Load an image */
   async loadImage(reason: string): Promise<void> {
-    const viewports = this.context.deck?.getViewports() || [];
-    if (viewports.length <= 0) {
+    // TODO - need to handle multiple viewports
+    const viewport = this._getViewport();
+    if (!viewport) {
       return;
     }
-
-    // TODO - need to handle multiple viewports
-    const viewport = viewports[0];
     const bounds = viewport.getBounds();
     const {width, height} = viewport;
 
@@ -163,6 +186,15 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
       this.context.onError?.(error, this);
       this.getCurrentLayer()?.props.onImageLoadError(requestId, error);
     }    
+  }
+
+  _getViewport() {
+    const viewports = this.context.deck?.getViewports() || [];
+    if (viewports.length <= 0) {
+      return null;
+    }
+
+    return viewports[0];
   }
 }
 

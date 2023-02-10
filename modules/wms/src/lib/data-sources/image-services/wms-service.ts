@@ -7,7 +7,7 @@ import {ImageLoader} from '@loaders.gl/images';
 
 import type {ImageSourceMetadata, GetImageParameters} from '../image-source';
 import {ImageSource} from '../image-source';
-import {ImageServiceProps, mergeImageServiceProps} from './image-service';
+import {ImageServiceProps, getFetchFunction, mergeImageServiceProps} from './image-service';
 
 import type {WMSCapabilities, WMSFeatureInfo, WMSLayerDescription} from '../../wms/wms-types';
 import {WMSCapabilitiesLoader} from '../../../wms-capabilities-loader';
@@ -58,7 +58,7 @@ export type WMSGetFeatureInfoParameters = WMSCommonParameters & {
   /** list of layers to query (could be different from rendered layers) */
   query_layers: string[];
   /** MIME type of returned feature info */
-  info_format?: 'text/plain';
+  info_format?: 'text/plain' | 'application/vnd.ogc.gml';
 
   /** Layers to render */
   layers: string[];
@@ -98,6 +98,8 @@ export class WMSService extends ImageSource {
   static testURL = (url: string): boolean => url.toLowerCase().includes('wms');
 
   props: Required<ImageServiceProps>;
+  fetch: (url: string, options?: RequestInit) => Promise<Response>;
+  capabilities: WMSCapabilities | null = null;
 
   /** A list of loaders used by the WMSService methods */
   readonly loaders = [
@@ -112,6 +114,7 @@ export class WMSService extends ImageSource {
   constructor(props: ImageServiceProps) {
     super();
     this.props = mergeImageServiceProps(props);
+    this.fetch = getFetchFunction(this.props);
     this.props.loadOptions = {
       ...this.props.loadOptions,
       // We want error responses to throw exceptions, the WMSErrorLoader can do this
@@ -136,10 +139,12 @@ export class WMSService extends ImageSource {
     vendorParameters?: Record<string, unknown>
   ): Promise<WMSCapabilities> {
     const url = this.getCapabilitiesURL(wmsParameters, vendorParameters);
-    const response = await this.props.fetch(url);
+    const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await WMSCapabilitiesLoader.parse(arrayBuffer, this.props.loadOptions);
+    const capabilities = await WMSCapabilitiesLoader.parse(arrayBuffer, this.props.loadOptions);
+    this.capabilities = capabilities;
+    return capabilities;
   }
 
   /** Get a map image */
@@ -148,7 +153,7 @@ export class WMSService extends ImageSource {
     vendorParameters?: Record<string, unknown>
   ): Promise<ImageType> {
     const url = this.getMapURL(options, vendorParameters);
-    const response = await this.props.fetch(url);
+    const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {
@@ -164,10 +169,23 @@ export class WMSService extends ImageSource {
     vendorParameters?: Record<string, unknown>
   ): Promise<WMSFeatureInfo> {
     const url = this.getFeatureInfoURL(options, vendorParameters);
-    const response = await this.props.fetch(url);
+    const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     return await WMSFeatureInfoLoader.parse(arrayBuffer, this.props.loadOptions);
+  }
+
+  /** Get Feature Info for a coordinate */
+  async getFeatureInfoText(
+    options: WMSGetFeatureInfoParameters,
+    vendorParameters?: Record<string, unknown>
+  ): Promise<string> {
+    options = {...options, info_format: 'text/plain'};
+    const url = this.getFeatureInfoURL(options, vendorParameters);
+    const response = await this.fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    this._checkResponse(response, arrayBuffer);
+    return new TextDecoder().decode(arrayBuffer);
   }
 
   /** Get more information about a layer */
@@ -176,7 +194,7 @@ export class WMSService extends ImageSource {
     vendorParameters?: Record<string, unknown>
   ): Promise<WMSLayerDescription> {
     const url = this.describeLayerURL(options, vendorParameters);
-    const response = await this.props.fetch(url);
+    const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     return await WMSLayerDescriptionLoader.parse(arrayBuffer, this.props.loadOptions);
@@ -188,7 +206,7 @@ export class WMSService extends ImageSource {
     vendorParameters?: Record<string, unknown>
   ): Promise<ImageType> {
     const url = this.getLegendGraphicURL(options, vendorParameters);
-    const response = await this.props.fetch(url);
+    const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {

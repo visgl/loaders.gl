@@ -13,11 +13,7 @@ export type ImageServiceProps = {
   url: string;
   /** Any load options to the loaders.gl Loaders used by the WMSService methods */
   loadOptions?: LoaderOptions;
-  /** Override the fetch function if required */
-  fetch?: typeof fetch | FetchLike;
 };
-
-type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
 /**
  * Quickly connect to "ad hoc" image sources without subclassing ImageSource.
@@ -29,10 +25,12 @@ export class ImageService extends ImageSource {
   static testURL = (url: string): boolean => url.toLowerCase().includes('{');
 
   props: Required<ImageServiceProps>;
+  fetch: (url: string, options?: RequestInit) => Promise<Response>;
 
   constructor(props: ImageServiceProps) {
     super();
     this.props = mergeImageServiceProps(props);
+    this.fetch = getFetchFunction(props);
   }
 
   // IMAGE SOURCE API
@@ -44,7 +42,7 @@ export class ImageService extends ImageSource {
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
     const granularParameters = this.getGranularParameters(parameters);
     const url = this.getURLFromTemplate(granularParameters);
-    const response = await this.props.fetch(url);
+    const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     return await ImageLoader.parse(arrayBuffer);
   }
@@ -98,8 +96,10 @@ export function getFetchFunction(options?: LoaderOptions) {
 export function mergeImageServiceProps(props: ImageServiceProps): Required<ImageServiceProps> {
   return {
     // Default fetch
-    fetch: getFetchFunction(props.loadOptions),
     ...props,
-    loadOptions: {...props.loadOptions}
+    loadOptions: {
+      ...props.loadOptions,
+      fetch: getFetchFunction(props.loadOptions)
+    }
   };
 }

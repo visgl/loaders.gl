@@ -106,27 +106,15 @@ export default class App extends PureComponent {
         onMetadataLoadComplete: (metadata: ImageSourceMetadata) => {
           globalThis.document.title = metadata.title || 'WMS';
           this.setState({metadata: JSON.stringify(metadata, null, 2)});
-          console.log(metadata);
         },
 
-        onClick: ({bitmap, layer}) => {
-          console.log('click in imagery layer');
+        onClick: async ({bitmap, layer}) => {
           if (bitmap) {
             const x = bitmap.pixel[0];
             const y = bitmap.pixel[1];
-            // debounce(async () => {
-            //   const featureInfo = await imageService.getFeatureInfo({
-            //     layers: this.props.layers,
-            //     width,
-            //     height,
-            //     bbox: bounds,
-            //     query_layers: this.props.layers,
-            //     x,
-            //     y,
-            //     info_format: 'text/plain'
-            //   })
-            console.log(x, y);
-            //}, 0);
+            // @ts-expect-error
+            const featureInfo = await layer.getFeatureInfo(x, y);
+            console.log('Click in imagery layer', x, y, featureInfo);
           }
         }
       })

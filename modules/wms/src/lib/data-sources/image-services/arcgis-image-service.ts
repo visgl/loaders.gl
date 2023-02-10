@@ -3,17 +3,19 @@
 import {ImageType} from '@loaders.gl/images';
 import type {ImageSourceMetadata, GetImageParameters} from '../image-source';
 import {ImageSource} from '../image-source';
-import {ImageServiceProps, mergeImageServiceProps} from './image-service';
+import {ImageServiceProps, mergeImageServiceProps, getFetchFunction} from './image-service';
 
 export class ArcGISImageService extends ImageSource {
   static type: 'arcgis-image-server' = 'arcgis-image-server';
   static testURL = (url: string): boolean => url.toLowerCase().includes('ImageServer');
 
   props: Required<ImageServiceProps>;
+  fetch: (url: string, options?: RequestInit) => Promise<Response>;
 
   constructor(props: ImageServiceProps) {
     super();
     this.props = mergeImageServiceProps(props);
+    this.fetch = getFetchFunction(this.props);
   }
 
   // ImageSource (normalized endpoints)
