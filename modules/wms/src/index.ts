@@ -17,10 +17,10 @@ export {ImageSource} from './lib/data-sources/image-source';
 export type {ImageServiceType} from './lib/data-sources/create-image-source';
 export {createImageSource} from './lib/data-sources/create-image-source';
 
-export type {WMSServiceProps} from './lib/data-sources/wms-service';
-export {WMSService} from './lib/data-sources/wms-service';
-export {AdHocImageService as _AdHocImageService} from './lib/data-sources/adhoc-image-service';
-export {ArcGISImageService as _ArcGISImageService} from './lib/data-sources/arcgis-image-service';
+export type {ImageServiceProps} from './lib/data-sources/image-services/image-service';
+export {ImageService} from './lib/data-sources/image-services/image-service';
+export {WMSService} from './lib/data-sources/image-services/wms-service';
+export {ArcGISImageService as _ArcGISImageService} from './lib/data-sources/image-services/arcgis-image-service';
 
 // WIP /////////////////////////////////////////////////////////////////
 // Plumbing set up but details of parsing and typing not yet completed

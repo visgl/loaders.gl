@@ -1,13 +1,17 @@
 // loaders.gl, MIT license
 
 import {ImageSource} from './image-source';
-import {WMSService} from './wms-service';
-import {ArcGISImageService} from './arcgis-image-service';
-import {AdHocImageService} from './adhoc-image-service';
+import {ImageService, ImageServiceProps} from './image-services/image-service';
+import {WMSService} from './image-services/wms-service';
+import {ArcGISImageService} from './image-services/arcgis-image-service';
 
 export type ImageServiceType = 'wms' | 'arcgis-image-server' | 'template';
 
-const SERVICES = [WMSService, ArcGISImageService, AdHocImageService];
+const SERVICES = [WMSService, ArcGISImageService, ImageService];
+
+type Props = ImageServiceProps & {
+  type?: ImageServiceType | 'auto';
+};
 
 /**
  * Creates an image source
@@ -16,13 +20,14 @@ const SERVICES = [WMSService, ArcGISImageService, AdHocImageService];
  * @param type type of source. if not known, set to 'auto'
  * @returns an ImageSource instance
  */
-export function createImageSource(url: string, type: ImageServiceType | 'auto'): ImageSource {
-  const serviceType = type === 'auto' ? guessServiceType(url) : type;
+export function createImageSource(props: Props): ImageSource {
+  const {type = 'auto'} = props;
+  const serviceType = type === 'auto' ? guessServiceType(props.url) : type;
   switch (serviceType) {
     case 'template':
-      return new AdHocImageService({templateUrl: url});
+      return new ImageService(props);
     case 'wms':
-      return new WMSService({serviceUrl: url});
+      return new WMSService(props);
     default:
       // currently only wms service supported
       throw new Error('Not a valid image source type');

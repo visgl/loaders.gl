@@ -7,7 +7,7 @@ import {WMSService} from '@loaders.gl/wms';
 const WMS_SERVICE_URL = 'https:/mock-wms-service';
 
 test('WMSService#', async (t) => {
-  const wmsService = new WMSService({serviceUrl: WMS_SERVICE_URL});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL});
   const getCapabilitiesUrl = wmsService.getCapabilitiesURL();
 
   t.equal(
@@ -19,7 +19,7 @@ test('WMSService#', async (t) => {
 });
 
 test('WMSService#getMapURL', async (t) => {
-  const wmsService = new WMSService({serviceUrl: WMS_SERVICE_URL});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL});
   const getMapUrl = wmsService.getMapURL({
     width: 800,
     height: 600,
@@ -35,14 +35,14 @@ test('WMSService#getMapURL', async (t) => {
 });
 
 test('WMSService#getFeatureInfoURL', async (t) => {
-  // const wmsService = new WMSService({serviceUrl: WMS_SERVICE_URL});
+  // const wmsService = new WMSService({url: WMS_SERVICE_URL});
   // const getFeatureInfoUrl = wmsService.getFeatureInfoURL({x: 400, y: 300});
   // t.equal(getFeatureInfoUrl, 'https:/mock-wms-service?REQUEST=GetFeatureInfo', 'getFeatureInfoURL');
   t.end();
 });
 
 test('WMSService#describeLayerURL', async (t) => {
-  const wmsService = new WMSService({serviceUrl: WMS_SERVICE_URL});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL});
   const describeLayerUrl = wmsService.describeLayerURL({});
   t.equal(
     describeLayerUrl,
@@ -53,7 +53,7 @@ test('WMSService#describeLayerURL', async (t) => {
 });
 
 test('WMSService#getLegendGraphicURL', async (t) => {
-  const wmsService = new WMSService({serviceUrl: WMS_SERVICE_URL});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL});
   const getLegendGraphicUrl = wmsService.getLegendGraphicURL({});
   t.equal(
     getLegendGraphicUrl,

@@ -2,7 +2,7 @@
 
 ## v3.3 Prerelease
 
-## v3.3.0-alpha.12
+## v3.3.0-alpha.13
 
 - feat(wms): AdHocImageSource - initial URL template support (#2346)
 - website: bump luma & fix I3S Debug (#2343)
