@@ -4,6 +4,7 @@
 
 ## v3.3.0-alpha.14 (TBD)
 
+- chore(wms): Streamline ImageService APIs (#2357)
 - feat(wms): ArcGIS data sources (#2340)
 - chore(tile-converter): add Docker guide (#2355)
 - example(wms): Fixes to ImageryLayer (#2356)
