@@ -2,7 +2,20 @@
 
 ## v3.3 Prerelease
 
-## v3.3.0-alpha.12
+## v3.3.0-alpha.14 (TBD)
+
+- feat(wms): ArcGIS data sources (#2340)
+- chore(tile-converter): add Docker guide (#2355)
+- example(wms): Fixes to ImageryLayer (#2356)
+- chore(polyfills): Split Node fetch polyfill into request and file versions (#2354)
+- chore(parquet): Clean up parquet code base (#2349)
+- chore: Upgrade github actions to v3 (#2353)
+- fix(wms): Unbundle LERCLoader to unblock esbuild applications (#2351)
+- feat(loader-utils): Add ReadableFile, WritableFile (#2350)
+- chore(examples): update 3d-tiles examples (#2348)
+- control panel styling; misc. auto formatting app (#2347)
+
+## v3.3.0-alpha.13
 
 - feat(wms): AdHocImageSource - initial URL template support (#2346)
 - website: bump luma & fix I3S Debug (#2343)
