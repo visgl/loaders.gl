@@ -19,7 +19,7 @@ export type ImageryLayerProps = CompositeLayerProps<string | ImageSource> & {
 
 type ImageryLayerState = {
   imageSource: ImageSource;
-  bitmapLayer: BitmapLayer;
+  image: ImageType;
   metadata: ImageSourceMetadata;
 };
 
@@ -43,7 +43,7 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
   static layerName = 'ImageryLayer';
   static defaultProps: DefaultProps<ImageryLayerProps> = defaultProps;
 
-  /** We want resize events etc */
+  /** Lets deck.gl know that we want viewport change events */
   /*override*/ shouldUpdateState(): boolean {
     return true;
   }
@@ -55,42 +55,44 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     const state = this.state as ImageryLayerState;
 
     if (changeFlags.propsChanged) {
-      console.log('update props');
-
-    const dataChanged =
-      changeFlags.dataChanged ||
-      (changeFlags.updateTriggersChanged &&
-        (changeFlags.updateTriggersChanged.all || changeFlags.updateTriggersChanged));
+      const dataChanged =
+        changeFlags.dataChanged ||
+        props.serviceType !== oldProps.serviceType || 
+        (changeFlags.updateTriggersChanged &&
+          (changeFlags.updateTriggersChanged.all || changeFlags.updateTriggersChanged));
 
 
       // Check if data source has changed
       if (dataChanged) {
         state.imageSource = createImageSource(this.props);
         this._loadMetadata();
-        debounce(() => this.loadImage('props changed'), 0);
+        debounce(() => this.loadImage('image source changed'), 0);
       }
 
       // Some sublayer props may have changed
     }
     
     if (changeFlags.viewportChanged) {
-      console.log('update viewport');
       debounce(() => this.loadImage('viewport changed'));
     }
 
     const propsChanged = changeFlags.propsOrDataChanged || changeFlags.updateTriggersChanged;
   }
   
+  /*override*/ finalizeState(): void {
+    // TODO - we could cancel outstanding requests
+  }
+  
   /*override*/ renderLayers(): Layer {
-    console.log('renderlayers');
-
     // TODO - which bitmap layer is rendered should depend on the current viewport
     // Currently Studio only uses one viewport
     const state = this.state as ImageryLayerState;
     const {imageSource} = this.state;
     const {bounds, image, width, height} = this.state;
 
-    return new BitmapLayer({
+    console.log('render', this.state);
+
+    return image && new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),
       bounds,
       image,
@@ -114,41 +116,12 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
               y,
               info_format: 'text/plain'
             })
-            console.log(featureInfo);
+            // console.log(featureInfo);
           }, 0);
         }
       }
     });
   }
-
-  /** Load an image */
-  async loadImage(reason: string): Promise<void> {
-    // const viewports = deckInstance.getViewports();
-    const viewports = this.context.deck?.getViewports() || [];
-    if (viewports.length <= 0) {
-      return;
-    }
-
-    const viewport = viewports[0];
-    const bounds = viewport.getBounds();
-    const {width, height} = viewport;
-
-    const state = this.state as ImageryLayerState;
-
-    let requestId = getRequestId();
-
-    try {
-      this.props.onImageLoadStart(requestId);
-      const image = await state.imageSource.getImage({width, height, bbox: bounds, layers: this.props.layers});
-      this.getCurrentLayer()?.props.onImageLoadComplete(requestId);
-      this.setNeedsRedraw();
-    } catch (error) {
-      this.context.onError?.(error, this);
-      this.getCurrentLayer()?.props.onImageLoadError(requestId, error);
-    }    
-  }
-
-  // HELPERS
 
   /** Run a getMetadata on the image service */
   async _loadMetadata(): Promise<void> {
@@ -162,6 +135,34 @@ export class ImageryLayer extends CompositeLayer<ImageryLayerProps> {
     } catch (error) {
       this.getCurrentLayer()?.props.onMetadataLoadError(error);
     }
+  }
+  
+  /** Load an image */
+  async loadImage(reason: string): Promise<void> {
+    const viewports = this.context.deck?.getViewports() || [];
+    if (viewports.length <= 0) {
+      return;
+    }
+
+    // TODO - need to handle multiple viewports
+    const viewport = viewports[0];
+    const bounds = viewport.getBounds();
+    const {width, height} = viewport;
+
+    const state = this.state as ImageryLayerState;
+
+    let requestId = getRequestId();
+
+    try {
+      this.props.onImageLoadStart(requestId);
+      const image = await state.imageSource.getImage({width, height, bbox: bounds, layers: this.props.layers});
+      Object.assign(this.state, {image, bounds, width, height});
+      this.getCurrentLayer()?.props.onImageLoadComplete(requestId);
+      this.setNeedsRedraw();
+    } catch (error) {
+      this.context.onError?.(error, this);
+      this.getCurrentLayer()?.props.onImageLoadError(requestId, error);
+    }    
   }
 }
 
@@ -181,6 +182,8 @@ function createImageSource(props: ImageryLayerProps): ImageSource {
   }
   throw new Error('data props is not a valid image source');
 }
+
+// HELPERS
 
 let nextRequestId: number = 0;
 

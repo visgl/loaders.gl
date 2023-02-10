@@ -137,7 +137,6 @@ export default class ControlPanel extends PureComponent {
   
   
   render() {
-    console.log(this.props.loading)
     return (
       <Container>
         {this._renderHeader()}

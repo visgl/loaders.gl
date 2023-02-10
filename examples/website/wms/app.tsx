@@ -92,7 +92,7 @@ export default class App extends PureComponent {
 
     return [
       new ImageryLayer({
-        service,
+        data: service,
         serviceType,
         layers,
 
