@@ -1,18 +1,20 @@
+// loaders.gl, MIT license
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {TILE3D_OPTIMIZATION_HINT, TILE_REFINEMENT} from '../../constants';
-import TilesetTraverser from './tileset-traverser';
+import {TilesetTraverser} from '../tileset-traverser';
 
-export default class Tileset3DTraverser extends TilesetTraverser {
-  compareDistanceToCamera(a, b) {
+export class Tileset3DTraverser extends TilesetTraverser {
+  override compareDistanceToCamera(a, b) {
     // Sort by farthest child first since this is going on a stack
     return b._distanceToCamera === 0 && a._distanceToCamera === 0
       ? b._centerZDepth - a._centerZDepth
       : b._distanceToCamera - a._distanceToCamera;
   }
 
-  updateTileVisibility(tile, frameState) {
+  override updateTileVisibility(tile, frameState) {
     super.updateTileVisibility(tile, frameState);
 
     //  Optimization - if none of the tile's children are visible then this tile isn't visible

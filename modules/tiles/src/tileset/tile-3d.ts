@@ -1,9 +1,15 @@
+// loaders.gl, MIT license
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
+
 import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/culling';
 
 import {load} from '@loaders.gl/core';
+
+// Note: circular dependency
+import type {Tileset3D} from './tileset-3d';
 import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
 import {FrameState} from './helpers/frame-state';
@@ -11,10 +17,7 @@ import {createBoundingVolume} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getProjectedRadius} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
-import TilesetTraverser from './traversers/tileset-traverser';
-
-// Note: circular dependency
-import type Tileset3D from './tileset-3d';
+import {TilesetTraverser} from './tileset-traverser';
 
 const scratchVector = new Vector3();
 
@@ -25,14 +28,14 @@ function defined(x) {
 /**
  * @param tileset - Tileset3D instance
  * @param header - tile header - JSON loaded from a dataset
- * @param parentHeader - parent TileHeader instance
+ * @param parentHeader - parent Tile3D instance
  * @param extendedId - optional ID to separate copies of a tile for different viewports.
  *                              const extendedId = `${tile.id}-${frameState.viewport.id}`;
  */
-export type TileHeaderProps = {
+export type Tile3DProps = {
   tileset: Tileset3D;
   header: Object;
-  parentHeader: TileHeader;
+  parentHeader: Tile3D;
   extendedId: string;
 };
 
@@ -41,12 +44,12 @@ export type TileHeaderProps = {
  * the content is loaded on-demand when needed based on the view.
  * Do not construct this directly, instead access tiles through {@link Tileset3D#tileVisible}.
  */
-export default class TileHeader {
+export class Tile3D {
   tileset: Tileset3D;
   header: any;
   id: string;
   url: string;
-  parent: TileHeader;
+  parent: Tile3D;
   refine: number;
   type: string;
   contentUrl: string;
@@ -56,7 +59,7 @@ export default class TileHeader {
   content: any;
   contentState: any;
   gpuMemoryUsageInBytes: number;
-  children: TileHeader[];
+  children: Tile3D[];
   depth: number;
   viewportIds: any[];
   transform: Matrix4;
@@ -115,10 +118,10 @@ export default class TileHeader {
 
   /**
    * @constructs
-   * Create a TileHeader instance
+   * Create a Tile3D instance
    * @param tileset - Tileset3D instance
    * @param header - tile header - JSON loaded from a dataset
-   * @param parentHeader - parent TileHeader instance
+   * @param parentHeader - parent Tile3D instance
    * @param extendedId - optional ID to separate copies of a tile for different viewports.
    *    const extendedId = `${tile.id}-${frameState.viewport.id}`;
    */
@@ -126,7 +129,7 @@ export default class TileHeader {
   constructor(
     tileset: Tileset3D,
     header: {[key: string]: any},
-    parentHeader?: TileHeader,
+    parentHeader?: Tile3D,
     extendedId = ''
   ) {
     // PUBLIC MEMBERS
@@ -786,7 +789,7 @@ export default class TileHeader {
             attributeStorageInfo: this.tileset.tileset.attributeStorageInfo,
             fields: this.tileset.tileset.fields
           },
-          isTileHeader: false
+          isTile3D: false
         };
       case '3d-tiles':
       case 'cesium-ion':

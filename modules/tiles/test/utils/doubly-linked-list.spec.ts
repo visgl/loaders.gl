@@ -2,7 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import test from 'tape-promise/tape';
-import DoublyLinkedList from '../../src/utils/doubly-linked-list';
+import {DoublyLinkedList} from '../../src/utils/doubly-linked-list';
 
 function expectOrder(t, list, nodes) {
   // Assumes at least one node is in the list

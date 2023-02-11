@@ -1,5 +1,5 @@
 import {FrameState} from '../helpers/frame-state';
-import I3SPendingTilesRegister from './i3s-pending-tiles-register';
+import {I3SPendingTilesRegister} from './i3s-pending-tiles-register';
 
 const STATUS = {
   REQUESTED: 'REQUESTED',
@@ -8,7 +8,7 @@ const STATUS = {
 };
 
 // A helper class to manage tile metadata fetching
-export default class I3STileManager {
+export class I3STileManager {
   private _statusMap: object;
   private pendingTilesRegister = new I3SPendingTilesRegister();
 

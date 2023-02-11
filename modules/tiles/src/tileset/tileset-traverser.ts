@@ -1,6 +1,6 @@
-import ManagedArray from '../../utils/managed-array';
-import {TILE_REFINEMENT} from '../../constants';
-import {FrameState} from '../helpers/frame-state';
+import {ManagedArray} from '../utils/managed-array';
+import {TILE_REFINEMENT} from '../constants';
+import {FrameState} from './helpers/frame-state';
 
 export type TilesetTraverserProps = {
   loadSiblings?: boolean;
@@ -9,19 +9,20 @@ export type TilesetTraverserProps = {
   onTraversalEnd?: (frameState) => any;
   viewportTraversersMap?: {[key: string]: any};
   basePath?: string;
+  updateTransforms?: boolean;
 };
 
-export type Props = {
-  loadSiblings: boolean;
-  skipLevelOfDetail: boolean;
-  updateTransforms: boolean;
-  maximumScreenSpaceError: number;
-  onTraversalEnd: (frameState) => any;
-  viewportTraversersMap: {[key: string]: any};
-  basePath: string;
-};
+// export type Props = {
+//   loadSiblings: boolean;
+//   skipLevelOfDetail: boolean;
+//   updateTransforms: boolean;
+//   maximumScreenSpaceError: number;
+//   onTraversalEnd: (frameState) => any;
+//   viewportTraversersMap: {[key: string]: any};
+//   basePath: string;
+// };
 
-export const DEFAULT_PROPS: Props = {
+export const DEFAULT_PROPS: Required<TilesetTraverserProps> = {
   loadSiblings: false,
   skipLevelOfDetail: false,
   maximumScreenSpaceError: 2,
@@ -31,8 +32,8 @@ export const DEFAULT_PROPS: Props = {
   basePath: ''
 };
 
-export default class TilesetTraverser {
-  options: Props;
+export class TilesetTraverser {
+  options: Required<TilesetTraverserProps>;
 
   root: any;
   requestedTiles: object;

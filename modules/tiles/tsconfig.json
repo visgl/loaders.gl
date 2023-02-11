@@ -3,6 +3,22 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    "noImplicitAny": false, // covered by strict
+    "noImplicitThis": true, // covered by strict
+    // "strictBindCallApply": true, // covered by strict
+    // "strictFunctionTypes": true, // covered by strict
+    // "useUnknownInCatchVariables": true,  // covered by strict
+    // "strictNullChecks": true, // covered by strict
+    // "strictPropertyInitialization": true,
+    // "exactOptionalPropertyTypes": true,
+
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    // "noPropertyAccessFromIndexSignature": true,
+    // "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false, // Not used - fixing this requires changing APIs.  
     "composite": true,
     "rootDir": "src",
     "outDir": "dist"
