@@ -789,7 +789,7 @@ export class Tile3D {
             attributeStorageInfo: this.tileset.tileset.attributeStorageInfo,
             fields: this.tileset.tileset.fields
           },
-          isTile3D: false
+          isTileHeader: false
         };
       case '3d-tiles':
       case 'cesium-ion':
