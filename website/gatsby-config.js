@@ -94,13 +94,13 @@ module.exports = {
         ],
 
         EXAMPLES: [
-          {
-            title: 'glTF Loader',
-            category: "Loaders",
-            image: 'images/example-gltf.jpg',
-            componentUrl: resolve(__dirname, './templates/example-gltf.tsx'),
-            path: 'examples/gltf'
-          },
+          // {
+          //   title: 'glTF Loader',
+          //   category: "Loaders",
+          //   image: 'images/example-gltf.jpg',
+          //   componentUrl: resolve(__dirname, './templates/example-gltf.tsx'),
+          //   path: 'examples/gltf'
+          // },
           {
             title: 'Texture Loaders',
             category: "Loaders",
@@ -158,6 +158,12 @@ module.exports = {
             path: 'examples/benchmarks'
           }
         ]
+      }
+    },
+    {
+      resolve: `gatsby-plugin-typescript`,
+      options: {
+        target: 'es2021'
       }
     },
     {

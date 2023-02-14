@@ -24,7 +24,7 @@ export default class DebugOptionGroup extends PureComponent {
     this.state = {};
   }
   render() {
-    const {children, title} = this.props;
+    const {children} = this.props;
     return <OptionGroup>{children}</OptionGroup>;
   }
 }

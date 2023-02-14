@@ -135,7 +135,7 @@ export default function Showcase() {
           <Thumbnail>
             <div data-title={name} >
               <a href={url}>
-                <img src={withPrefix(image)} />
+                <img src={withPrefix(image)} alt='' />
               </a>
             </div>
           </Thumbnail>

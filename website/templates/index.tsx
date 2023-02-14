@@ -1,8 +1,9 @@
 import React from 'react';
-import {Home} from 'gatsby-theme-ocular/components';
-// import Example from '../../examples/website/pointcloud/app';
-import Example from './example-gltf';
 import styled from 'styled-components';
+import {Home} from 'gatsby-theme-ocular/components';
+// import Example from './example-gltf';
+// import Example from '../../examples/website/pointcloud/app';
+import Example from '../../examples/website/i3s/src/app';
 
 if (typeof window !== 'undefined') {
   window.website = true;
