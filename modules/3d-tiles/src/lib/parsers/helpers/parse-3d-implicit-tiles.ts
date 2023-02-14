@@ -1,6 +1,8 @@
 import type {Availability, BoundingVolume, Subtree} from '../../../types';
 import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
+import {getS2ChildCellId, getTokenFromId, getIdFromToken} from '../../utils/s2/s2-utils';
+import {S2BoundingVolume, convertS2BVtoBox} from '../../utils/s2/s2-bv-obb';
 
 const QUADTREE_DEVISION_COUNT = 4;
 const OCTREE_DEVISION_COUNT = 8;
@@ -9,6 +11,31 @@ const SUBDIVISION_COUNT_MAP = {
   QUADTREE: QUADTREE_DEVISION_COUNT,
   OCTREE: OCTREE_DEVISION_COUNT
 };
+
+function getCTile(curTile, midZ, sizeZ, index) {
+  let cTile;
+  if (curTile && curTile.boundingVolume && curTile.boundingVolume.box) {
+    if (typeof curTile.boundingVolume.cellId === 'undefined')
+      curTile.boundingVolume.cellId = getIdFromToken(curTile.boundingVolume.s2bv.token);
+    // Get box from childCellId
+    const childCellId = getS2ChildCellId(curTile.boundingVolume.cellId, index);
+    const childToken = getTokenFromId(childCellId);
+
+    // Clone object
+    const s2bv: S2BoundingVolume = JSON.parse(JSON.stringify(curTile.boundingVolume.s2bv));
+    s2bv.token = childToken; // replace token with the child's one
+    s2bv.minimumHeight = midZ - sizeZ;
+    s2bv.maximumHeight = midZ + sizeZ;
+
+    const box = convertS2BVtoBox(s2bv);
+    cTile = {boundingVolume: {box, cellId: childCellId, s2bv}};
+
+    // if (options.rootBoundingVolume.s2bv.token === "1") {
+    //   console.log(`level=${childTileLevel}, index=${index}, s2bv=${s2bv.token}, min=${s2bv.minimumHeight}, max=${s2bv.maximumHeight}` );
+    // }
+  }
+  return cTile;
+}
 
 /**
  * Recursively parse implicit tiles tree
@@ -30,6 +57,7 @@ export async function parseImplicitTiles(params: {
   childIndex?: number;
   level?: number;
   globalData?: {level: number; mortonIndex: number; x: number; y: number; z: number};
+  curTile?: any;
 }) {
   const {
     options,
@@ -46,7 +74,9 @@ export async function parseImplicitTiles(params: {
       x: 0,
       y: 0,
       z: 0
-    }
+    },
+
+    curTile
   } = params;
   let {subtree, level = 0} = params;
   const {
@@ -128,20 +158,36 @@ export async function parseImplicitTiles(params: {
   const childTileLevel = level + 1;
   const pData = {mortonIndex: childTileMortonIndex, x: childTileX, y: childTileY, z: childTileZ};
 
+  const boundingVolumesCount = 2 ** childTileLevel;
+  const sizeZ =
+    (curTile.boundingVolume.s2bv.maximumHeight - curTile.boundingVolume.s2bv.minimumHeight) /
+    boundingVolumesCount;
+  const delta =
+    curTile.boundingVolume.s2bv.maximumHeight - curTile.boundingVolume.s2bv.minimumHeight;
+  const midZ = curTile.boundingVolume.s2bv.minimumHeight + delta / 2.0;
+
   for (let index = 0; index < childrenPerTile; index++) {
+    const cTile = getCTile(curTile, midZ, sizeZ, index);
     const currentTile = await parseImplicitTiles({
       subtree,
       options,
       parentData: pData,
       childIndex: index,
       level: childTileLevel,
-      globalData
+      globalData,
+      curTile: cTile
     });
 
     if (currentTile.contentUrl || currentTile.children.length) {
       const globalLevel = lev + 1;
       const childCoordinates = {childTileX, childTileY, childTileZ};
-      const formattedTile = formatTileData(currentTile, globalLevel, childCoordinates, options);
+      const formattedTile = formatTileData(
+        currentTile,
+        globalLevel,
+        childCoordinates,
+        options,
+        curTile
+      );
       // @ts-ignore
       tile.children.push(formattedTile);
     }
@@ -174,7 +220,9 @@ function formatTileData(
   tile,
   level: number,
   childCoordinates: {childTileX: number; childTileY: number; childTileZ: number},
-  options: any
+  options: any,
+
+  currentRoot?: any
 ) {
   const {
     basePath,
@@ -189,7 +237,7 @@ function formatTileData(
   const lodMetricValue = rootLodMetricValue / 2 ** level;
   const boundingVolume = calculateBoundingVolumeForChildTile(
     level,
-    rootBoundingVolume,
+    currentRoot ? currentRoot.boundingVolume : rootBoundingVolume,
     childCoordinates
   );
 
@@ -239,6 +287,10 @@ function calculateBoundingVolumeForChildTile(
     return {
       region: [childWest, childSouth, childEast, childNorth, childMinimumHeight, childMaximumHeight]
     };
+  }
+
+  if (rootBoundingVolume.box) {
+    return rootBoundingVolume;
   }
 
   // eslint-disable-next-line no-console
