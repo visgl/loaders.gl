@@ -43,9 +43,7 @@ export class AppAnimationLoop extends AnimationLoop {
 
   scenes: any[] = [];
   animator: GLTFAnimator | null = null;
-  modelFile: string | null;
 
-  gl: WebGLRenderingContext | null = null;
   glOptions = {
     // Use to test gltf with webgl 1.0 and 2.0
     // webgl2: true,
@@ -71,12 +69,8 @@ export class AppAnimationLoop extends AnimationLoop {
   };
 
 
-  constructor({modelFile}: {modelFile?: string | null} = {modelFile: null}) {
+  constructor() {
     super();
-
-    this.modelFile = modelFile || null;
-
-
     this.onInitialize = this.onInitialize.bind(this);
     this.onRender = this.onRender.bind(this);
   }
@@ -100,23 +94,20 @@ export class AppAnimationLoop extends AnimationLoop {
     this.gltfCreateOptions.imageBasedLightingEnvironment = this.environment;
 
     this.gl = gl;
-    if (this.modelFile) {
-      await this._loadGLTF(this.modelFile);
-    } else {
-      const models = await loadModelList();
-      addModelsToDropdown(models, async (modelUrl) => {
-        this._deleteScenes();
-        await this._loadGLTF(modelUrl);
-      });
+    const models = await loadModelList();
+    addModelsToDropdown(models, async (modelUrl) => {
+      this._deleteScenes();
+      await this._loadGLTF(modelUrl);
+    });
 
-      // Load the default model
-      const defaultModelUrl = getSelectedModelUrl();
-      await this._loadGLTF(defaultModelUrl);
-    }
+    // Load the default model
+    const defaultModelUrl = getSelectedModelUrl();
+    await this._loadGLTF(defaultModelUrl);
 
     onSettingsChange((settings) => {
       Object.assign(this, settings);
     });
+
     onLightSettingsChange((settings) => {
       Object.assign(this.gltfCreateOptions, settings);
       if (this.gltfCreateOptions.imageBasedLightingEnvironment) {
@@ -182,6 +173,7 @@ export class AppAnimationLoop extends AnimationLoop {
 
     this._deleteScenes();
 
+    // const rawGltf = await load(file, GLTFLoader, {fetch: {mode: 'no-cors'}});
     const rawGltf = await load(file, GLTFLoader);
 
     const {gltf, scenes, animator} = await createGLTFObjects(gl, rawGltf, this.gltfCreateOptions);
