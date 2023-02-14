@@ -1,9 +1,11 @@
-export type {Tileset3DProps} from './tileset/tileset-3d';
-export {default as Tileset3D} from './tileset/tileset-3d';
-export {default as Tile3D} from './tileset/tile-3d';
+// loaders.gl, MIT license
 
-export {default as TilesetTraverser} from './tileset/traversers/tileset-traverser';
-export {default as TilesetCache} from './tileset/tileset-cache';
+export type {Tileset3DProps} from './tileset/tileset-3d';
+export {Tileset3D} from './tileset/tileset-3d';
+export {Tile3D} from './tileset/tile-3d';
+
+export {TilesetTraverser} from './tileset/tileset-traverser';
+export {TilesetCache} from './tileset/tileset-cache';
 
 export {createBoundingVolume} from './tileset/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset/helpers/transform-utils';

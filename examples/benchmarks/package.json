@@ -13,7 +13,7 @@
     "@probe.gl/react-bench": "^3.5.0"
   },
   "devDependencies": {
-    "@loaders.gl/core": "2.2.0",
+    "@loaders.gl/core": "^3.2.0",
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.4.0",
     "@babel/preset-react": "^7.0.0",

@@ -2,7 +2,7 @@
  * Counter to register pending tile headers for the particular frameNumber
  * Until all tiles are loaded we won't call `onTraversalEnd` callback
  */
-export default class I3SPendingTilesRegister {
+export class I3SPendingTilesRegister {
   private frameNumberMap: Map<string, Map<number, number>> = new Map();
 
   /**

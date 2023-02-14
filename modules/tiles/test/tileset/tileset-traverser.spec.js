@@ -4,8 +4,8 @@ import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tileset3D} from '@loaders.gl/tiles';
 
-import TilesetTraverser from '../../../src/tileset/traversers/tileset-traverser';
-import {getFrameState} from '../../../src/tileset/helpers/frame-state';
+import {TilesetTraverser} from '../../src/tileset/tileset-traverser';
+import {getFrameState} from '../../src/tileset/helpers/frame-state';
 
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/Tileset/tileset.json';

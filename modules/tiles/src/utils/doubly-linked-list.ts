@@ -1,14 +1,13 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import DoublyLinkedListNode from '../utils/doubly-linked-list-node';
+import {DoublyLinkedListNode} from './doubly-linked-list-node';
 
 /**
  * Doubly linked list
- *
  * @private
  */
-export default class DoublyLinkedList {
+export class DoublyLinkedList {
   head: DoublyLinkedListNode | null = null;
   tail: DoublyLinkedListNode | null = null;
   _length = 0;
