@@ -122,13 +122,13 @@ module.exports = {
             componentUrl: resolve(__dirname, '../examples/website/geospatial/app.tsx'),
             path: 'examples/geopkg'
           },
-          {
-            title: 'WMS Loaders',
-            category: "Loaders",
-            image: 'images/example-geospatial.jpg',
-            componentUrl: resolve(__dirname, '../examples/website/wms/app.tsx'),
-            path: 'examples/wms'
-          },
+          // {
+          //   title: 'WMS Loaders',
+          //   category: "Loaders",
+          //   image: 'images/example-geospatial.jpg',
+          //   componentUrl: resolve(__dirname, '../examples/website/wms/app.tsx'),
+          //   path: 'examples/wms'
+          // },
           {
             title: '3D Tiles Loader',
             category: "Loaders",
