@@ -13,7 +13,7 @@
     // "exactOptionalPropertyTypes": true,
 
     "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
+    "noImplicitOverride": false, // `override` modifier fails the website build
     "noImplicitReturns": true,
     // "noPropertyAccessFromIndexSignature": true,
     // "noUncheckedIndexedAccess": true,

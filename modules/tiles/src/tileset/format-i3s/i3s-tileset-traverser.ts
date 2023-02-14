@@ -19,16 +19,16 @@ export class I3STilesetTraverser extends TilesetTraverser {
    * that means the traversal is finished and we can call
    * following-up callbacks.
    */
-  override traversalFinished(frameState: FrameState): boolean {
+  traversalFinished(frameState: FrameState): boolean {
     return !this._tileManager.hasPendingTiles(frameState.viewport.id, this._frameNumber || 0);
   }
 
-  override shouldRefine(tile, frameState: FrameState) {
+  shouldRefine(tile, frameState: FrameState) {
     tile._lodJudge = getLodStatus(tile, frameState);
     return tile._lodJudge === 'DIG';
   }
 
-  override updateChildTiles(tile, frameState: FrameState): boolean {
+  updateChildTiles(tile, frameState: FrameState): boolean {
     const children = tile.header.children || [];
     // children which are already fetched and constructed as Tile3D instances
     const childTiles = tile.children;
