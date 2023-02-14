@@ -9,7 +9,7 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {WMTSCapabilitiesLoader, WMTSCapabilities} from '@loaders.gl/wms';
+import {_WMTSCapabilitiesLoader as WMTSCapabilitiesLoader, _WMTSCapabilities as WMTSCapabilities} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 
 const WMTS_CAPABILITIES_RESPONSE_URL =

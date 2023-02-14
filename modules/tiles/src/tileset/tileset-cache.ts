@@ -1,7 +1,9 @@
+// loaders.gl, MIT license
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import DoublyLinkedList from '../utils/doubly-linked-list';
+import {DoublyLinkedList} from '../utils/doubly-linked-list';
 
 function defined(x) {
   return x !== undefined && x !== null;
@@ -12,7 +14,7 @@ function defined(x) {
  *
  * @private
  */
-export default class TilesetCache {
+export class TilesetCache {
   private _list: DoublyLinkedList;
   private _sentinel: any;
   private _trimTiles: boolean;

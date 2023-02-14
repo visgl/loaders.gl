@@ -1,6 +1,8 @@
+// loaders.gl, MIT license
+
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import Tile3D from '../tile-3d';
+import {Tile3D} from '../tile-3d';
 import {FrameState} from './frame-state';
 
 const cameraPositionCartesian = new Vector3();

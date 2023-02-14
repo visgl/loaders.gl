@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import {Vector3} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';

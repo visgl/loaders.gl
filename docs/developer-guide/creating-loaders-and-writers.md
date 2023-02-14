@@ -10,7 +10,7 @@ Applications can also create new loader objects. E.g. if you have existing JavaS
 
 You would give a name to the loader object, define what file extension(s) it uses, and define a parser function.
 
-```js
+```typescript
 export default {
   name: 'JSON',
   extensions: ['json'],
@@ -48,7 +48,7 @@ To call another loader, a loader should use the appropriate `parse` function pro
 
 A conceptual example of a 3D Tiles loader calling the `GLTFLoader` with some additional options.
 
-```js
+```typescript
 export async function parse3DTile(arrayBuffer, options, context) {
   const tile = {};
   // Extract embedded GLB (if present) into `tile.gltfArrayBuffer`
@@ -72,7 +72,7 @@ Loaders will often use the [fetch API](https://developer.mozilla.org/en-US/docs/
 
 An example of accessing a HTTP header.
 
-```js
+```typescript
 export async function parseWithHeader(arrayBuffer, options, context) {
   const {parse, response} = context;
   const contentLength = response.headers.get('content-length');

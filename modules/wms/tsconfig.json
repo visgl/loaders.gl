@@ -9,6 +9,7 @@
   },
   "references": [
     {"path": "../xml"},
+    {"path": "../images"},
     {"path": "../loader-utils"},
     {"path": "../schema"}
   ]

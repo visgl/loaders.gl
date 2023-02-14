@@ -1,6 +1,8 @@
+// loaders.gl, MIT license
+
 import {assert} from '../../utils/assert';
 import {decompressReadStream, concatenateReadStream} from './utils/stream-utils.node';
-import Headers from './headers.node';
+import {Headers} from './headers.node';
 
 const isBoolean = (x) => typeof x === 'boolean';
 const isFunction = (x) => typeof x === 'function';
@@ -20,7 +22,7 @@ const isReadableNodeStream = (x) =>
  */
 import {Readable} from 'stream';
 
-export default class Response {
+export class Response {
   readonly ok: boolean;
   readonly status: number;
   readonly statusText: string;

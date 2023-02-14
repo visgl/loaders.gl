@@ -5,7 +5,7 @@
 // See README.md in `./data` directory for full license text copy.
 
 import test from 'tape-promise/tape';
-import {WMSFeatureInfoLoader, WMSFeatureInfo} from '@loaders.gl/wms';
+import {_WMSFeatureInfoLoader as WMSFeatureInfoLoader, _WMSFeatureInfo as WMSFeatureInfo} from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
 test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {

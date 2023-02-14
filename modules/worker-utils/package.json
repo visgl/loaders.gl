@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "3.3.0-alpha.10",
+  "version": "3.3.0-alpha.14",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "publishConfig": {
@@ -27,7 +27,7 @@
   "browser": {
     "child_process": false,
     "fs": false,
-    "./src/lib/node/worker_threads.js": "./src/lib/node/worker_threads-browser.js",
+    "./src/lib/node/worker_threads.ts": "./src/lib/node/worker_threads-browser.ts",
     "./dist/lib/node/worker_threads.js": "./dist/lib/node/worker_threads-browser.js",
     "./dist/es5/lib/node/worker_threads.js": "./dist/es5/lib/node/worker_threads-browser.js",
     "./dist/esm/lib/node/worker_threads.js": "./dist/esm/lib/node/worker_threads-browser.js",

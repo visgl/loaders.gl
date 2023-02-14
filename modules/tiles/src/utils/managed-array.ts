@@ -12,7 +12,7 @@ import {assert} from '@loaders.gl/loader-utils';
  *
  * @param {Number} [length=0] The initial length of the array.
  */
-export default class ManagedArray {
+export class ManagedArray {
   _map = new Map();
   _array: any[];
   _length: number;

@@ -32,8 +32,8 @@ export {preloadCompressions} from './parquetjs/compression';
 
 export {ParquetSchema} from './parquetjs/schema/schema';
 export {ParquetReader} from './parquetjs/parser/parquet-reader';
-export {ParquetEnvelopeReader} from './parquetjs/parser/parquet-envelope-reader';
-// export {ParquetWriter, ParquetEnvelopeWriter, ParquetTransformer} from './parquetjs/encoder/writer';
+export {ParquetEncoder} from './parquetjs/encoder/parquet-encoder';
+
 export {convertParquetToArrowSchema} from './lib/convert-schema';
 
 // TESTS

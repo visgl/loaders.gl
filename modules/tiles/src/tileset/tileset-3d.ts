@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
@@ -46,16 +48,19 @@ import {
   LoaderWithParser,
   LoaderOptions
 } from '@loaders.gl/loader-utils';
-import TilesetCache from './tileset-cache';
+import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
 import {FrameState, getFrameState, limitSelectedTiles} from './helpers/frame-state';
 import {getZoomFromBoundingVolume, getZoomFromExtent, getZoomFromFullExtent} from './helpers/zoom';
-import Tile3D from './tile-3d';
-import Tileset3DTraverser from './traversers/tileset-3d-traverser';
-import TilesetTraverser from './traversers/tileset-traverser';
-import I3SetTraverser from './traversers/i3s-tileset-traverser';
+import {Tile3D} from './tile-3d';
 import {TILESET_TYPE} from '../constants';
 import {GeospatialViewport, Viewport} from '../types';
+
+import {TilesetTraverser} from './tileset-traverser';
+
+// TODO - these should be moved into their respective modules
+import {Tileset3DTraverser} from './format-3d-tiles/tileset-3d-traverser';
+import {I3STilesetTraverser} from './format-i3s/i3s-tileset-traverser';
 
 export type Tileset3DProps = {
   // loading
@@ -185,7 +190,7 @@ const TILES_LOAD_FAILED = 'Failed Tile Loads';
 const POINTS_COUNT = 'Points/Vertices';
 const TILES_GPU_MEMORY = 'Tile Memory Use';
 
-export default class Tileset3D {
+export class Tileset3D {
   // props: Tileset3DProps;
   options: Props;
   loadOptions: {[key: string]: any};
@@ -746,7 +751,7 @@ export default class Tileset3D {
         TraverserClass = Tileset3DTraverser;
         break;
       case TILESET_TYPE.I3S:
-        TraverserClass = I3SetTraverser;
+        TraverserClass = I3STilesetTraverser;
         break;
       default:
         TraverserClass = TilesetTraverser;

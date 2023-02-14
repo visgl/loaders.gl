@@ -2,7 +2,7 @@
  * Polyfill for Browser Headers
  * Based on https://github.com/github/fetch under MIT license
  */
-export default class Headers {
+export class Headers {
   map: {};
 
   constructor(headers) {

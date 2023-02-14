@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 export const TILE_CONTENT_STATE = {
   UNLOADED: 0, // Has never been requested
   LOADING: 1, // Is waiting on a pending request

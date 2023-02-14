@@ -1,4 +1,6 @@
-import type {Tile3D, Tileset3DProps} from '@loaders.gl/tiles';
+// loaders.gl, MIT license
+
+import type {Tileset3DProps} from '@loaders.gl/tiles';
 import type {FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {WriteQueueItem} from '../lib/utils/write-queue';
 import type {
@@ -39,7 +41,9 @@ import {LAYERS as layersTemplate} from './json-templates/layers';
 import {GEOMETRY_DEFINITION as geometryDefinitionTemlate} from './json-templates/geometry-definitions';
 import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
-import TileHeader from '@loaders.gl/tiles/src/tileset/tile-3d';
+// loaders.gl, MIT license
+
+import {Tile3D} from '@loaders.gl/tiles';
 import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
@@ -271,7 +275,7 @@ export default class I3SConverter {
     this.materialDefinitions = [];
     this.materialMap = new Map();
 
-    const sourceRootTile: TileHeader = this.sourceTileset!.root!;
+    const sourceRootTile: Tile3D = this.sourceTileset!.root!;
     const boundingVolumes = createBoundingVolumes(sourceRootTile, this.geoidHeightModel!);
     await this.nodePages.push({
       index: 0,
@@ -348,7 +352,7 @@ export default class I3SConverter {
    */
   private async _convertNodesTree(
     rootNode: NodeIndexDocument,
-    sourceRootTile: TileHeader
+    sourceRootTile: Tile3D
   ): Promise<void> {
     await this.sourceTileset!._loadTile(sourceRootTile);
     if (this.isContentSupported(sourceRootTile)) {
@@ -436,7 +440,7 @@ export default class I3SConverter {
    */
   private async _addChildrenWithNeighborsAndWriteFile(data: {
     parentNode: NodeIndexDocument;
-    sourceTiles: TileHeader[];
+    sourceTiles: Tile3D[];
     level: number;
   }): Promise<void> {
     await this._addChildren(data);
@@ -456,7 +460,7 @@ export default class I3SConverter {
     level
   }: {
     parentNode: NodeIndexDocument;
-    sourceTile: TileHeader;
+    sourceTile: Tile3D;
     level: number;
   }) {
     await this.sourceTileset!._loadTile(sourceTile);
@@ -481,7 +485,7 @@ export default class I3SConverter {
     level
   }: {
     parentNode: NodeIndexDocument;
-    sourceTile: TileHeader;
+    sourceTile: Tile3D;
     level: number;
   }) {
     const childNodes = await this._createNode(parentNode, sourceTile, level);
@@ -497,34 +501,23 @@ export default class I3SConverter {
    */
   private async _addChildren(data: {
     parentNode: NodeIndexDocument;
-    sourceTiles: TileHeader[];
+    sourceTiles: Tile3D[];
     level: number;
   }): Promise<void> {
     const {sourceTiles, parentNode, level} = data;
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
-
-    const promises: Promise<void>[] = [];
     for (const sourceTile of sourceTiles) {
       if (sourceTile.type === 'json') {
-        if (this.options.instantNodeWriting) {
-          await this.convertNestedTileset({parentNode, sourceTile, level});
-        } else {
-          promises.push(this.convertNestedTileset({parentNode, sourceTile, level}));
-        }
+        await this.convertNestedTileset({parentNode, sourceTile, level});
       } else {
-        if (this.options.instantNodeWriting) {
-          await this.convertNode({parentNode, sourceTile, level});
-        } else {
-          promises.push(this.convertNode({parentNode, sourceTile, level}));
-        }
+        await this.convertNode({parentNode, sourceTile, level});
       }
       if (sourceTile.id) {
         console.log(sourceTile.id); // eslint-disable-line
       }
     }
-    await Promise.all(promises);
   }
 
   /**
@@ -535,7 +528,7 @@ export default class I3SConverter {
    */
   private async _createNode(
     parentNode: NodeIndexDocument,
-    sourceTile: TileHeader,
+    sourceTile: Tile3D,
     level: number
   ): Promise<NodeIndexDocument[]> {
     this._checkAddRefinementTypeForTile(sourceTile);
@@ -637,7 +630,7 @@ export default class I3SConverter {
    * @returns - converted node resources
    */
   private async _convertResources(
-    sourceTile: TileHeader,
+    sourceTile: Tile3D,
     parentId: number,
     propertyTable: FeatureTableJson | null
   ): Promise<I3SConvertedResources[] | null> {
@@ -682,7 +675,7 @@ export default class I3SConverter {
   private async _updateNodeInNodePages(
     maxScreenThresholdSQ: MaxScreenThresholdSQ,
     boundingVolumes: BoundingVolumes,
-    sourceTile: TileHeader,
+    sourceTile: Tile3D,
     parentId: number,
     resources: I3SConvertedResources
   ): Promise<NodeInPage> {
@@ -1115,7 +1108,7 @@ export default class I3SConverter {
   /** Do calculations of all tiles and tiles with "ADD" type of refinement.
    * @param tile
    */
-  private _checkAddRefinementTypeForTile(tile: TileHeader): void {
+  private _checkAddRefinementTypeForTile(tile: Tile3D): void {
     const ADD_TILE_REFINEMENT = 1;
 
     if (tile.refine === ADD_TILE_REFINEMENT) {

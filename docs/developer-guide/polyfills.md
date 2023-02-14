@@ -8,7 +8,7 @@ While there are many good polyfill modules for these classes available on `npm`,
 
 To install these polyfills, just `import` the polyfills module before start using loaders.gl.
 
-```js
+```typescript
 import '@loaders.gl/polyfills';
 import {parse} from '@loaders.gl/core';
 ```
