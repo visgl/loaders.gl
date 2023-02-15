@@ -96,11 +96,11 @@ export default class SemanticValidator extends PureComponent {
       justifyContent: 'center',
       background: 'transparent',
       padding: '4px 16px',
-      margin: '0 10px',
+      // margin: '0 10px',
+      margin: '8px',
       color: 'rgba(255,255,255,.6)',
       fontWeight: '500px',
       borderRadius: '4px',
-      margin: '8px',
       cursor: 'pointer'
     };
   }

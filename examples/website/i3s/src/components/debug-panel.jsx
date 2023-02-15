@@ -190,7 +190,7 @@ export default class DebugPanel extends PureComponent {
   _renderDebugTextureImage() {
     return (
       <DebugTextureContainer>
-        <img src={this.props.debugTextureImage} alt="Debug Texture Image" width="100%" />
+        <img src={this.props.debugTextureImage} width="100%" alt='' />
       </DebugTextureContainer>
     );
   }
@@ -206,7 +206,7 @@ export default class DebugPanel extends PureComponent {
           <Label>Tiles</Label>
         </CheckboxOption>
         <CheckboxOption>
-          <label>
+          <label htmlFor="loadTiles">
             <Checkbox
               id="loadTiles"
               value={loadTiles}
@@ -217,7 +217,7 @@ export default class DebugPanel extends PureComponent {
           </label>
         </CheckboxOption>
         <CheckboxOption>
-          <label>
+          <label htmlFor="pickable">
             <Checkbox
               id="pickable"
               value={pickable}
@@ -228,7 +228,7 @@ export default class DebugPanel extends PureComponent {
           </label>
         </CheckboxOption>
         <CheckboxOption>
-          <label>
+          <label htmlFor="uvDebugTexture">
             <Checkbox
               id="uvDebugTexture"
               value={showUVDebugTexture}
@@ -240,7 +240,7 @@ export default class DebugPanel extends PureComponent {
         </CheckboxOption>
         {showUVDebugTexture ? this._renderDebugTextureImage() : null}
         <CheckboxOption>
-          <label>
+          <label htmlFor='wireframe'>
             <Checkbox
               id="wireframe"
               value={wireframe}
@@ -279,7 +279,7 @@ export default class DebugPanel extends PureComponent {
     } = this.props;
     return (
       <CheckboxOption>
-        <label>
+        <label htmlFor='showFrustumCullingMinimapViewport'>
           <Checkbox
             id="showFrustumCullingMinimapViewport"
             value={minimapViewport}

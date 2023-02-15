@@ -7,12 +7,15 @@ import {GLTFEnvironment} from '@luma.gl/experimental';
 import {createGLTFObjects} from './create-gltf-objects';
 import {Matrix4, radians} from '@math.gl/core';
 
+// Missing types in luma.gl/experimental v8
+type GLTFAnimator = any;
+
 import {loadModelList, GLTF_ENV_BASE_URL} from './components/examples';
 import {
   LIGHT_SOURCES,
   INFO_HTML,
   addModelsToDropdown,
-  getSelectedModel,
+  getSelectedModelUrl,
   onSettingsChange,
   onLightSettingsChange
 } from './components/model-picker';
@@ -27,7 +30,8 @@ const CUBE_FACE_TO_DIRECTION = {
   [GL.TEXTURE_CUBE_MAP_NEGATIVE_Z]: 'back'
 };
 
-export default class AppAnimationLoop extends AnimationLoop {
+
+export class AppAnimationLoop extends AnimationLoop {
   // TODO - do we need both?
   static getInfo() {
     return INFO_HTML;
@@ -37,25 +41,41 @@ export default class AppAnimationLoop extends AnimationLoop {
     return INFO_HTML;
   }
 
-  constructor({modelFile = null} = {}) {
+  scenes: any[] = [];
+  animator: GLTFAnimator | null = null;
+  modelFile: string | null;
+
+  gl: WebGLRenderingContext | null = null;
+  glOptions = {
+    // Use to test gltf with webgl 1.0 and 2.0
+    // webgl2: true,
+    // alpha causes issues with some glTF demos
+    alpha: false
+  };
+
+  controller: Controller | null = null;
+
+  u_ScaleDiffBaseMR = [0, 0, 0, 0];
+  u_ScaleFGDSpec = [0, 0, 0, 0];
+
+  environment: GLTFEnvironment | null = null;
+
+  gltfCreateOptions: {
+    pbrDebug: boolean;
+    imageBasedLightingEnvironment?: GLTFEnvironment | null;
+    lights: boolean;
+  } = {
+    pbrDebug: true,
+    imageBasedLightingEnvironment: null,
+    lights: false
+  };
+
+
+  constructor({modelFile}: {modelFile?: string | null} = {modelFile: null}) {
     super();
 
-    this.scenes = [];
-    this.animator = null;
-    this.gl = null;
-    this.modelFile = modelFile;
+    this.modelFile = modelFile || null;
 
-    this.glOptions = {
-      // Use to test gltf with webgl 1.0 and 2.0
-      // webgl2: true,
-      // alpha causes issues with some glTF demos
-      alpha: false
-    };
-
-    this.controller = null;
-
-    this.u_ScaleDiffBaseMR = [0, 0, 0, 0];
-    this.u_ScaleFGDSpec = [0, 0, 0, 0];
 
     this.onInitialize = this.onInitialize.bind(this);
     this.onRender = this.onRender.bind(this);
@@ -72,12 +92,6 @@ export default class AppAnimationLoop extends AnimationLoop {
       onDrop: (file) => this._loadGLTF(file)
     });
 
-    this.gltfCreateOptions = {
-      pbrDebug: true,
-      imageBasedLightingEnvironment: null,
-      lights: false
-    };
-
     this.environment = new GLTFEnvironment(gl, {
       brdfLutUrl: `${GLTF_ENV_BASE_URL}/brdfLUT.png`,
       getTexUrl: (type, dir, mipLevel) =>
@@ -87,12 +101,7 @@ export default class AppAnimationLoop extends AnimationLoop {
 
     this.gl = gl;
     if (this.modelFile) {
-      await this._loadGLTF(this.modelFile, {
-        // options for unit testing
-        pbrDebug: false,
-        imageBasedLightingEnvironment: null,
-        lights: true
-      });
+      await this._loadGLTF(this.modelFile);
     } else {
       const models = await loadModelList();
       addModelsToDropdown(models, async (modelUrl) => {
@@ -101,7 +110,7 @@ export default class AppAnimationLoop extends AnimationLoop {
       });
 
       // Load the default model
-      const defaultModelUrl = getSelectedModel();
+      const defaultModelUrl = getSelectedModelUrl();
       await this._loadGLTF(defaultModelUrl);
     }
 
@@ -120,16 +129,19 @@ export default class AppAnimationLoop extends AnimationLoop {
   onRender({gl, time, aspect, viewMatrix, projectionMatrix}) {
     clear(gl, {color: [0.2, 0.2, 0.2, 1.0], depth: true});
 
-    this.controller.animate(time);
-    const controls = this.controller.getMatrices();
+    this.controller?.animate(time);
+    const controls = this.controller?.getMatrices();
 
     // TODO: find how to avoid using Array.from() to convert TypedArray to regular array
-    const uView = new Matrix4(viewMatrix ? Array.from(viewMatrix) : null);
-    uView.multiplyRight(controls.viewMatrix);
+    const uView = viewMatrix ? new Matrix4(Array.from(viewMatrix)) : new Matrix4();
+    const viewMatrix2 = controls?.viewMatrix;
+    if (viewMatrix2) {
+      uView.multiplyRight(viewMatrix2);
+    }
 
     const uProjection = projectionMatrix
       ? new Matrix4(Array.from(projectionMatrix))
-      : new Matrix4().perspective({fov: radians(40), aspect, near: 0.01, far: 9000});
+      : new Matrix4().perspective({fovy: radians(40), aspect, near: 0.01, far: 9000});
 
     if (!this.scenes.length) {
       return false;
@@ -149,7 +161,7 @@ export default class AppAnimationLoop extends AnimationLoop {
         success &&
         model.draw({
           uniforms: {
-            u_Camera: controls.cameraPosition,
+            u_Camera: controls?.cameraPosition,
             u_MVPMatrix,
             u_ModelMatrix: worldMatrix,
             u_NormalMatrix: new Matrix4(worldMatrix).invert().transpose(),

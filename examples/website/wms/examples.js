@@ -19,10 +19,10 @@ const VIEW_STATE = {
 export const EXAMPLES = {
   WMS: {
     'Terrestris(OpenStreetMap)': {
-      // const imageUrl = `https://ows.terrestris.de/osm/service?width=${width}&height=${height}&bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&srs=EPSG:4326&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=TRUE&version=1.1.1&layers=OSM-WMS`;
-      // TODO: change in the URL `srs=EPSG:4326` to `srs=EPSG:900913`
+      // const imageUrl = 'https://ows.terrestris.de/osm/service?width={width}&height={height}&bbox={bounds[0]},{bounds[1]},{bounds[2]},{bounds[3]}&srs=EPSG:4326&format=image%2Fpng&request=GetMap&service=WMS&styles=&transparent=TRUE&version=1.1.1&layers=OSM-WMS';
+      // TODO: change in the URL 'srs=EPSG:4326' to 'srs=EPSG:900913'
       // once we can change the TileLayer bounds from lat/lon to web mercator coordinates
-      service: `https://ows.terrestris.de/osm/service`,
+      service: 'https://ows.terrestris.de/osm/service',
       serviceType: 'wms',
       layers: ['OSM-WMS'],
       viewState: {...VIEW_STATE}
@@ -48,7 +48,7 @@ export const EXAMPLES = {
   },
   ImageServer: {
     NLCDLandCover2001: {
-      service: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox=${east},${north},${west},${south}&bboxSR=4326&size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image',
+      service: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox={east},{north},{west},{south}&bboxSR=4326&size={width},{height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image',
       serviceType: 'template',
       viewState: {...VIEW_STATE}
     },
