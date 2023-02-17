@@ -1,8 +1,10 @@
+// loaders.gl, MIT license
+
 import type {WorkerObject, WorkerOptions} from '../../types';
 import {assert} from '../env-utils/assert';
 import {VERSION as __VERSION__} from '../env-utils/version';
 
-const NPM_TAG = 'beta'; // Change to 'latest' on release-branch
+const NPM_TAG = 'latest'; // 'beta', or 'latest' on release-branch
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
 
 /**
