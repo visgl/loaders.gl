@@ -1,8 +1,12 @@
 # CHANGELOG for loaders.gl
 
-## v3.3 
+## v3.3
 
-## v3.3.0 
+## v3.3.1
+
+- fix(loader-utils): Fix incorrect browser field for 'utils' (#2363)
+
+## v3.3.0
 
 - feat(examples): Add URL loading to glTF example
 - fix(website): Disable glTF example due to gatsby typescript issues (#2361)
