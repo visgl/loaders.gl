@@ -14,20 +14,7 @@ import {
 } from '@loaders.gl/compression';
 
 import {ParquetCompression} from './schema/declare';
-
-/** We can't use loaders-util buffer handling since we are dependent on buffers even in the browser */
-function toBuffer(arrayBuffer: ArrayBuffer): Buffer {
-  return Buffer.from(arrayBuffer);
-}
-
-function toArrayBuffer(buffer: Buffer): ArrayBuffer {
-  // TODO - per docs we should just be able to call buffer.buffer, but there are issues
-  if (Buffer.isBuffer(buffer)) {
-    const typedArray = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.length);
-    return typedArray.slice().buffer;
-  }
-  return buffer;
-}
+import {toArrayBuffer, toBuffer} from './utils/buffer-utils';
 
 // TODO switch to worker compression to avoid bundling...
 

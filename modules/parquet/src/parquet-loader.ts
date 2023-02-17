@@ -8,15 +8,13 @@ export type ParquetLoaderOptions = LoaderOptions & {
   parquet?: {
     type?: 'object-row-table';
     url?: string;
-    columnList?: string[] | string[][];
   };
 };
 
 const DEFAULT_PARQUET_LOADER_OPTIONS: ParquetLoaderOptions = {
   parquet: {
     type: 'object-row-table',
-    url: undefined,
-    columnList: []
+    url: undefined
   }
 };
 

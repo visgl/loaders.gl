@@ -35,6 +35,7 @@ export {parseJSON} from './lib/parser-utils/parse-json';
 
 // MEMORY COPY UTILS
 export {
+  toArrayBuffer,
   sliceArrayBuffer,
   concatenateArrayBuffers,
   concatenateTypedArrays,
@@ -42,12 +43,14 @@ export {
 } from './lib/binary-utils/array-buffer-utils';
 export {padToNBytes, copyToArray, copyArrayBuffer} from './lib/binary-utils/memory-copy-utils';
 export {
-  padStringToByteAlignment,
-  copyStringToDataView,
-  copyBinaryToDataView,
   copyPaddedArrayBufferToDataView,
   copyPaddedStringToDataView
-} from './lib/binary-utils/dataview-copy-utils';
+} from './lib/binary-utils/binary-copy-utils';
+export {
+  padStringToByteAlignment,
+  copyStringToDataView,
+  copyBinaryToDataView
+} from './lib/binary-utils/encode-utils';
 export {getFirstCharacters, getMagicString} from './lib/binary-utils/get-first-characters';
 
 // ITERATOR UTILS
@@ -73,17 +76,17 @@ export {JSONLoader} from './json-loader';
 
 // Node.js emulation (can be used in browser)
 
+// `path` replacement (avoids bundling big path polyfill)
+import * as path from './lib/path-utils/path';
+export {path};
+
 // Avoid direct use of `Buffer` which pulls in 50KB polyfill
-export {isBuffer, toBuffer, toArrayBuffer} from './lib/binary-utils/memory-conversion-utils';
+export {isBuffer, toBuffer, bufferToArrayBuffer} from './lib/binary-utils/buffer-utils';
 
 // Note.js wrappers (can be safely imported, but not used in browser)
 
 // Use instead of importing 'util' to avoid node dependencies
 export {promisify1, promisify2} from './lib/node/util';
-
-// `path` replacement (avoids bundling big path polyfill)
-import * as path from './lib/path-utils/path';
-export {path};
 
 // Use instead of importing 'fs' to avoid node dependencies`
 import * as fs from './lib/node/fs';

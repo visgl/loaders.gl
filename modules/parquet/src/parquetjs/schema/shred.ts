@@ -146,14 +146,9 @@ function shredRecordFields(
  */
 export function materializeRecords(schema: ParquetSchema, buffer: ParquetBuffer): ParquetRecord[] {
   const records: ParquetRecord[] = [];
-  for (let i = 0; i < buffer.rowCount; i++) {
-    records.push({});
-  }
+  for (let i = 0; i < buffer.rowCount; i++) records.push({});
   for (const key in buffer.columnData) {
-    const columnData = buffer.columnData[key];
-    if (columnData.count) {
-      materializeColumn(schema, columnData, key, records);
-    }
+    materializeColumn(schema, buffer, key, records);
   }
   return records;
 }
@@ -161,151 +156,33 @@ export function materializeRecords(schema: ParquetSchema, buffer: ParquetBuffer)
 // eslint-disable-next-line max-statements, complexity
 function materializeColumn(
   schema: ParquetSchema,
-  columnData: ParquetData,
+  buffer: ParquetBuffer,
   key: string,
   records: ParquetRecord[]
-): void {
+) {
+  const data = buffer.columnData[key];
+  if (!data.count) return;
+
   const field = schema.findField(key);
   const branch = schema.findFieldBranch(key);
 
   // tslint:disable-next-line:prefer-array-literal
   const rLevels: number[] = new Array(field.rLevelMax + 1).fill(0);
   let vIndex = 0;
-  for (let i = 0; i < columnData.count; i++) {
-    const dLevel = columnData.dlevels[i];
-    const rLevel = columnData.rlevels[i];
+  for (let i = 0; i < data.count; i++) {
+    const dLevel = data.dlevels[i];
+    const rLevel = data.rlevels[i];
     rLevels[rLevel]++;
     rLevels.fill(0, rLevel + 1);
 
     let rIndex = 0;
     let record = records[rLevels[rIndex++] - 1];
 
-    // Internal nodes - Build a nested row object
+    // Internal nodes
     for (const step of branch) {
-      if (step === field || dLevel < step.dLevelMax) {
-        break;
-      }
-
-      switch (step.repetitionType) {
-        case 'REPEATED':
-          if (!(step.name in record)) {
-            // eslint-disable max-depth
-            record[step.name] = [];
-          }
-          const ix = rLevels[rIndex++];
-          while (record[step.name].length <= ix) {
-            // eslint-disable max-depth
-            record[step.name].push({});
-          }
-          record = record[step.name][ix];
-          break;
-
-        default:
-          record[step.name] = record[step.name] || {};
-          record = record[step.name];
-      }
-    }
-
-    // Leaf node - Add the value
-    if (dLevel === field.dLevelMax) {
-      const value = Types.fromPrimitive(
-        // @ts-ignore
-        field.originalType || field.primitiveType,
-        columnData.values[vIndex],
-        field
-      );
-      vIndex++;
-
-      switch (field.repetitionType) {
-        case 'REPEATED':
-          if (!(field.name in record)) {
-            // eslint-disable max-depth
-            record[field.name] = [];
-          }
-          const ix = rLevels[rIndex];
-          while (record[field.name].length <= ix) {
-            // eslint-disable max-depth
-            record[field.name].push(null);
-          }
-          record[field.name][ix] = value;
-          break;
-
-        default:
-          record[field.name] = value;
-      }
-    }
-  }
-}
-
-// Columnar export
-
-/**
- * 'Materialize' a list of <value, repetition_level, definition_level>
- * tuples back to nested records (objects/arrays) using the Google Dremel
- * Algorithm..
- *
- * The buffer argument must point to an object with the following structure (i.e.
- * the same structure that is returned by shredRecords):
- *
- *   buffer = {
- *     columnData: [
- *       'my_col': {
- *          dlevels: [d1, d2, .. dN],
- *          rlevels: [r1, r2, .. rN],
- *          values: [v1, v2, .. vN],
- *        }, ...
- *      ],
- *      rowCount: X,
- *   }
- *
-export function extractColumns(schema: ParquetSchema, buffer: ParquetBuffer): Record<string, unknown> {
-  const columns: ParquetRecord = {};
-  for (const key in buffer.columnData) {
-    const columnData = buffer.columnData[key];
-    if (columnData.count) {
-      extractColumn(schema, columnData, key, columns);
-    }
-  }
-  return columns;
-}
-
-// eslint-disable-next-line max-statements, complexity
-function extractColumn(
-  schema: ParquetSchema,
-  columnData: ParquetData,
-  key: string,
-  columns: Record<string, unknown> 
-) {
-  if (columnData.count <= 0) {
-    return;
-  }
-
-  const record = columns;
-
-  const field = schema.findField(key);
-  const branch = schema.findFieldBranch(key);
-
-  // tslint:disable-next-line:prefer-array-literal
-  const rLevels: number[] = new Array(field.rLevelMax + 1).fill(0);
-  let vIndex = 0;
-
-  let i = 0;
-  const dLevel = columnData.dlevels[i];
-  const rLevel = columnData.rlevels[i];
-  rLevels[rLevel]++;
-  rLevels.fill(0, rLevel + 1);
-
-  let rIndex = 0;
-  let record = records[rLevels[rIndex++] - 1];
-
-  // Internal nodes
-  for (const step of branch) {
-    if (step === field || dLevel < step.dLevelMax) {
-      break;
-    }
-
-    switch (step.repetitionType) {
-      case 'REPEATED':
+      if (step === field) break;
+      if (dLevel < step.dLevelMax) break;
+      if (step.repetitionType === 'REPEATED') {
         if (!(step.name in record)) {
           // eslint-disable max-depth
           record[step.name] = [];
@@ -316,26 +193,22 @@ function extractColumn(
           record[step.name].push({});
         }
         record = record[step.name][ix];
-        break;
-
-      default:
+      } else {
         record[step.name] = record[step.name] || {};
         record = record[step.name];
+      }
     }
-  }
 
-  // Leaf node
-  if (dLevel === field.dLevelMax) {
-    const value = Types.fromPrimitive(
-      // @ts-ignore
-      field.originalType || field.primitiveType,
-      columnData.values[vIndex],
-      field
-    );
-    vIndex++;
-
-    switch (field.repetitionType) {
-      case 'REPEATED':
+    // Leaf node
+    if (dLevel === field.dLevelMax) {
+      const value = Types.fromPrimitive(
+        // @ts-ignore
+        field.originalType || field.primitiveType,
+        data.values[vIndex],
+        field
+      );
+      vIndex++;
+      if (field.repetitionType === 'REPEATED') {
         if (!(field.name in record)) {
           // eslint-disable max-depth
           record[field.name] = [];
@@ -346,11 +219,9 @@ function extractColumn(
           record[field.name].push(null);
         }
         record[field.name][ix] = value;
-        break;
-
-      default:
+      } else {
         record[field.name] = value;
+      }
     }
   }
 }
-*/

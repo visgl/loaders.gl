@@ -168,7 +168,7 @@ export const PARQUET_LOGICAL_TYPES: Record<ParquetType, ParquetTypeKit> = {
  * Convert a value from it's native representation to the internal/underlying
  * primitive type
  */
-export function toPrimitive(type: ParquetType, value: unknown, field?: ParquetField): unknown {
+export function toPrimitive(type: ParquetType, value: any, field?: ParquetField) {
   if (!(type in PARQUET_LOGICAL_TYPES)) {
     throw new Error(`invalid type: ${type}`);
   }
@@ -180,7 +180,7 @@ export function toPrimitive(type: ParquetType, value: unknown, field?: ParquetFi
  * Convert a value from it's internal/underlying primitive representation to
  * the native representation
  */
-export function fromPrimitive(type: ParquetType, value: unknown, field?: ParquetField) {
+export function fromPrimitive(type: ParquetType, value: any, field?: ParquetField) {
   if (!(type in PARQUET_LOGICAL_TYPES)) {
     throw new Error(`invalid type: ${type}`);
   }
@@ -192,27 +192,29 @@ export function fromPrimitive(type: ParquetType, value: unknown, field?: Parquet
   return value;
 }
 
-function toPrimitive_BOOLEAN(value: unknown): boolean {
+function toPrimitive_BOOLEAN(value: any) {
   return Boolean(value);
 }
 
-function fromPrimitive_BOOLEAN(value: any): boolean {
+function fromPrimitive_BOOLEAN(value: any) {
   return Boolean(value);
 }
 
-function toPrimitive_FLOAT(value: any): number {
+function toPrimitive_FLOAT(value: any) {
   const v = parseFloat(value);
   if (isNaN(v)) {
     throw new Error(`invalid value for FLOAT: ${value}`);
   }
+
   return v;
 }
 
-function toPrimitive_DOUBLE(value: any): number {
+function toPrimitive_DOUBLE(value: any) {
   const v = parseFloat(value);
   if (isNaN(v)) {
     throw new Error(`invalid value for DOUBLE: ${value}`);
   }
+
   return v;
 }
 
@@ -261,28 +263,31 @@ function toPrimitive_INT32(value: any) {
   return v;
 }
 
-function decimalToPrimitive_INT32(value: number, field: ParquetField): number {
+function decimalToPrimitive_INT32(value: number, field: ParquetField) {
   const primitiveValue = value * 10 ** (field.scale || 0);
   const v = Math.round(((primitiveValue * 10 ** -field.presision!) % 1) * 10 ** field.presision!);
   if (v < -0x80000000 || v > 0x7fffffff || isNaN(v)) {
     throw new Error(`invalid value for INT32: ${value}`);
   }
+
   return v;
 }
 
-function toPrimitive_UINT32(value: any): number {
+function toPrimitive_UINT32(value: any) {
   const v = parseInt(value, 10);
   if (v < 0 || v > 0xffffffffffff || isNaN(v)) {
     throw new Error(`invalid value for UINT32: ${value}`);
   }
+
   return v;
 }
 
-function toPrimitive_INT64(value: any): number {
+function toPrimitive_INT64(value: any) {
   const v = parseInt(value, 10);
   if (isNaN(v)) {
     throw new Error(`invalid value for INT64: ${value}`);
   }
+
   return v;
 }
 
@@ -314,32 +319,32 @@ function toPrimitive_INT96(value: any) {
   return v;
 }
 
-function toPrimitive_BYTE_ARRAY(value: any): Buffer {
+function toPrimitive_BYTE_ARRAY(value: any) {
   return Buffer.from(value);
 }
 
-function decimalToPrimitive_BYTE_ARRAY(value: any): Buffer {
+function decimalToPrimitive_BYTE_ARRAY(value: any) {
   // TBD
   return Buffer.from(value);
 }
 
-function toPrimitive_UTF8(value: any): Buffer {
+function toPrimitive_UTF8(value: any) {
   return Buffer.from(value, 'utf8');
 }
 
-function fromPrimitive_UTF8(value: any): string {
+function fromPrimitive_UTF8(value: any) {
   return value.toString();
 }
 
-function toPrimitive_JSON(value: any): Buffer {
+function toPrimitive_JSON(value: any) {
   return Buffer.from(JSON.stringify(value));
 }
 
-function fromPrimitive_JSON(value: any): unknown {
+function fromPrimitive_JSON(value: any) {
   return JSON.parse(value);
 }
 
-function toPrimitive_BSON(value: any): Buffer {
+function toPrimitive_BSON(value: any) {
   return Buffer.from(BSON.serialize(value));
 }
 
@@ -356,17 +361,18 @@ function toPrimitive_TIME_MILLIS(value: any) {
   return v;
 }
 
-function toPrimitive_TIME_MICROS(value: any): number {
+function toPrimitive_TIME_MICROS(value: any) {
   const v = parseInt(value, 10);
   if (v < 0 || isNaN(v)) {
     throw new Error(`invalid value for TIME_MICROS: ${value}`);
   }
+
   return v;
 }
 
 const kMillisPerDay = 86400000;
 
-function toPrimitive_DATE(value: any): number {
+function toPrimitive_DATE(value: any) {
   /* convert from date */
   if (value instanceof Date) {
     return value.getTime() / kMillisPerDay;
@@ -383,11 +389,11 @@ function toPrimitive_DATE(value: any): number {
   }
 }
 
-function fromPrimitive_DATE(value: any): Date {
+function fromPrimitive_DATE(value: any) {
   return new Date(value * kMillisPerDay);
 }
 
-function toPrimitive_TIMESTAMP_MILLIS(value: any): number {
+function toPrimitive_TIMESTAMP_MILLIS(value: any) {
   /* convert from date */
   if (value instanceof Date) {
     return value.getTime();
@@ -404,7 +410,7 @@ function toPrimitive_TIMESTAMP_MILLIS(value: any): number {
   }
 }
 
-function fromPrimitive_TIMESTAMP_MILLIS(value: any): Date {
+function fromPrimitive_TIMESTAMP_MILLIS(value: any) {
   return new Date(value);
 }
 

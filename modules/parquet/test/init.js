@@ -19,7 +19,5 @@ const modules = {
   lzo,
 };
 
-// Start loading compression modules in the background to minimize 
-// time spent during test case execution
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
+// TODO async
 preloadCompressions({modules});

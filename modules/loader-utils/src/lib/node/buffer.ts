@@ -1,10 +1,10 @@
 // Isolates Buffer references to ensure they are only bundled under Node.js (avoids big webpack polyfill)
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
 
+import {assert} from '../env-utils/assert';
+
 /**
  * Convert Buffer to ArrayBuffer
- * Converts Node.js `Buffer` to `ArrayBuffer` (without triggering bundler to include Buffer polyfill on browser)
- * @todo better data type
  */
 export function toArrayBuffer(buffer) {
   // TODO - per docs we should just be able to call buffer.buffer, but there are issues
@@ -18,18 +18,19 @@ export function toArrayBuffer(buffer) {
 /**
  * Convert (copy) ArrayBuffer to Buffer
  */
-export function toBuffer(binaryData: ArrayBuffer | ArrayBuffer | Buffer): Buffer {
-  if (Buffer.isBuffer(binaryData)) {
-    return binaryData;
-  }
-
+export function toBuffer(binaryData) {
   if (ArrayBuffer.isView(binaryData)) {
     binaryData = binaryData.buffer;
   }
 
   if (typeof Buffer !== 'undefined' && binaryData instanceof ArrayBuffer) {
-    return Buffer.from(binaryData);
+    const buffer = new Buffer(binaryData.byteLength);
+    const view = new Uint8Array(binaryData);
+    for (let i = 0; i < buffer.length; ++i) {
+      buffer[i] = view[i];
+    }
+    return buffer;
   }
 
-  throw new Error('toBuffer');
+  return assert(false);
 }

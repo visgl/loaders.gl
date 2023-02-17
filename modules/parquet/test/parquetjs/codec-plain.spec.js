@@ -4,8 +4,8 @@ import {assertArrayEqualEpsilon} from '../test-utils/assertions';
 
 test('ParquetCodec::PLAIN#should encode BOOLEAN values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
-    'BOOLEAN',
-    [true, false, true, true, false, true, false, false]);
+      'BOOLEAN',
+      [true, false, true, true, false, true, false, false]);
 
   assert.deepEqual(buf, new Buffer([0x2d])); // b101101
   assert.end();
@@ -25,8 +25,8 @@ test('ParquetCodec::PLAIN#should decode BOOLEAN values', assert => {
 
 test('ParquetCodec::PLAIN#should encode INT32 values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
-    'INT32',
-    [42, 17, 23, -1, -2, -3, 9000, 420]);
+      'INT32',
+      [42, 17, 23, -1, -2, -3, 9000, 420]);
 
   assert.deepEqual(buf, new Buffer([
     0x2a, 0x00, 0x00, 0x00, // 42
@@ -64,8 +64,8 @@ test('ParquetCodec::PLAIN#should decode INT32 values', assert => {
 
 test('ParquetCodec::PLAIN#should encode INT64 values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
-    'INT64',
-    [42, 17, 23, -1, -2, -3, 9000, 420]);
+      'INT64',
+      [42, 17, 23, -1, -2, -3, 9000, 420]);
 
   assert.deepEqual(buf, new Buffer([
     0x2a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 42
@@ -103,8 +103,8 @@ test('ParquetCodec::PLAIN#should decode INT64 values', assert => {
 
 test('ParquetCodec::PLAIN#should encode INT96 values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
-    'INT96',
-    [42, 17, 23, -1, -2, -3, 9000, 420]);
+      'INT96',
+      [42, 17, 23, -1, -2, -3, 9000, 420]);
 
   assert.deepEqual(buf, new Buffer([
     0x2a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 42
@@ -142,8 +142,8 @@ test('ParquetCodec::PLAIN#should decode INT96 values', assert => {
 
 test('ParquetCodec::PLAIN#should encode FLOAT values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
-    'FLOAT',
-    [42.0, 23.5, 17.0, 4.20, 9000]);
+      'FLOAT',
+      [42.0, 23.5, 17.0, 4.20, 9000]);
 
   assert.deepEqual(buf, new Buffer([
     0x00, 0x00, 0x28, 0x42, // 42.0
@@ -175,8 +175,8 @@ test('ParquetCodec::PLAIN#should decode FLOAT values', assert => {
 
 test('ParquetCodec::PLAIN#should encode DOUBLE values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
-    'DOUBLE',
-    [42.0, 23.5, 17.0, 4.20, 9000]);
+      'DOUBLE',
+      [42.0, 23.5, 17.0, 4.20, 9000]);
 
   assert.deepEqual(buf, new Buffer([
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x45, 0x40, // 42.0
@@ -208,8 +208,8 @@ test('ParquetCodec::PLAIN#should decode DOUBLE values', assert => {
 
 test('ParquetCodec::PLAIN#should encode BYTE_ARRAY values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
-    'BYTE_ARRAY',
-    ['one', new Buffer([0xde, 0xad, 0xbe, 0xef]), 'three']);
+      'BYTE_ARRAY',
+      ['one', new Buffer([0xde, 0xad, 0xbe, 0xef]), 'three']);
 
   assert.deepEqual(buf, new Buffer([
     0x03, 0x00, 0x00, 0x00,       // (3)
@@ -247,10 +247,10 @@ test('ParquetCodec::PLAIN#should decode BYTE_ARRAY values', assert => {
 
 test('ParquetCodec::PLAIN#should encode FIXED_LEN_BYTE_ARRAY values', assert => {
   const buf = PARQUET_CODECS.PLAIN.encodeValues(
-    'FIXED_LEN_BYTE_ARRAY',
-    ['oneoo', new Buffer([0xde, 0xad, 0xbe, 0xef, 0x42]), 'three'], {
-      typeLength: 5
-    });
+      'FIXED_LEN_BYTE_ARRAY',
+      ['oneoo', new Buffer([0xde, 0xad, 0xbe, 0xef, 0x42]), 'three'], {
+        typeLength: 5
+      });
 
   assert.deepEqual(buf, new Buffer([
     0x6f, 0x6e, 0x65, 0x6f, 0x6f, // 'oneoo'

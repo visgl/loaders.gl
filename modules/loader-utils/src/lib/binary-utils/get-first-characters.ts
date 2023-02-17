@@ -1,12 +1,4 @@
-// loaders.gl, MIT license
-
-/**
- * Get the first characters from a binary file (interpret the first bytes as an ASCII string)
- * @param data
- * @param length
- * @returns
- */
-export function getFirstCharacters(data: string | ArrayBuffer, length: number = 5): string {
+export function getFirstCharacters(data, length = 5): string {
   if (typeof data === 'string') {
     return data.slice(0, length);
   } else if (ArrayBuffer.isView(data)) {
@@ -19,14 +11,6 @@ export function getFirstCharacters(data: string | ArrayBuffer, length: number = 
   return '';
 }
 
-/**
- * Gets a magic string from a "file"
- * Typically used to check or detect file format
- * @param arrayBuffer
- * @param byteOffset
- * @param length
- * @returns
- */
 export function getMagicString(
   arrayBuffer: ArrayBuffer,
   byteOffset: number,

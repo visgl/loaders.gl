@@ -55,7 +55,7 @@ const PARQUET_DEFAULT_ROW_GROUP_SIZE = 4096;
 const PARQUET_RDLVL_TYPE = 'INT32';
 const PARQUET_RDLVL_ENCODING = 'RLE';
 
-export interface ParquetEncoderOptions {
+export interface ParquetWriterOptions {
   baseOffset?: number;
   rowGroupSize?: number;
   pageSize?: number;
@@ -71,12 +71,12 @@ export interface ParquetEncoderOptions {
 }
 
 /**
- * Write a parquet file to an output stream. The ParquetEncoder will perform
+ * Write a parquet file to an output stream. The ParquetWriter will perform
  * buffering/batching for performance, so close() must be called after all rows
  * are written.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export class ParquetEncoder<T> {
+export class ParquetWriter<T> {
   /**
    * Convenience method to create a new buffered parquet writer that writes to
    * the specified file
@@ -84,10 +84,10 @@ export class ParquetEncoder<T> {
   static async openFile<T>(
     schema: ParquetSchema,
     path: string,
-    opts?: ParquetEncoderOptions
-  ): Promise<ParquetEncoder<T>> {
+    opts?: ParquetWriterOptions
+  ): Promise<ParquetWriter<T>> {
     const outputStream = await osopen(path, opts);
-    return ParquetEncoder.openStream(schema, outputStream, opts);
+    return ParquetWriter.openStream(schema, outputStream, opts);
   }
 
   /**
@@ -97,10 +97,16 @@ export class ParquetEncoder<T> {
   static async openStream<T>(
     schema: ParquetSchema,
     outputStream: stream.Writable,
-    opts: ParquetEncoderOptions = {}
-  ): Promise<ParquetEncoder<T>> {
+    opts?: ParquetWriterOptions
+  ): Promise<ParquetWriter<T>> {
+    if (!opts) {
+      // tslint:disable-next-line:no-parameter-reassignment
+      opts = {};
+    }
+
     const envelopeWriter = await ParquetEnvelopeWriter.openStream(schema, outputStream, opts);
-    return new ParquetEncoder(schema, envelopeWriter, opts);
+
+    return new ParquetWriter(schema, envelopeWriter, opts);
   }
 
   public schema: ParquetSchema;
@@ -116,7 +122,7 @@ export class ParquetEncoder<T> {
   constructor(
     schema: ParquetSchema,
     envelopeWriter: ParquetEnvelopeWriter,
-    opts: ParquetEncoderOptions
+    opts: ParquetWriterOptions
   ) {
     this.schema = schema;
     this.envelopeWriter = envelopeWriter;
@@ -222,7 +228,7 @@ export class ParquetEnvelopeWriter {
   static async openStream(
     schema: ParquetSchema,
     outputStream: stream.Writable,
-    opts: ParquetEncoderOptions
+    opts: ParquetWriterOptions
   ): Promise<ParquetEnvelopeWriter> {
     const writeFn = oswrite.bind(undefined, outputStream);
     const closeFn = osclose.bind(undefined, outputStream);
@@ -243,7 +249,7 @@ export class ParquetEnvelopeWriter {
     writeFn: (buf: Buffer) => Promise<void>,
     closeFn: () => Promise<void>,
     fileOffset: number,
-    opts: ParquetEncoderOptions
+    opts: ParquetWriterOptions
   ) {
     this.schema = schema;
     this.write = writeFn;
@@ -308,10 +314,11 @@ export class ParquetEnvelopeWriter {
 
 /**
  * Create a parquet transform stream
+ */
 export class ParquetTransformer<T> extends stream.Transform {
-  public writer: ParquetEncoder<T>;
+  public writer: ParquetWriter<T>;
 
-  constructor(schema: ParquetSchema, opts: ParquetEncoderOptions = {}) {
+  constructor(schema: ParquetSchema, opts: ParquetWriterOptions = {}) {
     super({objectMode: true});
 
     const writeProxy = (function (t: ParquetTransformer<any>) {
@@ -320,7 +327,7 @@ export class ParquetTransformer<T> extends stream.Transform {
       };
     })(this);
 
-    this.writer = new ParquetEncoder(
+    this.writer = new ParquetWriter(
       schema,
       new ParquetEnvelopeWriter(schema, writeProxy, async () => {}, 0, opts),
       opts
@@ -341,7 +348,6 @@ export class ParquetTransformer<T> extends stream.Transform {
     await this.writer.close(callback);
   }
 }
- */
 
 /**
  * Encode a consecutive array of data using one of the parquet encodings
@@ -484,7 +490,7 @@ async function encodeColumnChunk(
   column: ParquetField,
   buffer: ParquetBuffer,
   offset: number,
-  opts: ParquetEncoderOptions
+  opts: ParquetWriterOptions
 ): Promise<{
   body: Buffer;
   metadata: ColumnMetaData;
@@ -540,7 +546,7 @@ async function encodeColumnChunk(
 async function encodeRowGroup(
   schema: ParquetSchema,
   data: ParquetBuffer,
-  opts: ParquetEncoderOptions
+  opts: ParquetWriterOptions
 ): Promise<{
   body: Buffer;
   metadata: RowGroup;
