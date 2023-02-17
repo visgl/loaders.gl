@@ -1,10 +1,4 @@
-import type {ReadableOptions} from 'stream';
-import * as Stream from 'stream';
-
-class _Readable {}
-
-type ReadableType = Stream.Readable | _Readable;
-const Readable = Stream.Readable || _Readable;
+import {Readable, ReadableOptions} from 'stream';
 
 export type MakeStreamOptions = ReadableOptions;
 
@@ -12,7 +6,7 @@ export type MakeStreamOptions = ReadableOptions;
 export function makeStream<ArrayBuffer>(
   source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   options?: ReadableOptions
-): ReadableType {
+): Readable {
   const iterator = source[Symbol.asyncIterator]
     ? source[Symbol.asyncIterator]()
     : source[Symbol.iterator]();

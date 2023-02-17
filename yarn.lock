@@ -1925,40 +1925,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@^3.2.5":
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.2.10.tgz#793e5f839fa8a919f8272641ba9893929acc751f"
-  integrity sha512-t/WTJh25d5WdzW+xleMGjDUuZwfevEPjlhdtGGqEh8fx6uhj/yZDxrXbP4O+QezIuo9v1fJ1JOGh8UDw97N11w==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.2.10"
-    "@loaders.gl/worker-utils" "3.2.10"
-    "@probe.gl/log" "^3.5.0"
-    probe.gl "^3.4.0"
-
-"@loaders.gl/images@^3.2.5":
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-3.2.10.tgz#7e41ef755e0737428c6c60b199a4741219a661fb"
-  integrity sha512-GsGl6c83Qd2nitVjoGtcIUPsg6vkfrLyaJyc/1UJUGoWOvk3DHBrcaSO/ld5bnWxjImUP6enwV5rmw6NylXU0Q==
-  dependencies:
-    "@loaders.gl/loader-utils" "3.2.10"
-
-"@loaders.gl/loader-utils@3.2.10":
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.2.10.tgz#2fb644cbe4a890492030fd4270da005bae2d88a1"
-  integrity sha512-oCxYRN1j93zgu3klByFN4fYCSMdhaZodHtDKvG4VEqTmDWFT3jbFpDkBmjwFseEmHQRirt52vwZSknvIUTSXBQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.2.10"
-    "@probe.gl/stats" "^3.5.0"
-
-"@loaders.gl/worker-utils@3.2.10":
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.2.10.tgz#cf4d1308b69cca3e8dea6ef02548333b840edf22"
-  integrity sha512-z75rIsddAGeMV8u1O0jsq1+BGgTYxFHTx6rhmPfOLGQhiZg6bEF2dFSr/mpkUd0xJyyV+Z67+jcC8RUTb1sOTA==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
 "@luma.gl/constants@8.5.17", "@luma.gl/constants@^8.5.16", "@luma.gl/constants@^8.5.4":
   version "8.5.17"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.5.17.tgz#f7ef1cb7000108d6030232db92f0735643004815"
@@ -2313,7 +2279,7 @@
     "@babel/runtime" "^7.0.0"
     "@probe.gl/env" "3.5.2"
 
-"@probe.gl/stats@3.5.2", "@probe.gl/stats@^3.5.0":
+"@probe.gl/stats@^3.5.0":
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.5.2.tgz#8ee41f73199182fddb8e40221da967414eaea619"
   integrity sha512-YKaYXiHF//fgy1OkX38JD70Lc8qxg2Viw8Q2CTNMwGPDJe12wda7kEmMKPJNw2oYLyFUfTzv00KJMA5h18z02w==
@@ -2434,14 +2400,6 @@
   resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.10.tgz#6dfbf5ea17142f7f9a043809f1cd4c448cb68249"
   integrity sha512-Nmh0K3iWQJzniTuPRcJn5hxXkfB1T1pgB89SBig5PlJQU5yocazeu4jATJlaA0GYFKWMqDdvYemoSnF2pXgLVA==
 
-"@types/get-pixels@^3.3.2":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@types/get-pixels/-/get-pixels-3.3.2.tgz#8baa43dc2b9379e4ac372b3c1e8ee86db762e8c8"
-  integrity sha512-wz3mMXvIzMS8G7Ryu2fygEOaVifR2Fl1uI33jwlbjWwaARIiOf4Q+zzDYmJuVxNG8C+A+vR5WLl1TePce+nTbQ==
-  dependencies:
-    "@types/ndarray" "*"
-    "@types/node" "*"
-
 "@types/glob@^7.1.1":
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.2.0.tgz#bc1b5bf3aa92f25bd5dd39f35c57361bdce5b2eb"
@@ -2481,11 +2439,6 @@
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.2.tgz#ee771e2ba4b3dc5b372935d549fd9617bf345b8c"
   integrity sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==
-
-"@types/ndarray@*":
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/@types/ndarray/-/ndarray-1.0.11.tgz#a78730ac1fd10ea01cda6954dba7b3bf4fa126f4"
-  integrity sha512-hOZVTN24zDHwCHaW7mF9n1vHJt83fZhNZ0YYRBwQGhA96yBWWDPTDDlqJatagHIOJB0a4xoNkNc+t/Cxd+6qUA==
 
 "@types/node-int64@*", "@types/node-int64@^0.4.29":
   version "0.4.29"
@@ -3970,9 +3923,9 @@ camelcase@^5.0.0, camelcase@^5.3.1:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 caniuse-lite@^1.0.30001400:
-  version "1.0.30001450"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001450.tgz"
-  integrity sha512-qMBmvmQmFXaSxexkjjfMvD5rnDL0+m+dUMZKoDYsGG8iZN29RuYh9eRoMvKsT6uMAWlyUUGDEQGJJYjzCIO9ew==
+  version "1.0.30001456"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001456.tgz"
+  integrity sha512-XFHJY5dUgmpMV25UqaD4kVq2LsiaU5rS8fb0f17pCoXQiQslzmFgnfOxfvo1bTpTqf7dwG/N/05CnLCnOEKmzA==
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -9969,16 +9922,6 @@ printj@~1.1.0:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/printj/-/printj-1.1.2.tgz#d90deb2975a8b9f600fb3a1c94e3f4c53c78a222"
   integrity sha512-zA2SmoLaxZyArQTOPj5LXecR+RagfPSU5Kw1qP+jkWeNlrq+eJZyY2oS68SU1Z/7/myXM4lo9716laOFAVStCQ==
-
-probe.gl@^3.4.0:
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.5.2.tgz#d24f84a24678bd7ce005826d4cf2d7221b9c7db8"
-  integrity sha512-8lFQVmi7pMQZkqfj8+VjX4GU9HTkyxgRm5/h/xxA/4/IvZPv3qtP996L+awPwZsrPRKEw99t12SvqEHqSls/sA==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    "@probe.gl/env" "3.5.2"
-    "@probe.gl/log" "3.5.2"
-    "@probe.gl/stats" "3.5.2"
 
 process-nextick-args@~2.0.0:
   version "2.0.1"

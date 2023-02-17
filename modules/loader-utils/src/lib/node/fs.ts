@@ -1,7 +1,7 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
 import {toArrayBuffer} from './buffer';
-import {promisify1, promisify2} from './util';
+import {promisify} from './util';
 
 export type {Stats} from 'fs';
 
@@ -35,29 +35,29 @@ export let isSupported = Boolean(fs);
 
 try {
   /** Wrapper for Node.js fs method */
-  readdir = promisify1(fs.readdir);
+  readdir = promisify(fs.readdir);
   /** Wrapper for Node.js fs method */
-  stat = promisify1(fs.stat);
+  stat = promisify(fs.stat);
 
   /** Wrapper for Node.js fs method */
-  readFile = promisify1(fs.readFile);
+  readFile = promisify(fs.readFile);
   /** Wrapper for Node.js fs method */
   readFileSync = fs.readFileSync;
   /** Wrapper for Node.js fs method */
-  writeFile = promisify2(fs.writeFile);
+  writeFile = promisify(fs.writeFile);
   /** Wrapper for Node.js fs method */
   writeFileSync = fs.writeFileSync;
 
   // file descriptors
 
   /** Wrapper for Node.js fs method */
-  open = promisify1(fs.open);
+  open = promisify(fs.open);
   /** Wrapper for Node.js fs method */
-  close = promisify1(fs.close);
+  close = promisify(fs.close);
   /** Wrapper for Node.js fs method */
-  read = promisify1(fs.read);
+  read = promisify(fs.read);
   /** Wrapper for Node.js fs method */
-  fstat = promisify1(fs.fstat);
+  fstat = promisify(fs.fstat);
 
   isSupported = Boolean(fs);
 } catch {
