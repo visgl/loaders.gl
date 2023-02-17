@@ -1,9 +1,9 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
 import {toArrayBuffer} from './buffer';
-import {promisify2, promisify3} from './util';
+import {promisify1, promisify2} from './util';
 
-export type {Stats, WriteStream} from 'fs';
+export type {Stats} from 'fs';
 
 export let readdir;
 /** Wrapper for Node.js fs method */
@@ -23,13 +23,11 @@ export let writeFileSync;
 /** Wrapper for Node.js fs method */
 export let open;
 /** Wrapper for Node.js fs method */
-export let close: (fd: number) => Promise<void>;
+export let close;
 /** Wrapper for Node.js fs method */
 export let read;
 /** Wrapper for Node.js fs method */
 export let fstat;
-
-export let createWriteStream: typeof fs.createWriteStream;
 
 export let isSupported = Boolean(fs);
 
@@ -37,32 +35,29 @@ export let isSupported = Boolean(fs);
 
 try {
   /** Wrapper for Node.js fs method */
-  readdir = promisify2(fs.readdir);
+  readdir = promisify1(fs.readdir);
   /** Wrapper for Node.js fs method */
-  stat = promisify2(fs.stat);
+  stat = promisify1(fs.stat);
 
   /** Wrapper for Node.js fs method */
-  readFile = fs.readFile;
+  readFile = promisify1(fs.readFile);
   /** Wrapper for Node.js fs method */
   readFileSync = fs.readFileSync;
   /** Wrapper for Node.js fs method */
-  writeFile = promisify3(fs.writeFile);
+  writeFile = promisify2(fs.writeFile);
   /** Wrapper for Node.js fs method */
   writeFileSync = fs.writeFileSync;
 
   // file descriptors
 
   /** Wrapper for Node.js fs method */
-  open = fs.open;
+  open = promisify1(fs.open);
   /** Wrapper for Node.js fs method */
-  close = (fd: number) =>
-    new Promise((resolve, reject) => fs.close(fd, (err) => (err ? reject(err) : resolve())));
+  close = promisify1(fs.close);
   /** Wrapper for Node.js fs method */
-  read = fs.read;
+  read = promisify1(fs.read);
   /** Wrapper for Node.js fs method */
-  fstat = fs.fstat;
-
-  createWriteStream = fs.createWriteStream;
+  fstat = promisify1(fs.fstat);
 
   isSupported = Boolean(fs);
 } catch {
