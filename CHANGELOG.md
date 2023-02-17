@@ -1,8 +1,14 @@
 # CHANGELOG for loaders.gl
 
-## v3.3 Prerelease
+## v3.3 
 
-## v3.3.0-alpha.14 (TBD)
+## v3.3.0 
+
+- feat(examples): Add URL loading to glTF example
+- fix(website): Disable glTF example due to gatsby typescript issues (#2361)
+- chore(tiles): Code cleanup (#2358)
+
+## v3.3.0-alpha.14
 
 - chore(wms): Streamline ImageService APIs (#2357)
 - feat(wms): ArcGIS data sources (#2340)
