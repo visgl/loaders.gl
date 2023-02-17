@@ -1,7 +1,7 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
 import {toArrayBuffer} from './buffer';
-import {promisify2, promisify3} from './util';
+import {promisify2, promisify3} from './promisify';
 
 export type {Stats, WriteStream} from 'fs';
 
