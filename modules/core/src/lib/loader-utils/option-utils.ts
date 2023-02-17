@@ -1,14 +1,16 @@
-import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+// loaders.gl, MIT license
+
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
-import {fetchFile} from '../fetch/fetch-file';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
+
 /**
  * Global state for loaders.gl. Stored on `global.loaders._state`
  */
 type GlobalLoaderState = {
   loaderRegistry: Loader[];
-  globalOptions: {[key: string]: any};
+  globalOptions: LoaderOptions;
 };
 
 /**
@@ -31,7 +33,7 @@ export function getGlobalLoaderState(): GlobalLoaderState {
  * NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
  * @returns global loader options merged with default loader options
  */
-export const getGlobalLoaderOptions = () => {
+export const getGlobalLoaderOptions = (): LoaderOptions => {
   const state = getGlobalLoaderState();
   // Ensure all default loader options from this library are mentioned
   state.globalOptions = state.globalOptions || {...DEFAULT_LOADER_OPTIONS};
@@ -42,7 +44,7 @@ export const getGlobalLoaderOptions = () => {
  * Set global loader options
  * @param options
  */
-export function setGlobalOptions(options: object): void {
+export function setGlobalOptions(options: LoaderOptions): void {
   const state = getGlobalLoaderState();
   const globalOptions = getGlobalLoaderOptions();
   state.globalOptions = normalizeOptionsInternal(globalOptions, options);
@@ -56,48 +58,16 @@ export function setGlobalOptions(options: object): void {
  * @param url
  */
 export function normalizeOptions(
-  options: object,
+  options: LoaderOptions,
   loader: Loader,
   loaders?: Loader[],
   url?: string
-): object {
+): LoaderOptions {
   loaders = loaders || [];
   loaders = Array.isArray(loaders) ? loaders : [loaders];
 
   validateOptions(options, loaders);
   return normalizeOptionsInternal(loader, options, url);
-}
-
-/**
- * Gets the current fetch function from options and context
- * @param options
- * @param context
- */
-export function getFetchFunction(
-  options?: LoaderOptions,
-  context?: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>
-) {
-  const globalOptions = getGlobalLoaderOptions();
-
-  const fetchOptions = options || globalOptions;
-
-  // options.fetch can be a function
-  if (typeof fetchOptions.fetch === 'function') {
-    return fetchOptions.fetch;
-  }
-
-  // options.fetch can be an options object
-  if (isObject(fetchOptions.fetch)) {
-    return (url) => fetchFile(url, fetchOptions);
-  }
-
-  // else refer to context (from parent loader) if available
-  if (context?.fetch) {
-    return context?.fetch;
-  }
-
-  // else return the default fetch function
-  return fetchFile;
 }
 
 // VALIDATE OPTIONS
@@ -214,11 +184,14 @@ function mergeNestedFields(mergedOptions, options) {
   }
 }
 
-// Harvest information from the url
-// TODO - baseUri should be a directory, i.e. remove file component from baseUri
-// TODO - extract extension?
-// TODO - extract query parameters?
-// TODO - should these be injected on context instead of options?
+/**
+ * Harvest information from the url
+ * @deprecated This is mainly there to support a hack in the GLTFLoader
+ * TODO - baseUri should be a directory, i.e. remove file component from baseUri
+ * TODO - extract extension?
+ * TODO - extract query parameters?
+ * TODO - should these be injected on context instead of options?
+ */
 function addUrlOptions(options, url?: string) {
   if (url && !('baseUri' in options)) {
     options.baseUri = url;

@@ -9,9 +9,10 @@ export type ImageServiceType = 'wms' | 'arcgis-image-server' | 'template';
 
 const SERVICES = [WMSService, ArcGISImageServer, ImageService];
 
-type Props = ImageServiceProps & {
-  type?: ImageServiceType | 'auto';
-};
+type Props = ImageServiceProps &
+  WMSServiceProps & {
+    type?: ImageServiceType | 'auto';
+  };
 
 /**
  * Creates an image source

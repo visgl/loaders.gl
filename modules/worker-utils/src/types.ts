@@ -3,7 +3,7 @@
  */
 export type WorkerOptions = {
   // Worker farm options
-  CDN?: string;
+  CDN?: string | null;
   worker?: boolean;
   maxConcurrency?: number;
   maxMobileConcurrency?: number;

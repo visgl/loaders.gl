@@ -84,11 +84,13 @@ export async function normalizeTilesetData(tileset : I3STilesetHeader, options :
     tileset.nodePagesTile = new I3SNodePagesTiles(tileset, options);
     tileset.root = tileset.nodePagesTile.formTileFromNodePages(0);
   } else {
+    // @ts-expect-error options is not properly typed
     const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.i3s?.token);
     // eslint-disable-next-line no-use-before-define
     tileset.root = await load(rootNodeUrl, tileset.loader, {
       ...options,
       i3s: {
+        // @ts-expect-error options is not properly typed
         ...options.i3s,
         loadContent: false, isTileHeader: true, isTileset: false}
     });

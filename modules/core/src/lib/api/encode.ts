@@ -1,4 +1,4 @@
-import {Writer, LoaderOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
+import {Writer, WriterOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
@@ -12,9 +12,10 @@ import {getLoaderOptions} from './loader-options';
 export async function encode(
   data: any,
   writer: Writer,
-  options?: LoaderOptions
+  options?: WriterOptions
 ): Promise<ArrayBuffer> {
-  const globalOptions = getLoaderOptions();
+  const globalOptions = getLoaderOptions() as WriterOptions;
+  // const globalOptions: WriterOptions = {}; // getWriterOptions();
   options = {...globalOptions, ...options};
   if (canEncodeWithWorker(writer, options)) {
     return await processOnWorker(writer, data, options);
@@ -71,7 +72,7 @@ export async function encode(
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSync(data: any, writer: Writer, options?: LoaderOptions): ArrayBuffer {
+export function encodeSync(data: any, writer: Writer, options?: WriterOptions): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
   }
@@ -87,7 +88,7 @@ export function encodeSync(data: any, writer: Writer, options?: LoaderOptions): 
 export async function encodeText(
   data: any,
   writer: Writer,
-  options?: LoaderOptions
+  options?: WriterOptions
 ): Promise<string> {
   if (writer.text && writer.encodeText) {
     return await writer.encodeText(data, options);
@@ -107,7 +108,7 @@ export async function encodeText(
 export function encodeInBatches(
   data: any,
   writer: Writer,
-  options?: LoaderOptions
+  options?: WriterOptions
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);
