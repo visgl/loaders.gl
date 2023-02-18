@@ -13,8 +13,11 @@ const getTextureBytes = (texture) => texture.map(level => level.data.byteLength)
 async function main() {
   const texture = await parse(fetch(TEXTURE_URL), CompressedTextureLoader);
   const data = await parse(fetch(GLTF_URL), GLTFLoader, {gltf: {postProcess: false}});
-  document.getElementById('content').innerHTML = 
-    `Texture: [${getTextureBytes(texture)}] bytes <br/> <br/>GLTF = ` + JSON.stringify(data.json, null, 2);
+  const content = document.getElementById('content');
+  if (content) {
+    content.innerHTML = 
+      `Texture: [${getTextureBytes(texture)}] bytes <br/> <br/>GLTF = ` + JSON.stringify(data.json, null, 2);
+  }
 }
 
 main();

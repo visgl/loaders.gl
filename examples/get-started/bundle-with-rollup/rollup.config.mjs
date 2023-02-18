@@ -4,6 +4,8 @@ import alias from '@rollup/plugin-alias';
 import typescript from '@rollup/plugin-typescript';
 import fs from 'fs';
 
+const ROOTDIR = '../../..';
+
 /** Run against local source */
 const getAliases = async (frameworkName, frameworkRootDir) => {
   const modules = await fs.promises.readdir(`${frameworkRootDir}/modules`)
@@ -16,7 +18,7 @@ const getAliases = async (frameworkName, frameworkRootDir) => {
 }
 
 export default async () => ({
-  input: 'app.js',
+  input: 'app.ts',
   output: {
     file: 'dist/bundle.js',
     format: 'iife', // immediately-invoked function expression — suitable for <script> tags
@@ -25,7 +27,7 @@ export default async () => ({
   plugins: [
     typescript(),
     alias({
-      entries: {} // await getAliases('@loaders.gl', `${__dirname}/../../..`)
+      entries: {}
     }),
     resolve({
       browser: true,
