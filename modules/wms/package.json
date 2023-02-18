@@ -35,7 +35,7 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js --platform=node"
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

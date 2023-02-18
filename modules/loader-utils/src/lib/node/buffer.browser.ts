@@ -9,11 +9,6 @@
  * @todo better data type
  */
 export function toArrayBuffer(buffer) {
-  // TODO - per docs we should just be able to call buffer.buffer, but there are issues
-  if (Buffer.isBuffer(buffer)) {
-    const typedArray = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.length);
-    return typedArray.slice().buffer;
-  }
   return buffer;
 }
 
@@ -21,17 +16,5 @@ export function toArrayBuffer(buffer) {
  * Convert (copy) ArrayBuffer to Buffer
  */
 export function toBuffer(binaryData: ArrayBuffer | ArrayBuffer | Buffer): Buffer {
-  if (Buffer.isBuffer(binaryData)) {
-    return binaryData;
-  }
-
-  if (ArrayBuffer.isView(binaryData)) {
-    binaryData = binaryData.buffer;
-  }
-
-  if (typeof Buffer !== 'undefined' && binaryData instanceof ArrayBuffer) {
-    return Buffer.from(binaryData);
-  }
-
-  throw new Error('toBuffer');
+  throw new Error('Buffer not supported in browser');
 }
