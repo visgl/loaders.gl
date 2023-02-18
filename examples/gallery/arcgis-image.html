@@ -15,7 +15,7 @@
 </style>
 <body>
 </body>
-<script src="https://unpkg.com/@loaders.gl/core@3.3.0-alpha.10/dist/dist.min.js"></script>
+<script src="https://unpkg.com/@loaders.gl/core@3.3.0/dist/dist.min.js"></script>
 <script src="https://unpkg.com/@loaders.gl/wms@3.3.0-alpha.10/dist/dist.min.js"></script>
 <script src="https://unpkg.com/deck.gl@8.8.1/dist.min.js"></script>
 <script>
@@ -27,10 +27,10 @@
  * https://deck.gl/docs/api-reference/layers/bitmap-layer
  */
 const { DeckGL, BitmapLayer } = deck;
-const { ArcGISImageService } = loaders;
+// const { ArcGISImageService } = loaders;
 
 let timeoutId;
-const debounce = (fn, ms = 0) => {
+const debounce = (ms, fn) => {
   clearTimeout(timeoutId);
   timeoutId = setTimeout(() => fn(), ms);
 };
@@ -66,48 +66,46 @@ const deckInstance = new DeckGL({
       return;
     }
 
-    debounce(() => {
-      const viewport = deckInstance.getViewports()[0];
-      const bounds = viewport.getBounds();
-      const { width, height } = viewport;
-      updateBitmapLayer(deckInstance, bounds, width, height);
+    updateBitmapLayer(deckInstance, bounds, width, height);
 
-      console.log("onViewStateChange with debounce", {
-        bounds,
-        width,
-        height
-      });
-    }, 500);
+    console.log("onViewStateChange", {
+      bounds,
+      width,
+      height
+    });
   },
 
   onResize: function ({ width, height }) {
-    debounce(() => {
-      const viewport = deckInstance.getViewports()[0];
-      const bounds = viewport.getBounds();
-      updateBitmapLayer(deckInstance, bounds, width, height);
+    const viewport = deckInstance.getViewports()[0];
+    const bounds = viewport.getBounds();
+    updateBitmapLayer(deckInstance, bounds, width, height);
 
-      console.log("onResize with debounce", {
-        bounds,
-        width,
-        height
-      });
-    }, 500);
+    console.log("onResize with debounce", {
+      bounds,
+      width,
+      height
+    });
   }
 
 });
 
 function updateBitmapLayer(deckInstance, bounds, width, height) {
   const url = `https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&bboxSR=4326&size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image`;
+  const imageService = null;
   const imageUrl = imageService ? getImageURL({width, height, bounds}) : url;
 
-  const layer = new BitmapLayer({
-    id: "BitmapLayer",
-    bounds: bounds,
-    image: imageUrl,
-    opacity: 0.5
-  });
+  // to reduce jankiness, preload image instead of passing URL to layer
 
-  deckInstance.setProps({ layers: [layer] });
+  debounce(500, async () => {
+    const layer = new BitmapLayer({
+      id: "BitmapLayer",
+      bounds: bounds,
+      image: imageUrl,
+      opacity: 0.5
+    });
+    deckInstance.setProps({ layers: [layer] });
+  });
 }
+
 
 </script>
