@@ -17,8 +17,7 @@ test('NPYLoader#loader objects', async (t) => {
 });
 
 test('NPYLoader#parse', async (t) => {
-  const options = {};
-  const {data, header} = await load(NPY_UINT8_URL, NPYLoader, options);
+  const {data, header} = await load(NPY_UINT8_URL, NPYLoader);
 
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase
@@ -36,8 +35,7 @@ test('NPYWorkerLoader#parse', async (t) => {
     return;
   }
 
-  const options = {};
-  const {data, header} = await load(NPY_UINT8_URL, NPYWorkerLoader, options);
+  const {data, header} = await load(NPY_UINT8_URL, NPYWorkerLoader);
 
   const expectedData = new Uint8Array([1, 2, 3, 4]);
   // eslint-disable-next-line camelcase
