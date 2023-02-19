@@ -58,6 +58,6 @@ Unstructured, untyped data in the form a tree of JavaScrip objects representing 
 Remarks:
 - It is possible to pass options to the underlying parser, currently `fast-xml-parser`, however there are no guarantees that loaders.gl will continue to use this underlying parser or continue to support those options.
 
+## Attributions
 
-
-
+The `XMLLoader` is a wrapper around [`fast-xml-parser`](https://github.com/NaturalIntelligence/fast-xml-parser).

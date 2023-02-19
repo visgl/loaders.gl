@@ -4,4 +4,6 @@
 // import './sax-ts';
 
 import './lib/pretty-print.spec';
+
 import './xml-loader.spec';
+import './html-loader.spec';

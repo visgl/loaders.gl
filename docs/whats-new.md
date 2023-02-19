@@ -21,7 +21,7 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-## v3.4 In Development
+## v3.4 (In Development)
 
 Target Release Date: April, 2023.
 
@@ -30,11 +30,16 @@ Target Release Date: April, 2023.
 - Support for the AVIF image format
 - Functions for testing which image formats are supported
 
+**@loaders.gl/images**
+
+- Support for the AVIF image format
+- Functions for testing which image formats are supported
+
 **@loaders.gl/xml**
 
-- New [`HTMLLoader`](modules/json/docs/api-reference/html-loader) - a minimal HTML loader, parses HTML as an unstructured XML tree.
+- New [`HTMLLoader`](modules/json/docs/api-reference/html-loader) - a minimal HTML loader, parses HTML as an unstructured XML tree. Intended for minimal ad-hoc use cases such as extracting an error message or a link from a short HTML page.
 
-**@loaders.gl/wms** (New module)
+**@loaders.gl/wms**
 
 Support for additional OGC Web Services standards:
 
