@@ -93,11 +93,6 @@ export type I3SParseOptions = {
   /** Is 3DNodeIndexDocument json expected in response */
   isTileHeader?: string;
   /** Tile3D instance. This property used only to load tile content */
-  /** @deprecated */
-  tile?: Tile3D | I3STileOptions;
-  /** Tileset3D instance. This property used only to load tile content */
-  /** @deprecated */
-  tileset?: Tileset3D | I3STilesetOptions;
   /** Tile-specific options */
   _tileOptions?: I3STileOptions;
   /** Tileset-specific options */
@@ -120,6 +115,12 @@ export type I3SParseOptions = {
     minColor: COLOR;
     maxColor: COLOR;
   };
+
+  /** @deprecated */
+  tile?: Tile3D | I3STileOptions;
+  /** Tileset3D instance. This property used only to load tile content */
+  /** @deprecated */
+  tileset?: Tileset3D | I3STilesetOptions;
 };
 
 export type I3STileOptions = {

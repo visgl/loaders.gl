@@ -6,10 +6,11 @@ import {fetchFile} from '@loaders.gl/core';
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 
-const readFile = (url) => fetchFile(url).then((response) => response.arrayBuffer());
+const readFile = (url: string): Promise<ArrayBuffer> =>
+  fetchFile(url).then((response) => response.arrayBuffer());
 
-let imagesPromise = null;
-const imageMap = {};
+let imagesPromise: Promise<ArrayBuffer[]> | null = null;
+const imageMap: {[mimeType: string]: ArrayBuffer} = {};
 
 export async function loadImages() {
   imagesPromise =
@@ -26,6 +27,9 @@ export async function loadImages() {
       ),
       readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(
         (data) => (imageMap['image/bmp'] = data)
+      ),
+      readFile('@loaders.gl/images/test/data/avif/hato.profile0.8bpc.yuv420.avif').then(
+        (data) => (imageMap['image/avif'] = data)
       )
     ]);
 
@@ -50,8 +54,20 @@ test('getBinaryImageMetadata#size', async (t) => {
     const dimensions = getBinaryImageMetadata(images[imageType]);
     t.ok(dimensions, `got image metadata for ${imageType.toUpperCase()}`);
     if (dimensions) {
-      t.equals(dimensions.width, 480, `width, should work with ${imageType.toUpperCase()} files`);
-      t.equals(dimensions.height, 320, `height, should work with ${imageType.toUpperCase()} files`);
+      t.equals(
+        dimensions.mimeType,
+        imageType,
+        `width, should work with ${imageType.toUpperCase()} files`
+      );
+
+      if (dimensions.mimeType !== 'image/avif') {
+        t.equals(dimensions.width, 480, `width, should work with ${imageType.toUpperCase()} files`);
+        t.equals(
+          dimensions.height,
+          320,
+          `height, should work with ${imageType.toUpperCase()} files`
+        );
+      }
     }
   }
   t.end();

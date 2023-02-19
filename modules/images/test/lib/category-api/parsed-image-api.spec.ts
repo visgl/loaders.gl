@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader, ImageType} from '@loaders.gl/images';
 
 // PARSED IMAGE API
 import {
@@ -16,16 +16,17 @@ const IMAGE_TYPES = ['auto', 'image', 'imagebitmap', 'data'];
 
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
-let imagesPromise = null;
+let imagesPromise: Promise<ImageType[]> | null = null;
 
 async function loadImages() {
-  imagesPromise =
-    imagesPromise ||
-    Promise.all(
-      IMAGE_TYPES.filter(isImageTypeSupported).map((type) =>
-        load(IMAGE_URL, ImageLoader, {image: {type}})
+  if (!imagesPromise) {
+    const supportedImageTypes = IMAGE_TYPES.filter(isImageTypeSupported);
+    imagesPromise = Promise.all(
+      supportedImageTypes.map(
+        (type) => load(IMAGE_URL, ImageLoader, {image: {type}}) as Promise<ImageType>
       )
     );
+  }
   return await imagesPromise;
 }
 

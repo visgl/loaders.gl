@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/loader-utils';
 
-import {_isImageFormatSupported} from '@loaders.gl/images';
+import {isImageFormatSupported, getSupportedImageFormats} from '@loaders.gl/images';
 
 export const TEST_CASES = [
   {
@@ -31,13 +31,31 @@ export const TEST_CASES = [
   {
     mimeType: 'image/webp',
     supported: isBrowser
+  },
+  {
+    mimeType: 'image/avif',
+    supported: false,
+    supportedAsync: isBrowser
   }
 ];
 
-test('Image Category#_isImageFormatSupported', (t) => {
+test('Image Category#isImageFormatSupported', (t) => {
   for (const tc of TEST_CASES) {
-    const isSupported = _isImageFormatSupported(tc.mimeType);
+    const isSupported = isImageFormatSupported(tc.mimeType);
     t.equal(isSupported, tc.supported, `${tc.mimeType} support ${isSupported}`);
+  }
+  t.end();
+});
+
+test('Image Category#getSupportedImageFormats', async (t) => {
+  const supportedImageFormats = await getSupportedImageFormats();
+  for (const tc of TEST_CASES) {
+    const isSupported = supportedImageFormats.has(tc.mimeType);
+    t.equal(
+      isSupported,
+      Boolean(tc.supported || tc.supportedAsync),
+      `${tc.mimeType} support ${isSupported}`
+    );
   }
   t.end();
 });
