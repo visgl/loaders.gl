@@ -35,7 +35,7 @@ export default class IndexPage extends React.Component {
           <ul>
             <Bullet>
               Parsers and encoders for many major 3D, geospatial and tabular formats.
-              </Bullet>
+            </Bullet>
             <Bullet>
               Loaders and Writers can be used with any visualization framework.
             </Bullet>
