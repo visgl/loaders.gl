@@ -206,9 +206,6 @@
           "title": "@loaders.gl/images",
           "entries": [
             {"entry": "modules/images/docs"},
-            {"entry": "modules/images/docs/api-reference/load-image"},
-            {"entry": "modules/images/docs/api-reference/load-image-array"},
-            {"entry": "modules/images/docs/api-reference/load-image-cube"},
             {"entry": "modules/images/docs/api-reference/parsed-image-api"},
             {"entry": "modules/images/docs/api-reference/binary-image-api"}
           ]
@@ -297,7 +294,10 @@
           "title": "@loaders.gl/textures",
           "entries": [
             {"entry": "modules/textures/docs"},
-            {"entry": "modules/textures/docs/using-compressed-textures"}
+            {"entry": "modules/textures/docs/formats/using-compressed-textures"},
+            {"entry": "modules/textures/docs/api-reference/load-image"},
+            {"entry": "modules/textures/docs/api-reference/load-image-array"},
+            {"entry": "modules/textures/docs/api-reference/load-image-cube"}
           ]
         },
         {
