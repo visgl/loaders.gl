@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import {Home} from 'gatsby-theme-ocular/components';
 // import Example from './example-gltf';
 // import Example from '../../examples/website/pointcloud/app';
-import Example from '../../examples/website/i3s/src/app';
+import {BareApp} from '../../examples/website/i3s/src/app';
 
 if (typeof window !== 'undefined') {
   window.website = true;
@@ -25,7 +25,7 @@ const Bullet = styled.li`
   font: ${props => props.theme.typography.font300};
 `;
 
-const HeroExample = () => <Example panel={false} />
+const HeroExample = () => <BareApp panel={false} />
 
 export default class IndexPage extends React.Component {
   render() {
@@ -35,7 +35,7 @@ export default class IndexPage extends React.Component {
           <ul>
             <Bullet>
               Parsers and encoders for many major 3D, geospatial and tabular formats.
-            </Bullet>
+              </Bullet>
             <Bullet>
               Loaders and Writers can be used with any visualization framework.
             </Bullet>

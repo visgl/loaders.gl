@@ -81,7 +81,7 @@ const StatsWidgetContainer = styled.div`
   overflow: auto;
 `;
 
-export default class App extends PureComponent {
+class App extends PureComponent {
   constructor(props) {
     super(props);
     this._tilesetStatsWidget = null;
@@ -198,12 +198,12 @@ export default class App extends PureComponent {
 
         const {zmin = 0} = metadata?.layers?.[0]?.fullExtent || {};
         /**
-       * See image in the PR https://github.com/visgl/loaders.gl/pull/2046
-       * For elevated tilesets cartographic center position of a tileset is not correct
-       * to use it as viewState position because these positions are different.
-       * We need to calculate projection of camera direction onto the ellipsoid surface.
-       * We use this projection as offset to add it to the tileset cartographic center position.
-       */
+         * See image in the PR https://github.com/visgl/loaders.gl/pull/2046
+         * For elevated tilesets cartographic center position of a tileset is not correct
+         * to use it as viewState position because these positions are different.
+         * We need to calculate projection of camera direction onto the ellipsoid surface.
+         * We use this projection as offset to add it to the tileset cartographic center position.
+         */
         const projection = zmin * Math.tan((pitch * Math.PI) / 180);
         /**
          * Convert to world coordinate system to shift the position on some distance in meters
@@ -491,9 +491,9 @@ export default class App extends PureComponent {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderControlPanel()}
+        {!this.props.hideControlPanel && this._renderControlPanel()}
         {selectedFeatureAttributes && this.renderAttributesPanel()}
-        {this._renderMemory()}
+        {!this.props.hideStats && this._renderMemory()}
         <DeckGL
           layers={layers}
           viewState={viewState}
@@ -519,6 +519,13 @@ export default class App extends PureComponent {
   }
 }
 
+const appFactory = (AppComponent, extraProps: {hideControlPanel?: boolean, hideStats?: boolean}) => {
+  return (props) => <AppComponent {...props} {...extraProps} />;
+};
+
+export const AppWithPanels = appFactory(App, {});
+export const BareApp = appFactory(App, {hideControlPanel: true, hideStats: true});
 export function renderToDOM(container) {
-  render(<App />, container);
+  render(<AppWithPanels />, container);
 }
+export default AppWithPanels;
