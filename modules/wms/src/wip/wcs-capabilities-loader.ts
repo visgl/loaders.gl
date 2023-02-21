@@ -1,11 +1,14 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parseWFSCapabilities} from '../lib/wcs/parse-wcs';
+import type {WCSCapabilities} from './lib/wcs/parse-wcs-capabilities';
+import {parseWCSCapabilities} from './lib/wcs/parse-wcs-capabilities';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export {WCSCapabilities};
 
 export type WCSLoaderOptions = LoaderOptions & {
   wcs?: {};
@@ -28,8 +31,8 @@ export const WCSCapabilitiesLoader = {
     wms: {}
   },
   parse: async (arrayBuffer: ArrayBuffer, options?: WCSLoaderOptions) =>
-    parseWFSCapabilities(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WCSLoaderOptions) => parseWFSCapabilities(text, options)
+    parseWCSCapabilities(new TextDecoder().decode(arrayBuffer), options),
+  parseTextSync: (text: string, options?: WCSLoaderOptions) => parseWCSCapabilities(text, options)
 };
 
 function testXMLFile(text: string): boolean {
