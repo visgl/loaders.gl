@@ -22,7 +22,7 @@
     "@luma.gl/core": "^8.5.4",
     "@math.gl/core": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
-    "@probe.gl/stats-widget": "^3.5.0",
+    "@probe.gl/stats-widget": "^4.0.1",
     "marked": "^0.7.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.0",
