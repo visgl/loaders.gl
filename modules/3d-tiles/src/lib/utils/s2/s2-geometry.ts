@@ -68,8 +68,40 @@ export function XYZToLngLat([x, y, z]: [number, number, number]): [number, numbe
   return [lng * RADIAN_TO_DEGREE, lat * RADIAN_TO_DEGREE];
 }
 
-// export function toHilbertQuadkey(idS: string): string {
-//  let bin = Long.fromString(idS, true, 10).toString(2);
+/*
+  Here is the version of toHilbertQuadkey taken from deck.gl
+  We replace it with the function that takes Long instead of string.
+  The original function does not support the case of level==0
+
+export function toHilbertQuadkey(idS: string): string {
+  let bin = Long.fromString(idS, true, 10).toString(2);
+
+  while (bin.length < FACE_BITS + POS_BITS) {
+    // eslint-disable-next-line prefer-template
+    bin = '0' + bin;
+  }
+
+  // MUST come AFTER binstr has been left-padded with '0's
+  const lsbIndex = bin.lastIndexOf('1');
+  // substr(start, len)
+  // substring(start, end) // includes start, does not include end
+  const faceB = bin.substring(0, 3);
+  // posB will always be a multiple of 2 (or it's invalid)
+  const posB = bin.substring(3, lsbIndex);
+  const levelN = posB.length / 2;
+
+  const faceS = Long.fromString(faceB, true, 2).toString(10);
+  let posS = Long.fromString(posB, true, 2).toString(4);
+
+  while (posS.length < levelN) {
+    // eslint-disable-next-line prefer-template
+    posS = '0' + posS;
+  }
+
+  return `${faceS}/${posS}`;
+}
+*/
+
 export function toHilbertQuadkey(id: Long): string {
   let bin = id.toString(2);
 
@@ -87,20 +119,25 @@ export function toHilbertQuadkey(id: Long): string {
   const posB = bin.substring(3, lsbIndex);
   const levelN = posB.length / 2;
 
-  //  const faceS = Long.fromString(faceB, true, 2).toString(10);
-  const faceS = BigInt(`0b${faceB}`).toString(10); // Definitely it's Unsigned
+  const faceS = Long.fromString(faceB, true, 2).toString(10);
 
+  /*
+    Here is a fix for the case when posB is an empty string that causes an exception in Long.fromString
+
+    let posS = Long.fromString(posB, true, 2).toString(4);
+  */
   let posS = '0';
   if (levelN !== 0) {
-    //  let posS = Long.fromString(posB, true, 2).toString(4);
     // posB is not an empty string< because levelN!==0
-    posS = BigInt.asUintN(64, BigInt(`0b${posB}`)).toString(4);
+    posS = Long.fromString(posB, true, 2).toString(4);
 
     while (posS.length < levelN) {
       // eslint-disable-next-line prefer-template
       posS = '0' + posS;
     }
   }
+  // Note, posS will be "0" for the level==0
+  // TODO: Is it ok?
 
   return `${faceS}/${posS}`;
 }
@@ -118,6 +155,10 @@ function rotateAndFlipQuadrant(n: number, point: [number, number], rx: number, r
   }
 }
 
+/*
+  Original function taken from deck.gl doesn't support the case of (face <= 5)
+  It's fixed here.
+*/
 export function FromHilbertQuadKey(hilbertQuadkey: string): {
   face: number;
   ij: [number, number];
@@ -126,9 +167,15 @@ export function FromHilbertQuadKey(hilbertQuadkey: string): {
   const parts = hilbertQuadkey.split('/');
   const face = parseInt(parts[0], 10);
   const position = parts[1];
-  const maxLevel = position.length;
+  /*
+    Fix for the case of level==0 that corresponds to (face <= 5)
+    const maxLevel = position.length;
+    let level;
+  */
+  const maxLevel = face > 5 ? position.length : 0;
+  let level = 0;
+
   const point = [0, 0] as [number, number];
-  let level;
 
   for (let i = maxLevel - 1; i >= 0; i--) {
     level = maxLevel - i;

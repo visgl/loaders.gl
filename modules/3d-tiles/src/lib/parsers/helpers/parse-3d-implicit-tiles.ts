@@ -1,7 +1,8 @@
 import type {Availability, BoundingVolume, Subtree} from '../../../types';
 import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
-import {getS2ChildCellId, getTokenFromId, getIdFromToken} from '../../utils/s2/s2-utils';
+import {getIdFromToken} from '../../utils/s2/s2-utils';
+import {getS2ChildCellId, getTokenFromId} from '../../utils/s2/s2-utils-ext';
 import {S2BoundingVolume, convertS2BVtoBox} from '../../utils/s2/s2-bv-obb';
 
 const QUADTREE_DEVISION_COUNT = 4;
@@ -24,15 +25,16 @@ function getCTile(curTile, midZ, sizeZ, index) {
     // Clone object
     const s2bv: S2BoundingVolume = JSON.parse(JSON.stringify(curTile.boundingVolume.s2bv));
     s2bv.token = childToken; // replace token with the child's one
-    s2bv.minimumHeight = midZ - sizeZ;
-    s2bv.maximumHeight = midZ + sizeZ;
 
+    // In case of QUADTREE the sizeZ should NOT be changed!
+    // https://portal.ogc.org/files/102132
+    // A quadtree divides space only on the x and y dimensions. It divides each tile into 4 smaller tiles where the x and y dimensions are halved. The quadtree z minimum and maximum remain unchanged.
+    if (typeof midZ !== 'undefined' && typeof sizeZ !== 'undefined') {
+      s2bv.minimumHeight = midZ - sizeZ;
+      s2bv.maximumHeight = midZ + sizeZ;
+    }
     const box = convertS2BVtoBox(s2bv);
     cTile = {boundingVolume: {box, cellId: childCellId, s2bv}};
-
-    // if (options.rootBoundingVolume.s2bv.token === "1") {
-    //   console.log(`level=${childTileLevel}, index=${index}, s2bv=${s2bv.token}, min=${s2bv.minimumHeight}, max=${s2bv.maximumHeight}` );
-    // }
   }
   return cTile;
 }
@@ -158,16 +160,27 @@ export async function parseImplicitTiles(params: {
   const childTileLevel = level + 1;
   const pData = {mortonIndex: childTileMortonIndex, x: childTileX, y: childTileY, z: childTileZ};
 
-  const boundingVolumesCount = 2 ** childTileLevel;
-  const sizeZ =
-    (curTile.boundingVolume.s2bv.maximumHeight - curTile.boundingVolume.s2bv.minimumHeight) /
-    boundingVolumesCount;
-  const delta =
-    curTile.boundingVolume.s2bv.maximumHeight - curTile.boundingVolume.s2bv.minimumHeight;
-  const midZ = curTile.boundingVolume.s2bv.minimumHeight + delta / 2.0;
+  // In case of QUADTREE the sizeZ should NOT be changed!
+  // https://portal.ogc.org/files/102132
+  // A quadtree divides space only on the x and y dimensions. It divides each tile into 4 smaller tiles where the x and y dimensions are halved. The quadtree z minimum and maximum remain unchanged.
+  /*
+   */
+  let sizeZ;
+  let midZ;
+
+  if (subdivisionScheme === 'OCTREE') {
+    const boundingVolumesCount = 2 ** childTileLevel;
+    sizeZ =
+      (curTile.boundingVolume.s2bv.maximumHeight - curTile.boundingVolume.s2bv.minimumHeight) /
+      boundingVolumesCount;
+    const delta =
+      curTile.boundingVolume.s2bv.maximumHeight - curTile.boundingVolume.s2bv.minimumHeight;
+    midZ = curTile.boundingVolume.s2bv.minimumHeight + delta / 2.0;
+  }
 
   for (let index = 0; index < childrenPerTile; index++) {
     const cTile = getCTile(curTile, midZ, sizeZ, index);
+
     const currentTile = await parseImplicitTiles({
       subtree,
       options,
@@ -275,6 +288,13 @@ function calculateBoundingVolumeForChildTile(
 
     const sizeX = (east - west) / boundingVolumesCount;
     const sizeY = (north - south) / boundingVolumesCount;
+
+    // TODO : Why is the subdivisionScheme not being checked here?
+
+    // In case of QUADTREE the sizeZ should NOT be changed!
+    // https://portal.ogc.org/files/102132
+    // A quadtree divides space only on the x and y dimensions. It divides each tile into 4 smaller tiles where the x and y dimensions are halved. The quadtree z minimum and maximum remain unchanged.
+
     const sizeZ = (maximumHeight - minimumHeight) / boundingVolumesCount;
 
     const [childWest, childEast] = [west + sizeX * childTileX, west + sizeX * (childTileX + 1)];
