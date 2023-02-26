@@ -129,11 +129,11 @@ export type Loader = {
   binary?: boolean;
   text?: boolean;
 
-  tests?: (((ArrayBuffer) => boolean) | ArrayBuffer | string)[];
+  tests?: (((ArrayBuffer: ArrayBuffer) => boolean) | ArrayBuffer | string)[];
 
   // TODO - deprecated
   supported?: boolean;
-  testText?: (string) => boolean;
+  testText?: (string: string) => boolean;
 };
 
 /**
@@ -142,7 +142,7 @@ export type Loader = {
  */
 export type LoaderWithParser = Loader & {
   // TODO - deprecated
-  testText?: (string) => boolean;
+  testText?: (string: string) => boolean;
 
   parse: Parse;
   preload?: Preload;
@@ -189,19 +189,19 @@ export type LoaderContext = {
   fetch: typeof fetch;
   parse: (
     arrayBuffer: ArrayBuffer,
-    loaders?,
+    loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
   ) => Promise<any>;
   parseSync?: (
     arrayBuffer: ArrayBuffer,
-    loaders?,
+    loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
   ) => any;
   parseInBatches?: (
     iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-    loaders?,
+    loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
   ) => AsyncIterable<any> | Promise<AsyncIterable<any>>;
@@ -295,7 +295,7 @@ export interface IFileSystem {
 
 type ReadOptions = {buffer?: ArrayBuffer; offset?: number; length?: number; position?: number};
 export interface IRandomAccessReadFileSystem extends IFileSystem {
-  open(path: string, flags, mode?): Promise<any>;
+  open(path: string, flags: string | number, mode?: any): Promise<any>;
   close(fd: any): Promise<void>;
   fstat(fd: any): Promise<object>;
   read(fd: any, options?: ReadOptions): Promise<{bytesRead: number; buffer: Buffer}>;
