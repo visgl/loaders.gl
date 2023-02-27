@@ -17,6 +17,6 @@ export function parseWMSError(text: string, options): string {
   const message =
     typeof serviceExceptionXML === 'string'
       ? serviceExceptionXML
-      : serviceExceptionXML['#text'] || serviceExceptionXML.code || 'Unknown error';
+      : serviceExceptionXML.value || serviceExceptionXML.code || 'Unknown error';
   return message;
 }
