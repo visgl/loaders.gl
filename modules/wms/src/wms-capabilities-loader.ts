@@ -1,11 +1,15 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parseWMSCapabilities} from './lib/wms/parse-wms';
+import type {WMSCapabilities} from './lib/wms/parse-wms-capabilities';
+import {parseWMSCapabilities} from './lib/wms/parse-wms-capabilities';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+// Parsed data type
+export type {WMSCapabilities};
 
 export type WMSLoaderOptions = LoaderOptions & {
   wms?: {};

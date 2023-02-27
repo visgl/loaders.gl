@@ -2,7 +2,11 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {WMSCapabilitiesLoader, WMSLoaderOptions} from '../wms-capabilities-loader';
-import {parseWMSFeatureInfo} from '../lib/wms/parse-wms';
+
+import type {WMSFeatureInfo} from '../lib/wms/parse-wms-features';
+import {parseWMSFeatureInfo} from '../lib/wms/parse-wms-features';
+
+export {WMSFeatureInfo};
 
 /**
  * Loader for the response to the WMS GetFeatureInfo request

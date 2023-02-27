@@ -1,8 +1,13 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {WMSCapabilitiesLoader, WMSLoaderOptions} from '../wms-capabilities-loader';
-import {parseWMSLayerDescription} from '../lib/wms/parse-wms';
+import type{WMSLoaderOptions} from '../wms-capabilities-loader';
+import {WMSCapabilitiesLoader} from '../wms-capabilities-loader';
+
+import type {WMSLayerDescription} from '../lib/wms/parse-wms-layer-description';
+import {parseWMSLayerDescription} from '../lib/wms/parse-wms-layer-description';
+
+export {WMSLayerDescription};
 
 /**
  * Loader for the response to the WMS DescribeLayer request

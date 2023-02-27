@@ -25,6 +25,25 @@ The WMS standard specifies a number of "request types" that a standards-complian
 
 > Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server. Information about which request types are supported is available in the response to `GetCapabilities` request.
 
+## Versions
+
+#### v1.3.0
+
+Per [stackexchange](https://gis.stackexchange.com/questions/23347/getmap-wms-1-1-1-vs-1-3-0) the key differences are:
+
+- Use SRS for 1.1.1, Use CRS for 1.3.0
+- WMS 1.3.0 ONLY: The order of parameters for BBOX depends on whether the CRS definition has flipped axes. You will see this in the GetCapabilities request at 1.3.0 - the response should show the flipped axes.
+  + BBOX=xmin,ymin,xmax,ymax NON-FLIPPED
+  + BBOX=ymin,xmin,ymax,xmax FLIPPED
+  + EPSG:4326 needs to have flipped axes. 4326 1 WGS 84 Latitude North Longitude East
+
+In WMS 1.1.1 EPSG:4326 is wrongly defined as having long/lat coordinate axes. In WMS 1.3.0 the correct axes lat/long are used. CRS:84 is defined by OGC as having the same datum as EPSG:4326 (that is the World Geodetic System 1984 datum ~ EPSG::6326) but axis order of long/lat.
+CRS:84 was introduced with the publication of the WMS 1.3.0 specification, to overcome this issue. 
+
+#### v1.1.1
+
+TBA
+
 ## Map images
 
 A WMS server usually serves the map in a bitmap format, e.g. PNG, GIF, JPEG. In addition, vector graphics can be included, such as points, lines, curves and text, expressed in SVG or WebCGM format. The MIME types of the `GetMap` request can be inspected in the response to the `GetCapabilities` request.
