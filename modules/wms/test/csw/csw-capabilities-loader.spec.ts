@@ -8,7 +8,7 @@ import {load} from '@loaders.gl/core';
 
 const CSW_CAPABILITIES_URL = '@loaders.gl/wms/test/data/csw/get-capabilities.xml';
 
-test.only('CSWCapabilitiesLoader#forecasts.xml', async (t) => {
+test('CSWCapabilitiesLoader#forecasts.xml', async (t) => {
   const capabilities = (await load(CSW_CAPABILITIES_URL, CSWCapabilitiesLoader)) as CSWCapabilities;
   t.comment(JSON.stringify(capabilities));
 
