@@ -9,7 +9,8 @@ export const IMAGES_DATA = [
       {format: 'GIF', src: 'shannon.gif'},
       {format: 'PNG', src: 'shannon.png'},
       {format: 'BMP', src: 'shannon.bmp'},
-      {format: 'WEBP', src: 'shannon.webp'}
+      {format: 'WEBP', src: 'shannon.webp'},
+      {format: 'AVIF', src: 'shannon.avif'}
     ]
   },
   {

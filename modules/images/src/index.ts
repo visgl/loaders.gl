@@ -22,7 +22,8 @@ export {
 } from './lib/category-api/parsed-image-api';
 
 // EXPERIMENTAL
-export {_isImageFormatSupported} from './lib/category-api/image-format';
+export {getSupportedImageFormats} from './lib/category-api/image-format';
+export {isImageFormatSupported} from './lib/category-api/image-format';
 
-// DEPRECATED - Remove in V3 (fix dependency in luma.gl)
+// DEPRECATED - Remove in V4 (fix dependency in luma.gl)
 export {loadImage} from './lib/texture-api/load-image';

@@ -7,10 +7,11 @@ const PNG_BITS = `\
 iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVQIW2P8z\
 /D/PwMDAwMjjAEAQOwF/W1Dp54AAAAASUVORK5CYII=`;
 
-const SVG_BITS = `\
+const SVG_BITS =
+  '\
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">\
 <path d="M14 26c3.31 0 6-2.69 6-6s-2.69-6-6-6-6 2.69-6 6 2.69 6 6 6zm24-12H22v14H6V10H2v30h4v-6h36v6h4V22c0-4.42-3.58-8-8-8z"/>\
-</svg>`;
+</svg>';
 
 const SVG_BITS_NOT_LATIN = `\
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">\
@@ -80,6 +81,19 @@ export const TEST_CASES = [
     width: 72,
     height: 72,
     skip: !isBrowser
+  },
+  {
+    title: 'WEBP',
+    url: `${CONTENT_BASE}/webp/wild-cherry.webp`,
+    width: 320,
+    height: 241,
+    skip: !isBrowser
+  },
+  {
+    title: 'AVIF',
+    url: `${CONTENT_BASE}/avif/hato.profile0.8bpc.yuv420.avif`,
+    width: 3082,
+    height: 2048,
+    skip: !isBrowser
   }
-  // TODO - Add webp test file
 ];

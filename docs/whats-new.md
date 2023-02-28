@@ -21,9 +21,14 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-## v3.4 (In Development)
+## v3.4 In Development
 
-Target Release Date: April 2023.
+Target Release Date: April, 2023.
+
+**@loaders.gl/images**
+
+- Support for the AVIF image format
+- Functions for testing which image formats are supported
 
 **@loaders.gl/xml**
 

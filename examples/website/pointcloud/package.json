@@ -1,7 +1,7 @@
 {
   "name": "loaders.gl-example-pointcloud-loaders",
   "private": true,
-  "version": "3.3.0-alpha.11",
+  "version": "3.3.0",
   "license": "MIT",
   "scripts": {
     "start": "vite",
