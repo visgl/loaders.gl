@@ -68,7 +68,7 @@ export class CSWService {
     this.props.loadOptions = {
       ...this.props.loadOptions,
       // We want error responses to throw exceptions, the CSWErrorLoader can do this
-      wms: {...this.props.loadOptions?.wms, throwOnError: true}
+      // wms: {...this.props.loadOptions?.wms, throwOnError: true}
     };
   }
 

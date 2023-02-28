@@ -16,7 +16,7 @@ export function mergeLoaderOptions<Options extends LoaderOptions>(
   for (const [key, newValue] of Object.entries(newOptions)) {
     if (newValue && typeof newValue === 'object') {
       options[key] = options[key] || {};
-      Object.assign(options[key], newOptions[key]);
+      Object.assign(options[key] as object, newOptions[key]);
     } else {
       options[key] = newOptions[key];
     }

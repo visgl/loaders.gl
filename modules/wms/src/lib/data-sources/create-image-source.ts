@@ -2,6 +2,7 @@
 
 import {ImageSource} from './sources/image-source';
 import {ImageService, ImageServiceProps} from './sources/image-service';
+import type {WMSServiceProps} from './ogc/wms-service';
 import {WMSService} from './ogc/wms-service';
 import {ArcGISImageServer} from './arcgis/arcgis-image-service';
 
