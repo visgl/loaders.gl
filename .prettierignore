@@ -34,6 +34,8 @@ modules/xml/test/sax-ts/testcases/xmlns-xml-default-ns.spec.ts
 modules/xml/test/sax-ts/testcases/xmlns-xml-default-prefix-attribute.spec.ts
 modules/xml/test/sax-ts/testcases/xmlns-xml-default-redefine.spec.ts
 
+modules/wms/src/lib/data-sources/ogc/csw-service.ts
+
 modules/wms/src/lib/gml/parse-gml.ts
 modules/wms/src/lib/wfs/wfs-types.ts
 modules/wms/src/wms-layer-description-loader.ts
