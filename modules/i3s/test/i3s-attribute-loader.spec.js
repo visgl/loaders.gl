@@ -165,8 +165,7 @@ test('I3SAttributeLoader# should return empty object if no attributeType provide
 });
 
 test('I3SAttributeLoader# should return empty object if no attributeName and attributeType provided', async (t) => {
-  const options = {};
-  const attributes = await load(objectIdsUrl, I3SAttributeLoader, options);
+  const attributes = await load(objectIdsUrl, I3SAttributeLoader);
   t.ok(attributes);
   t.deepEqual(attributes, {});
   t.end();

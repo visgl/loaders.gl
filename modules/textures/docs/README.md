@@ -25,20 +25,27 @@ npm install @loaders.gl/core
 | ----------------------------------------------------------------- | ----------- |
 | [`BasisLoader`](modules/textures/docs/api-reference/basis-loader) |             |
 
-### Compressed Texture API
-
-A set of functions that can extract information from "unparsed" binary memory representation of certain compressed texture image formats. These functions are intended to be called on raw `ArrayBuffer` data, before the `BasisLoader` parses it and converts it to a parsed image type.
-
-TBA
-
-| Function | Description |
-| -------- | ----------- |
 
 ## Return Types
 
 The `BasisLoader` returns Array of Array of ArrayBuffer
 
 See [`BasisLoader`](modules/textures/docs/api-reference/image-loader) for more details on options etc.
+
+
+## Texture APIs
+
+The textures API offers functions to load "composite" images for WebGL textures, cube textures and image mip levels.
+
+These functions take a `getUrl` parameter that enables the app to supply the url for each "sub-image", and return a single promise enabling applications to for instance load all the faces of a cube texture, with one image for each mip level for each face in a single async operation.
+
+| Function                                                               | Description                                                                                                           |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [`loadImage`](modules/images/docs/api-reference/load-image)            | Load a single image                                                                                                   |
+| [`loadImageArray`](modules/images/docs/api-reference/load-image-array) | Load an array of images, e.g. for a `Texture2DArray` or `Texture3D`                                                   |
+| [`loadImageCube`](modules/images/docs/api-reference/load-image-cube)   | Load a map of 6 images for the faces of a cube map, or a map of 6 arrays of images for the mip levels of the 6 faces. |
+
+As with all loaders.gl functions, while these functions are intended for use in WebGL applications, they do not call any WebGL functions, and do not actually create any WebGL textures..
 
 ## Attributions
 

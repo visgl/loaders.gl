@@ -13,7 +13,7 @@ import {Response as ResponseNode} from './node/fetch/response.node';
 import {fetchNode as fetchNode} from './node/fetch/fetch.node';
 
 import {encodeImageNode} from './node/images/encode-image.node';
-import {parseImageNode} from './node/images/parse-image.node';
+import {parseImageNode, NODE_FORMAT_SUPPORT} from './node/images/parse-image.node';
 
 export {ReadableStreamPolyfill} from './node/file/readable-stream';
 export {BlobPolyfill} from './node/file/blob';
@@ -82,6 +82,7 @@ if (!isBrowser && !('_encodeImageNode' in global) && encodeImageNode) {
 
 if (!isBrowser && !('_parseImageNode' in global) && parseImageNode) {
   global['_parseImageNode'] = parseImageNode;
+  global['_imageFormatsNode'] = NODE_FORMAT_SUPPORT;
 }
 
 if (!('allSettled' in Promise)) {

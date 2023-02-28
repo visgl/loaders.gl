@@ -25,10 +25,18 @@ export function addModelsToDropdown(models, onChange) {
   };
 }
 
-export function getSelectedModel() {
+/** @returns {string} */
+export function getSelectedModelUrl() {
+  // Check if `?url=...` parameter is supplied in the url?
+  const parsedUrl = new URL(window.location.href);
+  const customUrl = parsedUrl.searchParams.get('url');
+  if (customUrl) {
+    return customUrl;
+  }
+
+  // read the URL from the modelSelector
   const modelSelector = document.getElementById('modelSelector');
   const modelUrl = (modelSelector && modelSelector.value) || GLTF_DEFAULT_MODEL;
-
   return `${modelUrl}`;
 }
 

@@ -1,0 +1,28 @@
+{
+  "name": "bundle-with-nextjs",
+  "version": "0.0.0",
+  "description": "Minimal working example of using loaders.gl with Next.js.",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "@deck.gl/geo-layers": "^8.8.23",
+    "@deck.gl/layers": "^8.8.23",
+    "@deck.gl/react": "^8.8.23",
+    "@loaders.gl/core": "^3.2.13",
+    "@loaders.gl/worker-utils": "^3.2.13",
+    "@next/font": "13.1.6",
+    "@types/node": "18.11.18",
+    "@types/react": "18.0.27",
+    "@types/react-dom": "18.0.10",
+    "deck.gl": "^8.8.23",
+  }, 
+  "devDependencies": {
+    "eslint": "8.33.0",
+    "eslint-config-next": "13.1.6",
+    "next": "13.1.6",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "sass": "^1.58.0",
+    "typescript": "4.9.5"
+  }
+}

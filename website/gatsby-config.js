@@ -94,13 +94,13 @@ module.exports = {
         ],
 
         EXAMPLES: [
-          {
-            title: 'glTF Loader',
-            category: "Loaders",
-            image: 'images/example-gltf.jpg',
-            componentUrl: resolve(__dirname, './templates/example-gltf.tsx'),
-            path: 'examples/gltf'
-          },
+          // {
+          //   title: 'glTF Loader',
+          //   category: "Loaders",
+          //   image: 'images/example-gltf.jpg',
+          //   componentUrl: resolve(__dirname, './templates/example-gltf.tsx'),
+          //   path: 'examples/gltf'
+          // },
           {
             title: 'Texture Loaders',
             category: "Loaders",
@@ -122,13 +122,13 @@ module.exports = {
             componentUrl: resolve(__dirname, '../examples/website/geospatial/app.tsx'),
             path: 'examples/geopkg'
           },
-          {
-            title: 'WMS Loaders',
-            category: "Loaders",
-            image: 'images/example-geospatial.jpg',
-            componentUrl: resolve(__dirname, '../examples/website/wms/app.tsx'),
-            path: 'examples/wms'
-          },
+          // {
+          //   title: 'WMS Loaders',
+          //   category: "Loaders",
+          //   image: 'images/example-geospatial.jpg',
+          //   componentUrl: resolve(__dirname, '../examples/website/wms/app.tsx'),
+          //   path: 'examples/wms'
+          // },
           {
             title: '3D Tiles Loader',
             category: "Loaders",
@@ -158,6 +158,12 @@ module.exports = {
             path: 'examples/benchmarks'
           }
         ]
+      }
+    },
+    {
+      resolve: `gatsby-plugin-typescript`,
+      options: {
+        target: 'es2021'
       }
     },
     {

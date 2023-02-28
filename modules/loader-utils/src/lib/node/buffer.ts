@@ -1,5 +1,7 @@
+// loaders.gl, MIT license
+
 // Isolates Buffer references to ensure they are only bundled under Node.js (avoids big webpack polyfill)
-// this file is not visible to webpack (it is excluded in the package.json "browser" field).
+// this file is selected by the package.json "browser" field).
 
 /**
  * Convert Buffer to ArrayBuffer

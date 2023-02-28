@@ -3,12 +3,13 @@ import {VERSION} from './lib/utils/version';
 import parseImage from './lib/parsers/parse-image';
 import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
-const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg'];
+const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg', 'avif'];
 const MIME_TYPES = [
   'image/png',
   'image/jpeg',
   'image/gif',
   'image/webp',
+  'image/avif',
   'image/bmp',
   'image/vnd.microsoft.icon',
   'image/svg+xml'

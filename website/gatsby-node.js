@@ -34,7 +34,7 @@ module.exports.onCreateWebpackConfig = function onCreateWebpackConfigOverride(op
   config.resolve.mainFields = ['esnext', 'browser', 'module', 'main'];
 
 
-  // console.error(JSON.stringify(config.resolve.alias, null, 2));
+  // console.error(JSON.stringify(config, null, 2));
 
   // Completely replace the webpack config for the current stage.
   // This can be dangerous and break Gatsby if certain configuration options are changed.

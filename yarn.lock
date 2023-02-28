@@ -1925,40 +1925,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@loaders.gl/core@^3.2.5":
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.2.10.tgz#793e5f839fa8a919f8272641ba9893929acc751f"
-  integrity sha512-t/WTJh25d5WdzW+xleMGjDUuZwfevEPjlhdtGGqEh8fx6uhj/yZDxrXbP4O+QezIuo9v1fJ1JOGh8UDw97N11w==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.2.10"
-    "@loaders.gl/worker-utils" "3.2.10"
-    "@probe.gl/log" "^3.5.0"
-    probe.gl "^3.4.0"
-
-"@loaders.gl/images@^3.2.5":
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-3.2.10.tgz#7e41ef755e0737428c6c60b199a4741219a661fb"
-  integrity sha512-GsGl6c83Qd2nitVjoGtcIUPsg6vkfrLyaJyc/1UJUGoWOvk3DHBrcaSO/ld5bnWxjImUP6enwV5rmw6NylXU0Q==
-  dependencies:
-    "@loaders.gl/loader-utils" "3.2.10"
-
-"@loaders.gl/loader-utils@3.2.10":
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.2.10.tgz#2fb644cbe4a890492030fd4270da005bae2d88a1"
-  integrity sha512-oCxYRN1j93zgu3klByFN4fYCSMdhaZodHtDKvG4VEqTmDWFT3jbFpDkBmjwFseEmHQRirt52vwZSknvIUTSXBQ==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.2.10"
-    "@probe.gl/stats" "^3.5.0"
-
-"@loaders.gl/worker-utils@3.2.10":
-  version "3.2.10"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.2.10.tgz#cf4d1308b69cca3e8dea6ef02548333b840edf22"
-  integrity sha512-z75rIsddAGeMV8u1O0jsq1+BGgTYxFHTx6rhmPfOLGQhiZg6bEF2dFSr/mpkUd0xJyyV+Z67+jcC8RUTb1sOTA==
-  dependencies:
-    "@babel/runtime" "^7.3.1"
-
 "@luma.gl/constants@8.5.17", "@luma.gl/constants@^8.5.16", "@luma.gl/constants@^8.5.4":
   version "8.5.17"
   resolved "https://registry.yarnpkg.com/@luma.gl/constants/-/constants-8.5.17.tgz#f7ef1cb7000108d6030232db92f0735643004815"
@@ -2313,7 +2279,7 @@
     "@babel/runtime" "^7.0.0"
     "@probe.gl/env" "3.5.2"
 
-"@probe.gl/stats@3.5.2", "@probe.gl/stats@^3.5.0":
+"@probe.gl/stats@^3.5.0":
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.5.2.tgz#8ee41f73199182fddb8e40221da967414eaea619"
   integrity sha512-YKaYXiHF//fgy1OkX38JD70Lc8qxg2Viw8Q2CTNMwGPDJe12wda7kEmMKPJNw2oYLyFUfTzv00KJMA5h18z02w==
@@ -3970,9 +3936,9 @@ camelcase@^5.0.0, camelcase@^5.3.1:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 caniuse-lite@^1.0.30001400:
-  version "1.0.30001452"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001452.tgz"
-  integrity sha512-Lkp0vFjMkBB3GTpLR8zk4NwW5EdRdnitwYJHDOOKIU85x4ckYCPQ+9WlVvSVClHxVReefkUMtWZH2l9KGlD51w==
+  version "1.0.30001458"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001458.tgz"
+  integrity sha512-lQ1VlUUq5q9ro9X+5gOEyH7i3vm+AYVT1WDCVB69XOZ17KZRhnZ9J0Sqz7wTHQaLBJccNCHq8/Ww5LlOIZbB0w==
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -6031,10 +5997,10 @@ fast-xml-parser@^3.16.0:
   dependencies:
     strnum "^1.0.4"
 
-fast-xml-parser@^4.0.11:
-  version "4.0.11"
-  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-4.0.11.tgz#42332a9aca544520631c8919e6ea871c0185a985"
-  integrity sha512-4aUg3aNRR/WjQAcpceODG1C3x3lFANXRo8+1biqfieHmg9pyMt7qB4lQV/Ta6sJCTbA5vfD8fnA8S54JATiFUA==
+fast-xml-parser@^4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-4.1.3.tgz#0254ad0d4d27f07e6b48254b068c0c137488dd97"
+  integrity sha512-LsNDahCiCcJPe8NO7HijcnukHB24tKbfDDA5IILx9dmW3Frb52lhbeX6MPNUSvyGNfav2VTYpJ/OqkRoVLrh2Q==
   dependencies:
     strnum "^1.0.5"
 
@@ -9974,16 +9940,6 @@ printj@~1.1.0:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/printj/-/printj-1.1.2.tgz#d90deb2975a8b9f600fb3a1c94e3f4c53c78a222"
   integrity sha512-zA2SmoLaxZyArQTOPj5LXecR+RagfPSU5Kw1qP+jkWeNlrq+eJZyY2oS68SU1Z/7/myXM4lo9716laOFAVStCQ==
-
-probe.gl@^3.4.0:
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/probe.gl/-/probe.gl-3.5.2.tgz#d24f84a24678bd7ce005826d4cf2d7221b9c7db8"
-  integrity sha512-8lFQVmi7pMQZkqfj8+VjX4GU9HTkyxgRm5/h/xxA/4/IvZPv3qtP996L+awPwZsrPRKEw99t12SvqEHqSls/sA==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    "@probe.gl/env" "3.5.2"
-    "@probe.gl/log" "3.5.2"
-    "@probe.gl/stats" "3.5.2"
 
 process-nextick-args@~2.0.0:
   version "2.0.1"

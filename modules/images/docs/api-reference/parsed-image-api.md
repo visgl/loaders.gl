@@ -21,19 +21,29 @@ console.log(imageData.width, imageData.height, imageData.data);
 
 ## Functions
 
-### isImageTypeSupported(type : string) : boolean
+### getSupportedImageTypes(): `Promise<Set<string>>`
 
-- `type`: value to test
+Returns a promise that resolves to a `Set` of MIME types that `@loaders.gl/images` can parse on the current platform (depends on the current browser, or whether the app is running under Node.js).
 
-Returns `true` if `type` is one of the types that `@loaders.gl/images` can use on the current platform (depends on browser, or whether running under Node.js).
+> Asynchronous testing of supported image formats is more reliable and is preferred in browsers. A small caveat is that some formats like AVIF and WebP support different options in terms of bit-depths and packing and this function just tests for basic image support.
 
-### isImage(image : any) : boolean
+### isImageTypeSupported(mimeType : string): boolean
+
+- `mimeType`: value to test
+
+Synchronously checks if an image type is supported. 
+
+Returns `true` if `mimeType` is one of the MIME types that `@loaders.gl/images` can use on the current platform (depends on browser, or whether running under Node.js).
+
+> Run-time checks for some recent image formats such as AVIF (and to a lesser extent, WEBP) can not reliably be done using synchronous techniques. If your code allows for asynchronous calls, use `getSupportedImageTypes()` for the most accurate results.
+
+### isImage(image : any): boolean
 
 - `image`: An image returned by an image category loader, such as `ImageLoader`
 
 Returns `true` if `image` is one of the types that `@loaders.gl/images` can return.
 
-### getImageType(image : any) : String
+### getImageType(image : any): String
 
 Returns the type of an image. Can be used when loading images with the default setting of `options.type: 'auto'` to discover what type was actually returned.
 
@@ -53,7 +63,7 @@ Throws
 | `imagebitmap` | `ImageBitmap`                                   | The newer HTML5 image class (modern browsers only)                   |
 | `image`       | `Image` aka `HTMLImageElement`                  | More widely supported (but less performant and flexible) image class |
 
-### getImageData(image : any) : Object
+### getImageData(image : any): Object
 
 - `image`: An image returned by an image category loader, such as `ImageLoader`
 

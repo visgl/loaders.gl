@@ -1,13 +1,13 @@
 // loaders.gl, MIT license
 
-import {ImageSource} from './image-source';
-import {ImageService, ImageServiceProps} from './image-services/image-service';
-import {WMSService} from './image-services/wms-service';
-import {ArcGISImageService} from './image-services/arcgis-image-service';
+import {ImageSource} from './sources/image-source';
+import {ImageService, ImageServiceProps} from './sources/image-service';
+import {WMSService} from './ogc/wms-service';
+import {ArcGISImageServer} from './arcgis/arcgis-image-service';
 
 export type ImageServiceType = 'wms' | 'arcgis-image-server' | 'template';
 
-const SERVICES = [WMSService, ArcGISImageService, ImageService];
+const SERVICES = [WMSService, ArcGISImageServer, ImageService];
 
 type Props = ImageServiceProps & {
   type?: ImageServiceType | 'auto';

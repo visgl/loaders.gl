@@ -1,57 +1,76 @@
 // loaders.gl, MIT license
 
-// WMS
+// CSW - Catalog Service for the Web
+
+export type {CSWLoaderOptions} from './csw-capabilities-loader';
+
+export type {CSWCapabilities} from './csw-capabilities-loader';
+export {CSWCapabilitiesLoader} from './csw-capabilities-loader';
+
+export type {CSWDomain} from './csw-domain-loader';
+export {CSWDomainLoader} from './csw-domain-loader';
+
+export type {CSWRecords} from './csw-records-loader';
+export {CSWRecordsLoader} from './csw-records-loader';
+
+// WMS - Web Map Service
 
 export {WMSErrorLoader} from './wms-error-loader';
 
 export type {WMSLoaderOptions} from './wms-capabilities-loader';
 
-export type {WMSCapabilities} from './lib/wms/wms-types';
+export type {WMSCapabilities} from './wms-capabilities-loader';
 export {WMSCapabilitiesLoader} from './wms-capabilities-loader';
 
+export type {WMSFeatureInfo as _WMSFeatureInfo} from './wip/wms-feature-info-loader';
+export {WMSFeatureInfoLoader as _WMSFeatureInfoLoader} from './wip/wms-feature-info-loader';
+
+export type {WMSLayerDescription as _WMSLayerDescription} from './wip/wms-layer-description-loader';
+export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms-layer-description-loader';
+
+// WMTS - Web Map Tile Service
+
+export type {WMTSLoaderOptions as _WMTSLoaderOptions} from './wip/wmts-capabilities-loader';
+
+export type {WMTSCapabilities as _WMTSCapabilities} from './wip/wmts-capabilities-loader';
+export {WMTSCapabilitiesLoader as _WMTSCapabilitiesLoader} from './wip/wmts-capabilities-loader';
+
+// WFS - Web Feature Service
+
+export type {WFSLoaderOptions as _WFSLoaderOptions} from './wip/wfs-capabilities-loader';
+
+export type {WFSCapabilities as _WFSCapabilities} from './wip/wfs-capabilities-loader';
+export {WFSCapabilitiesLoader as _WFSCapabilitiesLoader} from './wip/wfs-capabilities-loader';
+
+// GML - Geographic Markup Language
+
+export type {GeoJSON as _GeoJSON} from '@loaders.gl/schema';
+export type {GMLLoaderOptions as _GMLLoaderOptions} from './gml-loader';
+export {GMLLoader as _GMLLoader} from './gml-loader';
+
+// EXPERIMENTAL: DATA SOURCES
+
 // NOTE: Will likely move to tiles module
-export type {ImageSourceMetadata} from './lib/data-sources/image-source';
+export type {ImageSourceMetadata} from './lib/data-sources/sources/image-source';
 export type {ImageType} from '@loaders.gl/images';
-export {ImageSource} from './lib/data-sources/image-source';
+export {ImageSource} from './lib/data-sources/sources/image-source';
 
 export type {ImageServiceType} from './lib/data-sources/create-image-source';
 export {createImageSource} from './lib/data-sources/create-image-source';
 
-export type {ImageServiceProps} from './lib/data-sources/image-services/image-service';
-export {ImageService} from './lib/data-sources/image-services/image-service';
-export {WMSService} from './lib/data-sources/image-services/wms-service';
-export {ArcGISImageService as _ArcGISImageService} from './lib/data-sources/image-services/arcgis-image-service';
+export type {ImageServiceProps} from './lib/data-sources/sources/image-service';
+export {ImageService} from './lib/data-sources/sources/image-service';
 
-// WIP /////////////////////////////////////////////////////////////////
-// Plumbing set up but details of parsing and typing not yet completed
+// OGC Services
+export {CSWService} from './lib/data-sources/ogc/csw-service';
+export {WMSService} from './lib/data-sources/ogc/wms-service';
 
-// WMS
+// ArcGIS Services
 
-export type {WMSFeatureInfo as _WMSFeatureInfo} from './lib/wms/wms-types';
-export {WMSFeatureInfoLoader as _WMSFeatureInfoLoader} from './wip/wms-feature-info-loader';
+export {getArcGISServices as _getArcGISServices} from './lib/data-sources/arcgis/arcgis-server';
+export {ArcGISImageServer as _ArcGISImageServer} from './lib/data-sources/arcgis/arcgis-image-service';
 
-export type {WMSLayerDescription as _WMSLayerDescription} from './lib/wms/wms-types';
-export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms-layer-description-loader';
-
-// WMTS
-
-export type {WMTSCapabilities as _WMTSCapabilities} from './lib/wmts/wmts-types';
-export type {WMTSLoaderOptions as _WMTSLoaderOptions} from './wip/wmts-capabilities-loader';
-export {WMTSCapabilitiesLoader as _WMTSCapabilitiesLoader} from './wip/wmts-capabilities-loader';
-
-// WFS
-
-export type {WFSCapabilities as _WFSCapabilities} from './lib/wfs/wfs-types';
-export type {WFSLoaderOptions as _WFSLoaderOptions} from './wip/wfs-capabilities-loader';
-export {WFSCapabilitiesLoader as _WFSCapabilitiesLoader} from './wip/wfs-capabilities-loader';
-
-// GML
-
-export type {GeoJSON as _GeoJSON} from '@loaders.gl/schema';
-export type {GMLLoaderOptions as _GMLLoaderOptions} from './wip/gml-loader';
-export {GMLLoader as _GMLLoader} from './wip/gml-loader';
-
-// LERC
+// LERC - Limited Error Raster Compression
 
 // TODO - restore once esbuild bundling issues have been resolved
 // export type {LERCData} from './lib/lerc/lerc-types';

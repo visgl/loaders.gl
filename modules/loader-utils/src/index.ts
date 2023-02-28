@@ -25,6 +25,8 @@ export {
   document
 } from './lib/env-utils/globals';
 
+export {mergeLoaderOptions} from './lib/option-utils/merge-loader-options';
+
 // LOADERS.GL-SPECIFIC WORKER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
 export {parseWithWorker, canParseWithWorker} from './lib/worker-loader-utils/parse-with-worker';
@@ -79,7 +81,7 @@ export {isBuffer, toBuffer, toArrayBuffer} from './lib/binary-utils/memory-conve
 // Note.js wrappers (can be safely imported, but not used in browser)
 
 // Use instead of importing 'util' to avoid node dependencies
-export {promisify1, promisify2} from './lib/node/util';
+export {promisify1, promisify2} from './lib/node/promisify';
 
 // `path` replacement (avoids bundling big path polyfill)
 import * as path from './lib/path-utils/path';

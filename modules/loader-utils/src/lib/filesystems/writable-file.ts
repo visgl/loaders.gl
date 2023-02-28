@@ -1,5 +1,5 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {isBrowser} from '../env-utils/globals';
 import * as fs from '../node/fs';
 import type {Writable} from 'stream';
 

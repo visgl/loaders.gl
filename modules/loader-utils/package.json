@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/loader-utils",
-  "version": "3.3.0-alpha.14",
+  "version": "3.3.0",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "publishConfig": {
@@ -27,26 +27,18 @@
     "README.md"
   ],
   "browser": {
-    "./src/lib/node/buffer.ts": false,
-    "./src/lib/node/buffer.js": false,
-    "./dist/es5/lib/node/buffer.js": false,
-    "./dist/esm/lib/node/buffer.js": false,
-    "./src/lib/node/fs.ts": false,
-    "./src/lib/node/fs.js": false,
-    "./dist/es5/lib/node/fs.js": false,
-    "./dist/esm/lib/node/fs.js": false,
-    "./src/lib/node/util.ts": false,
-    "./src/lib/node/util.js": false,
-    "./dist/es5/lib/node/util.js": false,
-    "./dist/esm/lib/node/util.js": false,
+    "./src/lib/node/buffer.ts": "./src/lib/node/buffer.browser.ts",
+    "./src/lib/node/buffer.js": "./src/lib/node/buffer.browser.js",
+    "./dist/lib/node/buffer.js": "./dist/lib/node/buffer.browser.js",
+    "./dist/es5/lib/node/buffer.js": "./dist/es5/lib/node/buffer.browser.js",
+    "./dist/esm/lib/node/buffer.js": "./dist/esm/lib/node/buffer.browser.js",
     "fs": false,
-    "util": false,
     "stream": false
   },
   "scripts": {},
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/worker-utils": "3.3.0-alpha.14",
+    "@loaders.gl/worker-utils": "3.3.0",
     "@probe.gl/stats": "^3.5.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
