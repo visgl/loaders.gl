@@ -10,7 +10,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type XMLLoaderOptions = LoaderOptions & {
   xml?: {
     // TODO - type this harder
-    parser?: string; // 'fast';
+    parser?: 'fast-xml-parser' | string;
     /** XML is typically PascalCase, JavaScript prefects camelCase */
     uncapitalizeKeys?: boolean;
     removeNSPrefix?: boolean;
@@ -37,7 +37,7 @@ export const XMLLoader = {
   testText: testXMLFile,
   options: {
     xml: {
-      parser: 'fast',
+      parser: 'fast-xml-parser',
       uncapitalizeKeys: false,
       removeNSPrefix: false,
       textNodeName: 'value',
@@ -49,10 +49,15 @@ export const XMLLoader = {
   parseTextSync: (text: string, options?: XMLLoaderOptions) => parseTextSync(text, options)
 };
 
+function testXMLFile(text: string): boolean {
+  // TODO - There could be space first.
+  return text.startsWith('<?xml');
+}
+
 function parseTextSync(text: string, options?: XMLLoaderOptions): any {
   const xmlOptions: Required<XMLLoaderOptions['xml']> = {...XMLLoader.options.xml, ...options?.xml};
   switch (xmlOptions.parser) {
-    case 'fast':
+    case 'fast-xml-parser':
       const fastXMLOptions: FastXMLParserOptions = {
         // Default FastXML options
         // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#allowbooleanattributes
@@ -85,11 +90,6 @@ function parseTextSync(text: string, options?: XMLLoaderOptions): any {
     default:
       throw new Error(options?.xml?.parser);
   }
-}
-
-function testXMLFile(text: string): boolean {
-  // TODO - There could be space first.
-  return text.startsWith('<?xml');
 }
 
 export const _typecheckXMLLoader: LoaderWithParser = XMLLoader;

@@ -44,3 +44,7 @@ For options, see the [`XMLLoader`](./xml-loader).
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+
+## Attributions
+
+The `HTMLLoader` is a wrapper around [`fast-xml-parser`](https://github.com/NaturalIntelligence/fast-xml-parser).

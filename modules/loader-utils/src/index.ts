@@ -25,6 +25,8 @@ export {
   document
 } from './lib/env-utils/globals';
 
+export {mergeLoaderOptions} from './lib/option-utils/merge-loader-options';
+
 // LOADERS.GL-SPECIFIC WORKER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
 export {parseWithWorker, canParseWithWorker} from './lib/worker-loader-utils/parse-with-worker';

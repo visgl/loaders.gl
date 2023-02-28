@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 import {XMLLoader, XMLLoaderOptions} from './xml-loader';
 
 export type HTMLLoaderOptions = XMLLoaderOptions;
@@ -17,7 +18,10 @@ export const HTMLLoader: LoaderWithParser = {
   id: 'html',
   extensions: ['html', 'htm'],
   mimeTypes: ['text/html'],
-  testText: testHTMLFile
+  testText: testHTMLFile,
+  parse: async (arrayBuffer: ArrayBuffer, options?: XMLLoaderOptions) =>
+    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
+  parseTextSync: (text: string, options?: XMLLoaderOptions) => parseTextSync(text, options)
 };
 
 function testHTMLFile(text: string): boolean {
@@ -25,5 +29,18 @@ function testHTMLFile(text: string): boolean {
   return text.startsWith('<html');
 }
 
-// TODO
-// https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#htmlentities
+function parseTextSync(text: string, options?: XMLLoaderOptions): any {
+  // fast-xml-parser can recognize HTML entities
+  // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#htmlentities
+  // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/5.Entities.md
+  options = mergeLoaderOptions(options, {
+    xml: {
+      parser: 'fast-xml-parser'
+    },
+    _fastXML: {
+      htmlEntities: true
+    }
+  });
+
+  return XMLLoader.parseTextSync(text, options);
+}
