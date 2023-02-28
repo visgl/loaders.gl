@@ -21,7 +21,6 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-
 ## v3.4 In Development
 
 Target Release Date: April, 2023.
@@ -31,11 +30,24 @@ Target Release Date: April, 2023.
 - Support for the AVIF image format
 - Functions for testing which image formats are supported
 
+**@loaders.gl/xml**
+
+- New [`HTMLLoader`](modules/json/docs/api-reference/html-loader) - a minimal HTML loader, parses HTML as an unstructured XML tree.
+
+**@loaders.gl/wms** (New module)
+
+Support for additional OGC Web Services standards:
+
+- CSW (Catalog Services for the Web) supports service discovery.
+  - [`CSWCapabilitiesLoader`](modules/json/docs/api-reference/csw-capabilities-loader)
+  - [`CSWDomainLoader`](modules/json/docs/api-reference/csw-domain-loader)
+  - [`CSWRecordsLoader`](modules/json/docs/api-reference/csw-records-loader)
+
 ## v3.3
 
-Release Date: February 16, 2023.
+Release Date: February 17, 2023.
 
-**General Improvments**
+**General Improvements**
 
 - **Improved support for vite bundler** Most examples are now bundled with vite. vite is now an officially supported bundler for loaders.gl.
 
@@ -78,7 +90,7 @@ Release Date: February 16, 2023.
   - `split-nodes` - create multiple I3S nodes from one glTF file when the source glTF has multiple materials.
   - `instant-node-writing` - memory usage management option. Keep JSON resources on disk instead of memory in cost of conversion speed.
 
-## v3.2 
+## v3.2
 
 Target Release Date: May 2022.
 

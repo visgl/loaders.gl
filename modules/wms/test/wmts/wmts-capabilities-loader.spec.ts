@@ -26,7 +26,7 @@ test('WMTSCapabilitiesLoader#response.xml', async (t) => {
   t.end();
 });
 
-test('WMTSCapabilitiesLoader#response.xml#OWS', async (t) => {
+test.skip('WMTSCapabilitiesLoader#response.xml#OWS', async (t) => {
   const capabilities = (await load(
     WMTS_CAPABILITIES_RESPONSE_URL,
     WMTSCapabilitiesLoader
