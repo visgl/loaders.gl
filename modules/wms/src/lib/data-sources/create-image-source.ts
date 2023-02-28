@@ -2,6 +2,7 @@
 
 import {ImageSource} from './sources/image-source';
 import {ImageService, ImageServiceProps} from './sources/image-service';
+import type {WMSServiceProps} from './ogc/wms-service';
 import {WMSService} from './ogc/wms-service';
 import {ArcGISImageServer} from './arcgis/arcgis-image-service';
 
@@ -9,9 +10,10 @@ export type ImageServiceType = 'wms' | 'arcgis-image-server' | 'template';
 
 const SERVICES = [WMSService, ArcGISImageServer, ImageService];
 
-type Props = ImageServiceProps & {
-  type?: ImageServiceType | 'auto';
-};
+type Props = ImageServiceProps &
+  WMSServiceProps & {
+    type?: ImageServiceType | 'auto';
+  };
 
 /**
  * Creates an image source

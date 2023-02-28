@@ -18,6 +18,7 @@ import {WMSCapabilitiesLoader} from '../../../wms-capabilities-loader';
 import {WMSFeatureInfoLoader} from '../../../wip/wms-feature-info-loader';
 import {WMSLayerDescriptionLoader} from '../../../wip/wms-layer-description-loader';
 
+import type {WMSLoaderOptions} from '../../../wms-error-loader';
 import {WMSErrorLoader} from '../../../wms-error-loader';
 
 type WMSCommonParameters = {
@@ -91,6 +92,11 @@ export type WMSGetLegendGraphicParameters = WMSCommonParameters & {
   request?: 'GetLegendGraphic';
 };
 
+/** Properties for initializing a WMS service */
+export type WMSServiceProps = ImageServiceProps & {
+  loadOptions?: WMSLoaderOptions;
+};
+
 /**
  * The WMSService class provides
  * - provides type safe methods to form URLs to a WMS service
@@ -102,7 +108,7 @@ export class WMSService extends ImageSource {
   static type: 'wms' = 'wms';
   static testURL = (url: string): boolean => url.toLowerCase().includes('wms');
 
-  props: Required<ImageServiceProps>;
+  props: Required<WMSServiceProps>;
   fetch: (url: string, options?: RequestInit) => Promise<Response>;
   capabilities: WMSCapabilities | null = null;
 
@@ -116,7 +122,7 @@ export class WMSService extends ImageSource {
   ];
 
   /** Create a WMSService */
-  constructor(props: ImageServiceProps) {
+  constructor(props: WMSServiceProps) {
     super();
     this.props = mergeImageServiceProps(props);
     this.fetch = getFetchFunction(this.props);

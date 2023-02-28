@@ -12,6 +12,7 @@ export type LASLoaderOptions = LoaderOptions & {
     skip?: number;
     colorDepth?: number | string;
   };
+  onProgress?: Function;
 };
 
 const DEFAULT_LAS_OPTIONS: LASLoaderOptions = {

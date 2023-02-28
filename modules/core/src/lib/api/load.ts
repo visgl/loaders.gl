@@ -1,7 +1,7 @@
 import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {getFetchFunction} from '../loader-utils/option-utils';
+import {getFetchFunction} from '../loader-utils/get-fetch-function';
 
 import {parse} from './parse';
 
@@ -41,9 +41,10 @@ export async function load(
 
   if (isBlob(url)) {
     // The fetch response object will contain blob.name
+    // @ts-expect-error TODO - This may not work for overridden fetch functions
     data = await fetch(url);
   }
 
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
-  return await parse(data, loaders, options);
+  return await parse(data, loaders as Loader[], options);
 }

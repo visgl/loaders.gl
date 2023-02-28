@@ -57,7 +57,7 @@ export type LoaderOptions = {
   // workers
 
   /** CDN load workers from */
-  CDN?: string;
+  CDN?: string | null;
   /** Set to `false` to disable workers */
   worker?: boolean;
   /** Number of concurrent workers (per loader) on desktop browser */
@@ -76,40 +76,40 @@ export type LoaderOptions = {
   /** @deprecated `options.throw removed`, Use `options.nothrow` instead */
   throws?: boolean;
   /** @deprecated `options.dataType` no longer used */
-  dataType?: any;
+  dataType?: never;
   /** @deprecated `options.uri` no longer used */
-  uri?: any;
+  uri?: never;
   /** @deprecated `options.method` removed. Use `options.fetch.method` */
-  method?: any;
+  method?: never;
   /** @deprecated `options.headers` removed. Use `options.fetch.headers` */
-  headers?: any;
+  headers?: never;
   /** @deprecated `options.body` removed. Use `options.fetch.body` */
-  body?: any;
+  body?: never;
   /** @deprecated `options.mode` removed. Use `options.fetch.mode` */
-  mode?: any;
+  mode?: never;
   /** @deprecated `options.credentials` removed. Use `options.fetch.credentials` */
-  credentials?: any;
+  credentials?: never;
   /** @deprecated `options.cache` removed. Use `options.fetch.cache` */
-  cache?: any;
+  cache?: never;
   /** @deprecated `options.redirect` removed. Use `options.fetch.redirect` */
-  redirect?: any;
+  redirect?: never;
   /** @deprecated `options.referrer` removed. Use `options.fetch.referrer` */
-  referrer?: any;
+  referrer?: never;
   /** @deprecated `options.referrerPolicy` removed. Use `options.fetch.referrerPolicy` */
-  referrerPolicy?: any;
+  referrerPolicy?: never;
   /** @deprecated `options.integrity` removed. Use `options.fetch.integrity` */
-  integrity?: any;
+  integrity?: never;
   /** @deprecated `options.keepalive` removed. Use `options.fetch.keepalive` */
-  keepalive?: any;
+  keepalive?: never;
   /** @deprecated `options.signal` removed. Use `options.fetch.signal` */
-  signal?: any;
+  signal?: never;
 
   // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
-  [loaderId: string]: any;
+  [loaderId: string]: unknown;
 };
 
 type PreloadOptions = {
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 /**
@@ -122,7 +122,7 @@ export type Loader = {
   module: string;
   version: string;
   worker?: string | boolean;
-  options: object;
+  options: LoaderOptions;
   deprecatedOptions?: object;
   // end Worker
 
@@ -196,7 +196,7 @@ export type LoaderContext = {
   loaders?: Loader[] | null;
   url?: string;
 
-  fetch: typeof fetch;
+  fetch: typeof fetch | FetchLike;
   response?: Response;
   parse: (
     arrayBuffer: ArrayBuffer,

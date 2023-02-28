@@ -12,6 +12,11 @@ export type DBFLoaderOptions = LoaderOptions & {
     encoding?: string;
     shape?: 'rows' | 'table' | 'object-row-table';
   };
+  /** @deprecated */
+  tables?: {
+    /** @deprecated */
+    format?: 'rows' | 'table' | 'object-row-table';
+  };
 };
 
 export type ShapefileLoaderOptions = LoaderOptions &

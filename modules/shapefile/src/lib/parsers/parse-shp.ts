@@ -67,7 +67,7 @@ class SHPParser {
   }
 }
 
-export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeometry[] {
+export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): BinaryGeometry[] {
   const shpParser = new SHPParser(options);
   shpParser.write(arrayBuffer);
   shpParser.end();
@@ -83,7 +83,7 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeom
  */
 export async function* parseSHPInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: object
+  options?: SHPLoaderOptions
 ): AsyncIterable<BinaryGeometry | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
