@@ -1,0 +1,375 @@
+[
+  {
+    "type": "category",
+    "label": "Developer Guide",
+    "items": [
+      {
+        "type": "category",
+        "label": "Overview",
+        "items": [
+          "README",
+          "whats-new",
+          "upgrade-guide"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Guides",
+        "items": [
+          "developer-guide/get-started",
+          "developer-guide/using-loaders",
+          "developer-guide/using-worker-loaders",
+          "developer-guide/using-streaming-loaders",
+          "developer-guide/using-writers",
+          "developer-guide/loader-categories",
+          "developer-guide/error-handling",
+          "developer-guide/polyfills",
+          "developer-guide/dependencies",
+          "developer-guide/creating-loaders-and-writers",
+          "developer-guide/dev-env"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Concepts",
+        "items": [
+          "developer-guide/concepts/binary-data",
+          "developer-guide/concepts/streaming",
+          "developer-guide/concepts/async-iterators",
+          "developer-guide/concepts/worker-threads"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Loader Categories",
+    "items": [
+      "specifications/category-table",
+      "specifications/category-image",
+      "specifications/category-gis",
+      "specifications/category-mesh",
+      "specifications/category-scenegraph",
+      "specifications/category-3d-tiles"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Loader Catalog",
+    "items": [
+      "modules/3d-tiles/docs/api-reference/tiles-3d-loader",
+      "modules/3d-tiles/docs/api-reference/cesium-ion-loader",
+      "modules/arrow/docs/api-reference/arrow-loader",
+      "modules/arrow/docs/api-reference/arrow-writer",
+      "modules/csv/docs/api-reference/csv-loader",
+      "modules/draco/docs/api-reference/draco-loader",
+      "modules/draco/docs/api-reference/draco-writer",
+      "modules/flatgeobuf/docs/api-reference/flatgeobuf-loader",
+      "modules/geopackage/docs/api-reference/geopackage-loader",
+      "modules/gltf/docs/api-reference/gltf-loader",
+      "modules/gltf/docs/api-reference/gltf-writer",
+      "modules/gltf/docs/api-reference/glb-loader",
+      "modules/gltf/docs/api-reference/glb-writer",
+      "modules/i3s/docs/api-reference/i3s-loader",
+      "modules/images/docs/api-reference/image-loader",
+      "modules/images/docs/api-reference/image-writer",
+      "modules/json/docs/api-reference/json-loader",
+      "modules/json/docs/api-reference/ndjson-loader",
+      "modules/json/docs/api-reference/geojson-loader",
+      "modules/json/docs/api-reference/ndgeojson-loader",
+      "modules/kml/docs/api-reference/gpx-loader",
+      "modules/kml/docs/api-reference/kml-loader",
+      "modules/kml/docs/api-reference/tcx-loader",
+      "modules/las/docs/api-reference/las-loader",
+      "modules/mvt/docs/api-reference/mvt-loader",
+      "modules/obj/docs/api-reference/obj-loader",
+      "modules/parquet/docs/api-reference/parquet-loader",
+      "modules/pcd/docs/api-reference/pcd-loader",
+      "modules/ply/docs/api-reference/ply-loader",
+      "modules/terrain/docs/api-reference/quantized-mesh-loader",
+      "modules/shapefile/docs/api-reference/shapefile-loader",
+      "modules/terrain/docs/api-reference/terrain-loader",
+      "modules/textures/docs/api-reference/basis-loader",
+      "modules/textures/docs/api-reference/compressed-texture-loader",
+      "modules/textures/docs/api-reference/compressed-texture-writer",
+      "modules/textures/docs/api-reference/ktx2-basis-texture-writer",
+      "modules/textures/docs/api-reference/crunch-loader",
+      "modules/textures/docs/api-reference/npy-loader",
+      "modules/video/docs/api-reference/video-loader",
+      "modules/wkt/docs/api-reference/wkb-loader",
+      "modules/wkt/docs/api-reference/wkb-writer",
+      "modules/wkt/docs/api-reference/wkt-loader",
+      "modules/wkt/docs/api-reference/wkt-writer",
+      "modules/wms/docs/api-reference/wms-capabilities-loader",
+      "modules/wms/docs/api-reference/wms-error-loader",
+      "modules/xml/docs/api-reference/xml-loader",
+      "modules/zip/docs/api-reference/zip-loader",
+      "modules/zip/docs/api-reference/zip-writer"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Command-Line Reference",
+    "items": [
+      "modules/tile-converter/docs/cli-reference/tile-converter"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "API Reference",
+    "items": [
+      {
+        "type": "category",
+        "label": "@loaders.gl/core",
+        "items": [
+          "modules/core/docs/README",
+          "modules/core/docs/api-reference/loader-options",
+          "modules/core/docs/api-reference/load",
+          "modules/core/docs/api-reference/load-in-batches",
+          "modules/core/docs/api-reference/parse",
+          "modules/core/docs/api-reference/parse-sync",
+          "modules/core/docs/api-reference/parse-in-batches",
+          "modules/core/docs/api-reference/select-loader",
+          "modules/core/docs/api-reference/set-loader-options",
+          "modules/core/docs/api-reference/register-loaders",
+          "modules/core/docs/api-reference/encode",
+          "modules/core/docs/api-reference/save",
+          "modules/core/docs/api-reference/fetch-file",
+          "modules/core/docs/api-reference/write-file",
+          "modules/core/docs/api-reference/set-path-prefix",
+          "modules/core/docs/api-reference/binary-utilities",
+          "modules/core/docs/api-reference/iterator-utilities",
+          "modules/loader-utils/docs/api-reference/request-scheduler",
+          "specifications/loader-object-format",
+          "specifications/writer-object-format"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/3d-tiles",
+        "items": [
+          "modules/3d-tiles/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/arrow",
+        "items": [
+          "modules/arrow/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/csv",
+        "items": [
+          "modules/csv/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/compression",
+        "items": [
+          "modules/compression/docs/README",
+          "modules/compression/docs/api-reference/compression",
+          "modules/compression/docs/api-reference/brotli-compression",
+          "modules/compression/docs/api-reference/deflate-compression",
+          "modules/compression/docs/api-reference/gzip-compression",
+          "modules/compression/docs/api-reference/lz4-compression",
+          "modules/compression/docs/api-reference/lzo-compression",
+          "modules/compression/docs/api-reference/no-compression",
+          "modules/compression/docs/api-reference/snappy-compression",
+          "modules/compression/docs/api-reference/zstd-compression"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/crypto",
+        "items": [
+          "modules/crypto/docs/README",
+          "modules/crypto/docs/api-reference/hash",
+          "modules/crypto/docs/api-reference/crc32-hash",
+          "modules/crypto/docs/api-reference/crc32c-hash",
+          "modules/crypto/docs/api-reference/md5-hash",
+          "modules/crypto/docs/api-reference/sha256-hash"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/draco",
+        "items": [
+          "modules/draco/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/gltf",
+        "items": [
+          "modules/gltf/docs/README",
+          "modules/gltf/docs/api-reference/gltf-extensions",
+          "modules/gltf/docs/api-reference/gltf-scenegraph",
+          "modules/gltf/docs/api-reference/post-process-gltf"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/i3s",
+        "items": [
+          "modules/i3s/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/images",
+        "items": [
+          "modules/images/docs/README",
+          "modules/images/docs/api-reference/parsed-image-api",
+          "modules/images/docs/api-reference/binary-image-api"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/json",
+        "items": [
+          "modules/json/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/kml",
+        "items": [
+          "modules/kml/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/las",
+        "items": [
+          "modules/las/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/mvt",
+        "items": [
+          "modules/mvt/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/obj",
+        "items": [
+          "modules/obj/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/parquet",
+        "items": [
+          "modules/parquet/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/pcd",
+        "items": [
+          "modules/pcd/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/ply",
+        "items": [
+          "modules/ply/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/polyfills",
+        "items": [
+          "modules/polyfills/docs/api-reference"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/shapefile",
+        "items": [
+          "modules/shapefile/docs/README",
+          "modules/shapefile/docs/api-reference/shp-loader",
+          "modules/shapefile/docs/api-reference/dbf-loader"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/tiles",
+        "items": [
+          "modules/tiles/docs/README",
+          "modules/tiles/docs/api-reference/tileset-3d",
+          "modules/tiles/docs/api-reference/tile-3d"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/tile-converter",
+        "items": [
+          "modules/tile-converter/docs/README",
+          "modules/tile-converter/docs/api-reference/3d-tiles-converter",
+          "modules/tile-converter/docs/api-reference/i3s-converter",
+          "modules/tile-converter/docs/api-reference/build-instructions",
+          "modules/tile-converter/docs/api-reference/tile-converter-bundle"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/textures",
+        "items": [
+          "modules/textures/docs/README",
+          "modules/textures/docs/formats/using-compressed-textures",
+          "modules/textures/docs/api-reference/load-image",
+          "modules/textures/docs/api-reference/load-image-array",
+          "modules/textures/docs/api-reference/load-image-cube"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/video",
+        "items": [
+          "modules/video/docs/README",
+          "modules/video/docs/api-reference/gif-builder"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/wkt",
+        "items": [
+          "modules/wkt/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/wms",
+        "items": [
+          "modules/wms/docs/README",
+          "modules/wms/docs/api-reference/wms-service",
+          "modules/wms/docs/formats/wms",
+          "modules/wms/docs/formats/wmts",
+          "modules/wms/docs/formats/wfs",
+          "modules/wms/docs/formats/gml"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/xml",
+        "items": [
+          "modules/xml/docs/README"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/zip",
+        "items": [
+          "modules/zip/docs/README"
+        ]
+      }
+    ]
+  }
+]
