@@ -47,7 +47,7 @@ export class DepsInstaller {
     const childProcess = new ChildProcessProxy();
     await childProcess.start({
       command: 'npm',
-      arguments: ['install', 'sharp', 'join-images'],
+      arguments: ['install', 'sharp@^0.30.4', 'join-images@^1.1.3'],
       wait: 0
     });
 
