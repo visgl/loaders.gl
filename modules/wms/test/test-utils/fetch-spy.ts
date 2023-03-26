@@ -1,13 +1,16 @@
 // loaders.gl, MIT license
 
 /** Stores a reference to the intercepted requestInit object under the url */
-export let requestInits: Record<string, RequestInit | undefined> = {};
+export const requestInits: Record<string, RequestInit | undefined> = {};
 export const mockResults: Record<string, string | Blob> = {};
 
 const originalFetch = globalThis.fetch;
 
 /** Calls global fetch after storing the request info */
-export async function fetchSpy(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response> {
+export async function fetchSpy(
+  input: RequestInfo | URL,
+  init?: RequestInit | undefined
+): Promise<Response> {
   if (typeof input === 'string') {
     requestInits[input] = init;
   }
@@ -15,7 +18,10 @@ export async function fetchSpy(input: RequestInfo | URL, init?: RequestInit | un
 }
 
 /** Calls global fetch after storing the request info */
-export async function fetchMock(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response> {
+export async function fetchMock(
+  input: RequestInfo | URL,
+  init?: RequestInit | undefined
+): Promise<Response> {
   if (typeof input === 'string') {
     requestInits[input] = init;
     const mockResult = mockResults[input];
@@ -27,7 +33,9 @@ export async function fetchMock(input: RequestInfo | URL, init?: RequestInit | u
 }
 
 /** Calls global fetch after storing the request info */
-export async function withFetchSpy(func: () => Promise<void>): Promise<Record<string, RequestInit | undefined>> {
+export async function withFetchSpy(
+  func: () => Promise<void>
+): Promise<Record<string, RequestInit | undefined>> {
   let promise;
   try {
     globalThis.fetch = fetchSpy;
@@ -40,7 +48,9 @@ export async function withFetchSpy(func: () => Promise<void>): Promise<Record<st
   return requestInits;
 }
 
-export async function withFetchMock(func: () => Promise<void>): Promise<Record<string, RequestInit | undefined>> {
+export async function withFetchMock(
+  func: () => Promise<void>
+): Promise<Record<string, RequestInit | undefined>> {
   let promise;
   try {
     globalThis.fetch = fetchMock;
