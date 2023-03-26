@@ -260,8 +260,8 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetCapabilitiesParameters> = {
       service: 'WMS',
-      request: 'GetCapabilities',
       version: this.props.version,
+      request: 'GetCapabilities',
       ...wmsParameters,
       ...vendorParameters
     };
