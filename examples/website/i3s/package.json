@@ -32,7 +32,7 @@
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
-    "@probe.gl/stats-widget": "^3.5.0",
+    "@probe.gl/stats-widget": "^4.0.1",
     "gl-matrix": "^3.3.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.0",
