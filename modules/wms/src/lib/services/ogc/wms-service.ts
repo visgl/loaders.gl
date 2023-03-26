@@ -63,7 +63,7 @@ export type WMSGetFeatureInfoParameters = WMSCommonParameters & {
   y: number;
   /** list of layers to query (could be different from rendered layers) */
   query_layers: string[];
-  /** MIME type of returned feature info */
+  /** Requested MIME type of returned feature info */
   info_format?: 'text/plain' | 'application/vnd.ogc.gml';
 
   /** Layers to render */
@@ -95,6 +95,16 @@ export type WMSGetLegendGraphicParameters = WMSCommonParameters & {
 /** Properties for initializing a WMS service */
 export type WMSServiceProps = ImageSourceProps & {
   url: string;
+  /** WMS version */
+  version?: '1.1.1' | '1.3.0';
+  /** Layers to render */
+  layers?: string[];
+  /** SRS for the image (not the bounding box) */
+  srs?: string;
+  /** Requested format for the return image */
+  format?: 'image/png';
+  /** Requested MIME type of returned feature info */
+  info_format?: 'text/plain' | 'application/vnd.ogc.gml';
 };
 
 /**
@@ -108,7 +118,7 @@ export class WMSService extends ImageSource {
   static type: 'wms' = 'wms';
   static testURL = (url: string): boolean => url.toLowerCase().includes('wms');
 
-  props: WMSServiceProps;
+  props: Required<WMSServiceProps>;
   capabilities: WMSCapabilities | null = null;
 
   /** A list of loaders used by the WMSService methods */
@@ -123,7 +133,15 @@ export class WMSService extends ImageSource {
   /** Create a WMSService */
   constructor(props: WMSServiceProps) {
     super(props);
-    this.props = props;
+    this.props = {
+      loadOptions: undefined!,
+      layers: undefined!,
+      version: '1.1.1',
+      srs: 'EPSG:4326',
+      format: 'image/png',
+      info_format: 'text/plain',
+      ...props
+    };
   }
 
   // ImageSource implementation
@@ -189,7 +207,6 @@ export class WMSService extends ImageSource {
     options: WMSGetFeatureInfoParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<string> {
-    options = {...options, info_format: 'text/plain'};
     const url = this.getFeatureInfoURL(options, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
@@ -235,7 +252,7 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetCapabilitiesParameters> = {
       service: 'WMS',
-      version: '1.1.1',
+      version: this.version,
       request: 'GetCapabilities',
       ...wmsParameters,
       ...vendorParameters
@@ -250,7 +267,7 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetMapParameters> = {
       service: 'WMS',
-      version: '1.1.1',
+      version: this.version,
       request: 'GetMap',
       // layers: [],
       // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
@@ -272,18 +289,18 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetFeatureInfoParameters> = {
       service: 'WMS',
-      version: '1.1.1',
       request: 'GetFeatureInfo',
-      // layers: [],
+      version: this.props.version,
+      // layers: this.props.layers,
       // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
       // width: 1200,
       // height: 900,
       // x: undefined!,
       // y: undefined!,
       // query_layers: [],
-      srs: 'EPSG:4326',
-      format: 'image/png',
-      info_format: 'text/plain',
+      srs: this.props.srs,
+      format: this.props.format,
+      info_format: this.props.info_format,
       styles: undefined,
       ...wmsParameters,
       ...vendorParameters
@@ -298,8 +315,8 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSDescribeLayerParameters> = {
       service: 'WMS',
-      version: '1.1.1',
       request: 'DescribeLayer',
+      version: this.props.version,
       ...wmsParameters,
       ...vendorParameters
     };
@@ -312,8 +329,9 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetLegendGraphicParameters> = {
       service: 'WMS',
-      version: '1.1.1',
       request: 'GetLegendGraphic',
+      version: this.props.version,
+      // format?
       ...wmsParameters,
       ...vendorParameters
     };
