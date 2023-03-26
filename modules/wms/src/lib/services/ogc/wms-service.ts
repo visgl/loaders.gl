@@ -94,6 +94,7 @@ export type WMSGetLegendGraphicParameters = WMSCommonParameters & {
 
 /** Properties for initializing a WMS service */
 export type WMSServiceProps = ImageSourceProps & {
+  /** Base URL to the service */
   url: string;
   /** WMS version */
   version?: '1.1.1' | '1.3.0';
@@ -105,6 +106,8 @@ export type WMSServiceProps = ImageSourceProps & {
   format?: 'image/png';
   /** Requested MIME type of returned feature info */
   info_format?: 'text/plain' | 'application/vnd.ogc.gml';
+  /** Styling */
+  styles?: unknown;
 };
 
 /**
@@ -133,9 +136,14 @@ export class WMSService extends ImageSource {
   /** Create a WMSService */
   constructor(props: WMSServiceProps) {
     super(props);
+
+    // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
+    // This would make pasting in any WMS URL more likely to make this class just work.
+
     this.props = {
       loadOptions: undefined!,
       layers: undefined!,
+      styles: undefined,
       version: '1.1.1',
       srs: 'EPSG:4326',
       format: 'image/png',
@@ -252,8 +260,8 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetCapabilitiesParameters> = {
       service: 'WMS',
-      version: this.version,
       request: 'GetCapabilities',
+      version: this.props.version,
       ...wmsParameters,
       ...vendorParameters
     };
@@ -267,15 +275,15 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetMapParameters> = {
       service: 'WMS',
-      version: this.version,
+      version: this.props.version,
       request: 'GetMap',
       // layers: [],
       // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
       // width: 1200,
       // height: 900,
-      styles: undefined,
-      srs: 'EPSG:4326',
-      format: 'image/png',
+      styles: this.props.styles,
+      srs: this.props.srs,
+      format: this.props.format,
       ...wmsParameters,
       ...vendorParameters
     };
@@ -289,8 +297,8 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetFeatureInfoParameters> = {
       service: 'WMS',
-      request: 'GetFeatureInfo',
       version: this.props.version,
+      request: 'GetFeatureInfo',
       // layers: this.props.layers,
       // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
       // width: 1200,
@@ -301,7 +309,7 @@ export class WMSService extends ImageSource {
       srs: this.props.srs,
       format: this.props.format,
       info_format: this.props.info_format,
-      styles: undefined,
+      styles: this.props.styles,
       ...wmsParameters,
       ...vendorParameters
     };
@@ -315,8 +323,8 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSDescribeLayerParameters> = {
       service: 'WMS',
-      request: 'DescribeLayer',
       version: this.props.version,
+      request: 'DescribeLayer',
       ...wmsParameters,
       ...vendorParameters
     };
@@ -329,8 +337,8 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetLegendGraphicParameters> = {
       service: 'WMS',
-      request: 'GetLegendGraphic',
       version: this.props.version,
+      request: 'GetLegendGraphic',
       // format?
       ...wmsParameters,
       ...vendorParameters
