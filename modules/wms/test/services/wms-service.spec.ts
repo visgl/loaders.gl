@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
 
 import test from 'tape-promise/tape';
+import {withFetchMock, mockResults, requestInits} from '../test-utils/fetch-spy';
 
 import {WMSService} from '@loaders.gl/wms';
 
@@ -78,4 +79,22 @@ test('WMSService#parameters', async (t) => {
     'getMapURL'
   );
   t.end();
+});
+
+// TODO - move to image-source.spec.ts
+test('WMSService#fetch override', async (t) => {
+  const loadOptions = {fetch: {headers: {Authorization: 'Bearer abc'}}};
+  const wmsService = new WMSService({url: WMS_SERVICE_URL, loadOptions});
+  const generatedUrl = wmsService.getFeatureInfoURL({});
+
+  mockResults[generatedUrl] = 'mock data';
+  await withFetchMock(async () => {
+    const featureInfo = await wmsService.getFeatureInfo({});
+    t.deepEqual(
+      requestInits[generatedUrl]?.headers,
+      {Authorization: 'Bearer abc'},
+      'authorization header provided in constructor passed to fetch'
+    );
+    t.end();
+  });
 });
