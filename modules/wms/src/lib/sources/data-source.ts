@@ -1,4 +1,24 @@
-import {LoaderOptions} from '@loaders.gl/loader-utils';
+// loaders.gl, MIT license
+
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
+
+export type DataSourceProps = {
+  /** LoaderOptions provide an option to override `fetch`. Will also be passed to any sub loaders */
+  loadOptions?: LoaderOptions;
+};
+
+/** base class of all data sources */
+export abstract class DataSource {
+  /** A resolved fetch function extracted from loadOptions prop */
+  fetch: (url: string, options?: RequestInit) => Promise<Response>;
+  /** The actual load options, if calling a loaders.gl loader */
+  loadOptions: LoaderOptions;
+
+  constructor(props: DataSourceProps) {
+    this.loadOptions = {...props.loadOptions};
+    this.fetch = getFetchFunction(this.loadOptions);
+  }
+}
 
 /**
  * Gets the current fetch function from options
@@ -23,18 +43,4 @@ export function getFetchFunction(options?: LoaderOptions) {
 
   // else return the global fetch function
   return (url) => fetch(url);
-}
-
-export function mergeImageServiceProps<Props extends {loadOptions?: any}>(
-  props: Props
-): Required<Props> {
-  // @ts-expect-error
-  return {
-    // Default fetch
-    ...props,
-    loadOptions: {
-      ...props.loadOptions,
-      fetch: getFetchFunction(props.loadOptions)
-    }
-  };
 }

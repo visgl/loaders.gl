@@ -4,11 +4,11 @@
 
 import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
+import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 
-import type {ImageSourceMetadata, GetImageParameters} from '../sources/image-source';
-import {ImageSource} from '../sources/image-source';
-import type {ImageServiceProps} from '../sources/image-service';
-import {getFetchFunction, mergeImageServiceProps} from '../utils/utils';
+import type {ImageSourceMetadata, GetImageParameters} from '../../sources/image-source';
+import type {ImageSourceProps} from '../../sources/image-source';
+import {ImageSource} from '../../sources/image-source';
 
 import type {WMSCapabilities} from '../../../wms-capabilities-loader';
 import type {WMSFeatureInfo} from '../../../wip/wms-feature-info-loader';
@@ -93,8 +93,8 @@ export type WMSGetLegendGraphicParameters = WMSCommonParameters & {
 };
 
 /** Properties for initializing a WMS service */
-export type WMSServiceProps = ImageServiceProps & {
-  loadOptions?: WMSLoaderOptions;
+export type WMSServiceProps = ImageSourceProps & {
+  url: string;
 };
 
 /**
@@ -108,8 +108,7 @@ export class WMSService extends ImageSource {
   static type: 'wms' = 'wms';
   static testURL = (url: string): boolean => url.toLowerCase().includes('wms');
 
-  props: Required<WMSServiceProps>;
-  fetch: (url: string, options?: RequestInit) => Promise<Response>;
+  props: WMSServiceProps;
   capabilities: WMSCapabilities | null = null;
 
   /** A list of loaders used by the WMSService methods */
@@ -123,14 +122,8 @@ export class WMSService extends ImageSource {
 
   /** Create a WMSService */
   constructor(props: WMSServiceProps) {
-    super();
-    this.props = mergeImageServiceProps(props);
-    this.fetch = getFetchFunction(this.props);
-    this.props.loadOptions = {
-      ...this.props.loadOptions,
-      // We want error responses to throw exceptions, the WMSErrorLoader can do this
-      wms: {...this.props.loadOptions?.wms, throwOnError: true}
-    };
+    super(props);
+    this.props = props;
   }
 
   // ImageSource implementation
@@ -354,7 +347,11 @@ export class WMSService extends ImageSource {
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers['content-type'];
     if (!response.ok || WMSErrorLoader.mimeTypes.includes(contentType)) {
-      const error = WMSErrorLoader.parseSync(arrayBuffer, this.props.loadOptions);
+      // We want error responses to throw exceptions, the WMSErrorLoader can do this
+      const loadOptions = mergeLoaderOptions<WMSLoaderOptions>(this.props.loadOptions, {
+        wms: {throwOnError: true}
+      });
+      const error = WMSErrorLoader.parseSync(arrayBuffer, loadOptions);
       throw new Error(error);
     }
   }
