@@ -1,6 +1,8 @@
 // loaders.gl, MIT license
 
 import type {ImageType} from '@loaders.gl/images';
+import type {DataSourceProps} from './data-source';
+import {DataSource} from './data-source';
 
 /**
  * Normalized capabilities of an Image service
@@ -71,12 +73,14 @@ export type ImageFormat = {
   format?: 'image/png';
 };
 
+export type ImageSourceProps = DataSourceProps;
+
 /**
  * MapImageSource - data sources that allow data to be queried by (geospatial) extents
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export abstract class ImageSource {
+export abstract class ImageSource extends DataSource {
   abstract getMetadata(): Promise<ImageSourceMetadata>;
   abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
 }

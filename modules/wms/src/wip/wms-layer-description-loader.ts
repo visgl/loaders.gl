@@ -4,8 +4,8 @@ import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type{WMSLoaderOptions} from '../wms-capabilities-loader';
 import {WMSCapabilitiesLoader} from '../wms-capabilities-loader';
 
-import type {WMSLayerDescription} from '../lib/wms/parse-wms-layer-description';
-import {parseWMSLayerDescription} from '../lib/wms/parse-wms-layer-description';
+import type {WMSLayerDescription} from '../lib/parsers/wms/parse-wms-layer-description';
+import {parseWMSLayerDescription} from '../lib/parsers/wms/parse-wms-layer-description';
 
 export {WMSLayerDescription};
 

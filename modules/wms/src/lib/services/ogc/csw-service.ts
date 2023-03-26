@@ -2,8 +2,8 @@
 
 /* eslint-disable camelcase */
 
-import type {ImageServiceProps} from '../sources/image-service';
-import {getFetchFunction, mergeImageServiceProps} from '../utils/utils';
+import type {DataSourceProps} from '../../sources/data-source';
+import {DataSource} from '../../sources/data-source';
 
 import type {CSWCapabilities} from '../../../csw-capabilities-loader';
 import {CSWCapabilitiesLoader} from '../../../csw-capabilities-loader';
@@ -43,6 +43,10 @@ export type CSWGetDomainParameters = CSWCommonParameters & {
 
 export type Service = {name: string; type: string; url: string; params?: string; scheme?: string};
 
+export type CSWServiceProps = DataSourceProps & {
+  url: string;
+};
+
 /**
  * The CSWService class provides
  * - provides type safe methods to form URLs to a CSW service
@@ -50,26 +54,20 @@ export type Service = {name: string; type: string; url: string; params?: string;
  * - implements the ImageService interface
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class CSWService {
+export class CSWService extends DataSource {
   static type: 'csw' = 'csw';
   static testURL = (url: string): boolean => url.toLowerCase().includes('csw');
 
-  props: Required<ImageServiceProps>;
-  fetch: (url: string, options?: RequestInit) => Promise<Response>;
+  props: CSWServiceProps;
   capabilities: CSWCapabilities | null = null;
 
   /** A list of loaders used by the CSWService methods */
   readonly loaders = [CSWErrorLoader, CSWCapabilitiesLoader];
 
   /** Create a CSWService */
-  constructor(props: ImageServiceProps) {
-    this.props = mergeImageServiceProps(props);
-    this.fetch = getFetchFunction(this.props);
-    this.props.loadOptions = {
-      ...this.props.loadOptions,
-      // We want error responses to throw exceptions, the CSWErrorLoader can do this
-      // wms: {...this.props.loadOptions?.wms, throwOnError: true}
-    };
+  constructor(props: CSWServiceProps) {
+    super(props);
+    this.props = props;
   }
 
   async getMetadata(): Promise<CSWCapabilities> {

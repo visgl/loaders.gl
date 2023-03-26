@@ -1,10 +1,13 @@
 // loaders.gl, MIT license
 
 import {ImageType} from '@loaders.gl/images';
-import type {ImageSourceMetadata, GetImageParameters} from '../sources/image-source';
-import {ImageSource} from '../sources/image-source';
-import {ImageServiceProps} from '../sources/image-service';
-import {mergeImageServiceProps, getFetchFunction} from '../utils/utils';
+import type {ImageSourceMetadata, GetImageParameters} from '../../sources/image-source';
+import type {ImageSourceProps} from '../../sources/image-source';
+import {ImageSource} from '../../sources/image-source';
+
+export type ArcGISImageServerProps = ImageSourceProps & {
+  url: string;
+};
 
 /**
  * ArcGIS ImageServer
@@ -15,13 +18,11 @@ export class ArcGISImageServer extends ImageSource {
   static type: 'arcgis-image-server' = 'arcgis-image-server';
   static testURL = (url: string): boolean => url.toLowerCase().includes('ImageServer');
 
-  props: Required<ImageServiceProps>;
-  fetch: (url: string, options?: RequestInit) => Promise<Response>;
+  props: ArcGISImageServerProps;
 
-  constructor(props: ImageServiceProps) {
-    super();
-    this.props = mergeImageServiceProps(props);
-    this.fetch = getFetchFunction(this.props);
+  constructor(props: ArcGISImageServerProps) {
+    super(props);
+    this.props = props;
   }
 
   // ImageSource (normalized endpoints)
