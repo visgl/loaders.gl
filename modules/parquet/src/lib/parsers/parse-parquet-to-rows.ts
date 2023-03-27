@@ -1,8 +1,8 @@
 // import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {ColumnarTableBatch} from '@loaders.gl/schema';
 import {makeReadableFile} from '@loaders.gl/loader-utils';
-import type {ParquetLoaderOptions} from '../parquet-loader';
-import {ParquetReader} from '../parquetjs/parser/parquet-reader';
+import type {ParquetLoaderOptions} from '../../parquet-loader';
+import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 
 export async function parseParquet(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
   const blob = new Blob([arrayBuffer]);

@@ -4,7 +4,11 @@ import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
 import {ParquetLoader as ParquetWorkerLoader} from './parquet-loader';
-import {parseParquet, parseParquetFileInBatches} from './lib/parse-parquet';
+import {parseParquet, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-rows';
+import {
+  parseParquetInColumns,
+  parseParquetFileInColumnarBatches
+} from './lib/parsers/parse-parquet-to-columns';
 import {parseParquet as parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
 
 export {ParquetWorkerLoader, ParquetWasmWorkerLoader};
@@ -14,6 +18,13 @@ export const ParquetLoader = {
   ...ParquetWorkerLoader,
   parse: parseParquet,
   parseFileInBatches: parseParquetFileInBatches
+};
+
+/** ParquetJS table loader */
+export const ParquetColumnarLoader = {
+  ...ParquetWorkerLoader,
+  parse: parseParquetInColumns,
+  parseFileInBatches: parseParquetFileInColumnarBatches
 };
 
 export const ParquetWasmLoader = {
@@ -34,7 +45,10 @@ export {ParquetSchema} from './parquetjs/schema/schema';
 export {ParquetReader} from './parquetjs/parser/parquet-reader';
 export {ParquetEncoder} from './parquetjs/encoder/parquet-encoder';
 
-export {convertParquetToArrowSchema} from './lib/convert-schema';
+export {
+  convertSchemaFromParquet,
+  convertSchemaFromParquet as convertParquetToArrowSchema
+} from './lib/arrow/convert-schema-from-parquet';
 
 // TESTS
 export const _typecheckParquetLoader: LoaderWithParser = ParquetLoader;

@@ -1,5 +1,7 @@
-import type {ParquetSchema} from '../parquetjs/schema/schema';
-import type {FieldDefinition, ParquetField, ParquetType} from '../parquetjs/schema/declare';
+// loaders.gl, MIT license
+
+import type {ParquetSchema} from '../../parquetjs/schema/schema';
+import type {FieldDefinition, ParquetField, ParquetType} from '../../parquetjs/schema/declare';
 
 import {
   Schema,
@@ -45,7 +47,7 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: typeof DataType} = {
   INT_64: Int64,
   JSON: Binary,
   BSON: Binary,
-  // TODO check interal type
+  // TODO check interval type
   INTERVAL: Binary,
   DECIMAL_INT32: Float32,
   DECIMAL_INT64: Float64,
@@ -53,11 +55,32 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: typeof DataType} = {
   DECIMAL_FIXED_LEN_BYTE_ARRAY: Float64
 };
 
-export function convertParquetToArrowSchema(parquetSchema: ParquetSchema): Schema {
+export function convertSchemaFromParquet(parquetSchema: ParquetSchema): Schema {
   const fields = getFields(parquetSchema.schema);
 
   // TODO add metadata if needed.
   return new Schema(fields);
+}
+
+function getFields(schema: FieldDefinition): Field[] {
+  const fields: Field[] = [];
+
+  for (const name in schema) {
+    const field = schema[name];
+
+    if (field.fields) {
+      const childFields = getFields(field.fields);
+      const nestedField = new Field(name, new Struct(childFields), field.optional);
+      fields.push(nestedField);
+    } else {
+      const FieldType = PARQUET_TYPE_MAPPING[field.type];
+      const metadata = getFieldMetadata(field);
+      const arrowField = new Field(name, new FieldType(), field.optional, metadata);
+      fields.push(arrowField);
+    }
+  }
+
+  return fields;
 }
 
 function getFieldMetadata(field: ParquetField): Map<string, string> {
@@ -71,25 +94,4 @@ function getFieldMetadata(field: ParquetField): Map<string, string> {
   }
 
   return metadata;
-}
-
-function getFields(schema: FieldDefinition): Field[] {
-  const fields: Field[] = [];
-
-  for (const name in schema) {
-    const field = schema[name];
-
-    if (field.fields) {
-      const childField = getFields(field.fields);
-      const nestedField = new Field(name, new Struct(childField), field.optional);
-      fields.push(nestedField);
-    } else {
-      const FieldType = PARQUET_TYPE_MAPPING[field.type];
-      const metadata = getFieldMetadata(field);
-      const arrowField = new Field(name, new FieldType(), field.optional, metadata);
-      fields.push(arrowField);
-    }
-  }
-
-  return fields;
 }
