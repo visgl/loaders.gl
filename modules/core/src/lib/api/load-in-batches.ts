@@ -1,6 +1,6 @@
 import type {LoaderWithParser, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {getFetchFunction} from '../loader-utils/option-utils';
+import {getFetchFunction} from '../loader-utils/get-fetch-function';
 
 import {parseInBatches} from './parse-in-batches';
 

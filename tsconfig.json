@@ -115,6 +115,7 @@
     "coverage",
     "arrowjs",
     "website",
+    "website-gatsby",
     "test"
   ]
 }

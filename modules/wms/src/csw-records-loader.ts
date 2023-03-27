@@ -2,8 +2,8 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
-import type {CSWRecords} from './lib/csw/parse-csw-records';
-import {parseCSWRecords} from './lib/csw/parse-csw-records';
+import type {CSWRecords} from './lib/parsers/csw/parse-csw-records';
+import {parseCSWRecords} from './lib/parsers/csw/parse-csw-records';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

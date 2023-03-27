@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {LERCData} from './lib/lerc/lerc-types';
+import type {LERCData} from './lib/parsers/lerc/lerc-types';
 import * as Lerc from 'lerc';
 
 // __VERSION__ is injected by babel-plugin-version-inline

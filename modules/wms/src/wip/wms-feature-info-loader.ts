@@ -3,8 +3,8 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {WMSCapabilitiesLoader, WMSLoaderOptions} from '../wms-capabilities-loader';
 
-import type {WMSFeatureInfo} from '../lib/wms/parse-wms-features';
-import {parseWMSFeatureInfo} from '../lib/wms/parse-wms-features';
+import type {WMSFeatureInfo} from '../lib/parsers/wms/parse-wms-features';
+import {parseWMSFeatureInfo} from '../lib/parsers/wms/parse-wms-features';
 
 export {WMSFeatureInfo};
 

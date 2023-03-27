@@ -50,28 +50,29 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // EXPERIMENTAL: DATA SOURCES
 
-// NOTE: Will likely move to tiles module
-export type {ImageSourceMetadata} from './lib/data-sources/sources/image-source';
+export type {ImageSourceMetadata} from './lib/sources/image-source';
 export type {ImageType} from '@loaders.gl/images';
-export {ImageSource} from './lib/data-sources/sources/image-source';
+export {ImageSource} from './lib/sources/image-source';
 
-export type {ImageServiceType} from './lib/data-sources/create-image-source';
-export {createImageSource} from './lib/data-sources/create-image-source';
+export type {ImageServiceType} from './lib/create-image-source';
+export {createImageSource} from './lib/create-image-source';
 
-export type {ImageServiceProps} from './lib/data-sources/sources/image-service';
-export {ImageService} from './lib/data-sources/sources/image-service';
+// Generic (Template URL) Services
+
+export type {ImageServiceProps} from './lib/services/generic/image-service';
+export {ImageService} from './lib/services/generic/image-service';
 
 // OGC Services
-export {CSWService} from './lib/data-sources/ogc/csw-service';
-export {WMSService} from './lib/data-sources/ogc/wms-service';
+
+export {CSWService} from './lib/services/ogc/csw-service';
+export {WMSService} from './lib/services/ogc/wms-service';
 
 // ArcGIS Services
 
-export {getArcGISServices as _getArcGISServices} from './lib/data-sources/arcgis/arcgis-server';
-export {ArcGISImageServer as _ArcGISImageServer} from './lib/data-sources/arcgis/arcgis-image-service';
+export {getArcGISServices as _getArcGISServices} from './lib/services/arcgis/arcgis-server';
+export {ArcGISImageServer as _ArcGISImageServer} from './lib/services/arcgis/arcgis-image-service';
 
 // LERC - Limited Error Raster Compression
-
 // TODO - restore once esbuild bundling issues have been resolved
 // export type {LERCData} from './lib/lerc/lerc-types';
 // export {LERCLoader} from './lerc-loader';

@@ -1,5 +1,5 @@
 import type {Loader, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
-import {getFetchFunction} from './option-utils';
+import {getFetchFunction} from './get-fetch-function';
 
 /**
  * "sub" loaders invoked by other loaders get a "context" injected on `this`

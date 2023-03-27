@@ -62,11 +62,13 @@ export async function parseI3STileContent(
   };
 
   if (tileOptions.textureUrl) {
+    // @ts-expect-error options is not properly typed
     const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
     const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
     const response = await fetch(url, options?.fetch as RequestInit);
     const arrayBuffer = await response.arrayBuffer();
 
+    // @ts-expect-error options is not properly typed
     if (options?.i3s.decodeTextures) {
       if (loader === ImageLoader) {
         const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};

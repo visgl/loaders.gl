@@ -39,7 +39,7 @@
     "@math.gl/culling": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
     "@math.gl/web-mercator": "^3.5.1",
-    "@probe.gl/stats": "^3.5.0"
+    "@probe.gl/stats": "^4.0.1"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^3.2.0"
