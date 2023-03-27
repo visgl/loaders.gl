@@ -56,7 +56,10 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: typeof DataType} = {
   DECIMAL_FIXED_LEN_BYTE_ARRAY: Float64
 };
 
-export function convertSchemaFromParquet(parquetSchema: ParquetSchema, parquetMetadata?: FileMetaData): Schema {
+export function convertSchemaFromParquet(
+  parquetSchema: ParquetSchema,
+  parquetMetadata?: FileMetaData
+): Schema {
   const fields = getFields(parquetSchema.schema);
   const metadata = parquetMetadata && getSchemaMetadata(parquetMetadata);
   return new Schema(fields, metadata);

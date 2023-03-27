@@ -23,15 +23,14 @@ export function decodeGeoparquetMetadata(schema: Schema): void {
     }
 
     for (const [columnName, columnMetadata] of Object.entries(columns || {})) {
-      const field = schema.fields.find(field => field.name === columnName);
+      const field = schema.fields.find((field) => field.name === columnName);
       if (field) {
         if (field.name === primary_column) {
-          field.metadata.set('_geoparquet:primary_field', "true");
+          field.metadata.set('_geoparquet:primary_field', 'true');
         }
         decodeGeoparquetSchemaToField(field, columnMetadata);
       }
     }
-
   } catch {
     // ignore
   }
@@ -47,7 +46,10 @@ function decodeGeoparquetSchemaToField(field: Field, columnMetadata): void {
       case 'crs':
       case 'edges':
       default:
-        field.metadata.set(`_geoparquet:${key}`, typeof value === 'string' ? value : JSON.stringify(value));
+        field.metadata.set(
+          `_geoparquet:${key}`,
+          typeof value === 'string' ? value : JSON.stringify(value)
+        );
     }
   }
 }
