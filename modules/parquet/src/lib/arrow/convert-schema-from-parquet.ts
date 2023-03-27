@@ -88,7 +88,8 @@ function getFieldMetadata(field: ParquetField): Map<string, string> {
 
   for (const key in field) {
     if (key !== 'name') {
-      const value = typeof field[key] !== 'string' ? JSON.stringify(field[key]) : field[key];
+      let value = field[key] || '';
+      value = typeof field[key] !== 'string' ? JSON.stringify(field[key]) : field[key];
       metadata.set(key, value);
     }
   }
