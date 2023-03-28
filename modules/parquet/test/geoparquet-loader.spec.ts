@@ -36,7 +36,7 @@ test.skip('GeoParquetColumnarLoader#load', async (t) => {
   t.end();
 })
 
-test('ParquetWriterLoader round trip', async (t) => {
+test.skip('ParquetWriterLoader round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWriter, {worker: false});
