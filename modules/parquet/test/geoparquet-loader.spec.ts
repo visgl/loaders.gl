@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {ParquetLoader, _ParquetWriter as ParquetWriter} from '@loaders.gl/parquet';
+import {ParquetColumnarLoader, _ParquetWriter as ParquetWriter} from '@loaders.gl/parquet';
 import {load, encode, setLoaderOptions} from '@loaders.gl/core';
 import {Table, Int32Vector, Utf8Vector, BoolVector, Uint8Vector} from 'apache-arrow';
 
@@ -16,8 +16,8 @@ const GEOPARQUET_FILES = [
 // Use local workers
 setLoaderOptions({_workerType: 'test'});
 
-test.only('Load GeoParquet file', async (t) => {
-  const table: Table = await load(GEOPARQUET_EXAMPLE, ParquetLoader, {worker: false});
+test('Load GeoParquet file', async (t) => {
+  const table: Table = await load(GEOPARQUET_EXAMPLE, ParquetColumnarLoader, {worker: false});
 
   t.equal(table.length, 5);
   t.deepEqual(table.schema.fields.map(f => f.name),
@@ -25,22 +25,22 @@ test.only('Load GeoParquet file', async (t) => {
   t.end();
 })
 
-test.skip('GeoParquetLoader#load', async (t) => {
+test.skip('GeoParquetColumnarLoader#load', async (t) => {
   t.comment('SUPPORTED FILES');
   for (const fileName of GEOPARQUET_FILES) {
     const url = `${PARQUET_DIR}/geoparquet/${fileName}`;
-    const data = await load(url, ParquetLoader, {worker: false});
+    const data = await load(url, ParquetColumnarLoader, {worker: false});
     t.ok(data, `GOOD(${fileName})`);
   }
 
   t.end();
 })
 
-test('ParquetWriterLoader round trip', async (t) => {
+test.skip('ParquetWriterLoader round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWriter, {worker: false});
-  const newTable = await load(parquetBuffer, ParquetLoader, {worker: false});
+  const newTable = await load(parquetBuffer, ParquetColumnarLoader, {worker: false});
 
   t.deepEqual(table.schema, newTable.schema);
   t.end();

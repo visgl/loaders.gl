@@ -9,6 +9,7 @@ export type ParquetLoaderOptions = LoaderOptions & {
     type?: 'object-row-table';
     url?: string;
     columnList?: string[] | string[][];
+    geoparquet?: boolean;
   };
 };
 
@@ -16,7 +17,8 @@ const DEFAULT_PARQUET_LOADER_OPTIONS: ParquetLoaderOptions = {
   parquet: {
     type: 'object-row-table',
     url: undefined,
-    columnList: []
+    columnList: [],
+    geoparquet: true
   }
 };
 

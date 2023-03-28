@@ -8,6 +8,7 @@ import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {ParquetBuffer} from '../../parquetjs/schema/declare';
 import {convertSchemaFromParquet} from '../arrow/convert-schema-from-parquet';
 import {convertParquetRowGroupToColumns} from '../arrow/convert-row-group-to-columns';
+import {unpackGeoMetadata} from '../geo/decode-geo-metadata';
 
 export async function parseParquetInColumns(
   arrayBuffer: ArrayBuffer,
@@ -27,7 +28,9 @@ export async function* parseParquetFileInColumnarBatches(
   const file = makeReadableFile(blob);
   const reader = new ParquetReader(file);
   const parquetSchema = await reader.getSchema();
-  const schema = convertSchemaFromParquet(parquetSchema);
+  const parquetMetadata = await reader.getFileMetadata();
+  const schema = convertSchemaFromParquet(parquetSchema, parquetMetadata);
+  unpackGeoMetadata(schema);
   const rowGroups = reader.rowGroupIterator(options?.parquet);
   for await (const rowGroup of rowGroups) {
     yield convertRowGroupToTableBatch(schema, rowGroup);

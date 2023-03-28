@@ -52,3 +52,9 @@ export {
 
 // TESTS
 export const _typecheckParquetLoader: LoaderWithParser = ParquetLoader;
+
+// Geo Metadata
+export {default as geoJSONSchema} from './lib/geo/geoparquet-schema';
+
+export type {GeoMetadata} from './lib/geo/decode-geo-metadata';
+export {getGeoMetadata, setGeoMetadata, unpackGeoMetadata} from './lib/geo/decode-geo-metadata';
