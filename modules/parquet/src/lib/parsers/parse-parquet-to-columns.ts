@@ -8,7 +8,7 @@ import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {ParquetBuffer} from '../../parquetjs/schema/declare';
 import {convertSchemaFromParquet} from '../arrow/convert-schema-from-parquet';
 import {convertParquetRowGroupToColumns} from '../arrow/convert-row-group-to-columns';
-import {decodeGeoparquetMetadata} from '../geoparquet/decode-geoparquet-schema';
+import {decodeGeoparquetMetadata} from '../geoparquet/decode-geoparquet-metadata';
 
 export async function parseParquetInColumns(
   arrayBuffer: ArrayBuffer,
