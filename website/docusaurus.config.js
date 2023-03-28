@@ -173,16 +173,16 @@ const config = {
             title: 'Other vis.gl Libraries',
             items: [
               {
+                label: 'deck.gl',
+                href: 'https:/deck.gl',
+              },
+              {
                 label: 'luma.gl',
                 href: 'https://luma.gl',
               },
               {
-                label: 'loaders.gl',
-                href: 'https://loaders.gl',
-              },
-              {
-                label: 'deck.gl',
-                href: 'https:/deck.gl',
+                label: 'math.gl',
+                href: 'https://math.gl',
               },
               {
                 label: 'vis.gl',

@@ -53,17 +53,15 @@ http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf
 
 As mentioned the actual compressed subimages are not parsed or modified by loaders.gl, however loaders.gl attempts to identify the formats using metadata and return the appropiate format fields to facilitate use in WebGL and WebGPU.
 
-The following is the typical list of compressed texture formats, which loaders.gl can properly tag:
+The following is a list of the most common compressed texture formats, which loaders.gl can properly tag:
 
-| Format         | Description                         |
-| -------------- | ----------------------------------- |
-| [`S3TC]()      | S3 texture compression formats      |
-| [`S3TC_SRGB]() | S3 SRGB texture compression formats |
-| [`PVRTC]()     | PowerVR texture compression formats |
-| [`ETC1]()      | texture compression formats         |
-| [`ETC]()       | texture compression formats         |
-| [`ASTC`]()     | texture compression formats         |
-| [`ATC]()       | AMD texture compression formats     |
+| Format                                                                 | aka                | Description                                     |
+| ---------------------------------------------------------------------- | ------------------ |
+| [`S3TC`](https://en.wikipedia.org/wiki/S3_Texture_Compression)         | DXTn, DXTC, or BCn | S3 texture compression formats                  |
+| [`PVRTC`](https://en.wikipedia.org/wiki/PVRTC)                         |                    | PowerVR texture compression formats             |
+| [`ETC`](https://en.wikipedia.org/wiki/Ericsson_Texture_Compression)    | ETC1, ETC2, EAC    | Ericsoon texture compression formats            |
+| [`ASTC`](https://www.khronos.org/opengl/wiki/ASTC_Texture_Compression) |                    | Adaptable, scalable texture compression formats |
+| `ATC`                                                                  |                    | AMD texture compression formats                 |
 
 ### Recommnended Formats
 

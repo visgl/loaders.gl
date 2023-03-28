@@ -72,34 +72,14 @@ export default function IndexPage() {
           <FeatureImage src={`${baseUrl}images/maps.jpg`}  />
           <TextContainer>
             <h2>
-              A collection of math modules for Geospatial and 3D use cases.
+              Parsers and encoders for major geospatial, tabular and 3D formats.
             </h2>
-            <hr className="short" />
-
-            <h3>
-              <img src={`${baseUrl}images/icon-layers.svg`} />
-              Toolbox of 3D math modules
-            </h3>
-            <p></p>
-
-            <h3>
-              <img src={`${baseUrl}images/icon-high-precision.svg`} />
-              Matrices and vectors, bounding boxes, frustum culling etc
-            </h3>
-            <p></p>
-            
-            <h3>
-            <img src={`${baseUrl}images/icon-basemap.webp`} />
-              Geospatial reprojection, gravity models, solar position, etc
-            </h3>
-            <p></p>
-
-            <h3>
-            <img src={`${baseUrl}images/icon-react.svg`} />
-              Strict TypeScript and run-time checks that detect bad data
-            </h3>
-            <p></p>
-
+            <h2>
+              Can be used with any JavaScript applications.
+            </h2>
+            <h2>
+              Move your code between browser, worker threads and Node.js and rely on your loaders to keep working.
+            </h2>
           </TextContainer>
         </div>
       </Home>

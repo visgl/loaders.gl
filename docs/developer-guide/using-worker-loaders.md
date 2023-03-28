@@ -1,4 +1,4 @@
-## Using Workers
+# Using Worker Loaders
 
 Most loaders.gl loaders can perform parsing on JavaScript worker threads.
 This means that the main thread will not block during parsing and can continue
