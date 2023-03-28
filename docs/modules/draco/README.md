@@ -53,7 +53,7 @@ setLoaderOptions({
 | Library                                 | Import                            | Install               | Size        | Description                                                                        |
 | --------------------------------------- | --------------------------------- | --------------------- | ----------- | ---------------------------------------------------------------------------------- |
 | `options.libs.draco3d`                  | `require('draco3d')`              | `npm install draco3d` | ~1.5MB      | The full Draco library (encode + decode, web assembly + IE11 javascript fallback). |
-| `options.libs['draco_decoder.wasm']`    | [`ArrayBuffer`]()                 | ~320K                 | manual copy | Web Assembly Decoder (access using `draco_wasm_wrapper.js`)                        |
+| `options.libs['draco_decoder.wasm']`    | `ArrayBuffer`                     | ~320K                 | manual copy | Web Assembly Decoder (access using `draco_wasm_wrapper.js`)                        |
 | `options.libs['draco_wasm_wrapper.js']` | `require('.../draco_decoder.js')` | ~64K                  | manual copy | JavaScript wrapper for `draco_decoder.wasm`                                        |
 | `options.libs['draco_decoder.js']`      | `require('.../draco_decoder.js')` | ~790K                 | manual copy | JavaScript decoder (fallback for IE11)                                             |
 | `options.libs['draco_encoder.js']`      | `require('.../draco_encode.js')`  | ~900K                 | manual copy | Encoder part of the library                                                        |

@@ -1,25 +1,26 @@
 # Introduction
 
-<p align="center">
-  <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />
-  <img src="https://flat.badgen.net/badge/icon/Typed?icon=typescript&label&labelColor=blue&color=555555)" />
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" />
-  <img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" />
-  <br />
-</p>
+<img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" /> &nbsp;
+<img src="https://img.shields.io/badge/License-MIT-green.svg" /> &nbsp;
+<img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" />  &nbsp; &nbsp; &nbsp;
+<img src="https://flat.badgen.net/badge/icon/Typed?icon=typescript&label&labelColor=blue&color=555555)" /> &nbsp;
+<br />
+<br />
 
-
-Documentation for loaders.gl **v3.1**. Docs for older versions are available on github:
+This documentation describes loaders.gl **v3.3**. Docs for older versions are available on github:
+**[v3.2](https://github.com/visgl/loaders.gl/blob/3.2-release/docs/README.md)**,
+**[v3.1](https://github.com/visgl/loaders.gl/blob/3.1-release/docs/README.md)**,
+**[v3.0](https://github.com/visgl/loaders.gl/blob/3.0-release/docs/README.md)**,
 **[v2.3](https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md)**,
 **[v1.3](https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md)**.
 
 ## Overview
 
-loaders.gl is a collection of open source loaders and writers for file formats focused on visualization of big data, including tabular, geospatial, and 3D formats.
+loaders.gl is a collection of open source loaders and writers for file formats including tabular, geospatial, and 3D formats. It is focused on supporting visualization and analytics of big data. 
 
-loaders.gl is packaged and published as a suite of composable loader modules offering consistent APIs and features, and offers advanced features such as running loaders on workers and incremental parsing, and all loaders work in both the browser and in Node.js.
+loaders.gl is packaged and published as a suite of composable loader modules offering consistent APIs and features across file formats, and offers advanced features such as running loaders on workers and incremental parsing, and all loaders work in both the browser and in Node.js.
 
-Other [vis.gl frameworks](https://vis.gl/frameworks) such as [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) integrate seamlessly with loaders.gl, however the API is framework-agnostic, and all loaders and writers can be used with any JavaScript application or framework.
+By design, other [vis.gl frameworks](https://vis.gl/frameworks) such as [deck.gl](https://deck.gl) and [luma.gl](https://luma.gl) integrate seamlessly with loaders.gl, however loaders.gl itself has no dependencies on those frameworks, and all loaders and writers can be used with any JavaScript application or framework.
 
 ## Loaders
 
@@ -102,7 +103,7 @@ loaders.gl provides consistent support for both browsers and Node.js. The follow
 
 ## Licenses
 
-loaders.gl itself is MIT licensed but various modules contain code under several permissive open source licenses, currently MIT, BSD and Apache licenses. Each loader module comes with its own license, so if the distinction matters to you, please check the documentation for each module and decide accordingly, however loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
+loaders.gl itself is MIT licensed but various modules contain code under several permissive open source licenses, currently MIT, BSD and Apache licenses. Each loader module comes with its own license, so if the distinction matters to you, please check the documentation for each module and decide accordingly, however loaders.gl will never include code with non-permissive, commercial or copyLeft licenses.
 
 ## Credits and Attributions
 
@@ -112,28 +113,27 @@ While loaders.gl contains a lot of original code, it is also partly a repackagin
 
 Even so, we can make mistakes, and we may not have the full history of the code we are reusing. If you think that we have missed something, or that we could do better in regard to attribution, please let us know.
 
-## Open Governance
+### Primary maintainers
 
-<a href="https://vis.gl">
-  <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/linux-foundation.svg" />
-  <span style="padding-left: 50px;" />
-  <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/ucf-color-hztl.svg" />
-  <span style="padding-left: 50px;" />
-  <img height="30" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/vis-logo.png" />
-</a>
+The organizations and individuals that contribute most significantly to the development and maintenance of loaders.gl are:
+
+<p style={{marginLeft: 30, marginRight: 'auto'}}>
+  <a href="https://studio.foursquare.com">
+    <img height="80" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/Foursquare.svg" />
+  </a>
+  <br />
+  <br />
+  <a href="https://carto.com">
+    <img height="80" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/carto.svg" />
+  </a>
+</p>
+
+## Open Governance
 
 loaders.gl is a part of the <a href="https://vis.gl"><b>vis.gl framework suite</b></a>, an open governance Linux Foundation project that is developed collaboratively by multiple organizations and individuals and the Urban Computing Foundation.
 
-### Primary maintainers
-
-Some of the organizations and individuals that contribute most significantly to the development and maintenance of loaders.gl are:
-
-<p style="margin-left: auto; margin-right: auto;">
-  <a href="https://unfolded.ai">
-    <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/unfolded-logo.png" />
-  </a>
-  <span style="margin-left: 30px;" />
-  <a href="https://carto.com">
-    <img height="40" src="https://raw.githubusercontent.com/visgl/vis.gl/master/src/images/logos/CARTO-logo-positive.png" />
-  </a>
-</p>
+<a href="https://vis.gl">
+  <img height="30" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/openjsf-color-textg.png" />
+  <span style={{paddingLeft: 50}} />
+  <img height="30" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/vis-logo.png" />
+</a>

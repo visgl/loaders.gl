@@ -88,6 +88,6 @@ Remarks:
 
 ## Attribution
 
-This class is a fork of Mapbox / Vladimir Agafonkin's amazing [geojson-vt]() module.
+This class is a fork of Mapbox / Vladimir Agafonkin's wonderful [geojson-vt](https://github.com/mapbox/geojson-vt) module.
 
 This directory is forked from Mapbox's https://github.com/mapbox/geojson-vt under ISC License.
