@@ -1,5 +1,7 @@
 // loaders.gl, MIT license
 
+/* eslint-disable camelcase */
+
 /**
  * Geoparquet JSON schema for geo metadata
  * @see https://github.com/geoarrow/geoarrow/blob/main/metadata.md

@@ -92,6 +92,7 @@ test('WMSService#fetch override', async (t) => {
     height: 600,
     bbox: [30, 70, 35, 75],
     layers: ['oms'],
+    // eslint-disable-next-line camelcase
     query_layers: ['oms']
   });
 
@@ -104,6 +105,7 @@ test('WMSService#fetch override', async (t) => {
       height: 600,
       bbox: [30, 70, 35, 75],
       layers: ['oms'],
+      // eslint-disable-next-line camelcase
       query_layers: ['oms']
     });
     t.deepEqual(

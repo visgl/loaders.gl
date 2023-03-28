@@ -1,6 +1,8 @@
 // loaders.gl, MIT license
 import {Schema, Field} from '@loaders.gl/schema';
 
+/* eslint-disable camelcase */
+
 /** A geoarrow / geoparquet geo metadata object (stored in stringified form in the top level metadata 'geo' key) */
 export type GeoMetadata = {
   version?: string;
