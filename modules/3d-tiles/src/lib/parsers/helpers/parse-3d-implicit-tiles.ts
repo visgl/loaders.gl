@@ -2,6 +2,11 @@ import type {Availability, BoundingVolume, Subtree} from '../../../types';
 import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
 
+import {getS2CellIdFromToken, getS2ChildCellId, getS2TokenFromCellId} from '../../utils/s2/index';
+import type {S2VolumeInfo} from '../../utils/obb/s2-corners-to-obb';
+import {convertS2BoundingVolumetoOBB} from '../../utils/obb/s2-corners-to-obb';
+import Long from 'long';
+
 const QUADTREE_DEVISION_COUNT = 4;
 const OCTREE_DEVISION_COUNT = 8;
 
@@ -9,6 +14,59 @@ const SUBDIVISION_COUNT_MAP = {
   QUADTREE: QUADTREE_DEVISION_COUNT,
   OCTREE: OCTREE_DEVISION_COUNT
 };
+
+/**
+ *  S2VolumeBox is an extention of BoundingVolume of type "box"
+ */
+export type S2VolumeBox = {
+  /** BoundingVolume of type "box" has the "box" field. S2VolumeBox contains it as well. */
+  box: number[];
+  /** s2VolumeInfo provides additional info about the box - specifically the token, min and max height */
+  s2VolumeInfo: S2VolumeInfo;
+};
+
+function getChildS2VolumeBox(
+  s2VolumeBox: S2VolumeBox | undefined,
+  index: number,
+  subdivisionScheme: string
+): S2VolumeBox | undefined {
+  if (s2VolumeBox?.box) {
+    // Check if the BoundingVolume is of type "box"
+    const cellId: Long = getS2CellIdFromToken(s2VolumeBox.s2VolumeInfo.token);
+    const childCellId = getS2ChildCellId(cellId, index);
+    const childToken = getS2TokenFromCellId(childCellId);
+
+    // Clone object. Note, s2VolumeInfo is a plain object that doesn't contain any nested object.
+    // So, we can use the Spread Operator to make a shallow copy of the object.
+    const s2ChildVolumeInfo: S2VolumeInfo = {...s2VolumeBox.s2VolumeInfo};
+    s2ChildVolumeInfo.token = childToken; // replace the token with the child's one
+
+    // In case of QUADTREE the sizeZ should NOT be changed!
+    // https://portal.ogc.org/files/102132
+    // A quadtree divides space only on the x and y dimensions.
+    // It divides each tile into 4 smaller tiles where the x and y dimensions are halved.
+    // The quadtree z minimum and maximum remain unchanged.
+    switch (subdivisionScheme) {
+      case 'OCTREE':
+        const s2VolumeInfo: S2VolumeInfo = s2VolumeBox.s2VolumeInfo;
+        const delta = s2VolumeInfo.maximumHeight - s2VolumeInfo.minimumHeight;
+        const sizeZ: number = delta / 2.0; // It's a next level (a child)
+        const midZ: number = s2VolumeInfo.minimumHeight + delta / 2.0;
+        s2VolumeInfo.minimumHeight = midZ - sizeZ;
+        s2VolumeInfo.maximumHeight = midZ + sizeZ;
+        break;
+      default:
+        break;
+    }
+    const box = convertS2BoundingVolumetoOBB(s2ChildVolumeInfo);
+    const childS2VolumeBox: S2VolumeBox = {
+      box,
+      s2VolumeInfo: s2ChildVolumeInfo
+    };
+    return childS2VolumeBox;
+  }
+  return undefined;
+}
 
 /**
  * Recursively parse implicit tiles tree
@@ -30,6 +88,7 @@ export async function parseImplicitTiles(params: {
   childIndex?: number;
   level?: number;
   globalData?: {level: number; mortonIndex: number; x: number; y: number; z: number};
+  s2VolumeBox?: S2VolumeBox;
 }) {
   const {
     options,
@@ -46,7 +105,8 @@ export async function parseImplicitTiles(params: {
       x: 0,
       y: 0,
       z: 0
-    }
+    },
+    s2VolumeBox
   } = params;
   let {subtree, level = 0} = params;
   const {
@@ -129,19 +189,33 @@ export async function parseImplicitTiles(params: {
   const pData = {mortonIndex: childTileMortonIndex, x: childTileX, y: childTileY, z: childTileZ};
 
   for (let index = 0; index < childrenPerTile; index++) {
-    const currentTile = await parseImplicitTiles({
+    const childS2VolumeBox: S2VolumeBox | undefined = getChildS2VolumeBox(
+      s2VolumeBox,
+      index,
+      subdivisionScheme
+    );
+
+    // Recursive calling...
+    const childTileParsed = await parseImplicitTiles({
       subtree,
       options,
       parentData: pData,
       childIndex: index,
       level: childTileLevel,
-      globalData
+      globalData,
+      s2VolumeBox: childS2VolumeBox
     });
 
-    if (currentTile.contentUrl || currentTile.children.length) {
+    if (childTileParsed.contentUrl || childTileParsed.children.length) {
       const globalLevel = lev + 1;
       const childCoordinates = {childTileX, childTileY, childTileZ};
-      const formattedTile = formatTileData(currentTile, globalLevel, childCoordinates, options);
+      const formattedTile = formatTileData(
+        childTileParsed,
+        globalLevel,
+        childCoordinates,
+        options,
+        s2VolumeBox
+      );
       // @ts-ignore
       tile.children.push(formattedTile);
     }
@@ -174,7 +248,8 @@ function formatTileData(
   tile,
   level: number,
   childCoordinates: {childTileX: number; childTileY: number; childTileZ: number},
-  options: any
+  options: any,
+  s2VolumeBox?: S2VolumeBox
 ) {
   const {
     basePath,
@@ -187,9 +262,14 @@ function formatTileData(
   } = options;
   const uri = tile.contentUrl && tile.contentUrl.replace(`${basePath}/`, '');
   const lodMetricValue = rootLodMetricValue / 2 ** level;
-  const boundingVolume = calculateBoundingVolumeForChildTile(
+
+  const boundingVolume: BoundingVolume = s2VolumeBox?.box
+    ? {box: s2VolumeBox.box}
+    : rootBoundingVolume;
+
+  const boundingVolumeForChildTile = calculateBoundingVolumeForChildTile(
     level,
-    rootBoundingVolume,
+    boundingVolume,
     childCoordinates
   );
 
@@ -204,7 +284,7 @@ function formatTileData(
     lodMetricValue,
     geometricError: lodMetricValue,
     transform: tile.transform,
-    boundingVolume
+    boundingVolume: boundingVolumeForChildTile
   };
 }
 
@@ -219,7 +299,7 @@ function calculateBoundingVolumeForChildTile(
   level: number,
   rootBoundingVolume: BoundingVolume,
   childCoordinates: {childTileX: number; childTileY: number; childTileZ: number}
-): BoundingVolume | null {
+): BoundingVolume {
   if (rootBoundingVolume.region) {
     const {childTileX, childTileY, childTileZ} = childCoordinates;
     const [west, south, east, north, minimumHeight, maximumHeight] = rootBoundingVolume.region;
@@ -227,6 +307,13 @@ function calculateBoundingVolumeForChildTile(
 
     const sizeX = (east - west) / boundingVolumesCount;
     const sizeY = (north - south) / boundingVolumesCount;
+
+    // TODO : Why is the subdivisionScheme not being checked here?
+
+    // In case of QUADTREE the sizeZ should NOT be changed!
+    // https://portal.ogc.org/files/102132
+    // A quadtree divides space only on the x and y dimensions. It divides each tile into 4 smaller tiles where the x and y dimensions are halved. The quadtree z minimum and maximum remain unchanged.
+
     const sizeZ = (maximumHeight - minimumHeight) / boundingVolumesCount;
 
     const [childWest, childEast] = [west + sizeX * childTileX, west + sizeX * (childTileX + 1)];
@@ -241,9 +328,11 @@ function calculateBoundingVolumeForChildTile(
     };
   }
 
-  // eslint-disable-next-line no-console
-  console.warn('Unsupported bounding volume type: ', rootBoundingVolume);
-  return null;
+  if (rootBoundingVolume.box) {
+    return rootBoundingVolume;
+  }
+
+  throw new Error(`Unsupported bounding volume type ${rootBoundingVolume}`);
 }
 
 /**

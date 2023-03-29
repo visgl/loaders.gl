@@ -3,7 +3,10 @@ import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
 import {Tileset3D, LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D} from '@loaders.gl/tiles';
 import {ImplicitTilingExtension, Subtree} from '../../types';
+import type {S2VolumeBox} from './helpers/parse-3d-implicit-tiles';
 import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-implicit-tiles';
+import type {S2VolumeInfo} from '../utils/obb/s2-corners-to-obb';
+import {convertS2BoundingVolumetoOBB} from '../utils/obb/s2-corners-to-obb';
 
 function getTileType(tile) {
   if (!tile.contentUrl) {
@@ -141,6 +144,15 @@ export async function normalizeImplicitTileHeaders(
   const refine = tileset?.root?.refine;
   // @ts-ignore
   const rootLodMetricValue = tile.geometricError;
+
+  // Replace tile.boundingVolume with the the bounding volume specified by the extensions['3DTILES_bounding_volume_S2']
+  const s2VolumeInfo: S2VolumeInfo = tile.boundingVolume.extensions?.['3DTILES_bounding_volume_S2'];
+  if (s2VolumeInfo) {
+    const box = convertS2BoundingVolumetoOBB(s2VolumeInfo);
+    const s2VolumeBox: S2VolumeBox = {box, s2VolumeInfo};
+    tile.boundingVolume = s2VolumeBox;
+  }
+
   const rootBoundingVolume = tile.boundingVolume;
 
   const implicitOptions = {
@@ -177,7 +189,11 @@ export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, opti
   tile.lodMetricValue = tile.geometricError;
   tile.transformMatrix = tile.transform;
 
-  const {children, contentUrl} = await parseImplicitTiles({subtree: rootSubtree, options});
+  const {children, contentUrl} = await parseImplicitTiles({
+    subtree: rootSubtree,
+    options,
+    s2VolumeBox: tile
+  });
 
   if (contentUrl) {
     tile.contentUrl = contentUrl;
