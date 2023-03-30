@@ -2,6 +2,13 @@
 
 ## v3.3
 
+## v3.3.2
+
+- fix(tile-converter): install dependencies crash (#2384)
+- fix(tile-converter): node 18 compatibility (#2385)
+- docs(i3s): Update i3s-loader.md (#2386)
+- fix(website): I3S as hero example (#2370)
+
 ## v3.3.1
 
 - fix(loader-utils): Fix incorrect browser field for 'utils' (#2363)
