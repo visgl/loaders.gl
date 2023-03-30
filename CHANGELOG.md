@@ -1,8 +1,34 @@
 # CHANGELOG for loaders.gl
 
-## v3.3 
+## v3.4 Prerelease
 
-## v3.3.0 
+## v3.4.0-alpha.2
+
+- feat(3d-tiles): support s2 bounding volume (#2376)
+- feat(parquet): Extract geoparquet metadata (#2391)
+- fix(website): Working docusaurus docs (#2392)
+- feat(parquet): columnar loading (#2390)
+- fix(tile-converter): install dependencies crash (#2384)
+- fix(tile-converter): node 18 compatibility (#2385)
+- feat(wms): Pass through authorization load options (#2388)
+- docs(i3s): Update i3s-loader.md (#2386)
+- feat(wms): Support specifying WMS protocol version. (#2389)
+- chore(wms): Code reorganization (#2387)
+- chore: Bump to probe.gl@4.0.1 (#2371)
+- chore(deps): bump webpack from 5.75.0 to 5.76.1 in /website (#2383)
+- chore(deps): bump @sideway/formula in /website-gatsby (#2378)
+- chore: Add docusaurus website boilerplate (#2377)
+- chore(loader-utils): Improve LoaderOption typings (#2365)
+- fix(website): I3S as hero example (#2370)
+- feat(xml): Improved HTMLLoader (#2375)
+- feat(images): initial AVIF support (#2369)
+- feature(wms): Add CSWService class (OGC Catalog Service for the Web) (#2374)
+- chore: Update example dependencies to 3.3.1 (#2367)
+- chore: Cleanup load options in tests (#2366)
+- fix(loader-utils): Fix incorrect browser field for 'utils' (#2363) (#2364)
+- chore: update CHANGELOG
+
+## v3.3.0
 
 - feat(examples): Add URL loading to glTF example
 - fix(website): Disable glTF example due to gatsby typescript issues (#2361)
