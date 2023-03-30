@@ -2,7 +2,7 @@
 
 A major feature of loaders.gl is the availability of a number of batched (or streaming) loaders.
 
-The advantages and characteristics of streaming are descriped in more detail in the [streaming](./concepts/streaming.md) concepts section, but the highlights are:
+The advantages and characteristics of streaming are descriped in more detail in the [streaming](./concepts/streaming) concepts section, but the highlights are:
 
 - Ability to parse large data sources that exceed browser memory limits (maximum allocation limits for a single `string` or `ArrayBuffer` etc tends to be less tha 1GB in most browsers).
 - While parsing is done on smaller chunks and does not freeze the main thread.

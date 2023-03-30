@@ -21,6 +21,18 @@ module.exports = function(context, opts = {
     configureWebpack(_config, isServer, utils) {
       const {resolve, debug, module, plugins} = opts;
 
+      // const {getStyleLoaders} = utils;
+
+      // _config.module = _config.module || {};
+      // _config.module.rules = _config.module.rules || []
+      // _config.module.rules.push({
+      //   test: /\.css$/,
+      //   use: [
+      //     'style-loader',
+      //     getStyleLoaders(isServer)
+      //   ],
+      // });
+
       // Custom merging
       if (resolve) {
         if (resolve.modules) {

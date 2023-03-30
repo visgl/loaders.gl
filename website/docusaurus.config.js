@@ -48,7 +48,7 @@ const config = {
         resolve: {
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
-            'website-examples': resolve('../examples'),
+            'examples': resolve('../examples'),
 
             '@loaders.gl/3d': resolve('../modules/3d-tiles'),
             '@loaders.gl/arrow': resolve('../modules/arrow'),
@@ -68,7 +68,7 @@ const config = {
             '@loaders.gl/json': resolve('../modules/json'),
             '@loaders.gl/kml': resolve('../modules/kml'),
             '@loaders.gl/las': resolve('../modules/las'),
-            '@loaders.gl/loader': resolve('../modules/loader-utils'),
+            '@loaders.gl/loader-utils': resolve('../modules/loader-utils'),
             '@loaders.gl/math': resolve('../modules/math'),
             '@loaders.gl/mvt': resolve('../modules/mvt'),
             '@loaders.gl/netcdf': resolve('../modules/netcdf'),
@@ -93,7 +93,22 @@ const config = {
             '@loaders.gl/worker': resolve('../modules/worker-utils'),
             '@loaders.gl/xml': resolve('../modules/xml'),
             '@loaders.gl/zarr': resolve('../modules/zarr'),
-            '@loaders.gl/zip': resolve('../modules/zip')
+            '@loaders.gl/zip': resolve('../modules/zip'),
+
+            // '@deck.gl/react': resolve()
+            // '@deck.gl/layers'
+            // '@luma.gl/experimental'
+            // '@luma.gl/experimental'
+            // '@deck.gl/react'
+            // '@deck.gl/layers'
+            // '@deck.gl/react/typed'
+            // '@deck.gl/layers/typed'
+            // '@deck.gl/react'
+            // '@deck.gl/geo-layers'
+            // 'marked'
+            // 'website-examples/i3s-arcgis/app'
+            // 'website-examples/website/i3s/app'
+            // '../react-table.css.js'
           }
         },
         plugins: [

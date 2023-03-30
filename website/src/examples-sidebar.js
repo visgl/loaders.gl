@@ -8,18 +8,39 @@
 
  Create as many sidebars as you want.
  */
-const sidebars = {
+ const sidebars = {
   examplesSidebar: [
     {
-      "type": "doc",
-      "label": "Overview",
-      "id": "index"
+      type: 'doc',
+      label: 'Overview',
+      id: 'index'
+    },
+    {
+      type: 'category',
+      label: 'Loaders',
+      items: [
+        'textures',
+        'gltf',
+        'geospatial',
+        'wms',
+        'pointcloud'
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Tiled Loaders',
+      items: [
+        'i3s',
+        'i3s-debug',
+        'i3s-arcgis',
+        '3d-tiles'
+      ]
     },
     // {
-    //   "type": "category",
-    //   "label": "Core",
-    //   "items": [
-    //     // 'benchmarks'
+    //   type: 'category',
+    //   label: 'Benchmarks',
+    //   items: [
+    //     'benchmarks',
     //   ]
     // }
   ]

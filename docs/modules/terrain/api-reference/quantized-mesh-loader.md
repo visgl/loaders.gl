@@ -14,7 +14,7 @@ mesh][quantized_mesh] format.
 | File Extension        | `.terrain`                                    |
 | File Type             | Binary                                        |
 | File Format           | Encoded mesh                                  |
-| Data Format           | [Mesh](/docs/specifications/category-mesh.md) |
+| Data Format           | [Mesh](/docs/specifications/category-mesh) |
 | Supported APIs        | `load`, `parse`, `parseSync`                  |
 | Decoder Type          | Synchronous                                   |
 | Worker Thread Support | Yes                                           |

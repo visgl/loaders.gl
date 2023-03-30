@@ -29,7 +29,7 @@ npx tile-converter --install-dependencies
 
 You can use custom Earth Gravity Model using `--egm` option.
 
-5. [Convert some tileset](modules/tile-converter/docs/cli-reference/tile-converter.md)
+5. [Convert some tileset](modules/tile-converter/docs/cli-reference/tile-converter)
    Examples:
 
 ```

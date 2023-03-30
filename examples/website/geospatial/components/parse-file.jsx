@@ -2,7 +2,7 @@ import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
+// import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {load, registerLoaders} from '@loaders.gl/core';
 
@@ -11,7 +11,8 @@ const ErrorFormatHeader = styled.h1`
   font-size: 16px;
 `;
 
-registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
+// registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
+registerLoaders([FlatGeobufLoader]);
 
 const propTypes = {
   file: PropTypes.object,

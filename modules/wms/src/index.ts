@@ -30,10 +30,9 @@ export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms
 
 // WMTS - Web Map Tile Service
 
-export type {WMTSLoaderOptions as _WMTSLoaderOptions} from './wip/wmts-capabilities-loader';
-
-export type {WMTSCapabilities as _WMTSCapabilities} from './wip/wmts-capabilities-loader';
-export {WMTSCapabilitiesLoader as _WMTSCapabilitiesLoader} from './wip/wmts-capabilities-loader';
+// export type {WMTSLoaderOptions as _WMTSLoaderOptions} from './wip/wmts-capabilities-loader';
+// export type {WMTSCapabilities as _WMTSCapabilities} from './wip/wmts-capabilities-loader';
+// export {WMTSCapabilitiesLoader as _WMTSCapabilitiesLoader} from './wip/wmts-capabilities-loader';
 
 // WFS - Web Feature Service
 

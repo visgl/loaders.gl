@@ -79,7 +79,7 @@ export class CSWService extends DataSource {
     return capabilities;
   }
 
-  async getServiceDirectory(options: {includeUnknown?: boolean}): Promise<Service[]> {
+  async getServiceDirectory(options?: {includeUnknown?: boolean}): Promise<Service[]> {
     const services: Service[] = [];
     const unknownServices: Service[] = [];
 

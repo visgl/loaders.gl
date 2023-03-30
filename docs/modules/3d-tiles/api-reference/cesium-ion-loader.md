@@ -62,7 +62,7 @@ For i3dm and b3dm tiles:
 | ------------------------- | ------- | ------- | ------------------------------------- |
 | `['cesium-ion'].loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
 
-If `options['cesium-ion'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](modules/gltf/docs/api-reference/gltf-loader.md) via the `options.gltf` sub options.
+If `options['cesium-ion'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](modules/gltf/docs/api-reference/gltf-loader) via the `options.gltf` sub options.
 
 ## Data formats
 
