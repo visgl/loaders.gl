@@ -139,7 +139,7 @@ const config = {
         routeBasePath: 'examples',
         sidebarPath: resolve('./src/examples-sidebar.js'),
         breadcrumbs: false,
-        docItemComponent: resolve('./src/components/example/doc-item-component.jsx')
+        docItemComponent: resolve('./src/components/example/doc-item-component.tsx')
       },
     ]
   ],
