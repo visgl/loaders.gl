@@ -13,9 +13,9 @@ The table API is modelled after a subset of the Apache Arrow API:
 
 | Class                                                              | Arrow Counterpart | Description  |
 | ------------------------------------------------------------------ | ----------------- | ------------ |
-| [`Table`](modules/schema/docs/api-reference/table.md)              | Table             | Table        |
-| [`TableSchema`](modules/schema/docs/api-reference/table-schema.md) | `Schema`          | Table schema |
-| [`TableBatch`](modules/schema/docs/api-reference/table-batch.md)   | `RecordBatch`     | Table batch  |
+| [`Table`](modules/schema/api-reference/table)              | Table             | Table        |
+| [`TableSchema`](modules/schema/api-reference/table-schema) | `Schema`          | Table schema |
+| [`TableBatch`](modules/schema/api-reference/table-batch)   | `RecordBatch`     | Table batch  |
 
 
 ## Determining shape of loaded data

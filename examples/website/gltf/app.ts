@@ -225,3 +225,5 @@ export function runApp() {
     }
   }
 }
+
+export default AppAnimationLoop;

@@ -7,7 +7,7 @@ The `OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format.
 | File Extension        | `.obj`                                                                  |
 | File Type             | Text                                                                    |
 | File Format           | [Wavefront OBJ file](https://en.wikipedia.org/wiki/Wavefront_.obj_file) |
-| Data Format           | [Mesh](docs/specifications/category-mesh.md)                            |
+| Data Format           | [Mesh](docs/specifications/category-mesh)                            |
 | Decoder Type          | Synchronous                                                             |
 | Worker Thread Support | Yes                                                                     |
 | Streaming Support     | No                                                                      |

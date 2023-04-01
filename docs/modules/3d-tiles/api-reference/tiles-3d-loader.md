@@ -89,7 +89,7 @@ For i3dm and b3dm tiles:
 | ------------------- | ------- | ------- | ------------------------------------- |
 | `3d-tiles.loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
 
-If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](modules/gltf/docs/api-reference/gltf-loader.md) via the `options.gltf` sub options.
+If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](modules/gltf/docs/api-reference/gltf-loader) via the `options.gltf` sub options.
 
 ## Notes about Tile Types
 
@@ -139,7 +139,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `cartesianOrigin`    | `Number[3]`   | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                              |
 | `cartographicOrigin` | `Number[3]`   | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
 | `modelMatrix`        | `Number[16]`  | Transforms tile geometry positions to fixed frame coordinates                                                                           |
-| `attributes`         | `Object`      | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
+| `attributes`         | `Object`      | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor) properties |
 | `featureIds`         | `Uint32Array` | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                      |
 
 `attributes` contains following fields

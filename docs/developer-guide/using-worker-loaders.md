@@ -20,7 +20,7 @@ particularly useful when adding loaders that are only used occasionally by your
 application.
 
 More details on advantages and complications with worker thread based loading the
-[Worker Threads](./concepts/worker-threads.md) article in the concepts section.
+[Worker Threads](./concepts/worker-threads) article in the concepts section.
 
 ## Processing Data on Workers
 

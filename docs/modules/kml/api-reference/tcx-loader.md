@@ -18,7 +18,7 @@ The `TCXLoader` parses [TCX files][tcx_wikipedia] into GeoJSON. From Wikipedia:
 | File Extension        | `.tcx`                                     |
 | File Type             | Text                                       |
 | File Format           | [TCX][tcx_wikipedia]                       |
-| Data Format           | [GIS](docs/specifications/category-gis.md) |
+| Data Format           | [GIS](docs/specifications/category-gis) |
 | Decoder Type          | Synchronous                                |
 | Worker Thread Support | No                                         |
 | Streaming Support     | No                                         |

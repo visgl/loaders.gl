@@ -15,7 +15,7 @@ KML is now an [Open Geospatial Consortium standard][kml_ogc_standard].
 | File Extension        | `.kml`                                     |
 | File Type             | Text                                       |
 | File Format           | [KML][kml_wikipedia]                       |
-| Data Format           | [GIS](docs/specifications/category-gis.md) |
+| Data Format           | [GIS](docs/specifications/category-gis) |
 | Decoder Type          | Synchronous                                |
 | Worker Thread Support | No                                         |
 | Streaming Support     | No                                         |

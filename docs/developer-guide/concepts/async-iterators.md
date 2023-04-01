@@ -23,7 +23,7 @@ for await (const x of asyncIterable) {
 
 ## Using Streams as AsyncIterators
 
-With a little effort, streams in JavaScript can be treated as AsyncIterators. As the section about [Javascript Streams](docs/developer-guide/streams.md) explains, instead of registering callbacks on the stream, you can now work with streams in this way:
+With a little effort, streams in JavaScript can be treated as AsyncIterators. As the section about [Javascript Streams](docs/developer-guide/streams) explains, instead of registering callbacks on the stream, you can now work with streams in this way:
 
 ```typescript
 for await (const buf of fs.createReadStream('foo.txt')) {

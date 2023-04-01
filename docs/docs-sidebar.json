@@ -352,7 +352,8 @@
           "modules/wms/formats/wms",
           "modules/wms/formats/wmts",
           "modules/wms/formats/wfs",
-          "modules/wms/formats/gml"
+          "modules/wms/formats/gml",
+          "modules/wms/formats/lerc"
         ]
       },
       {
