@@ -15,7 +15,7 @@ export function filename(url: string): string {
  */
 export function dirname(url: string): string {
   const slashIndex = url ? url.lastIndexOf('/') : -1;
-  return slashIndex >= 0 ? url.substr(0, slashIndex ) : '';
+  return slashIndex >= 0 ? url.substr(0, slashIndex) : '';
 }
 
 /**

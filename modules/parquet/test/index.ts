@@ -11,12 +11,11 @@ import './parquetjs/thrift.spec';
 import './parquetjs/reader.spec';
 
 // The integration spec runs tens of thousands of detailed tests. Too slow for CI, uncomment to run.
-import './parquetjs/integration.spec';
+// import './parquetjs/integration.spec';
 
 // loader/writer
 import './parquet-loader.spec';
 import './parquet-writer.spec';
-
 
 import './parquet-wasm-loader.spec';
 
