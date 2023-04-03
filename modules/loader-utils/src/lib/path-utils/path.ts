@@ -8,7 +8,7 @@ import {getCWD} from './get-cwd';
  */
 export function filename(url: string): string {
   const slashIndex = url ? url.lastIndexOf('/') : -1;
-  return slashIndex >= 0 ? url.substr((slashIndex as number) + 1) : '';
+  return slashIndex >= 0 ? url.substr((slashIndex ) + 1) : '';
 }
 
 /**
@@ -43,10 +43,10 @@ export function join(...parts: string[]): string {
  * @param paths A sequence of paths or path segments.
  * @return resolved path
  * Forked from BTOdell/path-resolve under MIT license
- * @see https://github.com/BTOdell/path-resolve/blob/master/LICENSE 
+ * @see https://github.com/BTOdell/path-resolve/blob/master/LICENSE
  */
 export function resolve(...components: string[]): string {
-  let paths: string[] = [];
+  const paths: string[] = [];
   for (let _i = 0; _i < components.length; _i++) {
     paths[_i] = components[_i];
   }
@@ -67,7 +67,7 @@ export function resolve(...components: string[]): string {
     if (path.length === 0) {
       continue;
     }
-    resolvedPath = path + '/' + resolvedPath;
+    resolvedPath = `${path  }/${  resolvedPath}`;
     resolvedAbsolute = path.charCodeAt(0) === SLASH;
   }
   // At this point the path should be resolved to a full absolute path, but
@@ -75,12 +75,12 @@ export function resolve(...components: string[]): string {
   // Normalize the path (removes leading slash)
   resolvedPath = normalizeStringPosix(resolvedPath, !resolvedAbsolute);
   if (resolvedAbsolute) {
-    return '/' + resolvedPath;
+    return `/${  resolvedPath}`;
   } else if (resolvedPath.length > 0) {
     return resolvedPath;
-  } else {
-    return '.';
-  }
+  } 
+  return '.';
+  
 }
 
 const SLASH = 47;
@@ -89,8 +89,10 @@ const DOT = 46;
 /**
  * Resolves . and .. elements in a path with directory names
  * Forked from BTOdell/path-resolve under MIT license
- * @see https://github.com/BTOdell/path-resolve/blob/master/LICENSE 
+ * @see https://github.com/BTOdell/path-resolve/blob/master/LICENSE
  */
+/* eslint-disable max-depth */
+// eslint-disable-next-line complexity, max-statements
 function normalizeStringPosix(path: string, allowAboveRoot: boolean): string {
   let res = '';
   let lastSlash = -1;
@@ -117,7 +119,7 @@ function normalizeStringPosix(path: string, allowAboveRoot: boolean): string {
           res.charCodeAt(res.length - 2) !== DOT
         ) {
           if (res.length > 2) {
-            let start = res.length - 1;
+            const start = res.length - 1;
             let j = start;
             for (; j >= 0; --j) {
               if (res.charCodeAt(j) === SLASH) {
@@ -148,9 +150,9 @@ function normalizeStringPosix(path: string, allowAboveRoot: boolean): string {
           isAboveRoot = true;
         }
       } else {
-        let slice = path.slice(lastSlash + 1, i);
+        const slice = path.slice(lastSlash + 1, i);
         if (res.length > 0) {
-          res += '/' + slice;
+          res += `/${  slice}`;
         } else {
           res = slice;
         }
