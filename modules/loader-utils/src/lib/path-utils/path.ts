@@ -8,7 +8,7 @@ import {getCWD} from './get-cwd';
  */
 export function filename(url: string): string {
   const slashIndex = url ? url.lastIndexOf('/') : -1;
-  return slashIndex >= 0 ? url.substr((slashIndex ) + 1) : '';
+  return slashIndex >= 0 ? url.substr(slashIndex + 1) : '';
 }
 
 /**
@@ -67,7 +67,7 @@ export function resolve(...components: string[]): string {
     if (path.length === 0) {
       continue;
     }
-    resolvedPath = `${path  }/${  resolvedPath}`;
+    resolvedPath = `${path}/${resolvedPath}`;
     resolvedAbsolute = path.charCodeAt(0) === SLASH;
   }
   // At this point the path should be resolved to a full absolute path, but
@@ -75,12 +75,11 @@ export function resolve(...components: string[]): string {
   // Normalize the path (removes leading slash)
   resolvedPath = normalizeStringPosix(resolvedPath, !resolvedAbsolute);
   if (resolvedAbsolute) {
-    return `/${  resolvedPath}`;
+    return `/${resolvedPath}`;
   } else if (resolvedPath.length > 0) {
     return resolvedPath;
-  } 
+  }
   return '.';
-  
 }
 
 const SLASH = 47;
@@ -152,7 +151,7 @@ function normalizeStringPosix(path: string, allowAboveRoot: boolean): string {
       } else {
         const slice = path.slice(lastSlash + 1, i);
         if (res.length > 0) {
-          res += `/${  slice}`;
+          res += `/${slice}`;
         } else {
           res = slice;
         }
