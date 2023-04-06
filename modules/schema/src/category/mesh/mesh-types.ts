@@ -48,4 +48,4 @@ export type MeshAttribute = {
 };
 
 /** A map of mesh attributes keyed by attribute names */
-export type MeshAttributes = {[attributeName: string]: MeshAttribute};
+export type MeshAttributes = Record<string, MeshAttribute>;

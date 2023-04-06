@@ -1,4 +1,4 @@
-import {Schema, Field, Float32, Uint8, FixedSizeList} from '@loaders.gl/schema';
+import {Schema, Field, Float32, Int32, Uint8, FixedSizeList} from '@loaders.gl/schema';
 import type {PCDHeader} from './pcd-types';
 
 type SchemaMetadata = Map<string, any>;
@@ -26,6 +26,14 @@ export function getPCDSchema(PCDheader: PCDHeader, metadata: SchemaMetadata): Sc
 
   if (offset.rgb !== undefined) {
     fields.push(new Field('COLOR_0', new FixedSizeList(3, new Field('rgb', new Uint8())), false));
+  }
+
+  if (offset.intensity !== undefined) {
+    fields.push(new Field('intensity', new Field('intensity', new Float32()), false));
+  }
+
+  if (offset.rgb !== undefined) {
+    fields.push(new Field('label', new Field('label', new Int32()), false));
   }
 
   return new Schema(fields, metadata);
