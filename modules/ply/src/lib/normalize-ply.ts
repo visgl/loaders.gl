@@ -50,25 +50,47 @@ export default function normalizePLY(
  * @param attributes
  * @returns accessors []
  */
+// eslint-disable-next-line complexity
 function getMeshAttributes(attributes: PLYAttributes): MeshAttributes {
   const accessors: MeshAttributes = {};
 
-  accessors.POSITION = {value: new Float32Array(attributes.vertices), size: 3};
+  for (const attributeName of Object.keys(attributes)) {
+    switch (attributeName) {
+      case 'vertices':
+        if (attributes.vertices.length > 0) {
+          accessors.POSITION = {value: new Float32Array(attributes.vertices), size: 3};
+        }
+        break;
 
-  // optional attributes data
+      // optional attributes data
+      case 'normals':
+        if (attributes.normals.length > 0) {
+          accessors.NORMAL = {value: new Float32Array(attributes.normals), size: 3};
+        }
+        break;
 
-  if (attributes.normals.length > 0) {
-    accessors.NORMAL = {value: new Float32Array(attributes.normals), size: 3};
+      case 'uvs':
+        if (attributes.uvs.length > 0) {
+          accessors.TEXCOORD_0 = {value: new Float32Array(attributes.uvs), size: 2};
+        }
+        break;
+
+      case 'colors':
+        if (attributes.colors.length > 0) {
+          // TODO - normalized shoud be based on `uchar` flag in source data?
+          accessors.COLOR_0 = {value: new Uint8Array(attributes.colors), size: 3, normalized: true};
+        }
+        break;
+
+      case 'indices':
+        break;
+
+      default:
+        if (attributes[attributeName].length > 0) {
+          accessors[attributeName] = {value: new Float32Array(attributes[attributeName]), size: 1};
+        }
+        break;
+    }
   }
-
-  if (attributes.uvs.length > 0) {
-    accessors.TEXCOORD_0 = {value: new Float32Array(attributes.uvs), size: 2};
-  }
-
-  if (attributes.colors.length > 0) {
-    // TODO - normalized shoud be based on `uchar` flag in source data?
-    accessors.COLOR_0 = {value: new Uint8Array(attributes.colors), size: 3, normalized: true};
-  }
-
   return accessors;
 }
