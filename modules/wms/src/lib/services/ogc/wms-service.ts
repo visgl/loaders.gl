@@ -356,14 +356,14 @@ export class WMSService extends ImageSource {
   _parseWMSUrl(url: string): {url: string, parameters: Record<string, unknown>} {
     const [baseUrl, search] = '' = url.split('?');
     const searchParams = search.split('&');
-
-    const result: {url: string, parameters: Record<string, unknown>} = {url: baseUrl, parameters: {}};
+    
+    const parameters: Record<string, unknown> = {};
     for (const parameter of searchParams) {
       const [key, value] = parameter.split('=');
-      
+      parameters[key] = value;
     }
 
-    return result;
+    return {url: baseUrl, parameters};
   }
 
   /**
