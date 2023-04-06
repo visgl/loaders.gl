@@ -142,7 +142,7 @@ export default class ControlPanel extends PureComponent {
         {this._renderHeader()}
         {this._renderDropDown()}
         {this.props.children}
-        <h1>WMS Capabilities</h1>
+        <h1>WMS Server Capabilities</h1>
         <pre>
           {this.props.metadata}
         </pre>

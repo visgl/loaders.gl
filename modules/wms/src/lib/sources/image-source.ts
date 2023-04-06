@@ -15,13 +15,7 @@ export type ImageSourceMetadata = {
   title?: string;
   abstract?: string;
   keywords: string[];
-  layer: {
-    name: string;
-    title?: string;
-    srs?: string[];
-    boundingBox?: [number, number, number, number];
-    layers: ImageSourceLayer[];
-  };
+  layers: ImageSourceLayer[];
 };
 
 export type ImageSourceLayer = {
@@ -29,7 +23,7 @@ export type ImageSourceLayer = {
   title?: string;
   srs?: string[];
   boundingBox?: [number, number, number, number];
-  layers: ImageSourceLayer[];
+  layers?: ImageSourceLayer[];
 };
 
 export type GetImageParameters = {
