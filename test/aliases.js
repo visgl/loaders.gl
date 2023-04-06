@@ -50,4 +50,4 @@ function makeAliases(basename = __dirname) {
   };
 }
 
-module.exports = makeAliases();
+export default makeAliases();
