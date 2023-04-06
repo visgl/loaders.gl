@@ -44,7 +44,7 @@ test('PCDLoader#parse(text)', async (t) => {
   t.end();
 });
 
-test.only('PCDLoader#parse(binary)', async (t) => {
+test('PCDLoader#parse(binary)', async (t) => {
   const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {worker: false});
   validateMeshCategoryData(t, data);
 
