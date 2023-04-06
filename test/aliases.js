@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-// import {resolve} from 'path';
-
-/** Poor man's resolve to avoid node import */
-function resolve(basePath, relativePath) {
-  return `${basePath}/${relativePath}`;
-}
+import {path} from '@loaders.gl/loader-utils';
+const {resolve} = path;
 
 // NOTE - Replace with a transform of ocular-dev-tools aliases?
 function makeAliases(basename = __dirname) {
@@ -54,4 +50,4 @@ function makeAliases(basename = __dirname) {
   };
 }
 
-module.exports = makeAliases();
+export default makeAliases();

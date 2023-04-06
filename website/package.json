@@ -46,6 +46,7 @@
     "react-map-gl": "^6.0.0",
     "styled-components": "^5.3.3",
     "@deck.gl/core": "^8.9.0",
+    "@deck.gl/arcgis": "^8.9.0",
     "@deck.gl/extensions": "^8.9.0",
     "@deck.gl/react": "^8.9.0",
     "@deck.gl/layers": "^8.9.0",

@@ -1,5 +1,6 @@
 # I3SLoader
 
+<<<<<<< HEAD:docs/modules/i3s/api-reference/i3s-loader.md
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
@@ -50,7 +51,7 @@ I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1
 
 ## Terms
 
-The terms and concepts used in `i3s` module have the corresponding parts [I3S Spec](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md).
+The terms and concepts used in `i3s` module have the corresponding parts [I3S Spec](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification).
 
 - `tileset`: I3S Indexed 3D Layer File.
 - `tile`: I3S node file.
@@ -152,6 +153,8 @@ export default class App extends Component {
 ```
 
 A more complex example can be found [here](https://github.com/visgl/loaders.gl/tree/master/examples/website/i3s), checkout website [example](https://loaders.gl/examples/i3s).
+=======
+>>>>>>> 9c921f73a (feat(docs): Improvements to examples on docusaurus website):docs/modules/i3s/api-reference/i3s-loader.mdx
 
 **Basic API Usage**
 
@@ -212,7 +215,7 @@ The following fields are guaranteed. Additionally, the loaded tileset object wil
 | Field            | Type     | Contents                                                                                                                                                                                                                                                                         |
 | ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `type`           | `String` | Value is `i3s`. Indicates the returned object is an `i3s` tileset.                                                                                                                                                                                                               |
-| `lodMetricType`  | `String` | Root's level of detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn.md) for more details. |
+| `lodMetricType`  | `String` | Root's level of detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn) for more details. |
 | `lodMetricValue` | `Number` | Root's level of detail (LoD) metric value.                                                                                                                                                                                                                                       |
 
 ### Tile Object
@@ -228,8 +231,8 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 | `contentUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
 | `featureUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
 | `textureUrl`     | `String` | The url of this tile.                                                                                                                                                                                                                                                                    |
-| `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md) that encloses a tile or its content. Exactly one box, region, or sphere property is required. |
-| `lodMetricType`  | `String` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn.md) for more details.                |
+| `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification) that encloses a tile or its content. Exactly one box, region, or sphere property is required. |
+| `lodMetricType`  | `String` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/lodSelection.cmn) for more details.                |
 | `lodMetricValue` | `String` | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                      |
 | `content`        | `String` | The actual payload of the tile or the url point to the actual payload. If `option.loadContent` is enabled, content will be populated with the loaded value following the Tile Content section                                                                                            |
 
@@ -243,7 +246,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
 | `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                           |
 | `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                           |
-| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties |
+| `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor) properties |
 | `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                               |
 | `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                               |
 

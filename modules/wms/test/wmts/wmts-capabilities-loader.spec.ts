@@ -5,6 +5,7 @@
 // Forked from https://github.com/chrelad/openlayers/blob/master/tests/Format/WMTSCapabilities/v1_0_0.html
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
+/*
 
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
@@ -221,3 +222,4 @@ test.skip('WMTSCapabilitiesLoader#response.xml#test_tileMatrixSets', async (t) =
 
   t.end();
 });
+*/

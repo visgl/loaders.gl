@@ -1407,6 +1407,13 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
+"@deck.gl/arcgis@^8.9.0":
+  version "8.9.6"
+  resolved "https://registry.yarnpkg.com/@deck.gl/arcgis/-/arcgis-8.9.6.tgz#3747761c1927e60a7d40ccab1ee209e257f0798f"
+  integrity sha512-So/6QBfnfB5/dwNu6qSff1ROzXDW+CsE6CjSVQg9Vng079czmytEsKEG4vkM2EHjByEQhy2Rs/N29NAbMaKmuQ==
+  dependencies:
+    esri-loader "^3.3.0"
+
 "@deck.gl/core@^8.9.0":
   version "8.9.4"
   resolved "https://registry.yarnpkg.com/@deck.gl/core/-/core-8.9.4.tgz#8e4026c072e303eeafc9fc543ba5b0f6c2871676"
@@ -6320,6 +6327,11 @@ esrecurse@^4.3.0:
   integrity sha512-KmfKL3b6G+RXvP8N1vr3Tq1kL/oCFgn2NYXEtqP8/L3pKapUA4G8cFVaoF3SU323CD4XypR/ffioHmkti6/Tag==
   dependencies:
     estraverse "^5.2.0"
+
+esri-loader@^3.3.0:
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/esri-loader/-/esri-loader-3.7.0.tgz#be2432664f53d4878b34ab903499248bbca3e087"
+  integrity sha512-cB1Sw9EQjtW4mtT7eFBjn/6VaaIWNTjmTd2asnnEyuZk1xVSFRMCfLZSBSjZM7ZarDcVu5WIjOP0t0MYVu4hVQ==
 
 estraverse@^4.1.1:
   version "4.3.0"
