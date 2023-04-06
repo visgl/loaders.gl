@@ -65,7 +65,7 @@ function getMeshAttributes(attributes: PLYAttributes): MeshAttributes {
       // optional attributes data
       case 'normals':
         if (attributes.normals.length > 0) {
-          accessors.POSITION = {value: new Float32Array(attributes.normals), size: 3};
+          accessors.NORMAL = {value: new Float32Array(attributes.normals), size: 3};
         }
         break;
 
