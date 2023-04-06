@@ -25,7 +25,7 @@ type WMSCommonParameters = {
   /** In case the endpoint supports multiple services */
   service?: 'WMS';
   /** In case the endpoint supports multiple WMS versions */
-  version?: '1.1.1' | '1.3.0';
+  version?: '1.3.0' | '1.1.1';
 };
 
 export type WMSGetCapabilitiesParameters = WMSCommonParameters & {
@@ -38,8 +38,6 @@ export type WMSGetMapParameters = WMSCommonParameters & {
   request?: 'GetMap';
   /** Layers to render */
   layers: string | string[];
-  /** Styling */
-  styles?: unknown;
   /** bounding box of the requested map image */
   bbox: [number, number, number, number];
   /** pixel width of returned image */
@@ -48,6 +46,10 @@ export type WMSGetMapParameters = WMSCommonParameters & {
   height: number;
   /** srs for the image (not the bounding box) */
   srs?: string;
+  /** Styling */
+  styles?: unknown;
+  /** Don't render background when no data */
+  transparent?: boolean;
   /** requested format for the return image */
   format?: 'image/png';
 };
@@ -97,7 +99,7 @@ export type WMSServiceProps = ImageSourceProps & {
   /** Base URL to the service */
   url: string;
   /** WMS version */
-  version?: '1.1.1' | '1.3.0';
+  version?: '1.3.0' | '1.1.1';
   /** Layers to render */
   layers?: string[];
   /** SRS for the image (not the bounding box) */
@@ -106,8 +108,10 @@ export type WMSServiceProps = ImageSourceProps & {
   format?: 'image/png';
   /** Requested MIME type of returned feature info */
   info_format?: 'text/plain' | 'application/vnd.ogc.gml';
-  /** Styling */
+  /** Styling - Not yet supported */
   styles?: unknown;
+  /** Any additional parameters specific to this WMSService */
+  vendorParameters?: Record<string, unknown>;
 };
 
 /**
@@ -144,10 +148,11 @@ export class WMSService extends ImageSource {
       loadOptions: undefined!,
       layers: undefined!,
       styles: undefined,
-      version: '1.1.1',
+      version: '1.3.0',
       srs: 'EPSG:4326',
       format: 'image/png',
       info_format: 'text/plain',
+      vendorParameters: {},
       ...props
     };
   }
@@ -348,6 +353,19 @@ export class WMSService extends ImageSource {
 
   // INTERNAL METHODS
 
+  _parseWMSUrl(url: string): {url: string, parameters: Record<string, unknown>} {
+    const [baseUrl, search] = '' = url.split('?');
+    const searchParams = search.split('&');
+
+    const result: {url: string, parameters: Record<string, unknown>} = {url: baseUrl, parameters: {}};
+    for (const parameter of searchParams) {
+      const [key, value] = parameter.split('=');
+      
+    }
+
+    return result;
+  }
+
   /**
    * @note case _getWMSUrl may need to be overridden to handle certain backends?
    * */
@@ -366,6 +384,19 @@ export class WMSService extends ImageSource {
         url += `${key.toUpperCase()}=${value ? String(value) : ''}`;
       }
     }
+
+    // Add any vendor searchParams
+    const additionalParameters = {...this.vendorParameters, ...vendorParameters};
+    for (const [key, value] of Object.entries(additionalParameters)) {
+      url += first ? '?' : '&';
+      first = false;
+      if (Array.isArray(value)) {
+        url += `${key.toUpperCase()}=${value.join(',')}`;
+      } else {
+        url += `${key.toUpperCase()}=${value ? String(value) : ''}`;
+      }
+    }
+
     return encodeURI(url);
   }
 
