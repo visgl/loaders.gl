@@ -90,7 +90,7 @@ export class Tile3D {
   // @ts-ignore
   private _shouldRefine: boolean;
 
-  private _boundingBox?: [min: number[], max: number[]];
+  private _boundingBox?: CartographicBounds;
 
   // Members this are updated every frame for tree traversal and rendering optimizations:
   public _distanceToCamera: number;
