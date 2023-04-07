@@ -31,8 +31,8 @@ The WMS standard specifies a number of "request types" that a standards-complian
 
 Per [stackexchange](https://gis.stackexchange.com/questions/23347/getmap-wms-1-1-1-vs-1-3-0) the key differences are:
 
-- Use SRS for 1.1.1, Use CRS for 1.3.0
-- WMS 1.3.0 ONLY: The order of parameters for BBOX depends on whether the CRS definition has flipped axes. You will see this in the GetCapabilities request at 1.3.0 - the response should show the flipped axes.
+- Use CRS instead of SRS parameter for 1.3.0
+- The order of parameters for BBOX (in v1.3.0 only) depends on whether the CRS definition has flipped axes. You will see this in the GetCapabilities request at 1.3.0 - the response should show the flipped axes.
   + BBOX=xmin,ymin,xmax,ymax NON-FLIPPED
   + BBOX=ymin,xmin,ymax,xmax FLIPPED
   + EPSG:4326 needs to have flipped axes. 4326 1 WGS 84 Latitude North Longitude East
@@ -41,8 +41,23 @@ In WMS 1.1.1 EPSG:4326 is wrongly defined as having long/lat coordinate axes. In
 CRS:84 was introduced with the publication of the WMS 1.3.0 specification, to overcome this issue. 
 
 #### v1.1.1
+Released in Jan 2002
 
-TBA
+- Use SRS instead of CRS parameter for 1.1.1
+- In WMS 1.1.1 EPSG:4326 is wrongly defined as having long/lat coordinate axes. See v1.3.0 documentation for details.
+
+#### v1.1.0
+
+Released in June 2001
+
+> Not tested / not officially supported.
+
+#### v1.0.0
+
+Released in April 2000. 
+
+> Not tested / not officially supported.
+
 
 ## Map images
 

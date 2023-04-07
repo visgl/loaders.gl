@@ -10,19 +10,15 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.8.0",
-    "@deck.gl/layers": "^8.8.0",
-    "@deck.gl/react": "^8.8.0",
-    "@loaders.gl/core": "^3.3.0-alpha.11",
-    "@loaders.gl/wms": "^3.3.0-alpha.11",
-    "react": "^16.8.0",
-    "react-color": "^2.19.3",
-    "react-dom": "^16.8.0",
-    "react-map-gl": "^5.0.0",
+    "deck.gl": "^8.9.0",
+    "@loaders.gl/core": "^3.3.0",
+    "@loaders.gl/wms": "^3.3.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "typescript": "^4.3.2",
-    "vite": "^2.7.1"
+    "typescript": "^5.0.0",
+    "vite": "^4.2.0"
   }
 }

@@ -1,50 +1,51 @@
 // loaders.gl, MIT license
 
 import React, {PureComponent} from 'react';
-import {render} from 'react-dom';
-import {StaticMap} from 'react-map-gl';
+import {createRoot} from 'react-dom/client';
+// import {StaticMap} from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react/typed';
 import {MapController} from '@deck.gl/core/typed';
-import {ImageryLayer} from './imagery-layer';
 import type {ImageSourceMetadata} from '@loaders.gl/wms';
+import {_WMSLayer as WMSLayer} from '@deck.gl/geo-layers/typed';
+
 
 import ControlPanel from './components/control-panel';
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
 
-import {_getArcGISServices, CSWService} from '@loaders.gl/wms';
+// import {_getArcGISServices, CSWService} from '@loaders.gl/wms';
 
-export async function loadCSWCatalog(url: string = 'https://gamone.whoi.edu/csw') {
-  const catalogService = new CSWService({url}); // https://deims.org/pycsw/catalogue'});
-  const services = await catalogService.getServiceDirectory();
-  console.log(JSON.stringify(services, null, 2));
+// export async function loadCSWCatalog(url: string = 'https://gamone.whoi.edu/csw') {
+//   const catalogService = new CSWService({url}); // https://deims.org/pycsw/catalogue'});
+//   const services = await catalogService.getServiceDirectory();
+//   console.log(JSON.stringify(services, null, 2));
 
-  const examples = EXAMPLES['gamone'] = {};
-  let i = 0;
-  for (const service of services) {
-    examples[`${service.name.replace('-', '')}`] = {
-      service: service.url,
-      serviceType: 'wms',
-      layers: ['THREDDS'],
-      viewState: {
-        longitude: -122.4,
-        latitude: 37.74,
-        zoom: 9,
-        minZoom: 1,
-        maxZoom: 20,
-        pitch: 0,
-        bearing: 0    
-      }
-    }
-  }
-}
+//   const examples = EXAMPLES['gamone'] = {};
+//   let i = 0;
+//   for (const service of services) {
+//     examples[`${service.name.replace('-', '')}`] = {
+//       service: service.url,
+//       serviceType: 'wms',
+//       layers: ['THREDDS'],
+//       viewState: {
+//         longitude: -122.4,
+//         latitude: 37.74,
+//         zoom: 9,
+//         minZoom: 1,
+//         maxZoom: 20,
+//         pitch: 0,
+//         bearing: 0    
+//       }
+//     }
+//   }
+// }
 
-loadCSWCatalog();
+// loadCSWCatalog();
 
-export async function loadArcGISCatalog(url: string = 'https://gamone.whoi.edu/csw') {
-  // const services = await _getArcGISServices('https://sampleserver6.arcgisonline.com/arcgis/rest/services'); // /Water_Network_Base_Map/MapServer
-  // console.log(JSON.stringify(services, null, 2));
-}
+// export async function loadArcGISCatalog(url: string = 'https://gamone.whoi.edu/csw') {
+//   // const services = await _getArcGISServices('https://sampleserver6.arcgisonline.com/arcgis/rest/services'); // /Water_Network_Base_Map/MapServer
+//   // console.log(JSON.stringify(services, null, 2));
+// }
 
 export const INITIAL_VIEW_STATE = {
   latitude: 49.254,
@@ -125,7 +126,7 @@ export default class App extends PureComponent {
     const {service, serviceType, layers, opacity = 1} = EXAMPLES[selectedCategory][selectedExample];
 
     return [
-      new ImageryLayer({
+      new WMSLayer({
         data: service,
         serviceType,
         layers,
@@ -134,10 +135,10 @@ export default class App extends PureComponent {
         opacity,
 
         onImageLoadStart: () => this.setState({loading: true}),
-        onImageLoadComplete: () => this.setState({loading: false}),
+        onImageLoad: () => this.setState({loading: false}),
 
         onMetadataLoadStart: () => this.setState({metadata: 'Loading metadata...'}),
-        onMetadataLoadComplete: (metadata: ImageSourceMetadata) => {
+        onMetadataLoad: (metadata: ImageSourceMetadata) => {
           globalThis.document.title = metadata.title || 'WMS';
           this.setState({metadata: JSON.stringify(metadata, null, 2)});
         },
@@ -148,7 +149,6 @@ export default class App extends PureComponent {
           } else if (bitmap) {
             const x = bitmap.pixel[0];
             const y = bitmap.pixel[1];
-            // @ts-expect-error
             const featureInfo = await layer.getFeatureInfoText(x, y);
             console.log('Click in imagery layer', x, y, featureInfo);
             this.setState({featureInfo});
@@ -182,7 +182,6 @@ export default class App extends PureComponent {
             }
           }
         >
-          <StaticMap mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
         </DeckGL>
       </div>
     );
@@ -190,5 +189,5 @@ export default class App extends PureComponent {
 }
 
 export function renderToDOM(container = document.body) {
-  render(<App />, container);
+  createRoot(container).render(<App />);
 }

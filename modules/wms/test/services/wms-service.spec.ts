@@ -66,7 +66,7 @@ test('WMSService#getLegendGraphicURL', async (t) => {
 });
 
 test('WMSService#parameters', async (t) => {
-  const wmsService = new WMSService({url: WMS_SERVICE_URL, version: '1.3.0'});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {version: '1.3.0'}});
   const getMapUrl = wmsService.getMapURL({
     width: 800,
     height: 600,
@@ -75,7 +75,7 @@ test('WMSService#parameters', async (t) => {
   });
   t.equal(
     getMapUrl,
-    'https:/mock-wms-service?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&STYLES=&SRS=EPSG:4326&FORMAT=image/png&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75&LAYERS=oms',
+    'https:/mock-wms-service?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&STYLES=&CRS=EPSG:4326&FORMAT=image/png&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75&LAYERS=oms',
     'getMapURL'
   );
   t.end();
