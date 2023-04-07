@@ -4,16 +4,59 @@
   <tbody>
     <tr>
       <td>
-        <img style={{maxHeight:200}} src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/mvt-layer.jpg" />
-        <p><i>MVTLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer">MVTLayer</a></i> (v2.1)</p>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/mvt-layer.jpg"
+        />
+        <p>
+          <i>
+            MVTLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer"
+            >
+              MVTLayer
+            </a>
+          </i>{' '}
+          (v2.1)
+        </p>
       </td>
       <td>
-        <img style={{maxHeight:200}} src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/terrain.jpg" />
-        <p><i>TerrainLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer">TerrainLayer</a></i> (v2.1)</p>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/terrain.jpg"
+        />
+        <p>
+          <i>
+            TerrainLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer"
+            >
+              TerrainLayer
+            </a>
+          </i>{' '}
+          (v2.1)
+        </p>
       </td>
       <td>
-        <img style={{maxHeight:200}} src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
-        <p><i>I3SLoader + <a target="_blank" href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer">Tile3DLayer</a> + I3S</i> (v2.1)</p>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif"
+        />
+        <p>
+          <i>
+            I3SLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer"
+            >
+              Tile3DLayer
+            </a>{' '}
+            + I3S
+          </i>{' '}
+          (v2.1)
+        </p>
       </td>
     </tr>
   </tbody>
@@ -30,11 +73,6 @@ Target Release Date: April, 2023.
 - Support for the AVIF image format
 - Functions for testing which image formats are supported
 
-**@loaders.gl/images**
-
-- Support for the AVIF image format
-- Functions for testing which image formats are supported
-
 **@loaders.gl/pcd**
 
 Add support for `intensity` and `label` attributes.
@@ -45,16 +83,16 @@ Add support for custom attributes such as `intensity` and `confidence`.
 
 **@loaders.gl/xml**
 
-- New [`HTMLLoader`](modules/json/docs/api-reference/html-loader) - a minimal HTML loader, parses HTML as an unstructured XML tree. Intended for minimal ad-hoc use cases such as extracting an error message or a link from a short HTML page.
+- New [`HTMLLoader`](modules/xml/api-reference/html-loader) - a minimal HTML loader, parses HTML as an unstructured XML tree. Intended for minimal ad-hoc use cases such as extracting an error message or a link from a short HTML page.
 
 **@loaders.gl/wms**
 
-Support for additional OGC Web Services standards:
-
-- CSW (Catalog Services for the Web) supports service discovery.
-  - [`CSWCapabilitiesLoader`](modules/json/docs/api-reference/csw-capabilities-loader)
-  - [`CSWDomainLoader`](modules/json/docs/api-reference/csw-domain-loader)
-  - [`CSWRecordsLoader`](modules/json/docs/api-reference/csw-records-loader)
+- The [**CSW (Catalog Services for the Web)**](modules/wms/formats/csw) protocol is now supported by a new [`CSWService`](modules/wms/api-reference/csw-service) class which enables applications to discover available services (including WMS).
+- Experimental [`WMSService`](modules/wms/api-reference/wms-service) class improvements
+  - Default WMS parameters (`layers`, `crs` etc) can be specified during `WMSService` construction, instead of having to repeatedly pass them to `getMap` etc methods.
+  - WMS 1.3.0 is now the default, and automatic remapping of parameter names is handled under the hood (`CRS` s `SRS`)
+  - Authentication support: Plumbs through loadOptions, including HTTP `Authentication` headers.
+  - Transparency support: The `transparent` prop is now included in the exported types enabling images that are transparent where there is no data.
 
 ## v3.3
 
@@ -67,14 +105,14 @@ Release Date: February 17, 2023.
 **@loaders.gl/xml** (New module)
 
 - New module for parsing XML (eXtensible Markup Language)
-- [`XMLLoader`](modules/json/docs/api-reference/xml-loader)
+- [`XMLLoader`](modules/xml/api-reference/xml-loader)
 
 **@loaders.gl/wms** (New module)
 
 - New module for parsing WMS (Web Management Service) server responses:
-  - [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
-  - [`WMSFeatureInfoLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
-  - [`WMSLayerDescriptionLoader`](modules/json/docs/api-reference/wms-feature-info-loader)
+  - [`WMSCapabilitiesLoader`](modules/wms/api-reference/wms-capabilities-loader)
+  - [`WMSFeatureInfoLoader`](modules/wms/api-reference/wms-feature-info-loader)
+  - [`WMSLayerDescriptionLoader`](modules/wms/api-reference/wms-feature-info-loader)
 
 **@loaders.gl/3d-tiles**
 
@@ -121,9 +159,9 @@ Target Release Date: May 2022.
 
 **@loaders.gl/json**
 
-- [`GeoJSONLoader`](modules/json/docs/api-reference/geojson-loader)
-- [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader) - Now supports JSONL, JSONSeq etc.
-- [`NDGeoJSONLoader`](modules/json/docs/api-reference/ndgeojson-loader) - Now supports JSONL, JSONSeq etc.
+- [`GeoJSONLoader`](modules/json/api-reference/geojson-loader)
+- [`NDJSONLoader`](modules/json/api-reference/ndjson-loader) - Now supports JSONL, JSONSeq etc.
+- [`NDGeoJSONLoader`](modules/json/api-reference/ndgeojson-loader) - Now supports JSONL, JSONSeq etc.
 
 **@loaders.gl/terrain**
 
@@ -161,7 +199,7 @@ Release Date: Dec 7, 2021.
 
 **@loaders.gl/json**
 
-- New [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader) which handles new-line delimited JSON files.
+- New [`NDJSONLoader`](modules/json/api-reference/ndjson-loader) which handles new-line delimited JSON files.
 
 **@loaders.gl/csv**
 
@@ -169,11 +207,11 @@ Release Date: Dec 7, 2021.
 
 **@loaders.gl/flatgeobuf**
 
-- The experimental [`FlatgeobufLoader`](modules/flatgeobug/docs/api-reference/flatgeobuf-loader) is now documented.
+- The experimental [`FlatgeobufLoader`](modules/flatgeobuf/api-reference/flatgeobuf-loader) is now documented.
 
 **@loaders.gl/parquet** (NEW)
 
-- New experimental [`ParquetLoader`](modules/parquet/docs/api-reference/parquet-loader)
+- New experimental [`ParquetLoader`](modules/parquet//api-reference/parquet-loader)
 
 **@loaders.gl/pcd**
 
@@ -516,8 +554,13 @@ The 1.3 release is focused on production quality 3D tiles support, maturing the 
   <tbody>
     <tr>
       <td style={{textAlign: 'center'}}>
-        <img style={{maxHeight: 200}} src="https://raw.github.com/visgl/loaders.gl/master/website/static/images/example-3d-tiles.png" />
-        <p><strong>Tiles3DLoader</strong></p>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/loaders.gl/master/website/static/images/example-3d-tiles.png"
+        />
+        <p>
+          <strong>Tiles3DLoader</strong>
+        </p>
       </td>
     </tr>
   </tbody>
@@ -591,8 +634,13 @@ Release Date: May 30, 2019
   <tbody>
     <tr>
       <td style={{textAlign: 'center'}}>
-        <img style={{maxHeight:200}} src="https://raw.github.com/visgl/loaders.gl/master/website/static/images/example-gltf.jpg" />
-        <p><strong>GLTFLoader</strong></p>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/loaders.gl/master/website/static/images/example-gltf.jpg"
+        />
+        <p>
+          <strong>GLTFLoader</strong>
+        </p>
       </td>
     </tr>
   </tbody>
@@ -614,10 +662,10 @@ Release Date: May 30, 2019
 - "Embedded' GLB data (GLBs inside other binary formats) can now be parsed (e.g. the glTF parser can now extract embedded glTF inside 3D tile files).
 
 - New classes/functions:
-  - [`GLTFScenegraph`](/docs/api-reference/gltf/gltf-scenegraph) class (NEW) - A helper class that provides methods for structured access to and modification/creation of glTF data.
-  - [`postProcessGLTF`](/docs/api-reference/gltf/post-process-gltf) function ( EW) - Function that performs a set of transformations on loaded glTF data that simplify application processing.
-  - [`GLBLoader`](/docs/api-reference/gltf/glb-loader)/[`GLBWriter`](NEW) - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
-  - [`GLTFLoader`](/docs/api-reference/gltf/gltf-loader), letting application separately handle post-processing.
+  - [`GLTFScenegraph`](//api-reference/gltf/gltf-scenegraph) class (NEW) - A helper class that provides methods for structured access to and modification/creation of glTF data.
+  - [`postProcessGLTF`](//api-reference/gltf/post-process-gltf) function ( EW) - Function that performs a set of transformations on loaded glTF data that simplify application processing.
+  - [`GLBLoader`](//api-reference/gltf/glb-loader)/[`GLBWriter`](NEW) - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
+  - [`GLTFLoader`](//api-reference/gltf/gltf-loader), letting application separately handle post-processing.
 
 ### @loaders.gl/3d-tiles (NEW MODULE)
 

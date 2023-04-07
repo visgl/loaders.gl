@@ -349,7 +349,9 @@
         "items": [
           "modules/wms/README",
           "modules/wms/api-reference/wms-service",
+          "modules/wms/api-reference/csw-service",
           "modules/wms/formats/wms",
+          "modules/wms/formats/csw",
           "modules/wms/formats/wmts",
           "modules/wms/formats/wfs",
           "modules/wms/formats/gml",
@@ -360,7 +362,9 @@
         "type": "category",
         "label": "@loaders.gl/xml",
         "items": [
-          "modules/xml/README"
+          "modules/xml/README",
+          "modules/xml/api-reference/xml-loader",
+          "modules/xml/api-reference/html-loader"
         ]
       },
       {

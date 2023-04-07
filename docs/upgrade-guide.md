@@ -1,5 +1,9 @@
 # Upgrade Guide
 
+## Upgrading to v3.4
+
+- `WMSService` - the `srs` parameters has been renamed to `crs` preferring the WMS 1.3.0 conventions.
+
 ## Upgrading to v3.2
 
 **@loaders.gl/geopackage**

@@ -2,6 +2,16 @@
 
 ## v3.4 Prerelease
 
+## v3.4.0-alpha.3
+
+- (HEAD -> master, origin/master, origin/HEAD) docs: Docusaurus deploy, remove gatsby folder (#2402)
+- chore: fix vite deps + add missing types to loader-utils/src/types.ts (#2396)
+- feat(wms): WMS 1.3.0 preparations, WMS example upgrade (#2399)
+- feat(pcd): support intensity and label (#2398)
+- feat(ply): Support arbitrary columns (intensity, confidence etc). (#2397)
+- feat(docs): Most examples now running on docusaurus website (#2394)
+- feat(docs): Add examples to docusaurus website (#2393)
+
 ## v3.4.0-alpha.2
 
 - feat(3d-tiles): support s2 bounding volume (#2376)
