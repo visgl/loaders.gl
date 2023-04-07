@@ -6,6 +6,7 @@ import {withFetchMock, mockResults, requestInits} from '../test-utils/fetch-spy'
 import {WMSService} from '@loaders.gl/wms';
 
 const WMS_SERVICE_URL = 'https:/mock-wms-service';
+const WMS_VERSION = '1.3.0';
 
 test('WMSService#', async (t) => {
   const wmsService = new WMSService({url: WMS_SERVICE_URL});
@@ -13,7 +14,7 @@ test('WMSService#', async (t) => {
 
   t.equal(
     getCapabilitiesUrl,
-    'https:/mock-wms-service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities',
+    `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=GetCapabilities`,
     'getCapabilitiesURL'
   );
   t.end();
@@ -29,7 +30,7 @@ test('WMSService#getMapURL', async (t) => {
   });
   t.equal(
     getMapUrl,
-    'https:/mock-wms-service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG:4326&FORMAT=image/png&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75&LAYERS=oms',
+    `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=GetMap&STYLES=&CRS=EPSG:4326&FORMAT=image/png&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75&LAYERS=oms`,
     'getMapURL'
   );
   t.end();
@@ -47,7 +48,7 @@ test('WMSService#describeLayerURL', async (t) => {
   const describeLayerUrl = wmsService.describeLayerURL({});
   t.equal(
     describeLayerUrl,
-    'https:/mock-wms-service?SERVICE=WMS&VERSION=1.1.1&REQUEST=DescribeLayer',
+    `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=DescribeLayer`,
     'describeLayerURL'
   );
   t.end();
@@ -58,7 +59,7 @@ test('WMSService#getLegendGraphicURL', async (t) => {
   const getLegendGraphicUrl = wmsService.getLegendGraphicURL({});
   t.equal(
     getLegendGraphicUrl,
-    'https:/mock-wms-service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic',
+    `https:/mock-wms-service?SERVICE=WMS&VERSION=${WMS_VERSION}&REQUEST=GetLegendGraphic`,
     'getLegendGraphicURL'
   );
 
@@ -66,7 +67,7 @@ test('WMSService#getLegendGraphicURL', async (t) => {
 });
 
 test('WMSService#parameters', async (t) => {
-  const wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {version: '1.3.0'}});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {version: '1.1.1'}});
   const getMapUrl = wmsService.getMapURL({
     width: 800,
     height: 600,
@@ -75,7 +76,8 @@ test('WMSService#parameters', async (t) => {
   });
   t.equal(
     getMapUrl,
-    'https:/mock-wms-service?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&STYLES=&CRS=EPSG:4326&FORMAT=image/png&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75&LAYERS=oms',
+    // Note: CRS parameter becomes SRS in pre 1.3.0 !
+    'https:/mock-wms-service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG:4326&FORMAT=image/png&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75&LAYERS=oms',
     'getMapURL'
   );
   t.end();

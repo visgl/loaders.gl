@@ -18,7 +18,7 @@ test('WMSCapabilitiesLoader#forecasts.xml', async (t) => {
   const capabilities = (await load(WMS_FORECASTS_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.layer.layers[2]?.name, 'world_rivers', 'contents');
+  t.equal(capabilities.layers[0].layers[2]?.name, 'world_rivers', 'contents');
 
   t.end();
 });
@@ -27,7 +27,7 @@ test('WMSCapabilitiesLoader#obs.xml', async (t) => {
   const capabilities = (await load(WMS_OBS_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.layer.layers[2].name, 'world_rivers', 'contents');
+  t.equal(capabilities.layers[0].layers[2].name, 'world_rivers', 'contents');
   t.end();
 });
 
@@ -35,7 +35,7 @@ test('WMSCapabilitiesLoader#wwa.xml', async (t) => {
   const capabilities = (await load(WMS_WWA_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.layer.layers[2].name, 'world_rivers', 'contents');
+  t.equal(capabilities.layers[0].layers[2].name, 'world_rivers', 'contents');
 
   t.end();
 });
@@ -44,7 +44,7 @@ test('WMSCapabilitiesLoader#analyses.xml', async (t) => {
   const capabilities = (await load(WMS_ANALYSES_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.layer.layers[2].name, 'world_countries_label', 'contents');
+  t.equal(capabilities.layers[0].layers[2].name, 'world_countries_label', 'contents');
 
   t.end();
 });
@@ -53,7 +53,7 @@ test('WMSCapabilitiesLoader#dmsp.xml', async (t) => {
   const capabilities = (await load(WMS_DMSP_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.layer.layers[2].name, 'eez', 'contents');
+  t.equal(capabilities.layers[0].layers[2].name, 'eez', 'contents');
 
   t.end();
 });
@@ -63,7 +63,7 @@ test.skip('WMSCapabilitiesLoader#ad-hoc-test', async (t) => {
   const capabilities = (await load(WMS_ADHOC_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.layer.layers[2].name, 'eez', 'contents');
+  t.equal(capabilities.layers[0].layers[2].name, 'eez', 'contents');
 
   t.end();
 });

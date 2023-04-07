@@ -156,7 +156,7 @@ export class WMSService extends ImageSource {
     this.wmsParameters = {
       layers: undefined!,
       styles: undefined,
-      version: '1.1.1',
+      version: '1.3.0',
       crs: 'EPSG:4326',
       format: 'image/png',
       info_format: 'text/plain',

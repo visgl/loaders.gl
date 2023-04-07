@@ -12,7 +12,12 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type {WMSCapabilities};
 
 export type WMSLoaderOptions = LoaderOptions & {
-  wms?: {};
+  wms?: {
+    /** Add inherited layer information to sub layers */
+    inheritedLayerProps?: boolean;
+    /** Whether to include "raw" XML-derived JSON */
+    raw?: boolean;
+  };
 };
 
 /**
@@ -32,8 +37,9 @@ export const WMSCapabilitiesLoader = {
     wms: {}
   },
   parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
-    parseWMSCapabilities(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSLoaderOptions) => parseWMSCapabilities(text, options)
+    parseWMSCapabilities(new TextDecoder().decode(arrayBuffer), options?.wms),
+  parseTextSync: (text: string, options?: WMSLoaderOptions) =>
+    parseWMSCapabilities(text, options?.wms)
 };
 
 function testXMLFile(text: string): boolean {
