@@ -99,7 +99,7 @@ function extractRequest(name: string, xmlRequest: any): WMSRequest {
 function extractLayer(xmlLayer: any): WMSLayer {
   const layer: Omit<WMSLayer, 'layers'> = {
     name: String(xmlLayer?.Name || ''),
-    title: String(xmlLayer?.Title || ''),
+    title: String(xmlLayer?.Title || '')
   };
 
   // WMS 1.3.0 changes SRS to CRS
