@@ -36,6 +36,7 @@ const TILE_HEADER_WITH_CONTENT_BOUNDING_SPHERE = {
     sphere: [0.0, 0.0, 1.0, 5.0]
   }
 };
+*/
 
 const TILE_HEADER_WITH_BOUNDING_REGION = {
   lodMetricValue: 1,
@@ -46,6 +47,7 @@ const TILE_HEADER_WITH_BOUNDING_REGION = {
   }
 };
 
+/*
 const TILE_HEADER_WITH_CONTENT_BOUNDING_REGION = {
   lodMetricValue: 1,
   refine: 'REPLACE',
@@ -60,6 +62,7 @@ const TILE_HEADER_WITH_CONTENT_BOUNDING_REGION = {
     region: [-1.2, -1.2, 0, 0, -30, -34]
   }
 };
+*/
 
 const TILE_HEADER_WITH_BOUNDING_BOX = {
   lodMetricValue: 1,
@@ -70,6 +73,7 @@ const TILE_HEADER_WITH_BOUNDING_BOX = {
   }
 };
 
+/*
 const TILE_HEADER_WITH_CONTENT_BOUNDING_BOX = {
   lodMetricValue: 1,
   refine: 'REPLACE',
@@ -329,6 +333,36 @@ test.skip('Tile3D#screenSpaceError is calculated correctly', (t) => {
     ['test']
   );
   t.equal(tile.screenSpaceError, 2.7410122234342147);
+  t.end();
+});
+
+test('Tile3D#cartographic bounding box', (t) => {
+  // @ts-ignore
+  let tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_BOX);
+  t.ok(tile.boundingBox, 'Calculated for bounding box');
+
+  // @ts-ignore
+  tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
+  t.ok(tile.boundingBox, 'Calculated for bounding sphere');
+
+  // @ts-ignore
+  tile = new Tile3D(MOCK_TILESET, {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    boundingVolume: {sphere: [1, 1, 1, 5]}
+  });
+  t.ok(tile.boundingBox, 'Calculated for bounding sphere');
+
+  // @ts-ignore
+  tile = new Tile3D(MOCK_TILESET, {
+    ...TILE_HEADER_WITH_BOUNDING_SPHERE,
+    boundingVolume: {sphere: [1, 0, 0, 5]}
+  });
+  t.ok(tile.boundingBox, 'Calculated for bounding sphere');
+
+  // @ts-ignore
+  tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_REGION);
+  t.ok(tile.boundingBox, 'Calculated for bounding region');
+
   t.end();
 });
 
