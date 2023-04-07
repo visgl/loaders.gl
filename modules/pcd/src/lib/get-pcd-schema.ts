@@ -32,7 +32,7 @@ export function getPCDSchema(PCDheader: PCDHeader, metadata: SchemaMetadata): Sc
     fields.push(new Field('intensity', new Field('intensity', new Float32()), false));
   }
 
-  if (offset.rgb !== undefined) {
+  if (offset.label !== undefined) {
     fields.push(new Field('label', new Field('label', new Int32()), false));
   }
 

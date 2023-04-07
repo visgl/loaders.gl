@@ -22,6 +22,7 @@ test('PCDLoader#parse(text)', async (t) => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {worker: false});
   validateMeshCategoryData(t, data);
 
+  debugger
   t.equal(data.schema.fields.length, 2, 'schema field count is correct');
   t.equal(data.schema.metadata.get('mode'), '0', 'schema metadata is correct');
   t.ok(data.schema.metadata.get('boundingBox'), 'schema metadata is correct');
