@@ -13,7 +13,11 @@ import type {Tileset3D} from './tileset-3d';
 import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
 import {FrameState} from './helpers/frame-state';
-import {createBoundingVolume, getCartographicBounds} from './helpers/bounding-volume';
+import {
+  createBoundingVolume,
+  getCartographicBounds,
+  CartographicBounds
+} from './helpers/bounding-volume';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getProjectedRadius} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
@@ -309,7 +313,7 @@ export class Tile3D {
    * Get bounding box in cartographic coordinates
    * @returns [min, max] each in [longitude, latitude, altitude]
    */
-  get boundingBox(): [min: number[], max: number[]] {
+  get boundingBox(): CartographicBounds {
     if (!this._boundingBox) {
       this._boundingBox = getCartographicBounds(this.header.boundingVolume, this.boundingVolume);
     }

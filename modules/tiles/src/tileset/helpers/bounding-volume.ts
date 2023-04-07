@@ -69,16 +69,19 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
 }
 
+/** [min, max] each in [longitude, latitude, altitude] */
+export type CartographicBounds = [min: number[], max: number[]];
+
 /**
  * Calculate the cartographic bounding box the tile's bounding volume.
  * @param {Object} boundingVolumeHeader The tile's bounding volume header.
  * @param {BoundingVolume} boundingVolume The bounding volume.
- * @returns [min, max] in [longitude, latitude, altitude]
+ * @returns {CartographicBounds}
  */
 export function getCartographicBounds(
   boundingVolumeHeader,
   boundingVolume: OrientedBoundingBox | BoundingSphere
-): [min: number[], max: number[]] {
+): CartographicBounds {
   // boundingVolume schema:
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/boundingVolume.schema.json
   if (boundingVolumeHeader.box) {
@@ -233,9 +236,13 @@ function createSphere(sphere, transform, result?) {
   return new BoundingSphere(center, radius);
 }
 
+/**
+ * Convert a bounding volume defined by OrientedBoundingBox to cartographic bounds
+ * @returns {CartographicBounds}
+ */
 function orientedBoundingBoxToCartographicBounds(
   boundingVolume: OrientedBoundingBox
-): [number[], number[]] {
+): CartographicBounds {
   const result = emptyCartographicBounds();
 
   const {halfAxes} = boundingVolume as OrientedBoundingBox;
@@ -252,7 +259,7 @@ function orientedBoundingBoxToCartographicBounds(
         scratchPoint.add(yAxis);
         scratchPoint.add(zAxis);
 
-        addToCartographicBounds(scratchPoint, result);
+        addToCartographicBounds(result, scratchPoint);
         zAxis.negate();
       }
       yAxis.negate();
@@ -262,7 +269,11 @@ function orientedBoundingBoxToCartographicBounds(
   return result;
 }
 
-function boundingSphereToCartographicBounds(boundingVolume: BoundingSphere): [number[], number[]] {
+/**
+ * Convert a bounding volume defined by BoundingSphere to cartographic bounds
+ * @returns {CartographicBounds}
+ */
+function boundingSphereToCartographicBounds(boundingVolume: BoundingSphere): CartographicBounds {
   const result = emptyCartographicBounds();
 
   const {center, radius} = boundingVolume as BoundingSphere;
@@ -288,7 +299,7 @@ function boundingSphereToCartographicBounds(boundingVolume: BoundingSphere): [nu
     for (let dir = 0; dir < 2; dir++) {
       scratchPoint.copy(center);
       scratchPoint.add(scratchScale);
-      addToCartographicBounds(scratchPoint, result);
+      addToCartographicBounds(result, scratchPoint);
       // Flip the axis
       scratchScale.negate();
     }
@@ -296,20 +307,29 @@ function boundingSphereToCartographicBounds(boundingVolume: BoundingSphere): [nu
   return result;
 }
 
-function emptyCartographicBounds(): [number[], number[]] {
+/**
+ * Create a new cartographic bounds that contains no points
+ * @returns {CartographicBounds}
+ */
+function emptyCartographicBounds(): CartographicBounds {
   return [
     [Infinity, Infinity, Infinity],
     [-Infinity, -Infinity, -Infinity]
   ];
 }
 
-function addToCartographicBounds(cartesian: Vector3, out: [number[], number[]]) {
+/**
+ * Add a point to the target cartographic bounds
+ * @param {CartographicBounds} target
+ * @param {Vector3} cartesian coordinates of the point to add
+ */
+function addToCartographicBounds(target: CartographicBounds, cartesian: Readonly<Vector3>) {
   Ellipsoid.WGS84.cartesianToCartographic(cartesian, scratchPoint);
-  out[0][0] = Math.min(out[0][0], scratchPoint[0]);
-  out[0][1] = Math.min(out[0][1], scratchPoint[1]);
-  out[0][2] = Math.min(out[0][2], scratchPoint[2]);
+  target[0][0] = Math.min(target[0][0], scratchPoint[0]);
+  target[0][1] = Math.min(target[0][1], scratchPoint[1]);
+  target[0][2] = Math.min(target[0][2], scratchPoint[2]);
 
-  out[1][0] = Math.max(out[1][0], scratchPoint[0]);
-  out[1][1] = Math.max(out[1][1], scratchPoint[1]);
-  out[1][2] = Math.max(out[1][2], scratchPoint[2]);
+  target[1][0] = Math.max(target[1][0], scratchPoint[0]);
+  target[1][1] = Math.max(target[1][1], scratchPoint[1]);
+  target[1][2] = Math.max(target[1][2], scratchPoint[2]);
 }
