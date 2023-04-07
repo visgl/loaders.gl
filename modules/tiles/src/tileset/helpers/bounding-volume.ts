@@ -14,6 +14,7 @@ function defined(x) {
 }
 
 // const scratchMatrix = new Matrix3();
+const scratchPoint = new Vector3();
 const scratchScale = new Vector3();
 const scratchNorthWest = new Vector3();
 const scratchSouthEast = new Vector3();
@@ -66,6 +67,40 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
   }
 
   throw new Error('3D Tile: boundingVolume must contain a sphere, region, or box');
+}
+
+/**
+ * Calculate the cartographic bounding box the tile's bounding volume.
+ * @param {Object} boundingVolumeHeader The tile's bounding volume header.
+ * @param {BoundingVolume} boundingVolume The bounding volume.
+ * @returns [min, max] in [longitude, latitude, altitude]
+ */
+export function getCartographicBounds(
+  boundingVolumeHeader,
+  boundingVolume: OrientedBoundingBox | BoundingSphere
+): [min: number[], max: number[]] {
+  // boundingVolume schema:
+  // https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/boundingVolume.schema.json
+  if (boundingVolumeHeader.box) {
+    return orientedBoundingBoxToCartographicBounds(boundingVolume as OrientedBoundingBox);
+  }
+  if (boundingVolumeHeader.region) {
+    // [west, south, east, north, minimum height, maximum height]
+    // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
+    // Heights are in meters above (or below) the WGS 84 ellipsoid.
+    const [west, south, east, north, minHeight, maxHeight] = boundingVolumeHeader.region;
+
+    return [
+      [degrees(west), degrees(south), minHeight],
+      [degrees(east), degrees(north), maxHeight]
+    ];
+  }
+
+  if (boundingVolumeHeader.sphere) {
+    return boundingSphereToCartographicBounds(boundingVolume as BoundingSphere);
+  }
+
+  throw new Error('Unkown boundingVolume type');
 }
 
 function createBox(box, transform, result) {
@@ -196,4 +231,85 @@ function createSphere(sphere, transform, result?) {
   }
 
   return new BoundingSphere(center, radius);
+}
+
+function orientedBoundingBoxToCartographicBounds(
+  boundingVolume: OrientedBoundingBox
+): [number[], number[]] {
+  const result = emptyCartographicBounds();
+
+  const {halfAxes} = boundingVolume as OrientedBoundingBox;
+  const xAxis = new Vector3(halfAxes.getColumn(0));
+  const yAxis = new Vector3(halfAxes.getColumn(1));
+  const zAxis = new Vector3(halfAxes.getColumn(2));
+
+  // Test all 8 corners of the box
+  for (let x = 0; x < 2; x++) {
+    for (let y = 0; y < 2; y++) {
+      for (let z = 0; z < 2; z++) {
+        scratchPoint.copy(boundingVolume.center);
+        scratchPoint.add(xAxis);
+        scratchPoint.add(yAxis);
+        scratchPoint.add(zAxis);
+
+        addToCartographicBounds(scratchPoint, result);
+        zAxis.negate();
+      }
+      yAxis.negate();
+    }
+    xAxis.negate();
+  }
+  return result;
+}
+
+function boundingSphereToCartographicBounds(boundingVolume: BoundingSphere): [number[], number[]] {
+  const result = emptyCartographicBounds();
+
+  const {center, radius} = boundingVolume as BoundingSphere;
+  const point = Ellipsoid.WGS84.scaleToGeodeticSurface(center, scratchPoint);
+
+  let zAxis: Vector3;
+  if (point) {
+    zAxis = Ellipsoid.WGS84.geodeticSurfaceNormal(point) as Vector3;
+  } else {
+    zAxis = new Vector3(0, 0, 1);
+  }
+  let xAxis = new Vector3(zAxis[2], -zAxis[1], 0);
+  if (xAxis.len() > 0) {
+    xAxis.normalize();
+  } else {
+    xAxis = new Vector3(0, 1, 0);
+  }
+  const yAxis = xAxis.clone().cross(zAxis);
+
+  // Test 6 end points of the 3 axes
+  for (const axis of [xAxis, yAxis, zAxis]) {
+    scratchScale.copy(axis).scale(radius);
+    for (let dir = 0; dir < 2; dir++) {
+      scratchPoint.copy(center);
+      scratchPoint.add(scratchScale);
+      addToCartographicBounds(scratchPoint, result);
+      // Flip the axis
+      scratchScale.negate();
+    }
+  }
+  return result;
+}
+
+function emptyCartographicBounds(): [number[], number[]] {
+  return [
+    [Infinity, Infinity, Infinity],
+    [-Infinity, -Infinity, -Infinity]
+  ];
+}
+
+function addToCartographicBounds(cartesian: Vector3, out: [number[], number[]]) {
+  Ellipsoid.WGS84.cartesianToCartographic(cartesian, scratchPoint);
+  out[0][0] = Math.min(out[0][0], scratchPoint[0]);
+  out[0][1] = Math.min(out[0][1], scratchPoint[1]);
+  out[0][2] = Math.min(out[0][2], scratchPoint[2]);
+
+  out[1][0] = Math.max(out[1][0], scratchPoint[0]);
+  out[1][1] = Math.max(out[1][1], scratchPoint[1]);
+  out[1][2] = Math.max(out[1][2], scratchPoint[2]);
 }
