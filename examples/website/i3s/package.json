@@ -19,11 +19,11 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
-    "@loaders.gl/core": "3.3.0-alpha.11",
-    "@loaders.gl/draco": "3.3.0-alpha.11",
-    "@loaders.gl/gltf": "3.3.0-alpha.11",
-    "@loaders.gl/i3s": "3.3.0-alpha.11",
-    "@loaders.gl/images": "3.3.0-alpha.11",
+    "@loaders.gl/core": "^3.3.0",
+    "@loaders.gl/draco": "^3.3.0",
+    "@loaders.gl/gltf": "^3.3.0",
+    "@loaders.gl/i3s": "^3.3.0",
+    "@loaders.gl/images": "^3.3.0",
     "@luma.gl/constants": "^8.5.4",
     "@luma.gl/core": "^8.5.4",
     "@luma.gl/engine": "^8.5.4",
@@ -42,7 +42,7 @@
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "typescript": "^4.3.2",
+    "typescript": "^5.0.4",
     "vite": "^2.7.1"
   }
 }

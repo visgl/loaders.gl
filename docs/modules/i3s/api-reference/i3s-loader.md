@@ -64,9 +64,9 @@ As an I3S tileset contains multiple file formats, `I3SLoader` is needed to be ex
 
 A simple react app uses [`I3SLoader`](https://github.com/visgl/loaders.gl/blob/master/modules/i3s/src/i3s-loader.ts) to load [San Francisco Buildings](https://www.arcgis.com/home/item.html?id=d3344ba99c3f4efaa909ccfbcc052ed5), render with [deck.gl's](https://deck.gl/) [`Tile3Dlayer`](https://deck.gl/docs/api-reference/geo-layers/tile-3d-layer) and dynamically load/unload tiles based on current viewport and adjust the level of details when zooming in and out.
 
-<table style="border: 0;" align="center">
+<table style={{border: 0, align: "center"}}>
   <tbody>
-    <img style="max-height:200px" src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
+    <img style={{maxHeight: 200}} src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif" />
   </tbody>
 </table>
 

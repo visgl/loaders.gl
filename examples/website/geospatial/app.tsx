@@ -1,10 +1,10 @@
 import React, {PureComponent} from 'react';
-import {render} from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import {StaticMap} from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react';
-import {MapController} from '@deck.gl/core';
-import {GeoJsonLayer} from '@deck.gl/layers';
+import {MapController} from '@deck.gl/core/typed';
+import {GeoJsonLayer} from '@deck.gl/layers/typed';
 
 import ControlPanel from './components/control-panel';
 import FileUploader from './components/file-uploader';
@@ -144,5 +144,5 @@ export default class App extends PureComponent {
 }
 
 export function renderToDOM(container) {
-  render(<App />, container);
+  createRoot(container).render(<App />);
 }

@@ -14,16 +14,15 @@
     "@deck.gl/layers": "^8.5.0",
     "@deck.gl/react": "^8.5.0",
     "@loaders.gl/geopackage": "3.0.1",
-    "@loaders.gl/core": "3.3.0-alpha.11",
+    "@loaders.gl/core": "^3.3.0",
     "@loaders.gl/flatgeobuf": "3.0.1",
-    "react": "^16.8.0",
-    "react-color": "^2.19.3",
-    "react-dom": "^16.8.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "react-map-gl": "^5.0.0",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "typescript": "^4.3.2",
+    "typescript": "^5.0.4",
     "vite": "^2.7.1"
   }
 }
