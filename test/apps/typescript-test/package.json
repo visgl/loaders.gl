@@ -1,7 +1,7 @@
 {
   "name": "loaders.gl-compiler-issue",
   "private": true,
-  "version": "3.3.0-alpha.12",
+  "version": "^3.3.0",
   "description": "loaders.gl-compiler-issue demonstration",
   "type": "module",
   "main": "index.js",
@@ -28,10 +28,10 @@
     "rimraf": "^3.0.0",
     "run-script-os": "^1.1.1",
     "ts-node": "^8.3.0",
-    "typescript": "^4.0.3"
+    "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@loaders.gl/shapefile": "3.3.0-alpha.12"
+    "@loaders.gl/shapefile": "^3.3.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

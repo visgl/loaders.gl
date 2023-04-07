@@ -13,7 +13,7 @@
     "@loaders.gl/gltf": "^3.3.1"
   },
   "devDependencies": {
-    "typescript": "^4.9.5",
+    "typescript": "^5.0.4",
     "vite": "^4.2.1"
   }
 }

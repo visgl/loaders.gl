@@ -320,7 +320,7 @@ function getGeopackageVersion(db: Database): string | null {
   const userVersionQuery = db.exec('PRAGMA user_version;')[0];
   const userVersionInt = userVersionQuery.values[0][0];
 
-  if (userVersionInt && userVersionInt < 10300) {
+  if (userVersionInt && typeof userVersionInt === 'number' && userVersionInt < 10300) {
     return '1.2';
   }
 

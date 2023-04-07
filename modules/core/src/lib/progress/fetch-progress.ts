@@ -20,8 +20,8 @@ export default async function fetchProgress(
     return response;
   }
   const contentLength = response.headers.get('content-length') || 0;
-  const totalBytes = contentLength && parseInt(contentLength);
-  if (!(contentLength > 0)) {
+  const totalBytes = contentLength ? parseInt(contentLength) : 0;
+  if (!(totalBytes > 0)) {
     return response;
   }
   // Currently override only implemented in browser

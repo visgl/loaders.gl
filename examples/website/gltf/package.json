@@ -21,7 +21,7 @@
     "@math.gl/core": "^3.5.1"
   },
   "devDependencies": {
-    "typescript": "^4.3.2",
+    "typescript": "^5.0.4",
     "vite": "^2.7.1"
   }
 }
