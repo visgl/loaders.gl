@@ -15,6 +15,7 @@
     "deploy": "docusaurus deploy"
   },
   "dependencies": {
+    "@algolia/autocomplete-js": "^1.8.3",
     "@deck.gl/arcgis": "^8.9.0",
     "@deck.gl/core": "^8.9.0",
     "@deck.gl/extensions": "^8.9.0",
@@ -56,6 +57,7 @@
     "styled-components": "^5.3.3"
   },
   "devDependencies": {
+    "@cmfcmf/docusaurus-search-local": "^1.0.0",
     "@docusaurus/core": "^2.4.0",
     "@docusaurus/plugin-client-redirects": "^2.4.0",
     "@docusaurus/plugin-content-docs": "^2.4.0",
