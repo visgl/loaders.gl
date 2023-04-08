@@ -5,7 +5,7 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-Among other things, the `WMSService` class provides: 
+The `WMSService` class provides: 
 - type safe method to request and parse the capabilities metadata of a WMS service
 - type safe methods to call and parse results (and errors) from a WMS service's endpoints
 - type safe methods to form URLs to a WMS service
@@ -15,14 +15,14 @@ Among other things, the `WMSService` class provides:
  
 ## Usage
 
-A `WMSService` once created provides type safe methods that make calls to the service and parse the responses: 
+A `WMSService` instance provides type safe methods to send requests to a WMS service and parse the responses: 
+
 ```typescript
-  const wmsService = new WMSService({url: WMS_SERVICE_URL});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParamaters: {layers: ['oms']}});
   const mapImage = await wmsService.getMap({
     width: 800,
     height: 600,
-    bbox: [30, 70, 35, 75],
-    layers: ['oms']
+    bbox: [30, 70, 35, 75]
   });
   // Render mapImage...
 ```
@@ -34,7 +34,7 @@ Capabilities metadata can be queried:
   // Check capabilities
 ```
 
-It is also possible to just generate URLs allowing the app to perform fetching and parsing: 
+It is also possible to just use the WMS service to generate URLs. This allowing the application to perform its own and parsing: 
 ```typescript
   const wmsService = new WMSService({url: WMS_SERVICE_URL});
   const getMapUrl = await wmsService.getMapURL({
@@ -43,23 +43,26 @@ It is also possible to just generate URLs allowing the app to perform fetching a
     bbox: [30, 70, 35, 75],
     layers: ['oms']
   });
-  const response = await fetch(getMapURL);
+  const response = await myCustomFetch(getMapURL);
   // parse...
 ```
 
 The WMS version as well as other default WMS parameters can be specified in the constructor
+
 ```typescript
-  const wmsService = new WMSService({url: WMS_SERVICE_URL, version: '1.3.0'});
+  // Specify the older 1.1.1 version (1.3.0 is the default)
+  const wmsService = new WMSService({url: WMS_SERVICE_URL, version: '1.1.1', layers: ['oms']});
   const getMap = await wmsService.getMap({
     width: 800,
     height: 600,
     bbox: [30, 70, 35, 75],
-    layers: ['oms']
+    
   });
 ```
 
 Custom fetch options, such as HTTP headers, and loader-specific options can be specified via the 
 standard loaders.gl `loadOptions` argument, which is forwarded to all load and parse operations:
+
 ```typescript
   const wmsService = new WMSService({url: WMS_SERVICE_URL, loadOptions: {
     fetch: {
@@ -77,22 +80,6 @@ standard loaders.gl `loadOptions` argument, which is forwarded to all load and p
   });
 ```
 
-## Fields
-
-### loaders 
-
-A list of loaders used by the WMSService methods
-
-```typescript
-readonly loaders = [
-  ImageLoader,
-  WMSErrorLoader,
-  WMSCapabilitiesLoader,
-  WMSFeatureInfoLoader,
-  WMSLayerDescriptionLoader
-];
-```
-
 ## Methods
   
 ### constructor(props: WMSServiceProps)
@@ -104,17 +91,21 @@ export type WMSServiceProps = {
   url: string; // Base URL to the service
   loadOptions?: LoaderOptions; // Any load options to the loaders.gl Loaders used by the WMSService methods
 
-  // Default WMS parameters
-  version?: '1.1.1' | '1.3.0'; /** WMS version */
-  layers?: string[]; /** Layers to render */
-  srs?: string; /** SRS for the image (not the bounding box) */
-  format?: 'image/png'; /** Requested format for the return image */
-  info_format?: 'text/plain' | 'application/vnd.ogc.gml'; /** Requested MIME type of returned feature info */
-  styles?: unknown; /** Styling */
+  wmsParameters: {
+    // Default WMS parameters
+    version?: '1.3.0' | '1.1.1'; /** WMS version */
+    layers?: string[]; /** Layers to render */
+    crs?: string; /** CRS for the image (not the bounding box) */
+    format?: 'image/png'; /** Requested format for the return image */
+    info_format?: 'text/plain' | 'application/vnd.ogc.gml'; /** Requested MIME type of returned feature info */
+    styles?: unknown; /** Styling */
+    transparent?: boolean; /** Render transparent pixels if no data */
+  },
+  vendor PAra
 };
 ```
 
-### async getCapabilities
+### `getCapabilities()`
 
 Get Capabilities
 
@@ -125,34 +116,38 @@ Get Capabilities
   ): Promise<WMSCapabilities>
 ```
 
-### async getMap
+### `getMap()`
 
 Get a map image
 
 ```typescript
-  async getMap(options: WMSGetMapParameters, vendorParameters?: Record<string, unknown>): Promise<ImageType>
+  async getMap(wmsParameters: WMSGetMapParameters, vendorParameters?: Record<string, unknown>): Promise<ImageType>
 ```
 
 ```typescript
 export type WMSGetMapParameters = {
-  layers: string | string[]; // Layers to render 
-  styles?: unknown; // Styling 
   bbox: [number, number, number, number]; // bounding box of the requested map image 
   width: number; // pixel width of returned image 
   height: number; // pixels 
-  srs?: string; // srs for the image (not the bounding box) 
+
+  // constructor parameters can be overridden in the actual calls
+  layers?: string | string[]; // Layers to render 
+  styles?: unknown; // Styling 
+  crs?: string; // crs for the image (not the bounding box) 
   format?: 'image/png'; // requested format for the return image 
 };
 ```
 
 
-### async getFeatureInfo
+### `getFeatureInfo()`
+
+> This request is not supported by all WNS servers. Use `getCapabilities()` to determine if it is.
 
 Get Feature Info for a coordinate
 
 ```typescript
   async getFeatureInfo(
-    options: WMSGetFeatureInfoParameters,
+    wmsParameters: WMSGetFeatureInfoParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<WMSFeatureInfo>
 ```
@@ -170,34 +165,39 @@ export type WMSGetFeatureInfoParameters = {
   bbox: [number, number, number, number]; // bounding box of the requested map image
   width: number; // pixel width of returned image
   height: number; // pixels
-  srs?: string; // srs for the image (not the bounding box)
+  crs?: string; // crs for the image (not the bounding box)
   format?: 'image/png'; // requested format for the return image
 };
 ```
 
-### async describeLayer
+### `describeLayer()`
 
-Get more information about a layer
+> This request is not supported by all WNS servers. Use `getCapabilities()` to determine if it is.
+
+Get more information about a layer. 
 
 ```typescript
   async describeLayer(
-    options: WMSDescribeLayerParameters,
+    wmsParameters: WMSDescribeLayerParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<WMSLayerDescription>
 ```
 
 ```typescript
 export type WMSDescribeLayerParameters = {
+  layer: string; // Layer to describe
 };
 ```
 
-### async getLegendGraphic
+### `getLegendGraphic()`
+
+> This request is not supported by all WMS servers. Use `getCapabilities()` to determine if it is.
 
 Get an image with a semantic legend
 
 ```typescript
   async getLegendGraphic(
-    options: WMSGetLegendGraphicParameters,
+    wmsParameters: WMSGetLegendGraphicParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<ImageType>
 ```
