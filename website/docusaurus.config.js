@@ -28,15 +28,15 @@ const config = {
           path: '../docs',
           sidebarPath: resolve('./src/docs-sidebar.js'),
           // Point to to the website directory in your repo.
-          editUrl: 'https://github.com/uber-web/loaders.gl/tree/master/website',
+          editUrl: 'https://github.com/uber-web/loaders.gl/tree/master/website'
         },
         theme: {
           customCss: [
-            resolve('./src/styles.css'),
+            resolve('./src/styles.css')
             // resolve('./node_modules/maplibre-gl/dist/maplibre-gl.css')
-          ],
-        },
-      }),
+          ]
+        }
+      })
     ]
   ],
 
@@ -48,7 +48,7 @@ const config = {
         resolve: {
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
-            'examples': resolve('../examples'),
+            examples: resolve('../examples'),
 
             '@loaders.gl/3d': resolve('../modules/3d-tiles'),
             '@loaders.gl/arrow': resolve('../modules/arrow'),
@@ -93,7 +93,7 @@ const config = {
             '@loaders.gl/worker': resolve('../modules/worker-utils'),
             '@loaders.gl/xml': resolve('../modules/xml'),
             '@loaders.gl/zarr': resolve('../modules/zarr'),
-            '@loaders.gl/zip': resolve('../modules/zip'),
+            '@loaders.gl/zip': resolve('../modules/zip')
 
             // '@deck.gl/react': resolve()
             // '@deck.gl/layers'
@@ -140,7 +140,13 @@ const config = {
         sidebarPath: resolve('./src/examples-sidebar.js'),
         breadcrumbs: false,
         docItemComponent: resolve('./src/components/example/doc-item-component.tsx')
-      },
+      }
+    ],
+    [
+      require.resolve('@cmfcmf/docusaurus-search-local'),
+      {
+        // Options here
+      }
     ]
   ],
 
@@ -151,18 +157,18 @@ const config = {
         title: 'loaders.gl',
         logo: {
           alt: 'vis.gl Logo',
-          src: 'images/visgl-logo-dark.png',
+          src: 'images/visgl-logo-dark.png'
         },
         items: [
           {
             to: '/examples',
             position: 'left',
-            label: 'Examples',
+            label: 'Examples'
           },
           {
             to: '/docs',
             position: 'left',
-            label: 'Docs',
+            label: 'Docs'
           },
           // {
           //   to: '/showcase',
@@ -177,9 +183,9 @@ const config = {
           {
             href: 'https://github.com/uber-web/loaders.gl',
             label: 'GitHub',
-            position: 'right',
-          },
-        ],
+            position: 'right'
+          }
+        ]
       },
       footer: {
         style: 'dark',
@@ -189,47 +195,47 @@ const config = {
             items: [
               {
                 label: 'deck.gl',
-                href: 'https:/deck.gl',
+                href: 'https:/deck.gl'
               },
               {
                 label: 'luma.gl',
-                href: 'https://luma.gl',
+                href: 'https://luma.gl'
               },
               {
                 label: 'math.gl',
-                href: 'https://math.gl',
+                href: 'https://math.gl'
               },
               {
                 label: 'vis.gl',
-                href: 'https://vis.gl',
-              },
-            ],
+                href: 'https://vis.gl'
+              }
+            ]
           },
           {
             title: 'More',
             items: [
               {
                 label: 'deck.gl slack',
-                href: 'https://join.slack.com/t/deckgl/shared_invite/zt-7oeoqie8-NQqzSp5SLTFMDeNSPxi7eg',
+                href: 'https://join.slack.com/t/deckgl/shared_invite/zt-7oeoqie8-NQqzSp5SLTFMDeNSPxi7eg'
               },
               {
                 label: 'vis.gl blog on Medium',
-                href: 'https://medium.com/vis-gl',
+                href: 'https://medium.com/vis-gl'
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/uber-web/loaders.gl',
-              },
-            ],
-          },
+                href: 'https://github.com/uber-web/loaders.gl'
+              }
+            ]
+          }
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} OpenJS Foundation`,
+        copyright: `Copyright © ${new Date().getFullYear()} OpenJS Foundation`
       },
       prism: {
         theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
-      },
-    }),
+        darkTheme: darkCodeTheme
+      }
+    })
 };
 
 module.exports = config;
