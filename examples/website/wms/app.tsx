@@ -6,9 +6,12 @@ import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react/typed';
 import {MapController} from '@deck.gl/core/typed';
-import type {ImageSourceMetadata} from '@loaders.gl/wms';
 import {_WMSLayer as WMSLayer} from '@deck.gl/geo-layers/typed';
 
+import type {ImageSourceMetadata} from '@loaders.gl/wms';
+
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
 
 import ControlPanel from './components/control-panel';
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
@@ -182,6 +185,7 @@ export default class App extends PureComponent {
             }
           }
         >
+          <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
         </DeckGL>
       </div>
     );

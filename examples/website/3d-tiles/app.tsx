@@ -1,6 +1,8 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import {StaticMap} from 'react-map-gl';
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
@@ -261,7 +263,7 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85, inertia: true}}
           onAfterRender={() => this._updateStatWidgets()}
         >
-          <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
+          <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
       </div>
     );

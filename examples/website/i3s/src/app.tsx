@@ -1,6 +1,8 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import {StaticMap} from 'react-map-gl';
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+
 import styled from 'styled-components';
 
 import {lumaStats} from '@luma.gl/core';
@@ -512,7 +514,8 @@ class App extends PureComponent {
           {({viewport}) => {
             this.currentViewport = viewport;
           }}
-          {!useTerrainLayer && <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />}
+          {!useTerrainLayer &&  <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
+}
         </DeckGL>
       </div>
     );
