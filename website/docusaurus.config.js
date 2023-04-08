@@ -147,6 +147,23 @@ const config = {
       {
         // Options here
       }
+    ],
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        createRedirects(existingPath) {
+          // docs/modules/*/api-reference <= modules/*/docs/api-reference
+          if (existingPath.includes('/docs/modules/')) {
+            return [
+              existingPath
+                .replace('/docs/modules/', '/modules/')
+                // Replaces api-reference if present
+                .replace('/api-reference/', '/docs/api-reference/')
+            ];
+          }
+          return undefined; // Return a falsy value: no redirect created
+        }
+      }
     ]
   ],
 

@@ -58,9 +58,10 @@
   },
   "devDependencies": {
     "@cmfcmf/docusaurus-search-local": "^1.0.0",
-    "@docusaurus/core": "^2.2.0",
-    "@docusaurus/plugin-content-docs": "^2.2.0",
-    "@docusaurus/preset-classic": "^2.2.0",
+    "@docusaurus/core": "^2.4.0",
+    "@docusaurus/plugin-client-redirects": "^2.4.0",
+    "@docusaurus/plugin-content-docs": "^2.4.0",
+    "@docusaurus/preset-classic": "^2.4.0",
     "@mdx-js/react": "^1.6.22",
     "babel-plugin-styled-components": "^2.0.0",
     "prism-react-renderer": "^1.2.1",
