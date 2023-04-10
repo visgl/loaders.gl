@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import './init';
 
 // parquetjs unit test suite
@@ -14,7 +16,6 @@ import './parquetjs/reader.spec';
 // loader/writer
 import './parquet-loader.spec';
 import './parquet-writer.spec';
-
 
 import './parquet-wasm-loader.spec';
 

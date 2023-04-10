@@ -2,7 +2,7 @@
 
 import {ParquetBuffer, ParquetData, ParquetField, ParquetRecord} from './declare';
 import {ParquetSchema} from './schema';
-import * as Types from './types';
+import {toPrimitive, fromPrimitive} from './types';
 
 export {ParquetBuffer};
 
@@ -118,7 +118,7 @@ function shredRecordFields(
         data[field.key].rlevels.push(rlvl);
         data[field.key].dlevels.push(field.dLevelMax);
         data[field.key].values.push(
-          Types.toPrimitive((field.originalType || field.primitiveType)!, values[i])
+          toPrimitive((field.originalType || field.primitiveType)!, values[i])
         );
       }
     }
@@ -208,7 +208,7 @@ function materializeColumn(
 
     // Leaf node - Add the value
     if (dLevel === field.dLevelMax) {
-      const value = Types.fromPrimitive(
+      const value = fromPrimitive(
         // @ts-ignore
         field.originalType || field.primitiveType,
         columnData.values[vIndex],
@@ -326,7 +326,7 @@ function extractColumn(
 
   // Leaf node
   if (dLevel === field.dLevelMax) {
-    const value = Types.fromPrimitive(
+    const value = fromPrimitive(
       // @ts-ignore
       field.originalType || field.primitiveType,
       columnData.values[vIndex],

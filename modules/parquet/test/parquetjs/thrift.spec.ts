@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 
 import * as parquetThrift from '@loaders.gl/parquet/parquetjs/parquet-thrift';
-import {serializeThrift} from '@loaders.gl/parquet/parquetjs/utils/read-utils';
+import {serializeThrift} from '@loaders.gl/parquet/parquetjs/utils/thrift-utils';
 
 test('thrift#should correctly en/decode literal zeroes with the CompactProtocol', assert => {
   const obj = new parquetThrift.ColumnMetaData({
