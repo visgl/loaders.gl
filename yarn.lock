@@ -1927,35 +1927,35 @@
     write-file-atomic "^2.3.0"
 
 "@loaders.gl/core@^3.3.1":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.3.2.tgz#7da7b3df8e36aef586bdbb5e5549016524299f9e"
-  integrity sha512-m3KezxBmRvoIqHXqpb3GbYhvAofgmR6D/ft/a1tbigFNeAQUGRtiVQZzrfiq2vZQvGToEhsW0q+5dEcG85Aciw==
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/core/-/core-3.3.3.tgz#55e929240466c3ca8d9e283ecd4fee0a5f0d0248"
+  integrity sha512-kModKGZ3V1AYue8eQxM9H19PZQt9HxtVJUvAMmOeFiXZmhIiEO8gf5+c7Ph6C/+whPff8cRbMd06P93PJD5PlA==
   dependencies:
     "@babel/runtime" "^7.3.1"
-    "@loaders.gl/loader-utils" "3.3.2"
-    "@loaders.gl/worker-utils" "3.3.2"
+    "@loaders.gl/loader-utils" "3.3.3"
+    "@loaders.gl/worker-utils" "3.3.3"
     "@probe.gl/log" "^3.5.0"
 
 "@loaders.gl/images@^3.3.1":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-3.3.2.tgz#1ebd74fe3b7723f31f6b7f6160267fe2d7962c00"
-  integrity sha512-zfE0EgQKoLuVONXgC/LiHmQpAntVUyvF+N+YuNVU4NS/nTIwvpDoAWQv38c65r/xG0klP0kJxYu6Gkuy5XD36A==
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/images/-/images-3.3.3.tgz#f5a6c77bd66afad6bb203383bc178caf8d5557a5"
+  integrity sha512-IFRs3TuqaBI4crY9x3BhD+FbayiwQww7zH4PUs3vpMRQYVf593+wngW1rMbl7zgNnkFbudzxaTr8MW8VaWriCA==
   dependencies:
-    "@loaders.gl/loader-utils" "3.3.2"
+    "@loaders.gl/loader-utils" "3.3.3"
 
-"@loaders.gl/loader-utils@3.3.2":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.3.2.tgz#25ce30245ee4c76ec573f6f39f1b4c58d962556f"
-  integrity sha512-Ie66ElSAgyE9b0vgMgcWZ0CAZHBer8MOzO4GNlneIomtX7pq8D0fdMwqJwzqxjKphSeu1Zs4u1OWeV7QNs8Haw==
+"@loaders.gl/loader-utils@3.3.3":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.3.3.tgz#4965b024bed31953d24de783cb8d0d33d4301a90"
+  integrity sha512-QHwc8dw5kn2KyoEQGqPvmuHRSEo+UeKOgUFwRM7FjNgkFySr+Wc1HMCCPH+VBCvdzGp0aIH+WWQB1Ug2yaQZeg==
   dependencies:
     "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.3.2"
+    "@loaders.gl/worker-utils" "3.3.3"
     "@probe.gl/stats" "^3.5.0"
 
-"@loaders.gl/worker-utils@3.3.2":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.3.2.tgz#0997d67a90bf6a0a4e740d2eb55bdff0bd7dcb95"
-  integrity sha512-CfxfEG01/PFzOUFfy6S+yRqkvKhz5hRLNFHXXKqs8J7OfqfjFdfh8qEQSTxPn3fxlKWekaOBZ9v++ajguYf4Mg==
+"@loaders.gl/worker-utils@3.3.3":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.3.3.tgz#d669b538a17757a2d6da70930a09af323e49990f"
+  integrity sha512-mTQqbuAtFCgR2yu//7Rrt9pwhnDh0H2t69vOJ65Eh2YA0q4c58Kqd+260WxoPps3A0aiYNyA2099AHze7fI+Jg==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
@@ -4037,9 +4037,9 @@ camelcase@^5.0.0, camelcase@^5.3.1:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 caniuse-lite@^1.0.30001400:
-  version "1.0.30001474"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001474.tgz"
-  integrity sha512-iaIZ8gVrWfemh5DG3T9/YqarVZoYf0r188IjaGwx68j4Pf0SGY6CQkmJUIE+NZHkkecQGohzXmBGEwWDr9aM3Q==
+  version "1.0.30001477"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001477.tgz"
+  integrity sha512-lZim4iUHhGcy5p+Ri/G7m84hJwncj+Kz7S5aD4hoQfslKZJgt0tHc/hafVbqHC5bbhHb+mrW2JOUHkI5KH7toQ==
 
 caseless@~0.12.0:
   version "0.12.0"
