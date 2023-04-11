@@ -1,66 +1,86 @@
-import {loadArcGISModules} from '@deck.gl/arcgis';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
-import {I3SLoader} from '@loaders.gl/i3s';
+import React, {useEffect, useState} from 'react';
+import {createRoot} from 'react-dom/client';
 
-function flipY(texCoords) {
-  for (let i = 0; i < texCoords.length; i += 2) {
-    texCoords[i + 1] = 1 - texCoords[i + 1];
+import {Map} from '@esri/react-arcgis';
+import {loadArcGISModules} from '@deck.gl/arcgis';
+import {GeoJsonLayer, ArcLayer} from '@deck.gl/layers';
+
+// source: Natural Earth http://www.naturalearthdata.com/ via geojson.xyz
+const AIR_PORTS =
+  'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_airports.geojson';
+
+// A React wrapper around https://deck.gl/docs/api-reference/arcgis/deck-layer
+function DeckGLLayer(props) {
+  const [layer, setLayer] = useState(null);
+
+  useEffect(() => {
+    let deckLayer;
+    loadArcGISModules().then(({DeckLayer}) => {
+      deckLayer = new DeckLayer({});
+      setLayer(deckLayer);
+      props.map.add(deckLayer);
+    });
+
+    // clean up
+    return () => deckLayer && props.map.remove(deckLayer);
+  }, []);
+
+  if (layer) {
+    layer.deck.set(props);
   }
+
+  return null;
 }
 
-function renderLayers(sceneView) {
-  return [
-    new Tile3DLayer({
-      id: 'tile-3d-layer',
-      // Tileset entry point: Indexed 3D layer file url
-      data: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
-      loader: I3SLoader,
-      onTilesetLoad: (tileset) => {
-        const {cartographicCenter} = tileset;
-        const [longitude, latitude] = cartographicCenter;
-
-        sceneView.goTo({center: [longitude, latitude]});
-      },
-      onTileLoad: (tile) => {
-        if (tile.content.attributes.texCoords) {
-          flipY(tile.content.attributes.texCoords.value);
-        }
-      }
+export default function App() {
+  const layers = [
+    new GeoJsonLayer({
+      id: 'airports',
+      data: AIR_PORTS,
+      // Styles
+      filled: true,
+      pointRadiusMinPixels: 2,
+      pointRadiusScale: 2000,
+      getPointRadius: f => 11 - f.properties.scalerank,
+      getFillColor: [200, 0, 80, 180],
+      // Interactive props
+      pickable: true,
+      autoHighlight: true,
+      onClick: info =>
+        info.object &&
+        // eslint-disable-next-line
+        alert(`${info.object.properties.name} (${info.object.properties.abbrev})`)
+    }),
+    new ArcLayer({
+      id: 'arcs',
+      data: AIR_PORTS,
+      dataTransform: d => d.features.filter(f => f.properties.scalerank < 4),
+      // Styles
+      getSourcePosition: f => [-0.4531566, 51.4709959], // London
+      getTargetPosition: f => f.geometry.coordinates,
+      getSourceColor: [0, 128, 200],
+      getTargetColor: [200, 0, 80],
+      getWidth: 1
     })
   ];
-}
 
-export function runApp(container = 'sceneViewDiv') {
-
-  loadArcGISModules(['esri/Map', 'esri/views/SceneView', 'esri/views/3d/externalRenderers']).then(
-    ({DeckRenderer, modules}) => {
-      const [ArcGISMap, SceneView, externalRenderers] = modules;
-
-      const sceneView = new SceneView({
-        container,
-        qualityProfile: 'high',
-        map: new ArcGISMap({
-          basemap: 'dark-gray-vector'
-        }),
-        environment: {
-          atmosphereEnabled: false
-        },
-        camera: {
-          position: {x: -122, y: 37, z: 5000},
-          heading: 180,
-          tilt: 45
-        },
-        viewingMode: 'local'
-      });
-
-      const renderer = new DeckRenderer(sceneView, {});
-      externalRenderers.add(sceneView, renderer);
-
-      setInterval(() => {
-        renderer.deck.layers = renderLayers(sceneView);
-      }, 50);
-    }
+  return (
+    <Map
+      mapProperties={{basemap: 'dark-gray-vector'}}
+      viewProperties={{
+        center: [0.119167, 52.205276],
+        zoom: 5
+      }}
+    >
+      <DeckGLLayer
+        getTooltip={info => info.object && info.object.properties.name}
+        layers={layers}
+      />
+    </Map>
   );
-  
 }
-  
+
+/* global document */
+export function runApp() {
+  createRoot(document.getElementById('root')).render(<App />);
+}
