@@ -30,32 +30,37 @@ function renderLayers(sceneView) {
   ];
 }
 
-loadArcGISModules(['esri/Map', 'esri/views/SceneView', 'esri/views/3d/externalRenderers']).then(
-  ({DeckRenderer, modules}) => {
-    const [ArcGISMap, SceneView, externalRenderers] = modules;
+export function runApp(container = 'sceneViewDiv') {
 
-    const sceneView = new SceneView({
-      container: 'sceneViewDiv',
-      qualityProfile: 'high',
-      map: new ArcGISMap({
-        basemap: 'dark-gray-vector'
-      }),
-      environment: {
-        atmosphereEnabled: false
-      },
-      camera: {
-        position: {x: -122, y: 37, z: 5000},
-        heading: 180,
-        tilt: 45
-      },
-      viewingMode: 'local'
-    });
+  loadArcGISModules(['esri/Map', 'esri/views/SceneView', 'esri/views/3d/externalRenderers']).then(
+    ({DeckRenderer, modules}) => {
+      const [ArcGISMap, SceneView, externalRenderers] = modules;
 
-    const renderer = new DeckRenderer(sceneView, {});
-    externalRenderers.add(sceneView, renderer);
+      const sceneView = new SceneView({
+        container,
+        qualityProfile: 'high',
+        map: new ArcGISMap({
+          basemap: 'dark-gray-vector'
+        }),
+        environment: {
+          atmosphereEnabled: false
+        },
+        camera: {
+          position: {x: -122, y: 37, z: 5000},
+          heading: 180,
+          tilt: 45
+        },
+        viewingMode: 'local'
+      });
 
-    setInterval(() => {
-      renderer.deck.layers = renderLayers(sceneView);
-    }, 50);
-  }
-);
+      const renderer = new DeckRenderer(sceneView, {});
+      externalRenderers.add(sceneView, renderer);
+
+      setInterval(() => {
+        renderer.deck.layers = renderLayers(sceneView);
+      }, 50);
+    }
+  );
+  
+}
+  

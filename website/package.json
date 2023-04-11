@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@algolia/autocomplete-js": "^1.8.3",
+    "@arcgis/core": "^4.25.0",
+    "@esri/react-arcgis": "^5.2.0",
     "@deck.gl/arcgis": "^8.9.0",
     "@deck.gl/core": "^8.9.0",
     "@deck.gl/extensions": "^8.9.0",
