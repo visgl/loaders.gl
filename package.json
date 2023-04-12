@@ -63,10 +63,12 @@
   "pre-push": "pre-push",
   "dependencies": {},
   "resolutions_notes": [
+    "Something triggers double luma.gl versions after deck.gl 8.9 upgrade",
     "Note: tape 4.12 and higher no longer compares 0 and -0 equally...",
     "Note: newer prettier breaks on typescript import type"
   ],
   "resolutions": {
+    "@luma.gl/core": "8.5.19",
     "tape": "4.11.0",
     "prettier": "2.3.1",
     "typescript": "^5.0.4"
