@@ -6,9 +6,9 @@ The image loader category documents a common data format, options, conventions a
 
 | Loader                                                                                  | Notes                                                 |
 | --------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [`ImageLoader`](modules/images/docs/api-reference/image-loader)                         | Loads compressed images (PNG, JPG, etc)               |
-| [`CompressedTextureLoader`](modules/basis/docs/api-reference/compressed-texture-loader) | Parses compressed textures to image data mipmap array |
-| [`BasisLoader`](modules/basis/docs/api-reference/basis-loader)                          | Transpiles into supported compressed texture format   |
+| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)                         | Loads compressed images (PNG, JPG, etc)               |
+| [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | Parses compressed textures to image data mipmap array |
+| [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Transpiles into supported compressed texture format   |
 
 Core image category support is provided by the `@loaders.gl/images` module:
 
