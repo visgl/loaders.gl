@@ -1,6 +1,8 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import {StaticMap} from 'react-map-gl';
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+
 import {HuePicker, MaterialPicker} from 'react-color';
 import styled from 'styled-components';
 
@@ -1055,14 +1057,10 @@ export default class App extends PureComponent {
           onClick={(info) => this.handleClick(info)}
         >
           {!useTerrainLayer && (
-            <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
+            <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
           )}
           <View id="minimap">
-            <StaticMap
-              reuseMaps
-              mapStyle={CONTRAST_MAP_STYLES[selectedMapStyle]}
-              preventStyleDiffing={true}
-            />
+            <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
           </View>
         </DeckGL>
       </div>

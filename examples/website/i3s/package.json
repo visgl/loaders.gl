@@ -34,11 +34,13 @@
     "@math.gl/geospatial": "^3.5.1",
     "@probe.gl/stats-widget": "^4.0.1",
     "gl-matrix": "^3.3.0",
+    "mapbox-gl": "npm:empty-npm-package@^1.0.0",
+    "maplibre-gl": "^2.4.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.0",
     "react-color": "^2.19.3",
     "react-dom": "^16.8.0",
-    "react-map-gl": "^5.0.0",
+    "react-map-gl": "^7.0.21",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {

@@ -20,7 +20,7 @@
       label: 'Loaders',
       items: [
         'textures',
-        'gltf',
+        // 'gltf',
         'geospatial',
         'wms',
         'pointcloud'

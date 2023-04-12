@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.14.5",
-    "@deck.gl/core": "^8.5.0",
+    "@deck.gl/core": "^8.9.0",
     "@luma.gl/core": "^8.5.4",
     "@luma.gl/debug": "^8.5.4",
     "@luma.gl/test-utils": "^8.5.4",
@@ -63,10 +63,12 @@
   "pre-push": "pre-push",
   "dependencies": {},
   "resolutions_notes": [
+    "Something triggers double luma.gl versions after deck.gl 8.9 upgrade",
     "Note: tape 4.12 and higher no longer compares 0 and -0 equally...",
     "Note: newer prettier breaks on typescript import type"
   ],
   "resolutions": {
+    "@luma.gl/core": "8.5.19",
     "tape": "4.11.0",
     "prettier": "2.3.1",
     "typescript": "^5.0.4"

@@ -69,8 +69,8 @@ export class AppAnimationLoop extends AnimationLoop {
   };
 
 
-  constructor() {
-    super();
+  constructor(glOptions = {}) {
+    super({glOptions});
     this.onInitialize = this.onInitialize.bind(this);
     this.onRender = this.onRender.bind(this);
   }
@@ -211,10 +211,10 @@ export class AppAnimationLoop extends AnimationLoop {
   }
 }
 
-export function runApp() {
+export function runApp(glOptions) {
   if (typeof window !== 'undefined' && !window.website) {
     try {
-      const animationLoop = new AppAnimationLoop();
+      const animationLoop = new AppAnimationLoop(glOptions);
       animationLoop.start();
 
       const infoDiv = document.createElement('div');
