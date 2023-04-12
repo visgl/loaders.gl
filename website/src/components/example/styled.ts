@@ -33,6 +33,10 @@ export const ExampleCard = styled.a`
     transition-property: filter;
     transition-duration: var(--ifm-transition-slow);
     transition-timing-function: var(--ifm-transition-timing-default);
+    height: 100%;
+    height: -moz-available;
+    height: -webkit-fill-available;
+    height: fill-available;
   }
   &:hover {
     box-shadow: var(--ifm-global-shadow-md);
