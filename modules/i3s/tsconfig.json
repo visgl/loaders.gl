@@ -9,6 +9,7 @@
   },
   "references": [
     {"path": "../core"},
+    {"path": "../compression"},
     {"path": "../draco"},
     {"path": "../gltf"},
     {"path": "../images"},

@@ -1,4 +1,6 @@
+import {processOnWorker} from '@loaders.gl/worker-utils';
 import md5 from 'md5';
+import {CompressionWorker} from '@loaders.gl/compression';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -30,9 +32,8 @@ class SlpkArchieve {
       );
       const offset = offsetBuffer.getUint32(offsetBuffer.byteOffset, true);
       this.hashArray.push({
-        hash: hashFileBuffer.subarray(
-          hashFileBuffer.byteOffset + i,
-          hashFileBuffer.byteOffset + i + 16
+        hash: Buffer.from(
+          hashFileBuffer.subarray(hashFileBuffer.byteOffset + i, hashFileBuffer.byteOffset + i + 16)
         ),
         offset
       });
@@ -40,11 +41,9 @@ class SlpkArchieve {
   }
 
   /* eslint-disable consistent-return */
-  getFile(path: string) {
-    const fileInfo = this.hashArray.find(
-      (val) => Buffer.compare(val.hash, Buffer.from(md5(`${path}.gz`), 'hex')) === 0
-    );
-
+  async getFile(path: string) {
+    const nameHash = Buffer.from(md5(`${path}.gz`), 'hex');
+    const fileInfo = this.hashArray.find((val) => Buffer.compare(val.hash, nameHash) === 0);
     if (!fileInfo) {
       return;
     }
@@ -56,10 +55,17 @@ class SlpkArchieve {
       this.slpkArchieve.getUint16(fileOffset + 26, true) +
       this.slpkArchieve.getUint16(fileOffset + 28, true);
 
-    return this.slpkArchieve.buffer.slice(
+    const compressedFile = this.slpkArchieve.buffer.slice(
       fileDataOffset,
       fileDataOffset + this.slpkArchieve.getUint32(fileOffset + 18, true)
     );
+    const decompressedData = await processOnWorker(CompressionWorker, compressedFile, {
+      compression: 'gzip',
+      operation: 'decompress',
+      _workerType: 'test',
+      gzip: {}
+    });
+    return decompressedData;
   }
 }
 
@@ -104,36 +110,36 @@ export async function parseSlpk(data: ArrayBuffer, options = {}, context?) {
     throw new Error('No hash file in slpk');
   }
 
-  const fileDataOffset = slpkArchieve.getUint32(hashCDOffset + 42, true);
-  if (fileDataOffset < 0xffffffff) {
-    // check if it in zip or zip64 format
+  const fileOffset = slpkArchieve.getUint32(hashCDOffset + 42, true);
+  if (fileOffset < 0xffffffff) {
+    // check if it's in zip or zip64 format
     hashFile = slpkArchieve.buffer.slice(
-      fileDataOffset,
-      fileDataOffset + slpkArchieve.getUint16(fileDataOffset + ZIP_OFFSETS.compressedSize, true)
+      fileOffset,
+      fileOffset + slpkArchieve.getUint16(fileOffset + ZIP_OFFSETS.compressedSize, true)
     );
   } else {
     let offsetInZip64Data = 4;
     if (slpkArchieve.getUint16(hashCDOffset + ZIP_OFFSETS.cdCompressedSize, true) === 0xffffffff) {
-      // looking for info that should be in zip64 extra field
-      offsetInZip64Data += 4;
+      // looking for info that might be also be in zip64 extra field
+      offsetInZip64Data += 8;
     }
     if (
       slpkArchieve.getUint16(hashCDOffset + ZIP_OFFSETS.cdUncompressedSize, true) === 0xffffffff
     ) {
-      offsetInZip64Data += 4;
+      offsetInZip64Data += 8;
     }
     const n = slpkArchieve.getUint16(hashCDOffset + ZIP_OFFSETS.cdFileNameLength, true);
-    const fileDataOffset64 = slpkArchieve.getUint32(
+    const fileOffset64 = slpkArchieve.getUint32(
       hashCDOffset + ZIP_OFFSETS.cdFileName + n + offsetInZip64Data,
       true
-    ); // replace with BigInt for archieves bigger than 2gb
+    ); // need to be replaced with BigInt for archieves bigger than 2gb
 
     const fileDataOffset =
-      fileDataOffset64 +
+      fileOffset64 +
       30 +
-      slpkArchieve.getUint16(fileDataOffset64 + 26, true) +
-      slpkArchieve.getUint16(fileDataOffset64 + 28, true);
-    const fileLength = slpkArchieve.getUint32(fileDataOffset64 + 18, true);
+      slpkArchieve.getUint16(fileOffset64 + 26, true) +
+      slpkArchieve.getUint16(fileOffset64 + 28, true);
+    const fileLength = slpkArchieve.getUint32(fileOffset64 + 18, true);
     hashFile = slpkArchieve.buffer.slice(fileDataOffset, fileDataOffset + fileLength);
   }
 
