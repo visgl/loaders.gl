@@ -13,7 +13,7 @@ npm install @loaders.gl/core
 
 | Loader                                                                         |
 | ------------------------------------------------------------------------------ |
-| [`FlatGeobufLoader`](/docs//modules/flatgeobuf/api-reference/flatgeobuf-loader) |
+| [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) |
 
 ## Attribution
 
