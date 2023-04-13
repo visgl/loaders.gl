@@ -8,7 +8,7 @@ Loader for compressed textures in the PVR file format
 
 | Loader         | Characteristic                                                                                                                                                                                                                  |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| File Format    | [PVR](http://cdn.imgtec.com/sdk-documentation/PVR+File+Format.Specification.pdf), [DDS](https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide) [KTX](https://github.khronos.org/KTX-Specification/) |
+| File Format    | [PVR](http://powervr-graphics.github.io/WebGL_SDK/WebGL_SDK/Documentation/Specifications/PVR%20File%20Format.Specification.pdf), [DDS](https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide), [KTX](https://github.com/KhronosGroup/KTX-Software/) |
 | File Extension | `.dds`, `.pvr`, `.ktx`, `.ktx2`                                                                                                                                                                                                 |
 | File Type      | Binary                                                                                                                                                                                                                          |
 | Data Format    | Array of compressed image data objects                                                                                                                                                                                          |
@@ -36,8 +36,8 @@ Returns an array of image data objects representing mip levels.
 
 | Option                        | Type    | Default | Description                                                                                |
 | ----------------------------- | ------- | ------- | ------------------------------------------------------------------------------------------ |
-| `compressed-texture.useBasis` | Boolean | `false` | Use [BasisLoader](modules/textures/docs/api-reference/basis-loader) to decode KTX2 texture |
+| `compressed-texture.useBasis` | Boolean | `false` | Use [BasisLoader](/docs/modules/textures/api-reference/basis-loader) to decode KTX2 texture |
 
 ## Basis loader
 
-From v3.1 [BasisLoader](modules/textures/docs/api-reference/basis-loader) supports decoding KTX2 format. Applying BasisLoader for KTX2 files can possibly give results when internal ktx parser can't parse an image for some reason.
+From v3.1 [BasisLoader](/docs/modules/textures/api-reference/basis-loader) supports decoding KTX2 format. Applying BasisLoader for KTX2 files can possibly give results when internal ktx parser can't parse an image for some reason.

@@ -12,14 +12,14 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC Web Servic
 
 | OGC Protocol/Format                                                    | Supported    | Description                                                                                                                          |
 | ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [**CSW**](./formats/csw) (Catalog Service for the Web) protocol     | Y            | protocol for reading a catalog of geospatial assets and services from a URL.                                                         |
-| [**WMS**](./formats/wms) (Web Map Service) protocol                 | Y            | protocol for serving geo-referenced map images over the internet.                                                                    |
-| [**WFS**](./formats/wfs) (Web Feature Service) protocol             | experimental | protocol for serving geo-referenced map features (geometries) over the internet.                                                     |
-| [**WMTS**](./formats/wmts) (Web Map Tile Service) protocol          | experimental | protocol for serving pre-rendered or run-time computed georeferenced map tiles over the Internet.                                    |
-| [**GML**](./formats/gml) (Geographic Markup Language) format        | experimental | an XML grammar that describes geographical features.                                                                                 |
-| [**WCS**](./formats/wcs) (Web Coverage Service)                     | N            | Load coverage data (e.g. geotiff images for satellite data) from a server.                                                           |
-| [**WMC**](./formats/wmc) (Web Map Context)                          | No           | Used in WMS clients to save the configuration of maps and to load them again later. Can also be exchanged between different clients. |
-| [**OWS Context**](./formats/ows-context) (OGC Web Services Context) | No           | Allows configured information resources to be passed between applications primarily as a collection of services.                     |
+| [**CSW**](/docs/modules/wms/formats/csw) (Catalog Service for the Web) protocol     | Y            | protocol for reading a catalog of geospatial assets and services from a URL.                                                         |
+| [**WMS**](/docs/modules/wms/formats/wms) (Web Map Service) protocol                 | Y            | protocol for serving geo-referenced map images over the internet.                                                                    |
+| [**WFS**](/docs/modules/wms/formats/wfs) (Web Feature Service) protocol             | experimental | protocol for serving geo-referenced map features (geometries) over the internet.                                                     |
+| [**WMTS**](/docs/modules/wms/formats/wmts) (Web Map Tile Service) protocol          | experimental | protocol for serving pre-rendered or run-time computed georeferenced map tiles over the Internet.                                    |
+| [**GML**](/docs/modules/wms/formats/gml) (Geographic Markup Language) format        | experimental | an XML grammar that describes geographical features.                                                                                 |
+| [**WCS**](/docs/modules/wms/formats/wcs) (Web Coverage Service)                     | N            | Load coverage data (e.g. geotiff images for satellite data) from a server.                                                           |
+| [**WMC**](/docs/modules/wms/formats/wmc) (Web Map Context)                          | No           | Used in WMS clients to save the configuration of maps and to load them again later. Can also be exchanged between different clients. |
+| [**OWS Context**](/docs/modules/wms/formats/ows-context) (OGC Web Services Context) | No           | Allows configured information resources to be passed between applications primarily as a collection of services.                     |
 
 Support for the protocols is provided in the form of:
 

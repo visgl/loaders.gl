@@ -16,10 +16,10 @@ The API offers "transforms" that can calculate a cryptographic hash incrementall
 
 | Transforms                                                           | Sync | Description                       |
 | -------------------------------------------------------------------- | ---- | --------------------------------- |
-| [`CRC32Hash`](modules/crypto/docs/api-reference/crc32-hash)          | Y    | Base64-encoded Cryptographic Hash |
-| [`CRC32CHash`](modules/crypto/docs/api-reference/crc32c-hash)        | Y    | Base64-encoded Cryptographic Hash |
-| [`MD5Hash`](modules/crypto/docs/api-reference/md5-hash)              | Y    | Base64-encoded Cryptographic Hash |
-| [`SHA256Hash`](modules/crypto/docs/api-reference/sha256-hash)        | Y    | Base64-encoded Cryptographic Hash |
+| [`CRC32Hash`](/docs/modules/crypto/api-reference/crc32-hash)          | Y    | Base64-encoded Cryptographic Hash |
+| [`CRC32CHash`](/docs/modules/crypto/api-reference/crc32c-hash)        | Y    | Base64-encoded Cryptographic Hash |
+| [`MD5Hash`](/docs/modules/crypto/api-reference/md5-hash)              | Y    | Base64-encoded Cryptographic Hash |
+| [`SHA256Hash`](/docs/modules/crypto/api-reference/sha256-hash)        | Y    | Base64-encoded Cryptographic Hash |
 
 ## Using Transforms
 

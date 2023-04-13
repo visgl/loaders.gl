@@ -10,10 +10,10 @@ The 3D Tiles category can represent the major tiled 3D formats:
 
 | Loader                                                                     | Notes |
 | -------------------------------------------------------------------------- | ----- |
-| [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tiles-3d-loader)     |       |
-| [`CesiumIonLoader`](modules/3d-tiles/docs/api-reference/cesium-ion-loader) |       |
-| [`I3SLoader`](modules/i3s/docs/api-reference/i3s-loader)                   |       |
-| [`PotreeLoader`](modules/potree/docs/api-reference/potree-loader)          |       |
+| [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader)     |       |
+| [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader) |       |
+| [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader)                   |       |
+| [`PotreeLoader`](/docs/modules/potree/api-reference/potree-loader)          |       |
 
 ## Concepts
 

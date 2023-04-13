@@ -6,9 +6,9 @@ The _table_ category loaders supports loading tables in _row-based_, _columnar_ 
 
 | Loader                                                         | Notes                              |
 | -------------------------------------------------------------- | ---------------------------------- |
-| [`ArrowLoader`](modules/arrow/docs/api-reference/arrow-loader) |                                    |
-| [`CSVLoader`](modules/csv/docs/api-reference/csv-loader)       |                                    |
-| [`JSONLoader`](modules/json/docs/api-reference/json-loader)    | Set `options.json.table` to `true` |
+| [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader) |                                    |
+| [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader)       |                                    |
+| [`JSONLoader`](/docs/modules/json/api-reference/json-loader)    | Set `options.json.table` to `true` |
 
 ## Data Structure
 
