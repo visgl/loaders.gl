@@ -48,8 +48,8 @@ Note: the command line tools are implemented using this API and offer the same f
 
 There are additional ways to perform conversion:
 
-- Tile converter can be run right on a repository branch. It might be helpful if some updates are needed which last release doesn't contain [Build instructions](modules/tile-converter/docs/api-reference/build-instructions).
-- An autonomous bundle script can be built. It is entire converter in just 1 file. This file can be destributed directly to interested but not experienced user. [See instructions](modules/tile-converter/docs/api-reference/tile-converter-bundle).
+- Tile converter can be run right on a repository branch. It might be helpful if some updates are needed which last release doesn't contain [Build instructions](/docs/modules/tile-converter/api-reference/build-instructions).
+- An autonomous bundle script can be built. It is entire converter in just 1 file. This file can be destributed directly to interested but not experienced user. [See instructions](/docs/modules/tile-converter/api-reference/tile-converter-bundle).
 
 ## Attribution
 

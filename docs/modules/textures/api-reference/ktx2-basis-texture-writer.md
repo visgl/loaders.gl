@@ -32,7 +32,7 @@ const encodedData = await encode(image, KTX2BasisUniversalTextureWriter);
 
 ## Data Format
 
-https://github.khronos.org/KTX-Specification/
+http://powervr-graphics.github.io/WebGL_SDK/WebGL_SDK/Documentation/Specifications/PVR%20File%20Format.Specification.pdf
 
 ## Options
 

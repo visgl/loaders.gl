@@ -19,4 +19,4 @@ npm install @loaders.gl/core
 
 | Loader                                                         | Description |
 | -------------------------------------------------------------- | ----------- |
-| [`VideoLoader`](modules/video/docs/api-reference/video-loader) |             |
+| [`VideoLoader`](/docs/modules/video/api-reference/video-loader) |             |

@@ -14,12 +14,12 @@ npm install @loaders.gl/core @loaders.gl/arrow
 
 | Loader                                                               |
 | -------------------------------------------------------------------- |
-| [`ArrowLoader`](modules/arrow/docs/api-reference/arrow-loader)       |
-| [`ArrowWorkerLoader`](modules/arrow/docs/api-reference/arrow-loader) |
+| [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader)       |
+| [`ArrowWorkerLoader`](/docs/modules/arrow/api-reference/arrow-loader) |
 
 | Writer                                                         |
 | -------------------------------------------------------------- |
-| [`ArrowWriter`](modules/arrow/docs/api-reference/arrow-writer) |
+| [`ArrowWriter`](/docs/modules/arrow/api-reference/arrow-writer) |
 
 ## Additional APIs
 

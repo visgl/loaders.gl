@@ -12,7 +12,7 @@ Streaming loader for Apache Parquet encoded files.
 | File Extension | `.parquet`,                                          |
 | MIME Type      | N/A (`application/octet-stream`)                     |
 | File Type      | Binary                                               |
-| File Format    | [Parquet](https://parquet.apache.org/documentation/latest) |
+| File Format    | [Parquet](https://parquet.apache.org/docs/file-format/) |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseInBatches`                    |
 
@@ -49,7 +49,7 @@ for await (const batch of batches) {
 
 ## Data Format
 
-For details see [@loaders.gl/parquet](/modules/parquet/docs).
+For details see [parquet documentation](https://parquet.apache.org/docs/).
 
 ## Options
 

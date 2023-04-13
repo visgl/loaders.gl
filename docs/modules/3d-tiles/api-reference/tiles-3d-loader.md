@@ -89,7 +89,7 @@ For i3dm and b3dm tiles:
 | ------------------- | ------- | ------- | ------------------------------------- |
 | `3d-tiles.loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
 
-If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](modules/gltf/docs/api-reference/gltf-loader) via the `options.gltf` sub options.
+If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader) via the `options.gltf` sub options.
 
 ## Notes about Tile Types
 

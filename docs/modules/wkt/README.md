@@ -13,10 +13,10 @@ npm install @loaders.gl/core
 
 | Loader                                                   |
 | -------------------------------------------------------- |
-| [`WKBLoader`](modules/wkt/docs/api-reference/wkb-loader) |
-| [`WKBWriter`](modules/wkt/docs/api-reference/wkb-writer) |
-| [`WKTLoader`](modules/wkt/docs/api-reference/wkt-loader) |
-| [`WKTWriter`](modules/wkt/docs/api-reference/wkt-writer) |
+| [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader) |
+| [`WKBWriter`](/docs/modules/wkt/api-reference/wkb-writer) |
+| [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) |
+| [`WKTWriter`](/docs/modules/wkt/api-reference/wkt-writer) |
 
 ## Format Notes
 
