@@ -5,7 +5,7 @@ import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {COORDINATE_SYSTEM} from './lib/parsers/constants';
 import {I3SParseOptions} from './types';
 import {LoaderOptions} from './../../loader-utils/src/types';
-import {parseSlpk} from './lib/parsers/parse-slpk';
+import {parseSlpk} from './lib/parsers/parce-slpk';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -58,7 +58,7 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
 
   // check if file is slpk
   if (magicNumber === SLPK_HEX) {
-    data = parseSlpk(data, options, context);
+    data = parseSlpk(data, options);
     return data;
   }
 
