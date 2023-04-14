@@ -18,6 +18,8 @@ const POINT_CLOUD = 'PointCloud';
 
 export type I3SLoaderOptions = LoaderOptions & {
   i3s?: I3SParseOptions;
+  path?: string;
+  mode?: 'http' | 'raw';
 };
 
 /**
@@ -58,7 +60,6 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
   if (magicNumber === SLPK_HEX) {
     data = parseSlpk(data, options, context);
     return data;
-    // throw new Error('Files with .slpk extention currently are not supported by I3SLoader');
   }
 
   // auto detect file type based on url
