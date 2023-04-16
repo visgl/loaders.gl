@@ -1,6 +1,6 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 /* eslint-disable camelcase */
-import BSON from 'bson';
+import {BSONLoader, BSONWriter} from '@loaders.gl/bson';
 import {OriginalType, ParquetField, ParquetType, PrimitiveType} from './declare';
 
 export interface ParquetTypeKit {
@@ -340,11 +340,12 @@ function fromPrimitive_JSON(value: any): unknown {
 }
 
 function toPrimitive_BSON(value: any): Buffer {
-  return Buffer.from(BSON.serialize(value));
+  const arrayBuffer = BSONWriter.encodeSync?.(value) as ArrayBuffer;
+  return Buffer.from(arrayBuffer);
 }
 
 function fromPrimitive_BSON(value: any) {
-  return BSON.deserialize(value);
+  return BSONLoader.parseSync?.(value);
 }
 
 function toPrimitive_TIME_MILLIS(value: any) {
