@@ -7,6 +7,8 @@ node_modules/
 .cache
 public
 
+modules/bson/test/data/js-bson/corrupt.ts
+
 modules/parquet/test
 
 examples/experimental/gltf-with-raw-webgl/
