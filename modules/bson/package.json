@@ -34,8 +34,8 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "bson": "^4.2.0",
-    "@types/bson": "^4.2.0",
+    "bson": "4.2.0",
+    "@types/bson": "4.2.0",
     "@loaders.gl/gis": "3.4.0-alpha.2",
     "@loaders.gl/loader-utils": "3.4.0-alpha.2",
     "@loaders.gl/schema": "3.4.0-alpha.2"
