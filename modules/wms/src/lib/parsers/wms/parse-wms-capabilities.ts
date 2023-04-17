@@ -10,6 +10,9 @@ export type WMSCapabilities = {
   keywords: string[];
   layers: WMSLayer[];
   requests: Record<string, WMSRequest>;
+  exceptions?: {
+    mimeTypes: string[];
+  };
   raw?: Record<string, unknown>;
 };
 
@@ -19,7 +22,14 @@ export type WMSLayer = {
   boundingBox?: [number, number, number, number];
   /** Supported CRS */
   crs?: string[];
-  /** Sublayers - these inherit properties from the parent */
+  /** Whether queries can be performed on the layer */
+  queryable?: boolean;
+  /** `false` if layer has significant no-data areas that the client can display as transparent. */
+  opaque?: boolean;
+  /** WMS cascading allows server to expose layers coming from other WMS servers as if they were local layers */
+  cascaded?: boolean;
+
+  /** Sublayers - (these inherit crs and boundingBox if not overriden) */
   layers: WMSLayer[];
 };
 
@@ -58,6 +68,7 @@ export function parseWMSCapabilities(
     }
     // Not yet implemented
   }
+
   return capabilities;
 }
 
@@ -67,8 +78,8 @@ function extractCapabilities(xml: any): WMSCapabilities {
     name: String(xml.Service?.Name || 'unnamed'),
     title: String(xml.Service?.Title || ''),
     keywords: [],
-    requests: {},
-    layers: []
+    layers: [],
+    requests: {}
   };
 
   for (const keyword of xml.Service?.KeywordList?.Keyword || []) {
@@ -77,6 +88,13 @@ function extractCapabilities(xml: any): WMSCapabilities {
 
   for (const [name, xmlRequest] of Object.entries(xml.Capability?.Request || {})) {
     capabilities.requests[name] = extractRequest(name, xmlRequest);
+  }
+
+  const xmlExceptionFormats = getXMLArray(xml.Exception?.Format);
+  if (xmlExceptionFormats.length > 0 && xmlExceptionFormats.every((_) => typeof _ === 'string')) {
+    capabilities.exceptions = {
+      mimeTypes: xmlExceptionFormats as string[]
+    };
   }
 
   // Single layer is not represented as array in XML
@@ -108,6 +126,16 @@ function extractLayer(xmlLayer: any): WMSLayer {
     layer.crs = crs;
   }
 
+  if (xmlLayer?.opaque) {
+    layer.opaque = getXMLBoolean(xmlLayer?.opaque);
+  }
+  if (xmlLayer?.cascaded) {
+    layer.cascaded = getXMLBoolean(xmlLayer?.cascaded);
+  }
+  if (xmlLayer?.queryable) {
+    layer.queryable = getXMLBoolean(xmlLayer?.queryable);
+  }
+
   // Single layer is not represented as array in XML
   const xmlLayers = getXMLArray(xmlLayer?.Layer);
   const layers: WMSLayer[] = [];
@@ -117,6 +145,21 @@ function extractLayer(xmlLayer: any): WMSLayer {
   }
 
   return {...layer, layers};
+}
+
+function getXMLBoolean(xmlValue: any) {
+  switch (xmlValue) {
+    case 'true':
+      return true;
+    case 'false':
+      return false;
+    case '1':
+      return true;
+    case '0':
+      return false;
+    default:
+      return false;
+  }
 }
 
 function getXMLArray(xmlValue: any) {

@@ -53,7 +53,11 @@ test('WMSCapabilitiesLoader#dmsp.xml', async (t) => {
   const capabilities = (await load(WMS_DMSP_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.layers[0].layers[2].name, 'eez', 'contents');
+
+  t.equal(capabilities.layers[0].layers[2].name, 'eez', 'name');
+  t.strictEqual(capabilities.layers[0].layers[2].opaque, false, 'opaque');
+  t.strictEqual(capabilities.layers[0].layers[2].queryable, false, 'queryable');
+  t.strictEqual(capabilities.layers[0].layers[2].cascaded, false, 'cascaded');
 
   t.end();
 });
