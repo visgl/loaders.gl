@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import test from 'tape-promise/tape';
 import {load, parseSync} from '@loaders.gl/core';
 import {BSONLoader} from '@loaders.gl/bson';

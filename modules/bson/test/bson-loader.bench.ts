@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import {BSONLoader} from '@loaders.gl/bson';
 import {load} from '@loaders.gl/core';
 

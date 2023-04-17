@@ -15,7 +15,7 @@ export const BSONWriter = {
   extensions: ['bson'],
   options: {
     image: {
-      mimeType: 'application/bson',
+      mimeType: 'application/bson'
     }
   },
   encode: encodeBSONSync

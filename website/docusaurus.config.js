@@ -52,6 +52,7 @@ const config = {
 
             '@loaders.gl/3d': resolve('../modules/3d-tiles'),
             '@loaders.gl/arrow': resolve('../modules/arrow'),
+            '@loaders.gl/bson': resolve('../modules/bson'),
             '@loaders.gl/compression': resolve('../modules/compression'),
             '@loaders.gl/core': resolve('../modules/core'),
             '@loaders.gl/crypto': resolve('../modules/crypto'),
