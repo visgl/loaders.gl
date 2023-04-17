@@ -7,6 +7,10 @@ node_modules/
 .cache
 public
 
+modules/bson/src/bson-writer.ts
+modules/bson/src/index.ts
+modules/bson/src/lib/encoders/encode-bson.ts
+modules/bson/src/lib/parsers/parse-bson.ts
 modules/bson/test/data/js-bson/corrupt.ts
 
 modules/parquet/test
