@@ -213,7 +213,7 @@ const config = {
             items: [
               {
                 label: 'deck.gl',
-                href: 'https:/deck.gl'
+                href: 'https://deck.gl'
               },
               {
                 label: 'luma.gl',
