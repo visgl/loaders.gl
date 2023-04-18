@@ -37,7 +37,7 @@ import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES
 //         minZoom: 1,
 //         maxZoom: 20,
 //         pitch: 0,
-//         bearing: 0    
+//         bearing: 0
 //       }
 //     }
 //   }
@@ -108,10 +108,10 @@ export default class App extends PureComponent {
         metadata={metadata}
       >
         {error ? <div style={{color: 'red'}}>{error}</div> : ''}
-        <div style={{textAlign: 'center'}}>
-          long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:{' '}
+        <pre style={{textAlign: 'center', margin: 0}}>
+          long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '}
           {viewState.zoom.toFixed(2)}
-        </div>
+        </pre>
       </ControlPanel>
     );
   }
