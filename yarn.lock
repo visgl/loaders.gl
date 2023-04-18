@@ -1991,21 +1991,6 @@
     glsl-transpiler "^1.8.5"
     webgl-debug "^2.0.1"
 
-"@luma.gl/engine@8.5.17", "@luma.gl/engine@^8.5.4":
-  version "8.5.17"
-  resolved "https://registry.yarnpkg.com/@luma.gl/engine/-/engine-8.5.17.tgz#86d9b9594b9c45544db1f38475f9b2488d15faba"
-  integrity sha512-XyYYBUKj23P6e9VH+vJ7vEZe/5IH80DZkst4qQABJIBAXg/0dUf2QxST5PNbokOT4SrmuM5As5a2QUrmcUmGiw==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    "@luma.gl/constants" "8.5.17"
-    "@luma.gl/gltools" "8.5.17"
-    "@luma.gl/shadertools" "8.5.17"
-    "@luma.gl/webgl" "8.5.17"
-    "@math.gl/core" "^3.5.0"
-    "@probe.gl/env" "^3.5.0"
-    "@probe.gl/stats" "^3.5.0"
-    "@types/offscreencanvas" "^2019.7.0"
-
 "@luma.gl/engine@8.5.19":
   version "8.5.19"
   resolved "https://registry.yarnpkg.com/@luma.gl/engine/-/engine-8.5.19.tgz#29196604d127e08f638164c84320c0e0424dc70b"
@@ -2016,6 +2001,21 @@
     "@luma.gl/gltools" "8.5.19"
     "@luma.gl/shadertools" "8.5.19"
     "@luma.gl/webgl" "8.5.19"
+    "@math.gl/core" "^3.5.0"
+    "@probe.gl/env" "^3.5.0"
+    "@probe.gl/stats" "^3.5.0"
+    "@types/offscreencanvas" "^2019.7.0"
+
+"@luma.gl/engine@^8.5.4":
+  version "8.5.17"
+  resolved "https://registry.yarnpkg.com/@luma.gl/engine/-/engine-8.5.17.tgz#86d9b9594b9c45544db1f38475f9b2488d15faba"
+  integrity sha512-XyYYBUKj23P6e9VH+vJ7vEZe/5IH80DZkst4qQABJIBAXg/0dUf2QxST5PNbokOT4SrmuM5As5a2QUrmcUmGiw==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    "@luma.gl/constants" "8.5.17"
+    "@luma.gl/gltools" "8.5.17"
+    "@luma.gl/shadertools" "8.5.17"
+    "@luma.gl/webgl" "8.5.17"
     "@math.gl/core" "^3.5.0"
     "@probe.gl/env" "^3.5.0"
     "@probe.gl/stats" "^3.5.0"
@@ -2490,7 +2490,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/bson@^4.0.0":
+"@types/bson@4.2.0":
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/@types/bson/-/bson-4.2.0.tgz#a2f71e933ff54b2c3bf267b67fa221e295a33337"
   integrity sha512-ELCPqAdroMdcuxqwMgUpifQyRoTpyYCNr1V9xKyF40VsBobsj+BbWNRvwGchMgBPGqkw655ypkjj2MEF5ywVwg==
@@ -3831,16 +3831,16 @@ browserslist@^4.21.3, browserslist@^4.21.4:
     update-browserslist-db "^1.0.9"
 
 bson@*:
-  version "4.7.0"
-  resolved "https://registry.yarnpkg.com/bson/-/bson-4.7.0.tgz#7874a60091ffc7a45c5dd2973b5cad7cded9718a"
-  integrity sha512-VrlEE4vuiO1WTpfof4VmaVolCVYkYTgB9iWgYNOrVlnifpME/06fhFRmONgBhClD5pFC1t9ZWqFUQEQAzY43bA==
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-5.2.0.tgz#c81d35dd30e2798203e5422a639780ea98dd25ba"
+  integrity sha512-HevkSpDbpUfsrHWmWiAsNavANKYIErV2ePXllp1bwq5CDreAaFVj6RVlZpJnxK4WWDCJ/5jMUpaY6G526q3Hjg==
+
+bson@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-4.2.0.tgz#15b5beffed6e44883de9922a2e1896fba4042cd4"
+  integrity sha512-c3MlJqdROnCRvDr/+MLfaDvQ7CvGI4p1hKX45/fvgzSwKRdOjsfRug1NJJ8ty5mXCNtUdjJEWzoZWcBQxV4TyA==
   dependencies:
     buffer "^5.6.0"
-
-bson@^1.0.4:
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/bson/-/bson-1.1.6.tgz#fb819be9a60cd677e0853aee4ca712a785d6618a"
-  integrity sha512-EvVNVeGo4tHxwi8L6bPj3y3itEvStdwvvlojVxxbyYfoaxJ6keLgrTuKdyfEAszFK+H3olzBuafE0yoh0D1gdg==
 
 btoa-lite@^1.0.0:
   version "1.0.0"
