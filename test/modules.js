@@ -41,6 +41,7 @@ import '@loaders.gl/gltf/test';
 // 3D Tile Formats
 import '@loaders.gl/3d-tiles/test';
 import '@loaders.gl/i3s/test';
+import '@loaders.gl/slpk/test';
 import '@loaders.gl/potree/test';
 import '@loaders.gl/tiles/test';
 

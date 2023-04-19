@@ -5,7 +5,6 @@ import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {COORDINATE_SYSTEM} from './lib/parsers/constants';
 import {I3SParseOptions} from './types';
 import {LoaderOptions} from './../../loader-utils/src/types';
-import {parseSlpk} from './lib/parsers/parce-slpk';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -13,7 +12,6 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const TILESET_REGEX = /layers\/[0-9]+$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
-const SLPK_HEX = '504b0304';
 const POINT_CLOUD = 'PointCloud';
 
 export type I3SLoaderOptions = LoaderOptions & {
@@ -54,13 +52,6 @@ export const I3SLoader: LoaderWithParser = {
 async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
   const url = context.url;
   options.i3s = options.i3s || {};
-  const magicNumber = getMagicNumber(data);
-
-  // check if file is slpk
-  if (magicNumber === SLPK_HEX) {
-    data = parseSlpk(data, options);
-    return data;
-  }
 
   // auto detect file type based on url
   let isTileset;
@@ -108,14 +99,4 @@ async function parseTileset(data, options: I3SLoaderOptions, context) {
 async function parseTile(data, context) {
   data = JSON.parse(new TextDecoder().decode(data));
   return normalizeTileData(data, context);
-}
-
-function getMagicNumber(data) {
-  if (data instanceof ArrayBuffer) {
-    // slice binary data (4 bytes from the beginning) and transform it to hexadecimal numeral system
-    return [...new Uint8Array(data, 0, 4)]
-      .map((value) => value.toString(16).padStart(2, '0'))
-      .join('');
-  }
-  return null;
 }

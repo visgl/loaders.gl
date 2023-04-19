@@ -1,19 +1,18 @@
-import {I3SLoaderOptions} from '../../../i3s-loader';
 import CDFileHeader from './cd-file-header';
 import LocalFileHeader from './local-file-header';
 import SlpkArchieve from './slpk-archieve';
 
-export async function parseSlpk(data: ArrayBuffer, options: I3SLoaderOptions = {}) {
+const getByteAt = (offset: number, buffer: DataView) => {
+  return buffer.getUint8(buffer.byteOffset + offset);
+};
+
+export async function parceSlpk(data: ArrayBuffer, options: any = {}) {
   const slpkArchieve = new DataView(data);
 
-  const getAt = (offset: number) => {
-    return slpkArchieve.getUint8(slpkArchieve.byteOffset + offset);
-  };
-
   const searchWindow = [
-    getAt(slpkArchieve.byteLength - 1),
-    getAt(slpkArchieve.byteLength - 2),
-    getAt(slpkArchieve.byteLength - 3),
+    getByteAt(slpkArchieve.byteLength - 1, slpkArchieve),
+    getByteAt(slpkArchieve.byteLength - 2, slpkArchieve),
+    getByteAt(slpkArchieve.byteLength - 3, slpkArchieve),
     undefined
   ];
 
@@ -24,7 +23,7 @@ export async function parseSlpk(data: ArrayBuffer, options: I3SLoaderOptions = {
     searchWindow[3] = searchWindow[2];
     searchWindow[2] = searchWindow[1];
     searchWindow[1] = searchWindow[0];
-    searchWindow[0] = getAt(i);
+    searchWindow[0] = getByteAt(i, slpkArchieve);
     if (searchWindow.toString().includes('80,75,1,2')) {
       hashCDOffset = i;
       break;
