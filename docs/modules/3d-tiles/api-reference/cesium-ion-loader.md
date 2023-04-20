@@ -13,7 +13,7 @@ Load a tileset file from Cesium ion server.
 import {load} from '@loaders.gl/core';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 import {WebMercatorViewport} from '@deck.gl/core';
-const tilesetUrl = 'https://assets.cesium.com/43978/tileset.json';
+const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
 const ION_ACCESS_TOKEN = ''; // your own ion access token
 
 const options = {ion: {loadGLTF: true}};

@@ -5,13 +5,13 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-Loader for the [FlatGeobuf](https://bjornharrtell.github.io/flatgeobuf/) format, a binary FlatBuffers-encoded format that defines geospatial geometries.
+Loader for the [FlatGeobuf](http://flatgeobuf.org/) format, a binary FlatBuffers-encoded format that defines geospatial geometries.
 
 | Loader         | Characteristic                                                  |
 | -------------- | --------------------------------------------------------------- |
 | File Extension | `.fgb`,                                                         |
 | File Type      | Binary                                                          |
-| File Format    | [FlatGeobuf](https://bjornharrtell.github.io/flatgeobuf/)       |
+| File Format    | [FlatGeobuf](http://flatgeobuf.org/)       |
 | Data Format    | [Geometry](/docs/specifications/category-gis)                   |
 | Supported APIs | `load`, `loadInBatches`, `parse`, `parseSync`, `parseInBatches` |
 
