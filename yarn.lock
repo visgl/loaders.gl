@@ -1991,7 +1991,7 @@
     glsl-transpiler "^1.8.5"
     webgl-debug "^2.0.1"
 
-"@luma.gl/engine@8.5.19":
+"@luma.gl/engine@8.5.19", "@luma.gl/engine@^8.5.19":
   version "8.5.19"
   resolved "https://registry.yarnpkg.com/@luma.gl/engine/-/engine-8.5.19.tgz#29196604d127e08f638164c84320c0e0424dc70b"
   integrity sha512-QlyTUTKcrRZ8qclloH9dldGeBN7SY8qPwtt7g6bTrsRMWQjdAQVfGtjJUkqxV2qIEEOSIdU07t5xFYCEES2M/w==
@@ -2006,32 +2006,6 @@
     "@probe.gl/stats" "^3.5.0"
     "@types/offscreencanvas" "^2019.7.0"
 
-"@luma.gl/engine@^8.5.4":
-  version "8.5.17"
-  resolved "https://registry.yarnpkg.com/@luma.gl/engine/-/engine-8.5.17.tgz#86d9b9594b9c45544db1f38475f9b2488d15faba"
-  integrity sha512-XyYYBUKj23P6e9VH+vJ7vEZe/5IH80DZkst4qQABJIBAXg/0dUf2QxST5PNbokOT4SrmuM5As5a2QUrmcUmGiw==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    "@luma.gl/constants" "8.5.17"
-    "@luma.gl/gltools" "8.5.17"
-    "@luma.gl/shadertools" "8.5.17"
-    "@luma.gl/webgl" "8.5.17"
-    "@math.gl/core" "^3.5.0"
-    "@probe.gl/env" "^3.5.0"
-    "@probe.gl/stats" "^3.5.0"
-    "@types/offscreencanvas" "^2019.7.0"
-
-"@luma.gl/gltools@8.5.17":
-  version "8.5.17"
-  resolved "https://registry.yarnpkg.com/@luma.gl/gltools/-/gltools-8.5.17.tgz#5e5d55b3771a80d917f4d0862d780f8d8d1d24ac"
-  integrity sha512-ikrhwDcTBxxHFRvpCYFjm0HW9l2G2tueD4BV2UpWIl4u8rVTCG98nkypymU8HvF2W6zdvrOwna7Ha2vG4egX1Q==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    "@luma.gl/constants" "8.5.17"
-    "@probe.gl/env" "^3.5.0"
-    "@probe.gl/log" "^3.5.0"
-    "@types/offscreencanvas" "^2019.7.0"
-
 "@luma.gl/gltools@8.5.19":
   version "8.5.19"
   resolved "https://registry.yarnpkg.com/@luma.gl/gltools/-/gltools-8.5.19.tgz#34b6c21b057254dfcfb8fa71fcbaa08903028786"
@@ -2042,14 +2016,6 @@
     "@probe.gl/env" "^3.5.0"
     "@probe.gl/log" "^3.5.0"
     "@types/offscreencanvas" "^2019.7.0"
-
-"@luma.gl/shadertools@8.5.17":
-  version "8.5.17"
-  resolved "https://registry.yarnpkg.com/@luma.gl/shadertools/-/shadertools-8.5.17.tgz#aceae9c4f1961c2906012cd4afe1ff8196acd0d9"
-  integrity sha512-lpCjdutWx3i8qeroH9jPCGyCFvLguLaccQ0d7PCLeFD2eQrN/KuDzgka2V3PHgW1M9Wjph+c0RlaFc6NOuRokQ==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    "@math.gl/core" "^3.5.0"
 
 "@luma.gl/shadertools@8.5.19":
   version "8.5.19"
@@ -2064,17 +2030,6 @@
   resolved "https://registry.yarnpkg.com/@luma.gl/test-utils/-/test-utils-8.5.17.tgz#92e824cc771916670aed1d4edf7117e6219942ea"
   integrity sha512-W7EDdlP2PAFUAn2OtK75s/nUMV8bsAVZEh9WmO5GGs+vcdCwPvZpoL6F6RiqnVVrlCi8DTj7En8BTHnqNt0xfQ==
   dependencies:
-    "@probe.gl/stats" "^3.5.0"
-
-"@luma.gl/webgl@8.5.17":
-  version "8.5.17"
-  resolved "https://registry.yarnpkg.com/@luma.gl/webgl/-/webgl-8.5.17.tgz#eaa7d60b4e16dcc6ed72b562a2e9d1dc3a12d2ff"
-  integrity sha512-z9uzRO7i1Y5i3D729x+eE1EjistEn1Ni3S+3RMJEHx6zPfs3WyiDc20B1ul+wk6vX0ukQWihLGCF6AIRdenktA==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    "@luma.gl/constants" "8.5.17"
-    "@luma.gl/gltools" "8.5.17"
-    "@probe.gl/env" "^3.5.0"
     "@probe.gl/stats" "^3.5.0"
 
 "@luma.gl/webgl@8.5.19", "@luma.gl/webgl@^8.5.16":
@@ -4060,9 +4015,9 @@ camelcase@^5.0.0, camelcase@^5.3.1:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 caniuse-lite@^1.0.30001400:
-  version "1.0.30001478"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001478.tgz"
-  integrity sha512-gMhDyXGItTHipJj2ApIvR+iVB5hd0KP3svMWWXDvZOmjzJJassGLMfxRkQCSYgGd2gtdL/ReeiyvMSFD1Ss6Mw==
+  version "1.0.30001480"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001480.tgz"
+  integrity sha512-q7cpoPPvZYgtyC4VaBSN0Bt+PJ4c4EYRf0DrduInOz2SkFpHD5p3LnvEpqBp7UnJn+8x1Ogl1s38saUxe+ihQQ==
 
 caseless@~0.12.0:
   version "0.12.0"

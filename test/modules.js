@@ -74,5 +74,4 @@ import '@loaders.gl/crypto/test';
 import '@loaders.gl/zip/test';
 
 // Tile converter
-// TODO - something is triggering double luma.gl version breakage
-// import '@loaders.gl/tile-converter/test';
+import '@loaders.gl/tile-converter/test';
