@@ -44,8 +44,8 @@ export default class CDFileHeader {
     let fileDataOffset = this.getOldFormatOffset();
     if (fileDataOffset === 0xffffffff) {
       let offsetInZip64Data = 4;
+      // looking for info that might be also be in zip64 extra field
       if (this.getCompressedSize() === 0xffffffff) {
-        // looking for info that might be also be in zip64 extra field
         offsetInZip64Data += 8;
       }
       if (this.getUncompressedSize() === 0xffffffff) {
