@@ -188,11 +188,11 @@ const config = {
             position: 'left',
             label: 'Docs'
           },
-          // {
-          //   to: '/showcase',
-          //   position: 'left',
-          //   label: 'Showcase',
-          // },
+          {
+            to: '/showcase',
+            position: 'left',
+            label: 'Showcase',
+          },
           {
             to: 'https://medium.com/vis-gl',
             label: 'Blog',
