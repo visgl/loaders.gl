@@ -5,7 +5,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import {joinPath} from '../utils/data-utils';
 
 import items from '../../showcase.json';
-
+// copied from deck.gl/website/pages/showcase with small fixes 
 const ShowcaseContainer = styled.div`
   padding: 60px 12px;
   width: 800px;
@@ -82,7 +82,7 @@ const Thumbnail = styled.div`
 `;
 
 const ProjectInfo = styled.div`
-  width: 67%;
+  width: 68%;
   height: 0;
   padding-top: 32%;
   display: inline-block;
@@ -91,7 +91,6 @@ const ProjectInfo = styled.div`
   vertical-align: top;
   position: relative;
   background: #eee;
-  margin-left: -4px;
 
   a {
     text-decoration: none;
