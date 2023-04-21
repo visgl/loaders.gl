@@ -49,3 +49,9 @@ main .container {
 html[data-theme='dark'] .docusaurus-highlight-code-line {
   background-color: rgba(0, 0, 0, 0.3);
 }
+
+@media (min-width: 1440px) {
+  .container {
+    max-width: 100%;
+  }
+}
