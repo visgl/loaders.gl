@@ -40,6 +40,8 @@ import {B3DMAttributesData /*, transformI3SAttributesOnWorker*/} from '../../i3s
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
+import {MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
+import {GL} from '@loaders.gl/math';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -507,6 +509,8 @@ function convertMesh(
     if (!outputAttributes) {
       continue;
     }
+
+    const indices = getIndices(primitive);
     outputAttributes.positions = concatenateTypedArrays(
       outputAttributes.positions,
       transformVertexArray({
@@ -514,7 +518,7 @@ function convertMesh(
         cartographicOrigin,
         cartesianModelMatrix,
         nodeMatrix: matrix,
-        indices: primitive.indices?.value,
+        indices,
         attributeSpecificTransformation: transformVertexPositions,
         useCartesianPositions
       })
@@ -526,36 +530,75 @@ function convertMesh(
         cartographicOrigin,
         cartesianModelMatrix,
         nodeMatrix: matrix,
-        indices: primitive.indices?.value,
+        indices,
         attributeSpecificTransformation: transformVertexNormals,
         useCartesianPositions: false
       })
     );
     outputAttributes.texCoords = concatenateTypedArrays(
       outputAttributes.texCoords,
-      flattenTexCoords(
-        attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value,
-        primitive.indices?.value
-      )
+      flattenTexCoords(attributes.TEXCOORD_0 && attributes.TEXCOORD_0.value, indices)
     );
 
     outputAttributes.colors = concatenateTypedArrays(
       outputAttributes.colors,
-      flattenColors(attributes.COLOR_0, primitive.indices?.value)
+      flattenColors(attributes.COLOR_0, indices)
     );
 
     if (materialUvRegion) {
       outputAttributes.uvRegions = concatenateTypedArrays(
         outputAttributes.uvRegions,
-        createUvRegion(materialUvRegion, primitive.indices?.value)
+        createUvRegion(materialUvRegion, indices)
       );
     }
 
     outputAttributes.featureIndicesGroups = outputAttributes.featureIndicesGroups || [];
     outputAttributes.featureIndicesGroups.push(
-      flattenBatchIds(getBatchIds(attributes, primitive, images), primitive.indices?.value)
+      flattenBatchIds(getBatchIds(attributes, primitive, images), indices)
     );
   }
+}
+
+type TypedArrayConstructor =
+  | Uint8ArrayConstructor
+  | Int8ArrayConstructor
+  | Uint16ArrayConstructor
+  | Int16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;
+
+/**
+ * Converts TRIANGLE-STRIPS to independent TRIANGLES
+ * @param {MeshPrimitive} primitive - the primitive to get the indices from
+ * @returns indices of vertices of the independent triangles
+ */
+function getIndices(primitive: MeshPrimitive): TypedArray {
+  let indices: TypedArray = primitive.indices?.value;
+  if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
+    /*
+    TRIANGLE_STRIP geometry contains n+2 vertices for n triangles;
+    TRIANGLE geometry contains n*3 vertices for n triangles.
+    The conversion from TRIANGLE_STRIP to TRIANGLE implies duplicating adjacent vertices.
+    */
+    const TypedArrayConstructor = indices.constructor as TypedArrayConstructor;
+    const newIndices = new TypedArrayConstructor((indices.length - 2) * 3);
+    let triangleIndex = 0;
+    let currentTriangle = indices.slice(0, 3);
+    newIndices.set(currentTriangle, 0);
+    for (let i = 1; i + 2 < indices.length; i++) {
+      triangleIndex += 3;
+      currentTriangle = indices.slice(i, i + 3);
+      if (i % 2 === 0) {
+        newIndices.set(currentTriangle, triangleIndex);
+      } else {
+        newIndices.set(currentTriangle.reverse(), triangleIndex);
+      }
+    }
+    indices = newIndices;
+  }
+  return indices;
 }
 
 /**
@@ -575,7 +618,7 @@ function transformVertexArray(args: {
   cartographicOrigin: number[];
   cartesianModelMatrix: number[];
   nodeMatrix: Matrix4;
-  indices: Uint8Array;
+  indices: TypedArray;
   attributeSpecificTransformation: Function;
   useCartesianPositions: boolean;
 }) {
@@ -654,7 +697,7 @@ function transformVertexNormals(vertexVector, calleeArgs): number[] {
  * @param indices - gltf primitive indices
  * @returns flattened texture coordinates
  */
-function flattenTexCoords(texCoords: Float32Array, indices: Uint8Array): Float32Array {
+function flattenTexCoords(texCoords: Float32Array, indices: TypedArray): Float32Array {
   const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
   if (!texCoords) {
     // We need dummy UV0s because it is required in 1.6
@@ -679,7 +722,7 @@ function flattenTexCoords(texCoords: Float32Array, indices: Uint8Array): Float32
  */
 function flattenColors(
   colorsAttribute: GLTFAccessorPostprocessed,
-  indices: Uint8Array
+  indices: TypedArray
 ): Uint8Array {
   const components = colorsAttribute?.components || VALUES_PER_COLOR_ELEMENT;
   const newColors = new Uint8Array(indices.length * components);
@@ -707,7 +750,7 @@ function flattenColors(
  * @param indices - geometry indices data
  * @returns - uv-region array
  */
-function createUvRegion(materialUvRegion: Uint16Array, indices: Uint8Array): Uint16Array {
+function createUvRegion(materialUvRegion: Uint16Array, indices: TypedArray): Uint16Array {
   const result = new Uint16Array(indices.length * 4);
   for (let i = 0; i < result.length; i += 4) {
     result.set(materialUvRegion, i);
@@ -721,7 +764,7 @@ function createUvRegion(materialUvRegion: Uint16Array, indices: Uint8Array): Uin
  * @param indices - gltf primitive indices
  * @returns flattened batch ids
  */
-function flattenBatchIds(batchedIds: number[], indices: Uint8Array): number[] {
+function flattenBatchIds(batchedIds: number[], indices: TypedArray): number[] {
   if (!batchedIds.length || !indices.length) {
     return [];
   }
