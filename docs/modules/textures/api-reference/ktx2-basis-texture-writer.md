@@ -11,7 +11,7 @@
 | -------------- | ------------------------------------------------------ |
 | File Extension | `.ktx2`                                                |
 | File Type      | Binary                                                 |
-| Data Format    | https://github.khronos.org/KTX-Specification           |
+| Data Format    | https://github.com/KhronosGroup/KTX-Specification/blob/main/ktxspec.adoc         |
 | File Format    | KTX2                                                   |
 | Encoder Type   | Asynchronous                                           |
 | Worker Thread  | No (but may run on separate native thread in browsers) |
@@ -32,7 +32,7 @@ const encodedData = await encode(image, KTX2BasisUniversalTextureWriter);
 
 ## Data Format
 
-http://powervr-graphics.github.io/WebGL_SDK/WebGL_SDK/Documentation/Specifications/PVR%20File%20Format.Specification.pdf
+https://github.com/KhronosGroup/KTX-Specification/blob/main/ktxspec.adoc
 
 ## Options
 

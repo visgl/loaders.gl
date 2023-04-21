@@ -1,6 +1,6 @@
 # Creating New Loaders and Writers
 
-> See the a detailed specification of the [loader object format API reference](docs/specifications/loader-object-format).
+> See the a detailed specification of the [loader object format API reference](/docs/specifications/loader-object-format).
 
 ## Overview
 

@@ -29,12 +29,12 @@ npx tile-converter --install-dependencies
 
 You can use custom Earth Gravity Model using `--egm` option.
 
-5. [Convert some tileset](modules/tile-converter/docs/cli-reference/tile-converter)
+5. [Convert some tileset](/docs/modules/tile-converter/cli-reference/tile-converter)
    Examples:
 
 ```
 npx tile-converter --input-type 3dtiles --tileset ./modules/3d-tiles/test/data/Batched/BatchedTextured/tileset.json --name BatchedTextured
-npx tile-converter --input-type 3dtiles --tileset https://assets.cesium.com/29328/tileset.json --name CairoLayer --max-depth 10
+npx tile-converter --input-type 3dtiles --tileset https://assets.ion.cesium.com/29328/tileset.json --name CairoLayer --max-depth 10
 ```
 
 Notice "--max-depth" option. It means that the converter will load and convert only first 'n' (10 in example) levels of tiles. Use it for big tilesets when full conversion could take a lot of time. If you want to convert all the tileset, omit this option.
