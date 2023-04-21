@@ -35,7 +35,7 @@ export const INITIAL_VIEW_STATE = {
   zoom: 3 // Start zoomed out on US, tileset will center via "fly-to" on load
 };
 
-const Stats = styled.div`
+const StatsWidgetContainer = styled.div`
   position: absolute;
   top: 12px;
   left: 12px;
@@ -221,7 +221,7 @@ export default class App extends PureComponent {
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
     return (
-      <Stats ref={(_) => (this._statsWidgetContainer = _)} />
+      <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />
     );
   }
 
