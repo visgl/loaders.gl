@@ -20,6 +20,7 @@ const Container = styled.div`
   line-height: 2;
   outline: none;
   z-index: 100;
+  color: #121212;
 `;
 
 const DropDown = styled.select`

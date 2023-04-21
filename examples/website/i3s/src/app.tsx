@@ -73,7 +73,7 @@ const StatsWidgetContainer = styled.div`
   z-index: 3;
   bottom: 15px;
   word-break: break-word;
-  padding: 24px;
+  padding: 6px;
   border-radius: 8px;
   line-height: 135%;
   bottom: auto;
@@ -81,6 +81,12 @@ const StatsWidgetContainer = styled.div`
   left: 10px;
   max-height: calc(100% - 125px);
   overflow: auto;
+
+  > div {
+    position: unset !important;
+    z-index: 1 !important;
+    background-color: transparent !important;
+  }
 `;
 
 class App extends PureComponent {
