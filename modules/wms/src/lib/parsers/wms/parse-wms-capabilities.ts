@@ -4,6 +4,7 @@ import {XMLLoader} from '@loaders.gl/xml';
 
 /** All capabilities of a WMS service - response to a WMS `GetCapabilities` data structure extracted from XML */
 export type WMSCapabilities = {
+  version?: string;
   name: string;
   title?: string;
   abstract?: string;
@@ -75,8 +76,10 @@ export function parseWMSCapabilities(
 /** Extract typed capability data from XML */
 function extractCapabilities(xml: any): WMSCapabilities {
   const capabilities: WMSCapabilities = {
+    version: String(xml.version || ''),
     name: String(xml.Service?.Name || 'unnamed'),
-    title: String(xml.Service?.Title || ''),
+    title: xml.Service?.Title ? String(xml.Service?.Title) : undefined,
+    abstract: xml.Service?.Abstract ? String(xml.Service?.Abstract) : undefined,
     keywords: [],
     layers: [],
     requests: {}
