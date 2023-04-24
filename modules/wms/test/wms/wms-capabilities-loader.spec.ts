@@ -58,7 +58,7 @@ test('WMSCapabilitiesLoader#dmsp.xml', async (t) => {
 
   t.equal(typeof capabilities, 'object', 'parsed');
 
-  t.equal(capabilities.version, '1.1.1', 'version');
+  t.equal(capabilities.version, '1.3.0', 'version');
   t.equal(capabilities.layers[0].layers[2].name, 'eez', 'name');
   t.strictEqual(capabilities.layers[0].layers[2].opaque, false, 'opaque');
   t.strictEqual(capabilities.layers[0].layers[2].queryable, false, 'queryable');
