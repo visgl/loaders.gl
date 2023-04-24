@@ -55,3 +55,7 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
     max-width: 100%;
   }
 }
+
+.backToTopButton_node_modules-\@docusaurus-theme-classic-lib-theme-BackToTopButton-styles-module {
+  box-shadow: var(--ifm-global-shadow-md) !important;
+}

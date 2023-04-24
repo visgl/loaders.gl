@@ -40,6 +40,7 @@ const TableHeader = styled.th`
   background: #0e111a;
   padding: 8px;
   height: 22px;
+  border: none;
 `;
 
 const NoIssuesItem = styled.h4`
@@ -50,7 +51,8 @@ const NoIssuesItem = styled.h4`
 
 const TR_STYLE = {
   color: 'rgba(255, 255, 255, .3)',
-  margin: '8px 0'
+  margin: '8px 0',
+  border: 'none'
 };
 
 const NO_ISSUES = 'No Issues';
@@ -77,10 +79,10 @@ const defaultProps = {
 export default class SemanticValidator extends PureComponent {
   renderColumns(warnings) {
     return warnings.map((warning, index) => (
-      <tr key={`${warning.title}-${index}`}>
-        <td style={{padding: '0 8px 0 8px', textAlign: 'center'}}>{index + 1}</td>
-        <td style={{padding: '0 8px 0 8px'}}>{WARNING_TYPES[warning.type]}</td>
-        <td style={{color: 'rgba(249, 80, 80, .6)', padding: '0 8px 0 8px'}}>{warning.title}</td>
+      <tr style={{border: 'none'}} key={`${warning.title}-${index}`}>
+        <td style={{padding: '0 8px 0 8px', textAlign: 'center', border: 'none'}}>{index + 1}</td>
+        <td style={{padding: '0 8px 0 8px', border: 'none !important', border: 'none'}}>{WARNING_TYPES[warning.type]}</td>
+        <td style={{color: 'rgba(249, 80, 80, .6)', padding: '0 8px 0 8px', border: 'none'}}>{warning.title}</td>
       </tr>
     ));
   }
