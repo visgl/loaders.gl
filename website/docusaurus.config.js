@@ -28,7 +28,7 @@ const config = {
           path: '../docs',
           sidebarPath: resolve('./src/docs-sidebar.js'),
           // Point to to the website directory in your repo.
-          editUrl: 'https://github.com/uber-web/loaders.gl/tree/master/website'
+          editUrl: 'https://github.com/visgl/loaders.gl/tree/master/website'
         },
         theme: {
           customCss: [
@@ -199,7 +199,7 @@ const config = {
             position: 'left'
           },
           {
-            href: 'https://github.com/uber-web/loaders.gl',
+            href: 'https://github.com/visgl/loaders.gl',
             label: 'GitHub',
             position: 'right'
           }
@@ -242,7 +242,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/uber-web/loaders.gl'
+                href: 'https://github.com/visgl/loaders.gl'
               }
             ]
           }

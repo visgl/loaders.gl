@@ -9,6 +9,9 @@ import ToggleSwitch from './toggle-switch';
 
 const Container = styled.div`
   ${Flex}
+  ${Color}
+  gap: 10px;
+  padding: 16px;
   width: 277px;
   height: 132px;
   margin: 10px;
@@ -23,6 +26,7 @@ const Container = styled.div`
     top: 0;
     border-radius: 0;
     flex-direction: row;
+    align-items: center;
     height: 80px;
   }
 `;
@@ -32,10 +36,8 @@ const TilesetDropDown = styled.select`
   ${Font}
   ${DropDownStyle}
   width: 245px;
-  margin: 16px 16px 0 16px;
   @media (max-width: 768px) {
-    margin: 25px 0 25px 15px;
-    width: 100%;
+    width: auto;
   }
 `;
 
@@ -43,25 +45,20 @@ const MapContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0px;
-  margin: 0 16px 8px 16px;
   width: 245px;
 `;
 
-const MapName = styled.h3`
+const MapName = styled.div`
   ${Color}
   font-weight: normal;
   width: 70px;
-  margin-bottom: 0;
   @media (max-width: 768px) {
     display: none;
   }
 `;
 
-const ItemName = styled.h3`
+const ItemName = styled.div`
   ${Color}
-  margin: 0;
-  font-weight: normal;
   @media (max-width: 768px) {
     display: none;
   }
@@ -75,8 +72,7 @@ const DropDown = styled.select`
   margin-left: 8px;
   left: 86px;
   @media (max-width: 768px) {
-    width: 100%;
-    margin: 25px 0 25px 5px;
+    width: auto;
   }
 `;
 

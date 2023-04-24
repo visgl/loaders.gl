@@ -5,7 +5,6 @@ export const DropDownStyle = `
   justify-content: space-between;
   align-items: center;
   padding: 4px 16px;
-  height: 28px;
   cursor: pointer;
   border-radius: 4px;
   box-sizing: border-box;
@@ -14,8 +13,6 @@ export const DropDownStyle = `
       background: #0E111A;
       display: flex;
       white-space: pre;
-      min-height: 20px;
-      padding: 0px 2px 1px;
     }
   &:hover {
     background: #4F52CC;

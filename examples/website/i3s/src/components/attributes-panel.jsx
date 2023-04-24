@@ -46,13 +46,15 @@ const STYLED_TH = {
   textAlign: 'left',
   fontWeight: '500',
   borderRight: '3px solid rgba(0,0,0,.05)',
-  padding: '5px 0'
+  padding: '5px 0',
+  border: 'none'
 };
 
 const STYLED_TD = {
   width: '50%',
   fontWeight: '400',
-  padding: '5px 0'
+  padding: '5px 0',
+  border: 'none'
 };
 
 const CLOSE_BUTTON_STYLE = {
@@ -83,6 +85,7 @@ const defaultProps = {
 };
 
 const HEADER_STYLE = {
+  margin: '0',
   marginLeft: '15px',
   color: 'white'
 };
@@ -109,7 +112,7 @@ export default class AttributesPanel extends PureComponent {
 
   createTableColumn(key, value) {
     return (
-      <tr key={key}>
+      <tr style={{border: 'none'}} key={key}>
         <th style={STYLED_TH}>{key}</th>
         <td style={STYLED_TD}>{value}</td>
       </tr>

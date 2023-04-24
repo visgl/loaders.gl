@@ -1,12 +1,21 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
+const TR_STYLE = {
+  border: 'none',
+}
+
 const TH_STYLE = {
   textAlign: 'left',
   fontSize: '14px',
   color: 'white',
-  fontWeight: '400'
+  fontWeight: '400',
+  border: 'none',
 };
+
+const TD_STYLE = {
+  border: 'none',
+}
 
 const TOOLTIP_STYLE = {
   background: '#0E111A',
@@ -33,9 +42,9 @@ export default class AttributesTooltip extends PureComponent {
 
     for (const key in data) {
       const row = (
-        <tr key={key}>
+        <tr style={TR_STYLE} key={key}>
           <th style={TH_STYLE}>{key}</th>
-          <td>{this.formatTooltipValue(data[key])}</td>
+          <td style={TD_STYLE}>{this.formatTooltipValue(data[key])}</td>
         </tr>
       );
 
