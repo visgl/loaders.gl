@@ -18,6 +18,7 @@ test('WMSCapabilitiesLoader#forecasts.xml', async (t) => {
   const capabilities = (await load(WMS_FORECASTS_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
+  t.equal(capabilities.version, '1.1.1', 'version');
   t.equal(capabilities.layers[0].layers[2]?.name, 'world_rivers', 'contents');
 
   t.end();
@@ -27,6 +28,7 @@ test('WMSCapabilitiesLoader#obs.xml', async (t) => {
   const capabilities = (await load(WMS_OBS_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
+  t.equal(capabilities.version, '1.1.1', 'version');
   t.equal(capabilities.layers[0].layers[2].name, 'world_rivers', 'contents');
   t.end();
 });
@@ -35,6 +37,7 @@ test('WMSCapabilitiesLoader#wwa.xml', async (t) => {
   const capabilities = (await load(WMS_WWA_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
+  t.equal(capabilities.version, '1.1.1', 'version');
   t.equal(capabilities.layers[0].layers[2].name, 'world_rivers', 'contents');
 
   t.end();
@@ -44,6 +47,7 @@ test('WMSCapabilitiesLoader#analyses.xml', async (t) => {
   const capabilities = (await load(WMS_ANALYSES_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
+  t.equal(capabilities.version, '1.1.1', 'version');
   t.equal(capabilities.layers[0].layers[2].name, 'world_countries_label', 'contents');
 
   t.end();
@@ -54,6 +58,7 @@ test('WMSCapabilitiesLoader#dmsp.xml', async (t) => {
 
   t.equal(typeof capabilities, 'object', 'parsed');
 
+  t.equal(capabilities.version, '1.1.1', 'version');
   t.equal(capabilities.layers[0].layers[2].name, 'eez', 'name');
   t.strictEqual(capabilities.layers[0].layers[2].opaque, false, 'opaque');
   t.strictEqual(capabilities.layers[0].layers[2].queryable, false, 'queryable');
@@ -67,6 +72,7 @@ test.skip('WMSCapabilitiesLoader#ad-hoc-test', async (t) => {
   const capabilities = (await load(WMS_ADHOC_URL, WMSCapabilitiesLoader)) as WMSCapabilities;
 
   t.equal(typeof capabilities, 'object', 'parsed');
+  t.equal(capabilities.version, '1.1.1', 'version');
   t.equal(capabilities.layers[0].layers[2].name, 'eez', 'contents');
 
   t.end();
