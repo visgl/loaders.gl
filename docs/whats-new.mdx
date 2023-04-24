@@ -95,17 +95,19 @@ Target Release Date: April, 2023.
 
 **@loaders.gl/xml**
 
-- New [`HTMLLoader`](modules/xml/api-reference/html-loader) - a minimal HTML loader, parses HTML as an unstructured XML tree. Intended for minimal ad-hoc use cases such as extracting an error message or a link from a short HTML page.
+- [`HTMLLoader`](modules/xml/api-reference/html-loader) - New minimal HTML loader, intended for small ad-hoc use cases such as extracting an error message or a link from a short HTML page.
 
 **@loaders.gl/wms**
 
-- The [**CSW (Catalog Services for the Web)**](modules/wms/formats/csw) protocol is now supported by a new [`CSWService`](modules/wms/api-reference/csw-service) class which enables applications to discover available services (including WMS).
-- Experimental [`WMSService`](modules/wms/api-reference/wms-service) class improvements
-  - Default WMS parameters (`layers`, `crs` etc) can be specified during `WMSService` construction, instead of having to repeatedly pass them to `getMap` etc methods.
-  - WMS 1.3.0 is now the default, and automatic remapping of parameter names is handled under the hood (`CRS` s `SRS`)
-  - Authentication support: Plumbs through loadOptions, including HTTP `Authentication` headers.
+- `WMSCapabilitiesLoader` 
+  - now handles version `1.3.0`, and parameter names that have changed across WMS versions are automatically remapped to 1.3.0 equivalents (e.g. `CRS` vs `SRS`).
+  - Also extracts more information (such as `version`, `abstract` fields, layer flags (`opaque`, `queryable`, `cascaded`), MIME types for `exceptions`).
+- [`WMSService`](modules/wms/api-reference/wms-service) class improvements:
+  - WMS `1.3.0` is now the default version.
+  - Authentication support: Now correctly uses application supplied `loadOptions`, including fetch overrides and HTTP `Authentication` headers.
   - Transparency support: The `transparent` prop is now included in the exported WMS parameter types enabling requesting images that are transparent where there is no data.
-- `WMSCapabilitiesLoader` handles 1.3.0, and extracts more information (such as `version`, `abstract` fields, layer flags (`opaque`, `queryable`, `cascaded`), MIME types for `exceptions`).
+  - Default WMS parameter support (`layers`, `crs` etc) can be specified during `WMSService` construction, instead of having to repeatedly pass them to `getMap` etc methods.
+- The [**CSW (Catalog Services for the Web)**](modules/wms/formats/csw) protocol is now supported by a new [`CSWService`](modules/wms/api-reference/csw-service) class which enables applications to discover available services (including WMS).
 
 ## v3.3
 
@@ -118,7 +120,7 @@ Release Date: February 17, 2023.
 **@loaders.gl/xml** (New module)
 
 - New module for parsing XML (eXtensible Markup Language)
-- [`XMLLoader`](modules/xml/api-reference/xml-loader)
+  - [`XMLLoader`](modules/xml/api-reference/xml-loader)
 
 **@loaders.gl/wms** (New module)
 
@@ -135,7 +137,8 @@ Release Date: February 17, 2023.
 
 **@loaders.gl/gltf**
 
-- The [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) glTF extension is now supported by the `GLTFLoader`, by optionally transforming UV coordinates on CPU level.
+- `GLTFLoader` glTF extension support:
+  - [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) - can now optionally be processed and removed during load by transforming UV coordinates. Useful if renderer or post processing stage does not have support for this extension.
 
 **@loaders.gl/draco**
 
