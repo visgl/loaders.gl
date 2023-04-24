@@ -11,13 +11,15 @@ const Container = styled.div`
   top: 0;
   right: 0;
   background: #fff;
+  color: #121212;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  padding: 12px 24px;
+  padding: 12px 24px 24px 24px;
   margin: 20px;
   font-size: 13px;
   line-height: 2;
   outline: none;
   z-index: 100;
+  height: calc(100vh - var(--ifm-navbar-height) - 40px);
 
   h2 {
     margin: 0 0 0.5rem 0;
@@ -29,7 +31,7 @@ const Container = styled.div`
     transition: opacity 300ms ease-out;
   }
 
-  .monaco-editor {
+  > .monaco-editor {
     height: calc(100vh - 200px) !important;
     width: 500px !important;
   }
