@@ -178,7 +178,12 @@ const CURSOR_STYLE = {
 };
 
 const StatsWidgetWrapper = styled.div`
-  display: ${(props) => (props.showMemory ? 'inherit' : 'none')};
+  display: ${(props) => (props.showMemory ? 'flex' : 'none')};
+
+  > div {
+    background-color: transparent !important;
+    padding: 0;
+  }
 `;
 
 const StatsWidgetContainer = styled.div`
