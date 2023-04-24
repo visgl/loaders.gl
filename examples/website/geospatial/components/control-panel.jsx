@@ -11,6 +11,7 @@ const Container = styled.div`
   right: 0;
   max-width: 320px;
   background: #fff;
+  color: #121212;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   padding: 12px 24px;
   margin: 20px;
