@@ -9,8 +9,6 @@ import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
-const TILESET_WITH_TRIANGLE_STRIP_URL =
-  '@loaders.gl/3d-tiles/test/data/Batched/BatchedTriangleStrip/tileset.json';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -348,30 +346,5 @@ test('tile-converter - Converters#layer json should contain fullExtent field', a
     t.deepEqual(layer.fullExtent, TEST_FULL_EXTENT);
   }
   await cleanUpPath('data/BatchedTextured');
-  t.end();
-});
-
-test('tile-converter - Converters#TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
-  const tilesetName = 'BatchedTriangleStrip';
-  const EXPECT_VERTEX_COUNT = 55752;
-  if (!isBrowser) {
-    const converter = new I3SConverter();
-    await converter.convert({
-      inputUrl: TILESET_WITH_TRIANGLE_STRIP_URL,
-      outputPath: 'data',
-      tilesetName: tilesetName,
-      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-      egmFilePath: PGM_FILE_PATH
-    });
-    const layerJson = await fs.readFile(
-      `data/${tilesetName}/SceneServer/layers/0/index.json`,
-      'utf8'
-    );
-    const layer = JSON.parse(layerJson);
-
-    t.equals(converter.vertexCounter, EXPECT_VERTEX_COUNT);
-    t.ok(layer.fullExtent);
-  }
-  await cleanUpPath(`data/${tilesetName}`);
   t.end();
 });

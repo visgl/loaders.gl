@@ -43,6 +43,13 @@ import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature
 import {MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import {GL} from '@loaders.gl/math';
 
+/*
+  At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/types'.
+  So the following import is replaced with the local import
+  import type {TypedArrayConstructor} from '@math.gl/types'; 
+*/
+import type {TypedArrayConstructor} from '../types';
+
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
 const DEFAULT_METALLIC_FACTOR = 1;
@@ -558,17 +565,6 @@ function convertMesh(
     );
   }
 }
-
-type TypedArrayConstructor =
-  | Uint8ArrayConstructor
-  | Int8ArrayConstructor
-  | Uint16ArrayConstructor
-  | Int16ArrayConstructor
-  | Int32ArrayConstructor
-  | Uint32ArrayConstructor
-  | Float32ArrayConstructor
-  | Float64ArrayConstructor;
-
 /**
  * Converts TRIANGLE-STRIPS to independent TRIANGLES
  * @param {MeshPrimitive} primitive - the primitive to get the indices from
@@ -584,15 +580,21 @@ function getIndices(primitive: MeshPrimitive): TypedArray {
     */
     const TypedArrayConstructor = indices.constructor as TypedArrayConstructor;
     const newIndices = new TypedArrayConstructor((indices.length - 2) * 3);
+
+    // Copy the first triangle indices with no modification like [i0, i1, i2, ...] -> [i0, i1, i2, ...]
     let triangleIndex = 0;
     let currentTriangle = indices.slice(0, 3);
     newIndices.set(currentTriangle, 0);
+
+    // The rest triangle indices are being taken from strips using the following logic:
+    // [i1, i2, i3, i4, i5, i6, ...] -> [i3, i2, i1,   i2, i3, i4,   i5, i4, i3,   i4, i5, i6, ...]
     for (let i = 1; i + 2 < indices.length; i++) {
       triangleIndex += 3;
       currentTriangle = indices.slice(i, i + 3);
       if (i % 2 === 0) {
         newIndices.set(currentTriangle, triangleIndex);
       } else {
+        // The following "reverce" is necessary to calculate normals correctly
         newIndices.set(currentTriangle.reverse(), triangleIndex);
       }
     }
