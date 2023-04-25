@@ -38,6 +38,8 @@ export function join(...parts: string[]): string {
   return parts.join(separator);
 }
 
+/* eslint-disable no-continue */
+
 /**
  * https://nodejs.org/api/path.html#path_path_resolve_paths
  * @param paths A sequence of paths or path segments.

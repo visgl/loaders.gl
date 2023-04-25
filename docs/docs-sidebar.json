@@ -359,8 +359,9 @@
         "label": "@loaders.gl/wms",
         "items": [
           "modules/wms/README",
-          "modules/wms/api-reference/wms-service",
           "modules/wms/api-reference/csw-service",
+          "modules/wms/api-reference/wms-service",
+          "modules/wms/api-reference/wms-capabilities-loader",
           "modules/wms/formats/wms",
           "modules/wms/formats/csw",
           "modules/wms/formats/wmts",

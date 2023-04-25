@@ -32,7 +32,7 @@ export type WMSParameters = {
   /** Requested format for the return image */
   format?: 'image/png';
   /** Requested MIME type of returned feature info */
-  info_format?: 'text/plain' | 'application/vnd.ogc.gml';
+  info_format?: 'text/plain' | 'application/geojson' | 'application/vnd.ogc.gml';
   /** Styling - Not yet supported */
   styles?: unknown;
   /** Any additional parameters specific to this WMSService */
@@ -79,7 +79,7 @@ export type WMSGetFeatureInfoParameters = WMSCommonParameters & {
   /** list of layers to query (could be different from rendered layers) */
   query_layers: string[];
   /** Requested MIME type of returned feature info */
-  info_format?: 'text/plain' | 'application/vnd.ogc.gml';
+  info_format?: 'text/plain' | 'application/geojson' | 'application/vnd.ogc.gml';
 
   /** Layers to render */
   layers: string[];

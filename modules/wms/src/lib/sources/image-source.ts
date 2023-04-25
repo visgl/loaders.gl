@@ -19,7 +19,7 @@ export type ImageSourceMetadata = {
 };
 
 export type ImageSourceLayer = {
-  name: string;
+  name?: string;
   title?: string;
   srs?: string[];
   boundingBox?: [number, number, number, number];
