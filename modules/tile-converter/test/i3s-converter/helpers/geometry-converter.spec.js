@@ -323,7 +323,7 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
   t.end();
 });
 
-test.only('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
+test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
   const EXPECT_VERTEX_COUNT = [42891, 12861];
 
   if (isBrowser) {
