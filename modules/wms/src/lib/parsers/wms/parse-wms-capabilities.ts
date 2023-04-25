@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
 
 import {XMLLoader} from '@loaders.gl/xml';
+import {getXMLArray, getXMLBoolean} from '../xml/parse-xml-helpers';
 
 /** All capabilities of a WMS service - response to a WMS `GetCapabilities` data structure extracted from XML */
 export type WMSCapabilities = {
@@ -17,11 +18,18 @@ export type WMSCapabilities = {
   raw?: Record<string, unknown>;
 };
 
+/** 
+ * Metadata about a layer 
+ * @see https://www.ogc.org/standard/wms/ 7.2.4.6 
+ */
 export type WMSLayer = {
-  name: string;
-  title?: string;
+  /** The title is a human readable name. It is mandatory on each layer. Not inherited.  */
+  title: string;
+  /** A layer is renderable if it has a name. A named parent layer will render all its sublayers. Not inherited. */
+  name?: string;
+  /** The boundingBox. Inherited. */
   boundingBox?: [number, number, number, number];
-  /** Supported CRS */
+  /** Supported CRS. Inherited. */
   crs?: string[];
   /** Whether queries can be performed on the layer */
   queryable?: boolean;
@@ -30,11 +38,13 @@ export type WMSLayer = {
   /** WMS cascading allows server to expose layers coming from other WMS servers as if they were local layers */
   cascaded?: boolean;
 
-  /** Sublayers - (these inherit crs and boundingBox if not overriden) */
+  /** Sublayers - these inherit crs and boundingBox) if not overriden) */
   layers: WMSLayer[];
 };
 
+/** Metadata about a supported WMS request  */
 export type WMSRequest = {
+  /** MIMEtypes that can be returned by this request. */
   mimeTypes: string[];
 };
 
@@ -85,14 +95,17 @@ function extractCapabilities(xml: any): WMSCapabilities {
     requests: {}
   };
 
+  // KEYWORDS
   for (const keyword of xml.Service?.KeywordList?.Keyword || []) {
     capabilities.keywords.push(keyword);
   }
 
+  // REQUESTS
   for (const [name, xmlRequest] of Object.entries(xml.Capability?.Request || {})) {
     capabilities.requests[name] = extractRequest(name, xmlRequest);
   }
 
+  // EXCEPTIONS
   const xmlExceptionFormats = getXMLArray(xml.Exception?.Format);
   if (xmlExceptionFormats.length > 0 && xmlExceptionFormats.every((_) => typeof _ === 'string')) {
     capabilities.exceptions = {
@@ -100,7 +113,7 @@ function extractCapabilities(xml: any): WMSCapabilities {
     };
   }
 
-  // Single layer is not represented as array in XML
+  // LAYERS
   const xmlLayers = getXMLArray(xml.Capability?.Layer);
   for (const xmlSubLayer of xmlLayers) {
     capabilities.layers.push(extractLayer(xmlSubLayer));
@@ -148,31 +161,6 @@ function extractLayer(xmlLayer: any): WMSLayer {
   }
 
   return {...layer, layers};
-}
-
-function getXMLBoolean(xmlValue: any) {
-  switch (xmlValue) {
-    case 'true':
-      return true;
-    case 'false':
-      return false;
-    case '1':
-      return true;
-    case '0':
-      return false;
-    default:
-      return false;
-  }
-}
-
-function getXMLArray(xmlValue: any) {
-  if (Array.isArray(xmlValue)) {
-    return xmlValue;
-  }
-  if (xmlValue) {
-    return [xmlValue];
-  }
-  return [];
 }
 
 /** Traverse layers and inject missing props from parents */
