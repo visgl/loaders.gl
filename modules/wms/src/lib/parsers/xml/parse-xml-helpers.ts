@@ -25,7 +25,7 @@ export function getXMLStringArray(xmlValue: any): string[] {
 }
 
 /** Get XML float */
-export function getXMLFloat<T>(xmlValue: any, defaultValue = undefined): number | undefined {
+export function getXMLFloat(xmlValue: any, defaultValue = undefined): number | undefined {
   switch (typeof xmlValue) {
     case 'number':
       return xmlValue;
@@ -37,7 +37,7 @@ export function getXMLFloat<T>(xmlValue: any, defaultValue = undefined): number 
 }
 
 /** Get XML integer */
-export function getXMLInteger<T>(xmlValue: any, defaultValue = undefined): number | undefined {
+export function getXMLInteger(xmlValue: any, defaultValue = undefined): number | undefined {
   switch (typeof xmlValue) {
     case 'number':
       return xmlValue;

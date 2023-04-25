@@ -161,7 +161,6 @@ export type WMSGetFeatureInfoParameters = {
   y: number; // y coordinate for the feature info request
   query_layers: string[]; // list of layers to query (could be different from rendered layers)
   info_format?: 'text/plain' | 'application/geojson' | 'application/vnd.ogc.gml'; // MIME type of returned feature info
-
   layers: string[]; // Layers to render
   styles?: unknown; // Styling
   bbox: [number, number, number, number]; // bounding box of the requested map image

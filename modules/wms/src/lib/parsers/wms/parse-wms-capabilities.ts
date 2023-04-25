@@ -5,6 +5,7 @@ import {
   getXMLArray,
   getXMLStringArray,
   getXMLInteger,
+  getXMLFloat,
   getXMLBoolean
 } from '../xml/parse-xml-helpers';
 
@@ -86,7 +87,7 @@ export type WMSLayer = {
   styles?: unknown[];
 
   /** Sublayers - these inherit crs and boundingBox) if not overridden) */
-  layers: WMSLayer[];
+  layers?: WMSLayer[];
 };
 
 /**
@@ -220,19 +221,16 @@ function extractExceptions(xmlException: any): WMSExceptions | undefined {
 }
 
 /** Extract request data */
-// eslint-disable-next-line complexity
+// eslint-disable-next-line complexity, max-statements
 function extractLayer(xmlLayer: any): WMSLayer {
-  const layer: Omit<WMSLayer, 'layers'> = {
-    name: String(xmlLayer?.Name || ''),
+  const layer: WMSLayer = {
+    // All layers must have a title
     title: String(xmlLayer?.Title || ''),
-    abstract: String(xmlLayer?.Abstract || ''),
+    // Name is required only if renderable
+    name: String(xmlLayer?.Name),
+    abstract: String(xmlLayer?.Abstract),
     keywords: getXMLStringArray(xmlLayer.KeywordList?.Keyword)
   };
-
-  // Clean up. A layer without a name is not renderable.
-  if (!layer.name) {
-    delete layer.name;
-  }
 
   // WMS 1.3.0 changes SRS to CRS
   const crs = xmlLayer?.CRS || xmlLayer?.SRS;
@@ -240,7 +238,6 @@ function extractLayer(xmlLayer: any): WMSLayer {
     layer.crs = crs;
   }
 
-  
   // v1.3.0 extract simple geographic bounding box
   let geographicBoundingBox =
     xmlLayer?.EX_GeographicBoundingBox && extractEXBoundingBox(xmlLayer?.EX_GeographicBoundingBox);
@@ -279,7 +276,18 @@ function extractLayer(xmlLayer: any): WMSLayer {
     layers.push(extractLayer(xmlSubLayer));
   }
 
-  return {...layer, layers};
+  if (layers.length > 0) {
+    layer.layers = layers;
+  }
+
+  // Clean up object
+  for (const [key, value] of Object.entries(layer)) {
+    if (value === undefined) {
+      delete layer[key];
+    }
+  }
+
+  return layer;
 }
 
 /** WMS 1.3.0 Loosely defined geospatial bounding box in unspecified CRS for quick content searches */
@@ -318,8 +326,8 @@ function extractWMSBoundingBox(xmlBoundingBox: any): WMSBoundingBox {
     // CRS in 1.3.0, SRS in 1.1.1
     crs: CRS || SRS,
     boundingBox: [
-      [minx, miny],
-      [maxx, maxy]
+      [getXMLFloat(minx) as number, getXMLFloat(miny) as number],
+      [getXMLFloat(maxx) as number, getXMLFloat(maxy) as number]
     ]
   };
   if (resx) {
@@ -347,7 +355,7 @@ function addInheritedLayerProps(layer: WMSLayer, parent: WMSLayer | null): void 
 
   // TODO inherit other elements
 
-  for (const subLayer of layer.layers) {
+  for (const subLayer of layer.layers || []) {
     addInheritedLayerProps(subLayer, layer);
   }
 }
