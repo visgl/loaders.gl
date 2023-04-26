@@ -43,47 +43,47 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@loaders.gl/gis@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/gis/-/gis-3.3.0-alpha.12.tgz#ba6080df9148cefed9e77da8e0753d46053e00d7"
-  integrity sha512-yNvr90e6b27pmxcIXdwfgEIqv0KSLpKsDu7etkLTgYBeNpQnclf/YHG9tzlP9kPY9HEidm+K10XmSwpUGIknDw==
+"@loaders.gl/gis@3.3.3":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/gis/-/gis-3.3.3.tgz#1af1aadb80553e1944711aaa5f445ef9bc6472b8"
+  integrity sha512-/lv8KYQxGDeSYmYgkR7zxKWtva8jLVLsQFcCCLhkmcEQY3rUrIjaXL0twZRNRrLMqFMvOFZScVvF4oA/9uXTlA==
   dependencies:
-    "@loaders.gl/loader-utils" "3.3.0-alpha.12"
-    "@loaders.gl/schema" "3.3.0-alpha.12"
+    "@loaders.gl/loader-utils" "3.3.3"
+    "@loaders.gl/schema" "3.3.3"
     "@mapbox/vector-tile" "^1.3.1"
     "@math.gl/polygon" "^3.5.1"
     pbf "^3.2.1"
 
-"@loaders.gl/loader-utils@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.3.0-alpha.12.tgz#55ce0de14422f64ddf72727716f5ebfa3ddf29f2"
-  integrity sha512-pBlHaXCbEaAwFe+XbuzoEjwbV4OPLiJ9DS+P3Cpe/ML2R9CT9UUxNDQMJOqM9cW/+hIG+kyUhatP3f67R5SOfQ==
+"@loaders.gl/loader-utils@3.3.3":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.3.3.tgz#4965b024bed31953d24de783cb8d0d33d4301a90"
+  integrity sha512-QHwc8dw5kn2KyoEQGqPvmuHRSEo+UeKOgUFwRM7FjNgkFySr+Wc1HMCCPH+VBCvdzGp0aIH+WWQB1Ug2yaQZeg==
   dependencies:
     "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.3.0-alpha.12"
+    "@loaders.gl/worker-utils" "3.3.3"
     "@probe.gl/stats" "^3.5.0"
 
-"@loaders.gl/schema@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-3.3.0-alpha.12.tgz#bd78d48ae3c7c527bd55afedbc9dc6cb6e0e2afc"
-  integrity sha512-Kv7Auj2fEHU52kvegjFpK/Hjn83MWni3lVm2EpFEDc+Aw27dDb7U5sH7ow606qq7axiX+lC9JXaEDGYIBALn0Q==
+"@loaders.gl/schema@3.3.3":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-3.3.3.tgz#6f9933b5cd6bfffa586ba981e18a316b177f3518"
+  integrity sha512-l06pdG9pn2SABUgFm7N1JmfddU7KlBvGaxXlLbPhun+02Z0m2ExASHy0mEU7DVsdbfsbCyYDYqxuvn1O7yHX+A==
   dependencies:
     "@types/geojson" "^7946.0.7"
 
-"@loaders.gl/shapefile@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/shapefile/-/shapefile-3.3.0-alpha.12.tgz#3d5096f74d8c5ebb269d971951a2eb21395792b1"
-  integrity sha512-2z0OOq+HbTEsH/nIr6Gi5v7fvx5Pdgqyrdk6VohmCgXKsTPupP5q2tX5Wmx8OBA4TfU+Q8XGydUFbLsmBBJS5Q==
+"@loaders.gl/shapefile@^3.3.0":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/shapefile/-/shapefile-3.3.3.tgz#96dad5f8f7f5834efac92423882f4424e5f18fcd"
+  integrity sha512-fXGhOOgYyee3c4d63jKk5ZzEpFxgX5qGeujpKADlBdc8AJBv4NaOr0suaKqwaiexfx6rP/VQu7LiCvBhc3iTDQ==
   dependencies:
-    "@loaders.gl/gis" "3.3.0-alpha.12"
-    "@loaders.gl/loader-utils" "3.3.0-alpha.12"
-    "@loaders.gl/schema" "3.3.0-alpha.12"
+    "@loaders.gl/gis" "3.3.3"
+    "@loaders.gl/loader-utils" "3.3.3"
+    "@loaders.gl/schema" "3.3.3"
     "@math.gl/proj4" "^3.5.1"
 
-"@loaders.gl/worker-utils@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.3.0-alpha.12.tgz#3c5f56be03b1359491e79674c6d5d71b3161e998"
-  integrity sha512-OOptTemcEvH0K0P/WJi13jXF2eerdcoxIDRVX0Q8sHHahkhD3+oGBwhilFj+oxTy1VQUiE/wienJRqZioQ22dQ==
+"@loaders.gl/worker-utils@3.3.3":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.3.3.tgz#d669b538a17757a2d6da70930a09af323e49990f"
+  integrity sha512-mTQqbuAtFCgR2yu//7Rrt9pwhnDh0H2t69vOJ65Eh2YA0q4c58Kqd+260WxoPps3A0aiYNyA2099AHze7fI+Jg==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
@@ -1141,9 +1141,9 @@ mimic-response@^1.0.0, mimic-response@^1.0.1:
   integrity sha512-j5EctnkH7amfV/q5Hgmoal1g2QHFJRraOtmx0JpIqkxhBhI/lJSl1nMpQ45hVarwNETOoWEimndZ4QK0RHxuxQ==
 
 minimatch@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.4.tgz#5166e286457f03306064be5497e8dbb0c3d32083"
-  integrity sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
+  integrity sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==
   dependencies:
     brace-expansion "^1.1.7"
 
@@ -1607,10 +1607,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript@^4.0.3:
-  version "4.4.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.4.tgz#2cd01a1a1f160704d3101fd5a58ff0f9fcb8030c"
-  integrity sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==
+typescript@^5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.0.4.tgz#b217fd20119bd61a94d4011274e0ab369058da3b"
+  integrity sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==
 
 undefsafe@^2.0.3:
   version "2.0.5"
