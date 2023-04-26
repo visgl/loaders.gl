@@ -21,49 +21,55 @@ import {WMSLayerDescriptionLoader} from '../../../wip/wms-layer-description-load
 import type {WMSLoaderOptions} from '../../../wms-error-loader';
 import {WMSErrorLoader} from '../../../wms-error-loader';
 
-/** Static WMS parameters (not viewport or selected pixel dependent) that can be provided as defaults */
+/**
+ * "Static" WMS parameters (not viewport or selected pixel dependent)
+ * These can be provided as defaults in the WMSService constructor
+ */
 export type WMSParameters = {
-  /** WMS version */
+  /** WMS version (all requests) */
   version?: '1.3.0' | '1.1.1';
-  /** Layers to render */
+  /** Layers to render (GetMap, GetFeatureInfo) */
   layers?: string[];
+  /** list of layers to query.. (GetFeatureInfo) */
+  query_layers?: string[];
+
   /** Coordinate Reference System (CRS) for the image (not the bounding box) */
   crs?: string;
-  /** Requested format for the return image */
+  /** Requested format for the return image (GetMap, GetLegendGraphic) */
   format?: 'image/png';
-  /** Requested MIME type of returned feature info */
+  /** Requested MIME type of returned feature info (GetFeatureInfo) */
   info_format?: 'text/plain' | 'application/geojson' | 'application/vnd.ogc.gml';
   /** Styling - Not yet supported */
   styles?: unknown;
-  /** Any additional parameters specific to this WMSService */
+  /** Any additional parameters specific to this WMSService (GetMap) */
   transparent?: boolean;
 };
 
-type WMSCommonParameters = {
+/** Parameters for GetCapabilities */
+export type WMSGetCapabilitiesParameters = {
   /** In case the endpoint supports multiple WMS versions */
   version?: '1.3.0' | '1.1.1';
 };
 
-/** Parameters for GetCapabilities */
-export type WMSGetCapabilitiesParameters = WMSCommonParameters;
-
 /** Parameters for GetMap */
-export type WMSGetMapParameters = WMSCommonParameters & {
-  /** Layers to render */
-  layers: string | string[];
+export type WMSGetMapParameters = {
+  /** In case the endpoint supports multiple WMS versions */
+  version?: '1.3.0' | '1.1.1';
   /** bounding box of the requested map image */
   bbox: [number, number, number, number];
   /** pixel width of returned image */
   width: number;
   /** pixels */
   height: number;
-  /** Coordinate Reference System for the image (not the bounding box). */
+  /** Layers to render - can be provided in service constructor */
+  layers?: string | string[];
+  /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
   crs?: string;
-  /** Styling */
+  /** Styling. can be provided in service constructor */
   styles?: unknown;
-  /** Don't render background when no data */
+  /** Don't render background when no data. can be provided in service constructor */
   transparent?: boolean;
-  /** requested format for the return image */
+  /** requested format for the return image. can be provided in service constructor */
   format?: 'image/png';
 };
 
@@ -71,18 +77,19 @@ export type WMSGetMapParameters = WMSCommonParameters & {
  * Parameters for GetFeatureInfo
  * @see https://imagery.pasda.psu.edu/arcgis/services/pasda/UrbanTreeCanopy_Landcover/MapServer/WmsServer?SERVICE=WMS&
  */
-export type WMSGetFeatureInfoParameters = WMSCommonParameters & {
+export type WMSGetFeatureInfoParameters = {
+  /** In case the endpoint supports multiple WMS versions */
+  version?: '1.3.0' | '1.1.1';
   /** x coordinate for the feature info request */
   x: number;
   /** y coordinate for the feature info request */
   y: number;
-  /** list of layers to query (could be different from rendered layers) */
-  query_layers: string[];
-  /** Requested MIME type of returned feature info */
+  /** MIME type of returned feature info. Can be specified in service constructor */
   info_format?: 'text/plain' | 'application/geojson' | 'application/vnd.ogc.gml';
-
-  /** Layers to render */
-  layers: string[];
+  /** list of layers to query. Required but can be specified in service constructor. */
+  query_layers?: string[];
+  /** Layers to render. Required, but can be specified in service constructor */
+  layers?: string[];
   /** Styling */
   styles?: unknown;
   /** bounding box of the requested map image */
@@ -92,16 +99,22 @@ export type WMSGetFeatureInfoParameters = WMSCommonParameters & {
   /** pixels */
   height: number;
   /** srs for the image (not the bounding box) */
-  srs?: string;
+  crs?: string;
   /** requested format for the return image */
   format?: 'image/png';
 };
 
 /** Parameters for DescribeLayer */
-export type WMSDescribeLayerParameters = WMSCommonParameters;
+export type WMSDescribeLayerParameters = {
+  /** In case the endpoint supports multiple WMS versions */
+  version?: '1.3.0' | '1.1.1';
+};
 
 /** Parameters for GetLegendGraphic */
-export type WMSGetLegendGraphicParameters = WMSCommonParameters;
+export type WMSGetLegendGraphicParameters = {
+  /** In case the endpoint supports multiple WMS versions */
+  version?: '1.3.0' | '1.1.1';
+};
 
 //
 
@@ -109,6 +122,9 @@ export type WMSGetLegendGraphicParameters = WMSCommonParameters;
 export type WMSServiceProps = ImageSourceProps & {
   /** Base URL to the service */
   url: string;
+  /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+  substituteCRS84?: boolean;
+
   /** Default WMS parameters. If not provided here, must be provided in the various request */
   wmsParameters?: WMSParameters;
   /** Any additional service specific parameters */
@@ -126,7 +142,12 @@ export class WMSService extends ImageSource {
   static type: 'wms' = 'wms';
   static testURL = (url: string): boolean => url.toLowerCase().includes('wms');
 
+  /** Base URL to the service */
   readonly url: string;
+
+  /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+  substituteCRS84: boolean;
+
   /** Default static WMS parameters */
   wmsParameters: Required<WMSParameters>;
   /** Default static vendor parameters */
@@ -153,8 +174,11 @@ export class WMSService extends ImageSource {
 
     this.url = props.url;
 
+    this.substituteCRS84 = props.substituteCRS84 ?? true;
+
     this.wmsParameters = {
       layers: undefined!,
+      query_layers: undefined!,
       styles: undefined,
       version: '1.3.0',
       crs: 'EPSG:4326',
@@ -174,10 +198,7 @@ export class WMSService extends ImageSource {
   }
 
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
-    // WMS 1.3.0 renamed SRS to CRS (sigh...)
-    const wmsParameters = {...parameters, crs: parameters.srs};
-    delete wmsParameters.srs;
-    return await this.getMap(wmsParameters);
+    return await this.getMap(parameters);
   }
 
   normalizeMetadata(capabilities: WMSCapabilities): ImageSourceMetadata {
@@ -290,14 +311,14 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetMapParameters> = {
       version: this.wmsParameters.version,
-      // layers: [],
+      format: this.wmsParameters.format,
+      transparent: this.wmsParameters.transparent,
+      layers: this.wmsParameters.layers,
+      styles: this.wmsParameters.styles,
+      crs: this.wmsParameters.crs,
       // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
       // width: 1200,
       // height: 900,
-      styles: this.wmsParameters.styles,
-      crs: this.wmsParameters.crs,
-      format: this.wmsParameters.format,
-      transparent: this.wmsParameters.transparent,
       ...wmsParameters
     };
     return this._getWMSUrl('GetMap', options, vendorParameters);
@@ -310,17 +331,18 @@ export class WMSService extends ImageSource {
   ): string {
     const options: Required<WMSGetFeatureInfoParameters> = {
       version: this.wmsParameters.version,
-      // layers: this.props.layers,
+      // query_layers: [],
+      format: this.wmsParameters.format,
+      info_format: this.wmsParameters.info_format,
+      layers: this.wmsParameters.layers,
+      query_layers: this.wmsParameters.query_layers,
+      styles: this.wmsParameters.styles,
+      crs: this.wmsParameters.crs,
       // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
       // width: 1200,
       // height: 900,
       // x: undefined!,
       // y: undefined!,
-      // query_layers: [],
-      srs: this.wmsParameters.crs,
-      format: this.wmsParameters.format,
-      info_format: this.wmsParameters.info_format,
-      styles: this.wmsParameters.styles,
       ...wmsParameters
     };
     return this._getWMSUrl('GetFeatureInfo', options, vendorParameters);
@@ -372,7 +394,7 @@ export class WMSService extends ImageSource {
    * */
   protected _getWMSUrl(
     request: string,
-    wmsParameters: WMSCommonParameters & {[key: string]: unknown},
+    wmsParameters: {version?: '1.3.0' | '1.1.1'; [key: string]: unknown},
     vendorParameters?: Record<string, unknown>
   ): string {
     let url = this.url;
@@ -402,7 +424,19 @@ export class WMSService extends ImageSource {
   }
 
   _getParameterValue(version: string, key: string, value: unknown): string {
-    // SRS parameter changed to CRS in 1.3.0, in non-backwards compatible way (sigh...)
+    switch (version) {
+      case '1.3.0':
+        /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
+        if (this.substituteCRS84 && value === 'EPSG:4326') {
+          value = 'CRS:84';
+        }
+        break;
+      default:
+        // CRS parameter is called SRS pre-1.3.0
+        if (key === 'crs') {
+          key = 'srs';
+        }
+    }
     if (key === 'crs' && version !== '1.3.0') {
       key = 'srs';
     }
@@ -422,6 +456,7 @@ export class WMSService extends ImageSource {
       : `${key}=${value ? String(value) : ''}`;
   }
 
+  /** Fetches an array buffer and checks the response (boilerplate reduction) */
   protected async _fetchArrayBuffer(url: string): Promise<ArrayBuffer> {
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();

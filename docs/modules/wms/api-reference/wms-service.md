@@ -18,7 +18,7 @@ The `WMSService` class provides:
 A `WMSService` instance provides type safe methods to send requests to a WMS service and parse the responses: 
 
 ```typescript
-  const wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParamaters: {layers: ['oms']}});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {layers: ['oms']}});
   const mapImage = await wmsService.getMap({
     width: 800,
     height: 600,
@@ -90,18 +90,20 @@ Creates a `WMSService` instance
 export type WMSServiceProps = {
   url: string; // Base URL to the service
   loadOptions?: LoaderOptions; // Any load options to the loaders.gl Loaders used by the WMSService methods
+  substituteCRS84?: boolean; // In WMS 1.3.0, replaces EPSG:4326 with CRS:84 to ensure lng,lat axis order. Default true.
 
   wmsParameters: {
-    // Default WMS parameters
+    // Default WMS parameters can be provided here
     version?: '1.3.0' | '1.1.1'; /** WMS version */
     layers?: string[]; /** Layers to render */
+    query_layers?: string[]; /** Layers to query */
     crs?: string; /** CRS for the image (not the bounding box) */
     format?: 'image/png'; /** Requested format for the return image */
     info_format?: 'text/plain' | 'application/vnd.ogc.gml'; /** Requested MIME type of returned feature info */
     styles?: unknown; /** Styling */
     transparent?: boolean; /** Render transparent pixels if no data */
   },
-  vendor PAra
+  vendorParameters
 };
 ```
 

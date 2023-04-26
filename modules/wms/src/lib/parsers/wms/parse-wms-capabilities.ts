@@ -340,6 +340,7 @@ function extractWMSBoundingBox(xmlBoundingBox: any): WMSBoundingBox {
 }
 
 /** Traverse layers and inject missing props from parents */
+// eslint-disable-next-line complexity
 function addInheritedLayerProps(layer: WMSLayer, parent: WMSLayer | null): void {
   if (parent && parent.geographicBoundingBox && !layer.geographicBoundingBox) {
     layer.geographicBoundingBox = [...parent.geographicBoundingBox];
