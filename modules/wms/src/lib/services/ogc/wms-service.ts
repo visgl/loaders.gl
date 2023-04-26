@@ -21,9 +21,9 @@ import {WMSLayerDescriptionLoader} from '../../../wip/wms-layer-description-load
 import type {WMSLoaderOptions} from '../../../wms-error-loader';
 import {WMSErrorLoader} from '../../../wms-error-loader';
 
-/** 
- * "Static" WMS parameters (not viewport or selected pixel dependent) 
- * These can be provided as defaults in the WMSService constructor 
+/**
+ * "Static" WMS parameters (not viewport or selected pixel dependent)
+ * These can be provided as defaults in the WMSService constructor
  */
 export type WMSParameters = {
   /** WMS version (all requests) */
@@ -32,7 +32,7 @@ export type WMSParameters = {
   layers?: string[];
   /** list of layers to query.. (GetFeatureInfo) */
   query_layers?: string[];
-  
+
   /** Coordinate Reference System (CRS) for the image (not the bounding box) */
   crs?: string;
   /** Requested format for the return image (GetMap, GetLegendGraphic) */
@@ -108,13 +108,13 @@ export type WMSGetFeatureInfoParameters = {
 export type WMSDescribeLayerParameters = {
   /** In case the endpoint supports multiple WMS versions */
   version?: '1.3.0' | '1.1.1';
-}
+};
 
 /** Parameters for GetLegendGraphic */
 export type WMSGetLegendGraphicParameters = {
   /** In case the endpoint supports multiple WMS versions */
   version?: '1.3.0' | '1.1.1';
-}
+};
 
 //
 
@@ -394,7 +394,7 @@ export class WMSService extends ImageSource {
    * */
   protected _getWMSUrl(
     request: string,
-    wmsParameters: {version?: '1.3.0' | '1.1.1', [key: string]: unknown},
+    wmsParameters: {version?: '1.3.0' | '1.1.1'; [key: string]: unknown},
     vendorParameters?: Record<string, unknown>
   ): string {
     let url = this.url;

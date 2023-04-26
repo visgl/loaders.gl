@@ -35,7 +35,10 @@ test('WMSService#getMapURL', async (t) => {
     'getMapURL layers in params'
   );
 
-  wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {layers: ['oms'], crs: 'EPSG:3857'}});
+  wmsService = new WMSService({
+    url: WMS_SERVICE_URL,
+    wmsParameters: {layers: ['oms'], crs: 'EPSG:3857'}
+  });
   getMapUrl = wmsService.getMapURL({
     width: 800,
     height: 600,
@@ -80,7 +83,10 @@ test('WMSService#getLegendGraphicURL', async (t) => {
 });
 
 test('WMSService#WMS versions', async (t) => {
-  const wms111Service = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {version: '1.1.1', layers: ['oms']}});
+  const wms111Service = new WMSService({
+    url: WMS_SERVICE_URL,
+    wmsParameters: {version: '1.1.1', layers: ['oms']}
+  });
   let getMapUrl = wms111Service.getMapURL({
     width: 800,
     height: 600,
@@ -91,7 +97,10 @@ test('WMSService#WMS versions', async (t) => {
     'https:/mock-wms-service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&LAYERS=oms&STYLES=&SRS=EPSG:4326&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75',
     'getMapURL replaces CRS with SRS in WMS 1.1.1'
   );
-  const wms130Service = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {version: '1.3.0', layers: ['oms']}});
+  const wms130Service = new WMSService({
+    url: WMS_SERVICE_URL,
+    wmsParameters: {version: '1.3.0', layers: ['oms']}
+  });
   getMapUrl = wms130Service.getMapURL({
     width: 800,
     height: 600,
