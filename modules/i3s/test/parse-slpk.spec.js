@@ -1,9 +1,9 @@
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {SlpkLoader} from '../src';
-import LocalFileHeader from '../src/parse-slpk/local-file-header';
-import {DATA_ARRAY} from './test.zip.js';
-import CDFileHeader from '../src/parse-slpk/cd-file-header';
+import LocalFileHeader from '../src/lib/parsers/parse-slpk/local-file-header';
+import {DATA_ARRAY} from './data/test.zip.js';
+import CDFileHeader from '../src/lib/parsers/parse-slpk/cd-file-header';
 
 test('SlpkLoader#slpk load', async (t) => {
   const slpkUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';

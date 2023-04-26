@@ -1,5 +1,5 @@
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {parceSlpk} from './parse-slpk';
+import {parceSlpk} from './lib/parsers/parse-slpk';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
