@@ -12,12 +12,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const TILESET_REGEX = /layers\/[0-9]+$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
+const SLPK_HEX = '504b0304';
 const POINT_CLOUD = 'PointCloud';
 
 export type I3SLoaderOptions = LoaderOptions & {
   i3s?: I3SParseOptions;
-  path?: string;
-  mode?: 'http' | 'raw';
 };
 
 /**
@@ -52,6 +51,12 @@ export const I3SLoader: LoaderWithParser = {
 async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
   const url = context.url;
   options.i3s = options.i3s || {};
+  const magicNumber = getMagicNumber(data);
+
+  // check if file is slpk
+  if (magicNumber === SLPK_HEX) {
+    throw new Error('Files with .slpk extention currently are not supported by I3SLoader');
+  }
 
   // auto detect file type based on url
   let isTileset;
@@ -99,4 +104,14 @@ async function parseTileset(data, options: I3SLoaderOptions, context) {
 async function parseTile(data, context) {
   data = JSON.parse(new TextDecoder().decode(data));
   return normalizeTileData(data, context);
+}
+
+function getMagicNumber(data) {
+  if (data instanceof ArrayBuffer) {
+    // slice binary data (4 bytes from the beginning) and transform it to hexadecimal numeral system
+    return [...new Uint8Array(data, 0, 4)]
+      .map((value) => value.toString(16).padStart(2, '0'))
+      .join('');
+  }
+  return null;
 }

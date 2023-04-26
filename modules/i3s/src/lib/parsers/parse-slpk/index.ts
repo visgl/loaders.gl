@@ -1,3 +1,4 @@
+import {SlpkLoaderOptions} from 'modules/i3s/src/i3s-slpk-loader';
 import CDFileHeader from './cd-file-header';
 import LocalFileHeader from './local-file-header';
 import SlpkArchieve from './slpk-archieve';
@@ -6,7 +7,7 @@ const getByteAt = (offset: number, buffer: DataView) => {
   return buffer.getUint8(buffer.byteOffset + offset);
 };
 
-export async function parceSlpk(data: ArrayBuffer, options: any = {}) {
+export async function parceSlpk(data: ArrayBuffer, options: SlpkLoaderOptions = {}) {
   const slpkArchieve = new DataView(data);
 
   const searchWindow = [
