@@ -1,4 +1,4 @@
-# GML Overview
+# GML - Geography Markup Language
 
 The Geography Markup Language (GML) [wikpedia](https://en.wikipedia.org/wiki/Geography_Markup_Language) is an XML grammar defined by the Open Geospatial Consortium (OGC) to express geographical features. 
 

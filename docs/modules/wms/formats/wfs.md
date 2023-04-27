@@ -1,4 +1,4 @@
-# WFS Overview
+# WFS - Web Feature Service
 
 [WFS](https://en.wikipedia.org/wiki/Web_Feature_Service) (Web Feature Service) is a standardized protocol for serving geographical *features** over the internet.
 

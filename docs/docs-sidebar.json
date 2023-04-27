@@ -116,7 +116,23 @@
   },
   {
     "type": "category",
-    "label": "API Reference",
+    "label": "Formats",
+    "items": [
+      "modules/bson/formats/bson",
+      "modules/wms/formats/wms",
+      "modules/wms/formats/csw",
+      "modules/wms/formats/wmts",
+      "modules/wms/formats/wfs",
+      "modules/wms/formats/gml",
+      "modules/wms/formats/lerc",
+      "modules/parquet/formats/parquet",
+      "modules/parquet/formats/geoparquet",
+      "modules/xml/formats/xml",
+      "modules/xml/formats/html"
+    ]
+  },
+  {
+    "type": "category",
     "label": "Submodule API Reference",
     "items": [
       {
@@ -324,13 +340,7 @@
           "modules/wms/README",
           "modules/wms/api-reference/csw-service",
           "modules/wms/api-reference/wms-service",
-          "modules/wms/api-reference/wms-capabilities-loader",
-          "modules/wms/formats/wms",
-          "modules/wms/formats/csw",
-          "modules/wms/formats/wmts",
-          "modules/wms/formats/wfs",
-          "modules/wms/formats/gml",
-          "modules/wms/formats/lerc"
+          "modules/wms/api-reference/wms-capabilities-loader"
         ]
       },
       {
