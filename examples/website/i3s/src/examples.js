@@ -1,3 +1,6 @@
+import {MapView} from '@deck.gl/core';
+import {MAP_STYLES} from './constants';
+
 const VIEW_STATE = {
   height: 600,
   width: 800,
@@ -58,3 +61,29 @@ export const EXAMPLES = {
     }
   }
 };
+
+// HERO EXAMPLE CONSTANTS
+export const HERO_EXAMPLE_MAP_STYLE = MAP_STYLES['Light'];
+export const HERO_EXAMPLE_URL =
+  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17/SceneServer/layers/0';
+
+export const HERO_EXAMPLE_VIEW_STATE = {
+  longitude: -73,
+  latitude: 45,
+  height: 600,
+  width: 800,
+  pitch: 30,
+  bearing: 0,
+  zoom: 16.7
+};
+
+export const HERO_EXAMPLE_VIEW = new MapView({
+  id: 'main',
+  controller: {
+    inertia: true,
+    dragPan: false,
+    dragRotate: false,
+    scrollZoom: false
+  },
+  farZMultiplier: 2.02
+});
