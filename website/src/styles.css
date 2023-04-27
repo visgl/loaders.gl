@@ -59,3 +59,16 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 .backToTopButton_node_modules-\@docusaurus-theme-classic-lib-theme-BackToTopButton-styles-module {
   box-shadow: var(--ifm-global-shadow-md) !important;
 }
+/* map labels style overwrite */
+#view-main > div > div.maplibregl-control-container.mapboxgl-control-container > div.maplibregl-ctrl-bottom-right.mapboxgl-ctrl-bottom-right > details {
+  position: absolute !important;
+  bottom: 0;
+  right: 0;
+  font-size: 12px;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 0 5px;
+}
+
+#view-main > div > div.maplibregl-control-container.mapboxgl-control-container > div.maplibregl-ctrl-bottom-right.mapboxgl-ctrl-bottom-right > details > summary {
+  display: none !important;
+}

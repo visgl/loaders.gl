@@ -1,13 +1,18 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
-
 import styled from 'styled-components';
 
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator, COORDINATE_SYSTEM, MapView} from '@deck.gl/core';
+import {
+  MapController,
+  FlyToInterpolator,
+  COORDINATE_SYSTEM,
+  MapView,
+  LinearInterpolator
+} from '@deck.gl/core';
 import {TerrainLayer, Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
@@ -17,15 +22,37 @@ import AttributesPanel from './components/attributes-panel';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './utils/url-utils';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
-import {INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
-import {INITIAL_MAP_STYLE} from './constants';
 import {Color, Flex, Font} from './components/styles';
 import {load} from '@loaders.gl/core';
 import {buildSublayersTree} from './helpers/sublayers';
 import {initStats, sumTilesetsStats} from './helpers/stats';
 import {getElevationByCentralTile} from './helpers/terrain-elevation';
+import {INITIAL_MAP_STYLE} from './constants';
+import {
+  INITIAL_EXAMPLE_NAME,
+  EXAMPLES,
+  HERO_EXAMPLE_VIEW_STATE,
+  HERO_EXAMPLE_MAP_STYLE,
+  HERO_EXAMPLE_VIEW,
+  HERO_EXAMPLE_URL
+} from './examples';
 
-const TRANSITION_DURAITON = 4000;
+export const TRANSITION_DURAITON = 4000;
+
+const MAP_CONTROLLER = {
+  type: MapController,
+  maxPitch: 60,
+  inertia: true,
+  scrollZoom: {speed: 0.01, smooth: true}
+};
+
+const MAIN_VIEW = new MapView({
+  id: 'main',
+  controller: {
+    inertia: true
+  },
+  farZMultiplier: 2.02
+});
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -40,13 +67,8 @@ const INITIAL_VIEW_STATE = {
   zoom: 14.5
 };
 
-const VIEW = new MapView({
-  id: 'main',
-  controller: {inertia: true},
-  farZMultiplier: 2.02
-});
-
 // https://github.com/tilezen/joerd/blob/master/docs/use-service.md#additional-amazon-s3-endpoints
+// constants for terrain layer
 const MAPZEN_TERRAIN_IMAGES = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`;
 const ARCGIS_STREET_MAP_SURFACE_IMAGES =
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -99,8 +121,8 @@ class App extends PureComponent {
       url: null,
       token: null,
       name: INITIAL_EXAMPLE_NAME,
-      viewState: INITIAL_VIEW_STATE,
-      selectedMapStyle: INITIAL_MAP_STYLE,
+      viewState: this.props.heroExample ? HERO_EXAMPLE_VIEW_STATE : INITIAL_VIEW_STATE,
+      selectedMapStyle: this.props.heroExample ? HERO_EXAMPLE_MAP_STYLE : INITIAL_MAP_STYLE,
       selectedFeatureAttributes: null,
       selectedFeatureIndex: -1,
       selectedTilesetBasePath: null,
@@ -142,6 +164,8 @@ class App extends PureComponent {
     const tilesetUrl = parseTilesetUrlFromUrl();
     if (tilesetUrl) {
       tileset = {url: tilesetUrl};
+    } else if (this.props.heroExample) {
+      tileset = {url: HERO_EXAMPLE_URL};
     } else {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
@@ -188,6 +212,26 @@ class App extends PureComponent {
     const {tilesetsStats} = this.state;
     sumTilesetsStats(this._loadedTilesets, tilesetsStats);
     this._tilesetStatsWidget.update();
+  }
+
+  _rotateCamera() {
+    const {
+      viewState: {bearing}
+    } = this.state;
+
+    const viewState = {
+      ...this.state.viewState
+    };
+
+    this.setState({
+      viewState: {
+        ...viewState,
+        bearing: bearing + 30,
+        transitionDuration: 10000,
+        transitionInterpolator: new LinearInterpolator(['bearing']),
+        onTransitionEnd: this._rotateCamera.bind(this)
+      }
+    });
   }
 
   _onTilesetLoad(tileset) {
@@ -239,19 +283,30 @@ class App extends PureComponent {
 
       const viewState = {
         ...this.state.viewState,
-        zoom: zoom + 2.5,
         longitude: pLongitue,
         latitude: pLatitude
       };
 
-      this.setState({
-        tileset,
-        viewState: {
-          ...viewState,
-          transitionDuration: TRANSITION_DURAITON,
-          transitionInterpolator: new FlyToInterpolator()
-        }
-      });
+      if (this.props.heroExample) {
+        this.setState({
+          tileset,
+          viewState: {
+            ...viewState,
+            onTransitionEnd: this._rotateCamera()
+          }
+        });
+      } else {
+        this.setState({
+          tileset,
+          viewState: {
+            ...viewState,
+            zoom: zoom + 2.5,
+            transitionDuration: TRANSITION_DURAITON,
+            transitionInterpolator: new FlyToInterpolator()
+          }
+        });
+      }
+
       this.needTransitionToTileset = false;
     }
   }
@@ -324,7 +379,9 @@ class App extends PureComponent {
   _isLayerPickable() {
     const {tileset} = this.state;
     const layerType = tileset?.tileset?.layerType;
-
+    if (this.props.heroExample) {
+      return false;
+    }
     switch (layerType) {
       case 'IntegratedMesh':
         return false;
@@ -505,14 +562,9 @@ class App extends PureComponent {
         <DeckGL
           layers={layers}
           viewState={viewState}
-          views={[VIEW]}
+          views={[!this.props.heroExample ? MAIN_VIEW : HERO_EXAMPLE_VIEW]}
           onViewStateChange={this._onViewStateChange.bind(this)}
-          controller={{
-            type: MapController,
-            maxPitch: 60,
-            inertia: true,
-            scrollZoom: {speed: 0.01, smooth: true}
-          }}
+          controller={!this.props.heroExample ? MAP_CONTROLLER : false}
           onAfterRender={() => this._updateStatWidgets()}
           getTooltip={(info) => this.getTooltip(info)}
           onClick={(info) => this.handleClick(info)}
@@ -520,20 +572,30 @@ class App extends PureComponent {
           {({viewport}) => {
             this.currentViewport = viewport;
           }}
-          {!useTerrainLayer &&  <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
-}
+          {!useTerrainLayer && (
+            <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
+          )}
         </DeckGL>
       </div>
     );
   }
 }
 
-const appFactory = (AppComponent, extraProps: {hideControlPanel?: boolean, hideStats?: boolean}) => {
+const appFactory = (
+  AppComponent,
+  extraProps: {hideControlPanel?: boolean; hideStats?: boolean; heroExample?: boolean}
+) => {
   return (props) => <AppComponent {...props} {...extraProps} />;
 };
 
 export const AppWithPanels = appFactory(App, {});
 export const BareApp = appFactory(App, {hideControlPanel: true, hideStats: true});
+// app for hero example (website: main page)
+export const HeroExample = appFactory(App, {
+  hideControlPanel: true,
+  hideStats: true,
+  heroExample: true
+});
 export function renderToDOM(container) {
   render(<AppWithPanels />, container);
 }
