@@ -32,6 +32,7 @@ function makeAliases(basename = __dirname) {
     '@loaders.gl/parquet/test': resolve(basename, '../modules/parquet/test'),
     '@loaders.gl/pcd/test': resolve(basename, '../modules/pcd/test'),
     '@loaders.gl/ply/test': resolve(basename, '../modules/ply/test'),
+    '@loaders.gl/pmtiles/test': resolve(basename, '../modules/pmtiles/test'),
     '@loaders.gl/polyfills/test': resolve(basename, '../modules/polyfills/test'),
     '@loaders.gl/potree/test': resolve(basename, '../modules/potree/test'),
     '@loaders.gl/shapefile/test': resolve(basename, '../modules/shapefile/test'),

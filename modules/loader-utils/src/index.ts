@@ -118,7 +118,8 @@ export {fs};
 import * as stream from './lib/node/stream';
 export {stream};
 
-// EXPERIMENTAL
+// EXPERIMENTAL: FILE SYSTEMS
+
 export type {FileSystem, RandomAccessReadFileSystem} from './lib/filesystems/filesystem';
 export {NodeFileSystem as _NodeFileSystem} from './lib/filesystems/node-filesystem';
 
@@ -134,3 +135,18 @@ export {makeReadableFile} from './lib/filesystems/readable-file';
 
 export type {WritableFile} from './lib/filesystems/writable-file';
 export {makeWritableFile} from './lib/filesystems/writable-file';
+
+// EXPERIMENTAL: DATA SOURCES
+export type {DataSourceProps} from './lib/sources/data-source';
+export {DataSource} from './lib/sources/data-source';
+
+export type {ImageType} from './lib/sources/image-source';
+export type {ImageSourceProps, ImageSourceMetadata} from './lib/sources/image-source';
+export type {GetImageParameters} from './lib/sources/image-source';
+export {ImageSource} from './lib/sources/image-source';
+
+export type {TileSourceProps, TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
+export {TileSource} from './lib/sources/tile-source';
+
+export type {ImageTileSourceProps} from './lib/sources/image-tile-source';
+export {ImageTileSource} from './lib/sources/image-tile-source';

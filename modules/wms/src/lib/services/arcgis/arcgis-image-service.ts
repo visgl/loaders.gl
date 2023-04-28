@@ -1,9 +1,9 @@
 // loaders.gl, MIT license
 
 import {ImageType} from '@loaders.gl/images';
-import type {ImageSourceMetadata, GetImageParameters} from '../../sources/image-source';
-import type {ImageSourceProps} from '../../sources/image-source';
-import {ImageSource} from '../../sources/image-source';
+import type {ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
+import type {ImageSourceProps} from '@loaders.gl/loader-utils';
+import {ImageSource} from '@loaders.gl/loader-utils';
 
 export type ArcGISImageServerProps = ImageSourceProps & {
   url: string;

@@ -13,8 +13,8 @@ export type ZipEoCDRecord = {
 };
 
 const eoCDSignature: ZipSignature = [0x50, 0x4b, 0x05, 0x06];
-const zip64EoCDLocatorSignature = Buffer.from([0x50, 0x4b, 0x06, 0x07]);
-const zip64EoCDSignature = Buffer.from([0x50, 0x4b, 0x06, 0x06]);
+const zip64EoCDLocatorSignature = [0x50, 0x4b, 0x06, 0x07];
+const zip64EoCDSignature = [0x50, 0x4b, 0x06, 0x06];
 
 // offsets accroding to https://en.wikipedia.org/wiki/ZIP_(file_format)
 const CD_RECORDS_NUMBER_OFFSET = 8n;
@@ -42,7 +42,7 @@ export const parseEoCDRecord = async (fileProvider: FileProvider): Promise<ZipEo
     if (
       Buffer.from(
         await fileProvider.slice(zip64EoCDLocatorOffset, zip64EoCDLocatorOffset + 4n)
-      ).compare(zip64EoCDLocatorSignature) !== 0
+      ).compare(Buffer.from(zip64EoCDLocatorSignature)) !== 0
     ) {
       throw new Error('zip64 EoCD locator not found');
     }
@@ -52,7 +52,7 @@ export const parseEoCDRecord = async (fileProvider: FileProvider): Promise<ZipEo
 
     if (
       Buffer.from(await fileProvider.slice(zip64EoCDOffset, zip64EoCDOffset + 4n)).compare(
-        zip64EoCDSignature
+        Buffer.from(zip64EoCDSignature)
       ) !== 0
     ) {
       throw new Error('zip64 EoCD not found');

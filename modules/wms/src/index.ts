@@ -54,8 +54,6 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 // EXPERIMENTAL: DATA SOURCES
 
 export type {ImageType} from '@loaders.gl/images';
-export type {ImageSourceProps, ImageSourceMetadata} from './lib/sources/image-source';
-export {ImageSource} from './lib/sources/image-source';
 
 export type {ImageServiceType} from './lib/create-image-source';
 export {createImageSource} from './lib/create-image-source';
@@ -82,3 +80,6 @@ export {ArcGISImageServer as _ArcGISImageServer} from './lib/services/arcgis/arc
 
 /** @deprecated Use WMSCapabilitiesLoaderOptions */
 export type {WMSCapabilitiesLoaderOptions as WMSLoaderOptions} from './wms-capabilities-loader';
+
+// TODO - restore once deck.gl has been udpated
+export {ImageSource} from '@loaders.gl/loader-utils';

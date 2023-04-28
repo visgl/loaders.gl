@@ -20,6 +20,7 @@
       label: 'Geospatial Loaders',
       items: [
         'geospatial',
+        'pmtiles',
         'wms'
       ],
     },

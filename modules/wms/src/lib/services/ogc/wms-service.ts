@@ -5,9 +5,9 @@ import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 
-import type {ImageSourceMetadata, GetImageParameters} from '../../sources/image-source';
-import type {ImageSourceProps} from '../../sources/image-source';
-import {ImageSource} from '../../sources/image-source';
+import type {ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
+import type {ImageSourceProps} from '@loaders.gl/loader-utils';
+import {ImageSource} from '@loaders.gl/loader-utils';
 
 import type {WMSCapabilities} from '../../../wms-capabilities-loader';
 import type {WMSFeatureInfo} from '../../../wip/wms-feature-info-loader';
@@ -498,7 +498,7 @@ export class WMSService extends ImageSource<WMSServiceProps> {
         break;
 
       default:
-      // do nothing
+        // do nothing
     }
 
     key = key.toUpperCase();

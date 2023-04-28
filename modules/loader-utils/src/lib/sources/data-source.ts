@@ -2,6 +2,7 @@
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 
+/** Common properties for all data sources */
 export type DataSourceProps = {
   /** LoaderOptions provide an option to override `fetch`. Will also be passed to any sub loaders */
   loadOptions?: LoaderOptions;

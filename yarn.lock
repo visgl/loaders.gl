@@ -1961,6 +1961,15 @@
   dependencies:
     "@loaders.gl/loader-utils" "3.4.14"
 
+"@loaders.gl/loader-utils@3.4.0-alpha.3":
+  version "3.4.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.4.0-alpha.3.tgz#a4a6e5acc1075988b3b88fb6a889f8cd71c39fc4"
+  integrity sha512-/7si5ZbeuB2DX7kuZ2Egir/0OAL4qbIqYOs90vj+jarEbEflsedete/TPrjsdVwKLFT7RfDQPohTqMVEy9hdEg==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    "@loaders.gl/worker-utils" "3.4.0-alpha.3"
+    "@probe.gl/stats" "^4.0.1"
+
 "@loaders.gl/loader-utils@3.4.14":
   version "3.4.14"
   resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.4.14.tgz#d94decc279fd2304b8762c87d8d9626058d91f21"
@@ -1969,6 +1978,20 @@
     "@babel/runtime" "^7.3.1"
     "@loaders.gl/worker-utils" "3.4.14"
     "@probe.gl/stats" "^4.0.1"
+
+"@loaders.gl/schema@3.4.0-alpha.3":
+  version "3.4.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-3.4.0-alpha.3.tgz#c97fa3c553e0fbddb6ff6497cc59e78f9781181d"
+  integrity sha512-syMpg7GHGS1o82PH884AhV9RualUfXs7Hul0B3y/T3jBv2Z60nzxpsRlQcqJ9r1vJE0q8ZimQGpAsccQcSdMRA==
+  dependencies:
+    "@types/geojson" "^7946.0.7"
+
+"@loaders.gl/worker-utils@3.4.0-alpha.3":
+  version "3.4.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.4.0-alpha.3.tgz#15deba3310b1bbe2933b2816b08c26e5fe211888"
+  integrity sha512-Ifxvm6g8v5KdJk5mwN5xG2lYNRozB9svgRcnJQyoyf3NJd1K+Dq4SRatAHxzGzbmpTa6dm8TLgK8cYF/78++BA==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
 
 "@loaders.gl/worker-utils@3.4.14":
   version "3.4.14"
@@ -6264,6 +6287,11 @@ fflate@0.7.4:
   resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.7.4.tgz#61587e5d958fdabb5a9368a302c25363f4f69f50"
   integrity sha512-5u2V/CDW15QM1XbbgS+0DfPxVB+jUKhWEKuuFuHncbk3tEEqzmoXL+2KyOFuKGqOnmdIy0/davWF1CkuwtibCw==
 
+fflate@^0.8.0:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.8.1.tgz#1ed92270674d2ad3c73f077cd0acf26486dae6c9"
+  integrity sha512-/exOvEuc+/iaUm105QIiOt4LpBdMTWsXxqR0HDF35vx3fmaKzw7354gTilCh5rkzEt8WYyG//ku3h3nRmd7CHQ==
+
 figgy-pudding@^3.4.1, figgy-pudding@^3.5.1:
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/figgy-pudding/-/figgy-pudding-3.5.2.tgz#b4eee8148abb01dcf1d1ac34367d59e12fa61d6e"
@@ -10184,6 +10212,13 @@ pkg-dir@^4.1.0:
   integrity sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==
   dependencies:
     find-up "^4.0.0"
+
+pmtiles@^2.7.2:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/pmtiles/-/pmtiles-2.10.0.tgz#894e2954723924add7dd9637c89c0329ffe62501"
+  integrity sha512-X+s6JyperpcAkKwv55MKx72ckOUB0ZjcfK4929iM0SS0MkLydEi2FSW1E8YTE1E2XaZ2TVk/MIUrbsZuXV7K2g==
+  dependencies:
+    fflate "^0.8.0"
 
 pngjs-nozlib@^1.0.0:
   version "1.0.0"

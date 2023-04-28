@@ -1,0 +1,40 @@
+{
+  "name": "@loaders.gl/pmtiles",
+  "version": "3.4.0-alpha.3",
+  "description": "Framework-independent loader for the pmtiles format",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "3d",
+    "mesh",
+    "point cloud",
+    "PCD"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle",
+    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "3.4.0-alpha.3",
+    "@loaders.gl/schema": "3.4.0-alpha.3",
+    "pmtiles": "^2.7.2"
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+}

@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import {ImageSource} from './sources/image-source';
+import {ImageSource} from '@loaders.gl/loader-utils';
 import {ImageService, ImageServiceProps} from './services/generic/image-service';
 import type {WMSServiceProps} from './services/ogc/wms-service';
 import {WMSService} from './services/ogc/wms-service';
