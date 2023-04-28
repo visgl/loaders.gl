@@ -72,3 +72,7 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 #view-main > div > div.maplibregl-control-container.mapboxgl-control-container > div.maplibregl-ctrl-bottom-right.mapboxgl-ctrl-bottom-right > details > summary {
   display: none !important;
 }
+
+#docusaurus_skipToContent_fallback > section > div.styled__Container-sc-exnbu5-1.styled__BannerContainer-sc-exnbu5-2.gMcHAv.fYMkHs > h1 {
+  text-shadow: 0 0 5px #FFF, 0 0 5px #000;
+}
