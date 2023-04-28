@@ -117,7 +117,7 @@ test('WMSService#WMS versions', async (t) => {
 // TODO - move to image-source.spec.ts
 test('WMSService#fetch override', async (t) => {
   const loadOptions = {fetch: {headers: {Authorization: 'Bearer abc'}}};
-  const wmsService = new WMSService({url: WMS_SERVICE_URL, loadOptions});
+  const wmsService = new WMSService({url: WMS_SERVICE_URL, loadOptions, substituteCRS84: true});
   const generatedUrl = wmsService.getFeatureInfoURL({
     x: 1,
     y: 1,

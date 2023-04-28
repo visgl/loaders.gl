@@ -1,7 +1,6 @@
 // loaders.gl, MIT license
 
 /* eslint-disable camelcase */
-
 import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
@@ -73,6 +72,18 @@ export type WMSGetMapParameters = {
   format?: 'image/png';
 };
 
+/** GetMap parameters that are specific to the current view */
+export type WMSGetMapViewParameters = {
+  /** pixel width of returned image */
+  width: number;
+  /** pixels */
+  height: number;
+  /** bounding box of the requested map image */
+  bbox: [number, number, number, number];
+  /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
+  crs?: string;
+};
+
 /**
  * Parameters for GetFeatureInfo
  * @see https://imagery.pasda.psu.edu/arcgis/services/pasda/UrbanTreeCanopy_Landcover/MapServer/WmsServer?SERVICE=WMS&
@@ -100,8 +111,22 @@ export type WMSGetFeatureInfoParameters = {
   height: number;
   /** srs for the image (not the bounding box) */
   crs?: string;
-  /** requested format for the return image */
-  format?: 'image/png';
+};
+
+/** GetMap parameters that are specific to the current view */
+export type WMSGetFeatureInfoViewParameters = {
+  /** x coordinate for the feature info request */
+  x: number;
+  /** y coordinate for the feature info request */
+  y: number;
+  /** pixel width of returned image */
+  width: number;
+  /** pixels */
+  height: number;
+  /** bounding box of the requested map image */
+  bbox: [number, number, number, number];
+  /** srs for the image (not the bounding box) */
+  crs?: string;
 };
 
 /** Parameters for DescribeLayer */
@@ -138,15 +163,17 @@ export type WMSServiceProps = ImageSourceProps & {
  * - implements the ImageService interface
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class WMSService extends ImageSource {
+export class WMSService extends ImageSource<WMSServiceProps> {
   static type: 'wms' = 'wms';
   static testURL = (url: string): boolean => url.toLowerCase().includes('wms');
 
   /** Base URL to the service */
   readonly url: string;
 
-  /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+  /** In WMS 1.3.0, replaces references to EPSG:4326 with CRS:84. But not always supported. Default: false */
   substituteCRS84: boolean;
+  /** In WMS 1.3.0, flips x,y (lng, lat) coordinates for the supplied coordinate systems. Default: ['ESPG:4326'] */
+  flipCRS: string[];
 
   /** Default static WMS parameters */
   wmsParameters: Required<WMSParameters>;
@@ -174,7 +201,8 @@ export class WMSService extends ImageSource {
 
     this.url = props.url;
 
-    this.substituteCRS84 = props.substituteCRS84 ?? true;
+    this.substituteCRS84 = props.substituteCRS84 ?? false;
+    this.flipCRS = ['EPSG:4326'];
 
     this.wmsParameters = {
       layers: undefined!,
@@ -309,6 +337,7 @@ export class WMSService extends ImageSource {
     wmsParameters: WMSGetMapParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
+    wmsParameters = this._getWMS130Parameters(wmsParameters);
     const options: Required<WMSGetMapParameters> = {
       version: this.wmsParameters.version,
       format: this.wmsParameters.format,
@@ -332,7 +361,7 @@ export class WMSService extends ImageSource {
     const options: Required<WMSGetFeatureInfoParameters> = {
       version: this.wmsParameters.version,
       // query_layers: [],
-      format: this.wmsParameters.format,
+      // format: this.wmsParameters.format,
       info_format: this.wmsParameters.info_format,
       layers: this.wmsParameters.layers,
       query_layers: this.wmsParameters.query_layers,
@@ -416,15 +445,27 @@ export class WMSService extends ImageSource {
       if (key !== 'transparent' || value) {
         url += first ? '?' : '&';
         first = false;
-        url += this._getParameterValue(wmsParameters.version!, key, value);
+        url += this._getParameterValue(key, value, wmsParameters);
       }
     }
 
     return encodeURI(url);
   }
 
-  _getParameterValue(version: string, key: string, value: unknown): string {
-    switch (version) {
+  _getWMS130Parameters<ParametersT extends {crs?: string; srs?: string}>(
+    wmsParameters: ParametersT
+  ): ParametersT {
+    const newParameters = {...wmsParameters};
+    if (newParameters.srs) {
+      newParameters.crs = newParameters.crs || newParameters.srs;
+      delete newParameters.srs;
+    }
+    return newParameters;
+  }
+
+  _getParameterValue(key: string, value: unknown, wmsParameters: WMSParameters): string {
+    // Substitute by value
+    switch (wmsParameters.version) {
       case '1.3.0':
         /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
         if (this.substituteCRS84 && value === 'EPSG:4326') {
@@ -437,8 +478,29 @@ export class WMSService extends ImageSource {
           key = 'srs';
         }
     }
-    if (key === 'crs' && version !== '1.3.0') {
-      key = 'srs';
+
+    // Substitute by key
+    switch (key) {
+      case 'crs':
+        // CRS was called SRS before WMS 1.3.0
+        if (wmsParameters.version !== '1.3.0') {
+          key = 'srs';
+        }
+        break;
+
+      case 'bbox':
+        // Parameter order is flipped for certain CRS in WMS 1.3.0
+        if (
+          wmsParameters.version === '1.3.0' &&
+          Array.isArray(value) &&
+          this.flipCRS.includes(wmsParameters.crs || '')
+        ) {
+          value = [value[1], value[0], value[3], value[2]];
+        }
+        break;
+
+      default:
+      // do nothing
     }
 
     key = key.toUpperCase();

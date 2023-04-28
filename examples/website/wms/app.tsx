@@ -12,7 +12,7 @@ import type {ImageSourceMetadata} from '@loaders.gl/wms';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
-
+  
 import ControlPanel from './components/control-panel';
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
 

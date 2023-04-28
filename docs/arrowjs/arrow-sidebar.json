@@ -1,0 +1,62 @@
+{
+  "type": "category",
+  "label": "Arrow JS",
+  "items": [
+    {
+      "type": "category",
+      "label": "Overview",
+      "items": [
+        "/docs/arrowjs",
+        "/docs/arrowjs/roadmap",
+        "/docs/arrowjs/contributing"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Get Started",
+      "items": [
+        "/docs/arrowjs/get-started/installing",
+        "/docs/arrowjs/get-started/examples"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Developer Guide",
+      "items": [
+        "/docs/arrowjs/developer-guide/big-ints",
+        "/docs/arrowjs/developer-guide/converting-data",
+        "/docs/arrowjs/developer-guide/data-frame-operations",
+        "/docs/arrowjs/developer-guide/data-sources",
+        "/docs/arrowjs/developer-guide/data-types",
+        "/docs/arrowjs/developer-guide/memory-management",
+        "/docs/arrowjs/developer-guide/predicates",
+        "/docs/arrowjs/developer-guide/reading-and-writing",
+        "/docs/arrowjs/developer-guide/tables",
+        "/docs/arrowjs/developer-guide/typescript"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "API Reference",
+      "items": [
+        "/docs/arrowjs/api-reference",
+        "/docs/arrowjs/api-reference/chunked",
+        "/docs/arrowjs/api-reference/column",
+        "/docs/arrowjs/api-reference/data-frame",
+        "/docs/arrowjs/api-reference/data",
+        "/docs/arrowjs/api-reference/dictionary",
+        "/docs/arrowjs/api-reference/field",
+        "/docs/arrowjs/api-reference/predicates",
+        "/docs/arrowjs/api-reference/record-batch-reader",
+        "/docs/arrowjs/api-reference/record-batch-writer",
+        "/docs/arrowjs/api-reference/record-batch",
+        "/docs/arrowjs/api-reference/row",
+        "/docs/arrowjs/api-reference/schema",
+        "/docs/arrowjs/api-reference/table",
+        "/docs/arrowjs/api-reference/types",
+        "/docs/arrowjs/api-reference/vector",
+        "/docs/arrowjs/api-reference/vectors"
+      ]
+    }
+  ]
+}

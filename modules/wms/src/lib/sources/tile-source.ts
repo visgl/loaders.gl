@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 import type {ImageType} from '@loaders.gl/images';
-import {DataSource} from './data-source';
+import {DataSource, DataSourceProps} from './data-source';
 
 /**
  * Normalized capabilities of an Image service
@@ -48,12 +48,14 @@ export type GetTileParameters = {
   format?: 'image/png';
 };
 
+type TileSourceProps = DataSourceProps;
+
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) extents
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export abstract class TileSource extends DataSource {
+export abstract class TileSource<PropsT extends TileSourceProps> extends DataSource<PropsT> {
   abstract getMetadata(): Promise<TileSourceMetadata>;
   abstract getTile(parameters: GetTileParameters): Promise<ImageType>;
 }

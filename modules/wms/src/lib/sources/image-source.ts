@@ -74,7 +74,7 @@ export type ImageSourceProps = DataSourceProps;
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export abstract class ImageSource extends DataSource {
+export abstract class ImageSource<PropsT extends ImageSourceProps> extends DataSource<PropsT> {
   abstract getMetadata(): Promise<ImageSourceMetadata>;
   abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
 }

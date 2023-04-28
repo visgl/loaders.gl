@@ -8,8 +8,14 @@
 
  Create as many sidebars as you want.
  */
-const sidebars = {
-  tutorialSidebar: require('../../docs/docs-sidebar.json')
+ const tutorialSidebar = require('../../docs/docs-sidebar.json');
+
+ // Add ArrowJS sidebar
+// const arrowSidebar = require('../../docs/arrowjs/arrow-sidebar.json');
+// tutorialSidebar.push(arrowSidebar);
+
+ const sidebars = {
+  tutorialSidebar
 };
 
 module.exports = sidebars;
