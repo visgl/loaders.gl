@@ -3,7 +3,7 @@
 import type {Schema} from '../../../types/schema';
 import type {TableBatch} from '../../../types/category-table';
 // import type {ArrayRowTableBatch, ObjectRowTableBatch} from '../../category/table';
-import {convertToArrayRow, convertToObjectRow} from '../utilities/row-utils';
+import {convertToArrayRow, convertToObjectRow} from '../simple-table/row-utils';
 import {TableBatchAggregator, TableBatchOptions} from './table-batch-aggregator';
 
 const DEFAULT_ROW_COUNT = 100;

@@ -2,7 +2,7 @@
 
 import {MeshAttribute, MeshAttributes} from '../../types/category-mesh';
 import {Schema, Field} from '../../types/schema';
-import {getArrowType} from '../table/utilities/arrow-type-utils';
+import {getDataTypeFromTypedArray} from '../table/simple-table/data-type';
 
 /**
  * Create a schema for mesh attributes data
@@ -30,7 +30,7 @@ export function deduceMeshField(
   attribute: MeshAttribute,
   optionalMetadata?: Record<string, string>
 ): Field {
-  const type = getArrowType(attribute.value);
+  const type = getDataTypeFromTypedArray(attribute.value);
   const metadata = optionalMetadata ? optionalMetadata : makeMeshAttributeMetadata(attribute);
   return {
     name,

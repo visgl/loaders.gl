@@ -19,7 +19,7 @@ test('TerrainLoader#loader objects', async (t) => {
 });
 
 test('TerrainLoader#parse mapbox martini', async (t) => {
-  const options = {
+  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 65536 * 0.1,
@@ -31,8 +31,7 @@ test('TerrainLoader#parse mapbox martini', async (t) => {
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'martini'
     }
-  };
-  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, options);
+  });
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
@@ -50,7 +49,7 @@ test('TerrainLoader#parse mapbox martini', async (t) => {
 });
 
 test('TerrainLoader#add skirt to mapbox martini', async (t) => {
-  const options = {
+  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 65536 * 0.1,
@@ -63,8 +62,7 @@ test('TerrainLoader#add skirt to mapbox martini', async (t) => {
       tesselator: 'martini',
       skirtHeight: 50
     }
-  };
-  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, options);
+  });
   t.equal(data.indices.value.length, 105434 * 3, 'indices was found');
   t.equal(data.attributes.TEXCOORD_0.value.length, 53966 * 2, 'TEXCOORD_0 attribute was found');
   t.equal(data.attributes.POSITION.value.length, 53966 * 3, 'POSITION attribute was found');
@@ -72,7 +70,7 @@ test('TerrainLoader#add skirt to mapbox martini', async (t) => {
 });
 
 test('TerrainLoader#parse terrarium martini', async (t) => {
-  const options = {
+  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 256,
@@ -84,9 +82,7 @@ test('TerrainLoader#parse terrarium martini', async (t) => {
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'martini'
     }
-  };
-
-  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, options);
+  });
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
@@ -104,7 +100,7 @@ test('TerrainLoader#parse terrarium martini', async (t) => {
 });
 
 test('TerrainLoader#parse mapbox delatin', async (t) => {
-  const options = {
+  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 65536 * 0.1,
@@ -116,8 +112,7 @@ test('TerrainLoader#parse mapbox delatin', async (t) => {
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'delatin'
     }
-  };
-  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, options);
+  });
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
@@ -135,7 +130,7 @@ test('TerrainLoader#parse mapbox delatin', async (t) => {
 });
 
 test('TerrainLoader#add skirt to mapbox delatin', async (t) => {
-  const options = {
+  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 65536 * 0.1,
@@ -148,8 +143,7 @@ test('TerrainLoader#add skirt to mapbox delatin', async (t) => {
       tesselator: 'delatin',
       skirtHeight: 50
     }
-  };
-  const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, options);
+  });
   t.equal(data.indices.value.length, 90943 * 3, 'indices was found');
   t.equal(data.attributes.TEXCOORD_0.value.length, 45996 * 2, 'TEXCOORD_0 attribute was found');
   t.equal(data.attributes.POSITION.value.length, 45996 * 3, 'POSITION attribute was found');
@@ -157,7 +151,7 @@ test('TerrainLoader#add skirt to mapbox delatin', async (t) => {
 });
 
 test('TerrainLoader#parse terrarium delatin', async (t) => {
-  const options = {
+  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 256,
@@ -169,9 +163,8 @@ test('TerrainLoader#parse terrarium delatin', async (t) => {
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'delatin'
     }
-  };
+  });
 
-  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, options);
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
@@ -195,7 +188,7 @@ test('TerrainWorkerLoader#parse terrarium martini', async (t) => {
     return;
   }
 
-  const options = {
+  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 256,
@@ -207,15 +200,13 @@ test('TerrainWorkerLoader#parse terrarium martini', async (t) => {
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'martini'
     }
-  };
-
-  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, options);
+  });
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 
-  t.equal(data.indices.value.length, 11188 * 3, 'indices was found');
-  t.equal(data.indices.size, 1, 'indices was found');
+  t.equal(data.indices?.value.length, 11188 * 3, 'indices was found');
+  t.equal(data.indices?.size, 1, 'indices was found');
 
   t.equal(data.attributes.TEXCOORD_0.value.length, 5696 * 2, 'TEXCOORD_0 attribute was found');
   t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');
@@ -233,7 +224,7 @@ test('TerrainWorkerLoader#parse terrarium delatin', async (t) => {
     return;
   }
 
-  const options = {
+  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, {
     terrain: {
       elevationDecoder: {
         rScaler: 256,
@@ -245,15 +236,14 @@ test('TerrainWorkerLoader#parse terrarium delatin', async (t) => {
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'delatin'
     }
-  };
+  });
 
-  const data = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainWorkerLoader, options);
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
 
-  t.equal(data.indices.value.length, 6082 * 3, 'indices was found');
-  t.equal(data.indices.size, 1, 'indices was found');
+  t.equal(data.indices?.value.length, 6082 * 3, 'indices was found');
+  t.equal(data.indices?.size, 1, 'indices was found');
 
   t.equal(data.attributes.TEXCOORD_0.value.length, 3071 * 2, 'TEXCOORD_0 attribute was found');
   t.equal(data.attributes.TEXCOORD_0.size, 2, 'TEXCOORD_0 attribute was found');

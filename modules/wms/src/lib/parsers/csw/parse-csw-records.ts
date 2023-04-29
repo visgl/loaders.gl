@@ -35,17 +35,17 @@ export type CSWRecords = {
  * @note Error handlings is fairly weak
  */
 export function parseCSWRecords(text: string, options?: XMLLoaderOptions): CSWRecords {
-  const parsedXML = XMLLoader.parseTextSync(text, {
+  const parsedXML = XMLLoader.parseTextSync?.(text, {
     ...options,
     xml: {
       ...options?.xml,
       removeNSPrefix: true,
       uncapitalizeKeys: true,
-      arrayPaths: []
-    },
-    _fastXML: {
-      ...options?._fastXML,
-      parseAttributeValue: true
+      arrayPaths: [],
+      _fastXML: {
+        ...options?.xml?._fastXML,
+        parseAttributeValue: true
+      }
     }
   });
 

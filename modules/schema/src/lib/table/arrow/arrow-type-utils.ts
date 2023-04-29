@@ -1,7 +1,6 @@
 // loaders.gl, MIT license
 
-/*
-import type {TypedArray} from '../../../types';
+import type {TypedArray} from '../../../types/types';
 import {
   DataType,
   Float32,
@@ -12,16 +11,16 @@ import {
   Uint16,
   Uint32,
   Uint8,
-  Int8Vector,
-  Uint8Vector,
-  Int16Vector,
-  Uint16Vector,
-  Int32Vector,
-  Uint32Vector,
-  Float32Vector,
-  Float64Vector
+  // Int8Vector,
+  // Uint8Vector,
+  // Int16Vector,
+  // Uint16Vector,
+  // Int32Vector,
+  // Uint32Vector,
+  // Float32Vector,
+  // Float64Vector
 } from 'apache-arrow';
-import {AbstractVector} from 'apache-arrow/vector';
+// import {AbstractVector} from 'apache-arrow/vector';
 
 export function getArrowType(array: TypedArray): DataType {
   switch (array.constructor) {
@@ -46,6 +45,7 @@ export function getArrowType(array: TypedArray): DataType {
   }
 }
 
+/*
 export function getArrowVector(array: TypedArray): AbstractVector {
   switch (array.constructor) {
     case Int8Array:

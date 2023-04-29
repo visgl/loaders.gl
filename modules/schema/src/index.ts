@@ -16,8 +16,8 @@ export type {
 } from './types/category-table';
 export type {
   TableBatch,
-  RowArrayTableBatch,
-  RowObjectTableBatch,
+  ArrayRowTableBatch,
+  ObjectRowTableBatch,
   GeoJSONRowTableBatch,
   ColumnarTableBatch,
   ArrowTableBatch
@@ -41,13 +41,15 @@ export {
   makeRowIterator,
   makeArrayRowIterator,
   makeObjectRowIterator
-} from './lib/table/utilities/table-accessors';
+} from './lib/table/simple-table/table-accessors';
 
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 
-export {convertToObjectRow, convertToArrayRow} from './lib/table/utilities/row-utils';
+export {makeTableFromData} from './lib/table/simple-table/make-table';
+export {deduceTableSchema} from './lib/table/simple-table/table-schema';
+export {convertToObjectRow, convertToArrayRow} from './lib/table/simple-table/row-utils';
+export {getDataTypeFromArray} from './lib/table/simple-table/data-type';
 
-export {makeTableFromArray} from './lib/table/utilities/make-table';
 
 // MESH CATEGORY
 export type {
@@ -165,6 +167,6 @@ export {
 
 // SCHEMA UTILS
 export {getTypeInfo} from './lib/table/arrow-api/get-type-info';
-export {getArrowType} from './lib/table/utilities/arrow-type-utils';
+export {getArrowType} from './lib/table/arrow/arrow-type-utils';
 
 export {default as AsyncQueue} from './lib/utils/async-queue';

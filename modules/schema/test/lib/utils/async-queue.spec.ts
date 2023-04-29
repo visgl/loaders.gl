@@ -29,7 +29,7 @@ test('Dequeue before enqueue', async (t) => {
  * in `asyncIterable`
  */
 async function takeAsync(asyncIterable, count = Infinity) {
-  const result = [];
+  const result: unknown[] = [];
   const iterator = asyncIterable[Symbol.asyncIterator]();
   while (result.length < count) {
     const {value, done} = await iterator.next();

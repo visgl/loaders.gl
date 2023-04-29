@@ -83,6 +83,7 @@ export type Schema = {
 
 export type Batch = {
   batchType: 'data' | 'metadata' | 'partial-result' | 'final-result';
+  batch?: number;
   mimeType?: string;
   shape: string;
   data: any;
