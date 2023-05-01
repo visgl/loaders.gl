@@ -24,7 +24,10 @@ export type TypedArrayConstructor =
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
 
-export type BigTypedArrayConstructor = TypedArrayConstructor | BigInt64ArrayConstructor | BigUint64ArrayConstructor;
+export type BigTypedArrayConstructor =
+  | TypedArrayConstructor
+  | BigInt64ArrayConstructor
+  | BigUint64ArrayConstructor;
 
 /** Any numeric array: typed array or `number[]` */
 export type NumberArray = number[] | TypedArray;

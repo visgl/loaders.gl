@@ -5,9 +5,11 @@ import {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
 import {makeReadableFile} from '@loaders.gl/loader-utils';
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
-import {ParquetBuffer} from '../../parquetjs/schema/declare';
+import {ParquetRowGroup} from '../../parquetjs/schema/declare';
+import {ParquetSchema} from '../../parquetjs/schema/schema';
 import {convertParquetSchema} from '../arrow/convert-schema-from-parquet';
-import {convertParquetRowGroupToColumns} from '../arrow/convert-row-group-to-columns';
+import {materializeColumns} from '../../parquetjs/schema/shred';
+// import {convertParquetRowGroupToColumns} from '../arrow/convert-row-group-to-columns';
 import {unpackGeoMetadata} from '../geo/decode-geo-metadata';
 
 export async function parseParquetInColumns(
@@ -37,12 +39,17 @@ export async function* parseParquetFileInColumnarBatches(
   unpackGeoMetadata(schema);
   const rowGroups = reader.rowGroupIterator(options?.parquet);
   for await (const rowGroup of rowGroups) {
-    yield convertRowGroupToTableBatch(schema, rowGroup);
+    yield convertRowGroupToTableBatch(parquetSchema, rowGroup, schema);
   }
 }
 
-function convertRowGroupToTableBatch(schema: Schema, rowGroup: ParquetBuffer): ColumnarTableBatch {
-  const data = convertParquetRowGroupToColumns(schema, rowGroup);
+function convertRowGroupToTableBatch(
+  parquetSchema: ParquetSchema,
+  rowGroup: ParquetRowGroup,
+  schema: Schema
+): ColumnarTableBatch {
+  // const data = convertParquetRowGroupToColumns(schema, rowGroup);
+  const data = materializeColumns(parquetSchema, rowGroup);
   return {
     shape: 'columnar-table',
     batchType: 'data',

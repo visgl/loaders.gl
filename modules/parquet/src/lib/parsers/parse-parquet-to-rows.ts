@@ -3,7 +3,7 @@
 import {makeReadableFile} from '@loaders.gl/loader-utils';
 import {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
 import type {ParquetLoaderOptions} from '../../parquet-loader';
-import type {ParquetRecord} from '../../parquetjs/schema/declare';
+import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 
 export async function parseParquet(
@@ -12,7 +12,7 @@ export async function parseParquet(
 ): Promise<ObjectRowTable> {
   const blob = new Blob([arrayBuffer]);
 
-  const rows: ParquetRecord[] = [];
+  const rows: ParquetRow[] = [];
   for await (const batch of parseParquetFileInBatches(blob, options)) {
     // we have only one input batch so return
     for (const row of batch.data) {

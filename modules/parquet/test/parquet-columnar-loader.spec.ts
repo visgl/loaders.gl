@@ -39,9 +39,8 @@ test('ParquetColumnarLoader#loader objects', (t) => {
 
 test('ParquetColumnarLoader#load alltypes_plain file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
+  // const tableRows = await load(url, ParquetLoader, {parquet: {url}, worker: false});
   const table = await load(url, ParquetColumnarLoader, {parquet: {url}, worker: false});
-
-  debugger
   t.equal(getTableLength(table), 8);
   // t.deepEqual(data, ALL_TYPES_PLAIN_EXPECTED);
   t.end();
@@ -93,9 +92,9 @@ test('ParquetColumnarLoader#load dict file', async (t) => {
   t.end();
 });
 
-test.only('ParquetColumnarLoader#load list_columns file', async (t) => {
+test('ParquetColumnarLoader#load list_columns file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/list_columns.parquet';
-  debugger
+  // const tableRows = await load(url, ParquetLoader, {parquet: {url}, worker: false});
   const table = await load(url, ParquetColumnarLoader, {parquet: {url}, worker: false});
   t.equal(getTableLength(table), 3);
   // t.deepEqual(data, LIST_COLUMNS_EXPECTED);

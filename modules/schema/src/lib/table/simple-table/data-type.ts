@@ -88,6 +88,8 @@ export function getArrayTypeFromDataType(
         return Float32Array;
       case 'float64':
         return Float64Array;
+      default:
+        break;
     }
   }
 

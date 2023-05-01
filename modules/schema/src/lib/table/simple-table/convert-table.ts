@@ -37,7 +37,6 @@ export function makeColumnarTable(table: Table): ColumnarTable {
   };
 }
 
-
 /** Convert any table into array row format */
 export function makeArrayRowTable(table: Table): ArrayRowTable {
   if (table.shape === 'array-row-table') {

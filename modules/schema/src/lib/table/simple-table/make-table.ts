@@ -2,15 +2,15 @@
 import {Table, ArrayRowTable, ObjectRowTable, ColumnarTable} from '../../../types/category-table';
 import {deduceTableSchema} from './table-schema';
 
-/** 
- * Makes a typed table from data. 
- * @throws Row tables must contain at least one row. Columnar tables must contain empty arrays 
+/**
+ * Makes a typed table from data.
+ * @throws Row tables must contain at least one row. Columnar tables must contain empty arrays
  */
 export function makeTableFromData(data: unknown[][]): ArrayRowTable;
 export function makeTableFromData(data: {[column: string]: unknown}[]): ObjectRowTable;
 export function makeTableFromData(data: {[column: string]: ArrayLike<unknown>}): ColumnarTable;
 export function makeTableFromData(data: unknown): Table {
-  let table : Table;
+  let table: Table;
   switch (getTableShapeFromData(data)) {
     case 'array-row-table':
       table = {shape: 'array-row-table', data: data as unknown[][]};
@@ -21,6 +21,8 @@ export function makeTableFromData(data: unknown): Table {
     case 'columnar-table':
       table = {shape: 'columnar-table', data: data as {[column: string]: ArrayLike<unknown>}};
       break;
+    default:
+      throw new Error('table');
   }
   const schema = deduceTableSchema(table);
   return {...table, schema};

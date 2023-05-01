@@ -1,5 +1,11 @@
 // COMMON CATEGORY
-export type {TypedArray, NumberArray, AnyArray} from './types/types';
+export type {
+  TypedArray,
+  TypedArrayConstructor,
+  NumberArray,
+  ArrayType,
+  AnyArray
+} from './types/types';
 
 export type {Schema, Field, DataType, Batch, SchemaMetadata, FieldMetadata} from './types/schema';
 
@@ -49,7 +55,6 @@ export {makeTableFromData} from './lib/table/simple-table/make-table';
 export {deduceTableSchema} from './lib/table/simple-table/table-schema';
 export {convertToObjectRow, convertToArrayRow} from './lib/table/simple-table/row-utils';
 export {getDataTypeFromArray} from './lib/table/simple-table/data-type';
-
 
 // MESH CATEGORY
 export type {

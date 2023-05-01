@@ -10,7 +10,6 @@ export type TypedArrayConstructor =
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
 
-
 export {GL} from './geometry/constants';
 
 // GL support

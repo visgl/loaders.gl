@@ -2,14 +2,12 @@
 
 // import type {TypedArray,} from '../../../types/types';
 import {Field} from '../../../types/schema';
-import {getArrayTypeFromDataType } from './data-type';
-
+import {getArrayTypeFromDataType} from './data-type';
 
 export interface ArrayType<T = unknown> {
   readonly length: number;
   [n: number]: T;
 }
-
 
 export function makeColumnFromField(field: Field, length: number): ArrayType {
   const ArrayType = getArrayTypeFromDataType(field.type, field.nullable);
@@ -47,4 +45,3 @@ function deduceSchema(rows) {
   return schema;
 }
 */
-

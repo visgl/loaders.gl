@@ -10,7 +10,7 @@ import {
   Int8,
   Uint16,
   Uint32,
-  Uint8,
+  Uint8
   // Int8Vector,
   // Uint8Vector,
   // Int16Vector,

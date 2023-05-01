@@ -3,14 +3,14 @@ import type {ReadableFile} from '@loaders.gl/loader-utils';
 
 import {ParquetSchema} from '../schema/schema';
 import {decodeSchema} from './decoders';
-import {materializeRecords} from '../schema/shred';
+import {materializeRows} from '../schema/shred';
 
 import {PARQUET_MAGIC, PARQUET_MAGIC_ENCRYPTED} from '../../constants';
 import {ColumnChunk, CompressionCodec, FileMetaData, RowGroup, Type} from '../parquet-thrift';
 import {
-  ParquetBuffer,
+  ParquetRowGroup,
   ParquetCompression,
-  ParquetData,
+  ParquetColumnChunk,
   PrimitiveType,
   ParquetOptions
 } from '../schema/declare';
@@ -68,7 +68,7 @@ export class ParquetReader {
   async *rowBatchIterator(props?: ParquetIterationProps) {
     const schema = await this.getSchema();
     for await (const rowGroup of this.rowGroupIterator(props)) {
-      yield materializeRecords(schema, rowGroup);
+      yield materializeRows(schema, rowGroup);
     }
   }
 
@@ -172,8 +172,8 @@ export class ParquetReader {
     schema: ParquetSchema,
     rowGroup: RowGroup,
     columnList: string[][]
-  ): Promise<ParquetBuffer> {
-    const buffer: ParquetBuffer = {
+  ): Promise<ParquetRowGroup> {
+    const buffer: ParquetRowGroup = {
       rowCount: Number(rowGroup.num_rows),
       columnData: {}
     };
@@ -191,7 +191,7 @@ export class ParquetReader {
   /**
    * Each row group contains column chunks for all the columns.
    */
-  async readColumnChunk(schema: ParquetSchema, colChunk: ColumnChunk): Promise<ParquetData> {
+  async readColumnChunk(schema: ParquetSchema, colChunk: ColumnChunk): Promise<ParquetColumnChunk> {
     if (colChunk.file_path !== undefined && colChunk.file_path !== null) {
       throw new Error('external references are not supported');
     }
