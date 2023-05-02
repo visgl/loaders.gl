@@ -1,5 +1,29 @@
 # CHANGELOG for loaders.gl
 
+## v4.0 Prerelease
+
+Early pre-release track was abandoned due to build setup incompabitility problems.
+The official 4.0 alpha track starts with alpha.6
+## v4.0.0-alpha.6
+
+- feat: Typed loaders (#2448)
+- chore: Bump math.gl and probe.gl (#2444)
+- feat(parquet): Columnar loader (#2447)
+- Update whats-new.md
+- Update whats-new.md
+- docs: Update what's new for 4.0 (#2277)
+- feat: Improve Loader typing (v4) (#2325)
+- feat: Improve Writer typing (v4) (#2320)
+- feat: Add JSON and CSV writers (#2319)
+- feat(schema): Use standard objects for serialized metadata (#2318)
+- chore(schema): Split types and utils (#2317)
+- feat(schema): Add table accessors (v4) (#2316)
+- chore(arrow): bump apache-arrow to 9.0.0. Temporarily disable arrow workers. (#2276)
+- fix(examples): wms control panel height (#2443)
+- feat(website): add hero example (#2441)
+- feat(wms): Replace EPSG:4326 with CRS:84 in WMS 1.3.0 (#2439)
+- feat(tile-converter): support TRIANGLE-STRIP (#2428)
+
 ## v3.4 Prerelease
 
 ## v3.4.0-alpha.3
