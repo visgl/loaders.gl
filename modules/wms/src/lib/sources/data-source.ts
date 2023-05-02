@@ -26,7 +26,6 @@ export abstract class DataSource<PropsT extends DataSourceProps> {
   setProps(props: PropsT) {
     this.props = Object.assign(this.props, props);
     // TODO - add a shallow compare to avoid setting refresh if no change?
-    this.onPropsUpdated();
     this.setNeedsRefresh();
   }
 
@@ -46,9 +45,6 @@ export abstract class DataSource<PropsT extends DataSourceProps> {
     }
     return needsRefresh;
   }
-
-  /** Subclass can update state after props change */
-  protected onPropsUpdated() {}
 }
 
 /**

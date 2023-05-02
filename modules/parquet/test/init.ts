@@ -4,7 +4,7 @@ import {preloadCompressions} from '@loaders.gl/parquet';
 
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
-import lzo from 'lzo';
+// import lzo from 'lzo';
 
 
 // Inject large dependencies through Compression constructor options
@@ -16,7 +16,7 @@ const modules = {
       throw new Error('brotli compress');
     }
   },
-  lzo,
+  // lzo,
 };
 
 // Start loading compression modules in the background to minimize 

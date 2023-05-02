@@ -445,7 +445,7 @@ export class WMSService extends ImageSource<WMSServiceProps> {
       if (key !== 'transparent' || value) {
         url += first ? '?' : '&';
         first = false;
-        url += this._getParameterValue(key, value, wmsParameters);
+        url += this._getURLParameter(key, value, wmsParameters);
       }
     }
 
@@ -463,39 +463,33 @@ export class WMSService extends ImageSource<WMSServiceProps> {
     return newParameters;
   }
 
-  _getParameterValue(key: string, value: unknown, wmsParameters: WMSParameters): string {
-    // Substitute by value
-    switch (wmsParameters.version) {
-      case '1.3.0':
-        /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
-        if (this.substituteCRS84 && value === 'EPSG:4326') {
-          value = 'CRS:84';
-        }
-        break;
-      default:
-        // CRS parameter is called SRS pre-1.3.0
-        if (key === 'crs') {
-          key = 'srs';
-        }
-    }
-
+  // eslint-disable-complexity
+  _getURLParameter(key: string, value: unknown, wmsParameters: WMSParameters): string {
     // Substitute by key
     switch (key) {
       case 'crs':
         // CRS was called SRS before WMS 1.3.0
         if (wmsParameters.version !== '1.3.0') {
           key = 'srs';
+        } else if (this.substituteCRS84 && value === 'EPSG:4326') {
+        /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
+          // Substitute by value
+          value = 'CRS:84';
+        }
+        break;
+
+      case 'srs':
+        // CRS was called SRS before WMS 1.3.0
+        if (wmsParameters.version === '1.3.0') {
+          key = 'crs';
         }
         break;
 
       case 'bbox':
-        // Parameter order is flipped for certain CRS in WMS 1.3.0
-        if (
-          wmsParameters.version === '1.3.0' &&
-          Array.isArray(value) &&
-          this.flipCRS.includes(wmsParameters.crs || '')
-        ) {
-          value = [value[1], value[0], value[3], value[2]];
+        // Coordinate order is flipped for certain CRS in WMS 1.3.0
+        const bbox = this._flipBoundingBox(value, wmsParameters);
+        if (bbox) {
+          value = bbox;
         }
         break;
 
@@ -505,17 +499,31 @@ export class WMSService extends ImageSource<WMSServiceProps> {
 
     key = key.toUpperCase();
 
-    // TODO - in v1.3.0 only, the order of parameters for BBOX depends on whether the CRS definition has flipped axes
-    // You will see this in the GetCapabilities request at 1.3.0 - the response should show the flipped axes.
-    // BBOX=xmin,ymin,xmax,ymax NON-FLIPPED
-    // BBOX=ymin,xmin,ymax,xmax FLIPPED
-    // / EPSG:4326 needs to have flipped axes. 4326 1 WGS 84 Latitude North Longitude East
-    // In WMS 1.1.1 EPSG:4326 is wrongly defined as having long/lat coordinate axes. In WMS 1.3.0 the correct axes lat/long are used. CRS:84 is defined by OGC as having the same datum as EPSG:4326 (that is the World Geodetic System 1984 datum ~ EPSG::6326) but axis order of long/lat.
-    // CRS:84 was introduced with the publication of the WMS 1.3.0 specification, to overcome this issue.
-
     return Array.isArray(value)
       ? `${key}=${value.join(',')}`
       : `${key}=${value ? String(value) : ''}`;
+  }
+
+  /** Coordinate order is flipped for certain CRS in WMS 1.3.0 */
+  _flipBoundingBox(
+    bboxValue: unknown,
+    wmsParameters: WMSParameters
+  ): [number, number, number, number] | null {
+    // Sanity checks
+    if (!Array.isArray(bboxValue) || bboxValue.length !== 4) {
+      return null;
+    }
+
+    const flipCoordinates =
+      // Only affects WMS 1.3.0
+      wmsParameters.version === '1.3.0' &&
+      // Flip if we are dealing with a CRS that was flipped in 1.3.0
+      this.flipCRS.includes(wmsParameters.crs || '') &&
+      // Don't flip if we are subsituting EPSG:4326 with CRS:84
+      !(this.substituteCRS84 && wmsParameters.crs === 'EPSG:4326');
+
+    const bbox = bboxValue as [number, number, number, number];
+    return flipCoordinates ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
   }
 
   /** Fetches an array buffer and checks the response (boilerplate reduction) */
