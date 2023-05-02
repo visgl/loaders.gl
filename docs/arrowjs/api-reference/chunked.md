@@ -17,7 +17,7 @@ A `Chunked` array supports iteration, random element access and mutation.
 
 ## Inheritance
 
-class Chunked extends [Vector](docs-arrow/api-reference/vector.md)
+class Chunked extends [Vector](/docs/arrowjs/api-reference/vector)
 
 
 ## Static Methods
@@ -44,15 +44,15 @@ Note: This method extracts the inner chunks of any incoming `Chunked` instances,
 
 ## Members
 
-### [Symbol.iterator]() : Iterator
+### `Symbol.iterator : Iterator`
 
 `Chunked` arrays are iterable, allowing you to use constructs like `for (const element of chunked)` to iterate over elements. For in-order traversal, this is more performant than random-element access.
 
-### type : T
+### `type : T`
 
 Returns the DataType instance which determines the type of elements this `Chunked` instance contains. All vector chunks will have this type.
 
-### length: Number  (read-only)
+### `length: Number ` (read-only)
 
 Returns the total number of elements in this `Chunked` instance, representing the length of of all chunks.
 

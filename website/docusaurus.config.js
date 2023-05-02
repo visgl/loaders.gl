@@ -15,7 +15,7 @@ const config = {
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: '/favicon.png',
-  organizationName: 'uber-web', // Usually your GitHub org/user name.
+  organizationName: 'visgl', // Usually your GitHub org/user name.
   projectName: 'loaders.gl', // Usually your repo name.
   trailingSlash: false,
 

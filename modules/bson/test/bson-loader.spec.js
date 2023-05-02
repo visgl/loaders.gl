@@ -23,14 +23,12 @@ test.skip('BSONLoader#load(mongodump.airpair.tags.bson)', async (t) => {
 test('BSON Compliance - corrupt scenarips', async (t) => {
   for (let i = 0; i < corruptScenarios.documents.length; i++) {
     const doc = corruptScenarios.documents[i];
-    if (doc.skip) {
-      continue;
+    if (!doc.skip) {
+      // Create a buffer containing the payload
+      const buffer = Buffer.from(doc.encoded, 'hex');
+      // Attempt to deserialize
+      t.throws(() => parseSync(buffer, BSONLoader), `Throws ${doc.error}`);
     }
-
-    // Create a buffer containing the payload
-    const buffer = Buffer.from(doc.encoded, 'hex');
-    // Attempt to deserialize
-    t.throws(() => parseSync(buffer, BSONLoader), `Throws ${doc.error}`);
   }
 
   t.end();

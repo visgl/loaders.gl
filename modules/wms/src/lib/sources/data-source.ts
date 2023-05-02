@@ -8,15 +8,42 @@ export type DataSourceProps = {
 };
 
 /** base class of all data sources */
-export abstract class DataSource {
+export abstract class DataSource<PropsT extends DataSourceProps> {
   /** A resolved fetch function extracted from loadOptions prop */
   fetch: (url: string, options?: RequestInit) => Promise<Response>;
   /** The actual load options, if calling a loaders.gl loader */
   loadOptions: LoaderOptions;
+  _needsRefresh: boolean = true;
 
-  constructor(props: DataSourceProps) {
+  props: PropsT;
+
+  constructor(props: PropsT) {
+    this.props = {...props};
     this.loadOptions = {...props.loadOptions};
     this.fetch = getFetchFunction(this.loadOptions);
+  }
+
+  setProps(props: PropsT) {
+    this.props = Object.assign(this.props, props);
+    // TODO - add a shallow compare to avoid setting refresh if no change?
+    this.setNeedsRefresh();
+  }
+
+  /** Mark this data source as needing a refresh (redraw) */
+  setNeedsRefresh(): void {
+    this._needsRefresh = true;
+  }
+
+  /**
+   * Does this data source need refreshing?
+   * @note The specifics of the refresh mechanism depends on type of data source
+   */
+  getNeedsRefresh(clear: boolean = true) {
+    const needsRefresh = this._needsRefresh;
+    if (clear) {
+      this._needsRefresh = false;
+    }
+    return needsRefresh;
   }
 }
 

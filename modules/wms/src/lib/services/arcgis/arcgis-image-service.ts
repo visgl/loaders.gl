@@ -14,15 +14,12 @@ export type ArcGISImageServerProps = ImageSourceProps & {
  * Note - exports a big API, that could be exposed here if there is a use case
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/image-service.htm
  */
-export class ArcGISImageServer extends ImageSource {
+export class ArcGISImageServer extends ImageSource<ArcGISImageServerProps> {
   static type: 'arcgis-image-server' = 'arcgis-image-server';
   static testURL = (url: string): boolean => url.toLowerCase().includes('ImageServer');
 
-  props: ArcGISImageServerProps;
-
   constructor(props: ArcGISImageServerProps) {
     super(props);
-    this.props = props;
   }
 
   // ImageSource (normalized endpoints)

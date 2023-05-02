@@ -54,11 +54,10 @@ export type CSWServiceProps = DataSourceProps & {
  * - implements the ImageService interface
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class CSWService extends DataSource {
+export class CSWService extends DataSource<CSWServiceProps> {
   static type: 'csw' = 'csw';
   static testURL = (url: string): boolean => url.toLowerCase().includes('csw');
 
-  props: CSWServiceProps;
   capabilities: CSWCapabilities | null = null;
 
   /** A list of loaders used by the CSWService methods */
@@ -67,7 +66,6 @@ export class CSWService extends DataSource {
   /** Create a CSWService */
   constructor(props: CSWServiceProps) {
     super(props);
-    this.props = props;
   }
 
   async getMetadata(): Promise<CSWCapabilities> {
