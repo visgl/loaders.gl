@@ -14,15 +14,16 @@ export function getTableLength(table: Table): number {
     case 'geojson-row-table':
       return table.data.length;
 
+    case 'arrow-table':
+      return table.data.numRows;
+
     case 'columnar-table':
       for (const column of Object.values(table.data)) {
         return column.length || 0;
       }
       return 0;
-
-    case 'arrow-table':
     default:
-      return table.data.numRows;
+      throw new Error('table');
   }
 }
 
@@ -48,8 +49,9 @@ export function getTableNumCols(table: Table): number {
       return Object.keys(table.data).length;
 
     case 'arrow-table':
-    default:
       return table.data.numCols;
+    default:
+      throw new Error('table');
   }
 }
 
@@ -69,7 +71,10 @@ export function getTableCell(table: Table, rowIndex: number, columnName: string)
       return column[rowIndex];
 
     case 'arrow-table':
-      return table.data.getChild(columnName)?.get(rowIndex);
+      const arrowColumnIndex = table.data.schema.fields.findIndex(
+        (field) => field.name === columnName
+      );
+      return table.data.getChildAt(arrowColumnIndex)?.get(rowIndex);
 
     default:
       throw new Error('todo');

@@ -13,7 +13,7 @@ export type GLBLoaderOptions = LoaderOptions & {
  * GLB Loader -
  * GLB is the binary container format for GLTF
  */
-export const GLBLoader: LoaderWithParser = {
+export const GLBLoader: LoaderWithParser<GLB, never, GLBLoaderOptions> = {
   name: 'GLB',
   id: 'glb',
   module: 'gltf',
