@@ -8,7 +8,7 @@
  * @note Error handlings is fairly weak
  */
 export function parseExceptionReport(parsedXML: any): void {
-  // const parsedXML = XMLLoader.parseTextSync(text, {
+  // const parsedXML = XMLLoader.parseTextSync?.(text, {
   //   ...options,
   //   xml: {
   //     ...options?.xml,

@@ -1,10 +1,18 @@
 import type {Loader} from '@loaders.gl/loader-utils';
+import type {ImageLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
+import {TerrainOptions} from './lib/parse-terrain';
+import {Mesh} from '@loaders.gl/schema';
+
+export type TerrainLoaderOptions = ImageLoaderOptions & {
+  terrain?: TerrainOptions;
+};
+
 /**
- * Worker loader for color-encoded images
+ * Worker loader for image encoded terrain
  */
-export const TerrainLoader = {
+export const TerrainLoader: Loader<Mesh, never, TerrainLoaderOptions> = {
   name: 'Terrain',
   id: 'terrain',
   module: 'terrain',
@@ -15,7 +23,7 @@ export const TerrainLoader = {
   options: {
     terrain: {
       tesselator: 'auto',
-      bounds: null,
+      bounds: undefined!,
       meshMaxError: 10,
       elevationDecoder: {
         rScaler: 1,
@@ -23,12 +31,7 @@ export const TerrainLoader = {
         bScaler: 0,
         offset: 0
       },
-      skirtHeight: null
+      skirtHeight: undefined
     }
   }
 };
-
-/**
- * Loader for color-encoded images
- */
-export const _typecheckTerrainWorkerLoader: Loader = TerrainLoader;

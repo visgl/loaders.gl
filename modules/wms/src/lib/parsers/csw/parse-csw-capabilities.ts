@@ -87,7 +87,7 @@ export type CSWCapabilities = {
  * @note Error handlings is fairly weak
  */
 export function parseCSWCapabilities(text: string, options?: XMLLoaderOptions): CSWCapabilities {
-  const parsedXML = XMLLoader.parseTextSync(text, {
+  const parsedXML = XMLLoader.parseTextSync?.(text, {
     ...options,
     xml: {
       ...options?.xml,
