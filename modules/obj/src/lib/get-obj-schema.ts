@@ -1,6 +1,13 @@
-import {Schema, SchemaMetadata, Field, getArrowType} from '@loaders.gl/schema';
+// loaders.gl, MIT license
 
-export function getOBJSchema(attributes, metadata: Record<string, unknown> = {}): Schema {
+import type {Schema, SchemaMetadata, Field, MeshAttribute} from '@loaders.gl/schema';
+import {getDataTypeFromArray} from '@loaders.gl/schema';
+
+/** Get Mesh Schema */
+export function getOBJSchema(
+  attributes: Record<string, MeshAttribute>,
+  metadata: Record<string, unknown> = {}
+): Schema {
   const stringMetadata: SchemaMetadata = {};
   for (const key in metadata) {
     if (key !== 'value') {
@@ -11,14 +18,15 @@ export function getOBJSchema(attributes, metadata: Record<string, unknown> = {})
   const fields: Field[] = [];
   for (const attributeName in attributes) {
     const attribute = attributes[attributeName];
-    const field = getArrowFieldFromAttribute(attributeName, attribute);
+    const field = getFieldFromAttribute(attributeName, attribute);
     fields.push(field);
   }
 
   return {fields, metadata: stringMetadata};
 }
 
-function getArrowFieldFromAttribute(name: string, attribute): Field {
+/** Get a Field describing the column from an OBJ attribute */
+function getFieldFromAttribute(name: string, attribute: MeshAttribute): Field {
   const metadata: Record<string, string> = {};
   for (const key in attribute) {
     if (key !== 'value') {
@@ -26,14 +34,10 @@ function getArrowFieldFromAttribute(name: string, attribute): Field {
     }
   }
 
-  const type = getArrowType(attribute.value);
-  const isSingleValue = !('size' in attribute) || attribute.size === 1;
-  return isSingleValue
-    ? {name, type, nullable: false, metadata}
-    : {
-      name, 
-      type: {type: 'fixed-size-list', listSize: attribute.size, children: [{name: 'values', type}]},
-      nullable: false, 
-      metadata
-    };
+  let {type} = getDataTypeFromArray(attribute.value);
+  const isSingleValue = attribute.size === 1 || attribute.size === undefined;
+  if (!isSingleValue) {
+    type = {type: 'fixed-size-list', listSize: attribute.size, children: [{name: 'values', type}]};
+  }
+  return {name, type, nullable: false, metadata};
 }

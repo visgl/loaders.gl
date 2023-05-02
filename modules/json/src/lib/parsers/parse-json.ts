@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 import type {RowTable} from '@loaders.gl/schema';
-import {makeTableFromArray} from '@loaders.gl/schema';
+import {makeTableFromData} from '@loaders.gl/schema';
 import type {JSONLoaderOptions} from '../../json-loader';
 
 export function parseJSONSync(jsonText: string, options: JSONLoaderOptions): RowTable {
@@ -8,7 +8,7 @@ export function parseJSONSync(jsonText: string, options: JSONLoaderOptions): Row
     const json = JSON.parse(jsonText);
     if (options.json?.table) {
       const data = getFirstArray(json) || json;
-      return makeTableFromArray(data);
+      return makeTableFromData(data);
     }
     return json;
   } catch (error) {

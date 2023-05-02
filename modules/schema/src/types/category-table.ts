@@ -73,26 +73,20 @@ export type TableBatch = Batch & {
   schemaType?: 'explicit' | 'deduced';
 };
 
-/** Batch for a table organized as an array of rows */
-export type RowTableBatch = TableBatch & {
-  shape: 'row-table';
-  data: any[];
-};
-
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type RowArrayTableBatch = RowTableBatch & {
+export type ArrayRowTableBatch = TableBatch & {
   shape: 'array-row-table';
   data: any[][];
 };
 
 /** Batch for a table organized as an array of rows, each row is an object mapping columns to values */
-export type RowObjectTableBatch = RowTableBatch & {
+export type ObjectRowTableBatch = TableBatch & {
   shape: 'object-row-table';
   data: {[columnName: string]: any}[];
 };
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type GeoJSONRowTableBatch = RowTableBatch & {
+export type GeoJSONRowTableBatch = TableBatch & {
   shape: 'geojson-row-table';
   data: Feature[];
 };

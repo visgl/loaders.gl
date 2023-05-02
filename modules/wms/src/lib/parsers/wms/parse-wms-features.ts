@@ -18,7 +18,7 @@ export type WMSFeature = {
  * @note Error handlings is fairly weak
  */
 export function parseWMSFeatureInfo(text: string, options): WMSFeatureInfo {
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
   const xmlFeatureInfo: any = parsedXML.FeatureInfoResponse?.FIELDS || [];
 
   const xmlFeatures = Array.isArray(xmlFeatureInfo) ? xmlFeatureInfo : [xmlFeatureInfo];
