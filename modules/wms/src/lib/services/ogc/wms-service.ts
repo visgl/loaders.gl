@@ -472,7 +472,7 @@ export class WMSService extends ImageSource<WMSServiceProps> {
         if (wmsParameters.version !== '1.3.0') {
           key = 'srs';
         } else if (this.substituteCRS84 && value === 'EPSG:4326') {
-        /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
+          /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
           // Substitute by value
           value = 'CRS:84';
         }
