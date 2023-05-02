@@ -10,10 +10,17 @@ const MAGIC_BIN = 0x004e4942; // BIN\0 in ASCII
 
 const LE = true; // Binary GLTF is little endian.
 
+export type GLBEncodeOptions = {};
+
 // Encode the full GLB buffer with header etc
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#
 // glb-file-format-specification
-export default function encodeGLBSync(glb, dataView, byteOffset = 0, options = {}) {
+export default function encodeGLBSync(
+  glb,
+  dataView,
+  byteOffset = 0,
+  options: GLBEncodeOptions = {}
+) {
   const {magic = MAGIC_glTF, version = 2, json = {}, binary} = glb;
 
   const byteOffsetStart = byteOffset;

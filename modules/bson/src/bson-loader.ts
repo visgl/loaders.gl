@@ -19,7 +19,7 @@ const DEFAULT_BSON_LOADER_OPTIONS = {
   bson: {}
 };
 
-export const BSONLoader: LoaderWithParser = {
+export const BSONLoader: LoaderWithParser<Record<string, unknown>, never, BSONLoaderOptions> = {
   name: 'BSON',
   id: 'bson',
   module: 'bson',

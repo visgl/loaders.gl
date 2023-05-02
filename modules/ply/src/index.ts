@@ -25,5 +25,3 @@ export const PLYLoader: LoaderWithParser<PLYMesh, any, PLYLoaderOptions> = {
   parseSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
   parseInBatches: (arrayBuffer, options) => parsePLYInBatches(arrayBuffer, options?.ply)
 };
-
-export const _typecheckPLYLoader: LoaderWithParser = PLYLoader;

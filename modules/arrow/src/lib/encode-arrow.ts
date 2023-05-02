@@ -1,7 +1,7 @@
 import {Table, Vector, tableToIPC, vectorFromArray} from 'apache-arrow';
 import {AnyArrayType, VECTOR_TYPES} from '../types';
 
-type ColumnarTable = {
+export type ColumnarTable = {
   name: string;
   array: AnyArrayType;
   type: number;
