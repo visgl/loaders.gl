@@ -24,14 +24,14 @@ import ALIASES from '../../test/aliases';
 import {_addAliases} from '@loaders.gl/loader-utils';
 
 import loaderUtilsBench from '@loaders.gl/loader-utils/test/loader-utils.bench';
-import imageBench from '@loaders.gl/images/test/images.bench';
 import coreBench from '@loaders.gl/core/test/core.bench';
 import csvBench from '@loaders.gl/csv/test/csv.bench';
+import dracoBench from '@loaders.gl/draco/test/draco.bench';
+import excelBench from '@loaders.gl/excel/test/excel.bench';
+import imageBench from '@loaders.gl/images/test/images.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 import mvtBench from '@loaders.gl/mvt/test/mvt-loader.bench';
-import excelBench from '@loaders.gl/excel/test/excel.bench';
-import dracoBench from '@loaders.gl/draco/test/draco.bench';
-// import dracoBench from '@loaders.gl/draco/test/draco.bench';
+import {parquetBench} from '@loaders.gl/parquet/test/parquet.bench';
 import shapefileBench from '@loaders.gl/shapefile/test/shapefile.bench';
 
 import cryptoBench from '@loaders.gl/crypto/test/crypto.bench';
@@ -41,9 +41,13 @@ _addAliases(ALIASES);
 
 // add benchmarks
 export async function addModuleBenchmarksToSuite(suite) {
+  await coreBench(suite);
+
+  await parquetBench(suite);
+
   await jsonBench(suite);
 
-  await shapefileBench(suite);
+  // await shapefileBench(suite);
 
   await mvtBench(suite);
   await loaderUtilsBench(suite);
@@ -55,6 +59,5 @@ export async function addModuleBenchmarksToSuite(suite) {
   await csvBench(suite);
   await excelBench(suite);
 
-  await coreBench(suite);
   // await i3sLoaderBench(suite);
 }

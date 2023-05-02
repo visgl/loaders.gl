@@ -164,7 +164,7 @@ export function parseWMSCapabilities(
   xmlText: string,
   options?: parseWMSCapabilitiesOptions
 ): WMSCapabilities {
-  const parsedXML = XMLLoader.parseTextSync(xmlText, options);
+  const parsedXML = XMLLoader.parseTextSync?.(xmlText, options);
   const xmlCapabilities: any =
     parsedXML.WMT_MS_Capabilities || parsedXML.WMS_Capabilities || parsedXML;
   const capabilities = extractCapabilities(xmlCapabilities);

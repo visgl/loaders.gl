@@ -1,7 +1,7 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 import {
   ParquetCodec,
-  ParquetData,
+  ParquetColumnChunk,
   ParquetOptions,
   ParquetPageData,
   ParquetType,
@@ -32,14 +32,14 @@ import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils'
 export async function decodeDataPages(
   buffer: Buffer,
   options: ParquetOptions
-): Promise<ParquetData> {
+): Promise<ParquetColumnChunk> {
   const cursor: CursorBuffer = {
     buffer,
     offset: 0,
     size: buffer.length
   };
 
-  const data: ParquetData = {
+  const data: ParquetColumnChunk = {
     rlevels: [],
     dlevels: [],
     values: [],

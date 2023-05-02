@@ -12,7 +12,7 @@ export type WMSLayerDescription = {
  * @note Error handlings is fairly weak
  */
 export function parseWMSLayerDescription(text: string, options): WMSLayerDescription {
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
   // TODO - implement parser
   return parsedXML as unknown as WMSLayerDescription;
 }

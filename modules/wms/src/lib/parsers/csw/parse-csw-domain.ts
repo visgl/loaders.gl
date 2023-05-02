@@ -20,7 +20,7 @@ export type CSWDomain = {
  * @note Error handlings is fairly weak
  */
 export function parseCSWDomain(text: string, options?: XMLLoaderOptions): CSWDomain {
-  const parsedXML = XMLLoader.parseTextSync(text, {
+  const parsedXML = XMLLoader.parseTextSync?.(text, {
     ...options,
     xml: {
       ...options?.xml,

@@ -1,6 +1,8 @@
 // import type {TextureLevel} from '@loaders.gl/schema';
+import {TypedArray} from '@math.gl/types';
+// import {TypedArrayConstructor} from "@math.gl/types";
 
-type NumpyHeader = {descr: string; shape: number[]};
+// TODO move to math.gl
 type TypedArrayConstructor =
   | typeof Int8Array
   | typeof Uint8Array
@@ -13,22 +15,34 @@ type TypedArrayConstructor =
   | typeof Float32Array
   | typeof Float64Array;
 
-function systemIsLittleEndian() {
-  const a = new Uint32Array([0x12345678]);
-  const b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
-  return !(b[0] === 0x12);
-}
+const a = new Uint32Array([0x12345678]);
+const b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+const isLittleEndian = !(b[0] === 0x12);
 
-const LITTLE_ENDIAN_OS = systemIsLittleEndian();
+const LITTLE_ENDIAN_OS = isLittleEndian;
 
-// The basic string format consists of 3 characters:
-// 1. a character describing the byteorder of the data (<: little-endian, >: big-endian, |: not-relevant)
-// 2. a character code giving the basic type of the array
-// 3. an integer providing the number of bytes the type uses.
-// https://numpy.org/doc/stable/reference/arrays.interface.html
-//
-// Here I only include the second and third characters, and check endianness
-// separately
+/** One numpy "tile" */
+export type NPYTile = {
+  /** tile header */
+  header: NumpyHeader;
+  /** data in tile */
+  data: TypedArray;
+};
+
+type NumpyHeader = {
+  descr: string;
+  shape: number[];
+};
+
+/**
+ * The basic string format consists of 3 characters:
+ * 1. a character describing the byteorder of the data (<: little-endian, >: big-endian, |: not-relevant)
+ * 2. a character code giving the basic type of the array
+ * 3. an integer providing the number of bytes the type uses.
+ * https://numpy.org/doc/stable/reference/arrays.interface.html
+ *
+ * Here I only include the second and third characters, and check endianness separately
+ */
 const DTYPES: Record<string, TypedArrayConstructor> = {
   u1: Uint8Array,
   i1: Int8Array,
@@ -40,11 +54,7 @@ const DTYPES: Record<string, TypedArrayConstructor> = {
   f8: Float64Array
 };
 
-export function parseNPY(arrayBuffer: ArrayBuffer, options?: unknown) {
-  if (!arrayBuffer) {
-    return null;
-  }
-
+export function parseNPY(arrayBuffer: ArrayBuffer, options?: {}): NPYTile {
   const view = new DataView(arrayBuffer);
   const {header, headerEndOffset} = parseHeader(view);
 

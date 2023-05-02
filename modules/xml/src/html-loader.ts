@@ -35,12 +35,12 @@ function parseTextSync(text: string, options?: XMLLoaderOptions): any {
   // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/5.Entities.md
   options = mergeLoaderOptions(options, {
     xml: {
-      parser: 'fast-xml-parser'
-    },
-    _fastXML: {
-      htmlEntities: true
+      _parser: 'fast-xml-parser',
+      _fastXML: {
+        htmlEntities: true
+      }
     }
   });
 
-  return XMLLoader.parseTextSync(text, options);
+  return XMLLoader.parseTextSync?.(text, options);
 }

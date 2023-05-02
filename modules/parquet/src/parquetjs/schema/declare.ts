@@ -120,25 +120,26 @@ export interface ParquetPageData {
   pageHeader: PageHeader;
 }
 
-export interface ParquetRecord {
+export interface ParquetRow {
   [key: string]: any;
 }
 
 /** @
  * Holds data for one row group (column chunks) */
-export class ParquetBuffer {
+export class ParquetRowGroup {
   /** Number of rows in this page */
   rowCount: number;
+  /** Map of Column chunks */
+  columnData: Record<string, ParquetColumnChunk>;
 
-  columnData: Record<string, ParquetData>;
-  constructor(rowCount: number = 0, columnData: Record<string, ParquetData> = {}) {
+  constructor(rowCount: number = 0, columnData: Record<string, ParquetColumnChunk> = {}) {
     this.rowCount = rowCount;
     this.columnData = columnData;
   }
 }
 
 /** Holds the data for one column chunk */
-export interface ParquetData {
+export interface ParquetColumnChunk {
   dlevels: number[];
   rlevels: number[];
   values: any[];
