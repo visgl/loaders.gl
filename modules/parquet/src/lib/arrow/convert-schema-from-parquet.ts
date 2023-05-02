@@ -1,10 +1,10 @@
 // loaders.gl, MIT license
 
+import {Schema, Field, DataType} from '@loaders.gl/schema';
+
 import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import type {FieldDefinition, ParquetField, ParquetType} from '../../parquetjs/schema/declare';
 import {FileMetaData} from '@loaders.gl/parquet/parquetjs/parquet-thrift';
-
-import {Schema, Field, DataType} from '@loaders.gl/schema';
 
 export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: DataType} = {
   BOOLEAN: 'bool',
@@ -39,11 +39,19 @@ export const PARQUET_TYPE_MAPPING: {[type in ParquetType]: DataType} = {
   DECIMAL_FIXED_LEN_BYTE_ARRAY: 'float64'
 };
 
-export function convertParquetSchema(parquetSchema: ParquetSchema): Schema {
+export function convertParquetSchema(
+  parquetSchema: ParquetSchema,
+  parquetMetadata: FileMetaData | null
+): Schema {
   const fields = getFields(parquetSchema.schema);
+  const metadata = parquetMetadata && getSchemaMetadata(parquetMetadata);
 
-  // const metadata = parquetMetadata && getSchemaMetadata(parquetMetadata);
-  return {fields, metadata: {}};
+  const schema: Schema = {
+    fields,
+    metadata: metadata || {}
+  };
+
+  return schema;
 }
 
 function getFields(schema: FieldDefinition): Field[] {
@@ -66,31 +74,31 @@ function getFields(schema: FieldDefinition): Field[] {
   return fields;
 }
 
-function getFieldMetadata(field: ParquetField): Map<string, string> {
-  const metadata = new Map();
+function getFieldMetadata(field: ParquetField): Record<string, string> | undefined {
+  let metadata: Record<string, string> | undefined;
 
   for (const key in field) {
     if (key !== 'name') {
       let value = field[key] || '';
       value = typeof field[key] !== 'string' ? JSON.stringify(field[key]) : field[key];
-      metadata.set(key, value);
+      metadata = metadata || {};
+      metadata[key] = value;
     }
   }
 
   return metadata;
 }
 
-/*
-function getSchemaMetadata(parquetMetadata: FileMetaData): Map<string, string> {
-  const metadata = new Map();
+function getSchemaMetadata(parquetMetadata: FileMetaData): Record<string, string> | undefined {
+  let metadata: Record<string, string> | undefined;
 
   const keyValueList = parquetMetadata.key_value_metadata || [];
   for (const {key, value} of keyValueList) {
     if (typeof value === 'string') {
-      metadata.set(key, value);
+      metadata = metadata || {};
+      metadata[key] = value;
     }
   }
 
   return metadata;
 }
-*/

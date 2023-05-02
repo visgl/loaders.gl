@@ -83,7 +83,7 @@ export type WCSCapabilities = {
  * @note Error handlings is fairly weak
  */
 export function parseWCSCapabilities(text: string, options): WCSCapabilities {
-  const parsedXML = XMLLoader.parseTextSync(text, {...options, xml: {...options?.xml, removeNSPrefix: true}});
+  const parsedXML = XMLLoader.parseTextSync?.(text, {...options, xml: {...options?.xml, removeNSPrefix: true}});
   const xmlCapabilities: any = parsedXML.Capabilities || parsedXML;
   return xmlCapabilities;
 }

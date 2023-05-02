@@ -4,7 +4,7 @@ import {Table} from '../../../types/category-table';
 
 import {ArrowLikeSchema} from './arrow-like-schema';
 
-import {deduceTableSchema} from '../utilities/deduce-table-schema';
+import {deduceTableSchema} from '../simple-table/table-schema';
 
 import {
   getTableCell,
@@ -16,7 +16,7 @@ import {
   // getTableColumnName,
   // getTableRowAsObject,
   // getTableRowAsArray
-} from '../utilities/table-accessors';
+} from '../simple-table/table-accessors';
 
 class ArrowLikeVector {
   table: Table;

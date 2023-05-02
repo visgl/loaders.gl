@@ -1,5 +1,5 @@
 import type {ArrayRowTable, ObjectRowTable} from '@loaders.gl/schema';
-import {makeTableFromArray} from '@loaders.gl/schema';
+import {makeTableFromData} from '@loaders.gl/schema';
 
 export function parseNDJSONSync(ndjsonText: string): ArrayRowTable | ObjectRowTable {
   const lines = ndjsonText.trim().split('\n');
@@ -11,5 +11,5 @@ export function parseNDJSONSync(ndjsonText: string): ArrayRowTable | ObjectRowTa
     }
   });
 
-  return makeTableFromArray(parsedLines);
+  return makeTableFromData(parsedLines);
 }

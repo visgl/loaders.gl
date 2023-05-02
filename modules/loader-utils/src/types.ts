@@ -178,8 +178,8 @@ export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderO
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => DataT;
-  parseText?: (text: string, options?: LoaderOptions) => Promise<DataT>;
-  parseTextSync?: (text: string, options?: LoaderOptions) => DataT;
+  parseText?: (text: string, options?: LoaderOptionsT) => Promise<DataT>;
+  parseTextSync?: (text: string, options?: LoaderOptionsT) => DataT;
   parseInBatches?: (
     iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
     options?: LoaderOptionsT,

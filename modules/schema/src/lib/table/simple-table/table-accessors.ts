@@ -254,6 +254,9 @@ export function getTableRowAsArray(
 
 /** Convert any table into array row format */
 export function makeArrayRowTable(table: Table): ArrayRowTable {
+  if (table.shape === 'array-row-table') {
+    return table;
+  }
   const length = getTableLength(table);
   const data = new Array<unknown[]>(length);
   for (let rowIndex = 0; rowIndex < length; rowIndex++) {
@@ -268,6 +271,26 @@ export function makeArrayRowTable(table: Table): ArrayRowTable {
 
 /** Convert any table into object row format */
 export function makeObjectRowTable(table: Table): ObjectRowTable {
+  if (table.shape === 'object-row-table') {
+    return table;
+  }
+  const length = getTableLength(table);
+  const data = new Array<{[key: string]: unknown}>(length);
+  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
+    data[rowIndex] = getTableRowAsObject(table, rowIndex);
+  }
+  return {
+    shape: 'object-row-table',
+    schema: table.schema,
+    data
+  };
+}
+
+/** Convert any table into object row format */
+export function makeColumnarTable(table: Table): ObjectRowTable {
+  if (table.shape === 'object-row-table') {
+    return table;
+  }
   const length = getTableLength(table);
   const data = new Array<{[key: string]: unknown}>(length);
   for (let rowIndex = 0; rowIndex < length; rowIndex++) {

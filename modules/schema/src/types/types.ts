@@ -12,10 +12,32 @@ export type TypedArray =
 
 export type BigTypedArray = TypedArray | BigInt64Array | BigUint64Array;
 
+export type TypedArrayConstructor =
+  | Int8ArrayConstructor
+  | Uint8ArrayConstructor
+  | Int16ArrayConstructor
+  | Uint16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;
+
+export type BigTypedArrayConstructor =
+  | TypedArrayConstructor
+  | BigInt64ArrayConstructor
+  | BigUint64ArrayConstructor;
+
 /** Any numeric array: typed array or `number[]` */
 export type NumberArray = number[] | TypedArray;
 
 export type NumericArray = number[] | TypedArray;
+
+export interface ArrayType<T = unknown> {
+  readonly length: number;
+  [n: number]: T;
+}
 
 /** Any array: typed array or js array (`any[]`) */
 export type AnyArray = any[] | TypedArray;

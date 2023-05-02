@@ -1,7 +1,8 @@
 // Type deduction
 import {Schema, Field} from '../../../types/schema';
+import {ArrayType} from '../../../types/types';
 import {Table} from '../../../types/category-table';
-import {getTypeFromTypedArray, getTypeFromValue} from './deduce-column-type';
+import {getDataTypeFromArray, getDataTypeFromValue} from './data-type';
 
 /**
  * SCHEMA SUPPORT - AUTODEDUCTION
@@ -13,20 +14,25 @@ export function deduceTableSchema(table: Table): Schema {
   switch (table.shape) {
     case 'array-row-table':
     case 'object-row-table':
-      return deduceSchema(table.data);
+      return deduceSchemaFromRows(table.data);
+
+    case 'columnar-table':
+      return deduceSchemaFromColumns(table.data);
+
     case 'arrow-table':
     default:
-      throw new Error('Convert arrow schema');
+      throw new Error('Deduce schema');
   }
 }
 
 export function deduceSchema(
   data: unknown[][] | {[key: string]: unknown}[] | {[key: string]: unknown[]}
 ): Schema {
-  return Array.isArray(data) ? deduceSchemaForRowTable(data) : deduceSchemaForColumnarTable(data);
+  return Array.isArray(data) ? deduceSchemaFromRows(data) : deduceSchemaFromColumns(data);
 }
 
-function deduceSchemaForColumnarTable(columnarTable: {[key: string]: unknown}): Schema {
+/** Given an object with columnar arrays, try to deduce a schema */
+function deduceSchemaFromColumns(columnarTable: {[key: string]: ArrayType}): Schema {
   const fields: Field[] = [];
   for (const [columnName, column] of Object.entries(columnarTable)) {
     const field = deduceFieldFromColumn(column, columnName);
@@ -35,7 +41,8 @@ function deduceSchemaForColumnarTable(columnarTable: {[key: string]: unknown}): 
   return {fields, metadata: {}};
 }
 
-function deduceSchemaForRowTable(rowTable: unknown[][] | {[key: string]: unknown}[]): Schema {
+/** Given an array of rows, try to deduce a schema */
+function deduceSchemaFromRows(rowTable: unknown[][] | {[key: string]: unknown}[]): Schema {
   if (!rowTable.length) {
     throw new Error('deduce from empty table');
   }
@@ -51,38 +58,40 @@ function deduceSchemaForRowTable(rowTable: unknown[][] | {[key: string]: unknown
   return {fields, metadata: {}};
 }
 
-function deduceFieldFromColumn(column: unknown, name: string): Field {
+/** Given a column (i.e. array), attempt to deduce an appropriate `Field` */
+function deduceFieldFromColumn(column: ArrayType, name: string): Field {
   if (ArrayBuffer.isView(column)) {
-    const type = getTypeFromTypedArray(column);
+    const type = getDataTypeFromArray(column);
     return {
       name,
-      type,
-      nullable: false,
-      metadata: {}
+      type: type.type || 'null',
+      nullable: type.nullable
+      // metadata: {}
     };
   }
 
   if (Array.isArray(column) && column.length > 0) {
     const value = column[0];
-    const type = getTypeFromValue(value);
+    const type = getDataTypeFromValue(value);
     // TODO - support nested schemas?
     return {
       name,
-      nullable: true,
-      metadata: {},
-      ...type
+      type,
+      nullable: true
+      // metadata: {},
     };
   }
 
   throw new Error('empty table');
 }
 
+/** Given a value, attempt to deduce an appropriate `Field` */
 function deduceFieldFromValue(value: unknown, name: string): Field {
-  const type = getTypeFromValue(value);
+  const type = getDataTypeFromValue(value);
   return {
     name,
-    nullable: true,
-    metadata: {},
-    ...type
+    type,
+    nullable: true
+    // metadata: {}
   };
 }
