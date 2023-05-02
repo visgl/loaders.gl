@@ -9,8 +9,8 @@
   "dependencies": {
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
-    "@probe.gl/bench": "^4.0.1",
-    "@probe.gl/react-bench": "^4.0.1"
+    "@probe.gl/bench": "^4.0.2",
+    "@probe.gl/react-bench": "^4.0.2"
   },
   "devDependencies": {
     "@loaders.gl/core": "^3.4.0",
