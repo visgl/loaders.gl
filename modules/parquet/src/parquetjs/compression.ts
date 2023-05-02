@@ -34,7 +34,7 @@ function toArrayBuffer(buffer: Buffer): ArrayBuffer {
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 // import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
-import lzo from 'lzo';
+// import lzo from 'lzo';
 // import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
@@ -47,7 +47,7 @@ const modules = {
   //   }
   // },
   lz4js,
-  lzo
+  // lzo
   // 'zstd-codec': ZstdCodec
 };
 
@@ -60,6 +60,7 @@ export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression
   // TODO: Understand difference between LZ4 and LZ4_RAW
   LZ4: new LZ4Compression({modules}),
   LZ4_RAW: new LZ4Compression({modules}),
+  // 
   LZO: new LZOCompression({modules}),
   ZSTD: new ZstdCompression({modules})
 };
