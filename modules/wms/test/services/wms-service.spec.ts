@@ -99,6 +99,7 @@ test('WMSService#WMS versions', async (t) => {
   );
   const wms130Service = new WMSService({
     url: WMS_SERVICE_URL,
+    substituteCRS84: true,
     wmsParameters: {version: '1.3.0', layers: ['oms']}
   });
   getMapUrl = wms130Service.getMapURL({
