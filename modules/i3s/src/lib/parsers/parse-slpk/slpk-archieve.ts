@@ -44,10 +44,30 @@ export default class SlpkArchive {
     if (mode === 'http') {
       throw new Error('http mode is not supported');
     }
-    const nameHash = Buffer.from(md5(`${path}.gz`), 'hex');
+
+    const fileToDecompress = this.getFileBytes(`${path}.gz`);
+
+    if (fileToDecompress) {
+      const decompressedData = await processOnWorker(CompressionWorker, fileToDecompress, {
+        compression: 'gzip',
+        operation: 'decompress',
+        _workerType: 'test',
+        gzip: {}
+      });
+      return decompressedData;
+    }
+    const fileWithoutCompression = this.getFileBytes(path);
+    if (fileWithoutCompression) {
+      return Promise.resolve(Buffer.from(fileWithoutCompression));
+    }
+    throw new Error('No such file in the archieve');
+  }
+
+  private getFileBytes(path: string): ArrayBuffer | undefined {
+    const nameHash = Buffer.from(md5(path), 'hex');
     const fileInfo = this.hashArray.find((val) => Buffer.compare(val.hash, nameHash) === 0);
     if (!fileInfo) {
-      throw new Error('No such file in the archieve');
+      return undefined;
     }
 
     const localFileHeader = new LocalFileHeader(
@@ -60,12 +80,7 @@ export default class SlpkArchive {
       fileDataOffset,
       fileDataOffset + localFileHeader.compressedSize
     );
-    const decompressedData = await processOnWorker(CompressionWorker, compressedFile, {
-      compression: 'gzip',
-      operation: 'decompress',
-      _workerType: 'test',
-      gzip: {}
-    });
-    return decompressedData;
+
+    return compressedFile;
   }
 }
