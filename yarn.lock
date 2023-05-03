@@ -1932,7 +1932,7 @@
     "@luma.gl/shadertools" "8.5.20"
     "@luma.gl/webgl" "8.5.20"
 
-"@luma.gl/engine@8.5.20", "@luma.gl/engine@^8.5.19":
+"@luma.gl/engine@8.5.20":
   version "8.5.20"
   resolved "https://registry.yarnpkg.com/@luma.gl/engine/-/engine-8.5.20.tgz#5ef3fa7b69a3bcfeda5991ed9f1d75445cbfbf13"
   integrity sha512-+0ryJ/4gL1pWaEgZimY21jUPt1LYiO6Cqte8TNUprCfAHoAStsuzD7jwgEqnM6jJOUEdIxQ3w0z3Dzw/0KIE+w==
