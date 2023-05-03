@@ -1,9 +1,17 @@
 import type {Mbs, Node3DIndexDocument, Obb} from '@loaders.gl/i3s';
-
 import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
-import {CubeGeometry} from '@luma.gl/engine';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
+
+// prettier-ignore
+const CUBE_POSITIONS = new Float32Array([
+  -1,  -1,  1, 1,  -1,  1,  1,  1,  1,  -1,  1,  1,
+  -1,  -1,  -1,  -1,  1,  -1,  1,  1,  -1,  1,  -1,  -1,
+  -1,  1,  -1,  -1,  1,  1,  1,  1,  1,  1,  1,  -1,
+  -1,  -1,  -1,  1,  -1,  -1,  1,  -1,  1,  -1,  -1,  1,
+  1,  -1,  -1,  1,  1,  -1,  1,  1,  1,  1,  -1,  1,
+  -1,  -1,  -1,  -1,  -1,  1,  -1,  1,  1,  -1,  1,  -1
+]);
 
 // TODO Unite Tile validation logic in i3s-17-and-debug with this code.
 
@@ -86,11 +94,9 @@ function createBoundingBoxFromTileObb(obb: Obb): OrientedBoundingBox {
  * @param node
  */
 function getTileObbVertices(node: Node3DIndexDocument): number[] {
-  const geometry = new CubeGeometry();
   // @ts-expect-error
   const halfSize = node.obb.halfSize;
-  const attributes = geometry.getAttributes();
-  const positions = new Float32Array(attributes.POSITION.value);
+  const positions = CUBE_POSITIONS;
   // @ts-expect-error
   const obbCenterCartesian = Ellipsoid.WGS84.cartographicToCartesian(node.obb.center);
 
