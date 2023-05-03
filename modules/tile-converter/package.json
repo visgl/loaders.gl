@@ -57,7 +57,6 @@
     "@loaders.gl/tiles": "3.4.0-alpha.3",
     "@loaders.gl/worker-utils": "3.4.0-alpha.3",
     "@loaders.gl/zip": "3.4.0-alpha.3",
-    "@luma.gl/engine": "^8.5.19",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
     "@math.gl/geoid": "^3.5.1",
