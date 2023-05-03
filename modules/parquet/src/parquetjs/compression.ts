@@ -8,7 +8,7 @@ import {
   GZipCompression,
   SnappyCompression,
   BrotliCompression,
-  LZOCompression,
+  // LZOCompression,
   LZ4Compression,
   ZstdCompression
 } from '@loaders.gl/compression';
@@ -34,7 +34,7 @@ function toArrayBuffer(buffer: Buffer): ArrayBuffer {
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 // import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
-import lzo from 'lzo';
+// import lzo from 'lzo';
 // import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
@@ -46,12 +46,15 @@ const modules = {
   //     throw new Error('brotli compress');
   //   }
   // },
-  lz4js,
-  lzo
+  lz4js
+  // lzo
   // 'zstd-codec': ZstdCodec
 };
 
-// See https://github.com/apache/parquet-format/blob/master/Compression.md
+/**
+ * See https://github.com/apache/parquet-format/blob/master/Compression.md
+ */
+// @ts-expect-error
 export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression> = {
   UNCOMPRESSED: new NoCompression(),
   GZIP: new GZipCompression(),
@@ -60,7 +63,8 @@ export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression
   // TODO: Understand difference between LZ4 and LZ4_RAW
   LZ4: new LZ4Compression({modules}),
   LZ4_RAW: new LZ4Compression({modules}),
-  LZO: new LZOCompression({modules}),
+  //
+  // LZO: new LZOCompression({modules}),
   ZSTD: new ZstdCompression({modules})
 };
 

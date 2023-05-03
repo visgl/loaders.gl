@@ -22,7 +22,7 @@ type ImageSourceProps = ImageServiceProps &
  * @param type type of source. if not known, set to 'auto'
  * @returns an ImageSource instance
  */
-export function createImageSource(props: ImageSourceProps): ImageSource {
+export function createImageSource(props: ImageSourceProps): ImageSource<ImageSourceProps> {
   const {type = 'auto'} = props;
   const serviceType = type === 'auto' ? guessServiceType(props.url) : type;
   switch (serviceType) {

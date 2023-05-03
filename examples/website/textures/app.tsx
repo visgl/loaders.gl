@@ -181,7 +181,6 @@ export default class App extends PureComponent {
 
   render() {
     const {gl, canvas, program} = this.state;
-    debugger
     return (
       <div style={{margin: 30}}>
         {this.renderDescription()}

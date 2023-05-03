@@ -1,6 +1,6 @@
 # Parquet
 
-The GitHUB specification of [Apache Parquet](https://github.com/apache/parquet-format/blob/master/README).
+The GitHUB specification of [Apache Parquet](https://github.com/apache/parquet-format/blob/master/README.md).
 
 ## Column encodings
 

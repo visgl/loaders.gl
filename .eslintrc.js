@@ -37,6 +37,7 @@ const config = deepMerge(defaultConfig, {
         // For parquet module
         '@typescript-eslint/no-non-null-assertion': 0,
         '@typescript-eslint/no-non-null-asserted-optional-chain': 0,
+        '@typescript-eslint/no-floating-promises': 0,
         // Gradually enable
         '@typescript-eslint/ban-ts-comment': 0,
         '@typescript-eslint/ban-types': 0,

@@ -9,6 +9,7 @@ function makeAliases(basename = __dirname) {
     test: resolve(basename, '../test'),
     '@loaders.gl/3d-tiles/test': resolve(basename, '../modules/3d-tiles/test'),
     '@loaders.gl/arrow/test': resolve(basename, '../modules/arrow/test'),
+    '@loaders.gl/bson/test': resolve(basename, '../modules/bson/test'),
     '@loaders.gl/compression/test': resolve(basename, '../modules/compression/test'),
     '@loaders.gl/crypto/test': resolve(basename, '../modules/crypto/test'),
     '@loaders.gl/core/test': resolve(basename, '../modules/core/test'),

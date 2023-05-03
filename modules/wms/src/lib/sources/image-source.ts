@@ -19,9 +19,9 @@ export type ImageSourceMetadata = {
 };
 
 export type ImageSourceLayer = {
-  name: string;
+  name?: string;
   title?: string;
-  srs?: string[];
+  crs?: string[];
   boundingBox?: [number, number, number, number];
   layers?: ImageSourceLayer[];
 };
@@ -37,8 +37,8 @@ export type GetImageParameters = {
   width: number;
   /** pixels */
   height: number;
-  /** srs for the image (not the bounding box) */
-  srs?: string;
+  /** crs for the image (not the bounding box) */
+  crs?: string;
   /** requested format for the return image */
   format?: 'image/png';
 };
@@ -61,8 +61,8 @@ export type ImageFormat = {
   width: number;
   /** pixels */
   height: number;
-  /** srs for the image (not the bounding box) */
-  srs?: string;
+  /** crs for the image (not the bounding box) */
+  crs?: string;
   /** requested format for the return image */
   format?: 'image/png';
 };
@@ -74,7 +74,7 @@ export type ImageSourceProps = DataSourceProps;
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export abstract class ImageSource extends DataSource {
+export abstract class ImageSource<PropsT extends ImageSourceProps> extends DataSource<PropsT> {
   abstract getMetadata(): Promise<ImageSourceMetadata>;
   abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
 }

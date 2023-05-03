@@ -18,6 +18,8 @@ const BERLIN_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Berlin/1511577738.buildings.b3dm';
 const NEW_YORK_B3DM_FILE_PATH = '@loaders.gl/tile-converter/test/data/NewYork/75343/6/5/1.b3dm';
 const FERRY_GLTF_FILE_PATH = '@loaders.gl/tile-converter/test/data/Ferry/754834/6/0000000.glb';
+const TRIANGLE_STRIP_B3DM_FILE_PATH =
+  '@loaders.gl/tile-converter/test/data/TriangleStrip/lod1_0.b3dm';
 
 setLoaderOptions({
   _worker: 'test'
@@ -312,6 +314,66 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
       },
       t
     );
+  } finally {
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
+  t.end();
+});
+
+test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
+  const EXPECT_VERTEX_COUNT = [42891, 12861];
+
+  if (isBrowser) {
+    t.end();
+    return;
+  }
+
+  let nodeId = 1;
+  const addNodeToNodePage = async () => nodeId++;
+  const featuresHashArray = [];
+  const draco = true;
+  const generageBoundingVolumes = false;
+  const shouldMergeMaterials = false;
+  const tileHeaderRequiredProps = {
+    computedTransform: [
+      [
+        -0.16491735, -0.98630739, 0, 0, -0.70808611, 0.11839684, 0.69612948, 0, -0.68659765,
+        0.11480383, -0.71791625, 0, -4386786.82071079, 733504.6938935, -4556188.9172627, 1
+      ]
+    ],
+    boundingVolume: {center: [-4386794.587985844, 733486.8163247632, -4556196.147240348]}
+  };
+  const tileContent = await load(TRIANGLE_STRIP_B3DM_FILE_PATH, Tiles3DLoader);
+  const propertyTable = getPropertyTable(tileContent);
+  calculateTransformProps(tileHeaderRequiredProps, tileContent);
+  const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
+  const workerSource = await getWorkersSource();
+  const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
+  try {
+    const convertedResources = await convertB3dmToI3sGeometry(
+      tileContent,
+      addNodeToNodePage,
+      propertyTable,
+      featuresHashArray,
+      attributeStorageInfo,
+      draco,
+      generageBoundingVolumes,
+      shouldMergeMaterials,
+      geoidHeightModel,
+      workerSource
+    );
+    t.ok(convertedResources);
+    if (!convertedResources) {
+      return;
+    }
+    t.equals(convertedResources.length, 2, 'Returns 2 nodes');
+    for (let i = 0; i < convertedResources.length; i++) {
+      const nodeResources = convertedResources[i];
+      t.equals(nodeResources.vertexCount, EXPECT_VERTEX_COUNT[i]);
+    }
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});

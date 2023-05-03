@@ -7,7 +7,7 @@ The `DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRAC
 | File Extension | `.drc`                                       |
 | File Type      | Binary                                       |
 | File Format    | [Draco](https://google.github.io/draco/)     |
-| Data Format    | [Mesh](docs/specifications/category-mesh) |
+| Data Format    | [Mesh](/docs/specifications/category-mesh) |
 | Supported APIs | `parse`                                      |
 
 Features:

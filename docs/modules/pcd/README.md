@@ -1,6 +1,6 @@
 # Overview
 
-The `@loaders.gl/pcd` module handles the the [Point Cloud Data format](http://pointclouds.org/documentation/tutorials/pcd_file_format.php), which encodes point cloud data for use inside Point Cloud Library (PCL).
+The `@loaders.gl/pcd` module handles the the [Point Cloud Data format](https://pointclouds.org/about/), which encodes point cloud data for use inside Point Cloud Library (PCL).
 
 ## Installation
 

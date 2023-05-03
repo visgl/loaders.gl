@@ -26,20 +26,37 @@ Also note that layers are organized in a hierarchy. Sublayers inherit properties
 
 > Note that the GetCapabilities request can be used to discover valid layer names, however on public servers the `GetCapabilities` request is sometimesslow, so it can take some time to auto-discover a valid layer name and then request a map with that layer. The `GetMap` request is usually faster once you have a list of valid layer names. 
 
-## WMS Request Types
+## WMS Requests
 
 The WMS standard specifies a number of "request types" that a standards-compliant WMS server should support. loaders.gl provides loaders for all WMS request responses: 
 
 | **WMS Request**    | **Response Loader**         | **Description**                                                                                                                                                                                                        |
 | ------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GetCapabilities`  | `WMSCapabilitiesLoader`     | Returns WMS metadata (such as map image format and WMS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
-| `GetMap`           | `ImageLoader`               | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
-| `GetFeatureInfo`   | `WMSFeatureInfoLoader`      | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                     |
+| `GetCapabilities`  | [`WMSCapabilitiesLoader`][capabilities_loader]     | Returns WMS metadata (such as map image format and WMS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
+| `GetMap`           | `ImageLoader`][image_loader]               | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
+| `GetFeatureInfo`   | `WMSFeatureInfoLoader`][feature_info_loader]      | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                     |
 | `DescribeLayer`    | `WMSLayerDescriptionLoader` | gets feature types of the specified layer or layers, which can be further described using WFS or WCS requests. This request is dependent on the Styled Layer Descriptor (SLD) Profile of WMS.                          |
-| `GetLegendGraphic` | `ImageLoader`               | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
+| `GetLegendGraphic` | `ImageLoader`][image_loader]               | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
 | Exceptions         | `WMSErrorLoader`            | Parses an XML encoded WMS error response from any malformed request.                                                                                                                                                   |
 
-> Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server. Information about which request types are supported is available in the response to `GetCapabilities` request.
+Remarks:
+- Information about which request types are supported is available in the response to `GetCapabilities` request.
+- Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server. 
+
+[capabilities_loader]: /docs/modules/wms/api-reference/wms-capabilities-loader
+[feature_info_loader]: /docs/modules/wms/api-reference/wms-feature-info-loader
+[image_loader]: /docs/modules/image/api-reference/image_loader
+
+## WMS Capabilities
+
+On a high level WMS metadata includes:
+- WMS version compatibility
+- map image format 
+- available layers (map bounding box, coordinate reference systems)
+- Human readable names for service and layers
+- etc.
+ 
+More information about the structure and semantics of WMS service metadata, or capabilities, can be found in the [`WMSCapabilitiesLoader`][capabilities_loader] documentation.
 
 ## WMS Protocol Versions
 

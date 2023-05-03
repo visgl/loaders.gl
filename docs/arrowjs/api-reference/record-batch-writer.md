@@ -22,7 +22,7 @@ A Promise which resolves when this `RecordBatchWriter` is closed.
 
 ## Static Methods
 
-### RecordBatchWriter.throughNode(options?: Object): DuplexStream
+### `RecordBatchWriter.throughNode(options?: Object): DuplexStream`
 
 Creates a Node.js `TransformStream` that transforms an input `ReadableStream` of Tables or RecordBatches into a stream of `Uint8Array` Arrow Message chunks.
 
@@ -61,14 +61,14 @@ finished(result, () => console.log('done writing table.arrow'));
 Creates a DOM/WhatWG `ReadableStream`/`WritableStream` pair that together transforms an input `ReadableStream` of Tables or RecordBatches into a stream of `Uint8Array` Arrow Message chunks.
 
 - `options.autoDestroy`: boolean - (default: `true`) Indicates whether the RecordBatchWriter should close after writing the first logical stream of RecordBatches (batches which all share the same Schema), or should continue and reset each time it encounters a new Schema.
-- `writableStrategy.*`= - Any options for QueuingStrategy\<RecordBatch\>
+- `writableStrategy.*`= - Any options for` QueuingStrategy<RecordBatch>`
 - `readableStrategy.highWaterMark`? : Number
 - `readableStrategy.size`?: Number
 
 Returns: an object with the following fields:
 
-- `writable`: WritableStream\<Table | RecordBatch\>
-- `readable`: ReadableStream\<Uint8Array\>
+- `writable`: `WritableStream<Table | RecordBatch>`
+- `readable`: `ReadableStream<Uint8Array>`
 
 
 
@@ -80,41 +80,41 @@ constructor(options? : Object)
 * `options.autoDestroy`: boolean -
 
 
-### toString(sync: Boolean): string | `Promise<string>`
+### `toString(sync: Boolean): string | Promise<string>`
 
-### toUint8Array(sync: Boolean): Uint8Array | `Promise<Uint8Array>`
+### `toUint8Array(sync: Boolean): Uint8Array | Promise<Uint8Array>`
 
 
-### writeAll(input: Table | `Iterable<RecordBatch>`): this
-### writeAll(input: `AsyncIterable<RecordBatch>`): `Promise<this>`
-### writeAll(input: `PromiseLike<AsyncIterable<RecordBatch>`>): `Promise<this>`
-### writeAll(input: PromiseLike<Table | `Iterable<RecordBatch>`>): `Promise<this>`
+### `writeAll(input: Table | Iterable<RecordBatch>): this`
+### `writeAll(input: AsyncIterable<RecordBatch>`): `Promise<this>`
+### `writeAll(input: PromiseLike<AsyncIterable<RecordBatch>>): Promise<this>`
+### `writeAll(input: PromiseLike<Table | Iterable<RecordBatch>>): Promise<this>`
 
-* [Symbol.asyncIterator](): `AsyncByteQueue<Uint8Array>`
+* `[Symbol.asyncIterator](): AsyncByteQueue<Uint8Array>`
 
 Returns An async iterator that produces Uint8Arrays.
 
-### toDOMStream(options?: Object): `ReadableStream<Uint8Array>`
+### `toDOMStream(options?: Object): ReadableStream<Uint8Array>`
 
 Returns a new DOM/WhatWG stream that can be used to read the Uint8Array chunks produced by the RecordBatchWriter
 
 - `options` - passed through to the DOM ReadableStream constructor, any DOM ReadableStream options.
 
-### toNodeStream(options?: Object): Readable
+### `toNodeStream(options?: Object): Readable`
 
 - `options` - passed through to the Node ReadableStream constructor, any Node ReadableStream options.
 
-### close() : void
+### `close() : void`
 
 Close the RecordBatchWriter. After close is called, no more chunks can be written.
 
-### abort(reason?: any) : void
-### finish() : this
-### reset(sink?: `WritableSink<ArrayBufferViewInput>`, schema?: Schema | null): this
+### `abort(reason?: any) : void`
+### `finish() : this`
+### `reset(sink?: WritableSink<ArrayBufferViewInput>, schema?: Schema | null): this`
 
 Change the sink
 
-### write(payload?: Table | RecordBatch | `Iterable<Table>` | `Iterable<RecordBatch>` | null): void
+### `write(payload?: Table | RecordBatch | Iterable<Table> | Iterable<RecordBatch> | null): void`
 
 Writes a `RecordBatch` or all the RecordBatches from a `Table`.
 

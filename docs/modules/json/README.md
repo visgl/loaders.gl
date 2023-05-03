@@ -19,10 +19,10 @@ npm install @loaders.gl/core @loaders.gl/json
 
 | Loader                                                                |
 | --------------------------------------------------------------------- |
-| [`JSONLoader`](modules/json/docs/api-reference/json-loader)           |
-| [`NDJSONLoader`](modules/json/docs/api-reference/ndjson-loader)       |
-| [`GeoJSONLoader`](modules/json/docs/api-reference/geojson-loader)     |
-| [`NDGeoJSONLoader`](modules/json/docs/api-reference/ndgeojson-loader) |
+| [`JSONLoader`](/docs/modules/json/api-reference/json-loader)           |
+| [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader)       |
+| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader)     |
+| [`NDGeoJSONLoader`](/docs/modules/json/api-reference/ndgeojson-loader) |
 
 ## Additional APIs
 

@@ -1,6 +1,8 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import {StaticMap} from 'react-map-gl';
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+
 import {HuePicker, MaterialPicker} from 'react-color';
 import styled from 'styled-components';
 
@@ -176,24 +178,30 @@ const CURSOR_STYLE = {
 };
 
 const StatsWidgetWrapper = styled.div`
-  display: ${(props) => (props.showMemory ? 'inherit' : 'none')};
+  display: ${(props) => (props.showMemory ? 'flex' : 'none')};
 `;
 
 const StatsWidgetContainer = styled.div`
-  ${Flex}
   ${Color}
   ${Font}
-  color: rgba(255, 255, 255, .6);
+  display: flex;
+  flex-direction: column;
   z-index: 3;
+  position: absolute;
   top: 10px;
   right: 10px;
-  word-break: break-word;
-  padding: 24px;
+  padding: 6px;
   border-radius: 8px;
-  width: 250px;
+  width: 270px;
   max-height: calc(100% - 10px);
   line-height: 135%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  > div {
+    position: unset !important;
+    background-color: transparent !important;
+  }
 
   @media (max-width: 768px) {
     top: ${(props) => (props.renderControlPanel ? '85px' : '10px')};
@@ -1055,14 +1063,10 @@ export default class App extends PureComponent {
           onClick={(info) => this.handleClick(info)}
         >
           {!useTerrainLayer && (
-            <StaticMap reuseMaps mapStyle={selectedMapStyle} preventStyleDiffing={true} />
+            <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
           )}
           <View id="minimap">
-            <StaticMap
-              reuseMaps
-              mapStyle={CONTRAST_MAP_STYLES[selectedMapStyle]}
-              preventStyleDiffing={true}
-            />
+            <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
           </View>
         </DeckGL>
       </div>

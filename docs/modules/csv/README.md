@@ -13,8 +13,8 @@ npm install @loaders.gl/core @loaders.gl/csv
 
 | Loader                                                         |
 | -------------------------------------------------------------- |
-| [`CSVLoader`](modules/csv/docs/api-reference/csv-loader)       |
-| [`CSVWorkerLoader`](modules/csv/docs/api-reference/csv-loader) |
+| [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader)       |
+| [`CSVWorkerLoader`](/docs/modules/csv/api-reference/csv-loader) |
 
 ## Additional APIs
 

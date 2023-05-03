@@ -23,15 +23,16 @@
     "@math.gl/core": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
     "@probe.gl/stats-widget": "^4.0.1",
+    "maplibre-gl": "^2.4.0",
     "marked": "^0.7.0",
     "prop-types": "^15.7.2",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-map-gl": "^5.0.0",
+    "react-map-gl": "^7.0.0",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
     "typescript": "^5.0.4",
-    "vite": "^2.7.1"
+    "vite": "^4.2.1"
   }
 }

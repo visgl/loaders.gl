@@ -29,7 +29,7 @@ const arrayBuffer = encodeSync(gltf, GLBWriter, options);
 
 ## Data Format
 
-See [`GLBLoader`](/modules/gltf/docs/api-reference/glb-loader).
+See [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader).
 
 ## Remarks
 

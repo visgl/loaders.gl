@@ -15,7 +15,7 @@ const config = {
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: '/favicon.png',
-  organizationName: 'uber-web', // Usually your GitHub org/user name.
+  organizationName: 'visgl', // Usually your GitHub org/user name.
   projectName: 'loaders.gl', // Usually your repo name.
   trailingSlash: false,
 
@@ -28,7 +28,7 @@ const config = {
           path: '../docs',
           sidebarPath: resolve('./src/docs-sidebar.js'),
           // Point to to the website directory in your repo.
-          editUrl: 'https://github.com/uber-web/loaders.gl/tree/master/website'
+          editUrl: 'https://github.com/visgl/loaders.gl/tree/master/website'
         },
         theme: {
           customCss: [
@@ -52,6 +52,7 @@ const config = {
 
             '@loaders.gl/3d': resolve('../modules/3d-tiles'),
             '@loaders.gl/arrow': resolve('../modules/arrow'),
+            '@loaders.gl/bson': resolve('../modules/bson'),
             '@loaders.gl/compression': resolve('../modules/compression'),
             '@loaders.gl/core': resolve('../modules/core'),
             '@loaders.gl/crypto': resolve('../modules/crypto'),
@@ -187,18 +188,18 @@ const config = {
             position: 'left',
             label: 'Docs'
           },
-          // {
-          //   to: '/showcase',
-          //   position: 'left',
-          //   label: 'Showcase',
-          // },
+          {
+            to: '/showcase',
+            position: 'left',
+            label: 'Showcase',
+          },
           {
             to: 'https://medium.com/vis-gl',
             label: 'Blog',
             position: 'left'
           },
           {
-            href: 'https://github.com/uber-web/loaders.gl',
+            href: 'https://github.com/visgl/loaders.gl',
             label: 'GitHub',
             position: 'right'
           }
@@ -212,7 +213,7 @@ const config = {
             items: [
               {
                 label: 'deck.gl',
-                href: 'https:/deck.gl'
+                href: 'https://deck.gl'
               },
               {
                 label: 'luma.gl',
@@ -241,7 +242,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/uber-web/loaders.gl'
+                href: 'https://github.com/visgl/loaders.gl'
               }
             ]
           }

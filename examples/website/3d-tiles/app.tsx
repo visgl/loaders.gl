@@ -1,6 +1,8 @@
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
-import {StaticMap} from 'react-map-gl';
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+import styled from 'styled-components';
 
 import {lumaStats} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
@@ -32,6 +34,21 @@ export const INITIAL_VIEW_STATE = {
   maxZoom: 30,
   zoom: 3 // Start zoomed out on US, tileset will center via "fly-to" on load
 };
+
+const StatsWidgetContainer = styled.div`
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  max-width: 270px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  
+  > div {
+    position: unset !important;
+    z-index: 1 !important;
+  }
+`;
 
 export default class App extends PureComponent {
   constructor(props) {
@@ -204,17 +221,7 @@ export default class App extends PureComponent {
   _renderStats() {
     // TODO - too verbose, get more default styling from stats widget?
     return (
-      <div
-        style={{
-          position: 'absolute',
-          padding: 12,
-          zIndex: '10000',
-          maxWidth: 300,
-          background: '#000',
-          color: '#fff'
-        }}
-        ref={(_) => (this._statsWidgetContainer = _)}
-      />
+      <StatsWidgetContainer ref={(_) => (this._statsWidgetContainer = _)} />
     );
   }
 
@@ -261,7 +268,7 @@ export default class App extends PureComponent {
           controller={{type: MapController, maxPitch: 85, inertia: true}}
           onAfterRender={() => this._updateStatWidgets()}
         >
-          <StaticMap mapStyle={selectedMapStyle} preventStyleDiffing />
+          <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
       </div>
     );

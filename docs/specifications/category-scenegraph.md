@@ -6,8 +6,8 @@ The Scenegraph category is intended to represent glTF scenegraphs.
 
 | Loader                                                      | Notes |
 | ----------------------------------------------------------- | ----- |
-| [`GLTFLoader`](modules/gltf/docs/api-reference/gltf-loader) |       |
-| [`GLBLoader`](modules/gltf/docs/api-reference/glb-loader)   |       |
+| [`GLTFLoader`](/docs/modules/gltf/api-reference/gltf-loader) |       |
+| [`GLBLoader`](/docs/modules/gltf/api-reference/glb-loader)   |       |
 
 ## Data Format
 
