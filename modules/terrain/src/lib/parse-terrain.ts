@@ -5,7 +5,7 @@ import {getMeshBoundingBox} from '@loaders.gl/schema';
 import Martini from '@mapbox/martini';
 import Delatin from './delatin';
 import {addSkirt} from './helpers/skirt';
-import {ImageLoader} from '@loaders.gl/images'
+import {ImageLoader} from '@loaders.gl/images';
 
 type TerrainOptions = {
   meshMaxError: number;
