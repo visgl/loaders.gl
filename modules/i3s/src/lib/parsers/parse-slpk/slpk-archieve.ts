@@ -3,13 +3,25 @@ import md5 from 'md5';
 import {CompressionWorker} from '@loaders.gl/compression';
 import LocalFileHeader from './local-file-header';
 
-export default class SlpkArchieve {
-  slpkArchieve: DataView;
+interface HashElement {
+  hash: Buffer;
+  offset: number;
+}
+
+/**
+ * Class for handling information about slpk file
+ */
+export default class SlpkArchive {
+  slpkArchive: DataView;
   hashArray: {hash: Buffer; offset: number}[];
-  constructor(slpkArchieveBuffer: ArrayBuffer, hashFile: ArrayBuffer) {
+  constructor(slpkArchiveBuffer: ArrayBuffer, hashFile: ArrayBuffer) {
+    this.slpkArchive = new DataView(slpkArchiveBuffer);
+    this.hashArray = this.parseHashFile(hashFile);
+  }
+
+  private parseHashFile(hashFile: ArrayBuffer): HashElement[] {
     const hashFileBuffer = Buffer.from(hashFile);
-    this.slpkArchieve = new DataView(slpkArchieveBuffer);
-    this.hashArray = [];
+    const hashArray: HashElement[] = [];
     for (let i = 0; i < hashFileBuffer.buffer.byteLength; i = i + 24) {
       const offsetBuffer = new DataView(
         hashFileBuffer.buffer.slice(
@@ -18,16 +30,17 @@ export default class SlpkArchieve {
         )
       );
       const offset = offsetBuffer.getUint32(offsetBuffer.byteOffset, true);
-      this.hashArray.push({
+      hashArray.push({
         hash: Buffer.from(
           hashFileBuffer.subarray(hashFileBuffer.byteOffset + i, hashFileBuffer.byteOffset + i + 16)
         ),
         offset
       });
     }
+    return hashArray;
   }
 
-  async getFile(path: string, mode: 'http' | 'raw' = 'raw') {
+  async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
     if (mode === 'http') {
       throw new Error('http mode is not supported');
     }
@@ -38,14 +51,14 @@ export default class SlpkArchieve {
     }
 
     const localFileHeader = new LocalFileHeader(
-      this.slpkArchieve.byteOffset + fileInfo?.offset,
-      this.slpkArchieve
+      this.slpkArchive.byteOffset + fileInfo?.offset,
+      this.slpkArchive
     );
-    const fileDataOffset = localFileHeader.getFileDataOffset();
+    const fileDataOffset = localFileHeader.fileDataOffset;
 
-    const compressedFile = this.slpkArchieve.buffer.slice(
+    const compressedFile = this.slpkArchive.buffer.slice(
       fileDataOffset,
-      fileDataOffset + localFileHeader.getCompressedSize()
+      fileDataOffset + localFileHeader.compressedSize
     );
     const decompressedData = await processOnWorker(CompressionWorker, compressedFile, {
       compression: 'gzip',

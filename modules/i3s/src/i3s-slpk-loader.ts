@@ -1,5 +1,5 @@
 import {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {parceSlpk} from './lib/parsers/parse-slpk';
+import {parseSlpk} from './lib/parsers/parse-slpk';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -16,7 +16,7 @@ export const SlpkLoader: LoaderWithParser = {
   module: 'slpk',
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
-  parse: parceSlpk,
+  parse: parseSlpk,
   extensions: ['slpk'],
   options: {}
 };

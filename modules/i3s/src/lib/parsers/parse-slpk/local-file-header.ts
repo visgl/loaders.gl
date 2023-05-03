@@ -1,8 +1,13 @@
+/**
+ * Class for handling local file header of zip file
+ */
 export default class LocalFileHeader {
-  compressedSize = 18;
-  fileNameLength = 26;
-  extraFieldLength = 28;
-  fileName = 30;
+  offsets = {
+    COMPRESSED_SIZE_OFFSET: 18,
+    FILE_NAME_LENGTH_OFFSET: 26,
+    EXTRA_FIELD_LENGTH_OFFSET: 28,
+    FILE_NAME_OFFSET: 30
+  };
 
   headerOffset: number;
   buffer: DataView;
@@ -11,21 +16,24 @@ export default class LocalFileHeader {
     this.buffer = buffer;
   }
 
-  getFileNameLength() {
-    return this.buffer.getUint16(this.headerOffset + this.fileNameLength, true);
+  get fileNameLength(): number {
+    return this.buffer.getUint16(this.headerOffset + this.offsets.FILE_NAME_LENGTH_OFFSET, true);
   }
 
-  getExtraFieldLength() {
-    return this.buffer.getUint16(this.headerOffset + this.extraFieldLength, true);
+  get extraFieldLength(): number {
+    return this.buffer.getUint16(this.headerOffset + this.offsets.EXTRA_FIELD_LENGTH_OFFSET, true);
   }
 
-  getFileDataOffset() {
+  get fileDataOffset(): number {
     return (
-      this.headerOffset + this.fileName + this.getFileNameLength() + this.getExtraFieldLength()
+      this.headerOffset +
+      this.offsets.FILE_NAME_OFFSET +
+      this.fileNameLength +
+      this.extraFieldLength
     );
   }
 
-  getCompressedSize() {
-    return this.buffer.getUint32(this.headerOffset + this.compressedSize, true);
+  get compressedSize(): number {
+    return this.buffer.getUint32(this.headerOffset + this.offsets.COMPRESSED_SIZE_OFFSET, true);
   }
 }
