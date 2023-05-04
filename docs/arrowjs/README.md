@@ -2,7 +2,7 @@
 
 ## Why does loaders.gl provide an Arrow JS API Reference?
 
-loaders.gl is designed to output parsed tables and meshes in binary columnar format (whenever the parsed data structure allows). Binary columnar tables are a very compact and efficient representation that is easy to work with analytically in JavaScript and to seamlessly upload to GPUs (via e.g. WebGL or WebGPU) for ultra-performance rendering and computation.
+loaders.gl is designed to output parsed tables and meshes in binary columnar format (whenever the parsed data structure allows). Binary columnar tables are a compact and efficient representation that is easy to work with analytically in JavaScript and to seamlessly upload to GPUs (via e.g. WebGL or WebGPU) for ultra-performance rendering and computation.
 
 While loaders.gl is great for loading data into binary columnar tables, it does not provide much support for working with those tables. Instead, the intention is that the application will use complementary libraries like Apache Arrow for that purpose. Apache Arrow defines both a file format and a powerful "data frame" API (i.e. a data science optimized, Python `pandas`-style API) for working with binary columnar data.
 
