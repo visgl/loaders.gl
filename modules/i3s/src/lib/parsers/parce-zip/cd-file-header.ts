@@ -1,8 +1,21 @@
 /**
- * Class for handling central directory file header of zip file
+ * zip central directory file header info
  */
-export class ZipCDFileHeader {
-  offsets = {
+export type ZipCDFileHeader = {
+  compressedSize: number;
+  uncompressedSize: number;
+  fileNameLength: number;
+  fileName: ArrayBuffer;
+  extraOffset: number;
+  oldFormatOffset: number;
+  localHeaderOffset: number;
+};
+
+/**
+ * parses central directory file header of zip file
+ */
+export const parseZipCDFileHeader = (headerOffset: number, buffer: DataView): ZipCDFileHeader => {
+  const offsets = {
     CD_COMPRESSED_SIZE_OFFSET: 20,
     CD_UNCOMPRESSED_SIZE_OFFSET: 24,
     CD_FILE_NAME_LENGTH_OFFSET: 28,
@@ -11,61 +24,50 @@ export class ZipCDFileHeader {
     CD_FILE_NAME_OFFSET: 46
   };
 
-  headerOffset: number;
-  buffer: DataView;
-  constructor(headerOffset: number, buffer: DataView) {
-    this.headerOffset = headerOffset;
-    this.buffer = buffer;
-  }
+  const compressedSize = buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET, true);
 
-  get compressedSize(): number {
-    return this.buffer.getUint32(this.headerOffset + this.offsets.CD_COMPRESSED_SIZE_OFFSET, true);
-  }
+  const uncompressedSize = buffer.getUint32(
+    headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET,
+    true
+  );
 
-  get uncompressedSize(): number {
-    return this.buffer.getUint32(
-      this.headerOffset + this.offsets.CD_UNCOMPRESSED_SIZE_OFFSET,
-      true
-    );
-  }
+  const fileNameLength = buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET, true);
 
-  get fileNameLength(): number {
-    return this.buffer.getUint16(this.headerOffset + this.offsets.CD_FILE_NAME_LENGTH_OFFSET, true);
-  }
+  const fileName = buffer.buffer.slice(
+    headerOffset + offsets.CD_FILE_NAME_OFFSET,
+    headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength
+  );
 
-  get fileName(): ArrayBuffer {
-    return this.buffer.buffer.slice(
-      this.headerOffset + this.offsets.CD_FILE_NAME_OFFSET,
-      this.headerOffset + this.offsets.CD_FILE_NAME_OFFSET + this.fileNameLength
-    );
-  }
+  const extraOffset = headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength;
 
-  get extraOffset(): number {
-    return this.headerOffset + this.offsets.CD_FILE_NAME_OFFSET + this.fileNameLength;
-  }
+  const oldFormatOffset = buffer.getUint32(
+    headerOffset + offsets.CD_LOCAL_HEADER_OFFSET_OFFSET,
+    true
+  );
 
-  get oldFormatOffset(): number {
-    return this.buffer.getUint32(
-      this.headerOffset + this.offsets.CD_LOCAL_HEADER_OFFSET_OFFSET,
-      true
-    );
-  }
-
-  get localHeaderOffset(): number {
-    let fileDataOffset = this.oldFormatOffset;
-    if (fileDataOffset === 0xffffffff) {
-      let offsetInZip64Data = 4;
-      // looking for info that might be also be in zip64 extra field
-      if (this.compressedSize === 0xffffffff) {
-        offsetInZip64Data += 8;
-      }
-      if (this.uncompressedSize === 0xffffffff) {
-        offsetInZip64Data += 8;
-      }
-
-      // getUint32 needs to be replaced with getBigUint64 for archieves bigger than 2gb
-      fileDataOffset = this.buffer.getUint32(this.extraOffset + offsetInZip64Data, true); // setting it to the one from zip64
+  let fileDataOffset = oldFormatOffset;
+  if (fileDataOffset === 0xffffffff) {
+    let offsetInZip64Data = 4;
+    // looking for info that might be also be in zip64 extra field
+    if (compressedSize === 0xffffffff) {
+      offsetInZip64Data += 8;
     }
-    return fileDataOffset;
+    if (uncompressedSize === 0xffffffff) {
+      offsetInZip64Data += 8;
+    }
+
+    // getUint32 needs to be replaced with getBigUint64 for archieves bigger than 2gb
+    fileDataOffset = buffer.getUint32(extraOffset + offsetInZip64Data, true); // setting it to the one from zip64
   }
-}
+  const localHeaderOffset = fileDataOffset;
+
+  return {
+    compressedSize,
+    uncompressedSize,
+    fileNameLength,
+    fileName,
+    extraOffset,
+    oldFormatOffset,
+    localHeaderOffset
+  };
+};

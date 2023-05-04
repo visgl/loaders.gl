@@ -1,13 +1,13 @@
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import md5 from 'md5';
 import {CompressionWorker} from '@loaders.gl/compression';
-import {ZipLocalFileHeader} from '../parce-zip/local-file-header';
+import {parseZipLocalFileHeader} from '../parce-zip/local-file-header';
 
 /** Element of hash array */
 type HashElement = {
   hash: Buffer;
   offset: number;
-}
+};
 
 /**
  * Class for handling information about slpk file
@@ -20,7 +20,7 @@ export class SLPKArchive {
     this.hashArray = this.parseHashFile(hashFile);
   }
 
-  /** Reads hash file from buffer and returns it in ready-to-use form */  
+  /** Reads hash file from buffer and returns it in ready-to-use form */
   private parseHashFile(hashFile: ArrayBuffer): HashElement[] {
     const hashFileBuffer = Buffer.from(hashFile);
     const hashArray: HashElement[] = [];
@@ -41,7 +41,7 @@ export class SLPKArchive {
     }
     return hashArray;
   }
-  
+
   /** returns file with the given path from slpk archive */
   async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
     if (mode === 'http') {
@@ -74,15 +74,14 @@ export class SLPKArchive {
       return undefined;
     }
 
-    const localFileHeader = new ZipLocalFileHeader(
+    const localFileHeader = parseZipLocalFileHeader(
       this.slpkArchive.byteOffset + fileInfo?.offset,
       this.slpkArchive
     );
-    const fileDataOffset = localFileHeader.fileDataOffset;
 
     const compressedFile = this.slpkArchive.buffer.slice(
-      fileDataOffset,
-      fileDataOffset + localFileHeader.compressedSize
+      localFileHeader.fileDataOffset,
+      localFileHeader.fileDataOffset + localFileHeader.compressedSize
     );
 
     return compressedFile;
