@@ -5,7 +5,6 @@ import {getMeshBoundingBox} from '@loaders.gl/schema';
 import Martini from '@mapbox/martini';
 import Delatin from './delatin';
 import {addSkirt} from './helpers/skirt';
-import {ImageLoader} from '@loaders.gl/images';
 
 type TerrainOptions = {
   meshMaxError: number;
@@ -34,7 +33,7 @@ export default async function loadTerrain(arrayBuffer, options, context?: Loader
     mimeType: 'application/x.image',
     image: {...options.image, type: 'data'}
   };
-  const image = await context?.parse(arrayBuffer, ImageLoader, loadImageOptions);
+  const image = await context?.parse(arrayBuffer, loadImageOptions);
   // Extend function to support additional mesh generation options (square grid or delatin)
   return getMesh(image, options.terrain);
 }
