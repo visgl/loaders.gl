@@ -1,5 +1,7 @@
 ## RecordBatchWriter
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
 The `RecordBatchWriter` "serializes" Arrow Tables (or streams of RecordBatches) to the Arrow File, Stream, or JSON representations for inter-process communication (see also: [Arrow IPC format docs](https://arrow.apache.org/docs/format/IPC.html#streaming-format)).
 
 The RecordBatchWriter is conceptually a "transform" stream that transforms Tables or RecordBatches into binary `Uint8Array` chunks that represent the Arrow IPC messages (`Schema`, `DictionaryBatch`, `RecordBatch`, and in the case of the File format, `Footer` messages).

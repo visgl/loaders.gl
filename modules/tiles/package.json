@@ -42,7 +42,7 @@
     "@probe.gl/stats": "^4.0.2"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-alpha.5"
+    "@loaders.gl/core": "4.0.0-alpha.6"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

@@ -1,6 +1,18 @@
 # Introduction
 
-The Arrow JavaScript API is designed to helps applications tap into the full power of working with binary columnar data in the Apache Arrow format. Arrow JS has a rich set of classes that supports use cases such as batched loading and writing, as well performing data frame operations on Arrow encoded data, including applying filters, iterating over tables, etc.
+## Why does loaders.gl provide an Arrow JS API Reference?
+
+loaders.gl is designed to output parsed tables and meshes in binary columnar format (whenever the parsed data structure allows). Binary columnar tables are a very compact and efficient representation that is easy to work with analytically in JavaScript and to seamlessly upload to GPUs (via e.g. WebGL or WebGPU) for ultra-performance rendering and computation.
+
+While loaders.gl is great for loading data into binary columnar tables, it does not provide much support for working with those tables. Instead, the intention is that the application will use complementary libraries like Apache Arrow for that purpose. Apache Arrow defines both a file format and a powerful "data frame" API (i.e. a data science optimized, Python `pandas`-style API) for working with binary columnar data.
+
+While the Apache Arrow JS library itself is excellent, the [reference documentation for the Apache Arrow JavaScript bindings](https://arrow.apache.org/docs/js/) is unfortunately rather thin. It can therefore be challenging to get up to speed on the Arrow JS API, which is why this documentation is provided in loaders.gl.
+
+> Perhaps this documentation could at some point be contributed back to the Apache Arrow project, but so far this has not happened.
+
+## About Apache Arrow JS
+
+The Apache Arrow JavaScript API is designed to help applications tap into the full power of working with binary columnar data in the Apache Arrow format. Arrow JS has a rich set of classes that supports use cases such as batched loading and writing, as well performing data frame operations on Arrow encoded data, including applying filters, iterating over tables, etc.
 
 ## Getting Started
 

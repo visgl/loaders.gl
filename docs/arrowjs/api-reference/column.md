@@ -1,5 +1,7 @@
 # Column
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
 An immutable column data structure consisting of a field (type metadata) and a chunked data array.
 
 ## Usage
@@ -27,7 +29,7 @@ for (const value of column) {
 
 ## Inheritance
 
-Column extends [`Chunked`](modules/arrow/docs/api-reference/chunked.md)
+Column extends [`Chunked`](/docs/arrowjs/api-reference/chunked)
 
 
 ## Fields
@@ -52,7 +54,6 @@ Returns the `Field` instance that describes for the column.
 ### clone
 
 Returns a new `Column` instance with the same properties.
-
 
 ### getChildAt(index : Number) : Vector
 
