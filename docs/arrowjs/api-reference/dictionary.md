@@ -1,7 +1,8 @@
 # Dictionary
 
-A `Dictionary` stores index-to-value maps for dictionary encoded columns.
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
 
+A `Dictionary` stores index-to-value maps for dictionary encoded columns.
 
 ## Fields
 

@@ -1,5 +1,8 @@
 # RecordBatchReader
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
+
 The RecordBatchReader is the IPC reader for reading chunks from a stream or file
 
 ## Usage

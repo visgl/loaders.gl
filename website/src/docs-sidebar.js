@@ -11,8 +11,8 @@
  const tutorialSidebar = require('../../docs/docs-sidebar.json');
 
  // Add ArrowJS sidebar
-// const arrowSidebar = require('../../docs/arrowjs/arrow-sidebar.json');
-// tutorialSidebar.push(arrowSidebar);
+const arrowSidebar = require('../../docs/arrowjs/arrow-sidebar.json');
+tutorialSidebar.push(arrowSidebar);
 
  const sidebars = {
   tutorialSidebar

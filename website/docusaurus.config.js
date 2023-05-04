@@ -179,14 +179,14 @@ const config = {
         },
         items: [
           {
-            to: '/examples',
-            position: 'left',
-            label: 'Examples'
-          },
-          {
             to: '/docs',
             position: 'left',
             label: 'Docs'
+          },
+          {
+            to: '/examples',
+            position: 'left',
+            label: 'Examples'
           },
           {
             to: '/showcase',

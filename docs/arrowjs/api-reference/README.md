@@ -1,5 +1,7 @@
 # Apache Arrow JavaScript API Reference
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
 ## Class List
 
 > TODO - This is a class list from the C++ docs, it has only been partially updated to match JS API

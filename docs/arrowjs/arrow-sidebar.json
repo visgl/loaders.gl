@@ -1,61 +1,61 @@
 {
   "type": "category",
-  "label": "Arrow JS",
+  "label": "Arrow JS API Reference",
   "items": [
     {
       "type": "category",
       "label": "Overview",
       "items": [
-        "/docs/arrowjs",
-        "/docs/arrowjs/roadmap",
-        "/docs/arrowjs/contributing"
+        "arrowjs/README",
+        "arrowjs/whats-new",
+        "arrowjs/contributing"
       ]
     },
     {
       "type": "category",
       "label": "Get Started",
       "items": [
-        "/docs/arrowjs/get-started/installing",
-        "/docs/arrowjs/get-started/examples"
+        "arrowjs/get-started/installing",
+        "arrowjs/get-started/examples"
       ]
     },
     {
       "type": "category",
       "label": "Developer Guide",
       "items": [
-        "/docs/arrowjs/developer-guide/big-ints",
-        "/docs/arrowjs/developer-guide/converting-data",
-        "/docs/arrowjs/developer-guide/data-frame-operations",
-        "/docs/arrowjs/developer-guide/data-sources",
-        "/docs/arrowjs/developer-guide/data-types",
-        "/docs/arrowjs/developer-guide/memory-management",
-        "/docs/arrowjs/developer-guide/predicates",
-        "/docs/arrowjs/developer-guide/reading-and-writing",
-        "/docs/arrowjs/developer-guide/tables",
-        "/docs/arrowjs/developer-guide/typescript"
+        "arrowjs/developer-guide/big-ints",
+        "arrowjs/developer-guide/converting-data",
+        "arrowjs/developer-guide/data-frame-operations",
+        "arrowjs/developer-guide/data-sources",
+        "arrowjs/developer-guide/data-types",
+        "arrowjs/developer-guide/memory-management",
+        "arrowjs/developer-guide/predicates",
+        "arrowjs/developer-guide/reading-and-writing",
+        "arrowjs/developer-guide/tables",
+        "arrowjs/developer-guide/typescript"
       ]
     },
     {
       "type": "category",
       "label": "API Reference",
       "items": [
-        "/docs/arrowjs/api-reference",
-        "/docs/arrowjs/api-reference/chunked",
-        "/docs/arrowjs/api-reference/column",
-        "/docs/arrowjs/api-reference/data-frame",
-        "/docs/arrowjs/api-reference/data",
-        "/docs/arrowjs/api-reference/dictionary",
-        "/docs/arrowjs/api-reference/field",
-        "/docs/arrowjs/api-reference/predicates",
-        "/docs/arrowjs/api-reference/record-batch-reader",
-        "/docs/arrowjs/api-reference/record-batch-writer",
-        "/docs/arrowjs/api-reference/record-batch",
-        "/docs/arrowjs/api-reference/row",
-        "/docs/arrowjs/api-reference/schema",
-        "/docs/arrowjs/api-reference/table",
-        "/docs/arrowjs/api-reference/types",
-        "/docs/arrowjs/api-reference/vector",
-        "/docs/arrowjs/api-reference/vectors"
+        "arrowjs/api-reference/README",
+        "arrowjs/api-reference/chunked",
+        "arrowjs/api-reference/column",
+        "arrowjs/api-reference/data-frame",
+        "arrowjs/api-reference/data",
+        "arrowjs/api-reference/dictionary",
+        "arrowjs/api-reference/field",
+        "arrowjs/api-reference/predicates",
+        "arrowjs/api-reference/record-batch-reader",
+        "arrowjs/api-reference/record-batch-writer",
+        "arrowjs/api-reference/record-batch",
+        "arrowjs/api-reference/row",
+        "arrowjs/api-reference/schema",
+        "arrowjs/api-reference/table",
+        "arrowjs/api-reference/types",
+        "arrowjs/api-reference/vector",
+        "arrowjs/api-reference/vectors"
       ]
     }
   ]

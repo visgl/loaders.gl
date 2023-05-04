@@ -1,29 +1,21 @@
 [
   {
     "type": "category",
+    "label": "Overview",
+    "items": [
+      "README",
+      "whats-new",
+      "upgrade-guide"
+    ]
+  },
+  {
+    "type": "category",
     "label": "Developer Guide",
     "items": [
       {
         "type": "category",
         "label": "Overview",
         "items": ["README", "whats-new", "upgrade-guide"]
-      },
-      {
-        "type": "category",
-        "label": "Guides",
-        "items": [
-          "developer-guide/get-started",
-          "developer-guide/using-loaders",
-          "developer-guide/using-worker-loaders",
-          "developer-guide/using-streaming-loaders",
-          "developer-guide/using-writers",
-          "developer-guide/loader-categories",
-          "developer-guide/error-handling",
-          "developer-guide/polyfills",
-          "developer-guide/dependencies",
-          "developer-guide/creating-loaders-and-writers",
-          "developer-guide/dev-env"
-        ]
       },
       {
         "type": "category",
@@ -34,26 +26,43 @@
           "developer-guide/concepts/async-iterators",
           "developer-guide/concepts/worker-threads"
         ]
-      }
-    ]
-  },
-  {
-    "type": "category",
-    "label": "Loader Categories",
-    "items": [
-      "specifications/category-json",
-      "specifications/category-table",
-      "specifications/category-image",
-      "specifications/category-gis",
-      "specifications/category-mesh",
-      "specifications/category-scenegraph",
-      "specifications/category-3d-tiles"
+      },
+      {
+        "type": "category",
+        "label": "Advanced Topics",
+        "items": [
+          "developer-guide/dependencies",
+          "developer-guide/creating-loaders-and-writers",
+          "developer-guide/error-handling",
+          "developer-guide/dev-env"
+        ]
+      },
+      "developer-guide/get-started",
+      "developer-guide/using-loaders",
+      "developer-guide/using-writers",
+      "developer-guide/loader-categories",
+      "developer-guide/using-worker-loaders",
+      "developer-guide/using-streaming-loaders",
+      "developer-guide/polyfills"
     ]
   },
   {
     "type": "category",
     "label": "Loader Catalog",
     "items": [
+      {
+        "type": "category",
+        "label": "Loader Categories",
+        "items": [
+          "specifications/category-json",
+          "specifications/category-table",
+          "specifications/category-image",
+          "specifications/category-gis",
+          "specifications/category-mesh",
+          "specifications/category-scenegraph",
+          "specifications/category-3d-tiles"
+        ]
+      },
       "modules/3d-tiles/api-reference/tiles-3d-loader",
       "modules/3d-tiles/api-reference/cesium-ion-loader",
       "modules/arrow/api-reference/arrow-loader",
@@ -107,15 +116,8 @@
   },
   {
     "type": "category",
-    "label": "Command-Line Reference",
-    "items": [
-      "modules/tile-converter/cli-reference/tile-converter",
-      "modules/tile-converter/cli-reference/supported-features"
-    ]
-  },
-  {
-    "type": "category",
     "label": "API Reference",
+    "label": "Submodule API Reference",
     "items": [
       {
         "type": "category",
@@ -345,6 +347,14 @@
         "label": "@loaders.gl/zip",
         "items": ["modules/zip/README"]
       }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Command-Line Reference",
+    "items": [
+      "modules/tile-converter/cli-reference/tile-converter",
+      "modules/tile-converter/cli-reference/supported-features"
     ]
   }
 ]
