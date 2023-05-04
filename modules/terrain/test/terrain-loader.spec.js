@@ -3,7 +3,11 @@ import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
 import {TerrainLoader, TerrainWorkerLoader} from '@loaders.gl/terrain';
-import {setLoaderOptions, load} from '@loaders.gl/core';
+import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
+
+// Should be possible to remove this
+import {ImageLoader} from '@loaders.gl/images';
+registerLoaders([ImageLoader]);
 
 const MAPBOX_TERRAIN_PNG_URL = '@loaders.gl/terrain/test/data/mapbox.png';
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/terrain/test/data/terrarium.png';
