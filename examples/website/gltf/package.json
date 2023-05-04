@@ -13,8 +13,8 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/core": "^3.4.0",
-    "@loaders.gl/gltf": "^3.4.0",
+    "@loaders.gl/core": "4.0.0-alpha.5",
+    "@loaders.gl/gltf": "4.0.0-alpha.5",
     "@luma.gl/constants": "^8.5.4",
     "@luma.gl/core": "^8.5.4",
     "@luma.gl/experimental": "^8.5.4",
