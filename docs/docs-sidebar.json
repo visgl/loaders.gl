@@ -6,11 +6,7 @@
       {
         "type": "category",
         "label": "Overview",
-        "items": [
-          "README",
-          "whats-new",
-          "upgrade-guide"
-        ]
+        "items": ["README", "whats-new", "upgrade-guide"]
       },
       {
         "type": "category",
@@ -113,7 +109,8 @@
     "type": "category",
     "label": "Command-Line Reference",
     "items": [
-      "modules/tile-converter/cli-reference/tile-converter"
+      "modules/tile-converter/cli-reference/tile-converter",
+      "modules/tile-converter/cli-reference/features-compatibility"
     ]
   },
   {
@@ -149,31 +146,22 @@
       {
         "type": "category",
         "label": "@loaders.gl/3d-tiles",
-        "items": [
-          "modules/3d-tiles/README"
-        ]
+        "items": ["modules/3d-tiles/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/arrow",
-        "items": [
-          "modules/arrow/README"
-        ]
+        "items": ["modules/arrow/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/bson",
-        "items": [
-          "modules/bson/README",
-          "modules/bson/formats/bson"
-        ]
+        "items": ["modules/bson/README", "modules/bson/formats/bson"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/csv",
-        "items": [
-          "modules/csv/README"
-        ]
+        "items": ["modules/csv/README"]
       },
       {
         "type": "category",
@@ -206,9 +194,7 @@
       {
         "type": "category",
         "label": "@loaders.gl/draco",
-        "items": [
-          "modules/draco/README"
-        ]
+        "items": ["modules/draco/README"]
       },
       {
         "type": "category",
@@ -223,9 +209,7 @@
       {
         "type": "category",
         "label": "@loaders.gl/i3s",
-        "items": [
-          "modules/i3s/README"
-        ]
+        "items": ["modules/i3s/README"]
       },
       {
         "type": "category",
@@ -239,65 +223,47 @@
       {
         "type": "category",
         "label": "@loaders.gl/json",
-        "items": [
-          "modules/json/README"
-        ]
+        "items": ["modules/json/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/kml",
-        "items": [
-          "modules/kml/README"
-        ]
+        "items": ["modules/kml/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/las",
-        "items": [
-          "modules/las/README"
-        ]
+        "items": ["modules/las/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/mvt",
-        "items": [
-          "modules/mvt/README"
-        ]
+        "items": ["modules/mvt/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/obj",
-        "items": [
-          "modules/obj/README"
-        ]
+        "items": ["modules/obj/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/parquet",
-        "items": [
-          "modules/parquet/README"
-        ]
+        "items": ["modules/parquet/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/pcd",
-        "items": [
-          "modules/pcd/README"
-        ]
+        "items": ["modules/pcd/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/ply",
-        "items": [
-          "modules/ply/README"
-        ]
+        "items": ["modules/ply/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/polyfills",
-        "items": [
-          "modules/polyfills/api-reference/README"
-        ]
+        "items": ["modules/polyfills/api-reference/README"]
       },
       {
         "type": "category",
@@ -342,17 +308,12 @@
       {
         "type": "category",
         "label": "@loaders.gl/video",
-        "items": [
-          "modules/video/README",
-          "modules/video/api-reference/gif-builder"
-        ]
+        "items": ["modules/video/README", "modules/video/api-reference/gif-builder"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/wkt",
-        "items": [
-          "modules/wkt/README"
-        ]
+        "items": ["modules/wkt/README"]
       },
       {
         "type": "category",
@@ -382,9 +343,7 @@
       {
         "type": "category",
         "label": "@loaders.gl/zip",
-        "items": [
-          "modules/zip/README"
-        ]
+        "items": ["modules/zip/README"]
       }
     ]
   }
