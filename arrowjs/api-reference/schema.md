@@ -1,7 +1,8 @@
 # Schema
 
-Sequence of arrow::Field objects describing the columns of a record batch or table data structure
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
 
+Sequence of arrow::Field objects describing the columns of a record batch or table data structure
 
 ## Accessors
 

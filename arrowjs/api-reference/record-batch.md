@@ -1,5 +1,7 @@
 # RecordBatch
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
 ## Overview
 
 A Record Batch in Apache Arrow is a collection of equal-length array instances.
