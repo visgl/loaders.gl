@@ -1,9 +1,10 @@
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import md5 from 'md5';
 import {CompressionWorker} from '@loaders.gl/compression';
-import LocalFileHeader from './local-file-header';
+import {ZipLocalFileHeader} from '../parce-zip/local-file-header';
 
-interface HashElement {
+/** Element of hash array */
+type HashElement = {
   hash: Buffer;
   offset: number;
 }
@@ -11,7 +12,7 @@ interface HashElement {
 /**
  * Class for handling information about slpk file
  */
-export default class SlpkArchive {
+export class SLPKArchive {
   slpkArchive: DataView;
   hashArray: {hash: Buffer; offset: number}[];
   constructor(slpkArchiveBuffer: ArrayBuffer, hashFile: ArrayBuffer) {
@@ -19,6 +20,7 @@ export default class SlpkArchive {
     this.hashArray = this.parseHashFile(hashFile);
   }
 
+  /** Reads hash file from buffer and returns it in ready-to-use form */  
   private parseHashFile(hashFile: ArrayBuffer): HashElement[] {
     const hashFileBuffer = Buffer.from(hashFile);
     const hashArray: HashElement[] = [];
@@ -39,7 +41,8 @@ export default class SlpkArchive {
     }
     return hashArray;
   }
-
+  
+  /** returns file with the given path from slpk archive */
   async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
     if (mode === 'http') {
       throw new Error('http mode is not supported');
@@ -63,6 +66,7 @@ export default class SlpkArchive {
     throw new Error('No such file in the archieve');
   }
 
+  /** Trying to get raw file data by adress */
   private getFileBytes(path: string): ArrayBuffer | undefined {
     const nameHash = Buffer.from(md5(path), 'hex');
     const fileInfo = this.hashArray.find((val) => Buffer.compare(val.hash, nameHash) === 0);
@@ -70,7 +74,7 @@ export default class SlpkArchive {
       return undefined;
     }
 
-    const localFileHeader = new LocalFileHeader(
+    const localFileHeader = new ZipLocalFileHeader(
       this.slpkArchive.byteOffset + fileInfo?.offset,
       this.slpkArchive
     );

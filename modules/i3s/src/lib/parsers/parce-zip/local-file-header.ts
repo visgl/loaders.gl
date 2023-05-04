@@ -1,7 +1,7 @@
 /**
  * Class for handling local file header of zip file
  */
-export default class LocalFileHeader {
+export class ZipLocalFileHeader {
   offsets = {
     COMPRESSED_SIZE_OFFSET: 18,
     FILE_NAME_LENGTH_OFFSET: 26,

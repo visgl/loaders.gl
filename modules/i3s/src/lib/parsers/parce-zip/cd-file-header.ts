@@ -1,7 +1,7 @@
 /**
  * Class for handling central directory file header of zip file
  */
-export default class CDFileHeader {
+export class ZipCDFileHeader {
   offsets = {
     CD_COMPRESSED_SIZE_OFFSET: 20,
     CD_UNCOMPRESSED_SIZE_OFFSET: 24,
