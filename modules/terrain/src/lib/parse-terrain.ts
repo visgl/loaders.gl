@@ -1,6 +1,3 @@
-// loaders.gl, MIT license
-
-import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import Martini from '@mapbox/martini';
 import Delatin from './delatin';
@@ -26,86 +23,6 @@ type ElevationDecoder = {
   gScaler: any;
   offset: number;
 };
-
-export default async function loadTerrain(arrayBuffer, options, context?: LoaderContext) {
-  const loadImageOptions = {
-    ...options,
-    mimeType: 'application/x.image',
-    image: {...options.image, type: 'data'}
-  };
-  const image = await context?.parse(arrayBuffer, loadImageOptions);
-  // Extend function to support additional mesh generation options (square grid or delatin)
-  return getMesh(image, options.terrain);
-}
-
-/**
- * Returns generated mesh object from image data
- * @param terrainImage terrain image data
- * @param terrainOptions terrain options
- * @returns mesh object
- */
-function getMesh(terrainImage: TerrainImage, terrainOptions: TerrainOptions) {
-  if (terrainImage === null) {
-    return null;
-  }
-  const {meshMaxError, bounds, elevationDecoder} = terrainOptions;
-
-  const {data, width, height} = terrainImage;
-
-  let terrain;
-  let mesh;
-  switch (terrainOptions.tesselator) {
-    case 'martini':
-      terrain = getTerrain(data, width, height, elevationDecoder, terrainOptions.tesselator);
-      mesh = getMartiniTileMesh(meshMaxError, width, terrain);
-      break;
-    case 'delatin':
-      terrain = getTerrain(data, width, height, elevationDecoder, terrainOptions.tesselator);
-      mesh = getDelatinTileMesh(meshMaxError, width, height, terrain);
-      break;
-    // auto
-    default:
-      if (width === height && !(height & (width - 1))) {
-        terrain = getTerrain(data, width, height, elevationDecoder, 'martini');
-        mesh = getMartiniTileMesh(meshMaxError, width, terrain);
-      } else {
-        terrain = getTerrain(data, width, height, elevationDecoder, 'delatin');
-        mesh = getDelatinTileMesh(meshMaxError, width, height, terrain);
-      }
-      break;
-  }
-
-  const {vertices} = mesh;
-  let {triangles} = mesh;
-  let attributes = getMeshAttributes(vertices, terrain, width, height, bounds);
-
-  // Compute bounding box before adding skirt so that z values are not skewed
-  const boundingBox = getMeshBoundingBox(attributes);
-
-  if (terrainOptions.skirtHeight) {
-    const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
-      attributes,
-      triangles,
-      terrainOptions.skirtHeight
-    );
-    attributes = newAttributes;
-    triangles = newTriangles;
-  }
-
-  return {
-    // Data return by this loader implementation
-    loaderData: {
-      header: {}
-    },
-    header: {
-      vertexCount: triangles.length,
-      boundingBox
-    },
-    mode: 4, // TRIANGLES
-    indices: {value: Uint32Array.from(triangles), size: 1},
-    attributes
-  };
-}
 
 function getTerrain(
   imageData: Uint8Array,
@@ -181,6 +98,77 @@ function getMeshAttributes(
     // NORMAL: {}, - optional, but creates the high poly look with lighting
   };
 }
+
+/**
+ * Returns generated mesh object from image data
+ *
+ * @param {object} terrainImage terrain image data
+ * @param {object} terrainOptions terrain options
+ * @returns mesh object
+ */
+function getMesh(terrainImage: TerrainImage, terrainOptions: TerrainOptions) {
+  if (terrainImage === null) {
+    return null;
+  }
+  const {meshMaxError, bounds, elevationDecoder} = terrainOptions;
+
+  const {data, width, height} = terrainImage;
+
+  let terrain;
+  let mesh;
+  switch (terrainOptions.tesselator) {
+    case 'martini':
+      terrain = getTerrain(data, width, height, elevationDecoder, terrainOptions.tesselator);
+      mesh = getMartiniTileMesh(meshMaxError, width, terrain);
+      break;
+    case 'delatin':
+      terrain = getTerrain(data, width, height, elevationDecoder, terrainOptions.tesselator);
+      mesh = getDelatinTileMesh(meshMaxError, width, height, terrain);
+      break;
+    // auto
+    default:
+      if (width === height && !(height & (width - 1))) {
+        terrain = getTerrain(data, width, height, elevationDecoder, 'martini');
+        mesh = getMartiniTileMesh(meshMaxError, width, terrain);
+      } else {
+        terrain = getTerrain(data, width, height, elevationDecoder, 'delatin');
+        mesh = getDelatinTileMesh(meshMaxError, width, height, terrain);
+      }
+      break;
+  }
+
+  const {vertices} = mesh;
+  let {triangles} = mesh;
+  let attributes = getMeshAttributes(vertices, terrain, width, height, bounds);
+
+  // Compute bounding box before adding skirt so that z values are not skewed
+  const boundingBox = getMeshBoundingBox(attributes);
+
+  if (terrainOptions.skirtHeight) {
+    const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
+      attributes,
+      triangles,
+      terrainOptions.skirtHeight
+    );
+    attributes = newAttributes;
+    triangles = newTriangles;
+  }
+
+  return {
+    // Data return by this loader implementation
+    loaderData: {
+      header: {}
+    },
+    header: {
+      vertexCount: triangles.length,
+      boundingBox
+    },
+    mode: 4, // TRIANGLES
+    indices: {value: Uint32Array.from(triangles), size: 1},
+    attributes
+  };
+}
+
 /**
  * Get Martini generated vertices and triangles
  *
@@ -214,4 +202,15 @@ function getDelatinTileMesh(meshMaxError, width, height, terrain) {
   const {coords, triangles} = tin;
   const vertices = coords;
   return {vertices, triangles};
+}
+
+export default async function loadTerrain(arrayBuffer, options, context) {
+  const loadImageOptions = {
+    ...options,
+    mimeType: 'application/x.image',
+    image: {...options.image, type: 'data'}
+  };
+  const image = await context.parse(arrayBuffer, loadImageOptions);
+  // Extend function to support additional mesh generation options (square grid or delatin)
+  return getMesh(image, options.terrain);
 }
