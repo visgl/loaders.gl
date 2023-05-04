@@ -9,8 +9,8 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/core": "^3.3.1",
-    "@loaders.gl/gltf": "^3.3.1"
+    "@loaders.gl/core": "4.0.0-alpha.5",
+    "@loaders.gl/gltf": "4.0.0-alpha.5"
   },
   "devDependencies": {
     "typescript": "^5.0.4",
