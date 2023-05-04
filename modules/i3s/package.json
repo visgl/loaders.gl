@@ -33,6 +33,7 @@
     "build-loader-worker-nodejs": "esbuild src/workers/i3s-content-nodejs-worker.ts --outfile=dist/i3s-content-nodejs-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
+    "@loaders.gl/compression": "3.4.0-alpha.4",
     "@loaders.gl/draco": "3.4.0-alpha.4",
     "@loaders.gl/images": "3.4.0-alpha.4",
     "@loaders.gl/loader-utils": "3.4.0-alpha.4",

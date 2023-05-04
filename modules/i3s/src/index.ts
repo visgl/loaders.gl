@@ -1,4 +1,5 @@
 export {I3SLoader} from './i3s-loader';
+export {SLPKLoader} from './i3s-slpk-loader';
 export {I3SContentLoader} from './i3s-content-loader';
 export {I3SAttributeLoader, loadFeatureAttributes} from './i3s-attribute-loader';
 export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
