@@ -49,8 +49,8 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // EXPERIMENTAL: DATA SOURCES
 
-export type {ImageSourceMetadata} from './lib/sources/image-source';
 export type {ImageType} from '@loaders.gl/images';
+export type {ImageSourceProps, ImageSourceMetadata} from './lib/sources/image-source';
 export {ImageSource} from './lib/sources/image-source';
 
 export type {ImageServiceType} from './lib/create-image-source';
