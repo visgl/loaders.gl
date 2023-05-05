@@ -63,6 +63,7 @@ export class Tile3D {
   boundingVolume: any;
   content: any;
   contentState: any;
+  gpuMemoryUsageInBytes: number;
   children: Tile3D[];
   depth: number;
   viewportIds: any[];
@@ -165,6 +166,7 @@ export class Tile3D {
     // not the content's metadata in the tileset JSON file.
     this.content = null;
     this.contentState = TILE_CONTENT_STATE.UNLOADED;
+    this.gpuMemoryUsageInBytes = this._getGpuMemoryUsageInBytes();
 
     // The tile's children - an array of Tile3D objects.
     this.children = [];
@@ -302,24 +304,6 @@ export class Tile3D {
   }
 
   /**
-   * Memory usage of tile on GPU
-   */
-  get gpuMemoryUsageInBytes(): number {
-    switch (this.type) {
-      case TILE_TYPE.MESH:
-      case TILE_TYPE.POINTCLOUD:
-        return this.content.byteLength;
-
-      case TILE_TYPE.SCENEGRAPH:
-        return getMemoryUsageGLTF(this.content.gltf);
-
-      case TILE_TYPE.EMPTY:
-      default:
-        return 0;
-    }
-  }
-
-  /**
    * Screen space error for LOD selection
    */
   get screenSpaceError(): number {
@@ -356,6 +340,24 @@ export class Tile3D {
    */
   unselect(): void {
     this._selectedFrame = 0;
+  }
+
+  /**
+   * Memory usage of tile on GPU
+   */
+  _getGpuMemoryUsageInBytes(): number {
+    switch (this.type) {
+      case TILE_TYPE.MESH:
+      case TILE_TYPE.POINTCLOUD:
+        return this.content.byteLength;
+
+      case TILE_TYPE.SCENEGRAPH:
+        return getMemoryUsageGLTF(this.content.gltf);
+
+      case TILE_TYPE.EMPTY:
+      default:
+        return 0;
+    }
   }
 
   /*
