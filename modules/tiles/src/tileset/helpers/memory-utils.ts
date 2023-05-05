@@ -12,8 +12,8 @@ export function getGltfMemoryUsage(gltf: GLTF) {
   const imageBufferViews = images.map((i) => i.bufferView);
   bufferViews = bufferViews.filter((view) => !imageBufferViews.includes(view as any));
 
-  let bufferMemory = bufferViews.reduce((acc, view) => acc + view.byteLength, 0);
-  let textureMemory = images.reduce((acc, image) => {
+  const bufferMemory = bufferViews.reduce((acc, view) => acc + view.byteLength, 0);
+  const textureMemory = images.reduce((acc, image) => {
     // @ts-ignore
     const {width, height} = (image as any).image;
     return acc + 4 * width * height;
