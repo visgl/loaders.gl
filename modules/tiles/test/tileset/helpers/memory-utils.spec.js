@@ -3,13 +3,13 @@ import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {getGltfMemoryUsage} from '@loaders.gl/gltf';
+import {getMemoryUsageGLTF} from '@loaders.gl/gltf';
 
 const GLB_URL = '@loaders.gl/3d-tiles/test/data/143.glb';
-test('Tileset3D#getGltfMemoryUsage', async (t) => {
+test('Tileset3D#getMemoryUsageGLTF', async (t) => {
   const data = await load(GLB_URL, GLTFLoader);
   t.ok(data, 'GLTFLoader returned parsed data');
-  t.equal(getGltfMemoryUsage(data), 2192381, 'GLTF memory usage computed');
+  t.equal(getMemoryUsageGLTF(data), 2192381, 'GLTF memory usage computed');
   t.end();
 });
 

@@ -84,7 +84,7 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
  * @param gltf - the gltf content of a GLTF tile
  * @returns - total memory usage in bytes
  */
-export function getGltfMemoryUsage(gltf: GLTF) {
+export function getMemoryUsageGLTF(gltf: GLTF) {
   let {images, bufferViews} = gltf;
   images = images || [];
   bufferViews = bufferViews || [];

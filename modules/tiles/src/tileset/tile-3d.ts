@@ -18,7 +18,7 @@ import {
   getCartographicBounds,
   CartographicBounds
 } from './helpers/bounding-volume';
-import {getGltfMemoryUsage} from './helpers/memory-utils';
+import {getMemoryUsageGLTF} from '@loaders.gl/gltf';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getProjectedRadius} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
@@ -311,7 +311,7 @@ export class Tile3D {
         return this.content.byteLength;
 
       case TILE_TYPE.SCENEGRAPH:
-        return getGltfMemoryUsage(this.content.gltf);
+        return getMemoryUsageGLTF(this.content.gltf);
 
       case TILE_TYPE.EMPTY:
       default:
