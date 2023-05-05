@@ -13,7 +13,7 @@ function getTileType(tile) {
     return TILE_TYPE.EMPTY;
   }
 
-  const contentUrl = tile.contentUrl;
+  const contentUrl = tile.contentUrl.split('?')[0]; // Discard query string
   const fileExtension = contentUrl.split('.').pop();
   switch (fileExtension) {
     case 'pnts':
