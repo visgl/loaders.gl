@@ -4,7 +4,10 @@
 // @ts-ignore
 import test from 'tape-promise/tape';
 import {Matrix4} from '@math.gl/core';
-import {Tile3D} from '@loaders.gl/tiles';
+import {load} from '@loaders.gl/core';
+import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import {GLTFLoader, getMemoryUsageGLTF} from '@loaders.gl/gltf';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // @ts-ignore
 import {LOD_METRIC_TYPE} from '../../src';
 
@@ -363,6 +366,47 @@ test('Tile3D#cartographic bounding box', (t) => {
   tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_REGION);
   t.ok(tile.boundingBox, 'Calculated for bounding region');
 
+  t.end();
+});
+
+const GLB_URL = '@loaders.gl/3d-tiles/test/data/143.glb';
+test('Tile3D#getMemoryUsageGLTF', async (t) => {
+  const data = await load(GLB_URL, GLTFLoader);
+  t.ok(data, 'GLTFLoader returned parsed data');
+  t.equal(getMemoryUsageGLTF(data), 2192381, 'GLTF memory usage computed');
+  t.end();
+});
+
+const TEST_CASES = [
+  {
+    url: '@loaders.gl/3d-tiles/test/data/Tilesets/Tileset/tileset.json',
+    type: 'scenegraph',
+    gpuMemoryUsageInBytes: 7440
+  },
+  {
+    url: '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetPoints/tileset.json',
+    type: 'pointcloud',
+    gpuMemoryUsageInBytes: 15108
+  },
+  {
+    url: '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetEmptyRoot/tileset.json',
+    type: 'empty',
+    gpuMemoryUsageInBytes: 0
+  }
+];
+test('Tile3D#computes tiles gpu memory usage', async (t) => {
+  for (const {url, type, gpuMemoryUsageInBytes} of TEST_CASES) {
+    const tilesetJson = await load(url, Tiles3DLoader);
+    const tileset = new Tileset3D(tilesetJson);
+    // @ts-ignore
+    tileset.root._visible = true;
+    await tileset.root?.loadContent();
+
+    const tile = tileset.root;
+    t.ok(tile, 'Root tile is loaded');
+    t.equals(tile?.type, type, 'Tile has correct type');
+    t.equals(tile?.gpuMemoryUsageInBytes, gpuMemoryUsageInBytes, 'Tile GPU memory usage computed');
+  }
   t.end();
 });
 
