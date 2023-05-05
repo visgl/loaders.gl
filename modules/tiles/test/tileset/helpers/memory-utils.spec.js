@@ -40,8 +40,8 @@ test('Tileset3D#computes tiles gpu memory usage', async (t) => {
 
     const tile = tileset.root;
     t.ok(tile, 'Root tile is loaded');
-    t.equals(tile.type, type, 'Tile has correct type');
-    t.equals(tile.gpuMemoryUsageInBytes, gpuMemoryUsageInBytes, 'Tile GPU memory usage computed');
+    t.equals(tile?.type, type, 'Tile has correct type');
+    t.equals(tile?.gpuMemoryUsageInBytes, gpuMemoryUsageInBytes, 'Tile GPU memory usage computed');
   }
   t.end();
 });
