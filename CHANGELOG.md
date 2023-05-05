@@ -2,6 +2,15 @@
 
 ## v3.3
 
+## v3.3.4
+
+- Fix handling of query parameters in tile url (#2456)
+
+## v3.3.3
+
+- (feat)tiles: add boundingBox to Tile3D class
+- chore: fix vite deps + add missing types to loader-utils/src/types.ts 
+
 ## v3.3.2
 
 - fix(tile-converter): install dependencies crash (#2384)
