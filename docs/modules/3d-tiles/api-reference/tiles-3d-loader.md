@@ -28,7 +28,7 @@ Load a tileset file.
 ```js
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-const tilesetUrl = 'https://assets.cesium.com/43978/tileset.json';
+const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 ```
 
@@ -37,7 +37,7 @@ To decompress tiles containing Draco compressed glTF models or Draco compressed 
 ```js
 import {load, registerLoaders} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-const tileUrl = 'https://assets.cesium.com/43978/1.pnts';
+const tileUrl = 'https://assets.ion.cesium.com/43978/1.pnts';
 const tile = await load(tileUrl, Tiles3DLoader, {decompress: true});
 ```
 
@@ -49,7 +49,7 @@ import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {WebMercatorViewport} from '@deck.gl/core';
 
-const tilesetUrl = 'https://assets.cesium.com/43978/tileset.json';
+const tilesetUrl = 'https://assets.cesium.ion.com/43978/tileset.json';
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 
 // if your tileset file doesn't have the .json extension, set `3d-tiles.isTileset` to true
@@ -89,7 +89,7 @@ For i3dm and b3dm tiles:
 | ------------------- | ------- | ------- | ------------------------------------- |
 | `3d-tiles.loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
 
-If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](modules/gltf/docs/api-reference/gltf-loader) via the `options.gltf` sub options.
+If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader) via the `options.gltf` sub options.
 
 ## Notes about Tile Types
 

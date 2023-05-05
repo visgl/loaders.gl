@@ -22,7 +22,7 @@
   --ifm-color-gray-700: #6F8196;
   --ifm-color-gray-800: #485668;
   --ifm-color-gray-900: #2B3848;
-  --ifm-color-black: #19202C
+  --ifm-color-black: #19202C;
   --code-font-size: 95%;
 }
 main .container {
@@ -48,4 +48,31 @@ main .container {
 
 html[data-theme='dark'] .docusaurus-highlight-code-line {
   background-color: rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 1440px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+.backToTopButton_node_modules-\@docusaurus-theme-classic-lib-theme-BackToTopButton-styles-module {
+  box-shadow: var(--ifm-global-shadow-md) !important;
+}
+/* map labels style overwrite */
+#view-main > div > div.maplibregl-control-container.mapboxgl-control-container > div.maplibregl-ctrl-bottom-right.mapboxgl-ctrl-bottom-right > details {
+  position: absolute !important;
+  bottom: 0;
+  right: 0;
+  font-size: 12px;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 0 5px;
+}
+
+#view-main > div > div.maplibregl-control-container.mapboxgl-control-container > div.maplibregl-ctrl-bottom-right.mapboxgl-ctrl-bottom-right > details > summary {
+  display: none !important;
+}
+
+#docusaurus_skipToContent_fallback > section > div.styled__Container-sc-exnbu5-1.styled__BannerContainer-sc-exnbu5-2.gMcHAv.fYMkHs > h1 {
+  text-shadow: 0 0 5px #FFF, 0 0 5px #000;
 }

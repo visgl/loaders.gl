@@ -8,19 +8,20 @@
     "start": "webpack-dev-server --progress --hot --open"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.5.0",
-    "@deck.gl/extensions": "^8.5.0",
-    "@deck.gl/geo-layers": "^8.5.0",
-    "@deck.gl/react": "^8.5.0",
-    "@deck.gl/mesh-layers": "^8.5.0",
-    "@deck.gl/layers": "^8.5.0",
-    "@loaders.gl/core": "^3.0.0-beta.8",
-    "@loaders.gl/loader-utils": "^3.0.0-beta.8",
-    "@loaders.gl/mvt": "^3.0.0-beta.8",
-    "@loaders.gl/terrain": "^3.0.0-beta.8",
-    "react": "^16.3.0",
-    "react-dom": "^16.3.0",
-    "react-map-gl": "^5.0.0"
+    "@deck.gl/core": "^8.9.0",
+    "@deck.gl/extensions": "^8.9.0",
+    "@deck.gl/geo-layers": "^8.9.0",
+    "@deck.gl/react": "^8.9.0",
+    "@deck.gl/mesh-layers": "^8.9.0",
+    "@deck.gl/layers": "^8.9.0",
+    "@loaders.gl/core": "^3.3.0",
+    "@loaders.gl/loader-utils": "^3.3.0",
+    "@loaders.gl/mvt": "^3.3.0",
+    "@loaders.gl/terrain": "^3.3.0",
+    "maplibre-gl": "^2.4.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-map-gl": "^7.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

@@ -3,7 +3,7 @@
 
 The Arrow API provides standard predicates that allow for the comparison of column values against literals (equality, greater or equal than, less or eqial than) as well as the creation of composite logical expressions (`and`, `or` and `not`) out of individual column comparisons.
 
-It is of course also possible to write custom predicates, however the performance is best when using the built-ins. Note that for performance reasons, filters are specified using "predicates" rather than custom JavaScript functions. For details on available predicates see [Using Predicates]().
+It is of course also possible to write custom predicates, however the performance is best when using the built-ins. Note that for performance reasons, filters are specified using "predicates" rather than custom JavaScript functions.
 
 ## Filtering using Predicates
 

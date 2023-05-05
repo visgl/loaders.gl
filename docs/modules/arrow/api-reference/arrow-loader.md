@@ -6,7 +6,7 @@ The `ArrowLoader` parses the Apache Arrow columnar table format.
 
 | Loader                | Characteristic                                                            |
 | --------------------- | ------------------------------------------------------------------------- |
-| File Format           | [IPC: Encapsulated Message Format](http://arrow.apache.org/docs/ipc.html) |
+| File Format           | [IPC: Encapsulated Message Format](https://arrow.apache.org/docs/format/Columnar.html#serialization-and-interprocess-communication-ipc) |
 | File Extension        | `.arrow`                                                                  |
 | File Type             | Binary                                                                    |
 | Data Format           | [Columnar Table](/docs/specifications/category-table)                     |

@@ -13,8 +13,8 @@ npm install @loaders.gl/core
 
 | Loader                                                          | Description |
 | --------------------------------------------------------------- | ----------- |
-| [`ImageLoader`](modules/images/docs/api-reference/image-loader) |             |
-| [`ImageWriter`](modules/images/docs/api-reference/image-writer) |             |
+| [`ImageLoader`](/docs/modules/images/api-reference/image-loader) |             |
+| [`ImageWriter`](/docs/modules/images/api-reference/image-writer) |             |
 
 ### Parsed Image API
 
@@ -51,4 +51,4 @@ To support image loading on older browsers and Node.js, the `ImageLoader` can re
 - `Image` (aka `HTMLImageElement`) - The traditional HTML image class. Available in all browsers.
 - `data` - Raw binary memory representing the image pixels, typically in RGBA `Uint8Array` format. JavaScript computations can be done on this data. Also, Node.js texture creation functions in headless gl accept `data` images. and browser `ImageData` objects can be initialized with this data.
 
-See [`ImageLoader`](modules/images/docs/api-reference/image-loader) for more details on options etc.
+See [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for more details on options etc.

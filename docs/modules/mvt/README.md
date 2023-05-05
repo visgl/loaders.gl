@@ -16,13 +16,13 @@ npm install @loaders.gl/core
 
 | Loader                                                   |
 | -------------------------------------------------------- |
-| [`MVTLoader`](modules/mvt/docs/api-reference/mvt-loader) |
+| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) |
 
 ## Components
 
 | Component                                                      |
 | -------------------------------------------------------------- |
-| [`GeoJSONTiler`](modules/mvt/docs/api-reference/geojson-tiler) |
+| [`GeoJSONTiler`](/docs/modules/mvt/api-reference/geojson-tiler) |
 
 ## Attribution
 

@@ -2,7 +2,7 @@
 
 A small set of image utility functions functions intended to help write image handling code that works across platforms.
 
-Background: The image returned by the [`ImageLoader`](modules/images/docs/api-reference/image-loader) depends on the environment, i.e. whether the application is running in a new or old browser, or under Node.js.
+Background: The image returned by the [`ImageLoader`](/docs/modules/images/api-reference/image-loader) depends on the environment, i.e. whether the application is running in a new or old browser, or under Node.js.
 
 ## Usage
 

@@ -1,6 +1,7 @@
 import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
-import {StaticMap} from 'react-map-gl';
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
 
 import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core/typed';
@@ -136,7 +137,8 @@ export default class App extends PureComponent {
           onViewStateChange={this._onViewStateChange}
           controller={{type: MapController, maxPitch: 85}}
         >
-          <StaticMap mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
+          <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
+
         </DeckGL>
       </div>
     );

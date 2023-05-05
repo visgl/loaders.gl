@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
+import MonacoEditor from '@monaco-editor/react';
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from '../examples';
 
 const Container = styled.div`
@@ -9,34 +10,36 @@ const Container = styled.div`
   position: absolute;
   top: 0;
   right: 0;
-  max-width: 320px;
   background: #fff;
+  color: #121212;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  padding: 12px 24px;
+  padding: 12px 24px 24px 24px;
   margin: 20px;
   font-size: 13px;
   line-height: 2;
   outline: none;
   z-index: 100;
+  height: calc(100vh - 105px);
 
-  h3 {
-    margin: 0.5em 0;
+  h2 {
+    margin: 0 0 0.5rem 0;
   }
-  
+
   .loading-indicator {
-    margin: 0.5em 0;
-    
+    margin: 0;
+    text-align: center;
     transition: opacity 300ms ease-out;
   }
 
-  pre {
-    overflow: auto;
-    max-height: calc(100vh - 225px);
+  > .monaco-editor {
+    height: calc(100vh - 200px) !important;
+    width: 500px !important;
   }
 `;
 
 const DropDown = styled.select`
-  margin-bottom: 6px;
+  margin: 0.5rem 0;
+  font-size: 16px;
 `;
 
 const propTypes = {
@@ -118,34 +121,21 @@ export default class ControlPanel extends PureComponent {
     );
   }
 
-  _renderHeader() {
-    const {selectedCategory, selectedExample} = this.props;
-    if (!selectedCategory || !selectedExample) {
-      return null;
-    }
-
-    return (
-      <>
-        <h3>
-          {selectedExample} <b>{selectedCategory}</b>
-        </h3>
-        <p className='loading-indicator' style={{opacity: this.props.loading? 1 : 0}}>Loading image...</p> 
-      </>
-    );
-  }
-
-  
-  
   render() {
     return (
       <Container>
-        {this._renderHeader()}
         {this._renderDropDown()}
         {this.props.children}
-        <h1>WMS Server Capabilities</h1>
-        <pre>
-          {this.props.metadata}
+        <pre className="loading-indicator" style={{opacity: this.props.loading ? 1 : 0}}>
+          loading image...
         </pre>
+        <h2>WMS Server Capabilities</h2>
+        <MonacoEditor
+          language="json"
+          options={{readOnly: true}}
+          theme="vs-dark"
+          value={this.props.metadata}
+        />
       </Container>
     );
   }

@@ -153,3 +153,13 @@ export type MergedMaterial = {
   /** Uint16Array of 4 elements https://github.com/Esri/i3s-spec/blob/master/docs/1.7/geometryUVRegion.cmn.md */
   uvRegion?: Uint16Array;
 };
+
+export type TypedArrayConstructor =
+  | Uint8ArrayConstructor
+  | Int8ArrayConstructor
+  | Uint16ArrayConstructor
+  | Int16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;

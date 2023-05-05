@@ -8,6 +8,7 @@
   "references": [
     {"path": "modules/3d-tiles"},
     {"path": "modules/arrow"},
+    {"path": "modules/bson"},
     {"path": "modules/compression"},
     {"path": "modules/core"},
     {"path": "modules/crypto"},

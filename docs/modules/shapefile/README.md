@@ -12,6 +12,6 @@ npm install @loaders.gl/shapefile
 
 | Loader                                                   |
 | -------------------------------------------------------- |
-| [`SHPLoader`](modules/wkt/docs/api-reference/shp-loader) |
+| [`SHPLoader`](/docs/modules/wkt/api-reference/shp-loader) |
 
 ## Attribution

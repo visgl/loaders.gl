@@ -8,10 +8,10 @@ The `load` function can be used with any _loader object_. They takes a `url` and
 
 The `load` function is used to load and parse data with a specific _loader object_. An array of loader objects can be provided, in which case `load` will attempt to autodetect which loader is appropriate for the file.
 
-The `loaders` parameter can also be omitted, in which case any _loader objects_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
+The `loaders` parameter can also be omitted, in which case any _loader objects_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
 
 - `url` - Urls can be data urls (`data://`) or a request (`http://` or `https://`) urls, or a file name (Node.js only). Also accepts `File` or `Blob` object (Browser only). Can also accept any format that is accepted by [`parse`](https://github.com/visgl/loaders.gl/blob/master/docs/api-reference/core/parse), with the exception of strings that are interpreted as urls.
-- `loaders` - can be a single loader or an array of loaders. If single loader is provided, will force to use it. If ommitted, will use the list of pre-registered loaders (see `registerLoaders`)
+- `loaders` - can be a single loader or an array of loaders. If single loader is provided, will force to use it. If ommitted, will use the list of pre-registered loaders (see [`registerLoaders`](/docs/modules/core/api-reference/register-loaders))
 - `options` - see [`LoaderOptions`](./loader-options).
 
 Returns:

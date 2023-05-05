@@ -2,7 +2,7 @@
 
 > The `Tileset3D` class is being generalized to handle more use cases. Since this may require modifying some APIs, this class should be considered experiemental.
 
-The `Tileset3D` class can be instantiated with tileset data formatted according to the [3D Tiles Category](docs/specifications/3d-tiles), which is supported by the [Tiles3DLoader](docs/api-reference/3d-tiles/tileset-3d-loader).
+The `Tileset3D` class can be instantiated with tileset data formatted according to the [3D Tiles Category](/docs/specifications/category-3d-tiles), which is supported by the [Tiles3DLoader](/docs/modules/3d-tiles/api-reference/tiles-3d-loader).
 
 References
 
@@ -18,7 +18,7 @@ import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
-const tilesetUrl = 'https://assets.cesium.com/43978/tileset.json';
+const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 const tileset3d = new Tileset3D(tilesetJson, {
   onTileLoad: (tile) => console.log(tile)

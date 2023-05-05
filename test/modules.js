@@ -10,7 +10,7 @@ _addAliases(ALIASES);
 // Install polyfills (primarily for Node)
 installFilePolyfills();
 
-// base
+// Utility modules
 import '@loaders.gl/polyfills/test';
 import '@loaders.gl/worker-utils/test';
 import '@loaders.gl/math/test';
@@ -35,7 +35,7 @@ import '@loaders.gl/pcd/test';
 import '@loaders.gl/ply/test';
 import '@loaders.gl/terrain/test';
 
-// Scenegraph Formats
+// // Scenegraph Formats
 import '@loaders.gl/gltf/test';
 
 // 3D Tile Formats
@@ -45,7 +45,8 @@ import '@loaders.gl/potree/test';
 import '@loaders.gl/tiles/test';
 
 // Geospatial Formats
-import '@loaders.gl/flatgeobuf/test';
+// TODO restore once we have upgraded to ES modules
+// import '@loaders.gl/flatgeobuf/test';
 import '@loaders.gl/geopackage/test';
 import '@loaders.gl/gis/test';
 import '@loaders.gl/kml/test';
@@ -61,6 +62,10 @@ import '@loaders.gl/csv/test';
 import '@loaders.gl/json/test';
 import '@loaders.gl/excel/test';
 import '@loaders.gl/parquet/test';
+
+// unstructured (JSON) formats
+// JSON listed in tabular loaders since it optionally supports that category
+import '@loaders.gl/bson/test';
 import '@loaders.gl/xml/test';
 
 // Archive Formats

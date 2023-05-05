@@ -6,13 +6,13 @@ The _mesh and pointcloud_ loader category is intended for simpler mesh and point
 
 | Loader                                                                            | Notes |
 | --------------------------------------------------------------------------------- | ----- |
-| [`DracoLoader`](modules/draco/docs/api-reference/draco-loader)                    |       |
-| [`LASLoader`](modules/las/docs/api-reference/las-loader)                          |       |
-| [`OBJLoader`](modules/obj/docs/api-reference/obj-loader)                          |       |
-| [`PCDLoader`](modules/pcd/docs/api-reference/pcd-loader)                          |       |
-| [`PLYLoader`](modules/ply/docs/api-reference/ply-loader)                          |       |
-| [`QuantizedMeshLoader`](modules/terrain/docs/api-reference/quantized-mesh-loader) |       |
-| [`TerrainLoader`](modules/terrain/docs/api-reference/terrain-loader)              |       |
+| [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)                    |       |
+| [`LASLoader`](/docs/modules/las/api-reference/las-loader)                          |       |
+| [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader)                          |       |
+| [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader)                          |       |
+| [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader)                          |       |
+| [`QuantizedMeshLoader`](/docs/modules/terrain/api-reference/quantized-mesh-loader) |       |
+| [`TerrainLoader`](/docs/modules/terrain/api-reference/terrain-loader)              |       |
 
 ## Data Format
 
