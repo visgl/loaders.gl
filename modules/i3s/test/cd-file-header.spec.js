@@ -1,8 +1,8 @@
 import test from 'tape-promise/tape';
 import {DATA_ARRAY} from './data/test.zip.js';
-import {parseZipCDFileHeader} from '../src/lib/parsers/parce-zip/cd-file-header.js';
+import {parseZipCDFileHeader} from '../src/lib/parsers/parse-zip/cd-file-header.js';
 
-test('SLPKLoader#central directory file header parce', async (t) => {
+test('SLPKLoader#central directory file header parse', async (t) => {
   const cdFileHeader = parseZipCDFileHeader(78, new DataView(DATA_ARRAY.buffer));
   t.deepEqual(cdFileHeader.compressedSize, 39);
   t.deepEqual(cdFileHeader.fileNameLength, 9);
