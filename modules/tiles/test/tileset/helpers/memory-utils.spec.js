@@ -3,7 +3,7 @@ import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {getGltfMemoryUsage} from '../../../src/tileset/helpers/memory-utils';
+import {getGltfMemoryUsage} from '@loaders.gl/gltf';
 
 const GLB_URL = '@loaders.gl/3d-tiles/test/data/143.glb';
 test('Tileset3D#getGltfMemoryUsage', async (t) => {
