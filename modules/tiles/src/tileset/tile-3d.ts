@@ -166,7 +166,7 @@ export class Tile3D {
     // not the content's metadata in the tileset JSON file.
     this.content = null;
     this.contentState = TILE_CONTENT_STATE.UNLOADED;
-    this.gpuMemoryUsageInBytes = this._getGpuMemoryUsageInBytes();
+    this.gpuMemoryUsageInBytes = 0;
 
     // The tile's children - an array of Tile3D objects.
     this.children = [];
@@ -753,6 +753,8 @@ export class Tile3D {
     // The content may be tileset json
     if (this._isTileset()) {
       this.hasTilesetContent = true;
+    } else {
+      this.gpuMemoryUsageInBytes = this._getGpuMemoryUsageInBytes();
     }
   }
 

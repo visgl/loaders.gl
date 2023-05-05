@@ -373,7 +373,7 @@ const GLB_URL = '@loaders.gl/3d-tiles/test/data/143.glb';
 test('Tile3D#getMemoryUsageGLTF', async (t) => {
   const data = await load(GLB_URL, GLTFLoader);
   t.ok(data, 'GLTFLoader returned parsed data');
-  t.equal(getMemoryUsageGLTF(data), 2192381, 'GLTF memory usage computed');
+  t.equal(getMemoryUsageGLTF(data), 2884442, 'GLTF memory usage computed');
   t.end();
 });
 

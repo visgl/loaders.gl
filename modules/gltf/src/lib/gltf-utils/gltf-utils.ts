@@ -92,10 +92,12 @@ export function getMemoryUsageGLTF(gltf: GLTF) {
   bufferViews = bufferViews.filter((view) => !imageBufferViews.includes(view as any));
 
   const bufferMemory = bufferViews.reduce((acc, view) => acc + view.byteLength, 0);
-  const textureMemory = images.reduce((acc, image) => {
+
+  // Assume each pixel of the texture is 4 channel with mimmaps (which add 33%)
+  const pixelCount = images.reduce((acc, image) => {
     // @ts-ignore
     const {width, height} = (image as any).image;
-    return acc + 4 * width * height;
+    return acc + width * height;
   }, 0);
-  return bufferMemory + textureMemory;
+  return bufferMemory + Math.ceil(4 * pixelCount * 1.33);
 }
