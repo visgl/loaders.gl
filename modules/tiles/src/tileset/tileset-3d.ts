@@ -366,7 +366,7 @@ export class Tileset3D {
 
   get queryParams(): string {
     if (!this._queryParamsString) {
-      this._queryParamsString = getQueryParamString(this._queryParams);
+      this._queryParamsString = new URLSearchParams(this._queryParams).toString();
     }
     return this._queryParamsString;
   }
@@ -389,7 +389,7 @@ export class Tileset3D {
     if (isDataUrl) {
       return tilePath;
     }
-    return `${tilePath}${this.queryParams}`;
+    return `${tilePath}${tilePath.includes('?') ? '&' : '?'}${this.queryParams}`;
   }
 
   // TODO CESIUM specific
@@ -733,6 +733,14 @@ export class Tileset3D {
         const children = tile.header.children || [];
         for (const childHeader of children) {
           const childTile = new Tile3D(this, childHeader, tile);
+
+          // Special handling for Google 3D tiles
+          // A session key must be used for all tile requests
+          if (childTile.contentUrl?.includes('?session=')) {
+            const url = new URL(childTile.contentUrl);
+            this._queryParams.session = url.searchParams.get('session');
+          }
+
           tile.children.push(childTile);
           childTile.depth = tile.depth + 1;
           stack.push(childTile);
@@ -954,20 +962,5 @@ export class Tileset3D {
     if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
       this._queryParams.token = this.loadOptions.i3s.token;
     }
-  }
-}
-
-function getQueryParamString(queryParams): string {
-  const queryParamStrings: string[] = [];
-  for (const key of Object.keys(queryParams)) {
-    queryParamStrings.push(`${key}=${queryParams[key]}`);
-  }
-  switch (queryParamStrings.length) {
-    case 0:
-      return '';
-    case 1:
-      return `?${queryParamStrings[0]}`;
-    default:
-      return `?${queryParamStrings.join('&')}`;
   }
 }
