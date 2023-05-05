@@ -7,6 +7,7 @@ import './tileset/tileset-3d.spec';
 // import './tileset/tileset-traverser.spec';
 
 // import './tileset/helpers/get-frame-state.spec';
+import './tileset/helpers/memory-utils.spec';
 import './tileset/helpers/zoom.spec';
 
 // I3S Specific tests
