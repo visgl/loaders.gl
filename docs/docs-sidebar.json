@@ -110,7 +110,7 @@
     "label": "Command-Line Reference",
     "items": [
       "modules/tile-converter/cli-reference/tile-converter",
-      "modules/tile-converter/cli-reference/features-compatibility"
+      "modules/tile-converter/cli-reference/supported-features"
     ]
   },
   {

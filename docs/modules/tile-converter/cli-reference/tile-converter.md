@@ -10,7 +10,7 @@
   </a>
 </p>
 
-The `tile-converter` is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both an OGC community standard. It can load tilesets to be converted directly from an URL or file based formats. I3S and 3DTiles are large formats that include different layer types and data formats. See [features compatibility page](/docs/modules/tile-converter/cli-reference/features-compatibility) that describes what the tile-converter supports.
+The `tile-converter` is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both an OGC community standard. It can load tilesets to be converted directly from an URL or file based formats. I3S and 3DTiles are large formats that include different layer types and data formats. See ["Supported features" page](/docs/modules/tile-converter/cli-reference/supported-features) that describes what the tile-converter supports.
 
 ## Installation
 
