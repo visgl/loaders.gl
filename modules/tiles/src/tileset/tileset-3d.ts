@@ -728,11 +728,14 @@ export class Tileset3D {
         for (const childHeader of children) {
           const childTile = new Tile3D(this, childHeader, tile);
 
-          // Special handling for Google 3D tiles
+          // Special handling for Google
           // A session key must be used for all tile requests
           if (childTile.contentUrl?.includes('?session=')) {
             const url = new URL(childTile.contentUrl);
-            this._queryParams.session = url.searchParams.get('session');
+            const session = url.searchParams.get('session');
+            if (session) {
+              this._queryParams.session = session;
+            }
           }
 
           tile.children.push(childTile);
