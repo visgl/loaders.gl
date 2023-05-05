@@ -361,7 +361,7 @@ export class Tileset3D {
   }
 
   get queryParams(): string {
-    const search = new URLSearchParams(this._queryParams).toString()
+    const search = new URLSearchParams(this._queryParams).toString();
     return search ? `?${search}` : search;
   }
 
@@ -963,7 +963,7 @@ export class Tileset3D {
 
   _initializeI3STileset() {
     if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
-      this._queryParams.token = this.loadOptions.i3s.token
+      this._queryParams.token = this.loadOptions.i3s.token;
     }
   }
 }
