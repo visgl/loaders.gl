@@ -75,7 +75,7 @@ export default async function parse3DTilesSubtree(
 /**
  * Get url for bitstream downloading
  * @param bitstreamRelativeUri
- * @param baseUri
+ * @param basePath
  * @returns
  */
 function resolveBufferUri(bitstreamRelativeUri: string, basePath: string): string {

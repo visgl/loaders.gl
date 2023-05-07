@@ -11,7 +11,7 @@ import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';
 import {getAsyncIterableFromData} from '../loader-utils/get-data';
-import {getResourceUrlAndType} from '../utils/resource-utils';
+import {getResourceUrl} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
 // Ensure `parse` is available in context if loader falls back to `parse`
@@ -32,6 +32,8 @@ export async function parseInBatches(
 ): Promise<AsyncIterable<any>> {
   assert(!context || typeof context === 'object'); // parseInBatches no longer accepts final url
 
+  const loaderArray = Array.isArray(loaders) ? loaders : undefined;
+
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
@@ -43,11 +45,11 @@ export async function parseInBatches(
   options = options || {};
 
   // Extract a url for auto detection
-  const {url} = getResourceUrlAndType(data);
+  const url = getResourceUrl(data);
 
   // Chooses a loader and normalizes it
   // Note - only uses URL and contentType for streams and iterator inputs
-  const loader = await selectLoader(data as ArrayBuffer, loaders as Loader[], options);
+  const loader = await selectLoader(data as ArrayBuffer, loaders as Loader | Loader[], options);
   // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     // @ts-ignore
@@ -55,14 +57,11 @@ export async function parseInBatches(
   }
 
   // Normalize options
-  // @ts-ignore
-  options = normalizeOptions(options, loader, loaders, url);
-  // @ts-ignore
+  options = normalizeOptions(options, loader, loaderArray, url);
   context = getLoaderContext(
-    // @ts-ignore
-    {url, parseInBatches, parse, loaders: loaders as Loader[]},
+    {url, parseInBatches, parse, loaders: loaderArray},
     options,
-    context
+    context || null
   );
 
   return await parseWithLoaderInBatches(loader as LoaderWithParser, data, options, context);

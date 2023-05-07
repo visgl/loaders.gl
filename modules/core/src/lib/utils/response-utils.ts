@@ -1,5 +1,5 @@
 import {isResponse} from '../../javascript-utils/is-type';
-import {getResourceContentLength, getResourceUrlAndType} from './resource-utils';
+import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
 
 /**
  * Returns a Response object
@@ -22,7 +22,8 @@ export async function makeResponse(resource: any): Promise<Response> {
 
   // `new Response(File)` does not preserve content-type and URL
   // so we add them here
-  const {url, type} = getResourceUrlAndType(resource);
+  const url = getResourceUrl(resource);
+  const type = getResourceMIMEType(resource);
   if (type) {
     headers['content-type'] = type;
   }

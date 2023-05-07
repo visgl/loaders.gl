@@ -244,8 +244,7 @@ export class Tileset3D {
   _requestScheduler: RequestScheduler;
 
   _frameNumber: number;
-  private _queryParamsString: string;
-  private _queryParams: any;
+  private _queryParams: Record<string, string> = {};
   private _extensionsUsed: any;
   private _tiles: {[id: string]: Tile3D};
 
@@ -321,9 +320,6 @@ export class Tileset3D {
     this.frameStateData = {};
     this.lastUpdatedVieports = null;
 
-    this._queryParams = {};
-    this._queryParamsString = '';
-
     // METRICS
     // The maximum amount of GPU memory (in MB) that may be used to cache tiles.
     // Tiles not in view are unloaded to enforce this.
@@ -365,10 +361,8 @@ export class Tileset3D {
   }
 
   get queryParams(): string {
-    if (!this._queryParamsString) {
-      this._queryParamsString = new URLSearchParams(this._queryParams).toString();
-    }
-    return this._queryParamsString;
+    const search = new URLSearchParams(this._queryParams).toString();
+    return search ? `?${search}` : search;
   }
 
   setProps(props: Tileset3DProps): void {
@@ -734,11 +728,14 @@ export class Tileset3D {
         for (const childHeader of children) {
           const childTile = new Tile3D(this, childHeader, tile);
 
-          // Special handling for Google 3D tiles
+          // Special handling for Google
           // A session key must be used for all tile requests
           if (childTile.contentUrl?.includes('?session=')) {
             const url = new URL(childTile.contentUrl);
-            this._queryParams.session = url.searchParams.get('session');
+            const session = url.searchParams.get('session');
+            if (session) {
+              this._queryParams.session = session;
+            }
           }
 
           tile.children.push(childTile);
@@ -930,6 +927,12 @@ export class Tileset3D {
   }
 
   _initializeTiles3DTileset(tilesetJson) {
+    if (tilesetJson.queryString) {
+      const searchParams = new URLSearchParams(tilesetJson.queryString);
+      const queryParams = Object.fromEntries(searchParams.entries());
+      this._queryParams = {...this._queryParams, ...queryParams};
+    }
+
     this.asset = tilesetJson.asset;
     if (!this.asset) {
       throw new Error('Tileset must have an asset property.');

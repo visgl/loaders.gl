@@ -6,7 +6,7 @@ import {isResponse} from '../../javascript-utils/is-type';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
-import {getResourceUrlAndType} from '../utils/resource-utils';
+import {getResourceUrl} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
 /**
@@ -36,7 +36,7 @@ export async function parse(
   options = options || {};
 
   // Extract a url for auto detection
-  const {url} = getResourceUrlAndType(data);
+  const url = getResourceUrl(data);
 
   // Chooses a loader (and normalizes it)
   // Also use any loaders in the context, new loaders take priority
@@ -53,7 +53,7 @@ export async function parse(
   options = normalizeOptions(options, loader, candidateLoaders, url);
 
   // Get a context (if already present, will be unchanged)
-  context = getLoaderContext({url, parse, loaders: candidateLoaders}, options, context);
+  context = getLoaderContext({url, parse, loaders: candidateLoaders}, options, context || null);
 
   return await parseWithLoader(loader, data, options, context);
 }
