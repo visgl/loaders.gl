@@ -1,4 +1,4 @@
-import encodeGLBSync from './encode-glb';
+import {encodeGLBSync} from './encode-glb';
 
 export type GLTFEncodeOptions = Record<string, any>;
 

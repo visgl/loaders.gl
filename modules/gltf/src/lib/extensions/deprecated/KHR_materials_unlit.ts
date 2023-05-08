@@ -1,9 +1,9 @@
 // GLTF EXTENSION: KHR_materials_unlit
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit
 
-import type {GLTF} from '../../types/gltf-types';
+import type {GLTF} from '../../types/gltf-json-schema';
 
-import GLTFScenegraph from '../../api/gltf-scenegraph';
+import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 
 const KHR_MATERIALS_UNLIT = 'KHR_materials_unlit';
 

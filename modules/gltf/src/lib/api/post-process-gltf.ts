@@ -1,7 +1,42 @@
+// loaders.gl, MIT license
+
+import type {GLTFWithBuffers} from '../types/gltf-types';
+import type {ParseGLTFOptions} from '../parsers/parse-gltf';
+
+import type {
+  GLTF,
+  GLTFAccessor,
+  GLTFBufferView,
+  GLTFCamera,
+  GLTFImage,
+  GLTFMaterial,
+  GLTFMesh,
+  GLTFNode,
+  GLTFSampler,
+  GLTFScene,
+  GLTFSkin,
+  GLTFTexture
+} from '../types/gltf-json-schema';
+
+import type {
+  GLTFAccessorPostprocessed,
+  GLTFBufferPostprocessed,
+  GLTFBufferViewPostprocessed,
+  GLTFCameraPostprocessed,
+  GLTFImagePostprocessed,
+  GLTFMaterialPostprocessed,
+  GLTFMeshPostprocessed,
+  GLTFNodePostprocessed,
+  GLTFSamplerPostprocessed,
+  GLTFScenePostprocessed,
+  GLTFSkinPostprocessed,
+  GLTFTexturePostprocessed,
+  GLTFPostprocessed,
+  GLTFMeshPrimitivePostprocessed
+} from '../types/gltf-postprocessed-schema';
+
 import {assert} from '../utils/assert';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
-import {BufferView} from '../types/gltf-json-schema';
-import {BufferView as BufferViewPostprocessed} from '../types/gltf-postprocessed-schema';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -54,12 +89,19 @@ const SAMPLER_PARAMETER_GLTF_TO_GL = {
 
 // When undefined, a sampler with repeat wrapping and auto filtering should be used.
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#texture
-const DEFAULT_SAMPLER = {
+const DEFAULT_SAMPLER_PARAMETERS = {
   [GL_SAMPLER.TEXTURE_MAG_FILTER]: GL_SAMPLER.LINEAR,
   [GL_SAMPLER.TEXTURE_MIN_FILTER]: GL_SAMPLER.NEAREST_MIPMAP_LINEAR,
   [GL_SAMPLER.TEXTURE_WRAP_S]: GL_SAMPLER.REPEAT,
   [GL_SAMPLER.TEXTURE_WRAP_T]: GL_SAMPLER.REPEAT
 };
+
+function makeDefaultSampler(): GLTFSamplerPostprocessed {
+  return {
+    id: 'default-sampler',
+    parameters: DEFAULT_SAMPLER_PARAMETERS
+  };
+}
 
 function getBytesFromComponentType(componentType) {
   return BYTES[componentType];
@@ -71,20 +113,29 @@ function getSizeFromAccessorType(type) {
 
 class GLTFPostProcessor {
   baseUri: string = '';
-  json: Record<string, any> = {};
-  buffers: [] = [];
-  images: [] = [];
+  // @ts-expect-error
+  jsonUnprocessed: GLTF;
+  // @ts-expect-error
+  json: GLTFPostprocessed;
+  buffers: {
+    arrayBuffer: ArrayBuffer;
+    byteOffset: number;
+    byteLength: number;
+  }[] = [];
+  images: any[] = [];
 
-  postProcess(gltf, options = {}) {
-    const {json, buffers = [], images = [], baseUri = ''} = gltf;
+  postProcess(gltf: GLTFWithBuffers, options = {}) {
+    const {json, buffers = [], images = []} = gltf;
+    // @ts-expect-error
+    const {baseUri = ''} = gltf;
     assert(json);
 
     this.baseUri = baseUri;
-    this.json = json;
     this.buffers = buffers;
     this.images = images;
+    this.jsonUnprocessed = json;
 
-    this._resolveTree(this.json, options);
+    this.json = this._resolveTree(gltf.json, options);
 
     return this.json;
   }
@@ -92,121 +143,143 @@ class GLTFPostProcessor {
   // Convert indexed glTF structure into tree structure
   // cross-link index resolution, enum lookup, convenience calculations
   // eslint-disable-next-line complexity
-  _resolveTree(json, options = {}) {
-    if (json.bufferViews) {
-      json.bufferViews = json.bufferViews.map((bufView, i) => this._resolveBufferView(bufView, i));
+  _resolveTree(gltf: GLTF, options = {}): GLTFPostprocessed {
+    // @ts-expect-error
+    const json: GLTFPostprocessed = {...gltf};
+
+    if (gltf.bufferViews) {
+      json.bufferViews = gltf.bufferViews.map((bufView, i) => this._resolveBufferView(bufView, i));
     }
-    if (json.images) {
-      json.images = json.images.map((image, i) => this._resolveImage(image, i));
+    if (gltf.images) {
+      json.images = gltf.images.map((image, i) => this._resolveImage(image, i));
     }
-    if (json.samplers) {
-      json.samplers = json.samplers.map((sampler, i) => this._resolveSampler(sampler, i));
+    if (gltf.samplers) {
+      json.samplers = gltf.samplers.map((sampler, i) => this._resolveSampler(sampler, i));
     }
-    if (json.textures) {
-      json.textures = json.textures.map((texture, i) => this._resolveTexture(texture, i));
+    if (gltf.textures) {
+      json.textures = gltf.textures.map((texture, i) => this._resolveTexture(texture, i));
     }
-    if (json.accessors) {
-      json.accessors = json.accessors.map((accessor, i) => this._resolveAccessor(accessor, i));
+    if (gltf.accessors) {
+      json.accessors = gltf.accessors.map((accessor, i) => this._resolveAccessor(accessor, i));
     }
-    if (json.materials) {
-      json.materials = json.materials.map((material, i) => this._resolveMaterial(material, i));
+    if (gltf.materials) {
+      json.materials = gltf.materials.map((material, i) => this._resolveMaterial(material, i));
     }
-    if (json.meshes) {
-      json.meshes = json.meshes.map((mesh, i) => this._resolveMesh(mesh, i));
+    if (gltf.meshes) {
+      json.meshes = gltf.meshes.map((mesh, i) => this._resolveMesh(mesh, i));
     }
-    if (json.nodes) {
-      json.nodes = json.nodes.map((node, i) => this._resolveNode(node, i));
+    if (gltf.nodes) {
+      json.nodes = gltf.nodes.map((node, i) => this._resolveNode(node, i));
     }
-    if (json.skins) {
-      json.skins = json.skins.map((skin, i) => this._resolveSkin(skin, i));
+    if (gltf.skins) {
+      json.skins = gltf.skins.map((skin, i) => this._resolveSkin(skin, i));
     }
-    if (json.scenes) {
-      json.scenes = json.scenes.map((scene, i) => this._resolveScene(scene, i));
+    if (gltf.scenes) {
+      json.scenes = gltf.scenes.map((scene, i) => this._resolveScene(scene, i));
     }
-    if (json.scene !== undefined) {
+    if (typeof this.json.scene === 'number' && json.scenes) {
       json.scene = json.scenes[this.json.scene];
     }
+
+    return json;
   }
 
-  getScene(index) {
-    return this._get('scenes', index);
+  getScene(index: number): GLTFScenePostprocessed {
+    return this._get(this.json.scenes, index);
   }
 
-  getNode(index) {
-    return this._get('nodes', index);
+  getNode(index: number): GLTFNodePostprocessed {
+    return this._get(this.json.nodes, index);
   }
 
-  getSkin(index) {
-    return this._get('skins', index);
+  getSkin(index: number): GLTFSkinPostprocessed {
+    return this._get(this.json.skins, index);
   }
 
-  getMesh(index) {
-    return this._get('meshes', index);
+  getMesh(index: number): GLTFMeshPostprocessed {
+    return this._get(this.json.meshes, index);
   }
 
-  getMaterial(index) {
-    return this._get('materials', index);
+  getMaterial(index: number): GLTFMaterialPostprocessed {
+    return this._get(this.json.materials, index);
   }
 
-  getAccessor(index) {
-    return this._get('accessors', index);
+  getAccessor(index: number): GLTFAccessorPostprocessed {
+    return this._get(this.json.accessors, index);
   }
 
-  getCamera(index) {
-    return null; // TODO: fix this
+  getCamera(index: number): GLTFCameraPostprocessed {
+    return this._get(this.json.cameras, index);
   }
 
-  getTexture(index) {
-    return this._get('textures', index);
+  getTexture(index: number): GLTFTexturePostprocessed {
+    return this._get(this.json.textures, index);
   }
 
-  getSampler(index) {
-    return this._get('samplers', index);
+  getSampler(index: number): GLTFSamplerPostprocessed {
+    return this._get(this.json.samplers, index);
   }
 
-  getImage(index) {
-    return this._get('images', index);
+  getImage(index: number): GLTFImagePostprocessed {
+    return this._get(this.json.images, index);
   }
 
-  getBufferView(index) {
-    return this._get('bufferViews', index);
+  getBufferView(index: number): GLTFBufferViewPostprocessed {
+    return this._get(this.json.bufferViews, index);
   }
 
-  getBuffer(index) {
-    return this._get('buffers', index);
+  getBuffer(index: number): GLTFBufferPostprocessed {
+    return this._get(this.json.buffers, index);
   }
 
-  _get(array, index) {
+  _get<T>(array: T[] | undefined, index: number): T {
     // check if already resolved
     if (typeof index === 'object') {
       return index;
     }
-    const object = this.json[array] && this.json[array][index];
+    const object = array && array[index];
     if (!object) {
       console.warn(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
     }
-    return object;
+    return object as T;
   }
 
   // PARSING HELPERS
 
-  _resolveScene(scene, index) {
-    // scene = {...scene};
-    scene.id = scene.id || `scene-${index}`;
-    scene.nodes = (scene.nodes || []).map((node) => this.getNode(node));
-    return scene;
+  _resolveScene(scene: GLTFScene, index: number): GLTFScenePostprocessed {
+    return {
+      ...scene,
+      // @ts-ignore
+      sid: scene.id || `scene-${index}`,
+      nodes: (scene.nodes || []).map((node) => this.getNode(node))
+    };
   }
 
-  _resolveNode(node, index) {
-    // node = {...node};
-    node.id = node.id || `node-${index}`;
-    if (node.children) {
-      node.children = node.children.map((child) => this.getNode(child));
+  _resolveNode(gltfNode: GLTFNode, index: number): GLTFNodePostprocessed {
+    // @ts-expect-error
+    const node: GLTFNodePostprocessed = {
+      ...gltfNode,
+      // @ts-expect-error id could already be present, glTF standard does not prevent it
+      id: gltfNode.id || `node-${index}`,
+    };
+    if (gltfNode.children) {
+      node.children = gltfNode.children.map((child) => this.getNode(child));
     }
-    if (node.mesh !== undefined) {
-      node.mesh = this.getMesh(node.mesh);
-    } else if (node.meshes !== undefined && node.meshes.length) {
-      node.mesh = node.meshes.reduce(
+    if (gltfNode.mesh !== undefined) {
+      node.mesh = this.getMesh(gltfNode.mesh);
+    }
+    if (gltfNode.camera !== undefined) {
+      node.camera = this.getCamera(gltfNode.camera);
+    }
+    if (gltfNode.skin !== undefined) {
+      node.skin = this.getSkin(gltfNode.skin);
+    }
+
+    // TODO deprecated - Delete in v4.0?
+    // @ts-expect-error node.meshes does not seem to be part of the GLTF standard
+    if (gltfNode.meshes !== undefined && gltfNode.meshes.length) {
+      // @ts-expect-error
+      node.mesh = gltfNode.meshes.reduce(
         (accum, meshIndex) => {
           const mesh = this.getMesh(meshIndex);
           accum.id = mesh.id;
@@ -216,38 +289,46 @@ class GLTFPostProcessor {
         {primitives: []}
       );
     }
-    if (node.camera !== undefined) {
-      node.camera = this.getCamera(node.camera);
-    }
-    if (node.skin !== undefined) {
-      node.skin = this.getSkin(node.skin);
-    }
+
     return node;
   }
 
-  _resolveSkin(skin, index) {
-    // skin = {...skin};
-    skin.id = skin.id || `skin-${index}`;
-    skin.inverseBindMatrices = this.getAccessor(skin.inverseBindMatrices);
-    return skin;
+  _resolveSkin(gltfSkin: GLTFSkin, index: number): GLTFSkinPostprocessed {
+    const inverseBindMatrices =
+      typeof gltfSkin.inverseBindMatrices === 'number'
+        ? this.getAccessor(gltfSkin.inverseBindMatrices)
+        : undefined;
+
+    return {
+      ...gltfSkin,
+      id: gltfSkin['id'] || `skin-${index}`,
+      inverseBindMatrices
+    };
   }
 
-  _resolveMesh(mesh, index) {
-    // mesh = {...mesh};
-    mesh.id = mesh.id || `mesh-${index}`;
-    if (mesh.primitives) {
-      mesh.primitives = mesh.primitives.map((primitive) => {
-        primitive = {...primitive};
-        const attributes = primitive.attributes;
-        primitive.attributes = {};
+  _resolveMesh(gltfMesh: GLTFMesh, index: number): GLTFMeshPostprocessed {
+    const mesh: GLTFMeshPostprocessed = {
+      ...gltfMesh,
+      id: gltfMesh.id || `mesh-${index}`,
+      primitives: []
+    };
+    if (gltfMesh.primitives) {
+      mesh.primitives = gltfMesh.primitives.map((gltfPrimitive) => {
+        const primitive: GLTFMeshPrimitivePostprocessed = {
+          ...gltfPrimitive,
+          attributes: {},
+          indices: undefined,
+          material: undefined
+        };
+        const attributes = gltfPrimitive.attributes;
         for (const attribute in attributes) {
           primitive.attributes[attribute] = this.getAccessor(attributes[attribute]);
         }
-        if (primitive.indices !== undefined) {
-          primitive.indices = this.getAccessor(primitive.indices);
+        if (gltfPrimitive.indices !== undefined) {
+          primitive.indices = this.getAccessor(gltfPrimitive.indices);
         }
-        if (primitive.material !== undefined) {
-          primitive.material = this.getMaterial(primitive.material);
+        if (gltfPrimitive.material !== undefined) {
+          primitive.material = this.getMaterial(gltfPrimitive.material);
         }
         return primitive;
       });
@@ -255,23 +336,27 @@ class GLTFPostProcessor {
     return mesh;
   }
 
-  _resolveMaterial(material, index) {
-    // material = {...material};
-    material.id = material.id || `material-${index}`;
+  _resolveMaterial(gltfMaterial: GLTFMaterial, index: number): GLTFMaterialPostprocessed {
+    // @ts-expect-error
+    const material: GLTFMaterialPostprocessed = {
+      ...gltfMaterial,
+      // @ts-expect-error
+      id: gltfMaterial.id || `material-${index}`
+    };
     if (material.normalTexture) {
       material.normalTexture = {...material.normalTexture};
       material.normalTexture.texture = this.getTexture(material.normalTexture.index);
     }
     if (material.occlusionTexture) {
-      material.occlustionTexture = {...material.occlustionTexture};
+      material.occlusionTexture = {...material.occlusionTexture};
       material.occlusionTexture.texture = this.getTexture(material.occlusionTexture.index);
     }
     if (material.emissiveTexture) {
-      material.emmisiveTexture = {...material.emmisiveTexture};
+      material.emissiveTexture = {...material.emissiveTexture};
       material.emissiveTexture.texture = this.getTexture(material.emissiveTexture.index);
     }
     if (!material.emissiveFactor) {
-      material.emissiveFactor = material.emmisiveTexture ? [1, 1, 1] : [0, 0, 0];
+      material.emissiveFactor = material.emissiveTexture ? [1, 1, 1] : [0, 0, 0];
     }
 
     if (material.pbrMetallicRoughness) {
@@ -289,18 +374,24 @@ class GLTFPostProcessor {
     return material;
   }
 
-  _resolveAccessor(accessor, index) {
-    // accessor = {...accessor};
-    accessor.id = accessor.id || `accessor-${index}`;
-    if (accessor.bufferView !== undefined) {
-      // Draco encoded meshes don't have bufferView
-      accessor.bufferView = this.getBufferView(accessor.bufferView);
-    }
-
+  _resolveAccessor(gltfAccessor: GLTFAccessor, index: number): GLTFAccessorPostprocessed {
     // Look up enums
-    accessor.bytesPerComponent = getBytesFromComponentType(accessor.componentType);
-    accessor.components = getSizeFromAccessorType(accessor.type);
-    accessor.bytesPerElement = accessor.bytesPerComponent * accessor.components;
+    const bytesPerComponent = getBytesFromComponentType(gltfAccessor.componentType);
+    const components = getSizeFromAccessorType(gltfAccessor.type);
+    const bytesPerElement = bytesPerComponent * components;
+
+    const accessor: GLTFAccessorPostprocessed = {
+      ...gltfAccessor,
+      // @ts-expect-error
+      id: gltfAccessor.id || `accessor-${index}`,
+      bytesPerComponent,
+      components,
+      bytesPerElement
+    };
+    if (gltfAccessor.bufferView !== undefined) {
+      // Draco encoded meshes don't have bufferView
+      accessor.bufferView = this.getBufferView(gltfAccessor.bufferView);
+    }
 
     // Create TypedArray for the accessor
     // Note: The canonical way to instantiate is to ignore this array and create
@@ -336,7 +427,13 @@ class GLTFPostProcessor {
    * @param count
    * @returns
    */
-  _getValueFromInterleavedBuffer(buffer, byteOffset, byteStride, bytesPerElement, count) {
+  _getValueFromInterleavedBuffer(
+    buffer,
+    byteOffset: number,
+    byteStride: number,
+    bytesPerElement: number,
+    count: number
+  ): ArrayBufferLike {
     const result = new Uint8Array(count * bytesPerElement);
     for (let i = 0; i < count; i++) {
       const elementOffset = byteOffset + i * byteStride;
@@ -348,19 +445,24 @@ class GLTFPostProcessor {
     return result.buffer;
   }
 
-  _resolveTexture(texture, index) {
-    // texture = {...texture};
-    texture.id = texture.id || `texture-${index}`;
-    texture.sampler = 'sampler' in texture ? this.getSampler(texture.sampler) : DEFAULT_SAMPLER;
-    texture.source = this.getImage(texture.source);
-    return texture;
+  _resolveTexture(gltfTexture: GLTFTexture, index: number): GLTFTexturePostprocessed {
+    return {
+      ...gltfTexture,
+      // @ts-expect-error id could already be present, glTF standard does not prevent it
+      id: gltfTexture.id || `texture-${index}`,
+      sampler: gltfTexture.sampler ? this.getSampler(gltfTexture.sampler) : makeDefaultSampler(),
+      source: gltfTexture.source ? this.getImage(gltfTexture.source) : undefined
+    };
   }
 
-  _resolveSampler(sampler, index) {
-    // sampler = {...sampler};
-    sampler.id = sampler.id || `sampler-${index}`;
+  _resolveSampler(gltfSampler: GLTFSampler, index: number): GLTFSamplerPostprocessed {
+    const sampler: GLTFSamplerPostprocessed = {
+      // @ts-expect-error id could already be present, glTF standard does not prevent it
+      id: gltfSampler.id || `sampler-${index}`,
+      ...gltfSampler,
+      parameters: {}
+    };
     // Map textual parameters to GL parameter values
-    sampler.parameters = {};
     for (const key in sampler) {
       const glEnum = this._enumSamplerParameter(key);
       if (glEnum !== undefined) {
@@ -370,16 +472,19 @@ class GLTFPostProcessor {
     return sampler;
   }
 
-  _enumSamplerParameter(key) {
+  _enumSamplerParameter(key: string): number {
     return SAMPLER_PARAMETER_GLTF_TO_GL[key];
   }
 
-  _resolveImage(image, index) {
-    // image = {...image};
-    image.id = image.id || `image-${index}`;
-    if (image.bufferView !== undefined) {
-      image.bufferView = this.getBufferView(image.bufferView);
-    }
+  _resolveImage(gltfImage: GLTFImage, index: number): GLTFImagePostprocessed {
+    const image: GLTFImagePostprocessed = {
+      ...gltfImage,
+      // @ts-expect-error id could already be present, glTF standard does not prevent it
+      id: gltfImage.id || `image-${index}`,
+      image: null,
+      bufferView:
+        gltfImage.bufferView !== undefined ? this.getBufferView(gltfImage.bufferView) : undefined
+    };
 
     // Check if image has been preloaded by the GLTFLoader
     // If so, link it into the JSON and drop the URI
@@ -391,30 +496,34 @@ class GLTFPostProcessor {
     return image;
   }
 
-  _resolveBufferView(bufferView: BufferView, index: number): BufferViewPostprocessed {
-    // bufferView = {...bufferView};
-    const bufferIndex = bufferView.buffer;
-    const result: BufferViewPostprocessed = {
-      id: `bufferView-${index}`,
-      ...bufferView,
-      buffer: this.buffers[bufferIndex]
-    };
-
-    // @ts-expect-error
+  _resolveBufferView(gltfBufferView: GLTFBufferView, index: number): GLTFBufferViewPostprocessed {
+    const bufferIndex = gltfBufferView.buffer;
     const arrayBuffer = this.buffers[bufferIndex].arrayBuffer;
-    // @ts-expect-error
+    // Add offset of buffer, then offset of buffer view
     let byteOffset = this.buffers[bufferIndex].byteOffset || 0;
-
-    if ('byteOffset' in bufferView) {
-      byteOffset += bufferView.byteOffset;
+    if (gltfBufferView.byteOffset) {
+      byteOffset += gltfBufferView.byteOffset;
     }
 
-    result.data = new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
-    return result;
+    const bufferView: GLTFBufferViewPostprocessed = {
+      // // @ts-expect-error id could already be present, glTF standard does not prevent it
+      id: `bufferView-${index}`,
+      ...gltfBufferView,
+      // ...this.buffers[bufferIndex],
+      buffer: this.buffers[bufferIndex],
+      data: new Uint8Array(arrayBuffer, byteOffset, gltfBufferView.byteLength)
+    };
+
+    return bufferView;
   }
 
-  _resolveCamera(camera, index) {
-    camera.id = camera.id || `camera-${index}`;
+  _resolveCamera(gltfCamera: GLTFCamera, index): GLTFCameraPostprocessed {
+    const camera: GLTFCameraPostprocessed = {
+      ...gltfCamera,
+      // @ts-expect-error id could already be present, glTF standard does not prevent it
+      id: gltfCamera.id || `camera-${index}`
+    };
+
     // TODO - create 4x4 matrices
     if (camera.perspective) {
       // camera.matrix = createPerspectiveMatrix(camera.perspective);
@@ -426,6 +535,6 @@ class GLTFPostProcessor {
   }
 }
 
-export function postProcessGLTF(gltf, options?) {
+export function postProcessGLTF(gltf: GLTFWithBuffers, options?: ParseGLTFOptions) {
   return new GLTFPostProcessor().postProcess(gltf, options);
 }

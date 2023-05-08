@@ -3,18 +3,21 @@
  */
 
 import {Vector3, Matrix3} from '@math.gl/core';
-import type {GLTFMeshPrimitive, GLTFWithBuffers} from '../types/gltf-types';
+import type {GLTFWithBuffers} from '../types/gltf-types';
+import type {
+  GLTFMeshPrimitive,
+  GLTFAccessor,
+  GLTFBufferView,
+  GLTFMaterialNormalTextureInfo,
+  GLTFMaterialOcclusionTextureInfo,
+  GLTFTextureInfo
+} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
+
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
-import {
-  Accessor,
-  BufferView,
-  MaterialNormalTextureInfo,
-  MaterialOcclusionTextureInfo,
-  TextureInfo as GLTFTextureInfo
-} from '../types/gltf-json-schema';
-import GLTFScenegraph from '../api/gltf-scenegraph';
+import {} from '../types/gltf-json-schema';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
 
 /** Extension name */
 const EXT_MESHOPT_TRANSFORM = 'KHR_texture_transform';
@@ -38,8 +41,8 @@ type TextureInfo = {
 };
 /** Intersection of all GLTF textures */
 type CompoundGLTFTextureInfo = GLTFTextureInfo &
-  MaterialNormalTextureInfo &
-  MaterialOcclusionTextureInfo;
+  GLTFMaterialNormalTextureInfo &
+  GLTFMaterialOcclusionTextureInfo;
 /** Parameters for TEXCOORD transformation */
 type TransformParameters = {
   /** Original texCoord value https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#_textureinfo_texcoord */
@@ -220,8 +223,8 @@ function transformPrimitive(
  * @param newTexcoordArray typed array with data after transformation
  */
 function updateGltf(
-  accessor: Accessor,
-  bufferView: BufferView,
+  accessor: GLTFAccessor,
+  bufferView: GLTFBufferView,
   buffers: {arrayBuffer: ArrayBuffer; byteOffset: number; byteLength: number}[],
   newTexCoordArray: Float32Array
 ): void {
@@ -248,7 +251,7 @@ function updateGltf(
  */
 function createAttribute(
   newTexCoord: number,
-  originalAccessor: Accessor,
+  originalAccessor: GLTFAccessor,
   primitive: GLTFMeshPrimitive,
   gltfData: GLTFWithBuffers,
   newTexCoordArray: Float32Array

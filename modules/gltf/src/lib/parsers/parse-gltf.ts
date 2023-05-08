@@ -1,21 +1,23 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
-import type {GLB} from '../types/glb-types';
 import type {GLTFWithBuffers} from '../types/gltf-types';
+import type {GLB} from '../types/glb-types';
+import type {ParseGLBOptions} from './parse-glb';
 
 import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
+import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
+
 import {assert} from '../utils/assert';
+import {isGLB, parseGLBSync} from './parse-glb';
 import {resolveUrl} from '../gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
 import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
 import {postProcessGLTF} from '../api/post-process-gltf';
-import parseGLBSync, {isGLB} from './parse-glb';
 
-export type GLTFParseOptions = {
+export type ParseGLTFOptions = ParseGLBOptions & {
   normalize?: boolean;
   loadImages?: boolean;
   loadBuffers?: boolean;
@@ -25,10 +27,11 @@ export type GLTFParseOptions = {
 };
 
 // export type GLTFOptions = {
-//   gltf?: GLTFParseOptions;
+//   gltf?: ParseGLTFOptions;
 // };
 
-export function isGLTF(arrayBuffer, options?): boolean {
+/** Checks that contents of array buffer conforms to  */
+export function isGLTF(arrayBuffer: ArrayBuffer, options?: ParseGLTFOptions): boolean {
   const byteOffset = 0;
   return isGLB(arrayBuffer, byteOffset, options);
 }
@@ -65,7 +68,7 @@ export async function parseGLTF(
   await Promise.all(promises);
 
   // Post processing resolves indices to objects, buffers
-  return options?.gltf?.postProcess ? postProcessGLTF(gltf, options) : gltf;
+  return options?.gltf?.postProcess ? postProcessGLTF(gltf, options.gltf) : gltf;
 }
 
 // `data` - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)
