@@ -10,7 +10,7 @@ import {load} from '@loaders.gl/core';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
-import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILE_TYPE, TILESET_TYPE} from '../constants';
+import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
 import {FrameState} from './helpers/frame-state';
 import {
@@ -18,7 +18,6 @@ import {
   getCartographicBounds,
   CartographicBounds
 } from './helpers/bounding-volume';
-import {getMemoryUsageGLTF} from '@loaders.gl/gltf';
 import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
 import {getProjectedRadius} from './helpers/i3s-lod';
 import {get3dTilesOptions} from './helpers/3d-tiles-options';
@@ -346,18 +345,7 @@ export class Tile3D {
    * Memory usage of tile on GPU
    */
   _getGpuMemoryUsageInBytes(): number {
-    switch (this.type) {
-      case TILE_TYPE.MESH:
-      case TILE_TYPE.POINTCLOUD:
-        return this.content.byteLength;
-
-      case TILE_TYPE.SCENEGRAPH:
-        return getMemoryUsageGLTF(this.content.gltf);
-
-      case TILE_TYPE.EMPTY:
-      default:
-        return 0;
-    }
+    return this.content.gpuMemoryUsageInBytes || this.content.byteLength || 0;
   }
 
   /*
