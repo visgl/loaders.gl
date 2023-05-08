@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+
+import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {
   GLTF,
   GLTFScene,
@@ -11,8 +14,7 @@ import type {
   GLTFImage,
   GLTFBuffer,
   GLTFBufferView,
-  GLTFWithBuffers
-} from '../types/gltf-types';
+} from '../types/gltf-json-schema';
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
@@ -38,7 +40,7 @@ function makeDefaultGLTFJson(): GLTF {
 /**
  * Class for structured access to GLTF data
  */
-export default class GLTFScenegraph {
+export class GLTFScenegraph {
   // internal
   gltf: GLTFWithBuffers;
   sourceBuffers: any[];
@@ -84,7 +86,7 @@ export default class GLTFScenegraph {
   getExtension<T = Extension>(extensionName: string): T | null {
     const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
-    return isExtension ? extensions[extensionName] || true : null;
+    return isExtension ? extensions[extensionName] as T : null;
   }
 
   getRequiredExtension<T = Extension>(extensionName: string): T | null {

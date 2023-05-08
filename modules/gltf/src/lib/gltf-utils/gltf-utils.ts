@@ -1,5 +1,11 @@
 import {assert} from '../utils/assert';
-import {GLTF} from '../types/gltf-types';
+import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
+
+/** 
+ * Memory needed to store texture and all mipmap levels 1 + 1/4 + 1/16 + 1/64 + ...
+ * Minimum 1.33, but due to GPU layout may be 1.5
+ */
+const MIPMAP_FACTOR = 1.5;
 
 const TYPES = ['SCALAR', 'VEC2', 'VEC3', 'VEC4'];
 
@@ -84,7 +90,7 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
  * @param gltf - the gltf content of a GLTF tile
  * @returns - total memory usage in bytes
  */
-export function getMemoryUsageGLTF(gltf: Partial<GLTF>): number {
+export function getMemoryUsageGLTF(gltf: GLTFPostprocessed): number {
   let {images, bufferViews} = gltf;
   images = images || [];
   bufferViews = bufferViews || [];
@@ -100,5 +106,5 @@ export function getMemoryUsageGLTF(gltf: Partial<GLTF>): number {
     const {width, height} = (image as any).image;
     return acc + width * height;
   }, 0);
-  return bufferMemory + Math.ceil(4 * pixelCount * 1.33);
+  return bufferMemory + Math.ceil(4 * pixelCount * MIPMAP_FACTOR);
 }

@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import type {GLTF, GLTFBufferView, GLTF_EXT_meshopt_compression} from '../types/gltf-types';
+import type {GLTF, GLTFBufferView, GLTF_EXT_meshopt_compression} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
-import GLTFScenegraph from '../api/gltf-scenegraph';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
 // @ts-ignore

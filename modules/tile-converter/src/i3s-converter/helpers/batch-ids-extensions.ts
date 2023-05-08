@@ -3,10 +3,11 @@ import {
   GLTFImagePostprocessed,
   GLTFMeshPrimitivePostprocessed
 } from '@loaders.gl/gltf';
+import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
   GLTF_EXT_feature_metadata_attribute,
   GLTF_EXT_feature_metadata_primitive
-} from 'modules/gltf/src/lib/types/gltf-json-schema';
+} from '@loaders.gl/gltf';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
@@ -23,7 +24,7 @@ export function handleBatchIdsExtensions(
   },
   primitive: GLTFMeshPrimitivePostprocessed,
   images: GLTFImagePostprocessed[]
-): number[] {
+): NumericArray {
   const extensions = primitive?.extensions;
 
   if (!extensions) {
@@ -62,7 +63,7 @@ function handleExtFeatureMetadataExtension(
   },
   extFeatureMetadata: GLTF_EXT_feature_metadata_primitive,
   images: GLTFImagePostprocessed[]
-): number[] {
+): NumericArray {
   // Take only first extension object to get batchIds attribute name.
   const featureIdAttribute = extFeatureMetadata?.featureIdAttributes?.[0];
 

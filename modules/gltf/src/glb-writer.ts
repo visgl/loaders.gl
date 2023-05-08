@@ -1,7 +1,9 @@
+// loaders.gl, MIT license
+
 import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
 import type {GLBEncodeOptions} from './lib/encoders/encode-glb';
-import encodeGLBSync from './lib/encoders/encode-glb';
+import {encodeGLBSync} from './lib/encoders/encode-glb';
 import {VERSION} from './lib/utils/version';
 
 export type GLBWriterOptions = WriterOptions & {

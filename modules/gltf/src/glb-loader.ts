@@ -2,7 +2,7 @@ import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
 import type {ParseGLBOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
-import parseGLBSync from './lib/parsers/parse-glb';
+import {parseGLBSync} from './lib/parsers/parse-glb';
 
 export type GLBLoaderOptions = LoaderOptions & {
   glb?: ParseGLBOptions;

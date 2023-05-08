@@ -17,7 +17,15 @@ export type {
   SyncDataType,
   BatchableDataType,
   IFileSystem,
-  IRandomAccessReadFileSystem
+  IRandomAccessReadFileSystem,
+
+  // numeric array types
+  TypedArray, 
+  BigTypedArray, 
+  TypedArrayConstructor, 
+  BigTypedArrayConstructor, 
+  NumberArray, 
+  NumericArray
 } from './types';
 
 // GENERAL UTILS

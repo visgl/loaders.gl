@@ -41,7 +41,6 @@ import {B3DMAttributesData /*, transformI3SAttributesOnWorker*/} from '../../i3s
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import {GL} from '@loaders.gl/math';
 
 /*
@@ -568,10 +567,10 @@ function convertMesh(
 }
 /**
  * Converts TRIANGLE-STRIPS to independent TRIANGLES
- * @param {MeshPrimitive} primitive - the primitive to get the indices from
+ * @param primitive - the primitive to get the indices from
  * @returns indices of vertices of the independent triangles
  */
-function getIndices(primitive: MeshPrimitive): TypedArray {
+function getIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
   let indices: TypedArray = primitive.indices?.value;
   if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
     /*
@@ -614,7 +613,7 @@ function getIndices(primitive: MeshPrimitive): TypedArray {
  * @param args.indices - gltf primitive indices
  * @param args.attributeSpecificTransformation - function to do attribute - specific transformations
  * @param args.useCartesianPositions - use coordinates as it is.
- * @returns {Float32Array}
+ * @returns
  */
 function transformVertexArray(args: {
   vertices: Float32Array;
@@ -624,7 +623,7 @@ function transformVertexArray(args: {
   indices: TypedArray;
   attributeSpecificTransformation: Function;
   useCartesianPositions: boolean;
-}) {
+}): Float32Array {
   const {vertices, indices, attributeSpecificTransformation} = args;
   const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
   if (!vertices) {
@@ -1221,13 +1220,13 @@ function makeFeatureIdsUnique(
 
 /**
  * Generate replace map to make featureIds unique.
- * @param {Array} featureIds
- * @param {Object} batchTable
- * @param {Array} featuresHashArray
- * @returns {Object}
+ * @param featureIds
+ * @param batchTable
+ * @param featuresHashArray
+ * @returns
  */
-function getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray) {
-  const featureMap = {};
+function getFeaturesReplaceMap(featureIds: any[], batchTable: object, featuresHashArray: any[]): Record<string, any>  {
+  const featureMap: Record<string, any> = {};
 
   for (let index = 0; index < featureIds.length; index++) {
     const oldFeatureId = featureIds[index];
@@ -1240,11 +1239,11 @@ function getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray) {
 
 /**
  * Generates string for unique batch id creation.
- * @param {Object} batchTable
- * @param {Number} index
- * @returns {String}
+ * @param batchTable
+ * @param index
+ * @returns
  */
-function generateStringFromBatchTableByIndex(batchTable, index) {
+function generateStringFromBatchTableByIndex(batchTable: object, index: number): string {
   let str = '';
   for (const key in batchTable) {
     str += batchTable[key][index];
@@ -1254,12 +1253,12 @@ function generateStringFromBatchTableByIndex(batchTable, index) {
 
 /**
  * Return already exited featureId or creates and returns new to support unique feature ids throw nodes.
- * @param {Number} index
- * @param {Object} batchTable
- * @param {Array} featuresHashArray
- * @returns {Number}
+ * @param index
+ * @param batchTable
+ * @param featuresHashArray
+ * @returns
  */
-function getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray) {
+function getOrCreateUniqueFeatureId(index: number, batchTable: object, featuresHashArray: any[]): number {
   const batchTableStr = generateStringFromBatchTableByIndex(batchTable, index);
   const hash = md5(batchTableStr);
 
@@ -1271,11 +1270,11 @@ function getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray) {
 
 /**
  * Do replacement of indices for making them unique through all nodes.
- * @param {Array} indicesArray
- * @param {Object} featureMap
- * @returns {void}
+ * @param indicesArray
+ * @param featureMap
+ * @returns
  */
-function replaceIndicesByUnique(indicesArray, featureMap) {
+function replaceIndicesByUnique(indicesArray: any[], featureMap: Record<string, []>) {
   for (let index = 0; index < indicesArray.length; index++) {
     indicesArray[index] = featureMap[indicesArray[index]];
   }
@@ -1283,16 +1282,16 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
 
 /**
  * Convert property table data to attribute buffers.
- * @param {Array} featureIds
- * @param {Object} propertyTable - table with metadata for particular feature.
- * @param {Array} attributeStorageInfo
- * @returns {Array} - Array of file buffers.
+ * @param featureIds
+ * @param propertyTable - table with metadata for particular feature.
+ * @param attributeStorageInfo
+ * @returns - Array of file buffers.
  */
 function convertPropertyTableToAttributeBuffers(
   featureIds: number[],
   propertyTable: FeatureTableJson,
   attributeStorageInfo: AttributeStorageInfo[]
-) {
+): any[] {
   const attributeBuffers: ArrayBuffer[] = [];
 
   const needFlattenPropertyTable = checkPropertiesLength(featureIds, propertyTable);
@@ -1344,21 +1343,21 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 
 /**
  * Return attribute type.
- * @param {String} key
- * @param {Array} attributeStorageInfo
- * @returns {String} attribute type.
+ * @param key
+ * @param attributeStorageInfo
+ * @returns attribute type.
  */
-function getAttributeType(key, attributeStorageInfo) {
+function getAttributeType(key: string, attributeStorageInfo: any[]): string {
   const attribute = attributeStorageInfo.find((attr) => attr.name === key);
   return attribute.attributeValues.valueType;
 }
 
 /**
  * Convert short integer to attribute arrayBuffer.
- * @param {Array} featureIds
- * @returns {ArrayBuffer} - Buffer with objectId data.
+ * @param featureIds
+ * @returns - Buffer with objectId data.
  */
-function generateShortIntegerAttributeBuffer(featureIds): ArrayBuffer {
+function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const valuesArray = new Uint32Array(featureIds);
   return concatenateArrayBuffers(count.buffer, valuesArray.buffer);
@@ -1366,10 +1365,10 @@ function generateShortIntegerAttributeBuffer(featureIds): ArrayBuffer {
 
 /**
  * Convert double to attribute arrayBuffer.
- * @param {Array} featureIds
- * @returns {ArrayBuffer} - Buffer with objectId data.
+ * @param featureIds
+ * @returns - Buffer with objectId data.
  */
-function generateDoubleAttributeBuffer(featureIds): ArrayBuffer {
+function generateDoubleAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const padding = new Uint8Array(4);
   const valuesArray = new Float64Array(featureIds);
@@ -1379,10 +1378,10 @@ function generateDoubleAttributeBuffer(featureIds): ArrayBuffer {
 
 /**
  * Convert batch table attributes to array buffer with batch table data.
- * @param {Array} batchAttributes
- * @returns {ArrayBuffer} - Buffer with batch table data.
+ * @param batchAttributes
+ * @returns - Buffer with batch table data.
  */
-function generateStringAttributeBuffer(batchAttributes): ArrayBuffer {
+function generateStringAttributeBuffer(batchAttributes: any[]): ArrayBuffer {
   const stringCountArray = new Uint32Array([batchAttributes.length]);
   let totalNumberOfBytes = 0;
   const stringSizesArray = new Uint32Array(batchAttributes.length);
@@ -1409,10 +1408,10 @@ function generateStringAttributeBuffer(batchAttributes): ArrayBuffer {
 
 /**
  * Convert featureIds to BigUint64Array.
- * @param {Array} featureIds
- * @returns {BigUint64Array} - Array of feature ids in BigUint64 format.
+ * @param featureIds
+ * @returns - Array of feature ids in BigUint64 format.
  */
-function generateBigUint64Array(featureIds) {
+function generateBigUint64Array(featureIds: any[]): BigUint64Array {
   const typedFeatureIds = new BigUint64Array(featureIds.length);
   for (let index = 0; index < featureIds.length; index++) {
     typedFeatureIds[index] = BigInt(featureIds[index]);
@@ -1429,11 +1428,11 @@ function generateBigUint64Array(featureIds) {
  * @returns {Promise<object>} - COmpressed geometry.
  */
 async function generateCompressedGeometry(
-  vertexCount,
-  convertedAttributes,
-  attributes,
-  dracoWorkerSoure
-) {
+  vertexCount: number,
+  convertedAttributes: Record<string, any>,
+  attributes: Record<string, any>,
+  dracoWorkerSoure: string
+): Promise<Record<string, any>> {
   const {positions, normals, texCoords, colors, uvRegions, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
 
@@ -1493,11 +1492,11 @@ async function generateCompressedGeometry(
 
 /**
  * Generates ordered feature indices based on face range
- * @param {Uint32Array} featureIndex
- * @param {Uint32Array} faceRange
- * @returns {Uint32Array}
+ * @param featureIndex
+ * @param faceRange
+ * @returns
  */
-function generateFeatureIndexAttribute(featureIndex, faceRange) {
+function generateFeatureIndexAttribute(featureIndex: Uint32Array, faceRange: Uint32Array): Uint32Array {
   const orderedFeatureIndices = new Uint32Array(featureIndex.length);
   let fillIndex = 0;
   let startIndex = 0;

@@ -14,7 +14,8 @@ const TEST_CASES = [
           }
         ],
         nodes: [{mesh: 0}, {mesh: 1}],
-        meshes: [{}, {}]
+        meshes: [{}, {}],
+        buffers: []
       }
     },
     output: {
@@ -31,7 +32,8 @@ const TEST_CASES = [
         {mesh: {id: 'mesh-0'}, id: 'node-0'},
         {mesh: {id: 'mesh-1'}, id: 'node-1'}
       ],
-      meshes: [{id: 'mesh-0'}, {id: 'mesh-1'}]
+      meshes: [{id: 'mesh-0'}, {id: 'mesh-1'}],
+      buffers: []
     }
   }
 ];
