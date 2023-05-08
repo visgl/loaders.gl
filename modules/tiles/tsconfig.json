@@ -25,7 +25,6 @@
   },
   "references": [
     {"path": "../core"},
-    {"path": "../gltf"},
     {"path": "../loader-utils"},
     {"path": "../math"}
   ]

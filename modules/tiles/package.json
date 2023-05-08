@@ -33,7 +33,6 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/gltf": "3.4.0-alpha.4",
     "@loaders.gl/loader-utils": "3.4.0-alpha.4",
     "@loaders.gl/math": "3.4.0-alpha.4",
     "@math.gl/core": "^3.5.1",
