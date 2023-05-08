@@ -51,7 +51,7 @@ interface WKBOptions {
  */
 export default function encodeWKB(
   geometry: Geometry | Feature,
-  options: WKBOptions | {wkb: WKBOptions}
+  options: WKBOptions | {wkb: WKBOptions} = {}
 ): ArrayBuffer {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
