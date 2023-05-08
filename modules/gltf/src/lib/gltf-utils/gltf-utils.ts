@@ -94,6 +94,7 @@ export function getMemoryUsageGLTF(gltf: GLTF) {
   const bufferMemory = bufferViews.reduce((acc, view) => acc + view.byteLength, 0);
 
   // Assume each pixel of the texture is 4 channel with mimmaps (which add 33%)
+  // TODO correctly handle compressed textures
   const pixelCount = images.reduce((acc, image) => {
     // @ts-ignore
     const {width, height} = (image as any).image;
