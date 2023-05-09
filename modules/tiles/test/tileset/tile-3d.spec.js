@@ -6,7 +6,7 @@ import test from 'tape-promise/tape';
 import {Matrix4} from '@math.gl/core';
 import {load} from '@loaders.gl/core';
 import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
-import {GLTFLoader, getMemoryUsageGLTF} from '@loaders.gl/gltf';
+import {GLTFLoader, _getMemoryUsageGLTF} from '@loaders.gl/gltf';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // @ts-ignore
 import {LOD_METRIC_TYPE} from '../../src';
@@ -373,7 +373,7 @@ const GLB_URL = '@loaders.gl/3d-tiles/test/data/143.glb';
 test('Tile3D#getMemoryUsageGLTF', async (t) => {
   const data = await load(GLB_URL, GLTFLoader);
   t.ok(data, 'GLTFLoader returned parsed data');
-  t.equal(getMemoryUsageGLTF(data), 2884442, 'GLTF memory usage computed');
+  t.equal(_getMemoryUsageGLTF(data), 2884442, 'GLTF memory usage computed');
   t.end();
 });
 

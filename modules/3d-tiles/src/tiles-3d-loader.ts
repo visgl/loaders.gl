@@ -1,4 +1,4 @@
-import {getMemoryUsageGLTF, GLTF} from '@loaders.gl/gltf';
+import {_getMemoryUsageGLTF, GLTF} from '@loaders.gl/gltf';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
@@ -45,7 +45,7 @@ async function parseTile(arrayBuffer, options, context) {
   const byteOffset = 0;
   await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content);
   if (tile.content.gltf) {
-    tile.content.gpuMemoryUsageInBytes = getMemoryUsageGLTF(tile.content.gltf as any);
+    tile.content.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.content.gltf as any);
   }
   return tile.content;
 }
