@@ -2,6 +2,11 @@
 
 ## v3.3
 
+## v3.3.5
+
+- Compute memory usage for GLTF tiles (#2458)
+- fix(wkb): TypeError: Cannot use 'in' operator to search for 'wkb' in undefined (#2463)
+
 ## v3.3.4
 
 - Fix handling of query parameters in tile url (#2456)
