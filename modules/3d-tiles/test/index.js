@@ -6,6 +6,7 @@ import './lib/parsers/instanced-model-3d-tile.spec';
 import './lib/parsers/point-cloud-3d-tile.spec';
 import './lib/parsers/composite-3d-tile.spec';
 import './lib/parsers/parse-3d-tile-header.spec.js';
+import './lib/parsers/helpers/gpu-memory-usage.spec';
 import './lib/parsers/helpers/normalize-3d-tile-colors.spec';
 
 // import './styles/expression.spec';
