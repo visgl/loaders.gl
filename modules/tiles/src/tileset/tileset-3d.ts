@@ -841,12 +841,12 @@ export class Tileset3D {
     this.stats.get(TILES_IN_MEMORY).incrementCount();
 
     // Good enough? Just use the raw binary ArrayBuffer's byte length.
-    this.gpuMemoryUsageInBytes += tile.content.byteLength || 0;
+    this.gpuMemoryUsageInBytes += tile.gpuMemoryUsageInBytes || 0;
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
   }
 
   _unloadTile(tile) {
-    this.gpuMemoryUsageInBytes -= (tile.content && tile.content.byteLength) || 0;
+    this.gpuMemoryUsageInBytes -= tile.gpuMemoryUsageInBytes || 0;
 
     this.stats.get(TILES_IN_MEMORY).decrementCount();
     this.stats.get(TILES_UNLOADED).incrementCount();

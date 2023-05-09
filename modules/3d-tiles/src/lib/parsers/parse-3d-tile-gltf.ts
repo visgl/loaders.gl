@@ -1,4 +1,4 @@
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {_getMemoryUsageGLTF, GLTFLoader} from '@loaders.gl/gltf';
 
 export async function parseGltf3DTile(tile, arrayBuffer, options, context) {
   // Set flags
@@ -13,4 +13,5 @@ export async function parseGltf3DTile(tile, arrayBuffer, options, context) {
 
   const {parse} = context;
   tile.gltf = await parse(arrayBuffer, GLTFLoader, options, context);
+  tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
 }
