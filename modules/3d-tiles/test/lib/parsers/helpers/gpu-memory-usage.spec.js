@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
-import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import {Tileset3D} from '@loaders.gl/tiles';
 import {GLTFLoader, _getMemoryUsageGLTF} from '@loaders.gl/gltf';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
