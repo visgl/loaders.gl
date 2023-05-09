@@ -10,6 +10,7 @@ import {load} from '@loaders.gl/core';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
+import type {DoublyLinkedListNode} from '../utils/doubly-linked-list-node';
 import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
 import {FrameState} from './helpers/frame-state';
@@ -92,51 +93,42 @@ export class Tile3D {
 
   traverser = new TilesetTraverser({});
 
-  // @ts-ignore
-  private _cacheNode: any = null;
-  private _frameNumber: any = null;
+  /** Used by TilesetCache */
+  _cacheNode: DoublyLinkedListNode | null = null;
 
-  // TODO i3s specific, needs to remove
-  // @ts-ignore
-  private _lodJudge: any = null;
+  private _frameNumber: any = null;
 
   // TODO Cesium 3d tiles specific
   private _expireDate: any = null;
   private _expiredContent: any = null;
-  // @ts-ignore
-  private _shouldRefine: boolean = false;
 
   private _boundingBox?: CartographicBounds;
 
   /** updated every frame for tree traversal and rendering optimizations: */
   public _distanceToCamera: number = 0;
-  // @ts-ignore
-  private _centerZDepth: number = 0;
-  private _screenSpaceError: number = 0;
+  _screenSpaceError: number = 0;
   private _visibilityPlaneMask: any;
   private _visible: boolean | undefined = undefined;
-  private _inRequestVolume: boolean = false;
-
-  // @ts-ignore
-  private _stackLength: number = 0;
-  // @ts-ignore
-  private _selectionDepth: number = 0;
-
-  // @ts-ignore
-  private _touchedFrame: number = 0;
-  // @ts-ignore
-  private _visitedFrame: number = 0;
-  private _selectedFrame: number = 0;
-  // @ts-ignore
-  private _requestedFrame: number = 0;
-
-  // @ts-ignore
-  private _priority: number = 0;
 
   private _contentBoundingVolume: any;
   private _viewerRequestVolume: any;
 
   _initialTransform: Matrix4 = new Matrix4();
+
+  // Used by traverser, cannot be marked private
+  _priority: number = 0;
+  _selectedFrame: number = 0;
+  _requestedFrame: number = 0;
+  _selectionDepth: number = 0;
+  _touchedFrame: number = 0;
+  _centerZDepth: number = 0;
+  _shouldRefine: boolean = false;
+  _stackLength: number = 0;
+  _visitedFrame: number = 0;
+  _inRequestVolume: boolean = false;
+
+  // TODO i3s specific, needs to remove
+  // private _lodJudge: any = null;
 
   /**
    * @constructs
@@ -390,6 +382,7 @@ export class Tile3D {
       const options = {
         ...this.tileset.loadOptions,
         [loader.id]: {
+          // @ts-expect-error
           ...this.tileset.loadOptions[loader.id],
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)

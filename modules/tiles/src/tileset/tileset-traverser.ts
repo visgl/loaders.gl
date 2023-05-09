@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+
+import type {Tile3D} from './tile-3d';
 import {ManagedArray} from '../utils/managed-array';
 import {TILE_REFINEMENT} from '../constants';
 import {FrameState} from './helpers/frame-state';
@@ -5,22 +8,12 @@ import {FrameState} from './helpers/frame-state';
 export type TilesetTraverserProps = {
   loadSiblings?: boolean;
   skipLevelOfDetail?: boolean;
+  updateTransforms?: boolean;
   maximumScreenSpaceError?: number;
   onTraversalEnd?: (frameState) => any;
-  viewportTraversersMap?: {[key: string]: any};
+  viewportTraversersMap?: Record<string, any>;
   basePath?: string;
-  updateTransforms?: boolean;
 };
-
-// export type Props = {
-//   loadSiblings: boolean;
-//   skipLevelOfDetail: boolean;
-//   updateTransforms: boolean;
-//   maximumScreenSpaceError: number;
-//   onTraversalEnd: (frameState) => any;
-//   viewportTraversersMap: {[key: string]: any};
-//   basePath: string;
-// };
 
 export const DEFAULT_PROPS: Required<TilesetTraverserProps> = {
   loadSiblings: false,
@@ -35,17 +28,25 @@ export const DEFAULT_PROPS: Required<TilesetTraverserProps> = {
 export class TilesetTraverser {
   options: Required<TilesetTraverserProps>;
 
-  root: any;
-  requestedTiles: object;
-  selectedTiles: object;
-  emptyTiles: object;
+  // fulfill in traverse call
+  root: any = null;
+
+  // tiles should be rendered
+  selectedTiles: Record<string, Tile3D> = {};
+  // tiles should be loaded from server
+  requestedTiles: Record<string, Tile3D> = {};
+  // tiles does not have render content
+  emptyTiles: Record<string, Tile3D> = {};
 
   protected lastUpdate: number = new Date().getTime();
   protected readonly updateDebounceTime = 1000;
-  protected _traversalStack: ManagedArray;
-  protected _emptyTraversalStack: ManagedArray;
-  protected _frameNumber: number | null;
+  /** temporary storage to hold the traversed tiles during a traversal */
+  protected _traversalStack = new ManagedArray();
+  protected _emptyTraversalStack = new ManagedArray();
+  /** set in every traverse cycle */
+  protected _frameNumber: number | null = null;
 
+  // RESULT
   protected traversalFinished(frameState: FrameState): boolean {
     return true;
   }
@@ -53,24 +54,6 @@ export class TilesetTraverser {
   // TODO nested props
   constructor(options: TilesetTraverserProps) {
     this.options = {...DEFAULT_PROPS, ...options};
-    // TRAVERSAL
-    // temporary storage to hold the traversed tiles during a traversal
-    this._traversalStack = new ManagedArray();
-    this._emptyTraversalStack = new ManagedArray();
-
-    // set in every traverse cycle
-    this._frameNumber = null;
-
-    // fulfill in traverse call
-    this.root = null;
-
-    // RESULT
-    // tiles should be rendered
-    this.selectedTiles = {};
-    // tiles should be loaded from server
-    this.requestedTiles = {};
-    // tiles does not have render content
-    this.emptyTiles = {};
   }
 
   // tiles should be visible
@@ -89,22 +72,21 @@ export class TilesetTraverser {
   }
 
   reset() {
-    this.requestedTiles = {};
-    this.selectedTiles = {};
-    this.emptyTiles = {};
     this._traversalStack.reset();
     this._emptyTraversalStack.reset();
   }
 
-  // execute traverse
-  // Depth-first traversal that traverses all visible tiles and marks tiles for selection.
-  // If skipLevelOfDetail is off then a tile does not refine until all children are loaded.
-  // This is the traditional replacement refinement approach and is called the base traversal.
-  // Tiles that have a greater screen space error than the base screen space error are part of the base traversal,
-  // all other tiles are part of the skip traversal. The skip traversal allows for skipping levels of the tree
-  // and rendering children and parent tiles simultaneously.
+  /**
+   * Execute traverse
+   * Depth-first traversal that traverses all visible tiles and marks tiles for selection.
+   * If skipLevelOfDetail is off then a tile does not refine until all children are loaded.
+   * This is the traditional replacement refinement approach and is called the base traversal.
+   * Tiles that have a greater screen space error than the base screen space error are part of the base traversal,
+   * all other tiles are part of the skip traversal. The skip traversal allows for skipping levels of the tree
+   * and rendering children and parent tiles simultaneously.
+   */
   /* eslint-disable-next-line complexity, max-statements */
-  executeTraversal(root, frameState: FrameState) {
+  executeTraversal(root, frameState: FrameState): void {
     // stack to store traversed tiles, only visible tiles should be added to stack
     // visible: visible in the current view frustum
     const stack = this._traversalStack;
@@ -171,16 +153,15 @@ export class TilesetTraverser {
     }
   }
 
-  updateChildTiles(tile, frameState) {
+  updateChildTiles(tile: Tile3D, frameState: FrameState): void {
     const children = tile.children;
     for (const child of children) {
       this.updateTile(child, frameState);
     }
-    return true;
   }
 
   /* eslint-disable complexity, max-statements */
-  updateAndPushChildren(tile, frameState, stack, depth) {
+  updateAndPushChildren(tile: Tile3D, frameState: FrameState, stack, depth): boolean {
     const {loadSiblings, skipLevelOfDetail} = this.options;
 
     const children = tile.children;
@@ -235,12 +216,12 @@ export class TilesetTraverser {
   }
   /* eslint-enable complexity, max-statements */
 
-  updateTile(tile, frameState) {
+  updateTile(tile: Tile3D, frameState: FrameState): void {
     this.updateTileVisibility(tile, frameState);
   }
 
   // tile to render in the browser
-  selectTile(tile, frameState) {
+  selectTile(tile: Tile3D, frameState: FrameState): void {
     if (this.shouldSelectTile(tile)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
@@ -249,7 +230,7 @@ export class TilesetTraverser {
   }
 
   // tile to load from server
-  loadTile(tile, frameState) {
+  loadTile(tile: Tile3D, frameState: FrameState): void {
     if (this.shouldLoadTile(tile)) {
       tile._requestedFrame = frameState.frameNumber;
       tile._priority = tile._getPriority();
@@ -258,7 +239,7 @@ export class TilesetTraverser {
   }
 
   // cache tile
-  touchTile(tile, frameState) {
+  touchTile(tile: Tile3D, frameState: FrameState): void {
     tile.tileset._cache.touch(tile);
     tile._touchedFrame = frameState.frameNumber;
   }
@@ -266,7 +247,12 @@ export class TilesetTraverser {
   // tile should be visible
   // tile should have children
   // tile LoD (level of detail) is not sufficient under current viewport
-  canTraverse(tile, frameState, useParentMetric = false, ignoreVisibility = false) {
+  canTraverse(
+    tile: Tile3D,
+    frameState: FrameState,
+    useParentMetric: boolean = false,
+    ignoreVisibility: boolean = false
+  ): boolean {
     if (!tile.hasChildren) {
       return false;
     }
@@ -285,20 +271,20 @@ export class TilesetTraverser {
     return this.shouldRefine(tile, frameState, useParentMetric);
   }
 
-  shouldLoadTile(tile) {
+  shouldLoadTile(tile: Tile3D): boolean {
     // if request tile is in current frame
     // and has unexpired render content
     return tile.hasUnloadedContent || tile.contentExpired;
   }
 
-  shouldSelectTile(tile) {
+  shouldSelectTile(tile: Tile3D): boolean {
     // if select tile is in current frame
     // and content available
     return tile.contentAvailable && !this.options.skipLevelOfDetail;
   }
 
-  // Decide if tile LoD (level of detail) is not sufficient under current viewport
-  shouldRefine(tile, frameState, useParentMetric) {
+  /** Decide if tile LoD (level of detail) is not sufficient under current viewport */
+  shouldRefine(tile: Tile3D, frameState: FrameState, useParentMetric: boolean = false): boolean {
     let screenSpaceError = tile._screenSpaceError;
     if (useParentMetric) {
       screenSpaceError = tile.getScreenSpaceError(frameState, true);
@@ -307,7 +293,7 @@ export class TilesetTraverser {
     return screenSpaceError > this.options.maximumScreenSpaceError;
   }
 
-  updateTileVisibility(tile, frameState) {
+  updateTileVisibility(tile: Tile3D, frameState: FrameState): void {
     const viewportIds: string[] = [];
     if (this.options.viewportTraversersMap) {
       for (const key in this.options.viewportTraversersMap) {
@@ -324,14 +310,16 @@ export class TilesetTraverser {
 
   // UTILITIES
 
-  compareDistanceToCamera(b, a) {
+  compareDistanceToCamera(b: Tile3D, a: Tile3D): number {
     return b._distanceToCamera - a._distanceToCamera;
   }
 
-  anyChildrenVisible(tile, frameState) {
+  anyChildrenVisible(tile: Tile3D, frameState: FrameState): boolean {
     let anyVisible = false;
     for (const child of tile.children) {
+      // @ts-expect-error
       child.updateVisibility(frameState);
+      // @ts-expect-error
       anyVisible = anyVisible || child.isVisibleAndInRequestVolume;
     }
     return anyVisible;
@@ -339,7 +327,7 @@ export class TilesetTraverser {
 
   // Depth-first traversal that checks if all nearest descendants with content are loaded.
   // Ignores visibility.
-  executeEmptyTraversal(root, frameState) {
+  executeEmptyTraversal(root: Tile3D, frameState: FrameState): boolean {
     let allDescendantsLoaded = true;
     const stack = this._emptyTraversalStack;
 
@@ -377,7 +365,3 @@ export class TilesetTraverser {
     return allDescendantsLoaded;
   }
 }
-
-// TODO
-// enable expiration
-// enable optimization hint

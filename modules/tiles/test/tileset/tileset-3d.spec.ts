@@ -3,7 +3,7 @@
 
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // import {loadTileset} from '../utils/load-utils';
 
@@ -398,7 +398,8 @@ test('Tileset3D#should detect ktx2 texture', async (t) => {
   const tilesetJson = await load(KTX2_TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
 
-  await tileset._loadTile(tileset.root?.children?.[0]);
+  const tile = tileset.root?.children?.[0] as Tile3D;
+  await tileset._loadTile(tile);
 
   t.deepEquals(tileset.contentFormats, {draco: false, meshopt: false, dds: false, ktx2: true});
   t.end();
