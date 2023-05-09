@@ -341,6 +341,13 @@ export class Tile3D {
     this._selectedFrame = 0;
   }
 
+  /**
+   * Memory usage of tile on GPU
+   */
+  _getGpuMemoryUsageInBytes(): number {
+    return this.content.gpuMemoryUsageInBytes || this.content.byteLength || 0;
+  }
+
   /*
    * If skipLevelOfDetail is off try to load child tiles as soon as possible so that their parent can refine sooner.
    * Tiles are prioritized by screen space error.
@@ -734,6 +741,8 @@ export class Tile3D {
     // The content may be tileset json
     if (this._isTileset()) {
       this.hasTilesetContent = true;
+    } else {
+      this.gpuMemoryUsageInBytes = this._getGpuMemoryUsageInBytes();
     }
   }
 
