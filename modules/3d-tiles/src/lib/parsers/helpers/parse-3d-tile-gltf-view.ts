@@ -7,7 +7,7 @@
 // - Do we add an option to control this?
 // - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
 
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {_getMemoryUsageGLTF, GLTFLoader} from '@loaders.gl/gltf';
 import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
 
 export const GLTF_FORMAT = {
@@ -67,6 +67,7 @@ export async function extractGLTF(tile, gltfFormat, options, context) {
     if (tile.gltfArrayBuffer) {
       // TODO - Should handle byteOffset... However, not used now...
       tile.gltf = await parse(tile.gltfArrayBuffer, GLTFLoader, options, context);
+      tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
       delete tile.gltfArrayBuffer;
       delete tile.gltfByteOffset;
       delete tile.gltfByteLength;
