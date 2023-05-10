@@ -5,8 +5,8 @@ import {SLPKArchive} from './slpk-archieve';
 
 /**
  * Returns one byte from the provided buffer at the provided position
- * @param {number} offset - position where to read
- * @param {DataView} buffer - buffer to read
+ * @param offset - position where to read
+ * @param buffer - buffer to read
  * @returns one byte from the provided buffer at the provided position
  */
 const getByteAt = (offset: number, buffer: DataView): number => {

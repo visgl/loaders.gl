@@ -28,8 +28,8 @@ export class SLPKArchive {
 
   /**
    * Reads hash file from buffer and returns it in ready-to-use form
-   * @param {ArrayBuffer} hashFile - bufer containing hash file
-   * @returns {HashElement[]} Array containing file info
+   * @param hashFile - bufer containing hash file
+   * @returns Array containing file info
    */
   private parseHashFile(hashFile: ArrayBuffer): HashElement[] {
     const hashFileBuffer = Buffer.from(hashFile);
@@ -54,9 +54,9 @@ export class SLPKArchive {
 
   /**
    * Returns file with the given path from slpk archive
-   * @param {string} path - path inside the slpk
-   * @param {'http' | 'raw' | undefined} mode - currently only raw mode supported
-   * @returns {Promise<Buffer>} buffer with ready to use file
+   * @param path - path inside the slpk
+   * @param mode - currently only raw mode supported
+   * @returns buffer with ready to use file
    */
   async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
     if (mode === 'http') {
@@ -83,8 +83,8 @@ export class SLPKArchive {
 
   /**
    * Trying to get raw file data by adress
-   * @param {string} path - path inside the archive
-   * @returns {ArrayBuffer | undefined} buffer with the raw file data
+   * @param path - path inside the archive
+   * @returns buffer with the raw file data
    */
   private getFileBytes(path: string): ArrayBuffer | undefined {
     const nameHash = Buffer.from(md5(path), 'hex');

@@ -31,9 +31,9 @@ export type ZipCDFileHeader = {
 
 /**
  * Parses central directory file header of zip file
- * @param {number} headerOffset - offset in the archive where header starts
- * @param {DataView} buffer - buffer containing whole array
- * @returns {ZipCDFileHeader} Info from the header
+ * @param headerOffset - offset in the archive where header starts
+ * @param buffer - buffer containing whole array
+ * @returns Info from the header
  */
 export const parseZipCDFileHeader = (headerOffset: number, buffer: DataView): ZipCDFileHeader => {
   const offsets = {
