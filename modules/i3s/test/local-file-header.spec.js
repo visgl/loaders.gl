@@ -1,8 +1,8 @@
 import test from 'tape-promise/tape';
 import {DATA_ARRAY} from './data/test.zip.js';
-import {parseZipLocalFileHeader} from '../src/lib/parsers/parce-zip/local-file-header.js';
+import {parseZipLocalFileHeader} from '../src/lib/parsers/parse-zip/local-file-header.js';
 
-test('SLPKLoader#local file header parce', async (t) => {
+test('SLPKLoader#local file header parse', async (t) => {
   const localFileHeader = parseZipLocalFileHeader(0, new DataView(DATA_ARRAY.buffer));
   t.deepEqual(localFileHeader.compressedSize, 39);
   t.deepEqual(localFileHeader.fileNameLength, 9);

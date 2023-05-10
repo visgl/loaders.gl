@@ -1,11 +1,17 @@
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import md5 from 'md5';
 import {CompressionWorker} from '@loaders.gl/compression';
-import {parseZipLocalFileHeader} from '../parce-zip/local-file-header';
+import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 
 /** Element of hash array */
 type HashElement = {
+  /**
+   * File name hash
+   */
   hash: Buffer;
+  /**
+   * File offset in the archive
+   */
   offset: number;
 };
 
@@ -20,7 +26,11 @@ export class SLPKArchive {
     this.hashArray = this.parseHashFile(hashFile);
   }
 
-  /** Reads hash file from buffer and returns it in ready-to-use form */
+  /**
+   * Reads hash file from buffer and returns it in ready-to-use form
+   * @param hashFile - bufer containing hash file
+   * @returns Array containing file info
+   */
   private parseHashFile(hashFile: ArrayBuffer): HashElement[] {
     const hashFileBuffer = Buffer.from(hashFile);
     const hashArray: HashElement[] = [];
@@ -42,7 +52,12 @@ export class SLPKArchive {
     return hashArray;
   }
 
-  /** returns file with the given path from slpk archive */
+  /**
+   * Returns file with the given path from slpk archive
+   * @param path - path inside the slpk
+   * @param mode - currently only raw mode supported
+   * @returns buffer with ready to use file
+   */
   async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
     if (mode === 'http') {
       throw new Error('http mode is not supported');
@@ -66,7 +81,11 @@ export class SLPKArchive {
     throw new Error('No such file in the archieve');
   }
 
-  /** Trying to get raw file data by adress */
+  /**
+   * Trying to get raw file data by adress
+   * @param path - path inside the archive
+   * @returns buffer with the raw file data
+   */
   private getFileBytes(path: string): ArrayBuffer | undefined {
     const nameHash = Buffer.from(md5(path), 'hex');
     const fileInfo = this.hashArray.find((val) => Buffer.compare(val.hash, nameHash) === 0);

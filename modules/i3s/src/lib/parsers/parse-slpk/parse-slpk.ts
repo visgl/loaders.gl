@@ -1,9 +1,13 @@
 import {SLPKLoaderOptions} from 'modules/i3s/src/i3s-slpk-loader';
-import {parseZipCDFileHeader} from '../parce-zip/cd-file-header';
-import {parseZipLocalFileHeader} from '../parce-zip/local-file-header';
+import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
+import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {SLPKArchive} from './slpk-archieve';
+
 /**
  * Returns one byte from the provided buffer at the provided position
+ * @param offset - position where to read
+ * @param buffer - buffer to read
+ * @returns one byte from the provided buffer at the provided position
  */
 const getByteAt = (offset: number, buffer: DataView): number => {
   return buffer.getUint8(buffer.byteOffset + offset);
