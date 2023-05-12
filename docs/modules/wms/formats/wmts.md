@@ -1,6 +1,9 @@
-# WMTS Overview
+# WMTS - Web Map Tiling Service
 
-The [WMTS](https://en.wikipedia.org/wiki/Web_Map_Tile_Service) (Web Map Tile Service) is a standardized protocol for serving pre-rendered or run-time computed georeferenced **map tiles** over the Internet.
+- *[`@loaders.gl/wms`](/docs/modules/wms)*
+- *[Wikipedia article](https://en.wikipedia.org/wiki/Web_Map_Tile_Service)*
+
+WmTS (Web Map Tile Service) is a standardized protocol for serving pre-rendered or run-time computed georeferenced **map tiles** over the Internet.
 
 The specification was developed and first published by the Open Geospatial Consortium in 2010.
 

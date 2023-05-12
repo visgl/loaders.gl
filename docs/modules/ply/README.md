@@ -1,6 +1,6 @@
 # Overview
 
-The `@loaders.gl/ply` module handles the the [Polygon file format](http://paulbourke.net/dataformats/ply/), or the Stanford Trangle Format, a file format for 3D graphical objects described as a collection of polygons.
+The `@loaders.gl/ply` module handles the the [Polygon file format](/docs/modules/ply/formats/ply), a file format for 3D graphical objects described as a collection of polygons that is sometimes used to store point clouds.
 
 ## Installation
 

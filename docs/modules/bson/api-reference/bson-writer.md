@@ -8,11 +8,11 @@ Writer for BSON files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
+| File Format    | [BSON](/docs/modules/bson/formats/bson)                           |
+| Data Format    | [Unstructured/JSON](/docs/specifications/category-json) |
 | File Extension | `.bson`                                                 |
 | Media Type     | `application/bson`                                      |
 | File Type      | Binary                                                  |
-| File Format    | [BSON](https://bsonspec.org/)                           |
-| Data Format    | [Unstructured/HSON](/docs/specifications/category-json) |
 | Supported APIs | `encode`, `encodeSync`                            |
 
 ## Usage

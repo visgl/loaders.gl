@@ -10,6 +10,8 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC Web Servic
 
 > The Open Geospatial Consortium (OGC) has produced a large set of related XML-based standards for web mapping. Some of these standards are not supported by loaders.gl, but are still mentioned here to provide context for the provided functionality (and minimize confusion as the standards have similar names and functionalities):
 
+## OGC Web Services
+
 | OGC Protocol/Format                                                    | Supported    | Description                                                                                                                          |
 | ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | [**CSW**](/docs/modules/wms/formats/csw) (Catalog Service for the Web) protocol     | Y            | protocol for reading a catalog of geospatial assets and services from a URL.                                                         |
@@ -21,7 +23,12 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC Web Servic
 | [**WMC**](/docs/modules/wms/formats/wmc) (Web Map Context)                          | No           | Used in WMS clients to save the configuration of maps and to load them again later. Can also be exchanged between different clients. |
 | [**OWS Context**](/docs/modules/wms/formats/ows-context) (OGC Web Services Context) | No           | Allows configured information resources to be passed between applications primarily as a collection of services.                     |
 
+## API
+
 Support for the protocols is provided in the form of:
+
+- [`WMSService`][capabilities_loader].
+- [`WMSCapabilitiesLoader`][capabilities_loader].
 
 - a small collection of parsers for the XML responses from the various requests in these protocols.
 - a short write-up on each protocol to indicate how to use loaders.gl to parse responses
