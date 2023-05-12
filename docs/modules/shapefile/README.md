@@ -1,6 +1,6 @@
 # Overview
 
-The `@loaders.gl/shapefile` module handles the Shapefile format, a widely used binary format.
+The `@loaders.gl/shapefile` module handles the [Shapefile](/docs/modules/shapefile/formats/shapefile) format, a widely used binary format.
 
 ## Installation
 
@@ -15,3 +15,5 @@ npm install @loaders.gl/shapefile
 | [`SHPLoader`](/docs/modules/shapefile/api-reference/shp-loader) |
 
 ## Attribution
+
+The Shapefile loaders were written from scratch for loaders.gl.
