@@ -4,6 +4,7 @@
     "label": "Overview",
     "items": [
       "README",
+      "developer-guide/get-started",
       "whats-new",
       "upgrade-guide"
     ]
@@ -14,17 +15,14 @@
     "items": [
       {
         "type": "category",
-        "label": "Overview",
-        "items": ["README", "whats-new", "upgrade-guide"]
-      },
-      {
-        "type": "category",
-        "label": "Concepts",
+        "label": "Basics",
         "items": [
-          "developer-guide/concepts/binary-data",
-          "developer-guide/concepts/streaming",
-          "developer-guide/concepts/async-iterators",
-          "developer-guide/concepts/worker-threads"
+          "developer-guide/using-loaders",
+          "developer-guide/using-writers",
+          "developer-guide/loader-categories",
+          "developer-guide/using-worker-loaders",
+          "developer-guide/using-streaming-loaders",
+          "developer-guide/polyfills"
         ]
       },
       {
@@ -37,13 +35,36 @@
           "developer-guide/dev-env"
         ]
       },
-      "developer-guide/get-started",
-      "developer-guide/using-loaders",
-      "developer-guide/using-writers",
-      "developer-guide/loader-categories",
-      "developer-guide/using-worker-loaders",
-      "developer-guide/using-streaming-loaders",
-      "developer-guide/polyfills"
+      {
+        "type": "category",
+        "label": "Concepts",
+        "items": [
+          "developer-guide/concepts/binary-data",
+          "developer-guide/concepts/streaming",
+          "developer-guide/concepts/async-iterators",
+          "developer-guide/concepts/worker-threads"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Formats",
+    "items": [
+      "formats/README",
+      "modules/bson/formats/bson",
+      "modules/pcd/formats/pcd",
+      "modules/ply/formats/ply",
+      "modules/parquet/formats/parquet",
+      "modules/parquet/formats/geoparquet",
+      "modules/wms/formats/csw",
+      "modules/wms/formats/wms",
+      "modules/wms/formats/wmts",
+      "modules/wms/formats/wfs",
+      "modules/wms/formats/gml",
+      "modules/wms/formats/lerc",
+      "modules/xml/formats/xml",
+      "modules/zip/formats/zip"
     ]
   },
   {
@@ -112,23 +133,6 @@
       "modules/xml/api-reference/xml-loader",
       "modules/zip/api-reference/zip-loader",
       "modules/zip/api-reference/zip-writer"
-    ]
-  },
-  {
-    "type": "category",
-    "label": "Formats",
-    "items": [
-      "modules/bson/formats/bson",
-      "modules/wms/formats/wms",
-      "modules/wms/formats/csw",
-      "modules/wms/formats/wmts",
-      "modules/wms/formats/wfs",
-      "modules/wms/formats/gml",
-      "modules/wms/formats/lerc",
-      "modules/parquet/formats/parquet",
-      "modules/parquet/formats/geoparquet",
-      "modules/xml/formats/xml",
-      "modules/xml/formats/html"
     ]
   },
   {

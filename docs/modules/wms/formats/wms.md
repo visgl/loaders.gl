@@ -1,8 +1,9 @@
 # WMS - Web Map Service
 
-> The [`loaders.gl/wms`](/docs/modules/wms) module provides support for working with WMS services.
+- *[`@loaders.gl/wms`](/docs/modules/wms)*
+- *[Wikipedia article](https://en.wikipedia.org/wiki/Web_Map_Service)*
 
-[WMS](https://en.wikipedia.org/wiki/Web_Map_Service) (Web Map Service) is a protocol for serving geo-referenced **map images** over the internet. WMS was standardized in 1999 by the OGC (Open Geospatial Consortium).
+WMS (Web Map Service) is a protocol for serving geo-referenced **map images** over the internet. WMS was standardized in 1999 by the OGC (Open Geospatial Consortium).
 
 ## Characteristics
 

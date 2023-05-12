@@ -1,6 +1,6 @@
 # HTML
 
-> The [`loaders.gl/xml`](/docs/modules/xml) module provides support for parsing XML and HTML.
+- *[`@loaders.gl/xml`](/docs/modules/xml)*
 
 HTML (Hyper Text Markup Language) is a (slightly incompatible) profile of XML. 
 
