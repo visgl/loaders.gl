@@ -58,7 +58,7 @@
       "modules/ply/formats/ply",
       "modules/parquet/formats/parquet",
       "modules/parquet/formats/geoparquet",
-      "modules/parquet/formats/shapefile",
+      "modules/shapefile/formats/shapefile",
       "modules/textures/formats/compressed-textures",
       "modules/wms/formats/csw",
       "modules/wms/formats/wms",
