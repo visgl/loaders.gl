@@ -8,10 +8,10 @@ The `ArrowWriter` encodes a set of arrays into an ArrayBuffer of Apach Arrow col
 
 | Loader          | Characteristic                                                              |
 | --------------- | --------------------------------------------------------------------------- |
-| File Extensions | `.arrow`, `.feather`                                                        |
-| File Type       | Binary                                                                      |
 | File Format     | [Arrow](https://arrow.apache.org/docs/format/Columnar.html#ipc-file-format) |
 | Data Format     | [Arrow Columnar Format](https://arrow.apache.org/docs/format/Columnar.html) |
+| File Extensions | `.arrow`, `.feather`                                                        |
+| File Type       | Binary                                                                      |
 | Support API     | `encodeSync`                                                                |
 
 ## Usage

@@ -53,10 +53,13 @@
     "items": [
       "formats/README",
       "modules/bson/formats/bson",
+      "modules/csv/formats/csv",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
       "modules/parquet/formats/parquet",
       "modules/parquet/formats/geoparquet",
+      "modules/shapefile/formats/shapefile",
+      "modules/textures/formats/compressed-textures",
       "modules/wms/formats/csw",
       "modules/wms/formats/wms",
       "modules/wms/formats/wmts",
