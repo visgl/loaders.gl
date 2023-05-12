@@ -1,5 +1,10 @@
 # Parquet
 
+- *[`@loaders.gl/parquet`](/docs/modules/parquet)*
+- *[Parquet](https://parquet.apache.org/docs/file-format/)*
+
+Parquet is a binary columnar format optimized for compact storage on disk.
+
 The GitHUB specification of [Apache Parquet](https://github.com/apache/parquet-format/blob/master/README.md).
 
 ## Column encodings
@@ -27,6 +32,7 @@ A wide range of compression codecs are supported. Internal parquet compression f
 | `LZ4`          | YES  | YES   | 
 | `LZ4_RAW`      | YES  | YES   |
 | `ZSTD`         | YES  | YES   |  |
+
 
 ## Encoding
 

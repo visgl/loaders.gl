@@ -128,7 +128,7 @@ export class Tile3D {
   _inRequestVolume: boolean = false;
 
   // TODO i3s specific, needs to remove
-  // private _lodJudge: any = null;
+  _lodJudge: any = null;
 
   /**
    * @constructs

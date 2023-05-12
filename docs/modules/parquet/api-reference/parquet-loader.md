@@ -9,15 +9,15 @@ Streaming loader for Apache Parquet encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
+| File Format    | [Parquet](/docs/modules/parquet/formats/parquet)      |
+| Data Format    | [Classic Table](/docs/specifications/category-table) |
 | File Extension | `.parquet`,                                          |
 | MIME Type      | N/A (`application/octet-stream`)                     |
 | File Type      | Binary                                               |
-| File Format    | [Parquet](https://parquet.apache.org/docs/file-format/) |
-| Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseInBatches`                    |
 
-Please refer to the `@loaders.gl/parquet` module page for information on
-which [Parquet format features](/docs/modules/parquet) are supported.
+Please refer to the `parquet` format page for information on
+which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.
 
 ## Usage
 
