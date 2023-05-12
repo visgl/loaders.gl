@@ -1,10 +1,10 @@
 # CSW - Catalog Service for the Web
 
+The [`loaders.gl/wms`](/docs/modules/wms) module provides support for working with CSW services.
+
 [Catalogue Service for the Web (CSW)][csw] (sometimes written Catalogue Service - Web), is an OGC standard for exposing a catalogue of geospatial records in XML on the Internet (over HTTP). The catalogue is made up of records that describe geospatial data (e.g. KML), geospatial services (e.g. WMS), and related resources.
 
-[csw]: https://en.wikipedia.org/wiki/Catalogue_Service_for_the_Web
-
-Operations defined by the CSW standard include:[1][3]
+Operations defined by the CSW standard include:
 
 | Operation              | Description                                                                                   |
 | ---------------------- | --------------------------------------------------------------------------------------------- |
@@ -25,3 +25,5 @@ Requests can encode the parameters in three different ways:
 | POST with XML payload          | No        |
 
 Responses are in XML.
+
+[csw]: https://en.wikipedia.org/wiki/Catalogue_Service_for_the_Web

@@ -1,5 +1,7 @@
 # HTML
 
+> The [`loaders.gl/xml`](/docs/modules/xml) module provides support for parsing XML and HTML.
+
 HTML (Hyper Text Markup Language) is a (slightly incompatible) profile of XML. 
 
 The goals of the `HTMLLoader` in loaders.gl are quite limited. 

@@ -1,14 +1,12 @@
 # WMS - Web Map Service
 
+> The [`loaders.gl/wms`](/docs/modules/wms) module provides support for working with WMS services.
+
 [WMS](https://en.wikipedia.org/wiki/Web_Map_Service) (Web Map Service) is a protocol for serving geo-referenced **map images** over the internet. WMS was standardized in 1999 by the OGC (Open Geospatial Consortium).
-
-## loaders.gl Support
-
-The [`loaders.gl/wms`](/docs/modules/wms) module provides support for working with WMS services.
 
 ## Characteristics
 
-WMS is not a file format but rather a protocol, specifying a set of requests that the server should implement. Some WMS protocol requests return binary images, and some return metadata formatted as XML text responses. 
+WMS is not a single file format but rather a protocol, specifying a set of requests that the server should implement. Some WMS protocol requests return binary images, and some return metadata formatted as XML text responses. 
 
 WMS responses are typically XML encoded have a fairly detailed structure and some significant differences between versions exist, making it somewhat non-trivial to parse. Therefore when working with WMS it is typically useful to have access to well-tested parsers for each XML response type.
 
