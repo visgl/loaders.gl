@@ -23,7 +23,9 @@ export type {
   GLTF_KHR_texture_basisu,
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp,
-  GLTF_EXT_feature_metadata
+  GLTF_EXT_feature_metadata,
+  GLTF_EXT_feature_metadata_primitive,
+  GLTF_EXT_feature_metadata_attribute
 } from './lib/types/gltf-json-schema';
 
 // Postprocessed types (modified GLTF types)

@@ -386,7 +386,10 @@ class GLTFPostProcessor {
       id: gltfAccessor.id || `accessor-${index}`,
       bytesPerComponent,
       components,
-      bytesPerElement
+      bytesPerElement,
+      value: undefined!,
+      bufferView: undefined!,
+      sparse: undefined!
     };
     if (gltfAccessor.bufferView !== undefined) {
       // Draco encoded meshes don't have bufferView
@@ -481,7 +484,7 @@ class GLTFPostProcessor {
       ...gltfImage,
       // @ts-expect-error id could already be present, glTF standard does not prevent it
       id: gltfImage.id || `image-${index}`,
-      image: null,
+      image: null!,
       bufferView:
         gltfImage.bufferView !== undefined ? this.getBufferView(gltfImage.bufferView) : undefined
     };

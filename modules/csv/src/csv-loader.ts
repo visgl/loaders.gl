@@ -5,13 +5,13 @@ import type {Batch, TableBatch} from '@loaders.gl/schema';
 
 import {
   AsyncQueue,
+  Table,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
 } from '@loaders.gl/schema';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
-import {Table} from 'modules/schema/src/lib/table/arrow-api';
 
 type ObjectField = {name: string; index: number; type: any};
 type ObjectSchema = {[key: string]: ObjectField} | ObjectField[];

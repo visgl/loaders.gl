@@ -241,7 +241,7 @@ export type Asset = {
  * A buffer points to binary geometry, animation, or skins.
  */
 export type GLTFBufferPostprocessed = {
-  id: string;
+  id?: string;
   arrayBuffer: ArrayBuffer;
   byteOffset: number;
   
@@ -371,11 +371,17 @@ export type GLTFCameraPostprocessed = {
 }
 
 /**
- * GLTFImagePostprocessed data used to create a texture. GLTFImagePostprocessed can be referenced by URI or `bufferView` index. `mimeType` is required in the latter case.
+ * GLTFImagePostprocessed data used to create a texture. 
+ * GLTFImagePostprocessed can be referenced by URI or `bufferView` index. 
+ * `mimeType` is required in the latter case.
+ * @todo GLTF image postprocessing
  */
 export type GLTFImagePostprocessed = {
   id: string;
-  image: unknown;
+  // TODO - extend
+  image: { data: Uint8Array; compressed?: boolean; height?: number; width?: number; components?: number; mimeType?: string; };
+
+  compressed?: boolean;
 
   // GLTF attributes (possibly overridden)
   /**
