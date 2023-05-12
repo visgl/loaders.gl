@@ -8,15 +8,16 @@ A "sub loader" for the `.shp` (geometries) file component of a shapefile.
 
 Note: Most applications will want to use the `ShapefileLoader` instead of this loader.
 
-| Loader                | Characteristic                                |
-| --------------------- | --------------------------------------------- |
-| File Extension        | `.shp`                                        |
-| File Type             | Binary                                        |
-| File Format           | Shapefiles                                    |
-| Data Format           | [Geometry](/docs/specifications/category-gis) |
-| Supported APIs        | `load`, `parse`, `parseSync`                  |
-| Decoder Type          | Synchronous                                   |
-| Worker Thread Support | Yes                                           |
+| Loader                | Characteristic                                         |
+| --------------------- | ------------------------------------------------------ |
+| File Format           | [Shapefile](/docs/modules/shapefile/formats/shapefile) |
+| Data Format           | [Geometry](/docs/specifications/category-gis)          |
+| File Extension        | `.shp`                                                 |
+| File Type             | Binary                                                 |
+| File Format           | Shapefiles                                             |
+| Supported APIs        | `load`, `parse`, `parseSync`                           |
+| Decoder Type          | Synchronous                                            |
+| Worker Thread Support | Yes                                                    |
 
 ## Usage
 
@@ -66,10 +67,3 @@ including a bounding box of the data and the file's geometry type. Consult the
   currentIndex: 2
 }
 ```
-
-## Format Summary
-
-ESRI Shapefiles are a popular file format for storing geospatial vector data.
-The format consists of a number of files that must be stored together and with
-the same file name. Files with extensions `.shp`, `.shx`, `.dbf` must exist;
-additional files with other extensions such as `.prj` and `.cpg` may exist.
