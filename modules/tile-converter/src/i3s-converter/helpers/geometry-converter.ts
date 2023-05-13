@@ -1575,13 +1575,6 @@ function getPropertyTableExtension(tileContent: B3DMContent) {
 function getPropertyTableFromExtFeatureMetadata(
   extension: GLTF_EXT_feature_metadata
 ): FeatureTableJson | null {
-  if (extension?.featureTextures) {
-    console.warn(
-      'The I3S converter does not yet support the EXT_feature_metadata feature textures'
-    );
-    return null;
-  }
-
   if (extension?.featureTables) {
     /**
      * Take only first feature table to generate attributes storage info object.

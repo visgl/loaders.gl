@@ -1023,8 +1023,16 @@ export type FeatureTableProperty = {
    * The buffer view byteOffset must be aligned to a multiple of 8 bytes.
    * If the buffer view's buffer is the GLB-stored BIN chunk the byte offset is measured relative to the beginning of the GLB.
    * Otherwise it is measured relative to the beginning of the buffer.
+   *
+   * If bufferView === -1, buffer is not being used. The actual data are in the field "data"
    */
   bufferView: number;
+
+  /**
+   * Actual data can be stored in this field unstead of using buffer/bufferView/accessor mechanism
+   */
+  data?: Uint8Array | string[];
+
   /** The type of values in arrayOffsetBufferView and stringOffsetBufferView. */
   offsetType?: string; // default: "UINT32"
   /**
@@ -1070,6 +1078,8 @@ type FeatureTexture = {
   extras?: any;
   [key: string]: any;
 };
+export type {FeatureTexture as EXT_feature_metadata_feature_texture};
+export type {TextureAccessor as FeatureTextureProperty};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#texture-accessor

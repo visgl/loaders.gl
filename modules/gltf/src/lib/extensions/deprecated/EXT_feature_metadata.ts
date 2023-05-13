@@ -2,12 +2,18 @@
 import type {GLTF} from '../../types/gltf-types';
 
 import GLTFScenegraph from '../../api/gltf-scenegraph';
+import {getImageData} from '@loaders.gl/images';
+
 import {
   ClassProperty,
   EXT_feature_metadata_class_object,
   EXT_feature_metadata_feature_table,
   FeatureTableProperty,
-  GLTF_EXT_feature_metadata
+  GLTF_EXT_feature_metadata,
+  EXT_feature_metadata_feature_texture,
+  FeatureTextureProperty,
+  MeshPrimitive,
+  GLTF_EXT_feature_metadata_attribute
 } from '../../types/gltf-json-schema';
 
 /** Extension name */
@@ -26,19 +32,28 @@ export async function decode(gltfData: {json: GLTF}): Promise<void> {
  */
 function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph): void {
   const extension: GLTF_EXT_feature_metadata | null = scenegraph.getExtension(EXT_FEATURE_METADATA);
-  const schemaClasses = extension?.schema?.classes;
-  const featureTables = extension?.featureTables;
-  const featureTextures = extension?.featureTextures;
+  if (!extension) return;
 
-  if (featureTextures) {
+  const schemaClasses = extension.schema?.classes;
+
+  const featureTextures = extension.featureTextures;
+  if (schemaClasses && featureTextures) {
     /*
      * TODO add support for featureTextures
      * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-textures
      */
-    // eslint-disable-next-line no-console
-    console.warn('featureTextures is not yet supported in the "EXT_feature_metadata" extension.');
+
+    for (const schemaName in schemaClasses) {
+      const schemaClass = schemaClasses[schemaName];
+      const featureTexture = findFeatureTextureByName(featureTextures, schemaName);
+
+      if (featureTexture) {
+        handleFeatureTextureProperties(scenegraph, featureTexture, schemaClass);
+      }
+    }
   }
 
+  const featureTables = extension.featureTables;
   if (schemaClasses && featureTables) {
     for (const schemaName in schemaClasses) {
       const schemaClass = schemaClasses[schemaName];
@@ -79,6 +94,25 @@ function handleFeatureTableProperties(
   }
 }
 
+function handleFeatureTextureProperties(
+  scenegraph: GLTFScenegraph,
+  featureTexture: EXT_feature_metadata_feature_texture,
+  schemaClass: EXT_feature_metadata_class_object
+): void {
+  const attributeName = featureTexture.class;
+
+  for (const propertyName in schemaClass.properties) {
+    const featureTextureProperty = featureTexture?.properties?.[propertyName];
+
+    if (featureTextureProperty) {
+      // TODO: Check he following logic:
+      // We don't need "combined" data from all primitives
+      // The per-primitive data are being saved inside this function.
+      getPropertyDataFromTexture(scenegraph, featureTextureProperty, attributeName);
+    }
+  }
+}
+
 /**
  * Decode properties from binary sourse based on property type.
  * @param scenegraph
@@ -94,7 +128,12 @@ function getPropertyDataFromBinarySource(
 ): Uint8Array | string[] {
   const bufferView = featureTableProperty.bufferView;
   // TODO think maybe we shouldn't get data only in Uint8Array format.
-  let data: Uint8Array | string[] = scenegraph.getTypedArrayForBufferView(bufferView);
+  let data: Uint8Array | string[];
+  if (typeof bufferView === 'number' && bufferView < 0 && featureTableProperty.data) {
+    data = featureTableProperty.data;
+  } else {
+    data = scenegraph.getTypedArrayForBufferView(bufferView);
+  }
 
   switch (schemaProperty.type) {
     case 'STRING': {
@@ -108,6 +147,199 @@ function getPropertyDataFromBinarySource(
   }
 
   return data;
+}
+
+function getPropertyDataFromTexture(
+  scenegraph: GLTFScenegraph,
+  featureTextureProperty: FeatureTextureProperty,
+  attributeName: string
+): void {
+  const json = scenegraph.gltf.json;
+  if (!json.meshes) {
+    return;
+  }
+  for (const mesh of json.meshes) {
+    for (const primitive of mesh.primitives) {
+      const primitivePropertyData = getPrimitivePropertyData(
+        scenegraph,
+        featureTextureProperty,
+        primitive
+      );
+      const extention = primitive.extensions[EXT_FEATURE_METADATA];
+      createFeatureTable(extention, attributeName, primitivePropertyData);
+    }
+  }
+}
+
+function getPrimitivePropertyData(
+  scenegraph: GLTFScenegraph,
+  featureTextureProperty: FeatureTextureProperty,
+  primitive: MeshPrimitive
+): Uint8Array {
+  /*
+texture.index is an index for the "textures" array.
+The texture object referenced by this index looks like this:
+{
+"sampler": 0,
+"source": 0
+}
+"sampler" is an index for the "samplers" array
+"source" is an index for the "images" array that contains data. These data are stored in rgba channels of the image.
+
+texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
+The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates ared used to get data from the image.
+*/
+  const json = scenegraph.gltf.json;
+  const primitiveData: number[] = [];
+  const texCoordAccessorKey = `TEXCOORD_${featureTextureProperty.texture.texCoord}`;
+  const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
+  const texCoordBufferView = scenegraph.getBufferView(texCoordAccessorIndex);
+  const texCoordArray: Uint8Array = scenegraph.getTypedArrayForBufferView(texCoordBufferView);
+
+  const textureCoordinates: Float32Array = new Float32Array(
+    texCoordArray.buffer,
+    texCoordArray.byteOffset,
+    texCoordArray.length / 4
+  );
+  // textureCoordinates contains UV coordinates of the actual data stored in the texture
+  // accessor.count is a number of UV pairs (they are stored as VEC2)
+
+  const textureIndex = featureTextureProperty.texture.index;
+  const texture = json.textures?.[textureIndex];
+  const imageIndex = texture?.source;
+  if (typeof imageIndex !== 'undefined') {
+    const image = json.images?.[imageIndex];
+    const mimeType = image?.mimeType;
+    const parsedImage = scenegraph.gltf.images?.[imageIndex];
+    const imageBufferView = image?.bufferView;
+    if (typeof imageBufferView !== 'undefined' && parsedImage && !parsedImage.compressed) {
+      for (let index = 0; index < textureCoordinates.length; index += 2) {
+        const value = getImageValueByCoordinates(
+          parsedImage,
+          mimeType,
+          textureCoordinates,
+          index,
+          featureTextureProperty.channels
+        );
+        primitiveData.push(value);
+      }
+    }
+  }
+  return new Uint8Array(primitiveData);
+}
+
+function getImageValueByCoordinates(
+  parsedImage: any,
+  mimeType: string | undefined,
+  textureCoordinates: Float32Array,
+  index: number,
+  channels: string
+) {
+  const CHANNELS_MAP = {
+    r: {offset: 0, shift: 0},
+    g: {offset: 1, shift: 8},
+    b: {offset: 2, shift: 16},
+    a: {offset: 3, shift: 24}
+  };
+
+  const u = textureCoordinates[index];
+  const v = textureCoordinates[index + 1];
+
+  let components = 1;
+  if (mimeType?.indexOf('image/jpeg') !== -1 || mimeType?.indexOf('image/png') !== -1)
+    components = 4;
+  const offset = coordinatesToOffset(u, v, parsedImage, components);
+  let value = 0;
+  for (const c of channels) {
+    const map = CHANNELS_MAP[c];
+    const val = getVal(parsedImage, offset + map.offset);
+    value |= val << map.shift;
+  }
+  return value;
+}
+
+/**
+ * Creates and adds a new FeatureTable based on property data provided
+ * @param extension
+ * @param attributeName
+ * @param propertyData
+ */
+function createFeatureTable(extension: any, attributeName: string, propertyData: Uint8Array) {
+  if (!extension.featureTables) {
+    extension.featureTables = {};
+  }
+  const featureTables = extension.featureTables;
+  const featureTable: EXT_feature_metadata_feature_table = featureTables[attributeName]
+    ? featureTables[attributeName]
+    : {
+      featureTable: {}, // unused. TODO: make this field optional
+      count: propertyData?.length || 0
+    };
+
+  featureTable.class = attributeName;
+  const featureTableProperty: FeatureTableProperty = {bufferView: -1, propertyData};
+  if (!featureTable.properties) {
+    featureTable.properties = {};
+  }
+  if (!featureTable.properties[attributeName]) {
+    featureTable.properties[attributeName] = featureTableProperty;
+  }
+  featureTables[attributeName] = featureTable;
+
+  // featureIdAttributes
+  const featureIdAttribute: GLTF_EXT_feature_metadata_attribute = {
+    featureTable: attributeName,
+    featureIds: {constant: 0, divisor: 1}
+  };
+  if (!extension.featureIdAttributes) {
+    extension.featureIdAttributes = [] as GLTF_EXT_feature_metadata_attribute[];
+  }
+  if (!extension.featureIdAttributes.find((el) => el.featureTable === attributeName)) {
+    extension.featureIdAttributes.push(featureIdAttribute);
+  }
+}
+
+function getVal(parsedImage: any, offset: number): number {
+  const imageData = getImageData(parsedImage);
+  if (imageData.data.length <= offset) {
+    throw new Error(`${imageData.data.length} <= ${offset}`);
+  }
+  return imageData.data[offset];
+}
+
+function coordinatesToOffset(
+  u: number,
+  v: number,
+  parsedImage: any,
+  componentsCount: number = 1
+): number {
+  // The follwing code is taken from tile-converter\src\i3s-converter\helpers\batch-ids-extensions.ts (function generateBatchIdsFromTexture)
+  // It seems incorrect.
+  //  const tx = Math.min((emod(u) * parsedImage.width) | 0, parsedImage.width - 1);
+  //  const ty = Math.min((emod(v) * parsedImage.height) | 0, parsedImage.height - 1);
+  // It's replaced with the following:
+  const w = parsedImage.width;
+  const iX = emod(u) * (w - 1);
+  const indX = Math.round(iX);
+
+  const h = parsedImage.height;
+  const iY = emod(v) * (h - 1);
+  const indY = Math.round(iY);
+  const components = parsedImage.components ? parsedImage.components : componentsCount;
+  // components is a number of channels in the image
+  const offset = (indY * w + indX) * components;
+  return offset;
+}
+
+// The following is taken from tile-converter\src\i3s-converter\helpers\batch-ids-extensions.ts
+/**
+ * Handle UVs if they are out of range [0,1].
+ * @param n
+ * @param m
+ */
+function emod(n: number): number {
+  const a = ((n % 1) + 1) % 1;
+  return a;
 }
 
 /**
@@ -130,6 +362,21 @@ function findFeatureTableByName(
   return null;
 }
 
+function findFeatureTextureByName(
+  featureTextures: {[key: string]: EXT_feature_metadata_feature_texture},
+  schemaClassName: string
+): EXT_feature_metadata_feature_texture | null {
+  for (const featureTexturesName in featureTextures) {
+    const featureTable = featureTextures[featureTexturesName];
+
+    if (featureTable.class === schemaClassName) {
+      return featureTable;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Getting string attributes from binary data.
  * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#strings
@@ -138,26 +385,29 @@ function findFeatureTableByName(
  * @param stringsCount
  */
 function getStringAttributes(
-  data: Uint8Array,
+  data: Uint8Array | string[],
   offsetsData: Uint8Array,
   stringsCount: number
 ): string[] {
-  const stringsArray: string[] = [];
-  const textDecoder = new TextDecoder('utf8');
+  if (data instanceof Uint8Array) {
+    const stringsArray: string[] = [];
+    const textDecoder = new TextDecoder('utf8');
 
-  let stringOffset = 0;
-  const bytesPerStringSize = 4;
+    let stringOffset = 0;
+    const bytesPerStringSize = 4;
 
-  for (let index = 0; index < stringsCount; index++) {
-    // TODO check if it is multiplication on bytesPerStringSize is valid operation?
-    const stringByteSize =
-      offsetsData[(index + 1) * bytesPerStringSize] - offsetsData[index * bytesPerStringSize];
-    const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
-    const stringAttribute = textDecoder.decode(stringData);
+    for (let index = 0; index < stringsCount; index++) {
+      // TODO check if it is multiplication on bytesPerStringSize is valid operation?
+      const stringByteSize =
+        offsetsData[(index + 1) * bytesPerStringSize] - offsetsData[index * bytesPerStringSize];
+      const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
+      const stringAttribute = textDecoder.decode(stringData);
 
-    stringsArray.push(stringAttribute);
-    stringOffset += stringByteSize;
+      stringsArray.push(stringAttribute);
+      stringOffset += stringByteSize;
+    }
+
+    return stringsArray;
   }
-
-  return stringsArray;
+  return data;
 }
