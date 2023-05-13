@@ -31,14 +31,14 @@ loaders.gl aims to provide support for glTF extensions that can be handled compl
 
 Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
-| Extension                                               | Preprocessed | Description                                |
-| ------------------------------------------------------- | ------------ | ------------------------------------------ |
+| Extension                                                | Preprocessed | Description                                |
+| -------------------------------------------------------- | ------------ | ------------------------------------------ |
 | [KHR_draco_mesh_compression][KHR_draco_mesh_compression] | Y            | Decompresses draco-compressed geometries   |
 | [EXT_meshopt_compression][EXT_meshopt_compression])      | Y            | Decompresses meshopt-compressed geometries |
 | [KHR_texture_basisu][KHR_texture_basisu])                | Y            |
-| [KHR_texture_webp][KHR_texture_webp])                  | Y            |
+| [KHR_texture_webp][KHR_texture_webp])                    | Y            |
 | [KHR_lights_punctual][KHR_lights_punctual])              | Y\*          | Deprecated                                 |
-| [KHR_materials_unlit][KHR_materials_unlit])              | Y\*             | Deprecated                                 |
+| [KHR_materials_unlit][KHR_materials_unlit])              | Y\*          | Deprecated                                 |
 
 ## Official Extensions
 

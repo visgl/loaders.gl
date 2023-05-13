@@ -66,7 +66,8 @@ export async function extractGLTF(tile, gltfFormat, options, context) {
     }
     if (tile.gltfArrayBuffer) {
       // TODO - Should handle byteOffset... However, not used now...
-      tile.gltf = await parse(tile.gltfArrayBuffer, GLTFLoader, options, context);
+      const gltfWithBuffers = await parse(tile.gltfArrayBuffer, GLTFLoader, options, context);
+      tile.gltf = gltfWithBuffers;
       tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
       delete tile.gltfArrayBuffer;
       delete tile.gltfByteOffset;

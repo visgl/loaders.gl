@@ -27,6 +27,7 @@ export type ParseGLTFOptions = {
   postProcess?: false;
 };
 
+/** Check if an array buffer appears to contain GLTF data */
 export function isGLTF(arrayBuffer, options?: ParseGLBOptions): boolean {
   const byteOffset = 0;
   return isGLB(arrayBuffer, byteOffset, options);
