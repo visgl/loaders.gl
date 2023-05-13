@@ -1,4 +1,29 @@
-# glTF Extensions
+# glTF - gl Transfer Format
+
+- *[`@loaders.gl/gltf`](/docs/modules/gltf)*
+- *[glTF specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)*
+- *[Wikipedia article](https://en.wikipedia.org/wiki/GlTF)*
+
+glTF is a standard file format for three-dimensional scenes and models, intended to be a streamlined, interoperable format for the delivery of 3D assets, while minimizing file size and runtime processing by apps. Sometimes described as the "JPEG of 3D."
+
+An open standard developed and maintained by the Khronos Group, it supports 3D model geometry, appearance, scene graph hierarchy, and animation. 
+
+## Variants
+
+A glTF file uses one of two possible file extensions: .gltf (JSON/ASCII) or .glb (binary). Both .gltf and .glb files may reference external binary and texture resources. Alternatively, both formats may be self-contained by directly embedding binary data buffers (as base64-encoded strings in .gltf files or as raw byte arrays in .glb files).
+
+## Version History
+
+### glTF 2.0
+
+-GLB was incorporated directly into glTF 2.0.
+
+### glTF 1.0 
+
+- GLB was introduced as an extension.
+
+
+## glTF Extensions
 
 glTF extensions can be present in glTF files, and will be present in the parsed JSON. glTF extensions can supported by applications by inspecting the `extensions` fields inside glTF objects, and it is up to each application to handle or ignore them.
 

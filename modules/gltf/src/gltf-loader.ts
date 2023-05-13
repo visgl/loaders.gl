@@ -3,10 +3,10 @@ import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import {VERSION} from './lib/utils/version';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
 import type {TextureLoaderOptions} from '@loaders.gl/textures';
-import type {GLTFParseOptions} from './lib/parsers/parse-gltf';
+import type {ParseGLTFOptions} from './lib/parsers/parse-gltf';
 import type {GLTFWithBuffers} from './lib/types/gltf-types';
+import type {GLBLoaderOptions} from './glb-loader';
 import {parseGLTF} from './lib/parsers/parse-gltf';
-import {GLBLoaderOptions} from './glb-loader';
 
 /**
  * GLTF loader options
@@ -16,13 +16,13 @@ export type GLTFLoaderOptions = LoaderOptions &
   TextureLoaderOptions &
   GLBLoaderOptions &
   DracoLoaderOptions & {
-    gltf?: GLTFParseOptions;
+    gltf?: ParseGLTFOptions;
   };
 
 /**
  * GLTF loader
  */
-export const GLTFLoader: LoaderWithParser = {
+export const GLTFLoader: LoaderWithParser<GLTFWithBuffers, never, GLBLoaderOptions> = {
   name: 'glTF',
   id: 'gltf',
   module: 'gltf',
@@ -40,8 +40,7 @@ export const GLTFLoader: LoaderWithParser = {
       normalize: true, // Normalize glTF v1 to glTF v2 format (not yet stable)
       loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
       loadImages: true, // Create image objects
-      decompressMeshes: true, // Decompress Draco encoded meshes
-      postProcess: true // Postprocess glTF and return json structure directly
+      decompressMeshes: true // Decompress Draco encoded meshes
     },
 
     // common?
@@ -53,12 +52,17 @@ export const GLTFLoader: LoaderWithParser = {
     decompress: 'gltf.decompressMeshes',
     postProcess: 'gltf.postProcess',
     gltf: {
-      decompress: 'gltf.decompressMeshes'
+      decompress: 'gltf.decompressMeshes',
+      postProcess: 'removed in v4'
     }
   }
 };
 
-export async function parse(arrayBuffer, options: GLTFLoaderOptions = {}, context) {
+export async function parse(
+  arrayBuffer,
+  options: GLTFLoaderOptions = {},
+  context
+): Promise<GLTFWithBuffers> {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GLTFLoader.options, ...options};
   // @ts-ignore

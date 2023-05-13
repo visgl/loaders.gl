@@ -20,7 +20,8 @@ import type {
   GLTF_KHR_texture_basisu,
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp,
-  GLTF_EXT_feature_metadata
+  GLTF_EXT_feature_metadata,
+  GLTF_EXT_mesh_features
 } from './gltf-json-schema';
 
 import type {
@@ -53,6 +54,8 @@ export type {
   GLTF_KHR_texture_basisu,
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp,
+  GLTF_EXT_feature_metadata,
+  GLTF_EXT_mesh_features,
   GLTFPostprocessed,
   GLTFAccessorPostprocessed,
   GLTFImagePostprocessed,
@@ -60,8 +63,7 @@ export type {
   GLTFMeshPostprocessed,
   GLTFMeshPrimitivePostprocessed,
   GLTFMaterialPostprocessed,
-  GLTFTexturePostprocessed,
-  GLTF_EXT_feature_metadata
+  GLTFTexturePostprocessed
 };
 
 export type GLTFObject =
