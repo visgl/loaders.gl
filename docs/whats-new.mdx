@@ -81,6 +81,10 @@ A major release that brings:
 - Now uses `apache-arrow` v9. 
 - Apache Arrow v9 is a breaking change. 
 
+**@loaders.gl/compression**
+
+- `DeflateCompression` and `GzipCompression` now use [`fflate`](https://101arrowz.github.io/fflate/) instead of [`pako`](http://nodeca.github.io/pako/), providing signficantly better performance and smaller bundle size.
+
 **@loaders.gl/gltf**
 
 - Stricter typing (see upgrade-guide)

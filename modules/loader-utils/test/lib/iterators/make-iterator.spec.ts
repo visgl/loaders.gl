@@ -64,7 +64,7 @@ const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positi
 
 test('makeIterator(fetch)#async iterate', async (t) => {
   const response = await fetchFile(DATA_URL);
-  const stream = await response.body;
+  const stream = response.body;
   t.ok(stream);
 
   if (stream) {

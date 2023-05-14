@@ -55,7 +55,8 @@ const TEST_CASES = [
         compressedLength: 10903
       },
       gzip: {
-        compressedLength: 10915
+        compressedLength: 10913 // fflate
+        // compressedLength: 10915 // pako
       },
       lz4: {
         compressedLength: 10422
@@ -137,7 +138,10 @@ test('compression#batched', async (t) => {
       let compressedBatches = compression.compressBatches(inputChunks);
       const compressedData = await concatenateArrayBuffersAsync(compressedBatches);
       if (name === 'gzip') {
-        t.equals(compressedData.byteLength, 29, `${name}(${title}) batches: length correct`); // Header overhead
+        // FFLATE
+        t.equals(compressedData.byteLength, 47, `${name}(${title}) batches: length correct`); // Header overhead
+        // PAKO
+        // t.equals(compressedData.byteLength, 29, `${name}(${title}) batches: length correct`); // Header overhead
       }
 
       // test chained iterators

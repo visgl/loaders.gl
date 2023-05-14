@@ -1,25 +1,26 @@
 // loaders.gl, MIT license
-import {promisify1} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-
-import {deflate, inflate, deflateSync, inflateSync} from 'fflate';
-import type {DeflateOptions} from 'fflate'; // https://bundlephobia.com/package/pako
+import {getPakoError} from './utils/pako-utils';
+import pako from 'pako'; // https://bundlephobia.com/package/pako
 
 export type DeflateCompressionOptions = CompressionOptions & {
-  deflate?: DeflateOptions;
+  deflate?: pako.InflateOptions & pako.DeflateOptions & {useZlib?: boolean};
 };
 
 /**
  * DEFLATE compression / decompression
+ * Using PAKO library
  */
 export class DeflateCompression extends Compression {
-  readonly name: string = 'fflate';
+  readonly name: string = 'deflate';
   readonly extensions: string[] = [];
-  readonly contentEncodings = ['fflate', 'gzip, zlib'];
+  readonly contentEncodings = ['deflate'];
   readonly isSupported = true;
 
   readonly options: DeflateCompressionOptions;
+
+  private _chunks: ArrayBuffer[] = [];
 
   constructor(options: DeflateCompressionOptions = {}) {
     super(options);
@@ -27,34 +28,29 @@ export class DeflateCompression extends Compression {
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // const options = this.options?.gzip || {};
-    const inputArray = new Uint8Array(input);
-    const outputArray = await promisify1(deflate)(inputArray); // options - overload pick
-    return outputArray.buffer;
+    return this.compressSync(input);
   }
 
   async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    const inputArray = new Uint8Array(input);
-    const outputArray = await promisify1(inflate)(inputArray);
-    return outputArray.buffer;
+    return this.decompressSync(input);
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    const options = this.options?.deflate || {};
+    const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
-    return deflateSync(inputArray, options).buffer;
+    return pako.deflate(inputArray, pakoOptions).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
+    const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
-    return inflateSync(inputArray).buffer;
+    return pako.inflate(inputArray, pakoOptions).buffer;
   }
 
-  /*
   async *compressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    const pakoOptions: pako.DeflateOptions = this.options?.fflate || {};
+    const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
     const pakoProcessor = new pako.Deflate(pakoOptions);
     yield* this.transformBatches(pakoProcessor, asyncIterator);
   }
@@ -62,7 +58,7 @@ export class DeflateCompression extends Compression {
   async *decompressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    const pakoOptions: pako.InflateOptions = this.options?.fflate || {};
+    const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
     const pakoProcessor = new pako.Inflate(pakoOptions);
     yield* this.transformBatches(pakoProcessor, asyncIterator);
   }
@@ -77,7 +73,7 @@ export class DeflateCompression extends Compression {
       const uint8Array = new Uint8Array(chunk);
       const ok = pakoProcessor.push(uint8Array, false); // false -> not last chunk
       if (!ok) {
-        throw new Error(`${this._getError()}write`);
+        throw new Error(`${getPakoError()}write`);
       }
       const chunks = this._getChunks();
       yield* chunks;
@@ -88,7 +84,7 @@ export class DeflateCompression extends Compression {
     const ok = pakoProcessor.push(emptyChunk, true); // true -> last chunk
     if (!ok) {
       // For some reason we get error but it still works???
-      // throw new Error(this._getError() + 'end');
+      // throw new Error(getPakoError() + 'end');
     }
     const chunks = this._getChunks();
     yield* chunks;
@@ -100,7 +96,7 @@ export class DeflateCompression extends Compression {
 
   _onEnd(status) {
     if (status !== 0) {
-      throw new Error(this._getError(status) + this._chunks.length);
+      throw new Error(getPakoError(status) + this._chunks.length);
     }
   }
 
@@ -109,5 +105,4 @@ export class DeflateCompression extends Compression {
     this._chunks = [];
     return chunks;
   }
-  */
 }
