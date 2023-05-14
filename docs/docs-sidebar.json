@@ -56,6 +56,8 @@
       "modules/csv/formats/csv",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
+      "modules/gltf/formats/glb",
+      "modules/gltf/formats/gltf",
       "modules/parquet/formats/parquet",
       "modules/parquet/formats/geoparquet",
       "modules/shapefile/formats/shapefile",
@@ -226,7 +228,6 @@
         "label": "@loaders.gl/gltf",
         "items": [
           "modules/gltf/README",
-          "modules/gltf/api-reference/gltf-extensions",
           "modules/gltf/api-reference/gltf-scenegraph",
           "modules/gltf/api-reference/post-process-gltf"
         ]
