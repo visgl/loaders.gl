@@ -17,7 +17,8 @@ const MOCK_TILESET = {
     return {
       batchId
     };
-  }
+  },
+  _tileset: {}
 };
 
 MOCK_TILESET._tileset = MOCK_TILESET;

@@ -2,7 +2,8 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import test from 'tape-promise/tape';
-import {parseSync, encodeSync} from '@loaders.gl/core';
+import type {DracoLoaderOptions} from '@loaders.gl/draco';
+import {parseSync, encodeSync, LoaderContext} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadDraco} from '../../../src/lib/parsers/parse-3d-tile-point-cloud';
 // import {loadRootTileFromTileset} from '../utils/load-utils';
@@ -99,16 +100,16 @@ test('loadDraco# Pass options to draco loader properly', async (t) => {
     reuseWorkers: true
   };
   const tile = null;
-  const context = {
+  const context: LoaderContext = {
     parse: async (buffer, loader, resultOptions) => {
       t.deepEqual(resultOptions, resultObject);
-      t.equal(resultOptions['3d-tiles'], undefined);
+      t.equal(resultOptions?.['3d-tiles'], undefined);
       t.end();
     }
-  };
+  } as LoaderContext;
 
   const dracoData = {buffer: null, batchTableProperties: {test: 'yes'}};
-  const options = {
+  const options: DracoLoaderOptions = {
     draco: {
       decoderType: 'js'
     },

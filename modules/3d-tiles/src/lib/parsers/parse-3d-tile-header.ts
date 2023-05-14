@@ -1,3 +1,4 @@
+import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
@@ -128,7 +129,7 @@ export async function normalizeImplicitTileHeaders(
   tile: Tile3D,
   tileset: Tileset3D,
   implicitTilingExtension: ImplicitTilingExtension,
-  options: LoaderOptions
+  options: Tiles3DLoaderOptions
 ) {
   const basePath = tileset.basePath;
   const {

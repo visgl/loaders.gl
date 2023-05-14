@@ -372,7 +372,7 @@ test('Tile3DBatchTableParser#throws if hierarchy has a circular dependency (2)',
   t.end();
 });
 
-test("Tile3DBatchTableParser#throws if an instance's parentId exceeds instancesLength", (t) => {
+test('Tile3DBatchTableParser#throws if an instance\'s parentId exceeds instancesLength', (t) => {
   const BATCH_TABLE_JSON = {
     HIERARCHY: {
       instancesLength: 2,
@@ -402,7 +402,7 @@ test("Tile3DBatchTableParser#throws if an instance's parentId exceeds instancesL
         mockTileset,
         2,
         BATCH_TABLE_JSON,
-        "throws if an instance's parentId exceeds instancesLength"
+        'throws if an instance\'s parentId exceeds instancesLength'
       )
   );
   t.end();
