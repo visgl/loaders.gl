@@ -291,8 +291,8 @@ function createAttribute(
  */
 function makeTransformationMatrix(extensionData: TextureInfo): Matrix3 {
   const {offset = [0, 0], rotation = 0, scale = [1, 1]} = extensionData;
-  const translationMatirx = new Matrix3().set(1, 0, 0, 0, 1, 0, offset[0], offset[1], 1);
-  const rotationMatirx = scratchRotationMatrix.set(
+  const translationMatrix = new Matrix3().set(1, 0, 0, 0, 1, 0, offset[0], offset[1], 1);
+  const rotationMatrix = scratchRotationMatrix.set(
     Math.cos(rotation),
     Math.sin(rotation),
     0,
@@ -304,5 +304,5 @@ function makeTransformationMatrix(extensionData: TextureInfo): Matrix3 {
     1
   );
   const scaleMatrix = scratchScaleMatrix.set(scale[0], 0, 0, 0, scale[1], 0, 0, 0, 1);
-  return translationMatirx.multiplyRight(rotationMatirx).multiplyRight(scaleMatrix);
+  return translationMatrix.multiplyRight(rotationMatrix).multiplyRight(scaleMatrix);
 }

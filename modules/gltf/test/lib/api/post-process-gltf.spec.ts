@@ -1,10 +1,10 @@
 /* eslint-disable max-len, camelcase */
 import test from 'tape-promise/tape';
 
-import type {GLTFWithBuffers} from '@loaders.gl/gltf';
+import type {GLTFWithBuffers, GLTFPostprocessed} from '@loaders.gl/gltf';
 import {postProcessGLTF} from '@loaders.gl/gltf';
 
-const TEST_CASES = [
+const TEST_CASES: {name: string; input: GLTFWithBuffers; output: GLTFPostprocessed}[] = [
   {
     name: 'Simple scene',
     input: {
@@ -15,6 +15,7 @@ const TEST_CASES = [
           }
         ],
         nodes: [{mesh: 0}, {mesh: 1}],
+        // @ts-expect-error
         meshes: [{}, {}],
         buffers: []
       }
@@ -23,16 +24,21 @@ const TEST_CASES = [
       scenes: [
         {
           nodes: [
+            // @ts-expect-error
             {mesh: {id: 'mesh-0'}, id: 'node-0'},
+            // @ts-expect-error
             {mesh: {id: 'mesh-1'}, id: 'node-1'}
           ],
           id: 'scene-0'
         }
       ],
       nodes: [
+        // @ts-expect-error
         {mesh: {id: 'mesh-0'}, id: 'node-0'},
+        // @ts-expect-error
         {mesh: {id: 'mesh-1'}, id: 'node-1'}
       ],
+      // @ts-expect-error
       meshes: [{id: 'mesh-0'}, {id: 'mesh-1'}],
       buffers: []
     }

@@ -146,6 +146,7 @@ class GLTFPostProcessor {
   _resolveTree(gltf: GLTF, options = {}): GLTFPostprocessed {
     // @ts-expect-error
     const json: GLTFPostprocessed = {...gltf};
+    this.json = json;
 
     if (gltf.bufferViews) {
       json.bufferViews = gltf.bufferViews.map((bufView, i) => this._resolveBufferView(bufView, i));

@@ -3,9 +3,9 @@ import {load, loadInBatches} from '@loaders.gl/core';
 import {ExcelLoader} from '@loaders.gl/excel';
 import {CSVLoader} from '@loaders.gl/csv';
 
-const ZIPCODES_XLSX_PATH = `@loaders.gl/excel/test/data/zipcodes.xlsx`;
-const ZIPCODES_XLSB_PATH = `@loaders.gl/excel/test/data/zipcodes.xlsb`;
-const ZIPCODES_CSV_PATH = `@loaders.gl/excel/test/data/zipcodes.csv`;
+const ZIPCODES_XLSX_PATH = '@loaders.gl/excel/test/data/zipcodes.xlsx';
+const ZIPCODES_XLSB_PATH = '@loaders.gl/excel/test/data/zipcodes.xlsb';
+const ZIPCODES_CSV_PATH = '@loaders.gl/excel/test/data/zipcodes.csv';
 
 test('ExcelLoader#load(ZIPCODES)', async (t) => {
   const csvData = await load(ZIPCODES_CSV_PATH, CSVLoader, {

@@ -39,7 +39,7 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
 async function decodeMeshoptBufferView(
   scenegraph: GLTFScenegraph,
   bufferView: GLTFBufferView
-): Promise<ArrayBuffer | null> {
+): Promise<void> {
   const meshoptExtension = scenegraph.getObjectExtension<GLTF_EXT_meshopt_compression>(
     bufferView,
     EXT_MESHOPT_COMPRESSION
@@ -63,8 +63,6 @@ async function decodeMeshoptBufferView(
       bufferView.byteLength
     );
     await meshoptDecodeGltfBuffer(result, count, byteStride, source, mode, filter);
-    return result;
+    scenegraph.removeObjectExtension(bufferView, EXT_MESHOPT_COMPRESSION);
   }
-
-  return null;
 }
