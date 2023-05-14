@@ -4,7 +4,7 @@
 import type {GLB} from '../types/glb-types';
 import {padToNBytes, assert} from '@loaders.gl/loader-utils';
 
-export type GLBParseOptions = {
+export type ParseGLBOptions = {
   magic?: number;
   strict?: boolean;
 };
@@ -35,7 +35,7 @@ ${String.fromCharCode(dataView.getUint8(byteOffset + 3))}`;
 export function isGLB(
   arrayBuffer: ArrayBuffer,
   byteOffset: number = 0,
-  options: GLBParseOptions = {}
+  options: ParseGLBOptions = {}
 ): boolean {
   const dataView = new DataView(arrayBuffer);
   // Check that GLB Header starts with the magic number
@@ -48,7 +48,7 @@ export default function parseGLBSync(
   glb: GLB,
   arrayBuffer: ArrayBuffer,
   byteOffset: number = 0,
-  options: GLBParseOptions = {}
+  options: ParseGLBOptions = {}
 ) {
   // Check that GLB Header starts with the magic number
   const dataView = new DataView(arrayBuffer);
@@ -112,7 +112,7 @@ function parseGLBV2(
   glb: GLB,
   dataView: DataView,
   byteOffset: number,
-  options: GLBParseOptions
+  options: ParseGLBOptions
 ): number {
   // Sanity: ensure file is big enough to hold at least the first chunk header
   assert(glb.header.byteLength > GLB_FILE_HEADER_SIZE + GLB_CHUNK_HEADER_SIZE);
@@ -126,7 +126,7 @@ function parseGLBChunksSync(
   glb: GLB,
   dataView: DataView,
   byteOffset: number,
-  options: GLBParseOptions
+  options: ParseGLBOptions
 ) {
   // Per spec we must iterate over chunks, ignoring all except JSON and BIN
   // Iterate as long as there is space left for another chunk header

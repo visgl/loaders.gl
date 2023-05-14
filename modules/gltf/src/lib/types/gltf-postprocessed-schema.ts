@@ -620,19 +620,19 @@ export interface GLTF {
   /**
    * Names of glTF extensions used somewhere in this asset.
    */
-  extensionsUsed?: string[];
+  extensionsUsed: string[];
   /**
    * Names of glTF extensions required to properly load this asset.
    */
-  extensionsRequired?: string[];
+  extensionsRequired: string[];
   /**
    * An array of accessors.
    */
-  accessors?: Accessor[];
+  accessors: Accessor[];
   /**
    * An array of keyframe animations.
    */
-  animations?: Animation[];
+  animations: Animation[];
   /**
    * Metadata about the glTF asset.
    */
@@ -640,52 +640,52 @@ export interface GLTF {
   /**
    * An array of buffers.
    */
-  buffers?: Buffer[];
+  buffers: Buffer[];
   /**
    * An array of bufferViews.
    */
-  bufferViews?: BufferView[];
+  bufferViews: BufferView[];
   /**
    * An array of cameras.
    */
-  cameras?: Camera[];
+  cameras: Camera[];
   /**
    * An array of images.
    */
-  images?: Image[];
+  images: Image[];
   /**
    * An array of materials.
    */
-  materials?: Material[];
+  materials: Material[];
   /**
    * An array of meshes.
    */
-  meshes?: Mesh[];
+  meshes: Mesh[];
   /**
    * An array of nodes.
    */
-  nodes?: Node[];
+  nodes: Node[];
   /**
    * An array of samplers.
    */
-  samplers?: Sampler[];
+  samplers: Sampler[];
   /**
    * The index of the default scene.
    */
-  scene?: Scene;
+  scene: Scene;
   /**
    * An array of scenes.
    */
-  scenes?: Scene[];
+  scenes: Scene[];
   /**
    * An array of skins.
    */
-  skins?: Skin[];
+  skins: Skin[];
   /**
    * An array of textures.
    */
-  textures?: Texture[];
-  extensions?: any;
+  textures: Texture[];
+  extensions: Record<string, Record<string, any>>;
   extras?: any;
   [k: string]: any;
 }

@@ -786,6 +786,24 @@ export type GLTF_MSFT_texture_dds = {
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
+ * @todo belom88 complete typings
+ */
+export type GLTF_EXT_mesh_features = {
+  featureIds: {
+    featureCount: number;
+    nullFeatureId: number;
+    label: string;
+    attribute: any;
+    texture: any;
+    propertyTable: number;
+  }[];
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
  */
 export type GLTF_EXT_feature_metadata = {
   /** An object defining classes and enums. */

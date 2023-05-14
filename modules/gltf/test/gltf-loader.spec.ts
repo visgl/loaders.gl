@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {registerLoaders, load, parseSync, fetchFile} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
 import {ImageLoader} from '@loaders.gl/images';
 
@@ -31,39 +31,41 @@ test('GLTFLoader#parseSync()', async (t) => {
 
 test('GLTFLoader#load(binary)', async (t) => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader);
-  t.ok(data.asset, 'GLTFLoader returned parsed data');
+  t.ok(data.json.asset, 'GLTFLoader returned parsed data');
 
   t.end();
 });
 
 test('GLTFLoader#load(binary) - postProcess: false', async (t) => {
-  const data = await load(GLTF_BINARY_URL, GLTFLoader, {gltf: {postProcess: false}});
-  t.ok(data._glb, 'GLTFLoader without post-processing returned data._glb');
+  const data = await load(GLTF_BINARY_URL, GLTFLoader);
   t.ok(data.buffers, 'GLTFLoader without post-processing returned data.buffers');
   t.ok(data.images, 'GLTFLoader without post-processing returned data.images');
   t.ok(data.json, 'GLTFLoader without post-processing returned data.json');
+
+  t.ok((data as any)._glb, 'GLTFLoader without post-processing returned data._glb');
+
   t.end();
 });
 
 test('GLTFLoader#load(text)', async (t) => {
   const data = await load(GLTF_JSON_URL, GLTFLoader, {gltf: {loadImages: false}});
-  t.ok(data.asset, 'GLTFLoader returned parsed data');
+  t.ok(data.json.asset, 'GLTFLoader returned parsed data');
   t.end();
 });
 
 test('GLTFLoader#load(3d tile GLB)', async (t) => {
-  t.ok(await load(GLB_TILE_URL, [GLTFLoader, DracoLoader]), `Test that GLB from 3D tile parses`);
+  t.ok(await load(GLB_TILE_URL, [GLTFLoader, DracoLoader]), 'Test that GLB from 3D tile parses');
 
   t.ok(
     await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageLoader]),
-    `Parses Draco GLB with supplied DracoLoader`
+    'Parses Draco GLB with supplied DracoLoader'
   );
 
   // TODO - prone to flakiness since we have async unregisterLoaders calls
   registerLoaders([DracoLoader, ImageLoader]);
 
   const gltf2 = await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader);
-  t.ok(gltf2, `Parses Draco GLB with defaultregistered DracoLoader`);
+  t.ok(gltf2, 'Parses Draco GLB with default registered DracoLoader');
 
   t.end();
 });
@@ -76,7 +78,7 @@ test('GLTFLoader#load(glTF v1)', async (t) => {
   );
 
   const gltf1 = await load(GLB_V1_TILE_CESIUM_AIR_URL, GLTFLoader, {gltf: {normalize: true}});
-  t.ok(gltf1, `glTF v1 was normalized without errors`);
+  t.ok(gltf1, 'glTF v1 was normalized without errors');
 
   t.end();
 });
@@ -84,9 +86,8 @@ test('GLTFLoader#load(glTF v1)', async (t) => {
 // Check load options
 
 test('GLTFLoader#options({postProcess: true})', async (t) => {
-  const data = await load(GLTF_BINARY_URL, GLTFLoader, {
-    gltf: {postProcess: true}
-  });
+  const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
+  const data = postProcessGLTF(gltfWithBuffers);
   const value = data.meshes[0].primitives[0].attributes.POSITION.value;
   t.ok(
     ArrayBuffer.isView(value),

@@ -23,15 +23,18 @@ import {
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
 
-const DEFAULT_GLTF_JSON: GLTF = {
-  asset: {
-    version: '2.0',
-    generator: 'loaders.gl'
-  },
-  buffers: []
-};
-
 type Extension = {[key: string]: any};
+
+function makeDefaultGLTFJson(): GLTF {
+  return {
+    asset: {
+      version: '2.0',
+      generator: 'loaders.gl'
+    },
+    buffers: []
+  };
+}
+
 /**
  * Class for structured access to GLTF data
  */
@@ -41,10 +44,13 @@ export default class GLTFScenegraph {
   sourceBuffers: any[];
   byteLength: number;
 
+  // TODO - why is this not GLTFWithBuffers - what happens to images?
   constructor(gltf?: {json: GLTF; buffers?: any[]}) {
+    // Declare locally so
+
     // @ts-ignore
     this.gltf = gltf || {
-      json: {...DEFAULT_GLTF_JSON},
+      json: makeDefaultGLTFJson(),
       buffers: []
     };
     this.sourceBuffers = [];

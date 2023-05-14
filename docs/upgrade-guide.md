@@ -2,6 +2,18 @@
 
 ## Upgrading to v4.0
 
+**Typed Loaders**
+
+Loaders now return typed data. While this sudden injection of types into previously untyped code can generated type errors in applications that have been making the wrong assumptions about what was returned from loaders, those errors will likely be valid and should just be fixed in the application.
+
+In the interest of offering the most rigorous typing of returned data, some loaders now offer fewer options for the returned data type, and the trend in loaders.gl 3.x of offering a growing selection of return formats (or `shapes`) from each loader has now been reversed, in favor of offering a single core return data type, accompanied by optional conversion functions.
+
+- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
+
+**GLTF**
+
+- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
+
 **Apache Arrow JS** 
 
 loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_. 

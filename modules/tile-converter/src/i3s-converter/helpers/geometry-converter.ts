@@ -1,6 +1,7 @@
 import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {
   GLTF_EXT_feature_metadata,
+  GLTF_EXT_mesh_features,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
@@ -1534,7 +1535,7 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
       return null;
     }
     case EXT_FEATURE_METADATA: {
-      return getPropertyTableFromExtFeatureMetadata(extension);
+      return getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata);
     }
     default:
       return null;
@@ -1545,7 +1546,9 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
  * Check extensions which can be with property table inside.
  * @param sourceTile
  */
-function getPropertyTableExtension(tileContent: B3DMContent) {
+function getPropertyTableExtension(
+  tileContent: B3DMContent
+): GLTF_EXT_feature_metadata | GLTF_EXT_mesh_features {
   const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 

@@ -45,7 +45,7 @@ test('GLTFScenegraph#should detect meshopt and ktx2 content', async (t) => {
 
 test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
   const gltf = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader], {
-    gltf: {decompressMeshes: true, postProcess: false}
+    gltf: {decompressMeshes: true}
   });
 
   const gltfScenegraph = new GLTFScenegraph(gltf);
