@@ -910,7 +910,7 @@ export default class I3SConverter {
    * @param slpkChildPath
    */
   private async writeTextureFile(
-    textureData: Promise<ArrayBuffer>,
+    textureData: Uint8Array | Promise<ArrayBuffer>,
     name: string,
     format: 'jpg' | 'png' | 'ktx2',
     childPath: string,

@@ -15,17 +15,22 @@ export type GLBEncodeOptions = {};
 
 /**
  * Encode the full GLB buffer with header etc
- * 
- * @param glb 
+ *
+ * @param glb
  * @param dataView - if `null`, does not encode but just calculates length
- * @param byteOffset 
- * @param options 
- * @returns 
- * 
+ * @param byteOffset
+ * @param options
+ * @returns
+ *
  * @see https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
- * @todo type GLB argument 
+ * @todo type GLB argument
  */
-export function encodeGLBSync(glb, dataView: DataView | null, byteOffset = 0, options: GLBEncodeOptions = {}) {
+export function encodeGLBSync(
+  glb,
+  dataView: DataView | null,
+  byteOffset = 0,
+  options: GLBEncodeOptions = {}
+) {
   const {magic = MAGIC_glTF, version = 2, json = {}, binary} = glb;
 
   const byteOffsetStart = byteOffset;

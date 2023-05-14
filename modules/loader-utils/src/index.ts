@@ -18,13 +18,12 @@ export type {
   BatchableDataType,
   IFileSystem,
   IRandomAccessReadFileSystem,
-
   // numeric array types
-  TypedArray, 
-  BigTypedArray, 
-  TypedArrayConstructor, 
-  BigTypedArrayConstructor, 
-  NumberArray, 
+  TypedArray,
+  BigTypedArray,
+  TypedArrayConstructor,
+  BigTypedArrayConstructor,
+  NumberArray,
   NumericArray
 } from './types';
 

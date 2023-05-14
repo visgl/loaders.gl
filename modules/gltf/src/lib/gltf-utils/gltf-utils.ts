@@ -1,7 +1,7 @@
 import {assert} from '../utils/assert';
 import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
 
-/** 
+/**
  * Memory needed to store texture and all mipmap levels 1 + 1/4 + 1/16 + 1/64 + ...
  * Minimum 1.33, but due to GPU layout may be 1.5
  */

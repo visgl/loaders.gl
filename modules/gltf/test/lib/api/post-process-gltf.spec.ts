@@ -1,6 +1,7 @@
 /* eslint-disable max-len, camelcase */
 import test from 'tape-promise/tape';
 
+import type {GLTFWithBuffers} from '@loaders.gl/gltf';
 import {postProcessGLTF} from '@loaders.gl/gltf';
 
 const TEST_CASES = [
@@ -40,7 +41,7 @@ const TEST_CASES = [
 
 test('gltf#postProcessGLTF', (t) => {
   for (const testCase of TEST_CASES) {
-    const json = postProcessGLTF(testCase.input);
+    const json = postProcessGLTF(testCase.input as unknown as GLTFWithBuffers);
     t.deepEqual(json, testCase.output, testCase.name);
   }
   t.end();

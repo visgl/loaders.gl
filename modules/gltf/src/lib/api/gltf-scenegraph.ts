@@ -13,7 +13,7 @@ import type {
   GLTFTexture,
   GLTFImage,
   GLTFBuffer,
-  GLTFBufferView,
+  GLTFBufferView
 } from '../types/gltf-json-schema';
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
@@ -86,7 +86,7 @@ export class GLTFScenegraph {
   getExtension<T = Extension>(extensionName: string): T | null {
     const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
-    return isExtension ? extensions[extensionName] as T : null;
+    return isExtension ? (extensions[extensionName] as T) : null;
   }
 
   getRequiredExtension<T = Extension>(extensionName: string): T | null {
@@ -276,7 +276,7 @@ export class GLTFScenegraph {
   addExtension(extensionName: string, extensionData: object = {}): object {
     assert(extensionData);
     this.json.extensions = this.json.extensions || {};
-    (this.json.extensions as Record<string, unknown>)[extensionName] = extensionData;
+    this.json.extensions[extensionName] = extensionData;
     this.registerUsedExtension(extensionName);
     return extensionData;
   }

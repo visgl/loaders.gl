@@ -1,13 +1,11 @@
-import {
-  GLTFAccessorPostprocessed,
-  GLTFImagePostprocessed,
-  GLTFMeshPrimitivePostprocessed
-} from '@loaders.gl/gltf';
+import {GLTFAccessorPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
 import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
   GLTF_EXT_feature_metadata_attribute,
   GLTF_EXT_feature_metadata_primitive
 } from '@loaders.gl/gltf';
+import {TypedArray} from '@math.gl/core';
+import {TextureImageProperties} from '../../i3s-attributes-worker';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
@@ -23,7 +21,7 @@ export function handleBatchIdsExtensions(
     [key: string]: GLTFAccessorPostprocessed;
   },
   primitive: GLTFMeshPrimitivePostprocessed,
-  images: GLTFImagePostprocessed[]
+  images: (TextureImageProperties | null)[]
 ): NumericArray {
   const extensions = primitive?.extensions;
 
@@ -62,7 +60,7 @@ function handleExtFeatureMetadataExtension(
     [key: string]: GLTFAccessorPostprocessed;
   },
   extFeatureMetadata: GLTF_EXT_feature_metadata_primitive,
-  images: GLTFImagePostprocessed[]
+  images: (TextureImageProperties | null)[]
 ): NumericArray {
   // Take only first extension object to get batchIds attribute name.
   const featureIdAttribute = extFeatureMetadata?.featureIdAttributes?.[0];
@@ -152,8 +150,8 @@ function generateImplicitFeatureIds(
  */
 function generateBatchIdsFromTexture(
   featureIdTexture: GLTF_EXT_feature_metadata_attribute,
-  textureCoordinates: Float32Array,
-  images: GLTFImagePostprocessed[]
+  textureCoordinates: TypedArray,
+  images: (TextureImageProperties | null)[]
 ) {
   if (!images?.length) {
     return [];
@@ -177,7 +175,7 @@ function generateBatchIdsFromTexture(
   const batchIds: number[] = [];
   const channels = CHANNELS_MAP[featureChannel];
 
-  if (!image.compressed) {
+  if (image && image?.width && image?.height && image?.components) {
     for (let index = 0; index < textureCoordinates.length; index += 2) {
       const u = textureCoordinates[index];
       const v = textureCoordinates[index + 1];
@@ -191,7 +189,7 @@ function generateBatchIdsFromTexture(
       batchIds.push(batchId);
     }
   } else {
-    console.warn(`Can't get batch Ids from ${image.mimeType} compressed texture`);
+    console.warn(`Can't get batch Ids from ${image?.mimeType || ''} compressed texture`);
   }
 
   return batchIds;

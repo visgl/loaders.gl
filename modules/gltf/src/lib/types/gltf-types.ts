@@ -14,18 +14,20 @@ export type GLTFWithBuffers = {
 };
 
 type GLTFExternalBuffer = {
-  arrayBuffer: ArrayBuffer,
-  byteOffset: number,
-  byteLength: number
+  arrayBuffer: ArrayBuffer;
+  byteOffset: number;
+  byteLength: number;
 };
 
-type GLTFExternalImage = ImageType | {
-  compressed: true,
-  mipmaps: false,
-  width: number,
-  height: number,
-  data: Uint8Array
-};  
+type GLTFExternalImage =
+  | ImageType
+  | {
+      compressed: true;
+      mipmaps: false;
+      width: number;
+      height: number;
+      data: Uint8Array;
+    };
 
 export type {
   GLTF,
@@ -48,7 +50,7 @@ export type {
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp,
   GLTF_EXT_feature_metadata,
-  GLTF_EXT_mesh_features,
+  GLTF_EXT_mesh_features
 } from './gltf-json-schema';
 
 export type {

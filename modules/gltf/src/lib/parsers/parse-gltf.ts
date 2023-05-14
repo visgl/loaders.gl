@@ -10,11 +10,11 @@ import {ImageLoader} from '@loaders.gl/images';
 import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 
 import {assert} from '../utils/assert';
+import {isGLB, parseGLBSync} from './parse-glb';
 import {resolveUrl} from '../gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
 import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
-import {parseGLBSync, isGLB} from './parse-glb';
 
 /**  */
 export type ParseGLTFOptions = ParseGLBOptions & {
@@ -69,11 +69,11 @@ export async function parseGLTF(
 }
 
 /**
- * 
- * @param gltf 
+ *
+ * @param gltf
  * @param data - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)
- * @param byteOffset 
- * @param options 
+ * @param byteOffset
+ * @param options
  */
 function parseGLTFContainerSync(gltf, data, byteOffset, options) {
   // Initialize gltf container

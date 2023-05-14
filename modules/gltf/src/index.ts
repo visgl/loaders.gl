@@ -17,7 +17,6 @@ export type {
   GLTFTexture,
   GLTFImage,
   GLTFObject,
-
   // The following extensions are handled by the GLTFLoader and removed from the parsed glTF (disable via options.gltf.excludeExtensions)
   GLTF_KHR_binary_glTF,
   GLTF_KHR_draco_mesh_compression,
@@ -39,8 +38,10 @@ export type {
   GLTFMeshPostprocessed,
   GLTFMeshPrimitivePostprocessed,
   GLTFImagePostprocessed,
-  GLTFTexturePostprocessed,
+  GLTFTexturePostprocessed
 } from './lib/types/gltf-postprocessed-schema';
+
+export type {GLTFWithBuffers} from './lib/types/gltf-types';
 
 // glTF loader/writer definition objects
 export {GLTFLoader} from './gltf-loader';

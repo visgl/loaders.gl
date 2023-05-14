@@ -51,7 +51,7 @@ export type GLTFAccessorSparse = {
   count: number;
   /**
    * Index array of size `count` that points to those accessor attributes that deviate from their initialization value. Indices must strictly increase.
-   */ƒ
+   */
   indices: GLTFAccessorSparseIndices;
   /**
    * Array of size `count` times number of components, storing the displaced accessor attributes pointed by `indices`. Substituted values must have the same `componentType` and number of components as the base accessor.
@@ -601,6 +601,7 @@ export type GLTFScene = {
  * Joints and matrices defining a skin.
  */
 export type GLTFSkin = {
+  id?: string;
   /**
    * The index of the accessor containing the floating-point 4x4 inverse-bind matrices.  The default is that each matrix is a 4x4 identity matrix, which implies that inverse-bind matrices were pre-applied.
    */
@@ -1238,4 +1239,3 @@ export type GLTFObject =
   | GLTFSkin
   | GLTFTexture
   | GLTFImage;
-  
