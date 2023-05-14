@@ -19,7 +19,7 @@ export async function loadRootTile(t, tilesetUrl) {
     // Load root tile
     /** @type {Tile3D} */
     // @ts-ignore
-    const sourceRootTile = tileset.root;
+    const sourceRootTile = tileset.root as Tile3D;
     await tileset._loadTile(sourceRootTile);
     return sourceRootTile;
   } catch (error) {

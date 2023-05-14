@@ -10,14 +10,28 @@ import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 import {parse3DTileGLTFViewSync, extractGLTF} from './helpers/parse-3d-tile-gltf-view';
+import {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
+import {LoaderContext} from '@loaders.gl/loader-utils';
 
-export async function parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options, context) {
+export async function parseInstancedModel3DTile(
+  tile,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options: Tiles3DLoaderOptions,
+  context: LoaderContext
+): Promise<number> {
   byteOffset = parseInstancedModel(tile, arrayBuffer, byteOffset, options, context);
   await extractGLTF(tile, tile.gltfFormat, options, context);
   return byteOffset;
 }
 
-function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
+function parseInstancedModel(
+  tile,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options: Tiles3DLoaderOptions,
+  context: LoaderContext
+): number {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
   if (tile.version !== 1) {
     throw new Error(`Instanced 3D Model version ${tile.version} is not supported`);

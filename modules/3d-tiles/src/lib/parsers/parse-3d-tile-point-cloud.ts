@@ -12,8 +12,16 @@ import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/pars
 import {normalize3DTileColorAttribute} from './helpers/normalize-3d-tile-colors';
 import {normalize3DTileNormalAttribute} from './helpers/normalize-3d-tile-normals';
 import {normalize3DTilePositionAttribute} from './helpers/normalize-3d-tile-positions';
+import {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
+import {LoaderContext} from '@loaders.gl/loader-utils';
 
-export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, options, context) {
+export async function parsePointCloud3DTile(
+  tile,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options: Tiles3DLoaderOptions,
+  context: LoaderContext
+): Promise<number> {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset);
   byteOffset = parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options);
@@ -24,13 +32,14 @@ export async function parsePointCloud3DTile(tile, arrayBuffer, byteOffset, optio
   await parseDraco(tile, featureTable, batchTable, options, context);
 
   parsePositions(tile, featureTable, options);
+  // @ts-expect-error TODO - do we need to assert on the batch table?
   parseColors(tile, featureTable, batchTable);
   parseNormals(tile, featureTable);
 
   return byteOffset;
 }
 
-function initializeTile(tile) {
+function initializeTile(tile): void {
   // Initialize point cloud tile defaults
   tile.attributes = {
     positions: null,
@@ -44,7 +53,10 @@ function initializeTile(tile) {
   tile.isOctEncoded16P = false;
 }
 
-function parsePointCloudTables(tile) {
+function parsePointCloudTables(tile): {
+  featureTable: Tile3DFeatureTable;
+  batchTable: Tile3DBatchTable | null;
+} {
   const featureTable = new Tile3DFeatureTable(tile.featureTableJson, tile.featureTableBinary);
 
   const pointsLength = featureTable.getGlobalProperty('POINTS_LENGTH');
@@ -64,7 +76,11 @@ function parsePointCloudTables(tile) {
   return {featureTable, batchTable};
 }
 
-function parsePositions(tile, featureTable, options) {
+function parsePositions(
+  tile,
+  featureTable: Tile3DFeatureTable,
+  options: Tiles3DLoaderOptions
+): void {
   if (!tile.attributes.positions) {
     if (featureTable.hasProperty('POSITION')) {
       tile.attributes.positions = featureTable.getPropertyArray('POSITION', GL.FLOAT, 3);
@@ -101,7 +117,7 @@ function parsePositions(tile, featureTable, options) {
   }
 }
 
-function parseColors(tile, featureTable, batchTable) {
+function parseColors(tile, featureTable: Tile3DFeatureTable, batchTable: Tile3DBatchTable): void {
   if (!tile.attributes.colors) {
     let colors = null;
     if (featureTable.hasProperty('RGBA')) {
@@ -122,7 +138,7 @@ function parseColors(tile, featureTable, batchTable) {
   }
 }
 
-function parseNormals(tile, featureTable) {
+function parseNormals(tile, featureTable: Tile3DFeatureTable): void {
   if (!tile.attributes.normals) {
     let normals = null;
     if (featureTable.hasProperty('NORMAL')) {
@@ -136,7 +152,7 @@ function parseNormals(tile, featureTable) {
   }
 }
 
-function parseBatchIds(tile, featureTable) {
+function parseBatchIds(tile, featureTable: Tile3DFeatureTable): Tile3DBatchTable | null {
   let batchTable: Tile3DBatchTable | null = null;
   if (!tile.batchIds && featureTable.hasProperty('BATCH_ID')) {
     tile.batchIds = featureTable.getPropertyArray('BATCH_ID', GL.UNSIGNED_SHORT, 1);
@@ -154,7 +170,13 @@ function parseBatchIds(tile, featureTable) {
 }
 
 // eslint-disable-next-line complexity
-async function parseDraco(tile, featureTable, batchTable, options, context) {
+async function parseDraco(
+  tile,
+  featureTable: Tile3DFeatureTable,
+  batchTable,
+  options: Tiles3DLoaderOptions,
+  context: LoaderContext
+) {
   let dracoBuffer;
   let dracoFeatureTableProperties;
   let dracoBatchTableProperties;
@@ -202,7 +224,12 @@ async function parseDraco(tile, featureTable, batchTable, options, context) {
 }
 
 // eslint-disable-next-line complexity, max-statements
-export async function loadDraco(tile, dracoData, options, context) {
+export async function loadDraco(
+  tile,
+  dracoData,
+  options: Tiles3DLoaderOptions,
+  context: LoaderContext
+) {
   const {parse} = context;
   const dracoOptions = {
     ...options,
