@@ -33,7 +33,7 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/i3s';
-import {NumberArray, TypedArray} from '@loaders.gl/schema';
+import {NumberArray, TypedArray} from '@loaders.gl/loader-utils';
 import {Geoid} from '@math.gl/geoid';
 /** Usage of worker here brings more overhead than advantage */
 import {

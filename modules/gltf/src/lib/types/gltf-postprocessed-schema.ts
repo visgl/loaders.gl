@@ -1,7 +1,7 @@
 // Types forked from https://github.com/bwasty/gltf-loader-ts under MIT license
 // Generated from official JSON schema using `npm run generate-type` = on 2018-02-24
 
-import type {TypedArray} from '@loaders.gl/schema';
+import type {TypedArray} from '@loaders.gl/loader-utils';
 
 export type GlTfId = number;
 
