@@ -33,7 +33,10 @@ function makeDefaultGLTFJson(): GLTF {
       version: '2.0',
       generator: 'loaders.gl'
     },
-    buffers: []
+    buffers: [],
+    extensions: {},
+    extensionsRequired: [],
+    extensionsUsed: []
   };
 }
 
@@ -50,10 +53,9 @@ export class GLTFScenegraph {
   constructor(gltf?: {json: GLTF; buffers?: any[]}) {
     // Declare locally so
 
-    // @ts-ignore
-    this.gltf = gltf || {
-      json: makeDefaultGLTFJson(),
-      buffers: []
+    this.gltf = {
+      json: gltf?.json || makeDefaultGLTFJson(),
+      buffers: gltf?.buffers || []
     };
     this.sourceBuffers = [];
     this.byteLength = 0;
@@ -255,19 +257,24 @@ export class GLTFScenegraph {
     return this;
   }
 
-  setObjectExtension(object: object, extensionName: string, data: object): void {
-    // @ts-ignore
+  setObjectExtension(object: any, extensionName: string, data: object): void {
     const extensions = object.extensions || {};
     extensions[extensionName] = data;
     // TODO - add to usedExtensions...
   }
 
-  removeObjectExtension(object: object, extensionName: string): object {
-    // @ts-ignore
-    const extensions = object.extensions || {};
-    const extension = extensions[extensionName];
+  removeObjectExtension(object: any, extensionName: string): void {
+    const extensions = object?.extensions || {};
+
+    if (extensions[extensionName]) {
+      this.json.extensionsRemoved = this.json.extensionsRemoved || [];
+      const extensionsRemoved = this.json.extensionsRemoved as string[];
+      if (!extensionsRemoved.includes(extensionName)) {
+        extensionsRemoved.push(extensionName);
+      }
+    }
+
     delete extensions[extensionName];
-    return extension;
   }
 
   /**
@@ -316,24 +323,21 @@ export class GLTFScenegraph {
    * Removes an extension from the top-level list
    */
   removeExtension(extensionName: string): void {
-    if (!this.getExtension(extensionName)) {
-      return;
+    if (this.json.extensions?.[extensionName]) {
+      this.json.extensionsRemoved = this.json.extensionsRemoved || [];
+      const extensionsRemoved = this.json.extensionsRemoved as string[];
+      if (!extensionsRemoved.includes(extensionName)) {
+        extensionsRemoved.push(extensionName);
+      }
+    }
+    if (this.json.extensions) {
+      delete this.json.extensions[extensionName];
     }
     if (this.json.extensionsRequired) {
       this._removeStringFromArray(this.json.extensionsRequired, extensionName);
     }
     if (this.json.extensionsUsed) {
       this._removeStringFromArray(this.json.extensionsUsed, extensionName);
-    }
-    if (this.json.extensions) {
-      delete this.json.extensions[extensionName];
-    }
-    if (!Array.isArray(this.json.extensionsRemoved)) {
-      this.json.extensionsRemoved = [];
-    }
-    const extensionsRemoved = this.json.extensionsRemoved as string[];
-    if (!extensionsRemoved.includes(extensionName)) {
-      extensionsRemoved.push(extensionName);
     }
   }
 

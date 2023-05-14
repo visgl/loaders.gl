@@ -28,8 +28,8 @@ export function preprocess(gltfData: {json: GLTF}, options: GLTFLoaderOptions): 
     if (extension) {
       // TODO - if multiple texture extensions are present which one wins?
       texture.source = extension.source;
+      scene.removeObjectExtension(texture, KHR_TEXTURE_BASISU);
     }
-    scene.removeObjectExtension(texture, KHR_TEXTURE_BASISU);
   }
 
   // Remove the top-level extension

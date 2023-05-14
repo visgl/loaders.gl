@@ -128,7 +128,7 @@ async function decompressPrimitive(
   }
 
   // Extension has been processed, delete it
-  // delete primitive.extensions[KHR_DRACO_MESH_COMPRESSION];
+  scenegraph.removeObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
 
   checkPrimitive(primitive);
 }

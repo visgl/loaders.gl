@@ -1,8 +1,8 @@
 import {ExcelLoader} from '@loaders.gl/excel';
 import {load} from '@loaders.gl/core';
 
-const ZIPCODES_XLSX_PATH = `@loaders.gl/excel/test/data/zipcodes.xlsx`;
-const ZIPCODES_XLSB_PATH = `@loaders.gl/excel/test/data/zipcodes.xlsb`;
+const ZIPCODES_XLSX_PATH = '@loaders.gl/excel/test/data/zipcodes.xlsx';
+const ZIPCODES_XLSB_PATH = '@loaders.gl/excel/test/data/zipcodes.xlsb';
 
 export default async function excelLoaderBench(suite) {
   suite.group('ExcelLoader');
