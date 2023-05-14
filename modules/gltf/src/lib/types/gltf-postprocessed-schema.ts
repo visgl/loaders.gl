@@ -1,7 +1,7 @@
 // Types forked from https://github.com/bwasty/gltf-loader-ts under MIT license
 // Generated from official JSON schema using `npm run generate-type` = on 2018-02-24
 
-import type {TypedArray} from "@loaders.gl/schema";
+import type {TypedArray} from '@loaders.gl/schema';
 
 export type GlTfId = number;
 
@@ -29,7 +29,7 @@ export type AccessorSparseIndices = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Array of size `accessor.sparse.count` times number of components storing the displaced accessor attributes pointed by `accessor.sparse.indices`.
@@ -49,7 +49,7 @@ export type AccessorSparseValues = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Sparse storage of attributes that deviate from their initialization value.
@@ -73,7 +73,7 @@ export type AccessorSparse = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A typed view into a bufferView.  A bufferView contains raw binary data.  An accessor provides a typed view into a bufferView or a subset of a bufferView similar to how WebGL's `vertexAttribPointer()` defines an attribute in a buffer.
@@ -126,7 +126,7 @@ export type GLTFAccessorPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * The index of the node and TRS property that an animation channel targets.
@@ -146,7 +146,7 @@ export type AnimationChannelTarget = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Targets an animation's sampler at a node's property.
@@ -166,7 +166,7 @@ export type AnimationChannel = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
@@ -190,7 +190,7 @@ export type AnimationSampler = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A keyframe animation.
@@ -207,7 +207,7 @@ export type GLTFAnimationPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Metadata about the glTF asset.
@@ -235,7 +235,7 @@ export type Asset = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A buffer points to binary geometry, animation, or skins.
@@ -244,7 +244,7 @@ export type GLTFBufferPostprocessed = {
   id?: string;
   arrayBuffer: ArrayBuffer;
   byteOffset: number;
-  
+
   // GLTF attributes (possibly overridden)
   /** The length of the buffer in bytes. */
   byteLength: number;
@@ -255,7 +255,7 @@ export type GLTFBufferPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A view into a buffer generally representing a subset of the buffer.
@@ -283,13 +283,13 @@ export type GLTFBufferViewPostprocessed = {
   byteStride?: number;
   /**
    * The target that the GPU buffer should be bound to.
-   */ 
+   */
   target?: 34962 | 34963 | number;
   name?: any;
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * An orthographic camera containing properties to create an orthographic projection matrix.
@@ -317,7 +317,7 @@ export type CameraOrthographic = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A perspective camera containing properties to create a perspective projection matrix.
@@ -345,7 +345,7 @@ export type CameraPerspective = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A camera's projection.  A node can reference a camera to apply a transform to place the camera in the scene.
@@ -368,18 +368,25 @@ export type GLTFCameraPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
- * GLTFImagePostprocessed data used to create a texture. 
- * GLTFImagePostprocessed can be referenced by URI or `bufferView` index. 
+ * GLTFImagePostprocessed data used to create a texture.
+ * GLTFImagePostprocessed can be referenced by URI or `bufferView` index.
  * `mimeType` is required in the latter case.
  * @todo GLTF image postprocessing
  */
 export type GLTFImagePostprocessed = {
   id: string;
   // TODO - extend
-  image: { data: Uint8Array; compressed?: boolean; height?: number; width?: number; components?: number; mimeType?: string; };
+  image: {
+    data: Uint8Array;
+    compressed?: boolean;
+    height?: number;
+    width?: number;
+    components?: number;
+    mimeType?: string;
+  };
 
   compressed?: boolean;
 
@@ -400,14 +407,14 @@ export type GLTFImagePostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Reference to a texture.
  */
 export type GLTFTextureInfoPostprocessed = {
   id: string;
-  texture: unknown;
+  texture: GLTFTexturePostprocessed;
 
   // GLTF attributes (possibly overridden)
   /**
@@ -421,7 +428,7 @@ export type GLTFTextureInfoPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
@@ -453,7 +460,7 @@ export type MaterialPbrMetallicRoughnessPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 export type MaterialNormalTextureInfoPostprocessed = {
   id: string;
@@ -469,7 +476,7 @@ export type MaterialNormalTextureInfoPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 export type MaterialOcclusionTextureInfoPostprocessed = {
   id: string;
@@ -485,7 +492,7 @@ export type MaterialOcclusionTextureInfoPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * The material appearance of a primitive.
@@ -530,13 +537,12 @@ export type GLTFMaterialPostprocessed = {
    */
   doubleSided?: boolean;
   // [k: string]: any;
-}
+};
 
 /**
  * Geometry to be rendered with the given material.
  */
 export type GLTFMeshPrimitivePostprocessed = {
-
   // GLTF attributes (possibly overridden)
   /**
    * A dictionary object, where each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
@@ -563,7 +569,7 @@ export type GLTFMeshPrimitivePostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A set of primitives to be rendered.  A node can contain one mesh.  A node's transform places the mesh in the scene.
@@ -582,7 +588,7 @@ export type GLTFMeshPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A node in the node hierarchy.  When the node contains `skin`, all `mesh.primitives` must contain `JOINTS_0` and `WEIGHTS_0` attributes.  A node can have either a `matrix` or any combination of `translation`/`rotation`/`scale` (TRS) properties. TRS properties are converted to matrices and postmultiplied in the `T * R * S` order to compose the transformation matrix; first the scale is applied to the vertices, then the rotation, and then the translation. If none are provided, the transform is the identity. When a node is targeted for animation (referenced by an animation.channel.target), only TRS properties may be present; `matrix` will not be present.
@@ -631,7 +637,7 @@ export type GLTFNodePostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * GLTFTexturePostprocessed sampler properties for filtering and wrapping modes.
@@ -654,7 +660,7 @@ export type GLTFSamplerPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * The root nodes of a scene.
@@ -669,7 +675,7 @@ export type GLTFScenePostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Joints and matrices defining a skin.
@@ -694,7 +700,7 @@ export type GLTFSkinPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A texture and its sampler.
@@ -715,7 +721,7 @@ export type GLTFTexturePostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * The root object for a glTF asset.
@@ -763,4 +769,4 @@ export type GLTFPostprocessed = {
   extensions?: any;
   extras?: any;
   // [k: string]: any;
-}
+};

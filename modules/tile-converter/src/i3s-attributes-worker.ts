@@ -1,7 +1,7 @@
 import type {WorkerObject} from '@loaders.gl/worker-utils';
 import type {ConvertedAttributes} from './i3s-converter/types';
 import type {Matrix4, Vector3} from '@math.gl/core';
-import type {GLTFImagePostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
+import type {GLTFNodePostprocessed} from '@loaders.gl/gltf';
 
 import {processOnWorker} from '@loaders.gl/worker-utils';
 
@@ -16,10 +16,20 @@ export type I3SAttributesWorkerOptions = {
   source: string;
 };
 
+
+export type TextureImageProperties = {
+  data: Uint8Array;
+  compressed?: boolean;
+  height?: number;
+  width?: number;
+  components?: number;
+  mimeType?: string;
+};
+
 export type B3DMAttributesData = {
   gltfMaterials?: {id: string}[];
   nodes: GLTFNodePostprocessed[];
-  images: GLTFImagePostprocessed[];
+  images: (null | TextureImageProperties)[];
   cartographicOrigin: Vector3;
   cartesianModelMatrix: Matrix4;
 };

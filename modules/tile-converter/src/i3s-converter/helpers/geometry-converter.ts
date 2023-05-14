@@ -4,7 +4,6 @@ import type {
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
-  GLTFImagePostprocessed,
   GLTFMeshPrimitivePostprocessed,
   GLTFMeshPostprocessed,
   GLTFTexturePostprocessed
@@ -33,10 +32,11 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/i3s';
-import {TypedArray} from '@loaders.gl/schema';
+import {NumberArray, TypedArray} from '@loaders.gl/schema';
 import {Geoid} from '@math.gl/geoid';
 /** Usage of worker here brings more overhead than advantage */
-import {B3DMAttributesData /*, transformI3SAttributesOnWorker*/} from '../../i3s-attributes-worker';
+import {B3DMAttributesData, /*, transformI3SAttributesOnWorker*/
+TextureImageProperties} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
@@ -375,7 +375,7 @@ export async function convertAttributes(
  */
 function convertNodes(
   nodes: GLTFNodePostprocessed[],
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -441,7 +441,7 @@ function getCompositeTransformationMatrix(node: GLTFNodePostprocessed, matrix: M
  */
 function convertNode(
   node: GLTFNodePostprocessed,
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -492,7 +492,7 @@ function convertNode(
  */
 function convertMesh(
   mesh: GLTFMeshPostprocessed,
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -503,9 +503,9 @@ function convertMesh(
     let outputAttributes: ConvertedAttributes | null | undefined = null;
     let materialUvRegion: Uint16Array | undefined;
     if (primitive.material) {
-      outputAttributes = attributesMap.get(primitive.material.uniqueId);
+      outputAttributes = attributesMap.get(primitive.material.id);
       materialUvRegion = outputAttributes?.mergedMaterials.find(
-        ({originalMaterialId}) => originalMaterialId === primitive.material?.uniqueId
+        ({originalMaterialId}) => originalMaterialId === primitive.material?.id
       )?.uvRegion;
     } else if (attributesMap.has('default')) {
       outputAttributes = attributesMap.get('default');
@@ -570,7 +570,8 @@ function convertMesh(
  * @returns indices of vertices of the independent triangles
  */
 function getIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
-  let indices: TypedArray = primitive.indices?.value;
+  let indices: TypedArray | undefined = primitive.indices?.value;
+  assert(indices !== undefined, 'Non-indexed mesh primitives are not supported');
   if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
     /*
     TRIANGLE_STRIP geometry contains n+2 vertices for n triangles;
@@ -599,7 +600,7 @@ function getIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
     }
     indices = newIndices;
   }
-  return indices;
+  return indices as TypedArray;
 }
 
 /**
@@ -615,7 +616,7 @@ function getIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
  * @returns
  */
 function transformVertexArray(args: {
-  vertices: Float32Array;
+  vertices: TypedArray;
   cartographicOrigin: number[];
   cartesianModelMatrix: number[];
   nodeMatrix: Matrix4;
@@ -698,7 +699,7 @@ function transformVertexNormals(vertexVector, calleeArgs): number[] {
  * @param indices - gltf primitive indices
  * @returns flattened texture coordinates
  */
-function flattenTexCoords(texCoords: Float32Array, indices: TypedArray): Float32Array {
+function flattenTexCoords(texCoords: TypedArray, indices: TypedArray): Float32Array {
   const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
   if (!texCoords) {
     // We need dummy UV0s because it is required in 1.6
@@ -765,7 +766,7 @@ function createUvRegion(materialUvRegion: Uint16Array, indices: TypedArray): Uin
  * @param indices - gltf primitive indices
  * @returns flattened batch ids
  */
-function flattenBatchIds(batchedIds: number[], indices: TypedArray): number[] {
+function flattenBatchIds(batchedIds: NumberArray, indices: TypedArray): number[] {
   if (!batchedIds.length || !indices.length) {
     return [];
   }
@@ -788,9 +789,9 @@ function getBatchIds(
     [key: string]: GLTFAccessorPostprocessed;
   },
   primitive: GLTFMeshPrimitivePostprocessed,
-  images: GLTFImagePostprocessed[]
-): number[] {
-  const batchIds: number[] = handleBatchIdsExtensions(attributes, primitive, images);
+  images: (TextureImageProperties | null)[]
+): NumberArray {
+  const batchIds: NumberArray = handleBatchIdsExtensions(attributes, primitive, images);
 
   if (batchIds.length) {
     return batchIds;
@@ -978,9 +979,8 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
     };
   }
 
-  const uniqueId = uuidv4();
-  sourceMaterial.uniqueId = uniqueId;
-  let mergedMaterials: MergedMaterial[] = [{originalMaterialId: uniqueId}];
+  sourceMaterial.id = Number.isFinite(sourceMaterial.id) ? sourceMaterial.id : uuidv4();
+  let mergedMaterials: MergedMaterial[] = [{originalMaterialId: sourceMaterial.id}];
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
@@ -1166,7 +1166,7 @@ function extractSharedResourcesTextureInfo(
         // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/image.cmn.md
         id: generateImageId(texture, nodeId),
         size: texture.source?.image.width,
-        length: [texture.source?.image.data.length]
+        length: texture.source?.image.data.length ? [texture.source?.image.data.length] : undefined
       }
     ]
   };
@@ -1180,7 +1180,10 @@ function extractSharedResourcesTextureInfo(
  * @returns calculate image ID according to the spec
  */
 function generateImageId(texture: GLTFTexturePostprocessed, nodeId: number) {
-  const {width, height} = texture.source?.image;
+  const {width, height} = texture.source?.image || {};
+  if (!width || !height) {
+    return '';
+  }
   const levelCountOfTexture = 1;
   const indexOfLevel = 0;
   const indexOfTextureInStore = nodeId + 1;
@@ -1431,7 +1434,7 @@ async function generateCompressedGeometry(
   convertedAttributes: Record<string, any>,
   attributes: Record<string, any>,
   dracoWorkerSoure: string
-): Promise<Record<string, any>> {
+): Promise<ArrayBuffer> {
   const {positions, normals, texCoords, colors, uvRegions, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
 

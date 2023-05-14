@@ -1,5 +1,8 @@
 import type {B3DMContent} from '@loaders.gl/3d-tiles';
-import type {GLTFAccessorPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
+import type {
+  GLTFAccessorPostprocessed,
+  GLTFNodePostprocessed
+} from '@loaders.gl/gltf';
 import type {B3DMAttributesData} from '../../i3s-attributes-worker';
 
 type AttributesObject = {
@@ -38,10 +41,7 @@ export function prepareDataForAttributesConversion(tileContent: B3DMContent): B3
     tileContent.gltf?.images?.map((imageObject) => {
       // Need data only for uncompressed images because we can't get batchIds from compressed textures.
       if (imageObject?.image?.compressed) {
-        return {
-          data: null,
-          compressed: true
-        };
+        return null;
       } else {
         const data = imageObject?.image?.data;
         const dataCopy = new Uint8Array(data.length);
