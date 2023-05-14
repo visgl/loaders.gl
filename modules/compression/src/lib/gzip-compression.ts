@@ -1,23 +1,99 @@
-// GZIP
-// import {isBrowser} from '@loaders.gl/loader-utils';
+// loaders.gl, MIT license
+import {promisify1} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
-import {DeflateCompression} from './deflate-compression';
-import pako from 'pako'; // https://bundlephobia.com/package/pako
+import {Compression} from './compression';
+import type {GzipOptions, AsyncGzipOptions} from 'fflate';
+import {gzip, gunzip, gzipSync, gunzipSync, Gzip, Gunzip} from 'fflate'; // https://bundlephobia.com/package/pako
 
 export type GZipCompressionOptions = CompressionOptions & {
-  gzip?: pako.InflateOptions & pako.DeflateOptions;
+  gzip?: GzipOptions | AsyncGzipOptions;
 };
 
 /**
  * GZIP compression / decompression
  */
-export class GZipCompression extends DeflateCompression {
+export class GZipCompression extends Compression {
   readonly name: string = 'gzip';
   readonly extensions = ['gz', 'gzip'];
   readonly contentEncodings = ['gzip', 'x-gzip'];
   readonly isSupported = true;
 
-  constructor(options?: GZipCompressionOptions) {
-    super({...options, deflate: {...options?.gzip, gzip: true}});
+  readonly options: GZipCompressionOptions;
+  private _chunks: ArrayBuffer[] = [];
+
+  constructor(options: GZipCompressionOptions = {}) {
+    super({...options});
+    this.options = options;
+  }
+
+  async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
+    // const options = this.options?.gzip || {};
+    const inputArray = new Uint8Array(input);
+    const outputArray = await promisify1(gzip)(inputArray); // options - overload pick
+    return outputArray.buffer;
+  }
+
+  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
+    // const options = this.options?.gzip || {};
+    const inputArray = new Uint8Array(input);
+    const outputArray = await promisify1(gunzip)(inputArray); // options - overload pick
+    return outputArray.buffer;
+  }
+
+  compressSync(input: ArrayBuffer): ArrayBuffer {
+    const options = this.options?.gzip || {};
+    const inputArray = new Uint8Array(input);
+    return gzipSync(inputArray, options).buffer;
+  }
+
+  decompressSync(input: ArrayBuffer): ArrayBuffer {
+    // const options = this.options?.gzip || {};
+    const inputArray = new Uint8Array(input);
+    return gunzipSync(inputArray).buffer;
+  }
+
+  async *compressBatches(
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+  ): AsyncIterable<ArrayBuffer> {
+    const options = this.options?.gzip || {};
+    const streamProcessor = new Gzip(options);
+    streamProcessor.ondata = this._onData.bind(this);
+    yield* this.transformBatches(streamProcessor, asyncIterator);
+  }
+
+  async *decompressBatches(
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+  ): AsyncIterable<ArrayBuffer> {
+    const streamProcessor = new Gunzip();
+    streamProcessor.ondata = this._onData.bind(this);
+    yield* this.transformBatches(streamProcessor, asyncIterator);
+  }
+
+  protected async *transformBatches(
+    streamProcessor: Gzip | Gunzip,
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+  ): AsyncIterable<ArrayBuffer> {
+    for await (const chunk of asyncIterator) {
+      const uint8Array = new Uint8Array(chunk);
+      streamProcessor.push(uint8Array, false); // false -> not last chunk
+      const chunks = this._getChunks();
+      yield* chunks;
+    }
+
+    // End
+    const emptyChunk = new Uint8Array(0);
+    streamProcessor.push(emptyChunk, true); // true -> last chunk
+    const chunks = this._getChunks();
+    yield* chunks;
+  }
+
+  _onData(data: Uint8Array, final: boolean): void {
+    this._chunks.push(data);
+  }
+
+  _getChunks(): ArrayBuffer[] {
+    const chunks = this._chunks;
+    this._chunks = [];
+    return chunks;
   }
 }

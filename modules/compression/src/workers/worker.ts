@@ -18,6 +18,9 @@ import lz4js from 'lz4js';
 // import lzo from 'lzo';
 // import {ZstdCodec} from 'zstd-codec';
 
+// globalThis.Worker = globalThis.Worker || {};
+// globalThis.Blob = globalThis.Blob || {};
+
 // Inject large dependencies through Compression constructor options
 const modules = {
   // brotli has problems with decompress in browsers
