@@ -30,6 +30,7 @@ const TEST_CASES = [
     gpuMemoryUsageInBytes: 0
   }
 ];
+
 test('3D Tiles#computes tile GPU memory usage', async (t) => {
   for (const {url, type, gpuMemoryUsageInBytes} of TEST_CASES) {
     const tilesetJson = await load(url, Tiles3DLoader);
