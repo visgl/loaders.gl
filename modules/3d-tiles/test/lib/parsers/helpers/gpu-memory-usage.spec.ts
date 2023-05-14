@@ -2,12 +2,13 @@
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
-import {GLTFLoader, _getMemoryUsageGLTF} from '@loaders.gl/gltf';
+import {GLTFLoader, _getMemoryUsageGLTF, postProcessGLTF} from '@loaders.gl/gltf';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 const GLB_URL = '@loaders.gl/3d-tiles/test/data/143.glb';
 test('3D Tiles#getMemoryUsageGLTF', async (t) => {
-  const data = await load(GLB_URL, GLTFLoader);
+  const gltfWithBuffers = await load(GLB_URL, GLTFLoader);
+  const data = postProcessGLTF(gltfWithBuffers);
   t.ok(data, 'GLTFLoader returned parsed data');
   t.equal(_getMemoryUsageGLTF(data), 2884442, 'GLTF memory usage computed');
   t.end();
