@@ -4,11 +4,11 @@ Streaming loader for comma-separated value and [delimiter-separated value](https
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
+| File Format    | [CSV](/docs/modules/csv/formats/csv)                |
+| Data Format    | [Tables](/docs/specifications/category-table)       |
+| File Type      | Text                                                 |
 | File Extension | `.csv`, `.tsv`, `.dsv`                               |
 | MIME Types     | `text/csv`, `text/tab-separated-values`, `text/dsv`  |
-| File Type      | Text                                                 |
-| File Format    | [RFC4180](https://tools.ietf.org/html/rfc4180)       |
-| Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
 
 ## Usage

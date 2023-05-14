@@ -19,6 +19,7 @@ import type {
 } from '../types/gltf-json-schema';
 
 import type {
+  GLTFPostprocessed,
   GLTFAccessorPostprocessed,
   GLTFBufferPostprocessed,
   GLTFBufferViewPostprocessed,
@@ -31,7 +32,6 @@ import type {
   GLTFScenePostprocessed,
   GLTFSkinPostprocessed,
   GLTFTexturePostprocessed,
-  GLTFPostprocessed,
   GLTFMeshPrimitivePostprocessed
 } from '../types/gltf-postprocessed-schema';
 
@@ -260,7 +260,7 @@ class GLTFPostProcessor {
     const node: GLTFNodePostprocessed = {
       ...gltfNode,
       // @ts-expect-error id could already be present, glTF standard does not prevent it
-      id: gltfNode.id || `node-${index}`,
+      id: gltfNode.id || `node-${index}`
     };
     if (gltfNode.children) {
       node.children = gltfNode.children.map((child) => this.getNode(child));
@@ -301,7 +301,7 @@ class GLTFPostProcessor {
 
     return {
       ...gltfSkin,
-      id: gltfSkin['id'] || `skin-${index}`,
+      id: gltfSkin.id || `skin-${index}`,
       inverseBindMatrices
     };
   }
@@ -538,6 +538,9 @@ class GLTFPostProcessor {
   }
 }
 
-export function postProcessGLTF(gltf: GLTFWithBuffers, options?: ParseGLTFOptions) {
+export function postProcessGLTF(
+  gltf: GLTFWithBuffers,
+  options?: ParseGLTFOptions
+): GLTFPostprocessed {
   return new GLTFPostProcessor().postProcess(gltf, options);
 }

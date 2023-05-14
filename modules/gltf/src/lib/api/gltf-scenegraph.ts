@@ -13,7 +13,7 @@ import type {
   GLTFTexture,
   GLTFImage,
   GLTFBuffer,
-  GLTFBufferView,
+  GLTFBufferView
 } from '../types/gltf-json-schema';
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
@@ -25,15 +25,18 @@ import {
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
 
-const DEFAULT_GLTF_JSON: GLTF = {
-  asset: {
-    version: '2.0',
-    generator: 'loaders.gl'
-  },
-  buffers: []
-};
-
 type Extension = {[key: string]: any};
+
+function makeDefaultGLTFJson(): GLTF {
+  return {
+    asset: {
+      version: '2.0',
+      generator: 'loaders.gl'
+    },
+    buffers: []
+  };
+}
+
 /**
  * Class for structured access to GLTF data
  */
@@ -43,10 +46,13 @@ export class GLTFScenegraph {
   sourceBuffers: any[];
   byteLength: number;
 
+  // TODO - why is this not GLTFWithBuffers - what happens to images?
   constructor(gltf?: {json: GLTF; buffers?: any[]}) {
+    // Declare locally so
+
     // @ts-ignore
     this.gltf = gltf || {
-      json: {...DEFAULT_GLTF_JSON},
+      json: makeDefaultGLTFJson(),
       buffers: []
     };
     this.sourceBuffers = [];
@@ -80,7 +86,7 @@ export class GLTFScenegraph {
   getExtension<T = Extension>(extensionName: string): T | null {
     const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
-    return isExtension ? extensions[extensionName] as T : null;
+    return isExtension ? (extensions[extensionName] as T) : null;
   }
 
   getRequiredExtension<T = Extension>(extensionName: string): T | null {
@@ -270,7 +276,7 @@ export class GLTFScenegraph {
   addExtension(extensionName: string, extensionData: object = {}): object {
     assert(extensionData);
     this.json.extensions = this.json.extensions || {};
-    (this.json.extensions as Record<string, unknown>)[extensionName] = extensionData;
+    this.json.extensions[extensionName] = extensionData;
     this.registerUsedExtension(extensionName);
     return extensionData;
   }

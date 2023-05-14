@@ -1,4 +1,29 @@
-# glTF Extensions
+# glTF - gl Transfer Format
+
+- *[`@loaders.gl/gltf`](/docs/modules/gltf)*
+- *[glTF specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)*
+- *[Wikipedia article](https://en.wikipedia.org/wiki/GlTF)*
+
+glTF is a standard file format for three-dimensional scenes and models, intended to be a streamlined, interoperable format for the delivery of 3D assets, while minimizing file size and runtime processing by apps. Sometimes described as the "JPEG of 3D."
+
+An open standard developed and maintained by the Khronos Group, it supports 3D model geometry, appearance, scene graph hierarchy, and animation. 
+
+## Variants
+
+A glTF file uses one of two possible file extensions: .gltf (JSON/ASCII) or .glb (binary). Both .gltf and .glb files may reference external binary and texture resources. Alternatively, both formats may be self-contained by directly embedding binary data buffers (as base64-encoded strings in .gltf files or as raw byte arrays in .glb files).
+
+## Version History
+
+### glTF 2.0
+
+-GLB was incorporated directly into glTF 2.0.
+
+### glTF 1.0 
+
+- GLB was introduced as an extension.
+
+
+## glTF Extensions
 
 glTF extensions can be present in glTF files, and will be present in the parsed JSON. glTF extensions can supported by applications by inspecting the `extensions` fields inside glTF objects, and it is up to each application to handle or ignore them.
 
@@ -6,14 +31,14 @@ loaders.gl aims to provide support for glTF extensions that can be handled compl
 
 Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
-| Extension                                               | Preprocessed | Description                                |
-| ------------------------------------------------------- | ------------ | ------------------------------------------ |
+| Extension                                                | Preprocessed | Description                                |
+| -------------------------------------------------------- | ------------ | ------------------------------------------ |
 | [KHR_draco_mesh_compression][KHR_draco_mesh_compression] | Y            | Decompresses draco-compressed geometries   |
 | [EXT_meshopt_compression][EXT_meshopt_compression])      | Y            | Decompresses meshopt-compressed geometries |
 | [KHR_texture_basisu][KHR_texture_basisu])                | Y            |
-| [KHR_texture_webp][KHR_texture_webp])                  | Y            |
+| [KHR_texture_webp][KHR_texture_webp])                    | Y            |
 | [KHR_lights_punctual][KHR_lights_punctual])              | Y\*          | Deprecated                                 |
-| [KHR_materials_unlit][KHR_materials_unlit])              | Y\*             | Deprecated                                 |
+| [KHR_materials_unlit][KHR_materials_unlit])              | Y\*          | Deprecated                                 |
 
 ## Official Extensions
 

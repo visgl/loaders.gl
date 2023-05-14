@@ -1,6 +1,7 @@
 import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {
   GLTF_EXT_feature_metadata,
+  GLTF_EXT_mesh_features,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
@@ -35,8 +36,10 @@ import {
 import {NumberArray, TypedArray} from '@loaders.gl/schema';
 import {Geoid} from '@math.gl/geoid';
 /** Usage of worker here brings more overhead than advantage */
-import {B3DMAttributesData, /*, transformI3SAttributesOnWorker*/
-TextureImageProperties} from '../../i3s-attributes-worker';
+import {
+  B3DMAttributesData /*, transformI3SAttributesOnWorker*/,
+  TextureImageProperties
+} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
@@ -1227,7 +1230,11 @@ function makeFeatureIdsUnique(
  * @param featuresHashArray
  * @returns
  */
-function getFeaturesReplaceMap(featureIds: any[], batchTable: object, featuresHashArray: any[]): Record<string, any>  {
+function getFeaturesReplaceMap(
+  featureIds: any[],
+  batchTable: object,
+  featuresHashArray: any[]
+): Record<string, any> {
   const featureMap: Record<string, any> = {};
 
   for (let index = 0; index < featureIds.length; index++) {
@@ -1260,7 +1267,11 @@ function generateStringFromBatchTableByIndex(batchTable: object, index: number):
  * @param featuresHashArray
  * @returns
  */
-function getOrCreateUniqueFeatureId(index: number, batchTable: object, featuresHashArray: any[]): number {
+function getOrCreateUniqueFeatureId(
+  index: number,
+  batchTable: object,
+  featuresHashArray: any[]
+): number {
   const batchTableStr = generateStringFromBatchTableByIndex(batchTable, index);
   const hash = md5(batchTableStr);
 
@@ -1498,7 +1509,10 @@ async function generateCompressedGeometry(
  * @param faceRange
  * @returns
  */
-function generateFeatureIndexAttribute(featureIndex: Uint32Array, faceRange: Uint32Array): Uint32Array {
+function generateFeatureIndexAttribute(
+  featureIndex: Uint32Array,
+  faceRange: Uint32Array
+): Uint32Array {
   const orderedFeatureIndices = new Uint32Array(featureIndex.length);
   let fillIndex = 0;
   let startIndex = 0;
@@ -1536,7 +1550,7 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
       return null;
     }
     case EXT_FEATURE_METADATA: {
-      return getPropertyTableFromExtFeatureMetadata(extension);
+      return getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata);
     }
     default:
       return null;
@@ -1547,7 +1561,9 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
  * Check extensions which can be with property table inside.
  * @param sourceTile
  */
-function getPropertyTableExtension(tileContent: B3DMContent) {
+function getPropertyTableExtension(
+  tileContent: B3DMContent
+): GLTF_EXT_feature_metadata | GLTF_EXT_mesh_features {
   const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 

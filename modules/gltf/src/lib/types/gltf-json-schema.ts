@@ -51,7 +51,7 @@ export type GLTFAccessorSparse = {
   count: number;
   /**
    * Index array of size `count` that points to those accessor attributes that deviate from their initialization value. Indices must strictly increase.
-   */ƒ
+   */ ƒ;
   indices: GLTFAccessorSparseIndices;
   /**
    * Array of size `count` times number of components, storing the displaced accessor attributes pointed by `indices`. Substituted values must have the same `componentType` and number of components as the base accessor.
@@ -601,6 +601,7 @@ export type GLTFScene = {
  * Joints and matrices defining a skin.
  */
 export type GLTFSkin = {
+  id?: string;
   /**
    * The index of the accessor containing the floating-point 4x4 inverse-bind matrices.  The default is that each matrix is a 4x4 identity matrix, which implies that inverse-bind matrices were pre-applied.
    */
@@ -776,6 +777,24 @@ export type GLTF_EXT_texture_webp = {
 export type GLTF_MSFT_texture_dds = {
   source: GLTFId;
   extras?: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
+ * @todo belom88 complete typings
+ */
+export type GLTF_EXT_mesh_features = {
+  featureIds: {
+    featureCount: number;
+    nullFeatureId: number;
+    label: string;
+    attribute: any;
+    texture: any;
+    propertyTable: number;
+  }[];
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
 };
 
 /**
@@ -1206,3 +1225,17 @@ type ExtFeatureMetadataTexture = {
   /** The index of the texture. */
   index: number;
 };
+
+export type GLTFObject =
+  | GLTFAccessor
+  | GLTFBuffer
+  | GLTFBufferView
+  | GLTFMeshPrimitive
+  | GLTFMesh
+  | GLTFNode
+  | GLTFMaterial
+  | GLTFSampler
+  | GLTFScene
+  | GLTFSkin
+  | GLTFTexture
+  | GLTFImage;

@@ -2,14 +2,16 @@
 import test from 'tape-promise/tape';
 
 import {parse, fetchFile} from '@loaders.gl/core';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/meshopt/BoxTextured_meshopt.glb';
 
 test('GLTFLoader#KHR_texture_transform', async (t) => {
   const response = await fetchFile(GLTF_BINARY_URL);
   const data = await response.arrayBuffer();
-  const gltf = await parse(data, GLTFLoader);
+  const gltfWithBuffers = await parse(data, GLTFLoader);
+  const gltf = postProcessGLTF(gltfWithBuffers);
+
   t.equals(gltf.bufferViews[3].byteLength, 192, 'Has correct bufferView byte length');
   t.equals(
     gltf.accessors[2].componentType,

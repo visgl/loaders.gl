@@ -731,42 +731,40 @@ export type GLTFPostprocessed = {
 
   // GLTF attributes (possibly overridden)
   /** Names of glTF extensions used somewhere in this asset. */
-  extensionsUsed?: string[];
+  extensionsUsed: string[];
   /** Names of glTF extensions required to properly load this asset. */
-  extensionsRequired?: string[];
+  extensionsRequired: string[];
   /** An array of accessors. */
-  accessors?: GLTFAccessorPostprocessed[];
+  accessors: GLTFAccessorPostprocessed[];
   /** An array of keyframe animations. */
-  animations?: GLTFAnimationPostprocessed[];
+  animations: GLTFAnimationPostprocessed[];
   /** Metadata about the glTF asset. */
   asset: Asset;
   /** An array of buffers. */
-  buffers?: GLTFBufferPostprocessed[];
+  buffers: GLTFBufferPostprocessed[];
   /** An array of bufferViews. */
-  bufferViews?: GLTFBufferViewPostprocessed[];
+  bufferViews: GLTFBufferViewPostprocessed[];
   /** An array of cameras. */
-  cameras?: GLTFCameraPostprocessed[];
+  cameras: GLTFCameraPostprocessed[];
   /** An array of images. */
-  images?: GLTFImagePostprocessed[];
+  images: GLTFImagePostprocessed[];
   /** An array of materials. */
-  materials?: GLTFMaterialPostprocessed[];
+  materials: GLTFMaterialPostprocessed[];
   /** An array of meshes. */
   meshes: GLTFMeshPostprocessed[];
   /** An array of nodes. */
-  nodes?: GLTFNodePostprocessed[];
+  nodes: GLTFNodePostprocessed[];
   /** An array of samplers. */
-  samplers?: GLTFSamplerPostprocessed[];
-  /**
-   * The index of the default scene.
-   */
+  samplers: GLTFSamplerPostprocessed[];
+  /** The index of the default scene. */
   scene?: GLTFScenePostprocessed;
   /** An array of scenes. */
-  scenes?: GLTFScenePostprocessed[];
+  scenes: GLTFScenePostprocessed[];
   /** An array of skins. */
-  skins?: GLTFSkinPostprocessed[];
+  skins: GLTFSkinPostprocessed[];
   /** An array of textures. */
-  textures?: GLTFTexturePostprocessed[];
-  extensions?: any;
+  textures: GLTFTexturePostprocessed[];
+  extensions?: Record<string, Record<string, any>>;
   extras?: any;
   // [k: string]: any;
 };

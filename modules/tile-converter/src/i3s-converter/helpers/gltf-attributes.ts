@@ -1,8 +1,5 @@
 import type {B3DMContent} from '@loaders.gl/3d-tiles';
-import type {
-  GLTFAccessorPostprocessed,
-  GLTFNodePostprocessed
-} from '@loaders.gl/gltf';
+import type {GLTFAccessorPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import type {B3DMAttributesData} from '../../i3s-attributes-worker';
 
 type AttributesObject = {

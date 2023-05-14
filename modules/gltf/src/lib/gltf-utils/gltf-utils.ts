@@ -1,7 +1,7 @@
 import {assert} from '../utils/assert';
-import {GLTF} from '../types/gltf-json-schema';
+import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
 
-/** 
+/**
  * Memory needed to store texture and all mipmap levels 1 + 1/4 + 1/16 + 1/64 + ...
  * Minimum 1.33, but due to GPU layout may be 1.5
  */
@@ -90,7 +90,7 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
  * @param gltf - the gltf content of a GLTF tile
  * @returns - total memory usage in bytes
  */
-export function getMemoryUsageGLTF(gltf: GLTF): number {
+export function getMemoryUsageGLTF(gltf: GLTFPostprocessed): number {
   let {images, bufferViews} = gltf;
   images = images || [];
   bufferViews = bufferViews || [];

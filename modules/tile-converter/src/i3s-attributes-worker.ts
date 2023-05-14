@@ -16,7 +16,6 @@ export type I3SAttributesWorkerOptions = {
   source: string;
 };
 
-
 export type TextureImageProperties = {
   data: Uint8Array;
   compressed?: boolean;

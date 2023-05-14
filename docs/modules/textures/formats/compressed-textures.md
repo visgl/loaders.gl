@@ -1,4 +1,4 @@
-# About Compressed Textures
+# Compressed Textures
 
 **Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. However, a compressed texture typically consists of a collection of compressed subimages, representing mipmaps etc. These compressed subimages are stored as an array of "binary blobs" in a container file. Only the container file is parsed, extracting metadata and the binary buffers representing subimages. The binary subimages can then be passed directly to a GPU that understands how to read pixels directly from them without decompressing them first.
 

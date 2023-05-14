@@ -1,14 +1,11 @@
-import {
-  GLTFAccessorPostprocessed,
-  GLTFMeshPrimitivePostprocessed
-} from '@loaders.gl/gltf';
-import {NumberArray} from '@loaders.gl/schema';
+import {GLTFAccessorPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
+import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
   GLTF_EXT_feature_metadata_attribute,
   GLTF_EXT_feature_metadata_primitive
 } from '@loaders.gl/gltf';
-import { TypedArray } from '@math.gl/core';
-import { TextureImageProperties } from '../../i3s-attributes-worker';
+import {TypedArray} from '@math.gl/core';
+import {TextureImageProperties} from '../../i3s-attributes-worker';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
@@ -25,7 +22,7 @@ export function handleBatchIdsExtensions(
   },
   primitive: GLTFMeshPrimitivePostprocessed,
   images: (TextureImageProperties | null)[]
-): NumberArray {
+): NumericArray {
   const extensions = primitive?.extensions;
 
   if (!extensions) {
@@ -64,7 +61,7 @@ function handleExtFeatureMetadataExtension(
   },
   extFeatureMetadata: GLTF_EXT_feature_metadata_primitive,
   images: (TextureImageProperties | null)[]
-): NumberArray {
+): NumericArray {
   // Take only first extension object to get batchIds attribute name.
   const featureIdAttribute = extFeatureMetadata?.featureIdAttributes?.[0];
 
