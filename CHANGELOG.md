@@ -2,6 +2,32 @@
 
 ## v3.4 Prerelease
 
+## v3.4.0-alpha.5
+
+- feat(wms): Support for layer dimension metadata (#2475)
+- docs(slpk): TSDoc comments (#2460)
+- chore(tiles): Another round of type improvements (#2462)
+- Compute memory usage for GLTF tiles (#2458)
+- fix(wkb): TypeError: Cannot use 'in' operator to search for 'wkb' in undefined (#2463)
+- chore(tiles): Improved TypeScript types (#2461)
+- Tiles3DLoader: pass query parameters used on tileset request onto tile requests (#2252)
+- docs: tilesetUrl  change (#2408)
+- docs(tile-converter): features compatibility (#2454)
+- Fix handling of query parameters in tile url (#2456)
+- docs(whats-new): tile-converter updates (#2455)
+- chore(slpk): implementation of slpk parser (#2409)
+- fix(wms): fix type exports (#2452)
+
+## v3.4.0-alpha.4
+
+- chore: Remove deck.gl test dependency (#2451)
+- fix(tile-converter): Remove luma.gl dependency (#2450)
+- feat(wms): coordinate flipping for WMS 1.3.0 (#2442)
+- fix(examples): wms control panel height (#2443)
+- feat(website): add hero example (#2441)
+- feat(wms): Replace EPSG:4326 with CRS:84 in WMS 1.3.0 (#2439)
+- feat(tile-converter): support TRIANGLE-STRIP (#2428)
+
 ## v3.4.0-alpha.3
 
 - feat(wms): More closely follow spec, extract more capabilities (#2437)
