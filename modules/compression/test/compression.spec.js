@@ -164,6 +164,9 @@ test('compression#batched', async (t) => {
 // WORKER TESTS
 
 test('gzip#worker', async (t) => {
+  const COMPRESSED_LENGTH_EXPECTED = 12824; // fflate
+  // const COMPRESSED_LENGTH_EXPECTED = 12825; // pako
+
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -177,7 +180,7 @@ test('gzip#worker', async (t) => {
     }
   });
 
-  t.equal(compressedData.byteLength, 12825, 'Length correct');
+  t.equal(compressedData.byteLength, COMPRESSED_LENGTH_EXPECTED, 'Length correct');
 
   const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'gzip',
