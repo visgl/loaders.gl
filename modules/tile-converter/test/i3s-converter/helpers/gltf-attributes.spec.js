@@ -190,10 +190,7 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
       }
     ],
     images: [
-      {
-        compressed: true,
-        data: null
-      },
+      null,
       {
         width: 2,
         height: 1,

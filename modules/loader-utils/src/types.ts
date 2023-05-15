@@ -15,7 +15,29 @@ export type TypedFloatArray = Uint16Array | Float32Array | Float64Array;
 
 export type TypedArray = TypedIntArray | TypedFloatArray;
 
-export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
+export type BigTypedArray = TypedArray | BigInt64Array | BigUint64Array;
+
+export type TypedArrayConstructor =
+  | Int8ArrayConstructor
+  | Uint8ArrayConstructor
+  | Int16ArrayConstructor
+  | Uint16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;
+
+export type BigTypedArrayConstructor =
+  | TypedArrayConstructor
+  | BigInt64ArrayConstructor
+  | BigUint64ArrayConstructor;
+
+/** Any numeric array: typed array or `number[]` */
+export type NumberArray = number[] | TypedArray;
+
+export type NumericArray = number[] | TypedArray;
 
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 

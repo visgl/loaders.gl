@@ -1,14 +1,19 @@
 // Types forked from https://github.com/bwasty/gltf-loader-ts under MIT license
-// Generated from official JSON schema using `npm run generate-interface` on 2018-02-24
+// Generated from official JSON schema using `npm run generate-type` = on 2018-02-24
 
-// tslint:disable:quotemark
-// tslint:disable:max-line-length
+import type {TypedArray} from '@loaders.gl/loader-utils';
 
 export type GlTfId = number;
+
+// GLTF attributes (possibly overridden)
+
 /**
  * Indices of those attributes that deviate from their initialization value.
  */
-export interface AccessorSparseIndices {
+export type AccessorSparseIndices = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the bufferView with sparse indices. Referenced bufferView can't have ARRAY_BUFFER or ELEMENT_ARRAY_BUFFER target.
    */
@@ -23,12 +28,16 @@ export interface AccessorSparseIndices {
   componentType: 5121 | 5123 | 5125 | number;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * Array of size `accessor.sparse.count` times number of components storing the displaced accessor attributes pointed by `accessor.sparse.indices`.
  */
-export interface AccessorSparseValues {
+export type AccessorSparseValues = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the bufferView with sparse values. Referenced bufferView can't have ARRAY_BUFFER or ELEMENT_ARRAY_BUFFER target.
    */
@@ -39,12 +48,16 @@ export interface AccessorSparseValues {
   byteOffset?: number;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * Sparse storage of attributes that deviate from their initialization value.
  */
-export interface AccessorSparse {
+export type AccessorSparse = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * Number of entries stored in the sparse array.
    */
@@ -59,16 +72,24 @@ export interface AccessorSparse {
   values: AccessorSparseValues;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A typed view into a bufferView.  A bufferView contains raw binary data.  An accessor provides a typed view into a bufferView or a subset of a bufferView similar to how WebGL's `vertexAttribPointer()` defines an attribute in a buffer.
  */
-export interface Accessor {
+export type GLTFAccessorPostprocessed = {
+  id: string;
+  components: number;
+  bytesPerComponent: number;
+  bytesPerElement: number;
+  value: TypedArray;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the bufferView.
    */
-  bufferView?: GlTfId;
+  bufferView?: GLTFBufferViewPostprocessed;
   /**
    * The offset relative to the start of the bufferView in bytes.
    */
@@ -104,12 +125,16 @@ export interface Accessor {
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * The index of the node and TRS property that an animation channel targets.
  */
-export interface AnimationChannelTarget {
+export type AnimationChannelTarget = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the node to target.
    */
@@ -120,12 +145,16 @@ export interface AnimationChannelTarget {
   path: 'translation' | 'rotation' | 'scale' | 'weights' | string;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * Targets an animation's sampler at a node's property.
  */
-export interface AnimationChannel {
+export type AnimationChannel = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of a sampler in this animation used to compute the value for the target.
    */
@@ -136,12 +165,16 @@ export interface AnimationChannel {
   target: AnimationChannelTarget;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * Combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
  */
-export interface AnimationSampler {
+export type AnimationSampler = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of an accessor containing keyframe input values, e.g., time.
    */
@@ -156,29 +189,31 @@ export interface AnimationSampler {
   output: GlTfId;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A keyframe animation.
  */
-export interface Animation {
-  /**
-   * An array of channels, each of which targets an animation's sampler at a node's property. Different channels of the same animation can't have equal targets.
-   */
+export type GLTFAnimationPostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
+  /** An array of channels, each of which targets an animation's sampler at a node's property. Different channels of the same animation can't have equal targets. */
   channels: AnimationChannel[];
-  /**
-   * An array of samplers that combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
-   */
+  /** An array of samplers that combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target). */
   samplers: AnimationSampler[];
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * Metadata about the glTF asset.
  */
-export interface Asset {
+export type Asset = {
+  // GLTF attributes (possibly overridden)
   /**
    * A copyright message suitable for display to credit the content creator.
    */
@@ -197,34 +232,41 @@ export interface Asset {
   minVersion?: string;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A buffer points to binary geometry, animation, or skins.
  */
-export interface Buffer {
-  /**
-   * The uri of the buffer.
-   */
-  uri?: string;
-  /**
-   * The length of the buffer in bytes.
-   */
+export type GLTFBufferPostprocessed = {
+  id?: string;
+  arrayBuffer: ArrayBuffer;
+  byteOffset: number;
+
+  // GLTF attributes (possibly overridden)
+  /** The length of the buffer in bytes. */
   byteLength: number;
+
+  /** The uri of the buffer. */
+  uri?: string;
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A view into a buffer generally representing a subset of the buffer.
  */
-export interface BufferView {
+export type GLTFBufferViewPostprocessed = {
   id: string;
+  data: Uint8Array;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the buffer.
    */
-  buffer: ArrayBuffer;
+  buffer: GLTFBufferPostprocessed;
   /**
    * The offset into the buffer in bytes.
    */
@@ -244,12 +286,16 @@ export interface BufferView {
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * An orthographic camera containing properties to create an orthographic projection matrix.
  */
-export interface CameraOrthographic {
+export type CameraOrthographic = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The floating-point horizontal magnification of the view. Must not be zero.
    */
@@ -268,12 +314,16 @@ export interface CameraOrthographic {
   znear: number;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A perspective camera containing properties to create a perspective projection matrix.
  */
-export interface CameraPerspective {
+export type CameraPerspective = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The floating-point aspect ratio of the field of view.
    */
@@ -292,12 +342,14 @@ export interface CameraPerspective {
   znear: number;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A camera's projection.  A node can reference a camera to apply a transform to place the camera in the scene.
  */
-export interface Camera {
+export type GLTFCameraPostprocessed = {
+  // GLTF attributes (possibly overridden)
   /**
    * An orthographic camera containing properties to create an orthographic projection matrix.
    */
@@ -313,12 +365,30 @@ export interface Camera {
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
- * Image data used to create a texture. Image can be referenced by URI or `bufferView` index. `mimeType` is required in the latter case.
+ * GLTFImagePostprocessed data used to create a texture.
+ * GLTFImagePostprocessed can be referenced by URI or `bufferView` index.
+ * `mimeType` is required in the latter case.
+ * @todo GLTF image postprocessing
  */
-export interface Image {
+export type GLTFImagePostprocessed = {
+  id: string;
+  // TODO - extend
+  image: {
+    data: Uint8Array;
+    compressed?: boolean;
+    height?: number;
+    width?: number;
+    components?: number;
+    mimeType?: string;
+  };
+
+  compressed?: boolean;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The uri of the image.
    */
@@ -330,16 +400,21 @@ export interface Image {
   /**
    * The index of the bufferView that contains the image. Use this instead of the image's uri property.
    */
-  bufferView?: BufferView;
+  bufferView?: GLTFBufferViewPostprocessed;
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * Reference to a texture.
  */
-export interface TextureInfo {
+export type GLTFTextureInfoPostprocessed = {
+  id: string;
+  texture: GLTFTexturePostprocessed;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the texture.
    */
@@ -350,12 +425,16 @@ export interface TextureInfo {
   texCoord?: number;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
  */
-export interface MaterialPbrMetallicRoughness {
+export type MaterialPbrMetallicRoughnessPostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The material's base color factor.
    */
@@ -363,7 +442,7 @@ export interface MaterialPbrMetallicRoughness {
   /**
    * The base color texture.
    */
-  baseColorTexture?: TextureInfo;
+  baseColorTexture?: GLTFTextureInfoPostprocessed;
   /**
    * The metalness of the material.
    */
@@ -375,12 +454,17 @@ export interface MaterialPbrMetallicRoughness {
   /**
    * The metallic-roughness texture.
    */
-  metallicRoughnessTexture?: TextureInfo;
+  metallicRoughnessTexture?: GLTFTextureInfoPostprocessed;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
-export interface MaterialNormalTextureInfo {
+  // [k: string]: any;
+};
+
+export type MaterialNormalTextureInfoPostprocessed = {
+  id: string;
+  texture: GLTFTexturePostprocessed;
+
+  // GLTF attributes (possibly overridden)
   index?: any;
   texCoord?: any;
   /**
@@ -389,9 +473,14 @@ export interface MaterialNormalTextureInfo {
   scale?: number;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
-export interface MaterialOcclusionTextureInfo {
+  // [k: string]: any;
+};
+
+export type MaterialOcclusionTextureInfoPostprocessed = {
+  id: string;
+  texture: GLTFTexturePostprocessed;
+
+  // GLTF attributes (possibly overridden)
   index?: any;
   texCoord?: any;
   /**
@@ -400,31 +489,35 @@ export interface MaterialOcclusionTextureInfo {
   strength?: number;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * The material appearance of a primitive.
  */
-export interface Material {
+export type GLTFMaterialPostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   name?: any;
   extensions?: any;
   extras?: any;
   /**
    * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology. When not specified, all the default values of `pbrMetallicRoughness` apply.
    */
-  pbrMetallicRoughness?: MaterialPbrMetallicRoughness;
+  pbrMetallicRoughness?: MaterialPbrMetallicRoughnessPostprocessed;
   /**
    * The normal map texture.
    */
-  normalTexture?: MaterialNormalTextureInfo;
+  normalTexture?: MaterialNormalTextureInfoPostprocessed;
   /**
    * The occlusion map texture.
    */
-  occlusionTexture?: MaterialOcclusionTextureInfo;
+  occlusionTexture?: MaterialOcclusionTextureInfoPostprocessed;
   /**
    * The emissive map texture.
    */
-  emissiveTexture?: TextureInfo;
+  emissiveTexture?: GLTFTextureInfoPostprocessed;
   /**
    * The emissive color of the material.
    */
@@ -441,48 +534,50 @@ export interface Material {
    * Specifies whether the material is double sided.
    */
   doubleSided?: boolean;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * Geometry to be rendered with the given material.
  */
-export interface MeshPrimitive {
+export type GLTFMeshPrimitivePostprocessed = {
+  // GLTF attributes (possibly overridden)
   /**
    * A dictionary object, where each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
    */
   attributes: {
-    [k: string]: Accessor;
+    [k: string]: GLTFAccessorPostprocessed;
   };
   /**
    * The index of the accessor that contains the indices.
    */
-  indices?: Accessor;
+  indices?: GLTFAccessorPostprocessed;
   /**
    * The index of the material to apply to this primitive when rendering.
    */
-  material?: Material;
+  material?: GLTFMaterialPostprocessed;
   /**
    * The type of primitives to render.
    */
   mode?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | number;
-  /**
-   * An array of Morph Targets, each  Morph Target is a dictionary mapping attributes (only `POSITION`, `NORMAL`, and `TANGENT` supported) to their deviations in the Morph Target.
-   */
+  /** An array of Morph Targets, each  Morph Target is a dictionary mapping attributes (only `POSITION`, `NORMAL`, and `TANGENT` supported) to their deviations in the Morph Target. */
   targets?: {
     [k: string]: GlTfId;
   }[];
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A set of primitives to be rendered.  A node can contain one mesh.  A node's transform places the mesh in the scene.
  */
-export interface Mesh {
-  /**
-   * An array of primitives, each defining geometry to be rendered with a material.
-   */
-  primitives: MeshPrimitive[];
+export type GLTFMeshPostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
+  /** An array of primitives, each defining geometry to be rendered with a material. */
+  primitives: GLTFMeshPrimitivePostprocessed[];
   /**
    * Array of weights to be applied to the Morph Targets.
    */
@@ -490,24 +585,28 @@ export interface Mesh {
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A node in the node hierarchy.  When the node contains `skin`, all `mesh.primitives` must contain `JOINTS_0` and `WEIGHTS_0` attributes.  A node can have either a `matrix` or any combination of `translation`/`rotation`/`scale` (TRS) properties. TRS properties are converted to matrices and postmultiplied in the `T * R * S` order to compose the transformation matrix; first the scale is applied to the vertices, then the rotation, and then the translation. If none are provided, the transform is the identity. When a node is targeted for animation (referenced by an animation.channel.target), only TRS properties may be present; `matrix` will not be present.
  */
-export interface Node {
+export type GLTFNodePostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the camera referenced by this node.
    */
-  camera?: GlTfId;
+  camera?: GLTFCameraPostprocessed;
   /**
    * The indices of this node's children.
    */
-  children?: Node[];
+  children?: GLTFNodePostprocessed[];
   /**
    * The index of the skin referenced by this node.
    */
-  skin?: GlTfId;
+  skin?: GLTFSkinPostprocessed;
   /**
    * A floating-point 4x4 transformation matrix stored in column-major order.
    */
@@ -515,7 +614,7 @@ export interface Node {
   /**
    * The index of the mesh in this node.
    */
-  mesh?: Mesh;
+  mesh?: GLTFMeshPostprocessed;
   /**
    * The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
    */
@@ -535,54 +634,58 @@ export interface Node {
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
- * Texture sampler properties for filtering and wrapping modes.
+ * GLTFTexturePostprocessed sampler properties for filtering and wrapping modes.
  */
-export interface Sampler {
-  /**
-   * Magnification filter.
-   */
+export type GLTFSamplerPostprocessed = {
+  id: string;
+  /** WebGL parameters */
+  parameters: Record<string, number>;
+
+  // GLTF attributes (possibly overridden)
+  /** Magnification filter. */
   magFilter?: 9728 | 9729 | number;
-  /**
-   * Minification filter.
-   */
+  /** Minification filter. */
   minFilter?: 9728 | 9729 | 9984 | 9985 | 9986 | 9987 | number;
-  /**
-   * s wrapping mode.
-   */
+  /** s wrapping mode. */
   wrapS?: 33071 | 33648 | 10497 | number;
-  /**
-   * t wrapping mode.
-   */
+  /** t wrapping mode. */
   wrapT?: 33071 | 33648 | 10497 | number;
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * The root nodes of a scene.
  */
-export interface Scene {
-  /**
-   * The indices of each root node.
-   */
-  nodes?: Node[];
+export type GLTFScenePostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
+  /** The indices of each root node. */
+  nodes?: GLTFNodePostprocessed[];
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * Joints and matrices defining a skin.
  */
-export interface Skin {
+export type GLTFSkinPostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the accessor containing the floating-point 4x4 inverse-bind matrices.  The default is that each matrix is a 4x4 identity matrix, which implies that inverse-bind matrices were pre-applied.
    */
-  inverseBindMatrices?: GlTfId;
+  inverseBindMatrices?: GLTFAccessorPostprocessed;
   /**
    * The index of the node used as a skeleton root. When undefined, joints transforms resolve to scene root.
    */
@@ -594,98 +697,72 @@ export interface Skin {
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * A texture and its sampler.
  */
-export interface Texture {
+export type GLTFTexturePostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
   /**
    * The index of the sampler used by this texture. When undefined, a sampler with repeat wrapping and auto filtering should be used.
    */
-  sampler?: GlTfId;
+  sampler?: GLTFSamplerPostprocessed;
   /**
    * The index of the image used by this texture.
    */
-  source?: Image;
+  source?: GLTFImagePostprocessed;
   name?: any;
   extensions?: any;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};
+
 /**
  * The root object for a glTF asset.
  */
-export interface GLTF {
-  /**
-   * Names of glTF extensions used somewhere in this asset.
-   */
+export type GLTFPostprocessed = {
+  id: string;
+
+  // GLTF attributes (possibly overridden)
+  /** Names of glTF extensions used somewhere in this asset. */
   extensionsUsed: string[];
-  /**
-   * Names of glTF extensions required to properly load this asset.
-   */
+  /** Names of glTF extensions required to properly load this asset. */
   extensionsRequired: string[];
-  /**
-   * An array of accessors.
-   */
-  accessors: Accessor[];
-  /**
-   * An array of keyframe animations.
-   */
-  animations: Animation[];
-  /**
-   * Metadata about the glTF asset.
-   */
+  /** An array of accessors. */
+  accessors: GLTFAccessorPostprocessed[];
+  /** An array of keyframe animations. */
+  animations: GLTFAnimationPostprocessed[];
+  /** Metadata about the glTF asset. */
   asset: Asset;
-  /**
-   * An array of buffers.
-   */
-  buffers: Buffer[];
-  /**
-   * An array of bufferViews.
-   */
-  bufferViews: BufferView[];
-  /**
-   * An array of cameras.
-   */
-  cameras: Camera[];
-  /**
-   * An array of images.
-   */
-  images: Image[];
-  /**
-   * An array of materials.
-   */
-  materials: Material[];
-  /**
-   * An array of meshes.
-   */
-  meshes: Mesh[];
-  /**
-   * An array of nodes.
-   */
-  nodes: Node[];
-  /**
-   * An array of samplers.
-   */
-  samplers: Sampler[];
-  /**
-   * The index of the default scene.
-   */
-  scene: Scene;
-  /**
-   * An array of scenes.
-   */
-  scenes: Scene[];
-  /**
-   * An array of skins.
-   */
-  skins: Skin[];
-  /**
-   * An array of textures.
-   */
-  textures: Texture[];
-  extensions: Record<string, Record<string, any>>;
+  /** An array of buffers. */
+  buffers: GLTFBufferPostprocessed[];
+  /** An array of bufferViews. */
+  bufferViews: GLTFBufferViewPostprocessed[];
+  /** An array of cameras. */
+  cameras: GLTFCameraPostprocessed[];
+  /** An array of images. */
+  images: GLTFImagePostprocessed[];
+  /** An array of materials. */
+  materials: GLTFMaterialPostprocessed[];
+  /** An array of meshes. */
+  meshes: GLTFMeshPostprocessed[];
+  /** An array of nodes. */
+  nodes: GLTFNodePostprocessed[];
+  /** An array of samplers. */
+  samplers: GLTFSamplerPostprocessed[];
+  /** The index of the default scene. */
+  scene?: GLTFScenePostprocessed;
+  /** An array of scenes. */
+  scenes: GLTFScenePostprocessed[];
+  /** An array of skins. */
+  skins: GLTFSkinPostprocessed[];
+  /** An array of textures. */
+  textures: GLTFTexturePostprocessed[];
+  extensions?: Record<string, Record<string, any>>;
   extras?: any;
-  [k: string]: any;
-}
+  // [k: string]: any;
+};

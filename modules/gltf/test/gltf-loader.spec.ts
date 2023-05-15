@@ -36,7 +36,7 @@ test('GLTFLoader#load(binary)', async (t) => {
   t.end();
 });
 
-test('GLTFLoader#load(binary) - postProcess: false', async (t) => {
+test('GLTFLoader#load(binary)', async (t) => {
   const data = await load(GLTF_BINARY_URL, GLTFLoader);
   t.ok(data.buffers, 'GLTFLoader without post-processing returned data.buffers');
   t.ok(data.images, 'GLTFLoader without post-processing returned data.images');
@@ -85,14 +85,14 @@ test('GLTFLoader#load(glTF v1)', async (t) => {
 
 // Check load options
 
-test('GLTFLoader#options({postProcess: true})', async (t) => {
+test('GLTFLoader#options+postProcessGLTF', async (t) => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const data = postProcessGLTF(gltfWithBuffers);
   const value = data.meshes[0].primitives[0].attributes.POSITION.value;
   t.ok(
     ArrayBuffer.isView(value),
-    'GLTFLoader({postProcess: true}) resolves accessor value as typed array'
+    'GLTFLoader+postProcessGLTF() resolves accessor value as typed array'
   );
-  t.equal(value.length, 6036, 'GLTFLoader({postProcess: true}) resolves accessor value length');
+  t.equal(value.length, 6036, 'GLTFLoader+postProcessGLTF() resolves accessor value length');
   t.end();
 });
