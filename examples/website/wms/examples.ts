@@ -50,6 +50,14 @@ export const EXAMPLES = {
       viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3},
       opacity: 0.5
     },
+    'NASA': {
+      serviceType: 'wms',
+      service: 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi',
+      layers: ['Land Cover'], 
+      viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3},
+      opacity: 0.5
+    },
+    
     /*
     'Canadian Weather': {
       serviceType: 'wms',
