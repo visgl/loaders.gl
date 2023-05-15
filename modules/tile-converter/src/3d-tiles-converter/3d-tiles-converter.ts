@@ -220,7 +220,7 @@ export default class Tiles3DConverter {
     let header;
     if (this.sourceTileset!.tileset.nodePages) {
       console.log(`Node conversion: ${childNodeInfo.id}`); // eslint-disable-line no-console,no-undef
-      header = await this.sourceTileset!.tileset.nodePagesTile.formTileFromNodePages(
+      header = await this.sourceTileset?.tileset.nodePagesTile?.formTileFromNodePages(
         childNodeInfo.id
       );
     } else {

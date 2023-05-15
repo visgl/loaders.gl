@@ -30,6 +30,13 @@ function defined(x) {
   return x !== undefined && x !== null;
 }
 
+// export type TileJSON = {[key: string]: any};
+
+export type TileJSON = {
+  children: unknown[];
+  [key: string]: unknown
+};
+
 /**
  * @param tileset - Tileset3D instance
  * @param header - tile header - JSON loaded from a dataset
@@ -39,7 +46,7 @@ function defined(x) {
  */
 export type Tile3DProps = {
   tileset: Tileset3D;
-  header: Object;
+  header: TileJSON;
   parentHeader: Tile3D;
   extendedId: string;
 };
@@ -51,7 +58,7 @@ export type Tile3DProps = {
  */
 export class Tile3D {
   tileset: Tileset3D;
-  header: any;
+  header: TileJSON | null;
   id: string;
   url: string;
   parent: Tile3D;
@@ -142,7 +149,7 @@ export class Tile3D {
   // eslint-disable-next-line max-statements
   constructor(
     tileset: Tileset3D,
-    header: {[key: string]: any},
+    header: TileJSON,
     parentHeader?: Tile3D,
     extendedId = ''
   ) {

@@ -6,7 +6,8 @@
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
-import {RequestScheduler, path, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {RequestScheduler, path} from '@loaders.gl/loader-utils';
 import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
 import {FrameState, getFrameState, limitSelectedTiles} from './helpers/frame-state';
@@ -22,26 +23,44 @@ import {TilesetTraverser} from './tileset-traverser';
 import {Tileset3DTraverser} from './format-3d-tiles/tileset-3d-traverser';
 import {I3STilesetTraverser} from './format-i3s/i3s-tileset-traverser';
 
-export type TilesetJSON = any;
-
-/*
 export type TilesetJSON = {
-    loader;
+    /** @deprecated This should be a parameter on Tileset3D constructor */
+    loader: Loader;
     // could be  3d tiles, i3s
     type: 'I3S' | '3DTILES';
-    /** The url to the top level tileset JSON file. *
+    /** The url to the top level tileset JSON file. */
     url: string;
     basePath?: string;
     // Geometric error when the tree is not rendered at all
     lodMetricType: string;
     lodMetricValue: number;
+
     root: {
       refine: string;
       [key: string]: unknown;
     },
+
+    asset?: {
+      gltfUpAxis?: 'X' | 'Y' | 'Z';
+      [key: string]: unknown;
+    },
+
+    /** I3S */
+    store?: {
+      /** 2D extent */
+      extent
+    },
+
+    /** I3S 1.8 - 3D extent */
+    fullExtent?: {xmin, xmax, ymin, ymax, zmin, zmax};
+
+    nodePagesTile?: {
+      nodesInNodePages?: number;
+      formTileFromNodePages: Function; // TODO - better typing
+    };
+
     [key: string]: unknown;
 };
-*/
 
 export type Tileset3DProps = {
   // loading
@@ -191,7 +210,7 @@ export class Tileset3D {
 
   type: string;
   tileset: TilesetJSON;
-  loader: LoaderWithParser;
+  loader: Loader;
   url: string;
   basePath: string;
   modelMatrix: Matrix4;
