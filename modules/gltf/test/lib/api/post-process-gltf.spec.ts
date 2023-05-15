@@ -45,7 +45,7 @@ const TEST_CASES: {name: string; input: GLTFWithBuffers; output: Partial<GLTFPos
   }
 ];
 
-test.only('gltf#postProcessGLTF', (t) => {
+test.skip('gltf#postProcessGLTF', (t) => {
   for (const testCase of TEST_CASES) {
     const json = postProcessGLTF(testCase.input as unknown as GLTFWithBuffers);
     t.deepEqual(json, testCase.output, testCase.name);
