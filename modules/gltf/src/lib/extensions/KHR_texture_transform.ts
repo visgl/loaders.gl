@@ -60,8 +60,8 @@ type TransformParameters = {
  */
 export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions) {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
-  const extension = gltfScenegraph.getExtension(EXT_MESHOPT_TRANSFORM);
-  if (!extension) {
+  const hasExtension = gltfScenegraph.hasExtension(EXT_MESHOPT_TRANSFORM);
+  if (!hasExtension) {
     return;
   }
   const materials = gltfData.json.materials || [];

@@ -85,6 +85,12 @@ export class GLTFScenegraph {
     return extras[key];
   }
 
+  hasExtension(extensionName: string): boolean {
+    const isUsedExtension = this.getUsedExtensions().find((name) => name === extensionName);
+    const isRequiredExtension = this.getRequiredExtensions().find((name) => name === extensionName);
+    return typeof isUsedExtension === 'string' || typeof isRequiredExtension === 'string';
+  }
+
   getExtension<T = Extension>(extensionName: string): T | null {
     const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
