@@ -213,8 +213,6 @@ export type GLTFAnimationPostprocessed = {
  * Metadata about the glTF asset.
  */
 export type Asset = {
-  id: string;
-
   // GLTF attributes (possibly overridden)
   /**
    * A copyright message suitable for display to credit the content creator.
