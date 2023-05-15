@@ -15,7 +15,6 @@ const TEST_CASES: {name: string; input: GLTFWithBuffers; output: GLTFPostprocess
           }
         ],
         nodes: [{mesh: 0}, {mesh: 1}],
-        // @ts-expect-error
         meshes: [{}, {}],
         buffers: []
       }
@@ -24,22 +23,20 @@ const TEST_CASES: {name: string; input: GLTFWithBuffers; output: GLTFPostprocess
       scenes: [
         {
           nodes: [
-            // @ts-expect-error
-            {mesh: {id: 'mesh-0'}, id: 'node-0'},
-            // @ts-expect-error
-            {mesh: {id: 'mesh-1'}, id: 'node-1'}
+            {mesh: [Object], id: 'node-0'},
+            {mesh: [Object], id: 'node-1'}
           ],
-          id: 'scene-0'
+          sid: 'scene-0'
         }
       ],
       nodes: [
-        // @ts-expect-error
-        {mesh: {id: 'mesh-0'}, id: 'node-0'},
-        // @ts-expect-error
-        {mesh: {id: 'mesh-1'}, id: 'node-1'}
+        {mesh: {id: 'mesh-0', primitives: []}, id: 'node-0'},
+        {mesh: {id: 'mesh-1', primitives: []}, id: 'node-1'}
       ],
-      // @ts-expect-error
-      meshes: [{id: 'mesh-0'}, {id: 'mesh-1'}],
+      meshes: [
+        {id: 'mesh-0', primitives: []},
+        {id: 'mesh-1', primitives: []}
+      ],
       buffers: []
     }
   }
