@@ -4,6 +4,8 @@
 
 WMS was standardized in 1999 as a way to serve map images over the web.
 
+- *[OGC Specification](https://raw.githubusercontent.com/visgl/deck.gl-data/master/specifications/wms/06-042_OpenGIS_Web_Map_Service_WMS_Implementation_Specification.pdf) (PDF)*
+
 ## Characteristics
 
 WMS is not a file format but rather a protocol, specifying a set of requests that the server should implement. Some WMS protocol requests return binary images, and some return metadata formatted as XML text responses. 

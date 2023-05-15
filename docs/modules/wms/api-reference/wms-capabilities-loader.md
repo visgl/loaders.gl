@@ -90,9 +90,10 @@ export type WMSLayer = {
   /** Bounding boxes in specific CRS:es */
   boundingBoxes?: WMSBoundingBox[];
 
+  dimensions?: WMSDimension[]; // ?? 7.2.4.6.10
+
   // minScale: number;
   // maxScale: number;
-  // dimensions: ?? 7.2.4.6.10
   // MetadataURL
   // Attribution
   // Identifier and AuthorityURL
