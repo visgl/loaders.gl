@@ -142,7 +142,7 @@ class GLTFPostProcessor {
 
   // Convert indexed glTF structure into tree structure
   // cross-link index resolution, enum lookup, convenience calculations
-  // eslint-disable-next-line complexity
+  // eslint-disable-next-line complexity, max-statements
   _resolveTree(gltf: GLTF, options = {}): GLTFPostprocessed {
     // @ts-expect-error
     const json: GLTFPostprocessed = {...gltf};
@@ -171,6 +171,7 @@ class GLTFPostProcessor {
     }
     if (gltf.nodes) {
       json.nodes = gltf.nodes.map((node, i) => this._resolveNode(node, i));
+      json.nodes = json.nodes.map((node, i) => this._resolveNodeChildren(node));
     }
     if (gltf.skins) {
       json.skins = gltf.skins.map((skin, i) => this._resolveSkin(skin, i));
@@ -261,11 +262,8 @@ class GLTFPostProcessor {
     const node: GLTFNodePostprocessed = {
       ...gltfNode,
       // @ts-expect-error id could already be present, glTF standard does not prevent it
-      id: gltfNode.id || `node-${index}`
+      id: gltfNode?.id || `node-${index}`
     };
-    if (gltfNode.children) {
-      node.children = gltfNode.children.map((child) => this.getNode(child));
-    }
     if (gltfNode.mesh !== undefined) {
       node.mesh = this.getMesh(gltfNode.mesh);
     }
@@ -291,6 +289,14 @@ class GLTFPostProcessor {
       );
     }
 
+    return node;
+  }
+
+  _resolveNodeChildren(node: GLTFNodePostprocessed): GLTFNodePostprocessed {
+    if (node.children) {
+      // @ts-expect-error node.children are numbers at this stage
+      node.children = node.children.map((child) => this.getNode(child));
+    }
     return node;
   }
 
@@ -454,8 +460,11 @@ class GLTFPostProcessor {
       ...gltfTexture,
       // @ts-expect-error id could already be present, glTF standard does not prevent it
       id: gltfTexture.id || `texture-${index}`,
-      sampler: gltfTexture.sampler ? this.getSampler(gltfTexture.sampler) : makeDefaultSampler(),
-      source: gltfTexture.source ? this.getImage(gltfTexture.source) : undefined
+      sampler:
+        typeof gltfTexture.sampler === 'number'
+          ? this.getSampler(gltfTexture.sampler)
+          : makeDefaultSampler(),
+      source: typeof gltfTexture.source === 'number' ? this.getImage(gltfTexture.source) : undefined
     };
   }
 
