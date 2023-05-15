@@ -251,7 +251,7 @@ class GLTFPostProcessor {
     return {
       ...scene,
       // @ts-ignore
-      sid: scene.id || `scene-${index}`,
+      id: scene.id || `scene-${index}`,
       nodes: (scene.nodes || []).map((node) => this.getNode(node))
     };
   }
