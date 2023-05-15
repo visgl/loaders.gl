@@ -46,7 +46,7 @@
     "@math.gl/geospatial": "^3.5.1"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^3.2.0"
+    "@loaders.gl/core": "^3.4.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

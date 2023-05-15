@@ -1,5 +1,9 @@
 # Overview
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
+</p>
+
 The `@loaders.gl/bson` module provides support for the [BSON](/docs/modules/bson/formats/bson) format. 
 The BSON format stores arbitrary (loosely structured) data largely equivalent to the textual JSON format.
 

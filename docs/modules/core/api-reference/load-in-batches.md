@@ -57,8 +57,8 @@ Returns:
 
 Notes:
 
-- The `loaders` parameter can also be ommitted, in which case any _loaders_ previously registered with [`registerLoaders`](docs/api-reference/core/register-loaders) will be used.
-
+- The `loaders` parameter can also be ommitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
+ 
 ## Options
 
 A loader object, that can contain a mix of options:

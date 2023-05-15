@@ -4,7 +4,7 @@
 
 [csw]: https://en.wikipedia.org/wiki/Catalogue_Service_for_the_Web
 
-Operations defined by the CSW standard include:[1][3]
+Operations defined by the CSW standard include:
 
 | Operation              | Description                                                                                   |
 | ---------------------- | --------------------------------------------------------------------------------------------- |

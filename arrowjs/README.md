@@ -4,7 +4,7 @@ The Arrow JavaScript API is designed to helps applications tap into the full pow
 
 ## Getting Started
 
-To install and start coding with Apache Arrow JS bindings, see the [Getting Started](docs/get-started).
+To install and start coding with Apache Arrow JS bindings, see the [Getting Started](/docs/arrowjs/get-started).
 
 
 ## About Apache Arrow

@@ -31,7 +31,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@loaders.gl/shapefile": "^3.3.0"
+    "@loaders.gl/shapefile": "^3.4.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

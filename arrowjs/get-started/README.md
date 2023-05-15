@@ -1,4 +1,4 @@
-# Installing
+# Get Started
 
 ## Installing Arrow JS
 

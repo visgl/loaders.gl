@@ -27,7 +27,7 @@ for (const value of column) {
 
 ## Inheritance
 
-Column extends [`Chunked`](modules/arrow/docs/api-reference/chunked.md)
+Column extends [`Chunked`](/docs/arrowjs/api-reference/chunked)
 
 
 ## Fields

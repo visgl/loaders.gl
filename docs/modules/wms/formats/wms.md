@@ -28,6 +28,38 @@ Also note that layers are organized in a hierarchy. Sublayers inherit properties
 
 > Note that the GetCapabilities request can be used to discover valid layer names, however on public servers the `GetCapabilities` request is sometimesslow, so it can take some time to auto-discover a valid layer name and then request a map with that layer. The `GetMap` request is usually faster once you have a list of valid layer names. 
 
+## Dimensions
+
+WMS capability data may indicate that some layers support additional dimensions, typically time. 
+
+- An optional dimension that can be queried using the `dim_<name>=...`, `time=...`, `elevation=...` parameters.
+- Note that layers that have at least one dimension without `default` value.
+- become unrenderable unless the dimension value is supplied to GetMap requests.
+
+```typescript
+export type WMSDimension = {
+  name: string; /** name of dimension, becomes a valid parameter key for this layer */
+  units: string; /** Textual units for this dimensional axis */
+  unitSymbol?: string; /** Unit symbol for this dimensional axis */
+  defaultValue?: string; /** Default value if no value is supplied. If dimension lacks defaultValue, requests fail if no value is supplied */
+  multipleValues?: boolean; /** Can multiple values of the dimension be requested? */
+  nearestValue?: boolean; /* Will nearest values will be substituted when out of range, if false exact values are required */
+  current?: boolean; /** A special value "current" is supported, typically for time dimension */
+  extent: string; /** Text content indicating available values for dimension */
+};
+```
+
+Note that some layers have a default value for the extra dimensions, meaning that they can be queried without specifying that dimension. 
+
+With the exception of `time` and `elevation`, the request parameter name is constructed by concatenating the prefix “dim_” with the sample dimension Name (the value of the name attribute of the corresponding `<Dimension>` and `<Extent>` elements in the Capabilities XML). The resulting “dim_name” is case-insensitive. 
+
+The use of the “dim_” prefix is to avoid clashes between server-defined dimension names and current or future OGC Web Service specifications. (Time and Elevation, being predefined, do not use the prefix.)
+
+- single value: for example: …&elevation=500&…
+- multiple values: for example: …&dim_text_dimension=first,second&…
+- single range value: for example: …&elevation=480/490&…
+- multiple range values: for example: …&elevation=480/490,490/500&…
+
 ## WMS Requests
 
 The WMS standard specifies a number of "request types" that a standards-compliant WMS server should support. loaders.gl provides loaders for all WMS request responses: 
@@ -47,7 +79,7 @@ Remarks:
 
 [capabilities_loader]: /docs/modules/wms/api-reference/wms-capabilities-loader
 [feature_info_loader]: /docs/modules/wms/api-reference/wms-feature-info-loader
-[image_loader]: /docs/modules/image/api-reference/image_loader
+[image_loader]: /docs/modules/images/api-reference/image-loader
 
 ## WMS Capabilities
 

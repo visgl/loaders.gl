@@ -42,6 +42,10 @@ export type WMSParameters = {
   styles?: unknown;
   /** Any additional parameters specific to this WMSService (GetMap) */
   transparent?: boolean;
+  /** If layer supports time dimension */
+  time?: string;
+  /** If layer supports elevation dimension */
+  elevation?: string;
 };
 
 /** Parameters for GetCapabilities */
@@ -60,6 +64,8 @@ export type WMSGetMapParameters = {
   width: number;
   /** pixels */
   height: number;
+  /** requested format for the return image. can be provided in service constructor */
+  format?: 'image/png';
   /** Layers to render - can be provided in service constructor */
   layers?: string | string[];
   /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
@@ -68,8 +74,10 @@ export type WMSGetMapParameters = {
   styles?: unknown;
   /** Don't render background when no data. can be provided in service constructor */
   transparent?: boolean;
-  /** requested format for the return image. can be provided in service constructor */
-  format?: 'image/png';
+  /** If layer supports time dimension */
+  time?: string;
+  /** If layer supports elevation dimension */
+  elevation?: string;
 };
 
 /** GetMap parameters that are specific to the current view */
@@ -213,6 +221,8 @@ export class WMSService extends ImageSource<WMSServiceProps> {
       format: 'image/png',
       info_format: 'text/plain',
       transparent: undefined!,
+      time: undefined!,
+      elevation: undefined!,
       ...props.wmsParameters
     };
 
@@ -342,6 +352,8 @@ export class WMSService extends ImageSource<WMSServiceProps> {
       version: this.wmsParameters.version,
       format: this.wmsParameters.format,
       transparent: this.wmsParameters.transparent,
+      time: this.wmsParameters.time,
+      elevation: this.wmsParameters.elevation,
       layers: this.wmsParameters.layers,
       styles: this.wmsParameters.styles,
       crs: this.wmsParameters.crs,
