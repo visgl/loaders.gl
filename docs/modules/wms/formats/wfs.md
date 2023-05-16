@@ -1,5 +1,7 @@
 # WFS - Web Feature Service
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 - *[`@loaders.gl/wms`](/docs/modules/wms)*
 - *[Wikipedia article](https://en.wikipedia.org/wiki/Web_Feature_Service)*
 

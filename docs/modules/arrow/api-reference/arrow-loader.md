@@ -1,5 +1,7 @@
 # ArrowLoader
 
+![arrow-logo](../images/apache-arrow-small.png)
+
 > The Arrow loaders are still under development.
 
 The `ArrowLoader` parses the Apache Arrow columnar table format.

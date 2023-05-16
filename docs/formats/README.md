@@ -1,12 +1,8 @@
-# Overview
+# File Formats
 
-This file format documentation in loaders.gl is essentially a cleaned up collection of research notes for some of the formats supported by loaders.gl.  
+This section collects articles that provide additional information about a number of the file formats supported by loaders.gl.
 
-The hope that by sharing these notes we may help some readers save time by providing a high level, easily digestible summary of the key points of specific file formats. 
-
-However, please note that the docs in this "Formats" section are provided on an as-is basis, there is no currently no ambition to provide similar documentation for all covered formats.
-
-Requesting maintainers to write new articles or update existing articles will likely not be successful. That said, egregious errors will be fixed if reported. GitHub Pull Requests with corrections or additional contributions are welcome, as long the proposed changes are reasonably consistent with the general style and level detail of the existing documentation.
+Note that these file format articles are essentially a cleaned up collection of research notes for some of the formats supported by loaders.gl. They are not intended to be comprehensive or exhaustive. The hope is that by sharing these notes we may help some readers quickly build deeper understanding of a particular format, by providing a high level, easily digestible summary of the key points of that format. 
 
 ## Documentation Structure
 
@@ -21,3 +17,7 @@ The file format articles in this section aim to follow the following structure:
 The preference is that file format articles should focus on the format itself and avoid describing the loaders.gl API. The articles  can then be relevant for a bigger audience, and loaders.gl API information can be concentrated into the reference docs. 
 
 However for practical reasons some information showing loaders.gl support for various file format features may be included. For example, an extra loaders.gl specific column can occasionally found in tables listing out format features, indicating if those features are supported in loaders.gl. The information should so that it is clearly marked and can easily be ignored.
+
+## Caveats
+
+The documentation in this "Formats" section are provided on an as-is basis, there is no currently no stated goal of provide similar documentation for all covered formats. Requesting maintainers to write new articles or update existing articles will likely not be successful. That said, egregious errors will be fixed if reported. GitHub Pull Requests with corrections or additional contributions are welcome, as long the proposed changes are reasonably consistent with the general style and level detail of the existing documentation.

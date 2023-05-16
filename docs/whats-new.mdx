@@ -64,17 +64,17 @@
 
 See [roadmap](./roadmap) for more details on planned development.
 
-## v4.0 (In Development on 4.0-dev branch)
+## v4.0 (In Development)
 
-Release Date: TBD, Q1-2022
+Release Date: TBD, Q3-2022
 
 A major release that brings: 
 
-- Improved typings:`load` and `parse` APIs now infer the strict types from the supplied loader object. Both the returned data and the loader options types will be inferred. 
-- Integration with latest Apache Arrow JS v9, which now provides significantly improved tree-shaking developed partly based on feedback from loaders.gl
-- New `Writers` for a variselection of formats
-- Support for cross-worker schema and table exchange, through a "serialized Apache Arrow" representation.
-- New documentation section covering file formats, providing more in-depth informationa about the various file formats supported by loaders.gl.
+- Improved typings:`load` and `parse` APIs now infer strict types for both loader options and parsed data from the supplied loader object.
+- Integrates with Apache Arrow JS v9+
+- `Writers` - new writers for several formats.
+- Schema types that support cross-worker schema and table exchange (a "serialized Apache Arrow" representation).
+- [File format documentation](/docs/formats?README) - provides additional informationa about the various file formats supported by loaders.gl.
 
 **@loaders.gl/arrow**
 
@@ -85,7 +85,7 @@ A major release that brings:
 
 - Stricter typing (see upgrade-guide)
 
-## v3.4 (In Development)
+## v3.4
 
 Target Release Date: April, 2023.
 

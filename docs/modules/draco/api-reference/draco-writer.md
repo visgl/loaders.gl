@@ -1,5 +1,7 @@
 # DracoWriter
 
+![logo](../images/draco-small.png)
+
 The `DracoWriter` encodes a mesh or point cloud using [Draco](https://google.github.io/draco/) compression.
 
 | Loader         | Characteristic                               |

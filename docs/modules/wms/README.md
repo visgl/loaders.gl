@@ -4,13 +4,15 @@
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
 </p>
 
+![ogc-logo](../../images/logos/ogc-logo-60.png)
+
 # OGC Web Services
 
 The `@loaders.gl/wms` module provides support for a subset of the OGC Web Services which are a set of XML-based web mapping standards.
 
 > The Open Geospatial Consortium (OGC) has produced a large set of related XML-based standards for web mapping. Some of these standards are not supported by loaders.gl, but are still mentioned here to provide context for the provided functionality (and minimize confusion as the standards have similar names and functionalities):
 
-## OGC Web Services
+## Services
 
 | OGC Protocol/Format                                                    | Supported    | Description                                                                                                                          |
 | ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |

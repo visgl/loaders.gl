@@ -1,5 +1,7 @@
 # Overview
 
+![ogc-logo](../../images/logos/ogc-logo-60.png)
+
 The `@loaders.gl/kml` module supports the KML, GPX, and TCX formats.
 
 KML (Keyhole Markup Language) is an XML-based file format used to display geographic data in an Earth browser such as Google Earth (originally named "Keyhole Earth Viewer"). It can be used with any 2D or 3D maps.

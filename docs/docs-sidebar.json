@@ -183,7 +183,7 @@
       {
         "type": "category",
         "label": "@loaders.gl/bson",
-        "items": ["modules/bson/README", "modules/bson/formats/bson"]
+        "items": ["modules/bson/README"]
       },
       {
         "type": "category",
@@ -325,7 +325,6 @@
         "label": "@loaders.gl/textures",
         "items": [
           "modules/textures/README",
-          "modules/textures/formats/compressed-textures",
           "modules/textures/api-reference/load-image",
           "modules/textures/api-reference/load-image-array",
           "modules/textures/api-reference/load-image-cube"
