@@ -452,9 +452,10 @@ export class WMSService extends ImageSource<WMSServiceProps> {
     };
 
     // Encode the keys
+    const IGNORE_EMPTY_KEYS=['transparent', 'time', 'elevation'];
     for (const [key, value] of Object.entries(allParameters)) {
       // hack to preserve test cases. Not super clear if keys should be included when values are undefined
-      if (key !== 'transparent' || value) {
+      if (!IGNORE_EMPTY_KEYS.includes(key) || value) {
         url += first ? '?' : '&';
         first = false;
         url += this._getURLParameter(key, value, wmsParameters);
