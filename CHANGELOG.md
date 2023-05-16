@@ -1,5 +1,7 @@
 # CHANGELOG for loaders.gl
 
+## v3.4.0
+
 ## v3.4 Prerelease
 
 ## v3.4.0-alpha.5
@@ -11,7 +13,7 @@
 - fix(wkb): TypeError: Cannot use 'in' operator to search for 'wkb' in undefined (#2463)
 - chore(tiles): Improved TypeScript types (#2461)
 - Tiles3DLoader: pass query parameters used on tileset request onto tile requests (#2252)
-- docs: tilesetUrl  change (#2408)
+- docs: tilesetUrl change (#2408)
 - docs(tile-converter): features compatibility (#2454)
 - Fix handling of query parameters in tile url (#2456)
 - docs(whats-new): tile-converter updates (#2455)
