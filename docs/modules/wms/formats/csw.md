@@ -1,5 +1,7 @@
 # CSW - Catalog Service - Web
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 - *[`@loaders.gl/wms`](/docs/modules/wms)*
 - *[Wikipedia article)][csw]*
 

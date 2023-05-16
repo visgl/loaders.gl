@@ -1,5 +1,7 @@
 # GML - Geography Markup Language
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 - *[`loaders.gl/wms`](/docs/modules/wms)*
 - *[Wikpedia article](https://en.wikipedia.org/wiki/Geography_Markup_Language)*
 

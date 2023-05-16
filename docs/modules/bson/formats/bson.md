@@ -1,5 +1,7 @@
 # BSON - Binary JSON
 
+![bson-logo](../../../images/logos/bson-logo.png)
+
 - *[`@loaders.gl/bson`](/docs/modules/bson) *
 - *[BSON specification](https://bsonspec.org/)*
 - *[Wikipedia article](https://en.wikipedia.org/wiki/BSON)*

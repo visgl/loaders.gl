@@ -1,11 +1,13 @@
 # WMS - Web Map Service
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 - *[`@loaders.gl/wms`](/docs/modules/wms)*
 - *[Wikipedia article](https://en.wikipedia.org/wiki/Web_Map_Service)*
+- *[OGC Specification](https://raw.githubusercontent.com/visgl/deck.gl-data/master/specifications/wms/06-042_OpenGIS_Web_Map_Service_WMS_Implementation_Specification.pdf) (PDF)*
 
 WMS (Web Map Service) is a protocol for serving geo-referenced **map images** over the internet. WMS was standardized in 1999 by the OGC (Open Geospatial Consortium).
 
-- *[OGC Specification](https://raw.githubusercontent.com/visgl/deck.gl-data/master/specifications/wms/06-042_OpenGIS_Web_Map_Service_WMS_Implementation_Specification.pdf) (PDF)*
 
 ## Characteristics
 
@@ -27,57 +29,56 @@ Rendering parameters can be supported by the WMS service. Perhaps the most signi
 
 The `GetCapabilities` request returns metadata about the WMS service. 
 
-| XML Tag               | JSON Field           | Type       | Description                                                                                  |
-| --------------------- | -------------------- | ---------- | -------------------------------------------------------------------------------------------- |
-| `<Version>`           | `version?`           | `string`   | Version of the WMS service: '1.3.0', '1.1.1', '1.1.0' or '1.0.0'                             |
-| `<Name>`              | `name`               | `string`   | A human readable name for the service                                                        |
-| `<Title>`             | `title?`             | `string`   | A more extensive description of the service                                                  |
-| `<Abstract>`          | `abstract?`          | `string`   |                                                                                              |
-| `<Keyword>`           | `keywords`           | `string[]` | A set of keywords e.g. for searching services                                                |
-| `<AccessConstraints>` | `accessConstraints?` | `string`   | A field of unspecified format, describes any access constraints required to use the service. |
-| `<Fees>`              | `fees?`              | `string`   | A field of unspecified format, describes any fees required to use the service                |
-| `<LayerLimit>`        | `layerLimit?`        | `number`   | If present, the max number of layers that can be rendered by the service                     |
-| `<MaxWidth>`          | `maxWidth?`          | `number`   | If present, the widest image that can be rendered by the service                             |
-| `<MaxHeight>`         | `maxHeight?`         | `number`   | If present, the tallest image that can be rendered by the service                            |
-| `<Layers`             | `layers`             | `object[]` | Hierarchical list of layers.                                                                 |
-| `<Requests`           | `requests`           | `object`   | Information about supported WMS requests, specifically what MIME types they can return       |
-| `<Exceptions>`        | `exceptions?`        | `object`   | Information about any exceptions that the service will report (HTTP status != 2xx)           |
-| `<ContactInfo>`       | N/A                  | `object`   | Information about any exceptions that the service will report (HTTP status != 2xx)           |
+| XML Tag               | JSON Field           | JavaScript Type | Description                                                                                  |
+| --------------------- | -------------------- | --------------- | -------------------------------------------------------------------------------------------- |
+| `<Version>`           | `version?`           | `string`        | Version of the WMS service: '1.3.0', '1.1.1', '1.1.0' or '1.0.0'                             |
+| `<Name>`              | `name`               | `string`        | A human readable name for the service                                                        |
+| `<Title>`             | `title?`             | `string`        | A more extensive description of the service                                                  |
+| `<Abstract>`          | `abstract?`          | `string`        |                                                                                              |
+| `<Keyword>`           | `keywords`           | `string[]`      | A set of keywords e.g. for searching services                                                |
+| `<AccessConstraints>` | `accessConstraints?` | `string`        | A field of unspecified format, describes any access constraints required to use the service. |
+| `<Fees>`              | `fees?`              | `string`        | A field of unspecified format, describes any fees required to use the service                |
+| `<LayerLimit>`        | `layerLimit?`        | `number`        | If present, the max number of layers that can be rendered by the service                     |
+| `<MaxWidth>`          | `maxWidth?`          | `number`        | If present, the widest image that can be rendered by the service                             |
+| `<MaxHeight>`         | `maxHeight?`         | `number`        | If present, the tallest image that can be rendered by the service                            |
+| `<Layers`             | `layers`             | `object[]`      | Hierarchical list of layers.                                                                 |
+| `<Requests`           | `requests`           | `object`        | Information about supported WMS requests, specifically what MIME types they can return       |
+| `<Exceptions>`        | `exceptions?`        | `object`        | Information about any exceptions that the service will report (HTTP status != 2xx)           |
+| `<ContactInfo>`       | N/A                  | `object`        | Information about any exceptions that the service will report (HTTP status != 2xx)           |
 
 Layers in the `layers` field inherit many properties from their parent layers, see description of individual props for details.
 
-| XML Tag                      | JSON Field               | Type               | Description                                                                           | Required | Inherited |
-| ---------------------------- | ------------------------ | ------------------ | ------------------------------------------------------------------------------------- | -------- |
-| `<Title>`                    | `title`                  | `string`           | The title is a human readable name. It is mandatory on each layer.                    | Yes      | No        |
-| `<Name>`                     | `name?`                  | `string`           | Layer is renderable if it has a name. A named parent layer will render all sublayers. | No       | No        |
-| `<Abstract>`                 | `abstract?`              | `string`           | A narrative description of the map layer.                                             | No       | No        |
-| `<Keywords>`                 | `keywords`               | `string[]`         | A set of keywords e.g. for searching layers                                           | No       | No        |
-| `<EX_GeographicBoundingBox>` | `geographicBoundingBox?` | `[[w, s], [e, n]]` | 1.3.0. Rough extents of layer data in lng/lat, for quick access w/o CRS calculations. | yes      | Yes       |
-| `<LngLatBoundingBox>`        | `geographicBoundingBox?` | `[[w, s], [e, n]]` | 1.1.1 Rough extents of layer data in lng/lat, for quick access w/o CRS calculations.  | yes      | Yes       |
-| `<CRS>`                      | `crs?`                   | `string[]`         | 1.3.0 Supported CRS.                                                                  | Yes      | Yes       |
-| `<SRS>`                      | `crs?`                   | `string[]`         | 1.1.1 Supported CRS.                                                                  | Yes      | Yes       |
-| `<BoundingBox>`              | `boundingBoxes?`         | `object[]`         | Bounding boxes in specific CRS:es                                                     |
-| `<MinScale>`                 | `minScale`               | `number`           |
-| `<MaxScale>`                 | `maxScale`               | `number`           |
-| `<Dimensions>`               | `dimensions`             | `number`           |                                                                                       |
-| `<MetadataURL>`              | `metadataURL`            |                    |                                                                                       |
-| `<Attribution>`              | `attribution`            |                    |                                                                                       |
-| `<Identifier>`               | `identifier`             |                    |                                                                                       |
-| `<AuthorityURL>`             | `authorityURL`           |                    |                                                                                       |
-| `<FeatureListURL>`           | `featureListURL`         |                    |                                                                                       |
-| `<DataURL>`                  | `dataURL`                |                    |                                                                                       |
-| `<Queryable>`                | `queryable?`             | `boolean`          | Whether queries can be performed on the layer                                         |
-| `<Opaque>`                   | `opaque?`                | `boolean`          | `false` if layer has significant no-data areas that can be display as transparent.    |
-| `<Cascaded>`                 | `cascaded?`              | `boolean`          | "WMS cascading" allows server to expose layers coming from other WMS servers          |
-| `<NoSubsets>`                | `noSubsets`              | `boolean`          |
-| `<FixedWith>`                | `fixedWith`              | `number`           |
-| `<FixedHeight>`              | `fixedHeight`            | `number`           |
-| `<Styles>`                   | `styles?`                | `unknown[]`        | A list of styles. @note not yet supported by WMSCapabilitiesLoader                    |
-| `<Layers>`                   | `layers`                 | `object[]`         | Sublayers`  - these inherit crs and boundingBox (if not overridden)                   |
+| XML Tag                      | JSON Field               | JavaScript Type    | Description                                                               | Inherited |
+| ---------------------------- | ------------------------ | ------------------ | ------------------------------------------------------------------------- | --------- |
+| `<Title>`                    | `title`                  | `string`           | The title is a human readable name. It is mandatory on each layer.        | No        |
+| `<Name>`                     | `name?`                  | `string`           | ayer is renderable iff it has a name. Parent layers render all sublayers. | No        |
+| `<Abstract>`                 | `abstract?`              | `string`           | A narrative description of the map layer.                                 | No        |
+| `<Keywords>`                 | `keywords`               | `string[]`         | A set of keywords e.g. for searching layers                               | No        |
+| `<EX_GeographicBoundingBox>` | `geographicBoundingBox?` | `[[w, s], [e, n]]` | 1.3.0. Rough extents of layer data in lng/lat, avoids CRS calculations.   | Yes       |
+| `<LngLatBoundingBox>`        | `geographicBoundingBox?` | `[[w, s], [e, n]]` | 1.1.1 Rough extents of layer data in lng/lat, avoids CRS calculations.    | Yes       |
+| `<CRS>`                      | `crs?`                   | `string[]`         | 1.3.0 Supported CRS.                                                      | Yes       |
+| `<SRS>`                      | `crs?`                   | `string[]`         | 1.1.1 Supported CRS.                                                      | Yes       |
+| `<BoundingBox>`              | `boundingBoxes?`         | `object[]`         | Bounding boxes in specific CRS:es                                         |           |
+| `<MinScale>`                 | `minScale`               | `number`           |                                                                           |           |
+| `<Dimensions>`               | `dimensions`             | `object[]`         |                                                                           |           |
+| `<MetadataURL>`              | `metadataURL`            |                    |                                                                           |           |
+| `<Attribution>`              | `attribution`            |                    |                                                                           |           |
+| `<Identifier>`               | `identifier`             |                    |                                                                           |           |
+| `<AuthorityURL>`             | `authorityURL`           |                    |                                                                           |           |
+| `<FeatureListURL>`           | `featureListURL`         |                    |                                                                           |           |
+| `<DataURL>`                  | `dataURL`                |                    |                                                                           |           |
+| `<Queryable>`                | `queryable?`             | `boolean`          | Whether queries can be performed on the layer                             |           |
+| `<Opaque>`                   | `opaque?`                | `boolean`          | `false` if layer has no-data areas that can be display as transparent.    |           |
+| `<Cascaded>`                 | `cascaded?`              | `boolean`          | This layer is "forwarded" from another WMS server.                        |           |
+| `<NoSubsets>`                | `noSubsets`              | `boolean`          |                                                                           |           |
+| `<FixedWith>`                | `fixedWith`              | `number`           |                                                                           |           |
+| `<FixedHeight>`              | `fixedHeight`            | `number`           |                                                                           |           |
+| `<Styles>`                   | `styles?`                | `unknown[]`        | A list of styles.                                                         |           |
+| `<Layers>`                   | `layers`                 | `object[]`         | Sublayers. These inherit `crs`, `boundingBox` etc (if not overridden)     |           |
 
 A bounding box in the layer `boundingBoxes` field specifies the coordinate range for data in the layer, described in a specific CRS (coordinate reference system). No data is available outside this bounding box.
 
-| XML Tag         | JSON Field     | Type               | Description                                                                                   |
+| XML Tag         | JSON Field     | JavaScript Type    | Description                                                                                   |
 | --------------- | -------------- | ------------------ | --------------------------------------------------------------------------------------------- |
 | `<CRS>`         | `crs`          | `string`           | 1.3.0 CRS indicates the Layer CRS that applies to this bounding box.                          |
 | `<SRS>`         | `crs`          | `string`           | 1.1.1 CRS indicates the Layer CRS that applies to this bounding box.                          |
@@ -85,8 +86,21 @@ A bounding box in the layer `boundingBoxes` field specifies the coordinate range
 | `<resx>`        | `xResolution?` | `number`           | Spatial horizontal resolution of data in same units as bounding box                           |
 | `<resy>`        | `yResolution?` | `number`           | Spatial vertical resolution of data in same units as bounding box                             |
 
+A WMS layer can support one or more additional data dimensions, such as `time`, `elevation` or `dim_...` that can be specified when querying the map.
+
+| XML Tag            | JSON Field        | Type      | Description                                                                                   |
+| ------------------ | ----------------- | --------- | --------------------------------------------------------------------------------------------- |
+| `<Name>`           | `name`            | `string`  | name of dimension, `dim_<name>` is a valid parameter key for this layer                       |
+| `<Units>`          | `units`           | `string`  | Textual units for this dimensional axis                                                       |
+| `<UnitSymbol>`     | `unitSymbol?`     | `string`  | Unit symbol for this dimensional axis                                                         |
+| `<DefaultValue>`   | `defaultValue?`   | `string`  | Default value. If a dimension lacks defaultValue, requests fail if no value is supplied       |
+| `<MultipleValues>` | `multipleValues?` | `boolean` | Can multiple values of the dimension be requested?                                            |
+| `<NearestValue>`   | `nearestValue?`   | `boolean` | Will nearest values will be substituted when out of range, if false exact values are required |
+| `<Current>`        | `current?`        | `boolean` | A special value "current" is supported, typically for time dimension                          |
+| `<Extent>`         | `extent`          | `string`  | Text content indicating available values for dimension                                        |
+
 Remarks:
-- The above table is not intended to be an exhaustive description of OGC WMS Capabilities XML. 
+- The above tables are not intended to be an exhaustive description of OGC WMS Capabilities XML. 
 - Some XML tags have additional nested tags or properties not described here, please refer directly to the OGC WMS standard if such details matter.
 - The "JSON Field" in the tables below is not part of the OGC WMS standard. It describes the JSON representation that the loaders.gl `WMSCapabilitiesLoader` outputs, and the type field represents JSON types. 
 - The JSON representation is simpler, but similar to, the source XML. (camelCase instead of PascalCase etc).
