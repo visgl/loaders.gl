@@ -35,13 +35,8 @@
     "build-worker": "esbuild src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@loaders.gl/loader-utils": "3.4.0",
-    "@loaders.gl/schema": "3.4.0",
-=======
     "@loaders.gl/loader-utils": "4.0.0-alpha.6",
     "@loaders.gl/schema": "4.0.0-alpha.6",
->>>>>>> 99cf80fc6 (v4.0.0-alpha.6)
     "xlsx": "^0.17.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"

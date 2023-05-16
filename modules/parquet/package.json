@@ -1,10 +1,6 @@
 {
   "name": "@loaders.gl/parquet",
-<<<<<<< HEAD
-  "version": "3.4.0",
-=======
   "version": "4.0.0-alpha.6",
->>>>>>> 99cf80fc6 (v4.0.0-alpha.6)
   "description": "Framework-independent loader for Apache Parquet files",
   "license": "MIT",
   "publishConfig": {
@@ -45,17 +41,10 @@
     "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@loaders.gl/bson": "3.4.0",
-    "@loaders.gl/compression": "3.4.0",
-    "@loaders.gl/loader-utils": "3.4.0",
-    "@loaders.gl/schema": "3.4.0",
-=======
     "@loaders.gl/bson": "4.0.0-alpha.6",
     "@loaders.gl/compression": "4.0.0-alpha.6",
     "@loaders.gl/loader-utils": "4.0.0-alpha.6",
     "@loaders.gl/schema": "4.0.0-alpha.6",
->>>>>>> 99cf80fc6 (v4.0.0-alpha.6)
     "async-mutex": "^0.2.2",
     "brotli": "^1.3.2",
     "int53": "^0.2.4",
