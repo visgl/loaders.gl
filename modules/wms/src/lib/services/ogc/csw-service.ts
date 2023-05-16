@@ -20,7 +20,7 @@ type CSWCommonParameters = {
   /** In case the endpoint supports multiple services */
   service?: 'CSW';
   /** In case the endpoint supports multiple CSW versions */
-  version?: '1.1.1' | '2.0.0' | '2.0.1' | '3.0.0' | '3.0.0';
+  version?: '1.1.1' | '2.0.0' | '2.0.1' | '3.0.0';
 };
 
 export type CSWGetCapabilitiesParameters = CSWCommonParameters & {
@@ -41,17 +41,25 @@ export type CSWGetDomainParameters = CSWCommonParameters & {
   // TBA
 };
 
-export type Service = {name: string; type: string; url: string; params?: string; scheme?: string};
+/** Describes a service or resource exposed by the catalog */
+export type Service = {
+  /** name of service or resource */
+  name: string;
+  /** type of service or resource */
+  type: string;
+  url: string;
+  params?: string;
+  scheme?: string;
+};
 
 export type CSWServiceProps = DataSourceProps & {
   url: string;
 };
 
 /**
- * The CSWService class provides
+ * The CSWService class
  * - provides type safe methods to form URLs to a CSW service
  * - provides type safe methods to query and parse results (and errors) from a CSW service
- * - implements the ImageService interface
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
 export class CSWService extends DataSource<CSWServiceProps> {

@@ -15,7 +15,7 @@ Loader selection heuristics are based on:
 - Initial bytes - for certain inputs, the initial bytes in the supplied data can be compared against known "magic bytes" for various file formats.
 
 **loader registry** - `selectLoader()` and `selectLoaderSync()` are also aware of the
-[loader registry](docs/api-reference/core/register-loaders).
+[loader registry](/docs/modules/core/api-reference/register-loaders).
 The list of pre-registered loaders will be included in the search for a compatible loader,
 unless `options.ignoreRegisteredLoaders` is `true`.
 

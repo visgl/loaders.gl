@@ -26,7 +26,11 @@ const data = await load('data.csv');
 
 ## Functions
 
-### registerLoaders(loaders : Object | Object[])
+### registerLoaders()
+
+```typescript
+registerLoaders(loaders : Loader | Loader[])
+```
 
 Registers one or more _loader objects_ to a global _loader object registry_, these loaders will be used if no loader object is supplied to `parse` and `load`.
 

@@ -2,17 +2,16 @@
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
+  &nbsp;
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-The `WMSService` class provides: 
-- type safe method to request and parse the capabilities metadata of a WMS service
-- type safe methods to call and parse results (and errors) from a WMS service's endpoints
-- type safe methods to form URLs to a WMS service
-- an implementation of the `ImageService` interface, allowing WMS services to be used as one interchangeable type of map image data source.
+The `WMSService` class helps applications interact with a WMS service (discover its capabilities, request map images and information about geospatial features, etc).
 
-> The `WMSService` generates URLs with URL parameters intended to be used with HTTP GET requests against a WMS server. The OGC WMS standard also allows WMS services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported by this class.
- 
+The `WMSService` provides a type safe API that forms valid WMS URLs and issues requests, handles WMS version differences and edge cases under the hood and parses results and errors into strongly typed JavaScript objects.
+
+The `WMSService` implements the `ImageService` interface, allowing WMS services to be used as one interchangeable source of asynchronously generated map image data.
+
 ## Usage
 
 A `WMSService` instance provides type safe methods to send requests to a WMS service and parse the responses: 
@@ -32,19 +31,6 @@ Capabilities metadata can be queried:
   const wmsService = new WMSService({url: WMS_SERVICE_URL});
   const capabilities = await wmsService.getCapabilities({});
   // Check capabilities
-```
-
-It is also possible to just use the WMS service to generate URLs. This allowing the application to perform its own and parsing: 
-```typescript
-  const wmsService = new WMSService({url: WMS_SERVICE_URL});
-  const getMapUrl = await wmsService.getMapURL({
-    width: 800,
-    height: 600,
-    bbox: [30, 70, 35, 75],
-    layers: ['oms']
-  });
-  const response = await myCustomFetch(getMapURL);
-  // parse...
 ```
 
 The WMS version as well as other default WMS parameters can be specified in the constructor
@@ -80,9 +66,24 @@ standard loaders.gl `loadOptions` argument, which is forwarded to all load and p
   });
 ```
 
+For special use cases, is possible to use the `WMSService` to just generate URLs, so that the application issue its own requests and parse responses.
+
+```typescript
+  const wmsService = new WMSService({url: WMS_SERVICE_URL});
+  const getMapUrl = await wmsService.getMapURL({
+    width: 800,
+    height: 600,
+    bbox: [30, 70, 35, 75],
+    layers: ['oms']
+  });
+  const response = await myCustomFetch(getMapURL);
+  // parse...
+```
+
+
 ## Methods
   
-### constructor(props: WMSServiceProps)
+### constructor()
 
 Creates a `WMSService` instance
 
@@ -105,9 +106,11 @@ export type WMSServiceProps = {
   },
   vendorParameters
 };
+
+constructor(props: WMSServiceProps)
 ```
 
-### `getCapabilities()`
+### getCapabilities()
 
 Get Capabilities
 
@@ -120,7 +123,7 @@ Get Capabilities
 
 Returns a capabilities objects. See [`WMSCapabilitiesLoader`][/docs/modules/wms/api-reference/wms-capabilities-loader] for detailed information about the `WMSCapabilities` type.
 
-### `getMap()`
+### getMap()
 
 Get a map image
 
@@ -142,8 +145,7 @@ export type WMSGetMapParameters = {
 };
 ```
 
-
-### `getFeatureInfo()`
+### getFeatureInfo()
 
 > This request is not supported by all WNS servers. Use `getCapabilities()` to determine if it is.
 
@@ -173,7 +175,7 @@ export type WMSGetFeatureInfoParameters = {
 };
 ```
 
-### `describeLayer()`
+### describeLayer()
 
 > This request is not supported by all WNS servers. Use `getCapabilities()` to determine if it is.
 
@@ -192,7 +194,7 @@ export type WMSDescribeLayerParameters = {
 };
 ```
 
-### `getLegendGraphic()`
+### getLegendGraphic()
 
 > This request is not supported by all WMS servers. Use `getCapabilities()` to determine if it is.
 
@@ -209,4 +211,9 @@ Get an image with a semantic legend
 export type WMSGetLegendGraphicParameters = {
 };
 ```
+
+## Limitations
+
+The `WMSService` only supports WMS URL parameters generation and HTTP GET requests against a WMS server. The OGC WMS standard also allows WMS services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported.
+ 
 

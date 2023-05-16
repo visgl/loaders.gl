@@ -1,6 +1,10 @@
 # BSONWriter
 
-Write for BSON files.
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
+</p>
+
+Writer for BSON files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
