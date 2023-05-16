@@ -1,10 +1,14 @@
+// loaders.gl, MIT license
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseGeoPackage, {DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
+import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
+import {parseGeoPackage, DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 // const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const VERSION = 'latest';
+
+export type GeoPackageLoaderResult = Tables<ObjectRowTable> | Record<string, Feature[]>;
 
 export type GeoPackageLoaderOptions = LoaderOptions & {
   geopackage?: {
@@ -19,7 +23,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
 };
 
 /** Geopackage loader */
-export const GeoPackageLoader: LoaderWithParser = {
+export const GeoPackageLoader: LoaderWithParser<GeoPackageLoaderResult, never, GeoPackageLoaderOptions> = {
   id: 'geopackage',
   name: 'GeoPackage',
   module: 'geopackage',

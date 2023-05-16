@@ -40,6 +40,3 @@ function parseSync(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): GLB {
   parseGLBSync(glb, arrayBuffer, byteOffset, options?.glb);
   return glb;
 }
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckGLBLoader: LoaderWithParser = GLBLoader;

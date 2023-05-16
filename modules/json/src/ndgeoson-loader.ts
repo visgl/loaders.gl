@@ -15,15 +15,6 @@ export type NDGeoJSONLoaderOptions = LoaderOptions & {
   };
 };
 
-const DEFAULT_NDGEOJSON_LOADER_OPTIONS = {
-  geojson: {
-    shape: 'object-row-table'
-  },
-  gis: {
-    format: 'geojson'
-  }
-};
-
 export const NDJSONLoader = {
   name: 'NDJSON',
   id: 'ndjson',
@@ -42,7 +33,14 @@ export const NDJSONLoader = {
   parse: async (arrayBuffer: ArrayBuffer) => parseNDJSONSync(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseNDJSONSync,
   parseInBatches: parseNDJSONInBatches,
-  options: DEFAULT_NDGEOJSON_LOADER_OPTIONS
+  options: {
+    geojson: {
+      shape: 'object-row-table'
+    },
+    gis: {
+      format: 'geojson'
+    }
+  }
 };
 
 export const _typecheckNDJSONLoader: LoaderWithParser = NDJSONLoader;

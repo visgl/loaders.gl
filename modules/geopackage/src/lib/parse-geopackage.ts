@@ -68,7 +68,7 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes | GeoPackageGeometryTypes]: DataTy
   GEOMETRYCOLLECTION: 'binary'
 };
 
-export default async function parseGeoPackage(
+export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
 ): Promise<Tables<ObjectRowTable> | Record<string, Feature[]>> {
