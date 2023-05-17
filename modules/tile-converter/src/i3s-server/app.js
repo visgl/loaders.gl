@@ -16,9 +16,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 if (/\.slpk$/.test(I3S_LAYER_PATH)) {
-    app.use('/', router);
+  app.use('/', router);
 } else {
-    app.use('/', indexRouter);
+  app.use('/', indexRouter);
 }
 
 module.exports = app;
