@@ -2,6 +2,12 @@
 
 ## v3.4.0
 
+## v3.4.1
+
+- fix(tiles): isLoaded has breaking change (#2485)
+- fix: set VERSION tag to 'latest' (#2483)
+- docs: Polish and publish website for v3.4 (#2478)
+
 ## v3.4 Prerelease
 
 ## v3.4.0-alpha.5
