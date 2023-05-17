@@ -72,6 +72,9 @@ export class TilesetTraverser {
   }
 
   reset() {
+    this.requestedTiles = {};
+    this.selectedTiles = {};
+    this.emptyTiles = {};
     this._traversalStack.reset();
     this._emptyTraversalStack.reset();
   }
