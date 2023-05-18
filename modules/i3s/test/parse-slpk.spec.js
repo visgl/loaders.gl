@@ -9,6 +9,17 @@ test('SLPKLoader#slpk load', async (t) => {
   t.end();
 });
 
+test('SLPKLoader#slpk load error', async (t) => {
+  const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
+  try {
+    await load(SLPKUrl, SLPKLoader, {path: 'nodepages/5.json'});
+    t.fail('error should be thrown');
+  } catch (e) {
+    if (e) t.pass('correct error thrown');
+  }
+  t.end();
+});
+
 test('SLPKLoader#slpk load http nodepage', async (t) => {
   const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
