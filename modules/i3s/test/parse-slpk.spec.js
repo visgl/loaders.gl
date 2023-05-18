@@ -11,21 +11,27 @@ test('SLPKLoader#slpk load', async (t) => {
 
 test('SLPKLoader#slpk load http nodepage', async (t) => {
   const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
-  const uncompressedFile = await load(SLPKUrl, SLPKLoader, {path: 'nodepages/0', pathMode: 'http'});
+  const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
+    path: 'layers/0/nodepages/0',
+    pathMode: 'http'
+  });
   t.deepEqual(uncompressedFile.byteLength, 16153);
   t.end();
 });
 
 test('SLPKLoader#slpk load http layer', async (t) => {
   const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
-  const uncompressedFile = await load(SLPKUrl, SLPKLoader, {path: '', pathMode: 'http'});
+  const uncompressedFile = await load(SLPKUrl, SLPKLoader, {path: 'layers/0', pathMode: 'http'});
   t.deepEqual(uncompressedFile.byteLength, 4780);
   t.end();
 });
 
 test('SLPKLoader#slpk load http node', async (t) => {
   const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
-  const uncompressedFile = await load(SLPKUrl, SLPKLoader, {path: 'nodes/0', pathMode: 'http'});
+  const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
+    path: 'layers/0/nodes/0',
+    pathMode: 'http'
+  });
   t.deepEqual(uncompressedFile.byteLength, 1171);
   t.end();
 });
@@ -33,7 +39,7 @@ test('SLPKLoader#slpk load http node', async (t) => {
 test('SLPKLoader#slpk load http geometry', async (t) => {
   const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
-    path: 'nodes/0/geometries/0',
+    path: 'layers/0/nodes/0/geometries/0',
     pathMode: 'http'
   });
   t.deepEqual(uncompressedFile.byteLength, 156280);
@@ -43,7 +49,7 @@ test('SLPKLoader#slpk load http geometry', async (t) => {
 test('SLPKLoader#slpk load http attributes', async (t) => {
   const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
-    path: 'nodes/2/attributes/f_2/0',
+    path: 'layers/0/nodes/2/attributes/f_2/0',
     pathMode: 'http'
   });
   t.deepEqual(uncompressedFile.byteLength, 8);
@@ -53,7 +59,7 @@ test('SLPKLoader#slpk load http attributes', async (t) => {
 test('SLPKLoader#slpk load http statistics', async (t) => {
   const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
-    path: 'statistics/f_3/0',
+    path: 'layers/0/statistics/f_3/0',
     pathMode: 'http'
   });
   t.deepEqual(uncompressedFile.byteLength, 735);
@@ -63,7 +69,7 @@ test('SLPKLoader#slpk load http statistics', async (t) => {
 test('SLPKLoader#slpk load http shared', async (t) => {
   const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
-    path: 'nodes/2/shared',
+    path: 'layers/0/nodes/2/shared',
     pathMode: 'http'
   });
   t.deepEqual(uncompressedFile.byteLength, 333);

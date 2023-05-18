@@ -15,37 +15,39 @@ type HashElement = {
   offset: number;
 };
 
+const layerPrefixRemove = /^layers\/0\/?(.*)$/;
+
 const pathDescriptions = [
   {
-    test: /^$/,
+    test: /^layers\/0$/,
     extensions: ['3dSceneLayer.json.gz']
   },
   {
-    test: /^nodepages\/\d+$/,
+    test: /^layers\/0\/nodepages\/\d+$/,
     extensions: ['.json.gz']
   },
   {
-    test: /^nodes\/\d+$/,
+    test: /^layers\/0\/nodes\/\d+$/,
     extensions: ['/3dNodeIndexDocument.json.gz']
   },
   {
-    test: /^nodes\/\d+\/textures\/.+$/,
+    test: /^layers\/0\/nodes\/\d+\/textures\/.+$/,
     extensions: ['.jpg', '.png', '.bin.dds.gz', '.ktx']
   },
   {
-    test: /^nodes\/\d+\/geometries\/\d+$/,
+    test: /^layers\/0\/nodes\/\d+\/geometries\/\d+$/,
     extensions: ['.bin.gz', '.draco.gz']
   },
   {
-    test: /^nodes\/\d+\/attributes\/f_\d+\/\d+$/,
+    test: /^layers\/0\/nodes\/\d+\/attributes\/f_\d+\/\d+$/,
     extensions: ['.bin.gz']
   },
   {
-    test: /^statistics\/f_\d+\/\d+$/,
+    test: /^layers\/0\/statistics\/f_\d+\/\d+$/,
     extensions: ['.json.gz']
   },
   {
-    test: /^nodes\/\d+\/shared$/,
+    test: /^layers\/0\/nodes\/\d+\/shared$/,
     extensions: ['/sharedResource.json.gz']
   }
 ];
@@ -99,7 +101,7 @@ export class SLPKArchive {
       if (extensions) {
         let data: ArrayBuffer | undefined;
         for (const ext of extensions) {
-          data = await this.getDataByPath(`${path}${ext}`);
+          data = await this.getDataByPath(`${layerPrefixRemove.exec(path)?.at(1)}${ext}`);
           if (data) {
             break;
           }
