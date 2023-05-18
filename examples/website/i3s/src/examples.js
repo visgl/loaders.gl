@@ -65,16 +65,15 @@ export const EXAMPLES = {
 // HERO EXAMPLE CONSTANTS
 export const HERO_EXAMPLE_MAP_STYLE = MAP_STYLES['Light'];
 export const HERO_EXAMPLE_URL =
-  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17/SceneServer/layers/0';
+  'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0';
 
 export const HERO_EXAMPLE_VIEW_STATE = {
-  longitude: -73,
-  latitude: 45,
-  height: 600,
-  width: 800,
-  pitch: 30,
+  transitionDuration: 0,
+  longitude: -122.401,
+  latitude: 37.796,
+  pitch: 40,
   bearing: 0,
-  zoom: 16.7
+  zoom: 16.5,
 };
 
 export const HERO_EXAMPLE_VIEW = new MapView({
