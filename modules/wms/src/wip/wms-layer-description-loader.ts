@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type{WMSLoaderOptions} from '../wms-capabilities-loader';
+import type {XMLLoaderOptions} from '@loaders.gl/xml';
 import {WMSCapabilitiesLoader} from '../wms-capabilities-loader';
 
 import type {WMSLayerDescription} from '../lib/parsers/wms/parse-wms-layer-description';
@@ -18,9 +18,9 @@ export const WMSLayerDescriptionLoader = {
   id: 'wms-layer-description',
   name: 'WMS DescribeLayer',
 
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: XMLLoaderOptions) =>
     parseWMSLayerDescription(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSLoaderOptions) => parseWMSLayerDescription(text, options)
+  parseTextSync: (text: string, options?: XMLLoaderOptions) => parseWMSLayerDescription(text, options)
 };
 
 export const _typecheckWMSFeatureInfoLoader: LoaderWithParser = WMSLayerDescriptionLoader;

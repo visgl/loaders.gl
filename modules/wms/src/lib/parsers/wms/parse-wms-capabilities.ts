@@ -143,7 +143,7 @@ export type WMSExceptions = {
   mimeTypes: string[];
 };
 
-export type parseWMSCapabilitiesOptions = {
+export type ParseWMSCapabilitiesOptions = {
   /** Add inherited layer information to sub layers */
   inheritedLayerProps?: boolean;
   /** Include the "raw" JSON (parsed but untyped, unprocessed XML). May contain additional fields */
@@ -152,7 +152,6 @@ export type parseWMSCapabilitiesOptions = {
   includeXMLText?: boolean;
   /** @deprecated Use includeRawData` */
   raw?: boolean;
-
   // xml options are passed through to xml loader
 };
 
@@ -162,7 +161,7 @@ export type parseWMSCapabilitiesOptions = {
  */
 export function parseWMSCapabilities(
   xmlText: string,
-  options?: parseWMSCapabilitiesOptions
+  options?: ParseWMSCapabilitiesOptions
 ): WMSCapabilities {
   const parsedXML = XMLLoader.parseTextSync(xmlText, options);
   const xmlCapabilities: any =
@@ -254,8 +253,8 @@ function extractLayer(xmlLayer: any): WMSLayer {
     // All layers must have a title
     title: String(xmlLayer?.Title || ''),
     // Name is required only if renderable
-    name: String(xmlLayer?.Name),
-    abstract: String(xmlLayer?.Abstract),
+    name: xmlLayer?.Name && String(xmlLayer?.Name),
+    abstract: xmlLayer?.Name && String(xmlLayer?.Abstract),
     keywords: getXMLStringArray(xmlLayer.KeywordList?.Keyword)
   };
 
@@ -406,19 +405,21 @@ function extractDimension(xmlDimension: any): WMSDimension {
 /** Traverse layers and inject missing props from parents */
 // eslint-disable-next-line complexity
 function addInheritedLayerProps(layer: WMSLayer, parent: WMSLayer | null): void {
-  if (parent && parent.geographicBoundingBox && !layer.geographicBoundingBox) {
+  if (parent?.geographicBoundingBox && !layer.geographicBoundingBox) {
     layer.geographicBoundingBox = [...parent.geographicBoundingBox];
   }
 
-  if (parent && parent.crs && !layer.crs) {
+  if (parent?.crs && !layer.crs) {
     layer.crs = [...parent.crs];
   }
 
-  if (parent && parent.boundingBoxes && !layer.boundingBoxes) {
+  if (parent?.boundingBoxes && !layer.boundingBoxes) {
     layer.boundingBoxes = [...parent.boundingBoxes];
   }
 
-  // TODO inherit other elements
+  if (parent?.dimensions && !layer.dimensions) {
+    layer.dimensions = [...parent.dimensions];
+  }
 
   for (const subLayer of layer.layers || []) {
     addInheritedLayerProps(subLayer, layer);
