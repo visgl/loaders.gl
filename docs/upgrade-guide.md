@@ -2,7 +2,15 @@
 
 ## Upgrading to v3.4
 
-- `WMSService` - the `srs` parameters has been renamed to `crs` in alignment with the most recent WMS 1.3.0 conventions.
+**@loaders.gl/wms**
+
+This module is still marked as experimental and had some breaking changes.
+
+- `WMSService` class
+  - The `srs` parameters has been renamed to `crs` in alignment with the most recent WMS 1.3.0 conventions.
+- ``WMSCapabilities` type (returned by `WMSService` and `WMSCapabilitiesLoader`)
+  - `WMSCapabilities.layer` is now `WMSCapabilities.layers`
+  - `WMSCapabilities.boundingBox` is now `WMSCapabilities.geographicBoundingBox` (in generic lng/lats) and `WMSCapabilities.boundingBoxes` (array of bounding boxes in supported projections)
 
 ## Upgrading to v3.2
 
