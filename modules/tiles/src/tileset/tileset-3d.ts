@@ -328,7 +328,7 @@ export class Tileset3D {
 
   get queryParams(): string {
     const search = new URLSearchParams(this._queryParams).toString();
-    return search ? `?${search}` : '';
+    return search || '';
   }
 
   setProps(props: Tileset3DProps): void {
