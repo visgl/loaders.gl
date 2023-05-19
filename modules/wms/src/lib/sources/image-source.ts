@@ -7,7 +7,7 @@ import {DataSource} from './data-source';
 /**
  * Normalized capabilities of an Image service
  * @example
- *  The WMSService will normalize the response to the WMS `GetCapabilities` 
+ *  The WMSService will normalize the response to the WMS `GetCapabilities`
  *  data structure extracted from WMS XML response into an ImageSourceMetadata.
  */
 export type ImageSourceMetadata = {
