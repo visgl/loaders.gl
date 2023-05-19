@@ -17,9 +17,13 @@ export {CSWRecordsLoader} from './csw-records-loader';
 
 export {WMSErrorLoader} from './wms-error-loader';
 
-export type {WMSLoaderOptions} from './wms-capabilities-loader';
-
-export type {WMSCapabilities} from './wms-capabilities-loader';
+export type {
+  WMSCapabilities,
+  WMSLayer,
+  WMSBoundingBox,
+  WMSDimension
+} from './wms-capabilities-loader';
+export type {WMSCapabilitiesLoaderOptions} from './wms-capabilities-loader';
 export {WMSCapabilitiesLoader} from './wms-capabilities-loader';
 
 export type {WMSFeatureInfo as _WMSFeatureInfo} from './wip/wms-feature-info-loader';
@@ -75,3 +79,6 @@ export {ArcGISImageServer as _ArcGISImageServer} from './lib/services/arcgis/arc
 // TODO - restore once esbuild bundling issues have been resolved
 // export type {LERCData} from './lib/lerc/lerc-types';
 // export {LERCLoader} from './lerc-loader';
+
+/** @deprecated Use WMSCapabilitiesLoaderOptions */
+export type {WMSCapabilitiesLoaderOptions as WMSLoaderOptions} from './wms-capabilities-loader';

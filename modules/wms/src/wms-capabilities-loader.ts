@@ -1,21 +1,32 @@
 // loaders.gl, MIT license
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {WMSCapabilities} from './lib/parsers/wms/parse-wms-capabilities';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {XMLLoaderOptions} from '@loaders.gl/xml';
 import {parseWMSCapabilities} from './lib/parsers/wms/parse-wms-capabilities';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-// Parsed data type
-export type {WMSCapabilities};
+// Parsed data types
+export type {
+  WMSCapabilities,
+  WMSLayer,
+  WMSBoundingBox,
+  WMSDimension,
+  WMSRequest,
+  WMSExceptions
+} from './lib/parsers/wms/parse-wms-capabilities';
 
-export type WMSLoaderOptions = LoaderOptions & {
+export type WMSCapabilitiesLoaderOptions = XMLLoaderOptions & {
   wms?: {
     /** Add inherited layer information to sub layers */
     inheritedLayerProps?: boolean;
-    /** Whether to include "raw" XML-derived JSON */
+    /** Include the "raw" JSON (parsed but untyped, unprocessed XML). May contain additional fields */
+    includeRawData?: boolean;
+    /** Include the original XML document text. May contain additional information. */
+    includeXMLText?: boolean;
+    /** @deprecated Use options.includeRawData` */
     raw?: boolean;
   };
 };
@@ -36,9 +47,11 @@ export const WMSCapabilitiesLoader = {
   options: {
     wms: {}
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: WMSCapabilitiesLoaderOptions) =>
+    // TODO pass in XML options
     parseWMSCapabilities(new TextDecoder().decode(arrayBuffer), options?.wms),
-  parseTextSync: (text: string, options?: WMSLoaderOptions) =>
+  parseTextSync: (text: string, options?: WMSCapabilitiesLoaderOptions) =>
+    // TODO pass in XML options
     parseWMSCapabilities(text, options?.wms)
 };
 
