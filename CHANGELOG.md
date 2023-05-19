@@ -2,6 +2,12 @@
 
 ## v3.4.0
 
+## 3.4.2
+
+- docs: Upgrade guide for `WMSCapabilities` type, link to CHANGELOG for patch release info
+- fix(wms): undefined  fields can be set to `undefined` strings (#2489)
+- fix(tiles): Improved query params handling (#2490)
+
 ## v3.4.1
 
 - fix(tiles): isLoaded has breaking change (#2485)
