@@ -313,6 +313,7 @@ export type WriterOptions = {
 /**
  * A writer definition that can be used with `@loaders.gl/core` functions
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type Writer<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOptions> = {
   name: string;
 

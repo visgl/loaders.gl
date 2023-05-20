@@ -2,6 +2,7 @@
 
 import type {WorkerObject, WorkerOptions} from '../../types';
 import {assert} from '../env-utils/assert';
+import {isBrowser} from '../env-utils/globals';
 import {VERSION as __VERSION__} from '../env-utils/version';
 
 const NPM_TAG = 'beta'; // 'beta', or 'latest' on release-branch
@@ -25,7 +26,7 @@ export function getWorkerName(worker: WorkerObject): string {
 export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
   const workerOptions = options[worker.id] || {};
 
-  const workerFile = `${worker.id}-worker.js`;
+  const workerFile = isBrowser ? `${worker.id}-worker.js` : `${worker.id}-worker-node.js`;
 
   let url = workerOptions.workerUrl;
 
