@@ -2,7 +2,7 @@
  * data images
  */
 export type ImageDataType = {
-  data: Uint8Array;
+  data: Uint8Array | Uint8ClampedArray;
   width: number;
   height: number;
   compressed?: boolean;

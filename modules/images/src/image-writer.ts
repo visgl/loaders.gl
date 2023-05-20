@@ -6,9 +6,13 @@ import {VERSION} from './lib/utils/version';
 import {encodeImage} from './lib/encoders/encode-image';
 
 export type ImageWriterOptions = WriterOptions & {
-  image: {
-    mimeType: 'image/png';
-    jpegQuality: null;
+  image?: {
+    /** which format to write to, default is 'image/png' */
+    mimeType?: string;
+    /** quality for jpeg and webp */
+    quality?: number;
+    /** @deprecated in v4.0. use quality */
+    jpegQuality?: null;
   };
 };
 
@@ -22,7 +26,7 @@ export const ImageWriter: Writer<ImageDataType, never, ImageWriterOptions> = {
   options: {
     image: {
       mimeType: 'image/png',
-      jpegQuality: null
+      quality: undefined
     }
   },
   encode: encodeImage

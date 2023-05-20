@@ -4,13 +4,13 @@ import type {ImageType} from '../../types';
 import type {ImageLoaderOptions} from '../../image-loader';
 import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
 import {getImageData} from '../category-api/parsed-image-api';
-import parseToImage from './parse-to-image';
-import parseToImageBitmap from './parse-to-image-bitmap';
-import parseToNodeImage from './parse-to-node-image';
+import {parseToHTMLImage} from './parse-to-html-image';
+import {parseToImageBitmap} from './parse-to-image-bitmap';
+import {parseImageNode} from './parse-image-node';
 
 // Parse to platform defined image type (data on node, ImageBitmap or HTMLImage on browser)
 // eslint-disable-next-line complexity
-export default async function parseImage(
+export async function parseImage(
   arrayBuffer: ArrayBuffer,
   options?: ImageLoaderOptions,
   context?: LoaderContext
@@ -29,14 +29,19 @@ export default async function parseImage(
   let image;
   switch (loadType) {
     case 'imagebitmap':
-      image = await parseToImageBitmap(arrayBuffer, options, url);
+      image = await parseToImageBitmap(
+        arrayBuffer,
+        options?.image,
+        options?.imageBitmap || options?.imagebitmap,
+        url
+      );
       break;
     case 'image':
-      image = await parseToImage(arrayBuffer, options, url);
+      image = await parseToHTMLImage(arrayBuffer, options, url);
       break;
     case 'data':
       // Node.js loads imagedata directly
-      image = await parseToNodeImage(arrayBuffer, options);
+      image = await parseImageNode(arrayBuffer, options);
       break;
     default:
       assert(false);

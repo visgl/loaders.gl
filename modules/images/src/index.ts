@@ -12,6 +12,7 @@ export {ImageWriter} from './image-writer';
 export {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 // Parsed Image API
+export {getSupportedImageFormats, isImageFormatSupported} from './lib/category-api/image-format';
 export {isImageTypeSupported, getDefaultImageType} from './lib/category-api/image-type';
 
 export {
@@ -22,8 +23,3 @@ export {
 } from './lib/category-api/parsed-image-api';
 
 // EXPERIMENTAL
-export {getSupportedImageFormats} from './lib/category-api/image-format';
-export {isImageFormatSupported} from './lib/category-api/image-format';
-
-// DEPRECATED - Remove in V4 (fix dependency in luma.gl)
-export {loadImage} from './lib/texture-api/load-image';
