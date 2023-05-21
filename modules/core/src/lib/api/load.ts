@@ -26,7 +26,7 @@ export async function load<LoaderT extends Loader>(
 ): Promise<LoaderReturnType<LoaderT>>;
 
 export async function load<
-  LoaderT extends Loader,
+  LoaderT extends Loader, // eslint-disable-line  @typescript-eslint/no-unused-vars
   LoaderOptionsT extends LoaderOptions = LoaderOptions
 >(
   url: string | DataType,

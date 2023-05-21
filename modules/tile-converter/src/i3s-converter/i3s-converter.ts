@@ -218,12 +218,13 @@ export default class I3SConverter {
         loadOptions: {
           _nodeWorkers: true,
           reuseWorkers: true,
-          basis: {format: 'rgba32'},
-          'basis-nodejs': {
-            format: 'rgba32',
-            workerUrl: './modules/textures/dist/basis-nodejs-worker.js'
-          },
-          'draco-nodejs': {workerUrl: './modules/draco/dist/draco-nodejs-worker.js'}
+          basis: {format: 'rgba32'}
+          // TODO - should no longer be needed with new Node workers
+          // 'basis-nodejs': {
+          //   format: 'rgba32',
+          //   workerUrl: './modules/textures/dist/basis-worker-node.js'
+          // },
+          // 'draco-nodejs': {workerUrl: './modules/draco/dist/draco-worker-node.js'}
         }
       };
       if (preloadOptions.headers) {

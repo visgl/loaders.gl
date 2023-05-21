@@ -1,8 +1,6 @@
 // loaders.gl, MIT license
-
 import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {TextureLevel} from '@loaders.gl/schema';
-import {isBrowser} from '@loaders.gl/worker-utils';
 import {VERSION} from './lib/utils/version';
 import parseBasis from './lib/parsers/parse-basis';
 
@@ -11,7 +9,7 @@ import parseBasis from './lib/parsers/parse-basis';
  */
 export const BasisWorkerLoader: Loader<TextureLevel[][], never, LoaderOptions> = {
   name: 'Basis',
-  id: isBrowser ? 'basis' : 'basis-nodejs',
+  id: 'basis',
   module: 'textures',
   version: VERSION,
   worker: true,

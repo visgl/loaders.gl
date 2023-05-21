@@ -1,6 +1,4 @@
 // loaders.gl, MIT license
-
-import {isBrowser} from '@loaders.gl/worker-utils';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {DracoMesh, DracoLoaderData} from './lib/draco-types';
 import type {DracoLoaderOptions} from './draco-loader';
@@ -23,7 +21,7 @@ export {DracoWriter} from './draco-writer';
  * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
  */
 export const DracoWriterWorker = {
-  id: isBrowser ? 'draco-writer' : 'draco-writer-nodejs',
+  id: 'draco-writer',
   name: 'Draco compressed geometry writer',
   module: 'draco',
   version: VERSION,
