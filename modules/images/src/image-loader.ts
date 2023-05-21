@@ -8,13 +8,17 @@ import {VERSION} from './lib/utils/version';
 export type ImageLoaderOptions = LoaderOptions & {
   image?: {
     /** Which image representation to load into. imagebitmap is default in browser, data in Node. */
-    shape?: 'auto' | 'data' | 'imagebitmap' | 'htmlimage';
-    /** Whether to pre-decode the image */
+    shape?: 'data' | 'imagebitmap' | 'image';
+    /** Whether to pre-decode the image. Only used for HTML images */
     decode?: boolean;
+
     /** @deprecated v4.0: Use options.shape */
     type?: 'auto' | 'data' | 'imagebitmap' | 'image';
   };
+  /** Options passed to createImageBitmap */
   imageBitmap?: ImageBitmapOptions;
+
+  /** @deprecated Use options.imageBitmap... */
   imagebitmap?: ImageBitmapOptions;
 };
 
@@ -43,7 +47,7 @@ export const ImageLoader: LoaderWithParser<ImageType, never, ImageLoaderOptions>
   tests: [(arrayBuffer: ArrayBuffer) => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer)))],
   options: {
     image: {
-      shape: 'auto',
+      shape: undefined,
       decode: true // if format is HTML
     }
     // imagebitmap: {} - passes (platform dependent) parameters to ImageBitmap constructor

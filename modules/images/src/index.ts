@@ -1,5 +1,5 @@
 // TYPES
-export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
+export type {ImageDataType, ImageType, ImageShape} from './types';
 export type {ImageLoaderOptions} from './image-loader';
 
 // LOADERS AND WRITERS
@@ -13,7 +13,7 @@ export {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 // Parsed Image API
 export {getSupportedImageFormats, isImageFormatSupported} from './lib/category-api/image-format';
-export {isImageTypeSupported, getDefaultImageType} from './lib/category-api/image-type';
+export {isImageBitmapSupported} from './lib/category-api/image-type';
 
 export {
   isImage,
@@ -23,3 +23,7 @@ export {
 } from './lib/category-api/parsed-image-api';
 
 // EXPERIMENTAL
+
+// DEPRECATED
+
+export {isImageTypeSupported, getDefaultImageType} from './lib/category-api/image-type';

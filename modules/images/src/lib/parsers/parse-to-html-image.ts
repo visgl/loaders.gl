@@ -13,9 +13,10 @@ export async function parseToHTMLImage(
 
   const blobOrDataUrl = getBlobOrSVGDataUrl(arrayBuffer, url);
   const URL = self.URL || self.webkitURL;
-  const objectUrl = typeof blobOrDataUrl !== 'string' && URL.createObjectURL(blobOrDataUrl);
+  const objectUrl =
+    typeof blobOrDataUrl !== 'string' ? URL.createObjectURL(blobOrDataUrl) : blobOrDataUrl;
   try {
-    return await loadToImage(objectUrl || blobOrDataUrl, options);
+    return await loadToImage(objectUrl, options);
   } finally {
     if (objectUrl) {
       URL.revokeObjectURL(objectUrl);
@@ -23,7 +24,10 @@ export async function parseToHTMLImage(
   }
 }
 
-export async function loadToImage(url, options): Promise<HTMLImageElement> {
+export async function loadToImage(
+  url: string,
+  options?: ImageLoaderOptions
+): Promise<HTMLImageElement> {
   const image = new Image();
   image.src = url;
 
@@ -34,7 +38,7 @@ export async function loadToImage(url, options): Promise<HTMLImageElement> {
   // https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decode
   // Note: When calling `img.decode()`, we do not need to wait for `img.onload()`
   // Note: `HTMLImageElement.decode()` is not available in Edge and IE11
-  if (options.image && options.image.decode && image.decode) {
+  if (options?.image?.decode && image.decode) {
     await image.decode();
     return image;
   }

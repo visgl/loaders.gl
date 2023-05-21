@@ -22,7 +22,10 @@ export async function parseImageNode(
   arrayBuffer: ArrayBuffer,
   options: ImageLoaderOptions
 ): Promise<ImageDataType> {
+  // Auto detect MIME type from binary image
   const {mimeType} = getBinaryImageMetadata(arrayBuffer) || {};
+
+  // Parse with the right decoder
   switch (mimeType) {
     case 'image/png':
       return await png.decode(arrayBuffer);

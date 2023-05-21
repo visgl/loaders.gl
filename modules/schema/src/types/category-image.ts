@@ -16,4 +16,4 @@ export type ImageType = ImageBitmap | typeof Image | ImageDataType;
 /**
  * Image type string used to control or determine the type of images returned from ImageLoader
  */
-export type ImageTypeEnum = 'imagebitmap' | 'image' | 'data';
+export type ImageShape = 'imagebitmap' | 'image' | 'data';

@@ -1,6 +1,6 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
-import type {ImageType} from '../../types';
+import type {ImageType, ImageShape} from '../../types';
 import type {ImageLoaderOptions} from '../../image-loader';
 import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
 import {getImageData} from '../category-api/parsed-image-api';
@@ -19,12 +19,12 @@ export async function parseImage(
   const imageOptions = options.image || {};
 
   // The user can request a specific output format via `options.image.type`
-  const imageType = imageOptions.type || 'auto';
+  const imageShape = imageOptions.shape || imageOptions.type || 'auto';
 
   const {url} = context || {};
 
   // Note: For options.image.type === `data`, we may still need to load as `image` or `imagebitmap`
-  const loadType = getLoadableImageType(imageType);
+  const loadType = getLoadableImageShape(imageShape);
 
   let image;
   switch (loadType) {
@@ -40,7 +40,7 @@ export async function parseImage(
       image = await parseToHTMLImage(arrayBuffer, options, url);
       break;
     case 'data':
-      // Node.js loads imagedata directly
+      // Node.js loads image data directly
       image = await parseImageNode(arrayBuffer, options);
       break;
     default:
@@ -48,7 +48,7 @@ export async function parseImage(
   }
 
   // Browser: if options.image.type === 'data', we can now extract data from the loaded image
-  if (imageType === 'data') {
+  if (imageShape === 'data') {
     image = getImageData(image);
   }
 
@@ -56,7 +56,7 @@ export async function parseImage(
 }
 
 // Get a loadable image type from image type
-function getLoadableImageType(type) {
+function getLoadableImageShape(type: ImageShape | 'auto'): ImageShape {
   switch (type) {
     case 'auto':
     case 'data':

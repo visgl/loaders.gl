@@ -79,7 +79,7 @@ export {
 export type {TextureLevel, GPUTextureFormat} from './types/category-texture';
 
 // IMAGES
-export type {ImageDataType, ImageType, ImageTypeEnum} from './types/category-image';
+export type {ImageDataType, ImageType, ImageShape} from './types/category-image';
 
 // TYPES
 // GIS CATEGORY - GEOJSON
