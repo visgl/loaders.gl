@@ -39,3 +39,4 @@ export async function parseImageNode(
       throw new Error(`Cannot decode image of type ${mimeType}`);
   }
 }
+  
