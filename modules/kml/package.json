@@ -31,9 +31,6 @@
     "pre-build": "npm run build-bundle",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
-  "browser": {
-    "@xmldom/xmldom": {}
-  },
   "dependencies": {
     "@loaders.gl/gis": "4.0.0-alpha.6",
     "@loaders.gl/loader-utils": "4.0.0-alpha.6",

@@ -1,7 +1,8 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {kml} from '@tmcw/togeojson';
 import {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
+import {kml} from '@tmcw/togeojson';
+import {DOMParser} from '@xmldom/xmldom';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
