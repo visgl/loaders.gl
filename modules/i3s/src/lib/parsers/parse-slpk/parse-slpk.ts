@@ -1,4 +1,4 @@
-import {SLPKLoaderOptions} from 'modules/i3s/src/i3s-slpk-loader';
+import {SLPKLoaderOptions} from '../../../i3s-slpk-loader';
 import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {SLPKArchive} from './slpk-archieve';
