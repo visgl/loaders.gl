@@ -5,6 +5,7 @@
 
 import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/culling';
+import {addMetersToLngLat} from '@math.gl/web-mercator';
 
 import {load} from '@loaders.gl/core';
 
@@ -772,5 +773,20 @@ export class Tile3D {
       default:
         return get3dTilesOptions(this.tileset.tileset);
     }
+  }
+  getCoordinatesByIndex(index: number): number[] | null {
+    if (!this.content) {
+      return null;
+    }
+    if (this.tileset.type === TILESET_TYPE.TILES3D) {
+      if (this.content.type === 'pnts') {
+        return addMetersToLngLat(this.content.cartographicOrigin, [
+          this.content.attributes.positions[index * 3],
+          this.content.attributes.positions[index * 3 + 1],
+          this.content.attributes.positions[index * 3 + 2]
+        ]);
+      }
+    }
+    return null;
   }
 }
