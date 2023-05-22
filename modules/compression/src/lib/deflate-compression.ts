@@ -1,9 +1,8 @@
 // loaders.gl, MIT license
-import {promisify1} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 
-import {deflate, inflate, deflateSync, inflateSync} from 'fflate';
+import {deflateSync, inflateSync} from 'fflate';
 import type {DeflateOptions} from 'fflate'; // https://bundlephobia.com/package/pako
 
 export type DeflateCompressionOptions = CompressionOptions & {
@@ -26,18 +25,20 @@ export class DeflateCompression extends Compression {
     this.options = options;
   }
 
-  async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // const options = this.options?.gzip || {};
-    const inputArray = new Uint8Array(input);
-    const outputArray = await promisify1(deflate)(inputArray); // options - overload pick
-    return outputArray.buffer;
-  }
+  // Async fflate uses Workers which interferes with loaders.gl
 
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    const inputArray = new Uint8Array(input);
-    const outputArray = await promisify1(inflate)(inputArray);
-    return outputArray.buffer;
-  }
+  // async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
+  //   // const options = this.options?.gzip || {};
+  //   const inputArray = new Uint8Array(input);
+  //   const outputArray = await promisify1(deflate)(inputArray); // options - overload pick
+  //   return outputArray.buffer;
+  // }
+
+  // async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
+  //   const inputArray = new Uint8Array(input);
+  //   const outputArray = await promisify1(inflate)(inputArray);
+  //   return outputArray.buffer;
+  // }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
     const options = this.options?.deflate || {};

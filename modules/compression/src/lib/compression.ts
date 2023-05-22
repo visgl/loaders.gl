@@ -3,18 +3,36 @@ import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 
 /** Compression options */
 export type CompressionOptions = {
-  // operation: 'compress' | 'decompress';
-  modules?: {[moduleName: string]: any};
+  /** Compression quality typically goes from 1-11 (higher values better but slower) */
+  quality?: number;
+  /** Injection of npm modules for large libraries */
+  modules?: CompressionModules;
 };
+
+export type CompressionModules = {
+  brotli?: any;
+  lz4js?: any;
+  lzo?: any;
+  'zstd-codec'?: any;
+}
+
 
 /** Compression */
 export abstract class Compression {
+  /** Name of the compression */
   abstract readonly name: string;
+  /** File extensions used for this */
   abstract readonly extensions: string[];
+  /** Strings used for Content-Encoding headers in browser */
   abstract readonly contentEncodings: string[];
+  /** Whether decompression is supported */
   abstract readonly isSupported: boolean;
+  /** Whether compression is supported */
+  get isCompressionSupported(): boolean { return this.isSupported; };
 
-  constructor(options?: CompressionOptions) {
+  static modules: CompressionModules = {};
+
+  constructor(options) {
     this.compressBatches = this.compressBatches.bind(this);
     this.decompressBatches = this.decompressBatches.bind(this);
   }

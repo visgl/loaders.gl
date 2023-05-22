@@ -17,20 +17,6 @@ export type GZipCompressionOptions = CompressionOptions & {
  * Using PAKO library.
  */
 export class GZipCompression extends Compression {
-  readonly name: string = 'gzip';
-  readonly extensions = ['gz', 'gzip'];
-  readonly contentEncodings = ['gzip', 'x-gzip'];
-  readonly isSupported = true;
-
-  constructor(options?: GZipCompressionOptions) {
-    super({...options});
-  }
-}
-
-/**
- * DEFLATE compression / decompression
- */
-export class DeflateCompression extends Compression {
   readonly name: string = 'deflate';
   readonly extensions: string[] = [];
   readonly contentEncodings = ['deflate'];
@@ -54,21 +40,21 @@ export class DeflateCompression extends Compression {
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
+    const pakoOptions = this._getDeflateOptions();
     const inputArray = new Uint8Array(input);
-    return pako.deflate(inputArray, pakoOptions).buffer;
+    return pako.gzip(inputArray, pakoOptions).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
     const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
-    return pako.inflate(inputArray, pakoOptions).buffer;
+    return pako.ungzip(inputArray, pakoOptions).buffer;
   }
 
   async *compressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
+    const pakoOptions = this._getDeflateOptions();
     const pakoProcessor = new pako.Deflate(pakoOptions);
     yield* this.transformBatches(pakoProcessor, asyncIterator);
   }
@@ -108,19 +94,28 @@ export class DeflateCompression extends Compression {
     yield* chunks;
   }
 
-  _onData(chunk) {
+  protected _onData(chunk) {
     this._chunks.push(chunk);
   }
 
-  _onEnd(status) {
+  protected _onEnd(status) {
     if (status !== 0) {
       throw new Error(getPakoError(status) + this._chunks.length);
     }
   }
 
-  _getChunks(): ArrayBuffer[] {
+  protected _getChunks(): ArrayBuffer[] {
     const chunks = this._chunks;
     this._chunks = [];
     return chunks;
+  }
+
+  protected _getDeflateOptions(): pako.DeflateOptions {
+    const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
+    if (this.options.quality) {
+      // @ts-expect-error
+      pakoOptions.level = this.options.quality || 5;
+    }
+    return pakoOptions;
   }
 }

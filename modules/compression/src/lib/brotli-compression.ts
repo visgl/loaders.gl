@@ -1,12 +1,11 @@
 // BROTLI
+import {isBrowser} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
+import {BrotliCompressionZlib} from './brotli-compression-zlib';
 import type brotliNamespace from 'brotli';
 // import brotli from 'brotli';  // https://bundlephobia.com/package/brotli
-import {BrotliDecode} from '../brotli/decode';
-import zlib from 'zlib';
-import {promisify1} from '@loaders.gl/loader-utils';
+// import {BrotliDecode} from '../brotli/decode';
 
 export type BrotliCompressionOptions = CompressionOptions & {
   brotli?: {
@@ -34,12 +33,26 @@ export class BrotliCompression extends Compression {
   readonly name: string = 'brotli';
   readonly extensions = ['br'];
   readonly contentEncodings = ['br'];
-  readonly isSupported = true;
+
+  get isSupported() {
+    return brotli;
+  }
+  get isCompressionSupported() {
+    return false;
+  }
+
   readonly options: BrotliCompressionOptions;
 
-  constructor(options: BrotliCompressionOptions) {
+  constructor(options: BrotliCompressionOptions = {}) {
     super(options);
     this.options = options;
+
+    // dependency injection
+    brotli = brotli || this.options?.modules?.brotli || Compression.modules.brotli;
+
+    if (!isBrowser && this.options.brotli?.useZlib) {
+      return new BrotliCompressionZlib(options);
+    }
   }
 
   /**
@@ -47,65 +60,37 @@ export class BrotliCompression extends Compression {
    * @param options
    */
   async preload(): Promise<void> {
-    brotli = brotli || this.options?.modules?.brotli;
+    brotli = brotli || (await this.options?.modules?.brotli);
     if (!brotli) {
       // eslint-disable-next-line no-console
       console.warn(`${this.name} library not installed`);
     }
   }
 
-  async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // On Node.js we can use built-in zlib
-    if (!isBrowser && this.options.brotli?.useZlib) {
-      const buffer = await promisify1(zlib.brotliCompress)(input);
-      return toArrayBuffer(buffer);
-    }
-    return this.compressSync(input);
-  }
-
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    // On Node.js we can use built-in zlib
-    if (!isBrowser && this.options.brotli?.useZlib) {
-      const buffer = zlib.brotliCompressSync(input);
-      return toArrayBuffer(buffer);
-    }
-    const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
-    const inputArray = new Uint8Array(input);
-
     if (!brotli) {
       throw new Error('brotli compression: brotli module not installed');
     }
 
-    // @ts-ignore brotli types state that only Buffers are accepted...
-    const outputArray = brotli.compress(inputArray, brotliOptions);
+    const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
+    const inputArray = new Uint8Array(input);
+
+    const outputArray = brotli.compress(inputArray, {quality: 5, brotliOptions});
     return outputArray.buffer;
   }
 
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // On Node.js we can use built-in zlib
-    if (!isBrowser && this.options.brotli?.useZlib) {
-      const buffer = await promisify1(zlib.brotliDecompress)(input);
-      return toArrayBuffer(buffer);
-    }
-    return this.decompressSync(input);
-  }
-
   decompressSync(input: ArrayBuffer): ArrayBuffer {
-    // On Node.js we can use built-in zlib
-    if (!isBrowser && this.options.brotli?.useZlib) {
-      const buffer = zlib.brotliDecompressSync(input);
-      return toArrayBuffer(buffer);
+    if (!brotli) {
+      throw new Error('brotli compression: brotli module not installed');
     }
 
     const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
     const inputArray = new Uint8Array(input);
 
-    if (brotli) {
-      // @ts-ignore brotli types state that only Buffers are accepted...
-      const outputArray = brotli.decompress(inputArray, brotliOptions);
-      return outputArray.buffer;
-    }
-    const outputArray = BrotliDecode(inputArray, undefined);
+    // @ts-ignore brotli types state that only Buffers are accepted...
+    const outputArray = brotli.decompress(inputArray, brotliOptions);
     return outputArray.buffer;
+    // const outputArray = BrotliDecode(inputArray, undefined);
+    // return outputArray.buffer;
   }
 }

@@ -1,9 +1,8 @@
 // loaders.gl, MIT license
-import {promisify1} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 import type {GzipOptions, AsyncGzipOptions} from 'fflate';
-import {gzip, gunzip, gzipSync, gunzipSync, Gzip, Gunzip} from 'fflate'; // https://bundlephobia.com/package/pako
+import {gzipSync, gunzipSync, Gzip, Gunzip} from 'fflate'; // https://bundlephobia.com/package/pako
 
 export type GZipCompressionOptions = CompressionOptions & {
   gzip?: GzipOptions | AsyncGzipOptions;
@@ -16,32 +15,37 @@ export class GZipCompression extends Compression {
   readonly name: string = 'gzip';
   readonly extensions = ['gz', 'gzip'];
   readonly contentEncodings = ['gzip', 'x-gzip'];
-  readonly isSupported = true;
+  readonly isSupported = true;  
 
   readonly options: GZipCompressionOptions;
   private _chunks: ArrayBuffer[] = [];
 
   constructor(options: GZipCompressionOptions = {}) {
-    super({...options});
+    super(options);
     this.options = options;
   }
 
-  async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // const options = this.options?.gzip || {};
-    const inputArray = new Uint8Array(input);
-    const outputArray = await promisify1(gzip)(inputArray); // options - overload pick
-    return outputArray.buffer;
-  }
+  // Async fflate uses Workers which interferes with loaders.gl
+  
+  // async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
+  //   // const options = this.options?.gzip || {};
+  //   const inputArray = new Uint8Array(input);
+  //   const outputArray = await promisify1(gzip)(inputArray); // options - overload pick
+  //   return outputArray.buffer;
+  // }
 
-  async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // const options = this.options?.gzip || {};
-    const inputArray = new Uint8Array(input);
-    const outputArray = await promisify1(gunzip)(inputArray); // options - overload pick
-    return outputArray.buffer;
-  }
+  // async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
+  //   // const options = this.options?.gzip || {};
+  //   const inputArray = new Uint8Array(input);
+  //   const outputArray = await promisify1(gunzip)(inputArray); // options - overload pick
+  //   return outputArray.buffer;
+  // }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    const options = this.options?.gzip || {};
+    // @ts-expect-error level
+    const options: GzipOptions = this.options?.gzip || {
+      level: this.options.quality || 6
+    };
     const inputArray = new Uint8Array(input);
     return gzipSync(inputArray, options).buffer;
   }
@@ -55,7 +59,10 @@ export class GZipCompression extends Compression {
   async *compressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    const options = this.options?.gzip || {};
+    // @ts-expect-error level
+    const options: GzipOptions = this.options?.gzip || {
+      level: this.options.quality || 6
+    };
     const streamProcessor = new Gzip(options);
     streamProcessor.ondata = this._onData.bind(this);
     yield* this.transformBatches(streamProcessor, asyncIterator);

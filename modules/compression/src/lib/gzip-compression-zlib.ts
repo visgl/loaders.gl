@@ -14,7 +14,7 @@ export type DeflateCompressionOptions = CompressionOptions & {
  * GZIP compression / decompression
  * Using Node.js zlib library (works under Node only)
  */
-export class GzipCompression extends Compression {
+export class GZipCompression extends Compression {
   readonly name: string = 'gzip';
   readonly extensions = ['gz', 'gzip'];
   readonly contentEncodings = ['gzip', 'x-gzip'];
@@ -25,13 +25,16 @@ export class GzipCompression extends Compression {
   constructor(options: DeflateCompressionOptions = {}) {
     super(options);
     this.options = options;
-    if (!isBrowser) {
+    if (isBrowser) {
       throw new Error('zlib only available under Node.js');
     }
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    const buffer = await promisify2(zlib.gzip)(input, this.options.deflate || {});
+    const options: ZlibOptions = this.options?.deflate || {
+      level: this.options.quality || 6
+    };
+    const buffer = await promisify2(zlib.gzip)(input, options);
     return toArrayBuffer(buffer);
   }
 
@@ -41,7 +44,10 @@ export class GzipCompression extends Compression {
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    const buffer = zlib.gzipSync(input, this.options.deflate || {});
+    const options: ZlibOptions = this.options?.deflate || {
+      level: this.options.quality || 6
+    };
+    const buffer = zlib.gzipSync(input, options);
     return toArrayBuffer(buffer);
   }
 
