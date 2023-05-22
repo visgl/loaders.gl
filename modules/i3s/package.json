@@ -43,7 +43,8 @@
     "@luma.gl/constants": "^8.5.4",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
-    "@math.gl/geospatial": "^3.5.1"
+    "@math.gl/geospatial": "^3.5.1",
+    "md5": "^2.3.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^3.4.0"
