@@ -1,16 +1,16 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
-import type {ImageType} from '../../types';
+import type {ImageType, ImageShape} from '../../types';
 import type {ImageLoaderOptions} from '../../image-loader';
 import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
 import {getImageData} from '../category-api/parsed-image-api';
-import parseToImage from './parse-to-image';
-import parseToImageBitmap from './parse-to-image-bitmap';
-import parseToNodeImage from './parse-to-node-image';
+import {parseToHTMLImage} from './parse-to-html-image';
+import {parseToImageBitmap} from './parse-to-image-bitmap';
+import {parseImageNode} from './parse-image-node';
 
 // Parse to platform defined image type (data on node, ImageBitmap or HTMLImage on browser)
 // eslint-disable-next-line complexity
-export default async function parseImage(
+export async function parseImage(
   arrayBuffer: ArrayBuffer,
   options?: ImageLoaderOptions,
   context?: LoaderContext
@@ -19,31 +19,36 @@ export default async function parseImage(
   const imageOptions = options.image || {};
 
   // The user can request a specific output format via `options.image.type`
-  const imageType = imageOptions.type || 'auto';
+  const imageShape = imageOptions.shape || imageOptions.type || 'auto';
 
   const {url} = context || {};
 
   // Note: For options.image.type === `data`, we may still need to load as `image` or `imagebitmap`
-  const loadType = getLoadableImageType(imageType);
+  const loadType = getLoadableImageShape(imageShape);
 
   let image;
   switch (loadType) {
     case 'imagebitmap':
-      image = await parseToImageBitmap(arrayBuffer, options, url);
+      image = await parseToImageBitmap(
+        arrayBuffer,
+        options?.image,
+        options?.imageBitmap || options?.imagebitmap,
+        url
+      );
       break;
     case 'image':
-      image = await parseToImage(arrayBuffer, options, url);
+      image = await parseToHTMLImage(arrayBuffer, options, url);
       break;
     case 'data':
-      // Node.js loads imagedata directly
-      image = await parseToNodeImage(arrayBuffer, options);
+      // Node.js loads image data directly
+      image = await parseImageNode(arrayBuffer, options);
       break;
     default:
       assert(false);
   }
 
   // Browser: if options.image.type === 'data', we can now extract data from the loaded image
-  if (imageType === 'data') {
+  if (imageShape === 'data') {
     image = getImageData(image);
   }
 
@@ -51,7 +56,7 @@ export default async function parseImage(
 }
 
 // Get a loadable image type from image type
-function getLoadableImageType(type) {
+function getLoadableImageShape(type: ImageShape | 'auto'): ImageShape {
   switch (type) {
     case 'auto':
     case 'data':

@@ -1,17 +1,17 @@
-import {isBrowser} from '@loaders.gl/loader-utils';
-import type {ImageTypeEnum} from '../../types';
+import type {ImageShape} from '../../types';
 
-// @ts-ignore TS2339: Property does not exist on type
-const {_parseImageNode} = globalThis;
+export function isImageBitmapSupported() {
+  return typeof ImageBitmap !== 'undefined'
+}
 
 const IMAGE_SUPPORTED = typeof Image !== 'undefined'; // NOTE: "false" positives if jsdom is installed
 const IMAGE_BITMAP_SUPPORTED = typeof ImageBitmap !== 'undefined';
-const NODE_IMAGE_SUPPORTED = Boolean(_parseImageNode);
-const DATA_SUPPORTED = isBrowser ? true : NODE_IMAGE_SUPPORTED;
+const DATA_SUPPORTED = true;
 
 /**
  * Checks if a loaders.gl image type is supported
  * @param type image type string
+ * @deprecated From v4.0. Use isImageBitmapSupported() instead.
  */
 export function isImageTypeSupported(type: string): boolean {
   switch (type) {
@@ -34,8 +34,9 @@ export function isImageTypeSupported(type: string): boolean {
 /**
  * Returns the "most performant" supported image type on this platform
  * @returns image type string
+ * @deprecated From v4.0. Use isImageBitmapSupported() instead.
  */
-export function getDefaultImageType(): ImageTypeEnum {
+export function getDefaultImageType(): ImageShape {
   if (IMAGE_BITMAP_SUPPORTED) {
     return 'imagebitmap';
   }

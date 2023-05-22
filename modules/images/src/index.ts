@@ -1,5 +1,5 @@
 // TYPES
-export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
+export type {ImageDataType, ImageType, ImageShape} from './types';
 export type {ImageLoaderOptions} from './image-loader';
 
 // LOADERS AND WRITERS
@@ -12,7 +12,8 @@ export {ImageWriter} from './image-writer';
 export {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 // Parsed Image API
-export {isImageTypeSupported, getDefaultImageType} from './lib/category-api/image-type';
+export {getSupportedImageFormats, isImageFormatSupported} from './lib/category-api/image-format';
+export {isImageBitmapSupported} from './lib/category-api/image-type';
 
 export {
   isImage,
@@ -22,8 +23,7 @@ export {
 } from './lib/category-api/parsed-image-api';
 
 // EXPERIMENTAL
-export {getSupportedImageFormats} from './lib/category-api/image-format';
-export {isImageFormatSupported} from './lib/category-api/image-format';
 
-// DEPRECATED - Remove in V4 (fix dependency in luma.gl)
-export {loadImage} from './lib/texture-api/load-image';
+// DEPRECATED
+
+export {isImageTypeSupported, getDefaultImageType} from './lib/category-api/image-type';

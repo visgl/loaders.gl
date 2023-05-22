@@ -1,8 +1,9 @@
 /**
- * data images
+ * data for images
  */
 export type ImageDataType = {
-  data: Uint8Array;
+  shape?: 'data';
+  data: Uint8Array | Uint8ClampedArray;
   width: number;
   height: number;
   compressed?: boolean;
@@ -16,4 +17,8 @@ export type ImageType = ImageBitmap | ImageDataType | HTMLImageElement;
 /**
  * Image type string used to control or determine the type of images returned from ImageLoader
  */
-export type ImageTypeEnum = 'imagebitmap' | 'image' | 'data';
+export type ImageShape =
+  | 'imagebitmap'
+  | 'data'
+  /** @deprecated As of loaders.gl 4.0, imagebitmap is now universally supported  */
+  | 'image';

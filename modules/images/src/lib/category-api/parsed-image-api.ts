@@ -1,9 +1,16 @@
-import type {ImageType, ImageTypeEnum, ImageDataType} from '../../types';
+import type {ImageType, ImageShape, ImageDataType} from '../../types';
 
-export function isImage(image: ImageType): boolean {
-  return Boolean(getImageTypeOrNull(image));
+/** Returns true if ImageBitmaps are supported. If not, ImageDataType is always supported  */
+export function isImageBitmapSupported() {
+  return typeof ImageBitmap !== 'undefined';
 }
 
+/** Returns true of the argument is an image that can be handled by these functions */
+export function isImage(image: unknown): boolean {
+  return Boolean(getImageShapeOrNull(image));
+}
+
+/** Deletes resources associated with an image */
 export function deleteImage(image: ImageType): void {
   switch (getImageType(image)) {
     case 'imagebitmap':
@@ -14,18 +21,24 @@ export function deleteImage(image: ImageType): void {
   }
 }
 
-export function getImageType(image: ImageType): ImageTypeEnum {
-  const format = getImageTypeOrNull(image);
+/**
+ * Returns the "shape" of an image.
+ * @deprecated From v4.0
+ */
+export function getImageType(image: ImageType): ImageShape {
+  const format = getImageShapeOrNull(image);
   if (!format) {
     throw new Error('Not an image');
   }
   return format;
 }
 
+/** Gets the size of an image */
 export function getImageSize(image: ImageType): {width: number; height: number} {
   return getImageData(image);
 }
 
+/** Gets image data from an image */
 export function getImageData(image: ImageType): ImageDataType | ImageData {
   switch (getImageType(image)) {
     case 'data':
@@ -57,14 +70,15 @@ export function getImageData(image: ImageType): ImageDataType | ImageData {
 // PRIVATE
 
 // eslint-disable-next-line complexity
-function getImageTypeOrNull(image) {
+function getImageShapeOrNull(image: unknown) {
   if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) {
     return 'imagebitmap';
   }
   if (typeof Image !== 'undefined' && image instanceof Image) {
     return 'image';
   }
-  if (image && typeof image === 'object' && image.data && image.width && image.height) {
+  const imageData = image as ImageDataType;
+  if (image && typeof image === 'object' && imageData.data && imageData.width && imageData.height) {
     return 'data';
   }
   return null;
