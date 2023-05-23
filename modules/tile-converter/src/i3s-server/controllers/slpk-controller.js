@@ -21,8 +21,10 @@ async function getFileByUrl(url) {
     try {
       uncompressedFile = Buffer.from(
         await parse(slpkArchive, SLPKLoader, {
-          path: trimmedPath[1],
-          pathMode: 'http'
+          slpk: {
+            path: trimmedPath[1],
+            pathMode: 'http'
+          }
         })
       );
     } catch (e) {}

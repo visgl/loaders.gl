@@ -15,7 +15,7 @@ type HashElement = {
   offset: number;
 };
 
-const pathDescriptions = [
+const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
   {
     test: /^$/,
     extensions: ['3dSceneLayer.json.gz']
@@ -95,7 +95,7 @@ export class SLPKArchive {
    */
   async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
     if (mode === 'http') {
-      const extensions = pathDescriptions.find((val) => val.test.test(path))?.extensions;
+      const extensions = PATH_DESCRIPTIONS.find((val) => val.test.test(path))?.extensions;
       if (extensions) {
         let data: ArrayBuffer | undefined;
         for (const ext of extensions) {

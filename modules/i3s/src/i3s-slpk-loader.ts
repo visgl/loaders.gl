@@ -6,8 +6,10 @@ import {parseSLPK} from './lib/parsers/parse-slpk/parse-slpk';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type SLPKLoaderOptions = LoaderOptions & {
-  path?: string;
-  pathMode?: 'http' | 'raw';
+  slpk?: {
+    path?: string;
+    pathMode?: 'http' | 'raw';
+  };
 };
 
 /**
