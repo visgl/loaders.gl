@@ -5,10 +5,10 @@
  * @param {number} vertexCount - vertex count in the geometry
  * @returns {Uint32Array} indices array.
  */
-export const generateSynteticIndices = (vertexCount: number): Uint32Array => {
+export const generateSyntheticIndices = (vertexCount: number): Uint32Array => {
   const result = new Uint32Array(vertexCount);
   for (let index = 0; index < vertexCount; index++) {
-    result.set([index], index);
+    result[index] = index;
   }
   return result;
 };

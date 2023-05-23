@@ -51,7 +51,7 @@ import {GL} from '@loaders.gl/math';
   import type {TypedArrayConstructor} from '@math.gl/types'; 
 */
 import type {TypedArrayConstructor} from '../types';
-import {generateSynteticIndices} from '../../lib/utils/geometry-utils';
+import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -524,7 +524,7 @@ function convertMesh(
       continue;
     }
 
-    const indices = getIndices(primitive);
+    const indices = normalizeIndices(primitive);
     outputAttributes.positions = concatenateTypedArrays(
       outputAttributes.positions,
       transformVertexArray({
@@ -577,11 +577,11 @@ function convertMesh(
  * @param primitive - the primitive to get the indices from
  * @returns indices of vertices of the independent triangles
  */
-function getIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
+function normalizeIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
   let indices: TypedArray | undefined = primitive.indices?.value;
   if (!indices) {
     const positions = primitive.attributes.POSITION.value;
-    return generateSynteticIndices(positions.length / VALUES_PER_VERTEX);
+    return generateSyntheticIndices(positions.length / VALUES_PER_VERTEX);
   }
 
   if (indices && primitive.mode === GL.TRIANGLE_STRIP) {

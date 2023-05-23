@@ -6,7 +6,7 @@ import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
-import {generateSynteticIndices} from '../../lib/utils/geometry-utils';
+import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
@@ -86,7 +86,7 @@ export default class B3dmConverter {
       delete attributes.normals;
     }
     const indices =
-      originalIndices || generateSynteticIndices(positionsValue.length / positions.size);
+      originalIndices || generateSyntheticIndices(positionsValue.length / positions.size);
     const meshIndex = gltfBuilder.addMesh({
       attributes,
       indices,
