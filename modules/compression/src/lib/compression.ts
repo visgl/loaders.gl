@@ -3,22 +3,41 @@ import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 
 /** Compression options */
 export type CompressionOptions = {
-  /** Compression quality typically goes from 1-11 (higher values better but slower) */
+  /**
+   * Compression quality (higher values better compression but exponentially slower)
+   * brotli goes from 1-11
+   * zlib goes from 1-9
+   * 5 or 6 is usually a good compromise
+   */
   quality?: number;
-  /** Injection of npm modules for large libraries */
+
+  /**
+   * Whether to use built-in Zlib on node.js for max performance (doesn't handle incremental compression)
+   * Currently only deflate, gzip and brotli are supported.
+   */
+  useZlib?: boolean;
+
+  /**
+   * Injection of npm modules - keeps large compression libraries out of standard bundle
+   */
   modules?: CompressionModules;
 };
 
+/**
+ * Injection of npm modules - keeps large compression libraries out of standard bundle
+ */
 export type CompressionModules = {
   brotli?: any;
   lz4js?: any;
   lzo?: any;
   'zstd-codec'?: any;
-}
-
+};
 
 /** Compression */
 export abstract class Compression {
+  /** Default compression level for gzip, brotli etc */
+  static DEFAULT_COMPRESSION_LEVEL = 5;
+
   /** Name of the compression */
   abstract readonly name: string;
   /** File extensions used for this */
@@ -28,7 +47,9 @@ export abstract class Compression {
   /** Whether decompression is supported */
   abstract readonly isSupported: boolean;
   /** Whether compression is supported */
-  get isCompressionSupported(): boolean { return this.isSupported; };
+  get isCompressionSupported(): boolean {
+    return this.isSupported;
+  }
 
   static modules: CompressionModules = {};
 

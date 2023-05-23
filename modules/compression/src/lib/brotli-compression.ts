@@ -1,33 +1,22 @@
 // BROTLI
 import {isBrowser} from '@loaders.gl/loader-utils';
-import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {BrotliCompressionZlib} from './brotli-compression-zlib';
+import {BrotliCompressionZlib, BrotliCompressionZlibOptions} from './brotli-compression-zlib';
 import type brotliNamespace from 'brotli';
-// import brotli from 'brotli';  // https://bundlephobia.com/package/brotli
+import type {BrotliOptions} from 'brotli';
+// import brotli from 'brotli';
 // import {BrotliDecode} from '../brotli/decode';
 
-export type BrotliCompressionOptions = CompressionOptions & {
-  brotli?: {
-    mode?: number;
-    quality?: number;
-    lgwin?: number;
-    useZlib?: boolean;
-  };
-};
-
-const DEFAULT_BROTLI_OPTIONS = {
-  brotli: {
-    mode: 0,
-    quality: 8,
-    lgwin: 22
-  }
+export type BrotliCompressionOptions = BrotliCompressionZlibOptions & {
+  brotli?: {};
 };
 
 let brotli: typeof brotliNamespace;
 
 /**
  * brotli compression / decompression
+ * Implemented with brotli package
+ * @see https://bundlephobia.com/package/brotli
  */
 export class BrotliCompression extends Compression {
   readonly name: string = 'brotli';
@@ -50,7 +39,8 @@ export class BrotliCompression extends Compression {
     // dependency injection
     brotli = brotli || this.options?.modules?.brotli || Compression.modules.brotli;
 
-    if (!isBrowser && this.options.brotli?.useZlib) {
+    if (!isBrowser && this.options.useZlib) {
+      // @ts-ignore public API is equivalent
       return new BrotliCompressionZlib(options);
     }
   }
@@ -71,11 +61,9 @@ export class BrotliCompression extends Compression {
     if (!brotli) {
       throw new Error('brotli compression: brotli module not installed');
     }
-
-    const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
+    const options = this._getBrotliOptions();
     const inputArray = new Uint8Array(input);
-
-    const outputArray = brotli.compress(inputArray, {quality: 5, brotliOptions});
+    const outputArray = brotli.compress(inputArray, options);
     return outputArray.buffer;
   }
 
@@ -84,13 +72,20 @@ export class BrotliCompression extends Compression {
       throw new Error('brotli compression: brotli module not installed');
     }
 
-    const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
+    const options = this._getBrotliOptions();
     const inputArray = new Uint8Array(input);
 
     // @ts-ignore brotli types state that only Buffers are accepted...
-    const outputArray = brotli.decompress(inputArray, brotliOptions);
+    const outputArray = brotli.decompress(inputArray, options);
     return outputArray.buffer;
     // const outputArray = BrotliDecode(inputArray, undefined);
     // return outputArray.buffer;
+  }
+
+  private _getBrotliOptions(): BrotliOptions {
+    return {
+      level: this.options.quality || Compression.DEFAULT_COMPRESSION_LEVEL,
+      ...this.options?.brotli
+    };
   }
 }

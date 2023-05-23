@@ -1,26 +1,27 @@
+import type {Bench} from '@probe.gl/bench';
 import {isBrowser} from '@loaders.gl/loader-utils';
 import {
   Compression,
-  NoCompression,
-  GZipCompression,
+  // NoCompression,
   // DeflateCompression,
-  LZ4Compression,
-  ZstdCompression,
+  // DeflateCompressionZlib,
+  GZipCompression,
+  GZipCompressionZlib,
+  // LZ4Compression,
+  // ZstdCompression,
   SnappyCompression,
   BrotliCompression,
   BrotliCompressionZlib,
   // LZOCompression,
   // CompressionWorker,
   _GZipCompressionFflate,
-  _DeflateCompressionFflate,
-  _GZipCompressionPako,
-  _DeflateCompressionPako,
-  _GZipCompressionZlib,
-  _DeflateCompressionZlib,
+  _GZipCompressionPako
+  // _DeflateCompressionFflate,
+  // _DeflateCompressionPako
 } from '@loaders.gl/compression';
 import {getData} from './utils/test-utils';
 
-// import * as brotli from 'brotli-compress'; 
+// import * as brotli from 'brotli-compress';
 // import brotliPromise, {BrotliWasmType} from 'brotli-wasm'; // Import the default export
 // let brotli: BrotliWasmType | undefined;
 
@@ -32,7 +33,6 @@ import {ZstdCodec} from 'zstd-codec';
 // Inject large dependencies through Compression constructor options
 Object.assign(Compression.modules, {
   lz4js,
-  // lzo,
   'zstd-codec': ZstdCodec,
   // brotli module has big problems with compress in browsers
   brotli: {
@@ -41,30 +41,57 @@ Object.assign(Compression.modules, {
       throw new Error('brotli compress');
     }
   }
+  // lzo
 });
+
+// Prepare data
+const {binaryData} = getData();
+const gzippedData = new GZipCompression().compressSync(binaryData);
+const snappyData = new SnappyCompression().compressSync(binaryData);
+let brotliData: ArrayBuffer | undefined;
+try {
+  brotliData = new BrotliCompressionZlib().compressSync(binaryData);
+} catch {
+  // ignore errors
+}
 
 // const noCompression = new NoCompression();
 // const gzipFflate = new GZipCompression();
 // const gzipPako = new _GZipCompressionPako();
-// const gzipZlib = new _GZipCompressionZlib();
+// const gzipZlib = new GZipCompressionZlib();
 // const brotli = new BrotliCompression();
 // const brotliZlib = new BrotliCompressionZlib();
 // const snappy = new SnappyCompression();
 // const lz4 = new LZ4Compression();
 // const zstd = new ZstdCompression();
 
+export async function compressionBench(bench: Bench): Promise<Bench> {
+  await compressionBenchDecompression(bench);
 
-export default async function compressionBench(bench) {
-  const {binaryData} = getData();
-  const gzippedData = new GZipCompression().compressSync(binaryData);
-  const snappyData = new SnappyCompression().compressSync(binaryData)
-  let brotliData: ArrayBuffer | undefined;
-  try {
-    brotliData = new BrotliCompressionZlib().compressSync(binaryData);
-  } catch {
-    // ignore errors
-  }
+  await compressionBenchCompression(bench);
 
+  // bench = bench.addAsync(
+  //   'GZip - compress - Pako - async',
+  //   {multiplier: binaryData.byteLength, unit: 'bytes'},
+  //   () => {
+  //     new _GZipCompressionPako().compress(binaryData);
+  //   }
+  // );
+  // bench = bench.addAsync(
+  //   'GZip - compress - Fflate - async',
+  //   {multiplier: binaryData.byteLength, unit: 'bytes'},
+  //   () => new _GZipCompressionFflate().compress(binaryData)
+  // );
+  // bench = bench.addAsync(
+  //   'GZip - compress - Zlib - async',
+  //   {multiplier: binaryData.byteLength, unit: 'bytes'},
+  //   () => new GZipCompressionZlib().compress(binaryData)
+  // );
+
+  return bench;
+}
+
+async function compressionBenchDecompression(bench: Bench): Promise<void> {
   bench = bench.group('Decompression');
 
   bench = bench.add(
@@ -77,7 +104,7 @@ export default async function compressionBench(bench) {
     bench = bench.add(
       'GZip - decompress - Zlib - sync',
       {multiplier: binaryData.byteLength, unit: 'bytes'},
-      () => new _GZipCompressionZlib().compressSync(gzippedData)
+      () => new GZipCompressionZlib().compressSync(gzippedData)
     );
   }
 
@@ -106,7 +133,9 @@ export default async function compressionBench(bench) {
       () => new BrotliCompression().decompressSync(data)
     );
   }
+}
 
+async function compressionBenchCompression(bench: Bench): Promise<void> {
   bench = bench.group('Compression');
 
   bench = bench.addAsync(
@@ -119,7 +148,7 @@ export default async function compressionBench(bench) {
     bench = bench.add(
       'GZip - compress 6 - Zlib - sync',
       {multiplier: binaryData.byteLength, unit: 'bytes'},
-      () => new _GZipCompressionZlib().compressSync(binaryData)
+      () => new GZipCompressionZlib().compressSync(binaryData)
     );
   }
   bench = bench.add(
@@ -148,24 +177,4 @@ export default async function compressionBench(bench) {
       () => new BrotliCompression().compressSync(binaryData)
     );
   }
-
-  // bench = bench.addAsync(
-  //   'GZip - compress - Pako - async',
-  //   {multiplier: binaryData.byteLength, unit: 'bytes'},
-  //   () => {
-  //     new _GZipCompressionPako().compress(binaryData);
-  //   }
-  // );
-  // bench = bench.addAsync(
-  //   'GZip - compress - Fflate - async',
-  //   {multiplier: binaryData.byteLength, unit: 'bytes'},
-  //   () => new _GZipCompressionFflate().compress(binaryData)
-  // );
-  // bench = bench.addAsync(
-  //   'GZip - compress - Zlib - async',
-  //   {multiplier: binaryData.byteLength, unit: 'bytes'},
-  //   () => new _GZipCompressionZlib().compress(binaryData)
-  // );
-  
-  return bench;
 }

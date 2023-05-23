@@ -1,20 +1,19 @@
 // loaders.gl, MIT license
-import type {CompressionOptions} from './compression';
+import {isBrowser} from '@loaders.gl/loader-utils';
+import {GZipCompressionZlib, GZipCompressionZlibOptions} from './gzip-compression-zlib';
+
 import {Compression} from './compression';
 import {getPakoError} from './utils/pako-utils';
-import pako from 'pako'; // https://bundlephobia.com/package/pako
+import pako from 'pako';
 
-export type DeflateCompressionOptions = CompressionOptions & {
-  deflate?: pako.InflateOptions & pako.DeflateOptions & {useZlib?: boolean};
-};
-
-export type GZipCompressionOptions = CompressionOptions & {
+export type GZipCompressionOptions = GZipCompressionZlibOptions & {
   gzip?: pako.InflateOptions & pako.DeflateOptions;
 };
 
 /**
  * GZIP compression / decompression
- * Using PAKO library.
+ * Implementation using pako
+ * @see https://bundlephobia.com/package/pako
  */
 export class GZipCompression extends Compression {
   readonly name: string = 'deflate';
@@ -22,13 +21,17 @@ export class GZipCompression extends Compression {
   readonly contentEncodings = ['deflate'];
   readonly isSupported = true;
 
-  readonly options: DeflateCompressionOptions;
+  readonly options: GZipCompressionOptions;
 
   private _chunks: ArrayBuffer[] = [];
 
-  constructor(options: DeflateCompressionOptions = {}) {
+  constructor(options: GZipCompressionOptions = {}) {
     super(options);
     this.options = options;
+    if (!isBrowser && this.options.useZlib) {
+      // @ts-ignore public API is equivalent
+      return new GZipCompressionZlib(options);
+    }
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
@@ -40,13 +43,13 @@ export class GZipCompression extends Compression {
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    const pakoOptions = this._getDeflateOptions();
+    const pakoOptions = this._getPakoOptions();
     const inputArray = new Uint8Array(input);
     return pako.gzip(inputArray, pakoOptions).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
-    const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
+    const pakoOptions: pako.InflateOptions = this.options?.gzip || {};
     const inputArray = new Uint8Array(input);
     return pako.ungzip(inputArray, pakoOptions).buffer;
   }
@@ -54,7 +57,7 @@ export class GZipCompression extends Compression {
   async *compressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    const pakoOptions = this._getDeflateOptions();
+    const pakoOptions = this._getPakoOptions();
     const pakoProcessor = new pako.Deflate(pakoOptions);
     yield* this.transformBatches(pakoProcessor, asyncIterator);
   }
@@ -62,12 +65,12 @@ export class GZipCompression extends Compression {
   async *decompressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
+    const pakoOptions: pako.InflateOptions = this.options?.gzip || {};
     const pakoProcessor = new pako.Inflate(pakoOptions);
     yield* this.transformBatches(pakoProcessor, asyncIterator);
   }
 
-  async *transformBatches(
+  private async *transformBatches(
     pakoProcessor: pako.Inflate | pako.Deflate,
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
@@ -94,28 +97,27 @@ export class GZipCompression extends Compression {
     yield* chunks;
   }
 
-  protected _onData(chunk) {
+  private _onData(chunk) {
     this._chunks.push(chunk);
   }
 
-  protected _onEnd(status) {
+  private _onEnd(status) {
     if (status !== 0) {
       throw new Error(getPakoError(status) + this._chunks.length);
     }
   }
 
-  protected _getChunks(): ArrayBuffer[] {
+  private _getChunks(): ArrayBuffer[] {
     const chunks = this._chunks;
     this._chunks = [];
     return chunks;
   }
 
-  protected _getDeflateOptions(): pako.DeflateOptions {
-    const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
-    if (this.options.quality) {
-      // @ts-expect-error
-      pakoOptions.level = this.options.quality || 5;
-    }
-    return pakoOptions;
+  private _getPakoOptions(): pako.DeflateOptions {
+    return {
+      // @ts-ignore level is too strongly typed
+      level: this.options.quality || Compression.DEFAULT_COMPRESSION_LEVEL,
+      ...this.options?.gzipZlib
+    };
   }
 }

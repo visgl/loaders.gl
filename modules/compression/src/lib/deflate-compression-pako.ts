@@ -1,16 +1,18 @@
 // loaders.gl, MIT license
-import type {CompressionOptions} from './compression';
+import {isBrowser} from '@loaders.gl/loader-utils';
+import {DeflateCompressionZlib, DeflateCompressionZlibOptions} from './deflate-compression-zlib';
 import {Compression} from './compression';
 import {getPakoError} from './utils/pako-utils';
-import pako from 'pako'; // https://bundlephobia.com/package/pako
+import pako from 'pako';
 
-export type DeflateCompressionOptions = CompressionOptions & {
-  deflate?: pako.InflateOptions & pako.DeflateOptions & {useZlib?: boolean};
+export type DeflateCompressionOptions = DeflateCompressionZlibOptions & {
+  deflate?: pako.InflateOptions & pako.DeflateOptions;
 };
 
 /**
  * DEFLATE compression / decompression
- * Using PAKO library
+ * Implementation using pako
+ * @see https://bundlephobia.com/package/pako
  */
 export class DeflateCompression extends Compression {
   readonly name: string = 'deflate';
@@ -25,6 +27,10 @@ export class DeflateCompression extends Compression {
   constructor(options: DeflateCompressionOptions = {}) {
     super(options);
     this.options = options;
+    if (!isBrowser && this.options.useZlib) {
+      // @ts-ignore public API is equivalent
+      return new DeflateCompressionZlib(options);
+    }
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
@@ -63,7 +69,7 @@ export class DeflateCompression extends Compression {
     yield* this.transformBatches(pakoProcessor, asyncIterator);
   }
 
-  async *transformBatches(
+  private async *transformBatches(
     pakoProcessor: pako.Inflate | pako.Deflate,
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
@@ -90,17 +96,17 @@ export class DeflateCompression extends Compression {
     yield* chunks;
   }
 
-  _onData(chunk) {
+  private _onData(chunk) {
     this._chunks.push(chunk);
   }
 
-  _onEnd(status) {
+  private _onEnd(status) {
     if (status !== 0) {
       throw new Error(getPakoError(status) + this._chunks.length);
     }
   }
 
-  _getChunks(): ArrayBuffer[] {
+  private _getChunks(): ArrayBuffer[] {
     const chunks = this._chunks;
     this._chunks = [];
     return chunks;

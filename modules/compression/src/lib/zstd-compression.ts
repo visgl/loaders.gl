@@ -13,7 +13,9 @@ export class ZstdCompression extends Compression {
   readonly name: string = 'zstd';
   readonly extensions = [];
   readonly contentEncodings = [];
-  get isSupported() { return zstd; };
+  get isSupported() {
+    return zstd;
+  }
 
   readonly options: CompressionOptions;
 

@@ -1,28 +1,34 @@
 // loaders.gl, MIT license
-import type {CompressionOptions} from './compression';
+import {isBrowser} from '@loaders.gl/loader-utils';
+import {DeflateCompressionZlib, DeflateCompressionZlibOptions} from './deflate-compression-zlib';
 import {Compression} from './compression';
-
+import type {DeflateOptions} from 'fflate';
 import {deflateSync, inflateSync} from 'fflate';
-import type {DeflateOptions} from 'fflate'; // https://bundlephobia.com/package/pako
 
-export type DeflateCompressionOptions = CompressionOptions & {
+export type DeflateCompressionOptions = DeflateCompressionZlibOptions & {
   deflate?: DeflateOptions;
 };
 
 /**
  * DEFLATE compression / decompression
+ * Implementation using fflate
+ * @see https://bundlephobia.com/package/fflate
  */
 export class DeflateCompression extends Compression {
   readonly name: string = 'fflate';
   readonly extensions: string[] = [];
   readonly contentEncodings = ['fflate', 'gzip, zlib'];
-  readonly isSupported = true;
+  readonly isSupported: boolean = true;
 
   readonly options: DeflateCompressionOptions;
 
   constructor(options: DeflateCompressionOptions = {}) {
     super(options);
     this.options = options;
+    if (!isBrowser && this.options.useZlib) {
+      // @ts-ignore public API is equivalent
+      return new DeflateCompressionZlib(options);
+    }
   }
 
   // Async fflate uses Workers which interferes with loaders.gl

@@ -1,21 +1,24 @@
 // loaders.gl, MIT license
-import type {CompressionOptions} from './compression';
+import {isBrowser} from '@loaders.gl/loader-utils';
+import {GZipCompressionZlib, GZipCompressionZlibOptions} from './gzip-compression-zlib';
 import {Compression} from './compression';
 import type {GzipOptions, AsyncGzipOptions} from 'fflate';
 import {gzipSync, gunzipSync, Gzip, Gunzip} from 'fflate'; // https://bundlephobia.com/package/pako
 
-export type GZipCompressionOptions = CompressionOptions & {
+export type GZipCompressionOptions = GZipCompressionZlibOptions & {
   gzip?: GzipOptions | AsyncGzipOptions;
 };
 
 /**
  * GZIP compression / decompression
+ * Implementation using fflate
+ * @see https://bundlephobia.com/package/fflate
  */
 export class GZipCompression extends Compression {
   readonly name: string = 'gzip';
   readonly extensions = ['gz', 'gzip'];
   readonly contentEncodings = ['gzip', 'x-gzip'];
-  readonly isSupported = true;  
+  readonly isSupported = true;
 
   readonly options: GZipCompressionOptions;
   private _chunks: ArrayBuffer[] = [];
@@ -23,10 +26,13 @@ export class GZipCompression extends Compression {
   constructor(options: GZipCompressionOptions = {}) {
     super(options);
     this.options = options;
+    if (!isBrowser && this.options.useZlib) {
+      // @ts-ignore public API is equivalent
+      return new GZipCompressionZlib(options);
+    }
   }
 
   // Async fflate uses Workers which interferes with loaders.gl
-  
   // async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
   //   // const options = this.options?.gzip || {};
   //   const inputArray = new Uint8Array(input);
@@ -34,6 +40,7 @@ export class GZipCompression extends Compression {
   //   return outputArray.buffer;
   // }
 
+  // Async fflate uses Workers which interferes with loaders.gl
   // async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
   //   // const options = this.options?.gzip || {};
   //   const inputArray = new Uint8Array(input);
@@ -42,16 +49,12 @@ export class GZipCompression extends Compression {
   // }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    // @ts-expect-error level
-    const options: GzipOptions = this.options?.gzip || {
-      level: this.options.quality || 6
-    };
+    const options = this._getFflateOptions();
     const inputArray = new Uint8Array(input);
     return gzipSync(inputArray, options).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
-    // const options = this.options?.gzip || {};
     const inputArray = new Uint8Array(input);
     return gunzipSync(inputArray).buffer;
   }
@@ -59,10 +62,7 @@ export class GZipCompression extends Compression {
   async *compressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
-    // @ts-expect-error level
-    const options: GzipOptions = this.options?.gzip || {
-      level: this.options.quality || 6
-    };
+    const options = this._getFflateOptions();
     const streamProcessor = new Gzip(options);
     streamProcessor.ondata = this._onData.bind(this);
     yield* this.transformBatches(streamProcessor, asyncIterator);
@@ -76,7 +76,7 @@ export class GZipCompression extends Compression {
     yield* this.transformBatches(streamProcessor, asyncIterator);
   }
 
-  protected async *transformBatches(
+  private async *transformBatches(
     streamProcessor: Gzip | Gunzip,
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
@@ -94,13 +94,21 @@ export class GZipCompression extends Compression {
     yield* chunks;
   }
 
-  _onData(data: Uint8Array, final: boolean): void {
+  private _onData(data: Uint8Array, final: boolean): void {
     this._chunks.push(data);
   }
 
-  _getChunks(): ArrayBuffer[] {
+  private _getChunks(): ArrayBuffer[] {
     const chunks = this._chunks;
     this._chunks = [];
     return chunks;
+  }
+
+  private _getFflateOptions(): GzipOptions {
+    return {
+      // @ts-ignore-error
+      level: this.options.quality || Compression.DEFAULT_COMPRESSION_LEVEL,
+      ...this.options?.gzip
+    };
   }
 }
