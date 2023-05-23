@@ -20,6 +20,8 @@ const NEW_YORK_B3DM_FILE_PATH = '@loaders.gl/tile-converter/test/data/NewYork/75
 const FERRY_GLTF_FILE_PATH = '@loaders.gl/tile-converter/test/data/Ferry/754834/6/0000000.glb';
 const TRIANGLE_STRIP_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/TriangleStrip/lod1_0.b3dm';
+const HELSINKI_GLB_FILE_PATH =
+  '@loaders.gl/tile-converter/test/data/helsinki-glb-8-meshopt/0/0.glb';
 
 setLoaderOptions({
   _worker: 'test'
@@ -339,10 +341,8 @@ test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be conver
   const shouldMergeMaterials = false;
   const tileHeaderRequiredProps = {
     computedTransform: [
-      [
-        -0.16491735, -0.98630739, 0, 0, -0.70808611, 0.11839684, 0.69612948, 0, -0.68659765,
-        0.11480383, -0.71791625, 0, -4386786.82071079, 733504.6938935, -4556188.9172627, 1
-      ]
+      -0.16491735, -0.98630739, 0, 0, -0.70808611, 0.11839684, 0.69612948, 0, -0.68659765,
+      0.11480383, -0.71791625, 0, -4386786.82071079, 733504.6938935, -4556188.9172627, 1
     ],
     boundingVolume: {center: [-4386794.587985844, 733486.8163247632, -4556196.147240348]}
   };
@@ -374,6 +374,57 @@ test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be conver
       const nodeResources = convertedResources[i];
       t.equals(nodeResources.vertexCount, EXPECT_VERTEX_COUNT[i]);
     }
+  } finally {
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
+  t.end();
+});
+
+test('tile-converter - I3S Geometry converter # should not convert point geometry', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
+  let nodeId = 1;
+  const addNodeToNodePage = async () => nodeId++;
+  const featuresHashArray = [];
+  const draco = true;
+  const generageBoundingVolumes = false;
+  const shouldMergeMaterials = false;
+  const tileHeaderRequiredProps = {
+    computedTransform: [
+      -0.4222848483394723, 0.9064631856081685, 0, 0, -0.786494516061795, -0.3663962560290312,
+      0.49717216311116175, 0, 0.4506682627694476, 0.2099482714980043, 0.8676519119020993, 0,
+      2881693.941235528, 1342465.6491912308, 5510858.997465198, 1
+    ],
+    boundingVolume: {center: [2881727.346362028, 1342482.044833547, 5510923.203394569]}
+  };
+  const tileContent = await load(HELSINKI_GLB_FILE_PATH, Tiles3DLoader);
+  const propertyTable = getPropertyTable(tileContent);
+  calculateTransformProps(tileHeaderRequiredProps, tileContent);
+  const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
+  const workerSource = await getWorkersSource();
+  const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
+  try {
+    await convertB3dmToI3sGeometry(
+      tileContent,
+      addNodeToNodePage,
+      propertyTable,
+      featuresHashArray,
+      attributeStorageInfo,
+      draco,
+      generageBoundingVolumes,
+      shouldMergeMaterials,
+      geoidHeightModel,
+      workerSource
+    );
+    t.fail('The conversion should fail');
+  } catch (e) {
+    // @ts-ignore 'e' is of type 'unknown'
+    t.equal(e.message, 'Primitive - unsupported mode 0');
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});

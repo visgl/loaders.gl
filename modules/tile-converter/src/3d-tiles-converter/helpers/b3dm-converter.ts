@@ -6,6 +6,7 @@ import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
+import {generateSynteticIndices} from '../../lib/utils/geometry-utils';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
@@ -85,7 +86,7 @@ export default class B3dmConverter {
       delete attributes.normals;
     }
     const indices =
-      originalIndices || this._generateSynteticIndices(positionsValue.length / positions.size);
+      originalIndices || generateSynteticIndices(positionsValue.length / positions.size);
     const meshIndex = gltfBuilder.addMesh({
       attributes,
       indices,
@@ -189,21 +190,6 @@ export default class B3dmConverter {
       byteOffset: 0,
       value: featureIds
     };
-  }
-
-  /**
-   * luma.gl can not work without indices now:
-   * https://github.com/visgl/luma.gl/blob/d8cad75b9f8ca3e578cf078ed9d19e619c2ddbc9/modules/experimental/src/gltf/gltf-instantiator.js#L115
-   * This method generates syntetic indices array: [0, 1, 2, 3, .... , vertexCount-1]
-   * @param {number} vertexCount - vertex count in the geometry
-   * @returns {Uint32Array} indices array.
-   */
-  _generateSynteticIndices(vertexCount) {
-    const result = new Uint32Array(vertexCount);
-    for (let index = 0; index < vertexCount; index++) {
-      result.set([index], index);
-    }
-    return result;
   }
 
   /**

@@ -51,6 +51,7 @@ import {GL} from '@loaders.gl/math';
   import type {TypedArrayConstructor} from '@math.gl/types'; 
 */
 import type {TypedArrayConstructor} from '../types';
+import {generateSynteticIndices} from '../../lib/utils/geometry-utils';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -514,6 +515,10 @@ function convertMesh(
       outputAttributes = attributesMap.get('default');
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
+    assert(
+      primitive.mode === GL.TRIANGLES || primitive.mode === GL.TRIANGLE_STRIP,
+      `Primitive - unsupported mode ${primitive.mode}`
+    );
     const attributes = primitive.attributes;
     if (!outputAttributes) {
       continue;
@@ -574,7 +579,11 @@ function convertMesh(
  */
 function getIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
   let indices: TypedArray | undefined = primitive.indices?.value;
-  assert(indices !== undefined, 'Non-indexed mesh primitives are not supported');
+  if (!indices) {
+    const positions = primitive.attributes.POSITION.value;
+    return generateSynteticIndices(positions.length / VALUES_PER_VERTEX);
+  }
+
   if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
     /*
     TRIANGLE_STRIP geometry contains n+2 vertices for n triangles;
