@@ -16,9 +16,9 @@ export type GZipCompressionOptions = GZipCompressionZlibOptions & {
  * @see https://bundlephobia.com/package/pako
  */
 export class GZipCompression extends Compression {
-  readonly name: string = 'deflate';
-  readonly extensions: string[] = [];
-  readonly contentEncodings = ['deflate'];
+  readonly name: string = 'gzip';
+  readonly extensions = ['gz', 'gzip'];
+  readonly contentEncodings = ['gzip', 'x-gzip'];
   readonly isSupported = true;
 
   readonly options: GZipCompressionOptions;
