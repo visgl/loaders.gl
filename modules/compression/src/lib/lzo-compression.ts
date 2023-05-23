@@ -22,17 +22,18 @@ export class LZOCompression extends Compression {
   readonly extensions = [];
   readonly contentEncodings = [];
   readonly isSupported = false; // !isBrowser;
+
   readonly options: CompressionOptions;
 
   /**
    * lzo is an injectable dependency due to big size
    * @param options
    */
-  constructor(options: CompressionOptions) {
+  constructor(options: CompressionOptions = {}) {
     super(options);
     this.options = options;
 
-    lzo = lzo || this.options?.modules?.lzo;
+    lzo = lzo || this.options?.modules?.lzo || Compression.modules.lzo;
     if (!lzo) {
       throw new Error(this.name);
     }

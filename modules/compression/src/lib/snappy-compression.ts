@@ -11,6 +11,7 @@ export class SnappyCompression extends Compression {
   readonly extensions = [];
   readonly contentEncodings = [];
   readonly isSupported = true;
+
   readonly options: CompressionOptions;
 
   constructor(options?: CompressionOptions) {

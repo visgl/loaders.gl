@@ -3,22 +3,17 @@
 
 import {fetchFile, load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tileset3D} from '@loaders.gl/tiles';
-
-/** @typedef {import('@loaders.gl/tiles').Tile3D} Tile3D */
+import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 
 /**
- * @returns {Promise<Tile3D>}
  */
-export async function loadRootTile(t, tilesetUrl) {
+export async function loadRootTile(t, tilesetUrl): Promise<Tile3D> {
   try {
     // Load tileset
     const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
     const tileset = new Tileset3D(tilesetJson, tilesetUrl);
 
     // Load root tile
-    /** @type {Tile3D} */
-    // @ts-ignore
     const sourceRootTile = tileset.root as Tile3D;
     await tileset._loadTile(sourceRootTile);
     return sourceRootTile;

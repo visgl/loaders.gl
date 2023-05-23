@@ -1,17 +1,18 @@
-// DEFLATE
-import type {CompressionOptions} from './compression';
+// loaders.gl, MIT license
+import {isBrowser} from '@loaders.gl/loader-utils';
+import {DeflateCompressionZlib, DeflateCompressionZlibOptions} from './deflate-compression-zlib';
 import {Compression} from './compression';
-import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
-import pako from 'pako'; // https://bundlephobia.com/package/pako
-import zlib from 'zlib';
-import {promisify1} from '@loaders.gl/loader-utils';
+import {getPakoError} from './utils/pako-utils';
+import pako from 'pako';
 
-export type DeflateCompressionOptions = CompressionOptions & {
-  deflate?: pako.InflateOptions & pako.DeflateOptions & {useZlib?: boolean};
+export type DeflateCompressionOptions = DeflateCompressionZlibOptions & {
+  deflate?: pako.InflateOptions & pako.DeflateOptions;
 };
 
 /**
  * DEFLATE compression / decompression
+ * Implementation using pako
+ * @see https://bundlephobia.com/package/pako
  */
 export class DeflateCompression extends Compression {
   readonly name: string = 'deflate';
@@ -26,47 +27,27 @@ export class DeflateCompression extends Compression {
   constructor(options: DeflateCompressionOptions = {}) {
     super(options);
     this.options = options;
+    if (!isBrowser && this.options.useZlib) {
+      // @ts-ignore public API is equivalent
+      return new DeflateCompressionZlib(options);
+    }
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // On Node.js we can use built-in zlib
-    if (!isBrowser && this.options.deflate?.useZlib) {
-      const buffer = this.options.deflate?.gzip
-        ? await promisify1(zlib.gzip)(input)
-        : await promisify1(zlib.deflate)(input);
-      return toArrayBuffer(buffer);
-    }
     return this.compressSync(input);
   }
 
   async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
-    // On Node.js we can use built-in zlib
-    if (!isBrowser && this.options.deflate?.useZlib) {
-      const buffer = this.options.deflate?.gzip
-        ? await promisify1(zlib.gunzip)(input)
-        : await promisify1(zlib.inflate)(input);
-      return toArrayBuffer(buffer);
-    }
     return this.decompressSync(input);
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
-    // On Node.js we can use built-in zlib
-    if (!isBrowser && this.options.deflate?.useZlib) {
-      const buffer = this.options.deflate?.gzip ? zlib.gzipSync(input) : zlib.deflateSync(input);
-      return toArrayBuffer(buffer);
-    }
     const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
     return pako.deflate(inputArray, pakoOptions).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
-    // On Node.js we can use built-in zlib
-    if (!isBrowser && this.options.deflate?.useZlib) {
-      const buffer = this.options.deflate?.gzip ? zlib.gunzipSync(input) : zlib.inflateSync(input);
-      return toArrayBuffer(buffer);
-    }
     const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
     return pako.inflate(inputArray, pakoOptions).buffer;
@@ -88,7 +69,7 @@ export class DeflateCompression extends Compression {
     yield* this.transformBatches(pakoProcessor, asyncIterator);
   }
 
-  async *transformBatches(
+  private async *transformBatches(
     pakoProcessor: pako.Inflate | pako.Deflate,
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
@@ -98,7 +79,7 @@ export class DeflateCompression extends Compression {
       const uint8Array = new Uint8Array(chunk);
       const ok = pakoProcessor.push(uint8Array, false); // false -> not last chunk
       if (!ok) {
-        throw new Error(`${this._getError()}write`);
+        throw new Error(`${getPakoError()}write`);
       }
       const chunks = this._getChunks();
       yield* chunks;
@@ -109,50 +90,25 @@ export class DeflateCompression extends Compression {
     const ok = pakoProcessor.push(emptyChunk, true); // true -> last chunk
     if (!ok) {
       // For some reason we get error but it still works???
-      // throw new Error(this._getError() + 'end');
+      // throw new Error(getPakoError() + 'end');
     }
     const chunks = this._getChunks();
     yield* chunks;
   }
 
-  _onData(chunk) {
+  private _onData(chunk) {
     this._chunks.push(chunk);
   }
 
-  _onEnd(status) {
+  private _onEnd(status) {
     if (status !== 0) {
-      throw new Error(this._getError(status) + this._chunks.length);
+      throw new Error(getPakoError(status) + this._chunks.length);
     }
   }
 
-  _getChunks(): ArrayBuffer[] {
+  private _getChunks(): ArrayBuffer[] {
     const chunks = this._chunks;
     this._chunks = [];
     return chunks;
-  }
-
-  // TODO - For some reason we don't get the error message from pako in _onEnd?
-  _getError(code: number = 0): string {
-    const MESSAGES = {
-      /* Z_NEED_DICT       2  */
-      2: 'need dictionary',
-      /* Z_STREAM_END      1  */
-      1: 'stream end',
-      /* Z_OK              0  */
-      0: '',
-      /* Z_ERRNO         (-1) */
-      '-1': 'file error',
-      /* Z_STREAM_ERROR  (-2) */
-      '-2': 'stream error',
-      /* Z_DATA_ERROR    (-3) */
-      '-3': 'data error',
-      /* Z_MEM_ERROR     (-4) */
-      '-4': 'insufficient memory',
-      /* Z_BUF_ERROR     (-5) */
-      '-5': 'buffer error',
-      /* Z_VERSION_ERROR (-6) */
-      '-6': 'incompatible version'
-    };
-    return `${this.name}: ${MESSAGES[code]}`;
   }
 }

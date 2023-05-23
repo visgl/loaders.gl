@@ -38,13 +38,14 @@ export class LZ4Compression extends Compression {
   readonly extensions = ['lz4'];
   readonly contentEncodings = ['x-lz4'];
   readonly isSupported = true;
+
   readonly options: CompressionOptions;
 
-  constructor(options: CompressionOptions) {
+  constructor(options: CompressionOptions = {}) {
     super(options);
     this.options = options;
 
-    lz4js = lz4js || this.options?.modules?.lz4js;
+    lz4js = lz4js || this.options?.modules?.lz4js || Compression.modules.lz4js;
     if (!lz4js) {
       throw new Error(this.name);
     }
