@@ -50,6 +50,9 @@ test.only('tile-converter - Converters#texure attributes', async (t) => {
     slpk: true,
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
     egmFilePath: PGM_FILE_PATH,
+
+    mergeMaterials: false, // --split-nodes
+
     token:
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
   });

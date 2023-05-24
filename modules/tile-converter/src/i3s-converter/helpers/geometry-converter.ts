@@ -791,6 +791,16 @@ function getBatchIds(
   primitive: GLTFMeshPrimitivePostprocessed,
   images: GLTFImagePostprocessed[]
 ): number[] {
+  // for (let index = 0; index < BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES.length; index++) {
+  //   const possibleBatchIdAttributeName = BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES[index];
+  //   if (
+  //     attributes[possibleBatchIdAttributeName] &&
+  //     attributes[possibleBatchIdAttributeName].value
+  //   ) {
+  //     return attributes[possibleBatchIdAttributeName].value;
+  //   }
+  // }
+
   const batchIds: number[] = handleBatchIdsExtensions(attributes, primitive, images);
 
   if (batchIds.length) {

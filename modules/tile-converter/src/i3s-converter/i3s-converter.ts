@@ -234,6 +234,7 @@ export default class I3SConverter {
       // console.log(tilesetJson); // eslint-disable-line
       this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
 
+      this.nodePages.converter['globalFeatureTables'] = [];
       await this._createAndSaveTileset(
         outputPath,
         tilesetName,
@@ -534,6 +535,8 @@ export default class I3SConverter {
     this._checkAddRefinementTypeForTile(sourceTile);
 
     await this._updateTilesetOptions();
+    // TODO: Consider passing the converter through sourceTile.userData
+    sourceTile.userData['converter'] = this;
     await this.sourceTileset!._loadTile(sourceTile);
 
     let boundingVolumes = createBoundingVolumes(sourceTile, this.geoidHeightModel!);
