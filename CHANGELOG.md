@@ -6,6 +6,29 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 release info (#2491))
 
+### v4.0.0-alpha.7
+
+- fix(tile-converter): reject POINT mesh type (#2501)
+- fix(i3s): Dependency path error (#2499)
+- fix(i3s): add md5 to i3s module (#2479)
+- chore: Node worker cleanup (#2495)
+- chore: move DOMParser dep from polyfills to kml module (#2496)
+- fix(wms): Avoid breaking normalized ImageSource metadata (#2492)
+- docs: Upgrade guide for WMMSCapabilities, link to CHANGELOG for patch release info (#2491)
+- fix(wms): undefined fields can be set to undefined strings (#2489)
+- fix(tiles): Improved query params handling (#2490)
+- fix(hero example): change dataset url (#2484)
+- fix(tiles): isLoaded has breaking change (#2485)
+- fix: dependency issue (#2480)
+- chore: Cleanup after 4.0 fast forward (#2481)
+- cleanup
+- chore(gltf): Add types for post processed gltf (#2468)
+- feat(3d-tiles): Tiles3DLoaderOptions (#2471)
+- feat(gltf): Typed glTF loader, separate post processing (#2472)
+- docs: more formats (#2467)
+- docs: Add formats section (#2466)
+- docs: Add ArrowJS docs (#2453)
+
 ### v4.0.0-alpha.6
 
 - feat: Typed loaders (#2448)
@@ -27,11 +50,11 @@ release info (#2491))
 - feat(tile-converter): support TRIANGLE-STRIP (#2428)
 
 ## v3.4
- 
+
 ### 3.4.2
 
 - docs: Upgrade guide for `WMSCapabilities` type, link to CHANGELOG for patch release info
-- fix(wms): undefined  fields can be set to `undefined` strings (#2489)
+- fix(wms): undefined fields can be set to `undefined` strings (#2489)
 - fix(tiles): Improved query params handling (#2490)
 
 ### v3.4.1
