@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "4.0.0-alpha.6",
+  "version": "4.0.0-alpha.7",
   "description": "i3s .",
   "license": "MIT",
   "publishConfig": {
@@ -27,23 +27,24 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker && npm run build-loader-worker-nodejs",
+    "pre-build": "npm run build-bundle && npm run build-worker && npm run build-worker-node",
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/i3s-content-worker.ts --bundle --outfile=dist/i3s-content-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-loader-worker-nodejs": "esbuild src/workers/i3s-content-nodejs-worker.ts --outfile=dist/i3s-content-nodejs-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/i3s-content-worker.ts --outfile=dist/i3s-content-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/compression": "4.0.0-alpha.6",
-    "@loaders.gl/draco": "4.0.0-alpha.6",
-    "@loaders.gl/images": "4.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.6",
-    "@loaders.gl/schema": "4.0.0-alpha.6",
-    "@loaders.gl/textures": "4.0.0-alpha.6",
-    "@loaders.gl/tiles": "4.0.0-alpha.6",
+    "@loaders.gl/compression": "4.0.0-alpha.7",
+    "@loaders.gl/draco": "4.0.0-alpha.7",
+    "@loaders.gl/images": "4.0.0-alpha.7",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.7",
+    "@loaders.gl/schema": "4.0.0-alpha.7",
+    "@loaders.gl/textures": "4.0.0-alpha.7",
+    "@loaders.gl/tiles": "4.0.0-alpha.7",
     "@luma.gl/constants": "^8.5.4",
     "@math.gl/core": "^3.5.1",
     "@math.gl/culling": "^3.5.1",
-    "@math.gl/geospatial": "^3.5.1"
+    "@math.gl/geospatial": "^3.5.1",
+    "md5": "^2.3.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "4.0.0-alpha.6"

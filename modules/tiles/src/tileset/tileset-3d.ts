@@ -327,8 +327,7 @@ export class Tileset3D {
   }
 
   get queryParams(): string {
-    const search = new URLSearchParams(this._queryParams).toString();
-    return search ? `?${search}` : '';
+    return new URLSearchParams(this._queryParams).toString();
   }
 
   setProps(props: Tileset3DProps): void {
@@ -902,7 +901,11 @@ export class Tileset3D {
     if (!this.asset) {
       throw new Error('Tileset must have an asset property.');
     }
-    if (this.asset.version !== '0.0' && this.asset.version !== '1.0') {
+    if (
+      this.asset.version !== '0.0' &&
+      this.asset.version !== '1.0' &&
+      this.asset.version !== '1.1'
+    ) {
       throw new Error('The tileset must be 3D Tiles version 0.0 or 1.0.');
     }
 

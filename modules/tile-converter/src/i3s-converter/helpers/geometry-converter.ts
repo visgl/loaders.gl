@@ -51,6 +51,7 @@ import {GL} from '@loaders.gl/math';
   import type {TypedArrayConstructor} from '@math.gl/types'; 
 */
 import type {TypedArrayConstructor} from '../types';
+import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -514,12 +515,20 @@ function convertMesh(
       outputAttributes = attributesMap.get('default');
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
+    // Per the spec https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
+    // GL.TRIANGLES is default. So in case `mode` is `undefined`, it is 'TRIANGLES'
+    assert(
+      primitive.mode === undefined ||
+        primitive.mode === GL.TRIANGLES ||
+        primitive.mode === GL.TRIANGLE_STRIP,
+      `Primitive - unsupported mode ${primitive.mode}`
+    );
     const attributes = primitive.attributes;
     if (!outputAttributes) {
       continue;
     }
 
-    const indices = getIndices(primitive);
+    const indices = normalizeIndices(primitive);
     outputAttributes.positions = concatenateTypedArrays(
       outputAttributes.positions,
       transformVertexArray({
@@ -572,9 +581,13 @@ function convertMesh(
  * @param primitive - the primitive to get the indices from
  * @returns indices of vertices of the independent triangles
  */
-function getIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
+function normalizeIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
   let indices: TypedArray | undefined = primitive.indices?.value;
-  assert(indices !== undefined, 'Non-indexed mesh primitives are not supported');
+  if (!indices) {
+    const positions = primitive.attributes.POSITION.value;
+    return generateSyntheticIndices(positions.length / VALUES_PER_VERTEX);
+  }
+
   if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
     /*
     TRIANGLE_STRIP geometry contains n+2 vertices for n triangles;

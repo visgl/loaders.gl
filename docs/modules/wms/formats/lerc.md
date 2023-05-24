@@ -1,7 +1,5 @@
 # LERC - Limited Error Raster Compression
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
-
 - *[`loaders.gl/wms`](/docs/modules/wms)*
 - *[LERC specification](http://esri.github.io/lerc/)*
 

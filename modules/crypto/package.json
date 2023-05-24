@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/crypto",
-  "version": "4.0.0-alpha.6",
+  "version": "4.0.0-alpha.7",
   "description": "Cryptographic/hashing plugins for loaders.gl",
   "license": "MIT",
   "publishConfig": {
@@ -27,14 +27,15 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle",
+    "pre-build": "npm run build-bundle && npm run build-worker && npm run build-worker-node",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap",
-    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker.js --target=esnext,node12 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker.js --target=esnext --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker-node.js --platform=node --target=esnext,node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.6",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.6",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.7",
+    "@loaders.gl/worker-utils": "4.0.0-alpha.7",
     "@types/crypto-js": "^4.0.2"
   },
   "devDependencies": {

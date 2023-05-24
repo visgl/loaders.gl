@@ -41,12 +41,11 @@ const WITHOUT_BATCH_TABLE_URL =
 const WITH_BATCH_TABLE_URL =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTable/tileset.json';
 const NO_BATCH_IDS_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedNoBatchIds/tileset.json';
-*/
+*
 
 const TILESET_WITH_BATCH_TABLE_HIERARCHY_URL =
   '@loaders.gl/3d-tiles/test/data/Hierarchy/BatchTableHierarchy/tileset.json';
 
-/*
 const WITH_TRANSFORM_BOX_URL =
   '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithTransformBox/tileset.json';
 const WITH_TRANSFORM_SPHERE_URL =

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/draco",
-  "version": "4.0.0-alpha.6",
+  "version": "4.0.0-alpha.7",
   "description": "Framework-independent loader and writer for Draco compressed meshes and point clouds",
   "license": "MIT",
   "publishConfig": {
@@ -32,23 +32,23 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker",
+    "pre-build": "npm run build-bundle && npm run build-workers",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap",
-    "build-loader-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-loader-worker-nodejs": "esbuild src/workers/draco-nodejs-worker.ts --outfile=dist/draco-nodejs-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-writer-worker": "esbuild src/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-writer-worker-nodejs": "esbuild src/workers/draco-writer-nodejs-worker.ts --outfile=dist/draco-writer-nodejs-worker.js --platform=node --target=esnext,node12 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker": "yarn build-loader-worker && yarn build-loader-worker-nodejs && yarn build-writer-worker && yarn build-writer-worker-nodejs"
+    "build-workers": "yarn build-loader-worker && yarn build-loader-worker-node && yarn build-writer-worker && yarn build-writer-worker-node",
+    "build-loader-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js --target=esnext --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-loader-worker-node": "esbuild src/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-writer-worker": "esbuild src/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-writer-worker-node": "esbuild src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.js --target=node16 --platform=node --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.6",
-    "@loaders.gl/schema": "4.0.0-alpha.6",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.6",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.7",
+    "@loaders.gl/schema": "4.0.0-alpha.7",
+    "@loaders.gl/worker-utils": "4.0.0-alpha.7",
     "draco3d": "1.5.5"
   },
   "devDependencies": {
-    "@loaders.gl/polyfills": "4.0.0-alpha.6"
+    "@loaders.gl/polyfills": "4.0.0-alpha.7"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

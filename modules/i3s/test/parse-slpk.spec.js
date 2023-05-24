@@ -6,7 +6,7 @@ const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
 
 test('SLPKLoader#slpk load', async (t) => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {slpk: {path: 'nodepages/0.json'}});
-  t.deepEqual(uncompressedFile.byteLength, 16153);
+  t.deepEqual(uncompressedFile.byteLength, 16153, 'SLPK nodepage has the correct length');
   t.end();
 });
 

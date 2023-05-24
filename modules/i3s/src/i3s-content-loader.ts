@@ -1,4 +1,3 @@
-import {isBrowser} from '@loaders.gl/worker-utils';
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
@@ -13,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
  */
 export const I3SContentLoader: LoaderWithParser = {
   name: 'I3S Content (Indexed Scene Layers)',
-  id: isBrowser ? 'i3s-content' : 'i3s-content-nodejs',
+  id: 'i3s-content',
   module: 'i3s',
   worker: true,
   version: VERSION,

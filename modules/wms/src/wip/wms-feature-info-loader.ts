@@ -1,7 +1,8 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {WMSCapabilitiesLoader, WMSLoaderOptions} from '../wms-capabilities-loader';
+import type {XMLLoaderOptions} from '@loaders.gl/xml';
+import {WMSCapabilitiesLoader} from '../wms-capabilities-loader';
 
 import type {WMSFeatureInfo} from '../lib/parsers/wms/parse-wms-features';
 import {parseWMSFeatureInfo} from '../lib/parsers/wms/parse-wms-features';
@@ -17,9 +18,9 @@ export const WMSFeatureInfoLoader = {
   id: 'wms-feature-info',
   name: 'WMS FeatureInfo',
 
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions) =>
+  parse: async (arrayBuffer: ArrayBuffer, options?: XMLLoaderOptions) =>
     parseWMSFeatureInfo(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSLoaderOptions) => parseWMSFeatureInfo(text, options)
+  parseTextSync: (text: string, options?: XMLLoaderOptions) => parseWMSFeatureInfo(text, options)
 };
 
 export const _typecheckWMSFeatureInfoLoader: LoaderWithParser = WMSFeatureInfoLoader;

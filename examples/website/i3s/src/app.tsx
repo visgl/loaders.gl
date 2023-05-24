@@ -291,7 +291,7 @@ class App extends PureComponent {
         this.setState({
           tileset,
           viewState: {
-            ...viewState,
+            ...HERO_EXAMPLE_VIEW_STATE,
             onTransitionEnd: this._rotateCamera()
           }
         });

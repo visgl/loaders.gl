@@ -2,10 +2,34 @@
 
 ## v4.0 Prerelease
 
-The official 4.0 alpha track starts with alpha.6
-The early pre-release track was abandoned due to build incompatibility problems.
+> The official 4.0 alpha track starts with alpha.6
+> The early pre-release track was abandoned due to build incompatibility problems.
+release info (#2491))
 
-## v4.0.0-alpha.6
+### v4.0.0-alpha.7
+
+- fix(tile-converter): reject POINT mesh type (#2501)
+- fix(i3s): Dependency path error (#2499)
+- fix(i3s): add md5 to i3s module (#2479)
+- chore: Node worker cleanup (#2495)
+- chore: move DOMParser dep from polyfills to kml module (#2496)
+- fix(wms): Avoid breaking normalized ImageSource metadata (#2492)
+- docs: Upgrade guide for WMMSCapabilities, link to CHANGELOG for patch release info (#2491)
+- fix(wms): undefined fields can be set to undefined strings (#2489)
+- fix(tiles): Improved query params handling (#2490)
+- fix(hero example): change dataset url (#2484)
+- fix(tiles): isLoaded has breaking change (#2485)
+- fix: dependency issue (#2480)
+- chore: Cleanup after 4.0 fast forward (#2481)
+- cleanup
+- chore(gltf): Add types for post processed gltf (#2468)
+- feat(3d-tiles): Tiles3DLoaderOptions (#2471)
+- feat(gltf): Typed glTF loader, separate post processing (#2472)
+- docs: more formats (#2467)
+- docs: Add formats section (#2466)
+- docs: Add ArrowJS docs (#2453)
+
+### v4.0.0-alpha.6
 
 - feat: Typed loaders (#2448)
 - chore: Bump math.gl and probe.gl (#2444)
@@ -27,11 +51,17 @@ The early pre-release track was abandoned due to build incompatibility problems.
 
 ## v3.4
 
- ## v3.4.0 
- 
- TBA
+### 3.4.2
 
-## v3.4.0-alpha.5
+- docs: Upgrade guide for `WMSCapabilities` type, link to CHANGELOG for patch release info
+- fix(wms): undefined fields can be set to `undefined` strings (#2489)
+- fix(tiles): Improved query params handling (#2490)
+
+### v3.4.1
+
+### v3.4.0
+
+### v3.4.0-alpha.5
 
 - feat(wms): Support for layer dimension metadata (#2475)
 - docs(slpk): TSDoc comments (#2460)
@@ -47,7 +77,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - chore(slpk): implementation of slpk parser (#2409)
 - fix(wms): fix type exports (#2452)
 
-## v3.4.0-alpha.4
+### v3.4.0-alpha.4
 
 - chore: Remove deck.gl test dependency (#2451)
 - fix(tile-converter): Remove luma.gl dependency (#2450)
@@ -57,7 +87,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - feat(wms): Replace EPSG:4326 with CRS:84 in WMS 1.3.0 (#2439)
 - feat(tile-converter): support TRIANGLE-STRIP (#2428)
 
-## v3.4.0-alpha.3
+### v3.4.0-alpha.3
 
 - feat(wms): More closely follow spec, extract more capabilities (#2437)
 - fix(website): examples pictures (#2435)
@@ -99,7 +129,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - feat(docs): Most examples now running on docusaurus website (#2394)
 - feat(docs): Add examples to docusaurus website (#2393)
 
-## v3.4.0-alpha.2
+### v3.4.0-alpha.2
 
 - feat(3d-tiles): support s2 bounding volume (#2376)
 - feat(parquet): Extract geoparquet metadata (#2391)
@@ -125,13 +155,15 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - fix(loader-utils): Fix incorrect browser field for 'utils' (#2363) (#2364)
 - chore: update CHANGELOG
 
-## v3.3.0
+## v3.3
+
+### v3.3.0
 
 - feat(examples): Add URL loading to glTF example
 - fix(website): Disable glTF example due to gatsby typescript issues (#2361)
 - chore(tiles): Code cleanup (#2358)
 
-## v3.3.0-alpha.14
+### v3.3.0-alpha.14
 
 - chore(wms): Streamline ImageService APIs (#2357)
 - feat(wms): ArcGIS data sources (#2340)
@@ -145,7 +177,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - chore(examples): update 3d-tiles examples (#2348)
 - control panel styling; misc. auto formatting app (#2347)
 
-## v3.3.0-alpha.13
+### v3.3.0-alpha.13
 
 - feat(wms): AdHocImageSource - initial URL template support (#2346)
 - website: bump luma & fix I3S Debug (#2343)
@@ -161,11 +193,11 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - example: Working WMS website example (#2332)
 - docs(tile-converter): update docs for new options (#2335)
 
-## v3.3.0-alpha.12
+### v3.3.0-alpha.12
 
 - chore(parse-basis): add level size field (#2334)
 
-## v3.3.0-alpha.11
+### v3.3.0-alpha.11
 
 - Added link to showcases prod (#2330)
 - examples: Bundle examples with vite (#2331)
@@ -181,11 +213,11 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - feat(ogc): Add initial OGC support (WMS, WFS, WMTS and GML) (#2314)
 - chore: enable tests (#2313)
 
-## v3.3.0-alpha.10
+### v3.3.0-alpha.10
 
 - feat(tile-converter): i3s - merge materials (#2311)
 
-## v3.3.0-alpha.9
+### v3.3.0-alpha.9
 
 - feat(wms): Loaders for additional WMS response types. (#2312)
 - chore(i3sLoader): Handling unsupported point cloud layer (#2310)
@@ -196,7 +228,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - chore(i3s): add types for arcgis slides (#2299)
 - fix(i3s-converter): fix default arrays in shared-resources.ts (#2298)
 
-## v3.3.0-alpha.8
+### v3.3.0-alpha.8
 
 - feat(tiles): detect content formats (#2288)
 - chore: Replace probe.gl with @probe.gl (#2297)
@@ -211,7 +243,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - fix(tile-converter): lint error (#2289)
 - feat(xml): New XML loader module (#2291)
 
-## v3.3.0-alpha.7
+### v3.3.0-alpha.7
 
 - fix(tile-converter): always calculate refinement percentage (#2286)
 - chore(deps): bump socket.io-parser from 3.3.2 to 3.3.3 in /website (#2285)
@@ -221,7 +253,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - fix(tile-converter): i3s - handle file path with "\" (#2283)
 - Stat type changed to default 'count' (#2262)
 
-## v3.3.0-alpha.6
+### v3.3.0-alpha.6
 
 - chore(arcgis-webscene-loader): handle usupported layers (#2273)
 - chore: typescript 4.8.4 (#2275)
@@ -229,12 +261,12 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - deck.gl compatible Viewport type (#2259)
 - fix(tiles): Viewport type (#2258)
 
-## v3.3.0-alpha.5
+### v3.3.0-alpha.5
 
 - fix(tile-converter): 3DTiles - generage batchIds (#2257)
 - chore(i3s): export more types (#2255)
 
-## v3.3.0-alpha.4
+### v3.3.0-alpha.4
 
 - feat(i3s): colorize by attribute (#2254)
 - fix(gltf): add diffuseTex support to v1.0 (#2250)
@@ -251,13 +283,13 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - fix(implicit-tiling): handle child tiles (#2240)
 - feat(tile-converter): enable loader workers (#2234)
 
-## v3.3.0-alpha.3
+### v3.3.0-alpha.3
 
 - feat(i3s): content loader worker for Node.js (#2237)
 - chore(tiles): fix lint warning (#2235)
 - fix(parse-i3s-tile-content): move initial value inside function (#2230)
 
-## v3.3.0-alpha.2
+### v3.3.0-alpha.2
 
 - fix(worker-utils): check node worker properly (#2232)
 - chore(i3s): fix naming (#2222)
@@ -276,7 +308,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - chore(deps): bump devcert from 1.1.3 to 1.2.2 in /website (#2220)
 - chore(deps): bump moment from 2.29.2 to 2.29.4 in /website (#2219)
 
-## v3.3.0-alpha.1
+### v3.3.0-alpha.1
 
 - fix(3d-tiles): prevent crash when cartographic center is undefined (#2212)
 - fix(3d-tiles): add support for absolute content-uris (#2211)
@@ -301,7 +333,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 
 ## v3.2 Prerelease
 
-## v3.2.0-alpha.4
+### v3.2.0-alpha.4
 
 - feat(i3s-stats): add tiles total metric to i3s (#2118)
 - feat(webscene): ArcGIS WebScene loader (#2158)
@@ -309,7 +341,7 @@ The early pre-release track was abandoned due to build incompatibility problems.
 - fix(tiles): isLoaded criteria (#2167)
 - chore(tile-converter): full extent appears in json file (#2165)
 
-## v3.2.0-alpha.3
+### v3.2.0-alpha.3
 
 - WASM-based parquet (#2103)
 - chore(statistics): add vertex count statistics (#2163)
@@ -1354,23 +1386,23 @@ The early pre-release track was abandoned due to build incompatibility problems.
 
 #### v2.3.0-alpha.9
 
-    CI: fix cache (#891)
-    CI: add cache to .travis.yml (#890)
-    bump ocular-dev-tools: no generator transpile in es6 dist (#889)
-    pcd: color and normal attribute fixes (#888)
-    crypto: fix transform iterators (#887)
-    pcd: Fix color = 0 after loading (#886)
-    core: `parseInBatches` support for `options.transforms` (#883)
+- CI: fix cache (#891)
+- CI: add cache to .travis.yml (#890)
+- bump ocular-dev-tools: no generator transpile in es6 dist (#889)
+- pcd: color and normal attribute fixes (#888)
+- crypto: fix transform iterators (#887)
+- pcd: Fix color = 0 after loading (#886)
+- core: `parseInBatches` support for `options.transforms` (#883)
 
 #### v2.3.0-alpha.8
 
-    crypto: Add crc32c transform (#882)
-    Remove duplicate shapefile worker loader files (#881)
-    flatgeobuf: New module for flatgeobuf format (#880)
-    Docs: contributing.md cleanup (#878)
-    Use template contributing.md (#753)
-    crypto: fixes and cleanup (#876)
-    Fix name of indices returned from SHPLoader (#875)
+- crypto: Add crc32c transform (#882)
+- Remove duplicate shapefile worker loader files (#881)
+- flatgeobuf: New module for flatgeobuf format (#880)
+- Docs: contributing.md cleanup (#878)
+- Use template contributing.md (#753)
+- crypto: fixes and cleanup (#876)
+- Fix name of indices returned from SHPLoader (#875)
 
 #### v2.3.0-alpha.7
 
