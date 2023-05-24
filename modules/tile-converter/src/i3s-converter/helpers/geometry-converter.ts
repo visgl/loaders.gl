@@ -515,8 +515,12 @@ function convertMesh(
       outputAttributes = attributesMap.get('default');
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
+    // Per the spec https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
+    // GL.TRIANGLES is default. So in case `mode` is `undefined`, it is 'TRIANGLES'
     assert(
-      primitive.mode === GL.TRIANGLES || primitive.mode === GL.TRIANGLE_STRIP,
+      primitive.mode === undefined ||
+        primitive.mode === GL.TRIANGLES ||
+        primitive.mode === GL.TRIANGLE_STRIP,
       `Primitive - unsupported mode ${primitive.mode}`
     );
     const attributes = primitive.attributes;
