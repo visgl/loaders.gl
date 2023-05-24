@@ -1,6 +1,16 @@
 # CHANGELOG for loaders.gl
 
-## v3.4.0
+# v3.4
+
+## v3.4.4
+
+-  fix: 3d-tiles peer dependency (#2503)
+
+## v3.4.3
+
+-  fix(i3s): Dependency path error (#2499)
+-  fix(i3s): add md5 to i3s module (#2479)
+-  fix(wms): Avoid breaking normalized ImageSource metadata (#2492)
 
 ## 3.4.2
 
