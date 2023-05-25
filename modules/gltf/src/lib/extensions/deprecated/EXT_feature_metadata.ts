@@ -12,9 +12,9 @@ import {
   GLTF_EXT_feature_metadata,
   EXT_feature_metadata_feature_texture,
   FeatureTextureProperty,
-  MeshPrimitive,
-  GLTF_EXT_feature_metadata_attribute
+  MeshPrimitive
 } from '../../types/gltf-json-schema';
+import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 
 /** Extension name */
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
@@ -113,7 +113,8 @@ function handleFeatureTextureProperties(
       // TODO: Check he following logic:
       // We don't need "combined" data from all primitives
       // The per-primitive data are being saved inside this function.
-      getPropertyDataFromTexture(scenegraph, featureTextureProperty, attributeName);
+      const data = getPropertyDataFromTexture(scenegraph, featureTextureProperty, attributeName);
+      featureTextureProperty.data = data;
     }
   }
 }
@@ -158,36 +159,34 @@ function getPropertyDataFromTexture(
   scenegraph: GLTFScenegraph,
   featureTextureProperty: FeatureTextureProperty,
   attributeName: string
-): void {
+): number[] {
   const json = scenegraph.gltf.json;
   if (!json.meshes) {
-    return;
+    return [];
   }
+  const textureFeatureTable: number[] = [];
   for (const mesh of json.meshes) {
     for (const primitive of mesh.primitives) {
-      const primitivePropertyData = getPrimitivePropertyData(
+      processPrimitiveTextures(
         scenegraph,
+        attributeName,
         featureTextureProperty,
+        textureFeatureTable,
         primitive
-      );
-      const extention = primitive.extensions[EXT_FEATURE_METADATA];
-      const featureTableAttributeName: string = `ft_${attributeName}`;
-      createFeatureTable(
-        scenegraph,
-        primitive,
-        extention,
-        featureTableAttributeName,
-        primitivePropertyData
       );
     }
   }
+  return textureFeatureTable;
 }
 
-function getPrimitivePropertyData(
+// eslint-disable-next-line max-statements
+function processPrimitiveTextures(
   scenegraph: GLTFScenegraph,
+  attributeName: string,
   featureTextureProperty: FeatureTextureProperty,
+  textureFeatureTable: number[],
   primitive: MeshPrimitive
-): Uint8Array {
+): void {
   /*
 texture.index is an index for the "textures" array.
 The texture object referenced by this index looks like this:
@@ -202,7 +201,7 @@ texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" 
 The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates ared used to get data from the image.
 */
   const json = scenegraph.gltf.json;
-  const primitiveData: number[] = [];
+  const textureData: number[] = [];
   const texCoordAccessorKey = `TEXCOORD_${featureTextureProperty.texture.texCoord}`;
   const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
   const texCoordBufferView = scenegraph.getBufferView(texCoordAccessorIndex);
@@ -233,11 +232,32 @@ The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These 
           index,
           featureTextureProperty.channels
         );
-        primitiveData.push(value);
+        textureData.push(value);
       }
     }
   }
-  return new Uint8Array(primitiveData);
+  const featureIndices: number[] = [];
+  for (const texelData of textureData) {
+    let index = textureFeatureTable.findIndex((item) => item === texelData);
+    if (index === -1) {
+      index = textureFeatureTable.push(texelData) - 1;
+    }
+    featureIndices.push(index);
+  }
+  const typedArray = new Uint32Array(featureIndices);
+  const bufferIndex =
+    scenegraph.gltf.buffers.push({
+      arrayBuffer: typedArray.buffer,
+      byteOffset: 0,
+      byteLength: typedArray.byteLength
+    }) - 1;
+  const bufferViewIndex = scenegraph.addBufferView(typedArray, bufferIndex, 0);
+  const accessorIndex = scenegraph.addAccessor(bufferViewIndex, {
+    size: 1,
+    componentType: getComponentTypeFromArray(typedArray),
+    count: typedArray.length
+  });
+  primitive.attributes[attributeName] = accessorIndex;
 }
 
 function getImageValueByCoordinates(
@@ -268,113 +288,6 @@ function getImageValueByCoordinates(
     value |= val << map.shift;
   }
   return value;
-}
-
-type featureGlobalTable = {
-  fIds: number[];
-  fData: number[];
-};
-
-function updateFeatureArray(
-  propertyData: Uint8Array,
-  featureArray: number[],
-  featureIdArray: number[]
-) {
-  for (const v of propertyData) {
-    let ind = featureArray.findIndex((el) => el === v);
-    if (ind === -1) {
-      ind = featureArray.push(v) - 1;
-    }
-    featureIdArray.push(ind);
-  }
-}
-
-function getGlobalTable(featureTableAttributeName: string): featureGlobalTable {
-  const table: featureGlobalTable = {fIds: [], fData: []};
-  // get the table from somewhere...
-  // It should be a reference so the global table is being updated after the object's content changed.
-  return table;
-}
-
-/**
- * Creates and adds a new FeatureTable based on property data provided
- * @param extension
- * @param attributeName
- * @param propertyData
- */
-function createFeatureTable(
-  scenegraph: GLTFScenegraph,
-  primitive: any,
-  extension: any,
-  featureTableAttributeName: string,
-  propertyData: Uint8Array
-) {
-  // let ad: featureGlobalTable = scenegraph.getApplicationData(featureTableAttributeName) as featureGlobalTable;
-  // if (!ad) {
-  //   scenegraph.addApplicationData(featureTableAttributeName, {fIds: [], fData: []});
-  //   ad = scenegraph.getApplicationData(featureTableAttributeName) as featureGlobalTable;
-  // }
-  const ad: featureGlobalTable = getGlobalTable(featureTableAttributeName);
-  // ad (an empty global table) must be set when the Converter class is initialized.
-  updateFeatureArray(propertyData, ad.fData, ad.fIds);
-
-  if (!extension.featureTables) {
-    extension.featureTables = {};
-  }
-  const featureTables = extension.featureTables;
-  const featureTable: EXT_feature_metadata_feature_table = featureTables[featureTableAttributeName]
-    ? featureTables[featureTableAttributeName]
-    : {
-      featureTable: {}, // unused. TODO: make this field optional
-      count: ad.fData.length || 0
-    };
-
-  featureTable.class = featureTableAttributeName;
-
-  const featureTableProperty: FeatureTableProperty = {
-    bufferView: -1,
-    data: new Uint8Array(ad.fData)
-  };
-  if (!featureTable.properties) {
-    featureTable.properties = {};
-  }
-  if (!featureTable.properties[featureTableAttributeName]) {
-    featureTable.properties[featureTableAttributeName] = featureTableProperty;
-  }
-  featureTables[featureTableAttributeName] = featureTable;
-
-  // featureIdAttributes
-  const featureIdAttribute: GLTF_EXT_feature_metadata_attribute = {
-    featureTable: featureTableAttributeName,
-    featureIds: {attribute: '_FEATURE_ID_0'}
-  };
-
-  primitive.attributes._FEATURE_ID_0 = {};
-  primitive.attributes._FEATURE_ID_0.value = new Uint8Array(ad.fIds);
-
-  if (!extension.featureIdAttributes) {
-    extension.featureIdAttributes = [] as GLTF_EXT_feature_metadata_attribute[];
-  }
-  if (!extension.featureIdAttributes.find((el) => el.featureTable === featureTableAttributeName)) {
-    extension.featureIdAttributes.push(featureIdAttribute);
-  }
-
-  const rootExt: GLTF_EXT_feature_metadata | null = scenegraph.getExtension(EXT_FEATURE_METADATA);
-  if (!rootExt || !rootExt.schema || !rootExt.schema.classes) return;
-
-  const rootSchema = rootExt.schema?.classes?.[featureTableAttributeName];
-  if (!rootSchema) {
-    const schemaClass: EXT_feature_metadata_class_object = {properties: {}};
-    schemaClass.properties[featureTableAttributeName] = {normalized: false, type: 'UINT8'};
-    rootExt.schema.classes[featureTableAttributeName] = schemaClass;
-    if (!rootExt.featureTables) {
-      rootExt.featureTables = {};
-    }
-    const r_featureTables = rootExt.featureTables;
-    if (!r_featureTables[featureTableAttributeName]) {
-      r_featureTables[featureTableAttributeName] = featureTable;
-    }
-  }
 }
 
 function getVal(parsedImage: any, offset: number): number {
