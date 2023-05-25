@@ -193,12 +193,17 @@ const config = {
           {
             to: '/showcase',
             position: 'left',
-            label: 'Showcase'
+            label: 'Showcases',
           },
           {
             to: 'https://medium.com/vis-gl',
             label: 'Blog',
             position: 'left'
+          },
+          {
+            type: 'html',
+            position: 'right',
+            value: '<a href="https://openvisualization.org" target="_blank" style="content: \'\'; height: 48px; width: 72px; background-image: url(\'/images/openjs-foundation.svg\'); background-repeat: no-repeat;  background-size: 48px 72px; display: flex">'
           },
           {
             href: 'https://github.com/visgl/loaders.gl',
@@ -214,6 +219,10 @@ const config = {
             title: 'Other vis.gl Libraries',
             items: [
               {
+                label: 'vis.gl',
+                href: 'https://vis.gl'
+              },
+              {
                 label: 'deck.gl',
                 href: 'https://deck.gl'
               },
@@ -224,16 +233,16 @@ const config = {
               {
                 label: 'math.gl',
                 href: 'https://math.gl'
-              },
-              {
-                label: 'vis.gl',
-                href: 'https://vis.gl'
               }
             ]
           },
           {
             title: 'More',
             items: [
+              {
+                label: 'Open Visualization',
+                href: 'https://www.openvisualization.org/'
+              },
               {
                 label: 'deck.gl slack',
                 href: 'https://join.slack.com/t/deckgl/shared_invite/zt-7oeoqie8-NQqzSp5SLTFMDeNSPxi7eg'

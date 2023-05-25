@@ -31,7 +31,11 @@
   "sideEffects": false,
   "browser": {
     "fs": false,
-    "stream": false
+    "stream": false,
+    "zlib": false,
+    "./src/iterators/make-stream/make-node-stream.ts": "./src/iterators/make-stream/make-dom-stream.ts",
+    "./src/iterators/make-stream/make-node-stream.js": "./src/iterators/make-stream/make-dom-stream.js",
+    "./dist/iterators/make-stream/make-node-stream.js": "./dist/iterators/make-stream/make-dom-stream.js",
   },
   "files": [
     "src",
