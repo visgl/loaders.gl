@@ -4,10 +4,9 @@ const logger = require('morgan');
 const cors = require('cors');
 
 const indexRouter = require('./routes/index');
-const {initRouters} = require('./routes/slpk-router');
+const {sceneServerRouter, router} = require('./routes/slpk-router');
 
 const I3S_LAYER_PATH = process.env.I3sLayerPath || ''; // eslint-disable-line no-process-env, no-undef
-const FULL_LAYER_PATH = path.join(process.cwd(), I3S_LAYER_PATH); // eslint-disable-line no-undef
 const app = express();
 
 app.use(logger('dev'));
@@ -17,7 +16,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 if (/\.slpk$/.test(I3S_LAYER_PATH)) {
-  const {router, sceneServerRouter} = initRouters(FULL_LAYER_PATH);
   app.use('/SceneServer/layers/0', router);
   app.use('/SceneServer', sceneServerRouter);
 } else {
