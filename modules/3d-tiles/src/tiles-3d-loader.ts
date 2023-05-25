@@ -8,6 +8,7 @@ import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {VERSION} from './lib/utils/version';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
+import {Tiles3DTilesetJSON, Tiles3DTilesetJSONPostprocessed} from './types';
 
 export type Tiles3DLoaderOptions = LoaderOptions &
   // GLTFLoaderOptions & - TODO not yet exported
@@ -58,9 +59,7 @@ async function parse(data, options: Tiles3DLoaderOptions = {}, context?: LoaderC
     isTileset = loaderOptions.isTileset;
   }
 
-  return (await isTileset)
-    ? parseTileset(data, options, context)
-    : parseTile(data, options, context);
+  return isTileset ? parseTileset(data, options, context) : parseTile(data, options, context);
 }
 
 /** Parse a tileset */
@@ -68,25 +67,24 @@ async function parseTileset(
   data: ArrayBuffer,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
-) {
-  const tilesetJson = JSON.parse(new TextDecoder().decode(data));
+): Promise<Tiles3DTilesetJSONPostprocessed> {
+  const tilesetJson: Tiles3DTilesetJSON = JSON.parse(new TextDecoder().decode(data));
 
-  // eslint-disable-next-line no-use-before-define
-  tilesetJson.loader = options?.loader || Tiles3DLoader;
-  tilesetJson.url = context?.url || '';
-  tilesetJson.queryString = context?.queryString || '';
-
-  // base path that non-absolute paths in tileset are relative to.
-  tilesetJson.basePath = getBaseUri(tilesetJson);
-  // TODO - check option types in normalizeTileHeaders
-  tilesetJson.root = await normalizeTileHeaders(tilesetJson, options || {});
-
-  tilesetJson.type = TILESET_TYPE.TILES3D;
-
-  tilesetJson.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
-  tilesetJson.lodMetricValue = tilesetJson.root?.lodMetricValue || 0;
-
-  return tilesetJson;
+  const tilesetUrl = context?.url || '';
+  const basePath = getBaseUri(tilesetUrl);
+  const normalizedRoot = await normalizeTileHeaders(tilesetJson, basePath, options || {});
+  const tilesetJsonPostprocessed: Tiles3DTilesetJSONPostprocessed = {
+    ...tilesetJson,
+    loader: Tiles3DLoader,
+    url: tilesetUrl,
+    queryString: context?.queryString || '',
+    basePath,
+    root: normalizedRoot || tilesetJson.root,
+    type: TILESET_TYPE.TILES3D,
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    lodMetricValue: tilesetJson.root?.geometricError || 0
+  };
+  return tilesetJsonPostprocessed;
 }
 
 /** Parse a tile */
@@ -106,6 +104,6 @@ async function parseTile(
 }
 
 /** Get base name */
-function getBaseUri(tileset) {
-  return path.dirname(tileset.url);
+function getBaseUri(tilesetUrl: string): string {
+  return path.dirname(tilesetUrl);
 }
