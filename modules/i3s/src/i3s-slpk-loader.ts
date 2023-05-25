@@ -6,14 +6,16 @@ import {parseSLPK} from './lib/parsers/parse-slpk/parse-slpk';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type SLPKLoaderOptions = LoaderOptions & {
-  path?: string;
-  mode?: 'http' | 'raw';
+  slpk?: {
+    path?: string;
+    pathMode?: 'http' | 'raw';
+  };
 };
 
 /**
  * Loader for SLPK - Scene Layer Package
  */
-export const SLPKLoader: LoaderWithParser = {
+export const SLPKLoader: LoaderWithParser<Buffer, never, SLPKLoaderOptions> = {
   name: 'I3S SLPK (Scene Layer Package)',
   id: 'slpk',
   module: 'i3s',

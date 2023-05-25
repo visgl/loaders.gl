@@ -15,6 +15,41 @@ type HashElement = {
   offset: number;
 };
 
+const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
+  {
+    test: /^$/,
+    extensions: ['3dSceneLayer.json.gz']
+  },
+  {
+    test: /^nodepages\/\d+$/,
+    extensions: ['.json.gz']
+  },
+  {
+    test: /^nodes\/\d+$/,
+    extensions: ['/3dNodeIndexDocument.json.gz']
+  },
+  {
+    test: /^nodes\/\d+\/textures\/.+$/,
+    extensions: ['.jpg', '.png', '.bin.dds.gz', '.ktx']
+  },
+  {
+    test: /^nodes\/\d+\/geometries\/\d+$/,
+    extensions: ['.bin.gz', '.draco.gz']
+  },
+  {
+    test: /^nodes\/\d+\/attributes\/f_\d+\/\d+$/,
+    extensions: ['.bin.gz']
+  },
+  {
+    test: /^statistics\/f_\d+\/\d+$/,
+    extensions: ['.json.gz']
+  },
+  {
+    test: /^nodes\/\d+\/shared$/,
+    extensions: ['/sharedResource.json.gz']
+  }
+];
+
 /**
  * Class for handling information about slpk file
  */
@@ -60,13 +95,46 @@ export class SLPKArchive {
    */
   async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
     if (mode === 'http') {
-      throw new Error('http mode is not supported');
+      const extensions = PATH_DESCRIPTIONS.find((val) => val.test.test(path))?.extensions;
+      if (extensions) {
+        let data: ArrayBuffer | undefined;
+        for (const ext of extensions) {
+          data = await this.getDataByPath(`${path}${ext}`);
+          if (data) {
+            break;
+          }
+        }
+        if (data) {
+          return Buffer.from(data);
+        }
+      }
+    }
+    if (mode === 'raw') {
+      const decompressedFile = await this.getDataByPath(`${path}.gz`);
+      if (decompressedFile) {
+        return Buffer.from(decompressedFile);
+      }
+      const fileWithoutCompression = this.getFileBytes(path);
+      if (fileWithoutCompression) {
+        return Buffer.from(fileWithoutCompression);
+      }
     }
 
-    const fileToDecompress = this.getFileBytes(`${path}.gz`);
+    throw new Error('No such file in the archieve');
+  }
 
-    if (fileToDecompress) {
-      const decompressedData = await processOnWorker(CompressionWorker, fileToDecompress, {
+  /**
+   * returning uncompressed data for paths that ends with .gz and raw data for all other paths
+   * @param path - path inside the archive
+   * @returns buffer with the file data
+   */
+  private async getDataByPath(path: string): Promise<ArrayBuffer | undefined> {
+    const data = this.getFileBytes(path);
+    if (!data) {
+      return undefined;
+    }
+    if (/\.gz$/.test(path)) {
+      const decompressedData = await processOnWorker(CompressionWorker, data, {
         compression: 'gzip',
         operation: 'decompress',
         _workerType: 'test',
@@ -74,11 +142,7 @@ export class SLPKArchive {
       });
       return decompressedData;
     }
-    const fileWithoutCompression = this.getFileBytes(path);
-    if (fileWithoutCompression) {
-      return Promise.resolve(Buffer.from(fileWithoutCompression));
-    }
-    throw new Error('No such file in the archieve');
+    return Buffer.from(data);
   }
 
   /**

@@ -57,5 +57,8 @@ export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = 
     throw new Error('No hash file in slpk');
   }
 
-  return await new SLPKArchive(data, hashFile).getFile(options.path ?? '');
+  return await new SLPKArchive(data, hashFile).getFile(
+    options.slpk?.path ?? '',
+    options.slpk?.pathMode
+  );
 }
