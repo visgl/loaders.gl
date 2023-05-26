@@ -1604,6 +1604,24 @@ function getPropertyTableFromExtFeatureMetadata(
 
       return propertyTable;
     }
+  } else if (extension?.featureTextures) {
+    /**
+     * Take only first feature texture to generate attributes storage info object.
+     * TODO: Think about getting data from all feature textures?
+     * It can be tricky just because 3dTiles is able to have multiple featureTextures.
+     * In I3S we should decide which featureTextures will be passed to geometry data.
+     */
+    const firstTextureName = Object.keys(extension.featureTextures)?.[0];
+    if (firstTextureName) {
+      const featureTable = extension?.featureTextures[firstTextureName];
+      const propertyTable = {};
+
+      for (const propertyName in featureTable.properties) {
+        propertyTable[propertyName] = featureTable.properties[propertyName].data;
+      }
+
+      return propertyTable;
+    }
   }
 
   console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");

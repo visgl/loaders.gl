@@ -443,7 +443,7 @@ export default class GLTFScenegraph {
    * Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
    * @param buffer
    */
-  addBufferView(buffer: any): number {
+  addBufferView(buffer: any, bufferIndex = 0, byteOffset = this.byteLength): number {
     const byteLength = buffer.byteLength;
     assert(Number.isFinite(byteLength));
 
@@ -452,9 +452,9 @@ export default class GLTFScenegraph {
     this.sourceBuffers.push(buffer);
 
     const glTFBufferView = {
-      buffer: 0,
+      buffer: bufferIndex,
       // Write offset from the start of the binary body
-      byteOffset: this.byteLength,
+      byteOffset,
       byteLength
     };
 
