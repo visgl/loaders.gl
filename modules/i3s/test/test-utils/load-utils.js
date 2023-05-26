@@ -181,6 +181,7 @@ export async function loadI3STile(options = {}, _replaceWithKTX2Texture = false)
   const tileset = new Tileset3D(i3sTilesetData, options);
   const tile = new Tile3D(tileset, node1);
   await tileset._loadTile(tile);
+  console.error('loadI3STIle', tile.content)
   return tile;
 }
 

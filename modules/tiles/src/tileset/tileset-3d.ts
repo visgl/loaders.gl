@@ -752,7 +752,7 @@ export class Tileset3D {
   _onTileLoadError(tile: Tile3D, error: Error): void {
     this.stats.get(TILES_LOAD_FAILED).incrementCount();
 
-    const message = error.message || error.toString();
+    const message = error instanceof Error ? error.message : 'unknown error';
     const url = tile.url;
     // TODO - Allow for probe log to be injected instead of console?
     console.error(`A 3D tile failed to load: ${tile.url} ${message}`); // eslint-disable-line

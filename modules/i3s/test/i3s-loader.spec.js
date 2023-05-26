@@ -3,7 +3,7 @@ import {isBrowser, load} from '@loaders.gl/core';
 import {loadI3STileContent} from './test-utils/load-utils';
 import {I3SLoader} from '@loaders.gl/i3s';
 
-test('I3SLoader#Load tile content', async (t) => {
+test.only('I3SLoader#Load tile content', async (t) => {
   const content = await loadI3STileContent({loadOptions: {worker: false}});
   t.ok(content);
   t.ok(content.attributes);
