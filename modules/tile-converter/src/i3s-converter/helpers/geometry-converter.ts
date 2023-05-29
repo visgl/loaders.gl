@@ -791,16 +791,6 @@ function getBatchIds(
   primitive: GLTFMeshPrimitivePostprocessed,
   images: GLTFImagePostprocessed[]
 ): number[] {
-  // for (let index = 0; index < BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES.length; index++) {
-  //   const possibleBatchIdAttributeName = BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES[index];
-  //   if (
-  //     attributes[possibleBatchIdAttributeName] &&
-  //     attributes[possibleBatchIdAttributeName].value
-  //   ) {
-  //     return attributes[possibleBatchIdAttributeName].value;
-  //   }
-  // }
-
   const batchIds: number[] = handleBatchIdsExtensions(attributes, primitive, images);
 
   if (batchIds.length) {
@@ -1580,7 +1570,6 @@ function getPropertyTableExtension(tileContent: B3DMContent) {
 /**
  * Handle EXT_feature_metadata to get property table
  * @param extension
- * TODO add EXT_feature_metadata feature textures support.
  */
 function getPropertyTableFromExtFeatureMetadata(
   extension: GLTF_EXT_feature_metadata
@@ -1604,7 +1593,9 @@ function getPropertyTableFromExtFeatureMetadata(
 
       return propertyTable;
     }
-  } else if (extension?.featureTextures) {
+  }
+
+  if (extension?.featureTextures) {
     /**
      * Take only first feature texture to generate attributes storage info object.
      * TODO: Think about getting data from all feature textures?
@@ -1624,6 +1615,8 @@ function getPropertyTableFromExtFeatureMetadata(
     }
   }
 
-  console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
+  console.warn(
+    "The I3S converter couldn't handle EXT_feature_metadata extension: There is neither featureTables, no featureTextures in the extension."
+  );
   return null;
 }

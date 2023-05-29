@@ -21,11 +21,8 @@ const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
 
 export const name = EXT_FEATURE_METADATA;
 
-export async function decode(gltfData: {json: GLTF}, options): Promise<void> {
+export async function decode(gltfData: {json: GLTF}): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
-  // TODO: Consider passing the Converter class in an additional "options" parameter
-  // const converter = options.converter;
-  // Pass converter to decodeExtFeatureMetadata (matbe using the scenegraph object)
   decodeExtFeatureMetadata(scenegraph);
 }
 
@@ -51,15 +48,8 @@ function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph): void {
     }
   }
 
-  // The following handling of featureTextures must be done AFTER handling of featureTables,
-  // because handleFeatureTextureProperties creates new featureTables, that can have bufferView===-1, which brakes loading code.
   const featureTextures = extension.featureTextures;
   if (schemaClasses && featureTextures) {
-    /*
-     * TODO add support for featureTextures
-     * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-textures
-     */
-
     for (const schemaName in schemaClasses) {
       const schemaClass = schemaClasses[schemaName];
       const featureTexture = findFeatureTextureByName(featureTextures, schemaName);
@@ -110,9 +100,6 @@ function handleFeatureTextureProperties(
     const featureTextureProperty = featureTexture?.properties?.[propertyName];
 
     if (featureTextureProperty) {
-      // TODO: Check he following logic:
-      // We don't need "combined" data from all primitives
-      // The per-primitive data are being saved inside this function.
       const data = getPropertyDataFromTexture(scenegraph, featureTextureProperty, attributeName);
       featureTextureProperty.data = data;
     }
@@ -134,12 +121,7 @@ function getPropertyDataFromBinarySource(
 ): Uint8Array | string[] {
   const bufferView = featureTableProperty.bufferView;
   // TODO think maybe we shouldn't get data only in Uint8Array format.
-  let data: Uint8Array | string[];
-  if (typeof bufferView === 'number' && bufferView < 0 && featureTableProperty.data) {
-    data = featureTableProperty.data;
-  } else {
-    data = scenegraph.getTypedArrayForBufferView(bufferView);
-  }
+  let data: Uint8Array | string[] = scenegraph.getTypedArrayForBufferView(bufferView);
 
   switch (schemaProperty.type) {
     case 'STRING': {
@@ -155,6 +137,13 @@ function getPropertyDataFromBinarySource(
   return data;
 }
 
+/**
+ * Get properties from texture associated with all mesh primitives.
+ * @param scenegraph
+ * @param featureTextureProperty
+ * @param attributeName
+ * @returns Feature texture data
+ */
 function getPropertyDataFromTexture(
   scenegraph: GLTFScenegraph,
   featureTextureProperty: FeatureTextureProperty,
@@ -164,19 +153,19 @@ function getPropertyDataFromTexture(
   if (!json.meshes) {
     return [];
   }
-  const textureFeatureTable: number[] = [];
+  const featureTextureTable: number[] = [];
   for (const mesh of json.meshes) {
     for (const primitive of mesh.primitives) {
       processPrimitiveTextures(
         scenegraph,
         attributeName,
         featureTextureProperty,
-        textureFeatureTable,
+        featureTextureTable,
         primitive
       );
     }
   }
-  return textureFeatureTable;
+  return featureTextureTable;
 }
 
 // eslint-disable-next-line max-statements
@@ -184,22 +173,22 @@ function processPrimitiveTextures(
   scenegraph: GLTFScenegraph,
   attributeName: string,
   featureTextureProperty: FeatureTextureProperty,
-  textureFeatureTable: number[],
+  featureTextureTable: number[],
   primitive: MeshPrimitive
 ): void {
   /*
-texture.index is an index for the "textures" array.
-The texture object referenced by this index looks like this:
-{
-"sampler": 0,
-"source": 0
-}
-"sampler" is an index for the "samplers" array
-"source" is an index for the "images" array that contains data. These data are stored in rgba channels of the image.
+    texture.index is an index for the "textures" array.
+    The texture object referenced by this index looks like this:
+    {
+    "sampler": 0,
+    "source": 0
+    }
+    "sampler" is an index for the "samplers" array
+    "source" is an index for the "images" array that contains data. These data are stored in rgba channels of the image.
 
-texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
-The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates ared used to get data from the image.
-*/
+    texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
+    The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates ared used to get data from the image.
+  */
   const json = scenegraph.gltf.json;
   const textureData: number[] = [];
   const texCoordAccessorKey = `TEXCOORD_${featureTextureProperty.texture.texCoord}`;
@@ -238,9 +227,9 @@ The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These 
   }
   const featureIndices: number[] = [];
   for (const texelData of textureData) {
-    let index = textureFeatureTable.findIndex((item) => item === texelData);
+    let index = featureTextureTable.findIndex((item) => item === texelData);
     if (index === -1) {
-      index = textureFeatureTable.push(texelData) - 1;
+      index = featureTextureTable.push(texelData) - 1;
     }
     featureIndices.push(index);
   }
@@ -304,11 +293,6 @@ function coordinatesToOffset(
   parsedImage: any,
   componentsCount: number = 1
 ): number {
-  // The follwing code is taken from tile-converter\src\i3s-converter\helpers\batch-ids-extensions.ts (function generateBatchIdsFromTexture)
-  // It seems incorrect.
-  //  const tx = Math.min((emod(u) * parsedImage.width) | 0, parsedImage.width - 1);
-  //  const ty = Math.min((emod(v) * parsedImage.height) | 0, parsedImage.height - 1);
-  // It's replaced with the following:
   const w = parsedImage.width;
   const iX = emod(u) * (w - 1);
   const indX = Math.round(iX);

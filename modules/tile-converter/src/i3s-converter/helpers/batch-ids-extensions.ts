@@ -75,8 +75,6 @@ function handleExtFeatureMetadataExtension(
     featureIdAttribute?.featureIds?.hasOwnProperty('constant') &&
     featureIdAttribute?.featureIds?.hasOwnProperty('divisor')
   ) {
-    // TODO: Why POSITION(S) ?
-    //    const featuresCount = attributes?.POSITIONS?.value.length / 3 || 0;
     const featuresCount = attributes?.POSITION?.value.length / 3 || 0;
     return generateImplicitFeatureIds(
       featuresCount,
