@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import type {GLTF} from '../../types/gltf-json-schema';
-import GLTFScenegraph from '../../api/gltf-scenegraph';
+import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {getImageData} from '@loaders.gl/images';
 import {
   ClassProperty,
@@ -10,7 +10,7 @@ import {
   GLTF_EXT_feature_metadata,
   EXT_feature_metadata_feature_texture,
   FeatureTextureProperty,
-  MeshPrimitive
+  GLTFMeshPrimitive
 } from '../../types/gltf-json-schema';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 
@@ -172,7 +172,7 @@ function processPrimitiveTextures(
   attributeName: string,
   featureTextureProperty: FeatureTextureProperty,
   featureTextureTable: number[],
-  primitive: MeshPrimitive
+  primitive: GLTFMeshPrimitive
 ): void {
   /*
     texture.index is an index for the "textures" array.
@@ -210,7 +210,7 @@ function processPrimitiveTextures(
     const mimeType = image?.mimeType;
     const parsedImage = scenegraph.gltf.images?.[imageIndex];
     const imageBufferView = image?.bufferView;
-    if (typeof imageBufferView !== 'undefined' && parsedImage && !parsedImage.compressed) {
+    if (typeof imageBufferView !== 'undefined' && parsedImage) {
       for (let index = 0; index < textureCoordinates.length; index += 2) {
         const value = getImageValueByCoordinates(
           parsedImage,
