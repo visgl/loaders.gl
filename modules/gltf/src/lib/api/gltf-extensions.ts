@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import {GLTF} from '../types/gltf-types';
+import {GLTF} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 // GLTF 1.0 extensions (decode only)

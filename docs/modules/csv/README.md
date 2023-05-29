@@ -11,10 +11,11 @@ npm install @loaders.gl/core @loaders.gl/csv
 
 ## Loaders and Writers
 
-| Loader                                                         |
-| -------------------------------------------------------------- |
+| Loader                                                          |
+| --------------------------------------------------------------- |
 | [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader)       |
 | [`CSVWorkerLoader`](/docs/modules/csv/api-reference/csv-loader) |
+| [`CSVWriter`](/docs/modules/csv/api-reference/csv-loader)       |
 
 ## Additional APIs
 

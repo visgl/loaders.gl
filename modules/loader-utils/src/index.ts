@@ -1,16 +1,30 @@
 // TYPES
 export type {
+  // loaders
   Loader,
   LoaderWithParser,
   LoaderContext,
   LoaderOptions,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderBatchType,
+  // writers
   Writer,
   WriterOptions,
+  WriterOptionsType,
+  // misc
   DataType,
   SyncDataType,
   BatchableDataType,
   IFileSystem,
-  IRandomAccessReadFileSystem
+  IRandomAccessReadFileSystem,
+  // numeric array types
+  TypedArray,
+  BigTypedArray,
+  TypedArrayConstructor,
+  BigTypedArrayConstructor,
+  NumberArray,
+  NumericArray
 } from './types';
 
 // GENERAL UTILS

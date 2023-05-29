@@ -1,6 +1,6 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseNDJSONSync from './lib/parse-ndjson';
-import parseNDJSONInBatches from './lib/parse-ndjson-in-batches';
+import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
+import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

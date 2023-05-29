@@ -2,15 +2,15 @@
 
 An image loader that works under both Node.js (requires `@loaders.gl/polyfills`) and the browser.
 
-| Loader         | Characteristic                                                   |
-| -------------- | ---------------------------------------------------------------- |
-| File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.ico`, `.svg` |
-| File Type      | Binary                                                           |
-| File Format    | JPEG, PNG, ...                                                   |
-| Data Format    | `ImageBitmap`, `Image` or "image data"                           |
-| Supported APIs | `load`, `parse`                                                  |
-| Worker Thread  | No (but may run on separate native thread in browsers)           |
-| Streaming      | No                                                               |
+| Loader         | Characteristic                                                            |
+| -------------- | ------------------------------------------------------------------------- |
+| File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.avif`, `.bmp`, `.ico`, `.svg` |
+| File Type      | Binary                                                                    |
+| File Format    | PNG, JPEG, GIF, WEBP, AVIF, BMP, SVG                                      |
+| Data Format    | `ImageBitmap`, `Image` or "image data"                                    |
+| Supported APIs | `load`, `parse`                                                           |
+| Worker Thread  | No (but may run on separate native thread in browsers)                    |
+| Streaming      | No                                                                        |
 
 ## Usage
 

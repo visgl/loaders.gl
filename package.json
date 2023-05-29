@@ -43,12 +43,8 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.14.5",
-    "@deck.gl/core": "^8.9.0",
-    "@luma.gl/core": "^8.5.4",
-    "@luma.gl/debug": "^8.5.4",
-    "@luma.gl/test-utils": "^8.5.4",
-    "@probe.gl/bench": "^4.0.1",
-    "@probe.gl/test-utils": "^4.0.1",
+    "@probe.gl/bench": "^4.0.2",
+    "@probe.gl/test-utils": "^4.0.2",
     "@types/tape-promise": "^4.0.1",
     "base64-inline-loader": "^1.1.1",
     "base64-loader": "^1.0.0",
@@ -68,7 +64,7 @@
     "Note: newer prettier breaks on typescript import type"
   ],
   "resolutions": {
-    "@luma.gl/core": "8.5.19",
+    "@luma.gl/core": "8.5.20",
     "tape": "4.11.0",
     "prettier": "2.3.1",
     "typescript": "^5.0.4"

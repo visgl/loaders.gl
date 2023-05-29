@@ -10,10 +10,10 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.9.0",
-    "@deck.gl/geo-layers": "^8.9.0",
-    "@loaders.gl/core": "^3.3.0",
-    "@loaders.gl/wms": "^3.3.0",
+    "@deck.gl/core": "^8.9.7",
+    "@deck.gl/geo-layers": "^8.9.7",
+    "@loaders.gl/core": "4.0.0-alpha.6",
+    "@loaders.gl/wms": "4.0.0-alpha.6",
     "@monaco-editor/react": "^4.5.0",
     "deck.gl": "^8.9.0",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",

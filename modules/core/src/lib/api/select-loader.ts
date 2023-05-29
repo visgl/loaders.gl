@@ -2,9 +2,10 @@ import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-util
 import {compareArrayBuffers, path} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {log} from '../utils/log';
-import {getResourceUrlAndType} from '../utils/resource-utils';
+import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
 import {getRegisteredLoaders} from './register-loaders';
 import {isBlob} from '../../javascript-utils/is-type';
+import {stripQueryString} from '../utils/url-utils';
 
 const EXT_PATTERN = /\.([^.]+)$/;
 
@@ -111,9 +112,10 @@ function selectLoaderInternal(
   options?: LoaderOptions,
   context?: LoaderContext
 ) {
-  const {url, type} = getResourceUrlAndType(data);
+  const url = getResourceUrl(data);
+  const type = getResourceMIMEType(data);
 
-  const testUrl = url || context?.url;
+  const testUrl = stripQueryString(url) || context?.url;
 
   let loader: Loader | null = null;
   let reason: string = '';
@@ -161,7 +163,8 @@ function validHTTPResponse(data: any): boolean {
 
 /** Generate a helpful message to help explain why loader selection failed. */
 function getNoValidLoaderMessage(data): string {
-  const {url, type} = getResourceUrlAndType(data);
+  const url = getResourceUrl(data);
+  const type = getResourceMIMEType(data);
 
   let message = 'No valid loader found (';
   message += url ? `${path.filename(url)}, ` : 'no url provided, ';

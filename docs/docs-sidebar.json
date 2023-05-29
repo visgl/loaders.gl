@@ -1,31 +1,37 @@
 [
   {
     "type": "category",
+    "label": "Overview",
+    "items": [
+      "README",
+      "developer-guide/get-started",
+      "whats-new",
+      "upgrade-guide"
+    ]
+  },
+  {
+    "type": "category",
     "label": "Developer Guide",
     "items": [
       {
         "type": "category",
-        "label": "Overview",
+        "label": "Basics",
         "items": [
-          "README",
-          "whats-new",
-          "upgrade-guide"
+          "developer-guide/using-loaders",
+          "developer-guide/using-writers",
+          "developer-guide/loader-categories",
+          "developer-guide/using-worker-loaders",
+          "developer-guide/using-streaming-loaders",
+          "developer-guide/polyfills"
         ]
       },
       {
         "type": "category",
-        "label": "Guides",
+        "label": "Advanced Topics",
         "items": [
-          "developer-guide/get-started",
-          "developer-guide/using-loaders",
-          "developer-guide/using-worker-loaders",
-          "developer-guide/using-streaming-loaders",
-          "developer-guide/using-writers",
-          "developer-guide/loader-categories",
-          "developer-guide/error-handling",
-          "developer-guide/polyfills",
           "developer-guide/dependencies",
           "developer-guide/creating-loaders-and-writers",
+          "developer-guide/error-handling",
           "developer-guide/dev-env"
         ]
       },
@@ -43,21 +49,46 @@
   },
   {
     "type": "category",
-    "label": "Loader Categories",
+    "label": "Formats",
     "items": [
-      "specifications/category-json",
-      "specifications/category-table",
-      "specifications/category-image",
-      "specifications/category-gis",
-      "specifications/category-mesh",
-      "specifications/category-scenegraph",
-      "specifications/category-3d-tiles"
+      "formats/README",
+      "modules/bson/formats/bson",
+      "modules/csv/formats/csv",
+      "modules/pcd/formats/pcd",
+      "modules/ply/formats/ply",
+      "modules/gltf/formats/glb",
+      "modules/gltf/formats/gltf",
+      "modules/parquet/formats/parquet",
+      "modules/parquet/formats/geoparquet",
+      "modules/shapefile/formats/shapefile",
+      "modules/textures/formats/compressed-textures",
+      "modules/wms/formats/csw",
+      "modules/wms/formats/wms",
+      "modules/wms/formats/wmts",
+      "modules/wms/formats/wfs",
+      "modules/wms/formats/gml",
+      "modules/wms/formats/lerc",
+      "modules/xml/formats/xml",
+      "modules/zip/formats/zip"
     ]
   },
   {
     "type": "category",
     "label": "Loader Catalog",
     "items": [
+      {
+        "type": "category",
+        "label": "Loader Categories",
+        "items": [
+          "specifications/category-json",
+          "specifications/category-table",
+          "specifications/category-image",
+          "specifications/category-gis",
+          "specifications/category-mesh",
+          "specifications/category-scenegraph",
+          "specifications/category-3d-tiles"
+        ]
+      },
       "modules/3d-tiles/api-reference/tiles-3d-loader",
       "modules/3d-tiles/api-reference/cesium-ion-loader",
       "modules/arrow/api-reference/arrow-loader",
@@ -111,14 +142,7 @@
   },
   {
     "type": "category",
-    "label": "Command-Line Reference",
-    "items": [
-      "modules/tile-converter/cli-reference/tile-converter"
-    ]
-  },
-  {
-    "type": "category",
-    "label": "API Reference",
+    "label": "Submodule API Reference",
     "items": [
       {
         "type": "category",
@@ -149,31 +173,22 @@
       {
         "type": "category",
         "label": "@loaders.gl/3d-tiles",
-        "items": [
-          "modules/3d-tiles/README"
-        ]
+        "items": ["modules/3d-tiles/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/arrow",
-        "items": [
-          "modules/arrow/README"
-        ]
+        "items": ["modules/arrow/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/bson",
-        "items": [
-          "modules/bson/README",
-          "modules/bson/formats/bson"
-        ]
+        "items": ["modules/bson/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/csv",
-        "items": [
-          "modules/csv/README"
-        ]
+        "items": ["modules/csv/README"]
       },
       {
         "type": "category",
@@ -206,16 +221,13 @@
       {
         "type": "category",
         "label": "@loaders.gl/draco",
-        "items": [
-          "modules/draco/README"
-        ]
+        "items": ["modules/draco/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/gltf",
         "items": [
           "modules/gltf/README",
-          "modules/gltf/api-reference/gltf-extensions",
           "modules/gltf/api-reference/gltf-scenegraph",
           "modules/gltf/api-reference/post-process-gltf"
         ]
@@ -223,9 +235,7 @@
       {
         "type": "category",
         "label": "@loaders.gl/i3s",
-        "items": [
-          "modules/i3s/README"
-        ]
+        "items": ["modules/i3s/README"]
       },
       {
         "type": "category",
@@ -239,65 +249,47 @@
       {
         "type": "category",
         "label": "@loaders.gl/json",
-        "items": [
-          "modules/json/README"
-        ]
+        "items": ["modules/json/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/kml",
-        "items": [
-          "modules/kml/README"
-        ]
+        "items": ["modules/kml/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/las",
-        "items": [
-          "modules/las/README"
-        ]
+        "items": ["modules/las/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/mvt",
-        "items": [
-          "modules/mvt/README"
-        ]
+        "items": ["modules/mvt/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/obj",
-        "items": [
-          "modules/obj/README"
-        ]
+        "items": ["modules/obj/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/parquet",
-        "items": [
-          "modules/parquet/README"
-        ]
+        "items": ["modules/parquet/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/pcd",
-        "items": [
-          "modules/pcd/README"
-        ]
+        "items": ["modules/pcd/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/ply",
-        "items": [
-          "modules/ply/README"
-        ]
+        "items": ["modules/ply/README"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/polyfills",
-        "items": [
-          "modules/polyfills/api-reference/README"
-        ]
+        "items": ["modules/polyfills/api-reference/README"]
       },
       {
         "type": "category",
@@ -333,7 +325,6 @@
         "label": "@loaders.gl/textures",
         "items": [
           "modules/textures/README",
-          "modules/textures/formats/compressed-textures",
           "modules/textures/api-reference/load-image",
           "modules/textures/api-reference/load-image-array",
           "modules/textures/api-reference/load-image-cube"
@@ -342,17 +333,12 @@
       {
         "type": "category",
         "label": "@loaders.gl/video",
-        "items": [
-          "modules/video/README",
-          "modules/video/api-reference/gif-builder"
-        ]
+        "items": ["modules/video/README", "modules/video/api-reference/gif-builder"]
       },
       {
         "type": "category",
         "label": "@loaders.gl/wkt",
-        "items": [
-          "modules/wkt/README"
-        ]
+        "items": ["modules/wkt/README"]
       },
       {
         "type": "category",
@@ -361,13 +347,7 @@
           "modules/wms/README",
           "modules/wms/api-reference/csw-service",
           "modules/wms/api-reference/wms-service",
-          "modules/wms/api-reference/wms-capabilities-loader",
-          "modules/wms/formats/wms",
-          "modules/wms/formats/csw",
-          "modules/wms/formats/wmts",
-          "modules/wms/formats/wfs",
-          "modules/wms/formats/gml",
-          "modules/wms/formats/lerc"
+          "modules/wms/api-reference/wms-capabilities-loader"
         ]
       },
       {
@@ -382,10 +362,16 @@
       {
         "type": "category",
         "label": "@loaders.gl/zip",
-        "items": [
-          "modules/zip/README"
-        ]
+        "items": ["modules/zip/README"]
       }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Command-Line Reference",
+    "items": [
+      "modules/tile-converter/cli-reference/tile-converter",
+      "modules/tile-converter/cli-reference/supported-features"
     ]
   }
 ]

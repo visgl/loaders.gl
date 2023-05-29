@@ -1,34 +1,35 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
-import type {GLB} from '../types/glb-types';
 import type {GLTFWithBuffers} from '../types/gltf-types';
+import type {GLB} from '../types/glb-types';
+import type {ParseGLBOptions} from './parse-glb';
 
-import {ImageLoader} from '@loaders.gl/images';
 import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
+import {ImageLoader} from '@loaders.gl/images';
+import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
+
 import {assert} from '../utils/assert';
+import {isGLB, parseGLBSync} from './parse-glb';
 import {resolveUrl} from '../gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
 import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
-import {postProcessGLTF} from '../api/post-process-gltf';
-import parseGLBSync, {isGLB} from './parse-glb';
 
-export type GLTFParseOptions = {
+/**  */
+export type ParseGLTFOptions = ParseGLBOptions & {
   normalize?: boolean;
   loadImages?: boolean;
   loadBuffers?: boolean;
   decompressMeshes?: boolean;
-  postProcess?: boolean;
   excludeExtensions?: string[];
+
+  /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
+  postProcess?: false;
 };
 
-// export type GLTFOptions = {
-//   gltf?: GLTFParseOptions;
-// };
-
-export function isGLTF(arrayBuffer, options?): boolean {
+/** Check if an array buffer appears to contain GLTF data */
+export function isGLTF(arrayBuffer: ArrayBuffer, options?: ParseGLTFOptions): boolean {
   const byteOffset = 0;
   return isGLB(arrayBuffer, byteOffset, options);
 }
@@ -39,7 +40,7 @@ export async function parseGLTF(
   byteOffset = 0,
   options: GLTFLoaderOptions,
   context: LoaderContext
-) {
+): Promise<GLTFWithBuffers> {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   normalizeGLTFV1(gltf, {normalize: options?.gltf?.normalize});
@@ -59,11 +60,16 @@ export async function parseGLTF(
 
   await decodeExtensions(gltf, options, context);
 
-  // Post processing resolves indices to objects, buffers
-  return options?.gltf?.postProcess ? postProcessGLTF(gltf, options) : gltf;
+  return gltf;
 }
 
-// `data` - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)
+/**
+ *
+ * @param gltf
+ * @param data - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)
+ * @param byteOffset
+ * @param options
+ */
 function parseGLTFContainerSync(gltf, data, byteOffset, options) {
   // Initialize gltf container
   if (options.uri) {

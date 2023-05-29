@@ -1,9 +1,30 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+// / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
+import type {DracoLoaderOptions} from '@loaders.gl/draco';
+import type {ImageLoaderOptions} from '@loaders.gl/images';
+
 import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {VERSION} from './lib/utils/version';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
+import {Tiles3DTilesetJSON, Tiles3DTilesetJSONPostprocessed} from './types';
+
+export type Tiles3DLoaderOptions = LoaderOptions &
+  // GLTFLoaderOptions & - TODO not yet exported
+  DracoLoaderOptions &
+  ImageLoaderOptions & {
+    '3d-tiles'?: {
+      /** Whether to parse any embedded glTF binaries (or extract memory for independent glTF parsing) */
+      loadGLTF?: boolean;
+      /** If renderer doesn't support quantized positions, loader can decode them on CPU */
+      decodeQuantizedPositions?: boolean;
+      /** Whether this is a tileset or a tile */
+      isTileset?: boolean | 'auto';
+      /** Controls which axis is "up" in glTF files */
+      assetGltfUpAxis?: 'x' | 'y' | 'z' | null;
+    };
+  };
 
 /**
  * Loader for 3D Tiles
@@ -27,11 +48,51 @@ export const Tiles3DLoader: LoaderWithParser = {
   }
 };
 
-function getBaseUri(tileset) {
-  return path.dirname(tileset.url);
+/** Parses a tileset or tile */
+async function parse(data, options: Tiles3DLoaderOptions = {}, context?: LoaderContext) {
+  // auto detect file type
+  const loaderOptions = options['3d-tiles'] || {};
+  let isTileset;
+  if (loaderOptions.isTileset === 'auto') {
+    isTileset = context?.url && context.url.indexOf('.json') !== -1;
+  } else {
+    isTileset = loaderOptions.isTileset;
+  }
+
+  return isTileset ? parseTileset(data, options, context) : parseTile(data, options, context);
 }
 
-async function parseTile(arrayBuffer, options, context) {
+/** Parse a tileset */
+async function parseTileset(
+  data: ArrayBuffer,
+  options?: Tiles3DLoaderOptions,
+  context?: LoaderContext
+): Promise<Tiles3DTilesetJSONPostprocessed> {
+  const tilesetJson: Tiles3DTilesetJSON = JSON.parse(new TextDecoder().decode(data));
+
+  const tilesetUrl = context?.url || '';
+  const basePath = getBaseUri(tilesetUrl);
+  const normalizedRoot = await normalizeTileHeaders(tilesetJson, basePath, options || {});
+  const tilesetJsonPostprocessed: Tiles3DTilesetJSONPostprocessed = {
+    ...tilesetJson,
+    loader: Tiles3DLoader,
+    url: tilesetUrl,
+    queryString: context?.queryString || '',
+    basePath,
+    root: normalizedRoot || tilesetJson.root,
+    type: TILESET_TYPE.TILES3D,
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    lodMetricValue: tilesetJson.root?.geometricError || 0
+  };
+  return tilesetJsonPostprocessed;
+}
+
+/** Parse a tile */
+async function parseTile(
+  arrayBuffer: ArrayBuffer,
+  options?: Tiles3DLoaderOptions,
+  context?: LoaderContext
+) {
   const tile = {
     content: {
       featureIds: null
@@ -42,38 +103,7 @@ async function parseTile(arrayBuffer, options, context) {
   return tile.content;
 }
 
-async function parseTileset(data, options, context) {
-  const tilesetJson = JSON.parse(new TextDecoder().decode(data));
-  // eslint-disable-next-line no-use-before-define
-  tilesetJson.loader = options.loader || Tiles3DLoader;
-  tilesetJson.url = context.url;
-  // base path that non-absolute paths in tileset are relative to.
-  tilesetJson.basePath = getBaseUri(tilesetJson);
-  tilesetJson.root = await normalizeTileHeaders(tilesetJson, options);
-
-  tilesetJson.type = TILESET_TYPE.TILES3D;
-
-  tilesetJson.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
-  tilesetJson.lodMetricValue = tilesetJson.root?.lodMetricValue || 0;
-
-  return tilesetJson;
-}
-
-async function parse(data, options, context) {
-  // auto detect file type
-  const loaderOptions = options['3d-tiles'] || {};
-  let isTileset;
-  if (loaderOptions.isTileset === 'auto') {
-    isTileset = context.url && context.url.indexOf('.json') !== -1;
-  } else {
-    isTileset = loaderOptions.isTileset;
-  }
-
-  if (isTileset) {
-    data = await parseTileset(data, options, context);
-  } else {
-    data = await parseTile(data, options, context);
-  }
-
-  return data;
+/** Get base name */
+function getBaseUri(tilesetUrl: string): string {
+  return path.dirname(tilesetUrl);
 }

@@ -1,13 +1,14 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 
-import {ParquetBuffer, ParquetData, ParquetField, ParquetRecord} from './declare';
+import {ArrayType} from '@loaders.gl/schema';
+import {ParquetRowGroup, ParquetColumnChunk, ParquetField, ParquetRow} from './declare';
 import {ParquetSchema} from './schema';
 import * as Types from './types';
 
-export {ParquetBuffer};
+export {ParquetRowGroup};
 
-export function shredBuffer(schema: ParquetSchema): ParquetBuffer {
-  const columnData: Record<string, ParquetData> = {};
+export function shredBuffer(schema: ParquetSchema): ParquetRowGroup {
+  const columnData: Record<string, ParquetColumnChunk> = {};
   for (const field of schema.fieldList) {
     columnData[field.key] = {
       dlevels: [],
@@ -24,14 +25,14 @@ export function shredBuffer(schema: ParquetSchema): ParquetBuffer {
  * 'Shred' a record into a list of <value, repetition_level, definition_level>
  * tuples per column using the Google Dremel Algorithm..
  *
- * The buffer argument must point to an object into which the shredded record
- * will be returned. You may re-use the buffer for repeated calls to this function
- * to append to an existing buffer, as long as the schema is unchanged.
+ * The rowGroup argument must point to an object into which the shredded record
+ * will be returned. You may re-use the rowGroup for repeated calls to this function
+ * to append to an existing rowGroup, as long as the schema is unchanged.
  *
- * The format in which the shredded records will be stored in the buffer is as
+ * The format in which the shredded records will be stored in the rowGroup is as
  * follows:
  *
- *   buffer = {
+ *   rowGroup = {
  *     columnData: [
  *       'my_col': {
  *          dlevels: [d1, d2, .. dN],
@@ -42,32 +43,36 @@ export function shredBuffer(schema: ParquetSchema): ParquetBuffer {
  *      rowCount: X,
  *   }
  */
-export function shredRecord(schema: ParquetSchema, record: any, buffer: ParquetBuffer): void {
+export function shredRecord(
+  schema: ParquetSchema,
+  record: ParquetRow,
+  rowGroup: ParquetRowGroup
+): void {
   /* shred the record, this may raise an exception */
   const data = shredBuffer(schema).columnData;
 
   shredRecordFields(schema.fields, record, data, 0, 0);
 
-  /* if no error during shredding, add the shredded record to the buffer */
-  if (buffer.rowCount === 0) {
-    buffer.rowCount = 1;
-    buffer.columnData = data;
+  /* if no error during shredding, add the shredded record to the rowGroup */
+  if (rowGroup.rowCount === 0) {
+    rowGroup.rowCount = 1;
+    rowGroup.columnData = data;
     return;
   }
-  buffer.rowCount += 1;
+  rowGroup.rowCount += 1;
   for (const field of schema.fieldList) {
-    Array.prototype.push.apply(buffer.columnData[field.key].rlevels, data[field.key].rlevels);
-    Array.prototype.push.apply(buffer.columnData[field.key].dlevels, data[field.key].dlevels);
-    Array.prototype.push.apply(buffer.columnData[field.key].values, data[field.key].values);
-    buffer.columnData[field.key].count += data[field.key].count;
+    Array.prototype.push.apply(rowGroup.columnData[field.key].rlevels, data[field.key].rlevels);
+    Array.prototype.push.apply(rowGroup.columnData[field.key].dlevels, data[field.key].dlevels);
+    Array.prototype.push.apply(rowGroup.columnData[field.key].values, data[field.key].values);
+    rowGroup.columnData[field.key].count += data[field.key].count;
   }
 }
 
 // eslint-disable-next-line max-statements, complexity
 function shredRecordFields(
   fields: Record<string, ParquetField>,
-  record: any,
-  data: Record<string, ParquetData>,
+  record: ParquetRow,
+  data: Record<string, ParquetColumnChunk>,
   rLevel: number,
   dLevel: number
 ) {
@@ -99,7 +104,7 @@ function shredRecordFields(
     // push null
     if (values.length === 0) {
       if (field.isNested) {
-        shredRecordFields(field.fields!, null, data, rLevel, dLevel);
+        shredRecordFields(field.fields!, null!, data, rLevel, dLevel);
       } else {
         data[field.key].count += 1;
         data[field.key].rlevels.push(rLevel);
@@ -130,10 +135,10 @@ function shredRecordFields(
  * tuples back to nested records (objects/arrays) using the Google Dremel
  * Algorithm..
  *
- * The buffer argument must point to an object with the following structure (i.e.
+ * The rowGroup argument must point to an object with the following structure (i.e.
  * the same structure that is returned by shredRecords):
  *
- *   buffer = {
+ *   rowGroup = {
  *     columnData: [
  *       'my_col': {
  *          dlevels: [d1, d2, .. dN],
@@ -144,26 +149,28 @@ function shredRecordFields(
  *      rowCount: X,
  *   }
  */
-export function materializeRecords(schema: ParquetSchema, buffer: ParquetBuffer): ParquetRecord[] {
-  const records: ParquetRecord[] = [];
-  for (let i = 0; i < buffer.rowCount; i++) {
-    records.push({});
+export function materializeRows(schema: ParquetSchema, rowGroup: ParquetRowGroup): ParquetRow[] {
+  const rows: ParquetRow[] = [];
+  // rows = new Array(rowGroup.rowCount).fill({})'
+  for (let i = 0; i < rowGroup.rowCount; i++) {
+    rows.push({});
   }
-  for (const key in buffer.columnData) {
-    const columnData = buffer.columnData[key];
+  for (const key in rowGroup.columnData) {
+    const columnData = rowGroup.columnData[key];
     if (columnData.count) {
-      materializeColumn(schema, columnData, key, records);
+      materializeColumnAsRows(schema, columnData, key, rows);
     }
   }
-  return records;
+  return rows;
 }
 
+/** Populate record fields for one column */
 // eslint-disable-next-line max-statements, complexity
-function materializeColumn(
+function materializeColumnAsRows(
   schema: ParquetSchema,
-  columnData: ParquetData,
+  columnData: ParquetColumnChunk,
   key: string,
-  records: ParquetRecord[]
+  rows: ParquetRow[]
 ): void {
   const field = schema.findField(key);
   const branch = schema.findFieldBranch(key);
@@ -178,7 +185,7 @@ function materializeColumn(
     rLevels.fill(0, rLevel + 1);
 
     let rIndex = 0;
-    let record = records[rLevels[rIndex++] - 1];
+    let record = rows[rLevels[rIndex++] - 1];
 
     // Internal nodes - Build a nested row object
     for (const step of branch) {
@@ -244,10 +251,10 @@ function materializeColumn(
  * tuples back to nested records (objects/arrays) using the Google Dremel
  * Algorithm..
  *
- * The buffer argument must point to an object with the following structure (i.e.
+ * The rowGroup argument must point to an object with the following structure (i.e.
  * the same structure that is returned by shredRecords):
  *
- *   buffer = {
+ *   rowGroup = {
  *     columnData: [
  *       'my_col': {
  *          dlevels: [d1, d2, .. dN],
@@ -257,100 +264,132 @@ function materializeColumn(
  *      ],
  *      rowCount: X,
  *   }
- *
-export function extractColumns(schema: ParquetSchema, buffer: ParquetBuffer): Record<string, unknown> {
-  const columns: ParquetRecord = {};
-  for (const key in buffer.columnData) {
-    const columnData = buffer.columnData[key];
+ */
+export function materializeColumns(
+  schema: ParquetSchema,
+  rowGroup: ParquetRowGroup
+): Record<string, ArrayType> {
+  const columns: Record<string, ArrayType> = {};
+  for (const key in rowGroup.columnData) {
+    const columnData = rowGroup.columnData[key];
     if (columnData.count) {
-      extractColumn(schema, columnData, key, columns);
+      materializeColumnAsColumnarArray(schema, columnData, rowGroup.rowCount, key, columns);
     }
   }
   return columns;
 }
 
 // eslint-disable-next-line max-statements, complexity
-function extractColumn(
+function materializeColumnAsColumnarArray(
   schema: ParquetSchema,
-  columnData: ParquetData,
+  columnData: ParquetColumnChunk,
+  rowCount: number,
   key: string,
-  columns: Record<string, unknown> 
+  columns: Record<string, ArrayType<any>>
 ) {
   if (columnData.count <= 0) {
     return;
   }
 
-  const record = columns;
-
   const field = schema.findField(key);
   const branch = schema.findFieldBranch(key);
+
+  const columnName = branch[0].name;
+
+  let column: ArrayType | undefined;
+  const {values} = columnData;
+  if (values.length === rowCount && branch[0].primitiveType) {
+    // if (branch[0].repetitionType === `REQUIRED`) {
+    //   switch (branch[0].primitiveType) {
+    //     case 'INT32': return values instanceof Int32Array ? values : new Int32Array(values);
+    //   }
+    // }
+    column = values;
+  }
+
+  if (column) {
+    columns[columnName] = column;
+    return;
+  }
+
+  column = new Array(rowCount);
+  for (let i = 0; i < rowCount; i++) {
+    column[i] = {};
+  }
+  columns[columnName] = column;
 
   // tslint:disable-next-line:prefer-array-literal
   const rLevels: number[] = new Array(field.rLevelMax + 1).fill(0);
   let vIndex = 0;
+  for (let i = 0; i < columnData.count; i++) {
+    const dLevel = columnData.dlevels[i];
+    const rLevel = columnData.rlevels[i];
+    rLevels[rLevel]++;
+    rLevels.fill(0, rLevel + 1);
 
-  let i = 0;
-  const dLevel = columnData.dlevels[i];
-  const rLevel = columnData.rlevels[i];
-  rLevels[rLevel]++;
-  rLevels.fill(0, rLevel + 1);
+    let rIndex = 0;
+    let record = column[rLevels[rIndex++] - 1] as ParquetRow;
 
-  let rIndex = 0;
-  let record = records[rLevels[rIndex++] - 1];
+    // Internal nodes - Build a nested row object
+    for (const step of branch) {
+      if (step === field || dLevel < step.dLevelMax) {
+        break;
+      }
 
-  // Internal nodes
-  for (const step of branch) {
-    if (step === field || dLevel < step.dLevelMax) {
-      break;
+      switch (step.repetitionType) {
+        case 'REPEATED':
+          if (!(step.name in record)) {
+            // eslint-disable max-depth
+            record[step.name] = [];
+          }
+          const ix = rLevels[rIndex++];
+          while (record[step.name].length <= ix) {
+            // eslint-disable max-depth
+            record[step.name].push({});
+          }
+          record = record[step.name][ix];
+          break;
+
+        default:
+          record[step.name] = record[step.name] || {};
+          record = record[step.name];
+      }
     }
 
-    switch (step.repetitionType) {
-      case 'REPEATED':
-        if (!(step.name in record)) {
-          // eslint-disable max-depth
-          record[step.name] = [];
-        }
-        const ix = rLevels[rIndex++];
-        while (record[step.name].length <= ix) {
-          // eslint-disable max-depth
-          record[step.name].push({});
-        }
-        record = record[step.name][ix];
-        break;
+    // Leaf node - Add the value
+    if (dLevel === field.dLevelMax) {
+      const value = Types.fromPrimitive(
+        // @ts-ignore
+        field.originalType || field.primitiveType,
+        columnData.values[vIndex],
+        field
+      );
+      vIndex++;
 
-      default:
-        record[step.name] = record[step.name] || {};
-        record = record[step.name];
+      switch (field.repetitionType) {
+        case 'REPEATED':
+          if (!(field.name in record)) {
+            // eslint-disable max-depth
+            record[field.name] = [];
+          }
+          const ix = rLevels[rIndex];
+          while (record[field.name].length <= ix) {
+            // eslint-disable max-depth
+            record[field.name].push(null);
+          }
+          record[field.name][ix] = value;
+          break;
+
+        default:
+          record[field.name] = value;
+      }
     }
   }
 
-  // Leaf node
-  if (dLevel === field.dLevelMax) {
-    const value = Types.fromPrimitive(
-      // @ts-ignore
-      field.originalType || field.primitiveType,
-      columnData.values[vIndex],
-      field
-    );
-    vIndex++;
-
-    switch (field.repetitionType) {
-      case 'REPEATED':
-        if (!(field.name in record)) {
-          // eslint-disable max-depth
-          record[field.name] = [];
-        }
-        const ix = rLevels[rIndex];
-        while (record[field.name].length <= ix) {
-          // eslint-disable max-depth
-          record[field.name].push(null);
-        }
-        record[field.name][ix] = value;
-        break;
-
-      default:
-        record[field.name] = value;
+  // Remove one level of nesting
+  for (let i = 0; i < rowCount; ++i) {
+    if (columnName in (column[i] as object)) {
+      column[i] = (column[i] as object)[columnName];
     }
   }
 }
-*/

@@ -8,7 +8,7 @@ export function getDracoSchema(
   loaderData: DracoLoaderData,
   indices?: MeshAttribute
 ): Schema {
-  const metadataMap = makeMetadata(loaderData.metadata);
+  const metadata = makeMetadata(loaderData.metadata);
   const fields: Field[] = [];
   const namedLoaderDataAttributes = transformAttributesLoaderData(loaderData.attributes);
   for (const attributeName in attributes) {
@@ -24,7 +24,7 @@ export function getDracoSchema(
     const indicesField = getArrowFieldFromAttribute('indices', indices);
     fields.push(indicesField);
   }
-  return new Schema(fields, metadataMap);
+  return {fields, metadata};
 }
 
 function transformAttributesLoaderData(loaderData: {[key: number]: DracoAttribute}): {
@@ -48,10 +48,11 @@ function getArrowFieldFromAttribute(
   return field;
 }
 
-function makeMetadata(metadata: {[key: string]: DracoMetadataEntry}): Map<string, string> {
-  const metadataMap = new Map();
+function makeMetadata(metadata: {[key: string]: DracoMetadataEntry}): Record<string, string> {
+  Object.entries(metadata);
+  const serializedMetadata: Record<string, string> = {};
   for (const key in metadata) {
-    metadataMap.set(`${key}.string`, JSON.stringify(metadata[key]));
+    serializedMetadata[`${key}.string`] = JSON.stringify(metadata[key]);
   }
-  return metadataMap;
+  return serializedMetadata;
 }

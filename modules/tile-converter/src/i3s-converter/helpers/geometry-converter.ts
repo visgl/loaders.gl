@@ -1,10 +1,10 @@
 import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {
   GLTF_EXT_feature_metadata,
+  GLTF_EXT_mesh_features,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
-  GLTFImagePostprocessed,
   GLTFMeshPrimitivePostprocessed,
   GLTFMeshPostprocessed,
   GLTFTexturePostprocessed
@@ -33,14 +33,16 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/i3s';
-import {TypedArray} from '@loaders.gl/schema';
+import {NumberArray, TypedArray} from '@loaders.gl/loader-utils';
 import {Geoid} from '@math.gl/geoid';
 /** Usage of worker here brings more overhead than advantage */
-import {B3DMAttributesData /*, transformI3SAttributesOnWorker*/} from '../../i3s-attributes-worker';
+import {
+  B3DMAttributesData /*, transformI3SAttributesOnWorker*/,
+  TextureImageProperties
+} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import {GL} from '@loaders.gl/math';
 
 /*
@@ -49,6 +51,7 @@ import {GL} from '@loaders.gl/math';
   import type {TypedArrayConstructor} from '@math.gl/types'; 
 */
 import type {TypedArrayConstructor} from '../types';
+import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -376,7 +379,7 @@ export async function convertAttributes(
  */
 function convertNodes(
   nodes: GLTFNodePostprocessed[],
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -442,7 +445,7 @@ function getCompositeTransformationMatrix(node: GLTFNodePostprocessed, matrix: M
  */
 function convertNode(
   node: GLTFNodePostprocessed,
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -493,7 +496,7 @@ function convertNode(
  */
 function convertMesh(
   mesh: GLTFMeshPostprocessed,
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
@@ -504,20 +507,28 @@ function convertMesh(
     let outputAttributes: ConvertedAttributes | null | undefined = null;
     let materialUvRegion: Uint16Array | undefined;
     if (primitive.material) {
-      outputAttributes = attributesMap.get(primitive.material.uniqueId);
+      outputAttributes = attributesMap.get(primitive.material.id);
       materialUvRegion = outputAttributes?.mergedMaterials.find(
-        ({originalMaterialId}) => originalMaterialId === primitive.material?.uniqueId
+        ({originalMaterialId}) => originalMaterialId === primitive.material?.id
       )?.uvRegion;
     } else if (attributesMap.has('default')) {
       outputAttributes = attributesMap.get('default');
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
+    // Per the spec https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
+    // GL.TRIANGLES is default. So in case `mode` is `undefined`, it is 'TRIANGLES'
+    assert(
+      primitive.mode === undefined ||
+        primitive.mode === GL.TRIANGLES ||
+        primitive.mode === GL.TRIANGLE_STRIP,
+      `Primitive - unsupported mode ${primitive.mode}`
+    );
     const attributes = primitive.attributes;
     if (!outputAttributes) {
       continue;
     }
 
-    const indices = getIndices(primitive);
+    const indices = normalizeIndices(primitive);
     outputAttributes.positions = concatenateTypedArrays(
       outputAttributes.positions,
       transformVertexArray({
@@ -567,11 +578,16 @@ function convertMesh(
 }
 /**
  * Converts TRIANGLE-STRIPS to independent TRIANGLES
- * @param {MeshPrimitive} primitive - the primitive to get the indices from
+ * @param primitive - the primitive to get the indices from
  * @returns indices of vertices of the independent triangles
  */
-function getIndices(primitive: MeshPrimitive): TypedArray {
-  let indices: TypedArray = primitive.indices?.value;
+function normalizeIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
+  let indices: TypedArray | undefined = primitive.indices?.value;
+  if (!indices) {
+    const positions = primitive.attributes.POSITION.value;
+    return generateSyntheticIndices(positions.length / VALUES_PER_VERTEX);
+  }
+
   if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
     /*
     TRIANGLE_STRIP geometry contains n+2 vertices for n triangles;
@@ -600,7 +616,7 @@ function getIndices(primitive: MeshPrimitive): TypedArray {
     }
     indices = newIndices;
   }
-  return indices;
+  return indices as TypedArray;
 }
 
 /**
@@ -613,17 +629,17 @@ function getIndices(primitive: MeshPrimitive): TypedArray {
  * @param args.indices - gltf primitive indices
  * @param args.attributeSpecificTransformation - function to do attribute - specific transformations
  * @param args.useCartesianPositions - use coordinates as it is.
- * @returns {Float32Array}
+ * @returns
  */
 function transformVertexArray(args: {
-  vertices: Float32Array;
+  vertices: TypedArray;
   cartographicOrigin: number[];
   cartesianModelMatrix: number[];
   nodeMatrix: Matrix4;
   indices: TypedArray;
   attributeSpecificTransformation: Function;
   useCartesianPositions: boolean;
-}) {
+}): Float32Array {
   const {vertices, indices, attributeSpecificTransformation} = args;
   const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
   if (!vertices) {
@@ -699,7 +715,7 @@ function transformVertexNormals(vertexVector, calleeArgs): number[] {
  * @param indices - gltf primitive indices
  * @returns flattened texture coordinates
  */
-function flattenTexCoords(texCoords: Float32Array, indices: TypedArray): Float32Array {
+function flattenTexCoords(texCoords: TypedArray, indices: TypedArray): Float32Array {
   const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
   if (!texCoords) {
     // We need dummy UV0s because it is required in 1.6
@@ -766,7 +782,7 @@ function createUvRegion(materialUvRegion: Uint16Array, indices: TypedArray): Uin
  * @param indices - gltf primitive indices
  * @returns flattened batch ids
  */
-function flattenBatchIds(batchedIds: number[], indices: TypedArray): number[] {
+function flattenBatchIds(batchedIds: NumberArray, indices: TypedArray): number[] {
   if (!batchedIds.length || !indices.length) {
     return [];
   }
@@ -789,9 +805,9 @@ function getBatchIds(
     [key: string]: GLTFAccessorPostprocessed;
   },
   primitive: GLTFMeshPrimitivePostprocessed,
-  images: GLTFImagePostprocessed[]
-): number[] {
-  const batchIds: number[] = handleBatchIdsExtensions(attributes, primitive, images);
+  images: (TextureImageProperties | null)[]
+): NumberArray {
+  const batchIds: NumberArray = handleBatchIdsExtensions(attributes, primitive, images);
 
   if (batchIds.length) {
     return batchIds;
@@ -979,9 +995,8 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
     };
   }
 
-  const uniqueId = uuidv4();
-  sourceMaterial.uniqueId = uniqueId;
-  let mergedMaterials: MergedMaterial[] = [{originalMaterialId: uniqueId}];
+  sourceMaterial.id = Number.isFinite(sourceMaterial.id) ? sourceMaterial.id : uuidv4();
+  let mergedMaterials: MergedMaterial[] = [{originalMaterialId: sourceMaterial.id}];
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
@@ -1167,7 +1182,7 @@ function extractSharedResourcesTextureInfo(
         // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/image.cmn.md
         id: generateImageId(texture, nodeId),
         size: texture.source?.image.width,
-        length: [texture.source?.image.data.length]
+        length: texture.source?.image.data.length ? [texture.source?.image.data.length] : undefined
       }
     ]
   };
@@ -1181,7 +1196,10 @@ function extractSharedResourcesTextureInfo(
  * @returns calculate image ID according to the spec
  */
 function generateImageId(texture: GLTFTexturePostprocessed, nodeId: number) {
-  const {width, height} = texture.source?.image;
+  const {width, height} = texture.source?.image || {};
+  if (!width || !height) {
+    return '';
+  }
   const levelCountOfTexture = 1;
   const indexOfLevel = 0;
   const indexOfTextureInStore = nodeId + 1;
@@ -1220,13 +1238,17 @@ function makeFeatureIdsUnique(
 
 /**
  * Generate replace map to make featureIds unique.
- * @param {Array} featureIds
- * @param {Object} batchTable
- * @param {Array} featuresHashArray
- * @returns {Object}
+ * @param featureIds
+ * @param batchTable
+ * @param featuresHashArray
+ * @returns
  */
-function getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray) {
-  const featureMap = {};
+function getFeaturesReplaceMap(
+  featureIds: any[],
+  batchTable: object,
+  featuresHashArray: any[]
+): Record<string, any> {
+  const featureMap: Record<string, any> = {};
 
   for (let index = 0; index < featureIds.length; index++) {
     const oldFeatureId = featureIds[index];
@@ -1239,11 +1261,11 @@ function getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray) {
 
 /**
  * Generates string for unique batch id creation.
- * @param {Object} batchTable
- * @param {Number} index
- * @returns {String}
+ * @param batchTable
+ * @param index
+ * @returns
  */
-function generateStringFromBatchTableByIndex(batchTable, index) {
+function generateStringFromBatchTableByIndex(batchTable: object, index: number): string {
   let str = '';
   for (const key in batchTable) {
     str += batchTable[key][index];
@@ -1253,12 +1275,16 @@ function generateStringFromBatchTableByIndex(batchTable, index) {
 
 /**
  * Return already exited featureId or creates and returns new to support unique feature ids throw nodes.
- * @param {Number} index
- * @param {Object} batchTable
- * @param {Array} featuresHashArray
- * @returns {Number}
+ * @param index
+ * @param batchTable
+ * @param featuresHashArray
+ * @returns
  */
-function getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray) {
+function getOrCreateUniqueFeatureId(
+  index: number,
+  batchTable: object,
+  featuresHashArray: any[]
+): number {
   const batchTableStr = generateStringFromBatchTableByIndex(batchTable, index);
   const hash = md5(batchTableStr);
 
@@ -1270,11 +1296,11 @@ function getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray) {
 
 /**
  * Do replacement of indices for making them unique through all nodes.
- * @param {Array} indicesArray
- * @param {Object} featureMap
- * @returns {void}
+ * @param indicesArray
+ * @param featureMap
+ * @returns
  */
-function replaceIndicesByUnique(indicesArray, featureMap) {
+function replaceIndicesByUnique(indicesArray: any[], featureMap: Record<string, []>) {
   for (let index = 0; index < indicesArray.length; index++) {
     indicesArray[index] = featureMap[indicesArray[index]];
   }
@@ -1282,16 +1308,16 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
 
 /**
  * Convert property table data to attribute buffers.
- * @param {Array} featureIds
- * @param {Object} propertyTable - table with metadata for particular feature.
- * @param {Array} attributeStorageInfo
- * @returns {Array} - Array of file buffers.
+ * @param featureIds
+ * @param propertyTable - table with metadata for particular feature.
+ * @param attributeStorageInfo
+ * @returns - Array of file buffers.
  */
 function convertPropertyTableToAttributeBuffers(
   featureIds: number[],
   propertyTable: FeatureTableJson,
   attributeStorageInfo: AttributeStorageInfo[]
-) {
+): any[] {
   const attributeBuffers: ArrayBuffer[] = [];
 
   const needFlattenPropertyTable = checkPropertiesLength(featureIds, propertyTable);
@@ -1343,21 +1369,21 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 
 /**
  * Return attribute type.
- * @param {String} key
- * @param {Array} attributeStorageInfo
- * @returns {String} attribute type.
+ * @param key
+ * @param attributeStorageInfo
+ * @returns attribute type.
  */
-function getAttributeType(key, attributeStorageInfo) {
+function getAttributeType(key: string, attributeStorageInfo: any[]): string {
   const attribute = attributeStorageInfo.find((attr) => attr.name === key);
   return attribute.attributeValues.valueType;
 }
 
 /**
  * Convert short integer to attribute arrayBuffer.
- * @param {Array} featureIds
- * @returns {ArrayBuffer} - Buffer with objectId data.
+ * @param featureIds
+ * @returns - Buffer with objectId data.
  */
-function generateShortIntegerAttributeBuffer(featureIds): ArrayBuffer {
+function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const valuesArray = new Uint32Array(featureIds);
   return concatenateArrayBuffers(count.buffer, valuesArray.buffer);
@@ -1365,10 +1391,10 @@ function generateShortIntegerAttributeBuffer(featureIds): ArrayBuffer {
 
 /**
  * Convert double to attribute arrayBuffer.
- * @param {Array} featureIds
- * @returns {ArrayBuffer} - Buffer with objectId data.
+ * @param featureIds
+ * @returns - Buffer with objectId data.
  */
-function generateDoubleAttributeBuffer(featureIds): ArrayBuffer {
+function generateDoubleAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const padding = new Uint8Array(4);
   const valuesArray = new Float64Array(featureIds);
@@ -1378,10 +1404,10 @@ function generateDoubleAttributeBuffer(featureIds): ArrayBuffer {
 
 /**
  * Convert batch table attributes to array buffer with batch table data.
- * @param {Array} batchAttributes
- * @returns {ArrayBuffer} - Buffer with batch table data.
+ * @param batchAttributes
+ * @returns - Buffer with batch table data.
  */
-function generateStringAttributeBuffer(batchAttributes): ArrayBuffer {
+function generateStringAttributeBuffer(batchAttributes: any[]): ArrayBuffer {
   const stringCountArray = new Uint32Array([batchAttributes.length]);
   let totalNumberOfBytes = 0;
   const stringSizesArray = new Uint32Array(batchAttributes.length);
@@ -1408,10 +1434,10 @@ function generateStringAttributeBuffer(batchAttributes): ArrayBuffer {
 
 /**
  * Convert featureIds to BigUint64Array.
- * @param {Array} featureIds
- * @returns {BigUint64Array} - Array of feature ids in BigUint64 format.
+ * @param featureIds
+ * @returns - Array of feature ids in BigUint64 format.
  */
-function generateBigUint64Array(featureIds) {
+function generateBigUint64Array(featureIds: any[]): BigUint64Array {
   const typedFeatureIds = new BigUint64Array(featureIds.length);
   for (let index = 0; index < featureIds.length; index++) {
     typedFeatureIds[index] = BigInt(featureIds[index]);
@@ -1428,11 +1454,11 @@ function generateBigUint64Array(featureIds) {
  * @returns {Promise<object>} - COmpressed geometry.
  */
 async function generateCompressedGeometry(
-  vertexCount,
-  convertedAttributes,
-  attributes,
-  dracoWorkerSoure
-) {
+  vertexCount: number,
+  convertedAttributes: Record<string, any>,
+  attributes: Record<string, any>,
+  dracoWorkerSoure: string
+): Promise<ArrayBuffer> {
   const {positions, normals, texCoords, colors, uvRegions, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
 
@@ -1492,11 +1518,14 @@ async function generateCompressedGeometry(
 
 /**
  * Generates ordered feature indices based on face range
- * @param {Uint32Array} featureIndex
- * @param {Uint32Array} faceRange
- * @returns {Uint32Array}
+ * @param featureIndex
+ * @param faceRange
+ * @returns
  */
-function generateFeatureIndexAttribute(featureIndex, faceRange) {
+function generateFeatureIndexAttribute(
+  featureIndex: Uint32Array,
+  faceRange: Uint32Array
+): Uint32Array {
   const orderedFeatureIndices = new Uint32Array(featureIndex.length);
   let fillIndex = 0;
   let startIndex = 0;
@@ -1534,7 +1563,7 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
       return null;
     }
     case EXT_FEATURE_METADATA: {
-      return getPropertyTableFromExtFeatureMetadata(extension);
+      return getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata);
     }
     default:
       return null;
@@ -1545,7 +1574,9 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
  * Check extensions which can be with property table inside.
  * @param sourceTile
  */
-function getPropertyTableExtension(tileContent: B3DMContent) {
+function getPropertyTableExtension(
+  tileContent: B3DMContent
+): GLTF_EXT_feature_metadata | GLTF_EXT_mesh_features {
   const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 

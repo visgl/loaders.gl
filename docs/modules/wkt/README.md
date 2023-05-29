@@ -1,5 +1,7 @@
 # Overview
 
+![ogc-logo](../../images/logos/ogc-logo-60.png)
+
 The `@loaders.gl/wkt` module handles the [Well Known Text (WKT)](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) format, an ASCII format that defines geospatial geometries; and the [Well Known Binary](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) format, WKT's binary equivalent.
 
 ## Installation

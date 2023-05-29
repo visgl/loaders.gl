@@ -19,7 +19,7 @@ const Container = styled.div`
   line-height: 2;
   outline: none;
   z-index: 100;
-  height: calc(100vh - var(--ifm-navbar-height) - 40px);
+  height: calc(100vh - 105px);
 
   h2 {
     margin: 0 0 0.5rem 0;

@@ -1,5 +1,5 @@
 // import type {TypedArray} from '../types/loader-utils';
-import type {GLTFAccessor} from '../types/gltf-types';
+import type {GLTFAccessor} from '../types/gltf-json-schema';
 // TODO - remove
 import {getAccessorTypeFromSize, getComponentTypeFromArray} from './gltf-utils';
 

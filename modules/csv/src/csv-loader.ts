@@ -1,15 +1,20 @@
+// loaders.gl, MIT license
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {Batch} from '@loaders.gl/schema';
-type Schema = any;
+import type {Batch, TableBatch} from '@loaders.gl/schema';
 
 import {
   AsyncQueue,
+  Table,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
 } from '@loaders.gl/schema';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
+
+type ObjectField = {name: string; index: number; type: any};
+type ObjectSchema = {[key: string]: ObjectField} | ObjectField[];
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -59,7 +64,7 @@ const DEFAULT_CSV_LOADER_OPTIONS = {
   }
 };
 
-export const CSVLoader = {
+export const CSVLoader: LoaderWithParser<Table, TableBatch, CSVLoaderOptions> = {
   id: 'csv',
   module: 'csv',
   name: 'CSV',
@@ -147,7 +152,7 @@ function parseCSVInBatches(
   let isFirstRow: boolean = true;
   let headerRow: string[] | null = null;
   let tableBatchBuilder: TableBatchBuilder | null = null;
-  let schema: Schema | null = null;
+  let schema: ObjectSchema | null = null;
 
   const config = {
     // dynamicTyping: true, // Convert numbers and boolean values in rows from strings,
@@ -207,11 +212,14 @@ function parseCSVInBatches(
       // Add the row
       tableBatchBuilder =
         tableBatchBuilder ||
-        new TableBatchBuilder(schema, {
-          // @ts-expect-error
-          shape: csvOptions.shape || 'array-row-table',
-          ...options
-        });
+        new TableBatchBuilder(
+          // @ts-expect-error TODO this is not a proper schema
+          schema,
+          {
+            shape: csvOptions.shape || 'array-row-table',
+            ...options
+          }
+        );
 
       try {
         tableBatchBuilder.addRow(row);
@@ -306,8 +314,8 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
   return headers;
 }
 
-function deduceSchema(row, headerRow) {
-  const schema = headerRow ? {} : [];
+function deduceSchema(row, headerRow): ObjectSchema {
+  const schema: ObjectSchema = headerRow ? {} : [];
   for (let i = 0; i < row.length; i++) {
     const columnName = (headerRow && headerRow[i]) || i;
     const value = row[i];
@@ -326,5 +334,3 @@ function deduceSchema(row, headerRow) {
   }
   return schema;
 }
-
-export const _typecheckCSVLoader: LoaderWithParser = CSVLoader;

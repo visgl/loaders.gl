@@ -1,4 +1,7 @@
+// loaders.gl, MIT license
+
 import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -6,8 +9,32 @@ import {isResponse} from '../../javascript-utils/is-type';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
-import {getResourceUrlAndType} from '../utils/resource-utils';
+import {getResourceUrl} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
+
+// type LoaderArrayType<T> = T extends (infer Loader)[] ? LoaderOptionsType<Loader> : T
+
+export async function parse<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
+  data: DataType | Promise<DataType>,
+  loader: LoaderT,
+  options?: OptionsT,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
+export async function parse(
+  data: DataType | Promise<DataType>,
+  loaders: Loader[],
+  options?: LoaderOptions,
+  context?: LoaderContext
+): Promise<any>;
+
+export async function parse(
+  data: DataType | Promise<DataType>,
+  options?: LoaderOptions
+): Promise<any>;
 
 /**
  * Parses `data` using a specified loader
@@ -16,6 +43,7 @@ import {selectLoader} from './select-loader';
  * @param options
  * @param context
  */
+// implementation signature
 export async function parse(
   data: DataType | Promise<DataType>,
   loaders?: Loader | Loader[] | LoaderOptions,
@@ -33,10 +61,10 @@ export async function parse(
   }
 
   data = await data; // Resolve any promise
-  options = options || {};
+  options = options || ({} as LoaderOptions); // Could be invalid...
 
   // Extract a url for auto detection
-  const {url} = getResourceUrlAndType(data);
+  const url = getResourceUrl(data);
 
   // Chooses a loader (and normalizes it)
   // Also use any loaders in the context, new loaders take priority
@@ -50,10 +78,10 @@ export async function parse(
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, candidateLoaders, url);
+  options = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
 
   // Get a context (if already present, will be unchanged)
-  context = getLoaderContext({url, parse, loaders: candidateLoaders}, options, context);
+  context = getLoaderContext({url, parse, loaders: candidateLoaders}, options, context || null);
 
   return await parseWithLoader(loader, data, options, context);
 }

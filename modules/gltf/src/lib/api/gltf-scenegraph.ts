@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+
+import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {
   GLTF,
   GLTFScene,
@@ -10,9 +13,8 @@ import type {
   GLTFTexture,
   GLTFImage,
   GLTFBuffer,
-  GLTFBufferView,
-  GLTFWithBuffers
-} from '../types/gltf-types';
+  GLTFBufferView
+} from '../types/gltf-json-schema';
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
@@ -23,29 +25,37 @@ import {
   getComponentTypeFromArray
 } from '../gltf-utils/gltf-utils';
 
-const DEFAULT_GLTF_JSON: GLTF = {
-  asset: {
-    version: '2.0',
-    generator: 'loaders.gl'
-  },
-  buffers: []
-};
-
 type Extension = {[key: string]: any};
+
+function makeDefaultGLTFJson(): GLTF {
+  return {
+    asset: {
+      version: '2.0',
+      generator: 'loaders.gl'
+    },
+    buffers: [],
+    extensions: {},
+    extensionsRequired: [],
+    extensionsUsed: []
+  };
+}
+
 /**
  * Class for structured access to GLTF data
  */
-export default class GLTFScenegraph {
+export class GLTFScenegraph {
   // internal
   gltf: GLTFWithBuffers;
   sourceBuffers: any[];
   byteLength: number;
 
+  // TODO - why is this not GLTFWithBuffers - what happens to images?
   constructor(gltf?: {json: GLTF; buffers?: any[]}) {
-    // @ts-ignore
-    this.gltf = gltf || {
-      json: {...DEFAULT_GLTF_JSON},
-      buffers: []
+    // Declare locally so
+
+    this.gltf = {
+      json: gltf?.json || makeDefaultGLTFJson(),
+      buffers: gltf?.buffers || []
     };
     this.sourceBuffers = [];
     this.byteLength = 0;
@@ -75,10 +85,16 @@ export default class GLTFScenegraph {
     return extras[key];
   }
 
+  hasExtension(extensionName: string): boolean {
+    const isUsedExtension = this.getUsedExtensions().find((name) => name === extensionName);
+    const isRequiredExtension = this.getRequiredExtensions().find((name) => name === extensionName);
+    return typeof isUsedExtension === 'string' || typeof isRequiredExtension === 'string';
+  }
+
   getExtension<T = Extension>(extensionName: string): T | null {
     const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
-    return isExtension ? extensions[extensionName] || true : null;
+    return isExtension ? (extensions[extensionName] as T) : null;
   }
 
   getRequiredExtension<T = Extension>(extensionName: string): T | null {
@@ -247,19 +263,24 @@ export default class GLTFScenegraph {
     return this;
   }
 
-  setObjectExtension(object: object, extensionName: string, data: object): void {
-    // @ts-ignore
+  setObjectExtension(object: any, extensionName: string, data: object): void {
     const extensions = object.extensions || {};
     extensions[extensionName] = data;
     // TODO - add to usedExtensions...
   }
 
-  removeObjectExtension(object: object, extensionName: string): object {
-    // @ts-ignore
-    const extensions = object.extensions || {};
-    const extension = extensions[extensionName];
+  removeObjectExtension(object: any, extensionName: string): void {
+    const extensions = object?.extensions || {};
+
+    if (extensions[extensionName]) {
+      this.json.extensionsRemoved = this.json.extensionsRemoved || [];
+      const extensionsRemoved = this.json.extensionsRemoved as string[];
+      if (!extensionsRemoved.includes(extensionName)) {
+        extensionsRemoved.push(extensionName);
+      }
+    }
+
     delete extensions[extensionName];
-    return extension;
   }
 
   /**
@@ -268,7 +289,7 @@ export default class GLTFScenegraph {
   addExtension(extensionName: string, extensionData: object = {}): object {
     assert(extensionData);
     this.json.extensions = this.json.extensions || {};
-    (this.json.extensions as Record<string, unknown>)[extensionName] = extensionData;
+    this.json.extensions[extensionName] = extensionData;
     this.registerUsedExtension(extensionName);
     return extensionData;
   }
@@ -308,24 +329,21 @@ export default class GLTFScenegraph {
    * Removes an extension from the top-level list
    */
   removeExtension(extensionName: string): void {
-    if (!this.getExtension(extensionName)) {
-      return;
+    if (this.json.extensions?.[extensionName]) {
+      this.json.extensionsRemoved = this.json.extensionsRemoved || [];
+      const extensionsRemoved = this.json.extensionsRemoved as string[];
+      if (!extensionsRemoved.includes(extensionName)) {
+        extensionsRemoved.push(extensionName);
+      }
+    }
+    if (this.json.extensions) {
+      delete this.json.extensions[extensionName];
     }
     if (this.json.extensionsRequired) {
       this._removeStringFromArray(this.json.extensionsRequired, extensionName);
     }
     if (this.json.extensionsUsed) {
       this._removeStringFromArray(this.json.extensionsUsed, extensionName);
-    }
-    if (this.json.extensions) {
-      delete this.json.extensions[extensionName];
-    }
-    if (!Array.isArray(this.json.extensionsRemoved)) {
-      this.json.extensionsRemoved = [];
-    }
-    const extensionsRemoved = this.json.extensionsRemoved as string[];
-    if (!extensionsRemoved.includes(extensionName)) {
-      extensionsRemoved.push(extensionName);
     }
   }
 

@@ -1,8 +1,50 @@
 # Upgrade Guide
 
+## Upgrading to v4.0
+
+**Typed Loaders**
+
+Loaders now return typed data. While this sudden injection of types into previously untyped code can generated type errors in applications that have been making the wrong assumptions about what was returned from loaders, those errors will likely be valid and should just be fixed in the application.
+
+In the interest of offering the most rigorous typing of returned data, some loaders now offer fewer options for the returned data type, and the trend in loaders.gl 3.x of offering a growing selection of return formats (or `shapes`) from each loader has now been reversed, in favor of offering a single core return data type, accompanied by optional conversion functions.
+
+- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
+
+**GLTF**
+
+- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
+
+**Apache Arrow JS** 
+
+loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_. 
+
+If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes. 
+
+On the upside, the new Apache Arrow API is more modular and "tree shakeable" (meaning that only the Apache Arrow functionality your application is actually using is included in your application bundle). 
+
+Unfortunately, Apache Arrow JS does yet not come with great release or upgrade notes, however the changes are fairly superficial and relatively easy to work through.
+
+**Table Schemas** 
+
+If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" loaders.gl schemas. You can recover an Arrow schema as follows
+
+```typescript
+import {deserializeArrowSchema} from '@loaders.gl/schema-utils`;
+const table = load(url, ParquetLoader);
+const arrowSchema = deserializeArrowSchema(table.schema);
+```
+
 ## Upgrading to v3.4
 
-- `WMSService` - the `srs` parameters has been renamed to `crs` in alignment with the most recent WMS 1.3.0 conventions.
+**@loaders.gl/wms**
+
+This module is still marked as experimental and had some breaking changes.
+
+- `WMSService` class
+  - The `srs` parameters has been renamed to `crs` in alignment with the most recent WMS 1.3.0 conventions.
+- ``WMSCapabilities` type (returned by `WMSService` and `WMSCapabilitiesLoader`)
+  - `WMSCapabilities.layer` is now `WMSCapabilities.layers`
+  - `WMSCapabilities.boundingBox` is now `WMSCapabilities.geographicBoundingBox` (in generic lng/lats) and `WMSCapabilities.boundingBoxes` (array of bounding boxes in supported projections)
 
 ## Upgrading to v3.2
 

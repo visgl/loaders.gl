@@ -7,14 +7,6 @@ import {
   Field,
   Geometry,
   DataType,
-  Bool,
-  Utf8,
-  Float64,
-  Int32,
-  Int8,
-  Int16,
-  Float32,
-  Binary,
   Tables,
   ObjectRowTable,
   Feature
@@ -52,28 +44,28 @@ const ENVELOPE_BYTE_LENGTHS = {
 };
 
 // Documentation: https://www.geopackage.org/spec130/index.html#table_column_data_types
-const SQL_TYPE_MAPPING: {[type in SQLiteTypes | GeoPackageGeometryTypes]: typeof DataType} = {
-  BOOLEAN: Bool,
-  TINYINT: Int8,
-  SMALLINT: Int16,
-  MEDIUMINT: Int32,
-  INT: Int32,
-  INTEGER: Int32,
-  FLOAT: Float32,
-  DOUBLE: Float64,
-  REAL: Float64,
-  TEXT: Utf8,
-  BLOB: Binary,
-  DATE: Utf8,
-  DATETIME: Utf8,
-  GEOMETRY: Binary,
-  POINT: Binary,
-  LINESTRING: Binary,
-  POLYGON: Binary,
-  MULTIPOINT: Binary,
-  MULTILINESTRING: Binary,
-  MULTIPOLYGON: Binary,
-  GEOMETRYCOLLECTION: Binary
+const SQL_TYPE_MAPPING: {[type in SQLiteTypes | GeoPackageGeometryTypes]: DataType} = {
+  BOOLEAN: 'bool',
+  TINYINT: 'int8',
+  SMALLINT: 'int16',
+  MEDIUMINT: 'int32',
+  INT: 'int32',
+  INTEGER: 'int32',
+  FLOAT: 'float32',
+  DOUBLE: 'float64',
+  REAL: 'float64',
+  TEXT: 'utf8',
+  BLOB: 'binary',
+  DATE: 'utf8',
+  DATETIME: 'utf8',
+  GEOMETRY: 'binary',
+  POINT: 'binary',
+  LINESTRING: 'binary',
+  POLYGON: 'binary',
+  MULTIPOINT: 'binary',
+  MULTILINESTRING: 'binary',
+  MULTIPOLYGON: 'binary',
+  GEOMETRYCOLLECTION: 'binary'
 };
 
 export default async function parseGeoPackage(
@@ -204,12 +196,12 @@ function getVectorTable(
     geojsonFeatures.push(geojsonFeature);
   }
 
-  const schema = getArrowSchema(db, tableName);
+  const schema = getSchema(db, tableName);
   if (projection) {
     return {
+      shape: 'object-row-table',
       data: transformGeoJsonCoords(geojsonFeatures, projection.project),
-      schema,
-      shape: 'object-row-table'
+      schema
     };
   }
 
@@ -468,19 +460,19 @@ function getDataColumns(db: Database, tableName: string): DataColumnsMapping | n
  * @param tableName  table name
  * @returns Arrow-like Schema
  */
-function getArrowSchema(db: Database, tableName: string): Schema {
+function getSchema(db: Database, tableName: string): Schema {
   const stmt = db.prepare(`PRAGMA table_info(\`${tableName}\`)`);
 
   const fields: Field[] = [];
   while (stmt.step()) {
     const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
-    const {name, type, notnull} = pragmaTableInfo;
-    const schemaType = SQL_TYPE_MAPPING[type] && new SQL_TYPE_MAPPING[type]();
-    const field = new Field(name, schemaType, !notnull);
+    const {name, type: sqlType, notnull} = pragmaTableInfo;
+    const type = SQL_TYPE_MAPPING[sqlType];
+    const field = {name, type, nullable: !notnull};
     fields.push(field);
   }
 
-  return new Schema(fields);
+  return {fields, metadata: {}};
 }
 
 function formatTablesAsGeojson(tables: Tables<ObjectRowTable>): Record<string, Feature[]> {
@@ -488,6 +480,5 @@ function formatTablesAsGeojson(tables: Tables<ObjectRowTable>): Record<string, F
   for (const table of tables.tables) {
     geojsonMap[table.name] = table.table.data;
   }
-
   return geojsonMap;
 }

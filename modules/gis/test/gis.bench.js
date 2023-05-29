@@ -8,6 +8,7 @@ const GEOJSON_URL = '@loaders.gl/json/test/data/geojson-big.json';
 export default async function gisBench(suite) {
   suite.group('geojson-to-binary');
 
+  // @ts-expect-error
   const {features} = await load(GEOJSON_URL, JSONLoader);
   const options = {multiplier: 308, unit: 'features'};
 

@@ -1,4 +1,7 @@
+// loaders.gl, MIT license
+
 import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
@@ -14,22 +17,46 @@ import {parse} from './parse';
  * @param options
  * @param context
  */
-// implementation signature
-export async function load(
+
+export async function load<LoaderT extends Loader>(
   url: string | DataType,
-  loaders?: Loader | Loader[] | LoaderOptions,
-  options?: LoaderOptions,
+  loader: LoaderT,
+  options?: LoaderOptionsType<LoaderT>,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
+export async function load<
+  LoaderT extends Loader, // eslint-disable-line  @typescript-eslint/no-unused-vars
+  LoaderOptionsT extends LoaderOptions = LoaderOptions
+>(
+  url: string | DataType,
+  loaders: Loader[] | LoaderOptions,
+  options?: LoaderOptionsT,
+  context?: LoaderContext
+): Promise<any>;
+
+// implementation signature
+export async function load<LoaderOptionsT extends LoaderOptions>(
+  url: string | DataType,
+  loaders?: Loader[] | LoaderOptions,
+  options?: LoaderOptionsT,
   context?: LoaderContext
 ): Promise<any> {
+  let resolvedLoaders: Loader | Loader[];
+  let resolvedOptions: LoaderOptionsT | undefined;
+
   // Signature: load(url, options)
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
+    resolvedLoaders = [];
+    resolvedOptions = loaders as LoaderOptionsT;
     context = undefined; // context not supported in short signature
-    options = loaders as LoaderOptions;
-    loaders = undefined;
+  } else {
+    resolvedLoaders = loaders as Loader | Loader[];
+    resolvedOptions = options;
   }
 
   // Select fetch function
-  const fetch = getFetchFunction(options);
+  const fetch = getFetchFunction(resolvedOptions);
 
   // at this point, `url` could be already loaded binary data
   let data = url;
@@ -46,5 +73,8 @@ export async function load(
   }
 
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
-  return await parse(data, loaders as Loader[], options);
+  // return await parse(data, loaders as Loader[], options);
+  return Array.isArray(resolvedLoaders)
+    ? await parse(data, resolvedLoaders, resolvedOptions) // loader array overload
+    : await parse(data, resolvedLoaders, resolvedOptions); // single loader overload
 }

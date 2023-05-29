@@ -4,17 +4,28 @@
 // Reference code:
 // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Scene/Composite3DTileContent.js#L182
 
+import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
+
+/** Resolve circulate dependency by passing in parsing function as argument */
+type Parse3DTile = (
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options: Tiles3DLoaderOptions,
+  context: LoaderContext,
+  subtile
+) => Promise<number>;
 
 // eslint-disable-next-line max-params
 export async function parseComposite3DTile(
   tile,
-  arrayBuffer,
-  byteOffset,
-  options,
-  context,
-  parse3DTile
-) {
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options: Tiles3DLoaderOptions,
+  context: LoaderContext,
+  parse3DTile: Parse3DTile
+): Promise<number> {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
 
   const view = new DataView(arrayBuffer);

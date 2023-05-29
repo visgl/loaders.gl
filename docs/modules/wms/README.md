@@ -4,11 +4,15 @@
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
 </p>
 
+![ogc-logo](../../images/logos/ogc-logo-60.png)
+
 # OGC Web Services
 
 The `@loaders.gl/wms` module provides support for a subset of the OGC Web Services which are a set of XML-based web mapping standards.
 
 > The Open Geospatial Consortium (OGC) has produced a large set of related XML-based standards for web mapping. Some of these standards are not supported by loaders.gl, but are still mentioned here to provide context for the provided functionality (and minimize confusion as the standards have similar names and functionalities):
+
+## Services
 
 | OGC Protocol/Format                                                    | Supported    | Description                                                                                                                          |
 | ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -21,7 +25,12 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC Web Servic
 | [**WMC**](/docs/modules/wms/formats/wmc) (Web Map Context)                          | No           | Used in WMS clients to save the configuration of maps and to load them again later. Can also be exchanged between different clients. |
 | [**OWS Context**](/docs/modules/wms/formats/ows-context) (OGC Web Services Context) | No           | Allows configured information resources to be passed between applications primarily as a collection of services.                     |
 
+## API
+
 Support for the protocols is provided in the form of:
+
+- [`WMSService`][capabilities_loader].
+- [`WMSCapabilitiesLoader`][capabilities_loader].
 
 - a small collection of parsers for the XML responses from the various requests in these protocols.
 - a short write-up on each protocol to indicate how to use loaders.gl to parse responses

@@ -6,7 +6,7 @@ export type GLTFId = number;
 /**
  * Indices of those attributes that deviate from their initialization value.
  */
-export interface AccessorSparseIndices {
+export type GLTFAccessorSparseIndices = {
   /**
    * The index of the bufferView with sparse indices. Referenced bufferView can't have ARRAY_BUFFER or ELEMENT_ARRAY_BUFFER target.
    */
@@ -19,15 +19,15 @@ export interface AccessorSparseIndices {
    * The indices data type.
    */
   componentType: 5121 | 5123 | 5125 | number;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Array of size `accessor.sparse.count` times number of components storing the displaced accessor attributes pointed by `accessor.sparse.indices`.
  */
-export interface AccessorSparseValues {
+export type GLTFAccessorSparseValues = {
   /**
    * The index of the bufferView with sparse values. Referenced bufferView can't have ARRAY_BUFFER or ELEMENT_ARRAY_BUFFER target.
    */
@@ -36,15 +36,15 @@ export interface AccessorSparseValues {
    * The offset relative to the start of the bufferView in bytes. Must be aligned.
    */
   byteOffset?: number;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Sparse storage of attributes that deviate from their initialization value.
  */
-export interface AccessorSparse {
+export type GLTFAccessorSparse = {
   /**
    * Number of entries stored in the sparse array.
    */
@@ -52,20 +52,20 @@ export interface AccessorSparse {
   /**
    * Index array of size `count` that points to those accessor attributes that deviate from their initialization value. Indices must strictly increase.
    */
-  indices: AccessorSparseIndices;
+  indices: GLTFAccessorSparseIndices;
   /**
    * Array of size `count` times number of components, storing the displaced accessor attributes pointed by `indices`. Substituted values must have the same `componentType` and number of components as the base accessor.
    */
-  values: AccessorSparseValues;
-  extensions?: any;
+  values: GLTFAccessorSparseValues;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A typed view into a bufferView.  A bufferView contains raw binary data.  An accessor provides a typed view into a bufferView or a subset of a bufferView similar to how WebGL's `vertexAttribPointer()` defines an attribute in a buffer.
  */
-export interface Accessor {
+export type GLTFAccessor = {
   /**
    * The index of the bufferView.
    */
@@ -101,17 +101,17 @@ export interface Accessor {
   /**
    * Sparse storage of attributes that deviate from their initialization value.
    */
-  sparse?: AccessorSparse;
+  sparse?: GLTFAccessorSparse;
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * The index of the node and TRS property that an animation channel targets.
  */
-export interface AnimationChannelTarget {
+export type GLTFAnimationChannelTarget = {
   /**
    * The index of the node to target.
    */
@@ -120,15 +120,15 @@ export interface AnimationChannelTarget {
    * The name of the node's TRS property to modify, or the "weights" of the Morph Targets it instantiates. For the "translation" property, the values that are provided by the sampler are the translation along the x, y, and z axes. For the "rotation" property, the values are a quaternion in the order (x, y, z, w), where w is the scalar. For the "scale" property, the values are the scaling factors along the x, y, and z axes.
    */
   path: 'translation' | 'rotation' | 'scale' | 'weights' | string;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Targets an animation's sampler at a node's property.
  */
-export interface AnimationChannel {
+export type GLTFAnimationChannel = {
   /**
    * The index of a sampler in this animation used to compute the value for the target.
    */
@@ -136,16 +136,16 @@ export interface AnimationChannel {
   /**
    * The index of the node and TRS property to target.
    */
-  target: AnimationChannelTarget;
-  extensions?: any;
+  target: GLTFAnimationChannelTarget;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
  */
-export interface AnimationSampler {
+export type GLTFAnimationSampler = {
   /**
    * The index of an accessor containing keyframe input values, e.g., time.
    */
@@ -158,33 +158,33 @@ export interface AnimationSampler {
    * The index of an accessor, containing keyframe output values.
    */
   output: GLTFId;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A keyframe animation.
  */
-export interface Animation {
+export type GLTFAnimation = {
   /**
    * An array of channels, each of which targets an animation's sampler at a node's property. Different channels of the same animation can't have equal targets.
    */
-  channels: AnimationChannel[];
+  channels: GLTFAnimationChannel[];
   /**
    * An array of samplers that combines input and output accessors with an interpolation algorithm to define a keyframe graph (but not its target).
    */
-  samplers: AnimationSampler[];
+  samplers: GLTFAnimationSampler[];
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Metadata about the glTF asset.
  */
-export interface Asset {
+export type GLTFAsset = {
   /**
    * A copyright message suitable for display to credit the content creator.
    */
@@ -201,15 +201,15 @@ export interface Asset {
    * The minimum glTF version that this asset targets.
    */
   minVersion?: string;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A buffer points to binary geometry, animation, or skins.
  */
-export interface Buffer {
+export type GLTFBuffer = {
   /**
    * The uri of the buffer.
    */
@@ -219,15 +219,15 @@ export interface Buffer {
    */
   byteLength: number;
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A view into a buffer generally representing a subset of the buffer.
  */
-export interface BufferView {
+export type GLTFBufferView = {
   /**
    * The index of the buffer.
    */
@@ -249,15 +249,15 @@ export interface BufferView {
    */
   target?: 34962 | 34963 | number;
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * An orthographic camera containing properties to create an orthographic projection matrix.
  */
-export interface CameraOrthographic {
+export type GLTFCameraOrthographic = {
   /**
    * The floating-point horizontal magnification of the view. Must not be zero.
    */
@@ -274,15 +274,15 @@ export interface CameraOrthographic {
    * The floating-point distance to the near clipping plane.
    */
   znear: number;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A perspective camera containing properties to create a perspective projection matrix.
  */
-export interface CameraPerspective {
+export type GLTFCameraPerspective = {
   /**
    * The floating-point aspect ratio of the field of view.
    */
@@ -299,37 +299,37 @@ export interface CameraPerspective {
    * The floating-point distance to the near clipping plane.
    */
   znear: number;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A camera's projection.  A node can reference a camera to apply a transform to place the camera in the scene.
  */
-export interface Camera {
+export type GLTFCamera = {
   /**
    * An orthographic camera containing properties to create an orthographic projection matrix.
    */
-  orthographic?: CameraOrthographic;
+  orthographic?: GLTFCameraOrthographic;
   /**
    * A perspective camera containing properties to create a perspective projection matrix.
    */
-  perspective?: CameraPerspective;
+  perspective?: GLTFCameraPerspective;
   /**
    * Specifies if the camera uses a perspective or orthographic projection.
    */
   type: 'perspective' | 'orthographic' | string;
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Image data used to create a texture. Image can be referenced by URI or `bufferView` index. `mimeType` is required in the latter case.
  */
-export interface Image {
+export type GLTFImage = {
   /**
    * The uri of the image.
    */
@@ -343,15 +343,15 @@ export interface Image {
    */
   bufferView?: GLTFId;
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Reference to a texture.
  */
-export interface TextureInfo {
+export type GLTFTextureInfo = {
   /**
    * The index of the texture.
    */
@@ -360,15 +360,15 @@ export interface TextureInfo {
    * The set index of texture's TEXCOORD attribute used for texture coordinate mapping.
    */
   texCoord?: number;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
  */
-export interface MaterialPbrMetallicRoughness {
+export type GLTFMaterialPbrMetallicRoughness = {
   /**
    * The material's base color factor.
    */
@@ -376,7 +376,7 @@ export interface MaterialPbrMetallicRoughness {
   /**
    * The base color texture.
    */
-  baseColorTexture?: TextureInfo;
+  baseColorTexture?: GLTFTextureInfo;
   /**
    * The metalness of the material.
    */
@@ -388,57 +388,57 @@ export interface MaterialPbrMetallicRoughness {
   /**
    * The metallic-roughness texture.
    */
-  metallicRoughnessTexture?: TextureInfo;
-  extensions?: any;
+  metallicRoughnessTexture?: GLTFTextureInfo;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
-export interface MaterialNormalTextureInfo {
+};
+export type GLTFMaterialNormalTextureInfo = {
   index: any;
   texCoord?: any;
   /**
    * The scalar multiplier applied to each normal vector of the normal texture.
    */
   scale?: number;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
-export interface MaterialOcclusionTextureInfo {
+};
+export type GLTFMaterialOcclusionTextureInfo = {
   index: any;
   texCoord?: any;
   /**
    * A scalar multiplier controlling the amount of occlusion applied.
    */
   strength?: number;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * The material appearance of a primitive.
  */
-export interface Material {
+export type GLTFMaterial = {
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   /**
    * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology. When not specified, all the default values of `pbrMetallicRoughness` apply.
    */
-  pbrMetallicRoughness?: MaterialPbrMetallicRoughness;
+  pbrMetallicRoughness?: GLTFMaterialPbrMetallicRoughness;
   /**
    * The normal map texture.
    */
-  normalTexture?: MaterialNormalTextureInfo;
+  normalTexture?: GLTFMaterialNormalTextureInfo;
   /**
    * The occlusion map texture.
    */
-  occlusionTexture?: MaterialOcclusionTextureInfo;
+  occlusionTexture?: GLTFMaterialOcclusionTextureInfo;
   /**
    * The emissive map texture.
    */
-  emissiveTexture?: TextureInfo;
+  emissiveTexture?: GLTFTextureInfo;
   /**
    * The emissive color of the material.
    */
@@ -456,12 +456,12 @@ export interface Material {
    */
   doubleSided?: boolean;
   // [k: string]: any;
-}
+};
 
 /**
  * Geometry to be rendered with the given material.
  */
-export interface MeshPrimitive {
+export type GLTFMeshPrimitive = {
   /**
    * A dictionary object, where each key corresponds to mesh attribute semantic and each value is the index of the accessor containing attribute's data.
    */
@@ -486,35 +486,35 @@ export interface MeshPrimitive {
   targets?: {
     [k: string]: GLTFId;
   }[];
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A set of primitives to be rendered.  A node can contain one mesh.  A node's transform places the mesh in the scene.
  */
 
-export interface Mesh {
+export type GLTFMesh = {
   id?: string;
   /**
    * An array of primitives, each defining geometry to be rendered with a material.
    */
-  primitives: MeshPrimitive[];
+  primitives: GLTFMeshPrimitive[];
   /**
    * Array of weights to be applied to the Morph Targets.
    */
   weights?: number[];
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A node in the node hierarchy.  When the node contains `skin`, all `mesh.primitives` must contain `JOINTS_0` and `WEIGHTS_0` attributes.  A node can have either a `matrix` or any combination of `translation`/`rotation`/`scale` (TRS) properties. TRS properties are converted to matrices and postmultiplied in the `T * R * S` order to compose the transformation matrix; first the scale is applied to the vertices, then the rotation, and then the translation. If none are provided, the transform is the identity. When a node is targeted for animation (referenced by an animation.channel.target), only TRS properties may be present; `matrix` will not be present.
  */
-export interface Node {
+export type GLTFNode = {
   /**
    * The index of the camera referenced by this node.
    */
@@ -552,15 +552,15 @@ export interface Node {
    */
   weights?: number[];
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Texture sampler properties for filtering and wrapping modes.
  */
-export interface Sampler {
+export type GLTFSampler = {
   /**
    * Magnification filter.
    */
@@ -578,29 +578,30 @@ export interface Sampler {
    */
   wrapT?: 33071 | 33648 | 10497 | number;
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * The root nodes of a scene.
  */
-export interface Scene {
+export type GLTFScene = {
   /**
    * The indices of each root node.
    */
   nodes?: GLTFId[];
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * Joints and matrices defining a skin.
  */
-export interface Skin {
+export type GLTFSkin = {
+  id?: string;
   /**
    * The index of the accessor containing the floating-point 4x4 inverse-bind matrices.  The default is that each matrix is a 4x4 identity matrix, which implies that inverse-bind matrices were pre-applied.
    */
@@ -609,38 +610,32 @@ export interface Skin {
    * The index of the node used as a skeleton root. When undefined, joints transforms resolve to scene root.
    */
   skeleton?: GLTFId;
-  /**
-   * Indices of skeleton nodes, used as joints in this skin.
-   */
+  /** Indices of skeleton nodes, used as joints in this skin. */
   joints: GLTFId[];
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * A texture and its sampler.
  */
-export interface Texture {
-  /**
-   * The index of the sampler used by this texture. When undefined, a sampler with repeat wrapping and auto filtering should be used.
-   */
+export type GLTFTexture = {
+  /** The index of the sampler used by this texture. When undefined, a sampler with repeat wrapping and auto filtering should be used. */
   sampler?: GLTFId;
-  /**
-   * The index of the image used by this texture.
-   */
+  /** The index of the image used by this texture. */
   source?: GLTFId;
   name?: any;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   // [k: string]: any;
-}
+};
 
 /**
  * The root object for a glTF asset.
  */
-export interface GLTF {
+export type GLTF = {
   /**
    * Names of glTF extensions used somewhere in this asset.
    */
@@ -652,47 +647,47 @@ export interface GLTF {
   /**
    * An array of accessors.
    */
-  accessors?: Accessor[];
+  accessors?: GLTFAccessor[];
   /**
    * An array of keyframe animations.
    */
-  animations?: Animation[];
+  animations?: GLTFAnimation[];
   /**
    * Metadata about the glTF asset.
    */
-  asset: Asset;
+  asset: GLTFAsset;
   /**
    * An array of buffers.
    */
-  buffers?: Buffer[];
+  buffers?: GLTFBuffer[];
   /**
    * An array of bufferViews.
    */
-  bufferViews?: BufferView[];
+  bufferViews?: GLTFBufferView[];
   /**
    * An array of cameras.
    */
-  cameras?: Camera[];
+  cameras?: GLTFCamera[];
   /**
    * An array of images.
    */
-  images?: Image[];
+  images?: GLTFImage[];
   /**
    * An array of materials.
    */
-  materials?: Material[];
+  materials?: GLTFMaterial[];
   /**
    * An array of meshes.
    */
-  meshes?: Mesh[];
+  meshes?: GLTFMesh[];
   /**
    * An array of nodes.
    */
-  nodes?: Node[];
+  nodes?: GLTFNode[];
   /**
    * An array of samplers.
    */
-  samplers?: Sampler[];
+  samplers?: GLTFSampler[];
   /**
    * The index of the default scene.
    */
@@ -700,19 +695,19 @@ export interface GLTF {
   /**
    * An array of scenes.
    */
-  scenes?: Scene[];
+  scenes?: GLTFScene[];
   /**
    * An array of skins.
    */
-  skins?: Skin[];
+  skins?: GLTFSkin[];
   /**
    * An array of textures.
    */
-  textures?: Texture[];
-  extensions?: unknown;
+  textures?: GLTFTexture[];
+  extensions?: Record<string, unknown>;
   extras?: unknown;
   [k: string]: unknown;
-}
+};
 
 // GLTF Extensions
 /* eslint-disable camelcase */
@@ -786,6 +781,24 @@ export type GLTF_MSFT_texture_dds = {
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
+ * @todo belom88 complete typings
+ */
+export type GLTF_EXT_mesh_features = {
+  featureIds: {
+    featureCount: number;
+    nullFeatureId: number;
+    label: string;
+    attribute: any;
+    texture: any;
+    propertyTable: number;
+  }[];
+  extensions?: any;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
  */
 export type GLTF_EXT_feature_metadata = {
   /** An object defining classes and enums. */
@@ -802,7 +815,7 @@ export type GLTF_EXT_feature_metadata = {
   featureTextures?: {
     [key: string]: FeatureTexture;
   };
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -825,7 +838,7 @@ type ExtFeatureMetadataSchema = {
   enums?: {
     [key: string]: ExtFeatureMetadataEnum;
   };
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -842,7 +855,7 @@ export type EXT_feature_metadata_class_object = {
   properties: {
     [key: string]: ClassProperty;
   };
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -927,7 +940,7 @@ export type ClassProperty = {
    * The semantic cannot be used by other properties in the class.
    */
   semantic?: string;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -963,7 +976,7 @@ type ExtFeatureMetadataEnum = {
   valueType?: 'INT8' | 'UINT8' | 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'INT64' | 'UINT64'; // default: "UINT16"
   /** An array of enum values. Duplicate names or duplicate integer values are not allowed. */
   values: EnumValue[];
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -978,7 +991,7 @@ type EnumValue = {
   description?: string;
   /** The integer enum value. */
   value: number; // default: "UINT16"
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1000,7 +1013,7 @@ export type EXT_feature_metadata_feature_table = {
   properties?: {
     [key: string]: FeatureTableProperty;
   };
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1049,7 +1062,7 @@ export type FeatureTableProperty = {
    * The buffer view byteOffset must be aligned to a multiple of 8 bytes in the same manner as the main bufferView.
    */
   stringOffsetBufferView?: number;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1067,7 +1080,7 @@ type FeatureTexture = {
   properties: {
     [key: string]: TextureAccessor;
   };
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1081,8 +1094,8 @@ type TextureAccessor = {
   /** Texture channels containing property values. Channels are labeled by rgba and are swizzled with a string of 1-4 characters. */
   channels: string;
   /** The glTF texture and texture coordinates to use. */
-  texture: TextureInfo;
-  extensions?: any;
+  texture: GLTFTextureInfo;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1098,7 +1111,7 @@ type Statistics = {
   classes?: {
     [key: string]: ClassStatistics;
   };
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1116,7 +1129,7 @@ type ClassStatistics = {
   properties?: {
     [key: string]: StatisticsClassProperty;
   };
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1152,7 +1165,7 @@ type StatisticsClassProperty = {
   occurrences: {
     [key: string]: number | number[];
   };
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1168,7 +1181,7 @@ export type GLTF_EXT_feature_metadata_primitive = {
   featureIdTextures?: GLTF_EXT_feature_metadata_attribute[];
   /** An array of IDs of feature textures from the root EXT_feature_metadata object. */
   featureTextures?: string[];
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1181,7 +1194,7 @@ export type GLTF_EXT_feature_metadata_attribute = {
   featureTable: string;
   /** Described how feature ids are defined */
   featureIds: ExtFeatureMetadataFeatureIds;
-  extensions?: any;
+  extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
@@ -1215,3 +1228,17 @@ type ExtFeatureMetadataTexture = {
   /** The index of the texture. */
   index: number;
 };
+
+export type GLTFObject =
+  | GLTFAccessor
+  | GLTFBuffer
+  | GLTFBufferView
+  | GLTFMeshPrimitive
+  | GLTFMesh
+  | GLTFNode
+  | GLTFMaterial
+  | GLTFSampler
+  | GLTFScene
+  | GLTFSkin
+  | GLTFTexture
+  | GLTFImage;

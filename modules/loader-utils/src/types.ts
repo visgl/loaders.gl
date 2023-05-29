@@ -15,9 +15,33 @@ export type TypedFloatArray = Uint16Array | Float32Array | Float64Array;
 
 export type TypedArray = TypedIntArray | TypedFloatArray;
 
-export type NumericArray = Array<number> | TypedIntArray | TypedFloatArray;
+export type BigTypedArray = TypedArray | BigInt64Array | BigUint64Array;
+
+export type TypedArrayConstructor =
+  | Int8ArrayConstructor
+  | Uint8ArrayConstructor
+  | Int16ArrayConstructor
+  | Uint16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;
+
+export type BigTypedArrayConstructor =
+  | TypedArrayConstructor
+  | BigInt64ArrayConstructor
+  | BigUint64ArrayConstructor;
+
+/** Any numeric array: typed array or `number[]` */
+export type NumberArray = number[] | TypedArray;
+
+export type NumericArray = number[] | TypedArray;
 
 type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
+
+// LOADERS
 
 /**
  * Core Loader Options
@@ -115,18 +139,31 @@ type PreloadOptions = {
 /**
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
-export type Loader = {
+export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = {
+  // Types
+  dataType?: DataT;
+  batchType?: BatchT;
+
+  /** Default Options */
+  options: LoaderOptionsT;
+  /** Deprecated Options */
+  deprecatedOptions?: Record<string, string | Record<string, string>>;
+
   // Worker
   name: string;
+  /** id should be the same as the field used in LoaderOptions */
   id: string;
+  /** module is used to generate worker threads, need to be the module directory name */
   module: string;
+  /** Version should be injected by build tools */
   version: string;
+  /** A boolean, or a URL */
   worker?: string | boolean;
-  options: LoaderOptions;
-  deprecatedOptions?: object;
   // end Worker
 
+  /** Which category does this loader belong to */
   category?: string;
+  /** What extensions does this loader generate */
   extensions: string[];
   mimeTypes: string[];
 
@@ -144,18 +181,126 @@ export type Loader = {
  * A "bundled" loader definition that can be used with `@loaders.gl/core` functions
  * If a worker loader is supported it will also be supported.
  */
-export type LoaderWithParser = Loader & {
+export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = Loader<
+  DataT,
+  BatchT,
+  LoaderOptionsT
+> & {
   // TODO - deprecated
   testText?: (string: string) => boolean;
 
-  parse: Parse;
+  parse: (
+    arrayBuffer: ArrayBuffer,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => Promise<DataT>;
   preload?: Preload;
-  parseSync?: ParseSync;
-  parseText?: ParseText;
-  parseTextSync?: ParseTextSync;
-  parseInBatches?: ParseInBatches;
-  parseFileInBatches?: ParseFileInBatches;
+  parseSync?: (
+    arrayBuffer: ArrayBuffer,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => DataT;
+  parseText?: (text: string, options?: LoaderOptionsT) => Promise<DataT>;
+  parseTextSync?: (text: string, options?: LoaderOptionsT) => DataT;
+  parseInBatches?: (
+    iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => AsyncIterable<BatchT>;
+  parseFileInBatches?: (
+    file: Blob,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => AsyncIterable<BatchT>;
 };
+
+/**
+ * A Loader context is provided as a third parameters to a loader object's
+ * parse functions when that loader is called by other loaders rather then
+ * directly by the application.
+ *
+ * - The context object allows the subloaders to be aware of the parameters and
+ *   options that the application provided in the top level call.
+ * - The context also providedsaccess to parse functions so that the subloader
+ *   does not need to include the core module.
+ * - In addition, the context's parse functions may also redirect loads from worker
+ *   threads back to main thread.
+ */
+export type LoaderContext = {
+  loaders?: Loader[] | null;
+  /** If URL is available.  */
+  url?: string;
+  /** the file name component of the URL (leading path and query string removed) */
+  filename?: string;
+  /** the directory name component of the URL (leading path excluding file name and query string) */
+  baseUrl?: string;
+  /** Query string (characters after `?`) */
+  queryString?: string;
+
+  /** Provides access to any application overrides of fetch() */
+  fetch: typeof fetch | FetchLike;
+  /** TBD */
+  response?: Response;
+  /** Parse function. Use instead of importing `core`. In workers, may redirect to main thread */
+  parse: (
+    arrayBuffer: ArrayBuffer,
+    loaders?: Loader | Loader[] | LoaderOptions,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => Promise<any>;
+  /** ParseSync function. Use instead of importing `core`. In workers, may redirect to main thread */
+  parseSync?: (
+    arrayBuffer: ArrayBuffer,
+    loaders?: Loader | Loader[] | LoaderOptions,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => any;
+  /** ParseInBatches function. Use instead of importing `core`.  */
+  parseInBatches?: (
+    iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    loaders?: Loader | Loader[] | LoaderOptions,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => AsyncIterable<any> | Promise<AsyncIterable<any>>;
+};
+
+// type Parse = (
+//   arrayBuffer: ArrayBuffer,
+//   options?: LoaderOptions,
+//   context?: LoaderContext
+// ) => Promise<any>;
+// type ParseSync = (
+//   arrayBuffer: ArrayBuffer,
+//   options?: LoaderOptions,
+//   context?: LoaderContext
+// ) => any;
+// type ParseText = (text: string, options?: LoaderOptions) => Promise<any>;
+// type ParseTextSync = (text: string, options?: LoaderOptions) => any;
+// type ParseInBatches = (
+//   iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+//   options?: LoaderOptions,
+//   context?: LoaderContext
+// ) => AsyncIterable<any>;
+// type ParseFileInBatches = (
+//   file: Blob,
+//   options?: LoaderOptions,
+//   context?: LoaderContext
+// ) => AsyncIterable<any>;
+
+type Preload = (url: string, options?: PreloadOptions) => any;
+
+/** Typescript helper to extract options type from a generic loader type */
+export type LoaderOptionsType<T = Loader> = T extends Loader<any, any, infer Options>
+  ? Options
+  : never;
+/** Typescript helper to extract data type from a generic loader type */
+export type LoaderReturnType<T = Loader> = T extends Loader<infer Return, any, any>
+  ? Return
+  : never;
+/** Typescript helper to extract batch type from a generic loader type */
+export type LoaderBatchType<T = Loader> = T extends Loader<any, infer Batch, any> ? Batch : never;
+
+// WRITERS
 
 /** Options for writers */
 export type WriterOptions = {
@@ -168,7 +313,8 @@ export type WriterOptions = {
 /**
  * A writer definition that can be used with `@loaders.gl/core` functions
  */
-export type Writer = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type Writer<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOptions> = {
   name: string;
 
   id: string;
@@ -176,82 +322,43 @@ export type Writer = {
   version: string;
   worker?: string | boolean;
 
-  options: WriterOptions;
-  deprecatedOptions?: object;
-
   // TODO - are these are needed?
-  binary?: boolean;
   extensions?: string[];
   mimeTypes?: string[];
+  binary?: boolean;
   text?: boolean;
 
-  encode?: Encode;
+  options: WriterOptionsT;
+  deprecatedOptions?: Record<string, string>;
+
+  // encodeText?: EncodeText;
+  // encode?: Encode;
   encodeSync?: EncodeSync;
-  encodeInBatches?: EncodeInBatches;
+  // encodeInBatches?: EncodeInBatches;
   encodeURLtoURL?: EncodeURLtoURL;
-  encodeText?: EncodeText;
+
+  encode?(data: DataT, options?: WriterOptionsT): Promise<ArrayBuffer>;
+  encodeText?(table: DataT, options?: WriterOptionsT): Promise<string> | string;
+  encodeInBatches?(data: AsyncIterable<any>, options?: WriterOptionsT): AsyncIterable<ArrayBuffer>;
 };
 
-export type LoaderContext = {
-  loaders?: Loader[] | null;
-  url?: string;
-
-  fetch: typeof fetch | FetchLike;
-  response?: Response;
-  parse: (
-    arrayBuffer: ArrayBuffer,
-    loaders?: Loader | Loader[] | LoaderOptions,
-    options?: LoaderOptions,
-    context?: LoaderContext
-  ) => Promise<any>;
-  parseSync?: (
-    arrayBuffer: ArrayBuffer,
-    loaders?: Loader | Loader[] | LoaderOptions,
-    options?: LoaderOptions,
-    context?: LoaderContext
-  ) => any;
-  parseInBatches?: (
-    iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-    loaders?: Loader | Loader[] | LoaderOptions,
-    options?: LoaderOptions,
-    context?: LoaderContext
-  ) => AsyncIterable<any> | Promise<AsyncIterable<any>>;
-};
-
-type Parse = (
-  arrayBuffer: ArrayBuffer,
-  options?: LoaderOptions,
-  context?: LoaderContext
-) => Promise<any>;
-type ParseSync = (
-  arrayBuffer: ArrayBuffer,
-  options?: LoaderOptions,
-  context?: LoaderContext
-) => any;
-type ParseText = (text: string, options?: LoaderOptions) => Promise<any>;
-type ParseTextSync = (text: string, options?: LoaderOptions) => any;
-type ParseInBatches = (
-  iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: LoaderOptions,
-  context?: LoaderContext
-) => AsyncIterable<any>;
-type ParseFileInBatches = (
-  file: Blob,
-  options?: LoaderOptions,
-  context?: LoaderContext
-) => AsyncIterable<any>;
-
-type Encode = (data: any, options?: WriterOptions) => Promise<ArrayBuffer>;
+//  type Encode = (data: any, options?: WriterOptions) => Promise<ArrayBuffer>;
 type EncodeSync = (data: any, options?: WriterOptions) => ArrayBuffer;
 // TODO
-type EncodeText = Function;
-type EncodeInBatches = Function;
+// type EncodeText = Function;
+// type EncodeInBatches = Function;
 type EncodeURLtoURL = (
   inputUrl: string,
   outputUrl: string,
   options?: WriterOptions
 ) => Promise<string>;
-type Preload = (url: string, options?: PreloadOptions) => any;
+
+/** Typescript helper to extract the writer options type from a generic writer type */
+export type WriterOptionsType<T = Writer> = T extends Writer<unknown, unknown, infer Options>
+  ? Options
+  : never;
+
+// MISC TYPES
 
 export type TransformBatches = (
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>

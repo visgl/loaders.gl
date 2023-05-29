@@ -1,5 +1,7 @@
 # Overview
 
+![ogc-logo](../../images/logos/ogc-logo-60.png)
+
 The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
 
 References

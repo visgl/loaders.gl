@@ -73,6 +73,9 @@ export type WMSLayer = {
   // FeatureListURL
   // DataURL
 
+  /** any extra dimension such as time */
+  dimensions?: WMSDimension[];
+
   /** Whether queries can be performed on the layer */
   queryable?: boolean;
   /** `false` if layer has significant no-data areas that the client can display as transparent. */
@@ -105,6 +108,30 @@ export type WMSBoundingBox = {
   yResolution?: number;
 };
 
+/**
+ * An optional dimension that can be queried using the `name=...` parameter
+ * Note that layers that have at least one dimension without `default` value
+ * become unrenderable unless the dimension value is supplied to GetMap requests.
+ */
+export type WMSDimension = {
+  /** name of dimension, becomes a valid parameter key for this layer */
+  name: string;
+  /** Textual units for this dimensional axis */
+  units: string;
+  /** Unit symbol for this dimensional axis */
+  unitSymbol?: string;
+  /** Default value if no value is supplied. If dimension lacks defaultValue, requests fail if no value is supplied */
+  defaultValue?: string;
+  /** Can multiple values of the dimension be requested? */
+  multipleValues?: boolean;
+  /* Will nearest values will be substituted when out of range, if false exact values are required */
+  nearestValue?: boolean;
+  /** A special value "current" is supported, typically for time dimension */
+  current?: boolean;
+  /** Text content indicating available values for dimension */
+  extent: string;
+};
+
 /** Metadata about a supported WMS request  */
 export type WMSRequest = {
   /** MIMEtypes that can be returned by this request. */
@@ -116,7 +143,7 @@ export type WMSExceptions = {
   mimeTypes: string[];
 };
 
-export type parseWMSCapabilitiesOptions = {
+export type ParseWMSCapabilitiesOptions = {
   /** Add inherited layer information to sub layers */
   inheritedLayerProps?: boolean;
   /** Include the "raw" JSON (parsed but untyped, unprocessed XML). May contain additional fields */
@@ -125,7 +152,6 @@ export type parseWMSCapabilitiesOptions = {
   includeXMLText?: boolean;
   /** @deprecated Use includeRawData` */
   raw?: boolean;
-
   // xml options are passed through to xml loader
 };
 
@@ -135,9 +161,9 @@ export type parseWMSCapabilitiesOptions = {
  */
 export function parseWMSCapabilities(
   xmlText: string,
-  options?: parseWMSCapabilitiesOptions
+  options?: ParseWMSCapabilitiesOptions
 ): WMSCapabilities {
-  const parsedXML = XMLLoader.parseTextSync(xmlText, options);
+  const parsedXML = XMLLoader.parseTextSync?.(xmlText, options);
   const xmlCapabilities: any =
     parsedXML.WMT_MS_Capabilities || parsedXML.WMS_Capabilities || parsedXML;
   const capabilities = extractCapabilities(xmlCapabilities);
@@ -227,8 +253,8 @@ function extractLayer(xmlLayer: any): WMSLayer {
     // All layers must have a title
     title: String(xmlLayer?.Title || ''),
     // Name is required only if renderable
-    name: String(xmlLayer?.Name),
-    abstract: String(xmlLayer?.Abstract),
+    name: xmlLayer?.Name && String(xmlLayer?.Name),
+    abstract: xmlLayer?.Name && String(xmlLayer?.Abstract),
     keywords: getXMLStringArray(xmlLayer.KeywordList?.Keyword)
   };
 
@@ -256,6 +282,13 @@ function extractLayer(xmlLayer: any): WMSLayer {
   const boundingBoxes = xmlLayer?.BoundingBox && extractWMSBoundingBoxes(xmlLayer?.BoundingBox);
   if (boundingBoxes && boundingBoxes.length > 0) {
     layer.boundingBoxes = boundingBoxes;
+  }
+
+  // Extract dimensions
+  const xmlDimensions = getXMLArray(xmlLayer?.Dimension);
+  const dimensions = xmlDimensions.map((xml) => extractDimension(xml));
+  if (dimensions.length) {
+    layer.dimensions = dimensions;
   }
 
   if (xmlLayer?.opaque) {
@@ -339,22 +372,54 @@ function extractWMSBoundingBox(xmlBoundingBox: any): WMSBoundingBox {
   return boundingBox;
 }
 
+/**
+ * Extracts optional WMS Dimension layer field
+ * @param xmlDimension
+ * @example <Dimension name="time" units="ISO8601" default="2018-01-01" nearestValue="0">2001-01-01/2018-01-01/P1Y</Dimension>
+ * @see https://mapserver.org/ogc/wms_dimension.html
+ */
+function extractDimension(xmlDimension: any): WMSDimension {
+  const {name, units, value: extent} = xmlDimension;
+
+  const dimension: WMSDimension = {name, units, extent};
+
+  if (xmlDimension.unitSymbol) {
+    dimension.unitSymbol = xmlDimension.unitSymbol;
+  }
+  if (xmlDimension.default) {
+    dimension.defaultValue = xmlDimension.default;
+  }
+  if (xmlDimension.multipleValues) {
+    dimension.multipleValues = getXMLBoolean(xmlDimension.multipleValues);
+  }
+  if (xmlDimension.nearestValue) {
+    dimension.nearestValue = getXMLBoolean(xmlDimension.nearestValue);
+  }
+  if (xmlDimension.current) {
+    dimension.current = getXMLBoolean(xmlDimension.current);
+  }
+
+  return dimension;
+}
+
 /** Traverse layers and inject missing props from parents */
 // eslint-disable-next-line complexity
 function addInheritedLayerProps(layer: WMSLayer, parent: WMSLayer | null): void {
-  if (parent && parent.geographicBoundingBox && !layer.geographicBoundingBox) {
+  if (parent?.geographicBoundingBox && !layer.geographicBoundingBox) {
     layer.geographicBoundingBox = [...parent.geographicBoundingBox];
   }
 
-  if (parent && parent.crs && !layer.crs) {
+  if (parent?.crs && !layer.crs) {
     layer.crs = [...parent.crs];
   }
 
-  if (parent && parent.boundingBoxes && !layer.boundingBoxes) {
+  if (parent?.boundingBoxes && !layer.boundingBoxes) {
     layer.boundingBoxes = [...parent.boundingBoxes];
   }
 
-  // TODO inherit other elements
+  if (parent?.dimensions && !layer.dimensions) {
+    layer.dimensions = [...parent.dimensions];
+  }
 
   for (const subLayer of layer.layers || []) {
     addInheritedLayerProps(subLayer, layer);

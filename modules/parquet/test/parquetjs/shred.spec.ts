@@ -2,7 +2,7 @@
 /* eslint-disable max-statements */
 import test from 'tape-promise/tape';
 import {ParquetSchema} from '@loaders.gl/parquet';
-import {ParquetBuffer, shredRecord, materializeRecords} from '@loaders.gl/parquet/parquetjs/schema/shred';
+import {ParquetRowGroup, shredRecord, materializeRows} from '@loaders.gl/parquet/parquetjs/schema/shred';
 
 test('ParquetShredder#should shred a single simple record', assert => {
   const schema = new ParquetSchema({
@@ -11,7 +11,7 @@ test('ParquetShredder#should shred a single simple record', assert => {
     price: { type: 'DOUBLE' },
   });
 
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
 
   {
     const rec = { name: 'apple', quantity: 10, price: 23.5 };
@@ -41,7 +41,7 @@ test('ParquetShredder#should shred a list of simple records', assert => {
   });
 
 
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
 
   {
     const rec = { name: 'apple', quantity: 10, price: 23.5 };
@@ -80,7 +80,7 @@ test('ParquetShredder#should shred a list of simple records with optional scalar
     price: { type: 'DOUBLE' },
   });
 
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
 
   const rec1 = { name: 'apple', quantity: 10, price: 23.5 };
   shredRecord(schema, rec1, buf);
@@ -116,7 +116,7 @@ test('ParquetShredder#should shred a list of simple records with repeated scalar
 
 
   const rec1 = { name: 'apple', price: 23.5, colours: ['red', 'green'] };
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
   
   shredRecord(schema, rec1, buf);
 
@@ -156,7 +156,7 @@ test('ParquetShredder#should shred a nested record without repetition modifiers'
     price: { type: 'DOUBLE' },
   });
 
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
 
   const rec1 = { name: 'apple', stock: { quantity: 10, warehouse: 'A' }, price: 23.5 };
   shredRecord(schema, rec1, buf);
@@ -194,7 +194,7 @@ test('ParquetShredder#should shred a nested record with optional fields', assert
     price: { type: 'DOUBLE' },
   });
 
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
 
   const rec1 = { name: 'apple', stock: { quantity: 10, warehouse: 'A' }, price: 23.5 };
   shredRecord(schema, rec1, buf);
@@ -229,7 +229,7 @@ test('ParquetShredder#should shred a nested record with nested optional fields',
     price: { type: 'DOUBLE' },
   });
 
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
 
   const rec1 = { name: 'apple', stock: { quantity: 10, warehouse: 'A' }, price: 23.5 };
   shredRecord(schema, rec1, buf);
@@ -269,7 +269,7 @@ test('ParquetShredder#should shred a nested record with repeated fields', assert
     price: { type: 'DOUBLE' },
   });
 
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
 
   const rec1 = { name: 'apple', stock: { quantity: 10, warehouse: 'A' }, price: 23.5 };
   shredRecord(schema, rec1, buf);
@@ -309,7 +309,7 @@ test('ParquetShredder#should shred a nested record with nested repeated fields',
     price: { type: 'DOUBLE' },
   });
 
-  const buf = new ParquetBuffer();
+  const buf = new ParquetRowGroup();
 
   const rec1 = { name: 'apple', stock: [{ quantity: 10, warehouse: 'A' }, { quantity: 20, warehouse: 'B' } ], price: 23.5 };
   shredRecord(schema, rec1, buf);
@@ -371,7 +371,7 @@ test('ParquetShredder#should materialize a nested record with scalar repeated fi
     count: 6
   };
 
-  const records = materializeRecords(schema, buffer);
+  const records = materializeRows(schema, buffer);
 
   assert.equal(records.length, 4);
 
@@ -450,7 +450,7 @@ test('ParquetShredder#should materialize a nested record with nested repeated fi
     count: 4
   };
 
-  const records = materializeRecords(schema, buffer);
+  const records = materializeRows(schema, buffer);
 
   assert.equal(records.length, 4);
 
@@ -511,7 +511,7 @@ test('ParquetShredder#should materialize a static nested record with blank optio
     count: 1
   };
 
-  const records = materializeRecords(schema, buffer);
+  const records = materializeRows(schema, buffer);
 
   assert.equal(records.length, 1);
 

@@ -7,6 +7,8 @@ node_modules/
 .cache
 public
 
+modules/3d-tiles/test/lib/classes/tile-3d-batch-table-hierarchy.spec.ts
+
 modules/bson/src/bson-writer.ts
 modules/bson/src/index.ts
 modules/bson/src/lib/encoders/encode-bson.ts
@@ -30,6 +32,8 @@ modules/images/test/image-loader.spec.ts
 modules/obj/src/lib/get-obj-schema.ts
 
 modules/mvt/src/lib/geojson-tiler/tile.ts
+
+modules/parquet/test
 
 modules/xml/test/sax-ts/testcases/attribute-name.spec.ts
 modules/xml/test/sax-ts/testcases/opentagstart.spec.ts

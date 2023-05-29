@@ -218,12 +218,13 @@ export default class I3SConverter {
         loadOptions: {
           _nodeWorkers: true,
           reuseWorkers: true,
-          basis: {format: 'rgba32'},
-          'basis-nodejs': {
+          basis: {
             format: 'rgba32',
-            workerUrl: './modules/textures/dist/basis-nodejs-worker.js'
+            // We need to load local fs workers because nodejs can't load workers from the Internet
+            workerUrl: './modules/textures/dist/basis-worker-node.js'
           },
-          'draco-nodejs': {workerUrl: './modules/draco/dist/draco-nodejs-worker.js'}
+          // We need to load local fs workers because nodejs can't load workers from the Internet
+          draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'}
         }
       };
       if (preloadOptions.headers) {
@@ -910,7 +911,7 @@ export default class I3SConverter {
    * @param slpkChildPath
    */
   private async writeTextureFile(
-    textureData: Promise<ArrayBuffer>,
+    textureData: Uint8Array | Promise<ArrayBuffer>,
     name: string,
     format: 'jpg' | 'png' | 'ktx2',
     childPath: string,

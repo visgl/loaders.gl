@@ -43,6 +43,21 @@ export const EXAMPLES = {
       layers: ['Lightning'],
       viewState: {...VIEW_STATE, zoom: 3}
     },
+    '3DEP Elevation Index': {
+      serviceType: 'wms',
+      service: 'https://index.nationalmap.gov/arcgis/services/3DEPElevationIndex/MapServer/WMSServer',
+      layers: ['23'], 
+      viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3},
+      opacity: 0.5
+    },
+    'NASA': {
+      serviceType: 'wms',
+      service: 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi',
+      layers: ['Land Cover'], 
+      viewState: {...VIEW_STATE, longitude: -100, latitude: 55, zoom: 3},
+      opacity: 0.5
+    },
+    
     /*
     'Canadian Weather': {
       serviceType: 'wms',

@@ -10,7 +10,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 /*
     utils.js
-    ========
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -267,7 +266,6 @@ const utils$2 = Object.freeze({
 });
 /*
     error.js
-    ========
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -342,7 +340,6 @@ const error$2 = Object.freeze({
 });
 /*
     defaultOptions.js
-    =================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -385,7 +382,6 @@ const defaultOptions$2 = Object.freeze({
 });
 /*
     isSupported.js
-    ==============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -396,7 +392,6 @@ function isSupported() {
 }
 /*
     isWebCamGIFSupported.js
-    =======================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -406,7 +401,6 @@ function isWebCamGIFSupported() {
 }
 /*
     isSupported.js
-    ==============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -420,7 +414,6 @@ function isSupported$1() {
 }
 /*
     isExistingVideoGIFSupported.js
-    ==============================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -448,7 +441,6 @@ function isExistingVideoGIFSupported(codecs) {
 }
 /*
     NeuQuant.js
-    ===========
   */
 /*
  * NeuQuant Neural-Net Quantization Algorithm
@@ -900,7 +892,6 @@ function NeuQuant() {
 }
 /*
     processFrameWorker.js
-    =====================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -981,7 +972,6 @@ function workerCode() {
 }
 /*
     gifWriter.js
-    ============
   */
 // (c) Dean McNamee <dean@gmail.com>, 2013.
 //
@@ -1303,7 +1293,6 @@ function gifWriter(buf, width, height, gopts) {
 }
 /*
     animatedGIF.js
-    ==============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -1612,7 +1601,6 @@ AnimatedGIF.prototype = {
 };
 /*
     getBase64GIF.js
-    ===============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -1630,7 +1618,6 @@ function getBase64GIF(animatedGifInstance, callback) {
 }
 /*
     existingImages.js
-    =================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -1727,7 +1714,6 @@ function existingImages() {
 }
 /*
     screenShot.js
-    =============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -1916,7 +1902,6 @@ const screenShot = {
 };
 /*
     videoStream.js
-    ==============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2166,7 +2151,6 @@ var videoStream = {
 };
 /*
     stopVideoStreaming.js
-    =====================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2177,7 +2161,6 @@ function stopVideoStreaming(options) {
 }
 /*
     createAndGetGIF.js
-    ==================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2230,7 +2213,6 @@ function createAndGetGIF(obj, callback) {
 }
 /*
     existingVideo.js
-    ================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2285,7 +2267,6 @@ function existingVideo() {
 }
 /*
     existingWebcam.js
-    =================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2322,7 +2303,6 @@ function existingWebcam() {
 }
 /*
     createGIF.js
-    ============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2371,7 +2351,6 @@ function createGIF(userOptions, callback) {
 }
 /*
     takeSnapShot.js
-    ===============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2393,7 +2372,6 @@ function takeSnapShot(userOptions, callback) {
 }
 /*
     API.js
-    ======
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.

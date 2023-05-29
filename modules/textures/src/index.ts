@@ -1,4 +1,3 @@
-import {isBrowser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 
 // Types
@@ -17,7 +16,7 @@ export {KTX2BasisWriter} from './ktx2-basis-writer';
 
 export const KTX2BasisWriterWorker = {
   name: 'Basis Universal Supercompressed GPU Texture',
-  id: isBrowser ? 'ktx2-basis-writer' : 'ktx2-basis-writer-nodejs',
+  id: 'ktx2-basis-writer',
   module: 'textures',
   version: VERSION,
   extensions: ['ktx2'],

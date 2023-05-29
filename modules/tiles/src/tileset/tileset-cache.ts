@@ -3,15 +3,12 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import type {Tileset3D} from './tileset-3d';
+import type {Tile3D} from './tile-3d';
 import {DoublyLinkedList} from '../utils/doubly-linked-list';
-
-function defined(x) {
-  return x !== undefined && x !== null;
-}
 
 /**
  * Stores tiles with content loaded.
- *
  * @private
  */
 export class TilesetCache {
@@ -27,22 +24,26 @@ export class TilesetCache {
     this._trimTiles = false;
   }
 
-  reset() {
+  reset(): void {
     // Move sentinel node to the tail so, at the start of the frame, all tiles
     // may be potentially replaced.  Tiles are moved to the right of the sentinel
     // when they are selected so they will not be replaced.
     this._list.splice(this._list.tail, this._sentinel);
   }
 
-  touch(tile) {
+  touch(tile: Tile3D): void {
     const node = tile._cacheNode;
-    if (defined(node)) {
+    if (node) {
       this._list.splice(this._sentinel, node);
     }
   }
 
-  add(tileset, tile, addCallback) {
-    if (!defined(tile._cacheNode)) {
+  add(
+    tileset: Tileset3D,
+    tile: Tile3D,
+    addCallback?: (tileset: Tileset3D, tile: Tile3D) => void
+  ): void {
+    if (!tile._cacheNode) {
       tile._cacheNode = this._list.add(tile);
 
       if (addCallback) {
@@ -51,20 +52,24 @@ export class TilesetCache {
     }
   }
 
-  unloadTile(tileset, tile, unloadCallback?) {
+  unloadTile(
+    tileset: Tileset3D,
+    tile: Tile3D,
+    unloadCallback?: (tileset: Tileset3D, tile: Tile3D) => void
+  ): void {
     const node = tile._cacheNode;
-    if (!defined(node)) {
+    if (!node) {
       return;
     }
 
     this._list.remove(node);
-    tile._cacheNode = undefined;
+    tile._cacheNode = null;
     if (unloadCallback) {
       unloadCallback(tileset, tile);
     }
   }
 
-  unloadTiles(tileset, unloadCallback) {
+  unloadTiles(tileset, unloadCallback): void {
     const trimTiles = this._trimTiles;
     this._trimTiles = false;
 
@@ -90,7 +95,7 @@ export class TilesetCache {
     }
   }
 
-  trim() {
+  trim(): void {
     this._trimTiles = true;
   }
 }

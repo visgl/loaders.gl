@@ -9,11 +9,11 @@
   "dependencies": {
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
-    "@probe.gl/bench": "^4.0.1",
-    "@probe.gl/react-bench": "^4.0.1"
+    "@probe.gl/bench": "^4.0.2",
+    "@probe.gl/react-bench": "^4.0.2"
   },
   "devDependencies": {
-    "@loaders.gl/core": "^3.2.0",
+    "@loaders.gl/core": "4.0.0-alpha.6",
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.4.0",
     "@babel/preset-react": "^7.0.0",

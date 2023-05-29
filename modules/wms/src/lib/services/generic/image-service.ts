@@ -20,15 +20,12 @@ export type ImageServiceProps = {
  * ImageSource allows template url strings to be used to ad hoc connect to arbitrary image data sources
  * Accepts a template url string and builds requests URLs
  */
-export class ImageService extends ImageSource {
+export class ImageService<PropsT extends ImageServiceProps> extends ImageSource<PropsT> {
   static type: 'template' = 'template';
   static testURL = (url: string): boolean => url.toLowerCase().includes('{');
 
-  props: ImageServiceProps;
-
-  constructor(props: ImageServiceProps) {
+  constructor(props: PropsT) {
     super(props);
-    this.props = props;
   }
 
   // IMAGE SOURCE API

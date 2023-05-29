@@ -1,5 +1,5 @@
 import type {AttributeStorageInfo, FeatureAttribute, NodeReference} from '@loaders.gl/i3s';
-import type {Node3D} from '@loaders.gl/3d-tiles';
+import type {Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
 
 import {join} from 'path';
 import process from 'process';
@@ -86,10 +86,11 @@ export default class Tiles3DConverter {
       loadOptions: {
         _nodeWorkers: true,
         reuseWorkers: true,
-        'i3s-content-nodejs': {
-          workerUrl: './modules/i3s/dist/i3s-content-nodejs-worker.js'
-        },
         i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
+        // TODO should no longer be needed with new workers
+        // 'i3s-content-nodejs': {
+        //   workerUrl: './modules/i3s/dist/i3s-content-nodejs-worker.js'
+        // }
       }
     });
 
@@ -108,7 +109,7 @@ export default class Tiles3DConverter {
       // do nothing
     }
 
-    const rootTile: Node3D = {
+    const rootTile: Tiles3DTileJSON = {
       boundingVolume: {
         box: i3sObbTo3dTilesObb(rootNode.header.obb, this.geoidHeightModel)
       },
@@ -137,7 +138,7 @@ export default class Tiles3DConverter {
    */
   private async convertChildNode(
     parentSourceNode: Tile3D,
-    parentNode: Node3D,
+    parentNode: Tiles3DTileJSON,
     level: number,
     childNodeInfo: NodeReference
   ): Promise<void> {
@@ -159,7 +160,7 @@ export default class Tiles3DConverter {
       const boundingVolume = {
         box: i3sObbTo3dTilesObb(sourceChild.header.obb, this.geoidHeightModel)
       };
-      const child: Node3D = {
+      const child: Tiles3DTileJSON = {
         boundingVolume,
         geometricError: convertScreenThresholdToGeometricError(sourceChild),
         children: []
@@ -197,7 +198,7 @@ export default class Tiles3DConverter {
    */
   private async _addChildren(
     parentSourceNode: Tile3D,
-    parentNode: Node3D,
+    parentNode: Tiles3DTileJSON,
     level: number
   ): Promise<void> {
     if (this.options.maxDepth && level > this.options.maxDepth) {

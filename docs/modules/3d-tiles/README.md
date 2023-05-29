@@ -1,6 +1,9 @@
 # Overview
 
-![logo](./images/3d-tiles-small.png)
+![ogc-logo](../../images/logos/ogc-logo-60.png)
+&nbsp;
+![3dtiles-logo](./images/3d-tiles-logo-60.png) 
+
 
 The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
 

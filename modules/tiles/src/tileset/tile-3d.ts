@@ -10,6 +10,7 @@ import {load} from '@loaders.gl/core';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
+import type {DoublyLinkedListNode} from '../utils/doubly-linked-list-node';
 import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
 import {FrameState} from './helpers/frame-state';
@@ -54,73 +55,78 @@ export class Tile3D {
   id: string;
   url: string;
   parent: Tile3D;
+  /* Specifies the type of refine that is used when traversing this tile for rendering. */
   refine: number;
   type: string;
   contentUrl: string;
-  lodMetricType: string;
-  lodMetricValue: number;
-  boundingVolume: any;
-  content: any;
-  contentState: any;
-  gpuMemoryUsageInBytes: number;
-  children: Tile3D[];
-  depth: number;
-  viewportIds: any[];
-  transform: Matrix4;
-  extensions: any;
-  implicitTiling?: any;
+  /** Different refinement algorithms used by I3S and 3D tiles */
+  lodMetricType: 'geometricError' | 'maxScreenThreshold' = 'geometricError';
+  /** The error, in meters, introduced if this tile is rendered and its children are not. */
+  lodMetricValue: number = 0;
 
-  // Container to store application specific data
-  userData: {[key: string]: any};
+  /** @todo math.gl is not exporting BoundingVolume base type? */
+  boundingVolume: any = null;
+
+  /**
+   * The tile's content.  This represents the actual tile's payload,
+   * not the content's metadata in the tileset JSON file.
+   */
+  content: any = null;
+  contentState: number = TILE_CONTENT_STATE.UNLOADED;
+  gpuMemoryUsageInBytes: number = 0;
+
+  /** The tile's children - an array of Tile3D objects. */
+  children: Tile3D[] = [];
+  depth: number = 0;
+  viewportIds: any[] = [];
+  transform = new Matrix4();
+  extensions: any = null;
+  /** TODO Cesium 3d tiles specific */
+  implicitTiling?: any = null;
+
+  /** Container to store application specific data */
+  userData: Record<string, any> = {};
+
   computedTransform: any;
-  hasEmptyContent: boolean;
-  hasTilesetContent: boolean;
+  hasEmptyContent: boolean = false;
+  hasTilesetContent: boolean = false;
 
-  traverser: object;
+  traverser = new TilesetTraverser({});
 
-  // @ts-ignore
-  private _cacheNode: any;
-  private _frameNumber: any;
-  // TODO i3s specific, needs to remove
-  // @ts-ignore
-  private _lodJudge: any;
+  /** Used by TilesetCache */
+  _cacheNode: DoublyLinkedListNode | null = null;
+
+  private _frameNumber: any = null;
+
   // TODO Cesium 3d tiles specific
-  private _expireDate: any;
-  private _expiredContent: any;
-  // @ts-ignore
-  private _shouldRefine: boolean;
+  private _expireDate: any = null;
+  private _expiredContent: any = null;
 
   private _boundingBox?: CartographicBounds;
 
-  // Members this are updated every frame for tree traversal and rendering optimizations:
-  public _distanceToCamera: number;
-  // @ts-ignore
-  private _centerZDepth: number;
-  private _screenSpaceError: number;
+  /** updated every frame for tree traversal and rendering optimizations: */
+  public _distanceToCamera: number = 0;
+  _screenSpaceError: number = 0;
   private _visibilityPlaneMask: any;
-  private _visible?: boolean;
-  private _inRequestVolume: boolean;
-
-  // @ts-ignore
-  private _stackLength: number;
-  // @ts-ignore
-  private _selectionDepth: number;
-
-  // @ts-ignore
-  private _touchedFrame: number;
-  // @ts-ignore
-  private _visitedFrame: number;
-  private _selectedFrame: number;
-  // @ts-ignore
-  private _requestedFrame: number;
-
-  // @ts-ignore
-  private _priority: number;
+  private _visible: boolean | undefined = undefined;
 
   private _contentBoundingVolume: any;
   private _viewerRequestVolume: any;
 
-  _initialTransform: Matrix4;
+  _initialTransform: Matrix4 = new Matrix4();
+
+  // Used by traverser, cannot be marked private
+  _priority: number = 0;
+  _selectedFrame: number = 0;
+  _requestedFrame: number = 0;
+  _selectionDepth: number = 0;
+  _touchedFrame: number = 0;
+  _centerZDepth: number = 0;
+  _shouldRefine: boolean = false;
+  _stackLength: number = 0;
+  _visitedFrame: number = 0;
+  _inRequestVolume: boolean = false;
+  _lodJudge: any = null; // TODO i3s specific, needs to remove
 
   /**
    * @constructs
@@ -154,68 +160,11 @@ export class Tile3D {
     this.type = header.type;
     this.contentUrl = header.contentUrl;
 
-    // The error, in meters, introduced if this tile is rendered and its children are not.
-    this.lodMetricType = 'geometricError';
-    this.lodMetricValue = 0;
-
-    // Specifies the type of refine that is used when traversing this tile for rendering.
-    this.boundingVolume = null;
-
-    // The tile's content.  This represents the actual tile's payload,
-    // not the content's metadata in the tileset JSON file.
-    this.content = null;
-    this.contentState = TILE_CONTENT_STATE.UNLOADED;
-    this.gpuMemoryUsageInBytes = 0;
-
-    // The tile's children - an array of Tile3D objects.
-    this.children = [];
-
-    this.hasEmptyContent = false;
-    this.hasTilesetContent = false;
-
-    this.depth = 0;
-    this.viewportIds = [];
-
-    // Container to store application specific data
-    this.userData = {};
-    this.extensions = null;
-
-    // PRIVATE MEMBERS
-    this._priority = 0;
-    this._touchedFrame = 0;
-    this._visitedFrame = 0;
-    this._selectedFrame = 0;
-    this._requestedFrame = 0;
-    this._screenSpaceError = 0;
-
-    this._cacheNode = null;
-    this._frameNumber = null;
-    this._cacheNode = null;
-
-    this.traverser = new TilesetTraverser({});
-    this._shouldRefine = false;
-    this._distanceToCamera = 0;
-    this._centerZDepth = 0;
-    this._visible = undefined;
-    this._inRequestVolume = false;
-    this._stackLength = 0;
-    this._selectionDepth = 0;
-    this._initialTransform = new Matrix4();
-    this.transform = new Matrix4();
-
     this._initializeLodMetric(header);
     this._initializeTransforms(header);
     this._initializeBoundingVolumes(header);
     this._initializeContent(header);
     this._initializeRenderingState(header);
-
-    // TODO i3s specific, needs to remove
-    this._lodJudge = null;
-
-    // TODO Cesium 3d tiles specific
-    this._expireDate = null;
-    this._expiredContent = null;
-    this.implicitTiling = null;
 
     Object.seal(this);
   }
@@ -341,6 +290,13 @@ export class Tile3D {
     this._selectedFrame = 0;
   }
 
+  /**
+   * Memory usage of tile on GPU
+   */
+  _getGpuMemoryUsageInBytes(): number {
+    return this.content.gpuMemoryUsageInBytes || this.content.byteLength || 0;
+  }
+
   /*
    * If skipLevelOfDetail is off try to load child tiles as soon as possible so that their parent can refine sooner.
    * Tiles are prioritized by screen space error.
@@ -424,6 +380,7 @@ export class Tile3D {
       const options = {
         ...this.tileset.loadOptions,
         [loader.id]: {
+          // @ts-expect-error
           ...this.tileset.loadOptions[loader.id],
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)
@@ -734,6 +691,8 @@ export class Tile3D {
     // The content may be tileset json
     if (this._isTileset()) {
       this.hasTilesetContent = true;
+    } else {
+      this.gpuMemoryUsageInBytes = this._getGpuMemoryUsageInBytes();
     }
   }
 

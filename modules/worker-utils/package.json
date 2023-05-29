@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "3.4.0-alpha.3",
+  "version": "4.0.0-alpha.7",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "publishConfig": {
@@ -41,10 +41,11 @@
     "./dist/esm/lib/process-utils/child-process-proxy.js": false
   },
   "scripts": {
-    "pre-build": "npm run build-workers",
+    "pre-build": "npm run build-worker && npm run build-worker-node",
     "pre-build-disabled": "npm run build-bundle && npm run build-workers",
     "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js",
-    "build-workers": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1"

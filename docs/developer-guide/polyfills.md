@@ -19,7 +19,7 @@ loaders.gl only installs polyfills if the corresponding global symbol is `undefi
 
 ## Provided Polyfills
 
-See [API Reference](/docs/modules/polyfills/api-reference/README).
+See [API Reference](/docs/modules/polyfills/api-reference).
 
 ## Remarks
 

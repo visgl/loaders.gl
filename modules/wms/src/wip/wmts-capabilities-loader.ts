@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {XMLLoaderOptions} from '@loaders.gl/xml';
 // import type {WMTSCapabilities} from './lib/wmts/parse-wmts-capabilities';
 import {parseWMTSCapabilities} from './lib/wmts/parse-wmts-capabilities';
 
@@ -10,7 +11,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 // export type {WMTSCapabilities};
 
-export type WMTSLoaderOptions = LoaderOptions & {
+export type WMTSLoaderOptions = XMLLoaderOptions & {
   wmts?: {};
 };
 

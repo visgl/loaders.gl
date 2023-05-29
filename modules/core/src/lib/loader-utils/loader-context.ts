@@ -1,5 +1,7 @@
 import type {Loader, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {getFetchFunction} from './get-fetch-function';
+import {extractQueryString, stripQueryString} from '../utils/url-utils';
+import {path} from '@loaders.gl/loader-utils';
 
 /**
  * "sub" loaders invoked by other loaders get a "context" injected on `this`
@@ -12,26 +14,35 @@ import {getFetchFunction} from './get-fetch-function';
  */
 export function getLoaderContext(
   context: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>,
-  options?: LoaderOptions,
-  previousContext: LoaderContext | null = null
+  options: LoaderOptions,
+  parentContext: LoaderContext | null
 ): LoaderContext {
   // For recursive calls, we already have a context
   // TODO - add any additional loaders to context?
-  if (previousContext) {
-    return previousContext;
+  if (parentContext) {
+    return parentContext;
   }
 
-  const resolvedContext: LoaderContext = {
+  const newContext: LoaderContext = {
     fetch: getFetchFunction(options, context),
     ...context
   };
 
-  // Recursive loading does not use single loader
-  if (!Array.isArray(resolvedContext.loaders)) {
-    resolvedContext.loaders = null;
+  // Parse URLs so that subloaders can easily generate correct strings
+  if (newContext.url) {
+    const baseUrl = stripQueryString(newContext.url);
+    newContext.baseUrl = baseUrl;
+    newContext.queryString = extractQueryString(newContext.url);
+    newContext.filename = path.filename(baseUrl);
+    newContext.baseUrl = path.dirname(baseUrl);
   }
 
-  return resolvedContext;
+  // Recursive loading does not use single loader
+  if (!Array.isArray(newContext.loaders)) {
+    newContext.loaders = null;
+  }
+
+  return newContext;
 }
 
 // eslint-disable-next-line complexity

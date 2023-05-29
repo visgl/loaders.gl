@@ -1,14 +1,20 @@
 # BSONWriter
 
-Write for BSON files.
+![bson-logo](../../../images/logos/bson-logo.png)
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
+</p>
+
+Writer for BSON files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
+| File Format    | [BSON](/docs/modules/bson/formats/bson)                           |
+| Data Format    | [Unstructured/JSON](/docs/specifications/category-json) |
 | File Extension | `.bson`                                                 |
 | Media Type     | `application/bson`                                      |
 | File Type      | Binary                                                  |
-| File Format    | [BSON](https://bsonspec.org/)                           |
-| Data Format    | [Unstructured/HSON](/docs/specifications/category-json) |
 | Supported APIs | `encode`, `encodeSync`                            |
 
 ## Usage

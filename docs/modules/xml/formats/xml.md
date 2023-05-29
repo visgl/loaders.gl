@@ -1,6 +1,9 @@
 # XML
 
-XML (eXtensible Markup Language) ([wikipedia](https://en.wikipedia.org/wiki/XML)) is a markup language and file format for storing, transmitting, and reconstructing arbitrary data.
+- *[`@loaders.gl/xml`](/docs/modules/xml)*
+- *[Wikipedia article](https://en.wikipedia.org/wiki/XML)*
+
+XML (eXtensible Markup Language) is a markup language and file format for storing, transmitting, and reconstructing arbitrary data.
 
 Just like JSON, XML is not quite a format in itself, in that it doesn't define a schema. Rather other formats are defined as XML-based formats.
 

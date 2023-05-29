@@ -1,12 +1,20 @@
-import type {Writer} from '@loaders.gl/loader-utils';
+// loaders.gl, MIT license
+
+import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {GLB} from './lib/types/glb-types';
+import type {GLBEncodeOptions} from './lib/encoders/encode-glb';
+import {encodeGLBSync} from './lib/encoders/encode-glb';
 import {VERSION} from './lib/utils/version';
-import encodeGLBSync from './lib/encoders/encode-glb';
+
+export type GLBWriterOptions = WriterOptions & {
+  glb?: GLBEncodeOptions;
+};
 
 /**
  * GLB exporter
  * GLB is the binary container format for GLTF
  */
-export const GLBWriter = {
+export const GLBWriter: Writer<GLB, never, GLBWriterOptions> = {
   name: 'GLB',
   id: 'glb',
   module: 'gltf',

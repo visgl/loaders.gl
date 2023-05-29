@@ -8,14 +8,14 @@ import type {
   GLTFAccessor,
   GLTFMeshPrimitive,
   GLTF_KHR_draco_mesh_compression
-} from '../types/gltf-types';
+} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {DracoLoaderOptions, DracoMesh} from '@loaders.gl/draco';
 import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
-import {default as Scenegraph} from '../api/gltf-scenegraph';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
 const KHR_DRACO_MESH_COMPRESSION = 'KHR_draco_mesh_compression';
@@ -28,7 +28,7 @@ export function preprocess(
   options: GLTFLoaderOptions,
   context: LoaderContext
 ): void {
-  const scenegraph = new Scenegraph(gltfData);
+  const scenegraph = new GLTFScenegraph(gltfData);
   for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
     if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
       // TODO - Remove fallback accessors to make sure we don't load unnecessary buffers
@@ -45,7 +45,7 @@ export async function decode(
     return;
   }
 
-  const scenegraph = new Scenegraph(gltfData);
+  const scenegraph = new GLTFScenegraph(gltfData);
   const promises: Promise<void>[] = [];
   for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
     if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
@@ -61,7 +61,7 @@ export async function decode(
 }
 
 export function encode(gltfData, options: GLTFLoaderOptions = {}): void {
-  const scenegraph = new Scenegraph(gltfData);
+  const scenegraph = new GLTFScenegraph(gltfData);
 
   for (const mesh of scenegraph.json.meshes || []) {
     // eslint-disable-next-line camelcase
@@ -81,7 +81,7 @@ export function encode(gltfData, options: GLTFLoaderOptions = {}): void {
 // TODO - Implement fallback behavior per KHR_DRACO_MESH_COMPRESSION spec
 
 async function decompressPrimitive(
-  scenegraph: Scenegraph,
+  scenegraph: GLTFScenegraph,
   primitive: GLTFMeshPrimitive,
   options: GLTFLoaderOptions,
   context: LoaderContext
@@ -128,7 +128,7 @@ async function decompressPrimitive(
   }
 
   // Extension has been processed, delete it
-  // delete primitive.extensions[KHR_DRACO_MESH_COMPRESSION];
+  scenegraph.removeObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
 
   checkPrimitive(primitive);
 }

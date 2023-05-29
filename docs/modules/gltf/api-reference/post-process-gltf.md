@@ -1,30 +1,23 @@
 # postProcessGLTF
 
-The `postProcessGLTF` function transforms parsed GLTF JSON to make it easier to use.
+The `postProcessGLTF` function transforms standards-compliant glTF JSON 
+into an inter-linked JavaScript data structure that it significantly easier to work with. 
 
-- It adds loaded buffers and images to the glTF JSON objects
-- It creates typed arrays for buffer views
+For details see below.
 
 ## Usage
 
-Postprocessing is done by default by the `GLTFLoader`:
-
 ```js
-import {GLTFLoader} from '@loaders.gl/gltf';
-const processedGLTF = await parse(..., GLTFLoader,);
-```
-
-To turn post processing off, and then optionally post process via `postProcessGLTF` function:
-
-```js
+import {load} from '@loaders.gl.core';
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
-const gltf = await parse(..., GLTFLoader, {gltf: {postProcess: false}});
-const processedGLTF = postProcessGLTF(gltf);
+
+const gltfWithBuffers = await load(url, GLTFLoader);
+const processedGLTF = postProcessGLTF(gltfWithBuffers);
 ```
 
 After post-processing, the gltf scenegraphs are now easier to iterate over as indices have been resolved to object references:
 
-```js
+```
 const scenegraph = processedGLTF.scenegraphs[0];
 for (const node of scenegraph.nodes) {
   // no need to resolve indices
@@ -37,18 +30,42 @@ for (const node of scenegraph.nodes) {
 
 ## Functions
 
-### postProcessGLTF(gltf : Object, options? : Object) : Object
+### `postProcessGLTF(gltf : GLTFWithBuffers, options?) : GLTFPostprocessed`
 
 - `gltf` is expected to have `json` and `buffers` fields per the GLTF Data Format Category.
 - `options.uri` - Set base URI (for image loading)
 
 The GLTF post processor copies objects in the input gltf json field as necessary to avoid modifying the input JSON, but does not do a deep copy on sub-objects that do not need to be modified.
 
-## General Post Processing
+## Post Processing Summary
+
+`postProcessGLTF`:
+
+- Returns a strongly typed "modified version" of glTF: `GLTFPostprocessed`
+- The `GLTFPostprocessed` type has less optional fields. Many optional `GLTF` fields will be required and populated with empty arrays etc as appropriate.
+- "Resolves" references to GLTF objects. glTF objects reference other object with integer indexes. Such indexes will be replaced with object references, simplifying iteration over the scenegraph.
+- Generates required `id` fields for all objects. 
+
+## Post Processing of glTF Extensions
+
+Mhile many glTF extensions can only be handled in the final renderer, some extensions are "structural" and can be processed during the loading / post processing stage. 
+
+Such structural extensions may represent alternate, optional, more efficient ways to store data etc. 
+Examples are mesh compressions such as Draco, or alternate image formats for textures.
+
+By handling these extensions during loading, less work needs to be done by the upstream renderer.
+
+| Extension                                               | Preprocessed | Description                                |
+| ------------------------------------------------------- | ------------ | ------------------------------------------ |
+| [KHR_draco_mesh_compression][KHR_draco_mesh_compression] | Y            | Decompresses draco-compressed geometries   |
+| [EXT_meshopt_compression][EXT_meshopt_compression])      | Y            | Decompresses meshopt-compressed geometries |
+
+
+## Detailed Post Processing Notes
 
 ### Replace indices with references
 
-The first thing that `postProcessGLTF` does is replace glTF indices with object references to simplify iteration over the scenegraph.
+`postProcessGLTF` replaces glTF indices with object references to simplify iteration over the scenegraph.
 
 Background: The GLTF file format describes a tree structure, however it links nodes through numeric indices rather than direct references. (As an example the `nodes` field in the top-level glTF `scenegraph` array is an array of indices into the top-level `nodes` array. Each node has a `mesh` attribute that is an index into to the `meshes` array, and so on).
 

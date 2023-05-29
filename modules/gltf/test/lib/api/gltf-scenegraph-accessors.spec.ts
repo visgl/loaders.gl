@@ -3,7 +3,6 @@ import test from 'tape-promise/tape';
 
 import {GLTFScenegraph} from '@loaders.gl/gltf';
 import {GLTFLoader} from '@loaders.gl/gltf';
-import {DracoLoader} from '@loaders.gl/draco';
 import {load} from '@loaders.gl/core';
 
 // Extracted from Cesium 3D Tiles
@@ -19,19 +18,27 @@ test('GLTFScenegraph#ctor', (t) => {
 });
 
 test('GLTFScenegraph#should detect meshopt content', async (t) => {
-  const gltf = await load(GLB_MESHOPT_GEOMETRY_URL, [GLTFLoader], {
-    gltf: {decompressMeshes: true, postProcess: false}
+  const gltf = await load(GLB_MESHOPT_GEOMETRY_URL, GLTFLoader, {
+    gltf: {decompressMeshes: true}
   });
   const gltfScenegraph = new GLTFScenegraph(gltf);
   t.ok(gltfScenegraph);
-  t.deepEquals(gltfScenegraph.getRemovedExtensions(), ['EXT_meshopt_compression']);
-  t.deepEquals(gltfScenegraph.getUsedExtensions(), ['KHR_mesh_quantization']);
+  t.deepEquals(
+    gltfScenegraph.getRemovedExtensions(),
+    ['EXT_meshopt_compression'],
+    'removedExtions === meshopt'
+  );
+  t.deepEquals(
+    gltfScenegraph.getUsedExtensions(),
+    ['KHR_mesh_quantization'],
+    'usedExtensions no longer contain meshopt'
+  );
   t.end();
 });
 
 test('GLTFScenegraph#should detect meshopt and ktx2 content', async (t) => {
-  const gltf = await load(GLB_KTX2_GEOMETRY_URL, [GLTFLoader], {
-    gltf: {decompressMeshes: false, postProcess: false}
+  const gltf = await load(GLB_KTX2_GEOMETRY_URL, GLTFLoader, {
+    gltf: {decompressMeshes: false}
   });
   const gltfScenegraph = new GLTFScenegraph(gltf);
   t.ok(gltfScenegraph);
@@ -44,8 +51,8 @@ test('GLTFScenegraph#should detect meshopt and ktx2 content', async (t) => {
 });
 
 test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
-  const gltf = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader], {
-    gltf: {decompressMeshes: true, postProcess: false}
+  const gltf = await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader, {
+    gltf: {decompressMeshes: true}
   });
 
   const gltfScenegraph = new GLTFScenegraph(gltf);

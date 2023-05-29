@@ -2,9 +2,9 @@
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/1.0/Khronos/KHR_binary_glTF
 /* eslint-disable camelcase */
 
-import type {GLTF, GLTF_KHR_binary_glTF} from '../types/gltf-types';
+import type {GLTF, GLTF_KHR_binary_glTF} from '../types/gltf-json-schema';
 
-import GLTFScenegraph from '../api/gltf-scenegraph';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
 
 const KHR_BINARY_GLTF = 'KHR_binary_glTF';
 

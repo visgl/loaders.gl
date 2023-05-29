@@ -1,9 +1,7 @@
 /* eslint-disable camelcase */
-import type {GLTF} from '../../types/gltf-types';
-
+import type {GLTF} from '../../types/gltf-json-schema';
 import GLTFScenegraph from '../../api/gltf-scenegraph';
 import {getImageData} from '@loaders.gl/images';
-
 import {
   ClassProperty,
   EXT_feature_metadata_class_object,
