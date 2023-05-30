@@ -1,0 +1,169 @@
+{
+    "asset": {
+        "version": "1.0",
+        "extras": {
+            "vricon": {
+                "generator": "Vricon E 3daas (68fe025a3d78acece2ddb0ee855cbe41cf651554)",
+                "createDate": "2021-11-19T12:05:08.383354Z"
+            }
+        }
+    },
+    "geometricError": 32768.0,
+    "root": {
+        "boundingVolume": {
+            "region": [
+                -1.4929818610323376,
+                0.6813877149811674,
+                -1.4926136865962519,
+                0.6816748047572744,
+                -316.7043795334175,
+                738.4006615011022
+            ]
+        },
+        "geometricError": 32768.0,
+        "refine": "REPLACE",
+        "content": {
+            "uri": "../../0/0/0.glb"
+        },
+        "extras": {
+            "key": [
+                0,
+                0,
+                0
+            ],
+            "vricon": {
+                "bbox": [
+                    4322327.47678,
+                    626219.023438,
+                    4324124.429904,
+                    628015.976562,
+                    -738.400703,
+                    316.704338
+                ]
+            }
+        }
+    },
+    "extensionsRequired": [
+        "3DTILES_content_gltf"
+    ],
+    "extensionsUsed": [
+        "3DTILES_content_gltf",
+        "3DTILES_metadata",
+        "VRICON_class",
+        "VRICON_grid"
+    ],
+    "extensions": {
+        "VRICON_grid": {
+            "type": "quad",
+            "center": [
+                3983948.453342,
+                500000.0
+            ],
+            "size": [
+                2088960.0,
+                2088960.0
+            ],
+            "pcs": "ITRF2008[2005]:UTM16N,ELLIPSOID"
+        },
+        "VRICON_class": {
+            "texture": [
+                {
+                    "name": "r3dm::uncertainty_ce90sum",
+                    "class": 53
+                },
+                {
+                    "name": "r3dm::uncertainty_le90sum",
+                    "class": 54
+                },
+                {
+                    "name": "texture",
+                    "class": 1
+                }
+            ]
+        },
+        "3DTILES_metadata": {
+            "schema": {
+                "classes": {
+                    "tileset": {
+                        "properties": {
+                            "content_type": {
+                                "type": "STRING"
+                            },
+                            "created": {
+                                "type": "STRING"
+                            },
+                            "distribution": {
+                                "type": "STRING"
+                            },
+                            "distribution_statement": {
+                                "type": "STRING"
+                            },
+                            "geometry_model": {
+                                "type": "STRING"
+                            },
+                            "id": {
+                                "type": "STRING"
+                            },
+                            "licenses": {
+                                "type": "ARRAY",
+                                "componentType": "INT32"
+                            },
+                            "provider": {
+                                "type": "STRING"
+                            },
+                            "reference_epoch": {
+                                "type": "FLOAT32"
+                            },
+                            "reference_system": {
+                                "type": "STRING"
+                            },
+                            "runtime_enabled": {
+                                "type": "BOOLEAN"
+                            },
+                            "schema": {
+                                "type": "STRING"
+                            },
+                            "texture_features": {
+                                "type": "ARRAY",
+                                "componentType": "STRING"
+                            },
+                            "wff_version": {
+                                "type": "STRING"
+                            }
+                        }
+                    }
+                }
+            },
+            "tileset": {
+                "class": "tileset",
+                "properties": {
+                    "content_type": "MESH",
+                    "created": "2021-11-19T12:04:11.385594Z",
+                    "distribution": "A",
+                    "distribution_statement": "DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.",
+                    "geometry_model": "SURFACE",
+                    "id": "98022de4-3d42-4364-93c6-5ca4e5a9eeb6",
+                    "licenses": [],
+                    "provider": "Maxar",
+                    "reference_epoch": 2005.0,
+                    "reference_system": "WGS84_G1762",
+                    "runtime_enabled": false,
+                    "schema": "wff/12",
+                    "texture_features": [
+                        "r3dm::uncertainty_ce90sum",
+                        "r3dm::uncertainty_le90sum"
+                    ],
+                    "wff_version": "1.2"
+                }
+            },
+            "extras": {
+                "draftVersion": "1.0.0"
+            }
+        },
+        "3DTILES_content_gltf": {
+            "extras": {
+                "draftVersion": "0.0.0"
+            }
+        }
+    }
+}

@@ -50,12 +50,13 @@ export class GLTFScenegraph {
   byteLength: number;
 
   // TODO - why is this not GLTFWithBuffers - what happens to images?
-  constructor(gltf?: {json: GLTF; buffers?: any[]}) {
+  constructor(gltf?: {json: GLTF; buffers?: any[]; images?: any[]}) {
     // Declare locally so
 
     this.gltf = {
       json: gltf?.json || makeDefaultGLTFJson(),
-      buffers: gltf?.buffers || []
+      buffers: gltf?.buffers || [],
+      images: gltf?.images || []
     };
     this.sourceBuffers = [];
     this.byteLength = 0;
