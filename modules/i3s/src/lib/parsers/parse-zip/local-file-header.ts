@@ -1,3 +1,5 @@
+import { FileProvider } from "./file-provider";
+
 /**
  * zip local file header info
  * according to https://en.wikipedia.org/wiki/ZIP_(file_format)
@@ -29,7 +31,7 @@ export type ZipLocalFileHeader = {
  */
 export const parseZipLocalFileHeader = (
   headerOffset: number,
-  buffer: DataView
+  buffer: FileProvider
 ): ZipLocalFileHeader => {
   const offsets = {
     COMPRESSED_SIZE_OFFSET: 18,
@@ -38,14 +40,14 @@ export const parseZipLocalFileHeader = (
     FILE_NAME_OFFSET: 30
   };
 
-  const fileNameLength = buffer.getUint16(headerOffset + offsets.FILE_NAME_LENGTH_OFFSET, true);
+  const fileNameLength = buffer.getUint16(headerOffset + offsets.FILE_NAME_LENGTH_OFFSET);
 
-  const extraFieldLength = buffer.getUint16(headerOffset + offsets.EXTRA_FIELD_LENGTH_OFFSET, true);
+  const extraFieldLength = buffer.getUint16(headerOffset + offsets.EXTRA_FIELD_LENGTH_OFFSET);
 
   const fileDataOffset =
     headerOffset + offsets.FILE_NAME_OFFSET + fileNameLength + extraFieldLength;
 
-  const compressedSize = buffer.getUint32(headerOffset + offsets.COMPRESSED_SIZE_OFFSET, true);
+  const compressedSize = buffer.getUint32(headerOffset + offsets.COMPRESSED_SIZE_OFFSET);
 
   return {
     fileNameLength,

@@ -2,6 +2,7 @@ import {processOnWorker} from '@loaders.gl/worker-utils';
 import md5 from 'md5';
 import {CompressionWorker} from '@loaders.gl/compression';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
+import { BufferFileProvider } from '../parse-zip/buffer-file-provider';
 
 /** Element of hash array */
 type HashElement = {
@@ -159,7 +160,7 @@ export class SLPKArchive {
 
     const localFileHeader = parseZipLocalFileHeader(
       this.slpkArchive.byteOffset + fileInfo?.offset,
-      this.slpkArchive
+      new BufferFileProvider(this.slpkArchive)
     );
 
     const compressedFile = this.slpkArchive.buffer.slice(

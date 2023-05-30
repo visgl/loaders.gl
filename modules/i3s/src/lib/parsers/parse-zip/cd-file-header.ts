@@ -1,3 +1,5 @@
+import { FileProvider } from "./file-provider";
+
 /**
  * zip central directory file header info
  * according to https://en.wikipedia.org/wiki/ZIP_(file_format)
@@ -35,7 +37,7 @@ export type ZipCDFileHeader = {
  * @param buffer - buffer containing whole array
  * @returns Info from the header
  */
-export const parseZipCDFileHeader = (headerOffset: number, buffer: DataView): ZipCDFileHeader => {
+export const parseZipCDFileHeader = (headerOffset: number, buffer: FileProvider): ZipCDFileHeader => {
   const offsets = {
     CD_COMPRESSED_SIZE_OFFSET: 20,
     CD_UNCOMPRESSED_SIZE_OFFSET: 24,
@@ -45,16 +47,15 @@ export const parseZipCDFileHeader = (headerOffset: number, buffer: DataView): Zi
     CD_FILE_NAME_OFFSET: 46
   };
 
-  const compressedSize = buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET, true);
+  const compressedSize = buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET);
 
   const uncompressedSize = buffer.getUint32(
-    headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET,
-    true
+    headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET
   );
 
-  const fileNameLength = buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET, true);
+  const fileNameLength = buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET);
 
-  const fileName = buffer.buffer.slice(
+  const fileName = buffer.slice(
     headerOffset + offsets.CD_FILE_NAME_OFFSET,
     headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength
   );
@@ -62,8 +63,7 @@ export const parseZipCDFileHeader = (headerOffset: number, buffer: DataView): Zi
   const extraOffset = headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength;
 
   const oldFormatOffset = buffer.getUint32(
-    headerOffset + offsets.CD_LOCAL_HEADER_OFFSET_OFFSET,
-    true
+    headerOffset + offsets.CD_LOCAL_HEADER_OFFSET_OFFSET
   );
 
   let fileDataOffset = oldFormatOffset;
@@ -78,7 +78,7 @@ export const parseZipCDFileHeader = (headerOffset: number, buffer: DataView): Zi
     }
 
     // getUint32 needs to be replaced with getBigUint64 for archieves bigger than 2gb
-    fileDataOffset = buffer.getUint32(extraOffset + offsetInZip64Data, true); // setting it to the one from zip64
+    fileDataOffset = buffer.getUint32(extraOffset + offsetInZip64Data); // setting it to the one from zip64
   }
   const localHeaderOffset = fileDataOffset;
 
