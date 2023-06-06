@@ -115,7 +115,7 @@ export class SLPKArchive {
       if (decompressedFile) {
         return Buffer.from(decompressedFile);
       }
-      const fileWithoutCompression = this.getFileBytes(path);
+      const fileWithoutCompression = await this.getFileBytes(path);
       if (fileWithoutCompression) {
         return Buffer.from(fileWithoutCompression);
       }
@@ -130,7 +130,7 @@ export class SLPKArchive {
    * @returns buffer with the file data
    */
   private async getDataByPath(path: string): Promise<ArrayBuffer | undefined> {
-    const data = this.getFileBytes(path);
+    const data = await this.getFileBytes(path);
     if (!data) {
       return undefined;
     }
@@ -151,17 +151,20 @@ export class SLPKArchive {
    * @param path - path inside the archive
    * @returns buffer with the raw file data
    */
-  private getFileBytes(path: string): ArrayBuffer | undefined {
+  private async getFileBytes(path: string): Promise<ArrayBuffer | undefined> {
     const nameHash = Buffer.from(md5(path), 'hex');
     const fileInfo = this.hashArray.find((val) => Buffer.compare(val.hash, nameHash) === 0);
     if (!fileInfo) {
       return undefined;
     }
 
-    const localFileHeader = parseZipLocalFileHeader(
+    const localFileHeader = await parseZipLocalFileHeader(
       this.slpkArchive.byteOffset + fileInfo?.offset,
       new BufferFileProvider(this.slpkArchive)
     );
+    if (!localFileHeader) {
+      return undefined;
+    }
 
     const compressedFile = this.slpkArchive.buffer.slice(
       localFileHeader.fileDataOffset,

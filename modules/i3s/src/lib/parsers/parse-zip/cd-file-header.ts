@@ -20,7 +20,7 @@ export type ZipCDFileHeader = {
   /**
    * File name
    */
-  fileName: ArrayBuffer;
+  fileName: string;
   /**
    * Extra field offset
    */
@@ -37,7 +37,7 @@ export type ZipCDFileHeader = {
  * @param buffer - buffer containing whole array
  * @returns Info from the header
  */
-export const parseZipCDFileHeader = (headerOffset: number, buffer: FileProvider): ZipCDFileHeader => {
+export const parseZipCDFileHeader = async (headerOffset: number, buffer: FileProvider): Promise<ZipCDFileHeader> => {
   const offsets = {
     CD_COMPRESSED_SIZE_OFFSET: 20,
     CD_UNCOMPRESSED_SIZE_OFFSET: 24,
@@ -47,22 +47,22 @@ export const parseZipCDFileHeader = (headerOffset: number, buffer: FileProvider)
     CD_FILE_NAME_OFFSET: 46
   };
 
-  const compressedSize = buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET);
+  const compressedSize = await buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET);
 
-  const uncompressedSize = buffer.getUint32(
+  const uncompressedSize = await buffer.getUint32(
     headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET
   );
 
-  const fileNameLength = buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET);
+  const fileNameLength = await buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET);
 
-  const fileName = buffer.slice(
+  const fileName = new TextDecoder().decode(await buffer.slice(
     headerOffset + offsets.CD_FILE_NAME_OFFSET,
     headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength
-  );
+  ));
 
   const extraOffset = headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength;
 
-  const oldFormatOffset = buffer.getUint32(
+  const oldFormatOffset = await buffer.getUint32(
     headerOffset + offsets.CD_LOCAL_HEADER_OFFSET_OFFSET
   );
 
@@ -78,7 +78,7 @@ export const parseZipCDFileHeader = (headerOffset: number, buffer: FileProvider)
     }
 
     // getUint32 needs to be replaced with getBigUint64 for archieves bigger than 2gb
-    fileDataOffset = buffer.getUint32(extraOffset + offsetInZip64Data); // setting it to the one from zip64
+    fileDataOffset = await buffer.getUint32(extraOffset + offsetInZip64Data); // setting it to the one from zip64
   }
   const localHeaderOffset = fileDataOffset;
 

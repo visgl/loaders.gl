@@ -41,14 +41,16 @@ export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = 
 
   const fileProvider = new BufferFileProvider(archive);
 
-  const cdFileHeader = parseZipCDFileHeader(hashCDOffset, fileProvider);
+  const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 
-  const textDecoder = new TextDecoder();
-  if (textDecoder.decode(cdFileHeader.fileName) !== '@specialIndexFileHASH128@') {
+  if (cdFileHeader.fileName !== '@specialIndexFileHASH128@') {
     throw new Error('No hash file in slpk');
   }
 
-  const localFileHeader = parseZipLocalFileHeader(cdFileHeader.localHeaderOffset, fileProvider);
+  const localFileHeader = await parseZipLocalFileHeader(cdFileHeader.localHeaderOffset, fileProvider);
+  if (!localFileHeader) {
+    throw new Error('No hash file in slpk');
+  }
 
   const fileDataOffset = localFileHeader.fileDataOffset;
   const hashFile = archive.buffer.slice(
