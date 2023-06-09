@@ -18,6 +18,9 @@ const indexNames = [
   'sharedResource.json.gz'
 ];
 
+/**
+ * Description of the file in the SLPK
+ */
 type File = {
   name: string | null;
   data: ArrayBuffer;
@@ -81,7 +84,7 @@ export default class SLPKConverter {
       );
     }
 
-    return "success";
+    return 'success';
   }
 
   private correctIndexNames(fileName: string): string | null {
