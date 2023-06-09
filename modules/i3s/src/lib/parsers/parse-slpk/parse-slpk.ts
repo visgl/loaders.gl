@@ -1,5 +1,5 @@
 import type {SLPKLoaderOptions} from '../../../i3s-slpk-loader';
-import { BufferFileProvider } from '../parse-zip/buffer-file-provider';
+import {BufferFileProvider} from '../parse-zip/buffer-file-provider';
 import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {SLPKArchive} from './slpk-archieve';
@@ -47,7 +47,10 @@ export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = 
     throw new Error('No hash file in slpk');
   }
 
-  const localFileHeader = await parseZipLocalFileHeader(cdFileHeader.localHeaderOffset, fileProvider);
+  const localFileHeader = await parseZipLocalFileHeader(
+    cdFileHeader.localHeaderOffset,
+    fileProvider
+  );
   if (!localFileHeader) {
     throw new Error('No hash file in slpk');
   }

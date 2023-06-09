@@ -1,4 +1,4 @@
-import { FileProvider } from "./file-provider";
+import {FileProvider} from './file-provider';
 
 /**
  * zip central directory file header info
@@ -37,7 +37,10 @@ export type ZipCDFileHeader = {
  * @param buffer - buffer containing whole array
  * @returns Info from the header
  */
-export const parseZipCDFileHeader = async (headerOffset: number, buffer: FileProvider): Promise<ZipCDFileHeader> => {
+export const parseZipCDFileHeader = async (
+  headerOffset: number,
+  buffer: FileProvider
+): Promise<ZipCDFileHeader> => {
   const offsets = {
     CD_COMPRESSED_SIZE_OFFSET: 20,
     CD_UNCOMPRESSED_SIZE_OFFSET: 24,
@@ -55,10 +58,12 @@ export const parseZipCDFileHeader = async (headerOffset: number, buffer: FilePro
 
   const fileNameLength = await buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET);
 
-  const fileName = new TextDecoder().decode(await buffer.slice(
-    headerOffset + offsets.CD_FILE_NAME_OFFSET,
-    headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength
-  ));
+  const fileName = new TextDecoder().decode(
+    await buffer.slice(
+      headerOffset + offsets.CD_FILE_NAME_OFFSET,
+      headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength
+    )
+  );
 
   const extraOffset = headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength;
 

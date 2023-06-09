@@ -1,4 +1,4 @@
-import { FileProvider } from "./file-provider";
+import {FileProvider} from './file-provider';
 
 /**
  * zip local file header info
@@ -46,17 +46,18 @@ export const parseZipLocalFileHeader = async (
   headerOffset: number,
   buffer: FileProvider
 ): Promise<ZipLocalFileHeader | undefined> => {
-
-  if (Buffer.from(await buffer.slice(headerOffset, headerOffset+4)).compare(signature) !== 0) {
+  if (Buffer.from(await buffer.slice(headerOffset, headerOffset + 4)).compare(signature) !== 0) {
     return Promise.resolve(undefined);
   }
 
   const fileNameLength = await buffer.getUint16(headerOffset + offsets.FILE_NAME_LENGTH_OFFSET);
 
-  const fileName = new TextDecoder().decode(await buffer.slice(
-    headerOffset + offsets.FILE_NAME_OFFSET,
-    headerOffset + offsets.FILE_NAME_OFFSET + fileNameLength
-  ));
+  const fileName = new TextDecoder().decode(
+    await buffer.slice(
+      headerOffset + offsets.FILE_NAME_OFFSET,
+      headerOffset + offsets.FILE_NAME_OFFSET + fileNameLength
+    )
+  );
   const extraFieldLength = await buffer.getUint16(headerOffset + offsets.EXTRA_FIELD_LENGTH_OFFSET);
 
   const fileDataOffset =
