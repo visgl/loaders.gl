@@ -6,7 +6,7 @@ const scratchNormal = new Vector3();
 
 export function normalize3DTileNormalAttribute(
   tile: Tiles3DTileContent,
-  normals
+  normals: Float32Array | null
 ): {type: number; size: number; value: Float32Array} | null {
   if (!normals) {
     return null;

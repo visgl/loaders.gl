@@ -1,17 +1,19 @@
+import {Tile3DBatchTable} from '@loaders.gl/3d-tiles';
 import {decodeRGB565, GL} from '@loaders.gl/math';
+import {Tiles3DTileContent} from 'modules/3d-tiles/src/types';
 
 /* eslint-disable complexity*/
 export function normalize3DTileColorAttribute(
-  tile,
-  colors,
-  batchTable?
+  tile: Tiles3DTileContent,
+  colors: Uint8ClampedArray | null,
+  batchTable?: Tile3DBatchTable
 ): {type: number; value: Uint8ClampedArray; size: number; normalized: boolean} | null {
   // no colors defined
   if (!colors && (!tile || !tile.batchIds || !batchTable)) {
     return null;
   }
 
-  const {batchIds, isRGB565, pointCount} = tile;
+  const {batchIds, isRGB565, pointCount = 0} = tile;
   // Batch table, look up colors in table
   if (batchIds && batchTable) {
     const colorArray = new Uint8ClampedArray(pointCount * 3);
@@ -33,7 +35,7 @@ export function normalize3DTileColorAttribute(
   }
 
   // RGB565 case, convert to RGB
-  if (isRGB565) {
+  if (colors && isRGB565) {
     const colorArray = new Uint8ClampedArray(pointCount * 3);
     for (let i = 0; i < pointCount; i++) {
       const color = decodeRGB565(colors[i]);
@@ -62,7 +64,7 @@ export function normalize3DTileColorAttribute(
   // DEFAULT: RGBA case
   return {
     type: GL.UNSIGNED_BYTE,
-    value: colors,
+    value: colors || new Uint8ClampedArray(),
     size: 4,
     normalized: true
   };
