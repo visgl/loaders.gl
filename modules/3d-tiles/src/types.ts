@@ -100,7 +100,7 @@ export type Tiles3DTilesetJSONPostprocessed = Omit<Tiles3DTilesetJSON, 'root'> &
  */
 export type Tiles3DTileJSON = {
   /** A bounding volume that encloses a tile or its content. */
-  boundingVolume: BoundingVolume;
+  boundingVolume: Tile3DBoundingVolume;
   /** A bounding volume that encloses a tile or its content. */
   viewerRequestVolume?: object;
   /** The error, in meters, introduced if this tile is rendered and its children are not. At runtime, the geometric error is used to compute screen space error (SSE), i.e., the error measured in pixels. */
@@ -155,7 +155,7 @@ export type Tiles3DTileContentJSON = {
   /** url doesn't allign the spec but we support it same way as uri */
   url?: string;
   /** A bounding volume that encloses a tile or its content. At least one bounding volume property is required. Bounding volumes include box, region, or sphere. */
-  boundingVolume?: BoundingVolume;
+  boundingVolume?: Tile3DBoundingVolume;
   /** Dictionary object with extension-specific objects. */
   extensions?: object;
   /** Application-specific data. */
@@ -165,7 +165,7 @@ export type Tiles3DTileContentJSON = {
 /** A bounding volume that encloses a tile or its content.
  * https://github.com/CesiumGS/3d-tiles/tree/main/specification#bounding-volume
  */
-export type BoundingVolume = {
+export type Tile3DBoundingVolume = {
   /** An array of 12 numbers that define an oriented bounding box. The first three elements define the x, y, and z values for the center of the box.
    * The next three elements (with indices 3, 4, and 5) define the x axis direction and half-length. The next three elements (indices 6, 7, and 8) define
    * the y axis direction and half-length. The last three elements (indices 9, 10, and 11) define the z axis direction and half-length. */
@@ -195,6 +195,97 @@ export type TilesetProperty = {
   extensions?: object;
   /** Application-specific data. */
   extras?: any;
+};
+
+export type Tiles3DTileContent = {
+  /** Common properties */
+  byteOffset?: number;
+  type?: string;
+  featureIds?: null;
+
+  /** 3DTile header */
+  magic?: number;
+  version?: number;
+  byteLength?: number;
+
+  /** 3DTile tables header */
+  header?: {
+    featureTableJsonByteLength?: number;
+    featureTableBinaryByteLength?: number;
+    batchTableJsonByteLength?: number;
+    batchTableBinaryByteLength?: number;
+    batchLength?: number;
+  };
+
+  /** 3DTile tables */
+  featureTableJson?:
+    | {
+        BATCH_LENGTH?: number;
+      }
+    | Record<string, any>;
+  featureTableBinary?: Uint8Array;
+  batchTableJson?: Record<string, (string | number)[]>;
+  batchTableBinary?: Uint8Array;
+  rtcCenter?: number[];
+
+  /** 3DTile glTF */
+  gltfArrayBuffer?: ArrayBuffer;
+  gltfByteOffset?: number;
+  gltfByteLength?: number;
+  rotateYtoZ?: boolean;
+  gltfUpAxis?: 'x' | 'X' | 'y' | 'Y' | 'z' | 'Z';
+  gltfUrl?: string;
+  gpuMemoryUsageInBytes?: number;
+  gltf?: GLTFPostprocessed;
+
+  /** For Composite tiles */
+  tilesLength?: number;
+  tiles?: Tiles3DTileContent[];
+
+  /** For Instances model and Pointcloud tiles */
+  featuresLength?: number;
+
+  /** For Instanced model tiles */
+  gltfFormat?: number;
+  eastNorthUp?: boolean;
+  normalUp?: number[];
+  normalRight?: number[];
+  hasCustomOrientation?: boolean;
+  octNormalUp?: number[];
+  octNormalRight?: number[];
+  instances?: {
+    modelMatrix: Matrix4;
+    batchId: number;
+  }[];
+
+  /** For Pointcloud tiles */
+  attributes?: {
+    positions: null | number[];
+    colors:
+      | null
+      | number[]
+      | {type: number; value: Uint8ClampedArray; size: number; normalized: boolean};
+    normals: null | number[] | {type: number; size: number; value: Float32Array};
+    batchIds: null | number[];
+  };
+  constantRGBA?: number[];
+  isQuantized?: boolean;
+  isTranslucent?: boolean;
+  isRGB565?: boolean;
+  isOctEncoded16P?: boolean;
+  pointsLength?: number;
+  pointCount?: number;
+  batchIds?: number[];
+  hasPositions?: boolean;
+  hasColors?: boolean;
+  hasNormals?: boolean;
+  hasBatchIds?: boolean;
+  quantizedVolumeScale?: Vector3;
+  quantizedVolumeOffset?: Vector3;
+  quantizedRange?: number;
+  isQuantizedDraco?: boolean;
+  octEncodedRange?: number;
+  isOctEncodedDraco?: boolean;
 };
 
 /**
