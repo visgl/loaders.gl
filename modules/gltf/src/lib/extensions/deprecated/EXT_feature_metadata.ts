@@ -34,7 +34,7 @@ function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph): void {
 
   const schemaClasses = extension.schema?.classes;
 
-  const featureTables = extension.featureTables;
+  const {featureTables} = extension;
   if (schemaClasses && featureTables) {
     for (const schemaName in schemaClasses) {
       const schemaClass = schemaClasses[schemaName];
@@ -46,7 +46,7 @@ function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph): void {
     }
   }
 
-  const featureTextures = extension.featureTextures;
+  const {featureTextures} = extension;
   if (schemaClasses && featureTextures) {
     for (const schemaName in schemaClasses) {
       const schemaClass = schemaClasses[schemaName];
@@ -87,6 +87,13 @@ function handleFeatureTableProperties(
   }
 }
 
+/**
+ * Navigate throw all properies in feature texture and gets properties data.
+ * Data will be stored in featureTexture.properties[propertyName].data
+ * @param scenegraph
+ * @param featureTexture
+ * @param schemaClass
+ */
 function handleFeatureTextureProperties(
   scenegraph: GLTFScenegraph,
   featureTexture: EXT_feature_metadata_feature_texture,
@@ -119,20 +126,19 @@ function getPropertyDataFromBinarySource(
 ): Uint8Array | string[] {
   const bufferView = featureTableProperty.bufferView;
   // TODO think maybe we shouldn't get data only in Uint8Array format.
-  let data: Uint8Array | string[] = scenegraph.getTypedArrayForBufferView(bufferView);
+  const dataArray: Uint8Array = scenegraph.getTypedArrayForBufferView(bufferView);
 
   switch (schemaProperty.type) {
     case 'STRING': {
       // stringOffsetBufferView should be available for string type.
       const stringOffsetBufferView = featureTableProperty.stringOffsetBufferView!;
       const offsetsData = scenegraph.getTypedArrayForBufferView(stringOffsetBufferView);
-      data = getStringAttributes(data, offsetsData, numberOfFeatures);
-      break;
+      return getStringAttributes(dataArray, offsetsData, numberOfFeatures);
     }
     default:
   }
 
-  return data;
+  return dataArray;
 }
 
 /**
@@ -167,6 +173,14 @@ function getPropertyDataFromTexture(
 }
 
 // eslint-disable-next-line max-statements
+/**
+ * Processes data encoded in the texture associated with the primitive. This data will be accessible through the attributes.
+ * @param scenegraph
+ * @param attributeName
+ * @param featureTextureProperty
+ * @param featureTextureTable
+ * @param primitive
+ */
 function processPrimitiveTextures(
   scenegraph: GLTFScenegraph,
   attributeName: string,
@@ -209,8 +223,7 @@ function processPrimitiveTextures(
     const image = json.images?.[imageIndex];
     const mimeType = image?.mimeType;
     const parsedImage = scenegraph.gltf.images?.[imageIndex];
-    const imageBufferView = image?.bufferView;
-    if (typeof imageBufferView !== 'undefined' && parsedImage) {
+    if (parsedImage) {
       for (let index = 0; index < textureCoordinates.length; index += 2) {
         const value = getImageValueByCoordinates(
           parsedImage,
@@ -223,6 +236,13 @@ function processPrimitiveTextures(
       }
     }
   }
+  /*
+    featureTextureTable will contain unique values, e.g.
+      textureData = [24, 35, 28, 24]
+      featureTextureTable = [24, 35, 28]
+    featureIndices will contain indices hat refer featureTextureTable, e.g.
+      featureIndices = [0, 1, 2, 0]
+  */
   const featureIndices: number[] = [];
   for (const texelData of textureData) {
     let index = featureTextureTable.findIndex((item) => item === texelData);
@@ -265,7 +285,7 @@ function getImageValueByCoordinates(
   const v = textureCoordinates[index + 1];
 
   let components = 1;
-  if (mimeType?.indexOf('image/jpeg') !== -1 || mimeType?.indexOf('image/png') !== -1)
+  if (mimeType && (mimeType.indexOf('image/jpeg') !== -1 || mimeType.indexOf('image/png') !== -1))
     components = 4;
   const offset = coordinatesToOffset(u, v, parsedImage, components);
   let value = 0;
@@ -358,29 +378,26 @@ function findFeatureTextureByName(
  * @param stringsCount
  */
 function getStringAttributes(
-  data: Uint8Array | string[],
+  data: Uint8Array,
   offsetsData: Uint8Array,
   stringsCount: number
 ): string[] {
-  if (data instanceof Uint8Array) {
-    const stringsArray: string[] = [];
-    const textDecoder = new TextDecoder('utf8');
+  const stringsArray: string[] = [];
+  const textDecoder = new TextDecoder('utf8');
 
-    let stringOffset = 0;
-    const bytesPerStringSize = 4;
+  let stringOffset = 0;
+  const bytesPerStringSize = 4;
 
-    for (let index = 0; index < stringsCount; index++) {
-      // TODO check if it is multiplication on bytesPerStringSize is valid operation?
-      const stringByteSize =
-        offsetsData[(index + 1) * bytesPerStringSize] - offsetsData[index * bytesPerStringSize];
-      const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
-      const stringAttribute = textDecoder.decode(stringData);
+  for (let index = 0; index < stringsCount; index++) {
+    // TODO check if it is multiplication on bytesPerStringSize is valid operation?
+    const stringByteSize =
+      offsetsData[(index + 1) * bytesPerStringSize] - offsetsData[index * bytesPerStringSize];
+    const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
+    const stringAttribute = textDecoder.decode(stringData);
 
-      stringsArray.push(stringAttribute);
-      stringOffset += stringByteSize;
-    }
-
-    return stringsArray;
+    stringsArray.push(stringAttribute);
+    stringOffset += stringByteSize;
   }
-  return data;
+
+  return stringsArray;
 }

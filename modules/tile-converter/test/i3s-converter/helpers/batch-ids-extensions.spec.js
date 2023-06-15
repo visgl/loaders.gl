@@ -232,6 +232,34 @@ test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should retur
   t.deepEqual(batchIds, []);
 });
 
+test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return batchIds for featureTextures provided', async (t) => {
+  const attributes = {
+    firstTextureName: {
+      value: new Float32Array([33, 35, 29, 32, 24, 28])
+    }
+  };
+  const primitive = {
+    extensions: {
+      EXT_feature_metadata: {
+        featureTextures: ['firstTextureName', 'secondTextureName']
+      }
+    }
+  };
+  const images = [
+    {
+      name: 'first',
+      components: 4,
+      height: 2,
+      width: 2,
+      data: new Uint8Array([24, 24, 24, 255, 28, 28, 28, 255, 35, 35, 35, 255, 24, 24, 24, 255])
+    }
+  ];
+  // @ts-ignore
+  const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
+
+  t.deepEqual(batchIds, [33, 35, 29, 32, 24, 28]);
+});
+
 test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return batchIds for texture', async (t) => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])},
