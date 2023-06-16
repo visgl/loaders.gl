@@ -54,6 +54,8 @@ export type Tiles3DTilesetJSON = {
     extensions?: object;
     /** Application-specific data. */
     extras?: any;
+    /** Not mentioned in 1.0 spec but some tilesets contain this option */
+    gltfUpAxis?: string;
   };
   /** A dictionary object of metadata about per-feature properties. */
   properties?: Record<string, TilesetProperty>;
@@ -128,7 +130,7 @@ export type Tiles3DTileJSON = {
   implicitTiling?: ImplicitTilingData;
 };
 
-export type Tiles3DTileJSONPostprocessed = Omit<Tiles3DTileJSON, 'refine'> & {
+export type Tiles3DTileJSONPostprocessed = Omit<Tiles3DTileJSON, 'refine' | 'children'> & {
   /** Unique ID */
   id?: string;
   /** Content full URL */
@@ -146,6 +148,8 @@ export type Tiles3DTileJSONPostprocessed = Omit<Tiles3DTileJSON, 'refine'> & {
    * The default is to inherit from the parent tile.
    */
   refine?: TILE_REFINEMENT | string;
+  /** An array of objects that define child tiles. */
+  children: Tiles3DTileJSONPostprocessed[];
 };
 
 /** Metadata about the tile's content and a link to the content. */

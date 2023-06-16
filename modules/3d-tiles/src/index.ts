@@ -16,7 +16,11 @@ export {getIonTilesetMetadata as _getIonTilesetMetadata} from './lib/ion/ion';
 export type {
   FeatureTableJson,
   B3DMContent,
+  Tile3DBoundingVolume,
   Tiles3DTileJSON,
+  Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSON,
+  Tiles3DTilesetJSONPostprocessed,
+  Tiles3DTileContent,
   ImplicitTilingExensionData
 } from './types';
