@@ -79,7 +79,18 @@ export async function customizeColors(
     if (!color) {
       continue; // eslint-disable-line no-continue
     }
-    colors.value.set(color, i * 4);
+
+    /* eslint max-statements: ["error", 30] */
+    /* eslint complexity: ["error", 12] */
+    if (options.i3s.colorsByAttribute.mode === 'multiply') {
+      const multupliedColor = colors.value.subarray(i * 4, i * 4 + 3);
+      for (let j = 0; j < 4; j++) {
+        multupliedColor[j] = (multupliedColor[j] * color[j]) / 255;
+      }
+      colors.value.set(multupliedColor, i * 4);
+    } else {
+      colors.value.set(color, i * 4);
+    }
   }
 
   return colors;
