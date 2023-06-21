@@ -4,7 +4,7 @@ import type {COLOR, I3STileOptions, I3STilesetOptions} from '../../types';
 import {load} from '@loaders.gl/core';
 import {getAttributeValueType, I3SAttributeLoader} from '../../i3s-attribute-loader';
 import {I3SLoaderOptions} from '../../i3s-loader';
-import {getUrlWithToken} from '../utils/url-utils';
+import {getUrlWithToken} from './url-utils';
 
 /**
  * Modify vertex colors array to visualize 3D objects in a attribute driven way
