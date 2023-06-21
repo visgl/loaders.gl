@@ -100,33 +100,17 @@ export function getFrameState(viewport: GeospatialViewport, frameNumber: number)
  */
 export function limitSelectedTiles(
   tiles: Tile3D[],
-  frameState: FrameState,
   maximumTilesSelected: number
 ): [Tile3D[], Tile3D[]] {
   if (maximumTilesSelected === 0 || tiles.length <= maximumTilesSelected) {
     return [tiles, []];
   }
-  // Accumulate distances in couples array: [tileIndex: number, distanceToViewport: number]
-  const tuples: [number, number][] = [];
-  const {longitude: viewportLongitude, latitude: viewportLatitude} = frameState.viewport;
-  for (const [index, tile] of tiles.entries()) {
-    const [longitude, latitude] = tile.header.mbs;
-    const deltaLon = Math.abs(viewportLongitude - longitude);
-    const deltaLat = Math.abs(viewportLatitude - latitude);
-    const distance = Math.sqrt(deltaLat * deltaLat + deltaLon * deltaLon);
-    tuples.push([index, distance]);
-  }
-  const tuplesSorted = tuples.sort((a, b) => a[1] - b[1]);
-  const selectedTiles: Tile3D[] = [];
-  for (let i = 0; i < maximumTilesSelected; i++) {
-    selectedTiles.push(tiles[tuplesSorted[i][0]]);
-  }
-  const unselectedTiles: Tile3D[] = [];
-  for (let i = maximumTilesSelected; i < tuplesSorted.length; i++) {
-    unselectedTiles.push(tiles[tuplesSorted[i][0]]);
-  }
 
-  return [selectedTiles, unselectedTiles];
+  tiles.sort((a, b) => a._screenPriority - b._screenPriority);
+
+  const selectedTiles: Tile3D[] = tiles.splice(0, maximumTilesSelected);
+
+  return [selectedTiles, tiles];
 }
 
 function commonSpacePlanesToWGS84(viewport) {

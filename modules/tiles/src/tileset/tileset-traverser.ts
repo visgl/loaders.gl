@@ -236,7 +236,10 @@ export class TilesetTraverser {
   loadTile(tile: Tile3D, frameState: FrameState): void {
     if (this.shouldLoadTile(tile)) {
       tile._requestedFrame = frameState.frameNumber;
-      tile._priority = tile._getPriority();
+      tile._loadPriority = tile._getLoadPriority();
+
+      // TODO hacky
+      tile._screenPriority = tile._getScreenPriority();
       this.requestedTiles[tile.id] = tile;
     }
   }

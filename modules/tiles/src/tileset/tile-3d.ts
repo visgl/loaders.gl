@@ -106,6 +106,7 @@ export class Tile3D {
 
   /** updated every frame for tree traversal and rendering optimizations: */
   public _distanceToCamera: number = 0;
+  public _distanceToScreenCenter: number = 0;
   _screenSpaceError: number = 0;
   private _visibilityPlaneMask: any;
   private _visible: boolean | undefined = undefined;
@@ -116,7 +117,8 @@ export class Tile3D {
   _initialTransform: Matrix4 = new Matrix4();
 
   // Used by traverser, cannot be marked private
-  _priority: number = 0;
+  _loadPriority: number = 0;
+  _screenPriority: number = 0;
   _selectedFrame: number = 0;
   _requestedFrame: number = 0;
   _selectionDepth: number = 0;
@@ -302,7 +304,7 @@ export class Tile3D {
    * Tiles are prioritized by screen space error.
    */
   // eslint-disable-next-line complexity
-  _getPriority() {
+  _getLoadPriority() {
     const traverser = this.tileset._traverser;
     const {skipLevelOfDetail} = traverser.options;
 
@@ -318,13 +320,32 @@ export class Tile3D {
     if (maySkipTile && !this.isVisible && this._visible !== undefined) {
       return -1;
     }
+
     // Condition used in `cancelOutOfViewRequests` function in CesiumJS/Cesium3DTileset.js
     if (this.tileset._frameNumber - this._touchedFrame >= 1) {
       return -1;
     }
+
     if (this.contentState === TILE_CONTENT_STATE.UNLOADED) {
       return -1;
     }
+
+    // Map higher SSE to lower values (e.g. root tile is highest priority)
+    return this._getScreenPriority();
+  }
+
+  // eslint-disable-next-line complexity
+  _getScreenPriority() {
+    const traverser = this.tileset._traverser;
+    const {skipLevelOfDetail} = traverser.options;
+
+    /*
+     * Tiles that are outside of the camera's frustum could be skipped if we are in 'ADD' mode
+     * or if we are using 'Skip Traversal' in 'REPLACE' mode.
+     * Otherewise, all 'touched' child tiles have to be loaded and displayed,
+     * this may include tiles that are outide of the camera frustum (so that we can hide the parent tile).
+     */
+    const maySkipTile = this.refine === TILE_REFINEMENT.ADD || skipLevelOfDetail;
 
     // Based on the priority function `getPriorityReverseScreenSpaceError` in CesiumJS. Scheduling priority is based on the parent's screen space error when possible.
     const parent = this.parent;
@@ -337,7 +358,7 @@ export class Tile3D {
     const rootScreenSpaceError = traverser.root ? traverser.root._screenSpaceError : 0.0;
 
     // Map higher SSE to lower values (e.g. root tile is highest priority)
-    return Math.max(rootScreenSpaceError - screenSpaceError, 0);
+    return this._distanceToScreenCenter / Math.max(rootScreenSpaceError - screenSpaceError, 1e-7);
   }
 
   /**
@@ -364,7 +385,7 @@ export class Tile3D {
 
     const requestToken = await this.tileset._requestScheduler.scheduleRequest(
       this.id,
-      this._getPriority.bind(this)
+      this._getLoadPriority.bind(this)
     );
 
     if (!requestToken) {
@@ -450,6 +471,7 @@ export class Tile3D {
     }
 
     this._distanceToCamera = this.distanceToTile(frameState);
+    this._distanceToScreenCenter = this.distanceToScreenCenter(frameState);
     this._screenSpaceError = this.getScreenSpaceError(frameState, false);
     this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
     this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
@@ -535,6 +557,17 @@ export class Tile3D {
   distanceToTile(frameState: FrameState): number {
     const boundingVolume = this.boundingVolume;
     return Math.sqrt(Math.max(boundingVolume.distanceSquaredTo(frameState.camera.position), 0));
+  }
+
+  /**
+   * Computes the tile's distance from screen center
+   * @param frameState The frame state.
+   * @returns The distance, in meters.
+   */
+  distanceToScreenCenter(frameState: FrameState): number {
+    const center = this.boundingVolume.center;
+    const [screenX, screenY] = frameState.viewport.project(center);
+    return Math.sqrt(screenX * screenX + screenY * screenY);
   }
 
   /**
@@ -665,7 +698,8 @@ export class Tile3D {
     this._selectedFrame = 0;
     this._requestedFrame = 0;
 
-    this._priority = 0.0;
+    this._loadPriority = 0.0;
+    this._screenPriority = 0.0;
   }
 
   _getRefine(refine) {

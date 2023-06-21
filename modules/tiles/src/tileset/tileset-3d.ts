@@ -284,6 +284,7 @@ export class Tileset3D {
     this.basePath = tileset.basePath || path.dirname(this.url);
     this.modelMatrix = this.options.modelMatrix;
     this.ellipsoid = this.options.ellipsoid;
+    this.maximumMemoryUsage = this.options.maximumMemoryUsage;
 
     // Geometric error when the tree is not rendered at all
     this.lodMetricType = tileset.lodMetricType;
@@ -473,7 +474,6 @@ export class Tileset3D {
     const selectedTiles = Object.values(this._traverser.selectedTiles);
     const [filteredSelectedTiles, unselectedTiles] = limitSelectedTiles(
       selectedTiles,
-      frameState,
       this.options.maximumTilesSelected
     );
     currentFrameStateData.selectedTiles = filteredSelectedTiles;
