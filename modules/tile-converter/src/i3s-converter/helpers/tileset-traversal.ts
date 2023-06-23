@@ -11,7 +11,7 @@ export const traverseDatasetWith = async <TProps>(
   tile: Tiles3DTileJSONPostprocessed,
   traversalProps: TProps,
   processTile: (tile: Tiles3DTileJSONPostprocessed, traversalProps: TProps) => Promise<TProps>,
-  postprocessTile: (processResults: TProps[], currentTraversalProps: TProps) => Promise<void>,
+  postprocessTile?: (processResults: TProps[], currentTraversalProps: TProps) => Promise<void>,
   maxDepth?: number,
   level = 0
 ): Promise<void> => {
@@ -31,5 +31,5 @@ export const traverseDatasetWith = async <TProps>(
       level + 1
     );
   }
-  await postprocessTile(processResults, traversalProps);
+  postprocessTile && (await postprocessTile(processResults, traversalProps));
 };

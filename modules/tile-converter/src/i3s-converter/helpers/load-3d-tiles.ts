@@ -3,7 +3,7 @@ import type {
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSONPostprocessed
 } from '@loaders.gl/3d-tiles';
-import {load} from '@loaders.gl/core';
+import {fetchFile, load} from '@loaders.gl/core';
 import {Tiles3DLoadOptions} from '../types';
 
 /**
@@ -62,6 +62,28 @@ export const loadTile3DContent = async (
     }
   };
   const tileContent = await load(sourceTile.contentUrl, sourceTileset.loader, loadOptions);
+
+  return tileContent;
+};
+
+export const fetchTile3DContent = async (
+  sourceTileset: Tiles3DTilesetJSONPostprocessed | null,
+  sourceTile: Tiles3DTileJSONPostprocessed,
+  globalLoadOptions: Tiles3DLoadOptions
+): Promise<ArrayBuffer | null> => {
+  const isTileset = sourceTile.type === 'json';
+  if (!sourceTileset || !sourceTile.contentUrl || isTileset) {
+    return null;
+  }
+
+  const loadOptions = {
+    ...globalLoadOptions,
+    [sourceTileset.loader.id]: {
+      isTileset
+    }
+  };
+  const response = await fetchFile(sourceTile.contentUrl, loadOptions);
+  const tileContent = await response.arrayBuffer();
 
   return tileContent;
 };

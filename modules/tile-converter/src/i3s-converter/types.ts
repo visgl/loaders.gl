@@ -176,3 +176,17 @@ export type Tiles3DLoadOptions = {
     headers: any;
   };
 };
+
+export enum GltfPrimitiveModeString {
+  POINTS = 'POINTS',
+  LINES = 'LINES',
+  LINE_LOOP = 'LINE_LOOP',
+  LINE_STRIP = 'LINE_STRIP',
+  TRIANGLES = 'TRIANGLES',
+  TRIANGLE_STRIP = 'TRIANGLE_STRIP',
+  TRIANGLE_FAN = 'TRIANGLE_FAN'
+}
+
+export type PreprocessData = {
+  meshTopologyTypes: GltfPrimitiveModeString[];
+};

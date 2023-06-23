@@ -30,7 +30,7 @@ export async function parseBatchedModel3DTile(
   return byteOffset;
 }
 
-function parseBatchedModel(
+export function parseBatchedModel(
   tile: Tiles3DTileContent,
   arrayBuffer: ArrayBuffer,
   byteOffset: number,

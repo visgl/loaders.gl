@@ -10,6 +10,9 @@ export {Tile3DWriter} from './tile-3d-writer';
 export {default as Tile3DFeatureTable} from './lib/classes/tile-3d-feature-table';
 export {default as Tile3DBatchTable} from './lib/classes/tile-3d-batch-table';
 
+// PARSE
+export {parseBatchedModel} from './lib/parsers/parse-3d-tile-batched-model';
+
 // EXPERIMENTAL
 export {TILE3D_TYPE} from './lib/constants';
 export {getIonTilesetMetadata as _getIonTilesetMetadata} from './lib/ion/ion';

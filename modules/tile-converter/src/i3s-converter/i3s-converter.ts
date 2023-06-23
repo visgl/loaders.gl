@@ -49,7 +49,13 @@ import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
-import {I3SConvertedResources, SharedResourcesArrays, Tiles3DLoadOptions} from './types';
+import {
+  GltfPrimitiveModeString,
+  I3SConvertedResources,
+  PreprocessData,
+  SharedResourcesArrays,
+  Tiles3DLoadOptions
+} from './types';
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import WriteQueue from '../lib/utils/write-queue';
@@ -63,11 +69,12 @@ import {
   getFieldAttributeType
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
-import {loadNestedTileset, loadTile3DContent} from './helpers/load-3d-tiles';
+import {fetchTile3DContent, loadNestedTileset, loadTile3DContent} from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
+import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
 
 const ION_DEFAULT_TOKEN =
   process.env?.IonToken || // eslint-disable-line
@@ -124,6 +131,9 @@ export default class I3SConverter {
   workerSource: {[key: string]: string} = {};
   writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
   compressList: string[] | null = null;
+  preprocessData: PreprocessData = {
+    meshTopologyTypes: []
+  };
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE, this);
@@ -238,16 +248,71 @@ export default class I3SConverter {
       }
       this.sourceTileset = await load(inputUrl, this.Loader, this.loadOptions);
 
-      await this._createAndSaveTileset(outputPath, tilesetName);
-      await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
-      return 'success';
+      const preprocessResult = await this.preprocessConversion();
+
+      if (preprocessResult) {
+        await this._createAndSaveTileset(outputPath, tilesetName);
+        await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+      }
     } catch (error) {
       throw error;
     } finally {
+      await this.writeQueue.finalize();
       // Clean up worker pools
       const workerFarm = WorkerFarm.getWorkerFarm({});
       workerFarm.destroy();
     }
+    return 'success';
+  }
+
+  private async preprocessConversion(): Promise<boolean> {
+    console.log(`Analyze source tileset`);
+    const sourceRootTile: Tiles3DTileJSONPostprocessed = this.sourceTileset!.root!;
+    await traverseDatasetWith<null>(
+      sourceRootTile,
+      null,
+      this.analyzeTile.bind(this),
+      undefined,
+      this.options.maxDepth
+    );
+    const {meshTopologyTypes} = this.preprocessData;
+    console.log(`------------------------------------------------`);
+    console.log(`Preprocess results:`);
+    console.log(`glTF mesh topology types: ${meshTopologyTypes.join(', ')}`);
+    console.log(`------------------------------------------------`);
+    if (
+      !meshTopologyTypes.includes(GltfPrimitiveModeString.TRIANGLES) &&
+      !meshTopologyTypes.includes(GltfPrimitiveModeString.TRIANGLE_STRIP)
+    ) {
+      console.log(
+        'The tileset is of unsupported mesh topology types. The conversion will be interrupted.'
+      );
+      console.log(`------------------------------------------------`);
+      return false;
+    }
+    return true;
+  }
+
+  private async analyzeTile(
+    sourceTile: Tiles3DTileJSONPostprocessed,
+    traversalProps: null
+  ): Promise<null> {
+    if (sourceTile.type === 'json') {
+      await loadNestedTileset(this.sourceTileset, sourceTile, this.loadOptions);
+      return null;
+    }
+    if (sourceTile.id) {
+      console.log(`[analyze]: ${sourceTile.id}`); // eslint-disable-line
+    }
+    const tileContentBuffer = await fetchTile3DContent(
+      this.sourceTileset,
+      sourceTile,
+      this.loadOptions
+    );
+    const tilePreprocessData = await analyzeTileContent(sourceTile, tileContentBuffer);
+    this.preprocessData = mergePreprocessData(this.preprocessData, tilePreprocessData);
+
+    return null;
   }
 
   /**
@@ -431,14 +496,17 @@ export default class I3SConverter {
     sourceTile: Tiles3DTileJSONPostprocessed,
     traversalProps: TraversalConversionProps
   ): Promise<TraversalConversionProps> {
-    if (sourceTile.id) {
-      console.log(sourceTile.id); // eslint-disable-line
-    }
     if (sourceTile.type === 'json' || sourceTile.type === 'empty') {
       if (sourceTile.type === 'json') {
+        if (sourceTile.id) {
+          console.log(`[load]: ${sourceTile.id}`); // eslint-disable-line
+        }
         await loadNestedTileset(this.sourceTileset, sourceTile, this.loadOptions);
       }
       return traversalProps;
+    }
+    if (sourceTile.id) {
+      console.log(`[convert]: ${sourceTile.id}`); // eslint-disable-line
     }
 
     const {parentNodes, transform} = traversalProps;
