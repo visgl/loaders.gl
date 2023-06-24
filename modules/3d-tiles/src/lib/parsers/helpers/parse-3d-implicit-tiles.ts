@@ -172,14 +172,25 @@ export async function parseImplicitTiles(params: {
 
   const isTileAvailable = getAvailabilityResult(subtree.tileAvailability, tileAvailabilityIndex);
 
-  if (!isTileAvailable || level > maximumLevel) {
+  if (!isTileAvailable || (typeof maximumLevel === 'number' && level > maximumLevel)) {
     return tile;
   }
 
-  const isContentAvailable = getAvailabilityResult(
-    subtree.contentAvailability,
-    tileAvailabilityIndex
-  );
+  let isContentAvailable = false;
+  //  Note, that Content availability (contentAvailability) is an ARRAY of content availability objects.
+  const caArray = subtree.contentAvailability as Availability[];
+  if (typeof caArray?.length === 'number') {
+    // Vesion "1.1"
+    for (let i = 0; i < caArray.length; i++) {
+      const ca = caArray[i];
+      isContentAvailable = getAvailabilityResult(ca, tileAvailabilityIndex);
+      if (isContentAvailable) break; // If just one content is available, break the loop.
+    }
+  } else {
+    // Vesion "1.0"
+    const ca = subtree.contentAvailability as Availability;
+    isContentAvailable = getAvailabilityResult(ca, tileAvailabilityIndex);
+  }
 
   if (isContentAvailable) {
     tile.contentUrl = replaceContentUrlTemplate(contentUrlTemplate, lev, x, y, z);
@@ -382,6 +393,7 @@ function generateMapUrl(items: {[key: string]: number}): {[key: string]: string}
  * Multiple boolean values are packed tightly in the same buffer.
  * These buffers of tightly-packed bits are sometimes referred to as bitstreams.
  * Spec - https://github.com/CesiumGS/3d-tiles/tree/implicit-revisions/specification/Metadata#booleans
+ *        https://github.com/CesiumGS/3d-tiles/blob/main/specification/Metadata/README.adoc#metadata-booleans
  * @param availabilitiIndex
  */
 function getBooleanValueFromBitstream(

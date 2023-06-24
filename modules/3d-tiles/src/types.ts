@@ -205,13 +205,24 @@ export type Subtree = {
   buffers: Buffer[];
   bufferViews: BufferView[];
   tileAvailability: Availability;
-  contentAvailability: Availability;
+  /**
+   * In spec ver 1.1 contentAvailability is an array:
+   * https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling
+   * "Content availability (contentAvailability) is an array of content availability objects."
+   */
+  contentAvailability: Availability | Availability[];
   childSubtreeAvailability: Availability;
 };
 
+/**
+ * Spec:
+ * ver. Next - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling
+ * ver. 1.1  - https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling
+ */
 export type Availability = {
   constant?: 0 | 1;
   bufferView?: number;
+  bitstream?: number;
   // Internal bitstream type
   explicitBitstream?: ExplicitBitstream;
 };

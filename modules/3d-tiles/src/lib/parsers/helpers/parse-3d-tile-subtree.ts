@@ -1,4 +1,4 @@
-import type {Subtree, ExplicitBitstream} from '../../../types';
+import type {Subtree, ExplicitBitstream, Availability} from '../../../types';
 import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 
 const SUBTREE_FILE_MAGIC = 0x74627573;
@@ -42,28 +42,51 @@ export default async function parse3DTilesSubtree(
     internalBinaryBuffer = data.slice(24 + jsonByteLength);
   }
 
-  if ('bufferView' in subtree.tileAvailability) {
+  if ('bufferView' in subtree.tileAvailability || 'bitstream' in subtree.tileAvailability) {
     subtree.tileAvailability.explicitBitstream = await getExplicitBitstream(
       subtree,
-      'tileAvailability',
+      subtree.tileAvailability,
       internalBinaryBuffer,
       context
     );
   }
 
-  if ('bufferView' in subtree.contentAvailability) {
-    subtree.contentAvailability.explicitBitstream = await getExplicitBitstream(
-      subtree,
-      'contentAvailability',
-      internalBinaryBuffer,
-      context
-    );
+  //  Note, that Content availability (contentAvailability) is an ARRAY of content availability objects.
+  if (subtree.contentAvailability) {
+    if (typeof subtree.contentAvailability.length === 'number') {
+      // Vesion "1.1"
+      for (let i = 0; i < subtree.contentAvailability.length; i++) {
+        const ca = subtree.contentAvailability[i];
+        if ('bufferView' in ca || 'bitstream' in ca) {
+          ca.explicitBitstream = await getExplicitBitstream(
+            subtree,
+            ca,
+            internalBinaryBuffer,
+            context
+          );
+        }
+      }
+    } else {
+      // Vesion "1.0"
+      const ca = subtree.contentAvailability;
+      if ('bufferView' in ca || 'bitstream' in ca) {
+        ca.explicitBitstream = await getExplicitBitstream(
+          subtree,
+          ca,
+          internalBinaryBuffer,
+          context
+        );
+      }
+    }
   }
 
-  if ('bufferView' in subtree.childSubtreeAvailability) {
+  if (
+    'bufferView' in subtree.childSubtreeAvailability ||
+    'bitstream' in subtree.childSubtreeAvailability
+  ) {
     subtree.childSubtreeAvailability.explicitBitstream = await getExplicitBitstream(
       subtree,
-      'childSubtreeAvailability',
+      subtree.childSubtreeAvailability,
       internalBinaryBuffer,
       context
     );
@@ -106,15 +129,23 @@ function resolveBufferUri(bitstreamRelativeUri: string, basePath: string): strin
  */
 async function getExplicitBitstream(
   subtree: Subtree,
-  name: string,
+  availability: Availability,
   internalBinaryBuffer: ArrayBuffer,
   context: LoaderContext | undefined
 ): Promise<ExplicitBitstream> {
-  const bufferViewIndex = subtree[name].bufferView;
+  let bufferViewIndex: number;
+  if (typeof availability.bufferView !== 'undefined') {
+    bufferViewIndex = availability.bufferView;
+  } else if (typeof availability.bitstream !== 'undefined') {
+    bufferViewIndex = availability.bitstream;
+  } else {
+    return new Uint8Array(); // empty array
+  }
+
   const bufferView = subtree.bufferViews[bufferViewIndex];
   const buffer = subtree.buffers[bufferView.buffer];
 
-  if (!context?.url || !context.fetch) {
+  if (!context?.url) {
     throw new Error('Url is not provided');
   }
 
