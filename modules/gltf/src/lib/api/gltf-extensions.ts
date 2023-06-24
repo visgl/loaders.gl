@@ -18,6 +18,8 @@ import * as KHR_materials_unlit from '../extensions/deprecated/KHR_materials_unl
 import * as KHR_techniques_webgl from '../extensions/deprecated/KHR_techniques_webgl';
 import * as EXT_feature_metadata from '../extensions/deprecated/EXT_feature_metadata';
 
+import * as EXT_mesh_features from '../extensions/EXT_mesh_features';
+import * as EXT_structural_metadata from '../extensions/EXT_structural_metadata';
 // Vendor extensions
 
 type GLTFExtensionPlugin = {
@@ -54,7 +56,10 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   KHR_materials_unlit,
   KHR_techniques_webgl,
   KHR_texture_transform,
-  EXT_feature_metadata
+  EXT_feature_metadata,
+
+  EXT_mesh_features,
+  EXT_structural_metadata
 ];
 
 /** Call before any resource loading starts */

@@ -2,6 +2,7 @@ import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {
   GLTF_EXT_feature_metadata,
   GLTF_EXT_mesh_features,
+  GLTF_EXT_structural_metadata,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
@@ -74,6 +75,7 @@ const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', '
 
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
+const EXT_STRUCTURAL_METADATA = 'EXT_structural_metadata';
 
 let scratchVector = new Vector3();
 
@@ -1375,6 +1377,14 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
  */
 function getAttributeType(key: string, attributeStorageInfo: any[]): string {
   const attribute = attributeStorageInfo.find((attr) => attr.name === key);
+  if (!attribute) {
+    console.log(`attribute is null, key=${key}, attributeStorageInfo=${JSON.stringify(attributeStorageInfo, null, 2)}`);
+    return "";
+  }
+  if (!attribute.attributeValues) {
+    console.log(`attributeValues is null, attribute=${attribute}`);
+    return "";
+  }
   return attribute.attributeValues.valueType;
 }
 
@@ -1549,6 +1559,7 @@ function generateFeatureIndexAttribute(
  * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA
  */
 export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | null {
+  let propertyTable: FeatureTableJson | null;
   const batchTableJson = tileContent?.batchTableJson;
 
   if (batchTableJson) {
@@ -1563,7 +1574,12 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
       return null;
     }
     case EXT_FEATURE_METADATA: {
-      return getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata);
+      propertyTable = getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata);
+      return propertyTable;
+    }
+    case EXT_STRUCTURAL_METADATA: {
+      propertyTable = getPropertyTableFromExtStructuralMetadata(extension as GLTF_EXT_structural_metadata);
+      return propertyTable;
     }
     default:
       return null;
@@ -1576,8 +1592,9 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
  */
 function getPropertyTableExtension(
   tileContent: B3DMContent
-): GLTF_EXT_feature_metadata | GLTF_EXT_mesh_features {
-  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
+): GLTF_EXT_feature_metadata | GLTF_EXT_structural_metadata | GLTF_EXT_mesh_features {
+  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA, EXT_MESH_FEATURES];
+//  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
   if (!extensionsUsed) {
@@ -1624,6 +1641,42 @@ function getPropertyTableFromExtFeatureMetadata(
 
     if (firstFeatureTableName) {
       const featureTable = extension?.featureTables[firstFeatureTableName];
+      const propertyTable = {};
+
+      for (const propertyName in featureTable.properties) {
+        propertyTable[propertyName] = featureTable.properties[propertyName].data;
+      }
+
+      return propertyTable;
+    }
+  }
+
+  console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
+  return null;
+}
+
+
+function getPropertyTableFromExtStructuralMetadata(
+  extension: GLTF_EXT_structural_metadata
+): FeatureTableJson | null {
+  // if (extension?.propertyTextures) {
+  //   console.warn(
+  //     'The I3S converter does not yet support the GLTF_EXT_structural_metadata property textures'
+  //   );
+  //   return null;
+  // }
+
+  if (extension?.propertyTables) {
+    /**
+     * Take only first feature table to generate attributes storage info object.
+     * TODO: Think about getting data from all feature tables?
+     * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+     * In I3S we should decide which featureIds attribute will be passed to geometry data.
+     */
+    const firstFeatureTableName = Object.keys(extension.propertyTables)?.[0];
+
+    if (firstFeatureTableName) {
+      const featureTable = extension?.propertyTables[firstFeatureTableName];
       const propertyTable = {};
 
       for (const propertyName in featureTable.properties) {

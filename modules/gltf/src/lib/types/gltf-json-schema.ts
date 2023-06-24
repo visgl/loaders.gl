@@ -780,18 +780,239 @@ export type GLTF_MSFT_texture_dds = {
 };
 
 /**
- * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
- * @todo belom88 complete typings
+ * Spec - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/glTF.EXT_structural_metadata.schema.json
+ */
+type ExtStructuralMetadataSchema = {
+  /** The name of the schema. */
+  name?: string;
+  /** The description of the schema. */
+  description?: string;
+  /** Application-specific version of the schema. */
+  version?: string;
+  /** A dictionary, where each key is a class ID and each value is an object defining the class. */
+  classes?: {
+    [key: string]: EXT_structural_metadata_class_object;
+  };
+  /** A dictionary, where each key is an enum ID and each value is an object defining the values for the enum. */
+  enums?: {
+    [key: string]: ExtFeatureMetadataEnum;
+  };
+  extensions?: Record<string, any>;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class
+ */
+export type EXT_structural_metadata_class_object = {
+  /** The name of the class, e.g. for display purposes. */
+  name?: string;
+  /** The description of the class. */
+  description?: string;
+  /** A dictionary, where each key is a property ID and each value is an object defining the property.
+   * Property IDs must be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
+   */
+  properties: {
+    [key: string]: ClassProperty;
+  };
+  extensions?: Record<string, any>;
+  extras?: any;
+  [key: string]: any;
+};
+
+export type GLTF_EXT_structural_metadata = {
+  /** An object defining classes and enums. */
+  schema?: ExtStructuralMetadataSchema;
+  /** A uri to an external schema file. */
+  schemaUri?: string;
+  /** An array of property table definitions, which may be referenced by index. */
+  propertyTables: EXT_structural_metadata_property_table[];
+  /** An array of property texture definitions, which may be referenced by index. */
+  propertyTextures: EXT_structural_metadata_property_texture[];
+  /** "An array of property attribute definitions, which may be referenced by index. */
+  propertyAttributes: EXT_structural_metadata_property_attribute[];
+  [key: string]: any;
+};
+
+export type EXT_structural_metadata_property_table = {
+  /** The name of the property table, e.g. for display purposes. */
+  name?: string;
+  /** The class that property values conform to. The value must be a class ID declared in the `classes` dictionary. */
+  class: string;
+  /** The number of elements in each property array. */
+  count: number;
+  /**
+   * A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary
+   * and each value is an object describing where property values are stored.
+   * Required properties must be included in this dictionary.
+   */
+  properties?: {
+    [key: string]: EXT_structural_metadata_property_table_property;
+  };
+  extensions?: Record<string, any>;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json
+ */
+export type EXT_structural_metadata_property_table_property = {
+  /**
+   * The index of the buffer view containing property values.
+   * The data type of property values is determined by the property definition:
+   * When `type` is `BOOLEAN` values are packed into a bitstream.
+   * When `type` is `STRING` values are stored as byte sequences and decoded as UTF-8 strings.
+   * When `type` is `SCALAR`, `VECN`, or `MATN` the values are stored as the provided
+   * `componentType` and the buffer view `byteOffset` must be aligned to a multiple of the `componentType` size.
+   * When `type` is `ENUM` values are stored as the enum's
+   * `valueType` and the buffer view `byteOffset` must be aligned to a multiple of the `valueType` size.
+   * Each enum value in the array must match one of the allowed values in the enum definition.
+   * `arrayOffsets` is required for variable-length arrays and `stringOffsets` is required for strings (for variable-length arrays of strings, both are required).
+   */
+  values: number;
+  /**
+   * The index of the buffer view containing offsets for variable-length arrays.
+   * The number of offsets is equal to the property table `count` plus one.
+   * The offsets represent the start positions of each array, with the last offset representing the position after the last array.
+   * The array length is computed using the difference between the subsequent offset and the current offset.
+   * If `type` is `STRING` the offsets index into the string offsets array (stored in `stringOffsets`), otherwise they index into the property array (stored in `values`).
+   * The data type of these offsets is determined by `arrayOffsetType`.
+   * The buffer view `byteOffset` must be aligned to a multiple of the `arrayOffsetType` size.
+   */
+  arrayOffsets?: number;
+  /**
+   * The index of the buffer view containing offsets for strings.
+   * The number of offsets is equal to the number of string elements plus one.
+   * The offsets represent the byte offsets of each string in the property array (stored in `values`), with the last offset representing the byte offset after the last string.
+   * The string byte length is computed using the difference between the subsequent offset and the current offset.
+   * The data type of these offsets is determined by `stringOffsetType`.
+   * The buffer view `byteOffset` must be aligned to a multiple of the `stringOffsetType` size.
+   */
+  stringOffsets?: number;
+  /**
+   * The type of values in `arrayOffsets`.
+   */
+  arrayOffsetType?: string;
+  /**
+   * The type of values in `stringOffsets`.
+   */
+  stringOffsetType?: string;
+  /**
+   * An offset to apply to property values.
+   * Only applicable when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`.
+   * Overrides the class property's `offset` if both are defined.
+   */
+  offset?: number;
+  /**
+   * A scale to apply to property values.
+   * Only applicable when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`.
+   * Overrides the class property's `scale` if both are defined.
+   */
+  scale?: number;
+  /**
+   * Maximum value present in the property values.
+   * Only applicable to `SCALAR`, `VECN`, and `MATN` types.
+   * This is the maximum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied.
+   */
+  max?: number;
+  /**
+   * Minimum value present in the property values.
+   * Only applicable to `SCALAR`, `VECN`, and `MATN` types.
+   * This is the minimum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied.
+   */
+  min?: number;
+  extensions?: Record<string, any>;
+  extras?: any;
+  /**
+   * For internal usage
+   */
+  data?: any;
+};
+
+/**
+ * https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata
+ * Each property that is defined in the propertyTexture object extends the glTF textureInfo object.
+ */
+export type GLTFTextureInfoExtStructural = GLTFTextureInfo & {
+  channels: number[];
+  /**
+   * For internal usage
+   */
+  data?: any;
+};
+
+/** https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTexture.schema.json */
+export type EXT_structural_metadata_property_texture = {
+  /** The name of the property texture, e.g. for display purposes. */
+  name?: string;
+  /** The class that property values conform to. The value must be a class ID declared in the `classes` dictionary. */
+  class: string;
+  /**
+   * A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary
+   * and each value is an object describing where property values are stored.
+   * Required properties must be included in this dictionary.
+   *
+   * https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata
+   * Each property that is defined in the propertyTexture object extends the glTF textureInfo object.
+   * The texCoord specifies a texture coordinate set in the referring primitive.
+   * The index is the index of the glTF texture object that stores the actual data. Additionally,
+   * each property specifies an array of channels, which are the indices of the texture channels providing data for the respective property.
+   * Channels of an RGBA texture are numbered 0–3 respectively.
+   */
+  properties?: {
+    //    [key: string]: any;
+    [key: string]: GLTFTextureInfoExtStructural;
+  };
+  extensions?: Record<string, any>;
+  extras?: any;
+  [key: string]: any;
+};
+
+/** https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyAttribute.schema.json */
+export type EXT_structural_metadata_property_attribute = {
+  /** The name of the property attribute, e.g. for display purposes. */
+  name?: string;
+  /** The class that property values conform to. The value must be a class ID declared in the `classes` dictionary. */
+  class: string;
+  /**
+   * "A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary
+   * and each value is an object describing where property values are stored.
+   * Required properties must be included in this dictionary.
+   */
+  properties?: {
+    [key: string]: any;
+  };
+  extensions?: Record<string, any>;
+  extras?: any;
+  [key: string]: any;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features/schema/featureId.schema.json
+ */
+export type GLTF_EXT_mesh_features_feature_id = {
+  /** The number of unique features in the attribute or texture. */
+  featureCount: number;
+  /** A value that indicates that no feature is associated with this vertex or texel. */
+  nullFeatureId?: number;
+  /** A label assigned to this feature ID set. Labels must be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`. */
+  label?: string;
+  /** An attribute containing feature IDs. When `attribute` and `texture` are omitted the feature IDs are assigned to vertices by their index. */
+  attribute?: any;
+  /** A texture containing feature IDs. */
+  texture?: any;
+  /** The index of the property table containing per-feature property values. Only applicable when using the `EXT_structural_metadata` extension. */
+  propertyTable?: number;
+};
+
+/**
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
+ * @todo belom88, mspivak complete typings
  */
 export type GLTF_EXT_mesh_features = {
-  featureIds: {
-    featureCount: number;
-    nullFeatureId: number;
-    label: string;
-    attribute: any;
-    texture: any;
-    propertyTable: number;
-  }[];
+  featureIds: GLTF_EXT_mesh_features_feature_id[];
   extensions?: any;
   extras?: any;
   [key: string]: any;
