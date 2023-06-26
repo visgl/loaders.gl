@@ -83,11 +83,10 @@ export async function customizeColors(
     /* eslint max-statements: ["error", 30] */
     /* eslint complexity: ["error", 12] */
     if (options.i3s.colorsByAttribute.mode === 'multiply') {
-      const multupliedColor = colors.value.subarray(i * 4, i * 4 + 3);
-      for (let j = 0; j < 4; j++) {
-        multupliedColor[j] = (multupliedColor[j] * color[j]) / 255;
-      }
-      colors.value.set(multupliedColor, i * 4);
+      // multiplying original mesh and calculated for attribute rgba colors in range 0-255
+      color.forEach((colorItem, index) => {
+        colors.value[i * 4 + index] = (colors.value[i * 4 + index] * colorItem) / 255;
+      });
     } else {
       colors.value.set(color, i * 4);
     }
