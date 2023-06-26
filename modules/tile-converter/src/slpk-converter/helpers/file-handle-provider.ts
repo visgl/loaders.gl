@@ -1,4 +1,4 @@
-import {FileProvider} from 'modules/i3s/src/lib/parsers/parse-zip/file-provider';
+import {FileProvider} from '@loaders.gl/i3s';
 import {promises as fsPromises, PathLike} from 'fs';
 
 /**

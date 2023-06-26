@@ -1,8 +1,4 @@
-import type {AttributeStorageInfo} from '@loaders.gl/i3s';
-import process from 'process';
 import {isBrowser} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles';
-import {Geoid} from '@math.gl/geoid';
 
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {FileHandleProvider} from './helpers/file-handle-provider';
@@ -11,6 +7,7 @@ import {promises as fsPromises, existsSync} from 'fs';
 import {path} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import {CompressionWorker} from '@loaders.gl/compression';
+// import { writeFile } from '../lib/utils/file-utils';
 
 const indexNames = [
   '3dSceneLayer.json.gz',
@@ -30,26 +27,6 @@ type File = {
  * Converter from slpk to i3s
  */
 export default class SLPKConverter {
-  options: any;
-  tilesetPath: string;
-  vertexCounter: number;
-  conversionStartTime: [number, number];
-  geoidHeightModel: Geoid | null;
-  sourceTileset: Tileset3D | null;
-  attributeStorageInfo: AttributeStorageInfo | null;
-  workerSource: {[key: string]: string} = {};
-
-  constructor() {
-    this.options = {};
-    this.tilesetPath = '';
-    this.vertexCounter = 0;
-    this.conversionStartTime = [0, 0];
-    this.geoidHeightModel = null;
-    this.sourceTileset = null;
-    this.attributeStorageInfo = null;
-    this.workerSource = {};
-  }
-
   /**
    * Convert slpk to i3s
    * @param options
@@ -62,7 +39,6 @@ export default class SLPKConverter {
       return BROWSER_ERROR_MESSAGE;
     }
     const {inputUrl} = options;
-    this.conversionStartTime = process.hrtime();
 
     const provider = await FileHandleProvider.from(inputUrl);
 
@@ -87,15 +63,21 @@ export default class SLPKConverter {
     return 'success';
   }
 
+  /**
+   * Defines file name and path for i3s format
+   * @param fileName initial file name and path
+   */
+
   private correctIndexNames(fileName: string): string | null {
     if (indexNames.includes(path.filename(path.join('/', fileName)))) {
       return path.join(path.dirname(fileName), 'index.json.gz');
     }
+    // finds path with name part and extention part
     let parts = /^(.*\/[^\/\.]*)(\..+)$/.exec(fileName);
     if (!parts) {
       return null;
     }
-    return `${parts?.at(1)}/index${parts?.at(2)}`; //TODO add index insert
+    return `${parts?.at(1)}/index${parts?.at(2)}`;
   }
 
   private async unGzip(file: File): Promise<File> {

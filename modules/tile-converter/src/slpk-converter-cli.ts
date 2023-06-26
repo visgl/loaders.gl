@@ -4,14 +4,14 @@ import SLPKConverter from './slpk-converter/slpk-converter';
 // import {join} from 'path';
 // import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
 
-type TileConversionOptions = {
+type SLPKConversionOptions = {
   /** "tileset.json" file (3DTiles) / "http://..../SceneServer/layers/0" resource (I3S) */
   tileset?: string;
   output?: string;
 };
 
 /* During validation we check that particular options are defined so they can't be undefined */
-type ValidatedTileConversionOptions = TileConversionOptions & {
+export type ValidatedSLPKConversionOptions = SLPKConversionOptions & {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
   tileset: string;
   output: string;
@@ -30,9 +30,9 @@ async function main() {
 
   const validatedOptionsArr = validateOptionsWithEqual(args);
 
-  const options: TileConversionOptions = parseOptions(validatedOptionsArr);
+  const options: SLPKConversionOptions = parseOptions(validatedOptionsArr);
 
-  const validatedOptions: ValidatedTileConversionOptions = validateOptions(options);
+  const validatedOptions: ValidatedSLPKConversionOptions = validateOptions(options);
 
   await convert(validatedOptions);
 }
@@ -56,12 +56,12 @@ function printHelp(): void {
  * Run conversion process
  * @param options validated tile-converter options
  */
-async function convert(options: ValidatedTileConversionOptions) {
+async function convert(options: ValidatedSLPKConversionOptions) {
   console.log(`------------------------------------------------`); // eslint-disable-line
   console.log(`Starting conversion of SLPK`); // eslint-disable-line
   console.log(`------------------------------------------------`); // eslint-disable-line
-  const tiles3DConverter = new SLPKConverter();
-  tiles3DConverter.convert({
+  const slpkConverter = new SLPKConverter();
+  slpkConverter.convert({
     inputUrl: options.tileset,
     outputPath: options.output
   });
@@ -73,7 +73,7 @@ async function convert(options: ValidatedTileConversionOptions) {
  * @param options - input options of the CLI command
  * @returns validated options
  */
-function validateOptions(options: TileConversionOptions): ValidatedTileConversionOptions {
+function validateOptions(options: SLPKConversionOptions): ValidatedSLPKConversionOptions {
   const mandatoryOptionsWithExceptions: {
     [key: string]: () => void;
   } = {
@@ -91,7 +91,7 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
     exceptions.forEach((exeption) => exeption());
     process.exit(1);
   }
-  return <ValidatedTileConversionOptions>options;
+  return <ValidatedSLPKConversionOptions>options;
 }
 
 function validateOptionsWithEqual(args: string[]): string[] {
@@ -112,8 +112,8 @@ function validateOptionsWithEqual(args: string[]): string[] {
  * @param args
  * @returns
  */
-function parseOptions(args: string[]): TileConversionOptions {
-  const opts: TileConversionOptions = {};
+function parseOptions(args: string[]): SLPKConversionOptions {
+  const opts: SLPKConversionOptions = {};
 
   // eslint-disable-next-line complexity
   args.forEach((arg, index) => {
