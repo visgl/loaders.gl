@@ -97,12 +97,9 @@ function handleExtFeatureMetadataExtension(
   const featureTexture =
     extFeatureMetadata?.featureTextures && extFeatureMetadata?.featureTextures[0];
 
-  /**
-   * TODO need to get batchIds from root extension
-   */
   if (featureTexture) {
-    console.warn("EXT_feature_metadata doesn't yet support featureTextures in primitive");
-    return [];
+    const batchIdsAttribute = attributes[featureTexture];
+    return batchIdsAttribute.value;
   }
 
   return [];
