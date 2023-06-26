@@ -265,6 +265,11 @@ export default class I3SConverter {
     return 'success';
   }
 
+  /**
+   * Preprocess stage of the tile converter. Traverse all the tiles tree and
+   * check a tile content to be sure that the data is supported
+   * @returns true - the conversion is possible, false - the tileset's content is not supported
+   */
   private async preprocessConversion(): Promise<boolean> {
     console.log(`Analyze source tileset`);
     const sourceRootTile: Tiles3DTileJSONPostprocessed = this.sourceTileset!.root!;
@@ -293,6 +298,12 @@ export default class I3SConverter {
     return true;
   }
 
+  /**
+   * Analyze a tile content. The callback for preprocess stage.
+   * @param sourceTile - 3DTiles tile JSON metadata
+   * @param traversalProps - mandatory argument but it is not used for the preprocess stage
+   * @returns - nothing
+   */
   private async analyzeTile(
     sourceTile: Tiles3DTileJSONPostprocessed,
     traversalProps: null
@@ -492,6 +503,13 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Convert the specific 3DTiles tile to I3S nodes.
+   * This is callback function for the traversal generic function
+   * @param sourceTile - current 3DTiles tile JSON metadata
+   * @param traversalProps - traversal properties calculated recursively
+   * @returns - traversal properties for the child tiles
+   */
   private async convertTile(
     sourceTile: Tiles3DTileJSONPostprocessed,
     traversalProps: TraversalConversionProps
@@ -525,6 +543,11 @@ export default class I3SConverter {
     return newTraversalProps;
   }
 
+  /**
+   * Do final action with nodes after the current node and all child nodes been converted.
+   * @param conversionResults - array of conversion results of the current node
+   * @param currentTraversalProps - traversal properties of the current node
+   */
   private async finalizeTile(
     conversionResults: TraversalConversionProps[],
     currentTraversalProps: TraversalConversionProps

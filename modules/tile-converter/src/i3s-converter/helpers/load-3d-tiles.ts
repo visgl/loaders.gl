@@ -66,6 +66,13 @@ export const loadTile3DContent = async (
   return tileContent;
 };
 
+/**
+ * Fetch 3DTiles tile content
+ * @param sourceTileset - source tileset that contain the tile
+ * @param sourceTile - source tile JSON metadata
+ * @param globalLoadOptions - tileset-wide load options
+ * @returns ArrayBuffer of loaded content
+ */
 export const fetchTile3DContent = async (
   sourceTileset: Tiles3DTilesetJSONPostprocessed | null,
   sourceTile: Tiles3DTileJSONPostprocessed,

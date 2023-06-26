@@ -177,6 +177,10 @@ export type Tiles3DLoadOptions = {
   };
 };
 
+/**
+ * glTF primitive modes (mesh topology types)
+ * @see https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
+ */
 export enum GltfPrimitiveModeString {
   POINTS = 'POINTS',
   LINES = 'LINES',
@@ -187,6 +191,8 @@ export enum GltfPrimitiveModeString {
   TRIANGLE_FAN = 'TRIANGLE_FAN'
 }
 
+/** Preprocessed data gathered from child tiles binary content */
 export type PreprocessData = {
+  /** Mesh topology types used in gltf primitives of the tileset */
   meshTopologyTypes: GltfPrimitiveModeString[];
 };

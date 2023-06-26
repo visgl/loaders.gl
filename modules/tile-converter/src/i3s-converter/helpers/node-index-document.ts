@@ -31,7 +31,14 @@ export class NodeIndexDocument {
   /** converter instance */
   private converter: I3SConverter;
 
+  /**
+   * Finalized flag. It means that all child nodes are saved and their data
+   * is unloaded
+   */
   private finalizedValue: boolean = false;
+  /**
+   * Getter for finalized flag
+   */
   get finalized(): boolean {
     return this.finalizedValue;
   }
@@ -136,6 +143,7 @@ export class NodeIndexDocument {
     }
   }
 
+  /** Finalize the node */
   private finalize(): void {
     this.finalizedValue = true;
     for (const child of this.children) {

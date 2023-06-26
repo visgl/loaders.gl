@@ -22,6 +22,13 @@ export const GLTF_PRIMITIVE_MODES = [
   GltfPrimitiveModeString.TRIANGLE_FAN // 6
 ];
 
+/**
+ * Analyze tile content. This function is used during preprocess stage of
+ * conversion
+ * @param tile - 3DTiles tile JSON metadata
+ * @param tileContentBuffer - 3DTiles tile content ArrayBuffer
+ * @returns
+ */
 export const analyzeTileContent = async (
   tile: Tiles3DTileJSONPostprocessed,
   tileContentBuffer: ArrayBuffer | null
@@ -50,6 +57,10 @@ export const analyzeTileContent = async (
   return result;
 };
 
+/**
+ * Get JSON part of GLB content
+ * @param tileContentBuffer - 3DTiles tile content ArrayBuffer
+ */
 const getGltfJsonFromB3dm = async (tileContentBuffer: ArrayBuffer): Promise<GLTF | null> => {
   const tile: Tiles3DTileContent = {};
   parseBatchedModel(tile, tileContentBuffer, 0);
@@ -60,6 +71,11 @@ const getGltfJsonFromB3dm = async (tileContentBuffer: ArrayBuffer): Promise<GLTF
   return gltf.json;
 };
 
+/**
+ * Get mesh topology types that the glb content has
+ * @param gltfJson - JSON part of GLB content
+ * @returns array of mesh types found
+ */
 const getMeshTypesFromGltf = (gltfJson: GLTF): GltfPrimitiveModeString[] => {
   const result: GltfPrimitiveModeString[] = [];
   for (const mesh of gltfJson.meshes || []) {
@@ -74,10 +90,17 @@ const getMeshTypesFromGltf = (gltfJson: GLTF): GltfPrimitiveModeString[] => {
   return result;
 };
 
+/**
+ * Merge 2 preprocess data objects
+ * @param object1
+ * @param object2
+ * @returns
+ */
 export const mergePreprocessData = (
   object1: PreprocessData,
   object2: PreprocessData
 ): PreprocessData => {
+  // Merge topology mesh types info
   const uniqueMeshTypes = new Set<GltfPrimitiveModeString>();
   for (const type of object1.meshTopologyTypes) {
     uniqueMeshTypes.add(type);
@@ -85,6 +108,7 @@ export const mergePreprocessData = (
   for (const type of object2.meshTopologyTypes) {
     uniqueMeshTypes.add(type);
   }
+
   return {
     meshTopologyTypes: Array.from(uniqueMeshTypes.values())
   };
