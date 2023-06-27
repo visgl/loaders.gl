@@ -50,7 +50,7 @@ export class DepsInstaller {
       // `npm install sharp join-images` works unstable. It fails because installed `sharp` version
       // may be different from the version required by `join-images`. Pointing to specific versions
       // resolve this issue
-      arguments: ['install', 'sharp@^0.30.4', 'join-images@^1.1.3'],
+      arguments: ['install', 'sharp@0.30.4', 'join-images@1.1.3'],
       wait: 0
     });
 
