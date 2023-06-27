@@ -47,7 +47,7 @@
     "md5": "^2.3.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-alpha.6"
+    "@loaders.gl/core": "^4.0.0-alpha.8"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
