@@ -85,7 +85,6 @@ export default class SLPKConverter {
       const decompressedData = await processOnWorker(CompressionWorker, file.data, {
         compression: 'gzip',
         operation: 'decompress',
-        _workerType: 'test',
         gzip: {}
       });
       return {data: decompressedData, name: (file.name ?? '').slice(0, -3)};

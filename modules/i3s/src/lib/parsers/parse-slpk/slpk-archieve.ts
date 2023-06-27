@@ -138,7 +138,6 @@ export class SLPKArchive {
       const decompressedData = await processOnWorker(CompressionWorker, data, {
         compression: 'gzip',
         operation: 'decompress',
-        _workerType: 'test',
         gzip: {}
       });
       return decompressedData;
