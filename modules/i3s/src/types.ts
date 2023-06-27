@@ -114,6 +114,7 @@ export type I3SParseOptions = {
     maxValue: number;
     minColor: COLOR;
     maxColor: COLOR;
+    mode: string;
   };
 
   /** @deprecated */

@@ -1615,18 +1615,10 @@ function getPropertyTableExtension(
 /**
  * Handle EXT_feature_metadata to get property table
  * @param extension
- * TODO add EXT_feature_metadata feature textures support.
  */
 function getPropertyTableFromExtFeatureMetadata(
   extension: GLTF_EXT_feature_metadata
 ): FeatureTableJson | null {
-  if (extension?.featureTextures) {
-    console.warn(
-      'The I3S converter does not yet support the EXT_feature_metadata feature textures'
-    );
-    return null;
-  }
-
   if (extension?.featureTables) {
     /**
      * Take only first feature table to generate attributes storage info object.
@@ -1648,6 +1640,28 @@ function getPropertyTableFromExtFeatureMetadata(
     }
   }
 
-  console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
+  if (extension?.featureTextures) {
+    /**
+     * Take only first feature texture to generate attributes storage info object.
+     * TODO: Think about getting data from all feature textures?
+     * It can be tricky just because 3dTiles is able to have multiple featureTextures.
+     * In I3S we should decide which featureTextures will be passed to geometry data.
+     */
+    const firstTextureName = Object.keys(extension.featureTextures)?.[0];
+    if (firstTextureName) {
+      const featureTable = extension?.featureTextures[firstTextureName];
+      const propertyTable = {};
+
+      for (const propertyName in featureTable.properties) {
+        propertyTable[propertyName] = featureTable.properties[propertyName].data;
+      }
+
+      return propertyTable;
+    }
+  }
+
+  console.warn(
+    "The I3S converter couldn't handle EXT_feature_metadata extension: There is neither featureTables, no featureTextures in the extension."
+  );
   return null;
 }

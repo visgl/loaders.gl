@@ -1,9 +1,9 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-import {Tiles3DTileContent} from 'modules/3d-tiles/src/types';
 import {getStringFromArrayBuffer} from './parse-utils';
-import {Tiles3DLoaderOptions} from 'modules/3d-tiles/src/tiles-3d-loader';
+import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
+import {Tiles3DTileContent} from '../../../types';
 
 const SIZEOF_UINT32 = 4;
 const DEPRECATION_WARNING = 'b3dm tile in legacy format.';

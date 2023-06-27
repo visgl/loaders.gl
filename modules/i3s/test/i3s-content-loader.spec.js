@@ -198,18 +198,45 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
   t.end();
 });
 
-// TODO: Enable this test after test data is merged in master branch
-test.skip('ParseI3sTileContent#should colorize by attribute', async (t) => {
+test('ParseI3sTileContent#should colorize by attribute', async (t) => {
   const response = await fetchFile(NEW_YORK_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);
   const i3sLoaderOptions = await responseOptions.json();
+  i3sLoaderOptions.colorsByAttribute.mode = 'replace';
   const content = await parse(data, I3SContentLoader, {
     i3s: i3sLoaderOptions
   });
   t.ok(content);
 
   // color array should be colorized by attribute
+  const colorsArray = content.attributes.colors.value;
+  t.deepEquals(colorsArray.subarray(0, 9), [139, 139, 247, 255, 139, 139, 247, 255, 139]);
+  const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
+  t.deepEquals(
+    colorsArray.subarray(arrayMiddle, arrayMiddle + 9),
+    [244, 255, 135, 135, 244, 255, 135, 135, 244]
+  );
+  t.deepEquals(
+    colorsArray.subarray(colorsArray.length - 9),
+    [255, 141, 141, 248, 255, 141, 141, 248, 255]
+  );
+
+  t.end();
+});
+
+test('ParseI3sTileContent#should colorize by attribute using mutiplying colors', async (t) => {
+  const response = await fetchFile(NEW_YORK_TILE_CONTENT);
+  const data = await response.arrayBuffer();
+  const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);
+  const i3sLoaderOptions = await responseOptions.json();
+  i3sLoaderOptions.colorsByAttribute.mode = 'multiply';
+  const content = await parse(data, I3SContentLoader, {
+    i3s: i3sLoaderOptions
+  });
+  t.ok(content);
+
+  // color array should be colorized by attribute using multiplying colors
   const colorsArray = content.attributes.colors.value;
   t.deepEquals(colorsArray.subarray(0, 9), [139, 139, 247, 255, 139, 139, 247, 255, 139]);
   const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
