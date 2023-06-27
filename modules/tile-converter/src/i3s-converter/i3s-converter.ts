@@ -2,6 +2,7 @@
 
 import type {
   FeatureTableJson,
+  Tiles3DLoaderOptions,
   Tiles3DTileContent,
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSONPostprocessed
@@ -46,10 +47,15 @@ import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shar
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
+import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
-import {I3SConvertedResources, SharedResourcesArrays, Tiles3DLoadOptions} from './types';
+import {
+  GltfPrimitiveModeString,
+  I3SConvertedResources,
+  PreprocessData,
+  SharedResourcesArrays
+} from './types';
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import WriteQueue from '../lib/utils/write-queue';
@@ -67,6 +73,8 @@ import {loadNestedTileset, loadTile3DContent} from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
+import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
+import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
 
 const ION_DEFAULT_TOKEN =
   process.env?.IonToken || // eslint-disable-line
@@ -101,7 +109,7 @@ export default class I3SConverter {
   conversionStartTime: [number, number] = [0, 0];
   refreshTokenTime: [number, number] = [0, 0];
   sourceTileset: Tiles3DTilesetJSONPostprocessed | null = null;
-  loadOptions: Tiles3DLoadOptions = {
+  loadOptions: Tiles3DLoaderOptions = {
     _nodeWorkers: true,
     reuseWorkers: true,
     basis: {
@@ -111,9 +119,7 @@ export default class I3SConverter {
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
-    fetch: {
-      headers: null
-    }
+    fetch: {}
   };
   geoidHeightModel: Geoid | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
@@ -123,6 +129,9 @@ export default class I3SConverter {
   workerSource: {[key: string]: string} = {};
   writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
   compressList: string[] | null = null;
+  preprocessData: PreprocessData = {
+    meshTopologyTypes: new Set()
+  };
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE, this);
@@ -237,16 +246,81 @@ export default class I3SConverter {
       }
       this.sourceTileset = await load(inputUrl, this.Loader, this.loadOptions);
 
-      await this._createAndSaveTileset(outputPath, tilesetName);
-      await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
-      return 'success';
+      const preprocessResult = await this.preprocessConversion();
+
+      if (preprocessResult) {
+        await this._createAndSaveTileset(outputPath, tilesetName);
+        await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+      }
     } catch (error) {
       throw error;
     } finally {
+      await this.writeQueue.finalize();
       // Clean up worker pools
       const workerFarm = WorkerFarm.getWorkerFarm({});
       workerFarm.destroy();
     }
+    return 'success';
+  }
+
+  /**
+   * Preprocess stage of the tile converter. Traverse all the tiles tree and
+   * check a tile content to be sure that the data is supported
+   * @returns true - the conversion is possible, false - the tileset's content is not supported
+   */
+  private async preprocessConversion(): Promise<boolean> {
+    console.log(`Analyze source tileset`);
+    const sourceRootTile: Tiles3DTileJSONPostprocessed = this.sourceTileset!.root!;
+    await traverseDatasetWith<null>(
+      sourceRootTile,
+      null,
+      this.analyzeTile.bind(this),
+      undefined,
+      this.options.maxDepth
+    );
+    const {meshTopologyTypes} = this.preprocessData;
+    console.log(`------------------------------------------------`);
+    console.log(`Preprocess results:`);
+    console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
+    console.log(`------------------------------------------------`);
+    if (
+      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLES) &&
+      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLE_STRIP)
+    ) {
+      console.log(
+        'The tileset is of unsupported mesh topology types. The conversion will be interrupted.'
+      );
+      console.log(`------------------------------------------------`);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Analyze a tile content. The callback for preprocess stage.
+   * @param sourceTile - 3DTiles tile JSON metadata
+   * @param traversalProps - mandatory argument but it is not used for the preprocess stage
+   * @returns - nothing
+   */
+  private async analyzeTile(
+    sourceTile: Tiles3DTileJSONPostprocessed,
+    traversalProps: null
+  ): Promise<null> {
+    if (sourceTile.type === 'json') {
+      await loadNestedTileset(this.sourceTileset, sourceTile, this.loadOptions);
+      return null;
+    }
+    if (sourceTile.id) {
+      console.log(`[analyze]: ${sourceTile.id}`); // eslint-disable-line
+    }
+    const tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, {
+      ...this.loadOptions,
+      '3d-tiles': {...this.loadOptions['3d-tiles'], loadGLTF: false}
+    });
+    const tilePreprocessData = await analyzeTileContent(sourceTile, tileContent);
+    mergePreprocessData(this.preprocessData, tilePreprocessData);
+
+    return null;
   }
 
   /**
@@ -291,7 +365,16 @@ export default class I3SConverter {
     });
 
     const rootNode = await NodeIndexDocument.createRootNode(boundingVolumes, this);
-    await this._convertNodesTree(rootNode, sourceRootTile);
+    await traverseDatasetWith<TraversalConversionProps>(
+      sourceRootTile,
+      {
+        transform: new Matrix4(sourceRootTile.transform),
+        parentNodes: [rootNode]
+      },
+      this.convertTile.bind(this),
+      this.finalizeTile.bind(this),
+      this.options.maxDepth
+    );
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
     // @ts-ignore
@@ -418,142 +501,61 @@ export default class I3SConverter {
   }
 
   /**
-   * Form object of 3DSceneLayer https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DSceneLayer.cmn.md
-   * @param parentNode - 3DNodeIndexDocument of the parent node https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
-   * @param sourceTile - Source 3DTiles tile data
-   * @param parentTransform - transformation matrix of the parent tile
+   * Convert the specific 3DTiles tile to I3S nodes.
+   * This is callback function for the traversal generic function
+   * @param sourceTile - current 3DTiles tile JSON metadata
+   * @param traversalProps - traversal properties calculated recursively
+   * @returns - traversal properties for the child tiles
    */
-  private async _convertNodesTree(
-    parentNode: NodeIndexDocument,
+  private async convertTile(
     sourceTile: Tiles3DTileJSONPostprocessed,
-    parentTransform: Matrix4 = new Matrix4()
-  ): Promise<void> {
-    let transformationMatrix: Matrix4 = parentTransform.clone();
+    traversalProps: TraversalConversionProps
+  ): Promise<TraversalConversionProps> {
+    if (sourceTile.type === 'json' || sourceTile.type === 'empty') {
+      if (sourceTile.type === 'json') {
+        if (sourceTile.id) {
+          console.log(`[load]: ${sourceTile.id}`); // eslint-disable-line
+        }
+        await loadNestedTileset(this.sourceTileset, sourceTile, this.loadOptions);
+      }
+      return traversalProps;
+    }
+    if (sourceTile.id) {
+      console.log(`[convert]: ${sourceTile.id}`); // eslint-disable-line
+    }
+
+    const {parentNodes, transform} = traversalProps;
+    let transformationMatrix: Matrix4 = transform.clone();
     if (sourceTile.transform) {
       transformationMatrix = transformationMatrix.multiplyRight(sourceTile.transform);
     }
-    if (this.isContentSupported(sourceTile)) {
-      const childNodes = await this._createNode(parentNode, sourceTile, transformationMatrix, 0);
-      for (const childNode of childNodes) {
-        await childNode.save();
-      }
-      await parentNode.addChildren(childNodes);
-    } else {
-      await loadNestedTileset(this.sourceTileset, sourceTile, this.loadOptions);
-      await this._addChildrenWithNeighborsAndWriteFile({
-        parentNode: parentNode,
-        sourceTiles: sourceTile.children,
-        parentTransform: transformationMatrix,
-        level: 1
-      });
-    }
-    if (sourceTile.id) {
-      console.log(sourceTile.id); // eslint-disable-line
-    }
-    await parentNode.save();
-  }
-
-  /**
-   * Add child nodes recursively and write them to files
-   * @param data - arguments
-   * @param data.parentNode - 3DNodeIndexDocument of parent node
-   * @param data.sourceTiles - array of source child nodes
-   * @param data.parentTransform - transformation matrix of the parent tile
-   * @param data.level - level of node (distanse to root node in the tree)
-   */
-  private async _addChildrenWithNeighborsAndWriteFile(data: {
-    parentNode: NodeIndexDocument;
-    sourceTiles: Tiles3DTileJSONPostprocessed[];
-    parentTransform: Matrix4;
-    level: number;
-  }): Promise<void> {
-    await this._addChildren(data);
-    await data.parentNode.addNeighbors();
-  }
-
-  /**
-   * Convert nested subtree of 3DTiles dataset
-   * @param param0
-   * @param data.parentNode - 3DNodeIndexDocument of parent node
-   * @param param0.sourceTile - source 3DTile data
-   * @param param0.transformationMatrix - transformation matrix of the current tile
-   * @param param0.level - tree level
-   */
-  private async convertNestedTileset({
-    parentNode,
-    sourceTile,
-    transformationMatrix,
-    level
-  }: {
-    parentNode: NodeIndexDocument;
-    sourceTile: Tiles3DTileJSONPostprocessed;
-    transformationMatrix: Matrix4;
-    level: number;
-  }) {
-    await loadNestedTileset(this.sourceTileset, sourceTile, this.loadOptions);
-    await this._addChildren({
-      parentNode,
-      sourceTiles: sourceTile.children,
-      parentTransform: transformationMatrix,
-      level: level + 1
-    });
-  }
-
-  /**
-   * Convert 3DTiles tile to I3S node
-   * @param param0
-   * @param param0.parentNode - 3DNodeIndexDocument of parent node
-   * @param param0.sourceTile - source 3DTile data
-   * @param param0.transformationMatrix - transformation matrix of the current tile, calculated recursively multiplying
-   *                                      transform of all parent tiles and transform of the current tile
-   * @param param0.level - tree level
-   */
-  private async convertNode({
-    parentNode,
-    sourceTile,
-    transformationMatrix,
-    level
-  }: {
-    parentNode: NodeIndexDocument;
-    sourceTile: Tiles3DTileJSONPostprocessed;
-    transformationMatrix: Matrix4;
-    level: number;
-  }) {
-    const childNodes = await this._createNode(parentNode, sourceTile, transformationMatrix, level);
+    const parentNode = parentNodes[0];
+    const childNodes = await this._createNode(parentNode, sourceTile, transformationMatrix);
     await parentNode.addChildren(childNodes);
+
+    const newTraversalProps: TraversalConversionProps = {
+      transform: transformationMatrix,
+      parentNodes: childNodes
+    };
+    return newTraversalProps;
   }
 
   /**
-   * Add child nodes recursively and write them to files
-   * @param param0 - arguments
-   * @param param0.parentNode - 3DNodeIndexDocument of parent node
-   * @param param0.sourceTile - source 3DTile data
-   * @param data.parentTransform - transformation matrix of the parent tile
-   * @param param0.level - tree level
+   * Do final action with nodes after the current node and all child nodes been converted.
+   * @param conversionResults - array of conversion results of the current node
+   * @param currentTraversalProps - traversal properties of the current node
    */
-  private async _addChildren(data: {
-    parentNode: NodeIndexDocument;
-    sourceTiles: Tiles3DTileJSONPostprocessed[];
-    parentTransform: Matrix4;
-    level: number;
-  }): Promise<void> {
-    const {sourceTiles, parentTransform, parentNode, level} = data;
-    if (this.options.maxDepth && level > this.options.maxDepth) {
-      return;
+  private async finalizeTile(
+    conversionResults: TraversalConversionProps[],
+    currentTraversalProps: TraversalConversionProps
+  ): Promise<void> {
+    for (const result of conversionResults) {
+      for (const node of result.parentNodes) {
+        await node.addNeighbors();
+      }
     }
-    for (const sourceTile of sourceTiles) {
-      let transformationMatrix: Matrix4 = parentTransform.clone();
-      if (sourceTile.transform) {
-        transformationMatrix = transformationMatrix.multiplyRight(sourceTile.transform);
-      }
-      if (sourceTile.type === 'json') {
-        await this.convertNestedTileset({parentNode, sourceTile, transformationMatrix, level});
-      } else {
-        await this.convertNode({parentNode, sourceTile, transformationMatrix, level});
-      }
-      if (sourceTile.id) {
-        console.log(sourceTile.id); // eslint-disable-line
-      }
+    for (const node of currentTraversalProps.parentNodes) {
+      await node.save();
     }
   }
 
@@ -568,8 +570,7 @@ export default class I3SConverter {
   private async _createNode(
     parentNode: NodeIndexDocument,
     sourceTile: Tiles3DTileJSONPostprocessed,
-    transformationMatrix: Matrix4,
-    level: number
+    transformationMatrix: Matrix4
   ): Promise<NodeIndexDocument[]> {
     this._checkAddRefinementTypeForTile(sourceTile);
 
@@ -660,12 +661,6 @@ export default class I3SConverter {
       nodesInPage.push(nodeInPage);
     }
 
-    await this._addChildrenWithNeighborsAndWriteFile({
-      parentNode: nodes[0],
-      sourceTiles: sourceTile.children,
-      parentTransform: transformationMatrix,
-      level: level + 1
-    });
     return nodes;
   }
 

@@ -225,7 +225,7 @@ test('gltf#EXT_feature_metadata - Should handle feature texture attributes', asy
     }
   };
 
-  await decodeExtensions(GLTF_WITH_TEXTURES);
+  await decodeExtensions(GLTF_WITH_TEXTURES, {gltf: {loadImages: true}});
 
   const expectedResult = {
     buf: {

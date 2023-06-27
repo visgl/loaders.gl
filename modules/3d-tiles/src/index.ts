@@ -24,3 +24,4 @@ export type {
   Tiles3DTileContent,
   ImplicitTilingExensionData
 } from './types';
+export type {Tiles3DLoaderOptions} from './tiles-3d-loader';
