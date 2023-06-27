@@ -1,3 +1,4 @@
+import {Tiles3DTileJSONPostprocessed} from '@loaders.gl/3d-tiles';
 import {BoundingVolumes} from '@loaders.gl/i3s';
 import {Tile3D} from '@loaders.gl/tiles';
 
@@ -16,7 +17,7 @@ const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;
  * To avoid infinity values when we do calculations of maxError we shold replace 0 with value which allows us
  * to make child maxError bigger than his parent maxError.
  * 
- * @param tile - 3d-tiles tile Object
+ * @param tile - 3d-tiles tile JSON
  * @param coordinates - node converted coordinates
  * @returns An array of LOD metrics in format compatible with i3s 3DNodeIndexDocument.lodSelection
  * @example 
@@ -31,7 +32,10 @@ const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;
         }
     ]
  */
-export function convertGeometricErrorToScreenThreshold(tile: Tile3D, coordinates: BoundingVolumes) {
+export function convertGeometricErrorToScreenThreshold(
+  tile: Tiles3DTileJSONPostprocessed,
+  coordinates: BoundingVolumes
+) {
   const lodSelection: {metricType: string; maxError: number}[] = [];
   const boundingVolume = tile.boundingVolume;
   const lodMetricValue = tile.lodMetricValue || 0.1;

@@ -8,34 +8,35 @@ import {
   makeBoundingSphereFromPoints,
   BoundingSphere
 } from '@math.gl/culling';
-import {Tile3D} from '@loaders.gl/tiles';
 import {Geoid} from '@math.gl/geoid';
 
 /**
  * Create bounding volumes object from tile and geoid height model.
- * @param tile
- * @param geoidHeightModel
+ * @param sourceBoundingVolume - initialized bounding volume of the source tile
+ * @param geoidHeightModel - instance of Geoid class that converts elevation from geoidal to ellipsoidal and back
  * @returns - Bounding volumes object
  */
-export function createBoundingVolumes(tile: Tile3D, geoidHeightModel: Geoid): BoundingVolumes {
+export function createBoundingVolumes(
+  sourceBoundingVolume: OrientedBoundingBox | BoundingSphere,
+  geoidHeightModel: Geoid
+): BoundingVolumes {
   let radius;
   let halfSize;
   let quaternion;
 
-  const boundingVolume = tile.boundingVolume;
   const cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(
-    boundingVolume.center,
+    sourceBoundingVolume.center,
     new Vector3()
   );
   cartographicCenter[2] =
     cartographicCenter[2] -
     geoidHeightModel.getHeight(cartographicCenter[1], cartographicCenter[0]);
-  if (boundingVolume instanceof OrientedBoundingBox) {
-    halfSize = boundingVolume.halfSize;
+  if (sourceBoundingVolume instanceof OrientedBoundingBox) {
+    halfSize = sourceBoundingVolume.halfSize;
     radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
-    quaternion = boundingVolume.quaternion;
+    quaternion = sourceBoundingVolume.quaternion;
   } else {
-    radius = tile.boundingVolume.radius;
+    radius = sourceBoundingVolume.radius;
     halfSize = [radius, radius, radius];
     quaternion = new Quaternion()
       .fromMatrix3(new Matrix3([halfSize[0], 0, 0, 0, halfSize[1], 0, 0, 0, halfSize[2]]))

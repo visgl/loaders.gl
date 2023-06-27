@@ -163,3 +163,16 @@ export type TypedArrayConstructor =
   | Uint32ArrayConstructor
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
+
+export type Tiles3DLoadOptions = {
+  _nodeWorkers: boolean;
+  reuseWorkers: boolean;
+  basis: {
+    format: string;
+    workerUrl: string;
+  };
+  draco: {workerUrl: string};
+  fetch: {
+    headers: any;
+  };
+};

@@ -7,9 +7,10 @@ import convertB3dmToI3sGeometry, {
   getPropertyTable
 } from '../../../src/i3s-converter/helpers/geometry-converter';
 import {PGMLoader} from '../../../src/pgm-loader';
-import {calculateTransformProps} from '../../../../tiles/src/tileset/helpers/transform-utils';
 import {createdStorageAttribute} from '../../../src/i3s-converter/helpers/feature-attributes';
 import {I3SAttributesWorker} from '../../../src/i3s-attributes-worker';
+import {BoundingSphere} from '@math.gl/culling';
+import {Matrix4} from '@math.gl/core';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 const FRANKFURT_B3DM_FILE_PATH =
@@ -37,15 +38,14 @@ test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt ti
     let nodeId = 1;
     const addNodeToNodePage = async () => nodeId++;
     const featuresHashArray = [];
-    const tileHeaderRequiredProps = {
-      computedTransform: [
-        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4055182.44018, 615965.038498, 4867494.346586, 1
-      ],
-      boundingVolume: {center: [4051833.805439, 618316.801881, 4870677.172590001]}
-    };
     const tileContent = await load(FRANKFURT_B3DM_FILE_PATH, Tiles3DLoader);
     const propertyTable = getPropertyTable(tileContent);
-    calculateTransformProps(tileHeaderRequiredProps, tileContent);
+    const tileTransform = new Matrix4([
+      1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4055182.44018, 615965.038498, 4867494.346586, 1
+    ]);
+    const tileBoundingVolume = new BoundingSphere([
+      4051833.805439, 618316.801881, 4870677.172590001
+    ]);
     const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
     const workerSource = await getWorkersSource();
     const attributeStorageInfo = [];
@@ -53,6 +53,8 @@ test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt ti
     try {
       const convertedResources = await convertB3dmToI3sGeometry(
         tileContent,
+        tileTransform,
+        tileBoundingVolume,
         addNodeToNodePage,
         propertyTable,
         featuresHashArray,
@@ -124,19 +126,20 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
   const draco = true;
   const generageBoundingVolumes = false;
   const shouldMergeMaterials = false;
-  const tileHeaderRequiredProps = {
-    computedTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    boundingVolume: {center: [3781178.760596639, 902182.0936989671, 5039803.738586299]}
-  };
   const tileContent = await load(BERLIN_B3DM_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
-  calculateTransformProps(tileHeaderRequiredProps, tileContent);
+  const tileTransform = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  const tileBoundingVolume = new BoundingSphere([
+    3781178.760596639, 902182.0936989671, 5039803.738586299
+  ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const workerSource = await getWorkersSource();
   const attributeStorageInfo = [];
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
       tileContent,
+      tileTransform,
+      tileBoundingVolume,
       addNodeToNodePage,
       propertyTable,
       featuresHashArray,
@@ -202,21 +205,22 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
   const draco = true;
   const generageBoundingVolumes = false;
   const shouldMergeMaterials = false;
-  const tileHeaderRequiredProps = {
-    computedTransform: [
-      1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4055182.44018, 615965.038498, 4867494.346586, 1
-    ],
-    boundingVolume: {center: [1319833.032477655, -4673588.626640962, 4120866.796624521]}
-  };
   const tileContent = await load(NEW_YORK_B3DM_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
-  calculateTransformProps(tileHeaderRequiredProps, tileContent);
+  const tileTransform = new Matrix4([
+    1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4055182.44018, 615965.038498, 4867494.346586, 1
+  ]);
+  const tileBoundingVolume = new BoundingSphere([
+    1319833.032477655, -4673588.626640962, 4120866.796624521
+  ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
       tileContent,
+      tileTransform,
+      tileBoundingVolume,
       addNodeToNodePage,
       propertyTable,
       featuresHashArray,
@@ -265,23 +269,24 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
   const draco = true;
   const generageBoundingVolumes = false;
   const shouldMergeMaterials = false;
-  const tileHeaderRequiredProps = {
-    computedTransform: [
-      0.8443837640659682, -0.5357387973460459, 0, 0, 0.32832660036003297, 0.5174791372742712,
-      0.7902005985709575, 0, -0.42334111834053034, -0.667232555788526, 0.6128482797708588, 0,
-      -2703514.4440963655, -4261038.614006309, 3887533.151398322, 1
-    ],
-    boundingVolume: {center: [-2703528.7614193764, -4261014.993900511, 3887572.9889940596]}
-  };
   const tileContent = await load(FERRY_GLTF_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
-  calculateTransformProps(tileHeaderRequiredProps, tileContent);
+  const tileTransform = new Matrix4([
+    0.8443837640659682, -0.5357387973460459, 0, 0, 0.32832660036003297, 0.5174791372742712,
+    0.7902005985709575, 0, -0.42334111834053034, -0.667232555788526, 0.6128482797708588, 0,
+    -2703514.4440963655, -4261038.614006309, 3887533.151398322, 1
+  ]);
+  const tileBoundingVolume = new BoundingSphere([
+    -2703528.7614193764, -4261014.993900511, 3887572.9889940596
+  ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
       tileContent,
+      tileTransform,
+      tileBoundingVolume,
       addNodeToNodePage,
       propertyTable,
       featuresHashArray,
@@ -339,22 +344,23 @@ test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be conver
   const draco = true;
   const generageBoundingVolumes = false;
   const shouldMergeMaterials = false;
-  const tileHeaderRequiredProps = {
-    computedTransform: [
-      -0.16491735, -0.98630739, 0, 0, -0.70808611, 0.11839684, 0.69612948, 0, -0.68659765,
-      0.11480383, -0.71791625, 0, -4386786.82071079, 733504.6938935, -4556188.9172627, 1
-    ],
-    boundingVolume: {center: [-4386794.587985844, 733486.8163247632, -4556196.147240348]}
-  };
   const tileContent = await load(TRIANGLE_STRIP_B3DM_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
-  calculateTransformProps(tileHeaderRequiredProps, tileContent);
+  const tileTransform = new Matrix4([
+    -0.16491735, -0.98630739, 0, 0, -0.70808611, 0.11839684, 0.69612948, 0, -0.68659765, 0.11480383,
+    -0.71791625, 0, -4386786.82071079, 733504.6938935, -4556188.9172627, 1
+  ]);
+  const tileBoundingVolume = new BoundingSphere([
+    -4386794.587985844, 733486.8163247632, -4556196.147240348
+  ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
       tileContent,
+      tileTransform,
+      tileBoundingVolume,
       addNodeToNodePage,
       propertyTable,
       featuresHashArray,
@@ -394,23 +400,24 @@ test('tile-converter - I3S Geometry converter # should not convert point geometr
   const draco = true;
   const generageBoundingVolumes = false;
   const shouldMergeMaterials = false;
-  const tileHeaderRequiredProps = {
-    computedTransform: [
-      -0.4222848483394723, 0.9064631856081685, 0, 0, -0.786494516061795, -0.3663962560290312,
-      0.49717216311116175, 0, 0.4506682627694476, 0.2099482714980043, 0.8676519119020993, 0,
-      2881693.941235528, 1342465.6491912308, 5510858.997465198, 1
-    ],
-    boundingVolume: {center: [2881727.346362028, 1342482.044833547, 5510923.203394569]}
-  };
   const tileContent = await load(HELSINKI_GLB_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
-  calculateTransformProps(tileHeaderRequiredProps, tileContent);
+  const tileTransform = new Matrix4([
+    -0.4222848483394723, 0.9064631856081685, 0, 0, -0.786494516061795, -0.3663962560290312,
+    0.49717216311116175, 0, 0.4506682627694476, 0.2099482714980043, 0.8676519119020993, 0,
+    2881693.941235528, 1342465.6491912308, 5510858.997465198, 1
+  ]);
+  const tileBoundingVolume = new BoundingSphere([
+    2881727.346362028, 1342482.044833547, 5510923.203394569
+  ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     await convertB3dmToI3sGeometry(
       tileContent,
+      tileTransform,
+      tileBoundingVolume,
       addNodeToNodePage,
       propertyTable,
       featuresHashArray,

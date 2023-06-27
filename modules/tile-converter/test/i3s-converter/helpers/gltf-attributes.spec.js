@@ -1,5 +1,7 @@
+import {BoundingSphere} from '@math.gl/culling';
 import {prepareDataForAttributesConversion} from '../../../src/i3s-converter/helpers/gltf-attributes';
 import test from 'tape-promise/tape';
+import {Matrix4} from '@math.gl/core';
 
 test('gltf-attributes - Should generate attributes object from tileContent without images', async (t) => {
   const tileContent = {
@@ -46,9 +48,7 @@ test('gltf-attributes - Should generate attributes object from tileContent witho
           }
         ]
       }
-    },
-    cartographicOrigin: [1, 2, 3],
-    cartesianModelMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    }
   };
 
   const expectedResult = {
@@ -74,16 +74,23 @@ test('gltf-attributes - Should generate attributes object from tileContent witho
       }
     ],
     images: [],
-    cartographicOrigin: [1, 2, 3],
-    cartesianModelMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    cartographicOrigin: [8.676496951388435, 50.108416671362576, 189.47502169783516],
+    cartesianModelMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
   };
-  // @ts-expect-error
-  const result = prepareDataForAttributesConversion(tileContent);
+  const result = prepareDataForAttributesConversion(
+    // @ts-expect-error
+    tileContent,
+    new Matrix4(),
+    new BoundingSphere([4051833.805439, 618316.801881, 4870677.172590001])
+  );
 
   t.ok(result);
   // @ts-expect-error
   delete result.nodes[0].mesh.primitives[0].material.uniqueId;
-  t.deepEqual(result, expectedResult);
+  t.deepEqual(result.nodes, expectedResult.nodes);
+  t.deepEqual(result.images, expectedResult.images);
+  t.ok(areNumberArraysEqual(result.cartographicOrigin, expectedResult.cartographicOrigin));
+  t.ok(areNumberArraysEqual(result.cartesianModelMatrix, expectedResult.cartesianModelMatrix));
   t.end();
 });
 
@@ -160,9 +167,7 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
           }
         ]
       }
-    },
-    cartographicOrigin: [1, 2, 3],
-    cartesianModelMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    }
   };
 
   const expectedResult = {
@@ -200,15 +205,38 @@ test('gltf-attributes - Should generate attributes object from tileContent with 
         data: new Uint8Array([3, 3, 3, 255, 4, 4, 4, 255])
       }
     ],
-    cartographicOrigin: [1, 2, 3],
-    cartesianModelMatrix: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    cartographicOrigin: [8.676496951388435, 50.108416671362576, 189.47502169783516],
+    cartesianModelMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
   };
-  // @ts-expect-error
-  const result = prepareDataForAttributesConversion(tileContent);
+
+  const result = prepareDataForAttributesConversion(
+    // @ts-expect-error
+    tileContent,
+    new Matrix4(),
+    new BoundingSphere([4051833.805439, 618316.801881, 4870677.172590001])
+  );
 
   t.ok(result);
   // @ts-expect-error
   delete result.nodes[0].mesh.primitives[0].material.uniqueId;
-  t.deepEqual(result, expectedResult);
+  t.deepEqual(result.nodes, expectedResult.nodes);
+  t.deepEqual(result.images, expectedResult.images);
+  t.ok(areNumberArraysEqual(result.cartographicOrigin, expectedResult.cartographicOrigin));
+  t.ok(areNumberArraysEqual(result.cartesianModelMatrix, expectedResult.cartesianModelMatrix));
   t.end();
 });
+
+const EPSILON = 0.000000001;
+function areNumberArraysEqual(array1, array2) {
+  let result = true;
+  if (array1.length !== array2.length) {
+    return false;
+  }
+  for (let i = 0; i < array1.length; i++) {
+    if (Math.abs(array1[i] - array2[i]) > EPSILON) {
+      result = false;
+      break;
+    }
+  }
+  return result;
+}
