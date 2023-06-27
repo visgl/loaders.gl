@@ -13,22 +13,23 @@ import {
   GLTFMeshPrimitive
 } from '../../types/gltf-json-schema';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
+import {GLTFLoaderOptions} from '../../../gltf-loader';
 
 /** Extension name */
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
 
 export const name = EXT_FEATURE_METADATA;
 
-export async function decode(gltfData: {json: GLTF}): Promise<void> {
+export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
-  decodeExtFeatureMetadata(scenegraph);
+  decodeExtFeatureMetadata(scenegraph, options);
 }
 
 /**
  * Decodes feature metadata from extension
  * @param scenegraph
  */
-function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph): void {
+function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph, options: GLTFLoaderOptions): void {
   const extension: GLTF_EXT_feature_metadata | null = scenegraph.getExtension(EXT_FEATURE_METADATA);
   if (!extension) return;
 
@@ -47,7 +48,7 @@ function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph): void {
   }
 
   const {featureTextures} = extension;
-  if (schemaClasses && featureTextures) {
+  if (schemaClasses && featureTextures && options.gltf?.loadImages) {
     for (const schemaName in schemaClasses) {
       const schemaClass = schemaClasses[schemaName];
       const featureTexture = findFeatureTextureByName(featureTextures, schemaName);

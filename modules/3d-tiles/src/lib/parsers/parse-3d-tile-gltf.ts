@@ -19,11 +19,15 @@ export async function parseGltf3DTile(
       ? options['3d-tiles'].assetGltfUpAxis
       : 'Y';
 
-  if (!context) {
-    return;
+  if (options?.['3d-tiles']?.loadGLTF) {
+    if (!context) {
+      return;
+    }
+    const {parse} = context;
+    const gltfWithBuffers = await parse(arrayBuffer, GLTFLoader, options, context);
+    tile.gltf = postProcessGLTF(gltfWithBuffers);
+    tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
+  } else {
+    tile.gltfArrayBuffer = arrayBuffer;
   }
-  const {parse} = context;
-  const gltfWithBuffers = await parse(arrayBuffer, GLTFLoader, options, context);
-  tile.gltf = postProcessGLTF(gltfWithBuffers);
-  tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
 }
