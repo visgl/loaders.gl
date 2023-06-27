@@ -1038,6 +1038,7 @@ export type FeatureTableProperty = {
    * Otherwise it is measured relative to the beginning of the buffer.
    */
   bufferView: number;
+
   /** The type of values in arrayOffsetBufferView and stringOffsetBufferView. */
   offsetType?: string; // default: "UINT32"
   /**
@@ -1083,6 +1084,8 @@ type FeatureTexture = {
   extras?: any;
   [key: string]: any;
 };
+export type {FeatureTexture as EXT_feature_metadata_feature_texture};
+export type {TextureAccessor as FeatureTextureProperty};
 
 /**
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#texture-accessor

@@ -1,6 +1,6 @@
 import {Tile3DBatchTable} from '@loaders.gl/3d-tiles';
 import {decodeRGB565, GL} from '@loaders.gl/math';
-import {Tiles3DTileContent} from 'modules/3d-tiles/src/types';
+import {Tiles3DTileContent} from '../../../types';
 
 /* eslint-disable complexity*/
 export function normalize3DTileColorAttribute(

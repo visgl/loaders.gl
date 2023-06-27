@@ -9,8 +9,8 @@
 
 import {GLTFLoader, postProcessGLTF, _getMemoryUsageGLTF} from '@loaders.gl/gltf';
 import {LoaderContext, sliceArrayBuffer} from '@loaders.gl/loader-utils';
-import {Tiles3DLoaderOptions} from 'modules/3d-tiles/src/tiles-3d-loader';
-import {Tiles3DTileContent} from 'modules/3d-tiles/src/types';
+import {Tiles3DTileContent} from '../../../types';
+import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
 
 export const GLTF_FORMAT = {
   URI: 0,
