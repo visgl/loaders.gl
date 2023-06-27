@@ -1,12 +1,7 @@
-import {
-  Tiles3DTileContent,
-  Tiles3DTileJSONPostprocessed,
-  parseBatchedModel
-} from '@loaders.gl/3d-tiles';
+import {Tiles3DTileContent, Tiles3DTileJSONPostprocessed} from '@loaders.gl/3d-tiles';
 import {GltfPrimitiveModeString, PreprocessData} from '../types';
 import {GLTF, GLTFLoader} from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
-import {getMagicString} from '@loaders.gl/loader-utils';
 
 /**
  * glTF primitive modes
@@ -26,28 +21,24 @@ export const GLTF_PRIMITIVE_MODES = [
  * Analyze tile content. This function is used during preprocess stage of
  * conversion
  * @param tile - 3DTiles tile JSON metadata
- * @param tileContentBuffer - 3DTiles tile content ArrayBuffer
+ * @param tileContent - 3DTiles tile content ArrayBuffer
  * @returns
  */
 export const analyzeTileContent = async (
   tile: Tiles3DTileJSONPostprocessed,
-  tileContentBuffer: ArrayBuffer | null
+  tileContent: Tiles3DTileContent | null
 ): Promise<PreprocessData> => {
   const result: PreprocessData = {
-    meshTopologyTypes: []
+    meshTopologyTypes: new Set()
   };
-  if (!tileContentBuffer) {
+  if (!tileContent?.gltfArrayBuffer) {
     return result;
   }
 
-  const contentType = getMagicString(tileContentBuffer, 0, 4);
-  let gltf;
-  if (contentType === 'b3dm') {
-    gltf = await getGltfJsonFromB3dm(tileContentBuffer);
-  } else if (contentType === 'glTF') {
-    const gltfData = await parse(tileContentBuffer, GLTFLoader);
-    gltf = gltfData.json;
-  }
+  const gltfData = await parse(tileContent.gltfArrayBuffer, GLTFLoader, {
+    gltf: {normalize: false, loadBuffers: false, loadImages: false, decompressMeshes: false}
+  });
+  const gltf = gltfData.json;
 
   if (!gltf) {
     return result;
@@ -58,58 +49,33 @@ export const analyzeTileContent = async (
 };
 
 /**
- * Get JSON part of GLB content
- * @param tileContentBuffer - 3DTiles tile content ArrayBuffer
- */
-const getGltfJsonFromB3dm = async (tileContentBuffer: ArrayBuffer): Promise<GLTF | null> => {
-  const tile: Tiles3DTileContent = {};
-  parseBatchedModel(tile, tileContentBuffer, 0);
-  if (!tile.gltfArrayBuffer) {
-    return null;
-  }
-  const gltf = await parse(tile.gltfArrayBuffer, GLTFLoader);
-  return gltf.json;
-};
-
-/**
  * Get mesh topology types that the glb content has
  * @param gltfJson - JSON part of GLB content
  * @returns array of mesh types found
  */
-const getMeshTypesFromGltf = (gltfJson: GLTF): GltfPrimitiveModeString[] => {
-  const result: GltfPrimitiveModeString[] = [];
+const getMeshTypesFromGltf = (gltfJson: GLTF): Set<GltfPrimitiveModeString> => {
+  const result: Set<GltfPrimitiveModeString> = new Set();
   for (const mesh of gltfJson.meshes || []) {
     for (const primitive of mesh.primitives) {
       let {mode} = primitive;
       if (typeof mode !== 'number') {
         mode = 4; // Default is 4 - TRIANGLES
       }
-      result.push(GLTF_PRIMITIVE_MODES[mode]);
+      result.add(GLTF_PRIMITIVE_MODES[mode]);
     }
   }
   return result;
 };
 
 /**
- * Merge 2 preprocess data objects
+ * Merge object2 into object1
  * @param object1
  * @param object2
- * @returns
+ * @returns nothing
  */
-export const mergePreprocessData = (
-  object1: PreprocessData,
-  object2: PreprocessData
-): PreprocessData => {
+export const mergePreprocessData = (object1: PreprocessData, object2: PreprocessData): void => {
   // Merge topology mesh types info
-  const uniqueMeshTypes = new Set<GltfPrimitiveModeString>();
-  for (const type of object1.meshTopologyTypes) {
-    uniqueMeshTypes.add(type);
-  }
   for (const type of object2.meshTopologyTypes) {
-    uniqueMeshTypes.add(type);
+    object1.meshTopologyTypes.add(type);
   }
-
-  return {
-    meshTopologyTypes: Array.from(uniqueMeshTypes.values())
-  };
 };

@@ -2,6 +2,7 @@
 
 import type {
   FeatureTableJson,
+  Tiles3DLoaderOptions,
   Tiles3DTileContent,
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSONPostprocessed
@@ -46,15 +47,14 @@ import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shar
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s/src/types';
+import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {
   GltfPrimitiveModeString,
   I3SConvertedResources,
   PreprocessData,
-  SharedResourcesArrays,
-  Tiles3DLoadOptions
+  SharedResourcesArrays
 } from './types';
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
@@ -69,7 +69,7 @@ import {
   getFieldAttributeType
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
-import {fetchTile3DContent, loadNestedTileset, loadTile3DContent} from './helpers/load-3d-tiles';
+import {loadNestedTileset, loadTile3DContent} from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
@@ -109,7 +109,7 @@ export default class I3SConverter {
   conversionStartTime: [number, number] = [0, 0];
   refreshTokenTime: [number, number] = [0, 0];
   sourceTileset: Tiles3DTilesetJSONPostprocessed | null = null;
-  loadOptions: Tiles3DLoadOptions = {
+  loadOptions: Tiles3DLoaderOptions = {
     _nodeWorkers: true,
     reuseWorkers: true,
     basis: {
@@ -119,9 +119,7 @@ export default class I3SConverter {
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
-    fetch: {
-      headers: null
-    }
+    fetch: {}
   };
   geoidHeightModel: Geoid | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
@@ -132,7 +130,7 @@ export default class I3SConverter {
   writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
   compressList: string[] | null = null;
   preprocessData: PreprocessData = {
-    meshTopologyTypes: []
+    meshTopologyTypes: new Set()
   };
 
   constructor() {
@@ -283,11 +281,11 @@ export default class I3SConverter {
     const {meshTopologyTypes} = this.preprocessData;
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
-    console.log(`glTF mesh topology types: ${meshTopologyTypes.join(', ')}`);
+    console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
     console.log(`------------------------------------------------`);
     if (
-      !meshTopologyTypes.includes(GltfPrimitiveModeString.TRIANGLES) &&
-      !meshTopologyTypes.includes(GltfPrimitiveModeString.TRIANGLE_STRIP)
+      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLES) &&
+      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLE_STRIP)
     ) {
       console.log(
         'The tileset is of unsupported mesh topology types. The conversion will be interrupted.'
@@ -315,13 +313,12 @@ export default class I3SConverter {
     if (sourceTile.id) {
       console.log(`[analyze]: ${sourceTile.id}`); // eslint-disable-line
     }
-    const tileContentBuffer = await fetchTile3DContent(
-      this.sourceTileset,
-      sourceTile,
-      this.loadOptions
-    );
-    const tilePreprocessData = await analyzeTileContent(sourceTile, tileContentBuffer);
-    this.preprocessData = mergePreprocessData(this.preprocessData, tilePreprocessData);
+    const tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, {
+      ...this.loadOptions,
+      '3d-tiles': {...this.loadOptions['3d-tiles'], loadGLTF: false}
+    });
+    const tilePreprocessData = await analyzeTileContent(sourceTile, tileContent);
+    mergePreprocessData(this.preprocessData, tilePreprocessData);
 
     return null;
   }
