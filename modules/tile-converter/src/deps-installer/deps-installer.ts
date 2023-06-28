@@ -52,7 +52,7 @@ export class DepsInstaller {
       // resolve this issue
       arguments: ['install', 'sharp@0.30.4', 'join-images@1.1.3'],
       wait: 0,
-      proceedOnStrerrData: true
+      ignoreStderr: true
     });
 
     console.log('All dependencies were installed succesfully.'); // eslint-disable-line no-console
