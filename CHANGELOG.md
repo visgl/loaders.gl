@@ -6,6 +6,11 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 release info (#2491))
 
+### v4.0.0-alpha.9
+
+- fix(worker-utils): child process - ignore warnings (#2529)
+- fix: update dependencies (#2528)
+
 ### v4.0.0-alpha.8
 
 - Update supported-features.md (#2525)

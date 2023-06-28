@@ -4050,9 +4050,9 @@ camelcase@^5.0.0, camelcase@^5.3.1:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 caniuse-lite@^1.0.30001449:
-  version "1.0.30001508"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001508.tgz"
-  integrity sha512-sdQZOJdmt3GJs1UMNpCCCyeuS2IEGLXnHyAo9yIO5JJDjbjoVRij4M1qep6P6gFpptD1PqIYgzM+gwJbOi92mw==
+  version "1.0.30001509"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001509.tgz"
+  integrity sha512-2uDDk+TRiTX5hMcUYT/7CSyzMZxjfGu0vAUjS2g0LSD8UoXOv0LtpH4LxGMemsiPq6LCVIUjNwVM0erkOkGCDA==
 
 caseless@~0.12.0:
   version "0.12.0"
