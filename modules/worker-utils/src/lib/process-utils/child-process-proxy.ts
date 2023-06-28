@@ -20,7 +20,7 @@ export type ChildProcessProxyProps = {
   /** Options passed on to Node'.js `spawn` */
   spawn?: ChildProcess.SpawnOptionsWithoutStdio;
   /** Should proceed if stderr stream recieved data */
-  proceedOnStrerrData?: boolean;
+  ignoreStderr?: boolean;
   /** Callback when the  */
   onStart?: (proxy: ChildProcessProxy) => void;
   onSuccess?: (proxy: ChildProcessProxy) => void;
@@ -87,7 +87,7 @@ export default class ChildProcessProxy {
         });
         childProcess.stderr.on('data', (data) => {
           console.log(`Child process wrote to stderr: "${data}".`);
-          if (!props.proceedOnStrerrData) {
+          if (!props.ignoreStderr) {
             this._clearTimeout();
             reject(new Error(data));
           }
