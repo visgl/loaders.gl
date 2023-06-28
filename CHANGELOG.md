@@ -2,6 +2,10 @@
 
 # v3.4
 
+## v3.4.5
+
+- fix(worker-utils): child process - ignore warnings (#2530)
+
 ## v3.4.4
 
 -  fix: 3d-tiles peer dependency (#2503)
