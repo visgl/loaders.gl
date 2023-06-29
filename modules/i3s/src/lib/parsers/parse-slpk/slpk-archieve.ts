@@ -1,9 +1,28 @@
-import {processOnWorker} from '@loaders.gl/worker-utils';
 import md5 from 'md5';
-import {CompressionWorker} from '@loaders.gl/compression';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {BufferFileProvider} from '../parse-zip/buffer-file-provider';
+import '@loaders.gl/polyfills';
+import {GZipCompression} from '@loaders.gl/compression';
 
+// import brotli from 'brotli'; - brotli has problems with decompress in browsers
+// import brotliDecompress from 'brotli/decompress';
+// import lz4js from 'lz4js';
+// // import lzo from 'lzo';
+// import {ZstdCodec} from 'zstd-codec';
+
+// // Inject large dependencies through Compression constructor options
+// const modules = {
+//   // brotli has problems with decompress in browsers
+//   brotli: {
+//     decompress: brotliDecompress,
+//     compress: () => {
+//       throw new Error('brotli compress');
+//     }
+//   },
+//   lz4js,
+//   // lzo,
+//   'zstd-codec': ZstdCodec
+// };
 /** Element of hash array */
 type HashElement = {
   /**
@@ -135,11 +154,9 @@ export class SLPKArchive {
       return undefined;
     }
     if (/\.gz$/.test(path)) {
-      const decompressedData = await processOnWorker(CompressionWorker, data, {
-        compression: 'gzip',
-        operation: 'decompress',
-        gzip: {}
-      });
+      const compression = new GZipCompression();
+
+      const decompressedData = await compression.decompress(data);
       return decompressedData;
     }
     return Buffer.from(data);

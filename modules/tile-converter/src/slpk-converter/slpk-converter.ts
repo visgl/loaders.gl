@@ -5,8 +5,7 @@ import {FileHandleProvider} from './helpers/file-handle-provider';
 import {parseZipLocalFileHeader} from '@loaders.gl/i3s';
 import {promises as fsPromises, existsSync} from 'fs';
 import {path} from '@loaders.gl/loader-utils';
-import {processOnWorker} from '@loaders.gl/worker-utils';
-import {CompressionWorker} from '@loaders.gl/compression';
+import {GZipCompression} from '@loaders.gl/compression';
 // import { writeFile } from '../lib/utils/file-utils';
 
 const indexNames = [
@@ -82,11 +81,9 @@ export default class SLPKConverter {
 
   private async unGzip(file: File): Promise<File> {
     if (/\.gz$/.test(file.name ?? '')) {
-      const decompressedData = await processOnWorker(CompressionWorker, file.data, {
-        compression: 'gzip',
-        operation: 'decompress',
-        gzip: {}
-      });
+      const compression = new GZipCompression();
+
+      const decompressedData = await compression.decompress(file.data);
       return {data: decompressedData, name: (file.name ?? '').slice(0, -3)};
     }
     return Promise.resolve(file);
