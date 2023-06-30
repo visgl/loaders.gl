@@ -6,6 +6,10 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 release info (#2491))
 
+### v4.0.0-alpha.10
+
+- fix(tile-converter): install deps on windows (#2532)
+
 ### v4.0.0-alpha.9
 
 - fix(worker-utils): child process - ignore warnings (#2529)
