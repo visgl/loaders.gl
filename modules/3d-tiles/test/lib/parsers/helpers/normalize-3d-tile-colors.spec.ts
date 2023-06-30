@@ -5,7 +5,7 @@ import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers
 
 const TEST_CASES = [
   {
-    tile: null,
+    tile: {},
     colors: null,
     batchTable: null,
     expected: null,

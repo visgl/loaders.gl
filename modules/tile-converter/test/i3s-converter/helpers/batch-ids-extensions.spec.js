@@ -232,11 +232,10 @@ test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should retur
   t.deepEqual(batchIds, []);
 });
 
-test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return empty batchIds for not yet supported featureTextures', async (t) => {
+test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return batchIds for featureTextures provided', async (t) => {
   const attributes = {
-    POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])},
-    TEXCOORD_0: {
-      value: new Float32Array([0.1, 0.1, 0.9, 0.9, 0.1, 0.9])
+    firstTextureName: {
+      value: new Float32Array([33, 35, 29, 32, 24, 28])
     }
   };
   const primitive = {
@@ -249,22 +248,16 @@ test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should retur
   const images = [
     {
       name: 'first',
-      compressed: true,
-      data: [
-        {
-          components: 4,
-          width: 2,
-          height: 2,
-          data: new Uint8Array([1, 2, 3, 255])
-        }
-      ]
+      components: 4,
+      height: 2,
+      width: 2,
+      data: new Uint8Array([24, 24, 24, 255, 28, 28, 28, 255, 35, 35, 35, 255, 24, 24, 24, 255])
     }
   ];
-
   // @ts-ignore
   const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
 
-  t.deepEqual(batchIds, []);
+  t.deepEqual(batchIds, [33, 35, 29, 32, 24, 28]);
 });
 
 test('#handleBatchIdsExtensions#handleExtFeatureMetadataExtension - Should return batchIds for texture', async (t) => {

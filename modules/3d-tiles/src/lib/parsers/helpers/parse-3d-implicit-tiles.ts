@@ -1,4 +1,4 @@
-import type {Availability, BoundingVolume, Subtree} from '../../../types';
+import type {Availability, Tile3DBoundingVolume, Subtree} from '../../../types';
 import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
 
@@ -263,7 +263,7 @@ function formatTileData(
   const uri = tile.contentUrl && tile.contentUrl.replace(`${basePath}/`, '');
   const lodMetricValue = rootLodMetricValue / 2 ** level;
 
-  const boundingVolume: BoundingVolume = s2VolumeBox?.box
+  const boundingVolume: Tile3DBoundingVolume = s2VolumeBox?.box
     ? {box: s2VolumeBox.box}
     : rootBoundingVolume;
 
@@ -297,9 +297,9 @@ function formatTileData(
  */
 function calculateBoundingVolumeForChildTile(
   level: number,
-  rootBoundingVolume: BoundingVolume,
+  rootBoundingVolume: Tile3DBoundingVolume,
   childCoordinates: {childTileX: number; childTileY: number; childTileZ: number}
-): BoundingVolume {
+): Tile3DBoundingVolume {
   if (rootBoundingVolume.region) {
     const {childTileX, childTileY, childTileZ} = childCoordinates;
     const [west, south, east, north, minimumHeight, maximumHeight] = rootBoundingVolume.region;

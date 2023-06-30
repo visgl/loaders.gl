@@ -30,7 +30,8 @@ export type {
   ValueCount,
   BuildingSceneSublayer,
   DATA_TYPE,
-  OperationalLayer
+  OperationalLayer,
+  TextureSetDefinitionFormats
 } from './types';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';

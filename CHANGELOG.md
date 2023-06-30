@@ -6,6 +6,23 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 release info (#2491))
 
+### v4.0.0-alpha.9
+
+- fix(worker-utils): child process - ignore warnings (#2529)
+- fix: update dependencies (#2528)
+
+### v4.0.0-alpha.8
+
+- Update supported-features.md (#2525)
+- chore(tile-converter): preprocess stage for I3SConverter (#2520)
+- chore(tile-converter): i3s-converter - mitigate "tiles" module dependency (#2517)
+- chore(3d-tiles): tile content type (#2516)
+- feat(i3s): Add an option to multiply colors by attribute (#2519)
+- feat(tile-converter): support attributes data from textures (#2511)
+- chore(3d-tiles): improve JSON types (#2509)
+- chore(slpk): slpk mode for server implemented (#2486)
+- fix(tile-converter): node workers error (#2504)
+
 ### v4.0.0-alpha.7
 
 - fix(tile-converter): reject POINT mesh type (#2501)

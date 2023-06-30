@@ -47,23 +47,18 @@ export async function parseGLTF(
 
   preprocessExtensions(gltf, options, context);
 
-  const promises: Promise<any>[] = [];
-
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options?.gltf?.loadBuffers && gltf.json.buffers) {
     await loadBuffers(gltf, options, context);
   }
 
+  // loadImages and decodeExtensions should not be running in parallel, because
+  // decodeExtensions uses data from images taken during the loadImages call.
   if (options?.gltf?.loadImages) {
-    const promise = loadImages(gltf, options, context);
-    promises.push(promise);
+    await loadImages(gltf, options, context);
   }
 
-  const promise = decodeExtensions(gltf, options, context);
-  promises.push(promise);
-
-  // Parallelize image loading and buffer loading/extension decoding
-  await Promise.all(promises);
+  await decodeExtensions(gltf, options, context);
 
   return gltf;
 }
