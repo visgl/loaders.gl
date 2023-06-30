@@ -3,11 +3,13 @@ import {isBrowser} from '@loaders.gl/core';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {FileHandleProvider} from './helpers/file-handle-provider';
 import {parseZipLocalFileHeader} from '@loaders.gl/i3s';
-import {promises as fsPromises, existsSync} from 'fs';
 import {path} from '@loaders.gl/loader-utils';
 import {GZipCompression} from '@loaders.gl/compression';
-// import { writeFile } from '../lib/utils/file-utils';
+import {writeFile} from '../lib/utils/file-utils';
 
+/**
+ * names of files that should be changed to index
+ */
 const indexNames = [
   '3dSceneLayer.json.gz',
   '3dNodeIndexDocument.json.gz',
@@ -95,9 +97,7 @@ export default class SLPKConverter {
     }
     const finalPath = path.join(outputPath, options.name);
     const dirName = path.dirname(finalPath);
-    if (!existsSync(dirName)) {
-      await fsPromises.mkdir(dirName, {recursive: true});
-    }
-    await fsPromises.writeFile(finalPath, Buffer.from(options.data));
+    const fileName = path.filename(finalPath);
+    await writeFile(dirName, options.data, fileName);
   }
 }
