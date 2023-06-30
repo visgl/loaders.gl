@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/schema",
-  "version": "3.4.5",
+  "version": "3.4.6",
   "description": "Table format APIs for JSON, CSV, etc...",
   "license": "MIT",
   "publishConfig": {

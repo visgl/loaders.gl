@@ -2,6 +2,10 @@
 
 # v3.4
 
+## v3.4.6
+
+- fix(tile-converter): install deps on windows (#2532)
+
 ## v3.4.5
 
 - fix(worker-utils): child process - ignore warnings (#2530)

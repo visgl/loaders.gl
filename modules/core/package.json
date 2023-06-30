@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "3.4.5",
+  "version": "3.4.6",
   "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
   "publishConfig": {
@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.4.5",
-    "@loaders.gl/worker-utils": "3.4.5",
+    "@loaders.gl/loader-utils": "3.4.6",
+    "@loaders.gl/worker-utils": "3.4.6",
     "@probe.gl/log": "^4.0.1"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
