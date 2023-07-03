@@ -51,7 +51,7 @@ const ATTRIBUTES_STORAGE_INFO_STUB = [
 ];
 const Y_UP_TO_Z_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1]);
 
-test('tile-converter - b3dm converter#should convert i3s node data to b3dm encoded data', async (t) => {
+test('tile-converter(3d-tiles-converter)#b3dm converter - should convert i3s node data to b3dm encoded data', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
     const i3sContent = tile.content;
@@ -74,7 +74,7 @@ test('tile-converter - b3dm converter#should convert i3s node data to b3dm encod
   }
 });
 
-test('tile-converter - b3dm converter#should normalise positions correctly', async (t) => {
+test('tile-converter(3d-tiles-converter)#b3dm converter - should normalise positions correctly', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({
       i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
@@ -106,7 +106,7 @@ test('tile-converter - b3dm converter#should normalise positions correctly', asy
   }
 });
 
-test('tile-converter - b3dm converter#should convert material', async (t) => {
+test('tile-converter(3d-tiles-converter)#b3dm converter - should convert material', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
     const b3dmConverter = new B3dmConverter();
@@ -132,7 +132,7 @@ test('tile-converter - b3dm converter#should convert material', async (t) => {
   }
 });
 
-test('tile-converter - b3dm converter#should not convert incorrect normals', async (t) => {
+test('tile-converter(3d-tiles-converter)#b3dm converter - should not convert incorrect normals', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
     const b3dmConverter = new B3dmConverter();
@@ -171,7 +171,7 @@ test('tile-converter - b3dm converter#should not convert incorrect normals', asy
   }
 });
 
-test('tile-converter - b3dm converter#should handle geometry without normals', async (t) => {
+test('tile-converter(3d-tiles-converter)#b3dm converter - should handle geometry without normals', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
     const b3dmConverter = new B3dmConverter();
@@ -195,7 +195,7 @@ test('tile-converter - b3dm converter#should handle geometry without normals', a
   }
 });
 
-test('tile-converter - b3dm converter#should convert i3s node data to b3dm encoded data with ktx2 textures', async (t) => {
+test('tile-converter(3d-tiles-converter)#b3dm converter - should convert i3s node data to b3dm encoded data with ktx2 textures', async (t) => {
   if (!isBrowser) {
     const _replaceWithKTX2Texture = true;
     const options = {i3s: {decodeTextures: false, useCompressedTextures: true}};
@@ -217,7 +217,7 @@ test('tile-converter - b3dm converter#should convert i3s node data to b3dm encod
   }
 });
 
-test('tile-converter - b3dm converter#should generate batchIds during conversion', async (t) => {
+test('tile-converter(3d-tiles-converter)#b3dm converter - should generate batchIds during conversion', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
     const attributes = await _loadAttributes(tile, ATTRIBUTES_STORAGE_INFO_STUB);

@@ -15,63 +15,75 @@ const getConverter = ({slpk, instantNodeWriting} = {slpk: false, instantNodeWrit
   return converter;
 };
 
-test('tile-converter - I3SConverter#NodePages', async (t) => {
+test('tile-converter(i3s-converter)#NodeIndexDocument', async (t) => {
   if (isBrowser) {
     t.end();
     return;
   }
 
-  t.test('Should create an instance of NodeIndexDocument class', async (st) => {
-    const node = new NodeIndexDocument(0, getConverter());
-    st.ok(node instanceof NodeIndexDocument);
-    st.equal(node.inPageId, 0);
-    st.equal(node.id, 'root');
-    st.end();
-  });
+  t.test(
+    'tile-converter(i3s-converter)#NodeIndexDocument - Should create an instance of NodeIndexDocument class',
+    async (st) => {
+      const node = new NodeIndexDocument(0, getConverter());
+      st.ok(node instanceof NodeIndexDocument);
+      st.equal(node.inPageId, 0);
+      st.equal(node.id, 'root');
+      st.end();
+    }
+  );
 
-  t.test('Should create root node', async (st) => {
-    const node = await NodeIndexDocument.createRootNode(
-      {obb: {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]}, mbs: [1, 2, 3, 4]},
-      getConverter()
-    );
-    st.ok(node instanceof NodeIndexDocument);
-    st.equal(node.inPageId, 0);
-    st.equal(node.id, 'root');
-    st.end();
-  });
+  t.test(
+    'tile-converter(i3s-converter)#NodeIndexDocument - Should create root node',
+    async (st) => {
+      const node = await NodeIndexDocument.createRootNode(
+        {
+          obb: {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]},
+          mbs: [1, 2, 3, 4]
+        },
+        getConverter()
+      );
+      st.ok(node instanceof NodeIndexDocument);
+      st.equal(node.inPageId, 0);
+      st.equal(node.id, 'root');
+      st.end();
+    }
+  );
 
-  t.test('Should create root node', async (st) => {
-    const obb = {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]};
-    const parentNode = await NodeIndexDocument.createRootNode(
-      {obb, mbs: [1, 2, 3, 4]},
-      getConverter()
-    );
-    const nodeInPage = {index: 5, obb};
-    const emptyResources = {
-      geometry: null,
-      compressedGeometry: null,
-      texture: null,
-      sharedResources: null,
-      meshMaterial: null,
-      vertexCount: null,
-      attributes: null,
-      featureCount: null,
-      boundingVolumes: null,
-      hasUvRegions: false
-    };
-    const node = await NodeIndexDocument.createNode(
-      parentNode,
-      {obb, mbs: [1, 2, 3, 4]},
-      [{metricType: 'metricType', maxError: 12345}],
-      nodeInPage,
-      emptyResources,
-      getConverter()
-    );
-    st.ok(node instanceof NodeIndexDocument);
-    st.equal(node.inPageId, 5);
-    st.equal(node.id, '5');
-    st.end();
-  });
+  t.test(
+    'tile-converter(i3s-converter)#NodeIndexDocument - Should create root node',
+    async (st) => {
+      const obb = {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]};
+      const parentNode = await NodeIndexDocument.createRootNode(
+        {obb, mbs: [1, 2, 3, 4]},
+        getConverter()
+      );
+      const nodeInPage = {index: 5, obb};
+      const emptyResources = {
+        geometry: null,
+        compressedGeometry: null,
+        texture: null,
+        sharedResources: null,
+        meshMaterial: null,
+        vertexCount: null,
+        attributes: null,
+        featureCount: null,
+        boundingVolumes: null,
+        hasUvRegions: false
+      };
+      const node = await NodeIndexDocument.createNode(
+        parentNode,
+        {obb, mbs: [1, 2, 3, 4]},
+        [{metricType: 'metricType', maxError: 12345}],
+        nodeInPage,
+        emptyResources,
+        getConverter()
+      );
+      st.ok(node instanceof NodeIndexDocument);
+      st.equal(node.inPageId, 5);
+      st.equal(node.id, '5');
+      st.end();
+    }
+  );
 
   t.end();
 });

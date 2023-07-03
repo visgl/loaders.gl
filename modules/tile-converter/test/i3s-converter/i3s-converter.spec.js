@@ -38,7 +38,7 @@ setLoaderOptions({
   _worker: 'test'
 });
 
-test('tile-converter - Converters#texure attributes', async (t) => {
+test('tile-converter(i3s-converter)#texure attributes', async (t) => {
   const converter = new I3SConverter();
   const TEXTURE_ATTRIBUTES_TILESET_URL =
     '@loaders.gl/tile-converter/test/data/feature-texture/tileset.json';
@@ -64,7 +64,7 @@ test('tile-converter - Converters#texure attributes', async (t) => {
   t.end();
 });
 
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', async (t) => {
+test('tile-converter(i3s-converter)#converts 3d-tiles tileset to i3s tileset', async (t) => {
   const converter = new I3SConverter();
   const tilesetJson = await converter.convert({
     inputUrl: TILESET_URL,
@@ -85,7 +85,7 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
   t.end();
 });
 
-test('tile-converter - Converters#should create Draco compressed geometry', async (t) => {
+test('tile-converter(i3s-converter)#should create Draco compressed geometry', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -105,7 +105,7 @@ test('tile-converter - Converters#should create Draco compressed geometry', asyn
   t.end();
 });
 
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with validation', async (t) => {
+test('tile-converter(i3s-converter)#converts 3d-tiles tileset to i3s tileset with validation', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -125,7 +125,7 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
   t.end();
 });
 
-test('tile-converter - Converters#root node should not contain geometry and textures', async (t) => {
+test('tile-converter(i3s-converter)#root node should not contain geometry and textures', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -149,7 +149,7 @@ test('tile-converter - Converters#root node should not contain geometry and text
   t.end();
 });
 
-test('tile-converter - Converters#should create SceneServer path', async (t) => {
+test('tile-converter(i3s-converter)#should create SceneServer path', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -168,7 +168,7 @@ test('tile-converter - Converters#should create SceneServer path', async (t) => 
   t.end();
 });
 
-test('tile-converter - Converters#should create sharedResources json file', async (t) => {
+test('tile-converter(i3s-converter)#should create sharedResources json file', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -190,7 +190,7 @@ test('tile-converter - Converters#should create sharedResources json file', asyn
   t.end();
 });
 
-test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
+test('tile-converter(i3s-converter)#should generate KTX2 texture', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -233,7 +233,7 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
   t.end();
 });
 
-test('tile-converter - Converters#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
+test('tile-converter(i3s-converter)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {formats: [{name: '1', format: 'ktx2'}]},
@@ -266,7 +266,7 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
   t.end();
 });
 
-test('tile-converter - Converters#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
+test('tile-converter(i3s-converter)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -310,7 +310,7 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
   t.end();
 });
 
-test('tile-converter - Converters#should create only unique materials', async (t) => {
+test('tile-converter(i3s-converter)#should create only unique materials', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -333,7 +333,7 @@ test('tile-converter - Converters#should create only unique materials', async (t
   t.end();
 });
 
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async (t) => {
+test('tile-converter(i3s-converter)#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -353,7 +353,7 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
   t.end();
 });
 
-test('tile-converter - Converters#layer json should contain fullExtent field', async (t) => {
+test('tile-converter(i3s-converter)#layer json should contain fullExtent field', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
