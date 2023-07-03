@@ -7,7 +7,7 @@ import {cleanUpPath} from '../utils/file-utils';
 const SLPKUrl = 'modules/i3s/test/data/DA12_subset.slpk';
 const outputUrl = 'data';
 
-test('tile-converter - searchFromTheEnd', async (t) => {
+test('tile-converter(slpk-extractor)#extracts slpk to i3s', async (t) => {
   const converter = new SLPKConverter();
   const conversionResult = await converter.extract({
     inputUrl: SLPKUrl,
