@@ -317,7 +317,7 @@ export default class I3SConverter {
       ...this.loadOptions,
       '3d-tiles': {...this.loadOptions['3d-tiles'], loadGLTF: false}
     });
-    const tilePreprocessData = await analyzeTileContent(sourceTile, tileContent);
+    const tilePreprocessData = await analyzeTileContent(tileContent);
     mergePreprocessData(this.preprocessData, tilePreprocessData);
 
     return null;

@@ -1,7 +1,15 @@
 import {BoundingSphere} from '@math.gl/culling';
-import {prepareDataForAttributesConversion} from '../../../src/i3s-converter/helpers/gltf-attributes';
+import {
+  calculateTransformProps,
+  prepareDataForAttributesConversion
+} from '../../../src/i3s-converter/helpers/gltf-attributes';
 import test from 'tape-promise/tape';
 import {Matrix4} from '@math.gl/core';
+import {load} from '@loaders.gl/core';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+
+const FRANKFURT_B3DM_FILE_PATH =
+  '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
 
 test('tile-converter(i3s-converter)#prepareDataForAttributesConversion - Should generate attributes object from tileContent without images', async (t) => {
   const tileContent = {
@@ -223,6 +231,32 @@ test('tile-converter(i3s-converter)#prepareDataForAttributesConversion - Should 
   t.deepEqual(result.images, expectedResult.images);
   t.ok(areNumberArraysEqual(result.cartographicOrigin, expectedResult.cartographicOrigin));
   t.ok(areNumberArraysEqual(result.cartesianModelMatrix, expectedResult.cartesianModelMatrix));
+  t.end();
+});
+
+test('tile-converter(i3s-converter)#calculateTransformProps', async (t) => {
+  const tileContent = await load(FRANKFURT_B3DM_FILE_PATH, Tiles3DLoader);
+  const tileTransform = new Matrix4([
+    1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4055182.44018, 615965.038498, 4867494.346586, 1
+  ]);
+  const tileBoundingVolume = new BoundingSphere([4051833.805439, 618316.801881, 4870677.172590001]);
+  const transformProps = calculateTransformProps(tileContent, tileTransform, tileBoundingVolume);
+  t.ok(
+    areNumberArraysEqual(
+      transformProps.modelMatrix,
+      [
+        1, 0, 0, 0, 0, 6.123233995736766e-17, 1, 0, 0, -1, 6.123233995736766e-17, 0, 4055182.44018,
+        615965.038498, 4867494.346586, 1
+      ]
+    )
+  );
+  t.ok(
+    areNumberArraysEqual(
+      transformProps.cartographicOrigin,
+      [8.676496951388435, 50.108416671362576, 189.47502169783516]
+    )
+  );
+
   t.end();
 });
 
