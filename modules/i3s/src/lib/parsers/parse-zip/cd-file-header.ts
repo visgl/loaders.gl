@@ -5,29 +5,17 @@ import {FileProvider} from './file-provider';
  * according to https://en.wikipedia.org/wiki/ZIP_(file_format)
  */
 export type ZipCDFileHeader = {
-  /**
-   * Compressed size
-   */
+  /** Compressed size */
   compressedSize: number;
-  /**
-   * Uncompressed size
-   */
+  /** Uncompressed size */
   uncompressedSize: number;
-  /**
-   * File name length
-   */
+  /** File name length */
   fileNameLength: number;
-  /**
-   * File name
-   */
+  /** File name */
   fileName: string;
-  /**
-   * Extra field offset
-   */
+  /** Extra field offset */
   extraOffset: number;
-  /**
-   * Relative offset of local file header
-   */
+  /** Relative offset of local file header */
   localHeaderOffset: number;
 };
 

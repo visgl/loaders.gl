@@ -5,25 +5,15 @@ import {FileProvider} from './file-provider';
  * according to https://en.wikipedia.org/wiki/ZIP_(file_format)
  */
 export type ZipLocalFileHeader = {
-  /**
-   * File name length
-   */
+  /** File name length */
   fileNameLength: number;
-  /**
-   * File name
-   */
+  /** File name */
   fileName: string;
-  /**
-   * Extra field length
-   */
+  /** Extra field length */
   extraFieldLength: number;
-  /**
-   * Offset of the file data
-   */
+  /** Offset of the file data */
   fileDataOffset: number;
-  /**
-   * Compressed size
-   */
+  /** Compressed size */
   compressedSize: number;
 };
 

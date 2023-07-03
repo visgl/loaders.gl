@@ -27,14 +27,14 @@ type File = {
 /**
  * Converter from slpk to i3s
  */
-export default class SLPKConverter {
+export default class SLPKExtractor {
   /**
-   * Convert slpk to i3s
+   * extract slpk to i3s
    * @param options
    * @param options.inputUrl the url to read SLPK file
    * @param options.outputPath the output filename
    */
-  public async convert(options: {inputUrl: string; outputPath: string}): Promise<string> {
+  public async extract(options: {inputUrl: string; outputPath: string}): Promise<string> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE);
       return BROWSER_ERROR_MESSAGE;

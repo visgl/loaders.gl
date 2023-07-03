@@ -31,7 +31,7 @@ export class FileHandleProvider implements FileProvider {
 
   /**
    * Gets an unsigned 8-bit integer (unsigned byte) at the specified byte offset from the start of the file.
-   * @param offset The offset, in byte, from the start of the file where to read the data.
+   * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
   async getUint8(offset: number): Promise<number> {
     const val = new Uint8Array(
@@ -45,7 +45,7 @@ export class FileHandleProvider implements FileProvider {
 
   /**
    * Gets an unsigned 16-bit integer (unsigned byte) at the specified byte offset from the start of the file.
-   * @param offset The offset, in byte, from the start of the file where to read the data.
+   * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
   async getUint16(offset: number): Promise<number> {
     const val = new Uint16Array(
@@ -59,7 +59,7 @@ export class FileHandleProvider implements FileProvider {
 
   /**
    * Gets an unsigned 32-bit integer (unsigned byte) at the specified byte offset from the start of the file.
-   * @param offset The offset, in byte, from the start of the file where to read the data.
+   * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
   async getUint32(offset: number): Promise<number> {
     const val = new Uint32Array(
@@ -73,8 +73,8 @@ export class FileHandleProvider implements FileProvider {
 
   /**
    * returns an ArrayBuffer whose contents are a copy of this file bytes from startOffset, inclusive, up to endOffset, exclusive.
-   * @param startOffsset The offset, in byte, from the start of the file where to start reading the data.
-   * @param endOffset The offset, in byte, from the start of the file where to end reading the data.
+   * @param startOffsset The offset, in bytes, from the start of the file where to start reading the data.
+   * @param endOffset The offset, in bytes, from the start of the file where to end reading the data.
    */
   async slice(startOffsset: number, endOffset: number): Promise<ArrayBuffer> {
     const length = endOffset - startOffsset;

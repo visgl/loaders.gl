@@ -21,7 +21,7 @@
   "sideEffects": false, 
   "bin": {
     "tile-converter": "./bin/converter.js",
-    "slpk-converter": "./bin/slpk-converter.js",
+    "slpk-extractor": "./bin/slpk-extractor.js",
     "i3s-server": "./src/i3s-server/bin/www"
   },
   "files": [
@@ -38,10 +38,10 @@
     "join-images": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-converter-bundle && npm run build-i3s-attributes-worker && npm run build-slpk-converter-bundle && npm run build-3d-tiles-attributes-worker",
+    "pre-build": "npm run build-bundle && npm run build-converter-bundle && npm run build-i3s-attributes-worker && npm run build-slpk-extractor-bundle && npm run build-3d-tiles-attributes-worker",
     "build-bundle": "esbuild ./src/index.ts --bundle --outfile=dist/dist.min.js --platform=node  --external:join-images",
     "build-converter-bundle": "esbuild src/converter-cli.ts --outfile=dist/converter.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-slpk-converter-bundle": "esbuild src/slpk-converter-cli.ts --outfile=dist/slpk-converter.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-slpk-extractor-bundle": "esbuild src/slpk-extractor-cli.ts --outfile=dist/slpk-extractor.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-i3s-attributes-worker": "esbuild src/workers/i3s-attributes-worker.ts --outfile=dist/i3s-attributes-worker.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-3d-tiles-attributes-worker": "esbuild src/workers/3d-tiles-attributes-worker.ts --outfile=dist/3d-tiles-attributes-worker.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },

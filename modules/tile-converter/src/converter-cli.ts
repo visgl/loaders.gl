@@ -3,6 +3,7 @@ import '@loaders.gl/polyfills';
 import {join} from 'path';
 import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {DepsInstaller} from './deps-installer/deps-installer';
+import {getStringValue, getURLValue} from './lib/utils/cli-utils';
 
 type TileConversionOptions = {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
@@ -308,38 +309,6 @@ function parseOptions(args: string[]): TileConversionOptions {
     }
   });
   return opts;
-}
-
-/**
- * Get string option value from cli arguments
- * @param index - option's name index in the argument's array.
- *                The value of the option should be next to name of the option.
- * @param args - cli arguments array
- * @returns - string value of the option
- */
-function getStringValue(index: number, args: string[]): string {
-  if (index + 1 >= args.length) {
-    return '';
-  }
-  const value = args[index + 1];
-  if (value.indexOf('--') === 0) {
-    return '';
-  }
-  return value;
-}
-
-/**
- * Modyfy URL path to be compatible with fetch
- * @param index - option's name index in the argument's array.
- *                The value of the option should be next to name of the option.
- * @param args - cli arguments array
- * @returns - string value of the option
- */
-function getURLValue(index: number, args: string[]): string {
-  const value = getStringValue(index, args);
-  console.log(`Input tileset value: ${value}`);
-  console.log(`Modified tileset value: ${value.replace(/\\/g, '/')}`);
-  return value.replace(/\\/g, '/');
 }
 
 /**

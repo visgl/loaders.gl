@@ -1,19 +1,22 @@
 /* eslint-disable no-console */
 import '@loaders.gl/polyfills';
-import SLPKConverter from './slpk-converter/slpk-converter';
-// import {join} from 'path';
-// import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
+import SLPKExtractor from './slpk-extractor/slpk-extractor';
+import {getURLValue} from './lib/utils/cli-utils';
 
 type SLPKConversionOptions = {
   /** "tileset.json" file (3DTiles) / "http://..../SceneServer/layers/0" resource (I3S) */
   tileset?: string;
+  /** Output folder. This folder will be created by converter if doesn't exist. It is relative to the converter path.
+   * Default: "data" folder */
   output?: string;
 };
 
 /* During validation we check that particular options are defined so they can't be undefined */
 export type ValidatedSLPKConversionOptions = SLPKConversionOptions & {
-  /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
+  /** slpk file */
   tileset: string;
+  /** Output folder. This folder will be created by converter if doesn't exist. It is relative to the converter path.
+   * Default: "data" folder */
   output: string;
 };
 
@@ -43,7 +46,7 @@ main().catch((error) => {
 });
 
 /**
- * Output for `npx tile-converter --help`
+ * Output for `npx slpk-extractor --help`
  */
 function printHelp(): void {
   console.log('cli: converter slpk to I3S...');
@@ -54,14 +57,14 @@ function printHelp(): void {
 
 /**
  * Run conversion process
- * @param options validated tile-converter options
+ * @param options validated slpk-extractor options
  */
 async function convert(options: ValidatedSLPKConversionOptions) {
   console.log(`------------------------------------------------`); // eslint-disable-line
   console.log(`Starting conversion of SLPK`); // eslint-disable-line
   console.log(`------------------------------------------------`); // eslint-disable-line
-  const slpkConverter = new SLPKConverter();
-  slpkConverter.convert({
+  const slpkExtractor = new SLPKExtractor();
+  slpkExtractor.extract({
     inputUrl: options.tileset,
     outputPath: options.output
   });
@@ -135,36 +138,4 @@ function parseOptions(args: string[]): SLPKConversionOptions {
     }
   });
   return opts;
-}
-
-/**
- * Get string option value from cli arguments
- * @param index - option's name index in the argument's array.
- *                The value of the option should be next to name of the option.
- * @param args - cli arguments array
- * @returns - string value of the option
- */
-function getStringValue(index: number, args: string[]): string {
-  if (index + 1 >= args.length) {
-    return '';
-  }
-  const value = args[index + 1];
-  if (value.indexOf('--') === 0) {
-    return '';
-  }
-  return value;
-}
-
-/**
- * Modyfy URL path to be compatible with fetch
- * @param index - option's name index in the argument's array.
- *                The value of the option should be next to name of the option.
- * @param args - cli arguments array
- * @returns - string value of the option
- */
-function getURLValue(index: number, args: string[]): string {
-  const value = getStringValue(index, args);
-  console.log(`Input tileset value: ${value}`);
-  console.log(`Modified tileset value: ${value.replace(/\\/g, '/')}`);
-  return value.replace(/\\/g, '/');
 }
