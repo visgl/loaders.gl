@@ -103,7 +103,6 @@ export function convertPositionsToVectors(positions: Float32Array): Vector3[] {
 
 /**
  * Convert common coordinate to fullExtent https://github.com/Esri/i3s-spec/blob/master/docs/1.8/fullExtent.cmn.md
- * @param
  * @param boundingVolume
  * @returns - fullExtent object
  */
@@ -142,7 +141,7 @@ export function convertBoundingVolumeToI3SFullExtent(
 /**
  * Creates oriented boundinb box from mbs.
  * @param mbs - Minimum Bounding Sphere
- * @returns - Oriented BOunding Box
+ * @returns - Oriented Bounding Box
  */
 export function createObbFromMbs(mbs: Mbs): Obb {
   const radius = mbs[3];
