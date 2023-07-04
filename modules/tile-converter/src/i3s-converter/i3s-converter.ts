@@ -313,10 +313,18 @@ export default class I3SConverter {
     if (sourceTile.id) {
       console.log(`[analyze]: ${sourceTile.id}`); // eslint-disable-line
     }
-    const tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, {
-      ...this.loadOptions,
-      '3d-tiles': {...this.loadOptions['3d-tiles'], loadGLTF: false}
-    });
+
+    let tileContent: Tiles3DTileContent | null = null;
+    try {
+      tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, {
+        ...this.loadOptions,
+        '3d-tiles': {...this.loadOptions['3d-tiles'], loadGLTF: false}
+      });
+    } catch (error) {
+      console.log(
+        `Failed to load ${sourceTile.contentUrl}. This tile will be converted with empty content`
+      );
+    }
     const tilePreprocessData = await analyzeTileContent(sourceTile, tileContent);
     mergePreprocessData(this.preprocessData, tilePreprocessData);
 
@@ -576,7 +584,12 @@ export default class I3SConverter {
 
     await this._updateTilesetOptions();
 
-    const tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, this.loadOptions);
+    let tileContent: Tiles3DTileContent | null = null;
+    try {
+      tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, this.loadOptions);
+    } catch (error) {
+      console.log(`[warning]: Failed to load ${sourceTile.contentUrl}`);
+    }
     const sourceBoundingVolume = createBoundingVolume(
       sourceTile.boundingVolume,
       transformationMatrix,
@@ -753,11 +766,15 @@ export default class I3SConverter {
     }
 
     let nodeId = resources.nodeId;
-    let node;
+    let node: NodeInPage;
     if (!nodeId) {
       node = await this.nodePages.push(nodeInPage, parentId);
     } else {
       node = await this.nodePages.getNodeById(nodeId);
+    }
+
+    if (!nodeInPage.mesh) {
+      console.log(`[warning]: node ${node.index} is created with empty content`);
     }
 
     NodePages.updateAll(node, nodeInPage);
