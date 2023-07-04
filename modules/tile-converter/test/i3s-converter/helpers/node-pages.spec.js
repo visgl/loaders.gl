@@ -45,14 +45,14 @@ function getMaterialAndGeometryFromNode(nodePages, id) {
   return {material, geometry};
 }
 
-test('tile-converter(i3s-converter)#NodePages', async (t) => {
+test('tile-converter(i3s)#NodePages', async (t) => {
   if (isBrowser) {
     t.end();
     return;
   }
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Should create an instance of NodePages class',
+    'tile-converter(i3s)#NodePages - Should create an instance of NodePages class',
     async (st) => {
       const nodePages = new NodePages(() => {}, 64, getConverter());
       st.ok(nodePages instanceof NodePages);
@@ -61,34 +61,28 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
     }
   );
 
-  t.test(
-    'tile-converter(i3s-converter)#NodePages - Should push node into the last nodePage',
-    async (st) => {
-      const nodePages = new NodePages(() => {}, 64, getConverter());
+  t.test('tile-converter(i3s)#NodePages - Should push node into the last nodePage', async (st) => {
+    const nodePages = new NodePages(() => {}, 64, getConverter());
 
-      await nodePages.push(newNodeStub);
-      st.equal(nodePages.nodesCounter, 1);
-      st.deepEqual(nodePages.nodePages[0].nodes[0], {
-        ...newNodeStub,
-        index: 0
-      });
-      st.end();
-    }
-  );
+    await nodePages.push(newNodeStub);
+    st.equal(nodePages.nodesCounter, 1);
+    st.deepEqual(nodePages.nodePages[0].nodes[0], {
+      ...newNodeStub,
+      index: 0
+    });
+    st.end();
+  });
 
-  t.test(
-    'tile-converter(i3s-converter)#NodePages - Push method should return the new node',
-    async (st) => {
-      const nodePages = new NodePages(() => {}, 64, getConverter());
-      nodePages.push(newNodeStub);
-      const newNodeIndex = await nodePages.push(newNodeStub);
-      st.equal(newNodeIndex, newNodeStub);
-      st.end();
-    }
-  );
+  t.test('tile-converter(i3s)#NodePages - Push method should return the new node', async (st) => {
+    const nodePages = new NodePages(() => {}, 64, getConverter());
+    nodePages.push(newNodeStub);
+    const newNodeIndex = await nodePages.push(newNodeStub);
+    st.equal(newNodeIndex, newNodeStub);
+    st.end();
+  });
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Push method should create new nodePage when "last nodePage.length" === "nodesPerPage"',
+    'tile-converter(i3s)#NodePages - Push method should create new nodePage when "last nodePage.length" === "nodesPerPage"',
     async (st) => {
       const nodePages = new NodePages(() => {}, 64, getConverter());
       for (let i = 0; i <= 65; i++) {
@@ -101,7 +95,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
   );
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Should consume "nodesPerPage" in constructor',
+    'tile-converter(i3s)#NodePages - Should consume "nodesPerPage" in constructor',
     async (st) => {
       const nodePages = new NodePages(() => {}, 16, getConverter());
       for (let i = 0; i <= 65; i++) {
@@ -114,7 +108,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
   );
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Push method should add children relation into the parent node',
+    'tile-converter(i3s)#NodePages - Push method should add children relation into the parent node',
     async (st) => {
       const nodePages = new NodePages(() => {}, 64, getConverter());
       for (let i = 0; i <= 65; i++) {
@@ -127,7 +121,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
   );
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Push method should set "resource" property in the "mesh" equal to the new node index',
+    'tile-converter(i3s)#NodePages - Push method should set "resource" property in the "mesh" equal to the new node index',
     async (st) => {
       /** @type {import('@loaders.gl/i3s').NodeInPage} */
       const newNodeWithMesh = {
@@ -158,7 +152,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
     }
   );
 
-  t.test('tile-converter(i3s-converter)#NodePages - Should get getNodeById ', async (st) => {
+  t.test('tile-converter(i3s)#NodePages - Should get getNodeById ', async (st) => {
     const nodePages = new NodePages(() => {}, 16, getConverter());
     for (let i = 0; i <= 65; i++) {
       await nodePages.push({...newNodeStub});
@@ -169,7 +163,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
   });
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Should save node pages to the file system ',
+    'tile-converter(i3s)#NodePages - Should save node pages to the file system ',
     async (st) => {
       const savePaths = [];
       const writeFileFuncForSlpk = (layerPath, data, slpk) => {
@@ -190,7 +184,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
   );
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Update material method should set "material" object in the "mesh" with node index and material id',
+    'tile-converter(i3s)#NodePages - Update material method should set "material" object in the "mesh" with node index and material id',
     async (st) => {
       /** @type {import('@loaders.gl/i3s').NodeInPage} */
       const newNodeWithMesh = {
@@ -215,7 +209,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
     }
   );
 
-  t.test('tile-converter(i3s-converter)#NodePages - Should save node pages', async (st) => {
+  t.test('tile-converter(i3s)#NodePages - Should save node pages', async (st) => {
     const savedNodePages = [];
     const writeFileFunc = async (layerPath, data, slpk) => {
       savedNodePages.push(data);
@@ -233,7 +227,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
   });
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Should save node pages for slpk packaging',
+    'tile-converter(i3s)#NodePages - Should save node pages for slpk packaging',
     async (st) => {
       const savedNodePages = [];
       const writeFileFuncForSlpk = (layerPath, data, slpk) => {
@@ -252,7 +246,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
     }
   );
 
-  t.test('tile-converter(i3s-converter)#NodePages - Should save node pages', async (st) => {
+  t.test('tile-converter(i3s)#NodePages - Should save node pages', async (st) => {
     const savedNodePages = [];
     const writeFileFunc = (layerPath, data, slpk) => {
       savedNodePages.push(data);
@@ -270,7 +264,7 @@ test('tile-converter(i3s-converter)#NodePages', async (t) => {
   });
 
   t.test(
-    'tile-converter(i3s-converter)#NodePages - Should save node pages for slpk packaging',
+    'tile-converter(i3s)#NodePages - Should save node pages for slpk packaging',
     async (st) => {
       const savedNodePages = [];
       const writeFileFuncForSlpk = (layerPath, data, slpk) => {

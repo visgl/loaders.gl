@@ -3,7 +3,7 @@ import {prepareDataForAttributesConversion} from '../../../src/i3s-converter/hel
 import test from 'tape-promise/tape';
 import {Matrix4} from '@math.gl/core';
 
-test('tile-converter(i3s-converter)#prepareDataForAttributesConversion - Should generate attributes object from tileContent without images', async (t) => {
+test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent without images', async (t) => {
   const tileContent = {
     gltf: {
       materials: [{id: 'one', alphaMode: 'OPAQUE'}],
@@ -94,7 +94,7 @@ test('tile-converter(i3s-converter)#prepareDataForAttributesConversion - Should 
   t.end();
 });
 
-test('tile-converter(i3s-converter)#prepareDataForAttributesConversion - Should generate attributes object from tileContent with images', async (t) => {
+test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent with images', async (t) => {
   const tileContent = {
     gltf: {
       materials: [{id: 'one', alphaMode: 'OPAQUE'}],
