@@ -6,7 +6,7 @@ import {loadNestedTileset} from '../../../src/i3s-converter/helpers/load-3d-tile
 
 const NESTED_TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset.json';
 
-test('tile-converter(i3s-converter)#traverseDatasetWith', async (t) => {
+test('tile-converter(i3s)#traverseDatasetWith', async (t) => {
   const nestedTileset = await load(NESTED_TILESET_URL, Tiles3DLoader, {});
   const AUTH_TOKEN = 'AUTH_TOKEN';
   const processTileCallback = async (
@@ -36,7 +36,7 @@ test('tile-converter(i3s-converter)#traverseDatasetWith', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s-converter)#traverseDatasetWith - maxDepth', async (t) => {
+test('tile-converter(i3s)#traverseDatasetWith - maxDepth', async (t) => {
   const nestedTileset = await load(NESTED_TILESET_URL, Tiles3DLoader, {});
   let processCalls = 0;
   const processTileCallback = async (tile: Tiles3DTileJSONPostprocessed): Promise<undefined> => {

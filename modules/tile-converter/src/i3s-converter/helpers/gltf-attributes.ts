@@ -65,12 +65,10 @@ export function prepareDataForAttributesConversion(
  * @param attributes - geometry attributes
  * @returns attributes with only `value` item
  */
-function getB3DMAttributesWithoutBufferView(attributes: {[k: string]: GLTFAccessorPostprocessed}): {
-  [k: string]: {value: TypedArray};
-} {
-  const attributesWithoutBufferView: {
-    [k: string]: {value: TypedArray};
-  } = {};
+function getB3DMAttributesWithoutBufferView(
+  attributes: Record<string, GLTFAccessorPostprocessed>
+): Record<string, {value: TypedArray}> {
+  const attributesWithoutBufferView: Record<string, {value: TypedArray}> = {};
 
   for (const attributeName in attributes) {
     attributesWithoutBufferView[attributeName] = {
