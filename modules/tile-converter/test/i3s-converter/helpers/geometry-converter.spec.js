@@ -30,7 +30,7 @@ setLoaderOptions({
 });
 
 // TODO - failing test
-test.skip('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
+test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -116,7 +116,7 @@ test.skip('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should conve
   t.end();
 });
 
-test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should convert Berlin tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -195,7 +195,7 @@ test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should convert Be
   t.end();
 });
 
-test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should convert New York tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -259,7 +259,7 @@ test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should convert Ne
   t.end();
 });
 
-test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should convert Ferry tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -331,7 +331,7 @@ test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should convert Fe
   t.end();
 });
 
-test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
   const EXPECT_VERTEX_COUNT = [42891, 12861];
 
   if (isBrowser) {
@@ -390,7 +390,7 @@ test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS s
   t.end();
 });
 
-test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should not convert point geometry', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point geometry', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -442,7 +442,7 @@ test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should not conver
   t.end();
 });
 
-test('tile-converter(i3s-converter)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async (t) => {
   if (isBrowser) {
     t.end();
     return;
