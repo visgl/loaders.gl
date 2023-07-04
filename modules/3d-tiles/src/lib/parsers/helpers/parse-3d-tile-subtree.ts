@@ -73,32 +73,6 @@ export default async function parse3DTilesSubtree(
 }
 
 /**
- * Get url for bitstream downloading
- * @param bitstreamRelativeUri
- * @param basePath
- * @returns
- */
-function resolveBufferUri(bitstreamRelativeUri: string, basePath: string): string {
-  const hasProtocol = basePath.startsWith('http');
-
-  if (hasProtocol) {
-    const resolvedUri = new URL(bitstreamRelativeUri, basePath);
-    return decodeURI(resolvedUri.toString());
-  }
-
-  /**
-   * Adding http protocol only for new URL constructor usage.
-   * It allows to resolve relative paths like ../../example with basePath.
-   */
-  const basePathWithProtocol = `http://${basePath}`;
-  const resolvedUri = new URL(bitstreamRelativeUri, basePathWithProtocol);
-  /**
-   * Drop protocol and use just relative path.
-   */
-  return `/${resolvedUri.host}${resolvedUri.pathname}`;
-}
-
-/**
  * Get explicit bitstream for subtree availability data.
  * @param subtree
  * @param name
@@ -124,7 +98,7 @@ async function getExplicitBitstream(
 
   // External bitstream loading
   if (buffer.uri) {
-    const bufferUri = resolveBufferUri(buffer.uri, context?.url);
+    const bufferUri = `${context?.baseUrl || ''}/${buffer.uri}`;
     const response = await context.fetch(bufferUri);
     const data = await response.arrayBuffer();
     // Return view of bitstream.
