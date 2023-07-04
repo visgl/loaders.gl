@@ -1,6 +1,6 @@
 import md5 from 'md5';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
-import {BufferFileProvider} from '../parse-zip/buffer-file-provider';
+import {DataViewFileProvider} from '../parse-zip/buffer-file-provider';
 import {GZipCompression} from '@loaders.gl/compression';
 
 /** Element of hash array */
@@ -157,7 +157,7 @@ export class SLPKArchive {
 
     const localFileHeader = await parseZipLocalFileHeader(
       this.slpkArchive.byteOffset + fileInfo?.offset,
-      new BufferFileProvider(this.slpkArchive)
+      new DataViewFileProvider(this.slpkArchive)
     );
     if (!localFileHeader) {
       return undefined;

@@ -68,7 +68,6 @@ export default class SLPKExtractor {
    * Defines file name and path for i3s format
    * @param fileName initial file name and path
    */
-
   private correctIndexNames(fileName: string): string | null {
     if (indexNames.includes(path.filename(path.join('/', fileName)))) {
       return path.join(path.dirname(fileName), 'index.json.gz');

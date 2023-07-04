@@ -22,10 +22,10 @@ export interface FileProvider {
 
   /**
    * returns an ArrayBuffer whose contents are a copy of this file bytes from startOffset, inclusive, up to endOffset, exclusive.
-   * @param startOffsset The offset, in bytes, from the start of the file where to start reading the data.
+   * @param startOffset The offset, in bytes, from the start of the file where to start reading the data.
    * @param endOffset The offset, in bytes, from the start of the file where to end reading the data.
    */
-  slice(startOffsset: number, endOffset: number): Promise<ArrayBuffer>;
+  slice(startOffset: number, endOffset: number): Promise<ArrayBuffer>;
 
   /**
    * the length (in bytes) of the data.

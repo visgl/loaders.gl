@@ -1,5 +1,5 @@
 import type {SLPKLoaderOptions} from '../../../i3s-slpk-loader';
-import {BufferFileProvider} from '../parse-zip/buffer-file-provider';
+import {DataViewFileProvider} from '../parse-zip/buffer-file-provider';
 import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {SLPKArchive} from './slpk-archieve';
@@ -39,7 +39,7 @@ export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = 
     }
   }
 
-  const fileProvider = new BufferFileProvider(archive);
+  const fileProvider = new DataViewFileProvider(archive);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 

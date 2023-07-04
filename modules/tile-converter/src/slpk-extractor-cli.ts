@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 import '@loaders.gl/polyfills';
 import SLPKExtractor from './slpk-extractor/slpk-extractor';
-import {getURLValue} from './lib/utils/cli-utils';
+import {getURLValue, validateOptionsWithEqual} from './lib/utils/cli-utils';
 
-type SLPKConversionOptions = {
+type SLPKExtractionOptions = {
   /** "tileset.json" file (3DTiles) / "http://..../SceneServer/layers/0" resource (I3S) */
   tileset?: string;
   /** Output folder. This folder will be created by converter if doesn't exist. It is relative to the converter path.
@@ -12,7 +12,7 @@ type SLPKConversionOptions = {
 };
 
 /* During validation we check that particular options are defined so they can't be undefined */
-export type ValidatedSLPKConversionOptions = SLPKConversionOptions & {
+export type ValidatedSLPKExtractionOptions = SLPKExtractionOptions & {
   /** slpk file */
   tileset: string;
   /** Output folder. This folder will be created by converter if doesn't exist. It is relative to the converter path.
@@ -33,9 +33,9 @@ async function main() {
 
   const validatedOptionsArr = validateOptionsWithEqual(args);
 
-  const options: SLPKConversionOptions = parseOptions(validatedOptionsArr);
+  const options: SLPKExtractionOptions = parseOptions(validatedOptionsArr);
 
-  const validatedOptions: ValidatedSLPKConversionOptions = validateOptions(options);
+  const validatedOptions: ValidatedSLPKExtractionOptions = validateOptions(options);
 
   await convert(validatedOptions);
 }
@@ -56,10 +56,10 @@ function printHelp(): void {
 }
 
 /**
- * Run conversion process
+ * Run extraction process
  * @param options validated slpk-extractor options
  */
-async function convert(options: ValidatedSLPKConversionOptions) {
+async function convert(options: ValidatedSLPKExtractionOptions) {
   console.log(`------------------------------------------------`); // eslint-disable-line
   console.log(`Starting conversion of SLPK`); // eslint-disable-line
   console.log(`------------------------------------------------`); // eslint-disable-line
@@ -76,7 +76,7 @@ async function convert(options: ValidatedSLPKConversionOptions) {
  * @param options - input options of the CLI command
  * @returns validated options
  */
-function validateOptions(options: SLPKConversionOptions): ValidatedSLPKConversionOptions {
+function validateOptions(options: SLPKExtractionOptions): ValidatedSLPKExtractionOptions {
   const mandatoryOptionsWithExceptions: {
     [key: string]: () => void;
   } = {
@@ -94,20 +94,7 @@ function validateOptions(options: SLPKConversionOptions): ValidatedSLPKConversio
     exceptions.forEach((exeption) => exeption());
     process.exit(1);
   }
-  return <ValidatedSLPKConversionOptions>options;
-}
-
-function validateOptionsWithEqual(args: string[]): string[] {
-  return args.reduce((acc: string[], curr) => {
-    const equalSignIndex = curr.indexOf('=');
-    const beforeEqual = curr.slice(0, equalSignIndex);
-    const afterEqual = curr.slice(equalSignIndex + 1, curr.length);
-    const condition = curr.includes('=') && curr.startsWith('--') && afterEqual;
-    if (condition) {
-      return acc.concat(beforeEqual, afterEqual);
-    }
-    return acc.concat(curr);
-  }, []);
+  return <ValidatedSLPKExtractionOptions>options;
 }
 
 /**
@@ -115,8 +102,8 @@ function validateOptionsWithEqual(args: string[]): string[] {
  * @param args
  * @returns
  */
-function parseOptions(args: string[]): SLPKConversionOptions {
-  const opts: SLPKConversionOptions = {};
+function parseOptions(args: string[]): SLPKExtractionOptions {
+  const opts: SLPKExtractionOptions = {};
 
   // eslint-disable-next-line complexity
   args.forEach((arg, index) => {

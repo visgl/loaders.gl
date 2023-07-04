@@ -3,7 +3,13 @@ import '@loaders.gl/polyfills';
 import {join} from 'path';
 import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {DepsInstaller} from './deps-installer/deps-installer';
-import {getStringValue, getURLValue} from './lib/utils/cli-utils';
+import {
+  getBooleanValue,
+  getIntegerValue,
+  getStringValue,
+  getURLValue,
+  validateOptionsWithEqual
+} from './lib/utils/cli-utils';
 
 type TileConversionOptions = {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
@@ -214,19 +220,6 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
   return <ValidatedTileConversionOptions>options;
 }
 
-function validateOptionsWithEqual(args: string[]): string[] {
-  return args.reduce((acc: string[], curr) => {
-    const equalSignIndex = curr.indexOf('=');
-    const beforeEqual = curr.slice(0, equalSignIndex);
-    const afterEqual = curr.slice(equalSignIndex + 1, curr.length);
-    const condition = curr.includes('=') && curr.startsWith('--') && afterEqual;
-    if (condition) {
-      return acc.concat(beforeEqual, afterEqual);
-    }
-    return acc.concat(curr);
-  }, []);
-}
-
 /**
  * Parse option from the cli arguments array
  * @param args
@@ -309,31 +302,4 @@ function parseOptions(args: string[]): TileConversionOptions {
     }
   });
   return opts;
-}
-
-/**
- * Get integer option value from cli arguments
- * @param index - option's name index in the argument's array
- *                The value of the option should be next to name of the option.
- * @param args - cli arguments array
- * @returns - number value of the option
- */
-function getIntegerValue(index: number, args: string[]): number {
-  const stringValue: string = getStringValue(index, args);
-  const result: number = Number.parseInt(stringValue);
-  if (isFinite(result)) {
-    return result;
-  }
-  return NaN;
-}
-
-function getBooleanValue(index: number, args: string[]): boolean {
-  const stringValue: string = getStringValue(index, args).toLowerCase().trim();
-  if (['--no-draco', '--split-nodes'].includes(args[index]) && !stringValue) {
-    return false;
-  }
-  if (!stringValue || stringValue === 'true') {
-    return true;
-  }
-  return false;
 }
