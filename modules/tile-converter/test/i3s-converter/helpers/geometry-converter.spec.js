@@ -29,7 +29,7 @@ setLoaderOptions({
 });
 
 // TODO - failing test
-test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt tile content', async (t) => {
+test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -115,7 +115,7 @@ test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt ti
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # should convert Berlin tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -194,7 +194,7 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # should convert New York tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -258,7 +258,7 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # should convert Ferry tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -330,7 +330,7 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
   const EXPECT_VERTEX_COUNT = [42891, 12861];
 
   if (isBrowser) {
@@ -389,7 +389,7 @@ test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be conver
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # should not convert point geometry', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point geometry', async (t) => {
   if (isBrowser) {
     t.end();
     return;

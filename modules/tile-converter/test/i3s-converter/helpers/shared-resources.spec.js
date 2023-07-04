@@ -3,7 +3,7 @@ import transform from 'json-map-transform';
 
 import {SHARED_RESOURCES as sharedResourcesTemplate} from '../../../src/i3s-converter/json-templates/shared-resources';
 
-test('#tile-converter#i3s-converter#json-templates#shared-resources#default-data - Verify the default shared data', async (t) => {
+test('tile-converter(i3s)#json-templates - shared-resources - Verify the default shared data', async (t) => {
   const SHARED_RESOURCES_ENTRY = {
     materialDefinitionInfos: [
       {
