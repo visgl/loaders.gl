@@ -19,6 +19,7 @@ const BERLIN_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Berlin/1511577738.buildings.b3dm';
 const NEW_YORK_B3DM_FILE_PATH = '@loaders.gl/tile-converter/test/data/NewYork/75343/6/5/1.b3dm';
 const FERRY_GLTF_FILE_PATH = '@loaders.gl/tile-converter/test/data/Ferry/754834/6/0000000.glb';
+const MUSCATATUCK_GLB_FILE_PATH = '@loaders.gl/tile-converter/test/data/Muscatatuck/0/0/0.glb';
 const TRIANGLE_STRIP_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/TriangleStrip/lod1_0.b3dm';
 const HELSINKI_GLB_FILE_PATH =
@@ -29,7 +30,7 @@ setLoaderOptions({
 });
 
 // TODO - failing test
-test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt tile content', async (t) => {
+test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -115,7 +116,7 @@ test.skip('tile-converter - I3S Geometry converter # should convert Frankfurt ti
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # should convert Berlin tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -194,7 +195,7 @@ test('tile-converter - I3S Geometry converter # should convert Berlin tile conte
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # should convert New York tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -258,7 +259,7 @@ test('tile-converter - I3S Geometry converter # should convert New York tile con
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # should convert Ferry tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -330,7 +331,7 @@ test('tile-converter - I3S Geometry converter # should convert Ferry tile conten
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
   const EXPECT_VERTEX_COUNT = [42891, 12861];
 
   if (isBrowser) {
@@ -389,7 +390,7 @@ test('tile-converter - I3S Geometry converter # TRIANGLE_STRIPS should be conver
   t.end();
 });
 
-test('tile-converter - I3S Geometry converter # should not convert point geometry', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point geometry', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -432,6 +433,72 @@ test('tile-converter - I3S Geometry converter # should not convert point geometr
   } catch (e) {
     // @ts-ignore 'e' is of type 'unknown'
     t.equal(e.message, 'Primitive - unsupported mode 0');
+  } finally {
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
+  t.end();
+});
+
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
+  let nodeId = 1;
+  const addNodeToNodePage = async () => nodeId++;
+  const featuresHashArray = [];
+  const draco = true;
+  const generageBoundingVolumes = false;
+  const shouldMergeMaterials = false;
+  const tileContent = await load(MUSCATATUCK_GLB_FILE_PATH, Tiles3DLoader);
+  const propertyTable = getPropertyTable(tileContent);
+  const tileTransform = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  const tileBoundingVolume = new BoundingSphere([386500, -4945000, 3997000]);
+  const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
+  const workerSource = await getWorkersSource();
+  const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
+  try {
+    const convertedResources = await convertB3dmToI3sGeometry(
+      tileContent,
+      tileTransform,
+      tileBoundingVolume,
+      addNodeToNodePage,
+      propertyTable,
+      featuresHashArray,
+      attributeStorageInfo,
+      draco,
+      generageBoundingVolumes,
+      shouldMergeMaterials,
+      geoidHeightModel,
+      workerSource
+    );
+    t.ok(convertedResources);
+    if (!convertedResources) {
+      return;
+    }
+    t.equals(convertedResources.length, 1, 'Returns 1 node');
+    const nodeResources = convertedResources[0];
+    await checkNodeResources(
+      nodeResources,
+      {
+        draco,
+        vertexCount: 309,
+        attributesLength: 2,
+        featureCount: 12,
+        nonCompressedGeometryByteLength: 11324,
+        compressedGeometryByteLength: 5701,
+        texture: {
+          mimeType: 'image/jpeg',
+          width: 512,
+          height: 512,
+          bitmapByteLength: 1048576
+        }
+      },
+      t
+    );
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});

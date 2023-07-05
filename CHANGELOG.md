@@ -6,6 +6,12 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 release info (#2491))
 
+### v4.0.0-alpha.11
+
+- chore(tile-converter): add tests (#2534)
+- chore(tile-converter): unified tests naming (#2533)
+- feat(CLI): Extract SLPK (#2515)
+
 ### v4.0.0-alpha.10
 
 - fix(tile-converter): install deps on windows (#2532)

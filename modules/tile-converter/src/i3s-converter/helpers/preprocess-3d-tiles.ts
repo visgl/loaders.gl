@@ -1,4 +1,4 @@
-import {Tiles3DTileContent, Tiles3DTileJSONPostprocessed} from '@loaders.gl/3d-tiles';
+import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import {GltfPrimitiveModeString, PreprocessData} from '../types';
 import {GLTF, GLTFLoader} from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
@@ -20,12 +20,10 @@ export const GLTF_PRIMITIVE_MODES = [
 /**
  * Analyze tile content. This function is used during preprocess stage of
  * conversion
- * @param tile - 3DTiles tile JSON metadata
  * @param tileContent - 3DTiles tile content ArrayBuffer
  * @returns
  */
 export const analyzeTileContent = async (
-  tile: Tiles3DTileJSONPostprocessed,
   tileContent: Tiles3DTileContent | null
 ): Promise<PreprocessData> => {
   const result: PreprocessData = {

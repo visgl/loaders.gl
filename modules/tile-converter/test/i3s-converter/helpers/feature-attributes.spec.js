@@ -4,7 +4,7 @@ import {
   checkPropertiesLength
 } from '../../../src/i3s-converter/helpers/feature-attributes';
 
-test('#flattenPropertyTableByFeatureIds - Should return flatten property table', async (t) => {
+test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async (t) => {
   const featureIds = [0, 1, 3];
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock', 'Frames'],
@@ -18,7 +18,7 @@ test('#flattenPropertyTableByFeatureIds - Should return flatten property table',
   t.deepEqual(result, expectedResult);
 });
 
-test('#checkPropertiesLength - Should return false if properies count is the same as featureIds count', async (t) => {
+test('tile-converter(i3s)#checkPropertiesLength - Should return false if properies count is the same as featureIds count', async (t) => {
   const featureIds = [0, 1, 3];
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock'],
@@ -28,7 +28,7 @@ test('#checkPropertiesLength - Should return false if properies count is the sam
   t.deepEqual(result, false);
 });
 
-test('#checkPropertiesLength - Should return true if properies count is not the same as featureIds count', async (t) => {
+test('tile-converter(i3s)#checkPropertiesLength - Should return true if properies count is not the same as featureIds count', async (t) => {
   const featureIds = [0, 1, 3];
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock', 'Frames'],

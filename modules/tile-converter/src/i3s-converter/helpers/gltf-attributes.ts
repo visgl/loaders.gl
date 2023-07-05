@@ -1,13 +1,9 @@
 import type {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {GLTFAccessorPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import type {B3DMAttributesData} from '../../i3s-attributes-worker';
-import {Matrix4, Vector3} from '@math.gl/core';
+import {Matrix4, TypedArray, Vector3} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
-
-type AttributesObject = {
-  [k: string]: GLTFAccessorPostprocessed;
-};
 
 /**
  * Prepare attributes for conversion to avoid binary data breaking in worker thread.
@@ -15,7 +11,7 @@ type AttributesObject = {
  * @param tileTransform - transformation matrix of the tile, calculated recursively multiplying
  *                        transform of all parent tiles and transform of the current tile
  * @param boundingVolume - initialized bounding volume of the source tile
- * @returns
+ * @returns 3DTiles content data, prepared for conversion
  */
 export function prepareDataForAttributesConversion(
   tileContent: Tiles3DTileContent,
@@ -67,9 +63,12 @@ export function prepareDataForAttributesConversion(
 /**
  * Keep only values for glTF attributes to pass data to worker thread.
  * @param attributes - geometry attributes
+ * @returns attributes with only `value` item
  */
-function getB3DMAttributesWithoutBufferView(attributes: AttributesObject): AttributesObject {
-  const attributesWithoutBufferView = {};
+function getB3DMAttributesWithoutBufferView(
+  attributes: Record<string, GLTFAccessorPostprocessed>
+): Record<string, {value: TypedArray}> {
+  const attributesWithoutBufferView: Record<string, {value: TypedArray}> = {};
 
   for (const attributeName in attributes) {
     attributesWithoutBufferView[attributeName] = {

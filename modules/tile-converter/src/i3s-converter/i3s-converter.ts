@@ -325,7 +325,7 @@ export default class I3SConverter {
         `[warning]: Failed to load ${sourceTile.contentUrl}. This tile will be converted with empty content`
       );
     }
-    const tilePreprocessData = await analyzeTileContent(sourceTile, tileContent);
+    const tilePreprocessData = await analyzeTileContent(tileContent);
     mergePreprocessData(this.preprocessData, tilePreprocessData);
 
     return null;

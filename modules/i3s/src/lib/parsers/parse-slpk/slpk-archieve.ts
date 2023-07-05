@@ -1,7 +1,7 @@
-import {processOnWorker} from '@loaders.gl/worker-utils';
 import md5 from 'md5';
-import {CompressionWorker} from '@loaders.gl/compression';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
+import {DataViewFileProvider} from '../parse-zip/buffer-file-provider';
+import {GZipCompression} from '@loaders.gl/compression';
 
 /** Element of hash array */
 type HashElement = {
@@ -15,6 +15,7 @@ type HashElement = {
   offset: number;
 };
 
+/** Description of real paths for different file types */
 const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
   {
     test: /^$/,
@@ -114,7 +115,7 @@ export class SLPKArchive {
       if (decompressedFile) {
         return Buffer.from(decompressedFile);
       }
-      const fileWithoutCompression = this.getFileBytes(path);
+      const fileWithoutCompression = await this.getFileBytes(path);
       if (fileWithoutCompression) {
         return Buffer.from(fileWithoutCompression);
       }
@@ -129,17 +130,14 @@ export class SLPKArchive {
    * @returns buffer with the file data
    */
   private async getDataByPath(path: string): Promise<ArrayBuffer | undefined> {
-    const data = this.getFileBytes(path);
+    const data = await this.getFileBytes(path);
     if (!data) {
       return undefined;
     }
     if (/\.gz$/.test(path)) {
-      const decompressedData = await processOnWorker(CompressionWorker, data, {
-        compression: 'gzip',
-        operation: 'decompress',
-        _workerType: 'test',
-        gzip: {}
-      });
+      const compression = new GZipCompression();
+
+      const decompressedData = await compression.decompress(data);
       return decompressedData;
     }
     return Buffer.from(data);
@@ -150,17 +148,20 @@ export class SLPKArchive {
    * @param path - path inside the archive
    * @returns buffer with the raw file data
    */
-  private getFileBytes(path: string): ArrayBuffer | undefined {
+  private async getFileBytes(path: string): Promise<ArrayBuffer | undefined> {
     const nameHash = Buffer.from(md5(path), 'hex');
     const fileInfo = this.hashArray.find((val) => Buffer.compare(val.hash, nameHash) === 0);
     if (!fileInfo) {
       return undefined;
     }
 
-    const localFileHeader = parseZipLocalFileHeader(
+    const localFileHeader = await parseZipLocalFileHeader(
       this.slpkArchive.byteOffset + fileInfo?.offset,
-      this.slpkArchive
+      new DataViewFileProvider(this.slpkArchive)
     );
+    if (!localFileHeader) {
+      return undefined;
+    }
 
     const compressedFile = this.slpkArchive.buffer.slice(
       localFileHeader.fileDataOffset,
