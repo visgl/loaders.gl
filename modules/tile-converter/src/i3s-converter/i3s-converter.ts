@@ -322,7 +322,7 @@ export default class I3SConverter {
       });
     } catch (error) {
       console.log(
-        `[warning]: Failed to load ${sourceTile.contentUrl}. This tile will be converted with empty content`
+        `[warning]: Failed to load ${sourceTile.contentUrl}. An I3S tile with empty content will be added to the output tileset`
       );
     }
     const tilePreprocessData = await analyzeTileContent(tileContent);
