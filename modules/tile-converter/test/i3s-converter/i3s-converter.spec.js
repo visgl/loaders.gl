@@ -9,6 +9,8 @@ import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
+const TILESET_WITH_FAILING_CONTENT =
+  '@loaders.gl/tile-converter/test/data/failing-content-error/tileset.json';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -346,5 +348,30 @@ test('tile-converter(i3s)#layer json should contain fullExtent field', async (t)
     t.deepEqual(layer.fullExtent, TEST_FULL_EXTENT);
   }
   await cleanUpPath('data/BatchedTextured');
+  t.end();
+});
+
+test('tile-converter(i3s)#proceed with failing content', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_FAILING_CONTENT,
+      outputPath: 'data',
+      tilesetName: 'FailingContent',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const nodePageJson = await fs.readFile(
+      'data/FailingContent/SceneServer/layers/0/nodepages/0/index.json',
+      'utf8'
+    );
+    const nodePage = JSON.parse(nodePageJson);
+    t.ok(nodePage.nodes[1].mesh);
+    t.notOk(nodePage.nodes[2].mesh);
+    t.notOk(nodePage.nodes[3].mesh);
+    t.notOk(nodePage.nodes[4].mesh);
+    t.notOk(nodePage.nodes[5].mesh);
+  }
+  await cleanUpPath('data/FailingContent');
   t.end();
 });
