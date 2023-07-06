@@ -163,3 +163,23 @@ export type TypedArrayConstructor =
   | Uint32ArrayConstructor
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
+
+/**
+ * glTF primitive modes (mesh topology types)
+ * @see https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
+ */
+export enum GltfPrimitiveModeString {
+  POINTS = 'POINTS',
+  LINES = 'LINES',
+  LINE_LOOP = 'LINE_LOOP',
+  LINE_STRIP = 'LINE_STRIP',
+  TRIANGLES = 'TRIANGLES',
+  TRIANGLE_STRIP = 'TRIANGLE_STRIP',
+  TRIANGLE_FAN = 'TRIANGLE_FAN'
+}
+
+/** Preprocessed data gathered from child tiles binary content */
+export type PreprocessData = {
+  /** Mesh topology types used in gltf primitives of the tileset */
+  meshTopologyTypes: Set<GltfPrimitiveModeString>;
+};

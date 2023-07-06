@@ -1,21 +1,21 @@
-import parser from 'fast-xml-parser';
+import {XMLParser} from 'fast-xml-parser';
 import {ensureArray, intToRgba} from '../utils/tiff-utils';
 
 // WARNING: Changes to the parser options _will_ effect the types in types/omexml.d.ts.
-const PARSER_OPTIONS = {
+const xmlParser = new XMLParser({
   // Nests attributes withtout prefix under 'attr' key for each node
   attributeNamePrefix: '',
-  attrNodeName: 'attr',
+  attributesGroupName: 'attr',
 
   // Parses numbers for both attributes and nodes
-  parseNodeValue: true,
+  parseTagValue: true,
   parseAttributeValue: true,
 
   // Forces attributes to be parsed
   ignoreAttributes: false
-};
+});
 
-const parse = (str: string): Root => parser.parse(str, PARSER_OPTIONS);
+const parse = (str: string): Root => xmlParser.parse(str);
 
 export function fromString(str: string) {
   const res = parse(str);

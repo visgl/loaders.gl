@@ -1,6 +1,6 @@
 # Supported features
 
-The tile-converter is capable to convert 3D tiles data of formats [3DTiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both `3DTiles` and `I3S` are wide specifications included many internal formats and data types. The tile-converter doesn't cover all features described in those specifications. This sheet summarise compatibility of the tile-converter with different parts and features of `3DTiles` and `I3S`.
+The tile-converter is capable to convert 3D tiles data of formats [3DTiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both `3DTiles` and `I3S` are wide specifications which include many internal formats and data types. The tile-converter doesn't cover all features described in those specifications. This sheet summarises the compatibility of the tile-converter with different parts and features of `3DTiles` and `I3S`.
 
 ## Layer types
 
@@ -65,7 +65,7 @@ Some 3DTiles vNext extensions are supported as input data.
 
 ## Mesh topology types
 
-`I3S` specification supports only `TRIANGLE` mesh topoloty type.
+`I3S` specification supports only `TRIANGLE` mesh topology type.
 
 | Specification | Mesh type        | Status                  |
 | ------------- | ---------------- | ----------------------- |

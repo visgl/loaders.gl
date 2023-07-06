@@ -9,6 +9,8 @@ import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
+const TILESET_WITH_FAILING_CONTENT =
+  '@loaders.gl/tile-converter/test/data/failing-content-error/tileset.json';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -38,66 +40,7 @@ setLoaderOptions({
   _worker: 'test'
 });
 
-test.only('tile-converter - Converters#ext-mesh-features', async (t) => {
-  const converter = new I3SConverter();
-  const OUTPUT_PATH = 'data';
-  const TILESET_MESH_URL = '../data/esri-tile-sets/3D_Tiles_1.1/CDB_yemen_all/tileset.json';
-  const TILESET_MESH_NAME = 'CDB_yemen_all';
-
-  // const TILESET_MESH_URL = '../data/esri-tile-sets/3D_Tiles_1.1/baseglobe_s2/tileset.json';
-  // const TILESET_MESH_NAME = 'baseglobe_s2';
-
-  // const TILESET_MESH_URL =
-  //   '../data/3d-tiles-samples/gltf-ext-mesh-features/FeatureIdAttribute/tileset.json';
-  // const TILESET_MESH_NAME = 'gltf-ext-mesh-features';
-
-  const tilesetJson = await converter.convert({
-    inputUrl: TILESET_MESH_URL,
-    outputPath: OUTPUT_PATH,
-    tilesetName: TILESET_MESH_NAME,
-    slpk: false,
-    mergeMaterials: false, // --split-nodes
-    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-    egmFilePath: PGM_FILE_PATH,
-    token:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
-  });
-  if (!isBrowser) {
-    t.ok(tilesetJson);
-    //    await cleanUpPath(`${OUTPUT_PATH}/${TILESET_MESH_NAME}`);
-  } else {
-    t.equals(tilesetJson, BROWSER_ERROR_MESSAGE);
-  }
-  t.end();
-});
-
-test('tile-converter - Converters#texure attributes', async (t) => {
-  const converter = new I3SConverter();
-  const TEXTURE_ATTRIBUTES_TILESET_URL =
-    '@loaders.gl/tile-converter/test/data/feature-texture/tileset.json';
-  const outputPath = 'data';
-  const tilesetName = 'TextureAttributes';
-  const tilesetJson = await converter.convert({
-    inputUrl: TEXTURE_ATTRIBUTES_TILESET_URL,
-    outputPath: outputPath,
-    tilesetName: tilesetName,
-    slpk: true,
-    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-    egmFilePath: PGM_FILE_PATH,
-    mergeMaterials: false, // --split-nodes
-    token:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
-  });
-  if (!isBrowser) {
-    t.ok(tilesetJson);
-    await cleanUpPath('data/TextureAttributes');
-  } else {
-    t.equals(tilesetJson, BROWSER_ERROR_MESSAGE);
-  }
-  t.end();
-});
-
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', async (t) => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async (t) => {
   const converter = new I3SConverter();
   const tilesetJson = await converter.convert({
     inputUrl: TILESET_URL,
@@ -118,7 +61,7 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
   t.end();
 });
 
-test('tile-converter - Converters#should create Draco compressed geometry', async (t) => {
+test('tile-converter(i3s)#should create Draco compressed geometry', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -138,7 +81,7 @@ test('tile-converter - Converters#should create Draco compressed geometry', asyn
   t.end();
 });
 
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with validation', async (t) => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validation', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -158,7 +101,7 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
   t.end();
 });
 
-test('tile-converter - Converters#root node should not contain geometry and textures', async (t) => {
+test('tile-converter(i3s)#root node should not contain geometry and textures', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -182,7 +125,7 @@ test('tile-converter - Converters#root node should not contain geometry and text
   t.end();
 });
 
-test('tile-converter - Converters#should create SceneServer path', async (t) => {
+test('tile-converter(i3s)#should create SceneServer path', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -201,7 +144,7 @@ test('tile-converter - Converters#should create SceneServer path', async (t) => 
   t.end();
 });
 
-test('tile-converter - Converters#should create sharedResources json file', async (t) => {
+test('tile-converter(i3s)#should create sharedResources json file', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -223,7 +166,7 @@ test('tile-converter - Converters#should create sharedResources json file', asyn
   t.end();
 });
 
-test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
+test('tile-converter(i3s)#should generate KTX2 texture', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -266,7 +209,7 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
   t.end();
 });
 
-test('tile-converter - Converters#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
+test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {formats: [{name: '1', format: 'ktx2'}]},
@@ -299,7 +242,7 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
   t.end();
 });
 
-test('tile-converter - Converters#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
+test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -343,7 +286,7 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
   t.end();
 });
 
-test('tile-converter - Converters#should create only unique materials', async (t) => {
+test('tile-converter(i3s)#should create only unique materials', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -366,7 +309,7 @@ test('tile-converter - Converters#should create only unique materials', async (t
   t.end();
 });
 
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async (t) => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -386,7 +329,7 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
   t.end();
 });
 
-test('tile-converter - Converters#layer json should contain fullExtent field', async (t) => {
+test('tile-converter(i3s)#layer json should contain fullExtent field', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -405,5 +348,30 @@ test('tile-converter - Converters#layer json should contain fullExtent field', a
     t.deepEqual(layer.fullExtent, TEST_FULL_EXTENT);
   }
   await cleanUpPath('data/BatchedTextured');
+  t.end();
+});
+
+test('tile-converter(i3s)#proceed with failing content', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_FAILING_CONTENT,
+      outputPath: 'data',
+      tilesetName: 'FailingContent',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const nodePageJson = await fs.readFile(
+      'data/FailingContent/SceneServer/layers/0/nodepages/0/index.json',
+      'utf8'
+    );
+    const nodePage = JSON.parse(nodePageJson);
+    t.ok(nodePage.nodes[1].mesh);
+    t.notOk(nodePage.nodes[2].mesh);
+    t.notOk(nodePage.nodes[3].mesh);
+    t.notOk(nodePage.nodes[4].mesh);
+    t.notOk(nodePage.nodes[5].mesh);
+  }
+  await cleanUpPath('data/FailingContent');
   t.end();
 });

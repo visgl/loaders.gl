@@ -1,4 +1,5 @@
 import type {SLPKLoaderOptions} from '../../../i3s-slpk-loader';
+import {DataViewFileProvider} from '../parse-zip/buffer-file-provider';
 import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {SLPKArchive} from './slpk-archieve';
@@ -38,14 +39,21 @@ export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = 
     }
   }
 
-  const cdFileHeader = parseZipCDFileHeader(hashCDOffset, archive);
+  const fileProvider = new DataViewFileProvider(archive);
 
-  const textDecoder = new TextDecoder();
-  if (textDecoder.decode(cdFileHeader.fileName) !== '@specialIndexFileHASH128@') {
+  const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
+
+  if (cdFileHeader.fileName !== '@specialIndexFileHASH128@') {
     throw new Error('No hash file in slpk');
   }
 
-  const localFileHeader = parseZipLocalFileHeader(cdFileHeader.localHeaderOffset, archive);
+  const localFileHeader = await parseZipLocalFileHeader(
+    cdFileHeader.localHeaderOffset,
+    fileProvider
+  );
+  if (!localFileHeader) {
+    throw new Error('No hash file in slpk');
+  }
 
   const fileDataOffset = localFileHeader.fileDataOffset;
   const hashFile = archive.buffer.slice(

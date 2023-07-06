@@ -49,7 +49,7 @@ To allow for this (and also to generally improve the glTF code structure), the `
 
 ## glTF Extension Support
 
-Certain glTF extensions are fully or partially supported by the glTF classes. For details on which extensions are supported, see [glTF Extensions](/docs/modules/gltf/api-reference/gltf-extensions).
+Certain glTF extensions are fully or partially supported by the glTF classes. For details on which extensions are supported, see [glTF Extensions](/docs/modules/gltf/formats/gltf#gltf-extensions).
 
 ## Draco Mesh and Point Cloud Compression
 
