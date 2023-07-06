@@ -241,6 +241,8 @@ function getAvailabilityResult(
      * https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling/README.md#multiple-contents
      * Take first item in the array
      */
+    // eslint-disable-next-line no-console
+    console.warn('Not supported extension "3DTILES_multiple_contents" has been detected');
     availabilityObject = availabilityData[0];
   } else {
     availabilityObject = availabilityData;
