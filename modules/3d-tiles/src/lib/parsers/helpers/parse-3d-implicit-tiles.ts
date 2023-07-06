@@ -122,9 +122,10 @@ export async function parseImplicitTiles(params: {
 
   const childrenPerTile = SUBDIVISION_COUNT_MAP[subdivisionScheme];
 
-  const childX = childIndex & 0b01;
-  const childY = (childIndex >> 1) & 0b01;
-  const childZ = (childIndex >> 2) & 0b01;
+  // childIndex is in range [0, 7]
+  const childX = childIndex & 0b01; // Get first bit for X
+  const childY = (childIndex >> 1) & 0b01; // Get second bit for Y
+  const childZ = (childIndex >> 2) & 0b01; // Get third bit for Z
 
   const levelOffset = (childrenPerTile ** level - 1) / (childrenPerTile - 1);
   let childTileMortonIndex = concatBits(parentData.mortonIndex, childIndex);
@@ -224,13 +225,33 @@ export async function parseImplicitTiles(params: {
   return tile;
 }
 
-function getAvailabilityResult(availabilityData: Availability, index: number): boolean {
-  if ('constant' in availabilityData) {
-    return Boolean(availabilityData.constant);
+/**
+ * Check tile availability in the bitstream array
+ * @param availabilityData - tileAvailability / contentAvailability / childSubtreeAvailability object
+ * @param index - index in the bitstream array
+ * @returns
+ */
+function getAvailabilityResult(
+  availabilityData: Availability | Availability[],
+  index: number
+): boolean {
+  let availabilityObject: Availability;
+  if (Array.isArray(availabilityData)) {
+    /** TODO: we don't support `3DTILES_multiple_contents` extension at the moment.
+     * https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling/README.md#multiple-contents
+     * Take first item in the array
+     */
+    availabilityObject = availabilityData[0];
+  } else {
+    availabilityObject = availabilityData;
   }
 
-  if (availabilityData.explicitBitstream) {
-    return getBooleanValueFromBitstream(index, availabilityData.explicitBitstream);
+  if ('constant' in availabilityObject) {
+    return Boolean(availabilityObject.constant);
+  }
+
+  if (availabilityObject.explicitBitstream) {
+    return getBooleanValueFromBitstream(index, availabilityObject.explicitBitstream);
   }
 
   return false;
