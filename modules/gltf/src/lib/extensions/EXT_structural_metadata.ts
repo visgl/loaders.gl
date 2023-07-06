@@ -3,8 +3,8 @@ import type {GLTF} from '../types/gltf-json-schema';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {
-  ClassProperty,
-  EXT_feature_metadata_class_object,
+  GLTF_EXT_feature_metadata_Class,
+  GLTF_EXT_feature_metadata_ClassProperty,
   EXT_structural_metadata_property_table,
   GLTF_EXT_structural_metadata,
   EXT_structural_metadata_property_texture,
@@ -218,7 +218,7 @@ function processTexture(
 function handlePropertyTableProperties(
   scenegraph: GLTFScenegraph,
   propertyTable: EXT_structural_metadata_property_table, // propertyTable definition taken from the top-level extension
-  schemaClass: EXT_feature_metadata_class_object
+  schemaClass: GLTF_EXT_feature_metadata_Class
 ): void {
   for (const propertyName in schemaClass.properties) {
     const schemaProperty = schemaClass.properties[propertyName];
@@ -247,7 +247,7 @@ function handlePropertyTableProperties(
  */
 function getPropertyDataFromBinarySource(
   scenegraph: GLTFScenegraph,
-  schemaProperty: ClassProperty,
+  schemaProperty: GLTF_EXT_feature_metadata_ClassProperty,
   numberOfProperties: number,
   featureTableProperty: EXT_structural_metadata_property_table_property
 ): Uint8Array | string[] {

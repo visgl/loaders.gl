@@ -1,6 +1,5 @@
 import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {
-  GLTF_EXT_feature_metadata,
   GLTF_EXT_mesh_features,
   GLTF_EXT_structural_metadata,
 

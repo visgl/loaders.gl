@@ -29,7 +29,7 @@ export type {
   // GLTF_EXT_feature_metadata_primitive,
   // GLTF_EXT_feature_metadata_attribute,
   // GLTF_EXT_mesh_features,
-  // GLTF_EXT_structural_metadata
+  GLTF_EXT_structural_metadata,
 
   // 3DTiles extensions
   GLTF_EXT_mesh_features,

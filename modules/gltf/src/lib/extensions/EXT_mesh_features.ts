@@ -3,10 +3,12 @@ import type {GLTF} from '../types/gltf-json-schema';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {
-  ClassProperty,
+  GLTF_EXT_feature_metadata_Class,
+  GLTF_EXT_feature_metadata_ClassProperty,
+  GLTF_EXT_feature_metadata_FeatureTable,
 //  EXT_feature_metadata_class_object,
-  GLTF_EXT_mesh_features_feature_id,
-  FeatureTableProperty,
+  GLTF_EXT_mesh_features_featureId,
+  GLTF_EXT_feature_metadata_FeatureTableProperty,
   GLTF_EXT_mesh_features
 } from '../types/gltf-json-schema';
 
@@ -28,8 +30,14 @@ function decodeExtMeshFeatures(scenegraph: GLTFScenegraph): void {
   const extension: GLTF_EXT_mesh_features | null = scenegraph.getExtension(EXT_MESH_FEATURES);
   if (!extension) return;
 
-  const schemaClasses = extension.schema?.classes;
-  const featureIds: GLTF_EXT_mesh_features_feature_id[] = extension.featureIds;
+// TODO: Check it after merge!
+
+// Temp - to compile...
+  let propertyTable: GLTF_EXT_feature_metadata_FeatureTable = { count: 0};
+
+  // TODO: temp to compile...
+  const schemaClasses = []; //extension.schema?.classes;
+  const featureIds: GLTF_EXT_mesh_features_featureId[] = extension.featureIds;
 
 // Actuall featureIds is always here!
   if (featureIds) {
@@ -63,8 +71,8 @@ function decodeExtMeshFeatures(scenegraph: GLTFScenegraph): void {
  */
 function handlePropertyTableProperties(
   scenegraph: GLTFScenegraph,
-  featureTable: EXT_feature_metadata_feature_table,
-  schemaClass: EXT_feature_metadata_class_object
+  featureTable: GLTF_EXT_feature_metadata_FeatureTable,
+  schemaClass: GLTF_EXT_feature_metadata_Class
 ): void {
   for (const propertyName in schemaClass.properties) {
     const schemaProperty = schemaClass.properties[propertyName];
@@ -92,9 +100,9 @@ function handlePropertyTableProperties(
  */
 function getPropertyDataFromBinarySource(
   scenegraph: GLTFScenegraph,
-  schemaProperty: ClassProperty,
+  schemaProperty: GLTF_EXT_feature_metadata_ClassProperty,
   numberOfFeatures: number,
-  featureTableProperty: FeatureTableProperty
+  featureTableProperty: GLTF_EXT_feature_metadata_FeatureTableProperty
 ): Uint8Array | string[] {
   const bufferView = featureTableProperty.bufferView;
   // TODO think maybe we shouldn't get data only in Uint8Array format.
