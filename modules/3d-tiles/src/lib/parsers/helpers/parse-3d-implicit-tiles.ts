@@ -1,6 +1,7 @@
 import type {Availability, Tile3DBoundingVolume, Subtree} from '../../../types';
 import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
+import {default as log} from '@probe.gl/log';
 
 import {getS2CellIdFromToken, getS2ChildCellId, getS2TokenFromCellId} from '../../utils/s2/index';
 import type {S2VolumeInfo} from '../../utils/obb/s2-corners-to-obb';
@@ -244,7 +245,7 @@ function getAvailabilityResult(
     availabilityObject = availabilityData[0];
     if (availabilityData.length > 1) {
       // eslint-disable-next-line no-console
-      console.warn('Not supported extension "3DTILES_multiple_contents" has been detected');
+      log.once('Not supported extension "3DTILES_multiple_contents" has been detected');
     }
   } else {
     availabilityObject = availabilityData;
