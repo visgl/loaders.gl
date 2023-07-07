@@ -6,6 +6,11 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 release info (#2491))
 
+### v4.0.0-alpha.12
+
+- fix(tile-converter): proceed failed tiles (#2536)
+- fix(3d-tiles): implicit tiling relative paths (#2535)
+
 ### v4.0.0-alpha.11
 
 - chore(tile-converter): add tests (#2534)

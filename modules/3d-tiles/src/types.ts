@@ -294,20 +294,57 @@ export type Tiles3DTileContent = {
 
 /**
  * 3DTILES_implicit_tiling types
- * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling#subtree-file-format
+ * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling
+ * JSON Schema v1.1 https://github.com/CesiumGS/3d-tiles/blob/8e5e67e078850cc8ce15bd1873fe54f11bbee02f/specification/schema/Subtree/subtree.schema.json
+ * JSON Schema vNext https://github.com/CesiumGS/3d-tiles/blob/8e5e67e078850cc8ce15bd1873fe54f11bbee02f/extensions/3DTILES_implicit_tiling/schema/subtree/subtree.schema.json
  */
 export type Subtree = {
+  /** An array of buffers. */
   buffers: Buffer[];
+  /** An array of buffer views. */
   bufferViews: BufferView[];
+  /** The availability of tiles in the subtree. The availability bitstream is a 1D boolean array where tiles are ordered by their level in the subtree and Morton index
+   * within that level. A tile's availability is determined by a single bit, 1 meaning a tile exists at that spatial index, and 0 meaning it does not.
+   * The number of elements in the array is `(N^subtreeLevels - 1)/(N - 1)` where N is 4 for subdivision scheme `QUADTREE` and 8 for `OCTREE`.
+   * Availability may be stored in a buffer view or as a constant value that applies to all tiles. If a non-root tile's availability is 1 its parent
+   * tile's availability shall also be 1. `tileAvailability.constant: 0` is disallowed, as subtrees shall have at least one tile.
+   */
   tileAvailability: Availability;
-  contentAvailability: Availability;
+  /** It is array by spec but there are tiles that has a single object
+   * An array of content availability objects. If the tile has a single content this array will have one element; if the tile has multiple contents -
+   * as supported by 3DTILES_multiple_contents and 3D Tiles 1.1 - this array will have multiple elements.
+   */
+  contentAvailability: Availability | Availability[];
+  /** The availability of children subtrees. The availability bitstream is a 1D boolean array where subtrees are ordered by their Morton index in the level of the tree
+   * immediately below the bottom row of the subtree. A child subtree's availability is determined by a single bit, 1 meaning a subtree exists at that spatial index,
+   * and 0 meaning it does not. The number of elements in the array is `N^subtreeLevels` where N is 4 for subdivision scheme `QUADTREE` and 8 for `OCTREE`.
+   * Availability may be stored in a buffer view or as a constant value that applies to all child subtrees. If availability is 0 for all child subtrees,
+   * then the tileset does not subdivide further.
+   */
   childSubtreeAvailability: Availability;
+  // TODO: These are unused properties. Improve types when they are required
+  propertyTables: unknown;
+  tileMetadata: unknown;
+  contentMetadata: unknown;
+  subtreeMetadata: unknown;
 };
 
 export type Availability = {
+  /** Integer indicating whether all of the elements are available (1) or all are unavailable (0). */
   constant?: 0 | 1;
+  /** Index of a buffer view that indicates whether each element is available. The bitstream conforms to the boolean array encoding described
+   * in the 3D Metadata specification. If an element is available, its bit is 1, and if it is unavailable, its bit is 0. */
+  bitstream?: number;
+  /**
+   * v1.1 https://github.com/CesiumGS/3d-tiles/blob/8e5e67e078850cc8ce15bd1873fe54f11bbee02f/specification/schema/Subtree/availability.schema.json
+   * vNext https://github.com/CesiumGS/3d-tiles/blob/8e5e67e078850cc8ce15bd1873fe54f11bbee02f/extensions/3DTILES_implicit_tiling/schema/subtree/availability.schema.json
+   * The schemas of vNext and 1.1 are same but there are tiles with `bufferView` property instead of `bitstream`
+   */
   bufferView?: number;
-  // Internal bitstream type
+  /**
+   * Postprocessing property
+   * contain availability bits loaded from the bufferView
+   */
   explicitBitstream?: ExplicitBitstream;
 };
 
@@ -324,7 +361,8 @@ type Buffer = {
   byteLength: number;
 };
 
-type BufferView = {
+/** Subtree buffer view */
+export type BufferView = {
   buffer: number;
   byteOffset: number;
   byteLength: number;
