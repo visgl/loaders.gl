@@ -30,17 +30,17 @@ loaders.gl aims to provide support for glTF extensions that can be handled compl
 
 Note that many glTF extensions affect aspects that are firmly outside of the scope of loaders.gl (e.g. rendering), and no attempt is made to process those extensions in loaders.gl.
 
-| Extension                                                                                | Preprocessed | Description                                                      |
-| ---------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------- |
-| [KHR_draco_mesh_compression](/docs/modules/gltf/formats/gltf#khr_draco_mesh_compression) | Y            | Decompresses draco-compressed geometries                         |
-| [EXT_meshopt_compression](/docs/modules/gltf/formats/gltf#ext_meshopt_compression)       | Y            | Decompresses meshopt-compressed geometries                       |
-| [KHR_texture_basisu](/docs/modules/gltf/formats/gltf#khr_texture_basisu)                 | Y            | This extension adds the ability to specify textures using KTX v2 |
-| [KHR_texture_transform](/docs/modules/gltf/formats/gltf#khr_texture_transform)                                                                | Y            |                                                                  |
+| Extension                                                                                | Preprocessed | Description                                                                                 |
+| ---------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------- |
+| [KHR_draco_mesh_compression](/docs/modules/gltf/formats/gltf#khr_draco_mesh_compression) | Y            | Decompresses draco-compressed geometries                                                    |
+| [EXT_meshopt_compression](/docs/modules/gltf/formats/gltf#ext_meshopt_compression)       | Y            | Decompresses meshopt-compressed geometries                                                  |
+| [KHR_texture_basisu](/docs/modules/gltf/formats/gltf#khr_texture_basisu)                 | Y            | Adds the ability to specify textures using KTX v2                                           |
+| [KHR_texture_transform](/docs/modules/gltf/formats/gltf#khr_texture_transform)           | Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute |
 | KHR_texture_webp                                                                         | Y            |
-| [EXT_mesh_features](/docs/modules/gltf/formats/gltf#ext_mesh_features)                   | N            | (In progress) 3D tiles extension                                 |
-| [KHR_lights_punctual](/docs/modules/gltf/formats/gltf#khr_lights_punctual)               | Y\*          | Deprecated                                                       |
-| [KHR_materials_unlit](/docs/modules/gltf/formats/gltf#khr_materials_unlit)               | Y\*          | Deprecated                                                       |
-| [EXT_feature_metadata](/docs/modules/gltf/formats/gltf#ext_feature_metadata)             | Y\*          | Deprecated. 3D tiles extension                                   |
+| [EXT_mesh_features](/docs/modules/gltf/formats/gltf#ext_mesh_features)                   | N            | (In progress) 3D tiles extension                                                            |
+| [KHR_lights_punctual](/docs/modules/gltf/formats/gltf#khr_lights_punctual)               | Y\*          | Deprecated                                                                                  |
+| [KHR_materials_unlit](/docs/modules/gltf/formats/gltf#khr_materials_unlit)               | Y\*          | Deprecated                                                                                  |
+| [EXT_feature_metadata](/docs/modules/gltf/formats/gltf#ext_feature_metadata)             | Y\*          | Deprecated. 3D tiles extension                                                              |
 
 ## Official Extensions
 
