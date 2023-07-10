@@ -1,17 +1,17 @@
 /* eslint-disable camelcase */
-import type {GLTF} from '../../types/gltf-json-schema';
+import type {
+  GLTF,
+  GLTF_EXT_feature_metadata_Class,
+  GLTF_EXT_feature_metadata_ClassProperty,
+  GLTF_EXT_feature_metadata_FeatureTable,
+  GLTF_EXT_feature_metadata_FeatureTableProperty,
+  GLTF_EXT_feature_metadata_FeatureTexture,
+  GLTF_EXT_feature_metadata_GLTF,
+  GLTF_EXT_feature_metadata_TextureAccessor
+} from '../../types/gltf-json-schema';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {getImageData} from '@loaders.gl/images';
-import {
-  ClassProperty,
-  EXT_feature_metadata_class_object,
-  EXT_feature_metadata_feature_table,
-  FeatureTableProperty,
-  GLTF_EXT_feature_metadata,
-  EXT_feature_metadata_feature_texture,
-  FeatureTextureProperty,
-  GLTFMeshPrimitive
-} from '../../types/gltf-json-schema';
+import {GLTFMeshPrimitive} from '../../types/gltf-json-schema';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
 
@@ -30,7 +30,8 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
  * @param scenegraph
  */
 function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph, options: GLTFLoaderOptions): void {
-  const extension: GLTF_EXT_feature_metadata | null = scenegraph.getExtension(EXT_FEATURE_METADATA);
+  const extension: GLTF_EXT_feature_metadata_GLTF | null =
+    scenegraph.getExtension(EXT_FEATURE_METADATA);
   if (!extension) return;
 
   const schemaClasses = extension.schema?.classes;
@@ -68,8 +69,8 @@ function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph, options: GLTFLoade
  */
 function handleFeatureTableProperties(
   scenegraph: GLTFScenegraph,
-  featureTable: EXT_feature_metadata_feature_table,
-  schemaClass: EXT_feature_metadata_class_object
+  featureTable: GLTF_EXT_feature_metadata_FeatureTable,
+  schemaClass: GLTF_EXT_feature_metadata_Class
 ): void {
   for (const propertyName in schemaClass.properties) {
     const schemaProperty = schemaClass.properties[propertyName];
@@ -97,8 +98,8 @@ function handleFeatureTableProperties(
  */
 function handleFeatureTextureProperties(
   scenegraph: GLTFScenegraph,
-  featureTexture: EXT_feature_metadata_feature_texture,
-  schemaClass: EXT_feature_metadata_class_object
+  featureTexture: GLTF_EXT_feature_metadata_FeatureTexture,
+  schemaClass: GLTF_EXT_feature_metadata_Class
 ): void {
   const attributeName = featureTexture.class;
 
@@ -121,9 +122,9 @@ function handleFeatureTextureProperties(
  */
 function getPropertyDataFromBinarySource(
   scenegraph: GLTFScenegraph,
-  schemaProperty: ClassProperty,
+  schemaProperty: GLTF_EXT_feature_metadata_ClassProperty,
   numberOfFeatures: number,
-  featureTableProperty: FeatureTableProperty
+  featureTableProperty: GLTF_EXT_feature_metadata_FeatureTableProperty
 ): Uint8Array | string[] {
   const bufferView = featureTableProperty.bufferView;
   // TODO think maybe we shouldn't get data only in Uint8Array format.
@@ -151,7 +152,7 @@ function getPropertyDataFromBinarySource(
  */
 function getPropertyDataFromTexture(
   scenegraph: GLTFScenegraph,
-  featureTextureProperty: FeatureTextureProperty,
+  featureTextureProperty: GLTF_EXT_feature_metadata_TextureAccessor,
   attributeName: string
 ): number[] {
   const json = scenegraph.gltf.json;
@@ -182,10 +183,11 @@ function getPropertyDataFromTexture(
  * @param featureTextureTable
  * @param primitive
  */
+// eslint-disable-next-line max-statements
 function processPrimitiveTextures(
   scenegraph: GLTFScenegraph,
   attributeName: string,
-  featureTextureProperty: FeatureTextureProperty,
+  featureTextureProperty: GLTF_EXT_feature_metadata_TextureAccessor,
   featureTextureTable: number[],
   primitive: GLTFMeshPrimitive
 ): void {
@@ -342,9 +344,9 @@ function emod(n: number): number {
  * @param schemaClassName
  */
 function findFeatureTableByName(
-  featureTables: {[key: string]: EXT_feature_metadata_feature_table},
+  featureTables: {[key: string]: GLTF_EXT_feature_metadata_FeatureTable},
   schemaClassName: string
-): EXT_feature_metadata_feature_table | null {
+): GLTF_EXT_feature_metadata_FeatureTable | null {
   for (const featureTableName in featureTables) {
     const featureTable = featureTables[featureTableName];
 
@@ -357,9 +359,9 @@ function findFeatureTableByName(
 }
 
 function findFeatureTextureByName(
-  featureTextures: {[key: string]: EXT_feature_metadata_feature_texture},
+  featureTextures: {[key: string]: GLTF_EXT_feature_metadata_FeatureTexture},
   schemaClassName: string
-): EXT_feature_metadata_feature_texture | null {
+): GLTF_EXT_feature_metadata_FeatureTexture | null {
   for (const featureTexturesName in featureTextures) {
     const featureTable = featureTextures[featureTexturesName];
 
