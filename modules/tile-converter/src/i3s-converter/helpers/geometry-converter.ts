@@ -1,13 +1,12 @@
-import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
+import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {
-  GLTF_EXT_feature_metadata,
-  GLTF_EXT_mesh_features,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
   GLTFMeshPrimitivePostprocessed,
   GLTFMeshPostprocessed,
-  GLTFTexturePostprocessed
+  GLTFTexturePostprocessed,
+  GLTF_EXT_feature_metadata_GLTF
 } from '@loaders.gl/gltf';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
@@ -52,6 +51,7 @@ import {GL} from '@loaders.gl/math';
 */
 import type {TypedArrayConstructor} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -81,6 +81,9 @@ let scratchVector = new Vector3();
  * Convert binary data from b3dm file to i3s resources
  *
  * @param tileContent - 3d tile content
+ * @param tileTransform - transformation matrix of the tile, calculated recursively multiplying
+ *                        transform of all parent tiles and transform of the current tile
+ * @param tileBoundingVolume - initialized bounding volume of the source tile
  * @param addNodeToNodePage - function to add new node to node pages
  * @param propertyTable - batch table (corresponding to feature attributes data)
  * @param featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
@@ -93,7 +96,9 @@ let scratchVector = new Vector3();
  * @returns Array of node resources to create one or more i3s nodes
  */
 export default async function convertB3dmToI3sGeometry(
-  tileContent: B3DMContent,
+  tileContent: Tiles3DTileContent,
+  tileTransform: Matrix4,
+  tileBoundingVolume: OrientedBoundingBox | BoundingSphere,
   addNodeToNodePage: () => Promise<number>,
   propertyTable: FeatureTableJson | null,
   featuresHashArray: string[],
@@ -110,7 +115,11 @@ export default async function convertB3dmToI3sGeometry(
     shouldMergeMaterials
   );
 
-  const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
+  const dataForAttributesConversion = prepareDataForAttributesConversion(
+    tileContent,
+    tileTransform,
+    tileBoundingVolume
+  );
   const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
     dataForAttributesConversion,
     materialAndTextureList,
@@ -198,7 +207,7 @@ function _generateBoundingVolumesFromGeometry(
  * @param params.convertedAttributes - Converted geometry attributes
  * @param params.material - I3S PBR-like material definition
  * @param params.texture - texture content
- * @param params.tileContent - B3DM decoded content
+ * @param params.tileContent - 3DTiles decoded content
  * @param params.nodeId - new node ID
  * @param params.featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
  * @param params.propertyTable - batch table (corresponding to feature attributes data)
@@ -222,7 +231,7 @@ async function _makeNodeResources({
   convertedAttributes: ConvertedAttributes;
   material: I3SMaterialDefinition;
   texture?: {};
-  tileContent: B3DMContent;
+  tileContent: Tiles3DTileContent;
   nodeId: number;
   featuresHashArray: string[];
   propertyTable: FeatureTableJson | null;
@@ -1545,10 +1554,14 @@ function generateFeatureIndexAttribute(
 /**
  * Find property table in tile
  * For example it can be batchTable for b3dm files or property table in gLTF extension.
- * @param sourceTile
+ * @param tileContent - 3DTiles tile content
  * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA
  */
-export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | null {
+export function getPropertyTable(tileContent: Tiles3DTileContent | null): FeatureTableJson | null {
+  if (!tileContent) {
+    return null;
+  }
+
   const batchTableJson = tileContent?.batchTableJson;
 
   if (batchTableJson) {
@@ -1563,7 +1576,7 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
       return null;
     }
     case EXT_FEATURE_METADATA: {
-      return getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata);
+      return getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata_GLTF);
     }
     default:
       return null;
@@ -1572,11 +1585,12 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
 
 /**
  * Check extensions which can be with property table inside.
- * @param sourceTile
+ * @param tileContent - 3DTiles tile content
  */
-function getPropertyTableExtension(
-  tileContent: B3DMContent
-): GLTF_EXT_feature_metadata | GLTF_EXT_mesh_features {
+function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
+  extensionName: null | string;
+  extension: string | GLTF_EXT_feature_metadata_GLTF | null;
+} {
   const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
@@ -1585,7 +1599,6 @@ function getPropertyTableExtension(
   }
 
   let extensionName: string = '';
-
   for (const extensionItem of tileContent?.gltf?.extensionsUsed || []) {
     if (extensionsWithPropertyTables.includes(extensionItem)) {
       extensionName = extensionItem;
@@ -1593,7 +1606,13 @@ function getPropertyTableExtension(
     }
   }
 
-  const extension = tileContent?.gltf?.extensions?.[extensionName];
+  if (!extensionName) {
+    return {extensionName: null, extension: null};
+  }
+
+  const extension = tileContent?.gltf?.extensions?.[extensionName] as
+    | string // EXT_mesh_features doesn't have global metadata
+    | GLTF_EXT_feature_metadata_GLTF;
 
   return {extensionName, extension};
 }
@@ -1601,18 +1620,10 @@ function getPropertyTableExtension(
 /**
  * Handle EXT_feature_metadata to get property table
  * @param extension
- * TODO add EXT_feature_metadata feature textures support.
  */
 function getPropertyTableFromExtFeatureMetadata(
-  extension: GLTF_EXT_feature_metadata
+  extension: GLTF_EXT_feature_metadata_GLTF
 ): FeatureTableJson | null {
-  if (extension?.featureTextures) {
-    console.warn(
-      'The I3S converter does not yet support the EXT_feature_metadata feature textures'
-    );
-    return null;
-  }
-
   if (extension?.featureTables) {
     /**
      * Take only first feature table to generate attributes storage info object.
@@ -1634,6 +1645,28 @@ function getPropertyTableFromExtFeatureMetadata(
     }
   }
 
-  console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
+  if (extension?.featureTextures) {
+    /**
+     * Take only first feature texture to generate attributes storage info object.
+     * TODO: Think about getting data from all feature textures?
+     * It can be tricky just because 3dTiles is able to have multiple featureTextures.
+     * In I3S we should decide which featureTextures will be passed to geometry data.
+     */
+    const firstTextureName = Object.keys(extension.featureTextures)?.[0];
+    if (firstTextureName) {
+      const featureTable = extension?.featureTextures[firstTextureName];
+      const propertyTable = {};
+
+      for (const propertyName in featureTable.properties) {
+        propertyTable[propertyName] = featureTable.properties[propertyName].data;
+      }
+
+      return propertyTable;
+    }
+  }
+
+  console.warn(
+    "The I3S converter couldn't handle EXT_feature_metadata extension: There is neither featureTables, no featureTextures in the extension."
+  );
   return null;
 }

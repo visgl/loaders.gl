@@ -23,7 +23,7 @@ import {getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 import {I3SLoaderOptions} from '../../i3s-loader';
-import {customizeColors} from '../utils/customizeColors';
+import {customizeColors} from '../utils/customize-сolors';
 
 const scratchVector = new Vector3([0, 0, 0]);
 

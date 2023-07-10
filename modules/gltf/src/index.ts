@@ -23,10 +23,28 @@ export type {
   GLTF_KHR_texture_basisu,
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp,
-  GLTF_EXT_feature_metadata,
-  GLTF_EXT_feature_metadata_primitive,
-  GLTF_EXT_feature_metadata_attribute,
-  GLTF_EXT_mesh_features
+  // 3DTiles extensions
+  GLTF_EXT_mesh_features,
+  GLTF_EXT_mesh_features_featureId,
+  GLTF_EXT_mesh_features_featureIdTexture,
+  GLTF_EXT_feature_metadata_GLTF,
+  GLTF_EXT_feature_metadata_Schema,
+  GLTF_EXT_feature_metadata_Class,
+  GLTF_EXT_feature_metadata_ClassProperty,
+  GLTF_EXT_feature_metadata_Enum,
+  GLTF_EXT_feature_metadata_EnumValue,
+  GLTF_EXT_feature_metadata_FeatureTable,
+  GLTF_EXT_feature_metadata_FeatureTableProperty,
+  GLTF_EXT_feature_metadata_FeatureTexture,
+  GLTF_EXT_feature_metadata_TextureAccessor,
+  GLTF_EXT_feature_metadata_Statistics,
+  GLTF_EXT_feature_metadata_StatisticsClass,
+  GLTF_EXT_feature_metadata_StatisticsClassProperty,
+  GLTF_EXT_feature_metadata_Primitive,
+  GLTF_EXT_feature_metadata_FeatureIdAttribute,
+  GLTF_EXT_feature_metadata_FeatureIdAttributeFeatureIds,
+  GLTF_EXT_feature_metadata_FeatureIdTexture,
+  GLTF_EXT_feature_metadata_FeatureIdTextureAccessor
 } from './lib/types/gltf-json-schema';
 
 // Postprocessed types (modified GLTF types)

@@ -906,7 +906,7 @@ export class Tileset3D {
       this.asset.version !== '1.0' &&
       this.asset.version !== '1.1'
     ) {
-      throw new Error('The tileset must be 3D Tiles version 0.0 or 1.0.');
+      throw new Error('The tileset must be 3D Tiles version either 0.0 or 1.0 or 1.1.');
     }
 
     // Note: `asset.tilesetVersion` is version of the tileset itself (not the version of the 3D TILES standard)

@@ -32,6 +32,15 @@ export class NodeIndexDocument {
   private converter: I3SConverter;
 
   /**
+   * Finalized property. It means that all child nodes are saved and their data
+   * is unloaded
+   */
+  private _finalized: boolean = false;
+  get finalized(): boolean {
+    return this._finalized;
+  }
+
+  /**
    * Constructor
    * @param id - id of the node in node pages
    * @param converter - converter instance
@@ -90,6 +99,9 @@ export class NodeIndexDocument {
    * Add neighbors to child nodes of this node
    */
   public async addNeighbors(): Promise<void> {
+    if (this.finalized) {
+      return;
+    }
     const nodeData = await this.load();
     for (const childNode of this.children) {
       const childNodeData = await childNode.load();
@@ -116,15 +128,23 @@ export class NodeIndexDocument {
         await childNode.write(childNodeData);
       }
       await childNode.save();
-      // The save after adding neighbors is the last one. Flush the the node
-      childNode.flush();
     }
+    // The save after adding neighbors is the last one. Finalize the the node
+    this.finalize();
   }
 
   /** Save 3DNodeIndexDocument in file on disk */
   public async save(): Promise<void> {
     if (this.data) {
       await this.write(this.data);
+    }
+  }
+
+  /** Finalize the node */
+  private finalize(): void {
+    this._finalized = true;
+    for (const child of this.children) {
+      child.flush();
     }
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/bson",
-  "version": "4.0.0-alpha.7",
+  "version": "4.0.0-alpha.12",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
   "publishConfig": {
@@ -34,9 +34,9 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.0-alpha.7",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.7",
-    "@loaders.gl/schema": "4.0.0-alpha.7",
+    "@loaders.gl/gis": "4.0.0-alpha.12",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.12",
+    "@loaders.gl/schema": "4.0.0-alpha.12",
     "@types/bson": "4.2.0",
     "bson": "4.2.0"
   },

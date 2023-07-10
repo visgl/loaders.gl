@@ -1,6 +1,7 @@
-import type {Availability, BoundingVolume, Subtree} from '../../../types';
+import type {Availability, Tile3DBoundingVolume, Subtree} from '../../../types';
 import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
+import {default as log} from '@probe.gl/log';
 
 import {getS2CellIdFromToken, getS2ChildCellId, getS2TokenFromCellId} from '../../utils/s2/index';
 import type {S2VolumeInfo} from '../../utils/obb/s2-corners-to-obb';
@@ -122,9 +123,10 @@ export async function parseImplicitTiles(params: {
 
   const childrenPerTile = SUBDIVISION_COUNT_MAP[subdivisionScheme];
 
-  const childX = childIndex & 0b01;
-  const childY = (childIndex >> 1) & 0b01;
-  const childZ = (childIndex >> 2) & 0b01;
+  // childIndex is in range [0, 7]
+  const childX = childIndex & 0b01; // Get first bit for X
+  const childY = (childIndex >> 1) & 0b01; // Get second bit for Y
+  const childZ = (childIndex >> 2) & 0b01; // Get third bit for Z
 
   const levelOffset = (childrenPerTile ** level - 1) / (childrenPerTile - 1);
   let childTileMortonIndex = concatBits(parentData.mortonIndex, childIndex);
@@ -224,13 +226,37 @@ export async function parseImplicitTiles(params: {
   return tile;
 }
 
-function getAvailabilityResult(availabilityData: Availability, index: number): boolean {
-  if ('constant' in availabilityData) {
-    return Boolean(availabilityData.constant);
+/**
+ * Check tile availability in the bitstream array
+ * @param availabilityData - tileAvailability / contentAvailability / childSubtreeAvailability object
+ * @param index - index in the bitstream array
+ * @returns
+ */
+function getAvailabilityResult(
+  availabilityData: Availability | Availability[],
+  index: number
+): boolean {
+  let availabilityObject: Availability;
+  if (Array.isArray(availabilityData)) {
+    /** TODO: we don't support `3DTILES_multiple_contents` extension at the moment.
+     * https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling/README.md#multiple-contents
+     * Take first item in the array
+     */
+    availabilityObject = availabilityData[0];
+    if (availabilityData.length > 1) {
+      // eslint-disable-next-line no-console
+      log.once('Not supported extension "3DTILES_multiple_contents" has been detected');
+    }
+  } else {
+    availabilityObject = availabilityData;
   }
 
-  if (availabilityData.explicitBitstream) {
-    return getBooleanValueFromBitstream(index, availabilityData.explicitBitstream);
+  if ('constant' in availabilityObject) {
+    return Boolean(availabilityObject.constant);
+  }
+
+  if (availabilityObject.explicitBitstream) {
+    return getBooleanValueFromBitstream(index, availabilityObject.explicitBitstream);
   }
 
   return false;
@@ -263,7 +289,7 @@ function formatTileData(
   const uri = tile.contentUrl && tile.contentUrl.replace(`${basePath}/`, '');
   const lodMetricValue = rootLodMetricValue / 2 ** level;
 
-  const boundingVolume: BoundingVolume = s2VolumeBox?.box
+  const boundingVolume: Tile3DBoundingVolume = s2VolumeBox?.box
     ? {box: s2VolumeBox.box}
     : rootBoundingVolume;
 
@@ -297,9 +323,9 @@ function formatTileData(
  */
 function calculateBoundingVolumeForChildTile(
   level: number,
-  rootBoundingVolume: BoundingVolume,
+  rootBoundingVolume: Tile3DBoundingVolume,
   childCoordinates: {childTileX: number; childTileY: number; childTileZ: number}
-): BoundingVolume {
+): Tile3DBoundingVolume {
   if (rootBoundingVolume.region) {
     const {childTileX, childTileY, childTileZ} = childCoordinates;
     const [west, south, east, north, minimumHeight, maximumHeight] = rootBoundingVolume.region;

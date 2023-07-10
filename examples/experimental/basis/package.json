@@ -7,8 +7,8 @@
     "start-local": "webpack-dev-server --env.local --progress --hot --open"
   },
   "dependencies": {
-    "@loaders.gl/textures": "4.0.0-alpha.6",
-    "@loaders.gl/core": "4.0.0-alpha.6"
+    "@loaders.gl/textures": "^4.0.0-alpha.8",
+    "@loaders.gl/core": "^4.0.0-alpha.8"
   },
   "devDependencies": {
     "babel-plugin-inline-import": "^3.0.0",

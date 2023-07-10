@@ -5,7 +5,7 @@ import {DepsInstaller} from '../../src/deps-installer/deps-installer';
 import {cleanUpPath, isFileExists} from '../utils/file-utils';
 
 // The test cannot be run due to failing `npm install sharp join-images` in the test environment
-test.skip('tile-converter Install dependencies', async (t) => {
+test.skip('tile-converter(i3s-converter)#Install dependencies', async (t) => {
   if (!isBrowser) {
     const depsInstaller = new DepsInstaller();
     await depsInstaller.install('tmp', 'tmp-workers');

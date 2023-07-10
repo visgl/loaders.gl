@@ -1,8 +1,8 @@
 import {GLTFAccessorPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
 import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
-  GLTF_EXT_feature_metadata_attribute,
-  GLTF_EXT_feature_metadata_primitive
+  GLTF_EXT_feature_metadata_FeatureIdTexture,
+  GLTF_EXT_feature_metadata_Primitive
 } from '@loaders.gl/gltf';
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../../i3s-attributes-worker';
@@ -34,7 +34,7 @@ export function handleBatchIdsExtensions(
       case EXT_FEATURE_METADATA:
         return handleExtFeatureMetadataExtension(
           attributes,
-          extensionData as GLTF_EXT_feature_metadata_primitive,
+          extensionData as GLTF_EXT_feature_metadata_Primitive,
           images
         );
       case EXT_MESH_FEATURES:
@@ -59,7 +59,7 @@ function handleExtFeatureMetadataExtension(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
-  extFeatureMetadata: GLTF_EXT_feature_metadata_primitive,
+  extFeatureMetadata: GLTF_EXT_feature_metadata_Primitive,
   images: (TextureImageProperties | null)[]
 ): NumericArray {
   // Take only first extension object to get batchIds attribute name.
@@ -97,12 +97,9 @@ function handleExtFeatureMetadataExtension(
   const featureTexture =
     extFeatureMetadata?.featureTextures && extFeatureMetadata?.featureTextures[0];
 
-  /**
-   * TODO need to get batchIds from root extension
-   */
   if (featureTexture) {
-    console.warn("EXT_feature_metadata doesn't yet support featureTextures in primitive");
-    return [];
+    const batchIdsAttribute = attributes[featureTexture];
+    return batchIdsAttribute.value;
   }
 
   return [];
@@ -149,7 +146,7 @@ function generateImplicitFeatureIds(
  * @param featureIdTextures
  */
 function generateBatchIdsFromTexture(
-  featureIdTexture: GLTF_EXT_feature_metadata_attribute,
+  featureIdTexture: GLTF_EXT_feature_metadata_FeatureIdTexture,
   textureCoordinates: TypedArray,
   images: (TextureImageProperties | null)[]
 ) {

@@ -4,7 +4,7 @@ import type {COLOR, I3STileOptions, I3STilesetOptions} from '../../types';
 import {load} from '@loaders.gl/core';
 import {getAttributeValueType, I3SAttributeLoader} from '../../i3s-attribute-loader';
 import {I3SLoaderOptions} from '../../i3s-loader';
-import {getUrlWithToken} from '../utils/url-utils';
+import {getUrlWithToken} from './url-utils';
 
 /**
  * Modify vertex colors array to visualize 3D objects in a attribute driven way
@@ -79,7 +79,17 @@ export async function customizeColors(
     if (!color) {
       continue; // eslint-disable-line no-continue
     }
-    colors.value.set(color, i * 4);
+
+    /* eslint max-statements: ["error", 30] */
+    /* eslint complexity: ["error", 12] */
+    if (options.i3s.colorsByAttribute.mode === 'multiply') {
+      // multiplying original mesh and calculated for attribute rgba colors in range 0-255
+      color.forEach((colorItem, index) => {
+        colors.value[i * 4 + index] = (colors.value[i * 4 + index] * colorItem) / 255;
+      });
+    } else {
+      colors.value.set(color, i * 4);
+    }
   }
 
   return colors;

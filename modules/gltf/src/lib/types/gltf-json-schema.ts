@@ -709,6 +709,20 @@ export type GLTF = {
   [k: string]: unknown;
 };
 
+export type GLTFObject =
+  | GLTFAccessor
+  | GLTFBuffer
+  | GLTFBufferView
+  | GLTFMeshPrimitive
+  | GLTFMesh
+  | GLTFNode
+  | GLTFMaterial
+  | GLTFSampler
+  | GLTFScene
+  | GLTFSkin
+  | GLTFTexture
+  | GLTFImage;
+
 // GLTF Extensions
 /* eslint-disable camelcase */
 
@@ -780,50 +794,98 @@ export type GLTF_MSFT_texture_dds = {
 };
 
 /**
- * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
- * @todo belom88 complete typings
+ * EXT_mesh_features extension types
+ * This is a primitive-level extension
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
+ *
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/mesh.primitive.EXT_mesh_features.schema.json
+ * An object describing feature IDs for a mesh primitive.
  */
 export type GLTF_EXT_mesh_features = {
-  featureIds: {
-    featureCount: number;
-    nullFeatureId: number;
-    label: string;
-    attribute: any;
-    texture: any;
-    propertyTable: number;
-  }[];
-  extensions?: any;
+  /** An array of feature ID sets. */
+  featureIds: GLTF_EXT_mesh_features_featureId[];
+  extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
- * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
+ * JSON Schema https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/featureId.schema.json
+ * Feature IDs stored in an attribute or texture.
  */
-export type GLTF_EXT_feature_metadata = {
+export type GLTF_EXT_mesh_features_featureId = {
+  /** The number of unique features in the attribute or texture. */
+  featureCount: number;
+  /** A value that indicates that no feature is associated with this vertex or texel. */
+  nullFeatureId: number;
+  /** A label assigned to this feature ID set. Labels must be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`. */
+  label: string;
+  /**
+   * An attribute containing feature IDs. When `attribute` and `texture` are omitted the feature IDs are assigned to vertices by their index.
+   * Schema https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features/schema/featureIdAttribute.schema.json
+   * An integer value used to construct a string in the format `_FEATURE_ID_<set index>` which is a reference to a key in `mesh.primitives.attributes`
+   * (e.g. a value of `0` corresponds to `_FEATURE_ID_0`).
+   */
+  attribute: number;
+  /** A texture containing feature IDs. */
+  texture: any;
+  /** The index of the property table containing per-feature property values. Only applicable when using the `EXT_structural_metadata` extension. */
+  propertyTable: number;
+  extensions?: Record<string, any>;
+  extras?: any;
+};
+
+/**
+ * JSON Schema https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/featureIdTexture.schema.json
+ * Feature ID Texture in EXT_mesh_features
+ */
+export type GLTF_EXT_mesh_features_featureIdTexture = {
+  /**
+   * Texture channels containing feature IDs, identified by index. Feature IDs may be packed into multiple channels if a single channel does not have sufficient
+   * bit depth to represent all feature ID values. The values are packed in little-endian order.
+   */
+  channels: number[];
+  /** Texture index in the glTF textures array */
+  index: number;
+  /** Textcoord index in the primitive attribute (eg. 0 for TEXTCOORD_0, 1 for TEXTCOORD_1 etc...) */
+  texCoord: number;
+  extensions: Record<string, any>;
+  extras: any;
+};
+
+/**
+ * EXT_feature_metadata extension types
+ * This extension has glTF-level metadata and primitive-level feature indexing and segmentation metadata
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata
+ *
+ * glTF-level metadata
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#gltf-extension-1
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata/schema/glTF.EXT_feature_metadata.schema.json
+ */
+export type GLTF_EXT_feature_metadata_GLTF = {
   /** An object defining classes and enums. */
-  schema?: ExtFeatureMetadataSchema;
+  schema?: GLTF_EXT_feature_metadata_Schema;
   /** A uri to an external schema file. */
   schemaUri?: string;
   /** An object containing statistics about features. */
-  statistics?: Statistics;
+  statistics?: GLTF_EXT_feature_metadata_Statistics;
   /** A dictionary, where each key is a feature table ID and each value is an object defining the feature table. */
   featureTables?: {
-    [key: string]: EXT_feature_metadata_feature_table;
+    [key: string]: GLTF_EXT_feature_metadata_FeatureTable;
   };
   /** A dictionary, where each key is a feature texture ID and each value is an object defining the feature texture. */
   featureTextures?: {
-    [key: string]: FeatureTexture;
+    [key: string]: GLTF_EXT_feature_metadata_FeatureTexture;
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
+ * An object defining classes and enums.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#schema
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/schema.schema.json
  */
-type ExtFeatureMetadataSchema = {
+export type GLTF_EXT_feature_metadata_Schema = {
   /** The name of the schema. */
   name?: string;
   /** The description of the schema. */
@@ -832,38 +894,40 @@ type ExtFeatureMetadataSchema = {
   version?: string;
   /** A dictionary, where each key is a class ID and each value is an object defining the class. */
   classes?: {
-    [key: string]: EXT_feature_metadata_class_object;
+    [key: string]: GLTF_EXT_feature_metadata_Class;
   };
   /** A dictionary, where each key is an enum ID and each value is an object defining the values for the enum. */
   enums?: {
-    [key: string]: ExtFeatureMetadataEnum;
+    [key: string]: GLTF_EXT_feature_metadata_Enum;
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
+ * A class containing a set of properties.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/class.schema.json
  */
-export type EXT_feature_metadata_class_object = {
+export type GLTF_EXT_feature_metadata_Class = {
   /** The name of the class, e.g. for display purposes. */
   name?: string;
   /** The description of the class. */
   description?: string;
   /** A dictionary, where each key is a property ID and each value is an object defining the property. */
   properties: {
-    [key: string]: ClassProperty;
+    [key: string]: GLTF_EXT_feature_metadata_ClassProperty;
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
- * https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class-property
+ * A class property.
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class-property
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/class.property.schema.json
  */
-export type ClassProperty = {
+export type GLTF_EXT_feature_metadata_ClassProperty = {
   /** The name of the property, e.g. for display purposes. */
   name?: string;
   /** The description of the property. */
@@ -873,7 +937,22 @@ export type ClassProperty = {
    * If ARRAY is used, then componentType must also be specified.
    * ARRAY is a fixed-length array when componentCount is defined, and variable-length otherwise.
    */
-  type: ClassPropertyType;
+  type:
+    | 'INT8'
+    | 'UINT8'
+    | 'INT16'
+    | 'UINT16'
+    | 'INT32'
+    | 'UINT32'
+    | 'INT64'
+    | 'UINT64'
+    | 'FLOAT32'
+    | 'FLOAT64'
+    | 'BOOLEAN'
+    | 'STRING'
+    | 'ENUM'
+    | 'ARRAY'
+    | string;
   /**
    * An enum ID as declared in the enums dictionary.
    * This value must be specified when type or componentType is ENUM.
@@ -896,7 +975,8 @@ export type ClassProperty = {
     | 'FLOAT64'
     | 'BOOLEAN'
     | 'STRING'
-    | 'ENUM';
+    | 'ENUM'
+    | string;
   /** The number of components per element for ARRAY elements. */
   componentCount?: number;
   /**
@@ -923,7 +1003,6 @@ export type ClassProperty = {
    * The normalized property has no effect on these values: they always correspond to the integer values.
    */
   min?: number | number[];
-
   /**
    * A default value to use when the property value is not defined.
    * If used, optional must be set to true.
@@ -942,32 +1021,14 @@ export type ClassProperty = {
   semantic?: string;
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
- * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#classpropertytype
- */
-type ClassPropertyType =
-  | 'INT8'
-  | 'UINT8'
-  | 'INT16'
-  | 'UINT16'
-  | 'INT32'
-  | 'UINT32'
-  | 'INT64'
-  | 'UINT64'
-  | 'FLOAT32'
-  | 'FLOAT64'
-  | 'BOOLEAN'
-  | 'STRING'
-  | 'ENUM'
-  | 'ARRAY';
-
-/**
+ * An object defining the values of an enum.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#enum
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata/schema/enum.schema.json
  */
-type ExtFeatureMetadataEnum = {
+export type GLTF_EXT_feature_metadata_Enum = {
   /** The name of the enum, e.g. for display purposes. */
   name?: string;
   /** The description of the enum. */
@@ -975,16 +1036,18 @@ type ExtFeatureMetadataEnum = {
   /** The type of the integer enum value. */
   valueType?: 'INT8' | 'UINT8' | 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'INT64' | 'UINT64'; // default: "UINT16"
   /** An array of enum values. Duplicate names or duplicate integer values are not allowed. */
-  values: EnumValue[];
+  values: GLTF_EXT_feature_metadata_EnumValue[];
   extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
 };
 
 /**
+ * An enum value.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#enum-value
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata/schema/enum.value.schema.json
  */
-type EnumValue = {
+export type GLTF_EXT_feature_metadata_EnumValue = {
   /** The name of the enum value. */
   name: string;
   /** The description of the enum value. */
@@ -997,10 +1060,11 @@ type EnumValue = {
 };
 
 /**
+ * A feature table defined by a class and property values stored in arrays.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-table
+ * JSON Schenma - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/featureTable.schema.json
  */
-export type EXT_feature_metadata_feature_table = {
-  featureTable: any;
+export type GLTF_EXT_feature_metadata_FeatureTable = {
   /** The class that property values conform to. The value must be a class ID declared in the classes dictionary. */
   class?: string;
   /** The number of features, as well as the number of elements in each property array. */
@@ -1011,17 +1075,18 @@ export type EXT_feature_metadata_feature_table = {
    * Optional properties may be excluded from this dictionary.
    */
   properties?: {
-    [key: string]: FeatureTableProperty;
+    [key: string]: GLTF_EXT_feature_metadata_FeatureTableProperty;
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
+ * An array of binary property values.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-table-property
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/featureTable.property.schema.json
  */
-export type FeatureTableProperty = {
+export type GLTF_EXT_feature_metadata_FeatureTableProperty = {
   /**
    * The index of the buffer view containing property values.
    * The data type of property values is determined by the property definition:
@@ -1038,6 +1103,7 @@ export type FeatureTableProperty = {
    * Otherwise it is measured relative to the beginning of the buffer.
    */
   bufferView: number;
+
   /** The type of values in arrayOffsetBufferView and stringOffsetBufferView. */
   offsetType?: string; // default: "UINT32"
   /**
@@ -1061,15 +1127,18 @@ export type FeatureTableProperty = {
    * The buffer view byteOffset must be aligned to a multiple of 8 bytes in the same manner as the main bufferView.
    */
   stringOffsetBufferView?: number;
+  /** This is not part of the spec. GLTFLoader loads feature tables data into this property */
+  data: any;
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
+ * Features whose property values are stored directly in texture channels. This is not to be confused with feature ID textures which store feature IDs for use with a feature table.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-texture
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/featureTexture.schema.json
  */
-type FeatureTexture = {
+export type GLTF_EXT_feature_metadata_FeatureTexture = {
   /** The class this feature texture conforms to. The value must be a class ID declared in the classes dictionary. */
   class: string;
   /**
@@ -1077,46 +1146,51 @@ type FeatureTexture = {
    * and each value describes the texture channels containing property values.
    */
   properties: {
-    [key: string]: TextureAccessor;
+    [key: string]: GLTF_EXT_feature_metadata_TextureAccessor;
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
+ * A description of how to access property values from the color channels of a texture.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#texture-accessor
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/textureAccessor.schema.json
  */
-type TextureAccessor = {
+export type GLTF_EXT_feature_metadata_TextureAccessor = {
   /** Texture channels containing property values. Channels are labeled by rgba and are swizzled with a string of 1-4 characters. */
   channels: string;
   /** The glTF texture and texture coordinates to use. */
   texture: GLTFTextureInfo;
+  /** This is not part of the spec. GLTFLoader loads feature tables data into this property */
+  data: any;
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
+ * Statistics about features.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#statistics-1
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/statistics.schema.json
  */
-type Statistics = {
+export type GLTF_EXT_feature_metadata_Statistics = {
   /**
    * A dictionary, where each key is a class ID declared in the classes dictionary
    * and each value is an object containing statistics about features that conform to the class.
    */
   classes?: {
-    [key: string]: ClassStatistics;
+    [key: string]: GLTF_EXT_feature_metadata_StatisticsClass;
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
+ * Statistics about features that conform to the class.
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#class-statistics
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/statistics.class.property.schema.json
  */
-type ClassStatistics = {
+export type GLTF_EXT_feature_metadata_StatisticsClass = {
   /** The number of features that conform to the class. */
   count?: number;
   /**
@@ -1124,22 +1198,22 @@ type ClassStatistics = {
    * and each value is an object containing statistics about property values.
    */
   properties?: {
-    [key: string]: StatisticsClassProperty;
+    [key: string]: GLTF_EXT_feature_metadata_StatisticsClassProperty;
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
- * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#property-statistics
  * min, max, mean, median, standardDeviation, variance, sum are
  * only applicable for numeric types and fixed-length arrays of numeric types.
  * For numeric types this is a single number.
  * For fixed-length arrays this is an array with componentCount number of elements.
  * The normalized property has no effect on these values.
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#property-statistics
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/statistics.class.property.schema.json
  */
-type StatisticsClassProperty = {
+export type GLTF_EXT_feature_metadata_StatisticsClassProperty = {
   /** The minimum property value. */
   min?: number | number[];
   /** The maximum property value. */
@@ -1164,42 +1238,48 @@ type StatisticsClassProperty = {
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
- * 3DTilesNext EXT_feature_metadata primitive extension
+ * EXT_feature_metadata extension types
+ * This extension has glTF-level metadata and primitive-level (feature indexing and segmentation) metadata
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata
+ *
+ * primitive-level metadata
  * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#primitive-extension
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/mesh.primitive.EXT_feature_metadata.schema.json
  */
-export type GLTF_EXT_feature_metadata_primitive = {
+export type GLTF_EXT_feature_metadata_Primitive = {
   /** Feature ids definition in attributes */
-  featureIdAttributes?: GLTF_EXT_feature_metadata_attribute[];
+  featureIdAttributes?: GLTF_EXT_feature_metadata_FeatureIdAttribute[];
   /** Feature ids definition in textures */
-  featureIdTextures?: GLTF_EXT_feature_metadata_attribute[];
+  featureIdTextures?: GLTF_EXT_feature_metadata_FeatureIdTexture[];
   /** An array of IDs of feature textures from the root EXT_feature_metadata object. */
   featureTextures?: string[];
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
  * Attribute which described featureIds definition.
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-id-attribute
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/featureIdAttribute.schema.json
  */
-export type GLTF_EXT_feature_metadata_attribute = {
+export type GLTF_EXT_feature_metadata_FeatureIdAttribute = {
   /** Name of feature table */
   featureTable: string;
   /** Described how feature ids are defined */
-  featureIds: ExtFeatureMetadataFeatureIds;
+  featureIds: GLTF_EXT_feature_metadata_FeatureIdAttributeFeatureIds;
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
  * Defining featureIds by attributes or implicitly.
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#primitive-extensionfeatureidattributes
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/featureIdAttribute.featureIds.schema.json
  */
-type ExtFeatureMetadataFeatureIds = {
+export type GLTF_EXT_feature_metadata_FeatureIdAttributeFeatureIds = {
   /** Name of attribute where featureIds are defined */
   attribute?: string;
   /** Sets a constant feature ID for each vertex. The default is 0. */
@@ -1210,32 +1290,31 @@ type ExtFeatureMetadataFeatureIds = {
    * The default is 0
    */
   divisor?: number;
-  /** gLTF textureInfo object - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/specification/2.0/schema/textureInfo.schema.json */
-  texture?: ExtFeatureMetadataTexture;
-  /** Must be a single channel ("r", "g", "b", or "a") */
-  channels?: 'r' | 'g' | 'b' | 'a';
 };
 
 /**
- * Reference to a texture.
+ * An object describing a texture used for storing per-texel feature IDs.
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-id-texture
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/featureIdTexture.schema.json
  */
-type ExtFeatureMetadataTexture = {
-  /** The set index of texture's TEXCOORD attribute used for texture coordinate mapping.*/
-  texCoord: number;
-  /** The index of the texture. */
-  index: number;
+export type GLTF_EXT_feature_metadata_FeatureIdTexture = {
+  /** The ID of the feature table in the model's root `EXT_feature_metadata.featureTables` dictionary. */
+  featureTable: string;
+  /** A description of the texture and channel to use for feature IDs. The `channels` property must have a single channel. Furthermore,
+   * feature IDs must be whole numbers in the range `[0, count - 1]` (inclusive), where `count` is the total number of features
+   * in the feature table. Texel values must be read as integers. Texture filtering should be disabled when fetching feature IDs.
+   */
+  featureIds: GLTF_EXT_feature_metadata_FeatureIdTextureAccessor;
 };
 
-export type GLTFObject =
-  | GLTFAccessor
-  | GLTFBuffer
-  | GLTFBufferView
-  | GLTFMeshPrimitive
-  | GLTFMesh
-  | GLTFNode
-  | GLTFMaterial
-  | GLTFSampler
-  | GLTFScene
-  | GLTFSkin
-  | GLTFTexture
-  | GLTFImage;
+/**
+ * A description of how to access property values from the color channels of a texture.
+ * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#featureidtexturefeatureids
+ * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/textureAccessor.schema.json
+ */
+export type GLTF_EXT_feature_metadata_FeatureIdTextureAccessor = {
+  /** gLTF textureInfo object - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/specification/2.0/schema/textureInfo.schema.json */
+  texture: GLTFTextureInfo;
+  /** Must be a single channel ("r", "g", "b", or "a") */
+  channels: 'r' | 'g' | 'b' | 'a';
+};
