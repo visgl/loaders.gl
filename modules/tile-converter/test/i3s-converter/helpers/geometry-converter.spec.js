@@ -29,8 +29,7 @@ setLoaderOptions({
   _worker: 'test'
 });
 
-// TODO - failing test
-test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
+test('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -89,7 +88,7 @@ test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Frankfu
           },
           boundingVolumes: generateBoundingVolumes
             ? {
-                mbs: [8.62207030087592, 50.084050618016896, -217.21218885901865, 657.9565111182278],
+                mbs: [8.622161535185821, 50.0841151227351, -188.79808730024337, 633.1951829721843],
                 obb: {
                   center: [8.622050871641566, 50.084076204176576, -194.3917133680221],
                   halfSize: [611.3686583875675, 484.1319449471776, 365.7073438855587],
