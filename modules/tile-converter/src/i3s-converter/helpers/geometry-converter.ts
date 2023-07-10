@@ -1,13 +1,12 @@
 import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {
-  GLTF_EXT_feature_metadata,
-  GLTF_EXT_mesh_features,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
   GLTFMeshPrimitivePostprocessed,
   GLTFMeshPostprocessed,
-  GLTFTexturePostprocessed
+  GLTFTexturePostprocessed,
+  GLTF_EXT_feature_metadata_GLTF
 } from '@loaders.gl/gltf';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
@@ -1577,7 +1576,7 @@ export function getPropertyTable(tileContent: Tiles3DTileContent | null): Featur
       return null;
     }
     case EXT_FEATURE_METADATA: {
-      return getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata);
+      return getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata_GLTF);
     }
     default:
       return null;
@@ -1588,9 +1587,10 @@ export function getPropertyTable(tileContent: Tiles3DTileContent | null): Featur
  * Check extensions which can be with property table inside.
  * @param tileContent - 3DTiles tile content
  */
-function getPropertyTableExtension(
-  tileContent: Tiles3DTileContent
-): GLTF_EXT_feature_metadata | GLTF_EXT_mesh_features {
+function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
+  extensionName: null | string;
+  extension: string | GLTF_EXT_feature_metadata_GLTF | null;
+} {
   const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
@@ -1599,7 +1599,6 @@ function getPropertyTableExtension(
   }
 
   let extensionName: string = '';
-
   for (const extensionItem of tileContent?.gltf?.extensionsUsed || []) {
     if (extensionsWithPropertyTables.includes(extensionItem)) {
       extensionName = extensionItem;
@@ -1607,7 +1606,13 @@ function getPropertyTableExtension(
     }
   }
 
-  const extension = tileContent?.gltf?.extensions?.[extensionName];
+  if (!extensionName) {
+    return {extensionName: null, extension: null};
+  }
+
+  const extension = tileContent?.gltf?.extensions?.[extensionName] as
+    | string // EXT_mesh_features doesn't have global metadata
+    | GLTF_EXT_feature_metadata_GLTF;
 
   return {extensionName, extension};
 }
@@ -1617,7 +1622,7 @@ function getPropertyTableExtension(
  * @param extension
  */
 function getPropertyTableFromExtFeatureMetadata(
-  extension: GLTF_EXT_feature_metadata
+  extension: GLTF_EXT_feature_metadata_GLTF
 ): FeatureTableJson | null {
   if (extension?.featureTables) {
     /**
