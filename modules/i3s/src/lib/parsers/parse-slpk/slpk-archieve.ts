@@ -1,7 +1,7 @@
 import md5 from 'md5';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
-import {DataViewFileProvider} from '../parse-zip/buffer-file-provider';
 import {GZipCompression} from '@loaders.gl/compression';
+import {FileProvider} from '../parse-zip/file-provider';
 
 /** Element of hash array */
 type HashElement = {
@@ -12,7 +12,7 @@ type HashElement = {
   /**
    * File offset in the archive
    */
-  offset: number;
+  offset: bigint;
 };
 
 /** Description of real paths for different file types */
@@ -55,10 +55,10 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
  * Class for handling information about slpk file
  */
 export class SLPKArchive {
-  slpkArchive: DataView;
-  hashArray: {hash: Buffer; offset: number}[];
-  constructor(slpkArchiveBuffer: ArrayBuffer, hashFile: ArrayBuffer) {
-    this.slpkArchive = new DataView(slpkArchiveBuffer);
+  slpkArchive: FileProvider;
+  hashArray: {hash: Buffer; offset: bigint}[];
+  constructor(slpkArchive: FileProvider, hashFile: ArrayBuffer) {
+    this.slpkArchive = slpkArchive;
     this.hashArray = this.parseHashFile(hashFile);
   }
 
@@ -77,7 +77,7 @@ export class SLPKArchive {
           hashFileBuffer.byteOffset + i + 24
         )
       );
-      const offset = offsetBuffer.getUint32(offsetBuffer.byteOffset, true);
+      const offset = offsetBuffer.getBigUint64(offsetBuffer.byteOffset, true);
       hashArray.push({
         hash: Buffer.from(
           hashFileBuffer.subarray(hashFileBuffer.byteOffset + i, hashFileBuffer.byteOffset + i + 16)
@@ -155,15 +155,12 @@ export class SLPKArchive {
       return undefined;
     }
 
-    const localFileHeader = await parseZipLocalFileHeader(
-      this.slpkArchive.byteOffset + fileInfo?.offset,
-      new DataViewFileProvider(this.slpkArchive)
-    );
+    const localFileHeader = await parseZipLocalFileHeader(fileInfo?.offset, this.slpkArchive);
     if (!localFileHeader) {
       return undefined;
     }
 
-    const compressedFile = this.slpkArchive.buffer.slice(
+    const compressedFile = this.slpkArchive.slice(
       localFileHeader.fileDataOffset,
       localFileHeader.fileDataOffset + localFileHeader.compressedSize
     );

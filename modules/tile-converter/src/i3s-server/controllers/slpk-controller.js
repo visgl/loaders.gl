@@ -1,12 +1,12 @@
 require('@loaders.gl/polyfills');
-const {fetchFile, parse} = require('@loaders.gl/core');
-const {SLPKLoader} = require('@loaders.gl/i3s');
+const {parseSLPK} = require('@loaders.gl/i3s');
 const path = require('path');
+const {FileHandleProvider} = require('@loaders.gl/tile-converter');
 
 let slpkArchive;
 
 const loadArchive = async (fullLayerPath) => {
-  slpkArchive = await (await fetchFile(fullLayerPath)).arrayBuffer();
+  slpkArchive = await parseSLPK(await FileHandleProvider.from(fullLayerPath));
 };
 
 const I3S_LAYER_PATH = process.env.I3sLayerPath || ''; // eslint-disable-line no-process-env, no-undef
@@ -19,14 +19,7 @@ async function getFileByUrl(url) {
   let uncompressedFile;
   if (trimmedPath) {
     try {
-      uncompressedFile = Buffer.from(
-        await parse(slpkArchive, SLPKLoader, {
-          slpk: {
-            path: trimmedPath[1],
-            pathMode: 'http'
-          }
-        })
-      );
+      uncompressedFile = Buffer.from(await slpkArchive.getFile(trimmedPath[1], 'http'));
     } catch (e) {}
   }
   return uncompressedFile;

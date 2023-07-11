@@ -1,45 +1,13 @@
-import type {SLPKLoaderOptions} from '../../../i3s-slpk-loader';
-import {DataViewFileProvider} from '../parse-zip/buffer-file-provider';
 import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
+import {FileProvider} from '../parse-zip/file-provider';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
+import {searchFromTheEnd} from './search-from-the-end';
 import {SLPKArchive} from './slpk-archieve';
 
-/**
- * Returns one byte from the provided buffer at the provided position
- * @param offset - position where to read
- * @param buffer - buffer to read
- * @returns one byte from the provided buffer at the provided position
- */
-const getByteAt = (offset: number, buffer: DataView): number => {
-  return buffer.getUint8(buffer.byteOffset + offset);
-};
-
-export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = {}) {
-  const archive = new DataView(data);
+export const parseSLPK = async (fileProvider: FileProvider): Promise<SLPKArchive> => {
   const cdFileHeaderSignature = [80, 75, 1, 2];
 
-  const searchWindow = [
-    getByteAt(archive.byteLength - 1, archive),
-    getByteAt(archive.byteLength - 2, archive),
-    getByteAt(archive.byteLength - 3, archive),
-    undefined
-  ];
-
-  let hashCDOffset = 0;
-
-  // looking for the last record in the central directory
-  for (let i = archive.byteLength - 4; i > -1; i--) {
-    searchWindow[3] = searchWindow[2];
-    searchWindow[2] = searchWindow[1];
-    searchWindow[1] = searchWindow[0];
-    searchWindow[0] = getByteAt(i, archive);
-    if (searchWindow.every((val, index) => val === cdFileHeaderSignature[index])) {
-      hashCDOffset = i;
-      break;
-    }
-  }
-
-  const fileProvider = new DataViewFileProvider(archive);
+  const hashCDOffset = await searchFromTheEnd(fileProvider, cdFileHeaderSignature);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 
@@ -56,7 +24,7 @@ export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = 
   }
 
   const fileDataOffset = localFileHeader.fileDataOffset;
-  const hashFile = archive.buffer.slice(
+  const hashFile = await fileProvider.slice(
     fileDataOffset,
     fileDataOffset + localFileHeader.compressedSize
   );
@@ -65,8 +33,5 @@ export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = 
     throw new Error('No hash file in slpk');
   }
 
-  return await new SLPKArchive(data, hashFile).getFile(
-    options.slpk?.path ?? '',
-    options.slpk?.pathMode
-  );
-}
+  return new SLPKArchive(fileProvider, hashFile);
+};

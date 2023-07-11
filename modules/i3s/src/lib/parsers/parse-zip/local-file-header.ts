@@ -12,16 +12,16 @@ export type ZipLocalFileHeader = {
   /** Extra field length */
   extraFieldLength: number;
   /** Offset of the file data */
-  fileDataOffset: number;
+  fileDataOffset: bigint;
   /** Compressed size */
-  compressedSize: number;
+  compressedSize: bigint;
 };
 
 const offsets = {
-  COMPRESSED_SIZE_OFFSET: 18,
-  FILE_NAME_LENGTH_OFFSET: 26,
-  EXTRA_FIELD_LENGTH_OFFSET: 28,
-  FILE_NAME_OFFSET: 30
+  COMPRESSED_SIZE_OFFSET: 18n,
+  FILE_NAME_LENGTH_OFFSET: 26n,
+  EXTRA_FIELD_LENGTH_OFFSET: 28n,
+  FILE_NAME_OFFSET: 30n
 };
 
 const signature = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
@@ -33,10 +33,10 @@ const signature = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
  * @returns Info from the header
  */
 export const parseZipLocalFileHeader = async (
-  headerOffset: number,
+  headerOffset: bigint,
   buffer: FileProvider
 ): Promise<ZipLocalFileHeader | undefined> => {
-  if (Buffer.from(await buffer.slice(headerOffset, headerOffset + 4)).compare(signature) !== 0) {
+  if (Buffer.from(await buffer.slice(headerOffset, headerOffset + 4n)).compare(signature) !== 0) {
     return Promise.resolve(undefined);
   }
 
@@ -45,15 +45,17 @@ export const parseZipLocalFileHeader = async (
   const fileName = new TextDecoder().decode(
     await buffer.slice(
       headerOffset + offsets.FILE_NAME_OFFSET,
-      headerOffset + offsets.FILE_NAME_OFFSET + fileNameLength
+      headerOffset + offsets.FILE_NAME_OFFSET + BigInt(fileNameLength)
     )
   );
   const extraFieldLength = await buffer.getUint16(headerOffset + offsets.EXTRA_FIELD_LENGTH_OFFSET);
 
   const fileDataOffset =
-    headerOffset + offsets.FILE_NAME_OFFSET + fileNameLength + extraFieldLength;
+    headerOffset + offsets.FILE_NAME_OFFSET + BigInt(fileNameLength + extraFieldLength);
 
-  const compressedSize = await buffer.getUint32(headerOffset + offsets.COMPRESSED_SIZE_OFFSET);
+  const compressedSize = BigInt(
+    await buffer.getUint32(headerOffset + offsets.COMPRESSED_SIZE_OFFSET)
+  ); // add zip 64 logic
 
   return {
     fileNameLength,

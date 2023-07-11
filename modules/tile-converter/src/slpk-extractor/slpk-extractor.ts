@@ -3,13 +3,11 @@ import {isBrowser} from '@loaders.gl/core';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {FileHandleProvider} from './helpers/file-handle-provider';
 import {parseZipLocalFileHeader} from '@loaders.gl/i3s';
+import {promises as fsPromises, existsSync} from 'fs';
 import {path} from '@loaders.gl/loader-utils';
 import {GZipCompression} from '@loaders.gl/compression';
-import {writeFile} from '../lib/utils/file-utils';
+// import { writeFile } from '../lib/utils/file-utils';
 
-/**
- * names of files that should be changed to index
- */
 const indexNames = [
   '3dSceneLayer.json.gz',
   '3dNodeIndexDocument.json.gz',
@@ -27,9 +25,9 @@ type File = {
 /**
  * Converter from slpk to i3s
  */
-export default class SLPKExtractor {
+export default class SLPKConverter {
   /**
-   * extract slpk to i3s
+   * Convert slpk to i3s
    * @param options
    * @param options.inputUrl the url to read SLPK file
    * @param options.outputPath the output filename
@@ -43,7 +41,7 @@ export default class SLPKExtractor {
 
     const provider = await FileHandleProvider.from(inputUrl);
 
-    let localHeader = await parseZipLocalFileHeader(0, provider);
+    let localHeader = await parseZipLocalFileHeader(0n, provider);
     while (localHeader) {
       await this.writeFile(
         await this.unGzip({
@@ -68,6 +66,7 @@ export default class SLPKExtractor {
    * Defines file name and path for i3s format
    * @param fileName initial file name and path
    */
+
   private correctIndexNames(fileName: string): string | null {
     if (indexNames.includes(path.filename(path.join('/', fileName)))) {
       return path.join(path.dirname(fileName), 'index.json.gz');
@@ -85,6 +84,7 @@ export default class SLPKExtractor {
       const compression = new GZipCompression();
 
       const decompressedData = await compression.decompress(file.data);
+
       return {data: decompressedData, name: (file.name ?? '').slice(0, -3)};
     }
     return Promise.resolve(file);
@@ -96,7 +96,9 @@ export default class SLPKExtractor {
     }
     const finalPath = path.join(outputPath, options.name);
     const dirName = path.dirname(finalPath);
-    const fileName = path.filename(finalPath);
-    await writeFile(dirName, options.data, fileName);
+    if (!existsSync(dirName)) {
+      await fsPromises.mkdir(dirName, {recursive: true});
+    }
+    await fsPromises.writeFile(finalPath, Buffer.from(options.data));
   }
 }
