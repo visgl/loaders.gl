@@ -372,6 +372,10 @@ export type BufferView = {
  * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling
  */
 export type ImplicitTilingExensionData = ImplicitTilingData & {
+  /** This property is not part of the schema
+   * https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling/schema/tile.3DTILES_implicit_tiling.schema.json
+   * But it can be seen in some test datasets. We consider it is substitute of `availableLevels`
+   */
   maximumLevel?: number;
 };
 

@@ -7,6 +7,7 @@ import {getS2CellIdFromToken, getS2ChildCellId, getS2TokenFromCellId} from '../.
 import type {S2VolumeInfo} from '../../utils/obb/s2-corners-to-obb';
 import {convertS2BoundingVolumetoOBB} from '../../utils/obb/s2-corners-to-obb';
 import Long from 'long';
+import { Tiles3DLoaderOptions } from '../../..';
 
 const QUADTREE_DEVISION_COUNT = 4;
 const OCTREE_DEVISION_COUNT = 8;
@@ -84,15 +85,16 @@ function getChildS2VolumeBox(
 // eslint-disable-next-line max-statements
 export async function parseImplicitTiles(params: {
   subtree: Subtree;
-  options: any;
+  implicitOptions: any;
   parentData?: {mortonIndex: number; x: number; y: number; z: number};
   childIndex?: number;
   level?: number;
   globalData?: {level: number; mortonIndex: number; x: number; y: number; z: number};
   s2VolumeBox?: S2VolumeBox;
+  loaderOptions: Tiles3DLoaderOptions
 }) {
   const {
-    options,
+    implicitOptions,
     parentData = {
       mortonIndex: 0,
       x: 0,
@@ -107,7 +109,8 @@ export async function parseImplicitTiles(params: {
       y: 0,
       z: 0
     },
-    s2VolumeBox
+    s2VolumeBox,
+    loaderOptions,
   } = params;
   let {subtree, level = 0} = params;
   const {
@@ -117,44 +120,48 @@ export async function parseImplicitTiles(params: {
     contentUrlTemplate,
     subtreesUriTemplate,
     basePath
-  } = options;
-
+  } = implicitOptions;
   const tile = {children: [], lodMetricValue: 0, contentUrl: ''};
 
+  const lev = level + globalData.level;
+  if (lev > maximumLevel) {
+    return tile;
+  }
+  
   const childrenPerTile = SUBDIVISION_COUNT_MAP[subdivisionScheme];
+  const bitsPerTile = Math.log2(childrenPerTile);
 
-  // childIndex is in range [0, 7]
+  // childIndex is in range [0,4] for quadtrees and [0, 7] for octrees
   const childX = childIndex & 0b01; // Get first bit for X
   const childY = (childIndex >> 1) & 0b01; // Get second bit for Y
   const childZ = (childIndex >> 2) & 0b01; // Get third bit for Z
 
   const levelOffset = (childrenPerTile ** level - 1) / (childrenPerTile - 1);
-  let childTileMortonIndex = concatBits(parentData.mortonIndex, childIndex);
+  let childTileMortonIndex = concatBits(parentData.mortonIndex, childIndex, bitsPerTile);
   let tileAvailabilityIndex = levelOffset + childTileMortonIndex;
 
   // Local tile coordinates
-  let childTileX = concatBits(parentData.x, childX);
-  let childTileY = concatBits(parentData.y, childY);
-  let childTileZ = concatBits(parentData.z, childZ);
+  let childTileX = concatBits(parentData.x, childX, 1);
+  let childTileY = concatBits(parentData.y, childY, 1);
+  let childTileZ = concatBits(parentData.z, childZ, 1);
 
   let isChildSubtreeAvailable = false;
 
-  if (level + 1 > subtreeLevels) {
+  if (level >= subtreeLevels) {
     isChildSubtreeAvailable = getAvailabilityResult(
       subtree.childSubtreeAvailability,
       childTileMortonIndex
     );
   }
 
-  const x = concatBits(globalData.x, childTileX);
-  const y = concatBits(globalData.y, childTileY);
-  const z = concatBits(globalData.z, childTileZ);
-  const lev = level + globalData.level;
+  const x = concatBits(globalData.x, childTileX, level * bitsPerTile);
+  const y = concatBits(globalData.y, childTileY, level * bitsPerTile);
+  const z = concatBits(globalData.z, childTileZ, level * bitsPerTile);
 
   if (isChildSubtreeAvailable) {
     const subtreePath = `${basePath}/${subtreesUriTemplate}`;
     const childSubtreeUrl = replaceContentUrlTemplate(subtreePath, lev, x, y, z);
-    const childSubtree = await load(childSubtreeUrl, Tile3DSubtreeLoader);
+    const childSubtree = await load(childSubtreeUrl, Tile3DSubtreeLoader, loaderOptions);
 
     subtree = childSubtree;
 
@@ -174,7 +181,7 @@ export async function parseImplicitTiles(params: {
 
   const isTileAvailable = getAvailabilityResult(subtree.tileAvailability, tileAvailabilityIndex);
 
-  if (!isTileAvailable || level > maximumLevel) {
+  if (!isTileAvailable) {
     return tile;
   }
 
@@ -200,7 +207,8 @@ export async function parseImplicitTiles(params: {
     // Recursive calling...
     const childTileParsed = await parseImplicitTiles({
       subtree,
-      options,
+      implicitOptions,
+      loaderOptions,
       parentData: pData,
       childIndex: index,
       level: childTileLevel,
@@ -215,7 +223,7 @@ export async function parseImplicitTiles(params: {
         childTileParsed,
         globalLevel,
         childCoordinates,
-        options,
+        implicitOptions,
         s2VolumeBox
       );
       // @ts-ignore
@@ -363,11 +371,18 @@ function calculateBoundingVolumeForChildTile(
 
 /**
  * Do binary concatenation
- * @param first
- * @param second
+ * @param higher - number to put to higher part of result
+ * @param lower - number to put to lower part of result
+ * @param shift - number of bits to shift lower number
  */
-function concatBits(first: number, second: number): number {
-  return parseInt(first.toString(2) + second.toString(2), 2);
+function concatBits(higher: number, lower: number, shift: number): number {
+  // console.log(
+  //   `old - ${first.toString(2)} + ${second.toString(2)} = ${
+  //     first.toString(2) + second.toString(2)
+  //   } (${parseInt(first.toString(2) + second.toString(2), 2)})`
+  // );
+  // return parseInt(first.toString(2) + second.toString(2), 2);
+  return (higher << shift) + lower;
 }
 
 /**

@@ -158,6 +158,7 @@ export async function normalizeImplicitTileHeaders(
   const {
     subdivisionScheme,
     maximumLevel,
+    availableLevels,
     subtreeLevels,
     subtrees: {uri: subtreesUriTemplate}
   } = implicitTilingExtension;
@@ -184,7 +185,7 @@ export async function normalizeImplicitTileHeaders(
     subtreesUriTemplate,
     subdivisionScheme,
     subtreeLevels,
-    maximumLevel,
+    maximumLevel: Number.isFinite(availableLevels) ? availableLevels - 1 : maximumLevel,
     refine,
     basePath,
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
@@ -194,7 +195,7 @@ export async function normalizeImplicitTileHeaders(
     getRefine
   };
 
-  return await normalizeImplicitTileData(tile, basePath, subtree, implicitOptions);
+  return await normalizeImplicitTileData(tile, basePath, subtree, implicitOptions, options);
 }
 
 /**
@@ -208,7 +209,8 @@ export async function normalizeImplicitTileData(
   tile: Tiles3DTileJSON,
   basePath: string,
   rootSubtree: Subtree,
-  options: any
+  implicitOptions: any,
+  loaderOptions: Tiles3DLoaderOptions
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   if (!tile) {
     return null;
@@ -216,7 +218,8 @@ export async function normalizeImplicitTileData(
 
   const {children, contentUrl} = await parseImplicitTiles({
     subtree: rootSubtree,
-    options
+    implicitOptions,
+    loaderOptions
   });
 
   let tileContentUrl: string | undefined;
