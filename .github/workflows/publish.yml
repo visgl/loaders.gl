@@ -18,6 +18,6 @@ jobs:
           # Defaults to the user or organization that owns the workflow file
           scope: '@sensat'
       - run: yarn install
-      - run: yarn run publish
+      - run: yarn run publish beta
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
