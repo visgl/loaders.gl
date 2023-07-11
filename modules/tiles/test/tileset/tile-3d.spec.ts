@@ -192,6 +192,9 @@ test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume'
       camera: {position: [0, 0, 0]},
       cullingVolume: {
         computeVisibilityWithPlaneMask: () => false
+      },
+      viewport: {
+        project: () => [0, 0, 0]
       }
     },
     ['test']
@@ -225,6 +228,9 @@ test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume
       camera: {position: [1, 1, 0]},
       cullingVolume: {
         computeVisibilityWithPlaneMask: () => false
+      },
+      viewport: {
+        project: () => [0, 0, 0]
       }
     },
     ['test']
@@ -258,6 +264,9 @@ test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume'
       camera: {position: [1, 1, 0]},
       cullingVolume: {
         computeVisibilityWithPlaneMask: () => false
+      },
+      viewport: {
+        project: () => [0, 0, 0]
       }
     },
     ['test']
@@ -291,6 +300,9 @@ test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume
       camera: {position: [2, 2, 0]},
       cullingVolume: {
         computeVisibilityWithPlaneMask: () => false
+      },
+      viewport: {
+        project: () => [0, 0, 0]
       }
     },
     ['test']
