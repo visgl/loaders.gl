@@ -9,7 +9,7 @@ import {TilesetTraverser} from '../tileset-traverser';
 export class Tileset3DTraverser extends TilesetTraverser {
   compareDistanceToCamera(a, b) {
     // Sort by farthest child first since this is going on a stack
-    return b._distanceToScreenCenter - a._distanceToScreenCenter;
+    return b._displayPriority - a._displayPriority;
   }
 
   updateTileVisibility(tile, frameState) {

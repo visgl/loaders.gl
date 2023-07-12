@@ -237,9 +237,7 @@ export class TilesetTraverser {
     if (this.shouldLoadTile(tile)) {
       tile._requestedFrame = frameState.frameNumber;
       tile._loadPriority = tile._getLoadPriority();
-
-      // TODO hacky
-      tile._screenPriority = tile._getScreenPriority();
+      tile._displayPriority = tile._getDisplayPriority();
       this.requestedTiles[tile.id] = tile;
     }
   }
