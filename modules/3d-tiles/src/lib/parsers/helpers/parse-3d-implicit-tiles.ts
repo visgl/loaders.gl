@@ -7,7 +7,7 @@ import {getS2CellIdFromToken, getS2ChildCellId, getS2TokenFromCellId} from '../.
 import type {S2VolumeInfo} from '../../utils/obb/s2-corners-to-obb';
 import {convertS2BoundingVolumetoOBB} from '../../utils/obb/s2-corners-to-obb';
 import Long from 'long';
-import { Tiles3DLoaderOptions } from '../../..';
+import {Tiles3DLoaderOptions} from '../../..';
 
 const QUADTREE_DEVISION_COUNT = 4;
 const OCTREE_DEVISION_COUNT = 8;
@@ -91,7 +91,7 @@ export async function parseImplicitTiles(params: {
   level?: number;
   globalData?: {level: number; mortonIndex: number; x: number; y: number; z: number};
   s2VolumeBox?: S2VolumeBox;
-  loaderOptions: Tiles3DLoaderOptions
+  loaderOptions: Tiles3DLoaderOptions;
 }) {
   const {
     implicitOptions,
@@ -110,7 +110,7 @@ export async function parseImplicitTiles(params: {
       z: 0
     },
     s2VolumeBox,
-    loaderOptions,
+    loaderOptions
   } = params;
   let {subtree, level = 0} = params;
   const {
@@ -127,7 +127,7 @@ export async function parseImplicitTiles(params: {
   if (lev > maximumLevel) {
     return tile;
   }
-  
+
   const childrenPerTile = SUBDIVISION_COUNT_MAP[subdivisionScheme];
   const bitsPerTile = Math.log2(childrenPerTile);
 
@@ -212,7 +212,7 @@ export async function parseImplicitTiles(params: {
       parentData: pData,
       childIndex: index,
       level: childTileLevel,
-      globalData,
+      globalData: {...globalData},
       s2VolumeBox: childS2VolumeBox
     });
 
