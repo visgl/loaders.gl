@@ -6,9 +6,9 @@ import {FileProvider} from './file-provider';
  */
 export type ZipCDFileHeader = {
   /** Compressed size */
-  compressedSize: number;
+  compressedSize: bigint;
   /** Uncompressed size */
-  uncompressedSize: number;
+  uncompressedSize: bigint;
   /** File name length */
   fileNameLength: number;
   /** File name */
@@ -38,10 +38,12 @@ export const parseZipCDFileHeader = async (
     CD_FILE_NAME_OFFSET: 46n
   };
 
-  const compressedSize = await buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET);
+  let compressedSize = BigInt(
+    await buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET)
+  );
 
-  const uncompressedSize = await buffer.getUint32(
-    headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET
+  let uncompressedSize = BigInt(
+    await buffer.getUint32(headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET)
   );
 
   const fileNameLength = await buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET);
@@ -60,17 +62,17 @@ export const parseZipCDFileHeader = async (
   );
 
   let fileDataOffset = BigInt(oldFormatOffset);
+  let offsetInZip64Data = 4n;
+  // looking for info that might be also be in zip64 extra field
+  if (uncompressedSize === BigInt(0xffffffff)) {
+    uncompressedSize = await buffer.getBigUint64(extraOffset + offsetInZip64Data);
+    offsetInZip64Data += 8n;
+  }
+  if (compressedSize === BigInt(0xffffffff)) {
+    compressedSize = await buffer.getBigUint64(extraOffset + offsetInZip64Data);
+    offsetInZip64Data += 8n;
+  }
   if (fileDataOffset === BigInt(0xffffffff)) {
-    let offsetInZip64Data = 4n;
-    // looking for info that might be also be in zip64 extra field
-    if (compressedSize === 0xffffffff) {
-      offsetInZip64Data += 8n;
-    }
-    if (uncompressedSize === 0xffffffff) {
-      offsetInZip64Data += 8n;
-    }
-
-    // getUint32 needs to be replaced with getBigUint64 for archieves bigger than 2gb
     fileDataOffset = await buffer.getBigUint64(extraOffset + offsetInZip64Data); // setting it to the one from zip64
   }
   const localHeaderOffset = fileDataOffset;
