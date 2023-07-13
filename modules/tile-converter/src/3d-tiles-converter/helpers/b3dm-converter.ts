@@ -1,5 +1,3 @@
-import type {I3SAttributesData} from '../../3d-tiles-attributes-worker';
-
 import {encodeSync} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
@@ -10,6 +8,11 @@ import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
+
+export type I3SAttributesData = {
+  tileContent: any;
+  textureFormat: string;
+};
 
 /**
  * Converts content of an I3S node to *.b3dm's file content

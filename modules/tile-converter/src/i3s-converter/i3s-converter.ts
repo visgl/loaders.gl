@@ -59,7 +59,6 @@ import {
 import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import WriteQueue from '../lib/utils/write-queue';
-import {I3SAttributesWorker} from '../i3s-attributes-worker';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
   createdStorageAttribute,
@@ -1211,10 +1210,6 @@ export default class I3SConverter {
       this.workerSource.ktx2 = source;
     }
 
-    const i3sAttributesWorkerUrl = getWorkerURL(I3SAttributesWorker, {...getLoaderOptions()});
-    const sourceResponse = await fetchFile(i3sAttributesWorkerUrl);
-    const source = await sourceResponse.text();
-    this.workerSource.I3SAttributes = source;
     console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }

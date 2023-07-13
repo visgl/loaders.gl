@@ -1,10 +1,11 @@
-import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
+import {GLTFImagePostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import {
   BoundingVolumes,
   I3SMaterialDefinition,
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/i3s';
+import {Matrix4, Vector3} from '@math.gl/core';
 
 /** Converted resources for specific node */
 export type I3SConvertedResources = {
@@ -182,4 +183,34 @@ export enum GltfPrimitiveModeString {
 export type PreprocessData = {
   /** Mesh topology types used in gltf primitives of the tileset */
   meshTopologyTypes: Set<GltfPrimitiveModeString>;
+};
+
+/** Texture image properties required for conversion */
+export type TextureImageProperties = {
+  /** Array with image data */
+  data: Uint8Array;
+  /** Is the texture compressed */
+  compressed?: boolean;
+  /** Height of the texture's image */
+  height?: number;
+  /** Width of the texture's image */
+  width?: number;
+  /** Number of components (3 for RGB, 4 for RGBA) */
+  components?: number;
+  /** Mime type of the texture's image */
+  mimeType?: string;
+};
+
+/** glTF attributes data, prepared for conversion */
+export type GLTFAttributesData = {
+  /** glTF PBR materials (only id is required) */
+  gltfMaterials?: {id: string}[];
+  /** glTF geometry nodes */
+  nodes: GLTFNodePostprocessed[];
+  /** glTF texture images (set to null for compressed textures) */
+  images: (null | TextureImageProperties)[];
+  /** Source tile origin coordinates in cartographic coordinate system */
+  cartographicOrigin: Vector3;
+  /** Model matrix to convert coordinate system of POSITION and NORMAL attributes from METER_OFFSETS to CARTESIAN  */
+  cartesianModelMatrix: Matrix4;
 };
