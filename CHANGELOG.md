@@ -2,6 +2,10 @@
 
 # v3.4
 
+## v3.4.7
+
+- chore: Bump fast-xml-parser (#2537)
+
 ## v3.4.6
 
 - fix(tile-converter): install deps on windows (#2532)
