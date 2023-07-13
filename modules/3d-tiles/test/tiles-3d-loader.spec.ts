@@ -168,7 +168,7 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
   t.equal(tileset.root.children[0].children[0].children.length, 1);
 
   // children level 3
-  t.equal(tileset.root.children[0].children[0].children[0].content.uri, 'content/3/2/0/1.pnts');
+  t.equal(tileset.root.children[0].children[0].children[0].content.uri, 'content/3/8/0/1.pnts');
   t.equal(tileset.root.children[0].children[0].children[0].lodMetricValue, 625);
   t.equal(tileset.root.children[0].children[0].children[0].refine, 1);
   t.equal(tileset.root.children[0].children[0].children[0].type, 'pointcloud');
