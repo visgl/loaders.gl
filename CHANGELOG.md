@@ -6,6 +6,13 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 release info (#2491))
 
+### v4.0.0-alpha.13
+
+- fix(gltf): 3D tiles extension types & docs (#2542)
+- fix(tile-converter): failing test (#2540)
+- chore: bump fast-xml-parser (#2538)
+- fix(3d-tiles): implicit tiling v1.1 (#2539)
+
 ### v4.0.0-alpha.12
 
 - fix(tile-converter): proceed failed tiles (#2536)
