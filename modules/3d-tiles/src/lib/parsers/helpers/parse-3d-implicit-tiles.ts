@@ -376,12 +376,6 @@ function calculateBoundingVolumeForChildTile(
  * @param shift - number of bits to shift lower number
  */
 function concatBits(higher: number, lower: number, shift: number): number {
-  // console.log(
-  //   `old - ${first.toString(2)} + ${second.toString(2)} = ${
-  //     first.toString(2) + second.toString(2)
-  //   } (${parseInt(first.toString(2) + second.toString(2), 2)})`
-  // );
-  // return parseInt(first.toString(2) + second.toString(2), 2);
   return (higher << shift) + lower;
 }
 
