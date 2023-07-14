@@ -4,7 +4,7 @@ import type {Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
 import {join} from 'path';
 import process from 'process';
 import transform from 'json-map-transform';
-import {fetchFile, getLoaderOptions, load, isBrowser} from '@loaders.gl/core';
+import {load, isBrowser} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
 import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 import {Geoid} from '@math.gl/geoid';
@@ -16,13 +16,9 @@ import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
-import {
-  I3SAttributesData,
-  Tile3dAttributesWorker,
-  transform3DTilesAttributesOnWorker
-} from '../3d-tiles-attributes-worker';
-import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
+import B3dmConverter, {I3SAttributesData} from './helpers/b3dm-converter';
 
 const I3S = 'I3S';
 
@@ -78,19 +74,17 @@ export default class Tiles3DConverter {
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
     console.log('Loading egm file completed!'); // eslint-disable-line
 
-    await this.loadWorkers();
-
     const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
 
     this.sourceTileset = new Tileset3D(sourceTilesetJson, {
       loadOptions: {
         _nodeWorkers: true,
         reuseWorkers: true,
-        i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
-        // TODO should no longer be needed with new workers
-        // 'i3s-content-nodejs': {
-        //   workerUrl: './modules/i3s/dist/i3s-content-nodejs-worker.js'
-        // }
+        i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false},
+        // We need to load local fs workers because nodejs can't load workers from the Internet
+        'i3s-content': {
+          workerUrl: './modules/i3s/dist/i3s-content-worker-node.js'
+        }
       }
     });
 
@@ -171,10 +165,8 @@ export default class Tiles3DConverter {
         textureFormat: sourceChild?.header?.textureFormat
       };
 
-      const b3dm = await transform3DTilesAttributesOnWorker(i3sAttributesData, {
-        source: this.workerSource.tile3dWorkerSource,
-        featureAttributes
-      });
+      const b3dmConverter = new B3dmConverter();
+      const b3dm = await b3dmConverter.convert(i3sAttributesData, featureAttributes);
 
       child.content = {
         uri: `${sourceChild.id}.b3dm`,
@@ -341,15 +333,5 @@ export default class Tiles3DConverter {
     console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line
     console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line
     console.log(`------------------------------------------------`); // eslint-disable-line
-  }
-
-  private async loadWorkers(): Promise<void> {
-    console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
-    const tile3dAttributesWorkerUrl = getWorkerURL(Tile3dAttributesWorker, {...getLoaderOptions()});
-    const sourceResponse = await fetchFile(tile3dAttributesWorkerUrl);
-    const source = await sourceResponse.text();
-
-    this.workerSource.tile3dWorkerSource = source;
-    console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }

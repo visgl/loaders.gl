@@ -5,7 +5,7 @@ import type {
   GLTF_EXT_feature_metadata_Primitive
 } from '@loaders.gl/gltf';
 import {TypedArray} from '@math.gl/core';
-import {TextureImageProperties} from '../../i3s-attributes-worker';
+import {TextureImageProperties} from '../types';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
