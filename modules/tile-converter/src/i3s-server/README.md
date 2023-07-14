@@ -12,27 +12,49 @@ The server provides I3S Rest endpoints per specification https://github.com/Esri
 
 Example for path `./data/BatchTextured/SceneServer/layers/0/...`:
 
+#### Start the server
+
 ```bash
-PORT = 8080 PORT = 4443 I3sLayerPath="./data" DEBUG=i3s-server:* npx i3s-server
+PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./data" DEBUG=i3s-server:* npx i3s-server
 ```
+#### Check the layer availability
 
 The layer should be available on URLs:
 
 - `http://localhost:8080/BatchTextured/SceneServer/layers/0/...`
 - `https://localhost:4443/BatchTextured/SceneServer/layers/0/...`
 
+#### Open in ArcGIS
+
+`https://www.arcgis.com/home/webscene/viewer.html?url=http://localhost:8080/BatchTextured/SceneServer/layers/0/`
+
+#### Open in I3S Explorer
+
+`https://i3s.loaders.gl/viewer?tileset=http://localhost:8080/BatchTextured/SceneServer/layers/0`
+
 ### Serve SLPK
 
 Example for path `../datasets/Rancho_Mesh_mesh_v17_1.slpk`:
 
+#### Start the server
+
 ```bash
-I3sLayerPath="../datasets/Rancho_Mesh_mesh_v17_1.slpk" DEBUG=i3s-server:* npx i3s-server`
+PORT=8080 HTTPS_PORT=4443 I3sLayerPath="../datasets/Rancho_Mesh_mesh_v17_1.slpk" DEBUG=i3s-server:* npx i3s-server
 ```
+#### Check the layer availability
 
 The layer should be available on URLs:
 
 - `http://localhost:8080/SceneServer/layers/0/...`
 - `https://localhost:4443/SceneServer/layers/0/...`
+
+#### Open in ArcGIS
+
+`https://www.arcgis.com/home/webscene/viewer.html?url=http://localhost:8080/SceneServer`
+
+#### Open in I3S Explorer
+
+`https://i3s.loaders.gl/viewer?tileset=http://localhost:8080/SceneServer/layers/0`
 
 ## ENV variables
 
