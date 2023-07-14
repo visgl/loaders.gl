@@ -7,7 +7,8 @@ import {getS2CellIdFromToken, getS2ChildCellId, getS2TokenFromCellId} from '../.
 import type {S2VolumeInfo} from '../../utils/obb/s2-corners-to-obb';
 import {convertS2BoundingVolumetoOBB} from '../../utils/obb/s2-corners-to-obb';
 import Long from 'long';
-import {Tiles3DLoaderOptions} from '../../..';
+import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
+import {ImplicitOptions} from '../parse-3d-tile-header';
 
 const QUADTREE_DEVISION_COUNT = 4;
 const OCTREE_DEVISION_COUNT = 8;
@@ -85,7 +86,7 @@ function getChildS2VolumeBox(
 // eslint-disable-next-line max-statements
 export async function parseImplicitTiles(params: {
   subtree: Subtree;
-  implicitOptions: any;
+  implicitOptions: ImplicitOptions;
   parentData?: {mortonIndex: number; x: number; y: number; z: number};
   childIndex?: number;
   level?: number;
@@ -122,6 +123,14 @@ export async function parseImplicitTiles(params: {
     basePath
   } = implicitOptions;
   const tile = {children: [], lodMetricValue: 0, contentUrl: ''};
+
+  if (!maximumLevel) {
+    // eslint-disable-next-line no-console
+    log.once(
+      `Missing 'maximumLevel' or 'availableLevels' property. The subtree ${contentUrlTemplate} won't be loaded...`
+    );
+    return tile;
+  }
 
   const lev = level + globalData.level;
   if (lev > maximumLevel) {
@@ -282,7 +291,7 @@ function formatTileData(
   tile,
   level: number,
   childCoordinates: {childTileX: number; childTileY: number; childTileZ: number},
-  options: any,
+  options: ImplicitOptions,
   s2VolumeBox?: S2VolumeBox
 ) {
   const {
