@@ -34,11 +34,6 @@ import {
 } from '@loaders.gl/i3s';
 import {NumberArray, TypedArray} from '@loaders.gl/loader-utils';
 import {Geoid} from '@math.gl/geoid';
-/** Usage of worker here brings more overhead than advantage */
-import {
-  B3DMAttributesData /*, transformI3SAttributesOnWorker*/,
-  TextureImageProperties
-} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
@@ -49,7 +44,7 @@ import {GL} from '@loaders.gl/math';
   So the following import is replaced with the local import
   import type {TypedArrayConstructor} from '@math.gl/types'; 
 */
-import type {TypedArrayConstructor} from '../types';
+import type {GLTFAttributesData, TextureImageProperties, TypedArrayConstructor} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 
@@ -320,7 +315,7 @@ async function _makeNodeResources({
  * @returns map of converted geometry attributes
  */
 export async function convertAttributes(
-  attributesData: B3DMAttributesData,
+  attributesData: GLTFAttributesData,
   materialAndTextureList: I3SMaterialWithTexture[],
   useCartesianPositions: boolean
 ): Promise<Map<string, ConvertedAttributes>> {
