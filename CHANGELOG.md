@@ -6,6 +6,11 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 release info (#2491))
 
+### v4.0.0-alpha.14
+
+- fix(3d-tiles): implicit tiling v1.1 (#2549)
+- fix(tile-converter): i3s->3dtiles regression (#2550)
+
 ### v4.0.0-alpha.13
 
 - fix(gltf): 3D tiles extension types & docs (#2542)
