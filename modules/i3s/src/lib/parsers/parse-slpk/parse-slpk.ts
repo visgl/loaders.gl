@@ -1,11 +1,18 @@
 import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
 import {FileProvider} from '../parse-zip/file-provider';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
+import {ZipSignature} from '../parse-zip/signature';
 import {searchFromTheEnd} from './search-from-the-end';
 import {SLPKArchive} from './slpk-archieve';
 
+/**
+ * Creates slpk file handler from raw file
+ * @param fileProvider raw file data
+ * @returns slpk file handler
+ */
+
 export const parseSLPK = async (fileProvider: FileProvider): Promise<SLPKArchive> => {
-  const cdFileHeaderSignature = [80, 75, 1, 2];
+  const cdFileHeaderSignature: ZipSignature = [0x50, 0x4b, 0x01, 0x02];
 
   const hashCDOffset = await searchFromTheEnd(fileProvider, cdFileHeaderSignature);
 

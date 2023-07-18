@@ -1,6 +1,16 @@
 import {FileProvider} from 'modules/i3s/src/lib/parsers/parse-zip/file-provider';
+import {ZipSignature} from '../parse-zip/signature';
 
-export const searchFromTheEnd = async (file: FileProvider, target: number[]): Promise<bigint> => {
+/**
+ * looking for the last occurrence of the provided
+ * @param file
+ * @param target
+ * @returns
+ */
+export const searchFromTheEnd = async (
+  file: FileProvider,
+  target: ZipSignature
+): Promise<bigint> => {
   const searchWindow = [
     await file.getUint8(file.length - 1n),
     await file.getUint8(file.length - 2n),

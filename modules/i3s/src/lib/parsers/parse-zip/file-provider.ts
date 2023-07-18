@@ -21,7 +21,7 @@ export interface FileProvider {
   getUint32(offset: bigint): Promise<number>;
 
   /**
-   * Gets an unsigned 32-bit integer (unsigned byte) at the specified byte offset from the start of the file.
+   * Gets an unsigned 32-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in byte, from the file of the view where to read the data.
    */
   getBigUint64(offset: bigint): Promise<bigint>;

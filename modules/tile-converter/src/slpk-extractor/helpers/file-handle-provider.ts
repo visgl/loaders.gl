@@ -30,7 +30,7 @@ export class FileHandleProvider implements FileProvider {
   }
 
   /**
-   * Gets an unsigned 8-bit integer (unsigned byte) at the specified byte offset from the start of the file.
+   * Gets an unsigned 8-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
   async getUint8(offset: bigint): Promise<number> {
@@ -44,7 +44,7 @@ export class FileHandleProvider implements FileProvider {
   }
 
   /**
-   * Gets an unsigned 16-bit integer (unsigned byte) at the specified byte offset from the start of the file.
+   * Gets an unsigned 16-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
   async getUint16(offset: bigint): Promise<number> {
@@ -58,7 +58,7 @@ export class FileHandleProvider implements FileProvider {
   }
 
   /**
-   * Gets an unsigned 32-bit integer (unsigned byte) at the specified byte offset from the start of the file.
+   * Gets an unsigned 32-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
   async getUint32(offset: bigint): Promise<number> {
@@ -72,7 +72,7 @@ export class FileHandleProvider implements FileProvider {
   }
 
   /**
-   * Gets an unsigned 32-bit integer (unsigned byte) at the specified byte offset from the start of the file.
+   * Gets an unsigned 32-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
   async getBigUint64(offset: bigint): Promise<bigint> {

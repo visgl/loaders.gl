@@ -26,7 +26,7 @@ type File = {
  */
 export default class SLPKConverter {
   /**
-   * Convert slpk to i3s
+   * Extract slpk to i3s
    * @param options
    * @param options.inputUrl the url to read SLPK file
    * @param options.outputPath the output filename

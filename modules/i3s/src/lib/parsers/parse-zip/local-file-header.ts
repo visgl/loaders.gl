@@ -25,7 +25,7 @@ const offsets = {
   FILE_NAME_OFFSET: 30n
 };
 
-const signature = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
+export const signature = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 
 /**
  * Parses local file header of zip file
