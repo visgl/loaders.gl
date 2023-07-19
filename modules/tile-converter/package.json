@@ -64,13 +64,13 @@
     "archiver": "^5.0.0",
     "cors": "^2.8.5",
     "crypt": "^0.0.2",
-    "debug": "~2.6.9",
-    "express": "~4.17.3",
+    "debug": "~4.3.4",
+    "express": "~4.18.2",
     "json-map-transform": "^1.2.6",
     "jszip": "^3.5.0",
     "md5": "^2.3.0",
     "morgan": "~1.9.1",
-    "uuid": "^8.1.0"
+    "uuid": "^9.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0-alpha.8"
