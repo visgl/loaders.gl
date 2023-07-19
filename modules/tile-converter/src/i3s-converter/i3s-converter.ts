@@ -226,11 +226,15 @@ export default class I3SConverter {
           'draco-nodejs': {workerUrl: './modules/draco/dist/draco-nodejs-worker.js'}
         }
       };
+      let tilesetUrl = inputUrl;
+      if (preloadOptions.url) {
+        tilesetUrl = preloadOptions.url;
+      }
       if (preloadOptions.headers) {
         tilesetOptions.loadOptions!.fetch = {headers: preloadOptions.headers};
       }
       Object.assign(tilesetOptions, preloadOptions);
-      const sourceTilesetJson = await load(inputUrl, this.Loader, tilesetOptions.loadOptions);
+      const sourceTilesetJson = await load(tilesetUrl, this.Loader, tilesetOptions.loadOptions);
       // console.log(tilesetJson); // eslint-disable-line
       this.sourceTileset = new Tileset3D(sourceTilesetJson, tilesetOptions);
 
