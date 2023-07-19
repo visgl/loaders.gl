@@ -43,47 +43,47 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@loaders.gl/gis@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/gis/-/gis-3.3.0-alpha.12.tgz#ba6080df9148cefed9e77da8e0753d46053e00d7"
-  integrity sha512-yNvr90e6b27pmxcIXdwfgEIqv0KSLpKsDu7etkLTgYBeNpQnclf/YHG9tzlP9kPY9HEidm+K10XmSwpUGIknDw==
+"@loaders.gl/gis@4.0.0-alpha.14":
+  version "4.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/gis/-/gis-4.0.0-alpha.14.tgz#c9a8e38e6e2b74261dec82026d228604a4e5379a"
+  integrity sha512-g0X2/7JpCbJCe/xoHedJnYoEsBpKLvaw2jKTd66UA6ZNFCfAy51VmhRCG9A6HhcG25NOd3uunMrsmebSSBsgPg==
   dependencies:
-    "@loaders.gl/loader-utils" "3.3.0-alpha.12"
-    "@loaders.gl/schema" "3.3.0-alpha.12"
+    "@loaders.gl/loader-utils" "4.0.0-alpha.14"
+    "@loaders.gl/schema" "4.0.0-alpha.14"
     "@mapbox/vector-tile" "^1.3.1"
     "@math.gl/polygon" "^3.5.1"
     pbf "^3.2.1"
 
-"@loaders.gl/loader-utils@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-3.3.0-alpha.12.tgz#55ce0de14422f64ddf72727716f5ebfa3ddf29f2"
-  integrity sha512-pBlHaXCbEaAwFe+XbuzoEjwbV4OPLiJ9DS+P3Cpe/ML2R9CT9UUxNDQMJOqM9cW/+hIG+kyUhatP3f67R5SOfQ==
+"@loaders.gl/loader-utils@4.0.0-alpha.14":
+  version "4.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-4.0.0-alpha.14.tgz#d09d8867c7ef6036e23520e4c1c75690964a58a9"
+  integrity sha512-T4PCHX5r1ZP3BLyl9VAc9xdtYUgvJzVXdrbchRdCpyeEhkT8FVvOzW2PqYTii8uC7cJkAQZk7lJ13GrMsaMaYA==
   dependencies:
     "@babel/runtime" "^7.3.1"
-    "@loaders.gl/worker-utils" "3.3.0-alpha.12"
-    "@probe.gl/stats" "^3.5.0"
+    "@loaders.gl/worker-utils" "4.0.0-alpha.14"
+    "@probe.gl/stats" "^4.0.2"
 
-"@loaders.gl/schema@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-3.3.0-alpha.12.tgz#bd78d48ae3c7c527bd55afedbc9dc6cb6e0e2afc"
-  integrity sha512-Kv7Auj2fEHU52kvegjFpK/Hjn83MWni3lVm2EpFEDc+Aw27dDb7U5sH7ow606qq7axiX+lC9JXaEDGYIBALn0Q==
+"@loaders.gl/schema@4.0.0-alpha.14":
+  version "4.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-4.0.0-alpha.14.tgz#4cc04b834d7a7267cd7748b5a070a40021e813df"
+  integrity sha512-365OyfUF+Z3gi7XG4y4FYSpsefI+SW+qSMJIVwzE53z0bWNxgncPI5cuGHZPQFd4KYrFg0914z3O/FIj9ISaqA==
   dependencies:
     "@types/geojson" "^7946.0.7"
 
-"@loaders.gl/shapefile@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/shapefile/-/shapefile-3.3.0-alpha.12.tgz#3d5096f74d8c5ebb269d971951a2eb21395792b1"
-  integrity sha512-2z0OOq+HbTEsH/nIr6Gi5v7fvx5Pdgqyrdk6VohmCgXKsTPupP5q2tX5Wmx8OBA4TfU+Q8XGydUFbLsmBBJS5Q==
+"@loaders.gl/shapefile@^4.0.0-alpha.8":
+  version "4.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/shapefile/-/shapefile-4.0.0-alpha.14.tgz#6b9166eb1567c7d2348a6666eb5935e514abd4a0"
+  integrity sha512-Q2YS6K3lJfdImcYwz3srv+20CcWdX0HOnc9/Qi/jJAPyB9QAGAvAxCufqwE9YVQIET+O40gXYw6S1fSevKDxJQ==
   dependencies:
-    "@loaders.gl/gis" "3.3.0-alpha.12"
-    "@loaders.gl/loader-utils" "3.3.0-alpha.12"
-    "@loaders.gl/schema" "3.3.0-alpha.12"
+    "@loaders.gl/gis" "4.0.0-alpha.14"
+    "@loaders.gl/loader-utils" "4.0.0-alpha.14"
+    "@loaders.gl/schema" "4.0.0-alpha.14"
     "@math.gl/proj4" "^3.5.1"
 
-"@loaders.gl/worker-utils@3.3.0-alpha.12":
-  version "3.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.3.0-alpha.12.tgz#3c5f56be03b1359491e79674c6d5d71b3161e998"
-  integrity sha512-OOptTemcEvH0K0P/WJi13jXF2eerdcoxIDRVX0Q8sHHahkhD3+oGBwhilFj+oxTy1VQUiE/wienJRqZioQ22dQ==
+"@loaders.gl/worker-utils@4.0.0-alpha.14":
+  version "4.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-4.0.0-alpha.14.tgz#ac8d6da13f64e0aa2fb089543092cc26fa7307f8"
+  integrity sha512-ntnJgfPEt4ym9mxXpl1PLOjsGLTlNI/8ivfpzHR0Dp0KvaXjFsL+Vle8g/+2BV2dmbihHhnARygNw9VmYbgsKw==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
@@ -145,10 +145,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@probe.gl/stats@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-3.5.0.tgz#774495772f06e898aae28c1d315c9edac07f3425"
-  integrity sha512-IH2M+F3c8HR1DTroBARePUFG7wIewumtKA0UFqx51Z7S4hKrD60wFbpMmg0AcF4FvHAXMBoC+kYi1UKW9XbAOw==
+"@probe.gl/stats@^4.0.2":
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/@probe.gl/stats/-/stats-4.0.4.tgz#b33a47bf192951d0789dfd2044b295c3709386bd"
+  integrity sha512-SDuSY/D4yDL6LQDa69l/GCcnZLRiGYdyvYkxWb0CgnzTPdPrcdrzGkzkvpC3zsA4fEFw2smlDje370QGHwlisg==
   dependencies:
     "@babel/runtime" "^7.0.0"
 
@@ -1607,10 +1607,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript@^4.0.3:
-  version "4.4.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.4.tgz#2cd01a1a1f160704d3101fd5a58ff0f9fcb8030c"
-  integrity sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==
+typescript@^5.0.4:
+  version "5.1.6"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.1.6.tgz#02f8ac202b6dad2c0dd5e0913745b47a37998274"
+  integrity sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==
 
 undefsafe@^2.0.3:
   version "2.0.5"
@@ -1683,9 +1683,9 @@ wkt-parser@^1.2.4:
   integrity sha512-XK5qV+Y5gsygQfHx2/cS5a7Zxsgleaw8iX5UPC5eOXPc0TgJAu1JB9lr0iYYX3zAnN3p0aNiaN5c+1Bdblxwrg==
 
 word-wrap@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.3.tgz#610636f6b1f703891bd34771ccb17fb93b47079c"
-  integrity sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.4.tgz#cb4b50ec9aca570abd1f52f33cd45b6c61739a9f"
+  integrity sha512-2V81OA4ugVo5pRo46hAoD2ivUJx8jXmWXfUkY4KFNw0hEptvN0QfH3K4nHiwzGeKl5rFKedV48QVoqYavy4YpA==
 
 wrap-ansi@^7.0.0:
   version "7.0.0"
