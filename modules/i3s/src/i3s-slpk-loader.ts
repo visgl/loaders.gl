@@ -1,13 +1,17 @@
 import {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {parseSLPK} from './lib/parsers/parse-slpk/parse-slpk';
+import {parseSLPK as parseSLPKFromProvider} from './lib/parsers/parse-slpk/parse-slpk';
+import {DataViewFileProvider} from './lib/parsers/parse-zip/data-view-file-provider';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** options to load data from SLPK */
 export type SLPKLoaderOptions = LoaderOptions & {
   slpk?: {
+    /** path inside the slpk archive */
     path?: string;
+    /** mode of the path */
     pathMode?: 'http' | 'raw';
   };
 };
@@ -25,3 +29,17 @@ export const SLPKLoader: LoaderWithParser<Buffer, never, SLPKLoaderOptions> = {
   extensions: ['slpk'],
   options: {}
 };
+
+/**
+ * returns a single file from the slpk archive
+ * @param data slpk archive data
+ * @param options options
+ * @returns requested file
+ */
+
+async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = {}) {
+  return (await parseSLPKFromProvider(new DataViewFileProvider(new DataView(data)))).getFile(
+    options.slpk?.path ?? '',
+    options.slpk?.pathMode
+  );
+}

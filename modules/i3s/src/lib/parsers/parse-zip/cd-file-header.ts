@@ -6,17 +6,17 @@ import {FileProvider} from './file-provider';
  */
 export type ZipCDFileHeader = {
   /** Compressed size */
-  compressedSize: number;
+  compressedSize: bigint;
   /** Uncompressed size */
-  uncompressedSize: number;
+  uncompressedSize: bigint;
   /** File name length */
   fileNameLength: number;
   /** File name */
   fileName: string;
   /** Extra field offset */
-  extraOffset: number;
+  extraOffset: bigint;
   /** Relative offset of local file header */
-  localHeaderOffset: number;
+  localHeaderOffset: bigint;
 };
 
 /**
@@ -26,22 +26,24 @@ export type ZipCDFileHeader = {
  * @returns Info from the header
  */
 export const parseZipCDFileHeader = async (
-  headerOffset: number,
+  headerOffset: bigint,
   buffer: FileProvider
 ): Promise<ZipCDFileHeader> => {
   const offsets = {
-    CD_COMPRESSED_SIZE_OFFSET: 20,
-    CD_UNCOMPRESSED_SIZE_OFFSET: 24,
-    CD_FILE_NAME_LENGTH_OFFSET: 28,
-    CD_EXTRA_FIELD_LENGTH_OFFSET: 30,
-    CD_LOCAL_HEADER_OFFSET_OFFSET: 42,
-    CD_FILE_NAME_OFFSET: 46
+    CD_COMPRESSED_SIZE_OFFSET: 20n,
+    CD_UNCOMPRESSED_SIZE_OFFSET: 24n,
+    CD_FILE_NAME_LENGTH_OFFSET: 28n,
+    CD_EXTRA_FIELD_LENGTH_OFFSET: 30n,
+    CD_LOCAL_HEADER_OFFSET_OFFSET: 42n,
+    CD_FILE_NAME_OFFSET: 46n
   };
 
-  const compressedSize = await buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET);
+  let compressedSize = BigInt(
+    await buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET)
+  );
 
-  const uncompressedSize = await buffer.getUint32(
-    headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET
+  let uncompressedSize = BigInt(
+    await buffer.getUint32(headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET)
   );
 
   const fileNameLength = await buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET);
@@ -49,29 +51,29 @@ export const parseZipCDFileHeader = async (
   const fileName = new TextDecoder().decode(
     await buffer.slice(
       headerOffset + offsets.CD_FILE_NAME_OFFSET,
-      headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength
+      headerOffset + offsets.CD_FILE_NAME_OFFSET + BigInt(fileNameLength)
     )
   );
 
-  const extraOffset = headerOffset + offsets.CD_FILE_NAME_OFFSET + fileNameLength;
+  const extraOffset = headerOffset + offsets.CD_FILE_NAME_OFFSET + BigInt(fileNameLength);
 
   const oldFormatOffset = await buffer.getUint32(
     headerOffset + offsets.CD_LOCAL_HEADER_OFFSET_OFFSET
   );
 
-  let fileDataOffset = oldFormatOffset;
-  if (fileDataOffset === 0xffffffff) {
-    let offsetInZip64Data = 4;
-    // looking for info that might be also be in zip64 extra field
-    if (compressedSize === 0xffffffff) {
-      offsetInZip64Data += 8;
-    }
-    if (uncompressedSize === 0xffffffff) {
-      offsetInZip64Data += 8;
-    }
-
-    // getUint32 needs to be replaced with getBigUint64 for archieves bigger than 2gb
-    fileDataOffset = await buffer.getUint32(extraOffset + offsetInZip64Data); // setting it to the one from zip64
+  let fileDataOffset = BigInt(oldFormatOffset);
+  let offsetInZip64Data = 4n;
+  // looking for info that might be also be in zip64 extra field
+  if (uncompressedSize === BigInt(0xffffffff)) {
+    uncompressedSize = await buffer.getBigUint64(extraOffset + offsetInZip64Data);
+    offsetInZip64Data += 8n;
+  }
+  if (compressedSize === BigInt(0xffffffff)) {
+    compressedSize = await buffer.getBigUint64(extraOffset + offsetInZip64Data);
+    offsetInZip64Data += 8n;
+  }
+  if (fileDataOffset === BigInt(0xffffffff)) {
+    fileDataOffset = await buffer.getBigUint64(extraOffset + offsetInZip64Data); // setting it to the one from zip64
   }
   const localHeaderOffset = fileDataOffset;
 
