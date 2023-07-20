@@ -4,12 +4,14 @@
  * Module dependencies.
  */
 
-const app = require('../app');
-const debug = require('debug')('i3s-server:server');
-const https = require('https');
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+import {app} from '../app';
+import debugFactory from 'debug';
+import https from 'https';
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+
+const debug = debugFactory('i3s-server:server');
 
 /**
  * Get port from environment and store in Express.
