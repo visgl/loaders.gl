@@ -461,6 +461,12 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
 - Supports binary array fields in draco metadata.
 - Significant performance improvements for loading and decoding.
 
+**@loaders.gl/json**
+
+- Removed deprecated json parse option `_rootObjectBatches`. Use loader option `metadata` instead.
+- Replaced `batch.batchType` `root-object-batch-partial` with `partial-result`.
+- Replaced `batch.batchType` `root-object-batch-complete` with `final-result`.
+
 **@loaders.gl/kml**
 
 - `KMLLoader` - updated loader, now works under Node.js.

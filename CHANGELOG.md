@@ -4,7 +4,19 @@
 
 > The official 4.0 alpha track starts with alpha.6
 > The early pre-release track was abandoned due to build incompatibility problems.
-release info (#2491))
+> release info (#2491))
+
+### v4.0.0-alpha.15
+
+- chore(tile-converter): bump i3s-server deps (#2561)
+- chore(tile-converter): Support for SLPKs larger than 2 Gb (#2547)
+- feat(tile-converter): i3s-server bundle (#2555)
+- chore(deps): bump semver from 5.7.1 to 5.7.2 in /website (#2546)
+- fix(docs): JSONLoader \_rootObjectBatches removed but not mentioned in upgrade guide (#2558)
+- chore(deps): bump word-wrap in /test/apps/typescript-test (#2559)
+- fix(tile-converter): CesiumION tileset URL (#2560)
+- chore: update CHANGELOG.md (#2551)
+- chore(tile-converter): update i3s-server manual (#2552)
 
 ### v4.0.0-alpha.14
 
