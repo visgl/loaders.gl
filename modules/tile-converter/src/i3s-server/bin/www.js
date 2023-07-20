@@ -72,22 +72,22 @@ function formErrorHandler(optionalPort) {
       throw error;
     }
 
-    const bind = typeof port === 'string' ? `Pipe ${optionalPort}`: `Port ${optionalPort}`;
+    const bind = typeof global.port === 'string' ? `Pipe ${optionalPort}` : `Port ${optionalPort}`;
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
       case 'EACCES':
-        console.error(`${bind} requires elevated privileges`);// eslint-disable-line no-console, no-undef
-        process.exit(1);// eslint-disable-line no-process-exit, no-undef
+        console.error(`${bind} requires elevated privileges`); // eslint-disable-line no-console, no-undef
+        process.exit(1); // eslint-disable-line no-process-exit, no-undef
         break;
       case 'EADDRINUSE':
-        console.error(`${bind} is already in use`);// eslint-disable-line no-console, no-undef
-        process.exit(1);// eslint-disable-line no-process-exit, no-undef
+        console.error(`${bind} is already in use`); // eslint-disable-line no-console, no-undef
+        process.exit(1); // eslint-disable-line no-process-exit, no-undef
         break;
       default:
         throw error;
     }
-  }
+  };
 }
 
 /**
@@ -98,5 +98,5 @@ function formListeningHandler(optionalServer) {
     const addr = optionalServer.address();
     const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
     debug(`Listening on ${bind}`);
-  }
+  };
 }
