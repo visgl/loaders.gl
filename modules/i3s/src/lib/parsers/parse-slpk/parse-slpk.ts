@@ -1,8 +1,7 @@
 import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
 import {FileProvider} from '../parse-zip/file-provider';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
-import {ZipSignature} from '../parse-zip/signature';
-import {searchFromTheEnd} from './search-from-the-end';
+import {ZipSignature, searchFromTheEnd} from './search-from-the-end';
 import {SLPKArchive} from './slpk-archieve';
 
 /**

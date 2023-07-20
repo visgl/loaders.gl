@@ -1,5 +1,7 @@
 import {FileProvider} from 'modules/i3s/src/lib/parsers/parse-zip/file-provider';
-import {ZipSignature} from '../parse-zip/signature';
+
+/** Description of zip signature type */
+export type ZipSignature = [number, number, number, number];
 
 /**
  * looking for the last occurrence of the provided
