@@ -240,10 +240,14 @@ export default class I3SConverter {
 
     try {
       const preloadOptions = await this._fetchPreloadOptions();
+      let tilesetUrl = inputUrl;
+      if (preloadOptions.url) {
+        tilesetUrl = preloadOptions.url;
+      }
       if (preloadOptions.headers) {
         this.loadOptions.fetch = {headers: preloadOptions.headers};
       }
-      this.sourceTileset = await load(inputUrl, this.Loader, this.loadOptions);
+      this.sourceTileset = await load(tilesetUrl, this.Loader, this.loadOptions);
 
       const preprocessResult = await this.preprocessConversion();
 
