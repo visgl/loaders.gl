@@ -1,7 +1,7 @@
-require('@loaders.gl/polyfills');
-const {parseSLPK} = require('@loaders.gl/i3s');
-const path = require('path');
-const {FileHandleProvider} = require('@loaders.gl/tile-converter');
+import '@loaders.gl/polyfills';
+import {parseSLPK} from '@loaders.gl/i3s';
+import {FileHandleProvider} from '@loaders.gl/tile-converter';
+import path from 'path';
 
 let slpkArchive;
 
@@ -14,7 +14,7 @@ const FULL_LAYER_PATH = path.join(process.cwd(), I3S_LAYER_PATH); // eslint-disa
 
 loadArchive(FULL_LAYER_PATH);
 
-async function getFileByUrl(url) {
+export async function getFileByUrl(url) {
   const trimmedPath = /^\/?(.*)\/?$/.exec(url);
   let uncompressedFile;
   if (trimmedPath) {
@@ -24,8 +24,3 @@ async function getFileByUrl(url) {
   }
   return uncompressedFile;
 }
-
-module.exports = {
-  loadArchive,
-  getFileByUrl
-};

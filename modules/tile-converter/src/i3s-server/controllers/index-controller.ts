@@ -1,12 +1,12 @@
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import fs from 'fs';
 
 const {promises} = fs;
 
 const I3S_LAYER_PATH = process.env.I3sLayerPath || ''; // eslint-disable-line no-process-env, no-undef
 const FULL_LAYER_PATH = path.join(process.cwd(), I3S_LAYER_PATH); // eslint-disable-line no-undef
 
-async function getFileNameByUrl(url) {
+export async function getFileNameByUrl(url) {
   const extensions = ['json', 'bin', 'jpg', 'jpeg', 'png', 'bin.dds', 'ktx2'];
   for (const ext of extensions) {
     const fileName = `${FULL_LAYER_PATH}${url}/index.${ext}`;
@@ -19,7 +19,3 @@ async function getFileNameByUrl(url) {
   }
   return null;
 }
-
-module.exports = {
-  getFileNameByUrl
-};

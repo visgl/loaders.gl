@@ -1,6 +1,6 @@
-const {v4: uuidv4} = require('uuid');
+import {v4 as uuidv4} from 'uuid';
 
-const createSceneServer = (name, layer) => {
+export const createSceneServer = (name, layer) => {
   return {
     serviceItemId: uuidv4().replace(/-/gi, ''),
     serviceName: name,
@@ -11,5 +11,3 @@ const createSceneServer = (name, layer) => {
     layers: [layer]
   };
 };
-
-module.exports = createSceneServer;
