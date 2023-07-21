@@ -2,6 +2,10 @@
 
 # v3.4
 
+## v3.4.8
+
+- fix(tile-converter): CesiumION tileset URL (#2560)
+
 ## v3.4.7
 
 - chore: Bump fast-xml-parser (#2537)
