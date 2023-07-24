@@ -26,7 +26,7 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
     extensions: ['.json.gz']
   },
   {
-    test: /^nodes\/\d+$/,
+    test: /^nodes\/(\d+|root)$/,
     extensions: ['/3dNodeIndexDocument.json.gz']
   },
   {
