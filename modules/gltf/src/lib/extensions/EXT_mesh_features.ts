@@ -1,175 +1,65 @@
 /* eslint-disable camelcase */
 import type {GLTF} from '../types/gltf-json-schema';
+import {GLTFLoaderOptions} from '../../gltf-loader';
+import type {GLTF_EXT_mesh_features_featureId} from '../types/gltf-ext-mesh-features-schema';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
-import {
-  GLTF_EXT_feature_metadata_Class,
-  GLTF_EXT_feature_metadata_ClassProperty,
-  GLTF_EXT_feature_metadata_FeatureTable,
-//  EXT_feature_metadata_class_object,
-  GLTF_EXT_mesh_features_featureId,
-  GLTF_EXT_feature_metadata_FeatureTableProperty,
-  GLTF_EXT_mesh_features
-} from '../types/gltf-json-schema';
+import {processPrimitiveTextures} from '../gltf-utils/gltf-texture-storage';
+import {getPropertyTable} from './EXT_structural_metadata';
 
-/** Extension name */
-const EXT_MESH_FEATURES = 'EXT_mesh_features';
+import {EXTENSION_NAME_EXT_MESH_FEATURES} from '../types/gltf-ext-mesh-features-schema';
 
-export const name = EXT_MESH_FEATURES;
+export const name = EXTENSION_NAME_EXT_MESH_FEATURES;
 
-export async function decode(gltfData: {json: GLTF}): Promise<void> {
+export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
-  decodeExtMeshFeatures(scenegraph);
+  decodeExtMeshFeatures(scenegraph, options);
 }
 
 /**
  * Decodes feature metadata from extension
  * @param scenegraph
  */
-function decodeExtMeshFeatures(scenegraph: GLTFScenegraph): void {
-  const extension: GLTF_EXT_mesh_features | null = scenegraph.getExtension(EXT_MESH_FEATURES);
-  if (!extension) return;
-
-// TODO: Check it after merge!
-
-// Temp - to compile...
-  let propertyTable: GLTF_EXT_feature_metadata_FeatureTable = { count: 0};
-
-  // TODO: temp to compile...
-  const schemaClasses = []; //extension.schema?.classes;
-  const featureIds: GLTF_EXT_mesh_features_featureId[] = extension.featureIds;
-
-// Actuall featureIds is always here!
-  if (featureIds) {
-    /*
-     * TODO add support for featureTextures
-     * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#feature-textures
-     */
-    // eslint-disable-next-line no-console
-    console.warn('featureTextures is not yet supported in the "EXT_feature_metadata" extension.');
+/* eslint max-depth: ["error", 6]*/
+function decodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFLoaderOptions): void {
+  // Iterate through all meshes/primitives.
+  const json = scenegraph.gltf.json;
+  if (!json.meshes) {
+    return;
   }
 
-  if (schemaClasses && propertyTable) {
-    for (const schemaName in schemaClasses) {
-      const schemaClass = schemaClasses[schemaName];
-      if (propertyTable) {
-        //      const featureTable = findFeatureTableByName(propertyTable);
+  const featureTextureTable: number[] = [];
 
-        //      if (featureTable) {
-        handlePropertyTableProperties(scenegraph, propertyTable, schemaClass);
-        //      }
+  for (const mesh of json.meshes) {
+    for (const primitive of mesh.primitives) {
+      const extension = primitive.extensions?.[EXTENSION_NAME_EXT_MESH_FEATURES];
+      if (extension) {
+        extension.customMeshFeatures = [];
+        const featureIds: GLTF_EXT_mesh_features_featureId[] = extension.featureIds;
+
+        if (!featureIds) return;
+        for (const featureId of featureIds) {
+          if (typeof featureId.texture !== 'undefined' && options.gltf?.loadImages) {
+            let propTable;
+            if (typeof featureId.propertyTable === 'number') {
+              propTable = getPropertyTable(scenegraph, featureId.propertyTable);
+            }
+            processPrimitiveTextures(
+              scenegraph,
+              propTable.name,
+              featureId.texture,
+              propTable.data,
+              featureTextureTable,
+              primitive,
+              extension
+            );
+            extension.customMeshFeatures.push(propTable.name);
+          }
+          if (typeof featureId.attribute !== 'undefined') {
+            // TODO
+          }
+        }
       }
     }
   }
-}
-
-/**
- * Navigate throw all properies in feature table and gets properties data.
- * @param scenegraph
- * @param featureTable
- * @param schemaClass
- */
-function handlePropertyTableProperties(
-  scenegraph: GLTFScenegraph,
-  featureTable: GLTF_EXT_feature_metadata_FeatureTable,
-  schemaClass: GLTF_EXT_feature_metadata_Class
-): void {
-  for (const propertyName in schemaClass.properties) {
-    const schemaProperty = schemaClass.properties[propertyName];
-    const featureTableProperty = featureTable?.properties?.[propertyName];
-    const numberOfFeatures = featureTable.count;
-
-    if (featureTableProperty) {
-      const data = getPropertyDataFromBinarySource(
-        scenegraph,
-        schemaProperty,
-        numberOfFeatures,
-        featureTableProperty
-      );
-      featureTableProperty.data = data;
-    }
-  }
-}
-
-/**
- * Decode properties from binary sourse based on property type.
- * @param scenegraph
- * @param schemaProperty
- * @param numberOfFeatures
- * @param featureTableProperty
- */
-function getPropertyDataFromBinarySource(
-  scenegraph: GLTFScenegraph,
-  schemaProperty: GLTF_EXT_feature_metadata_ClassProperty,
-  numberOfFeatures: number,
-  featureTableProperty: GLTF_EXT_feature_metadata_FeatureTableProperty
-): Uint8Array | string[] {
-  const bufferView = featureTableProperty.bufferView;
-  // TODO think maybe we shouldn't get data only in Uint8Array format.
-  let data: Uint8Array | string[] = scenegraph.getTypedArrayForBufferView(bufferView);
-
-  switch (schemaProperty.type) {
-    case 'STRING': {
-      // stringOffsetBufferView should be available for string type.
-      const stringOffsetBufferView = featureTableProperty.stringOffsetBufferView!;
-      const offsetsData = scenegraph.getTypedArrayForBufferView(stringOffsetBufferView);
-      data = getStringAttributes(data, offsetsData, numberOfFeatures);
-      break;
-    }
-    default:
-  }
-
-  return data;
-}
-
-/**
- * Find the feature table by class name.
- * @param featureTables
- * @param schemaClassName
- */
-// function findFeatureTableByName(
-//   featureTables: {[key: string]: EXT_feature_metadata_feature_table},
-//   schemaClassName: string
-// ): EXT_feature_metadata_feature_table | null {
-//   for (const featureTableName in featureTables) {
-//     const featureTable = featureTables[featureTableName];
-
-//     if (featureTable.class === schemaClassName) {
-//       return featureTable;
-//     }
-//   }
-
-//   return null;
-// }
-
-/**
- * Getting string attributes from binary data.
- * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#strings
- * @param data
- * @param offsetsData
- * @param stringsCount
- */
-function getStringAttributes(
-  data: Uint8Array,
-  offsetsData: Uint8Array,
-  stringsCount: number
-): string[] {
-  const stringsArray: string[] = [];
-  const textDecoder = new TextDecoder('utf8');
-
-  let stringOffset = 0;
-  const bytesPerStringSize = 4;
-
-  for (let index = 0; index < stringsCount; index++) {
-    // TODO check if it is multiplication on bytesPerStringSize is valid operation?
-    const stringByteSize =
-      offsetsData[(index + 1) * bytesPerStringSize] - offsetsData[index * bytesPerStringSize];
-    const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
-    const stringAttribute = textDecoder.decode(stringData);
-
-    stringsArray.push(stringAttribute);
-    stringOffset += stringByteSize;
-  }
-
-  return stringsArray;
 }

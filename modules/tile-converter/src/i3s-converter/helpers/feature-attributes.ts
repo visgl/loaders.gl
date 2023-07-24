@@ -42,9 +42,11 @@ export function flattenPropertyTableByFeatureIds(
 function getPropertiesByFeatureIds(properties: any[], featureIds: number[]): any[] {
   const resultProperties: any = [];
 
-  for (const featureId of featureIds) {
-    const property = properties[featureId] || null;
-    resultProperties.push(property);
+  if (properties) {
+    for (const featureId of featureIds) {
+      const property = properties[featureId] || null;
+      resultProperties.push(property);
+    }
   }
 
   return resultProperties;
@@ -64,7 +66,7 @@ export function checkPropertiesLength(
   let needFlatten = false;
 
   for (const attribute of Object.values(propertyTable)) {
-    if (featureIds.length !== attribute.length) {
+    if (!featureIds || !attribute || featureIds.length !== attribute.length) {
       needFlatten = true;
     }
   }

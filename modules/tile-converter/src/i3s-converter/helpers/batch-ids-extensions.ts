@@ -4,6 +4,9 @@ import type {
   GLTF_EXT_feature_metadata_FeatureIdTexture,
   GLTF_EXT_feature_metadata_Primitive
 } from '@loaders.gl/gltf';
+
+import type {GLTF_EXT_mesh_features_featureId} from '@loaders.gl/gltf';
+
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../../i3s-attributes-worker';
 
@@ -38,8 +41,12 @@ export function handleBatchIdsExtensions(
           images
         );
       case EXT_MESH_FEATURES:
-        console.warn('EXT_mesh_features extension is not supported yet');
-        return [];
+        //        console.warn('EXT_mesh_features extension is not supported yet');
+        return handleExtMeshFeaturesExtension(
+          attributes,
+          extensionData as GLTF_EXT_mesh_features_featureId, //GLTF_EXT_feature_metadata_Primitive,
+          images
+        );
       default:
         return [];
     }
@@ -48,6 +55,45 @@ export function handleBatchIdsExtensions(
   return [];
 }
 
+function handleExtMeshFeaturesExtension(
+  attributes: {
+    [key: string]: GLTFAccessorPostprocessed;
+  },
+  extFeatureMetadata: GLTF_EXT_mesh_features_featureId,
+  images: (TextureImageProperties | null)[]
+): NumericArray {
+  // Take only first extension object to get batchIds attribute name.
+  const customMeshFeatures = extFeatureMetadata?.customMeshFeatures;
+
+  if (customMeshFeatures && customMeshFeatures.length) {
+    // Let's use the first element of the array
+    // TODO: What to do with others if any?
+    const batchIdsAttribute = attributes[customMeshFeatures[0]];
+    return batchIdsAttribute.value;
+  }
+
+  // // Take only first extension object to get batchIds attribute name.
+  // const featureIdTexture =
+  //   extFeatureMetadata?.featureIdTextures && extFeatureMetadata?.featureIdTextures[0];
+
+  // if (featureIdTexture) {
+  //   const textureAttributeIndex = featureIdTexture?.featureIds?.texture?.texCoord || 0;
+  //   const textCoordAttribute = `TEXCOORD_${textureAttributeIndex}`;
+  //   const textureCoordinates = attributes[textCoordAttribute].value;
+  //   return generateBatchIdsFromTexture(featureIdTexture, textureCoordinates, images);
+  // }
+
+  // // Take only first extension texture to get batchIds from the root EXT_feature_metadata object.
+  // const featureTexture =
+  //   extFeatureMetadata?.featureTextures && extFeatureMetadata?.featureTextures[0];
+
+  // if (featureTexture) {
+  //   const batchIdsAttribute = attributes[featureTexture];
+  //   return batchIdsAttribute.value;
+  // }
+
+  return [];
+}
 /**
  * Get batchIds from EXT_feature_metadata extension.
  * Docs - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata

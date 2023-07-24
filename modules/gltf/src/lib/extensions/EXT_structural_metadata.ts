@@ -1,24 +1,22 @@
 /* eslint-disable camelcase */
-import type {GLTF} from '../types/gltf-json-schema';
-
-import {GLTFScenegraph} from '../api/gltf-scenegraph';
-import {
-  GLTF_EXT_feature_metadata_Class,
-  GLTF_EXT_feature_metadata_ClassProperty,
-  EXT_structural_metadata_property_table,
+import type {GLTF, GLTFTextureInfoMetadata, GLTFMeshPrimitive} from '../types/gltf-json-schema';
+import type {
+  GLTF_EXT_structural_metadata_Schema,
+  GLTF_EXT_structural_metadata_ClassProperty,
+  GLTF_EXT_structural_metadata_Enum,
+  GLTF_EXT_structural_metadata_EnumValue,
+  GLTF_EXT_structural_metadata_PropertyTable,
   GLTF_EXT_structural_metadata,
-  EXT_structural_metadata_property_texture,
-  EXT_structural_metadata_property_table_property,
-  GLTFMeshPrimitive,
-  GLTFTextureInfoExtStructural
-} from '../types/gltf-json-schema';
+  GLTF_EXT_structural_metadata_PropertyTexture,
+  GLTF_EXT_structural_metadata_PropertyTable_Property
+} from '../types/gltf-ext-structural-metadata-schema';
+
+import {EXTENSION_NAME_EXT_STRUCTURAL_METADATA} from '../types/gltf-ext-structural-metadata-schema';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
 
-/** Extension name */
-const EXT_STRUCTURAL_METADATA = 'EXT_structural_metadata';
-
-export const name = EXT_STRUCTURAL_METADATA;
+export const name = EXTENSION_NAME_EXT_STRUCTURAL_METADATA;
 
 export async function decode(gltfData: {json: GLTF}): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
@@ -30,8 +28,9 @@ export async function decode(gltfData: {json: GLTF}): Promise<void> {
  * @param scenegraph
  */
 function decodeExtStructuralMetadata(scenegraph: GLTFScenegraph): void {
-  const extension: GLTF_EXT_structural_metadata | null =
-    scenegraph.getExtension(EXT_STRUCTURAL_METADATA);
+  const extension: GLTF_EXT_structural_metadata | null = scenegraph.getExtension(
+    EXTENSION_NAME_EXT_STRUCTURAL_METADATA
+  );
   if (!extension) return;
 
   const schemaClasses = extension?.schema?.classes;
@@ -63,13 +62,13 @@ function decodeExtStructuralMetadata(scenegraph: GLTFScenegraph): void {
 
 function processPrimitivePropertyTextures(
   scenegraph: GLTFScenegraph,
-  propertyTextures: EXT_structural_metadata_property_texture[] | undefined,
+  propertyTextures: GLTF_EXT_structural_metadata_PropertyTexture[] | undefined,
   primitive: GLTFMeshPrimitive,
   extension: GLTF_EXT_structural_metadata // top-level extension
 ): void {
   if (!propertyTextures) return;
   const primitivePropertyTextureIndices =
-    primitive.extensions?.[EXT_STRUCTURAL_METADATA]?.propertyTextures;
+    primitive.extensions?.[EXTENSION_NAME_EXT_STRUCTURAL_METADATA]?.propertyTextures;
   if (!primitivePropertyTextureIndices) return;
 
   for (const primitivePropertyTextureIndex of primitivePropertyTextureIndices) {
@@ -84,9 +83,10 @@ function processPrimitivePropertyTextures(
   }
 }
 
+// eslint-disable-next-line max-statements
 function processTexture(
   scenegraph: GLTFScenegraph,
-  propertyTexture: EXT_structural_metadata_property_texture, // propertyTexture definition taken from the top-level extension
+  propertyTexture: GLTF_EXT_structural_metadata_PropertyTexture, // propertyTexture definition taken from the top-level extension
   primitivePropertyTextureIndex: number,
   primitive: GLTFMeshPrimitive,
   extension: GLTF_EXT_structural_metadata // top-level extension
@@ -113,12 +113,12 @@ function processTexture(
   */
   const className = propertyTexture.class;
   for (const propName in propertyTexture.properties) {
-    const attributeName = `${className  }_${  propName}`;
-    const textureInfoTopLevel: GLTFTextureInfoExtStructural | undefined =
+    const attributeName = `${className}_${propName}`;
+    const textureInfoTopLevel: GLTFTextureInfoMetadata | undefined =
       extension.propertyTextures?.[primitivePropertyTextureIndex].properties?.[propName];
     if (!textureInfoTopLevel) return;
     // The data taken from all meshes/primitives (the same property, e.g. "speed" or "direction") will be combined into one array and saved in textureInfoTopLevel.data
-    // Initially textureInfoTopLevel.data will be initialized with an ampty array.
+    // Initially textureInfoTopLevel.data will be initialized with an empty array.
     if (!textureInfoTopLevel.data) {
       textureInfoTopLevel.data = [];
     }
@@ -217,24 +217,44 @@ function processTexture(
  */
 function handlePropertyTableProperties(
   scenegraph: GLTFScenegraph,
-  propertyTable: EXT_structural_metadata_property_table, // propertyTable definition taken from the top-level extension
-  schemaClass: GLTF_EXT_feature_metadata_Class
+  propertyTable: GLTF_EXT_structural_metadata_PropertyTable, // propertyTable definition taken from the top-level extension
+  schema: GLTF_EXT_structural_metadata_Schema
 ): void {
+  const schemaClass = schema.classes?.[propertyTable.class];
+  if (!schemaClass) return;
+
+  propertyTable.data = [];
+  const numberOfProperties = propertyTable.count;
+
   for (const propertyName in schemaClass.properties) {
     const schemaProperty = schemaClass.properties[propertyName];
-    const propertyTableProperty: EXT_structural_metadata_property_table_property | undefined =
+    const propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property | undefined =
       propertyTable?.properties?.[propertyName];
-    const numberOfProperties = propertyTable.count;
 
     if (propertyTableProperty) {
       const data = getPropertyDataFromBinarySource(
         scenegraph,
+        schema,
         schemaProperty,
         numberOfProperties,
         propertyTableProperty
       );
       propertyTableProperty.data = data;
     }
+  }
+
+  for (let i = 0; i < numberOfProperties; i++) {
+    const data: (number[] | string[])[] = [];
+    for (const propertyName in schemaClass.properties) {
+      const propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property | undefined =
+        propertyTable?.properties?.[propertyName];
+
+      if (propertyTableProperty) {
+        const d = propertyTableProperty.data?.[i] as number[] | string[];
+        data.push(d);
+      }
+    }
+    propertyTable.data.push(data);
   }
 }
 
@@ -243,24 +263,50 @@ function handlePropertyTableProperties(
  * @param scenegraph
  * @param schemaProperty
  * @param numberOfProperties
- * @param featureTableProperty
+ * @param propertyTableProperty
  */
 function getPropertyDataFromBinarySource(
   scenegraph: GLTFScenegraph,
-  schemaProperty: GLTF_EXT_feature_metadata_ClassProperty,
+  schema: GLTF_EXT_structural_metadata_Schema,
+  schemaProperty: GLTF_EXT_structural_metadata_ClassProperty,
   numberOfProperties: number,
-  featureTableProperty: EXT_structural_metadata_property_table_property
-): Uint8Array | string[] {
-  const bufferView = featureTableProperty.values;
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property
+): string[] | number[] {
+  const bufferView = propertyTableProperty.values;
   // TODO think maybe we shouldn't get data only in Uint8Array format.
-  let data: Uint8Array | string[] = scenegraph.getTypedArrayForBufferView(bufferView);
+  const valuesData: Uint8Array = scenegraph.getTypedArrayForBufferView(bufferView);
+  let data: string[] | number[] = [];
 
   switch (schemaProperty.type) {
     case 'STRING': {
       // stringOffsets should be available for string type.
-      const stringOffsetBufferView = featureTableProperty.stringOffsets!;
+      const stringOffsetBufferView = propertyTableProperty.stringOffsets!;
       const offsetsData = scenegraph.getTypedArrayForBufferView(stringOffsetBufferView);
-      data = getStringAttributes(data, offsetsData, numberOfProperties);
+      data = getStringAttributes(valuesData, offsetsData, numberOfProperties);
+      break;
+    }
+    case 'ENUM': {
+      let offsetsData;
+      if (propertyTableProperty.arrayOffsets) {
+        const arrayOffsetBufferView = propertyTableProperty.arrayOffsets;
+        offsetsData = scenegraph.getTypedArrayForBufferView(arrayOffsetBufferView);
+      }
+      data = getEnumAttributes(valuesData, schema, schemaProperty, offsetsData, numberOfProperties);
+      break;
+    }
+    case 'SCALAR': {
+      let offsetsData;
+      if (propertyTableProperty.arrayOffsets) {
+        const arrayOffsetBufferView = propertyTableProperty.arrayOffsets;
+        offsetsData = scenegraph.getTypedArrayForBufferView(arrayOffsetBufferView);
+      }
+      data = getScalarAttributes(
+        valuesData,
+        schema,
+        schemaProperty,
+        offsetsData,
+        numberOfProperties
+      );
       break;
     }
     default:
@@ -275,9 +321,9 @@ function getPropertyDataFromBinarySource(
  * @param schemaClassName
  */
 function findPropertyTableByClass(
-  featureTables: EXT_structural_metadata_property_table[],
+  featureTables: GLTF_EXT_structural_metadata_PropertyTable[],
   schemaClassName: string
-): EXT_structural_metadata_property_table | null {
+): GLTF_EXT_structural_metadata_PropertyTable | null {
   for (let i = 0, len = featureTables.length; i < len; i++) {
     const featureTable = featureTables[i];
 
@@ -305,19 +351,11 @@ function getStringAttributes(
   const textDecoder = new TextDecoder('utf8');
 
   let stringOffset = 0;
-//  const bytesPerStringSize = 4;
-
   for (let index = 0; index < stringsCount; index++) {
-    // TODO check if it is multiplication on bytesPerStringSize is valid operation?
-    // const stringByteSize =
-    //   offsetsData[(index + 1) * bytesPerStringSize] - offsetsData[index * bytesPerStringSize];
+    const stringByteSize = offsetsData[index + 1] - offsetsData[index];
 
-    const stringByteSize =
-      offsetsData[(index + 1)] - offsetsData[index];
-
-    // check the offset
     if (stringByteSize + stringOffset > data.length) {
-      console.log(`Incorrect string offset: ${stringOffset}, ${stringByteSize}`);
+      //      console.log(`Incorrect string offset: ${stringOffset}, ${stringByteSize}`);
       continue;
     }
     const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
@@ -328,6 +366,64 @@ function getStringAttributes(
   }
 
   return stringsArray;
+}
+
+function getEnumAttributes(
+  valuesData: Uint8Array,
+  schema: GLTF_EXT_structural_metadata_Schema,
+  schemaProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  offsetsData: Uint8Array | undefined,
+  numberOfAttributeValues: number
+): string[] {
+  const attributeValueArray: string[] = [];
+
+  const enumType = schemaProperty.enumType;
+  if (!enumType) return [];
+
+  const enumEntry: GLTF_EXT_structural_metadata_Enum | undefined = schema.enums?.[enumType];
+  if (!enumEntry) return [];
+
+  for (let index = 0; index < numberOfAttributeValues; index++) {
+    const valuesIndex = offsetsData?.[index] || 0;
+    const valueOfEnum = valuesData[valuesIndex];
+    const enumValue = getEnumByValue(enumEntry, valueOfEnum);
+    // TODO: Is the name or the value of the Enum expected to be used here?
+    if (enumValue) {
+      attributeValueArray.push(enumValue.name);
+    }
+  }
+
+  return attributeValueArray;
+}
+
+function getEnumByValue(
+  enumEntry: GLTF_EXT_structural_metadata_Enum,
+  value: number
+): GLTF_EXT_structural_metadata_EnumValue | null {
+  for (const enumValue of enumEntry.values) {
+    if (enumValue.value === value) {
+      return enumValue;
+    }
+  }
+
+  return null;
+}
+
+function getScalarAttributes(
+  valuesData: Uint8Array,
+  schema: GLTF_EXT_structural_metadata_Schema,
+  schemaProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  offsetsData: Uint8Array | undefined,
+  numberOfAttributeValues: number
+): number[] {
+  const attributeValueArray: number[] = [];
+
+  for (let index = 0; index < numberOfAttributeValues; index++) {
+    const valuesIndex = offsetsData?.[index] || 0;
+    const value = valuesData[valuesIndex];
+    attributeValueArray.push(value);
+  }
+  return attributeValueArray;
 }
 
 function getImageValueByCoordinates(
@@ -396,4 +492,22 @@ function coordinatesToOffset(
 function emod(n: number): number {
   const a = ((n % 1) + 1) % 1;
   return a;
+}
+
+export function getPropertyTable(scenegraph: GLTFScenegraph, propertyTableIndex: number): any {
+  const extensionStructuralMetadata: GLTF_EXT_structural_metadata | null = scenegraph.getExtension(
+    EXTENSION_NAME_EXT_STRUCTURAL_METADATA
+  );
+  if (!extensionStructuralMetadata) return null;
+  if (!extensionStructuralMetadata.propertyTables || !extensionStructuralMetadata.schema)
+    return null;
+
+  const propertyTable: GLTF_EXT_structural_metadata_PropertyTable =
+    extensionStructuralMetadata.propertyTables[propertyTableIndex];
+  const schemaClass = extensionStructuralMetadata?.schema?.classes?.[propertyTable.class];
+  if (propertyTable && schemaClass) {
+    handlePropertyTableProperties(scenegraph, propertyTable, extensionStructuralMetadata.schema);
+    return propertyTable;
+  }
+  return null;
 }

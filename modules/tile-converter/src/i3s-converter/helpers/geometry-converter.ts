@@ -2,7 +2,6 @@ import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {
   GLTF_EXT_mesh_features,
   GLTF_EXT_structural_metadata,
-
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
@@ -1389,12 +1388,18 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 function getAttributeType(key: string, attributeStorageInfo: any[]): string {
   const attribute = attributeStorageInfo.find((attr) => attr.name === key);
   if (!attribute) {
-    console.log(`attribute is null, key=${key}, attributeStorageInfo=${JSON.stringify(attributeStorageInfo, null, 2)}`);
-    return "";
+    console.log(
+      `attribute is null, key=${key}, attributeStorageInfo=${JSON.stringify(
+        attributeStorageInfo,
+        null,
+        2
+      )}`
+    );
+    return '';
   }
   if (!attribute.attributeValues) {
     console.log(`attributeValues is null, attribute=${attribute}`);
-    return "";
+    return '';
   }
   return attribute.attributeValues.valueType;
 }
@@ -1588,11 +1593,15 @@ export function getPropertyTable(tileContent: Tiles3DTileContent | null): Featur
       return null;
     }
     case EXT_FEATURE_METADATA: {
-      propertyTable = getPropertyTableFromExtFeatureMetadata(extension as GLTF_EXT_feature_metadata_GLTF);
+      propertyTable = getPropertyTableFromExtFeatureMetadata(
+        extension as GLTF_EXT_feature_metadata_GLTF
+      );
       return propertyTable;
     }
     case EXT_STRUCTURAL_METADATA: {
-      propertyTable = getPropertyTableFromExtStructuralMetadata(extension as GLTF_EXT_structural_metadata);
+      propertyTable = getPropertyTableFromExtStructuralMetadata(
+        extension as GLTF_EXT_structural_metadata
+      );
       return propertyTable;
     }
     default:
@@ -1606,9 +1615,18 @@ export function getPropertyTable(tileContent: Tiles3DTileContent | null): Featur
  */
 function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
   extensionName: null | string;
-  extension: string | GLTF_EXT_feature_metadata_GLTF | GLTF_EXT_structural_metadata | GLTF_EXT_mesh_features | null;
+  extension:
+    | string
+    | GLTF_EXT_feature_metadata_GLTF
+    | GLTF_EXT_structural_metadata
+    | GLTF_EXT_mesh_features
+    | null;
 } {
-  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA, EXT_MESH_FEATURES];
+  const extensionsWithPropertyTables = [
+    EXT_FEATURE_METADATA,
+    EXT_STRUCTURAL_METADATA,
+    EXT_MESH_FEATURES
+  ];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
   if (!extensionsUsed) {
@@ -1687,7 +1705,6 @@ function getPropertyTableFromExtFeatureMetadata(
   );
   return null;
 }
-
 
 function getPropertyTableFromExtStructuralMetadata(
   extension: GLTF_EXT_structural_metadata
