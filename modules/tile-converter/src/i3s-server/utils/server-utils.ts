@@ -12,7 +12,7 @@ const debug = debugFactory('i3s-server:server');
 export function normalizePort(val: string): number | string | false {
   const chkPort = parseInt(val, 10);
 
-  if (isNaN(chkPort)) {
+  if (Number.isNaN(chkPort)) {
     // named pipe
     return val;
   }
