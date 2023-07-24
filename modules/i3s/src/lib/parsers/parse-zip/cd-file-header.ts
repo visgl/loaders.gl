@@ -1,4 +1,5 @@
 import {FileProvider} from './file-provider';
+import {ZipSignature} from './search-from-the-end';
 
 /**
  * zip central directory file header info
@@ -9,6 +10,8 @@ export type ZipCDFileHeader = {
   compressedSize: bigint;
   /** Uncompressed size */
   uncompressedSize: bigint;
+  /** Extra field size size */
+  extraFieldLength: number;
   /** File name length */
   fileNameLength: number;
   /** File name */
@@ -19,6 +22,17 @@ export type ZipCDFileHeader = {
   localHeaderOffset: bigint;
 };
 
+const offsets = {
+  CD_COMPRESSED_SIZE_OFFSET: 20n,
+  CD_UNCOMPRESSED_SIZE_OFFSET: 24n,
+  CD_FILE_NAME_LENGTH_OFFSET: 28n,
+  CD_EXTRA_FIELD_LENGTH_OFFSET: 30n,
+  CD_LOCAL_HEADER_OFFSET_OFFSET: 42n,
+  CD_FILE_NAME_OFFSET: 46n
+};
+
+export const signature: ZipSignature = [0x50, 0x4b, 0x01, 0x02];
+
 /**
  * Parses central directory file header of zip file
  * @param headerOffset - offset in the archive where header starts
@@ -28,15 +42,14 @@ export type ZipCDFileHeader = {
 export const parseZipCDFileHeader = async (
   headerOffset: bigint,
   buffer: FileProvider
-): Promise<ZipCDFileHeader> => {
-  const offsets = {
-    CD_COMPRESSED_SIZE_OFFSET: 20n,
-    CD_UNCOMPRESSED_SIZE_OFFSET: 24n,
-    CD_FILE_NAME_LENGTH_OFFSET: 28n,
-    CD_EXTRA_FIELD_LENGTH_OFFSET: 30n,
-    CD_LOCAL_HEADER_OFFSET_OFFSET: 42n,
-    CD_FILE_NAME_OFFSET: 46n
-  };
+): Promise<ZipCDFileHeader | undefined> => {
+  if (
+    Buffer.from(await buffer.slice(headerOffset, headerOffset + 4n)).compare(
+      Buffer.from(signature)
+    ) !== 0
+  ) {
+    return Promise.resolve(undefined);
+  }
 
   let compressedSize = BigInt(
     await buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET)
@@ -44,6 +57,10 @@ export const parseZipCDFileHeader = async (
 
   let uncompressedSize = BigInt(
     await buffer.getUint32(headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET)
+  );
+
+  const extraFieldLength = await buffer.getUint16(
+    headerOffset + offsets.CD_EXTRA_FIELD_LENGTH_OFFSET
   );
 
   const fileNameLength = await buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET);
@@ -80,6 +97,7 @@ export const parseZipCDFileHeader = async (
   return {
     compressedSize,
     uncompressedSize,
+    extraFieldLength,
     fileNameLength,
     fileName,
     extraOffset,

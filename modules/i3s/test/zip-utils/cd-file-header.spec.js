@@ -8,9 +8,9 @@ test('SLPKLoader#central directory file header parse', async (t) => {
     78n,
     new DataViewFileProvider(new DataView(DATA_ARRAY.buffer))
   );
-  t.deepEqual(cdFileHeader.compressedSize, 39n);
-  t.deepEqual(cdFileHeader.fileNameLength, 9);
-  t.deepEqual(cdFileHeader.fileName, 'test.json');
-  t.deepEqual(cdFileHeader.localHeaderOffset, 0n);
+  t.deepEqual(cdFileHeader?.compressedSize, 39n);
+  t.deepEqual(cdFileHeader?.fileNameLength, 9);
+  t.deepEqual(cdFileHeader?.fileName, 'test.json');
+  t.deepEqual(cdFileHeader?.localHeaderOffset, 0n);
   t.end();
 });
