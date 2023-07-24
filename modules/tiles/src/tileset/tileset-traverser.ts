@@ -237,7 +237,6 @@ export class TilesetTraverser {
     if (this.shouldLoadTile(tile)) {
       tile._requestedFrame = frameState.frameNumber;
       tile._loadPriority = tile._getLoadPriority();
-      tile._displayPriority = tile._getDisplayPriority();
       this.requestedTiles[tile.id] = tile;
     }
   }
@@ -245,6 +244,12 @@ export class TilesetTraverser {
   // cache tile
   touchTile(tile: Tile3D, frameState: FrameState): void {
     tile.tileset._cache.touch(tile);
+
+    // update priority if we havn't already this frame
+    if (tile._touchedFrame !== frameState.frameNumber) {
+      tile._displayPriority = tile._getDisplayPriority();
+    }
+
     tile._touchedFrame = frameState.frameNumber;
   }
 

@@ -74,6 +74,7 @@ export type Tileset3DProps = {
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
   contentLoader?: (tile: Tile3D) => Promise<void>;
   onTraversalComplete?: (selectedTiles: Tile3D[]) => Tile3D[];
+  displayPriorityFunc?: (tile: Tile3D) => number;
 };
 
 type Props = {
