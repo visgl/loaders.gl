@@ -3,11 +3,16 @@ import fs from 'fs';
 
 const {promises} = fs;
 
-const I3S_LAYER_PATH = process.env.I3sLayerPath || ''; // eslint-disable-line no-process-env, no-undef
-const FULL_LAYER_PATH = path.join(process.cwd(), I3S_LAYER_PATH); // eslint-disable-line no-undef
+const I3S_LAYER_PATH = process.env.I3sLayerPath || '';
 
-export async function getFileNameByUrl(url) {
+/**
+ * Get local file name by input HTTP URL
+ * @param url - I3S HTTP service url
+ * @returns - local file name
+ */
+export async function getFileNameByUrl(url: string): Promise<string | null> {
   const extensions = ['json', 'bin', 'jpg', 'jpeg', 'png', 'bin.dds', 'ktx2'];
+  const FULL_LAYER_PATH = path.join(process.cwd(), I3S_LAYER_PATH);
   for (const ext of extensions) {
     const fileName = `${FULL_LAYER_PATH}${url}/index.${ext}`;
     try {

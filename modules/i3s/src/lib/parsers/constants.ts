@@ -1,17 +1,17 @@
 import GL from '@luma.gl/constants';
-import {DATA_TYPE} from '../../types';
+import {I3SAttributeType} from '../../types';
 
 export function getConstructorForDataFormat(dataType: string) {
   switch (dataType) {
-    case DATA_TYPE.UInt8:
+    case I3SAttributeType.UInt8:
       return Uint8Array;
-    case DATA_TYPE.UInt16:
+    case I3SAttributeType.UInt16:
       return Uint16Array;
-    case DATA_TYPE.UInt32:
+    case I3SAttributeType.UInt32:
       return Uint32Array;
-    case DATA_TYPE.Float32:
+    case I3SAttributeType.Float32:
       return Float32Array;
-    case DATA_TYPE.UInt64:
+    case I3SAttributeType.UInt64:
       return Float64Array;
     default:
       throw new Error(`parse i3s tile content: unknown type of data: ${dataType}`);
@@ -32,18 +32,18 @@ export const GL_TYPE_MAP: {[key: string]: number} = {
  */
 export function sizeOf(dataType: string): number {
   switch (dataType) {
-    case DATA_TYPE.UInt8:
+    case I3SAttributeType.UInt8:
       return 1;
-    case DATA_TYPE.UInt16:
-    case DATA_TYPE.Int16:
+    case I3SAttributeType.UInt16:
+    case I3SAttributeType.Int16:
       return 2;
-    case DATA_TYPE.UInt32:
-    case DATA_TYPE.Int32:
-    case DATA_TYPE.Float32:
+    case I3SAttributeType.UInt32:
+    case I3SAttributeType.Int32:
+    case I3SAttributeType.Float32:
       return 4;
-    case DATA_TYPE.UInt64:
-    case DATA_TYPE.Int64:
-    case DATA_TYPE.Float64:
+    case I3SAttributeType.UInt64:
+    case I3SAttributeType.Int64:
+    case I3SAttributeType.Float64:
       return 8;
     default:
       throw new Error(`parse i3s tile content: unknown size of data: ${dataType}`);

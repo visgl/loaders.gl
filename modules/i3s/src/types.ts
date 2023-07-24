@@ -2,7 +2,7 @@ import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
 
-export enum DATA_TYPE {
+export enum I3SAttributeType {
   UInt8 = 'UInt8',
   UInt16 = 'UInt16',
   UInt32 = 'UInt32',
@@ -690,20 +690,24 @@ type Domain = {
  * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/store.cmn.md
  */
 type Store = {
-  id: string | number;
+  id?: string | number;
   profile: string;
   version: number | string;
-  resourcePattern: string[];
-  rootNode: string;
-  extent: number[];
-  indexCRS: string;
-  vertexCRS: string;
-  normalReferenceFrame: string;
-  attributeEncoding: string;
-  textureEncoding: string[];
-  lodType: string;
-  lodModel: string;
+  resourcePattern?: string[];
+  rootNode?: string;
+  extent?: number[];
+  indexCRS?: string;
+  vertexCRS?: string;
+  normalReferenceFrame?: string;
+  lodType?: string;
+  lodModel?: string;
   defaultGeometrySchema: DefaultGeometrySchema;
+  nidEncoding?: string;
+  textureEncoding?: string[];
+  featureEncoding?: string;
+  geometryEncoding?: string;
+  attributeEncoding?: string;
+  indexingScheme?: string;
 };
 /**
  * Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/defaultGeometrySchema.cmn.md
@@ -726,15 +730,15 @@ type DefaultGeometrySchema = {
 export type HeaderAttribute = {
   property: HeaderAttributeProperty.vertexCount | HeaderAttributeProperty.featureCount | string;
   type:
-    | DATA_TYPE.UInt8
-    | DATA_TYPE.UInt16
-    | DATA_TYPE.UInt32
-    | DATA_TYPE.UInt64
-    | DATA_TYPE.Int16
-    | DATA_TYPE.Int32
-    | DATA_TYPE.Int64
-    | DATA_TYPE.Float32
-    | DATA_TYPE.Float64;
+    | I3SAttributeType.UInt8
+    | I3SAttributeType.UInt16
+    | I3SAttributeType.UInt32
+    | I3SAttributeType.UInt64
+    | I3SAttributeType.Int16
+    | I3SAttributeType.Int32
+    | I3SAttributeType.Int64
+    | I3SAttributeType.Float32
+    | I3SAttributeType.Float64;
 };
 export enum HeaderAttributeProperty {
   vertexCount = 'vertexCount',
@@ -750,13 +754,13 @@ export type VertexAttribute = {
 export type GeometryAttribute = {
   byteOffset?: number;
   valueType:
-    | DATA_TYPE.UInt8
-    | DATA_TYPE.UInt16
-    | DATA_TYPE.Int16
-    | DATA_TYPE.Int32
-    | DATA_TYPE.Int64
-    | DATA_TYPE.Float32
-    | DATA_TYPE.Float64;
+    | I3SAttributeType.UInt8
+    | I3SAttributeType.UInt16
+    | I3SAttributeType.Int16
+    | I3SAttributeType.Int32
+    | I3SAttributeType.Int64
+    | I3SAttributeType.Float32
+    | I3SAttributeType.Float64;
   valuesPerElement: number;
 };
 export type I3SMeshAttributes = {
