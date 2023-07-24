@@ -29,7 +29,6 @@ export type {
   Histogram,
   ValueCount,
   BuildingSceneSublayer,
-  DATA_TYPE,
   OperationalLayer,
   TextureSetDefinitionFormats
 } from './types';

@@ -1,8 +1,8 @@
-const express = require('express');
-const {getFileByUrl} = require('../controllers/slpk-controller');
-const createSceneServer = require('../utils/create-scene-server');
+import express from 'express';
+import {getFileByUrl} from '../controllers/slpk-controller';
+import {createSceneServer} from '../utils/create-scene-server';
 
-const sceneServerRouter = express.Router();
+export const sceneServerRouter = express.Router();
 sceneServerRouter.get('*', async function (req, res, next) {
   const file = await getFileByUrl('/');
   if (file) {
@@ -15,7 +15,7 @@ sceneServerRouter.get('*', async function (req, res, next) {
   }
 });
 
-const router = express.Router();
+export const router = express.Router();
 router.get('*', async function (req, res, next) {
   console.log(req.path);
   const file = await getFileByUrl(req.path);
@@ -26,8 +26,3 @@ router.get('*', async function (req, res, next) {
     res.send('File not found');
   }
 });
-
-module.exports = {
-  sceneServerRouter,
-  router
-};
