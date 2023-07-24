@@ -106,7 +106,7 @@ export function limitSelectedTiles(
     return [tiles, []];
   }
 
-  tiles.sort((a, b) => a._screenPriority - b._screenPriority);
+  tiles.sort((a, b) => a._displayPriority - b._displayPriority);
 
   const selectedTiles: Tile3D[] = tiles.splice(0, maximumTilesSelected);
 

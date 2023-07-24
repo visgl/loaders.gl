@@ -74,6 +74,7 @@ export type Tileset3DProps = {
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
   contentLoader?: (tile: Tile3D) => Promise<void>;
   onTraversalComplete?: (selectedTiles: Tile3D[]) => Tile3D[];
+  displayPriorityFunc?: (tile: Tile3D) => number;
 };
 
 type Props = {
@@ -112,6 +113,8 @@ type Props = {
   contentLoader?: (tile: Tile3D) => Promise<void>;
   /** @todo I3S specific knowledge should be moved to I3S module */
   i3s: Record<string, any>;
+  /** Optional tile priority function */
+  displayPriorityFunc?: (tile: Tile3D) => number;
 };
 
 const DEFAULT_PROPS: Props = {
@@ -128,6 +131,7 @@ const DEFAULT_PROPS: Props = {
   onTileError: () => {},
   onTraversalComplete: (selectedTiles: Tile3D[]) => selectedTiles,
   contentLoader: undefined,
+  displayPriorityFunc: undefined,
   viewDistanceScale: 1.0,
   maximumScreenSpaceError: 8,
   loadTiles: true,

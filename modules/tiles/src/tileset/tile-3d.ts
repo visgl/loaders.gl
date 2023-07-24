@@ -118,7 +118,7 @@ export class Tile3D {
 
   // Used by traverser, cannot be marked private
   _loadPriority: number = 0;
-  _screenPriority: number = 0;
+  _displayPriority: number = 0;
   _selectedFrame: number = 0;
   _requestedFrame: number = 0;
   _selectionDepth: number = 0;
@@ -331,11 +331,15 @@ export class Tile3D {
     }
 
     // Map higher SSE to lower values (e.g. root tile is highest priority)
-    return this._getScreenPriority();
+    return this._getDisplayPriority();
   }
 
   // eslint-disable-next-line complexity
-  _getScreenPriority() {
+  _getDisplayPriority() {
+    if (this.tileset.options.displayPriorityFunc) {
+      return this.tileset.options.displayPriorityFunc(this);
+    }
+
     const traverser = this.tileset._traverser;
     const {skipLevelOfDetail} = traverser.options;
 
@@ -358,7 +362,7 @@ export class Tile3D {
     const rootScreenSpaceError = traverser.root ? traverser.root._screenSpaceError : 0.0;
 
     // Map higher SSE to lower values (e.g. root tile is highest priority)
-    return this._distanceToScreenCenter / Math.max(rootScreenSpaceError - screenSpaceError, 1e-7);
+    return Math.max(rootScreenSpaceError - screenSpaceError, 0);
   }
 
   /**
@@ -699,7 +703,7 @@ export class Tile3D {
     this._requestedFrame = 0;
 
     this._loadPriority = 0.0;
-    this._screenPriority = 0.0;
+    this._displayPriority = 0.0;
   }
 
   _getRefine(refine) {
