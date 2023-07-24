@@ -6,7 +6,10 @@ const {FileHandleProvider} = require('@loaders.gl/tile-converter');
 let slpkArchive;
 
 const loadArchive = async (fullLayerPath) => {
-  slpkArchive = await parseSLPK(await FileHandleProvider.from(fullLayerPath));
+  slpkArchive = await parseSLPK(await FileHandleProvider.from(fullLayerPath), (msg) =>
+    console.log(msg)
+  );
+  console.log('Server ready to use');
 };
 
 const I3S_LAYER_PATH = process.env.I3sLayerPath || ''; // eslint-disable-line no-process-env, no-undef

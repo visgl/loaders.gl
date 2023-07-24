@@ -12,15 +12,21 @@ import {HashElement, SLPKArchive, compareHashes} from './slpk-archieve';
  * @returns slpk file handler
  */
 
-export const parseSLPK = async (fileProvider: FileProvider): Promise<SLPKArchive> => {
+export const parseSLPK = async (
+  fileProvider: FileProvider,
+  cb?: (msg: string) => void
+): Promise<SLPKArchive> => {
   const hashCDOffset = await searchFromTheEnd(fileProvider, cdHeaderSignature);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 
   let hashData: HashElement[];
   if (cdFileHeader?.fileName !== '@specialIndexFileHASH128@') {
+    cb?.("SLPK doesn't contain hash file");
     hashData = await generateHashInfo(fileProvider);
+    cb?.('hash info has been composed according to central directory records');
   } else {
+    cb?.('SLPK contains hash file');
     const localFileHeader = await parseZipLocalFileHeader(
       cdFileHeader.localHeaderOffset,
       fileProvider

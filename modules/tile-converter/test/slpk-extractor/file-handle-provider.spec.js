@@ -22,7 +22,7 @@ test('FileHandleProvider#getUint8', async (t) => {
   t.end();
 });
 
-test('FileHandleProvider#local file header parse', async (t) => {
+test('FileHandleProvider#getUint16', async (t) => {
   if (!isBrowser) {
     const provider = await FileHandleProvider.from(SLPKUrl);
     t.equals(await provider.getUint16(0n), 19280);
@@ -30,7 +30,7 @@ test('FileHandleProvider#local file header parse', async (t) => {
   t.end();
 });
 
-test('FileHandleProvider#local file header parse', async (t) => {
+test('FileHandleProvider#getUint32', async (t) => {
   if (!isBrowser) {
     const provider = await FileHandleProvider.from(SLPKUrl);
     t.equals(await provider.getUint32(0n), 67324752);
@@ -38,10 +38,10 @@ test('FileHandleProvider#local file header parse', async (t) => {
   t.end();
 });
 
-test('FileHandleProvider#local file header parse', async (t) => {
+test('FileHandleProvider#getBigUint64', async (t) => {
   if (!isBrowser) {
     const provider = await FileHandleProvider.from(SLPKUrl);
-    t.equals(await provider.getBigUint64(0n), 67324752n);
+    t.equals(await provider.getBigUint64(0n), 193340853072n);
   }
   t.end();
 });
