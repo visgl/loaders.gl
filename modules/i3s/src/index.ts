@@ -33,7 +33,6 @@ export type {
   TextureSetDefinitionFormats
 } from './types';
 export type {FileProvider} from './lib/parsers/parse-zip/file-provider';
-export {I3SAttributeType} from './types';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
 

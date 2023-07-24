@@ -2,18 +2,6 @@ import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
 
-export enum I3SAttributeType {
-  UInt8 = 'UInt8',
-  UInt16 = 'UInt16',
-  UInt32 = 'UInt32',
-  UInt64 = 'UInt64',
-  Int16 = 'Int16',
-  Int32 = 'Int32',
-  Int64 = 'Int64',
-  Float32 = 'Float32',
-  Float64 = 'Float64'
-}
-
 export type COLOR = [number, number, number, number];
 
 /**
@@ -730,15 +718,15 @@ type DefaultGeometrySchema = {
 export type HeaderAttribute = {
   property: HeaderAttributeProperty.vertexCount | HeaderAttributeProperty.featureCount | string;
   type:
-    | I3SAttributeType.UInt8
-    | I3SAttributeType.UInt16
-    | I3SAttributeType.UInt32
-    | I3SAttributeType.UInt64
-    | I3SAttributeType.Int16
-    | I3SAttributeType.Int32
-    | I3SAttributeType.Int64
-    | I3SAttributeType.Float32
-    | I3SAttributeType.Float64;
+    | 'UInt8'
+    | 'UInt16'
+    | 'UInt32'
+    | 'UInt64'
+    | 'Int16'
+    | 'Int32'
+    | 'Int64'
+    | 'Float32'
+    | 'Float64';
 };
 export enum HeaderAttributeProperty {
   vertexCount = 'vertexCount',
@@ -753,14 +741,7 @@ export type VertexAttribute = {
 };
 export type GeometryAttribute = {
   byteOffset?: number;
-  valueType:
-    | I3SAttributeType.UInt8
-    | I3SAttributeType.UInt16
-    | I3SAttributeType.Int16
-    | I3SAttributeType.Int32
-    | I3SAttributeType.Int64
-    | I3SAttributeType.Float32
-    | I3SAttributeType.Float64;
+  valueType: 'UInt8' | 'UInt16' | 'Int16' | 'Int32' | 'Int64' | 'Float32' | 'Float64';
   valuesPerElement: number;
 };
 export type I3SMeshAttributes = {

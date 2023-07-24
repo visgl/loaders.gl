@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import {I3SAttributeType, SceneLayer3D} from '@loaders.gl/i3s';
+import {SceneLayer3D} from '@loaders.gl/i3s';
 import {createSceneServer} from '../../../src/i3s-server/utils/create-scene-server';
 
 test('tile-converter(i3s-server)#createSceneServer', async (t) => {
@@ -117,16 +117,16 @@ const LAYER: SceneLayer3D = {
     defaultGeometrySchema: {
       geometryType: 'triangles',
       header: [
-        {property: 'vertexCount', type: I3SAttributeType.UInt32},
-        {property: 'featureCount', type: I3SAttributeType.UInt32}
+        {property: 'vertexCount', type: 'UInt32'},
+        {property: 'featureCount', type: 'UInt32'}
       ],
       topology: 'PerAttributeArray',
       ordering: ['position', 'normal', 'uv0', 'color'],
       vertexAttributes: {
-        position: {valueType: I3SAttributeType.Float32, valuesPerElement: 3},
-        normal: {valueType: I3SAttributeType.Float32, valuesPerElement: 3},
-        uv0: {valueType: I3SAttributeType.Float32, valuesPerElement: 2},
-        color: {valueType: I3SAttributeType.UInt8, valuesPerElement: 4}
+        position: {valueType: 'Float32', valuesPerElement: 3},
+        normal: {valueType: 'Float32', valuesPerElement: 3},
+        uv0: {valueType: 'Float32', valuesPerElement: 2},
+        color: {valueType: 'UInt8', valuesPerElement: 4}
       },
       featureAttributeOrder: ['id', 'faceRange'],
       featureAttributes: {
