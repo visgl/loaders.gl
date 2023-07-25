@@ -2,9 +2,13 @@
 import type {GLTF} from '../types/gltf-json-schema';
 import {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLTF_EXT_mesh_features_featureId} from '../types/gltf-ext-mesh-features-schema';
+import type {GLTF_EXT_structural_metadata_PropertyTable} from '../types/gltf-ext-structural-metadata-schema';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
-import {processPrimitiveTextures} from '../gltf-utils/gltf-texture-storage';
+import {
+  getPrimitiveTextureData,
+  primitivePropertyDataToAttributes
+} from '../gltf-utils/gltf-texture-storage';
 import {getPropertyTable} from './EXT_structural_metadata';
 
 import {EXTENSION_NAME_EXT_MESH_FEATURES} from '../types/gltf-ext-mesh-features-schema';
@@ -40,20 +44,28 @@ function decodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFLoaderOp
         if (!featureIds) return;
         for (const featureId of featureIds) {
           if (typeof featureId.texture !== 'undefined' && options.gltf?.loadImages) {
-            let propTable;
+            let propertyTable: GLTF_EXT_structural_metadata_PropertyTable | null = null;
             if (typeof featureId.propertyTable === 'number') {
-              propTable = getPropertyTable(scenegraph, featureId.propertyTable);
+              propertyTable = getPropertyTable(scenegraph, featureId.propertyTable);
             }
-            processPrimitiveTextures(
+            const attributeName = propertyTable?.name || '';
+            const propertyData: any[] | null = getPrimitiveTextureData(
               scenegraph,
-              propTable.name,
               featureId.texture,
-              propTable.data,
-              featureTextureTable,
-              primitive,
-              extension
+              propertyTable?.data,
+              primitive
             );
-            extension.customMeshFeatures.push(propTable.name);
+            if (propertyData === null) return;
+            primitivePropertyDataToAttributes(
+              scenegraph,
+              attributeName,
+              propertyData,
+              featureTextureTable,
+              primitive
+            );
+
+            extension.customMeshFeatures.push(attributeName);
+            extension.data = featureTextureTable;
           }
           if (typeof featureId.attribute !== 'undefined') {
             // TODO

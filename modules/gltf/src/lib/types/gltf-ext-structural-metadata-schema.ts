@@ -11,11 +11,11 @@ export type GLTF_EXT_structural_metadata = {
   /** A uri to an external schema file. */
   schemaUri?: string;
   /** An array of property table definitions, which may be referenced by index. */
-  propertyTables: GLTF_EXT_structural_metadata_PropertyTable[];
+  propertyTables?: GLTF_EXT_structural_metadata_PropertyTable[];
   /** An array of property texture definitions, which may be referenced by index. */
-  propertyTextures: GLTF_EXT_structural_metadata_PropertyTexture[];
+  propertyTextures?: GLTF_EXT_structural_metadata_PropertyTexture[];
   /** "An array of property attribute definitions, which may be referenced by index. */
-  propertyAttributes: GLTF_EXT_structural_metadata_PropertyAttribute[];
+  propertyAttributes?: GLTF_EXT_structural_metadata_PropertyAttribute[];
   [key: string]: any;
 };
 

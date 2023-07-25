@@ -5,41 +5,38 @@ import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
 
 /**
- * Processes data encoded in the texture associated with the primitive. This data will be accessible through the attributes.
+ * Processes data encoded in the texture associated with the primitive.
+ * If Ext_mesh_featues is combined with the Ext_structural_metadata, propertyTable will also be processed.
  * @param scenegraph
- * @param attributeName
- * @param featureIdTexture
- * @param featureTextureTable
+ * @param textureInfo
+ * @param propertyTable
  * @param primitive
  */
 // eslint-disable-next-line max-statements
-export function processPrimitiveTextures(
+export function getPrimitiveTextureData(
   scenegraph: GLTFScenegraph,
-  attributeName: string,
-  featureIdTexture: GLTFTextureInfoMetadata,
-  propertyTable: any | undefined,
-  featureTextureTable: number[],
-  primitive: GLTFMeshPrimitive,
-  exension: any
-): void {
+  textureInfo: GLTFTextureInfoMetadata,
+  propertyTable: any[] | undefined,
+  primitive: GLTFMeshPrimitive
+): any[] | null {
   /*
-      texture.index is an index for the "textures" array.
-      The texture object referenced by this index looks like this:
-      {
-      "sampler": 0,
-      "source": 0
-      }
-      "sampler" is an index for the "samplers" array
-      "source" is an index for the "images" array that contains data. These data are stored in rgba channels of the image.
-  
-      texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
-      The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates ared used to get data from the image.
-    */
+        texture.index is an index for the "textures" array.
+        The texture object referenced by this index looks like this:
+        {
+        "sampler": 0,
+        "source": 0
+        }
+        "sampler" is an index for the "samplers" array
+        "source" is an index for the "images" array that contains data. These data are stored in rgba channels of the image.
+    
+        texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
+        The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates ared used to get data from the image.
+      */
   const json = scenegraph.gltf.json;
   const textureData: number[] = [];
 
   // TODO: Is there a default?
-  const texCoordAccessorKey = `TEXCOORD_${featureIdTexture.texCoord || 0}`;
+  const texCoordAccessorKey = `TEXCOORD_${textureInfo.texCoord || 0}`;
   const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
   const texCoordBufferView = scenegraph.getBufferView(texCoordAccessorIndex);
   const texCoordArray: Uint8Array = scenegraph.getTypedArrayForBufferView(texCoordBufferView);
@@ -53,16 +50,14 @@ export function processPrimitiveTextures(
   // accessor.count is a number of UV pairs (they are stored as VEC2)
 
   // TODO: Is there a default?
-  const textureIndex: number = featureIdTexture.index || 0;
-  const texture = json.textures?.[textureIndex];
-  const imageIndex = texture?.source;
+  const textureIndex: number = textureInfo.index || 0;
+  const imageIndex = json.textures?.[textureIndex]?.source;
   if (typeof imageIndex !== 'undefined') {
-    const image = json.images?.[imageIndex];
-    const mimeType = image?.mimeType;
+    const mimeType = json.images?.[imageIndex]?.mimeType;
     const parsedImage = scenegraph.gltf.images?.[imageIndex];
     // TODO: Checking for width is to prevent handling Un-processed images (e.g. [analyze] stage, where loadImages option is set to false)
     if (parsedImage && typeof parsedImage.width === 'undefined') {
-      return;
+      return null;
     }
     if (parsedImage) {
       for (let index = 0; index < textureCoordinates.length; index += 2) {
@@ -71,29 +66,45 @@ export function processPrimitiveTextures(
           mimeType,
           textureCoordinates,
           index,
-          featureIdTexture.channels
+          textureInfo.channels
         );
         textureData.push(value);
       }
     }
   }
 
-  let propertyData;
   if (typeof propertyTable !== 'undefined') {
-    propertyData = [];
+    const propertyData: any[] = [];
     for (const texelData of textureData) {
       const d = propertyTable[texelData];
       propertyData.push(d);
     }
-  } else {
-    propertyData = textureData;
+    return propertyData;
   }
+  return textureData;
+}
 
+/**
+ * Put property data to attributes.
+ * @param scenegraph
+ * @param attributeName
+ * @param propertyData
+ * @param featureTextureTable
+ * @param primitive
+ */
+export function primitivePropertyDataToAttributes(
+  scenegraph: GLTFScenegraph,
+  attributeName: string,
+  propertyData: any[] | null,
+  featureTextureTable: number[],
+  primitive: GLTFMeshPrimitive
+): void {
+  if (propertyData === null) return;
   /*
-      featureTextureTable will contain unique values, e.g.
+        featureTextureTable will contain unique values, e.g.
         textureData = [24, 35, 28, 24]
         featureTextureTable = [24, 35, 28]
-      featureIndices will contain indices that refer featureTextureTable, e.g.
+        featureIndices will contain indices that refer featureTextureTable, e.g.
         featureIndices = [0, 1, 2, 0]
     */
   const featureIndices: number[] = [];
@@ -118,7 +129,6 @@ export function processPrimitiveTextures(
     count: typedArray.length
   });
   primitive.attributes[attributeName] = accessorIndex;
-  exension.data = featureTextureTable;
 }
 
 function getImageValueByCoordinates(

@@ -13,8 +13,10 @@ import type {
 
 import {EXTENSION_NAME_EXT_STRUCTURAL_METADATA} from '../types/gltf-ext-structural-metadata-schema';
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
-import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
-import {getImageData} from '@loaders.gl/images';
+import {
+  getPrimitiveTextureData,
+  primitivePropertyDataToAttributes
+} from '../gltf-utils/gltf-texture-storage';
 
 export const name = EXTENSION_NAME_EXT_STRUCTURAL_METADATA;
 
@@ -42,9 +44,11 @@ function decodeExtStructuralMetadata(scenegraph: GLTFScenegraph): void {
   if (!json.meshes) {
     return;
   }
-  for (const mesh of json.meshes) {
-    for (const primitive of mesh.primitives) {
-      processPrimitivePropertyTextures(scenegraph, propertyTextures, primitive, extension);
+  if (propertyTextures) {
+    for (const mesh of json.meshes) {
+      for (const primitive of mesh.primitives) {
+        processPrimitivePropertyTextures(scenegraph, propertyTextures, primitive, extension);
+      }
     }
   }
 
@@ -73,27 +77,25 @@ function processPrimitivePropertyTextures(
 
   for (const primitivePropertyTextureIndex of primitivePropertyTextureIndices) {
     const propertyTexture = propertyTextures[primitivePropertyTextureIndex];
-    processTexture(
-      scenegraph,
-      propertyTexture,
-      primitivePropertyTextureIndex,
-      primitive,
-      extension
-    );
+    processPropertyTexture(scenegraph, propertyTexture, primitive, extension);
   }
 }
 
 // eslint-disable-next-line max-statements
-function processTexture(
+function processPropertyTexture(
   scenegraph: GLTFScenegraph,
   propertyTexture: GLTF_EXT_structural_metadata_PropertyTexture, // propertyTexture definition taken from the top-level extension
-  primitivePropertyTextureIndex: number,
   primitive: GLTFMeshPrimitive,
   extension: GLTF_EXT_structural_metadata // top-level extension
 ): void {
   if (!propertyTexture.properties) return;
 
-  const json = scenegraph.gltf.json;
+  // The data taken from all meshes/primitives (the same property, e.g. "speed" or "direction") will be combined into one array and saved in textureInfoTopLevel.data
+  // Initially textureInfoTopLevel.data will be initialized with an empty array.
+  if (!extension.data) {
+    extension.data = [];
+  }
+  const featureTextureTable: number[] = extension.data;
   /* Iterate through all properties defined in propertyTexture, e.g. "speed" and "direction":
   {
       "class": "wind",
@@ -113,100 +115,29 @@ function processTexture(
   */
   const className = propertyTexture.class;
   for (const propName in propertyTexture.properties) {
+    // propName has values like "speed", "direction"
+    // Make attrinuteName as a combination of the class name and the propertyName like "wind_speed" or "wind_direction"
     const attributeName = `${className}_${propName}`;
     const textureInfoTopLevel: GLTFTextureInfoMetadata | undefined =
-      extension.propertyTextures?.[primitivePropertyTextureIndex].properties?.[propName];
+      propertyTexture.properties?.[propName];
     if (!textureInfoTopLevel) return;
-    // The data taken from all meshes/primitives (the same property, e.g. "speed" or "direction") will be combined into one array and saved in textureInfoTopLevel.data
-    // Initially textureInfoTopLevel.data will be initialized with an empty array.
-    if (!textureInfoTopLevel.data) {
-      textureInfoTopLevel.data = [];
-    }
-    const featureTextureTable: number[] = textureInfoTopLevel.data;
 
-    const textureData: number[] = [];
-    /*
-      texture.index is an index for the "textures" array.
-      The texture object referenced by this index looks like this:
-      {
-      "sampler": 0,
-      "source": 0
-      }
-      "sampler" is an index for the "samplers" array
-      "source" is an index for the "images" array that contains data. These data are stored in rgba channels of the image.
-   
-      texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
-      The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates ared used to get data from the image.
-    */
-    const texCoordAccessorKey = `TEXCOORD_${textureInfoTopLevel.texCoord}`;
-    const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
-    const texCoordBufferView = scenegraph.getBufferView(texCoordAccessorIndex);
-    const texCoordArray: Uint8Array = scenegraph.getTypedArrayForBufferView(texCoordBufferView);
-
-    const textureCoordinates: Float32Array = new Float32Array(
-      texCoordArray.buffer,
-      texCoordArray.byteOffset,
-      texCoordArray.length / 4
+    const propertyData: any[] | null = getPrimitiveTextureData(
+      scenegraph,
+      textureInfoTopLevel,
+      undefined,
+      primitive
     );
-    // textureCoordinates contains UV coordinates of the actual data stored in the texture
-    // accessor.count is a number of UV pairs (they are stored as VEC2)
-
-    const textureIndex = textureInfoTopLevel.index;
-    const texture = json.textures?.[textureIndex];
-    const imageIndex = texture?.source;
-    if (typeof imageIndex !== 'undefined') {
-      const image = json.images?.[imageIndex];
-      const mimeType = image?.mimeType;
-      const parsedImage = scenegraph.gltf.images?.[imageIndex];
-      if (parsedImage) {
-        for (let index = 0; index < textureCoordinates.length; index += 2) {
-          const value = getImageValueByCoordinates(
-            parsedImage,
-            mimeType,
-            textureCoordinates,
-            index,
-            textureInfoTopLevel.channels
-          );
-          textureData.push(value);
-        }
-      }
-    }
-    /*
-      featureTextureTable will contain unique values, e.g.
-        textureData = [24, 35, 28, 24]
-        featureTextureTable = [24, 35, 28]
-      featureIndices will contain indices hat refer featureTextureTable, e.g.
-        featureIndices = [0, 1, 2, 0]
-    */
-    const featureIndices: number[] = [];
-    for (const texelData of textureData) {
-      let index = featureTextureTable.findIndex((item) => item === texelData);
-      if (index === -1) {
-        index = featureTextureTable.push(texelData) - 1;
-      }
-      featureIndices.push(index);
-    }
-
-    // Create buffers, bufferViews
-
-    // TODO: Consider adding data to ONE buffer and creating individual bufferViews for the same properties. Would it optimal while indexing data?
-    const typedArray = new Uint32Array(featureIndices);
-    const bufferIndex =
-      scenegraph.gltf.buffers.push({
-        arrayBuffer: typedArray.buffer,
-        byteOffset: 0,
-        byteLength: typedArray.byteLength
-      }) - 1;
-    const bufferViewIndex = scenegraph.addBufferView(typedArray, bufferIndex, 0);
-    const accessorIndex = scenegraph.addAccessor(bufferViewIndex, {
-      size: 1,
-      componentType: getComponentTypeFromArray(typedArray),
-      count: typedArray.length
-    });
-    // Note, that attributeName is a combination of className and propertyName, e.g. "wind_speed" or "wind_direction".
-    // So, the data of each property (speed, direction) will be put to separate attributes.
-    primitive.attributes[attributeName] = accessorIndex;
+    if (propertyData === null) return;
+    primitivePropertyDataToAttributes(
+      scenegraph,
+      attributeName,
+      propertyData,
+      featureTextureTable,
+      primitive
+    );
   }
+  extension.data = featureTextureTable;
 }
 
 /**
@@ -316,19 +247,19 @@ function getPropertyDataFromBinarySource(
 }
 
 /**
- * Find the feature table by class name.
- * @param featureTables
+ * Find the property table by class name.
+ * @param propertyTables
  * @param schemaClassName
  */
 function findPropertyTableByClass(
-  featureTables: GLTF_EXT_structural_metadata_PropertyTable[],
+  propertyTables: GLTF_EXT_structural_metadata_PropertyTable[],
   schemaClassName: string
 ): GLTF_EXT_structural_metadata_PropertyTable | null {
-  for (let i = 0, len = featureTables.length; i < len; i++) {
-    const featureTable = featureTables[i];
+  for (let i = 0, len = propertyTables.length; i < len; i++) {
+    const propertyTable = propertyTables[i];
 
-    if (featureTable.class === schemaClassName) {
-      return featureTable;
+    if (propertyTable.class === schemaClassName) {
+      return propertyTable;
     }
   }
 
@@ -426,75 +357,10 @@ function getScalarAttributes(
   return attributeValueArray;
 }
 
-function getImageValueByCoordinates(
-  parsedImage: any,
-  mimeType: string | undefined,
-  textureCoordinates: Float32Array,
-  index: number,
-  channels: number[]
-) {
-  const CHANNELS_MAP = [
-    {offset: 0, shift: 0},
-    {offset: 1, shift: 8},
-    {offset: 2, shift: 16},
-    {offset: 3, shift: 24}
-  ];
-
-  const u = textureCoordinates[index];
-  const v = textureCoordinates[index + 1];
-
-  let components = 1;
-  if (mimeType && (mimeType.indexOf('image/jpeg') !== -1 || mimeType.indexOf('image/png') !== -1))
-    components = 4;
-  const offset = coordinatesToOffset(u, v, parsedImage, components);
-  let value = 0;
-  for (const c of channels) {
-    const map = CHANNELS_MAP[c];
-    const val = getVal(parsedImage, offset + map.offset);
-    value |= val << map.shift;
-  }
-  return value;
-}
-
-function getVal(parsedImage: any, offset: number): number {
-  const imageData = getImageData(parsedImage);
-  if (imageData.data.length <= offset) {
-    throw new Error(`${imageData.data.length} <= ${offset}`);
-  }
-  return imageData.data[offset];
-}
-
-function coordinatesToOffset(
-  u: number,
-  v: number,
-  parsedImage: any,
-  componentsCount: number = 1
-): number {
-  const w = parsedImage.width;
-  const iX = emod(u) * (w - 1);
-  const indX = Math.round(iX);
-
-  const h = parsedImage.height;
-  const iY = emod(v) * (h - 1);
-  const indY = Math.round(iY);
-  const components = parsedImage.components ? parsedImage.components : componentsCount;
-  // components is a number of channels in the image
-  const offset = (indY * w + indX) * components;
-  return offset;
-}
-
-// The following is taken from tile-converter\src\i3s-converter\helpers\batch-ids-extensions.ts
-/**
- * Handle UVs if they are out of range [0,1].
- * @param n
- * @param m
- */
-function emod(n: number): number {
-  const a = ((n % 1) + 1) % 1;
-  return a;
-}
-
-export function getPropertyTable(scenegraph: GLTFScenegraph, propertyTableIndex: number): any {
+export function getPropertyTable(
+  scenegraph: GLTFScenegraph,
+  propertyTableIndex: number
+): GLTF_EXT_structural_metadata_PropertyTable | null {
   const extensionStructuralMetadata: GLTF_EXT_structural_metadata | null = scenegraph.getExtension(
     EXTENSION_NAME_EXT_STRUCTURAL_METADATA
   );

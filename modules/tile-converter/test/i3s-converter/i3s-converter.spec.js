@@ -375,6 +375,3 @@ test('tile-converter(i3s)#proceed with failing content', async (t) => {
   await cleanUpPath('data/FailingContent');
   t.end();
 });
-
-// ae\data\for-ext-meta\data>
-
