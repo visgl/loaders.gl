@@ -12,7 +12,7 @@ export const loadArchive = async (fullLayerPath: string): Promise<void> => {
   slpkArchive = await parseSLPK(await FileHandleProvider.from(fullLayerPath), (msg) =>
     console.log(msg)
   );
-  console.log('Server ready to use');
+  console.log('The server is ready to use');
 };
 
 /**

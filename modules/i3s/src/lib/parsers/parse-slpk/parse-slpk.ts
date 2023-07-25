@@ -9,9 +9,9 @@ import {HashElement, SLPKArchive, compareHashes} from './slpk-archieve';
 /**
  * Creates slpk file handler from raw file
  * @param fileProvider raw file data
+ * @param cb is called with information message during parsing
  * @returns slpk file handler
  */
-
 export const parseSLPK = async (
   fileProvider: FileProvider,
   cb?: (msg: string) => void
@@ -22,7 +22,7 @@ export const parseSLPK = async (
 
   let hashData: HashElement[];
   if (cdFileHeader?.fileName !== '@specialIndexFileHASH128@') {
-    cb?.("SLPK doesn't contain hash file");
+    cb?.('SLPK doesnt contain hash file');
     hashData = await generateHashInfo(fileProvider);
     cb?.('hash info has been composed according to central directory records');
   } else {

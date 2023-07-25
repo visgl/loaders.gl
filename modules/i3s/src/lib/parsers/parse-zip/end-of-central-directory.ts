@@ -28,7 +28,7 @@ const offsets = {
 
 /**
  * Parses end of central directory record of zip file
- * @param fileProvider - buffer containing whole array
+ * @param fileProvider - FileProvider instance
  * @returns Info from the header
  */
 export const parseEoCDRecord = async (fileProvider: FileProvider): Promise<ZipEoCDRecord> => {
@@ -41,7 +41,7 @@ export const parseEoCDRecord = async (fileProvider: FileProvider): Promise<ZipEo
     await fileProvider.getUint32(zipEoCDOffset + offsets.CD_START_OFFSET_OFFSET)
   );
 
-  if (cdStartOffset === BigInt(0xffffffff)) {
+  if (cdStartOffset === BigInt(0xffffffff) || cdRecordsNumber === BigInt(0xffffffff)) {
     const zip64EoCDLocatorOffset = zipEoCDOffset - 20n;
 
     if (

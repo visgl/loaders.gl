@@ -10,7 +10,7 @@ export type ZipCDFileHeader = {
   compressedSize: bigint;
   /** Uncompressed size */
   uncompressedSize: bigint;
-  /** Extra field size size */
+  /** Extra field size */
   extraFieldLength: number;
   /** File name length */
   fileNameLength: number;
@@ -42,13 +42,13 @@ export const signature: ZipSignature = [0x50, 0x4b, 0x01, 0x02];
 export const parseZipCDFileHeader = async (
   headerOffset: bigint,
   buffer: FileProvider
-): Promise<ZipCDFileHeader | undefined> => {
+): Promise<ZipCDFileHeader | null> => {
   if (
     Buffer.from(await buffer.slice(headerOffset, headerOffset + 4n)).compare(
       Buffer.from(signature)
     ) !== 0
   ) {
-    return Promise.resolve(undefined);
+    return null;
   }
 
   let compressedSize = BigInt(
