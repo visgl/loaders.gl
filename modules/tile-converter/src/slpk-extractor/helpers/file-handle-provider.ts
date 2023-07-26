@@ -77,7 +77,7 @@ export class FileHandleProvider implements FileProvider {
    */
   async getBigUint64(offset: bigint): Promise<bigint> {
     const val = new BigInt64Array(
-      (await this.fileDescriptor.read(Buffer.alloc(8), 0, 4, offset)).buffer.buffer
+      (await this.fileDescriptor.read(Buffer.alloc(8), 0, 8, offset)).buffer.buffer
     ).at(0);
     if (val === undefined) {
       throw new Error('something went wrong');

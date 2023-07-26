@@ -53,7 +53,7 @@ export default class SLPKConverter {
         options.outputPath
       );
       localHeader = await parseZipLocalFileHeader(
-        localHeader?.fileDataOffset + localHeader?.compressedSize,
+        localHeader.fileDataOffset + localHeader?.compressedSize,
         provider
       );
     }

@@ -12,3 +12,4 @@ import './zip-utils/data-view-provider.spec';
 import './zip-utils/cd-file-header.spec';
 import './zip-utils/local-file-header.spec';
 import './search-from-the-end.spec';
+import './zip-utils/end-of-central-directory.spec';

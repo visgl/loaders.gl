@@ -15,19 +15,19 @@ test('DataViewFileProvider#getUint8', async (t) => {
   t.end();
 });
 
-test('DataViewFileProvider#local file header parse', async (t) => {
+test('DataViewFileProvider#getUint16', async (t) => {
   const provider = new DataViewFileProvider(new DataView(DATA_ARRAY.buffer));
   t.equals(await provider.getUint16(0n), 19280);
   t.end();
 });
 
-test('DataViewFileProvider#local file header parse', async (t) => {
+test('DataViewFileProvider#getUint32', async (t) => {
   const provider = new DataViewFileProvider(new DataView(DATA_ARRAY.buffer));
   t.equals(await provider.getUint32(0n), 67324752);
   t.end();
 });
 
-test('DataViewFileProvider#local file header parse', async (t) => {
+test('DataViewFileProvider#getBigUint64', async (t) => {
   const provider = new DataViewFileProvider(new DataView(DATA_ARRAY.buffer));
   t.equals(await provider.getBigUint64(0n), 563035920091984n);
   t.end();

@@ -9,7 +9,10 @@ let slpkArchive;
  * @param fullLayerPath - full path to SLPK file
  */
 export const loadArchive = async (fullLayerPath: string): Promise<void> => {
-  slpkArchive = await parseSLPK(await FileHandleProvider.from(fullLayerPath));
+  slpkArchive = await parseSLPK(await FileHandleProvider.from(fullLayerPath), (msg) =>
+    console.log(msg)
+  );
+  console.log('The server is ready to use');
 };
 
 /**

@@ -36,9 +36,9 @@ export const signature = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 export const parseZipLocalFileHeader = async (
   headerOffset: bigint,
   buffer: FileProvider
-): Promise<ZipLocalFileHeader | undefined> => {
+): Promise<ZipLocalFileHeader | null> => {
   if (Buffer.from(await buffer.slice(headerOffset, headerOffset + 4n)).compare(signature) !== 0) {
-    return Promise.resolve(undefined);
+    return null;
   }
 
   const fileNameLength = await buffer.getUint16(headerOffset + offsets.FILE_NAME_LENGTH_OFFSET);
