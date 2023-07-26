@@ -6,6 +6,15 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.16
+
+- chore(tile-converter): create SLPK hash during serve (#2565)
+- docs(tile-converter): I3S Server (#2564)
+- chore(tile-converter): i3s-server tests (#2563)
+- chore(deps): bump semver in /test/apps/typescript-test (#2544)
+- chore(deps): bump semver from 5.7.1 to 5.7.2 (#2545)
+- chore(tile-converter): i3s-server convert to ts (#2562)
+
 ### v4.0.0-alpha.15
 
 - chore(tile-converter): bump i3s-server deps (#2561)
