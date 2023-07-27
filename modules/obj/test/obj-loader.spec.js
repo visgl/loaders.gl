@@ -8,6 +8,7 @@ import {setLoaderOptions, load} from '@loaders.gl/core';
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
 const OBJ_NORMALS_URL = '@loaders.gl/obj/test/data/cube.obj';
 const OBJ_MULTI_PART_URL = '@loaders.gl/obj/test/data/magnolia.obj';
+const OBJ_VERTEX_COLOR_URL = '@loaders.gl/obj/test/data/cube_vertex_colors.obj';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -73,6 +74,19 @@ test('OBJLoader#parseText - multi-part object', async (t) => {
   validateMeshCategoryData(t, data);
 
   t.equal(data.header?.vertexCount, 1372 * 3, 'Vertices are loaded');
+  t.end();
+});
+
+test('OBJLoader#parseText - object with vertex colors', async (t) => {
+  const data = await load(OBJ_VERTEX_COLOR_URL, OBJLoader);
+  validateMeshCategoryData(t, data);
+
+  t.equal(data.attributes.POSITION.value.length, 108, 'POSITION attribute was found');
+  t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
+  t.equal(data.attributes.NORMAL.value.length, 108, 'NORMAL attribute was found');
+  t.equal(data.attributes.NORMAL.size, 3, 'NORMAL attribute was found');
+  t.equal(data.attributes.COLOR_0.value.length, 108, 'COLOR_0 attribute was found');
+  t.equal(data.attributes.COLOR_0.size, 3, 'COLOR_0 attribute was found');
   t.end();
 });
 
