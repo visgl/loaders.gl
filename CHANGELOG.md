@@ -116,6 +116,10 @@
 
 ## v3.4
 
+### v3.4.9
+
+- fix(obj): Improved OBJ vertex colors parsing (#2569)
+
 ### 3.4.2
 
 - docs: Upgrade guide for `WMSCapabilities` type, link to CHANGELOG for patch release info
