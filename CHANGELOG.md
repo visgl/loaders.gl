@@ -2,6 +2,10 @@
 
 # v3.4
 
+## v3.4.9
+
+- fix(obj): Improved OBJ vertex colors parsing (#2569)
+
 ## v3.4.8
 
 - fix(tile-converter): CesiumION tileset URL (#2560)
