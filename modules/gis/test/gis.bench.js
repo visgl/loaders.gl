@@ -3,16 +3,19 @@ import {load} from '@loaders.gl/core';
 
 import {geojsonToBinary} from '@loaders.gl/gis';
 
-const GEOJSON_URL = '@loaders.gl/json/test/data/geojson-big.json';
+// const GEOJSON_URL = '@loaders.gl/json/test/data/geojson-big.json';
+const GEOJSON_POLYGONS_URL = '@loaders.gl/mvt/test/data/geojson-vt/us-states.json';
 
 export default async function gisBench(suite) {
   suite.group('geojson-to-binary');
 
   // @ts-expect-error
-  const {features} = await load(GEOJSON_URL, JSONLoader);
-  const options = {multiplier: 308, unit: 'features'};
-
-  suite.addAsync('geojsonToBinary - GeoJSON to Binary conversion', options, async () => {
-    geojsonToBinary(features);
+  const {features} = await load(GEOJSON_POLYGONS_URL, JSONLoader);
+  const options = {multiplier: features.length, unit: 'features'};
+  suite.addAsync('geojsonToBinary(triangulate=true)', options, async () => {
+    const out = geojsonToBinary(features);
+  });
+  suite.addAsync('geojsonToBinary(triangulate=false)', options, async () => {
+    const out = geojsonToBinary(features, {triangulate: false});
   });
 }
