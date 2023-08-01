@@ -157,7 +157,6 @@ function fillArrays(
         ? new Uint32Array(polygonRingsCount + 1)
         : new Uint16Array(polygonRingsCount + 1),
     positions: new PositionDataType(polygonPositionsCount * coordLength),
-    ...(triangulate && {triangles: []}),
     globalFeatureIds: new GlobalFeatureIdsDataType(polygonPositionsCount),
     featureIds:
       polygonFeaturesCount > 65535
@@ -167,6 +166,10 @@ function fillArrays(
     properties: [],
     fields: []
   };
+
+  if (triangulate) {
+    polygons.triangles = [];
+  }
 
   // Instantiate numeric properties arrays; one value per vertex
   for (const object of [points, lines, polygons]) {
@@ -403,10 +406,8 @@ function handlePolygon(
       indexMap.polygonPosition += (end - start) / coordLength;
     }
 
-    if (polygons.triangles) {
-      const endPosition = indexMap.polygonPosition;
-      triangulatePolygon(polygons, areas, indices, {startPosition, endPosition, coordLength});
-    }
+    const endPosition = indexMap.polygonPosition;
+    triangulatePolygon(polygons, areas, indices, {startPosition, endPosition, coordLength});
   }
 }
 
@@ -428,6 +429,10 @@ function triangulatePolygon(
     coordLength
   }: {startPosition: number; endPosition: number; coordLength: number}
 ): void {
+  if (!polygons.triangles) {
+    return;
+  }
+
   const start = startPosition * coordLength;
   const end = endPosition * coordLength;
 
@@ -445,7 +450,7 @@ function triangulatePolygon(
   // Indices returned by triangulation are relative to start
   // of polygon, so we need to offset
   for (let t = 0, tl = triangles.length; t < tl; ++t) {
-    polygons.triangles!.push(startPosition + triangles[t]);
+    polygons.triangles.push(startPosition + triangles[t]);
   }
 }
 
@@ -481,7 +486,7 @@ function makeAccessorObjects(
   polygons: Polygons,
   coordLength: number
 ): BinaryFeatures {
-  return {
+  const binaryFeatures = {
     points: {
       ...points,
       positions: {value: points.positions, size: coordLength},
@@ -502,12 +507,17 @@ function makeAccessorObjects(
       positions: {value: polygons.positions, size: coordLength},
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
-      ...(polygons.triangles && {triangles: {value: new Uint32Array(polygons.triangles), size: 1}}),
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
       featureIds: {value: polygons.featureIds, size: 1},
       numericProps: wrapProps(polygons.numericProps, 1)
     } as BinaryPolygonFeatures
   };
+
+  if (polygons.triangles) {
+    binaryFeatures.polygons.triangles = {value: new Uint32Array(polygons.triangles), size: 1};
+  }
+
+  return binaryFeatures;
 }
 
 /**
