@@ -13,9 +13,9 @@ export default async function gisBench(suite) {
   const {features} = await load(GEOJSON_POLYGONS_URL, JSONLoader);
   const options = {multiplier: features.length, unit: 'features'};
   suite.addAsync('geojsonToBinary(triangulate=true)', options, async () => {
-    const out = geojsonToBinary(features);
+    geojsonToBinary(features);
   });
   suite.addAsync('geojsonToBinary(triangulate=false)', options, async () => {
-    const out = geojsonToBinary(features, {triangulate: false});
+    geojsonToBinary(features, {fixRingWinding: true, triangulate: false});
   });
 }

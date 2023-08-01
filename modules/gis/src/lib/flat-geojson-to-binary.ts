@@ -481,7 +481,7 @@ function makeAccessorObjects(
   polygons: Polygons,
   coordLength: number
 ): BinaryFeatures {
-  const out = {
+  return {
     points: {
       ...points,
       positions: {value: points.positions, size: coordLength},
@@ -502,16 +502,12 @@ function makeAccessorObjects(
       positions: {value: polygons.positions, size: coordLength},
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
+      ...(polygons.triangles && {triangles: {value: new Uint32Array(polygons.triangles), size: 1}}),
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
       featureIds: {value: polygons.featureIds, size: 1},
       numericProps: wrapProps(polygons.numericProps, 1)
     } as BinaryPolygonFeatures
   };
-  if (polygons.triangles) {
-    out.polygons.triangles = {value: new Uint32Array(polygons.triangles), size: 1};
-  }
-
-  return out;
 }
 
 /**
