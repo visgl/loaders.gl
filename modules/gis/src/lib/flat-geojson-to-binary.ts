@@ -40,7 +40,8 @@ export function flatGeojsonToBinary(
     },
     {
       numericPropKeys: (options && options.numericPropKeys) || numericPropKeys,
-      PositionDataType: options ? options.PositionDataType : Float32Array
+      PositionDataType: options ? options.PositionDataType : Float32Array,
+      triangulate: options ? options.triangulate : true
     }
   );
 }
@@ -51,6 +52,7 @@ export function flatGeojsonToBinary(
 export type FlatGeojsonToBinaryOptions = {
   numericPropKeys?: string[];
   PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
+  triangulate?: boolean;
 };
 
 export const TEST_EXPORTS = {
@@ -112,7 +114,7 @@ function fillArrays(
     propArrayTypes,
     coordLength
   } = geometryInfo;
-  const {numericPropKeys = [], PositionDataType = Float32Array} = options;
+  const {numericPropKeys = [], PositionDataType = Float32Array, triangulate = true} = options;
   const hasGlobalId = features[0] && 'id' in features[0];
   const GlobalFeatureIdsDataType = features.length > 65535 ? Uint32Array : Uint16Array;
   const points: Points = {
@@ -215,7 +217,7 @@ function fillArrays(
         indexMap.lineFeature++;
         break;
       case 'Polygon':
-        handlePolygon(geometry, polygons, indexMap, coordLength, properties);
+        handlePolygon(geometry, polygons, indexMap, coordLength, properties, triangulate);
         polygons.properties.push(keepStringProperties(properties, numericPropKeys));
         if (hasGlobalId) {
           polygons.fields.push({id: feature.id});
@@ -360,7 +362,8 @@ function handlePolygon(
     feature: number;
   },
   coordLength: number,
-  properties: {[x: string]: string | number | boolean | null}
+  properties: {[x: string]: string | number | boolean | null},
+  triangulate: boolean
 ): void {
   polygons.positions.set(geometry.data, indexMap.polygonPosition * coordLength);
 
@@ -400,8 +403,10 @@ function handlePolygon(
       indexMap.polygonPosition += (end - start) / coordLength;
     }
 
-    const endPosition = indexMap.polygonPosition;
-    triangulatePolygon(polygons, areas, indices, {startPosition, endPosition, coordLength});
+    if (triangulate) {
+      const endPosition = indexMap.polygonPosition;
+      triangulatePolygon(polygons, areas, indices, {startPosition, endPosition, coordLength});
+    }
   }
 }
 
