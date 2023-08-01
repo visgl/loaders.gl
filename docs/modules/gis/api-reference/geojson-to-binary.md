@@ -20,7 +20,8 @@ const geoJSONfeatures = await load('data.geojson', JSONLoader);
  * {
  *   fixRingWinding: true
  *   numericPropKeys: derived from data
- *   PositionDataType: Float32Array
+ *   PositionDataType: Float32Array,
+ *   triangulate: true
  * }
  */
 const options = {PositionDataType: Float32Array};
@@ -95,8 +96,8 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     polygonIndices: {value: Uint16Array | Uint32Array, size: 1},
     // Indices within positions of the start of each primitive Polygon/ring
     primitivePolygonIndices: {value: Uint16Array | Uint32Array, size: 1},
-    // Triangle indices. Allows deck.gl to skip performing costly triangulation on main thread
-    triangles: {value: Uint32Array, size: 1},
+    // Triangle indices. Allows deck.gl to skip performing costly triangulation on main thread. Not present if `options.triangulate` is `false`
+    triangles?: {value: Uint32Array, size: 1},
     // Array of original feature indexes by vertex
     globalFeatureIds: {value: Uint16Array | Uint32Array, size: 1},
     // Array of Polygon feature indexes by vertex
@@ -121,9 +122,10 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
 
 | Option           | Type      | Default           | Description                                                                                                                                             |
 | ---------------- | --------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| fixRingWinding   | `Boolean` | `true`            | Whether the fix incorrect ring winding for polygons. Valid `GeoJSON` polygons have the outer ring coordinates in CCW order and with holes in CW order   |
+| fixRingWinding   | `Boolean` | `true`            | Whether to fix incorrect ring winding for polygons. Valid `GeoJSON` polygons have the outer ring coordinates in CCW order and with holes in CW order    |
 | numericPropKeys  | `Array`   | Derived from data | Names of feature properties that should be converted to numeric `TypedArray`s. Passing `[]` will force all properties to be returned as normal objects. |
 | PositionDataType | `class`   | `Float32Array`    | Data type used for positions arrays.                                                                                                                    |
+| triangulate      | `Boolean` | `true`            | Whether polygons are triangulated as part of the conversion                                                                                             |
 
 ## Notes
 
