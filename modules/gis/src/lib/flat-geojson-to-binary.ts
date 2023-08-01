@@ -3,6 +3,7 @@ import {earcut} from '@math.gl/polygon';
 import type {
   BinaryAttribute,
   BinaryFeatures,
+  BinaryPolygonFeatures,
   FlatFeature,
   FlatPoint,
   FlatLineString,
@@ -156,7 +157,7 @@ function fillArrays(
         ? new Uint32Array(polygonRingsCount + 1)
         : new Uint16Array(polygonRingsCount + 1),
     positions: new PositionDataType(polygonPositionsCount * coordLength),
-    triangles: [],
+    ...(triangulate && {triangles: []}),
     globalFeatureIds: new GlobalFeatureIdsDataType(polygonPositionsCount),
     featureIds:
       polygonFeaturesCount > 65535
@@ -217,7 +218,7 @@ function fillArrays(
         indexMap.lineFeature++;
         break;
       case 'Polygon':
-        handlePolygon(geometry, polygons, indexMap, coordLength, properties, triangulate);
+        handlePolygon(geometry, polygons, indexMap, coordLength, properties);
         polygons.properties.push(keepStringProperties(properties, numericPropKeys));
         if (hasGlobalId) {
           polygons.fields.push({id: feature.id});
@@ -362,8 +363,7 @@ function handlePolygon(
     feature: number;
   },
   coordLength: number,
-  properties: {[x: string]: string | number | boolean | null},
-  triangulate: boolean
+  properties: {[x: string]: string | number | boolean | null}
 ): void {
   polygons.positions.set(geometry.data, indexMap.polygonPosition * coordLength);
 
@@ -403,7 +403,7 @@ function handlePolygon(
       indexMap.polygonPosition += (end - start) / coordLength;
     }
 
-    if (triangulate) {
+    if (polygons.triangles) {
       const endPosition = indexMap.polygonPosition;
       triangulatePolygon(polygons, areas, indices, {startPosition, endPosition, coordLength});
     }
@@ -445,7 +445,7 @@ function triangulatePolygon(
   // Indices returned by triangulation are relative to start
   // of polygon, so we need to offset
   for (let t = 0, tl = triangles.length; t < tl; ++t) {
-    polygons.triangles.push(startPosition + triangles[t]);
+    polygons.triangles!.push(startPosition + triangles[t]);
   }
 }
 
@@ -481,7 +481,7 @@ function makeAccessorObjects(
   polygons: Polygons,
   coordLength: number
 ): BinaryFeatures {
-  return {
+  const out = {
     points: {
       ...points,
       positions: {value: points.positions, size: coordLength},
@@ -502,12 +502,16 @@ function makeAccessorObjects(
       positions: {value: polygons.positions, size: coordLength},
       polygonIndices: {value: polygons.polygonIndices, size: 1},
       primitivePolygonIndices: {value: polygons.primitivePolygonIndices, size: 1},
-      triangles: {value: new Uint32Array(polygons.triangles), size: 1},
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
       featureIds: {value: polygons.featureIds, size: 1},
       numericProps: wrapProps(polygons.numericProps, 1)
-    }
+    } as BinaryPolygonFeatures
   };
+  if (polygons.triangles) {
+    out.polygons.triangles = {value: new Uint32Array(polygons.triangles), size: 1};
+  }
+
+  return out;
 }
 
 /**
