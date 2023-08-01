@@ -31,7 +31,7 @@ npm i @loaders.gl/tile-converter
 Extract .slpk to the `./data` folder:
 
 ```bash
-npx slpk-extractor --tileset="./path/to/the/file.slpk" --output="./data"
+npx slpk-extractor --tileset="./path/to/the/file.slpk" --output="./data//SceneServer/layers/0"
 ```
 Then you can start serving dataset
 
@@ -41,13 +41,13 @@ PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./data" DEBUG=i3s-server:* npx i3s-serve
 ```
 
 #### The layer should be available on URLs
-- `http://localhost:8080/NewTileset/SceneServer/layers/0`
-- `https://localhost:4443/NewTileset/SceneServer/layers/0`
+- `http://localhost:8080/SceneServer/layers/0`
+- `https://localhost:4443/SceneServer/layers/0`
 
 #### Open in ArcGIS
 
-`https://www.arcgis.com/home/webscene/viewer.html?url=http://localhost:8080/NewTileset/SceneServer`
+`https://www.arcgis.com/home/webscene/viewer.html?url=http://localhost:8080//SceneServer`
 
 #### Open in I3S Explorer
 
-`https://i3s.loaders.gl/viewer?tileset=http://localhost:8080/NewTileset/SceneServer/layers/0`
+`https://i3s.loaders.gl/viewer?tileset=http://localhost:8080/SceneServer/layers/0`
