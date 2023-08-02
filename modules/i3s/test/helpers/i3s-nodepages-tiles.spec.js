@@ -50,6 +50,7 @@ test('I3SNodePagesTiles#Layer without textures', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(
     // @ts-expect-error
     {...TILESET_STUB(), materialDefinitions: [{}]},
+    'http://url.to.layer',
     {}
   );
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -62,6 +63,7 @@ test('I3SNodePagesTiles#Layer without textures', async (t) => {
       // @ts-expect-error
       materialDefinitions: [{pbrMetallicRoughness: {baseColorFactor: [255, 255, 255, 255]}}]
     },
+    'http://url.to.layer',
     {}
   );
   const node2 = await i3SNodePagesTiles2.formTileFromNodePages(2);
@@ -74,6 +76,7 @@ test('I3SNodePagesTiles#Layer without textures', async (t) => {
       ...TILESET_STUB(),
       textureSetDefinitions: []
     },
+    'http://url.to.layer',
     {}
   );
   const node3 = await i3SNodePagesTiles3.formTileFromNodePages(3);
@@ -116,6 +119,7 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async (t) => {
         }
       ]
     },
+    'http://url.to.layer',
     {}
   );
   const node = await i3SNodePagesTiles.formTileFromNodePages(2);
@@ -172,6 +176,7 @@ test('I3SNodePagesTiles#Switch off compressed textures', async (t) => {
         }
       ]
     },
+    'http://url.to.layer',
     {i3s: {useCompressedTextures: false}}
   );
   const node = await i3SNodePagesTiles.formTileFromNodePages(2);

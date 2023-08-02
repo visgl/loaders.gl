@@ -5,12 +5,14 @@ import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
+import {calculateTransformProps} from './transform-utils';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
 
 export type I3SAttributesData = {
   tileContent: any;
+  box: number[];
   textureFormat: string;
 };
 
@@ -53,15 +55,8 @@ export default class B3dmConverter {
     i3sAttributesData: I3SAttributesData,
     featureAttributes: any
   ): Promise<ArrayBuffer> {
-    const {tileContent, textureFormat} = i3sAttributesData;
-    const {
-      material,
-      attributes,
-      indices: originalIndices,
-      cartesianOrigin,
-      cartographicOrigin,
-      modelMatrix
-    } = tileContent;
+    const {tileContent, textureFormat, box} = i3sAttributesData;
+    const {material, attributes, indices: originalIndices, modelMatrix} = tileContent;
     const gltfBuilder = new GLTFScenegraph();
 
     const textureIndex = await this._addI3sTextureToGltf(tileContent, textureFormat, gltfBuilder);
@@ -77,6 +72,8 @@ export default class B3dmConverter {
         attributes.uvRegions.value
       );
     }
+
+    const {cartesianOrigin, cartographicOrigin} = calculateTransformProps([box[0], box[1], box[2]]);
 
     attributes.positions.value = this._normalizePositions(
       positionsValue,

@@ -1,17 +1,28 @@
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
-import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import I3SNodePagesTiles from './lib/helpers/i3s-nodepages-tiles';
 
 export type COLOR = [number, number, number, number];
 
 /**
- * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DSceneLayer.cmn.md
+ * Extension of SceneLayer3D JSON with postprocessed loader data
  */
-// TODO Replace "[key: string]: any" with actual defenition
 export interface I3STilesetHeader extends SceneLayer3D {
   /** Not in spec, but is necessary for woking */
   url?: string;
-  [key: string]: any;
+  /** Base path that non-absolute paths in tileset are relative to. */
+  basePath?: string;
+  /** root node metadata */
+  root: I3STileHeader;
+  /** instance of the NodePages to tiles loader */
+  nodePagesTile?: I3SNodePagesTiles;
+  /** Type of the tileset */
+  type: TILESET_TYPE.I3S;
+  /** LOD metric type per I3S spec*/
+  lodMetricType?: string;
+  /** LOD metric value */
+  lodMetricValue?: number;
 }
 /** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md */
 export type NodePage = {
@@ -59,18 +70,22 @@ type meshAttribute = {
 
 export type I3STextureFormat = 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
 
-// TODO Replace "[key: string]: any" with actual defenition
-export type I3STileHeader = {
+export type I3STileHeader = I3SMinimalNodeData & {
   isDracoGeometry: boolean;
   textureUrl?: string;
   url?: string;
-  textureFormat?: I3STextureFormat;
+  textureFormat: I3STextureFormat;
   textureLoaderOptions?: any;
   materialDefinition?: I3SMaterialDefinition;
   mbs: Mbs;
   obb?: Obb;
   lodSelection?: LodSelection[];
-  [key: string]: any;
+  boundingVolume: {box?: number[]; sphere?: number[]};
+  lodMetricType?: string;
+  lodMetricValue?: number;
+  transformMatrix?: number[];
+  type: TILE_TYPE.MESH;
+  refine: TILE_REFINEMENT.REPLACE;
 };
 
 export type I3SParseOptions = {
@@ -375,7 +390,6 @@ export type Node3DIndexDocument = {
 export type I3SMinimalNodeData = {
   id: string;
   url?: string;
-  transform?: number[];
   lodSelection?: LodSelection[];
   obb?: Obb;
   mbs?: Mbs;
@@ -383,9 +397,9 @@ export type I3SMinimalNodeData = {
   textureUrl?: string;
   attributeUrls?: string[];
   materialDefinition?: I3SMaterialDefinition;
-  textureFormat?: I3STextureFormat;
+  textureFormat: I3STextureFormat;
   textureLoaderOptions?: {[key: string]: any};
-  children?: NodeReference[];
+  children: NodeReference[];
   isDracoGeometry: boolean;
 };
 
