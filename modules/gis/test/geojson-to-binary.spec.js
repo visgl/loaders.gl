@@ -395,6 +395,19 @@ test('gis#geojson-to-binary with empty properties', async (t) => {
   t.end();
 });
 
+test('gis#geojson-to-binary triangulation', async (t) => {
+  const response = await fetchFile(GEOJSON_NO_PROPERTIES);
+  const {features} = await response.json();
+  const binary = geojsonToBinary(features);
+
+  t.ok(binary.polygons.triangles);
+  t.deepEqual(binary.polygons.triangles.value, [3, 0, 1, 1, 2, 3]);
+
+  const binaryNoTriangles = geojsonToBinary(features, {triangulate: false});
+  t.notOk(binaryNoTriangles.polygons.triangles);
+  t.end();
+});
+
 function flatten(arr) {
   return arr.reduce(function (flat, toFlatten) {
     return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);

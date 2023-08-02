@@ -47,7 +47,7 @@ export type Polygons = {
   positions: Float32Array | Float64Array;
   polygonIndices: Uint16Array | Uint32Array;
   primitivePolygonIndices: Uint16Array | Uint32Array;
-  triangles: number[];
+  triangles?: number[];
   globalFeatureIds: Uint16Array | Uint32Array;
   featureIds: Uint16Array | Uint32Array;
   numericProps: {[key: string]: TypedArray};

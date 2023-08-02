@@ -14,15 +14,7 @@ import {geojsonToBinary} from '@loaders.gl/gis';
 
 const geoJSONfeatures = await load('data.geojson', JSONLoader);
 
-/*
- * Default options are:
- *
- * {
- *   fixRingWinding: true
- *   numericPropKeys: derived from data
- *   PositionDataType: Float32Array
- * }
- */
+// See table below for full list of options
 const options = {PositionDataType: Float32Array};
 const binaryFeatures = geojsonToBinary(geoJSONfeatures, options);
 ```
@@ -95,8 +87,8 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
     polygonIndices: {value: Uint16Array | Uint32Array, size: 1},
     // Indices within positions of the start of each primitive Polygon/ring
     primitivePolygonIndices: {value: Uint16Array | Uint32Array, size: 1},
-    // Triangle indices. Allows deck.gl to skip performing costly triangulation on main thread
-    triangles: {value: Uint32Array, size: 1},
+    // Triangle indices. Allows deck.gl to skip performing costly triangulation on main thread. Not present if `options.triangulate` is `false`
+    triangles?: {value: Uint32Array, size: 1},
     // Array of original feature indexes by vertex
     globalFeatureIds: {value: Uint16Array | Uint32Array, size: 1},
     // Array of Polygon feature indexes by vertex
@@ -121,10 +113,13 @@ corresponds to 3D coordinates, where each vertex is defined by three numbers.
 
 | Option           | Type      | Default           | Description                                                                                                                                             |
 | ---------------- | --------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| fixRingWinding   | `Boolean` | `true`            | Whether the fix incorrect ring winding for polygons. Valid `GeoJSON` polygons have the outer ring coordinates in CCW order and with holes in CW order   |
+| fixRingWinding   | `Boolean` | `true`            | Whether to fix incorrect ring winding for polygons. Valid `GeoJSON` polygons have the outer ring coordinates in CCW order and with holes in CW order    |
 | numericPropKeys  | `Array`   | Derived from data | Names of feature properties that should be converted to numeric `TypedArray`s. Passing `[]` will force all properties to be returned as normal objects. |
 | PositionDataType | `class`   | `Float32Array`    | Data type used for positions arrays.                                                                                                                    |
+| triangulate      | `Boolean` | `true`            | Whether polygons are broken into triangles as part of the conversion (generally required for GPU rendering)                                             |
 
 ## Notes
 
 In the case of the source geoJson features having an object as a property, it would not be deep cloned, so it would be linked from the output object (be careful on further mutations).
+
+Triangulation of polygons can be time consuming. If not needed, set the `triangulate` option to `false`.
