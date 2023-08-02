@@ -19,7 +19,7 @@ A simplest way to remove rows from a data frame mey be use `Table.slice(start, e
 
 The `Table.select(keys: String[])` method drops all columns except the columns with names that match the supplied `keys`.
 
-```js
+```typescript
 table.select(['name', 'age']); // Drop all colums except name and age
 ````
 
@@ -28,7 +28,7 @@ table.select(['name', 'age']); // Drop all colums except name and age
 
 Another way to "remove" rows from data frames is to apply filters. Filters effectively "removes" rows that don't fullfill the predicates in the filter. For details see the note below.
 
-```js
+```typescript
 const selectedName = 'myname';
 // Remove all rows with name === 'myname'
 const dataFrame = table.filter(arrow.predicate.col('name').eq(selectedName));
@@ -45,7 +45,7 @@ It is also possible to write custom predicates by supplying an arbitrary JavaScr
 
 To count the number of times different values appear in a table, use `countBy()`.
 
-```js
+```typescript
 const newTable = table.countBy('column_name');
 ```
 
@@ -73,7 +73,7 @@ In order to be more efficient, Arrow data is broken up into batches of records (
 
 In addition to the `next` callback, you can supply a `bind` function for scan to call each time it starts reading from a new `RecordBatch`. `scan` will call these functions as illustrated in the following pseudo-code:
 
-```js
+```typescript
 for (const batch of batches) {
   bind(batch);
   for (const index in batch) {

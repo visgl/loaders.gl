@@ -8,7 +8,7 @@ The `I3SConverter` class converts a 3D Tiles tileset to I3S layer.
 
 ## Usage
 
-```js
+```typescript
 import {I3SConverter} from '@loaders.gl/tile-converter';
 
 const converter = new I3SConverter();

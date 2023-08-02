@@ -19,7 +19,7 @@ Shapefile loader
 
 ## Usage
 
-```js
+```typescript
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {load} from '@loaders.gl/core';
 

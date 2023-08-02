@@ -27,7 +27,7 @@ The `TCXLoader` parses [TCX files][tcx_wikipedia] into GeoJSON. From Wikipedia:
 
 ## Usage
 
-```js
+```typescript
 import {TCXLoader} from '@loaders.gl/kml';
 import {load} from '@loaders.gl/core';
 

@@ -19,7 +19,7 @@
 
 ## Usage
 
-```js
+```typescript
 import '@loaders.gl/polyfill'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';

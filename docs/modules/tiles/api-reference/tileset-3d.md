@@ -13,7 +13,7 @@ References
 
 Loading a tileset and instantiating a `Tileset3D` instance.
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -27,7 +27,7 @@ const tileset3d = new Tileset3D(tilesetJson, {
 
 Loading a tileset and dynamically load/unload with viewport.
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {I3SLoader} from '@loaders.gl/i3s';
@@ -46,7 +46,7 @@ tileset3d.update(viewport);
 
 Since `Tileset3D's update` is a synchronized call, which selects the tiles qualified for rendering based on current viewport and available tiles, user can trigger another `update` when new tiles are loaded.
 
-```js
+```typescript
 import {Tileset3D} from '@loaders.gl/tiles';
 
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
@@ -58,7 +58,7 @@ const tileset3d = new Tileset3D(tilesetJson, {
 
 ## Constructor
 
-```js
+```typescript
 new Tileset3D(tilesetJson, {
   onTileLoad: (tile) => console.log(tile)
 });
@@ -209,7 +209,7 @@ The root tile header.
 
 The tileset's bounding sphere.
 
-```js
+```typescript
 var tileset = viewer.scene.primitives.add(
   new Tileset3D({
     url: 'http://localhost:8002/tilesets/Seattle/tileset.json'

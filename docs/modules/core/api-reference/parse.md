@@ -8,7 +8,7 @@ In contrast to `load`, `parse` does not accept URLs (it treats strings as data t
 
 The return value from `fetch` or `fetchFile` is a `Promise` that resolves to the fetch `Response` object and can be passed directly to the non-sync parser functions:
 
-```js
+```typescript
 import {fetchFile, parse} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 
@@ -19,7 +19,7 @@ data = await parse(fetchFile(url), OBJLoader);
 
 Batched (streaming) parsing is supported by some loaders
 
-```js
+```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/obj';
 
@@ -31,7 +31,7 @@ for await (const batch of batchIterator) {
 
 Handling errors
 
-```js
+```typescript
 try {
   const response = await fetch(url); // fetch can throw in case of network errors
   const data = await parse(response); // parse will throw if server reports an error

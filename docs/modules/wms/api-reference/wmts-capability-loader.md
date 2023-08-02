@@ -25,7 +25,7 @@ the [OGC](https://www.opengeospatial.org/) [WMTS](https://www.ogc.org/standards/
 
 ## Usage
 
-```js
+```typescript
 import {WMTSCapabilitiesLoader} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 

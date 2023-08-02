@@ -18,7 +18,7 @@ GeoPackage loader
 
 ## Usage
 
-```js
+```typescript
 import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
 import {load} from '@loaders.gl/core';
 import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';

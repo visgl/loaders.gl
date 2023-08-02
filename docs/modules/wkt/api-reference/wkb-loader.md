@@ -20,7 +20,7 @@ Loader for the [Well-known binary][wkb] format for representation of geometry.
 
 ## Usage
 
-```js
+```typescript
 import {WKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 
@@ -34,7 +34,7 @@ const data = parseSync(buffer, WKBLoader);
 // => { positions: { value: Float64Array(2) [ 1, 2 ], size: 2 } }
 ```
 
-```js
+```typescript
 import {WKBLoader} from '@loaders.gl/wkt';
 import {load} from '@loaders.gl/core';
 

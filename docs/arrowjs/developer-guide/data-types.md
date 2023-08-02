@@ -12,7 +12,7 @@ Arrow supports a rich set of data types:
 
 Apache Arrow Timestamp is a 64-bit int of milliseconds since the epoch, represented as two 32-bit ints in JS to preserve precision. The fist number is the "low" int and the second number is the "high" int.
 
-```js
+```typescript
 function toDate(timestamp) {
   return new Date((timestamp[1] * Math.pow(2, 32) + timestamp[0])/1000);
 }

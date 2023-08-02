@@ -14,7 +14,7 @@ The `DracoWriter` encodes a mesh or point cloud using [Draco](https://google.git
 
 ## Usage
 
-```js
+```typescript
 import {DracoWriter} from '@loaders.gl/draco';
 import {encode} from '@loaders.gl/core';
 

@@ -17,7 +17,7 @@ Streaming loader for GeoJSON encoded files.
 
 For simple usage, you can encode a table into a JSON "file" atomically:
 
-```js
+```typescript
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {encode} from '@loaders.gl/core';
 
@@ -28,7 +28,7 @@ const data = await encode(url, GeoJSONLoader, {json: options});
 
 For larger files, GeoJSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
 
-```js
+```typescript
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {encodeInBatches} from '@loaders.gl/core';
 

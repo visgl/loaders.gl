@@ -25,7 +25,7 @@ the [OGC](https://www.opengeospatial.org/)-standardized [GML](https://www.ogc.or
 
 ## Usage
 
-```js
+```typescript
 import {GMLLoader} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 

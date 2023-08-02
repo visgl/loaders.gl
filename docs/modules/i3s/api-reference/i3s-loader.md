@@ -72,7 +72,7 @@ A simple react app uses [`I3SLoader`](https://github.com/visgl/loaders.gl/blob/m
 
 [Example Codepen](https://codepen.io/belom88/pen/JjamLvx)
 
-```js
+```typescript
 import React, {Component} from 'react';
 
 import {StaticMap} from 'react-map-gl';
@@ -157,7 +157,7 @@ A more complex example can be found [here](https://github.com/visgl/loaders.gl/t
 
 Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';

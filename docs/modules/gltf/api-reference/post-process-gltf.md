@@ -7,7 +7,7 @@ For details see below.
 
 ## Usage
 
-```js
+```typescript
 import {load} from '@loaders.gl.core';
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 

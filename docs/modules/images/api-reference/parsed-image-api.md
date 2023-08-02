@@ -8,7 +8,7 @@ Background: The image returned by the [`ImageLoader`](/docs/modules/images/api-r
 
 E.g., the `getImageData` method enables the application to get width, height and pixel data from an image returned by the `ImageLoader` in a platform independent way:
 
-```js
+```typescript
 import {ImageLoader, getImageSize, getImageData} from `@loaders.gl/images`;
 import {load} from `@loaders.gl/core`;
 

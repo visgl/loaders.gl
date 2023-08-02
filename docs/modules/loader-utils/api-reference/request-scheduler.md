@@ -18,7 +18,7 @@ A primary use case is to let the app reprioritize or cancel requests if circumst
 
 To schedule a request so that it can be issued at a time when it can be immediately processed.
 
-```js
+```typescript
 const URL = '...';
 const requestToken = await requestScheduler.scheduleRequest(URL);
 if (requestToken) {

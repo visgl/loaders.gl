@@ -16,7 +16,7 @@ Loader for compressed textures in the PVR file format
 
 ## Usage
 
-```js
+```typescript
 import {CompressedTextureLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 

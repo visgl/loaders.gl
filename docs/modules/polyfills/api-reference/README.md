@@ -16,14 +16,14 @@ npm install @loaders.gl/polyfills
 
 Just import `@loaders.gl/polyfills` before you start using other loaders.gl modules.
 
-```js
+```typescript
 import '@loaders.gl/polyfills';
 import '@loaders.gl/core';
 ```
 
 To use the experimental `Blob` and `File` polyfills
 
-```js
+```typescript
 import {installFilePolyfills} from '@loaders.gl/polyfills';
 installFilePolyfills();
 ```
