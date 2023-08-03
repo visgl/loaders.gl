@@ -2,19 +2,17 @@ import test from 'tape-promise/tape';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
 import {isBrowser} from '@loaders.gl/core';
-import {TILESET_STUB} from '../test-utils/load-utils';
+import {TEST_LAYER_URL, TILESET_STUB} from '../test-utils/load-utils';
 
 test('I3SNodePagesTiles#Forms tile header from node pages data', async (t) => {
-  // @ts-expect-error
-  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});
   const rootNode = await i3SNodePagesTiles.formTileFromNodePages(0);
   t.ok(rootNode);
   t.end();
 });
 
 test('I3SNodePagesTiles#Root tile should not have content', async (t) => {
-  // @ts-expect-error
-  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});
   const rootNode = await i3SNodePagesTiles.formTileFromNodePages(0);
   t.ok(rootNode);
   t.notOk(rootNode.contentUrl);
@@ -23,8 +21,7 @@ test('I3SNodePagesTiles#Root tile should not have content', async (t) => {
 });
 
 test('I3SNodePagesTiles#Tile with content', async (t) => {
-  // @ts-expect-error
-  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   t.ok(node1);
   t.equal(
@@ -50,7 +47,7 @@ test('I3SNodePagesTiles#Layer without textures', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(
     // @ts-expect-error
     {...TILESET_STUB(), materialDefinitions: [{}]},
-    'http://url.to.layer',
+    TEST_LAYER_URL,
     {}
   );
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -63,7 +60,7 @@ test('I3SNodePagesTiles#Layer without textures', async (t) => {
       // @ts-expect-error
       materialDefinitions: [{pbrMetallicRoughness: {baseColorFactor: [255, 255, 255, 255]}}]
     },
-    'http://url.to.layer',
+    TEST_LAYER_URL,
     {}
   );
   const node2 = await i3SNodePagesTiles2.formTileFromNodePages(2);
@@ -71,12 +68,11 @@ test('I3SNodePagesTiles#Layer without textures', async (t) => {
   t.notOk(node2.textureUrl);
 
   const i3SNodePagesTiles3 = new I3SNodePagesTiles(
-    // @ts-expect-error
     {
       ...TILESET_STUB(),
       textureSetDefinitions: []
     },
-    'http://url.to.layer',
+    TEST_LAYER_URL,
     {}
   );
   const node3 = await i3SNodePagesTiles3.formTileFromNodePages(3);
@@ -88,8 +84,7 @@ test('I3SNodePagesTiles#Layer without textures', async (t) => {
 
 // Logic moved to parse-i3s.js to avoid calling extra conversion the center from cartographic to cartesian
 test.skip('I3SNodePagesTiles#Tile should have mbs converted from obb', async (t) => {
-  // @ts-expect-error
-  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   t.ok(node1);
   t.deepEqual(
@@ -101,7 +96,6 @@ test.skip('I3SNodePagesTiles#Tile should have mbs converted from obb', async (t)
 
 test('I3SNodePagesTiles#Select "dds" texture if it is supported', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(
-    // @ts-expect-error
     {
       ...TILESET_STUB(),
       textureSetDefinitions: [
@@ -119,7 +113,7 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async (t) => {
         }
       ]
     },
-    'http://url.to.layer',
+    TEST_LAYER_URL,
     {}
   );
   const node = await i3SNodePagesTiles.formTileFromNodePages(2);
@@ -158,7 +152,6 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async (t) => {
 
 test('I3SNodePagesTiles#Switch off compressed textures', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(
-    // @ts-expect-error
     {
       ...TILESET_STUB(),
       textureSetDefinitions: [
@@ -176,7 +169,7 @@ test('I3SNodePagesTiles#Switch off compressed textures', async (t) => {
         }
       ]
     },
-    'http://url.to.layer',
+    TEST_LAYER_URL,
     {i3s: {useCompressedTextures: false}}
   );
   const node = await i3SNodePagesTiles.formTileFromNodePages(2);
@@ -200,8 +193,9 @@ test('I3SNodePagesTiles#Switch off compressed textures', async (t) => {
 });
 
 test('I3SNodePagesTiles#Should load DRACO geometry', async (t) => {
-  // @ts-expect-error
-  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {i3s: {useDracoGeometry: true}});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {
+    i3s: {useDracoGeometry: true}
+  });
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   t.ok(node1);
   t.equal(
@@ -211,10 +205,14 @@ test('I3SNodePagesTiles#Should load DRACO geometry', async (t) => {
 
   const tilesetJson = TILESET_STUB();
   // Remove compressed geometry metadata from geometry definitions
-  tilesetJson.geometryDefinitions[0].geometryBuffers =
-    tilesetJson.geometryDefinitions[0].geometryBuffers.slice(0, 1);
-  // @ts-expect-error
-  const i3SNodePagesTiles2 = new I3SNodePagesTiles(tilesetJson, {i3s: {useDracoGeometry: true}});
+  if (tilesetJson.geometryDefinitions) {
+    tilesetJson.geometryDefinitions[0].geometryBuffers =
+      tilesetJson.geometryDefinitions[0].geometryBuffers.slice(0, 1);
+  }
+
+  const i3SNodePagesTiles2 = new I3SNodePagesTiles(tilesetJson, TEST_LAYER_URL, {
+    i3s: {useDracoGeometry: true}
+  });
   const node12 = await i3SNodePagesTiles2.formTileFromNodePages(1);
   t.equal(
     node12.contentUrl,
@@ -225,8 +223,7 @@ test('I3SNodePagesTiles#Should load DRACO geometry', async (t) => {
 });
 
 test('I3SNodePagesTiles#Root tile should calculate nodesInNodePages metric', async (t) => {
-  // @ts-expect-error
-  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(TILESET_STUB(), TEST_LAYER_URL, {});
   await i3SNodePagesTiles.formTileFromNodePages(0);
 
   const nodesInNodePages = i3SNodePagesTiles.nodesInNodePages;

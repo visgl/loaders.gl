@@ -1,24 +1,33 @@
-import {I3SLoader} from '@loaders.gl/i3s';
-import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
+import {I3SLoader, I3STilesetHeader, SceneLayer3D} from '@loaders.gl/i3s';
+import {Tileset3D, Tile3D, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
+
+export const TEST_LAYER_URL =
+  'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0';
 
 /**
  * The data stub of "tileset header" which I3SLoader returns after loading
  * "/SceneServer/layers/0" json
  */
-export const TILESET_STUB = () => ({
-  fetchOptions: {},
+export const TILESET_STUB = (): SceneLayer3D => ({
+  id: 0,
+  layerType: '3DObject',
+  version: '1.7',
+  capabilities: ['View', 'Query'],
+  disablePopup: false,
   nodePages: {
     nodesPerPage: 64,
     lodSelectionMetricType: 'maxScreenThresholdSQ'
   },
-  url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0',
   materialDefinitions: [
     {
       doubleSided: true,
       emissiveFactor: [255, 255, 255],
+      alphaMode: 'opaque',
       pbrMetallicRoughness: {
-        baseColorTexture: {textureSetDefinitionId: 0}
+        baseColorTexture: {textureSetDefinitionId: 0},
+        metallicFactor: 0,
+        roughnessFactor: 1
       }
     }
   ],
@@ -88,6 +97,8 @@ export const TILESET_STUB = () => ({
     }
   ],
   store: {
+    profile: 'meshpyramids',
+    version: '1.7',
     defaultGeometrySchema: {
       geometryType: 'triangles',
       header: [
@@ -161,24 +172,37 @@ export const TILESET_STUB = () => ({
       type: 'esriFieldTypeString',
       alias: 'NAME'
     }
-  ],
-  type: 'I3S',
-  loader: I3SLoader
+  ]
 });
+
+export async function getI3sTileHeader(
+  options = {},
+  _replaceWithKTX2Texture = false,
+  i3sTilesetData = TILESET_STUB()
+): Promise<I3STilesetHeader> {
+  // Replaced mocked textures with one ktx2 texture for testing purposes.
+  if (_replaceWithKTX2Texture && i3sTilesetData.textureSetDefinitions) {
+    i3sTilesetData.textureSetDefinitions[0].formats = [{name: '1', format: 'ktx2'}];
+  }
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, TEST_LAYER_URL, options);
+  const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
+  return {
+    ...i3sTilesetData,
+    root: nodeRoot,
+    type: TILESET_TYPE.I3S
+  };
+}
 
 export async function loadI3STile(options = {}, _replaceWithKTX2Texture = false) {
   const i3sTilesetData = TILESET_STUB();
-
   // Replaced mocked textures with one ktx2 texture for testing purposes.
-  if (_replaceWithKTX2Texture) {
+  if (_replaceWithKTX2Texture && i3sTilesetData.textureSetDefinitions) {
     i3sTilesetData.textureSetDefinitions[0].formats = [{name: '1', format: 'ktx2'}];
   }
-  // @ts-expect-error
-  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, options);
-  const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
+  const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, TEST_LAYER_URL, options);
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
-  i3sTilesetData.root = nodeRoot;
-  const tileset = new Tileset3D(i3sTilesetData, options);
+  const I3STilesetHeader = await getI3sTileHeader(options, _replaceWithKTX2Texture);
+  const tileset = new Tileset3D({...I3STilesetHeader, loader: I3SLoader}, options);
   const tile = new Tile3D(tileset, node1);
   await tileset._loadTile(tile);
   return tile;
