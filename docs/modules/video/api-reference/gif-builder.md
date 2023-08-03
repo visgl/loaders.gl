@@ -19,7 +19,7 @@ The `GIFBuilder` class creates a base64 encoded GIF image from either:
 
 Build a GIF from images
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {GIFBuilder} from '@loaders.gl/video';
@@ -39,7 +39,7 @@ gifBuilder.build();
 
 Build a GIF from image URLs (Experimental)
 
-```js
+```typescript
 import {GIFBuilder} from '@loaders.gl/video';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
@@ -51,7 +51,7 @@ gifBuilder.build();
 
 Build a GIF from image URLs, with frame-specific Text (Experimental)
 
-```js
+```typescript
 import {GIFBuilder} from '@loaders.gl/video';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
@@ -63,7 +63,7 @@ gifBuilder.build();
 
 Build a GIF from the webcam (Experimental)
 
-```js
+```typescript
 import {GIFBuilder} from '@loaders.gl/video';
 const gifBuilder = new GIFBuilder({source: webcam, width: 400, height: 400});
 gifBuilder.build();

@@ -24,7 +24,7 @@ There are two major versions, known as "Lerc1" and "Lerc2".
 
 ## Usage
 
-```js
+```typescript
 import {LERCLoader} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 

@@ -35,7 +35,7 @@ To handle the complex dynamic tile selection and loading required to performantl
 
 Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tileset3D} from '@loaders.gl/tiles';

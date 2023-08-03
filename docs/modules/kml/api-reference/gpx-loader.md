@@ -26,7 +26,7 @@ The `GPXLoader` parses [GPX files][gpx_wikipedia] into GeoJSON. From Wikipedia:
 
 ## Usage
 
-```js
+```typescript
 import {GPXLoader} from '@loaders.gl/kml';
 import {load} from '@loaders.gl/core';
 

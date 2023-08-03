@@ -22,7 +22,7 @@ mesh][quantized_mesh] format.
 
 ## Usage
 
-```js
+```typescript
 import {QuantizedMeshLoader} from '@loaders.gl/terrain';
 import {load} from '@loaders.gl/core';
 

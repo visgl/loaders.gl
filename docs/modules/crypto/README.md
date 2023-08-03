@@ -25,7 +25,7 @@ The API offers "transforms" that can calculate a cryptographic hash incrementall
 
 The `@loaders.gl/crypto` libraries exports transform that can be used to incrementally calculate a cryptographic hash as data is being loaded and parsed:
 
-```js
+```typescript
 import {loadInBatches} from '@loaders.gl/core';
 import {CRC32Hash} from '@loaders.gl/crypto';
 

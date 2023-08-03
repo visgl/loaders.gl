@@ -1,12 +1,14 @@
 # load
 
-The `load` function can be used with any _loader object_. They takes a `url` and one or more _loader objects_, checks what type of data that loader prefers to work on (e.g. text, JSON, binary, stream, ...), loads the data in the appropriate way, and passes it to the loader.
+```typescript
+load(url: string | File, loaders: Loader, options?: LoaderOptions]): Promise<unknown>
+load(url: string | File, loaders: Loader[], options?: LoaderOptions]): Promise<unknown>
+load(url: string | File, options?: LoaderOptions): Promise<unknown>
+```
 
-### load(url : String | File, loaders : Object | Object[], options?: object]): Promise.Response
+The `load()` function is used to load and parse data with a specific _loader object_. An array of loader objects can be provided, in which case `load` will attempt to autodetect which loader is appropriate for the file.
 
-### load(url : String | File, options?: Object): Promise.Response
-
-The `load` function is used to load and parse data with a specific _loader object_. An array of loader objects can be provided, in which case `load` will attempt to autodetect which loader is appropriate for the file.
+The `load()` function can also be used with multiple _loaders_. `load()` takes a `url` and one or more _loader objects_, checks what type of data that loader prefers to work on (e.g. text, JSON, binary, stream, ...), loads the data in the appropriate way, and passes it to the loader.
 
 The `loaders` parameter can also be omitted, in which case any _loader objects_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
 

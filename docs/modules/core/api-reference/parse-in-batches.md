@@ -10,7 +10,7 @@ From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=fla
 
 Parse CSV in batches (emitting a batch of rows every time data arrives from the network):
 
-```js
+```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/obj';
 
@@ -22,7 +22,7 @@ for await (const batch of batchIterator) {
 
 Parse CSV in batches, requesting an initial metadata batch:
 
-```js
+```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/obj';
 

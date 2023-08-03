@@ -10,7 +10,7 @@ Holds a "chunked array" that allows a number of array fragments (represented by 
 
 Create a new contiguous typed array from a `Chunked` instance (note that this creates a new typed array unless only one chunk)
 
-```js
+```typescript
 const typedArray = chunked.toArray();
 ```
 

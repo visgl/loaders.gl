@@ -4,6 +4,7 @@
 import {fetchFile, load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tileset3D} from '@loaders.gl/tiles';
+import type {Tile3D} from '@loaders.gl/tiles';
 
 /** @typedef {import('@loaders.gl/tiles').Tile3D} Tile3D */
 

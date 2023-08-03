@@ -23,7 +23,7 @@ To read Arrow tables incrementally, you use the `RecordBatchReader` class.
 
 If you only have one table in your file (the normal case), then you'll only need one `RecordBatchReader`:
 
-```js
+```typescript
 const reader = await RecordBatchReader.from(fetch(path, {credentials: 'omit'}));
 for await (const batch of reader) {
   console.log(batch.length);
@@ -34,7 +34,7 @@ for await (const batch of reader) {
 
 The JavaScript Arrow API supports arrow data streams that contain multiple tables (this is an "extension" to the arrow spec). Naturally, each Table comes with its own set of record batches, so to read all batches from all tables in the data source you will need a double loop:
 
-```js
+```typescript
 const readers = RecordBatchReader.readAll(fetch(path, {credentials: 'omit'}));
 for await (const reader of readers) {
   for await (const batch of reader) {
@@ -57,7 +57,7 @@ The `RecordStreamWriter` class allows you to write Arrow `Table` and `RecordBatc
 
 A more complicated example of using Arrow to go from node -> python -> node:
 
-```js
+```typescript
 const { AsyncIterable } = require('ix');
 const { child } = require('event-stream');
 const { fork } = require('child_process');

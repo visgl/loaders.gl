@@ -14,7 +14,7 @@ The `OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format.
 
 ## Usage
 
-```js
+```typescript
 import {OBJLoader} from '@loaders.gl/obj';
 import {load} from '@loaders.gl/core';
 

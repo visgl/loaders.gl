@@ -69,11 +69,8 @@ To quickly get up to speed on how the loaders.gl API works, please see [Get Star
 loaders.gl provides consistent support for both browsers and Node.js. The following platforms are supported:
 
 - **Evergreen Browsers** loaders.gl supports recent versions of the major evergreen browsers (e.g. Chrome, Firefox, Safari) on both desktop and mobile.
-- **Node.js** LTS (Long-Term Support) [releases](https://nodejs.org/en/about/releases/) are also supported. Note that the `@loaders.gl/polyfills` module should be imported under Node.js. It installs the required Node.js polyfills for `fetch` etc.
-- **IE11** is no longer officially supported from v3.0, however loaders.gl 2.3 is known to run on IE11.
-  - To run on IE11, both `@loaders.gl/polyfills` and additional appropriate polyfills (e.g. babel polyfills) need to be installed which will increase your application bundle size.
-  - Note that because of lack of regular testing on IE11, regressions can occur, so pinning your loaders.gl versions in package.json is advisable.
-  - For IE11, additional transpilation of loaders.gl packages in your `node_modules` folder may also be required.
+- **Node.js** LTS (Long-Term Support) [releases](https://nodejs.org/en/about/releases/) are also supported. 
+
 ## Design Goals
 
 **Framework Agnostic** - Files are parsed into clearly documented data structures (objects + typed arrays) that can be used with any JavaScript framework.

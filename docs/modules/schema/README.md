@@ -59,7 +59,7 @@ Rows can contain either
 - an array of values, where the column name is found in the schema.
 - object with key-value pairs, where the key is the column name
 
-```json
+```typescripton
 {
   "shape": , 
   "data": 

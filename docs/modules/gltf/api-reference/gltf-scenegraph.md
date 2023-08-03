@@ -8,7 +8,7 @@ The `GLTFScenegraph` class provides an API for accessing and modifying glTF data
 
 ### Accessing
 
-```js
+```typescript
 import {GLTFLoader, GLTFScenegraph} from '@loaders.gl/gltf';
 import {load} from '@loaders.gl/core';
 
@@ -42,7 +42,7 @@ const scenegraph = gltf.getScene(2);
 
 ### Modifying
 
-```js
+```typescript
 import {load, encode} from '@loaders.gl/core';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFLoader, GLTFWriter, GLTFScenegraph} from '@loaders.gl/gltf';

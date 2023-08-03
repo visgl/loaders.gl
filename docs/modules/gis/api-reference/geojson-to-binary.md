@@ -7,7 +7,7 @@ main process.
 
 ## Usage
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
 import {geojsonToBinary} from '@loaders.gl/gis';
@@ -30,13 +30,13 @@ non-numeric property objects of the given geometry type.
 
 Each `TypedArray` is wrapped inside an _accessor object_, where `.value` contains the raw numeric data, and `.size` gives the number of values per vertex. For example,
 
-```js
+```typescript
 positions: {value: Float32Array, size: 3}
 ```
 
 corresponds to 3D coordinates, where each vertex is defined by three numbers.
 
-```js
+```typescript
 {
   points: {
     // Array of x, y or x, y, z positions

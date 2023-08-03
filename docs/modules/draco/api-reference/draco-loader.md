@@ -23,7 +23,7 @@ Features:
 
 ## Usage
 
-```js
+```typescript
 import {DracoLoader} from '@loaders.gl/draco';
 import {load} from '@loaders.gl/core';
 

@@ -4,7 +4,7 @@ Some short examples
 
 ### Get a table from an Arrow file on disk (in IPC format)
 
-```js
+```typescript
 import { readFileSync } from 'fs';
 import { Table } from 'apache-arrow';
 
@@ -25,7 +25,7 @@ null, null, null
 
 ### Create a Table when the Arrow file is split across buffers
 
-```js
+```typescript
 import { readFileSync } from 'fs';
 import { Table } from 'apache-arrow';
 
@@ -48,7 +48,7 @@ console.log(table.toString());
 
 ### Create a Table from JavaScript arrays
 
-```js
+```typescript
 import {
   Table,
   FloatVector,
@@ -73,7 +73,7 @@ const rainfall = Table.new(
 
 ### Load data with `fetch`
 
-```js
+```typescript
 import { Table } from "apache-arrow";
 
 const table = await Table.from(fetch(("/simple.arrow")));
@@ -83,7 +83,7 @@ console.log(table.toString());
 
 ### Columns look like JS Arrays
 
-```js
+```typescript
 import { readFileSync } from 'fs';
 import { Table } from 'apache-arrow';
 

@@ -1,6 +1,30 @@
 # Upgrade Guide
 
-## Upgrading to v4.0
+## Upgrading to Node.js v18+
+
+If you are relying on loaders.gl to load data from the local file system under Node.js:
+
+When using loaders.gl v3.4 or earlier, importing the `@loaders.gl/polyfills` module 
+attempts to installs a global `fetch` function that supports fetching data from the local file system,
+by passing in non-file URLs.
+
+This breaks under 
+
+
+## Upgrading to loaders.gl v4.0
+
+**Polyfills**
+
+In loaders.gl v4.0, the `@loaders.gl/polyfills` module no longer installs a global `fetch` function under Node.js. 
+
+Through loaders.gl v3.4 that polyfill supported fetching data from the web and the local Node.js file system 
+(when non `http{s}://` and `data://` urls were used).
+
+Instead, the expectation is now that loaders.gl v4.0+ will be used with Node.js v18 and higher. 
+These newer Node.js versions now provide a built-in browser compatible `fetch` function by default.
+
+Since new built-in Node.js `fetch` function does not support reading from the file system,
+loaders.gl now provides this `fetch` "extension" as part of the loaders.gl `fetchFile` function.
 
 **Typed Loaders**
 

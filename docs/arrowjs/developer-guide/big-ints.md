@@ -22,7 +22,7 @@ One of the added methods is an implementation of [`[Symbol.toPrimitive]`](https:
  The implementation of these methods is [bifurcated](https://github.com/apache/arrow/blob/3eb07b7ed173e2ecf41d689b0780dd103df63a00/js/src/util/bn.ts#L125), so if you're in an environment with `BigInt` support we use the native type, but if not, we'll make a best-effort attempt to return something meaningful (usually the unsigned decimal representation of the number as a string, though we'd appreciate help if someone knows how to compute the signed decimal representation).
 
 Examples:
-```js
+```typescript
 import { Int64Vector } from 'apache-arrow';
 import assert from 'assert';
 

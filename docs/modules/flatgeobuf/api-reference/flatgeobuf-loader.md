@@ -18,7 +18,7 @@ Loader for the [FlatGeobuf](http://flatgeobuf.org/) format, a binary FlatBuffers
 
 ## Usage
 
-```js
+```typescript
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {load} from '@loaders.gl/core';
 
