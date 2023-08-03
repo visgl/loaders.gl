@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/3d-tiles",
-  "version": "4.0.0-alpha.16",
+  "version": "4.0.0-alpha.17",
   "description": "3D Tiles, an open standard for streaming massive heterogeneous 3D geospatial datasets.",
   "license": "MIT",
   "publishConfig": {
@@ -34,11 +34,11 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/draco": "4.0.0-alpha.16",
-    "@loaders.gl/gltf": "4.0.0-alpha.16",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.16",
-    "@loaders.gl/math": "4.0.0-alpha.16",
-    "@loaders.gl/tiles": "4.0.0-alpha.16",
+    "@loaders.gl/draco": "4.0.0-alpha.17",
+    "@loaders.gl/gltf": "4.0.0-alpha.17",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.17",
+    "@loaders.gl/math": "4.0.0-alpha.17",
+    "@loaders.gl/tiles": "4.0.0-alpha.17",
     "@math.gl/core": "^3.5.1",
     "@math.gl/geospatial": "^3.5.1",
     "@probe.gl/log": "^4.0.4",

@@ -6,6 +6,12 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.17
+
+- docs(chore): core API documentation improvements (#2573)
+- Add triangulate property to geojsonToBinary (#2571)
+- fix(obj): Improved vertex colors parsing (#2569)
+
 ### v4.0.0-alpha.16
 
 - chore(tile-converter): create SLPK hash during serve (#2565)
