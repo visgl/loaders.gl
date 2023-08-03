@@ -94,7 +94,7 @@ function extractNumericPropTypes(features: FlatFeature[]): {
  * @param options
  * @returns an accessor object with value and size keys
  */
-// eslint-disable-next-line complexity
+// eslint-disable-next-line complexity, max-statements
 function fillArrays(
   features: FlatFeature[],
   geometryInfo: GeojsonGeometryInfo & {
