@@ -10,7 +10,7 @@ test('tile-converter(i3s-server)#createSceneServer', async (t) => {
   }
 
   const result = await createSceneServer('Buildings_3D_Multipatch_DA12_Subset', LAYER);
-  t.equals(JSON.stringify(result).length, 4898);
+  t.equals(JSON.stringify(result).length, 4889);
 
   t.end();
 });
@@ -141,7 +141,7 @@ const LAYER: SceneLayer3D = {
   materialDefinitions: [],
   geometryDefinitions: [
     {
-      topology: 'PerAttributeArray',
+      topology: 'triangle',
       geometryBuffers: [
         {
           offset: 8,

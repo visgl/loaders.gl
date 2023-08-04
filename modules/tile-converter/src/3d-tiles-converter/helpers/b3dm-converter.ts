@@ -11,6 +11,7 @@ const scratchVector = new Vector3();
 
 export type I3SAttributesData = {
   tileContent: any;
+  box: number[];
   textureFormat: string;
 };
 
@@ -53,15 +54,8 @@ export default class B3dmConverter {
     i3sAttributesData: I3SAttributesData,
     featureAttributes: any
   ): Promise<ArrayBuffer> {
-    const {tileContent, textureFormat} = i3sAttributesData;
-    const {
-      material,
-      attributes,
-      indices: originalIndices,
-      cartesianOrigin,
-      cartographicOrigin,
-      modelMatrix
-    } = tileContent;
+    const {tileContent, textureFormat, box} = i3sAttributesData;
+    const {material, attributes, indices: originalIndices, modelMatrix} = tileContent;
     const gltfBuilder = new GLTFScenegraph();
 
     const textureIndex = await this._addI3sTextureToGltf(tileContent, textureFormat, gltfBuilder);
@@ -77,6 +71,12 @@ export default class B3dmConverter {
         attributes.uvRegions.value
       );
     }
+
+    const cartesianOrigin = new Vector3(box);
+    const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
+      cartesianOrigin,
+      new Vector3()
+    );
 
     attributes.positions.value = this._normalizePositions(
       positionsValue,

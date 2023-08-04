@@ -94,11 +94,9 @@ async function parseTileset(data, options: I3SLoaderOptions, context) {
   if (tilesetJson?.layerType === POINT_CLOUD) {
     throw new Error('Point Cloud layers currently are not supported by I3SLoader');
   }
-  // eslint-disable-next-line no-use-before-define
-  tilesetJson.loader = I3SLoader;
-  await normalizeTilesetData(tilesetJson, options, context);
 
-  return tilesetJson;
+  const tilesetPostprocessed = await normalizeTilesetData(tilesetJson, options, context);
+  return tilesetPostprocessed;
 }
 
 async function parseTile(data, context) {

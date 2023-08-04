@@ -4,6 +4,9 @@ export type {
   BoundingVolumes,
   Mbs,
   Obb,
+  I3STilesetHeader,
+  I3STileContent,
+  I3STileHeader,
   SceneLayer3D,
   AttributeStorageInfo,
   Field,
@@ -33,6 +36,7 @@ export type {
   TextureSetDefinitionFormats
 } from './types';
 export type {FileProvider} from './lib/parsers/parse-zip/file-provider';
+export type {I3SLoaderOptions} from './i3s-loader';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
 

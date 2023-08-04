@@ -3,7 +3,7 @@ import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 // @ts-expect-error
 import I3SNodePagesTiles from '@loaders.gl/i3s/lib/helpers/i3s-nodepages-tiles';
-import {TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
+import {TEST_LAYER_URL, TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
 
 import {I3SContentLoader} from '@loaders.gl/i3s';
 
@@ -20,7 +20,7 @@ const MONTREAL_CONTENT_LOADER_OPTIONS =
 
 test('ParseI3sTileContent#should parse tile content', async (t) => {
   const tileset = TILESET_STUB();
-  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
@@ -46,7 +46,7 @@ test('ParseI3sTileContent#should parse tile content', async (t) => {
 
 test('ParseI3sTileContent#should load "dds" texture if it is supported', async (t) => {
   const tileset = TILESET_STUB();
-  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
@@ -90,7 +90,7 @@ test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async
 
 test('ParseI3sTileContent#should make PBR material', async (t) => {
   const tileset = TILESET_STUB();
-  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
@@ -127,7 +127,7 @@ test('ParseI3sTileContent#should make PBR material', async (t) => {
 
 test('ParseI3sTileContent#should have featureIds', async (t) => {
   const tileset = TILESET_STUB();
-  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
@@ -146,7 +146,7 @@ test('ParseI3sTileContent#should have featureIds', async (t) => {
 
 test('ParseI3sTileContent#should generate mbs from obb', async (t) => {
   const tileset = TILESET_STUB();
-  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   t.ok(tile.mbs);
   t.equals(tile.mbs.length, 4);
@@ -156,7 +156,7 @@ test('ParseI3sTileContent#should generate mbs from obb', async (t) => {
 
 test('ParseI3sTileContent#should not decode the texture image if "decodeTextures" === false', async (t) => {
   const tileset = TILESET_STUB();
-  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, {});
+  const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
   const response = await fetchFile(I3S_TILE_CONTENT);
   const data = await response.arrayBuffer();
@@ -180,7 +180,9 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
     t.equal(texture.byteLength, 7199);
   }
 
-  const i3SNodePagesTiles2 = new I3SNodePagesTiles(tileset, {i3s: {useCompressedTextures: false}});
+  const i3SNodePagesTiles2 = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {
+    i3s: {useCompressedTextures: false}
+  });
   const tile2 = await i3SNodePagesTiles2.formTileFromNodePages(1);
   const response2 = await fetchFile(I3S_TILE_CONTENT);
   const data2 = await response2.arrayBuffer();

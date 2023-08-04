@@ -9,9 +9,11 @@ import {
   I3STileHeader,
   Mbs,
   I3SMinimalNodeData,
-  Node3DIndexDocument
+  Node3DIndexDocument,
+  SceneLayer3D
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import { I3SLoader } from '../../i3s-loader';
 
 export function normalizeTileData(tile : Node3DIndexDocument, context: LoaderContext): I3STileHeader {
   const url: string = context.url || '';
@@ -30,11 +32,15 @@ export function normalizeTileData(tile : Node3DIndexDocument, context: LoaderCon
     attributeUrls = generateTileAttributeUrls(url, tile);
   }
 
+  const children = tile.children || [];
+
   return normalizeTileNonUrlData({
     ...tile,
+    children,
     url,
     contentUrl,
     textureUrl,
+    textureFormat: 'jpg', // `jpg` format will cause `ImageLoader` usage that will be able to handle `png` as well
     attributeUrls,
     isDracoGeometry: false
   });
@@ -67,27 +73,27 @@ export function normalizeTileNonUrlData(tile : I3SMinimalNodeData): I3STileHeade
 
   const lodMetricType = tile.lodSelection?.[0].metricType;
   const lodMetricValue = tile.lodSelection?.[0].maxError;
-  const transformMatrix = tile.transform;
   const type = TILE_TYPE.MESH;
   /**
    * I3S specification supports only REPLACE
    */
   const refine = TILE_REFINEMENT.REPLACE;
 
-  return {...tile, mbs, boundingVolume, lodMetricType, lodMetricValue, transformMatrix, type, refine};
+  return {...tile, mbs, boundingVolume, lodMetricType, lodMetricValue, type, refine};
 }
 
-export async function normalizeTilesetData(tileset : I3STilesetHeader, options : LoaderOptions, context: LoaderContext) {
-  tileset.url = context.url;
-
+export async function normalizeTilesetData(tileset : SceneLayer3D, options : LoaderOptions, context: LoaderContext): Promise<I3STilesetHeader> {
+  const url = context.url;
+  let nodePagesTile: I3SNodePagesTiles | undefined;
+  let root: I3STileHeader;
   if (tileset.nodePages) {
-    tileset.nodePagesTile = new I3SNodePagesTiles(tileset, options);
-    tileset.root = tileset.nodePagesTile.formTileFromNodePages(0);
+    nodePagesTile = new I3SNodePagesTiles(tileset, url, options);
+    root = await nodePagesTile.formTileFromNodePages(0);
   } else {
     // @ts-expect-error options is not properly typed
     const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.i3s?.token);
     // eslint-disable-next-line no-use-before-define
-    tileset.root = await load(rootNodeUrl, tileset.loader, {
+    root = await load(rootNodeUrl, I3SLoader, {
       ...options,
       i3s: {
         // @ts-expect-error options is not properly typed
@@ -96,11 +102,14 @@ export async function normalizeTilesetData(tileset : I3STilesetHeader, options :
     });
   }
 
-  // base path that non-absolute paths in tileset are relative to.
-  tileset.basePath = tileset.url;
-  tileset.type = TILESET_TYPE.I3S;
-
-  // populate from root node
-  tileset.lodMetricType = tileset.root.lodMetricType;
-  tileset.lodMetricValue = tileset.root.lodMetricValue;
+  return {
+    ...tileset,
+    url,
+    basePath: url,
+    type: TILESET_TYPE.I3S,
+    nodePagesTile,
+    root,
+    lodMetricType: root.lodMetricType,
+    lodMetricValue: root.lodMetricValue
+  }
 }
