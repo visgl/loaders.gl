@@ -8,7 +8,7 @@ import {TypedArray} from '@loaders.gl/loader-utils';
  * @param uvRegions
  */
 export function convertTextureAtlas(texCoords: TypedArray, uvRegions: TypedArray): Float32Array {
-  const convertedTexCoords = new texCoords[Symbol.species](texCoords.length);
+  const convertedTexCoords = new Float32Array(texCoords.length);
   const normalisedRegions = normalizeRegions(uvRegions);
 
   for (let index = 0; index < texCoords.length; index += 2) {
