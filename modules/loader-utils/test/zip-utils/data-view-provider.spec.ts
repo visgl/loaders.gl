@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
-import {DATA_ARRAY} from '../data/test.zip.js';
-import {DataViewFileProvider} from '../../src/lib/parsers/parse-zip/data-view-file-provider';
-import {signature} from '../../src/lib/parsers/parse-zip/local-file-header';
+import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip.js';
+import {DataViewFileProvider} from '../../src/parse-zip/data-view-file-provider';
+import {signature} from '../../src/parse-zip/local-file-header';
 
 test('DataViewFileProvider#slice', async (t) => {
   const provider = new DataViewFileProvider(new DataView(DATA_ARRAY.buffer));

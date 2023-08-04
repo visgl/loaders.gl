@@ -1,6 +1,5 @@
-import {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {LoaderOptions, LoaderWithParser, DataViewFileProvider} from '@loaders.gl/loader-utils';
 import {parseSLPK as parseSLPKFromProvider} from './lib/parsers/parse-slpk/parse-slpk';
-import {DataViewFileProvider} from './lib/parsers/parse-zip/data-view-file-provider';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

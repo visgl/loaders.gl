@@ -1,9 +1,12 @@
 import md5 from 'md5';
-import {parseZipCDFileHeader, signature as cdHeaderSignature} from '../parse-zip/cd-file-header';
-import {parseEoCDRecord} from '../parse-zip/end-of-central-directory';
-import {FileProvider} from '../parse-zip/file-provider';
-import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
-import {searchFromTheEnd} from '../parse-zip/search-from-the-end';
+import {
+  parseZipCDFileHeader,
+  cdSignature as cdHeaderSignature,
+  parseEoCDRecord,
+  FileProvider,
+  parseZipLocalFileHeader,
+  searchFromTheEnd
+} from '@loaders.gl/loader-utils';
 import {HashElement, SLPKArchive, compareHashes} from './slpk-archieve';
 
 /**

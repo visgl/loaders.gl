@@ -16,3 +16,8 @@ import './lib/path-utils/path.spec';
 import './lib/request-utils/request-scheduler.spec';
 
 import './lib/worker-loader-utils/parse-with-worker.spec';
+import './zip-utils/cd-file-header.spec';
+import './zip-utils/data-view-provider.spec';
+import './zip-utils/end-of-central-directory.spec';
+import './zip-utils/local-file-header.spec';
+import './zip-utils/search-from-the-end.spec';

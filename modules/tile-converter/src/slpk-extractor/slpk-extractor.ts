@@ -2,8 +2,7 @@ import {isBrowser} from '@loaders.gl/core';
 
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {FileHandleProvider} from './helpers/file-handle-provider';
-import {parseZipLocalFileHeader} from '@loaders.gl/i3s';
-import {path} from '@loaders.gl/loader-utils';
+import {path, parseZipLocalFileHeader} from '@loaders.gl/loader-utils';
 import {GZipCompression} from '@loaders.gl/compression';
 import {writeFile} from '../lib/utils/file-utils';
 

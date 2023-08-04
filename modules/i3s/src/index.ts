@@ -35,7 +35,6 @@ export type {
   OperationalLayer,
   TextureSetDefinitionFormats
 } from './types';
-export type {FileProvider} from './lib/parsers/parse-zip/file-provider';
 export type {I3SLoaderOptions} from './i3s-loader';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
@@ -47,5 +46,4 @@ export {I3SAttributeLoader, loadFeatureAttributes} from './i3s-attribute-loader'
 export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
 export {I3SNodePageLoader} from './i3s-node-page-loader';
 export {ArcGisWebSceneLoader} from './arcgis-webscene-loader';
-export {parseZipLocalFileHeader} from './lib/parsers/parse-zip/local-file-header';
 export {parseSLPK} from './lib/parsers/parse-slpk/parse-slpk';

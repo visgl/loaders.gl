@@ -1,4 +1,4 @@
-import {FileProvider} from 'modules/i3s/src/lib/parsers/parse-zip/file-provider';
+import {FileProvider} from './file-provider';
 
 /** Description of zip signature type */
 export type ZipSignature = [number, number, number, number];

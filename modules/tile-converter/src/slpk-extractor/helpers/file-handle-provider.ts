@@ -1,4 +1,4 @@
-import {FileProvider} from '@loaders.gl/i3s';
+import {FileProvider} from '@loaders.gl/loader-utils';
 import {FileHandle} from './fs-promises';
 
 /**

@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
-import {DATA_ARRAY} from '../data/test.zip.js';
-import {parseZipCDFileHeader} from '../../src/lib/parsers/parse-zip/cd-file-header';
-import {DataViewFileProvider} from '../../src/lib/parsers/parse-zip/data-view-file-provider';
+import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip.js';
+import {parseZipCDFileHeader} from '../../src//parse-zip/cd-file-header';
+import {DataViewFileProvider} from '../../src//parse-zip/data-view-file-provider';
 
 test('SLPKLoader#central directory file header parse', async (t) => {
   const cdFileHeader = await parseZipCDFileHeader(
