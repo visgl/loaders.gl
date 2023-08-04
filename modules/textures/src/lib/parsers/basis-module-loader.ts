@@ -15,13 +15,13 @@ let loadBasisTranscoderPromise;
  * @param options
  * @returns {BasisFile} promise
  */
-export async function loadBasisTrascoderModule(options) {
+export async function loadBasisTranscoderModule(options) {
   const modules = options.modules || {};
   if (modules.basis) {
     return modules.basis;
   }
 
-  loadBasisTranscoderPromise = loadBasisTranscoderPromise || loadBasisTrascoder(options);
+  loadBasisTranscoderPromise = loadBasisTranscoderPromise || loadBasisTranscoder(options);
   return await loadBasisTranscoderPromise;
 }
 
@@ -30,7 +30,7 @@ export async function loadBasisTrascoderModule(options) {
  * @param options
  * @returns {BasisFile} promise
  */
-async function loadBasisTrascoder(options) {
+async function loadBasisTranscoder(options) {
   let BASIS = null;
   let wasmBinary = null;
 
@@ -42,7 +42,7 @@ async function loadBasisTrascoder(options) {
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
   BASIS = BASIS || globalThis.BASIS;
-  return await initializeBasisTrascoderModule(BASIS, wasmBinary);
+  return await initializeBasisTranscoderModule(BASIS, wasmBinary);
 }
 
 /**
@@ -51,7 +51,7 @@ async function loadBasisTrascoder(options) {
  * @param wasmBinary - wasm part of the module
  * @returns {BasisFile} promise
  */
-function initializeBasisTrascoderModule(BasisModule, wasmBinary) {
+function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
   const options: {wasmBinary?} = {};
 
   if (wasmBinary) {

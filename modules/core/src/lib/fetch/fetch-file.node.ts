@@ -1,19 +1,23 @@
 // loaders.gl, MIT license
 
-import fs from 'fs'; // `fs` will be empty object in browsers (see package.json "browser" field).
-import {Response} from './response.node';
-import {Headers} from './headers.node';
+import {fs} from '@loaders.gl/loader-utils';
 
-export function isRequestURL(url: string): boolean {
-  return url.startsWith('http:') || url.startsWith('https:');
-}
-
+/**
+ * Enables
+ * @param url
+ * @param options
+ * @returns
+ */
 export async function fetchFileNode(url: string, options): Promise<Response> {
+  // Support `file://` protocol
+  const FILE_PROTOCOL_REGEX = /^file:\/\//;
+  url.replace(FILE_PROTOCOL_REGEX, '/');
+
   const noqueryUrl = url.split('?')[0];
 
   try {
     // Now open the stream
-    const body = await new Promise((resolve, reject) => {
+    const body = await new Promise<fs.ReadStream>((resolve, reject) => {
       // @ts-ignore
       const stream = fs.createReadStream(noqueryUrl, {encoding: null});
       stream.once('readable', () => resolve(stream));
@@ -23,12 +27,18 @@ export async function fetchFileNode(url: string, options): Promise<Response> {
     const status = 200;
     const statusText = 'OK';
     const headers = getHeadersForFile(noqueryUrl);
-    return new Response(body, {headers, status, statusText, url});
+    // @ts-expect-error
+    const response = new Response(body, {headers, status, statusText});
+    Object.defineProperty(response, 'url', {value: url});
+    return response;
   } catch (error) {
+    const errorMessage = (error as Error).message;
     const status = 400;
-    const statusText = (error as Error).message;
+    const statusText = errorMessage;
     const headers = {};
-    return new Response((error as Error).message, {headers, status, statusText, url});
+    const response = new Response(errorMessage, {headers, status, statusText});
+    Object.defineProperty(response, 'url', {value: url});
+    return response;
   }
 }
 

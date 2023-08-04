@@ -18,6 +18,7 @@ The `loaders` parameter can also be omitted, in which case any _loader objects_ 
 
 Returns:
 
+- If `options.fetch` is not overridden with a new function.
 - Return value depends on the _loader category_.
 
 Notes:

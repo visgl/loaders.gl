@@ -6,8 +6,6 @@ import {Response} from './response.node';
 import {Headers} from './headers.node';
 import {decodeDataUri} from './utils/decode-data-uri.node';
 
-import {fetchFileNode} from './fetch-file.node';
-
 const isDataURL = (url: string): boolean => url.startsWith('data:');
 const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.startsWith('https:');
 
@@ -17,11 +15,13 @@ const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.st
  * @param options
  */
 // eslint-disable-next-line complexity
-export async function fetchNode(url: string, options): Promise<Response> {
+export async function fetchNode(url: string, options: RequestInit): Promise<Response> {
   try {
     // Handle file streams in node
-    if (!isRequestURL(url) && !isDataURL(url)) {
-      return await fetchFileNode(url, options);
+    // @ts-expect-error
+    if (globalThis.fetch !== fetchNode && (isRequestURL(url) || isDataURL(url))) {
+      // @ts-expect-error
+      return await fetch(url, options);
     }
 
     // Handle data urls in node, to match `fetch``
@@ -49,6 +49,7 @@ export async function fetchNode(url: string, options): Promise<Response> {
     const {status, statusText} = getStatus(body);
 
     const followRedirect =
+      // @ts-expect-error
       !options || options.followRedirect || options.followRedirect === undefined;
 
     if (status >= 300 && status < 400 && headers.has('location') && followRedirect) {

@@ -2,29 +2,33 @@
 
 ## Upgrading to Node.js v18+
 
-If you are relying on loaders.gl to load data from the local file system under Node.js:
+loaders.gl v3 does not support Node.js versions higher than v16.
 
-When using loaders.gl v3.4 or earlier, importing the `@loaders.gl/polyfills` module 
-attempts to installs a global `fetch` function that supports fetching data from the local file system,
-by passing in non-file URLs.
-
-This breaks under 
-
+When using loaders.gl v4.0 on Node.js v18+, you no longer need to import the 
+`@loaders.gl/polyfills` module to get access to the global `fetch()`function 
 
 ## Upgrading to loaders.gl v4.0
 
 **Polyfills**
 
-In loaders.gl v4.0, the `@loaders.gl/polyfills` module no longer installs a global `fetch` function under Node.js. 
+If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` 
+function under Node.js that supported fetching from local files:
+- You no longer need to import the `@loaders.gl/polyfills` module to get access to the global `fetch()`function 
+- To fetch from local files, you now need to use `fetchFile()` instead.
 
-Through loaders.gl v3.4 that polyfill supported fetching data from the web and the local Node.js file system 
-(when non `http{s}://` and `data://` urls were used).
+```typescript
+import {fetchFile} from '@loaders.gl/core';
+const response = await fetchFile('/path/to/local/file');
+...
+```
 
-Instead, the expectation is now that loaders.gl v4.0+ will be used with Node.js v18 and higher. 
-These newer Node.js versions now provide a built-in browser compatible `fetch` function by default.
+Note that `fetchFile` is called by all core `load()` functions unless the fetch function is overridden through
+loader options.
 
-Since new built-in Node.js `fetch` function does not support reading from the file system,
-loaders.gl now provides this `fetch` "extension" as part of the loaders.gl `fetchFile` function.
+Details: The expectation is that loaders.gl v4.0+ will be used with Node.js version 18 and higher,
+which now provide a built-in browser-compatible `fetch()` function by default.
+This new built-in Node.js `fetch` function does not support reading from the file system,
+and loaders.gl v4.0 aligns with this practice.
 
 **Typed Loaders**
 

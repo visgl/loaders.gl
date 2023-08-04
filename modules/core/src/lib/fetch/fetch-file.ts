@@ -2,6 +2,19 @@
 
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';
+import * as node from './fetch-file.node';
+
+export function isNodePath(url: string): boolean {
+  return !isRequestURL(url) && !isDataURL(url);
+}
+
+export function isRequestURL(url: string): boolean {
+  return url.startsWith('http:') || url.startsWith('https:');
+}
+
+export function isDataURL(url: string): boolean {
+  return url.startsWith('data:');
+}
 
 /**
  * fetch API compatible function
@@ -14,6 +27,11 @@ export async function fetchFile(
 ): Promise<Response> {
   if (typeof urlOrData === 'string') {
     const url = resolvePath(urlOrData);
+
+    // Support fetching from local file system
+    if (isNodePath(url) && node?.fetchFileNode) {
+      return node.fetchFileNode(url, fetchOptions);
+    }
 
     // Call global fetch
     return await fetch(url, fetchOptions);

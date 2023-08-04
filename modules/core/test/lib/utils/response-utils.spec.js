@@ -27,6 +27,7 @@ test('makeResponse(File)', async (t) => {
     type: 'text/plain'
   });
   const response = await makeResponse(file);
+  // t.comment(JSON.stringify(response.headers, null, 2));
   t.equal(
     response.headers.get('content-length'),
     '3',
