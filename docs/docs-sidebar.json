@@ -372,6 +372,7 @@
     "items": [
       "modules/tile-converter/cli-reference/tile-converter",
       "modules/tile-converter/cli-reference/i3s-server",
+      "modules/tile-converter/cli-reference/slpk-extractor",
       "modules/tile-converter/cli-reference/supported-features"
     ]
   }
