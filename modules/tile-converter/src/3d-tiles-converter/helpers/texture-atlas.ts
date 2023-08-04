@@ -1,3 +1,5 @@
+import {TypedArray} from '@loaders.gl/loader-utils';
+
 /**
  * Apply uvRegions to texture coordinates.
  * Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/geometryUVRegion.cmn.md
@@ -5,8 +7,8 @@
  * @param texCoords
  * @param uvRegions
  */
-export function convertTextureAtlas(texCoords: Float32Array, uvRegions: Uint16Array): Float32Array {
-  const convertedTexCoords = new Float32Array(texCoords.length);
+export function convertTextureAtlas(texCoords: TypedArray, uvRegions: TypedArray): Float32Array {
+  const convertedTexCoords = new texCoords[Symbol.species](texCoords.length);
   const normalisedRegions = normalizeRegions(uvRegions);
 
   for (let index = 0; index < texCoords.length; index += 2) {
@@ -43,7 +45,9 @@ function fract(uv: [number, number]): [number, number] {
  * Normalize uvRegions by dividing by the maximum Uint16 value
  * @param regions
  */
-function normalizeRegions(regions: Uint16Array): number[] {
+function normalizeRegions(regions: TypedArray): number[] {
+  // The code is for Uint16Array because it is the spec requirement
+  // https://github.com/Esri/i3s-spec/blob/master/docs/1.8/geometryUVRegion.cmn.md
   const MAX_UINT_16_VALUE = 65535;
   const normalizedRegions: number[] = [];
 

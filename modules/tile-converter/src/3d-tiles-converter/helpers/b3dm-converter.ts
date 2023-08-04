@@ -5,12 +5,13 @@ import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
+import {I3STileContent} from '@loaders.gl/i3s';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
 
 export type I3SAttributesData = {
-  tileContent: any;
+  tileContent: I3STileContent;
   box: number[];
   textureFormat: string;
 };
