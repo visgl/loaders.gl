@@ -20,8 +20,8 @@ export const isResponse: (x: any) => boolean = (x) =>
   (typeof Response !== 'undefined' && x instanceof Response) ||
   (x && x.arrayBuffer && x.text && x.json);
 
-export const isFile: (x: any) => boolean = (x) => typeof File !== 'undefined' && x instanceof File;
 export const isBlob: (x: any) => boolean = (x) => typeof Blob !== 'undefined' && x instanceof Blob;
+export const isFile: (x: any) => boolean = (x) => typeof File !== 'undefined' && x instanceof File;
 
 /** Check for Node.js `Buffer` without triggering bundler to include buffer polyfill */
 export const isBuffer: (x: any) => boolean = (x) => x && typeof x === 'object' && x.isBuffer;

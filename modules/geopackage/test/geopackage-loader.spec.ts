@@ -12,7 +12,6 @@ test('GeoPackageLoader#load file as tables', async (t) => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {sqlJsCDN}
   });
-
   const response = await fetchFile(GPKG_RIVERS_GEOJSON);
   const json = await response.json();
 

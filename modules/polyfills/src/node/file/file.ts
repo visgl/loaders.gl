@@ -1,12 +1,12 @@
 // Forked from @gozala's web-file under MIT license https://github.com/Gozala/web-file
-import {BlobPolyfill} from './blob';
+// import {BlobPolyfill} from './blob';
 
 /**
  * Forked from @gozala's web-file under MIT license
  * @see https://github.com/Gozala/web-file
  */
 // @ts-ignore
-export class FilePolyfill extends BlobPolyfill {
+export class FilePolyfill extends Blob {
   // implements File {
   // public API
   /** The name of the file referenced by the File object. */

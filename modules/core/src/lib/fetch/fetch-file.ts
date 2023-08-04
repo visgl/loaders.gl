@@ -34,7 +34,7 @@ export async function fetchFile(
     }
 
     // Call global fetch
-    return await fetch(url, fetchOptions);
+    return (await fetchOptions) ? globalThis.fetch(url, fetchOptions) : globalThis.fetch(url);
   }
 
   // TODO - should we still call fetch on non-URL inputs?

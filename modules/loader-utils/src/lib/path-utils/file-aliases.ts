@@ -40,6 +40,8 @@ export function resolvePath(filename: string): string {
   }
   if (!filename.startsWith('http://') && !filename.startsWith('https://')) {
     filename = `${pathPrefix}${filename}`;
+    // Remove query string if not a request
+    // filename = filename.split('?')[0];
   }
   return filename;
 }

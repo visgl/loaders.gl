@@ -61,6 +61,7 @@ export async function parseI3STileContent(
     texture: null
   };
 
+  const {fetch} = context!;
   if (tileOptions.textureUrl) {
     // @ts-expect-error options is not properly typed
     const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);

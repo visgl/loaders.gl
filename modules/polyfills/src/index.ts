@@ -7,10 +7,6 @@ import {allSettled} from './promise/all-settled';
 // Node specific
 import * as base64 from './node/buffer/btoa.node';
 
-import {Headers as HeadersNode} from './node/fetch/headers.node';
-import {Response as ResponseNode} from './node/fetch/response.node';
-import {fetchNode as fetchNode} from './node/fetch/fetch.node';
-
 import {encodeImageNode} from './node/images/encode-image.node';
 import {parseImageNode, NODE_FORMAT_SUPPORT} from './node/images/parse-image.node';
 
@@ -43,24 +39,6 @@ if (!isBrowser && !('atob' in global) && base64.atob) {
 }
 if (!isBrowser && !('btoa' in global) && base64.btoa) {
   global['btoa'] = base64.btoa;
-}
-
-// DEPRECATED POLYFILL:
-// - Node v18+: No, not needed
-// - Node v16 and lower: Yes
-// - Browsers (evergreen): Not needed.
-// - IE11: No. This polyfill is node only, install external polyfill
-
-if (!isBrowser && !('Headers' in global) && HeadersNode) {
-  global['Headers'] = HeadersNode;
-}
-
-if (!isBrowser && !('Response' in global) && ResponseNode) {
-  global['Response'] = ResponseNode;
-}
-
-if (!isBrowser && !('fetch' in global) && fetchNode) {
-  global['fetch'] = fetchNode;
 }
 
 // NODE IMAGE FUNCTIONS:
