@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip.js';
+import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {DataViewFileProvider} from '../../src/parse-zip/data-view-file-provider';
 import {signature} from '../../src/parse-zip/local-file-header';
 
