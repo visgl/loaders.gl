@@ -131,11 +131,8 @@ export default class BrowserFileSystem implements FileSystem {
   ): Promise<{bytesRead: number; buffer: ArrayBuffer}> {
     const file = fd as File;
     const startPosition = 0; // position
-<<<<<<< HEAD
-    const arrayBuffer = await file.slice(startPosition, startPosition + length).arrayBuffer();
-=======
+    // const arrayBuffer = await file.slice(startPosition, startPosition + length).arrayBuffer();
     const arrayBuffer = await readFileSlice(file, startPosition, startPosition + length);
->>>>>>> 2ce9138ae (feat(core): filesystem improvements)
     // copy into target buffer
     return {bytesRead: length, buffer: arrayBuffer};
   }
