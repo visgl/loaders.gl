@@ -39,8 +39,8 @@ export function flattenPropertyTableByFeatureIds(
  * @param properties
  * @param featureIds
  */
-function getPropertiesByFeatureIds(properties: any[], featureIds: number[]): any[] {
-  const resultProperties: any = [];
+function getPropertiesByFeatureIds(properties: unknown[], featureIds: number[]): unknown[] {
+  const resultProperties: unknown[] = [];
 
   if (properties) {
     for (const featureId of featureIds) {

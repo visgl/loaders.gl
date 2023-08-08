@@ -16,7 +16,7 @@ import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {
   getPrimitiveTextureData,
   primitivePropertyDataToAttributes
-} from '../gltf-utils/gltf-texture-storage';
+} from './texture-data-processing';
 
 export const name = EXTENSION_NAME_EXT_STRUCTURAL_METADATA;
 
@@ -122,10 +122,9 @@ function processPropertyTexture(
       propertyTexture.properties?.[propName];
     if (!textureInfoTopLevel) return;
 
-    const propertyData: any[] | null = getPrimitiveTextureData(
+    const propertyData: number[] | null = getPrimitiveTextureData(
       scenegraph,
       textureInfoTopLevel,
-      undefined,
       primitive
     );
     if (propertyData === null) return;
@@ -285,15 +284,13 @@ function getStringAttributes(
   for (let index = 0; index < stringsCount; index++) {
     const stringByteSize = offsetsData[index + 1] - offsetsData[index];
 
-    if (stringByteSize + stringOffset > data.length) {
-      //      console.log(`Incorrect string offset: ${stringOffset}, ${stringByteSize}`);
-      continue;
-    }
-    const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
-    const stringAttribute = textDecoder.decode(stringData);
+    if (stringByteSize + stringOffset <= data.length) {
+      const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
+      const stringAttribute = textDecoder.decode(stringData);
 
-    stringsArray.push(stringAttribute);
-    stringOffset += stringByteSize;
+      stringsArray.push(stringAttribute);
+      stringOffset += stringByteSize;
+    }
   }
 
   return stringsArray;

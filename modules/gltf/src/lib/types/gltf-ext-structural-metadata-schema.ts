@@ -1,10 +1,11 @@
 import {GLTFTextureInfoMetadata} from './gltf-json-schema';
 
-/**
- * Spec - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/glTF.EXT_structural_metadata.schema.json
- */
+/* eslint-disable camelcase */
 export const EXTENSION_NAME_EXT_STRUCTURAL_METADATA = 'EXT_structural_metadata';
 
+/**
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/glTF.EXT_structural_metadata.schema.json
+ */
 export type GLTF_EXT_structural_metadata = {
   /** An object defining classes and enums. */
   schema?: GLTF_EXT_structural_metadata_Schema;
@@ -41,7 +42,7 @@ export type GLTF_EXT_structural_metadata_Schema = {
 
 /**
  * An object defining the values of an enum.
- * JSON Schema - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/enum.schema.json
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/enum.schema.json
  */
 export type GLTF_EXT_structural_metadata_Enum = {
   /** The name of the enum, e.g. for display purposes. */
@@ -58,7 +59,7 @@ export type GLTF_EXT_structural_metadata_Enum = {
 };
 
 /**
- * JSON Schema - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/enum.value.schema.json
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/enum.value.schema.json
  */
 export type GLTF_EXT_structural_metadata_EnumValue = {
   /** The name of the enum value. */
@@ -73,7 +74,7 @@ export type GLTF_EXT_structural_metadata_EnumValue = {
 };
 
 /**
- * Spec - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/class.schema.json
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/class.schema.json
  */
 export type GLTF_EXT_structural_metadata_Class = {
   /** The name of the class, e.g. for display purposes. */
@@ -226,7 +227,7 @@ export type GLTF_EXT_structural_metadata_PropertyTable = {
 };
 
 /**
- * https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json
  */
 export type GLTF_EXT_structural_metadata_PropertyTable_Property = {
   /**
@@ -296,13 +297,13 @@ export type GLTF_EXT_structural_metadata_PropertyTable_Property = {
   min?: number | number[];
   extensions?: Record<string, any>;
   extras?: any;
-  /**
-   * For internal usage
-   */
+  /** For internal usage */
   data?: any;
 };
 
-/** https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTexture.schema.json */
+/**
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTexture.schema.json
+ */
 export type GLTF_EXT_structural_metadata_PropertyTexture = {
   /** The name of the property texture, e.g. for display purposes. */
   name?: string;
@@ -328,7 +329,9 @@ export type GLTF_EXT_structural_metadata_PropertyTexture = {
   [key: string]: any;
 };
 
-/** https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyAttribute.schema.json */
+/**
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyAttribute.schema.json
+ */
 export type GLTF_EXT_structural_metadata_PropertyAttribute = {
   /** The name of the property attribute, e.g. for display purposes. */
   name?: string;

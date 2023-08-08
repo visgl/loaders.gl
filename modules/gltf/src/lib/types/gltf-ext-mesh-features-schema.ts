@@ -1,27 +1,25 @@
 import {GLTFTextureInfoMetadata} from './gltf-json-schema';
-/**
- * Spec - https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features/schema/featureId.schema.json
- */
+/* eslint-disable camelcase */
+
 
 export const EXTENSION_NAME_EXT_MESH_FEATURES = 'EXT_mesh_features';
 
 /**
  * EXT_mesh_features extension types
  * This is a primitive-level extension
- * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
- *
- * JSON Schema - https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/mesh.primitive.EXT_mesh_features.schema.json
+ * @see https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
+ * or https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/mesh.primitive.EXT_mesh_features.schema.json
  * An object describing feature IDs for a mesh primitive.
  */
 export type GLTF_EXT_mesh_features = {
   /** An array of feature ID sets. */
   featureIds: GLTF_EXT_mesh_features_featureId[];
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
 /**
- * JSON Schema https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/featureId.schema.json
+ * @see https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/featureId.schema.json
  * Feature IDs stored in an attribute or texture.
  */
 export type GLTF_EXT_mesh_features_featureId = {
@@ -44,10 +42,10 @@ export type GLTF_EXT_mesh_features_featureId = {
   texture?: GLTFTextureInfoMetadata;
   /** The index of the property table containing per-feature property values. Only applicable when using the `EXT_structural_metadata` extension. */
   propertyTable?: number;
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 
   /** For internal usage */
-  data: any;
-  customMeshFeatures?: any;
+  data: unknown;
+  dataAttributeNames: string[];
 };

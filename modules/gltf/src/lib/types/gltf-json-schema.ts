@@ -372,9 +372,7 @@ export type GLTFTextureInfo = {
  */
 export type GLTFTextureInfoMetadata = GLTFTextureInfo & {
   channels: number[];
-  /**
-   * For internal usage
-   */
+  /** For internal usage */
   data?: any;
 };
 
@@ -806,6 +804,8 @@ export type GLTF_MSFT_texture_dds = {
   extras?: any;
 };
 
+export const EXTENSION_NAME_EXT_FEATURE_METADATA = 'EXT_feature_metadata';
+
 /**
  * EXT_feature_metadata extension types
  * This extension has glTF-level metadata and primitive-level feature indexing and segmentation metadata
@@ -906,7 +906,6 @@ export type GLTF_EXT_feature_metadata_ClassProperty = {
     | 'STRING'
     | 'ENUM'
     | 'ARRAY'
-    // TODO: Check if the following is correct:
     | string;
   /**
    * An enum ID as declared in the enums dictionary.
@@ -931,7 +930,6 @@ export type GLTF_EXT_feature_metadata_ClassProperty = {
     | 'BOOLEAN'
     | 'STRING'
     | 'ENUM'
-    // TODO: Check if the following is correct:
     | string;
   /** The number of components per element for ARRAY elements. */
   componentCount?: number;

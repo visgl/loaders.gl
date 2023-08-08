@@ -51,6 +51,10 @@ export type {
   GLTF_EXT_mesh_features_featureId
 } from './lib/types/gltf-ext-mesh-features-schema';
 
+export {EXTENSION_NAME_EXT_MESH_FEATURES} from './lib/types/gltf-ext-mesh-features-schema';
+export {EXTENSION_NAME_EXT_STRUCTURAL_METADATA} from './lib/types/gltf-ext-structural-metadata-schema';
+export {EXTENSION_NAME_EXT_FEATURE_METADATA} from './lib/types/gltf-json-schema';
+
 // Postprocessed types (modified GLTF types)
 export type {
   GLTFPostprocessed,

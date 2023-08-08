@@ -5,13 +5,15 @@ import type {
   GLTF_EXT_feature_metadata_Primitive
 } from '@loaders.gl/gltf';
 
-import type {GLTF_EXT_mesh_features_featureId} from '@loaders.gl/gltf';
+import type {GLTF_EXT_mesh_features, GLTF_EXT_mesh_features_featureId} from '@loaders.gl/gltf';
 
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../../i3s-attributes-worker';
 
-const EXT_MESH_FEATURES = 'EXT_mesh_features';
-const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
+import {
+  EXTENSION_NAME_EXT_MESH_FEATURES,
+  EXTENSION_NAME_EXT_FEATURE_METADATA
+} from '@loaders.gl/gltf';
 
 /**
  * Getting batchIds from 3DTilesNext extensions.
@@ -34,19 +36,14 @@ export function handleBatchIdsExtensions(
 
   for (const [extensionName, extensionData] of Object.entries(extensions || {})) {
     switch (extensionName) {
-      case EXT_FEATURE_METADATA:
+      case EXTENSION_NAME_EXT_FEATURE_METADATA:
         return handleExtFeatureMetadataExtension(
           attributes,
           extensionData as GLTF_EXT_feature_metadata_Primitive,
           images
         );
-      case EXT_MESH_FEATURES:
-        //        console.warn('EXT_mesh_features extension is not supported yet');
-        return handleExtMeshFeaturesExtension(
-          attributes,
-          extensionData as GLTF_EXT_mesh_features_featureId, //GLTF_EXT_feature_metadata_Primitive,
-          images
-        );
+      case EXTENSION_NAME_EXT_MESH_FEATURES:
+        return handleExtMeshFeaturesExtension(attributes, extensionData as GLTF_EXT_mesh_features);
       default:
         return [];
     }
@@ -55,45 +52,33 @@ export function handleBatchIdsExtensions(
   return [];
 }
 
+/**
+ * Getting batchIds from EXT_mesh_features extensions.
+ * @param attributes - gltf accessors
+ * @param extMeshFeatures - EXT_mesh_features extension
+ * @returns
+ */
 function handleExtMeshFeaturesExtension(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
-  extFeatureMetadata: GLTF_EXT_mesh_features_featureId,
-  images: (TextureImageProperties | null)[]
+  extMeshFeatures: GLTF_EXT_mesh_features
 ): NumericArray {
   // Take only first extension object to get batchIds attribute name.
-  const customMeshFeatures = extFeatureMetadata?.customMeshFeatures;
-
-  if (customMeshFeatures && customMeshFeatures.length) {
-    // Let's use the first element of the array
-    // TODO: What to do with others if any?
-    const batchIdsAttribute = attributes[customMeshFeatures[0]];
-    return batchIdsAttribute.value;
+  if (extMeshFeatures?.featureIds.length) {
+    const extMeshFeaturesFeatureId: GLTF_EXT_mesh_features_featureId =
+      extMeshFeatures.featureIds[0];
+    const dataAttributeNames = extMeshFeaturesFeatureId?.dataAttributeNames;
+    if (dataAttributeNames && dataAttributeNames.length) {
+      // Let's use the first element of the array
+      // TODO: What to do with others if any?
+      const batchIdsAttribute = attributes[dataAttributeNames[0]];
+      return batchIdsAttribute.value;
+    }
   }
-
-  // // Take only first extension object to get batchIds attribute name.
-  // const featureIdTexture =
-  //   extFeatureMetadata?.featureIdTextures && extFeatureMetadata?.featureIdTextures[0];
-
-  // if (featureIdTexture) {
-  //   const textureAttributeIndex = featureIdTexture?.featureIds?.texture?.texCoord || 0;
-  //   const textCoordAttribute = `TEXCOORD_${textureAttributeIndex}`;
-  //   const textureCoordinates = attributes[textCoordAttribute].value;
-  //   return generateBatchIdsFromTexture(featureIdTexture, textureCoordinates, images);
-  // }
-
-  // // Take only first extension texture to get batchIds from the root EXT_feature_metadata object.
-  // const featureTexture =
-  //   extFeatureMetadata?.featureTextures && extFeatureMetadata?.featureTextures[0];
-
-  // if (featureTexture) {
-  //   const batchIdsAttribute = attributes[featureTexture];
-  //   return batchIdsAttribute.value;
-  // }
-
   return [];
 }
+
 /**
  * Get batchIds from EXT_feature_metadata extension.
  * Docs - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata

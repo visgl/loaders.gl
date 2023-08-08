@@ -54,6 +54,11 @@ import {GL} from '@loaders.gl/math';
 import type {TypedArrayConstructor} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+import {
+  EXTENSION_NAME_EXT_MESH_FEATURES,
+  EXTENSION_NAME_EXT_FEATURE_METADATA,
+  EXTENSION_NAME_EXT_STRUCTURAL_METADATA
+} from '@loaders.gl/gltf';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -73,10 +78,6 @@ const OBJECT_ID_TYPE = 'Oid32';
  * BATCHID - Legacy attribute name which includes batch info.
  */
 const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', 'BATCHID'];
-
-const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
-const EXT_MESH_FEATURES = 'EXT_mesh_features';
-const EXT_STRUCTURAL_METADATA = 'EXT_structural_metadata';
 
 let scratchVector = new Vector3();
 
@@ -1588,17 +1589,17 @@ export function getPropertyTable(tileContent: Tiles3DTileContent | null): Featur
   const {extensionName, extension} = getPropertyTableExtension(tileContent);
 
   switch (extensionName) {
-    case EXT_MESH_FEATURES: {
+    case EXTENSION_NAME_EXT_MESH_FEATURES: {
       console.warn('The I3S converter does not yet support the EXT_mesh_features extension');
       return null;
     }
-    case EXT_FEATURE_METADATA: {
+    case EXTENSION_NAME_EXT_FEATURE_METADATA: {
       propertyTable = getPropertyTableFromExtFeatureMetadata(
         extension as GLTF_EXT_feature_metadata_GLTF
       );
       return propertyTable;
     }
-    case EXT_STRUCTURAL_METADATA: {
+    case EXTENSION_NAME_EXT_STRUCTURAL_METADATA: {
       propertyTable = getPropertyTableFromExtStructuralMetadata(
         extension as GLTF_EXT_structural_metadata
       );
@@ -1623,9 +1624,9 @@ function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
     | null;
 } {
   const extensionsWithPropertyTables = [
-    EXT_FEATURE_METADATA,
-    EXT_STRUCTURAL_METADATA,
-    EXT_MESH_FEATURES
+    EXTENSION_NAME_EXT_FEATURE_METADATA,
+    EXTENSION_NAME_EXT_STRUCTURAL_METADATA,
+    EXTENSION_NAME_EXT_MESH_FEATURES
   ];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
@@ -1737,6 +1738,29 @@ function getPropertyTableFromExtStructuralMetadata(
     }
   }
 
-  console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
+  if (extension?.propertyTextures) {
+    /**
+     * Take only first feature table to generate attributes storage info object.
+     * TODO: Think about getting data from all feature tables?
+     * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+     * In I3S we should decide which featureIds attribute will be passed to geometry data.
+     */
+    const firstPropertyTextureName = Object.keys(extension.propertyTextures)?.[0];
+
+    if (firstPropertyTextureName) {
+      const propertyTexture = extension?.propertyTextures[firstPropertyTextureName];
+      const propertyTable = {};
+
+      for (const propertyName in propertyTexture.properties) {
+        propertyTable[propertyName] = propertyTexture.properties[propertyName].data;
+      }
+
+      return propertyTable;
+    }
+  }
+
+  console.warn(
+    "The I3S converter couldn't handle EXT_structural_metadata extension: There is neither propertyTables, no propertyTextures in the extension."
+  );
   return null;
 }

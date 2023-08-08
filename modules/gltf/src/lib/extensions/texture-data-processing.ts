@@ -16,9 +16,8 @@ import {getImageData} from '@loaders.gl/images';
 export function getPrimitiveTextureData(
   scenegraph: GLTFScenegraph,
   textureInfo: GLTFTextureInfoMetadata,
-  propertyTable: any[] | undefined,
   primitive: GLTFMeshPrimitive
-): any[] | null {
+): number[] | null {
   /*
         texture.index is an index for the "textures" array.
         The texture object referenced by this index looks like this:
@@ -31,9 +30,8 @@ export function getPrimitiveTextureData(
     
         texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
         The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates ared used to get data from the image.
-      */
+    */
   const json = scenegraph.gltf.json;
-  const textureData: number[] = [];
 
   // TODO: Is there a default?
   const texCoordAccessorKey = `TEXCOORD_${textureInfo.texCoord || 0}`;
@@ -56,10 +54,8 @@ export function getPrimitiveTextureData(
     const mimeType = json.images?.[imageIndex]?.mimeType;
     const parsedImage = scenegraph.gltf.images?.[imageIndex];
     // TODO: Checking for width is to prevent handling Un-processed images (e.g. [analyze] stage, where loadImages option is set to false)
-    if (parsedImage && typeof parsedImage.width === 'undefined') {
-      return null;
-    }
-    if (parsedImage) {
+    if (parsedImage && typeof parsedImage.width !== 'undefined') {
+      const textureData: number[] = [];
       for (let index = 0; index < textureCoordinates.length; index += 2) {
         const value = getImageValueByCoordinates(
           parsedImage,
@@ -70,43 +66,49 @@ export function getPrimitiveTextureData(
         );
         textureData.push(value);
       }
+      return textureData;
     }
   }
+  return null;
+}
 
-  if (typeof propertyTable !== 'undefined') {
-    const propertyData: any[] = [];
-    for (const texelData of textureData) {
-      const d = propertyTable[texelData];
-      propertyData.push(d);
-    }
-    return propertyData;
+export function getPropertyTableDataByTextureData(
+  propertyTable: unknown[],
+  textureData: number[]
+): unknown[] | null {
+  const propertyData: unknown[] = [];
+  for (const texelData of textureData) {
+    const d = propertyTable[texelData];
+    propertyData.push(d);
   }
-  return textureData;
+  return propertyData;
 }
 
 /**
  * Put property data to attributes.
- * @param scenegraph
- * @param attributeName
- * @param propertyData
- * @param featureTextureTable
- * @param primitive
+ * It creates corresponding buffer, bufferView and accessor
+ * so the data can be accessed like regular data stored in buffers.
+ * @param scenegraph - scenegraph object
+ * @param attributeName - name of the attribute
+ * @param propertyData - property data to store
+ * @param featureTextureTable - an array where unique data from the property data are being stored 
+ * @param primitive - primitive object
  */
 export function primitivePropertyDataToAttributes(
   scenegraph: GLTFScenegraph,
   attributeName: string,
-  propertyData: any[] | null,
+  propertyData: number[] | null,
   featureTextureTable: number[],
   primitive: GLTFMeshPrimitive
 ): void {
   if (propertyData === null) return;
   /*
-        featureTextureTable will contain unique values, e.g.
-        textureData = [24, 35, 28, 24]
-        featureTextureTable = [24, 35, 28]
-        featureIndices will contain indices that refer featureTextureTable, e.g.
-        featureIndices = [0, 1, 2, 0]
-    */
+    featureTextureTable will contain unique values, e.g.
+    textureData = [24, 35, 28, 24]
+    featureTextureTable = [24, 35, 28]
+    featureIndices will contain indices that refer featureTextureTable, e.g.
+    featureIndices = [0, 1, 2, 0]
+  */
   const featureIndices: number[] = [];
   for (const texelData of propertyData) {
     let index = featureTextureTable.findIndex((item) => item === texelData);
@@ -192,7 +194,6 @@ function coordinatesToOffset(
 /**
  * Handle UVs if they are out of range [0,1].
  * @param n
- * @param m
  */
 function emod(n: number): number {
   const a = ((n % 1) + 1) % 1;
