@@ -1,5 +1,5 @@
 import md5 from 'md5';
-import {FileProvider, parseZipLocalFileHeader} from '@loaders.gl/loader-utils';
+import {FileProvider, parseZipLocalFileHeader} from '@loaders.gl/zip';
 import {GZipCompression} from '@loaders.gl/compression';
 
 /** Element of hash array */

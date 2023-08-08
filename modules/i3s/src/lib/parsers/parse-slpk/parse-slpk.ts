@@ -6,7 +6,7 @@ import {
   FileProvider,
   parseZipLocalFileHeader,
   searchFromTheEnd
-} from '@loaders.gl/loader-utils';
+} from '@loaders.gl/zip';
 import {HashElement, SLPKArchive, compareHashes} from './slpk-archieve';
 
 /**

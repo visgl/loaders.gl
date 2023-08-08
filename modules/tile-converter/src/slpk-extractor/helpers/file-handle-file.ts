@@ -1,4 +1,4 @@
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProvider} from '@loaders.gl/zip';
 import {FileHandle} from './fs-promises';
 
 /**

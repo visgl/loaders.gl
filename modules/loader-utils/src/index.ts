@@ -117,13 +117,3 @@ export type {WritableFile} from './lib/filesystems/writable-file';
 export {makeWritableFile} from './lib/filesystems/writable-file';
 
 export {default as _NodeFileSystem} from './lib/filesystems/node-filesystem';
-
-export type {FileProvider} from './parse-zip/file-provider';
-export {parseZipCDFileHeader, signature as cdSignature} from './parse-zip/cd-file-header';
-export {
-  parseZipLocalFileHeader,
-  signature as localHeaderSignature
-} from './parse-zip/local-file-header';
-export {parseEoCDRecord} from './parse-zip/end-of-central-directory';
-export {searchFromTheEnd} from './parse-zip/search-from-the-end';
-export {DataViewFile} from './parse-zip/data-view-file';

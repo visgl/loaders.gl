@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {localHeaderSignature as signature} from '@loaders.gl/loader-utils';
+import {localHeaderSignature as signature} from '@loaders.gl/zip';
 import {FileHandleFile} from '@loaders.gl/tile-converter';
 import {isBrowser} from '@loaders.gl/core';
 
