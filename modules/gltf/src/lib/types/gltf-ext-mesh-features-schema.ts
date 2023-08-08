@@ -1,7 +1,6 @@
 import {GLTFTextureInfoMetadata} from './gltf-json-schema';
 /* eslint-disable camelcase */
 
-
 export const EXTENSION_NAME_EXT_MESH_FEATURES = 'EXT_mesh_features';
 
 /**

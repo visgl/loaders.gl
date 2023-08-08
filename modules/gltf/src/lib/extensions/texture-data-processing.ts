@@ -91,7 +91,7 @@ export function getPropertyTableDataByTextureData(
  * @param scenegraph - scenegraph object
  * @param attributeName - name of the attribute
  * @param propertyData - property data to store
- * @param featureTextureTable - an array where unique data from the property data are being stored 
+ * @param featureTextureTable - an array where unique data from the property data are being stored
  * @param primitive - primitive object
  */
 export function primitivePropertyDataToAttributes(
