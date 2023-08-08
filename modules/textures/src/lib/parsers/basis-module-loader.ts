@@ -1,12 +1,4 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
-
-// @ts-nocheck
 import {loadLibrary} from '@loaders.gl/worker-utils';
-
-const BASIS_CDN_ENCODER_WASM = `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm`;
-const BASIS_CDN_ENCODER_JS = `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js`;
 
 let loadBasisTranscoderPromise;
 
@@ -95,8 +87,8 @@ async function loadBasisEncoder(options) {
   let wasmBinary = null;
 
   [BASIS_ENCODER, wasmBinary] = await Promise.all([
-    await loadLibrary(BASIS_CDN_ENCODER_JS, 'textures', options),
-    await loadLibrary(BASIS_CDN_ENCODER_WASM, 'textures', options)
+    await loadLibrary('basis_encoder.js', 'textures', options),
+    await loadLibrary('basis_encoder.wasm', 'textures', options)
   ]);
 
   // Depends on how import happened...

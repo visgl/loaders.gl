@@ -14,7 +14,7 @@ import type {
   MaxScreenThresholdSQ,
   NodeInPage
 } from '@loaders.gl/i3s';
-import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
+import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';
@@ -24,7 +24,13 @@ import transform from 'json-map-transform';
 import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
-import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
+import {
+  writeFile,
+  removeDir,
+  writeFileForSlpk,
+  removeFile,
+  isFileExists
+} from '../lib/utils/file-utils';
 import {
   compressFileWithGzip,
   compressWithChildProcess
@@ -56,8 +62,7 @@ import {
   PreprocessData,
   SharedResourcesArrays
 } from './types';
-import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
-import {DracoWriterWorker} from '@loaders.gl/draco';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
@@ -74,6 +79,11 @@ import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
+import {
+  DRACO_ENCODER_NAME,
+  DRACO_WASM_DECODER_NAME,
+  DRACO_WASM_WRAPPER_NAME
+} from '@loaders.gl/draco';
 
 const ION_DEFAULT_TOKEN =
   process.env?.IonToken || // eslint-disable-line
@@ -118,7 +128,8 @@ export default class I3SConverter {
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
-    fetch: {}
+    fetch: {},
+    modules: {}
   };
   geoidHeightModel: Geoid | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
@@ -225,6 +236,8 @@ export default class I3SConverter {
     this.generateTextures = Boolean(generateTextures);
     this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
 
+    await this.setLibraryUrls();
+
     this.writeQueue = new WriteQueue();
     this.writeQueue.startListening();
 
@@ -235,8 +248,6 @@ export default class I3SConverter {
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
-
-    await this.loadWorkers();
 
     try {
       const preloadOptions = await this._fetchPreloadOptions();
@@ -719,7 +730,7 @@ export default class I3SConverter {
       this.generateBoundingVolumes,
       this.options.mergeMaterials,
       this.geoidHeightModel!,
-      this.workerSource
+      this.loadOptions.modules as Record<string, string>
     );
     return resourcesData;
   }
@@ -935,7 +946,10 @@ export default class I3SConverter {
               KTX2BasisWriterWorker,
               {
                 ...KTX2BasisWriterWorker.options,
-                source: this.workerSource.ktx2,
+                ['ktx2-basis-writer']: {
+                  // We need to load local fs workers because nodejs can't load workers from the Internet
+                  workerUrl: './modules/textures/dist/ktx2-basis-writer-worker-node.js'
+                },
                 reuseWorkers: true,
                 _nodeWorkers: true
               }
@@ -1198,22 +1212,16 @@ export default class I3SConverter {
     return ['b3dm', 'glTF', 'scenegraph'].includes(sourceTile.type || '');
   }
 
-  private async loadWorkers(): Promise<void> {
-    console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
-    if (this.options.draco) {
-      const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
-      const sourceResponse = await fetchFile(url);
-      const source = await sourceResponse.text();
-      this.workerSource.draco = source;
+  private async setLibraryUrls(): Promise<void> {
+    const libs = {
+      [DRACO_ENCODER_NAME]: `./modules/draco/dist/libs/${DRACO_ENCODER_NAME}`,
+      [DRACO_WASM_DECODER_NAME]: `./modules/draco/dist/libs/${DRACO_WASM_DECODER_NAME}`,
+      [DRACO_WASM_WRAPPER_NAME]: `./modules/draco/dist/libs/${DRACO_WASM_WRAPPER_NAME}`
+    };
+    for (let [name, path] of Object.entries(libs)) {
+      if (await isFileExists(path)) {
+        (this.loadOptions.modules as Record<string, string>)[name] = path;
+      }
     }
-
-    if (this.generateTextures) {
-      const url = getWorkerURL(KTX2BasisWriterWorker, {...getLoaderOptions()});
-      const sourceResponse = await fetchFile(url);
-      const source = await sourceResponse.text();
-      this.workerSource.ktx2 = source;
-    }
-
-    console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }
