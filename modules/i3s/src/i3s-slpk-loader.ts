@@ -1,4 +1,4 @@
-import {LoaderOptions, LoaderWithParser, DataViewFileProvider} from '@loaders.gl/loader-utils';
+import {LoaderOptions, LoaderWithParser, DataViewFile} from '@loaders.gl/loader-utils';
 import {parseSLPK as parseSLPKFromProvider} from './lib/parsers/parse-slpk/parse-slpk';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -37,7 +37,7 @@ export const SLPKLoader: LoaderWithParser<Buffer, never, SLPKLoaderOptions> = {
  */
 
 async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = {}) {
-  return (await parseSLPKFromProvider(new DataViewFileProvider(new DataView(data)))).getFile(
+  return (await parseSLPKFromProvider(new DataViewFile(new DataView(data)))).getFile(
     options.slpk?.path ?? '',
     options.slpk?.pathMode
   );

@@ -126,4 +126,4 @@ export {
 } from './parse-zip/local-file-header';
 export {parseEoCDRecord} from './parse-zip/end-of-central-directory';
 export {searchFromTheEnd} from './parse-zip/search-from-the-end';
-export {DataViewFileProvider} from './parse-zip/data-view-file-provider';
+export {DataViewFile} from './parse-zip/data-view-file';
