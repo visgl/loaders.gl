@@ -1,7 +1,7 @@
 import {isBrowser} from '@loaders.gl/core';
 
 import {BROWSER_ERROR_MESSAGE} from '../constants';
-import {FileHandleProvider} from './helpers/file-handle-provider';
+import {FileHandleFile} from './helpers/file-handle-file';
 import {path, parseZipLocalFileHeader} from '@loaders.gl/loader-utils';
 import {GZipCompression} from '@loaders.gl/compression';
 import {writeFile} from '../lib/utils/file-utils';
@@ -37,7 +37,7 @@ export default class SLPKConverter {
     }
     const {inputUrl} = options;
 
-    const provider = await FileHandleProvider.from(inputUrl);
+    const provider = await FileHandleFile.from(inputUrl);
 
     let localHeader = await parseZipLocalFileHeader(0n, provider);
     while (localHeader) {

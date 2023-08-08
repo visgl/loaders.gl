@@ -4,14 +4,14 @@ import {FileHandle} from './fs-promises';
 /**
  * Provides file data using node fs library
  */
-export class FileHandleProvider implements FileProvider {
+export class FileHandleFile implements FileProvider {
   /**
-   * Returns a new copy of FileHandleProvider
+   * Returns a new copy of FileHandleFile
    * @param path The path to the file in file system
    */
-  static async from(path: string): Promise<FileHandleProvider> {
+  static async from(path: string): Promise<FileHandleFile> {
     const fileDescriptor = await FileHandle.open(path);
-    return new FileHandleProvider(fileDescriptor, fileDescriptor.stat.size);
+    return new FileHandleFile(fileDescriptor, fileDescriptor.stat.size);
   }
 
   /**
