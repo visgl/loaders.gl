@@ -36,7 +36,7 @@
     "@loaders.gl/loader-utils": "4.0.0-alpha.17",
     "@loaders.gl/schema": "4.0.0-alpha.17",
     "@tmcw/togeojson": "^4.5.0",
-    "@xmldom/xmldom": "^0.7.5"
+    "@xmldom/xmldom": "^0.7.13"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
