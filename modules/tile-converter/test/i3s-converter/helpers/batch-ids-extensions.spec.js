@@ -12,21 +12,6 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array i
   t.deepEqual(batchIds, []);
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array for not supported EXT_mesh_features yet', async (t) => {
-  const attributes = {};
-  const primitive = {
-    extensions: {
-      EXT_mesh_features: {}
-    }
-  };
-  const images = [];
-
-  // @ts-ignore
-  const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
-
-  t.deepEqual(batchIds, []);
-});
-
 test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array for not supported extensions', async (t) => {
   const attributes = {};
   const primitive = {
