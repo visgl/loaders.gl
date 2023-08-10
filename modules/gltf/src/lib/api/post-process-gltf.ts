@@ -124,7 +124,7 @@ class GLTFPostProcessor {
   }[] = [];
   images: any[] = [];
 
-  postProcess(gltf: GLTFWithBuffers, options?: ParseGLTFOptions) {
+  postProcess(gltf: GLTFWithBuffers, options = {}) {
     const {json, buffers = [], images = []} = gltf;
     // @ts-expect-error
     const {baseUri = ''} = gltf;
@@ -135,12 +135,6 @@ class GLTFPostProcessor {
     this.images = images;
     this.jsonUnprocessed = json;
 
-    if (!options?.loadBuffers) {
-      // @ts-expect-error
-      const jsonPost: GLTFPostprocessed = {...json};
-      return jsonPost; // It's unprocessed
-    }
-
     this.json = this._resolveTree(gltf.json, options);
 
     return this.json;
@@ -149,7 +143,7 @@ class GLTFPostProcessor {
   // Convert indexed glTF structure into tree structure
   // cross-link index resolution, enum lookup, convenience calculations
   // eslint-disable-next-line complexity, max-statements
-  _resolveTree(gltf: GLTF, options?: ParseGLTFOptions): GLTFPostprocessed {
+  _resolveTree(gltf: GLTF, options = {}): GLTFPostprocessed {
     // @ts-expect-error
     const json: GLTFPostprocessed = {...gltf};
     this.json = json;
