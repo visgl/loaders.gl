@@ -25,3 +25,22 @@ test('GLTFLoader#KHR_texture_transform', async (t) => {
   );
   t.end();
 });
+
+test('GLTFLoader#KHR_texture_transform with no buffers loaded', async (t) => {
+  const response = await fetchFile(GLTF_BINARY_URL);
+  const data = await response.arrayBuffer();
+  /**
+   * @type {import("@loaders.gl/gltf").ParseGLTFOptions}
+   */
+  const loaderOptions = {loadBuffers: false};
+  const gltfWithBuffers = await parse(data, GLTFLoader, {gltf: loaderOptions});
+  const gltf = postProcessGLTF(gltfWithBuffers, loaderOptions);
+
+  t.equals(gltf.bufferViews[3].byteLength, 96, 'Has UNPROCESSED bufferView byte length');
+  t.equals(
+    gltf.accessors[2].componentType,
+    5123,
+    "UV0 component type has NOT been changed from 5123 (int16) to 5126 (float), because it's UNPROCESSED"
+  );
+  t.end();
+});
