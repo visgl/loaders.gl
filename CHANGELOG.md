@@ -6,6 +6,14 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.18
+
+- fix(tile-converter): skip failing content (#2576)
+- fix: Bump and remove @xmldom/xmldom (input validation issue) (#2582)
+- docs(tile-converter): Add documentation for SLPK Extractor (#2567)
+- chore(core): Refactor fetchFile to handle Node.js local file loading (#2575)
+- chore(tile-converter): 3dtiles - exclude Tile3D and Tileset3D (#2574)
+
 ### v4.0.0-alpha.17
 
 - docs(chore): core API documentation improvements (#2573)
