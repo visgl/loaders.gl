@@ -7,7 +7,8 @@ import {
   parseZipLocalFileHeader,
   searchFromTheEnd
 } from '@loaders.gl/zip';
-import {HashElement, SLPKArchive, compareHashes} from './slpk-archieve';
+import {SLPKArchive} from './slpk-archieve';
+import {HashElement, compareHashes, parseHashFile} from '@loaders.gl/loader-utils';
 
 /**
  * Creates slpk file handler from raw file
@@ -71,30 +72,4 @@ const generateHashInfo = async (fileProvider: FileProvider): Promise<HashElement
   }
   hashInfo.sort((a, b) => compareHashes(a.hash, b.hash));
   return hashInfo;
-};
-
-/**
- * Reads hash file from buffer and returns it in ready-to-use form
- * @param hashFile - bufer containing hash file
- * @returns Array containing file info
- */
-const parseHashFile = (hashFile: ArrayBuffer): HashElement[] => {
-  const hashFileBuffer = Buffer.from(hashFile);
-  const hashArray: HashElement[] = [];
-  for (let i = 0; i < hashFileBuffer.buffer.byteLength; i = i + 24) {
-    const offsetBuffer = new DataView(
-      hashFileBuffer.buffer.slice(
-        hashFileBuffer.byteOffset + i + 16,
-        hashFileBuffer.byteOffset + i + 24
-      )
-    );
-    const offset = offsetBuffer.getBigUint64(offsetBuffer.byteOffset, true);
-    hashArray.push({
-      hash: Buffer.from(
-        hashFileBuffer.subarray(hashFileBuffer.byteOffset + i, hashFileBuffer.byteOffset + i + 16)
-      ),
-      offset
-    });
-  }
-  return hashArray;
 };
