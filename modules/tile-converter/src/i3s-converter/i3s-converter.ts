@@ -24,13 +24,7 @@ import transform from 'json-map-transform';
 import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
-import {
-  writeFile,
-  removeDir,
-  writeFileForSlpk,
-  removeFile,
-  isFileExists
-} from '../lib/utils/file-utils';
+import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
 import {
   compressFileWithGzip,
   compressWithChildProcess
@@ -79,11 +73,6 @@ import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
-import {
-  DRACO_ENCODER_NAME,
-  DRACO_WASM_DECODER_NAME,
-  DRACO_WASM_WRAPPER_NAME
-} from '@loaders.gl/draco';
 
 const ION_DEFAULT_TOKEN =
   process.env?.IonToken || // eslint-disable-line
@@ -121,6 +110,7 @@ export default class I3SConverter {
   loadOptions: Tiles3DLoaderOptions = {
     _nodeWorkers: true,
     reuseWorkers: true,
+    useLocalLibraries: true,
     basis: {
       format: 'rgba32',
       // We need to load local fs workers because nodejs can't load workers from the Internet
@@ -235,8 +225,6 @@ export default class I3SConverter {
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
     this.generateTextures = Boolean(generateTextures);
     this.generateBoundingVolumes = Boolean(generateBoundingVolumes);
-
-    await this.setLibraryUrls();
 
     this.writeQueue = new WriteQueue();
     this.writeQueue.startListening();
@@ -951,7 +939,8 @@ export default class I3SConverter {
                   workerUrl: './modules/textures/dist/ktx2-basis-writer-worker-node.js'
                 },
                 reuseWorkers: true,
-                _nodeWorkers: true
+                _nodeWorkers: true,
+                useLocalLibraries: true
               }
             );
 
@@ -1210,18 +1199,5 @@ export default class I3SConverter {
    */
   private isContentSupported(sourceTile: Tiles3DTileJSONPostprocessed): boolean {
     return ['b3dm', 'glTF', 'scenegraph'].includes(sourceTile.type || '');
-  }
-
-  private async setLibraryUrls(): Promise<void> {
-    const libs = {
-      [DRACO_ENCODER_NAME]: `./modules/draco/dist/libs/${DRACO_ENCODER_NAME}`,
-      [DRACO_WASM_DECODER_NAME]: `./modules/draco/dist/libs/${DRACO_WASM_DECODER_NAME}`,
-      [DRACO_WASM_WRAPPER_NAME]: `./modules/draco/dist/libs/${DRACO_WASM_WRAPPER_NAME}`
-    };
-    for (let [name, path] of Object.entries(libs)) {
-      if (await isFileExists(path)) {
-        (this.loadOptions.modules as Record<string, string>)[name] = path;
-      }
-    }
   }
 }

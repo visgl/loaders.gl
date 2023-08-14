@@ -1513,6 +1513,7 @@ async function generateCompressedGeometry(
     reuseWorkers: true,
     _nodeWorkers: true,
     modules: libraries,
+    useLocalLibraries: true,
     draco: {
       method: 'MESH_SEQUENTIAL_ENCODING',
       attributesMetadata
