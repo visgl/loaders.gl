@@ -188,6 +188,7 @@ export async function getI3sTileHeader(
   const nodeRoot = await i3SNodePagesTiles.formTileFromNodePages(0);
   return {
     ...i3sTilesetData,
+    loader: I3SLoader,
     root: nodeRoot,
     type: TILESET_TYPE.I3S
   };
