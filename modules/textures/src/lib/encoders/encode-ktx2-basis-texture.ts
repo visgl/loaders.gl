@@ -10,7 +10,7 @@ import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
  */
 export async function encodeKTX2BasisTexture(
   image: ImageDataType,
-  options: any = {['ktx2-basis-writer']: {}}
+  options: any = {}
 ): Promise<ArrayBuffer> {
   // TODO remove default values after writer options will be normalized like it done in load module.
   const {
@@ -18,7 +18,7 @@ export async function encodeKTX2BasisTexture(
     qualityLevel = 10,
     encodeUASTC = false,
     mipmaps = false
-  } = options['ktx2-basis-writer'];
+  } = options?.['ktx2-basis-writer'] || {};
   const {BasisEncoder} = await loadBasisEncoderModule(options);
   const basisEncoder = new BasisEncoder();
 
