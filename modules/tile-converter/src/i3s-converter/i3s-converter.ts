@@ -14,7 +14,7 @@ import type {
   MaxScreenThresholdSQ,
   NodeInPage
 } from '@loaders.gl/i3s';
-import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
+import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';
@@ -56,8 +56,7 @@ import {
   PreprocessData,
   SharedResourcesArrays
 } from './types';
-import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
-import {DracoWriterWorker} from '@loaders.gl/draco';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
@@ -111,6 +110,7 @@ export default class I3SConverter {
   loadOptions: Tiles3DLoaderOptions = {
     _nodeWorkers: true,
     reuseWorkers: true,
+    useLocalLibraries: true,
     basis: {
       format: 'rgba32',
       // We need to load local fs workers because nodejs can't load workers from the Internet
@@ -118,7 +118,8 @@ export default class I3SConverter {
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
-    fetch: {}
+    fetch: {},
+    modules: {}
   };
   geoidHeightModel: Geoid | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
@@ -235,8 +236,6 @@ export default class I3SConverter {
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
-
-    await this.loadWorkers();
 
     try {
       const preloadOptions = await this._fetchPreloadOptions();
@@ -719,7 +718,7 @@ export default class I3SConverter {
       this.generateBoundingVolumes,
       this.options.mergeMaterials,
       this.geoidHeightModel!,
-      this.workerSource
+      this.loadOptions.modules as Record<string, string>
     );
     return resourcesData;
   }
@@ -935,9 +934,13 @@ export default class I3SConverter {
               KTX2BasisWriterWorker,
               {
                 ...KTX2BasisWriterWorker.options,
-                source: this.workerSource.ktx2,
+                ['ktx2-basis-writer']: {
+                  // We need to load local fs workers because nodejs can't load workers from the Internet
+                  workerUrl: './modules/textures/dist/ktx2-basis-writer-worker-node.js'
+                },
                 reuseWorkers: true,
-                _nodeWorkers: true
+                _nodeWorkers: true,
+                useLocalLibraries: true
               }
             );
 
@@ -1196,24 +1199,5 @@ export default class I3SConverter {
    */
   private isContentSupported(sourceTile: Tiles3DTileJSONPostprocessed): boolean {
     return ['b3dm', 'glTF', 'scenegraph'].includes(sourceTile.type || '');
-  }
-
-  private async loadWorkers(): Promise<void> {
-    console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
-    if (this.options.draco) {
-      const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
-      const sourceResponse = await fetchFile(url);
-      const source = await sourceResponse.text();
-      this.workerSource.draco = source;
-    }
-
-    if (this.generateTextures) {
-      const url = getWorkerURL(KTX2BasisWriterWorker, {...getLoaderOptions()});
-      const sourceResponse = await fetchFile(url);
-      const source = await sourceResponse.text();
-      this.workerSource.ktx2 = source;
-    }
-
-    console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }

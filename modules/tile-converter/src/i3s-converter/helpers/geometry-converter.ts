@@ -87,7 +87,7 @@ let scratchVector = new Vector3();
  * @param generateBoundingVolumes - is converter should create accurate bounding voulmes from geometry attributes
  * @param shouldMergeMaterials - Try to merge similar materials to be able to merge meshes into one node
  * @param geoidHeightModel - model to convert elevation from elipsoidal to geoid
- * @param workerSource - source code of used workers
+ * @param libraries - dynamicaly loaded 3rd-party libraries
  * @returns Array of node resources to create one or more i3s nodes
  */
 export default async function convertB3dmToI3sGeometry(
@@ -102,7 +102,7 @@ export default async function convertB3dmToI3sGeometry(
   generateBoundingVolumes: boolean,
   shouldMergeMaterials: boolean,
   geoidHeightModel: Geoid,
-  workerSource: {[key: string]: string}
+  libraries: Record<string, string>
 ): Promise<I3SConvertedResources[] | null> {
   const useCartesianPositions = generateBoundingVolumes;
   const materialAndTextureList: I3SMaterialWithTexture[] = await convertMaterials(
@@ -156,7 +156,7 @@ export default async function convertB3dmToI3sGeometry(
         propertyTable,
         attributeStorageInfo,
         draco,
-        workerSource
+        libraries
       })
     );
   }
@@ -208,7 +208,7 @@ function _generateBoundingVolumesFromGeometry(
  * @param params.propertyTable - batch table (corresponding to feature attributes data)
  * @param params.attributeStorageInfo - attributes metadata from 3DSceneLayer json
  * @param params.draco - is converter should create draco compressed geometry
- * @param params.workerSource - source code of used workers
+ * @param libraries - dynamicaly loaded 3rd-party libraries
  * @returns Array of I3S node resources
  */
 async function _makeNodeResources({
@@ -221,7 +221,7 @@ async function _makeNodeResources({
   propertyTable,
   attributeStorageInfo,
   draco,
-  workerSource
+  libraries
 }: {
   convertedAttributes: ConvertedAttributes;
   material: I3SMaterialDefinition;
@@ -232,7 +232,7 @@ async function _makeNodeResources({
   propertyTable: FeatureTableJson | null;
   attributeStorageInfo?: AttributeStorageInfo[];
   draco: boolean;
-  workerSource: {[key: string]: string};
+  libraries: Record<string, string>;
 }): Promise<I3SConvertedResources> {
   const boundingVolumes = convertedAttributes.boundingVolumes;
   const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
@@ -277,7 +277,7 @@ async function _makeNodeResources({
           featureIds,
           faceRange
         },
-        workerSource.draco
+        libraries
       )
     : null;
 
@@ -1451,17 +1451,17 @@ function generateBigUint64Array(featureIds: any[]): BigUint64Array {
 
 /**
  * Generates draco compressed geometry
- * @param {Number} vertexCount
- * @param {Object} convertedAttributes - get rid of this argument here
- * @param {Object} attributes - geometry attributes to compress
- * @param {string} dracoWorkerSoure - draco worker source code
- * @returns {Promise<object>} - COmpressed geometry.
+ * @param vertexCount
+ * @param convertedAttributes - get rid of this argument here
+ * @param attributes - geometry attributes to compress
+ * @param libraries - dynamicaly loaded 3rd-party libraries
+ * @returns - Compressed geometry.
  */
 async function generateCompressedGeometry(
   vertexCount: number,
   convertedAttributes: Record<string, any>,
   attributes: Record<string, any>,
-  dracoWorkerSoure: string
+  libraries: Record<string, string>
 ): Promise<ArrayBuffer> {
   const {positions, normals, texCoords, colors, uvRegions, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
@@ -1510,12 +1510,17 @@ async function generateCompressedGeometry(
 
   return encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
     ...DracoWriterWorker.options,
-    source: dracoWorkerSoure,
     reuseWorkers: true,
     _nodeWorkers: true,
+    modules: libraries,
+    useLocalLibraries: true,
     draco: {
       method: 'MESH_SEQUENTIAL_ENCODING',
       attributesMetadata
+    },
+    ['draco-writer']: {
+      // We need to load local fs workers because nodejs can't load workers from the Internet
+      workerUrl: './modules/draco/dist/draco-writer-worker-node.js'
     }
   });
 }

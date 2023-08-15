@@ -25,8 +25,6 @@ import './3d-tiles-converter/helpers/load-i3s.spec';
 import './3d-tiles-converter/3d-tiles-converter.spec';
 import './3d-tiles-converter/helpers/geometry-attributes.spec';
 
-import './deps-installer/deps-installer.spec';
-
 import './i3s-server/controllers/index-controller.spec';
 import './i3s-server/controllers/slpk-controller.spec';
 import './i3s-server/utils/create-scene-server.spec.ts';
