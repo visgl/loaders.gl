@@ -497,7 +497,7 @@ export type GLTFMeshPrimitive = {
   targets?: {
     [k: string]: GLTFId;
   }[];
-  extensions?: Record<string, any>;
+  extensions?: Record<string, unknown>;
   extras?: any;
   // [k: string]: any;
 };
@@ -803,8 +803,6 @@ export type GLTF_MSFT_texture_dds = {
   source: GLTFId;
   extras?: any;
 };
-
-export const EXTENSION_NAME_EXT_FEATURE_METADATA = 'EXT_feature_metadata';
 
 /**
  * EXT_feature_metadata extension types

@@ -16,9 +16,8 @@ import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
 
 /** Extension name */
-import {EXTENSION_NAME_EXT_FEATURE_METADATA} from '../../types/gltf-json-schema';
-
-export const name = EXTENSION_NAME_EXT_FEATURE_METADATA;
+const EXT_FEATURE_METADATA_NAME = 'EXT_feature_metadata';
+export const name = EXT_FEATURE_METADATA_NAME;
 
 export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
@@ -30,9 +29,8 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
  * @param scenegraph
  */
 function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph, options: GLTFLoaderOptions): void {
-  const extension: GLTF_EXT_feature_metadata_GLTF | null = scenegraph.getExtension(
-    EXTENSION_NAME_EXT_FEATURE_METADATA
-  );
+  const extension: GLTF_EXT_feature_metadata_GLTF | null =
+    scenegraph.getExtension(EXT_FEATURE_METADATA_NAME);
   if (!extension) return;
 
   const schemaClasses = extension.schema?.classes;

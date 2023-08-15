@@ -375,3 +375,41 @@ test('tile-converter(i3s)#proceed with failing content', async (t) => {
   await cleanUpPath('data/FailingContent');
   t.end();
 });
+
+test.only('tile-converter - Converters#ext-mesh-features', async (t) => {
+  const converter = new I3SConverter();
+  const OUTPUT_PATH = 'data';
+
+  // feature-metadata:
+  // const TILESET_MESH_URL = '../data/for-ext-meta/data/next-meta/tileset.json';
+  // const TILESET_MESH_NAME = 'ext-meta';
+
+  const TILESET_MESH_URL = '../data/esri-tile-sets/3D_Tiles_1.1/CDB_yemen_all/tileset.json';
+  const TILESET_MESH_NAME = 'CDB_yemen_all';
+
+  // const TILESET_MESH_URL = '../data/esri-tile-sets/3D_Tiles_1.1/baseglobe_s2/tileset.json';
+  // const TILESET_MESH_NAME = 'baseglobe_s2';
+
+  // const TILESET_MESH_URL =
+  //   '../data/3d-tiles-samples/gltf-ext-mesh-features/FeatureIdAttribute/tileset.json';
+  // const TILESET_MESH_NAME = 'gltf-ext-mesh-features';
+
+  const tilesetJson = await converter.convert({
+    inputUrl: TILESET_MESH_URL,
+    outputPath: OUTPUT_PATH,
+    tilesetName: TILESET_MESH_NAME,
+    slpk: false,
+    mergeMaterials: false, // --split-nodes
+    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+    egmFilePath: PGM_FILE_PATH,
+    token:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+  });
+  if (!isBrowser) {
+    t.ok(tilesetJson);
+    //    await cleanUpPath(`${OUTPUT_PATH}/${TILESET_MESH_NAME}`);
+  } else {
+    t.equals(tilesetJson, BROWSER_ERROR_MESSAGE);
+  }
+  t.end();
+});

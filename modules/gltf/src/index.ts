@@ -51,9 +51,9 @@ export type {
   GLTF_EXT_mesh_features_featureId
 } from './lib/types/gltf-ext-mesh-features-schema';
 
-export {EXTENSION_NAME_EXT_MESH_FEATURES} from './lib/types/gltf-ext-mesh-features-schema';
-export {EXTENSION_NAME_EXT_STRUCTURAL_METADATA} from './lib/types/gltf-ext-structural-metadata-schema';
-export {EXTENSION_NAME_EXT_FEATURE_METADATA} from './lib/types/gltf-json-schema';
+export {name as EXT_MESH_FEATURES_NAME} from './lib/extensions/EXT_mesh_features';
+export {name as EXT_STRUCTURAL_METADATA_NAME} from './lib/extensions/EXT_structural_metadata';
+export {name as EXT_FEATURE_METADATA_NAME} from './lib/extensions/deprecated/EXT_feature_metadata';
 
 // Postprocessed types (modified GLTF types)
 export type {

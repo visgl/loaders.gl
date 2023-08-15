@@ -10,10 +10,7 @@ import type {GLTF_EXT_mesh_features, GLTF_EXT_mesh_features_featureId} from '@lo
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../../i3s-attributes-worker';
 
-import {
-  EXTENSION_NAME_EXT_MESH_FEATURES,
-  EXTENSION_NAME_EXT_FEATURE_METADATA
-} from '@loaders.gl/gltf';
+import {EXT_MESH_FEATURES_NAME, EXT_FEATURE_METADATA_NAME} from '@loaders.gl/gltf';
 
 /**
  * Getting batchIds from 3DTilesNext extensions.
@@ -36,13 +33,13 @@ export function handleBatchIdsExtensions(
 
   for (const [extensionName, extensionData] of Object.entries(extensions || {})) {
     switch (extensionName) {
-      case EXTENSION_NAME_EXT_FEATURE_METADATA:
+      case EXT_FEATURE_METADATA_NAME:
         return handleExtFeatureMetadataExtension(
           attributes,
           extensionData as GLTF_EXT_feature_metadata_Primitive,
           images
         );
-      case EXTENSION_NAME_EXT_MESH_FEATURES:
+      case EXT_MESH_FEATURES_NAME:
         return handleExtMeshFeaturesExtension(attributes, extensionData as GLTF_EXT_mesh_features);
       default:
         return [];

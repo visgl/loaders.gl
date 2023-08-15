@@ -1,8 +1,83 @@
+// import {assert} from '../utils/assert';
 import type {GLTFTextureInfoMetadata, GLTFMeshPrimitive} from '../types/gltf-json-schema';
+import type {TypedArray} from '@loaders.gl/schema';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
+
+const ATTRIBUTE_TYPE_TO_COMPONENTS = {
+  SCALAR: 1,
+  VEC2: 2,
+  VEC3: 3,
+  VEC4: 4,
+  MAT2: 4,
+  MAT3: 9,
+  MAT4: 16,
+  BOOLEAN: 1,
+  STRING: 1,
+  ENUM: 1
+};
+
+const SM_ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY = {
+  INT8: Int8Array,
+  UINT8: Uint8Array,
+  INT16: Int16Array,
+  UINT16: Uint16Array,
+  INT32: Int32Array,
+  UINT32: Uint32Array,
+  // 'INT64': BigInt64Array,
+  // 'UINT64': BigUint64Array,
+  FLOAT32: Float32Array,
+  FLOAT64: Float64Array
+};
+
+// const SM_ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE = {
+//   'INT8': 1,
+//   'UINT8': 1,
+//   'INT16': 2,
+//   'UINT16': 2,
+//   'INT32': 4,
+//   'UINT32': 4,
+//   'INT64': 8,
+//   'UINT64': 8,
+//   'FLOAT32': 4,
+//   'FLOAT64': 8
+// };
+
+// function getStructuralMetadataArrayTypeAndLength(typedArray: TypedArray, classProperty: GLTF_EXT_structural_metadata_ClassProperty) {
+//   if (classProperty.componentType) {
+//     const ArrayType = SM_ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY[classProperty.componentType];
+//     const components = ATTRIBUTE_TYPE_TO_COMPONENTS[classProperty.type];
+//     const bytesPerComponent = SM_ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE[classProperty.componentType];
+//     const count = classProperty.count ? classProperty.count : 0;
+//     const length = count * components;
+//     const byteLength = count * components * bytesPerComponent;
+//     assert(byteLength >= 0 && byteLength <= typedArray.byteLength);
+//     return {ArrayType, length, byteLength};
+//   }
+// }
+
+/**
+ * Converts raw bytes that are in the buffer to an array of the type defined by the schema
+ * @param typedArray - raw bytes in the buffer
+ * @param attributeType - SCALAR, VECN, MATN
+ * @param componentType - type of the component in elements, e.g. 'UINT8' or 'FLOAT32'
+ * @param elementCount - number of elements in the array
+ * @returns
+ */
+export function convertRawBufferToMetadataArray(
+  typedArray: Uint8Array,
+  attributeType: string,
+  componentType: string,
+  elementCount: number = 1
+): TypedArray {
+  const ArrayType = SM_ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY[componentType];
+  const components = ATTRIBUTE_TYPE_TO_COMPONENTS[attributeType];
+  const length = elementCount * components;
+  // TODO: Check if we need "elementCount+1" due to "The number of offsets is equal to the property table `count` plus one."
+  return new ArrayType(typedArray.buffer, 0, length);
+}
 
 /**
  * Processes data encoded in the texture associated with the primitive.

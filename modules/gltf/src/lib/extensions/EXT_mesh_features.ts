@@ -14,9 +14,8 @@ import {
 } from './texture-data-processing';
 import {getPropertyTable} from './EXT_structural_metadata';
 
-import {EXTENSION_NAME_EXT_MESH_FEATURES} from '../types/gltf-ext-mesh-features-schema';
-
-export const name = EXTENSION_NAME_EXT_MESH_FEATURES;
+const EXT_MESH_FEATURES_NAME = 'EXT_mesh_features';
+export const name = EXT_MESH_FEATURES_NAME;
 
 export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
@@ -38,9 +37,7 @@ function decodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFLoaderOp
 
   for (const mesh of json.meshes) {
     for (const primitive of mesh.primitives) {
-      const extension = primitive.extensions?.[
-        EXTENSION_NAME_EXT_MESH_FEATURES
-      ] as GLTF_EXT_mesh_features;
+      const extension = primitive.extensions?.[EXT_MESH_FEATURES_NAME] as GLTF_EXT_mesh_features;
       if (extension) {
         const featureIds: GLTF_EXT_mesh_features_featureId[] = extension.featureIds;
 

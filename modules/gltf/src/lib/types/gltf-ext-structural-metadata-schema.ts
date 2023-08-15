@@ -1,7 +1,6 @@
 import {GLTFTextureInfoMetadata} from './gltf-json-schema';
 
 /* eslint-disable camelcase */
-export const EXTENSION_NAME_EXT_STRUCTURAL_METADATA = 'EXT_structural_metadata';
 
 /**
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/glTF.EXT_structural_metadata.schema.json
@@ -348,4 +347,24 @@ export type GLTF_EXT_structural_metadata_PropertyAttribute = {
   extensions?: Record<string, any>;
   extras?: any;
   [key: string]: any;
+};
+
+// export type GLTF_EXT_structural_metadata_Primitive = {
+//   properties?: {
+//     [key: string]: GLTF_EXT_structural_metadata_Primitive_Property;
+//   };
+//   extensions?: Record<string, any>;
+//   extras?: any;
+// };
+
+// export type GLTF_EXT_structural_metadata_Primitive_Property = {
+//   propertyTextures?: [number];
+//   propertyAttributes?: [number];
+// }
+
+export type GLTF_EXT_structural_metadata_Primitive = {
+  propertyTextures?: [number];
+  propertyAttributes?: [number];
+  extensions?: Record<string, any>;
+  extras?: any;
 };

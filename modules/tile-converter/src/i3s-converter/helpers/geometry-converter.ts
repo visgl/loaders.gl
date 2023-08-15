@@ -55,9 +55,9 @@ import type {TypedArrayConstructor} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {
-  EXTENSION_NAME_EXT_MESH_FEATURES,
-  EXTENSION_NAME_EXT_FEATURE_METADATA,
-  EXTENSION_NAME_EXT_STRUCTURAL_METADATA
+  EXT_MESH_FEATURES_NAME,
+  EXT_FEATURE_METADATA_NAME,
+  EXT_STRUCTURAL_METADATA_NAME
 } from '@loaders.gl/gltf';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
@@ -1589,17 +1589,17 @@ export function getPropertyTable(tileContent: Tiles3DTileContent | null): Featur
   const {extensionName, extension} = getPropertyTableExtension(tileContent);
 
   switch (extensionName) {
-    case EXTENSION_NAME_EXT_MESH_FEATURES: {
+    case EXT_MESH_FEATURES_NAME: {
       console.warn('The I3S converter does not yet support the EXT_mesh_features extension');
       return null;
     }
-    case EXTENSION_NAME_EXT_FEATURE_METADATA: {
+    case EXT_FEATURE_METADATA_NAME: {
       propertyTable = getPropertyTableFromExtFeatureMetadata(
         extension as GLTF_EXT_feature_metadata_GLTF
       );
       return propertyTable;
     }
-    case EXTENSION_NAME_EXT_STRUCTURAL_METADATA: {
+    case EXT_STRUCTURAL_METADATA_NAME: {
       propertyTable = getPropertyTableFromExtStructuralMetadata(
         extension as GLTF_EXT_structural_metadata
       );
@@ -1624,9 +1624,9 @@ function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
     | null;
 } {
   const extensionsWithPropertyTables = [
-    EXTENSION_NAME_EXT_FEATURE_METADATA,
-    EXTENSION_NAME_EXT_STRUCTURAL_METADATA,
-    EXTENSION_NAME_EXT_MESH_FEATURES
+    EXT_FEATURE_METADATA_NAME,
+    EXT_STRUCTURAL_METADATA_NAME,
+    EXT_MESH_FEATURES_NAME
   ];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
@@ -1710,13 +1710,6 @@ function getPropertyTableFromExtFeatureMetadata(
 function getPropertyTableFromExtStructuralMetadata(
   extension: GLTF_EXT_structural_metadata
 ): FeatureTableJson | null {
-  // if (extension?.propertyTextures) {
-  //   console.warn(
-  //     'The I3S converter does not yet support the GLTF_EXT_structural_metadata property textures'
-  //   );
-  //   return null;
-  // }
-
   if (extension?.propertyTables) {
     /**
      * Take only first feature table to generate attributes storage info object.
@@ -1724,17 +1717,15 @@ function getPropertyTableFromExtStructuralMetadata(
      * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
      * In I3S we should decide which featureIds attribute will be passed to geometry data.
      */
-    const firstFeatureTableName = Object.keys(extension.propertyTables)?.[0];
+    if (extension?.propertyTables) {
+      const firstPropertyTable = extension?.propertyTables[0];
+      const propertyTableWithData = {};
 
-    if (firstFeatureTableName) {
-      const featureTable = extension?.propertyTables[firstFeatureTableName];
-      const propertyTable = {};
-
-      for (const propertyName in featureTable.properties) {
-        propertyTable[propertyName] = featureTable.properties[propertyName].data;
+      for (const propertyName in firstPropertyTable.properties) {
+        propertyTableWithData[propertyName] = firstPropertyTable.properties[propertyName].data;
       }
 
-      return propertyTable;
+      return propertyTableWithData;
     }
   }
 
@@ -1745,17 +1736,15 @@ function getPropertyTableFromExtStructuralMetadata(
      * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
      * In I3S we should decide which featureIds attribute will be passed to geometry data.
      */
-    const firstPropertyTextureName = Object.keys(extension.propertyTextures)?.[0];
+    if (extension?.propertyTextures) {
+      const firstPropertyTexture = extension?.propertyTextures[0];
+      const propertyTableWithData = {};
 
-    if (firstPropertyTextureName) {
-      const propertyTexture = extension?.propertyTextures[firstPropertyTextureName];
-      const propertyTable = {};
-
-      for (const propertyName in propertyTexture.properties) {
-        propertyTable[propertyName] = propertyTexture.properties[propertyName].data;
+      for (const propertyName in firstPropertyTexture.properties) {
+        propertyTableWithData[propertyName] = firstPropertyTexture.properties[propertyName].data;
       }
 
-      return propertyTable;
+      return propertyTableWithData;
     }
   }
 
