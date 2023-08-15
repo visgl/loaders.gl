@@ -11,6 +11,12 @@ import {
   DRACO_WASM_WRAPPER_NAME,
   DRACO_WASM_WRAPPER_URL
 } from '@loaders.gl/draco';
+import {
+  BASIS_ENCODER_JS_NAME,
+  BASIS_ENCODER_WASM_NAME,
+  BASIS_TRANSCODER_JS_NAME,
+  BASIS_TRANSCODER_WASM_NAME
+} from '@loaders.gl/textures';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
@@ -65,12 +71,12 @@ export class DepsInstaller {
     await this.installFromUrl(DRACO_ENCODER_URL, 'draco', DRACO_ENCODER_NAME);
 
     console.log('Installing "Basis transcoder" library'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', 'basis_transcoder.js', 'libs');
-    await this.installFromNpm('textures', 'basis_transcoder.wasm', 'libs');
+    await this.installFromNpm('textures', BASIS_TRANSCODER_JS_NAME, 'libs');
+    await this.installFromNpm('textures', BASIS_TRANSCODER_WASM_NAME, 'libs');
 
     console.log('Installing "Basis encoder" library'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', 'basis_encoder.js', 'libs');
-    await this.installFromNpm('textures', 'basis_encoder.wasm', 'libs');
+    await this.installFromNpm('textures', BASIS_ENCODER_JS_NAME, 'libs');
+    await this.installFromNpm('textures', BASIS_ENCODER_WASM_NAME, 'libs');
 
     console.log('Installing "join-images" npm package');
     const childProcess = new ChildProcessProxy();

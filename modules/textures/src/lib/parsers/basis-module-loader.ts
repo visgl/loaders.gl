@@ -1,5 +1,10 @@
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
+export const BASIS_TRANSCODER_JS_NAME = 'basis_transcoder.js';
+export const BASIS_TRANSCODER_WASM_NAME = 'basis_transcoder.wasm';
+export const BASIS_ENCODER_JS_NAME = 'basis_encoder.js';
+export const BASIS_ENCODER_WASM_NAME = 'basis_encoder.wasm';
+
 let loadBasisTranscoderPromise;
 
 /**

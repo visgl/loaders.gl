@@ -1,6 +1,8 @@
 // @ts-nocheck
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
+export const CRUNCH_DECODER_NAME = 'crunch.js';
+
 /**
  * Load crunch decoder module
  * @param options - loader options
@@ -27,7 +29,7 @@ async function loadCrunch(options) {
     return crunchModule;
   }
 
-  let loadCrunchDecoder = await loadLibrary('crunch.js', 'textures', options);
+  let loadCrunchDecoder = await loadLibrary(CRUNCH_DECODER_NAME, 'textures', options);
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
