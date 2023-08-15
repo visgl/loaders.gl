@@ -2,6 +2,10 @@
 
 # v3.4
 
+## v3.4.11
+
+- Handle empty childless tiles in TilesetTraverser (#2584)
+
 ## v3.4.10
 
 - fix: refresh version locks for `qs` module (#2583)
