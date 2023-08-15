@@ -49,7 +49,7 @@ export async function loadLibrary(
 export function getLibraryUrl(
   library: string,
   moduleName?: string,
-  options?: any,
+  options: any = {},
   libraryName: string | null = null
 ): string {
   // Check if already a URL
