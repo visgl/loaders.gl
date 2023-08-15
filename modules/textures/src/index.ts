@@ -11,13 +11,8 @@ export {CrunchLoader} from './crunch-loader';
 export {NPYLoader, NPYWorkerLoader} from './npy-loader';
 
 // Module constants
-export {
-  BASIS_ENCODER_JS_NAME,
-  BASIS_ENCODER_WASM_NAME,
-  BASIS_TRANSCODER_JS_NAME,
-  BASIS_TRANSCODER_WASM_NAME
-} from './lib/parsers/basis-module-loader';
-export {CRUNCH_DECODER_NAME} from './lib/parsers/crunch-module-loader';
+export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';
+export {CRUNCH_EXTERNAL_LIBRARIES} from './lib/parsers/crunch-module-loader';
 
 // Writers
 export {CompressedTextureWriter} from './compressed-texture-writer';

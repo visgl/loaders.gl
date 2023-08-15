@@ -1,9 +1,15 @@
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
-export const BASIS_TRANSCODER_JS_NAME = 'basis_transcoder.js';
-export const BASIS_TRANSCODER_WASM_NAME = 'basis_transcoder.wasm';
-export const BASIS_ENCODER_JS_NAME = 'basis_encoder.js';
-export const BASIS_ENCODER_WASM_NAME = 'basis_encoder.wasm';
+export const BASIS_EXTERNAL_LIBRARIES = {
+  /** Basis transcoder, javascript wrapper part */
+  TRANSCODER: 'basis_transcoder.js',
+  /** Basis transcoder, compiled web assembly part */
+  TRANSCODER_WASM: 'basis_transcoder.wasm',
+  /** Basis encoder, javascript wrapper part */
+  ENCODER: 'basis_encoder.js',
+  /** Basis encoder, compiled web assembly part */
+  ENCODER_WASM: 'basis_encoder.wasm'
+};
 
 let loadBasisTranscoderPromise;
 
@@ -32,8 +38,8 @@ async function loadBasisTranscoder(options) {
   let wasmBinary = null;
 
   [BASIS, wasmBinary] = await Promise.all([
-    await loadLibrary('basis_transcoder.js', 'textures', options),
-    await loadLibrary('basis_transcoder.wasm', 'textures', options)
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.TRANSCODER, 'textures', options),
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.TRANSCODER_WASM, 'textures', options)
   ]);
 
   // Depends on how import happened...
@@ -92,8 +98,8 @@ async function loadBasisEncoder(options) {
   let wasmBinary = null;
 
   [BASIS_ENCODER, wasmBinary] = await Promise.all([
-    await loadLibrary('basis_encoder.js', 'textures', options),
-    await loadLibrary('basis_encoder.wasm', 'textures', options)
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.ENCODER, 'textures', options),
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.ENCODER_WASM, 'textures', options)
   ]);
 
   // Depends on how import happened...

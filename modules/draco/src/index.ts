@@ -8,16 +8,7 @@ import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
 
 // Module constants
-export {
-  DRACO_ENCODER_NAME,
-  DRACO_ENCODER_URL,
-  DRACO_JS_DECODER_NAME,
-  DRACO_JS_DECODER_URL,
-  DRACO_WASM_DECODER_NAME,
-  DRACO_WASM_DECODER_URL,
-  DRACO_WASM_WRAPPER_NAME,
-  DRACO_WASM_WRAPPER_URL
-} from './lib/draco-module-loader';
+export {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from './lib/draco-module-loader';
 
 // Draco data types
 
