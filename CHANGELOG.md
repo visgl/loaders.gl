@@ -6,6 +6,14 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.19
+
+- fix(tile-converter): CLI startup script (#2587)
+- feat(tile-converter): i3s - offline conversion (#2579)
+- Handle empty childless tiles in TilesetTraverser (#2584)
+- fix(i3s): add to tileset data (#2585)
+- fix(tile-converter): fix loading buffers in preprocess-3d-tiles (#2572)
+
 ### v4.0.0-alpha.18
 
 - fix(tile-converter): skip failing content (#2576)
