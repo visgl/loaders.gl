@@ -212,6 +212,10 @@ function unifyObjectsByFeatureId(
         existedObject.texCoords,
         currentObject.texCoords
       );
+      existedObject.uvRegions = concatenateTypedArrays(
+        existedObject.uvRegions,
+        currentObject.uvRegions
+      );
     } else {
       uniqueObjects.push(currentObject);
     }
