@@ -15,9 +15,12 @@ export type ZipLocalFileHeader = {
   fileDataOffset: bigint;
   /** Compressed size */
   compressedSize: bigint;
+  /** Compression method */
+  compressionMethod: number;
 };
 
 const offsets = {
+  COMPRESSION_METHOD_OFFSET: 8n,
   COMPRESSED_SIZE_OFFSET: 18n,
   UNCOMPRESSED_SIZE_OFFSET: 22n,
   FILE_NAME_LENGTH_OFFSET: 26n,
@@ -57,6 +60,10 @@ export const parseZipLocalFileHeader = async (
   let fileDataOffset =
     headerOffset + offsets.FILE_NAME_OFFSET + BigInt(fileNameLength + extraFieldLength);
 
+  const compressionMethod = await buffer.getUint16(
+    headerOffset + offsets.COMPRESSION_METHOD_OFFSET
+  );
+
   let compressedSize = BigInt(
     await buffer.getUint32(headerOffset + offsets.COMPRESSED_SIZE_OFFSET)
   ); // add zip 64 logic
@@ -86,6 +93,7 @@ export const parseZipLocalFileHeader = async (
     fileName,
     extraFieldLength,
     fileDataOffset,
-    compressedSize
+    compressedSize,
+    compressionMethod
   };
 };

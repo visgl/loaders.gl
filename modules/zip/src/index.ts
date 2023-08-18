@@ -11,3 +11,4 @@ export {
 export {parseEoCDRecord} from './parse-zip/end-of-central-directory';
 export {searchFromTheEnd} from './parse-zip/search-from-the-end';
 export {DataViewFile} from './parse-zip/data-view-file';
+export {generateHashInfo} from './parse-zip/hash-data-parse';

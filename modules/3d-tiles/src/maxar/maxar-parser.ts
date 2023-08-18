@@ -1,41 +1,41 @@
-import {
-  parseZipCDFileHeader,
-  cdSignature as cdHeaderSignature,
-  FileProvider,
-  parseZipLocalFileHeader,
-  searchFromTheEnd,
-  generateHashInfo
-} from '@loaders.gl/zip';
-import {SLPKArchive} from './slpk-archieve';
 import {HashElement, parseHashFile} from '@loaders.gl/loader-utils';
+import {
+  FileProvider,
+  cdSignature as cdHeaderSignature,
+  generateHashInfo,
+  parseZipCDFileHeader,
+  parseZipLocalFileHeader,
+  searchFromTheEnd
+} from '@loaders.gl/zip';
+import {MaxarArchive} from './maxar-archive';
 
 /**
- * Creates slpk file handler from raw file
+ * Creates 3tz file handler from raw file
  * @param fileProvider raw file data
  * @param cb is called with information message during parsing
- * @returns slpk file handler
+ * @returns 3tz file handler
  */
-export const parseSLPK = async (
+export const parse3tz = async (
   fileProvider: FileProvider,
   cb?: (msg: string) => void
-): Promise<SLPKArchive> => {
+): Promise<MaxarArchive> => {
   const hashCDOffset = await searchFromTheEnd(fileProvider, cdHeaderSignature);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 
   let hashData: HashElement[];
-  if (cdFileHeader?.fileName !== '@specialIndexFileHASH128@') {
-    cb?.('SLPK doesnt contain hash file');
+  if (cdFileHeader?.fileName !== '@3dtilesIndex1@') {
+    cb?.('3tz doesnt contain hash file');
     hashData = await generateHashInfo(fileProvider);
     cb?.('hash info has been composed according to central directory records');
   } else {
-    cb?.('SLPK contains hash file');
+    cb?.('3tz contains hash file');
     const localFileHeader = await parseZipLocalFileHeader(
       cdFileHeader.localHeaderOffset,
       fileProvider
     );
     if (!localFileHeader) {
-      throw new Error('corrupted SLPK');
+      throw new Error('corrupted 3tz');
     }
 
     const fileDataOffset = localFileHeader.fileDataOffset;
@@ -47,5 +47,5 @@ export const parseSLPK = async (
     hashData = parseHashFile(hashFile);
   }
 
-  return new SLPKArchive(fileProvider, hashData);
+  return new MaxarArchive(fileProvider, hashData);
 };

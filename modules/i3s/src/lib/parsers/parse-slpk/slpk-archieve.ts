@@ -134,7 +134,4 @@ export class SLPKArchive {
 
     return compressedFile;
   }
-  findBin(nameHash: Buffer) {
-    throw new Error('Method not implemented.');
-  }
 }
