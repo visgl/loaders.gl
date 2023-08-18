@@ -19,7 +19,7 @@ export const name = EXT_MESHOPT_COMPRESSION;
 export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions) {
   const scenegraph = new GLTFScenegraph(gltfData);
 
-  if (!options?.gltf?.decompressMeshes) {
+  if (!options?.gltf?.decompressMeshes || !options.gltf?.loadBuffers) {
     return;
   }
 

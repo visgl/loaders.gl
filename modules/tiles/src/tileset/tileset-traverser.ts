@@ -360,7 +360,7 @@ export class TilesetTraverser {
           }
           stack.push(child);
         }
-      } else if (!tile.contentAvailable) {
+      } else if (!tile.contentAvailable && !tile.hasEmptyContent) {
         allDescendantsLoaded = false;
       }
     }

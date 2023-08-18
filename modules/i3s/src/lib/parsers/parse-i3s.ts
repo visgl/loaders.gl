@@ -104,6 +104,7 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
 
   return {
     ...tileset,
+    loader: I3SLoader,
     url,
     basePath: url,
     type: TILESET_TYPE.I3S,

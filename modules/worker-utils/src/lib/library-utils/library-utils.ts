@@ -31,10 +31,11 @@ const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 export async function loadLibrary(
   libraryUrl: string,
   moduleName: string | null = null,
-  options: object = {}
+  options: object = {},
+  libraryName: string | null = null
 ): Promise<any> {
   if (moduleName) {
-    libraryUrl = getLibraryUrl(libraryUrl, moduleName, options);
+    libraryUrl = getLibraryUrl(libraryUrl, moduleName, options, libraryName);
   }
   // Ensure libraries are only loaded once
 
@@ -45,36 +46,43 @@ export async function loadLibrary(
 }
 
 // TODO - sort out how to resolve paths for main/worker and dev/prod
-export function getLibraryUrl(library: string, moduleName?: string, options?: any): string {
+export function getLibraryUrl(
+  library: string,
+  moduleName?: string,
+  options: any = {},
+  libraryName: string | null = null
+): string {
   // Check if already a URL
-  if (library.startsWith('http')) {
+  if (!options.useLocalLibraries && library.startsWith('http')) {
     return library;
   }
 
+  libraryName = libraryName || library;
+
   // Allow application to import and supply libraries through `options.modules`
   const modules = options.modules || {};
-  if (modules[library]) {
-    return modules[library];
+  if (modules[libraryName]) {
+    return modules[libraryName];
   }
 
   // Load from local files, not from CDN scripts in Node.js
   // TODO - needs to locate the modules directory when installed!
   if (!isBrowser) {
-    return `modules/${moduleName}/dist/libs/${library}`;
+    return `modules/${moduleName}/dist/libs/${libraryName}`;
   }
 
   // In browser, load from external scripts
   if (options.CDN) {
     assert(options.CDN.startsWith('http'));
-    return `${options.CDN}/${moduleName}@${VERSION}/dist/libs/${library}`;
+    return `${options.CDN}/${moduleName}@${VERSION}/dist/libs/${libraryName}`;
   }
 
   // TODO - loading inside workers requires paths relative to worker script location...
   if (isWorker) {
-    return `../src/libs/${library}`;
+    return `../src/libs/${libraryName}`;
   }
 
-  return `modules/${moduleName}/src/libs/${library}`;
+  return `modules/${moduleName}/src/libs/${libraryName}`;
 }
 
 async function loadLibraryFromFile(libraryUrl: string): Promise<any> {

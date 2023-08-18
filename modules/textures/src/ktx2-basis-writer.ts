@@ -1,16 +1,18 @@
 // loaders.gl, MIT license
 
-import type {Writer} from '@loaders.gl/loader-utils';
+import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import type {ImageDataType} from '@loaders.gl/images';
 import {encodeKTX2BasisTexture} from './lib/encoders/encode-ktx2-basis-texture';
 
 /** @todo should be in basis sub-object */
-export type KTX2BasisWriterOptions = {
-  useSRGB?: boolean;
-  qualityLevel?: number;
-  encodeUASTC?: boolean;
-  mipmaps?: boolean;
+export type KTX2BasisWriterOptions = WriterOptions & {
+  ['ktx2-basis-writer']: {
+    useSRGB?: boolean;
+    qualityLevel?: number;
+    encodeUASTC?: boolean;
+    mipmaps?: boolean;
+  };
 };
 
 /**
@@ -25,10 +27,12 @@ export const KTX2BasisWriter: Writer<ImageDataType, unknown, KTX2BasisWriterOpti
 
   extensions: ['ktx2'],
   options: {
-    useSRGB: false,
-    qualityLevel: 10,
-    encodeUASTC: false,
-    mipmaps: false
+    ['ktx2-basis-writer']: {
+      useSRGB: false,
+      qualityLevel: 10,
+      encodeUASTC: false,
+      mipmaps: false
+    }
   },
 
   encode: encodeKTX2BasisTexture

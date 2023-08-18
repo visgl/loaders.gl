@@ -147,6 +147,11 @@ export default class Tiles3DConverter {
     if (sourceChild.contentUrl) {
       const content = await loadI3SContent(this.sourceTileset, sourceChild, this.loaderOptions);
 
+      if (!content) {
+        await this._addChildren(sourceChild, parentNode, level + 1);
+        return;
+      }
+
       this.vertexCounter += content?.vertexCount || 0;
 
       let featureAttributes: FeatureAttribute | null = null;

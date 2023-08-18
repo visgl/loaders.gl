@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/wkt",
   "description": "Loader and Writer for the WKT (Well Known Text) Format",
-  "version": "4.0.0-alpha.17",
+  "version": "4.0.0-alpha.19",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -35,8 +35,8 @@
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.0.0-alpha.17",
-    "@loaders.gl/schema": "4.0.0-alpha.17"
+    "@loaders.gl/loader-utils": "4.0.0-alpha.19",
+    "@loaders.gl/schema": "4.0.0-alpha.19"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
