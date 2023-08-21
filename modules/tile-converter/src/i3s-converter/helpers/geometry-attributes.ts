@@ -202,12 +202,23 @@ function unifyObjectsByFeatureId(
     const existingObject = uniqueObjects.find((obj) => obj.featureId === currentObject.featureId);
 
     if (existingObject) {
-      for (const attributeName in ['positions', 'normals', 'colors', 'texCoords', 'uvRegions']) {
-        existingObject[attributeName] = concatenateTypedArrays(
-          existingObject[attributeName],
-          currentObject[attributeName]
-        );
-      }
+      existingObject.positions = concatenateTypedArrays(
+        existingObject.positions,
+        currentObject.positions
+      );
+      existingObject.normals = concatenateTypedArrays(
+        existingObject.normals,
+        currentObject.normals
+      );
+      existingObject.colors = concatenateTypedArrays(existingObject.colors, currentObject.colors);
+      existingObject.texCoords = concatenateTypedArrays(
+        existingObject.texCoords,
+        currentObject.texCoords
+      );
+      existingObject.uvRegions = concatenateTypedArrays(
+        existingObject.uvRegions,
+        currentObject.uvRegions
+      );
     } else {
       uniqueObjects.push(currentObject);
     }
