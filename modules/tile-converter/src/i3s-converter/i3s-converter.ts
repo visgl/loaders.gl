@@ -130,7 +130,8 @@ export default class I3SConverter {
   writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
   compressList: string[] | null = null;
   preprocessData: PreprocessData = {
-    meshTopologyTypes: new Set()
+    meshTopologyTypes: new Set(),
+    metadataClasses: new Set()
   };
 
   constructor() {
@@ -187,6 +188,8 @@ export default class I3SConverter {
     generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
     instantNodeWriting?: boolean;
+    inquirer?: Promise<unknown>;
+    metadataClass?: string;
   }): Promise<string> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE);
@@ -207,7 +210,9 @@ export default class I3SConverter {
       generateTextures,
       generateBoundingVolumes,
       instantNodeWriting = false,
-      mergeMaterials = true
+      mergeMaterials = true,
+      inquirer,
+      metadataClass
     } = options;
     this.options = {
       maxDepth,
@@ -218,7 +223,9 @@ export default class I3SConverter {
       token,
       inputUrl,
       instantNodeWriting,
-      mergeMaterials
+      mergeMaterials,
+      inquirer,
+      metadataClass
     };
     this.compressList = (this.options.instantNodeWriting && []) || null;
     this.validate = Boolean(validate);
@@ -280,10 +287,20 @@ export default class I3SConverter {
       undefined,
       this.options.maxDepth
     );
-    const {meshTopologyTypes} = this.preprocessData;
+    const {meshTopologyTypes, metadataClasses} = this.preprocessData;
+
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
     console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
+
+    if (metadataClasses.size) {
+      console.log(
+        `Feature metadata classes has been found: ${Array.from(metadataClasses).join(', ')}`
+      );
+    } else {
+      console.log('Feature metadata classes has not been found');
+    }
+
     console.log(`------------------------------------------------`);
     if (
       !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLES) &&
@@ -295,6 +312,32 @@ export default class I3SConverter {
       console.log(`------------------------------------------------`);
       return false;
     }
+
+    if (metadataClasses.size > 1) {
+      if (this.options.metadataClass?.length) {
+        console.log(`${this.options.metadataClass} has been selected`);
+      } else if (this.options.inquirer) {
+        const result = await this.options.inquirer.prompt([
+          {
+            name: 'metadataClass',
+            type: 'list',
+            message: 'Select feature medata data class to convert...',
+            choices: Array.from(metadataClasses)
+          }
+        ]);
+        this.options.metadataClass = result.metadataClass;
+        console.log(`${result.metadataClass} has been selected`);
+      } else {
+        console.log(
+          `A feature metadata class has not been selected. Start the converter with option "--metadata-class". For example, "npx tile-converter ... --metadata-class ${
+            Array.from(metadataClasses)[0]
+          }"`
+        );
+        console.log(`------------------------------------------------`);
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -599,7 +642,7 @@ export default class I3SConverter {
     );
     let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
-    const propertyTable = getPropertyTable(tileContent);
+    const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
 
     if (propertyTable && !this.layers0?.attributeStorageInfo?.length) {
       this._convertPropertyTableToNodeAttributes(propertyTable);
@@ -718,7 +761,8 @@ export default class I3SConverter {
       this.generateBoundingVolumes,
       this.options.mergeMaterials,
       this.geoidHeightModel!,
-      this.loadOptions.modules as Record<string, string>
+      this.loadOptions.modules as Record<string, string>,
+      this.options.metadataClass
     );
     return resourcesData;
   }

@@ -183,6 +183,8 @@ export enum GltfPrimitiveModeString {
 export type PreprocessData = {
   /** Mesh topology types used in gltf primitives of the tileset */
   meshTopologyTypes: Set<GltfPrimitiveModeString>;
+  /** Featrue metadata classes found in glTF extensions */
+  metadataClasses: Set<string>;
 };
 
 /** Texture image properties required for conversion */

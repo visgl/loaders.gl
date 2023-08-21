@@ -1,7 +1,8 @@
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import {GltfPrimitiveModeString, PreprocessData} from '../types';
-import {GLTF, GLTFLoader} from '@loaders.gl/gltf';
+import {GLTF, GLTFLoader, GLTF_EXT_feature_metadata_GLTF} from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
+import {EXT_FEATURE_METADATA} from '../../constants';
 
 /**
  * glTF primitive modes
@@ -26,11 +27,12 @@ export const GLTF_PRIMITIVE_MODES = [
 export const analyzeTileContent = async (
   tileContent: Tiles3DTileContent | null
 ): Promise<PreprocessData> => {
-  const result: PreprocessData = {
-    meshTopologyTypes: new Set()
+  const defaultResult = {
+    meshTopologyTypes: new Set<GltfPrimitiveModeString>(),
+    metadataClasses: new Set<string>()
   };
   if (!tileContent?.gltfArrayBuffer) {
-    return result;
+    return defaultResult;
   }
 
   const gltfData = await parse(tileContent.gltfArrayBuffer, GLTFLoader, {
@@ -39,11 +41,14 @@ export const analyzeTileContent = async (
   const gltf = gltfData.json;
 
   if (!gltf) {
-    return result;
+    return defaultResult;
   }
-  const meshTypes = getMeshTypesFromGltf(gltf);
-  result.meshTopologyTypes = meshTypes;
-  return result;
+  const meshTopologyTypes = getMeshTypesFromGltf(gltf);
+  const metadataClasses = getMetadataClassesFromGltf(gltf);
+  return {
+    meshTopologyTypes,
+    metadataClasses
+  };
 };
 
 /**
@@ -66,6 +71,26 @@ const getMeshTypesFromGltf = (gltfJson: GLTF): Set<GltfPrimitiveModeString> => {
 };
 
 /**
+ * Get feature metadata classes from glTF
+ * @param gltfJson - JSON part of GLB content
+ * @returns array of classes
+ */
+const getMetadataClassesFromGltf = (gltfJson: GLTF): Set<string> => {
+  const result: Set<string> = new Set();
+
+  const classes = (gltfJson.extensions?.[EXT_FEATURE_METADATA] as GLTF_EXT_feature_metadata_GLTF)
+    ?.schema?.classes;
+
+  if (classes) {
+    for (const classKey of Object.keys(classes)) {
+      result.add(classKey);
+    }
+  }
+
+  return result;
+};
+
+/**
  * Merge object2 into object1
  * @param object1
  * @param object2
@@ -75,5 +100,10 @@ export const mergePreprocessData = (object1: PreprocessData, object2: Preprocess
   // Merge topology mesh types info
   for (const type of object2.meshTopologyTypes) {
     object1.meshTopologyTypes.add(type);
+  }
+
+  // Merge feature metadata classes
+  for (const metadataClass of object2.metadataClasses) {
+    object1.metadataClasses.add(metadataClass);
   }
 };
