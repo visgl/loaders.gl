@@ -295,10 +295,10 @@ export default class I3SConverter {
 
     if (metadataClasses.size) {
       console.log(
-        `Feature metadata classes has been found: ${Array.from(metadataClasses).join(', ')}`
+        `Feature metadata classes have been found: ${Array.from(metadataClasses).join(', ')}`
       );
     } else {
-      console.log('Feature metadata classes has not been found');
+      console.log('Feature metadata classes have not been found');
     }
 
     console.log(`------------------------------------------------`);
