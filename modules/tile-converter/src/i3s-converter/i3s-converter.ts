@@ -321,7 +321,7 @@ export default class I3SConverter {
           {
             name: 'metadataClass',
             type: 'list',
-            message: 'Select feature medata data class to convert...',
+            message: 'Select feature metadata data class to convert...',
             choices: Array.from(metadataClasses)
           }
         ]);
