@@ -199,23 +199,15 @@ function unifyObjectsByFeatureId(
 
   for (let index = 0; index < sortedData.length; index++) {
     const currentObject = sortedData[index];
-    const existedObject = uniqueObjects.find((obj) => obj.featureId === currentObject.featureId);
+    const existingObject = uniqueObjects.find((obj) => obj.featureId === currentObject.featureId);
 
-    if (existedObject) {
-      existedObject.positions = concatenateTypedArrays(
-        existedObject.positions,
-        currentObject.positions
-      );
-      existedObject.normals = concatenateTypedArrays(existedObject.normals, currentObject.normals);
-      existedObject.colors = concatenateTypedArrays(existedObject.colors, currentObject.colors);
-      existedObject.texCoords = concatenateTypedArrays(
-        existedObject.texCoords,
-        currentObject.texCoords
-      );
-      existedObject.uvRegions = concatenateTypedArrays(
-        existedObject.uvRegions,
-        currentObject.uvRegions
-      );
+    if (existingObject) {
+      for (const attributeName in ['positions', 'normals', 'colors', 'texCoords', 'uvRegions']) {
+        existingObject[attributeName] = concatenateTypedArrays(
+          existingObject[attributeName],
+          currentObject[attributeName]
+        );
+      }
     } else {
       uniqueObjects.push(currentObject);
     }
