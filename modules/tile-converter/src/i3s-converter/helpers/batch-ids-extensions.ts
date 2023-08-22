@@ -2,26 +2,54 @@ import {GLTFAccessorPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loader
 import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
   GLTF_EXT_feature_metadata_FeatureIdTexture,
+  GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_Primitive
 } from '@loaders.gl/gltf';
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../types';
+import {EXT_FEATURE_METADATA, EXT_MESH_FEATURES} from '../../constants';
+import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 
-const EXT_MESH_FEATURES = 'EXT_mesh_features';
-const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
+/**
+ * Get featureTexture by metadataClass
+ * @param tileContent - 3d tile content
+ * @param metadataClass - user selected feature metadata class name
+ * @returns featureTexture key
+ */
+export function getTextureByMetadataClass(
+  tileContent: Tiles3DTileContent,
+  metadataClass?: string
+): string | null {
+  const extFeatureMetadata = tileContent.gltf?.extensions?.[
+    EXT_FEATURE_METADATA
+  ] as GLTF_EXT_feature_metadata_GLTF;
+  if (!extFeatureMetadata?.featureTextures) {
+    return null;
+  }
+  for (const textureKey in extFeatureMetadata.featureTextures) {
+    const texture = extFeatureMetadata.featureTextures[textureKey];
+    if (texture.class === metadataClass) {
+      return textureKey;
+    }
+  }
+  return null;
+}
 
 /**
  * Getting batchIds from 3DTilesNext extensions.
  * @param attributes - gltf accessors
  * @param primitive - gltf primitive data
  * @param images - gltf texture images
+ * @param featureTexture - feature texture key
+ * @return array of batch IDs
  */
 export function handleBatchIdsExtensions(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
   primitive: GLTFMeshPrimitivePostprocessed,
-  images: (TextureImageProperties | null)[]
+  images: (TextureImageProperties | null)[],
+  featureTexture: string | null
 ): NumericArray {
   const extensions = primitive?.extensions;
 
@@ -35,7 +63,8 @@ export function handleBatchIdsExtensions(
         return handleExtFeatureMetadataExtension(
           attributes,
           extensionData as GLTF_EXT_feature_metadata_Primitive,
-          images
+          images,
+          featureTexture
         );
       case EXT_MESH_FEATURES:
         console.warn('EXT_mesh_features extension is not supported yet');
@@ -51,16 +80,18 @@ export function handleBatchIdsExtensions(
 /**
  * Get batchIds from EXT_feature_metadata extension.
  * Docs - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata
- * @param attributes
- * @param extFeatureMetadata
- * @param textures
+ * @param attributes - glTF attributes
+ * @param extFeatureMetadata - primitive-level EXT_FEATURE_METADATA extension data
+ * @param textures - texture images
+ * @param featureTexture - feature texture key
  */
 function handleExtFeatureMetadataExtension(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
   extFeatureMetadata: GLTF_EXT_feature_metadata_Primitive,
-  images: (TextureImageProperties | null)[]
+  images: (TextureImageProperties | null)[],
+  featureTexture: string | null
 ): NumericArray {
   // Take only first extension object to get batchIds attribute name.
   const featureIdAttribute = extFeatureMetadata?.featureIdAttributes?.[0];
@@ -92,10 +123,6 @@ function handleExtFeatureMetadataExtension(
     const textureCoordinates = attributes[textCoordAttribute].value;
     return generateBatchIdsFromTexture(featureIdTexture, textureCoordinates, images);
   }
-
-  // Take only first extension texture to get batchIds from the root EXT_feature_metadata object.
-  const featureTexture =
-    extFeatureMetadata?.featureTextures && extFeatureMetadata?.featureTextures[0];
 
   if (featureTexture) {
     const batchIdsAttribute = attributes[featureTexture];

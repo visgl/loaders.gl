@@ -66,6 +66,7 @@
     "crypt": "^0.0.2",
     "debug": "~4.3.4",
     "express": "~4.18.2",
+    "inquirer": "^8.0.0",
     "json-map-transform": "^1.2.6",
     "jszip": "^3.5.0",
     "md5": "^2.3.0",

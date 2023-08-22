@@ -1,8 +1,7 @@
 import test from 'tape-promise/tape';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {load, fetchFile, setLoaderOptions, getLoaderOptions, isBrowser} from '@loaders.gl/core';
-import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
-import {DracoWriterWorker} from '@loaders.gl/draco';
+import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
 import convertB3dmToI3sGeometry, {
   getPropertyTable
 } from '../../../src/i3s-converter/helpers/geometry-converter';
@@ -46,7 +45,6 @@ test('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt t
       4051833.805439, 618316.801881, 4870677.172590001
     ]);
     const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
-    const workerSource = await getWorkersSource();
     const attributeStorageInfo = [];
     const shouldMergeMaterials = false;
     try {
@@ -62,7 +60,7 @@ test('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt t
         generateBoundingVolumes,
         shouldMergeMaterials,
         geoidHeightModel,
-        workerSource
+        {}
       );
       t.ok(convertedResources);
       if (!convertedResources) {
@@ -132,7 +130,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
     3781178.760596639, 902182.0936989671, 5039803.738586299
   ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
-  const workerSource = await getWorkersSource();
   const attributeStorageInfo = [];
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
@@ -147,7 +144,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
       generageBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      workerSource
+      {}
     );
     t.ok(convertedResources);
     if (!convertedResources) {
@@ -213,7 +210,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
     1319833.032477655, -4673588.626640962, 4120866.796624521
   ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
-  const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
@@ -228,7 +224,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
       generageBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      workerSource
+      {}
     );
     t.ok(convertedResources);
     if (!convertedResources) {
@@ -279,7 +275,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
     -2703528.7614193764, -4261014.993900511, 3887572.9889940596
   ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
-  const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
@@ -294,7 +289,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
       generageBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      workerSource
+      {}
     );
     t.ok(convertedResources);
     if (!convertedResources) {
@@ -353,7 +348,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
     -4386794.587985844, 733486.8163247632, -4556196.147240348
   ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
-  const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
@@ -368,7 +362,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
       generageBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      workerSource
+      {}
     );
     t.ok(convertedResources);
     if (!convertedResources) {
@@ -410,7 +404,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
     2881727.346362028, 1342482.044833547, 5510923.203394569
   ]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
-  const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     await convertB3dmToI3sGeometry(
@@ -425,7 +418,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
       generageBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      workerSource
+      {}
     );
     t.fail('The conversion should fail');
   } catch (e) {
@@ -452,11 +445,10 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
   const generageBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(MUSCATATUCK_GLB_FILE_PATH, Tiles3DLoader);
-  const propertyTable = getPropertyTable(tileContent);
+  const propertyTable = getPropertyTable(tileContent, 'r3dm::uncertainty_ce90sum');
   const tileTransform = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
   const tileBoundingVolume = new BoundingSphere([386500, -4945000, 3997000]);
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
-  const workerSource = await getWorkersSource();
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
     const convertedResources = await convertB3dmToI3sGeometry(
@@ -471,7 +463,8 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
       generageBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      workerSource
+      {},
+      'r3dm::uncertainty_ce90sum'
     );
     t.ok(convertedResources);
     if (!convertedResources) {
@@ -505,16 +498,6 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
 
   t.end();
 });
-
-async function getWorkersSource() {
-  const result = {draco: '', I3SAttributes: ''};
-  const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
-  let sourceResponse = await fetchFile(url);
-  let source = await sourceResponse.text();
-  result.draco = source;
-
-  return result;
-}
 
 const OBJECT_ID_TYPE = 'OBJECTID';
 const STRING_TYPE = 'string';
