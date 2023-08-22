@@ -25,7 +25,7 @@ export function getFetchFunction(
 
   // options.fetch can be an options object
   if (isObject(fetchOptions.fetch)) {
-    return (url) => fetchFile(url, fetchOptions as RequestInit);
+    return (url) => fetchFile(url, fetchOptions.fetch as RequestInit);
   }
 
   // else refer to context (from parent loader) if available
