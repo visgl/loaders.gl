@@ -1,5 +1,5 @@
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
-import {GltfPrimitiveModeString, PreprocessData} from '../types';
+import {GLTFPrimitiveModeString, PreprocessData} from '../types';
 import {GLTF, GLTFLoader, GLTF_EXT_feature_metadata_GLTF} from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
 import {EXT_FEATURE_METADATA} from '../../constants';
@@ -9,13 +9,13 @@ import {EXT_FEATURE_METADATA} from '../../constants';
  * @see https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
  */
 export const GLTF_PRIMITIVE_MODES = [
-  GltfPrimitiveModeString.POINTS, // 0
-  GltfPrimitiveModeString.LINES, // 1
-  GltfPrimitiveModeString.LINE_LOOP, // 2
-  GltfPrimitiveModeString.LINE_STRIP, // 3
-  GltfPrimitiveModeString.TRIANGLES, // 4
-  GltfPrimitiveModeString.TRIANGLE_STRIP, // 5
-  GltfPrimitiveModeString.TRIANGLE_FAN // 6
+  GLTFPrimitiveModeString.POINTS, // 0
+  GLTFPrimitiveModeString.LINES, // 1
+  GLTFPrimitiveModeString.LINE_LOOP, // 2
+  GLTFPrimitiveModeString.LINE_STRIP, // 3
+  GLTFPrimitiveModeString.TRIANGLES, // 4
+  GLTFPrimitiveModeString.TRIANGLE_STRIP, // 5
+  GLTFPrimitiveModeString.TRIANGLE_FAN // 6
 ];
 
 /**
@@ -28,7 +28,7 @@ export const analyzeTileContent = async (
   tileContent: Tiles3DTileContent | null
 ): Promise<PreprocessData> => {
   const defaultResult = {
-    meshTopologyTypes: new Set<GltfPrimitiveModeString>(),
+    meshTopologyTypes: new Set<GLTFPrimitiveModeString>(),
     metadataClasses: new Set<string>()
   };
   if (!tileContent?.gltfArrayBuffer) {
@@ -56,8 +56,8 @@ export const analyzeTileContent = async (
  * @param gltfJson - JSON part of GLB content
  * @returns array of mesh types found
  */
-const getMeshTypesFromGltf = (gltfJson: GLTF): Set<GltfPrimitiveModeString> => {
-  const result: Set<GltfPrimitiveModeString> = new Set();
+const getMeshTypesFromGltf = (gltfJson: GLTF): Set<GLTFPrimitiveModeString> => {
+  const result: Set<GLTFPrimitiveModeString> = new Set();
   for (const mesh of gltfJson.meshes || []) {
     for (const primitive of mesh.primitives) {
       let {mode} = primitive;

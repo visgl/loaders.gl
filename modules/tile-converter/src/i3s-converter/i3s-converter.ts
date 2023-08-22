@@ -51,7 +51,7 @@ import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {
-  GltfPrimitiveModeString,
+  GLTFPrimitiveModeString,
   I3SConvertedResources,
   PreprocessData,
   SharedResourcesArrays
@@ -303,8 +303,8 @@ export default class I3SConverter {
 
     console.log(`------------------------------------------------`);
     if (
-      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLES) &&
-      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLE_STRIP)
+      !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLES) &&
+      !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLE_STRIP)
     ) {
       console.log(
         'The tileset is of unsupported mesh topology types. The conversion will be interrupted.'
