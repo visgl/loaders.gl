@@ -15,4 +15,4 @@ import './lib/parsers/helpers/normalize-3d-tile-colors.spec';
 
 import './tiles-3d-loader.spec';
 import './tile-3d-subtree-loader.spec';
-import './parse-maxar.spec';
+import './parse-tz3.spec';

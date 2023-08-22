@@ -23,11 +23,11 @@ const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
 /**
  * Class for handling information about 3tz file
  */
-export class MaxarArchive {
-  private maxarArchive: FileProvider;
+export class TZ3Archive {
+  private tz3Archive: FileProvider;
   private hashArray: HashElement[];
-  constructor(maxarArchive: FileProvider, hashFile: HashElement[]) {
-    this.maxarArchive = maxarArchive;
+  constructor(tz3Archive: FileProvider, hashFile: HashElement[]) {
+    this.tz3Archive = tz3Archive;
     this.hashArray = hashFile;
   }
 
@@ -63,12 +63,12 @@ export class MaxarArchive {
       return null;
     }
 
-    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.maxarArchive);
+    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.tz3Archive);
     if (!localFileHeader) {
       return null;
     }
 
-    const compressedFile = await this.maxarArchive.slice(
+    const compressedFile = await this.tz3Archive.slice(
       localFileHeader.fileDataOffset,
       localFileHeader.fileDataOffset + localFileHeader.compressedSize
     );

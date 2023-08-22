@@ -7,7 +7,7 @@ import {
   parseZipLocalFileHeader,
   searchFromTheEnd
 } from '@loaders.gl/zip';
-import {MaxarArchive} from './maxar-archive';
+import {TZ3Archive} from './tz3-archive';
 
 /**
  * Creates 3tz file handler from raw file
@@ -18,7 +18,7 @@ import {MaxarArchive} from './maxar-archive';
 export const parse3tz = async (
   fileProvider: FileProvider,
   cb?: (msg: string) => void
-): Promise<MaxarArchive> => {
+): Promise<TZ3Archive> => {
   const hashCDOffset = await searchFromTheEnd(fileProvider, cdHeaderSignature);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
@@ -47,5 +47,5 @@ export const parse3tz = async (
     hashData = parseHashFile(hashFile);
   }
 
-  return new MaxarArchive(fileProvider, hashData);
+  return new TZ3Archive(fileProvider, hashData);
 };

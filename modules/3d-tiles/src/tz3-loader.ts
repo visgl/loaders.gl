@@ -1,14 +1,14 @@
 import {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {DataViewFile} from '@loaders.gl/zip';
-import {parse3tz as parse3tzFromProvider} from './maxar/maxar-parser';
+import {parse3tz as parse3tzFromProvider} from './tz3/tz3-parser';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** options to load data from 3tz */
-export type MaxarLoaderOptions = LoaderOptions & {
-  maxar?: {
+export type TZ3LoaderOptions = LoaderOptions & {
+  tz3?: {
     /** path inside the 3tz archive */
     path?: string;
   };
@@ -17,7 +17,7 @@ export type MaxarLoaderOptions = LoaderOptions & {
 /**
  * Loader for 3tz packages
  */
-export const MaxarLoader: LoaderWithParser<Buffer, never, MaxarLoaderOptions> = {
+export const TZ3Loader: LoaderWithParser<Buffer, never, TZ3LoaderOptions> = {
   name: '3tz',
   id: '3tz',
   module: 'i3s',
@@ -34,8 +34,8 @@ export const MaxarLoader: LoaderWithParser<Buffer, never, MaxarLoaderOptions> = 
  * @param options options
  * @returns requested file
  */
-async function parse3tz(data: ArrayBuffer, options: MaxarLoaderOptions = {}) {
+async function parse3tz(data: ArrayBuffer, options: TZ3LoaderOptions = {}) {
   return (await parse3tzFromProvider(new DataViewFile(new DataView(data)))).getFile(
-    options.maxar?.path ?? ''
+    options.tz3?.path ?? ''
   );
 }
