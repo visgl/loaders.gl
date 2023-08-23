@@ -117,5 +117,3 @@ export type {WritableFile} from './lib/filesystems/writable-file';
 export {makeWritableFile} from './lib/filesystems/writable-file';
 
 export {default as _NodeFileSystem} from './lib/filesystems/node-filesystem';
-
-export {HashElement, compareHashes, parseHashFile, findBin} from './hash-file-utility';

@@ -5,10 +5,12 @@ import {
   parseEoCDRecord,
   FileProvider,
   parseZipLocalFileHeader,
-  searchFromTheEnd
+  searchFromTheEnd,
+  HashElement,
+  compareHashes,
+  parseHashFile
 } from '@loaders.gl/zip';
 import {SLPKArchive} from './slpk-archieve';
-import {HashElement, compareHashes, parseHashFile} from '@loaders.gl/loader-utils';
 
 /**
  * Creates slpk file handler from raw file
