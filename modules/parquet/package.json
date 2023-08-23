@@ -38,7 +38,9 @@
     "tls": false,
     "stream": false,
     "fs": false,
-    "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts"
+    "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts",
+    "./dist/es5/lib/wasm/load-wasm/load-wasm-node.js": "./dist/es5/lib/wasm/load-wasm/load-wasm-browser.js",
+    "./dist/esm/lib/wasm/load-wasm/load-wasm-node.js": "./dist/esm/lib/wasm/load-wasm/load-wasm-browser.js"
   },
   "dependencies": {
     "@loaders.gl/bson": "3.4.11",
