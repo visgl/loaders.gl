@@ -16,6 +16,7 @@
     {"path": "../loader-utils"},
     {"path": "../schema"},
     {"path": "../textures"},
-    {"path": "../tiles"}
+    {"path": "../tiles"},
+    {"path": "../zip"}
   ]
 }

@@ -1,7 +1,6 @@
 import md5 from 'md5';
-import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
+import {FileProvider, parseZipLocalFileHeader} from '@loaders.gl/zip';
 import {GZipCompression} from '@loaders.gl/compression';
-import {FileProvider} from '../parse-zip/file-provider';
 
 /** Element of hash array */
 export type HashElement = {

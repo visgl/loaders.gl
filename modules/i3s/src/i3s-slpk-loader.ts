@@ -1,6 +1,6 @@
 import {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {DataViewFile} from '@loaders.gl/zip';
 import {parseSLPK as parseSLPKFromProvider} from './lib/parsers/parse-slpk/parse-slpk';
-import {DataViewFileProvider} from './lib/parsers/parse-zip/data-view-file-provider';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -38,7 +38,7 @@ export const SLPKLoader: LoaderWithParser<Buffer, never, SLPKLoaderOptions> = {
  */
 
 async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = {}) {
-  return (await parseSLPKFromProvider(new DataViewFileProvider(new DataView(data)))).getFile(
+  return (await parseSLPKFromProvider(new DataViewFile(new DataView(data)))).getFile(
     options.slpk?.path ?? '',
     options.slpk?.pathMode
   );
