@@ -25,12 +25,9 @@
     "fs": false,
     "stream": false,
     "./src/lib/fetch/fetch-file.node.ts": false,
-    "./dist/lib/fetch/fetch-file.node.js": false,
     "./dist/es5/lib/fetch/fetch-file.node.js": false,
     "./dist/esm/lib/fetch/fetch-file.node.js": false,
     "./src/iterators/make-stream/make-node-stream.ts": "./src/iterators/make-stream/make-dom-stream.ts",
-    "./src/iterators/make-stream/make-node-stream.js": "./src/iterators/make-stream/make-dom-stream.js",
-    "./dist/iterators/make-stream/make-node-stream.js": "./dist/iterators/make-stream/make-dom-stream.js",
     "./dist/es5/iterators/make-stream/make-node-stream.js": "./dist/es5/iterators/make-stream/make-dom-stream.js",
     "./dist/esm/iterators/make-stream/make-node-stream.js": "./dist/esm/iterators/make-stream/make-dom-stream.js"
   },
