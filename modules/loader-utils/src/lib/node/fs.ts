@@ -5,69 +5,35 @@ import {promisify2, promisify3} from './promisify';
 
 export type {Stats, WriteStream} from 'fs';
 
-export let readdir;
 /** Wrapper for Node.js fs method */
-export let stat;
+export const readdir: any = promisify2(fs.readdir);
+/** Wrapper for Node.js fs method */
+export const stat: any = promisify2(fs.stat);
 
 /** Wrapper for Node.js fs method */
-export let readFile;
+export const readFile: any = fs.readFile;
 /** Wrapper for Node.js fs method */
-export let readFileSync;
+export const readFileSync = fs.readFileSync;
 /** Wrapper for Node.js fs method */
-export let writeFile;
+export const writeFile: any = promisify3(fs.writeFile);
 /** Wrapper for Node.js fs method */
-export let writeFileSync;
+export const writeFileSync = fs.writeFileSync;
 
 // file descriptors
 
 /** Wrapper for Node.js fs method */
-export let open;
+export const open: any = fs.open;
 /** Wrapper for Node.js fs method */
-export let close: (fd: number) => Promise<void>;
+export const close = (fd: number) =>
+  new Promise<void>((resolve, reject) => fs.close(fd, (err) => (err ? reject(err) : resolve())));
 /** Wrapper for Node.js fs method */
-export let read;
+export const read: any = fs.read;
 /** Wrapper for Node.js fs method */
-export let fstat;
+export const fstat: any = fs.fstat;
 
-export let createWriteStream: typeof fs.createWriteStream;
+export const createWriteStream = fs.createWriteStream;
 
-export let isSupported = Boolean(fs);
-
-// paths
-
-try {
-  /** Wrapper for Node.js fs method */
-  readdir = promisify2(fs.readdir);
-  /** Wrapper for Node.js fs method */
-  stat = promisify2(fs.stat);
-
-  /** Wrapper for Node.js fs method */
-  readFile = fs.readFile;
-  /** Wrapper for Node.js fs method */
-  readFileSync = fs.readFileSync;
-  /** Wrapper for Node.js fs method */
-  writeFile = promisify3(fs.writeFile);
-  /** Wrapper for Node.js fs method */
-  writeFileSync = fs.writeFileSync;
-
-  // file descriptors
-
-  /** Wrapper for Node.js fs method */
-  open = fs.open;
-  /** Wrapper for Node.js fs method */
-  close = (fd: number) =>
-    new Promise((resolve, reject) => fs.close(fd, (err) => (err ? reject(err) : resolve())));
-  /** Wrapper for Node.js fs method */
-  read = fs.read;
-  /** Wrapper for Node.js fs method */
-  fstat = fs.fstat;
-
-  createWriteStream = fs.createWriteStream;
-
-  isSupported = Boolean(fs);
-} catch {
-  // ignore
-}
+export const isSupported = Boolean(fs);
 
 export async function _readToArrayBuffer(fd: number, start: number, length: number) {
   const buffer = Buffer.alloc(length);
