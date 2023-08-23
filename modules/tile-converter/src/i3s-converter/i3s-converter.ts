@@ -14,7 +14,7 @@ import type {
   MaxScreenThresholdSQ,
   NodeInPage
 } from '@loaders.gl/i3s';
-import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
+import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';
@@ -51,13 +51,12 @@ import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {
-  GltfPrimitiveModeString,
+  GLTFPrimitiveModeString,
   I3SConvertedResources,
   PreprocessData,
   SharedResourcesArrays
 } from './types';
-import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
-import {DracoWriterWorker} from '@loaders.gl/draco';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
@@ -75,9 +74,7 @@ import {createBoundingVolume} from '@loaders.gl/tiles';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
 
-const ION_DEFAULT_TOKEN =
-  process.env?.IonToken || // eslint-disable-line
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
+const ION_DEFAULT_TOKEN = process.env?.IonToken;
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';
 const _3D_OBJECT_LAYER_TYPE = '3DObject';
@@ -111,6 +108,7 @@ export default class I3SConverter {
   loadOptions: Tiles3DLoaderOptions = {
     _nodeWorkers: true,
     reuseWorkers: true,
+    useLocalLibraries: true,
     basis: {
       format: 'rgba32',
       // We need to load local fs workers because nodejs can't load workers from the Internet
@@ -118,7 +116,8 @@ export default class I3SConverter {
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
-    fetch: {}
+    fetch: {},
+    modules: {}
   };
   geoidHeightModel: Geoid | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
@@ -129,7 +128,8 @@ export default class I3SConverter {
   writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
   compressList: string[] | null = null;
   preprocessData: PreprocessData = {
-    meshTopologyTypes: new Set()
+    meshTopologyTypes: new Set(),
+    metadataClasses: new Set()
   };
 
   constructor() {
@@ -186,6 +186,8 @@ export default class I3SConverter {
     generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
     instantNodeWriting?: boolean;
+    inquirer?: Promise<unknown>;
+    metadataClass?: string;
   }): Promise<string> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE);
@@ -206,7 +208,9 @@ export default class I3SConverter {
       generateTextures,
       generateBoundingVolumes,
       instantNodeWriting = false,
-      mergeMaterials = true
+      mergeMaterials = true,
+      inquirer,
+      metadataClass
     } = options;
     this.options = {
       maxDepth,
@@ -217,7 +221,9 @@ export default class I3SConverter {
       token,
       inputUrl,
       instantNodeWriting,
-      mergeMaterials
+      mergeMaterials,
+      inquirer,
+      metadataClass
     };
     this.compressList = (this.options.instantNodeWriting && []) || null;
     this.validate = Boolean(validate);
@@ -235,8 +241,6 @@ export default class I3SConverter {
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
-
-    await this.loadWorkers();
 
     try {
       const preloadOptions = await this._fetchPreloadOptions();
@@ -281,14 +285,24 @@ export default class I3SConverter {
       undefined,
       this.options.maxDepth
     );
-    const {meshTopologyTypes} = this.preprocessData;
+    const {meshTopologyTypes, metadataClasses} = this.preprocessData;
+
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
     console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
+
+    if (metadataClasses.size) {
+      console.log(
+        `Feature metadata classes have been found: ${Array.from(metadataClasses).join(', ')}`
+      );
+    } else {
+      console.log('Feature metadata classes have not been found');
+    }
+
     console.log(`------------------------------------------------`);
     if (
-      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLES) &&
-      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLE_STRIP)
+      !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLES) &&
+      !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLE_STRIP)
     ) {
       console.log(
         'The tileset is of unsupported mesh topology types. The conversion will be interrupted.'
@@ -296,6 +310,32 @@ export default class I3SConverter {
       console.log(`------------------------------------------------`);
       return false;
     }
+
+    if (metadataClasses.size > 1) {
+      if (this.options.metadataClass?.length) {
+        console.log(`${this.options.metadataClass} has been selected`);
+      } else if (this.options.inquirer) {
+        const result = await this.options.inquirer.prompt([
+          {
+            name: 'metadataClass',
+            type: 'list',
+            message: 'Select feature metadata data class to convert...',
+            choices: Array.from(metadataClasses)
+          }
+        ]);
+        this.options.metadataClass = result.metadataClass;
+        console.log(`${result.metadataClass} has been selected`);
+      } else {
+        console.log(
+          `A feature metadata class has not been selected. Start the converter with option "--metadata-class". For example, "npx tile-converter ... --metadata-class ${
+            Array.from(metadataClasses)[0]
+          }"`
+        );
+        console.log(`------------------------------------------------`);
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -600,7 +640,7 @@ export default class I3SConverter {
     );
     let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
-    const propertyTable = getPropertyTable(tileContent);
+    const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
 
     if (propertyTable && !this.layers0?.attributeStorageInfo?.length) {
       this._convertPropertyTableToNodeAttributes(propertyTable);
@@ -719,7 +759,8 @@ export default class I3SConverter {
       this.generateBoundingVolumes,
       this.options.mergeMaterials,
       this.geoidHeightModel!,
-      this.workerSource
+      this.loadOptions.modules as Record<string, string>,
+      this.options.metadataClass
     );
     return resourcesData;
   }
@@ -935,9 +976,13 @@ export default class I3SConverter {
               KTX2BasisWriterWorker,
               {
                 ...KTX2BasisWriterWorker.options,
-                source: this.workerSource.ktx2,
+                ['ktx2-basis-writer']: {
+                  // We need to load local fs workers because nodejs can't load workers from the Internet
+                  workerUrl: './modules/textures/dist/ktx2-basis-writer-worker-node.js'
+                },
                 reuseWorkers: true,
-                _nodeWorkers: true
+                _nodeWorkers: true,
+                useLocalLibraries: true
               }
             );
 
@@ -1196,24 +1241,5 @@ export default class I3SConverter {
    */
   private isContentSupported(sourceTile: Tiles3DTileJSONPostprocessed): boolean {
     return ['b3dm', 'glTF', 'scenegraph'].includes(sourceTile.type || '');
-  }
-
-  private async loadWorkers(): Promise<void> {
-    console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
-    if (this.options.draco) {
-      const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
-      const sourceResponse = await fetchFile(url);
-      const source = await sourceResponse.text();
-      this.workerSource.draco = source;
-    }
-
-    if (this.generateTextures) {
-      const url = getWorkerURL(KTX2BasisWriterWorker, {...getLoaderOptions()});
-      const sourceResponse = await fetchFile(url);
-      const source = await sourceResponse.text();
-      this.workerSource.ktx2 = source;
-    }
-
-    console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }

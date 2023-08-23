@@ -62,6 +62,8 @@ export type LoaderOptions = {
   // general
   /** Experimental: Supply a logger to the parser */
   log?: any;
+  /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
+  useLocalLibraries?: boolean;
 
   // batched parsing
 
@@ -306,6 +308,8 @@ export type LoaderBatchType<T = Loader> = T extends Loader<any, infer Batch, any
 export type WriterOptions = {
   /** worker source. If is set will be used instead of loading worker from the Internet */
   souce?: string | null;
+  /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
+  useLocalLibraries?: boolean;
   /** writer-specific options */
   [writerId: string]: any;
 };

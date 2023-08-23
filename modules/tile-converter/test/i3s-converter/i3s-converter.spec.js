@@ -48,9 +48,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async (t) =
     tilesetName: 'BatchedColors',
     slpk: false,
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-    egmFilePath: PGM_FILE_PATH,
-    token:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+    egmFilePath: PGM_FILE_PATH
   });
   if (!isBrowser) {
     t.ok(tilesetJson);
@@ -71,9 +69,7 @@ test('tile-converter(i3s)#should create Draco compressed geometry', async (t) =>
       slpk: false,
       draco: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-      egmFilePath: PGM_FILE_PATH,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      egmFilePath: PGM_FILE_PATH
     });
     t.ok(tilesetJson);
   }
@@ -91,9 +87,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validati
       slpk: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH,
-      validate: true,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      validate: true
     });
     t.ok(tilesetJson);
   }
@@ -319,9 +313,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding
       generateBoundingVolumes: true,
       slpk: false,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-      egmFilePath: PGM_FILE_PATH,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      egmFilePath: PGM_FILE_PATH
     });
     t.ok(tilesetJson);
   }
