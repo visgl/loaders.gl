@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import '@loaders.gl/polyfills';
 import {join} from 'path';
+import inquirer from 'inquirer';
 import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {DepsInstaller} from './deps-installer/deps-installer';
 import {
@@ -49,6 +50,8 @@ type TileConversionOptions = {
   maxDepth?: number;
   /** 3DTiles->I3S only. Whether the converter generates *.slpk (Scene Layer Package) I3S output file */
   slpk: boolean;
+  /** Feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
+  metadataClass?: string;
 };
 
 /* During validation we check that particular options are defined so they can't be undefined */
@@ -132,8 +135,9 @@ function printHelp(): void {
   console.log(
     '--generate-textures [Enable KTX2 textures generation if only one of (JPG, PNG) texture is provided or generate JPG texture if only KTX2 is provided]'
   );
+  console.log('--generate-bounding-volumes [Generate obb and mbs bounding volumes from geometry]');
   console.log(
-    '--generate-bounding-volumes [Will generate obb and mbs bounding volumes from geometry]'
+    '--metadata-class [One of the list of feature metadata classes, detected by converter on "analyze" stage, default: not set]'
   );
   console.log('--validate [Enable validation]');
   process.exit(0); // eslint-disable-line
@@ -175,7 +179,8 @@ async function convert(options: ValidatedTileConversionOptions) {
         generateTextures: options.generateTextures,
         generateBoundingVolumes: options.generateBoundingVolumes,
         validate: options.validate,
-        instantNodeWriting: options.instantNodeWriting
+        instantNodeWriting: options.instantNodeWriting,
+        inquirer
       });
       break;
     default:
@@ -292,6 +297,8 @@ function parseOptions(args: string[]): TileConversionOptions {
         case '--generate-bounding-volumes':
           opts.generateBoundingVolumes = getBooleanValue(index, args);
           break;
+        case '--metadata-class':
+          opts.metadataClass = getStringValue(index, args);
         case '--help':
           printHelp();
           break;
