@@ -6,6 +6,15 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.20
+
+- chore(i3s): Hash file utility moved to loader-utils (#2595)
+- chore(i3s): Zip parse refactoring (#2594)
+- fix(core): fetchOptions regression (#2591)
+- chore(tile-converter): remove CesiumION tokens (#2592)
+- feat(tile-converter): select metadata classes (#2590)
+- fix(tile-converter): featureIds + uvRegions (#2588)
+
 ### v4.0.0-alpha.19
 
 - fix(tile-converter): CLI startup script (#2587)
