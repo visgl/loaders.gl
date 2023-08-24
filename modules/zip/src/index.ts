@@ -13,4 +13,4 @@ export {searchFromTheEnd} from './parse-zip/search-from-the-end';
 export {DataViewFile} from './parse-zip/data-view-file';
 
 export type {HashElement} from './hash-file-utility';
-export {compareHashes, parseHashFile, findBin} from './hash-file-utility';
+export {compareHashes, parseHashFile, findBin, generateHashInfo} from './hash-file-utility';
