@@ -22,7 +22,6 @@
   "module": "dist/esm/index.js",
   "sideEffects": false,
   "browser": {
-    "./src/lib/filesystems/node-filesystem.js": false,
     "fs": false
   },
   "files": [

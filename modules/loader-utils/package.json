@@ -28,10 +28,14 @@
   ],
   "browser": {
     "./src/lib/node/buffer.ts": "./src/lib/node/buffer.browser.ts",
-    "./src/lib/node/buffer.js": "./src/lib/node/buffer.browser.js",
-    "./dist/lib/node/buffer.js": "./dist/lib/node/buffer.browser.js",
     "./dist/es5/lib/node/buffer.js": "./dist/es5/lib/node/buffer.browser.js",
     "./dist/esm/lib/node/buffer.js": "./dist/esm/lib/node/buffer.browser.js",
+    "./src/lib/node/fs.ts": "./src/lib/node/fs.browser.ts",
+    "./dist/es5/lib/node/fs.js": "./dist/es5/lib/node/fs.browser.js",
+    "./dist/esm/lib/node/fs.js": "./dist/esm/lib/node/fs.browser.js",
+    "./src/lib/node/stream.ts": "./src/lib/node/stream.browser.ts",
+    "./dist/es5/lib/node/stream.js": "./dist/es5/lib/node/stream.browser.js",
+    "./dist/esm/lib/node/stream.js": "./dist/esm/lib/node/stream.browser.js",
     "fs": false,
     "stream": false
   },
