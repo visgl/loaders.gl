@@ -1,5 +1,5 @@
 import md5 from 'md5';
-import {parseZipCDFileHeader} from './parse-zip/cd-file-header';
+import {ZipCDFileHeader, parseZipCDFileHeader} from './parse-zip/cd-file-header';
 import {parseEoCDRecord} from './parse-zip/end-of-central-directory';
 import {FileProvider} from './parse-zip/file-provider';
 
@@ -90,18 +90,41 @@ export const findBin = (
  */
 export const generateHashInfo = async (fileProvider: FileProvider): Promise<HashElement[]> => {
   const {cdStartOffset} = await parseEoCDRecord(fileProvider);
+  const hashInfo = headersToHashes(await getCDList(cdStartOffset, fileProvider));
+  hashInfo.sort((a, b) => compareHashes(a.hash, b.hash));
+  return hashInfo;
+};
+
+/**
+ * parses cd header and generates array of headers' info
+ * @param cdStartOffset - start of central directory
+ * @param fileProvider - file data
+ * @returns array of headers' info
+ */
+const getCDList = async (
+  cdStartOffset: bigint,
+  fileProvider: FileProvider
+): Promise<ZipCDFileHeader[]> => {
+  const headers: ZipCDFileHeader[] = [];
   let cdHeader = await parseZipCDFileHeader(cdStartOffset, fileProvider);
-  const hashInfo: HashElement[] = [];
   while (cdHeader) {
-    hashInfo.push({
-      hash: Buffer.from(md5(cdHeader.fileName.split('\\').join('/').toLocaleLowerCase()), 'hex'),
-      offset: cdHeader.localHeaderOffset
-    });
+    headers.push(cdHeader);
     cdHeader = await parseZipCDFileHeader(
       cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
       fileProvider
     );
   }
-  hashInfo.sort((a, b) => compareHashes(a.hash, b.hash));
-  return hashInfo;
+  return headers;
+};
+
+/**
+ * converts headers list to hash info
+ * @param headers - headers list
+ * @returns hash info
+ */
+const headersToHashes = (headers: ZipCDFileHeader[]): HashElement[] => {
+  return headers.map((header) => ({
+    hash: Buffer.from(md5(header.fileName.split('\\').join('/').toLocaleLowerCase()), 'hex'),
+    offset: header.localHeaderOffset
+  }));
 };
