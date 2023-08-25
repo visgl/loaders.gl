@@ -6,7 +6,11 @@ export type {FileProvider} from './classes/file-provider';
 export {FileHandleFile} from './classes/file-handle-file';
 export {DataViewFile} from './classes/data-view-file';
 
-export {parseZipCDFileHeader, signature as cdSignature} from './parse-zip/cd-file-header';
+export {
+  parseZipCDFileHeader,
+  zipCDFileHeaderGenerator,
+  signature as cdSignature
+} from './parse-zip/cd-file-header';
 export {
   parseZipLocalFileHeader,
   signature as localHeaderSignature

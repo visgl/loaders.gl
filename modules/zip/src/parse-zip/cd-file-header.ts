@@ -1,4 +1,5 @@
 import {FileProvider} from '../classes/file-provider';
+import {parseEoCDRecord} from './end-of-central-directory';
 import {ZipSignature} from './search-from-the-end';
 
 /**
@@ -104,3 +105,19 @@ export const parseZipCDFileHeader = async (
     localHeaderOffset
   };
 };
+
+/**
+ * Create iterator over files of zip archive
+ * @param fileProvider - file provider that provider random access to the file
+ */
+export async function* zipCDFileHeaderGenerator(fileProvider: FileProvider) {
+  const {cdStartOffset} = await parseEoCDRecord(fileProvider);
+  let cdHeader = await parseZipCDFileHeader(cdStartOffset, fileProvider);
+  while (cdHeader) {
+    yield cdHeader;
+    cdHeader = await parseZipCDFileHeader(
+      cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
+      fileProvider
+    );
+  }
+}

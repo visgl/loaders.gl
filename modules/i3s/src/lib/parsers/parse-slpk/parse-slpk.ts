@@ -2,13 +2,13 @@ import md5 from 'md5';
 import {
   parseZipCDFileHeader,
   cdSignature as cdHeaderSignature,
-  parseEoCDRecord,
   FileProvider,
   parseZipLocalFileHeader,
   searchFromTheEnd,
   HashElement,
   compareHashes,
-  parseHashFile
+  parseHashFile,
+  zipCDFileHeaderGenerator
 } from '@loaders.gl/zip';
 import {SLPKArchive} from './slpk-archieve';
 
@@ -59,18 +59,13 @@ export const parseSLPK = async (
  * @returns ready to use hash info
  */
 const generateHashInfo = async (fileProvider: FileProvider): Promise<HashElement[]> => {
-  const {cdStartOffset} = await parseEoCDRecord(fileProvider);
-  let cdHeader = await parseZipCDFileHeader(cdStartOffset, fileProvider);
+  const zipCDIterator = zipCDFileHeaderGenerator(fileProvider);
   const hashInfo: HashElement[] = [];
-  while (cdHeader) {
+  for await (const cdHeader of zipCDIterator) {
     hashInfo.push({
       hash: Buffer.from(md5(cdHeader.fileName.split('\\').join('/').toLocaleLowerCase()), 'hex'),
       offset: cdHeader.localHeaderOffset
     });
-    cdHeader = await parseZipCDFileHeader(
-      cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
-      fileProvider
-    );
   }
   hashInfo.sort((a, b) => compareHashes(a.hash, b.hash));
   return hashInfo;

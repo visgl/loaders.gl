@@ -1,6 +1,8 @@
 import './zip-writer-loader.spec';
 import './tar-builder.spec';
 
+import './filesystems/zip-filesystem.spec';
+
 import './classes/data-view-file.spec';
 import './classes/file-handle-file.spec';
 import './classes/file-handle.spec';
