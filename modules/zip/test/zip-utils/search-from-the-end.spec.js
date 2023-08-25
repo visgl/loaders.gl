@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {searchFromTheEnd} from '../../src/parse-zip/search-from-the-end';
-import {DataViewFile} from '../../src/parse-zip/data-view-file';
+import {DataViewFile} from '../../src/classes/data-view-file';
 
 test('SLPKLoader#searchFromTheEnd', async (t) => {
   t.equals(

@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {parseZipLocalFileHeader} from '../../src/parse-zip/local-file-header';
-import {DataViewFile} from '../../src/parse-zip/data-view-file';
+import {DataViewFile} from '../../src/classes/data-view-file';
 
 test('SLPKLoader#local file header parse', async (t) => {
   const localFileHeader = await parseZipLocalFileHeader(

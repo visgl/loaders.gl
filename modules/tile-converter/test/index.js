@@ -13,8 +13,6 @@ import './i3s-converter/helpers/preprocess-3d-tiles.spec';
 
 import './i3s-converter/i3s-converter.spec';
 import './slpk-extractor/slpk-extractor.spec';
-import './slpk-extractor/file-handle-file.spec';
-import './slpk-extractor/file-handle.spec';
 import './utils/cli-utils.spec';
 
 import './3d-tiles-converter/helpers/b3dm-converter.spec';

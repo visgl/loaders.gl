@@ -1,4 +1,4 @@
-import {FileProvider} from './file-provider';
+import {FileProvider} from '../classes/file-provider';
 import {ZipSignature, searchFromTheEnd} from './search-from-the-end';
 
 /**
