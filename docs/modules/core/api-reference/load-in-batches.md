@@ -1,5 +1,12 @@
 # loadInBatches
 
+```typescript
+loadInBatches(url: string | File | ... , loaders: Loader, options?: LoaderOptions]): Promise<AsyncIrerator<unknown>>
+loadInBatches(url: string | File | ... , loaders: Loader[], options?: LoaderOptions]): Promise<AsyncIrerator<unknown>>
+loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader, options?: LoaderOptions]): Promise<AsyncIterator<unknown>>
+loadInBatches(files: (string | File | ...)[] | FileList, loaders: Loader[], options?: LoaderOptions]): Promise<AsyncIterator<unknown>>
+```
+
 `loadInBatches` opens a `url` as a stream and passes it and options to `parseInBatches`. See the documentation of `load` and `parseInBatches` for more details.
 
 Starting with [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), `loadInBatches` can also load and parse multiple files from a list of `File` objects or urls.
@@ -10,7 +17,7 @@ More importantly, when called with multiple files, `loadInBatches` makes all the
 
 ### Usage
 
-```js
+```typescript
 const iteratorPromises = await loadInBatches([file1, file2], OBJLoader);
 for await (const iterator of iteratorPromises) {
   for await (const batch of iterator) {
@@ -20,7 +27,7 @@ for await (const iterator of iteratorPromises) {
 }
 ```
 
-```js
+```typescript
 import {fetchFile, parseFilesInBatches} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 
@@ -39,9 +46,6 @@ for (const batchIterator of batchIterators) {
 }
 ```
 
-### `loadInBatches(url: string | File | ... , loaders: object | object[], options?: object]): Promise<AsyncIrerator<any>>`
-
-### `loadInBatches(files: (string | File | ...)[] | FileList, loaders: object | object[], options?: object]): Promise<AsyncIterator<any>>`
 
 Loads data in batches from a stream, releasing each batch to the application while the stream is still being read.
 

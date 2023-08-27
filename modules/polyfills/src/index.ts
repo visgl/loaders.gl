@@ -14,13 +14,11 @@ import {fetchNode as fetchNode} from './node/fetch/fetch.node';
 import {encodeImageNode} from './node/images/encode-image.node';
 import {parseImageNode, NODE_FORMAT_SUPPORT} from './node/images/parse-image.node';
 
-export {ReadableStreamPolyfill} from './node/file/readable-stream';
-export {BlobPolyfill} from './node/file/blob';
+// export {ReadableStreamPolyfill} from './node/file/readable-stream';
+// export {BlobPolyfill} from './node/file/blob';
 export {FileReaderPolyfill} from './node/file/file-reader';
 export {FilePolyfill} from './node/file/file';
 export {installFilePolyfills} from './node/file/install-file-polyfills';
-export {fetchNode as _fetchNode} from './node/fetch/fetch.node';
-export {fetchFileNode as _fetchFileNode} from './node/fetch/fetch-file.node';
 
 // POLYFILLS: TextEncoder, TextDecoder
 // - Recent Node versions have these classes but virtually no encodings unless special build.
@@ -47,9 +45,11 @@ if (!isBrowser && !('btoa' in global) && base64.btoa) {
   global['btoa'] = base64.btoa;
 }
 
-// POLYFILL: fetch
-// - Node: Yes
-// - Browser: No. For This polyfill is node only, IE11 etc, install external polyfill
+// DEPRECATED POLYFILL:
+// - Node v18+: No, not needed
+// - Node v16 and lower: Yes
+// - Browsers (evergreen): Not needed.
+// - IE11: No. This polyfill is node only, install external polyfill
 
 if (!isBrowser && !('Headers' in global) && HeadersNode) {
   global['Headers'] = HeadersNode;

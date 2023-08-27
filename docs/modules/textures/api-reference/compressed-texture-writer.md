@@ -19,7 +19,7 @@
 
 ## Usage
 
-```js
+```typescript
 import '@loaders.gl/polyfill'; // only if using under Node
 import {encodeURLtoURL} from '@loaders.gl/core';
 import {CompressedTextureWriter} from '@loaders.gl/textures';

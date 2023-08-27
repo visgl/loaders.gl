@@ -12,7 +12,7 @@ Writer for the [Well-known text] format for representation of geometry.
 
 ## Usage
 
-```js
+```typescript
 import {WKTWriter} from '@loaders.gl/wkt';
 ```
 

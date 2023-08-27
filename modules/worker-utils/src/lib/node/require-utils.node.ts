@@ -6,6 +6,35 @@
 
 import Module from 'module';
 import path from 'path';
+import fs from 'fs';
+
+/**
+ * Load a file from local file system
+ * @param filename
+ * @returns
+ */
+export async function readFileAsArrayBuffer(filename: string): Promise<ArrayBuffer> {
+  if (filename.startsWith('http')) {
+    const response = await fetch(filename);
+    return await response.arrayBuffer();
+  }
+  const buffer = fs.readFileSync(filename);
+  return buffer.buffer;
+}
+
+/**
+ * Load a file from local file system
+ * @param filename
+ * @returns
+ */
+export async function readFileAsText(filename: string): Promise<string> {
+  if (filename.startsWith('http')) {
+    const response = await fetch(filename);
+    return await response.text();
+  }
+  const text = fs.readFileSync(filename, 'utf8');
+  return text;
+}
 
 // Node.js Dynamically require from file
 // Relative names are resolved relative to cwd

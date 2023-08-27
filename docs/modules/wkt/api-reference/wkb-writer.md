@@ -20,7 +20,7 @@ Writer for the [Well-known binary][wkb] format for representation of geometry.
 
 ## Usage
 
-```js
+```typescript
 import {WKBWriter} from '@loaders.gl/wkt';
 import {encodeSync} from '@loaders.gl/core';
 

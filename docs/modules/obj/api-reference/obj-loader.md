@@ -14,7 +14,7 @@ The `OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format.
 
 ## Usage
 
-```js
+```typescript
 import {OBJLoader} from '@loaders.gl/obj';
 import {load} from '@loaders.gl/core';
 
@@ -25,3 +25,11 @@ const data = await load(url, OBJLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+
+Remarks:
+
+- vertex colors are parsed as a `COLOR_0` attribute when red, green and blue values are included after x y and z (this precludes specifying w). The color values range from 0 to 1.
+
+## Attribution
+
+OBJLoader is a port of [three.js](https://github.com/mrdoob/three.js)'s OBJLoader under MIT License.

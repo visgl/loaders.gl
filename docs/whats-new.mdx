@@ -76,6 +76,10 @@ A major release that brings:
 - Schema types that support cross-worker schema and table exchange (a "serialized Apache Arrow" representation).
 - [File format documentation](/docs/formats?README) - provides additional informationa about the various file formats supported by loaders.gl.
 
+**@loaders.gl/core**
+
+- `fetchFile()` now supports fetching from local filesystem in Node.js (The global fetch function is no longer modified to support this).
+
 **@loaders.gl/arrow**
 
 - Now uses `apache-arrow` v9. 
@@ -88,6 +92,10 @@ A major release that brings:
 **@loaders.gl/gltf**
 
 - Stricter typing (see upgrade-guide)
+
+**loaders.gl/polyfills**
+
+- Polyfills no longer installs a 
 
 ## v3.4
 
@@ -104,6 +112,10 @@ Target Release Date: April, 2023.
 - New module supporting the [BSON](/docs/modules/bson/formats/bson) (Binary JSON) format.
 - [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) - loads BSON encoded binary data into a "JSON like" JavaScript structure
 - [`BSONWriter`](/docs/modules/bson/api-reference/bson-writer) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
+
+**@loaders.gl/gis**
+
+- `triangulate` parameter added to `geojsonToBinary()`.
 
 **@loaders.gl/images**
 
@@ -460,6 +472,12 @@ loaders.gl v3.0 is a major release, that adds a range of new loaders and feature
 - Updated to `draco3d@1.4.1`
 - Supports binary array fields in draco metadata.
 - Significant performance improvements for loading and decoding.
+
+**@loaders.gl/json**
+
+- Removed deprecated json parse option `_rootObjectBatches`. Use loader option `metadata` instead.
+- Replaced `batch.batchType` `root-object-batch-partial` with `partial-result`.
+- Replaced `batch.batchType` `root-object-batch-complete` with `final-result`.
 
 **@loaders.gl/kml**
 

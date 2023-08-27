@@ -5,7 +5,7 @@ a valid GeoJSON Geometry, Feature or array of Features.
 
 ## Usage
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
 import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';

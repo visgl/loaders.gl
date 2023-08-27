@@ -20,7 +20,7 @@ Loader and writer for the [Well-known text][wkt] format for representation of ge
 
 ## Usage
 
-```js
+```typescript
 import {WKTLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 
@@ -28,7 +28,7 @@ const data = parseSync('LINESTRING (30 10, 10 30, 40 40)', WKTLoader);
 // => {type: 'LineString', coordinates: [[30, 10], [10, 30], [40, 40]]}
 ```
 
-```js
+```typescript
 import {WKTLoader} from '@loaders.gl/wkt';
 import {load} from '@loaders.gl/core';
 

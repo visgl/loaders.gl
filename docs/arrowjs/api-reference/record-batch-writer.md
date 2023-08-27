@@ -35,7 +35,7 @@ Returns: A Node.js Duplex stream
 
 Example:
 
-```js
+```typescript
 
 const fs = require('fs');
 const { PassThrough, finished } = require('stream');

@@ -14,7 +14,7 @@ Many arrow classes support the following methods:
 
 You can get a temporary object representing a row in a table.
 
-```js
+```typescript
 const row = table.get(0);
 ```
 
@@ -24,13 +24,13 @@ Note that the `row` does not retain the schema, so you'll either need to know th
 
 More efficient is to get a column.
 
-```js
+```typescript
 const column = table.getColumn('data');
 ```
 
 The column can be chunked, so to get a contiguous (typed) array, call
 
-```js
+```typescript
 const array = table.getColumn('columnName').toArray();
 ```
 

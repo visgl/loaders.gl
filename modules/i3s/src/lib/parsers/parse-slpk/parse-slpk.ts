@@ -1,72 +1,97 @@
-import type {SLPKLoaderOptions} from '../../../i3s-slpk-loader';
-import {DataViewFileProvider} from '../parse-zip/buffer-file-provider';
-import {parseZipCDFileHeader} from '../parse-zip/cd-file-header';
+import md5 from 'md5';
+import {parseZipCDFileHeader, signature as cdHeaderSignature} from '../parse-zip/cd-file-header';
+import {parseEoCDRecord} from '../parse-zip/end-of-central-directory';
+import {FileProvider} from '../parse-zip/file-provider';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
-import {SLPKArchive} from './slpk-archieve';
+import {searchFromTheEnd} from '../parse-zip/search-from-the-end';
+import {HashElement, SLPKArchive, compareHashes} from './slpk-archieve';
 
 /**
- * Returns one byte from the provided buffer at the provided position
- * @param offset - position where to read
- * @param buffer - buffer to read
- * @returns one byte from the provided buffer at the provided position
+ * Creates slpk file handler from raw file
+ * @param fileProvider raw file data
+ * @param cb is called with information message during parsing
+ * @returns slpk file handler
  */
-const getByteAt = (offset: number, buffer: DataView): number => {
-  return buffer.getUint8(buffer.byteOffset + offset);
-};
-
-export async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = {}) {
-  const archive = new DataView(data);
-  const cdFileHeaderSignature = [80, 75, 1, 2];
-
-  const searchWindow = [
-    getByteAt(archive.byteLength - 1, archive),
-    getByteAt(archive.byteLength - 2, archive),
-    getByteAt(archive.byteLength - 3, archive),
-    undefined
-  ];
-
-  let hashCDOffset = 0;
-
-  // looking for the last record in the central directory
-  for (let i = archive.byteLength - 4; i > -1; i--) {
-    searchWindow[3] = searchWindow[2];
-    searchWindow[2] = searchWindow[1];
-    searchWindow[1] = searchWindow[0];
-    searchWindow[0] = getByteAt(i, archive);
-    if (searchWindow.every((val, index) => val === cdFileHeaderSignature[index])) {
-      hashCDOffset = i;
-      break;
-    }
-  }
-
-  const fileProvider = new DataViewFileProvider(archive);
+export const parseSLPK = async (
+  fileProvider: FileProvider,
+  cb?: (msg: string) => void
+): Promise<SLPKArchive> => {
+  const hashCDOffset = await searchFromTheEnd(fileProvider, cdHeaderSignature);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 
-  if (cdFileHeader.fileName !== '@specialIndexFileHASH128@') {
-    throw new Error('No hash file in slpk');
+  let hashData: HashElement[];
+  if (cdFileHeader?.fileName !== '@specialIndexFileHASH128@') {
+    cb?.('SLPK doesnt contain hash file');
+    hashData = await generateHashInfo(fileProvider);
+    cb?.('hash info has been composed according to central directory records');
+  } else {
+    cb?.('SLPK contains hash file');
+    const localFileHeader = await parseZipLocalFileHeader(
+      cdFileHeader.localHeaderOffset,
+      fileProvider
+    );
+    if (!localFileHeader) {
+      throw new Error('corrupted SLPK');
+    }
+
+    const fileDataOffset = localFileHeader.fileDataOffset;
+    const hashFile = await fileProvider.slice(
+      fileDataOffset,
+      fileDataOffset + localFileHeader.compressedSize
+    );
+
+    hashData = parseHashFile(hashFile);
   }
 
-  const localFileHeader = await parseZipLocalFileHeader(
-    cdFileHeader.localHeaderOffset,
-    fileProvider
-  );
-  if (!localFileHeader) {
-    throw new Error('No hash file in slpk');
+  return new SLPKArchive(fileProvider, hashData);
+};
+
+/**
+ * generates hash info from central directory
+ * @param fileProvider - provider of the archive
+ * @returns ready to use hash info
+ */
+const generateHashInfo = async (fileProvider: FileProvider): Promise<HashElement[]> => {
+  const {cdStartOffset} = await parseEoCDRecord(fileProvider);
+  let cdHeader = await parseZipCDFileHeader(cdStartOffset, fileProvider);
+  const hashInfo: HashElement[] = [];
+  while (cdHeader) {
+    hashInfo.push({
+      hash: Buffer.from(md5(cdHeader.fileName.split('\\').join('/').toLocaleLowerCase()), 'hex'),
+      offset: cdHeader.localHeaderOffset
+    });
+    cdHeader = await parseZipCDFileHeader(
+      cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
+      fileProvider
+    );
   }
+  hashInfo.sort((a, b) => compareHashes(a.hash, b.hash));
+  return hashInfo;
+};
 
-  const fileDataOffset = localFileHeader.fileDataOffset;
-  const hashFile = archive.buffer.slice(
-    fileDataOffset,
-    fileDataOffset + localFileHeader.compressedSize
-  );
-
-  if (!hashFile) {
-    throw new Error('No hash file in slpk');
+/**
+ * Reads hash file from buffer and returns it in ready-to-use form
+ * @param hashFile - bufer containing hash file
+ * @returns Array containing file info
+ */
+const parseHashFile = (hashFile: ArrayBuffer): HashElement[] => {
+  const hashFileBuffer = Buffer.from(hashFile);
+  const hashArray: HashElement[] = [];
+  for (let i = 0; i < hashFileBuffer.buffer.byteLength; i = i + 24) {
+    const offsetBuffer = new DataView(
+      hashFileBuffer.buffer.slice(
+        hashFileBuffer.byteOffset + i + 16,
+        hashFileBuffer.byteOffset + i + 24
+      )
+    );
+    const offset = offsetBuffer.getBigUint64(offsetBuffer.byteOffset, true);
+    hashArray.push({
+      hash: Buffer.from(
+        hashFileBuffer.subarray(hashFileBuffer.byteOffset + i, hashFileBuffer.byteOffset + i + 16)
+      ),
+      offset
+    });
   }
-
-  return await new SLPKArchive(data, hashFile).getFile(
-    options.slpk?.path ?? '',
-    options.slpk?.pathMode
-  );
-}
+  return hashArray;
+};

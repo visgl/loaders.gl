@@ -2,13 +2,13 @@
 
 The `@loaders.gl/core` module contains the core API of loaders.gl
 
-The core API offers functions to parse data in various ways using loaders
+The core API offers functions to parse loaded data in various ways using loaders
 
 - [`parse`](/docs/modules/core/api-reference/parse)
 - [`parseSync`](/docs/modules/core/api-reference/parse-sync)
 - [`parseInBatches`](/docs/modules/core/api-reference/parse-in-batches)
 
-To fetch data
+To fetch data, use the built-in `fetch` or the API compatible but more capable `fetchFile`
 
 - [`fetchFile`](/docs/modules/core/api-reference/fetch-file)
 

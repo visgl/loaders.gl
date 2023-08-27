@@ -12,6 +12,7 @@ export type GeojsonToBinaryOptions = {
   fixRingWinding: boolean;
   numericPropKeys?: string[];
   PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
+  triangulate?: boolean;
 };
 
 /**
@@ -23,7 +24,7 @@ export type GeojsonToBinaryOptions = {
  */
 export function geojsonToBinary(
   features: Feature[],
-  options: GeojsonToBinaryOptions = {fixRingWinding: true}
+  options: GeojsonToBinaryOptions = {fixRingWinding: true, triangulate: true}
 ): BinaryFeatures {
   const geometryInfo = extractGeometryInfo(features);
   const coordLength = geometryInfo.coordLength;
@@ -31,6 +32,7 @@ export function geojsonToBinary(
   const flatFeatures = geojsonToFlatGeojson(features, {coordLength, fixRingWinding});
   return flatGeojsonToBinary(flatFeatures, geometryInfo, {
     numericPropKeys: options.numericPropKeys,
-    PositionDataType: options.PositionDataType || Float32Array
+    PositionDataType: options.PositionDataType || Float32Array,
+    triangulate: options.triangulate
   });
 }

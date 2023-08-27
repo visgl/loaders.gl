@@ -24,7 +24,7 @@ KML is now an [Open Geospatial Consortium standard][kml_ogc_standard].
 
 ## Usage
 
-```js
+```typescript
 import {KMLLoader} from '@loaders.gl/kml';
 import {load} from '@loaders.gl/core';
 

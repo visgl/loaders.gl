@@ -8,7 +8,7 @@ Applications can then make all those imported loaders available (via format auto
 
 Sample application initialization code that imports and registers loaders:
 
-```js
+```typescript
 import {registerLoaders} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
@@ -17,7 +17,7 @@ registerLoaders(CSVLoader);
 
 Some other file that needs to load CSV:
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 
 // The pre-registered CSVLoader gets auto selected based on file extension...

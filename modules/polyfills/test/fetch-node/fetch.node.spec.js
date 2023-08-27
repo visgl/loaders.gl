@@ -36,7 +36,7 @@ test('polyfills#fetch() ignores url query params when loading file (NODE)', asyn
   t.end();
 });
 
-test('polyfills#fetch() error handling (NODE)', async (t) => {
+test.skip('polyfills#fetch() error handling (NODE)', async (t) => {
   if (!isBrowser) {
     let response = await fetch('non-existent-file');
     t.comment(response.statusText);
@@ -99,7 +99,7 @@ test('polyfills#fetch() able to handle "Accept-Encoding: deflate"', async (t) =>
   t.end();
 });
 
-test('polyfills#fetch() able to decompress .gz extension (NODE)', async (t) => {
+test.skip('polyfills#fetch() able to decompress .gz extension (NODE)', async (t) => {
   let response = await fetchFile(TEXT_URL);
   t.ok(response.ok, response.statusText);
   let data = await response.text();

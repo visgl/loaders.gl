@@ -697,6 +697,7 @@ export class Tileset3D {
           if (childTile.contentUrl?.includes('?session=')) {
             const url = new URL(childTile.contentUrl);
             const session = url.searchParams.get('session');
+            // eslint-disable-next-line max-depth
             if (session) {
               this._queryParams.session = session;
             }

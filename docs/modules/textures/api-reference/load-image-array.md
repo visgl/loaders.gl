@@ -9,7 +9,7 @@ A function that loads an array of images. Primarily intended for loading:
 
 Loading an array of images
 
-```js
+```typescript
 import '@loaders.gl/polyfills'; // only needed for Node.js support
 import {loadImageArray} from `@loaders.gl/images`;
 
@@ -20,7 +20,7 @@ for (const image of images) {
 }
 ```
 
-```js
+```typescript
 import '@loaders.gl/polyfills'; // only needed for Node.js support
 import {loadImageArray} from `@loaders.gl/images`;
 

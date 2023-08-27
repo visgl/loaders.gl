@@ -8,7 +8,6 @@ import convertB3dmToI3sGeometry, {
 } from '../../../src/i3s-converter/helpers/geometry-converter';
 import {PGMLoader} from '../../../src/pgm-loader';
 import {createdStorageAttribute} from '../../../src/i3s-converter/helpers/feature-attributes';
-import {I3SAttributesWorker} from '../../../src/i3s-attributes-worker';
 import {BoundingSphere} from '@math.gl/culling';
 import {Matrix4} from '@math.gl/core';
 
@@ -513,11 +512,6 @@ async function getWorkersSource() {
   let sourceResponse = await fetchFile(url);
   let source = await sourceResponse.text();
   result.draco = source;
-
-  const i3sAttributesWorkerUrl = getWorkerURL(I3SAttributesWorker, {...getLoaderOptions()});
-  sourceResponse = await fetchFile(i3sAttributesWorkerUrl);
-  source = await sourceResponse.text();
-  result.I3SAttributes = source;
 
   return result;
 }

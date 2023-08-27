@@ -1,18 +1,34 @@
 import md5 from 'md5';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
-import {DataViewFileProvider} from '../parse-zip/buffer-file-provider';
 import {GZipCompression} from '@loaders.gl/compression';
+import {FileProvider} from '../parse-zip/file-provider';
 
 /** Element of hash array */
-type HashElement = {
-  /**
-   * File name hash
-   */
+export type HashElement = {
+  /** File name hash */
   hash: Buffer;
-  /**
-   * File offset in the archive
-   */
-  offset: number;
+  /** File offset in the archive */
+  offset: bigint;
+};
+
+/**
+ * Comparing md5 hashes according to https://github.com/Esri/i3s-spec/blob/master/docs/2.0/slpk_hashtable.pcsl.md step 5
+ * @param hash1 hash to compare
+ * @param hash2 hash to compare
+ * @returns -1 if hash1 < hash2, 0 of hash1 === hash2, 1 if hash1 > hash2
+ */
+export const compareHashes = (hash1: Buffer, hash2: Buffer): number => {
+  const h1 = new BigUint64Array(hash1.buffer, hash1.byteOffset, 2);
+  const h2 = new BigUint64Array(hash2.buffer, hash2.byteOffset, 2);
+
+  const diff = h1[0] === h2[0] ? h1[1] - h2[1] : h1[0] - h2[0];
+
+  if (diff < 0n) {
+    return -1;
+  } else if (diff === 0n) {
+    return 0;
+  }
+  return 1;
 };
 
 /** Description of real paths for different file types */
@@ -26,7 +42,7 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
     extensions: ['.json.gz']
   },
   {
-    test: /^nodes\/\d+$/,
+    test: /^nodes\/(\d+|root)$/,
     extensions: ['/3dNodeIndexDocument.json.gz']
   },
   {
@@ -55,38 +71,35 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
  * Class for handling information about slpk file
  */
 export class SLPKArchive {
-  slpkArchive: DataView;
-  hashArray: {hash: Buffer; offset: number}[];
-  constructor(slpkArchiveBuffer: ArrayBuffer, hashFile: ArrayBuffer) {
-    this.slpkArchive = new DataView(slpkArchiveBuffer);
-    this.hashArray = this.parseHashFile(hashFile);
+  private slpkArchive: FileProvider;
+  private hashArray: HashElement[];
+  constructor(slpkArchive: FileProvider, hashFile: HashElement[]) {
+    this.slpkArchive = slpkArchive;
+    this.hashArray = hashFile;
   }
 
   /**
-   * Reads hash file from buffer and returns it in ready-to-use form
-   * @param hashFile - bufer containing hash file
-   * @returns Array containing file info
+   * Binary search in the hash info
+   * @param hashToSearch hash that we need to find
+   * @returns required hash element or undefined if not found
    */
-  private parseHashFile(hashFile: ArrayBuffer): HashElement[] {
-    const hashFileBuffer = Buffer.from(hashFile);
-    const hashArray: HashElement[] = [];
-    for (let i = 0; i < hashFileBuffer.buffer.byteLength; i = i + 24) {
-      const offsetBuffer = new DataView(
-        hashFileBuffer.buffer.slice(
-          hashFileBuffer.byteOffset + i + 16,
-          hashFileBuffer.byteOffset + i + 24
-        )
-      );
-      const offset = offsetBuffer.getUint32(offsetBuffer.byteOffset, true);
-      hashArray.push({
-        hash: Buffer.from(
-          hashFileBuffer.subarray(hashFileBuffer.byteOffset + i, hashFileBuffer.byteOffset + i + 16)
-        ),
-        offset
-      });
+  private findBin = (hashToSearch: Buffer): HashElement | undefined => {
+    let lowerBorder = 0;
+    let upperBorder = this.hashArray.length;
+
+    while (upperBorder - lowerBorder > 1) {
+      const middle = lowerBorder + Math.floor((upperBorder - lowerBorder) / 2);
+      const value = compareHashes(this.hashArray[middle].hash, hashToSearch);
+      if (value === 0) {
+        return this.hashArray[middle];
+      } else if (value < 0) {
+        lowerBorder = middle;
+      } else {
+        upperBorder = middle;
+      }
     }
-    return hashArray;
-  }
+    return undefined;
+  };
 
   /**
    * Returns file with the given path from slpk archive
@@ -130,7 +143,12 @@ export class SLPKArchive {
    * @returns buffer with the file data
    */
   private async getDataByPath(path: string): Promise<ArrayBuffer | undefined> {
-    const data = await this.getFileBytes(path);
+    // sometimes paths are not in lower case when hash file is created,
+    // so first we're looking for lower case file name and then for original one
+    let data = await this.getFileBytes(path.toLocaleLowerCase());
+    if (!data) {
+      data = await this.getFileBytes(path);
+    }
     if (!data) {
       return undefined;
     }
@@ -150,20 +168,17 @@ export class SLPKArchive {
    */
   private async getFileBytes(path: string): Promise<ArrayBuffer | undefined> {
     const nameHash = Buffer.from(md5(path), 'hex');
-    const fileInfo = this.hashArray.find((val) => Buffer.compare(val.hash, nameHash) === 0);
+    const fileInfo = this.findBin(nameHash); // implement binary search
     if (!fileInfo) {
       return undefined;
     }
 
-    const localFileHeader = await parseZipLocalFileHeader(
-      this.slpkArchive.byteOffset + fileInfo?.offset,
-      new DataViewFileProvider(this.slpkArchive)
-    );
+    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.slpkArchive);
     if (!localFileHeader) {
       return undefined;
     }
 
-    const compressedFile = this.slpkArchive.buffer.slice(
+    const compressedFile = this.slpkArchive.slice(
       localFileHeader.fileDataOffset,
       localFileHeader.fileDataOffset + localFileHeader.compressedSize
     );

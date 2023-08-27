@@ -23,7 +23,7 @@ Streaming loader for BSON encoded files.
 
 For simple usage, you can load and parse a BSON file atomically:
 
-```js
+```typescript
 import {BSONLoader} from '@loaders.gl/bson';
 import {load} from '@loaders.gl/core';
 

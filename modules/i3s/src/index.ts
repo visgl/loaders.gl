@@ -4,6 +4,9 @@ export type {
   BoundingVolumes,
   Mbs,
   Obb,
+  I3STilesetHeader,
+  I3STileContent,
+  I3STileHeader,
   SceneLayer3D,
   AttributeStorageInfo,
   Field,
@@ -29,10 +32,11 @@ export type {
   Histogram,
   ValueCount,
   BuildingSceneSublayer,
-  DATA_TYPE,
   OperationalLayer,
   TextureSetDefinitionFormats
 } from './types';
+export type {FileProvider} from './lib/parsers/parse-zip/file-provider';
+export type {I3SLoaderOptions} from './i3s-loader';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
 
@@ -44,4 +48,4 @@ export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
 export {I3SNodePageLoader} from './i3s-node-page-loader';
 export {ArcGisWebSceneLoader} from './arcgis-webscene-loader';
 export {parseZipLocalFileHeader} from './lib/parsers/parse-zip/local-file-header';
-export {FileProvider} from './lib/parsers/parse-zip/file-provider';
+export {parseSLPK} from './lib/parsers/parse-slpk/parse-slpk';

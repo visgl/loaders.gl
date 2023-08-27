@@ -2,14 +2,14 @@
 
 ## Usage
 
-```js
+```typescript
 import '@loaders.gl/polyfills'; // only needed if using under Node
 import {loadImage} from `@loaders.gl/images`;
 
 const image = await loadImage(url);
 ```
 
-```js
+```typescript
 import '@loaders.gl/polyfills'; // only needed if using under Node
 import {loadImage} from `@loaders.gl/images`;
 

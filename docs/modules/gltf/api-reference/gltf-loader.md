@@ -78,7 +78,7 @@ The data format returned by the `GLTFLoader` is the unmodified glTF JSON extract
 
 The standard glTF JSON structure will be available in the `json` field.
 
-```json
+```typescripton
 {
   json: {
     scenes: [...],
@@ -92,7 +92,7 @@ The standard glTF JSON structure will be available in the `json` field.
 However, the objects inside these arrays will have been pre-processed to simplify usage. For details on changes and extra fields added to the various glTF objects, see [post processing](post-process-gltf).
 
 
-```json
+```typescripton
 {
   // The base URI used to load this glTF, if any. For resolving relative uris to linked resources.
   baseUri: String,

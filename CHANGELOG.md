@@ -4,7 +4,46 @@
 
 > The official 4.0 alpha track starts with alpha.6
 > The early pre-release track was abandoned due to build incompatibility problems.
-release info (#2491))
+> release info (#2491))
+
+### v4.0.0-alpha.17
+
+- docs(chore): core API documentation improvements (#2573)
+- Add triangulate property to geojsonToBinary (#2571)
+- fix(obj): Improved vertex colors parsing (#2569)
+
+### v4.0.0-alpha.16
+
+- chore(tile-converter): create SLPK hash during serve (#2565)
+- docs(tile-converter): I3S Server (#2564)
+- chore(tile-converter): i3s-server tests (#2563)
+- chore(deps): bump semver in /test/apps/typescript-test (#2544)
+- chore(deps): bump semver from 5.7.1 to 5.7.2 (#2545)
+- chore(tile-converter): i3s-server convert to ts (#2562)
+
+### v4.0.0-alpha.15
+
+- chore(tile-converter): bump i3s-server deps (#2561)
+- chore(tile-converter): Support for SLPKs larger than 2 Gb (#2547)
+- feat(tile-converter): i3s-server bundle (#2555)
+- chore(deps): bump semver from 5.7.1 to 5.7.2 in /website (#2546)
+- fix(docs): JSONLoader \_rootObjectBatches removed but not mentioned in upgrade guide (#2558)
+- chore(deps): bump word-wrap in /test/apps/typescript-test (#2559)
+- fix(tile-converter): CesiumION tileset URL (#2560)
+- chore: update CHANGELOG.md (#2551)
+- chore(tile-converter): update i3s-server manual (#2552)
+
+### v4.0.0-alpha.14
+
+- fix(3d-tiles): implicit tiling v1.1 (#2549)
+- fix(tile-converter): i3s->3dtiles regression (#2550)
+
+### v4.0.0-alpha.13
+
+- fix(gltf): 3D tiles extension types & docs (#2542)
+- fix(tile-converter): failing test (#2540)
+- chore: bump fast-xml-parser (#2538)
+- fix(3d-tiles): implicit tiling v1.1 (#2539)
 
 ### v4.0.0-alpha.12
 
@@ -82,6 +121,10 @@ release info (#2491))
 - feat(tile-converter): support TRIANGLE-STRIP (#2428)
 
 ## v3.4
+
+### v3.4.9
+
+- fix(obj): Improved OBJ vertex colors parsing (#2569)
 
 ### 3.4.2
 

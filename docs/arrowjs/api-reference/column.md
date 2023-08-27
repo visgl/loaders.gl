@@ -7,17 +7,17 @@ An immutable column data structure consisting of a field (type metadata) and a c
 ## Usage
 
 Copy a column
-```js
+```typescript
 const typedArray = column.slice();
 ```
 
 Get a contiguous typed array from a `Column` (creates a new typed array unless only one chunk)
-```js
+```typescript
 const typedArray = column.toArray();
 ```
 
 columns are iterable
-```js
+```typescript
 let max = column.get(0);
 let min = max;
 for (const value of column) {

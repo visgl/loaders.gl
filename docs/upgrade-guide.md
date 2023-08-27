@@ -1,6 +1,34 @@
 # Upgrade Guide
 
-## Upgrading to v4.0
+## Upgrading to Node.js v18+
+
+loaders.gl v3 does not support Node.js versions higher than v16.
+
+When using loaders.gl v4.0 on Node.js v18+, you no longer need to import the 
+`@loaders.gl/polyfills` module to get access to the global `fetch()`function 
+
+## Upgrading to loaders.gl v4.0
+
+**Polyfills**
+
+If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` 
+function under Node.js that supported fetching from local files:
+- You no longer need to import the `@loaders.gl/polyfills` module to get access to the global `fetch()`function 
+- To fetch from local files, you now need to use `fetchFile()` instead.
+
+```typescript
+import {fetchFile} from '@loaders.gl/core';
+const response = await fetchFile('/path/to/local/file');
+...
+```
+
+Note that `fetchFile` is called by all core `load()` functions unless the fetch function is overridden through
+loader options.
+
+Details: The expectation is that loaders.gl v4.0+ will be used with Node.js version 18 and higher,
+which now provide a built-in browser-compatible `fetch()` function by default.
+This new built-in Node.js `fetch` function does not support reading from the file system,
+and loaders.gl v4.0 aligns with this practice.
 
 **Typed Loaders**
 

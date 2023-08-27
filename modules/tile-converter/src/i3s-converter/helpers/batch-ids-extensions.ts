@@ -12,9 +12,8 @@ import type {
 } from '@loaders.gl/gltf';
 
 import {TypedArray} from '@math.gl/core';
-import {TextureImageProperties} from '../../i3s-attributes-worker';
+import {TextureImageProperties} from '../types';
 import {emod} from '@loaders.gl/math';
-
 import {
   EXT_STRUCTURAL_METADATA_NAME,
   EXT_MESH_FEATURES_NAME,

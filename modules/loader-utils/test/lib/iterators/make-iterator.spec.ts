@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import test from 'tape-promise/tape';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
 import {concatenateArrayBuffersAsync, makeTextEncoderIterator} from '@loaders.gl/loader-utils';
@@ -64,7 +66,7 @@ const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positi
 
 test('makeIterator(fetch)#async iterate', async (t) => {
   const response = await fetchFile(DATA_URL);
-  const stream = await response.body;
+  const stream = response.body;
   t.ok(stream);
 
   if (stream) {

@@ -9,6 +9,12 @@ npm install @loaders.gl/obj
 npm install @loaders.gl/core
 ```
 
+## Loaders and Writers
+
+| Loader                                                   |
+| -------------------------------------------------------- |
+| [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader) |
+
 ## Attribution
 
 OBJLoader is a port of [three.js](https://github.com/mrdoob/three.js)'s OBJLoader under MIT License.

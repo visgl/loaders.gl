@@ -22,7 +22,7 @@ Note: Most applications will want to use the `ShapefileLoader` instead of this l
 
 The `DBFLoader` parses feature attributes from the Shapefile format.
 
-```js
+```typescript
 import {DBFLoader} from '@loaders.gl/shapefile';
 import {load} from '@loaders.gl/core';
 

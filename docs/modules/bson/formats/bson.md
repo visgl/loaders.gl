@@ -50,7 +50,7 @@ Implementations are available in a variety of languages such as C, C++, C#, D, D
 
 A JSON "document" such as 
 
-```json
+```typescripton
 {"hello": "world"}
 ``` 
 

@@ -1,6 +1,6 @@
 import {Tiles3DTileJSONPostprocessed} from '@loaders.gl/3d-tiles';
 import {BoundingVolumes} from '@loaders.gl/i3s';
-import {Tile3D} from '@loaders.gl/tiles';
+import {I3STileHeader} from '@loaders.gl/i3s/src/types';
 
 // https://cesium.com/docs/cesiumjs-ref-doc/Cesium3DTileset.html
 const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;
@@ -64,11 +64,15 @@ export function convertGeometricErrorToScreenThreshold(
  * @param node - i3s node data
  * @returns lod metric in 3d-tiles format
  */
-export function convertScreenThresholdToGeometricError(node: Tile3D): number {
-  const metricData = node.header.lodSelection.maxScreenThreshold || {};
-  let maxError = metricData.maxError;
+export function convertScreenThresholdToGeometricError(node: I3STileHeader): number {
+  const metricData = node.lodSelection?.find(
+    (metric) => metric.metricType === 'maxScreenThreshold'
+  );
+  let maxError = metricData?.maxError;
   if (!maxError) {
-    const sqMetricData = node.header.lodSelection.maxScreenThresholdSQ;
+    const sqMetricData = node.lodSelection?.find(
+      (metric) => metric.metricType === 'maxScreenThresholdSQ'
+    );
     if (sqMetricData) {
       maxError = Math.sqrt(sqMetricData.maxError / (Math.PI * 0.25));
     }
@@ -78,5 +82,5 @@ export function convertScreenThresholdToGeometricError(node: Tile3D): number {
     maxError = DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR;
   }
 
-  return (node.header.mbs[3] * 2 * DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR) / maxError;
+  return (node.mbs[3] * 2 * DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR) / maxError;
 }
