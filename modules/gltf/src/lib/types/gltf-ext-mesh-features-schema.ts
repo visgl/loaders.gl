@@ -13,6 +13,8 @@ export type GLTF_EXT_mesh_features = {
   featureIds: GLTF_EXT_mesh_features_featureId[];
   extensions?: Record<string, unknown>;
   extras?: unknown;
+  /** For internal usage */
+  dataAttributeNames?: string[];
 };
 
 /**
@@ -29,13 +31,12 @@ export type GLTF_EXT_mesh_features_featureId = {
   /**
    * An attribute containing feature IDs.
    * When `attribute` and `texture` are omitted the feature IDs are assigned to vertices by their index.
-   * Schema https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features/schema/featureIdAttribute.schema.json
+   * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features/schema/featureIdAttribute.schema.json
    * An integer value used to construct a string in the format `_FEATURE_ID_<set index>` which is a reference to a key in `mesh.primitives.attributes`
    * (e.g. a value of `0` corresponds to `_FEATURE_ID_0`).
    */
   attribute?: number;
   /** A texture containing feature IDs. */
-  // texture?: GLTF_EXT_mesh_features_featureIdTexture;
   texture?: GLTFTextureInfoMetadata;
   /** The index of the property table containing per-feature property values. Only applicable when using the `EXT_structural_metadata` extension. */
   propertyTable?: number;
@@ -43,6 +44,5 @@ export type GLTF_EXT_mesh_features_featureId = {
   extras?: unknown;
 
   /** For internal usage */
-  data: unknown;
-  dataAttributeNames: string[];
+  data?: unknown;
 };

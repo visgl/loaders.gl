@@ -16,10 +16,16 @@ export type GLTF_EXT_structural_metadata = {
   propertyTextures?: GLTF_EXT_structural_metadata_PropertyTexture[];
   /** "An array of property attribute definitions, which may be referenced by index. */
   propertyAttributes?: GLTF_EXT_structural_metadata_PropertyAttribute[];
-  [key: string]: any;
+  /** For internal usage */
+  dataAttributeNames?: string[];
 };
 
+/**
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/schema.schema.json
+ */
 export type GLTF_EXT_structural_metadata_Schema = {
+  /** Unique identifier for the schema. Schema IDs must be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`. */
+  id: string;
   /** The name of the schema. */
   name?: string;
   /** The description of the schema. */
@@ -36,7 +42,6 @@ export type GLTF_EXT_structural_metadata_Schema = {
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
@@ -54,7 +59,6 @@ export type GLTF_EXT_structural_metadata_Enum = {
   values: GLTF_EXT_structural_metadata_EnumValue[];
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
@@ -69,7 +73,6 @@ export type GLTF_EXT_structural_metadata_EnumValue = {
   value: number;
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
@@ -80,7 +83,8 @@ export type GLTF_EXT_structural_metadata_Class = {
   name?: string;
   /** The description of the class. */
   description?: string;
-  /** A dictionary, where each key is a property ID and each value is an object defining the property.
+  /**
+   * A dictionary, where each key is a property ID and each value is an object defining the property.
    * Property IDs must be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
    */
   properties: {
@@ -88,19 +92,19 @@ export type GLTF_EXT_structural_metadata_Class = {
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
+/**
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/class.property.schema.json
+ */
 export type GLTF_EXT_structural_metadata_ClassProperty = {
   /** The name of the property, e.g. for display purposes. */
   name?: string;
+
   /** The description of the property. */
   description?: string;
-  /**
-   * The element type. If ENUM is used, then enumType must also be specified.
-   * If ARRAY is used, then componentType must also be specified.
-   * ARRAY is a fixed-length array when componentCount is defined, and variable-length otherwise.
-   */
+
+  /** The element type. */
   type:
     | 'SCALAR'
     | 'VEC2'
@@ -112,15 +116,8 @@ export type GLTF_EXT_structural_metadata_ClassProperty = {
     | 'BOOLEAN'
     | 'STRING'
     | 'ENUM';
-  /**
-   * An enum ID as declared in the enums dictionary.
-   * This value must be specified when type or componentType is ENUM.
-   */
-  enumType?: string;
-  /**
-   * When type is ARRAY this indicates the type of each component of the array.
-   * If ENUM is used, then enumType must also be specified.
-   */
+
+  /** The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types. */
   componentType?:
     | 'INT8'
     | 'UINT8'
@@ -133,15 +130,16 @@ export type GLTF_EXT_structural_metadata_ClassProperty = {
     | 'FLOAT32'
     | 'FLOAT64';
 
+  /** Enum ID as declared in the `enums` dictionary. Required when `type` is `ENUM`. */
+  enumType?: string;
+
   /**
    * Whether the property is an array.
    * When `count` is defined the property is a fixed-length array. Otherwise the property is a variable-length array.
    */
   array?: boolean;
 
-  /**
-   * The number of array elements. May only be defined when `array` is true.
-   */
+  /** The number of array elements. May only be defined when `array` is true. */
   count?: number;
 
   /**
@@ -222,7 +220,6 @@ export type GLTF_EXT_structural_metadata_PropertyTable = {
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
@@ -297,7 +294,7 @@ export type GLTF_EXT_structural_metadata_PropertyTable_Property = {
   extensions?: Record<string, any>;
   extras?: any;
   /** For internal usage */
-  data?: any;
+  data?: unknown;
 };
 
 /**
@@ -325,7 +322,6 @@ export type GLTF_EXT_structural_metadata_PropertyTexture = {
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
 /**
@@ -346,25 +342,16 @@ export type GLTF_EXT_structural_metadata_PropertyAttribute = {
   };
   extensions?: Record<string, any>;
   extras?: any;
-  [key: string]: any;
 };
 
-// export type GLTF_EXT_structural_metadata_Primitive = {
-//   properties?: {
-//     [key: string]: GLTF_EXT_structural_metadata_Primitive_Property;
-//   };
-//   extensions?: Record<string, any>;
-//   extras?: any;
-// };
-
-// export type GLTF_EXT_structural_metadata_Primitive_Property = {
-//   propertyTextures?: [number];
-//   propertyAttributes?: [number];
-// }
-
+/**
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/mesh.primitive.EXT_structural_metadata.schema.json
+ */
 export type GLTF_EXT_structural_metadata_Primitive = {
-  propertyTextures?: [number];
-  propertyAttributes?: [number];
+  /** An array of indexes of property textures in the root `EXT_structural_metadata` object. */
+  propertyTextures?: number[];
+  /** An array of indexes of property attributes in the root `EXT_structural_metadata` object. */
+  propertyAttributes?: number[];
   extensions?: Record<string, any>;
   extras?: any;
 };

@@ -14,6 +14,7 @@ import {getImageData} from '@loaders.gl/images';
 import {GLTFMeshPrimitive} from '../../types/gltf-json-schema';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
+import {emod} from '@loaders.gl/math';
 
 /** Extension name */
 const EXT_FEATURE_METADATA_NAME = 'EXT_feature_metadata';
@@ -61,7 +62,7 @@ function decodeExtFeatureMetadata(scenegraph: GLTFScenegraph, options: GLTFLoade
 }
 
 /**
- * Navigate throw all properies in feature table and gets properties data.
+ * Navigates through all properies in feature table and gets properties data.
  * @param scenegraph
  * @param featureTable
  * @param schemaClass
@@ -89,7 +90,7 @@ function handleFeatureTableProperties(
 }
 
 /**
- * Navigate throw all properies in feature texture and gets properties data.
+ * Navigates through all properies in feature texture and gets properties data.
  * Data will be stored in featureTexture.properties[propertyName].data
  * @param scenegraph
  * @param featureTexture
@@ -324,17 +325,6 @@ function coordinatesToOffset(
   // components is a number of channels in the image
   const offset = (indY * w + indX) * components;
   return offset;
-}
-
-// The following is taken from tile-converter\src\i3s-converter\helpers\batch-ids-extensions.ts
-/**
- * Handle UVs if they are out of range [0,1].
- * @param n
- * @param m
- */
-function emod(n: number): number {
-  const a = ((n % 1) + 1) % 1;
-  return a;
 }
 
 /**

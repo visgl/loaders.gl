@@ -12,7 +12,8 @@ import type {
   SceneLayer3D,
   BoundingVolumes,
   MaxScreenThresholdSQ,
-  NodeInPage
+  NodeInPage,
+  AttributeStorageInfo
 } from '@loaders.gl/i3s';
 import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -599,7 +600,14 @@ export default class I3SConverter {
 
     const propertyTable = getPropertyTable(tileContent);
 
-    if (propertyTable && !this.layers0?.attributeStorageInfo?.length) {
+    if (propertyTable) {
+      /*
+        Call the convertion procedure even if the node attributes have been already created.
+        We will append new attributes only in case the property table is updated.
+        According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
+        "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer, which is the same for every node in the layer."
+        But the specification of ver 2.1 doesn't have such a requirement ("...the same for every node...")
+      */
       this._convertPropertyTableToNodeAttributes(propertyTable);
     }
 
@@ -685,7 +693,7 @@ export default class I3SConverter {
    * @param boundingVolume - initialized bounding volume of the source tile
    * @param tileContent - content of the source tile
    * @param parentId - id of parent node in node pages
-   * @param propertyTable - batch table from b3dm / feature properties from EXT_FEATURE_METADATA
+   * @param propertyTable - batch table from b3dm / feature properties from EXT_FEATURE_METADATA, EXT_MESH_FEATURES or EXT_STRUCTURAL_METADATA
    * @returns - converted node resources
    */
   private async _convertResources(
@@ -1013,7 +1021,12 @@ export default class I3SConverter {
     slpkChildPath: string
   ): Promise<void> {
     if (attributes?.length && this.layers0?.attributeStorageInfo?.length) {
-      for (let index = 0; index < attributes.length; index++) {
+      const minimumLength =
+        attributes.length < this.layers0.attributeStorageInfo.length
+          ? attributes.length
+          : this.layers0.attributeStorageInfo.length;
+
+      for (let index = 0; index < minimumLength; index++) {
         const folderName = this.layers0.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
 
@@ -1095,19 +1108,31 @@ export default class I3SConverter {
     };
 
     for (const key in propertyTableWithObjectId) {
-      const firstAttribute = propertyTableWithObjectId[key][0];
-      const attributeType = getAttributeType(key, firstAttribute);
+      /*
+        We will append new attributes only in case the property table is updated.
+        According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
+        "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer, which is the same for every node in the layer."
+        But the specification of ver 2.1 doesn't have such a requirement ("...the same for every node...")
+      */
+      const found = this.layers0!.attributeStorageInfo!.find((element) => element.name === key);
+      if (!found) {
+        const firstAttribute = propertyTableWithObjectId[key][0];
+        const attributeType = getAttributeType(key, firstAttribute);
 
-      const storageAttribute = createdStorageAttribute(attributeIndex, key, attributeType);
-      const fieldAttributeType = getFieldAttributeType(attributeType);
-      const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
-      const popupInfo = createPopupInfo(propertyTableWithObjectId);
+        const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
+          attributeIndex,
+          key,
+          attributeType
+        );
+        const fieldAttributeType = getFieldAttributeType(attributeType);
+        const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
+        const popupInfo = createPopupInfo(propertyTableWithObjectId);
 
-      this.layers0!.attributeStorageInfo!.push(storageAttribute);
-      this.layers0!.fields!.push(fieldAttribute);
-      this.layers0!.popupInfo = popupInfo;
-      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
-
+        this.layers0!.attributeStorageInfo!.push(storageAttribute);
+        this.layers0!.fields!.push(fieldAttribute);
+        this.layers0!.popupInfo = popupInfo;
+        this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+      }
       attributeIndex += 1;
     }
   }

@@ -2,15 +2,24 @@ import {GLTFAccessorPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loader
 import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
   GLTF_EXT_feature_metadata_FeatureIdTexture,
-  GLTF_EXT_feature_metadata_Primitive
+  GLTF_EXT_feature_metadata_Primitive,
+  GLTF_EXT_structural_metadata
 } from '@loaders.gl/gltf';
 
-import type {GLTF_EXT_mesh_features, GLTF_EXT_mesh_features_featureId} from '@loaders.gl/gltf';
+import type {
+  GLTF_EXT_mesh_features
+  //  ,GLTF_EXT_mesh_features_featureId
+} from '@loaders.gl/gltf';
 
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../../i3s-attributes-worker';
+import {emod} from '@loaders.gl/math';
 
-import {EXT_MESH_FEATURES_NAME, EXT_FEATURE_METADATA_NAME} from '@loaders.gl/gltf';
+import {
+  EXT_STRUCTURAL_METADATA_NAME,
+  EXT_MESH_FEATURES_NAME,
+  EXT_FEATURE_METADATA_NAME
+} from '@loaders.gl/gltf';
 
 /**
  * Getting batchIds from 3DTilesNext extensions.
@@ -26,7 +35,6 @@ export function handleBatchIdsExtensions(
   images: (TextureImageProperties | null)[]
 ): NumericArray {
   const extensions = primitive?.extensions;
-
   if (!extensions) {
     return [];
   }
@@ -41,6 +49,12 @@ export function handleBatchIdsExtensions(
         );
       case EXT_MESH_FEATURES_NAME:
         return handleExtMeshFeaturesExtension(attributes, extensionData as GLTF_EXT_mesh_features);
+      case EXT_STRUCTURAL_METADATA_NAME:
+        return handleExtStructuralMetadataExtension(
+          attributes,
+          extensionData as GLTF_EXT_structural_metadata
+        );
+
       default:
         return [];
     }
@@ -49,11 +63,28 @@ export function handleBatchIdsExtensions(
   return [];
 }
 
+function handleExtStructuralMetadataExtension(
+  attributes: {
+    [key: string]: GLTFAccessorPostprocessed;
+  },
+  extStructuralMetadata: GLTF_EXT_structural_metadata
+): NumericArray {
+  // Take only first extension object to get batchIds attribute name.
+  const dataAttributeNames = extStructuralMetadata?.dataAttributeNames;
+  if (dataAttributeNames?.length) {
+    // Let's use the first element of the array
+    // TODO: What to do with others if any?
+    const batchIdsAttribute = attributes[dataAttributeNames[0]];
+    return batchIdsAttribute.value;
+  }
+  return [];
+}
+
 /**
  * Getting batchIds from EXT_mesh_features extensions.
  * @param attributes - gltf accessors
  * @param extMeshFeatures - EXT_mesh_features extension
- * @returns
+ * @returns an array of attribute values
  */
 function handleExtMeshFeaturesExtension(
   attributes: {
@@ -61,17 +92,12 @@ function handleExtMeshFeaturesExtension(
   },
   extMeshFeatures: GLTF_EXT_mesh_features
 ): NumericArray {
-  // Take only first extension object to get batchIds attribute name.
-  if (extMeshFeatures?.featureIds.length) {
-    const extMeshFeaturesFeatureId: GLTF_EXT_mesh_features_featureId =
-      extMeshFeatures.featureIds[0];
-    const dataAttributeNames = extMeshFeaturesFeatureId?.dataAttributeNames;
-    if (dataAttributeNames && dataAttributeNames.length) {
-      // Let's use the first element of the array
-      // TODO: What to do with others if any?
-      const batchIdsAttribute = attributes[dataAttributeNames[0]];
-      return batchIdsAttribute.value;
-    }
+  const dataAttributeNames = extMeshFeatures?.dataAttributeNames;
+  if (dataAttributeNames?.length) {
+    // Let's use the first element of the array
+    // TODO: What to do with others if any?
+    const batchIdsAttribute = attributes[dataAttributeNames[0]];
+    return batchIdsAttribute.value;
   }
   return [];
 }
@@ -218,13 +244,4 @@ function generateBatchIdsFromTexture(
   }
 
   return batchIds;
-}
-
-/**
- * Handle UVs if they are out of range [0,1].
- * @param n
- * @param m
- */
-function emod(n: number): number {
-  return ((n % 1) + 1) % 1;
 }

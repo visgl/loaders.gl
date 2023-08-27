@@ -373,7 +373,7 @@ export type GLTFTextureInfo = {
 export type GLTFTextureInfoMetadata = GLTFTextureInfo & {
   channels: number[];
   /** For internal usage */
-  data?: any;
+  data?: unknown;
 };
 
 /**
