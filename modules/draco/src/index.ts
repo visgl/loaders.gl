@@ -7,6 +7,9 @@ import DracoParser from './lib/draco-parser';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
 
+// Module constants
+export {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from './lib/draco-module-loader';
+
 // Draco data types
 
 export type {DracoMesh, DracoLoaderData};
@@ -54,6 +57,3 @@ async function parse(arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions): Pr
     dracoParser.destroy();
   }
 }
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckDracoLoader: LoaderWithParser = DracoLoader;

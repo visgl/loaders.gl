@@ -6,7 +6,7 @@ import {
   analyzeTileContent,
   mergePreprocessData
 } from '../../../src/i3s-converter/helpers/preprocess-3d-tiles';
-import {GltfPrimitiveModeString} from '../../../src/i3s-converter/types';
+import {GLTFPrimitiveModeString} from '../../../src/i3s-converter/types';
 
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
@@ -25,13 +25,21 @@ test('tile-converter(i3s)#analyzeTileContent', async (t) => {
 });
 
 test('tile-converter(i3s)#mergePreprocessData', async (t) => {
-  const targetSet = new Set<GltfPrimitiveModeString>();
-  targetSet.add(GLTF_PRIMITIVE_MODES[0]);
-  const target = {meshTopologyTypes: targetSet};
+  const targetMeshTypeSet = new Set<GLTFPrimitiveModeString>();
+  targetMeshTypeSet.add(GLTF_PRIMITIVE_MODES[0]);
+  const targetMetadataClassesSet = new Set<string>();
+  targetMetadataClassesSet.add('metadata_class');
+  const target = {meshTopologyTypes: targetMeshTypeSet, metadataClasses: targetMetadataClassesSet};
 
-  const newSet = new Set<GltfPrimitiveModeString>();
-  newSet.add(GLTF_PRIMITIVE_MODES[4]);
-  mergePreprocessData(target, {meshTopologyTypes: newSet});
+  const meshTypeSet = new Set<GLTFPrimitiveModeString>();
+  meshTypeSet.add(GLTF_PRIMITIVE_MODES[4]);
+  const metadataClassesSet = new Set<string>();
+  metadataClassesSet.add('metadata_class_2');
+  mergePreprocessData(target, {
+    meshTopologyTypes: meshTypeSet,
+    metadataClasses: metadataClassesSet
+  });
   t.deepEqual(Array.from(target.meshTopologyTypes), ['POINTS', 'TRIANGLES']);
+  t.deepEqual(Array.from(target.metadataClasses), ['metadata_class', 'metadata_class_2']);
   t.end();
 });

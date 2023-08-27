@@ -169,7 +169,7 @@ export type TypedArrayConstructor =
  * glTF primitive modes (mesh topology types)
  * @see https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
  */
-export enum GltfPrimitiveModeString {
+export enum GLTFPrimitiveModeString {
   POINTS = 'POINTS',
   LINES = 'LINES',
   LINE_LOOP = 'LINE_LOOP',
@@ -182,7 +182,9 @@ export enum GltfPrimitiveModeString {
 /** Preprocessed data gathered from child tiles binary content */
 export type PreprocessData = {
   /** Mesh topology types used in gltf primitives of the tileset */
-  meshTopologyTypes: Set<GltfPrimitiveModeString>;
+  meshTopologyTypes: Set<GLTFPrimitiveModeString>;
+  /** Featrue metadata classes found in glTF extensions */
+  metadataClasses: Set<string>;
 };
 
 /** Texture image properties required for conversion */

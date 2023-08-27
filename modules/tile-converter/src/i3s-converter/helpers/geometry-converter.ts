@@ -37,7 +37,7 @@ import {
 import {NumberArray, TypedArray} from '@loaders.gl/loader-utils';
 import {Geoid} from '@math.gl/geoid';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
-import {handleBatchIdsExtensions} from './batch-ids-extensions';
+import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
 import {GL} from '@loaders.gl/math';
 
@@ -49,11 +49,8 @@ import {GL} from '@loaders.gl/math';
 import type {GLTFAttributesData, TextureImageProperties, TypedArrayConstructor} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
-import {
-  EXT_MESH_FEATURES_NAME,
-  EXT_FEATURE_METADATA_NAME,
-  EXT_STRUCTURAL_METADATA_NAME
-} from '@loaders.gl/gltf';
+
+import {EXT_MESH_FEATURES, EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -91,7 +88,8 @@ let scratchVector = new Vector3();
  * @param generateBoundingVolumes - is converter should create accurate bounding voulmes from geometry attributes
  * @param shouldMergeMaterials - Try to merge similar materials to be able to merge meshes into one node
  * @param geoidHeightModel - model to convert elevation from elipsoidal to geoid
- * @param workerSource - source code of used workers
+ * @param libraries - dynamicaly loaded 3rd-party libraries
+ * @param metadataClass `- user selected feature metadata class name`
  * @returns Array of node resources to create one or more i3s nodes
  */
 export default async function convertB3dmToI3sGeometry(
@@ -106,7 +104,8 @@ export default async function convertB3dmToI3sGeometry(
   generateBoundingVolumes: boolean,
   shouldMergeMaterials: boolean,
   geoidHeightModel: Geoid,
-  workerSource: {[key: string]: string}
+  libraries: Record<string, string>,
+  metadataClass?: string
 ): Promise<I3SConvertedResources[] | null> {
   const useCartesianPositions = generateBoundingVolumes;
   const materialAndTextureList: I3SMaterialWithTexture[] = await convertMaterials(
@@ -119,10 +118,12 @@ export default async function convertB3dmToI3sGeometry(
     tileTransform,
     tileBoundingVolume
   );
+  const featureTexture = getTextureByMetadataClass(tileContent, metadataClass);
   const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
     dataForAttributesConversion,
     materialAndTextureList,
-    useCartesianPositions
+    useCartesianPositions,
+    featureTexture
   );
   /** Usage of worker here brings more overhead than advantage */
   // const convertedAttributesMap: Map<string, ConvertedAttributes> =
@@ -160,7 +161,7 @@ export default async function convertB3dmToI3sGeometry(
         propertyTable,
         attributeStorageInfo,
         draco,
-        workerSource
+        libraries
       })
     );
   }
@@ -212,7 +213,7 @@ function _generateBoundingVolumesFromGeometry(
  * @param params.propertyTable - batch table (corresponding to feature attributes data)
  * @param params.attributeStorageInfo - attributes metadata from 3DSceneLayer json
  * @param params.draco - is converter should create draco compressed geometry
- * @param params.workerSource - source code of used workers
+ * @param libraries - dynamicaly loaded 3rd-party libraries
  * @returns Array of I3S node resources
  */
 async function _makeNodeResources({
@@ -225,7 +226,7 @@ async function _makeNodeResources({
   propertyTable,
   attributeStorageInfo,
   draco,
-  workerSource
+  libraries
 }: {
   convertedAttributes: ConvertedAttributes;
   material: I3SMaterialDefinition;
@@ -236,7 +237,7 @@ async function _makeNodeResources({
   propertyTable: FeatureTableJson | null;
   attributeStorageInfo?: AttributeStorageInfo[];
   draco: boolean;
-  workerSource: {[key: string]: string};
+  libraries: Record<string, string>;
 }): Promise<I3SConvertedResources> {
   const boundingVolumes = convertedAttributes.boundingVolumes;
   const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
@@ -281,7 +282,7 @@ async function _makeNodeResources({
           featureIds,
           faceRange
         },
-        workerSource.draco
+        libraries
       )
     : null;
 
@@ -316,12 +317,14 @@ async function _makeNodeResources({
  * @param materialAndTextureList - array of data about materials and textures of the content
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
+ * @param featureTexture - feature texture key
  * @returns map of converted geometry attributes
  */
 export async function convertAttributes(
   attributesData: GLTFAttributesData,
   materialAndTextureList: I3SMaterialWithTexture[],
-  useCartesianPositions: boolean
+  useCartesianPositions: boolean,
+  featureTexture: string | null
 ): Promise<Map<string, ConvertedAttributes>> {
   const {nodes, images, cartographicOrigin, cartesianModelMatrix} = attributesData;
   const attributesMap = new Map<string, ConvertedAttributes>();
@@ -349,7 +352,9 @@ export async function convertAttributes(
     cartographicOrigin,
     cartesianModelMatrix,
     attributesMap,
-    useCartesianPositions
+    useCartesianPositions,
+    undefined,
+    featureTexture
   );
 
   for (const attrKey of attributesMap.keys()) {
@@ -383,6 +388,7 @@ export async function convertAttributes(
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param featureTexture - feature texture key
  * @returns {void}
  */
 function convertNodes(
@@ -392,7 +398,8 @@ function convertNodes(
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions: boolean,
-  matrix: Matrix4 = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  matrix: Matrix4 = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+  featureTexture: string | null
 ) {
   if (nodes) {
     for (const node of nodes) {
@@ -403,7 +410,8 @@ function convertNodes(
         cartesianModelMatrix,
         attributesMap,
         useCartesianPositions,
-        matrix
+        matrix,
+        featureTexture
       );
     }
   }
@@ -445,11 +453,12 @@ function getCompositeTransformationMatrix(node: GLTFNodePostprocessed, matrix: M
  * @param images - gltf images array
  * @param cartographicOrigin - cartographic origin of bounding volume
  * @param cartesianModelMatrix - cartesian model matrix to convert coordinates to cartographic
- * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
+ * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
- * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param featureTexture - feature texture key
  */
 function convertNode(
   node: GLTFNodePostprocessed,
@@ -458,7 +467,8 @@ function convertNode(
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions,
-  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+  featureTexture: string | null
 ) {
   const transformationMatrix = getCompositeTransformationMatrix(node, matrix);
 
@@ -472,7 +482,8 @@ function convertNode(
       cartesianModelMatrix,
       attributesMap,
       useCartesianPositions,
-      transformationMatrix
+      transformationMatrix,
+      featureTexture
     );
   }
 
@@ -483,7 +494,8 @@ function convertNode(
     cartesianModelMatrix,
     attributesMap,
     useCartesianPositions,
-    transformationMatrix
+    transformationMatrix,
+    featureTexture
   );
 }
 
@@ -495,12 +507,12 @@ function convertNode(
  * @param cartesianModelMatrix - cartesian model matrix to convert coordinates to cartographic
  * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
- * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets. 
+ * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
- 
- * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param featureTexture - feature texture key
  */
 function convertMesh(
   mesh: GLTFMeshPostprocessed,
@@ -509,7 +521,8 @@ function convertMesh(
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions = false,
-  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+  featureTexture: string | null
 ) {
   for (const primitive of mesh.primitives) {
     let outputAttributes: ConvertedAttributes | null | undefined = null;
@@ -580,7 +593,7 @@ function convertMesh(
 
     outputAttributes.featureIndicesGroups = outputAttributes.featureIndicesGroups || [];
     outputAttributes.featureIndicesGroups.push(
-      flattenBatchIds(getBatchIds(attributes, primitive, images), indices)
+      flattenBatchIds(getBatchIds(attributes, primitive, images, featureTexture), indices)
     );
   }
 }
@@ -807,15 +820,23 @@ function flattenBatchIds(batchedIds: NumberArray, indices: TypedArray): number[]
  * @param attributes - gltf accessors
  * @param primitive - gltf primitive data
  * @param images - gltf texture images
+ * @param featureTexture - feature texture key
+ * @return batch IDs
  */
 function getBatchIds(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
   primitive: GLTFMeshPrimitivePostprocessed,
-  images: (TextureImageProperties | null)[]
+  images: (TextureImageProperties | null)[],
+  featureTexture: string | null
 ): NumberArray {
-  const batchIds: NumberArray = handleBatchIdsExtensions(attributes, primitive, images);
+  const batchIds: NumberArray = handleBatchIdsExtensions(
+    attributes,
+    primitive,
+    images,
+    featureTexture
+  );
 
   if (batchIds.length) {
     return batchIds;
@@ -1471,17 +1492,17 @@ function generateBigUint64Array(featureIds: any[]): BigUint64Array {
 
 /**
  * Generates draco compressed geometry
- * @param {Number} vertexCount
- * @param {Object} convertedAttributes - get rid of this argument here
- * @param {Object} attributes - geometry attributes to compress
- * @param {string} dracoWorkerSoure - draco worker source code
- * @returns {Promise<object>} - COmpressed geometry.
+ * @param vertexCount
+ * @param convertedAttributes - get rid of this argument here
+ * @param attributes - geometry attributes to compress
+ * @param libraries - dynamicaly loaded 3rd-party libraries
+ * @returns - Compressed geometry.
  */
 async function generateCompressedGeometry(
   vertexCount: number,
   convertedAttributes: Record<string, any>,
   attributes: Record<string, any>,
-  dracoWorkerSoure: string
+  libraries: Record<string, string>
 ): Promise<ArrayBuffer> {
   const {positions, normals, texCoords, colors, uvRegions, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
@@ -1530,12 +1551,17 @@ async function generateCompressedGeometry(
 
   return encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
     ...DracoWriterWorker.options,
-    source: dracoWorkerSoure,
     reuseWorkers: true,
     _nodeWorkers: true,
+    modules: libraries,
+    useLocalLibraries: true,
     draco: {
       method: 'MESH_SEQUENTIAL_ENCODING',
       attributesMetadata
+    },
+    ['draco-writer']: {
+      // We need to load local fs workers because nodejs can't load workers from the Internet
+      workerUrl: './modules/draco/dist/draco-writer-worker-node.js'
     }
   });
 }
@@ -1570,9 +1596,13 @@ function generateFeatureIndexAttribute(
  * Find property table in tile
  * For example it can be batchTable for b3dm files or property table in gLTF extension.
  * @param tileContent - 3DTiles tile content
+ * @param metadataClass - user selected feature metadata class name
  * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA, EXT_MESH_FEATURES or EXT_STRUCTURAL_METADATA
  */
-export function getPropertyTable(tileContent: Tiles3DTileContent | null): FeatureTableJson | null {
+export function getPropertyTable(
+  tileContent: Tiles3DTileContent | null,
+  metadataClass?: string
+): FeatureTableJson | null {
   if (!tileContent) {
     return null;
   }
@@ -1586,19 +1616,24 @@ export function getPropertyTable(tileContent: Tiles3DTileContent | null): Featur
   const {extensionName, extension} = getPropertyTableExtension(tileContent);
 
   switch (extensionName) {
-    case EXT_MESH_FEATURES_NAME: {
-      propertyTable = getPropertyTableFromExtMeshFeatures(extension as GLTF_EXT_mesh_features);
-      return propertyTable;
-    }
-    case EXT_STRUCTURAL_METADATA_NAME: {
-      propertyTable = getPropertyTableFromExtStructuralMetadata(
-        extension as GLTF_EXT_structural_metadata
+    case EXT_MESH_FEATURES: {
+      propertyTable = getPropertyTableFromExtMeshFeatures(
+        extension as GLTF_EXT_mesh_features,
+        metadataClass
       );
       return propertyTable;
     }
-    case EXT_FEATURE_METADATA_NAME: {
+    case EXT_STRUCTURAL_METADATA: {
+      propertyTable = getPropertyTableFromExtStructuralMetadata(
+        extension as GLTF_EXT_structural_metadata,
+        metadataClass
+      );
+      return propertyTable;
+    }
+    case EXT_FEATURE_METADATA: {
       propertyTable = getPropertyTableFromExtFeatureMetadata(
-        extension as GLTF_EXT_feature_metadata_GLTF
+        extension as GLTF_EXT_feature_metadata_GLTF,
+        metadataClass
       );
       return propertyTable;
     }
@@ -1621,9 +1656,9 @@ function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
     | null;
 } {
   const extensionsWithPropertyTables = [
-    EXT_FEATURE_METADATA_NAME,
-    EXT_STRUCTURAL_METADATA_NAME,
-    EXT_MESH_FEATURES_NAME
+    EXT_FEATURE_METADATA,
+    EXT_STRUCTURAL_METADATA,
+    EXT_MESH_FEATURES
   ];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
@@ -1652,10 +1687,13 @@ function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
 
 /**
  * Handle EXT_feature_metadata to get property table
- * @param extension
+ * @param extension - global level of EXT_FEATURE_METADATA extension
+ * @param metadataClass - user selected feature metadata class name
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
  */
 function getPropertyTableFromExtFeatureMetadata(
-  extension: GLTF_EXT_feature_metadata_GLTF
+  extension: GLTF_EXT_feature_metadata_GLTF,
+  metadataClass?: string
 ): FeatureTableJson | null {
   if (extension?.featureTables) {
     /**
@@ -1679,15 +1717,16 @@ function getPropertyTableFromExtFeatureMetadata(
   }
 
   if (extension?.featureTextures) {
-    /**
-     * Take only first feature texture to generate attributes storage info object.
-     * TODO: Think about getting data from all feature textures?
-     * It can be tricky just because 3dTiles is able to have multiple featureTextures.
-     * In I3S we should decide which featureTextures will be passed to geometry data.
-     */
-    const firstTextureName = Object.keys(extension.featureTextures)?.[0];
-    if (firstTextureName) {
-      const featureTable = extension?.featureTextures[firstTextureName];
+    let featureTexture: string | undefined;
+    for (const textureKey in extension.featureTextures) {
+      const texture = extension.featureTextures[textureKey];
+      if (texture.class === metadataClass) {
+        featureTexture = textureKey;
+      }
+    }
+
+    if (typeof featureTexture === 'string') {
+      const featureTable = extension?.featureTextures[featureTexture];
       const propertyTable = {};
 
       for (const propertyName in featureTable.properties) {
@@ -1704,8 +1743,15 @@ function getPropertyTableFromExtFeatureMetadata(
   return null;
 }
 
+/**
+ * Handle EXT_structural_metadata to get property table
+ * @param extension - global level of EXT_STRUCTURAL_METADATA extension
+ * @param metadataClass - user selected feature metadata class name
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
+ */
 function getPropertyTableFromExtStructuralMetadata(
-  extension: GLTF_EXT_structural_metadata
+  extension: GLTF_EXT_structural_metadata,
+  metadataClass?: string
 ): FeatureTableJson | null {
   if (extension?.propertyTables) {
     /**
@@ -1749,8 +1795,15 @@ function getPropertyTableFromExtStructuralMetadata(
   return null;
 }
 
+/**
+ * Handle EXT_mesh_features to get property table
+ * @param extension - global level of EXT_MESH_FEATURES extension
+ * @param metadataClass - user selected feature metadata class name
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
+ */
 function getPropertyTableFromExtMeshFeatures(
-  extension: GLTF_EXT_mesh_features
+  extension: GLTF_EXT_mesh_features,
+  metadataClass?: string
 ): FeatureTableJson | null {
   if (extension?.featureIds) {
     const firstFeatureId = extension?.featureIds[0];

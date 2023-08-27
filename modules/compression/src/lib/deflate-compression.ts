@@ -8,6 +8,8 @@ import {promisify1} from '@loaders.gl/loader-utils';
 
 export type DeflateCompressionOptions = CompressionOptions & {
   deflate?: pako.InflateOptions & pako.DeflateOptions & {useZlib?: boolean};
+  /** creates raw data, without wrapper (header and adler32 crc). */
+  raw?: boolean;
 };
 
 /**
@@ -58,7 +60,8 @@ export class DeflateCompression extends Compression {
     }
     const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
-    return pako.deflate(inputArray, pakoOptions).buffer;
+    const deflate = this.options?.raw ? pako.deflateRaw : pako.deflate;
+    return deflate(inputArray, pakoOptions).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
@@ -69,7 +72,8 @@ export class DeflateCompression extends Compression {
     }
     const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
-    return pako.inflate(inputArray, pakoOptions).buffer;
+    const inflate = this.options?.raw ? pako.inflateRaw : pako.inflate;
+    return inflate(inputArray, pakoOptions).buffer;
   }
 
   async *compressBatches(

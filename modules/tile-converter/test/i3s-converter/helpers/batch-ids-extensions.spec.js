@@ -240,7 +240,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
     }
   ];
   // @ts-ignore
-  const batchIds = handleBatchIdsExtensions(attributes, primitive, images);
+  const batchIds = handleBatchIdsExtensions(attributes, primitive, images, 'firstTextureName');
 
   t.deepEqual(batchIds, [33, 35, 29, 32, 24, 28]);
 });

@@ -3,6 +3,10 @@
  */
 export interface FileProvider {
   /**
+   * Cleanup class data
+   */
+  destroy(): Promise<void>;
+  /**
    * Gets an unsigned 8-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
@@ -38,3 +42,15 @@ export interface FileProvider {
    */
   length: bigint;
 }
+
+/**
+ * Check is the object has FileProvider members
+ * @param fileProvider - tested object
+ */
+export const isFileProvider = (fileProvider: unknown) => {
+  return (
+    (fileProvider as FileProvider)?.getUint8 &&
+    (fileProvider as FileProvider)?.slice &&
+    (fileProvider as FileProvider)?.length
+  );
+};

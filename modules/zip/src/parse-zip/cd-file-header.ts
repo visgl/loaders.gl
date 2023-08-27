@@ -1,4 +1,5 @@
-import {FileProvider} from './file-provider';
+import {FileProvider} from '../file-provider/file-provider';
+import {parseEoCDRecord} from './end-of-central-directory';
 import {ZipSignature} from './search-from-the-end';
 
 /**
@@ -22,14 +23,13 @@ export type ZipCDFileHeader = {
   localHeaderOffset: bigint;
 };
 
-const offsets = {
-  CD_COMPRESSED_SIZE_OFFSET: 20n,
-  CD_UNCOMPRESSED_SIZE_OFFSET: 24n,
-  CD_FILE_NAME_LENGTH_OFFSET: 28n,
-  CD_EXTRA_FIELD_LENGTH_OFFSET: 30n,
-  CD_LOCAL_HEADER_OFFSET_OFFSET: 42n,
-  CD_FILE_NAME_OFFSET: 46n
-};
+// offsets accroding to https://en.wikipedia.org/wiki/ZIP_(file_format)
+const CD_COMPRESSED_SIZE_OFFSET = 20n;
+const CD_UNCOMPRESSED_SIZE_OFFSET = 24n;
+const CD_FILE_NAME_LENGTH_OFFSET = 28n;
+const CD_EXTRA_FIELD_LENGTH_OFFSET = 30n;
+const CD_LOCAL_HEADER_OFFSET_OFFSET = 42n;
+const CD_FILE_NAME_OFFSET = 46n;
 
 export const signature: ZipSignature = [0x50, 0x4b, 0x01, 0x02];
 
@@ -51,32 +51,24 @@ export const parseZipCDFileHeader = async (
     return null;
   }
 
-  let compressedSize = BigInt(
-    await buffer.getUint32(headerOffset + offsets.CD_COMPRESSED_SIZE_OFFSET)
-  );
+  let compressedSize = BigInt(await buffer.getUint32(headerOffset + CD_COMPRESSED_SIZE_OFFSET));
 
-  let uncompressedSize = BigInt(
-    await buffer.getUint32(headerOffset + offsets.CD_UNCOMPRESSED_SIZE_OFFSET)
-  );
+  let uncompressedSize = BigInt(await buffer.getUint32(headerOffset + CD_UNCOMPRESSED_SIZE_OFFSET));
 
-  const extraFieldLength = await buffer.getUint16(
-    headerOffset + offsets.CD_EXTRA_FIELD_LENGTH_OFFSET
-  );
+  const extraFieldLength = await buffer.getUint16(headerOffset + CD_EXTRA_FIELD_LENGTH_OFFSET);
 
-  const fileNameLength = await buffer.getUint16(headerOffset + offsets.CD_FILE_NAME_LENGTH_OFFSET);
+  const fileNameLength = await buffer.getUint16(headerOffset + CD_FILE_NAME_LENGTH_OFFSET);
 
   const fileName = new TextDecoder().decode(
     await buffer.slice(
-      headerOffset + offsets.CD_FILE_NAME_OFFSET,
-      headerOffset + offsets.CD_FILE_NAME_OFFSET + BigInt(fileNameLength)
+      headerOffset + CD_FILE_NAME_OFFSET,
+      headerOffset + CD_FILE_NAME_OFFSET + BigInt(fileNameLength)
     )
   );
 
-  const extraOffset = headerOffset + offsets.CD_FILE_NAME_OFFSET + BigInt(fileNameLength);
+  const extraOffset = headerOffset + CD_FILE_NAME_OFFSET + BigInt(fileNameLength);
 
-  const oldFormatOffset = await buffer.getUint32(
-    headerOffset + offsets.CD_LOCAL_HEADER_OFFSET_OFFSET
-  );
+  const oldFormatOffset = await buffer.getUint32(headerOffset + CD_LOCAL_HEADER_OFFSET_OFFSET);
 
   let fileDataOffset = BigInt(oldFormatOffset);
   let offsetInZip64Data = 4n;
@@ -104,3 +96,19 @@ export const parseZipCDFileHeader = async (
     localHeaderOffset
   };
 };
+
+/**
+ * Create iterator over files of zip archive
+ * @param fileProvider - file provider that provider random access to the file
+ */
+export async function* zipCDFileHeaderGenerator(fileProvider: FileProvider) {
+  const {cdStartOffset} = await parseEoCDRecord(fileProvider);
+  let cdHeader = await parseZipCDFileHeader(cdStartOffset, fileProvider);
+  while (cdHeader) {
+    yield cdHeader;
+    cdHeader = await parseZipCDFileHeader(
+      cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
+      fileProvider
+    );
+  }
+}

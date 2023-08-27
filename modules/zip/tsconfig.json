@@ -8,6 +8,8 @@
     "outDir": "dist"
   },
   "references": [
-    {"path": "../loader-utils"}
+    {"path": "../loader-utils"},
+    {"path": "../core"},
+    {"path": "../compression"}
   ]
 }

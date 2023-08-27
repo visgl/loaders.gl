@@ -2,6 +2,7 @@ import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from './lib/helpers/i3s-nodepages-tiles';
+import {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 export type COLOR = [number, number, number, number];
 
@@ -23,6 +24,8 @@ export interface I3STilesetHeader extends SceneLayer3D {
   lodMetricType?: string;
   /** LOD metric value */
   lodMetricValue?: number;
+  /** Loader that has to be used to load content */
+  loader: LoaderWithParser;
 }
 /** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md */
 export type NodePage = {

@@ -1,4 +1,4 @@
-import {read, open, stat, BigIntStats} from 'fs';
+import {read, open, close, stat, BigIntStats} from 'fs';
 
 /** file reading result */
 export type FileReadResult = {
@@ -34,6 +34,13 @@ export class FileHandle {
     ]);
     return new FileHandle(fd, stats);
   };
+
+  /** Close file */
+  async close(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      close(this.fileDescriptor, (_err) => resolve());
+    });
+  }
 
   /**
    * Reads data from the file and stores that in the given buffer.

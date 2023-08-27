@@ -1,9 +1,8 @@
 import {isBrowser} from '@loaders.gl/core';
 
 import {BROWSER_ERROR_MESSAGE} from '../constants';
-import {FileHandleProvider} from './helpers/file-handle-provider';
-import {parseZipLocalFileHeader} from '@loaders.gl/i3s';
 import {path} from '@loaders.gl/loader-utils';
+import {FileHandleFile, parseZipLocalFileHeader} from '@loaders.gl/zip';
 import {GZipCompression} from '@loaders.gl/compression';
 import {writeFile} from '../lib/utils/file-utils';
 
@@ -24,7 +23,7 @@ type File = {
 /**
  * Converter from slpk to i3s
  */
-export default class SLPKConverter {
+export default class SLPKExtractor {
   /**
    * Extract slpk to i3s
    * @param options
@@ -38,7 +37,7 @@ export default class SLPKConverter {
     }
     const {inputUrl} = options;
 
-    const provider = await FileHandleProvider.from(inputUrl);
+    const provider = await FileHandleFile.from(inputUrl);
 
     let localHeader = await parseZipLocalFileHeader(0n, provider);
     while (localHeader) {

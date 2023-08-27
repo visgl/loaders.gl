@@ -62,6 +62,8 @@ export type LoaderOptions = {
   // general
   /** Experimental: Supply a logger to the parser */
   log?: any;
+  /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
+  useLocalLibraries?: boolean;
 
   // batched parsing
 
@@ -140,8 +142,9 @@ type PreloadOptions = {
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
 export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = {
-  // Types
+  /** The result type of this loader  */
   dataType?: DataT;
+  /** The batched result type of this loader  */
   batchType?: BatchT;
 
   /** Default Options */
@@ -149,7 +152,7 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = 
   /** Deprecated Options */
   deprecatedOptions?: Record<string, string | Record<string, string>>;
 
-  // Worker
+  /** Human readable name */
   name: string;
   /** id should be the same as the field used in LoaderOptions */
   id: string;
@@ -163,17 +166,22 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = 
 
   /** Which category does this loader belong to */
   category?: string;
-  /** What extensions does this loader generate */
+  /** File extensions that are potential matches with this loader. */
   extensions: string[];
+  /** MIMETypes that indicate a match with this loader. @note Some MIMETypes are generic and supported by many loaders */
   mimeTypes: string[];
 
+  /** Is the input of this loader binary */
   binary?: boolean;
+  /** Is the input of this loader text */
   text?: boolean;
 
+  /** Test some initial bytes of content to see if this loader might be a match */
   tests?: (((ArrayBuffer: ArrayBuffer) => boolean) | ArrayBuffer | string)[];
 
-  // TODO - deprecated
+  /** @deprecated */
   supported?: boolean;
+  /** @deprecated */
   testText?: (string: string) => boolean;
 };
 
@@ -186,27 +194,31 @@ export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderO
   BatchT,
   LoaderOptionsT
 > & {
-  // TODO - deprecated
-  testText?: (string: string) => boolean;
-
+  /** Perform actions before load. @deprecated Not officially supported. */
+  preload?: Preload;
+  /** Parse atomically from an arraybuffer asynchronously */
   parse: (
     arrayBuffer: ArrayBuffer,
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => Promise<DataT>;
-  preload?: Preload;
+  /** Parse atomically from an arraybuffer synchronously */
   parseSync?: (
     arrayBuffer: ArrayBuffer,
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => DataT;
+  /** Parse atomically from a string asynchronously */
   parseText?: (text: string, options?: LoaderOptionsT) => Promise<DataT>;
+  /** Parse atomically from a string synchronously */
   parseTextSync?: (text: string, options?: LoaderOptionsT) => DataT;
+  /** Parse batches of data from an iterator, return an iterator that yield parsed batches. */
   parseInBatches?: (
     iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => AsyncIterable<BatchT>;
+  /** Like `parseInBatches` for loaders that don't integrate with fetch. @deprecated Not officially supported. */
   parseFileInBatches?: (
     file: Blob,
     options?: LoaderOptionsT,
@@ -227,6 +239,7 @@ export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderO
  *   threads back to main thread.
  */
 export type LoaderContext = {
+  /** Loader list provided to top-level loader call plus any sub loaders */
   loaders?: Loader[] | null;
   /** If URL is available.  */
   url?: string;
@@ -305,7 +318,9 @@ export type LoaderBatchType<T = Loader> = T extends Loader<any, infer Batch, any
 /** Options for writers */
 export type WriterOptions = {
   /** worker source. If is set will be used instead of loading worker from the Internet */
-  souce?: string | null;
+  source?: string | null;
+  /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
+  useLocalLibraries?: boolean;
   /** writer-specific options */
   [writerId: string]: any;
 };

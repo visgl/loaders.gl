@@ -1,6 +1,6 @@
 import '@loaders.gl/polyfills';
 import {parseSLPK} from '@loaders.gl/i3s';
-import {FileHandleProvider} from '@loaders.gl/tile-converter';
+import {FileHandleFile} from '@loaders.gl/zip';
 
 let slpkArchive;
 
@@ -9,7 +9,7 @@ let slpkArchive;
  * @param fullLayerPath - full path to SLPK file
  */
 export const loadArchive = async (fullLayerPath: string): Promise<void> => {
-  slpkArchive = await parseSLPK(await FileHandleProvider.from(fullLayerPath), (msg) =>
+  slpkArchive = await parseSLPK(await FileHandleFile.from(fullLayerPath), (msg) =>
     console.log(msg)
   );
   console.log('The server is ready to use');

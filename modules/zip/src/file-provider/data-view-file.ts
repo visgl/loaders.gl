@@ -13,13 +13,16 @@ const toNumber = (bigint: bigint) => {
 };
 
 /** Provides file data using DataView */
-export class DataViewFileProvider implements FileProvider {
+export class DataViewFile implements FileProvider {
   /** The DataView from which data is provided */
   private file: DataView;
 
   constructor(file: DataView) {
     this.file = file;
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async destroy(): Promise<void> {}
 
   /**
    * Gets an unsigned 8-bit integer at the specified byte offset from the start of the file.

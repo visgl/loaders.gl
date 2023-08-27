@@ -6,6 +6,31 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.20
+
+- chore(i3s): Hash file utility moved to loader-utils (#2595)
+- chore(i3s): Zip parse refactoring (#2594)
+- fix(core): fetchOptions regression (#2591)
+- chore(tile-converter): remove CesiumION tokens (#2592)
+- feat(tile-converter): select metadata classes (#2590)
+- fix(tile-converter): featureIds + uvRegions (#2588)
+
+### v4.0.0-alpha.19
+
+- fix(tile-converter): CLI startup script (#2587)
+- feat(tile-converter): i3s - offline conversion (#2579)
+- Handle empty childless tiles in TilesetTraverser (#2584)
+- fix(i3s): add to tileset data (#2585)
+- fix(tile-converter): fix loading buffers in preprocess-3d-tiles (#2572)
+
+### v4.0.0-alpha.18
+
+- fix(tile-converter): skip failing content (#2576)
+- fix: Bump and remove @xmldom/xmldom (input validation issue) (#2582)
+- docs(tile-converter): Add documentation for SLPK Extractor (#2567)
+- chore(core): Refactor fetchFile to handle Node.js local file loading (#2575)
+- chore(tile-converter): 3dtiles - exclude Tile3D and Tileset3D (#2574)
+
 ### v4.0.0-alpha.17
 
 - docs(chore): core API documentation improvements (#2573)
