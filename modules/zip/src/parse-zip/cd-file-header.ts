@@ -1,4 +1,4 @@
-import {FileProvider} from '../classes/file-provider';
+import {FileProvider} from '../file-provider/file-provider';
 import {parseEoCDRecord} from './end-of-central-directory';
 import {ZipSignature} from './search-from-the-end';
 

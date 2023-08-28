@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {localHeaderSignature as signature} from '@loaders.gl/zip';
 import {isBrowser} from '@loaders.gl/core';
 
-import {FileHandleFile} from '../../src/classes/file-handle-file';
+import {FileHandleFile} from '../../src/file-provider/file-handle-file';
 
 const SLPKUrl = 'modules/i3s/test/data/DA12_subset.slpk';
 

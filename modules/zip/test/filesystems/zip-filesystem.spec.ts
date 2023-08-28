@@ -1,9 +1,9 @@
 import test from 'tape-promise/tape';
-import {FileHandleFile} from '../../src/classes/file-handle-file';
+import {FileHandleFile} from '../../src/file-provider/file-handle-file';
 import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
 import {fetchFile, isBrowser} from '@loaders.gl/core';
-import {DataViewFile} from '../../src/classes/data-view-file';
-import {FileProvider} from '../../src/classes/file-provider';
+import {DataViewFile} from '../../src/file-provider/data-view-file';
+import {FileProvider} from '../../src/file-provider/file-provider';
 
 const ZIP_FILE_PATH = './modules/zip/test/data/test-store.zip';
 

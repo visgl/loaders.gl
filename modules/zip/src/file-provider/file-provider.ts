@@ -43,6 +43,10 @@ export interface FileProvider {
   length: bigint;
 }
 
+/**
+ * Check is the object has FileProvider members
+ * @param fileProvider - tested object
+ */
 export const isFileProvider = (fileProvider: unknown) => {
   return (
     (fileProvider as FileProvider)?.getUint8 &&

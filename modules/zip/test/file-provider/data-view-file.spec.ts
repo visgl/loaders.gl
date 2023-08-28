@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
-import {DataViewFile} from '../../src/classes/data-view-file';
+import {DataViewFile} from '../../src/file-provider/data-view-file';
 import {signature} from '../../src/parse-zip/local-file-header';
 
 test('DataViewFile#slice', async (t) => {

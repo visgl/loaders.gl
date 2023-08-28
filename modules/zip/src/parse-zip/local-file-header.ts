@@ -1,4 +1,4 @@
-import {FileProvider} from '../classes/file-provider';
+import {FileProvider} from '../file-provider/file-provider';
 
 /**
  * zip local file header info

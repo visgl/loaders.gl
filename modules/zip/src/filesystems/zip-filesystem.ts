@@ -1,6 +1,6 @@
 import {FileSystem, isBrowser} from '@loaders.gl/core';
-import {FileProvider, isFileProvider} from '../classes/file-provider';
-import {FileHandleFile} from '../classes/file-handle-file';
+import {FileProvider, isFileProvider} from '../file-provider/file-provider';
+import {FileHandleFile} from '../file-provider/file-handle-file';
 import {ZipCDFileHeader, zipCDFileHeaderGenerator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 
