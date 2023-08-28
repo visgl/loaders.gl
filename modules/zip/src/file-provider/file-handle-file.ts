@@ -1,5 +1,5 @@
 import {FileProvider} from '@loaders.gl/zip';
-import {FileHandle} from './fs-promises';
+import {FileHandle} from './file-handle';
 
 /**
  * Provides file data using node fs library
