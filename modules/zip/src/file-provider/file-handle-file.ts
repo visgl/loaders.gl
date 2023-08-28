@@ -29,6 +29,11 @@ export class FileHandleFile implements FileProvider {
     this.size = size;
   }
 
+  /** Close file */
+  async destroy(): Promise<void> {
+    await this.fileDescriptor.close();
+  }
+
   /**
    * Gets an unsigned 8-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.

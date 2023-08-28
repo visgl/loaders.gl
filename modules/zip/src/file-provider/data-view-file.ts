@@ -21,6 +21,9 @@ export class DataViewFile implements FileProvider {
     this.file = file;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async destroy(): Promise<void> {}
+
   /**
    * Gets an unsigned 8-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.

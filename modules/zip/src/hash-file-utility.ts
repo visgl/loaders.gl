@@ -1,6 +1,5 @@
 import md5 from 'md5';
-import {ZipCDFileHeader, parseZipCDFileHeader} from './parse-zip/cd-file-header';
-import {parseEoCDRecord} from './parse-zip/end-of-central-directory';
+import {zipCDFileHeaderGenerator} from './parse-zip/cd-file-header';
 import {FileProvider} from './file-provider/file-provider';
 
 /** Element of hash array */
@@ -89,42 +88,14 @@ export const findBin = (
  * @returns ready to use hash info
  */
 export const generateHashInfo = async (fileProvider: FileProvider): Promise<HashElement[]> => {
-  const {cdStartOffset} = await parseEoCDRecord(fileProvider);
-  const hashInfo = headersToHashes(await getCDList(cdStartOffset, fileProvider));
+  const zipCDIterator = zipCDFileHeaderGenerator(fileProvider);
+  const hashInfo: HashElement[] = [];
+  for await (const cdHeader of zipCDIterator) {
+    hashInfo.push({
+      hash: Buffer.from(md5(cdHeader.fileName.split('\\').join('/').toLocaleLowerCase()), 'hex'),
+      offset: cdHeader.localHeaderOffset
+    });
+  }
   hashInfo.sort((a, b) => compareHashes(a.hash, b.hash));
   return hashInfo;
-};
-
-/**
- * parses cd header and generates array of headers' info
- * @param cdStartOffset - start of central directory
- * @param fileProvider - file data
- * @returns array of headers' info
- */
-const getCDList = async (
-  cdStartOffset: bigint,
-  fileProvider: FileProvider
-): Promise<ZipCDFileHeader[]> => {
-  const headers: ZipCDFileHeader[] = [];
-  let cdHeader = await parseZipCDFileHeader(cdStartOffset, fileProvider);
-  while (cdHeader) {
-    headers.push(cdHeader);
-    cdHeader = await parseZipCDFileHeader(
-      cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
-      fileProvider
-    );
-  }
-  return headers;
-};
-
-/**
- * converts headers list to hash info
- * @param headers - headers list
- * @returns hash info
- */
-const headersToHashes = (headers: ZipCDFileHeader[]): HashElement[] => {
-  return headers.map((header) => ({
-    hash: Buffer.from(md5(header.fileName.split('\\').join('/').toLocaleLowerCase()), 'hex'),
-    offset: header.localHeaderOffset
-  }));
 };
