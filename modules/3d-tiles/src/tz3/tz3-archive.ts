@@ -1,6 +1,5 @@
 import md5 from 'md5';
-import {FileProvider, parseZipLocalFileHeader} from '@loaders.gl/zip';
-import {HashElement, findBin} from '@loaders.gl/loader-utils';
+import {FileProvider, parseZipLocalFileHeader, HashElement, findBin} from '@loaders.gl/zip';
 import {DeflateCompression} from '@loaders.gl/compression';
 
 type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;

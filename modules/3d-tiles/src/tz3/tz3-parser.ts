@@ -1,8 +1,9 @@
-import {HashElement, parseHashFile} from '@loaders.gl/loader-utils';
 import {
   FileProvider,
+  HashElement,
   cdSignature as cdHeaderSignature,
   generateHashInfo,
+  parseHashFile,
   parseZipCDFileHeader,
   parseZipLocalFileHeader,
   searchFromTheEnd
