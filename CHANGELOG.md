@@ -2,6 +2,10 @@
 
 # v3.4
 
+## v3.4.12
+
+- Fix browser exclude (3.4) (#2597)
+
 ## v3.4.11
 
 - Handle empty childless tiles in TilesetTraverser (#2584)
