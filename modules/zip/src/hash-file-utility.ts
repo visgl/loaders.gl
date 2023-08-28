@@ -1,3 +1,7 @@
+import md5 from 'md5';
+import {zipCDFileHeaderGenerator} from './parse-zip/cd-file-header';
+import {FileProvider} from './file-provider/file-provider';
+
 /** Element of hash array */
 export type HashElement = {
   /** File name hash */
@@ -76,4 +80,22 @@ export const findBin = (
     }
   }
   return undefined;
+};
+
+/**
+ * generates hash info from central directory
+ * @param fileProvider - provider of the archive
+ * @returns ready to use hash info
+ */
+export const generateHashInfo = async (fileProvider: FileProvider): Promise<HashElement[]> => {
+  const zipCDIterator = zipCDFileHeaderGenerator(fileProvider);
+  const hashInfo: HashElement[] = [];
+  for await (const cdHeader of zipCDIterator) {
+    hashInfo.push({
+      hash: Buffer.from(md5(cdHeader.fileName.split('\\').join('/').toLocaleLowerCase()), 'hex'),
+      offset: cdHeader.localHeaderOffset
+    });
+  }
+  hashInfo.sort((a, b) => compareHashes(a.hash, b.hash));
+  return hashInfo;
 };

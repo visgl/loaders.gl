@@ -19,4 +19,4 @@ export {parseEoCDRecord} from './parse-zip/end-of-central-directory';
 export {searchFromTheEnd} from './parse-zip/search-from-the-end';
 
 export type {HashElement} from './hash-file-utility';
-export {compareHashes, parseHashFile, findBin} from './hash-file-utility';
+export {compareHashes, parseHashFile, findBin, generateHashInfo} from './hash-file-utility';
