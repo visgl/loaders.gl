@@ -35,9 +35,7 @@ export class FileHandle {
     return new FileHandle(fd, stats);
   };
 
-  /**
-   * Close file
-   */
+  /** Close file */
   async close(): Promise<void> {
     return new Promise<void>((resolve) => {
       close(this.fileDescriptor, (_err) => resolve());

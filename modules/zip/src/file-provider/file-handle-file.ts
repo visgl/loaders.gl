@@ -29,9 +29,7 @@ export class FileHandleFile implements FileProvider {
     this.size = size;
   }
 
-  /**
-   * Close file
-   */
+  /** Close file */
   async destroy(): Promise<void> {
     await this.fileDescriptor.close();
   }
