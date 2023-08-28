@@ -2,9 +2,9 @@ export {ZipLoader} from './zip-loader';
 export {ZipWriter} from './zip-writer';
 export {default as TarBuilder} from './tar-builder';
 
-export type {FileProvider} from './classes/file-provider';
-export {FileHandleFile} from './classes/file-handle-file';
-export {DataViewFile} from './classes/data-view-file';
+export type {FileProvider} from './file-provider/file-provider';
+export {FileHandleFile} from './file-provider/file-handle-file';
+export {DataViewFile} from './file-provider/data-view-file';
 
 export {parseZipCDFileHeader, signature as cdSignature} from './parse-zip/cd-file-header';
 export {
