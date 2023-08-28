@@ -1,7 +1,7 @@
 import {HashElement, compareHashes} from '@loaders.gl/loader-utils';
 import {parseZipCDFileHeader} from './cd-file-header';
 import {parseEoCDRecord} from './end-of-central-directory';
-import {FileProvider} from './file-provider';
+import {FileProvider} from '../file-provider/file-provider';
 import md5 from 'md5';
 
 /**

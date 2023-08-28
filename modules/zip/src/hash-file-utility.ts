@@ -1,7 +1,7 @@
 import md5 from 'md5';
 import {ZipCDFileHeader, parseZipCDFileHeader} from './parse-zip/cd-file-header';
 import {parseEoCDRecord} from './parse-zip/end-of-central-directory';
-import {FileProvider} from './parse-zip/file-provider';
+import {FileProvider} from './file-provider/file-provider';
 
 /** Element of hash array */
 export type HashElement = {
