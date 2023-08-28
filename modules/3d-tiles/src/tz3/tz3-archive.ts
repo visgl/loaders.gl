@@ -72,12 +72,11 @@ export class TZ3Archive {
       localFileHeader.fileDataOffset + localFileHeader.compressedSize
     );
 
-    if (
-      Object.keys(COMPRESSION_METHODS).indexOf(localFileHeader.compressionMethod.toString()) === -1
-    ) {
+    const compressionMethod = COMPRESSION_METHODS[localFileHeader.compressionMethod];
+    if (!compressionMethod) {
       throw Error('Only Deflation compression is supported');
     }
 
-    return COMPRESSION_METHODS[localFileHeader.compressionMethod](compressedFile);
+    return compressionMethod(compressedFile);
   }
 }
