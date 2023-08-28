@@ -48,5 +48,6 @@ test('Zip#load one file', async (t) => {
     const text = new TextDecoder().decode(result);
     t.equal(text, 'test file data\n');
   }
+  fileSystem.destroy();
   t.end();
 });
