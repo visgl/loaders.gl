@@ -11,9 +11,18 @@ const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
   0: async (compressedFile) => compressedFile
 };
 
+/**
+ * FileSystem adapter for a ZIP file
+ * Holds FileProvider object that provides random access to archived files
+ */
 export class ZipFileSystem implements FileSystem {
+  /** FileProvider instance promise */
   private fileProvider: Promise<FileProvider | null> = Promise.resolve(null);
 
+  /**
+   * Constructor
+   * @param file - instance of FileProvider or file path string
+   */
   constructor(file: FileProvider | string) {
     // Try to open file in NodeJS
     if (typeof file === 'string') {
@@ -27,6 +36,7 @@ export class ZipFileSystem implements FileSystem {
     }
   }
 
+  /** Clean up resources */
   async destroy() {
     const fileProvider = await this.fileProvider;
     if (fileProvider) {
@@ -34,6 +44,10 @@ export class ZipFileSystem implements FileSystem {
     }
   }
 
+  /**
+   * Get file names list from zip archive
+   * @returns array of file names
+   */
   async readdir(): Promise<string[]> {
     const fileProvider = await this.fileProvider;
     if (!fileProvider) {
@@ -47,12 +61,22 @@ export class ZipFileSystem implements FileSystem {
     return fileNames;
   }
 
+  /**
+   * Get file metadata
+   * @param filename - name of a file
+   * @returns central directory data
+   */
   async stat(filename: string): Promise<ZipCDFileHeader & {size: number}> {
     const cdFileHeader = await this.getCDFileHeader(filename);
     return {...cdFileHeader, size: Number(cdFileHeader.uncompressedSize)};
   }
 
-  async fetch(filename: string, options?: RequestInit | undefined): Promise<Response> {
+  /**
+   * Implementation of fetch against this file system
+   * @param filename - name of a file
+   * @returns - Response with file data
+   */
+  async fetch(filename: string): Promise<Response> {
     const fileProvider = await this.fileProvider;
     if (!fileProvider) {
       throw new Error('No data detected in the zip archive');
@@ -82,6 +106,11 @@ export class ZipFileSystem implements FileSystem {
     return response;
   }
 
+  /**
+   * Get central directory file header
+   * @param filename - name of a file
+   * @returns central directory file header
+   */
   private async getCDFileHeader(filename: string): Promise<ZipCDFileHeader> {
     const fileProvider = await this.fileProvider;
     if (!fileProvider) {
