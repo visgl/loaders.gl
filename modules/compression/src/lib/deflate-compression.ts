@@ -8,6 +8,7 @@ import {promisify1} from '@loaders.gl/loader-utils';
 
 export type DeflateCompressionOptions = CompressionOptions & {
   deflate?: pako.InflateOptions & pako.DeflateOptions & {useZlib?: boolean};
+  /** creates raw data, without wrapper (header and adler32 crc). */
   raw?: boolean;
 };
 

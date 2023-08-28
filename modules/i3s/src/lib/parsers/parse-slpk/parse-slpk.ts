@@ -4,10 +4,11 @@ import {
   FileProvider,
   parseZipLocalFileHeader,
   searchFromTheEnd,
+  HashElement,
+  parseHashFile,
   generateHashInfo
 } from '@loaders.gl/zip';
 import {SLPKArchive} from './slpk-archieve';
-import {HashElement, parseHashFile} from '@loaders.gl/loader-utils';
 
 /**
  * Creates slpk file handler from raw file
