@@ -16,15 +16,12 @@ const eoCDSignature: ZipSignature = [0x50, 0x4b, 0x05, 0x06];
 const zip64EoCDLocatorSignature = Buffer.from([0x50, 0x4b, 0x06, 0x07]);
 const zip64EoCDSignature = Buffer.from([0x50, 0x4b, 0x06, 0x06]);
 
-const offsets = {
-  CD_RECORDS_NUMBER_OFFSET: 8n,
-  CD_START_OFFSET_OFFSET: 16n,
-
-  ZIP64_EOCD_START_OFFSET_OFFSET: 8n,
-
-  ZIP64_CD_RECORDS_NUMBER_OFFSET: 24n,
-  ZIP64_CD_START_OFFSET_OFFSET: 48n
-};
+// offsets accroding to https://en.wikipedia.org/wiki/ZIP_(file_format)
+const CD_RECORDS_NUMBER_OFFSET = 8n;
+const CD_START_OFFSET_OFFSET = 16n;
+const ZIP64_EOCD_START_OFFSET_OFFSET = 8n;
+const ZIP64_CD_RECORDS_NUMBER_OFFSET = 24n;
+const ZIP64_CD_START_OFFSET_OFFSET = 48n;
 
 /**
  * Parses end of central directory record of zip file
@@ -35,11 +32,9 @@ export const parseEoCDRecord = async (fileProvider: FileProvider): Promise<ZipEo
   const zipEoCDOffset = await searchFromTheEnd(fileProvider, eoCDSignature);
 
   let cdRecordsNumber = BigInt(
-    await fileProvider.getUint16(zipEoCDOffset + offsets.CD_RECORDS_NUMBER_OFFSET)
+    await fileProvider.getUint16(zipEoCDOffset + CD_RECORDS_NUMBER_OFFSET)
   );
-  let cdStartOffset = BigInt(
-    await fileProvider.getUint32(zipEoCDOffset + offsets.CD_START_OFFSET_OFFSET)
-  );
+  let cdStartOffset = BigInt(await fileProvider.getUint32(zipEoCDOffset + CD_START_OFFSET_OFFSET));
 
   if (cdStartOffset === BigInt(0xffffffff) || cdRecordsNumber === BigInt(0xffffffff)) {
     const zip64EoCDLocatorOffset = zipEoCDOffset - 20n;
@@ -52,7 +47,7 @@ export const parseEoCDRecord = async (fileProvider: FileProvider): Promise<ZipEo
       throw new Error('zip64 EoCD locator not found');
     }
     const zip64EoCDOffset = await fileProvider.getBigUint64(
-      zip64EoCDLocatorOffset + offsets.ZIP64_EOCD_START_OFFSET_OFFSET
+      zip64EoCDLocatorOffset + ZIP64_EOCD_START_OFFSET_OFFSET
     );
 
     if (
@@ -64,11 +59,9 @@ export const parseEoCDRecord = async (fileProvider: FileProvider): Promise<ZipEo
     }
 
     cdRecordsNumber = await fileProvider.getBigUint64(
-      zip64EoCDOffset + offsets.ZIP64_CD_RECORDS_NUMBER_OFFSET
+      zip64EoCDOffset + ZIP64_CD_RECORDS_NUMBER_OFFSET
     );
-    cdStartOffset = await fileProvider.getBigUint64(
-      zip64EoCDOffset + offsets.ZIP64_CD_START_OFFSET_OFFSET
-    );
+    cdStartOffset = await fileProvider.getBigUint64(zip64EoCDOffset + ZIP64_CD_START_OFFSET_OFFSET);
   }
 
   return {
