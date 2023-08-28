@@ -1,6 +1,7 @@
 # tests
 test/data/test.png
 tmp
+!modules/zip/test/data/**/*.zip
 
 # dists
 dist/*
