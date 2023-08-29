@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/json",
-  "version": "3.4.12",
+  "version": "3.4.13",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
   "publishConfig": {
@@ -35,9 +35,9 @@
     "build-worker": "esbuild src/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "3.4.12",
-    "@loaders.gl/loader-utils": "3.4.12",
-    "@loaders.gl/schema": "3.4.12"
+    "@loaders.gl/gis": "3.4.13",
+    "@loaders.gl/loader-utils": "3.4.13",
+    "@loaders.gl/schema": "3.4.13"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

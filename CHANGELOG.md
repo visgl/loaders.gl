@@ -2,6 +2,10 @@
 
 # v3.4
 
+## v3.4.13
+
+- Try fix bundling error (#2605)
+
 ## v3.4.12
 
 - Fix browser exclude (3.4) (#2597)
