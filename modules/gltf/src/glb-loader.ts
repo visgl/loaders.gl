@@ -4,8 +4,11 @@ import type {ParseGLBOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
 import {parseGLBSync} from './lib/parsers/parse-glb';
 
+/** GLB loader options */
 export type GLBLoaderOptions = LoaderOptions & {
+  /** GLB Parser Options */
   glb?: ParseGLBOptions;
+  /** GLB specific: byteOffset to start parsing from */
   byteOffset?: number;
 };
 

@@ -33,7 +33,7 @@ export const GeoJSONWorkerLoader: Loader<GeoJSON, TableBatch, GeoJSONLoaderOptio
   mimeTypes: ['application/geo+json'],
   category: 'geometry',
   text: true,
-  options:  {
+  options: {
     geojson: {
       shape: 'object-row-table'
     },
@@ -62,7 +62,7 @@ async function parse(arrayBuffer: ArrayBuffer, options?: GeoJSONLoaderOptions) {
 function parseTextSync(text: string, options?: GeoJSONLoaderOptions) {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GeoJSONLoader.options, ...options};
-  options.geojson = {...(GeoJSONLoader.options.geojson), ...options.geojson};
+  options.geojson = {...GeoJSONLoader.options.geojson, ...options.geojson};
   options.gis = options.gis || {};
   const table = parseJSONSync(text, options) as GeoJSONRowTable;
   table.shape = 'geojson-row-table';
@@ -77,7 +77,7 @@ function parseTextSync(text: string, options?: GeoJSONLoaderOptions) {
 function parseInBatches(asyncIterator, options): AsyncIterable<TableBatch> {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GeoJSONLoader.options, ...options};
-  options.json = {...(GeoJSONLoader.options.geojson), ...options.geojson};
+  options.json = {...GeoJSONLoader.options.geojson, ...options.geojson};
 
   const geojsonIterator = parseJSONInBatches(asyncIterator, options);
 

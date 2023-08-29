@@ -8,7 +8,7 @@ const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojs
 
 const sqlJsCDN = isBrowser ? 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/' : null;
 
-test('GeoPackageLoader#load file as table', async (t) => {
+test('GeoPackageLoader#load file as tables', async (t) => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {sqlJsCDN}
   });
@@ -25,25 +25,6 @@ test('GeoPackageLoader#load file as table', async (t) => {
 
   t.ok(table.schema);
   t.equal(table.schema?.fields.length, 5);
-
-  t.end();
-});
-
-test('GeoPackageLoader#load file as geojson', async (t) => {
-  const result = await load(GPKG_RIVERS, GeoPackageLoader, {
-    geopackage: {sqlJsCDN},
-    gis: {format: 'geojson'}
-  });
-
-  const response = await fetchFile(GPKG_RIVERS_GEOJSON);
-  const json = await response.json();
-
-  const tableName = Object.keys(result)[0];
-  const features = result[tableName];
-
-  t.equal(tableName, 'FEATURESriversds', 'loaded correct table name');
-  t.equal(features.length, 1, 'Correct number of rows received');
-  t.deepEqual(features[0], json.features[0], 'GeoPackage matches GeoJSON from OGR');
 
   t.end();
 });

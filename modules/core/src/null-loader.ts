@@ -6,22 +6,13 @@ import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-u
 import {LoaderContext} from 'modules/loader-utils/dist';
 
 export type NullLoaderOptions = LoaderOptions & {
-  null?: {
-    echoParameters?: boolean;
-  }
-}
-
-/** @todo - loaders should have one return type. Split */
-export type NullLoaderResult = null | {
-  arrayBuffer: ArrayBuffer;
-  options: NullLoaderOptions;
-  context?: LoaderContext;
+  null?: {};
 };
 
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullWorkerLoader: Loader<NullLoaderResult, NullLoaderResult, NullLoaderOptions> = {
+export const NullWorkerLoader: Loader<null, never, NullLoaderOptions> = {
   name: 'Null loader',
   id: 'null',
   module: 'core',
@@ -38,14 +29,15 @@ export const NullWorkerLoader: Loader<NullLoaderResult, NullLoaderResult, NullLo
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullLoader: LoaderWithParser<NullLoaderResult, NullLoaderResult, NullLoaderOptions> = {
+export const NullLoader: LoaderWithParser<null, null, NullLoaderOptions> = {
   name: 'Null loader',
   id: 'null',
   module: 'core',
   version: VERSION,
   mimeTypes: ['application/x.empty'],
   extensions: ['null'],
-  parse: async (arrayBuffer: ArrayBuffer, options?: NullLoaderOptions, context?: LoaderContext) => parseSync(arrayBuffer, options || {}, context),
+  parse: async (arrayBuffer: ArrayBuffer, options?: NullLoaderOptions, context?: LoaderContext) =>
+    parseSync(arrayBuffer, options || {}, context),
   parseSync,
   parseInBatches: async function* generator(asyncIterator, options, context) {
     for await (const batch of asyncIterator) {
@@ -54,9 +46,7 @@ export const NullLoader: LoaderWithParser<NullLoaderResult, NullLoaderResult, Nu
   },
   tests: [() => false],
   options: {
-    null: {
-      echoParameters: false
-    }
+    null: {}
   }
 };
 
@@ -68,10 +58,6 @@ function parseSync(
   arrayBuffer: ArrayBuffer,
   options?: NullLoaderOptions,
   context?: LoaderContext
-): NullLoaderResult {
-  if (!options?.null?.echoParameters) {
-    return null;
-  }
-  context = context && JSON.parse(JSON.stringify(context));
-  return {arrayBuffer, options, context};
+): null {
+  return null;
 }

@@ -90,14 +90,12 @@ test('load#load retrieve Response from worker - BROWSER ONLY', async (t) => {
     return;
   }
 
-  const {context} = await load(JSON_URL, NullWorkerLoader, {
-    null: {echoParameters: true},
+  const result = await load(JSON_URL, NullWorkerLoader, {
     _workerType: 'test',
     reuseWorkers: false
   });
 
-  t.ok(context, 'Context passed through by NullWorkerLoader');
-  checkResponse(t, context.response);
+  t.equal(result, null, 'null passed through by NullWorkerLoader');
 
   t.end();
 });

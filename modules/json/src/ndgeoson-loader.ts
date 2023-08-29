@@ -18,7 +18,11 @@ export type NDGeoJSONLoaderOptions = LoaderOptions & {
 };
 
 /** NDGeoJSONLoader */
-export const NDJSONLoader: LoaderWithParser<ArrayRowTable | ObjectRowTable, Batch, NDGeoJSONLoaderOptions> = {
+export const NDJSONLoader: LoaderWithParser<
+  ArrayRowTable | ObjectRowTable,
+  Batch,
+  NDGeoJSONLoaderOptions
+> = {
   name: 'NDJSON',
   id: 'ndjson',
   module: 'json',
