@@ -1,11 +1,13 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
 import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
+import {ArrayRowTable, ObjectRowTable, Batch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Options for NDGeoJSONLoader */
 export type NDGeoJSONLoaderOptions = LoaderOptions & {
   geojson?: {
     shape?: 'object-row-table';
@@ -15,7 +17,8 @@ export type NDGeoJSONLoaderOptions = LoaderOptions & {
   };
 };
 
-export const NDJSONLoader = {
+/** NDGeoJSONLoader */
+export const NDJSONLoader: LoaderWithParser<ArrayRowTable | ObjectRowTable, Batch, NDGeoJSONLoaderOptions> = {
   name: 'NDJSON',
   id: 'ndjson',
   module: 'json',
@@ -42,5 +45,3 @@ export const NDJSONLoader = {
     }
   }
 };
-
-export const _typecheckNDJSONLoader: LoaderWithParser = NDJSONLoader;

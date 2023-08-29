@@ -12,7 +12,7 @@ export type GeoPackageLoaderResult = Tables<ObjectRowTable> | Record<string, Fea
 
 export type GeoPackageLoaderOptions = LoaderOptions & {
   geopackage?: {
-    // Use null in Node
+    /** Use null in Node */
     sqlJsCDN: string | null;
   };
   gis?: {

@@ -11,6 +11,7 @@ export type NullLoaderOptions = LoaderOptions & {
   }
 }
 
+/** @todo - loaders should have one return type. Split */
 export type NullLoaderResult = null | {
   arrayBuffer: ArrayBuffer;
   options: NullLoaderOptions;
@@ -20,7 +21,7 @@ export type NullLoaderResult = null | {
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullWorkerLoader: Loader = {
+export const NullWorkerLoader: Loader<NullLoaderResult, NullLoaderResult, NullLoaderOptions> = {
   name: 'Null loader',
   id: 'null',
   module: 'core',
