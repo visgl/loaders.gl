@@ -27,5 +27,3 @@ export const PLYLoader: Loader<PLYMesh, never, LoaderOptions> = {
     ply: {}
   }
 };
-
-export const _typecheckPLYLoader: Loader = PLYLoader;

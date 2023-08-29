@@ -39,5 +39,3 @@ export const ExcelLoader: Loader<ObjectRowTable, never, ExcelLoaderOptions> = {
   binary: true,
   options: DEFAULT_EXCEL_LOADER_OPTIONS
 };
-
-export const _typecheckLoader: Loader = ExcelLoader;

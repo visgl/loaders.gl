@@ -27,5 +27,3 @@ export const MTLLoader: Loader<MTLMaterial[], never, LoaderOptions> = {
     mtl: {}
   }
 };
-
-export const _typecheckMTLLoader: Loader = MTLLoader;

@@ -68,12 +68,12 @@ const SQL_TYPE_MAPPING: {[type in SQLiteTypes | GeoPackageGeometryTypes]: DataTy
   GEOMETRYCOLLECTION: 'binary'
 };
 
-export default async function parseGeoPackage(
+export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<Tables<ObjectRowTable> | Record<string, Feature[]>> {
+): Promise<Tables<ObjectRowTable>> {
   const {sqlJsCDN = DEFAULT_SQLJS_CDN} = options?.geopackage || {};
-  const {reproject = false, _targetCrs = 'WGS84', format = 'tables'} = options?.gis || {};
+  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
 
   const db = await loadDatabase(arrayBuffer, sqlJsCDN);
   const tables = listVectorTables(db);
@@ -94,10 +94,6 @@ export default async function parseGeoPackage(
         _targetCrs
       })
     });
-  }
-
-  if (format === 'geojson') {
-    return formatTablesAsGeojson(outputTables);
   }
 
   return outputTables;
@@ -473,12 +469,4 @@ function getSchema(db: Database, tableName: string): Schema {
   }
 
   return {fields, metadata: {}};
-}
-
-function formatTablesAsGeojson(tables: Tables<ObjectRowTable>): Record<string, Feature[]> {
-  const geojsonMap = {};
-  for (const table of tables.tables) {
-    geojsonMap[table.name] = table.table.data;
-  }
-  return geojsonMap;
 }
