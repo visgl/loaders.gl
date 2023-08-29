@@ -7,7 +7,7 @@ import {parse3tz as parse3tzFromProvider} from './tz3/tz3-parser';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** options to load data from 3tz */
-export type TZ3LoaderOptions = LoaderOptions & {
+export type Tiles3DArchiveFileLoaderOptions = LoaderOptions & {
   tz3?: {
     /** path inside the 3tz archive */
     path?: string;
@@ -17,12 +17,16 @@ export type TZ3LoaderOptions = LoaderOptions & {
 /**
  * Loader for 3tz packages
  */
-export const TZ3Loader: LoaderWithParser<Buffer, never, TZ3LoaderOptions> = {
+export const Tiles3DArchiveFileLoader: LoaderWithParser<
+  ArrayBuffer,
+  never,
+  Tiles3DArchiveFileLoaderOptions
+> = {
   name: '3tz',
   id: '3tz',
   module: 'i3s',
   version: VERSION,
-  mimeTypes: ['application/octet-stream'],
+  mimeTypes: ['application/octet-stream', 'application/vnd.maxar.archive.3tz+zip'],
   parse: parse3tz,
   extensions: ['3tz'],
   options: {}
@@ -34,8 +38,10 @@ export const TZ3Loader: LoaderWithParser<Buffer, never, TZ3LoaderOptions> = {
  * @param options options
  * @returns requested file
  */
-async function parse3tz(data: ArrayBuffer, options: TZ3LoaderOptions = {}) {
-  return (await parse3tzFromProvider(new DataViewFile(new DataView(data)))).getFile(
-    options.tz3?.path ?? ''
-  );
+async function parse3tz(
+  data: ArrayBuffer,
+  options: Tiles3DArchiveFileLoaderOptions = {}
+): Promise<ArrayBuffer> {
+  const archive = await parse3tzFromProvider(new DataViewFile(new DataView(data)));
+  return archive.getFile(options.tz3?.path ?? '');
 }
