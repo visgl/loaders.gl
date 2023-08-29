@@ -5,7 +5,7 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 type FlatGeobufLoaderOptions = LoaderOptions & {
-  flatgeobuf: {}
+  flatgeobuf: {};
 };
 
 export const FlatGeobufLoader: Loader<any, any, FlatGeobufLoaderOptions> = {

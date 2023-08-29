@@ -24,12 +24,7 @@ test('parseWithWorker', async (t) => {
     custom: 'custom'
   };
   const testContext = {response: testResponse, fetch, parse: async (arrayBuffer) => arrayBuffer};
-  const result = await parseWithWorker(
-    NullWorkerLoader,
-    testData,
-    testOptions,
-    testContext
-  );
+  const result = await parseWithWorker(NullWorkerLoader, testData, testOptions, testContext);
 
   t.equal(result, null);
 
