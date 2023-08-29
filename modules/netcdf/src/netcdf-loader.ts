@@ -14,13 +14,14 @@ export type NetCDF = {
 export type NetCDFLoaderOptions = LoaderOptions & {
   netcdf?: {
     loadData?: boolean;
+    loadVariables?: boolean;
   };
 };
 
 /**
  * Worker loader for NETCDF
  */
-export const NetCDFWorkerLoader = {
+export const NetCDFWorkerLoader: Loader<NetCDF, never, NetCDFLoaderOptions> = {
   name: 'NetCDF',
   id: 'mvt',
   module: 'mvt',
@@ -42,7 +43,7 @@ export const NetCDFWorkerLoader = {
 /**
  * Loader for the NetCDF format
  */
-export const NetCDFLoader = {
+export const NetCDFLoader: LoaderWithParser<NetCDF, never, NetCDFLoaderOptions> = {
   ...NetCDFWorkerLoader,
   parse: async (arrayBuffer, options) => parseNetCDF(arrayBuffer, options),
   binary: true
@@ -61,7 +62,3 @@ function parseNetCDF(arrayBuffer: ArrayBuffer, options?: NetCDFLoaderOptions): N
     data: variables
   };
 }
-
-// Type tests
-export const _typecheckNetCDFWorkerLoader: Loader = NetCDFWorkerLoader;
-export const _typecheckNetCDFLoader: LoaderWithParser = NetCDFLoader;

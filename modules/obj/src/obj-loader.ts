@@ -30,5 +30,3 @@ function testOBJFile(text: string): boolean {
   // TODO - There could be comment line first
   return text[0] === 'v';
 }
-
-export const _typecheckOBJLoader: Loader = OBJLoader;

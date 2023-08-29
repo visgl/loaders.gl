@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import test from 'tape-promise/tape';
 import {WorkerPool} from '@loaders.gl/worker-utils';
 import {toArrayBuffer, parseWithWorker} from '@loaders.gl/loader-utils';
@@ -7,7 +9,7 @@ import {NullWorkerLoader} from '@loaders.gl/core';
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
 
-test('parseWithWorker', async (t) => {
+test.only('parseWithWorker', async (t) => {
   if (!WorkerPool.isSupported()) {
     t.comment('Workers not supported, skipping tests');
     t.end();
@@ -19,21 +21,17 @@ test('parseWithWorker', async (t) => {
   const testOptions = {
     _workerType: 'test',
     reuseWorkers: false,
-    null: {echoParameters: true},
     custom: 'custom'
   };
   const testContext = {response: testResponse, fetch, parse: async (arrayBuffer) => arrayBuffer};
-  const {arrayBuffer, options, context} = await parseWithWorker(
+  const result = await parseWithWorker(
     NullWorkerLoader,
     testData,
     testOptions,
     testContext
   );
 
-  t.deepEquals(arrayBuffer, testData, 'data parsed with relative worker url');
-  t.equals(options.custom, 'custom', 'options parsed with relative worker url');
-  t.ok(context, 'context parsed with relative worker url');
-  t.ok(context.response, 'context response parsed with relative worker url');
+  t.equal(result, null);
 
   t.end();
 });

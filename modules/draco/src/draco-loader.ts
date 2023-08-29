@@ -39,5 +39,3 @@ export const DracoLoader: Loader<DracoMesh, never, DracoLoaderOptions> = {
   tests: ['DRACO'],
   options: DEFAULT_DRACO_OPTIONS
 };
-
-export const _TypecheckDracoLoader: Loader = DracoLoader;
