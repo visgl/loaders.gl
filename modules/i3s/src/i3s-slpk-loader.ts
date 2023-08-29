@@ -19,7 +19,7 @@ export type SLPKLoaderOptions = LoaderOptions & {
 /**
  * Loader for SLPK - Scene Layer Package
  */
-export const SLPKLoader: LoaderWithParser<Buffer, never, SLPKLoaderOptions> = {
+export const SLPKLoader: LoaderWithParser<ArrayBuffer, never, SLPKLoaderOptions> = {
   name: 'I3S SLPK (Scene Layer Package)',
   id: 'slpk',
   module: 'i3s',

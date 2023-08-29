@@ -21,7 +21,7 @@ export type I3SLoaderOptions = LoaderOptions & {
 /**
  * Loader for I3S - Indexed 3D Scene Layer
  */
-export const I3SLoader: LoaderWithParser = {
+export const I3SLoader: LoaderWithParser<unknown, never, LoaderOptions> = {
   name: 'I3S (Indexed Scene Layers)',
   id: 'i3s',
   module: 'i3s',
