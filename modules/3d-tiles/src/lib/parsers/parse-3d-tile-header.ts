@@ -89,7 +89,24 @@ function resolveUri(uri: string = '', basePath: string): string {
     return uri;
   }
 
-  return `${basePath}/${uri}`;
+  return concatenateRelativePaths(basePath, uri);
+}
+
+function concatenateRelativePaths(basePath: string, uri: string): string {
+  const uriParts = uri.split('/');
+  const basePathParts = basePath.split('/');
+  if (basePathParts[basePathParts.length - 1] === '') {
+    basePathParts.splice(-1, 1);
+  }
+  if (uriParts[0] === '.') {
+    uriParts.splice(0, 1);
+  }
+  while (uriParts[0] === '..' && basePathParts.length) {
+    uriParts.splice(0, 1);
+    basePathParts.splice(-1, 1);
+  }
+  const resultParts = basePathParts.concat(uriParts);
+  return resultParts.join('/');
 }
 
 export function normalizeTileData(

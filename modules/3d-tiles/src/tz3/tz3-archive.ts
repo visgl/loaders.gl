@@ -43,7 +43,7 @@ export class TZ3Archive {
       data = await this.getFileBytes(path);
     }
     if (!data) {
-      throw new Error('No such file in the archieve');
+      throw new Error('No such file in the archive');
     }
     const decompressedFile = Buffer.from(data);
 

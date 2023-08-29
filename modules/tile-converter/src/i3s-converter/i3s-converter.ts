@@ -67,7 +67,7 @@ import {
   getFieldAttributeType
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
-import {loadNestedTileset, loadTile3DContent} from './helpers/load-3d-tiles';
+import {loadNestedTileset, loadTile3DContent, loadWithOptions} from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
@@ -251,7 +251,7 @@ export default class I3SConverter {
       if (preloadOptions.headers) {
         this.loadOptions.fetch = {headers: preloadOptions.headers};
       }
-      this.sourceTileset = await load(tilesetUrl, this.Loader, this.loadOptions);
+      this.sourceTileset = await loadWithOptions(tilesetUrl, this.Loader, this.loadOptions);
 
       const preprocessResult = await this.preprocessConversion();
 

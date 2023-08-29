@@ -4,6 +4,7 @@ export {CesiumIonLoader} from './cesium-ion-loader';
 export {Tile3DSubtreeLoader} from './tile-3d-subtree-loader';
 export type {TZ3LoaderOptions} from './tz3-loader';
 export {TZ3Loader} from './tz3-loader';
+export {Tiles3DArchiveFileSystem} from './lib/filesystems/tiles-3d-archive-file-system';
 
 // WRITERS
 export {Tile3DWriter} from './tile-3d-writer';
