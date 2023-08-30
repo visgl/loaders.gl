@@ -67,7 +67,12 @@ import {
   getFieldAttributeType
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
-import {loadNestedTileset, loadTile3DContent, loadWithOptions} from './helpers/load-3d-tiles';
+import {
+  isTilesetType,
+  loadNestedTileset,
+  loadTile3DContent,
+  loadWithOptions
+} from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
@@ -349,7 +354,8 @@ export default class I3SConverter {
     sourceTile: Tiles3DTileJSONPostprocessed,
     traversalProps: null
   ): Promise<null> {
-    if (sourceTile.type === 'json') {
+    const isTileset = isTilesetType(sourceTile.type);
+    if (isTileset) {
       await loadNestedTileset(this.sourceTileset, sourceTile, this.loadOptions);
       return null;
     }
@@ -562,8 +568,9 @@ export default class I3SConverter {
     sourceTile: Tiles3DTileJSONPostprocessed,
     traversalProps: TraversalConversionProps
   ): Promise<TraversalConversionProps> {
-    if (sourceTile.type === 'json' || sourceTile.type === 'empty') {
-      if (sourceTile.type === 'json') {
+    const isTileset = isTilesetType(sourceTile.type);
+    if (isTileset || sourceTile.type === 'empty') {
+      if (isTileset) {
         if (sourceTile.id) {
           console.log(`[load]: ${sourceTile.id}`); // eslint-disable-line
         }

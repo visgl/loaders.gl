@@ -49,7 +49,7 @@ export class ZipFileSystem implements FileSystem {
   async destroy() {
     const fileProvider = await this.fileProvider;
     if (fileProvider) {
-      fileProvider.destroy();
+      await fileProvider.destroy();
     }
   }
 

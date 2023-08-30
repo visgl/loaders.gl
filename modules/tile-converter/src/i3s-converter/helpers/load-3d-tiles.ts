@@ -19,7 +19,7 @@ export const loadNestedTileset = async (
   sourceTile: Tiles3DTileJSONPostprocessed,
   tilesetLoadOptions: Tiles3DLoaderOptions
 ): Promise<void> => {
-  const isTileset = sourceTile.type === 'json';
+  const isTileset = isTilesetType(sourceTile.type);
   if (!sourceTileset || !sourceTile.contentUrl || !isTileset) {
     return;
   }
@@ -54,7 +54,7 @@ export const loadTile3DContent = async (
   sourceTile: Tiles3DTileJSONPostprocessed,
   tilesetLoadOptions: Tiles3DLoaderOptions
 ): Promise<Tiles3DTileContent | null> => {
-  const isTileset = sourceTile.type === 'json';
+  const isTileset = isTilesetType(sourceTile.type);
   if (!sourceTileset || !sourceTile.contentUrl || isTileset) {
     return null;
   }
@@ -108,7 +108,12 @@ export async function loadWithOptions(
       ...loadOptions,
       fetch: fileSystem.fetch.bind(fileSystem)
     });
+    await fileSystem.destroy();
     return content;
   }
   return await load(url, loader, loadOptions);
+}
+
+export function isTilesetType(type?: string) {
+  return type === 'json' || type === '3tz';
 }
