@@ -92,19 +92,35 @@ function resolveUri(uri: string = '', basePath: string): string {
   return concatenateRelativePaths(basePath, uri);
 }
 
+/**
+ * Concatenate relative paths properly
+ * @param basePath base path of the file
+ * @param uri relative path of the file
+ * @returns concatenated string
+ * @example if `basePath`==='/a/b/c' and `uri`==='../d', the result will be 'a/b/d'
+ * @example if `basePath`==='/a/b/c' and `uri`==='./d', the result will be 'a/b/c/d'
+ * @example if `basePath`==='/a/b/c/' and `uri`==='../../d', the result will be 'a/d'
+ */
 function concatenateRelativePaths(basePath: string, uri: string): string {
   const uriParts = uri.split('/');
   const basePathParts = basePath.split('/');
+
+  // Ignore closing '/'
   if (basePathParts[basePathParts.length - 1] === '') {
     basePathParts.splice(-1, 1);
   }
+
+  // Handle './'
   if (uriParts[0] === '.') {
     uriParts.splice(0, 1);
   }
+
+  // Handle '../'
   while (uriParts[0] === '..' && basePathParts.length) {
     uriParts.splice(0, 1);
     basePathParts.splice(-1, 1);
   }
+
   const resultParts = basePathParts.concat(uriParts);
   return resultParts.join('/');
 }

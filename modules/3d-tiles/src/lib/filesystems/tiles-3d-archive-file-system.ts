@@ -47,7 +47,12 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
     return super.fetch(filename);
   }
 
-  async parseHashFile(): Promise<void> {
+  /**
+   * Try to get and parse '@3dtilesIndex1@' file, that allows to get direct access
+   * to files inside the archive
+   * @returns void
+   */
+  private async parseHashFile(): Promise<void> {
     if (this.hashData !== undefined) {
       return;
     }
