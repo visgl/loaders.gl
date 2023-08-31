@@ -57,7 +57,7 @@ test('Tiles3DLoader#Tileset file', async (t) => {
 
 test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async (t) => {
   const response = await fetchFile(TILE_B3DM_WITH_DRACO_URL);
-  const tile = await parse(response, [Tiles3DLoader, DracoLoader]);
+  const tile = (await parse(response, [Tiles3DLoader, DracoLoader]));
   t.ok(tile);
   t.ok(tile.gltf);
   t.equals(tile.type, 'b3dm', 'Should parse the correct tiles type.');

@@ -41,7 +41,7 @@ test('CryptoHash#iterator(CSV stream, against external hash)', async (t) => {
   for await (const batch of csvIterator) {
     csv = batch;
   }
-  t.ok(Array.isArray(csv.data), 'parsing from wrapped iterator works');
+  t.ok(Array.isArray(csv?.data), 'parsing from wrapped iterator works');
 
   t.equal(hash, CSV_MD5, 'streaming MD5 hash is correct');
 

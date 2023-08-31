@@ -65,7 +65,7 @@ export function encodeTableInBatches<WriterT extends Writer = Writer>(
   throw new Error('Writer could not encode data in batches');
 }
 
-function getIterator(data) {
+function getIterator(data: any): Iterable<{table: any; start: number; end: number}> {
   const dataIterator = [{table: data, start: 0, end: data.length}];
   return dataIterator;
 }

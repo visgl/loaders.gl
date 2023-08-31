@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderOptions, FetchLike} from '@loaders.gl/loader-utils';
 import {isObject} from '../../javascript-utils/is-type';
 import {fetchFile} from '../fetch/fetch-file';
 import {getGlobalLoaderOptions} from './option-utils';
@@ -13,7 +13,7 @@ import {getGlobalLoaderOptions} from './option-utils';
 export function getFetchFunction(
   options?: LoaderOptions,
   context?: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>
-) {
+): FetchLike {
   const globalOptions = getGlobalLoaderOptions();
 
   const loaderOptions = options || globalOptions;

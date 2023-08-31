@@ -1,10 +1,6 @@
-import type {
-  SyncDataType,
-  Loader,
-  LoaderWithParser,
-  LoaderContext,
-  LoaderOptions
-} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderContext, SyncDataType} from '@loaders.gl/loader-utils';
+import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
 import {assert} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -13,19 +9,45 @@ import {getArrayBufferOrStringFromDataSync} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
 
+// OVERLOADS
+
+/**
+ * Parses `data` synchronously using the specified loader
+ */
+export function parseSync<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
+  data: SyncDataType,
+  loader: LoaderT,
+  options?: OptionsT,
+  context?: LoaderContext
+): LoaderReturnType<LoaderT>;
+
+/**
+ * Parses `data` synchronously by matching one of the supplied loaders
+ */
+export function parseSync(
+  data: SyncDataType,
+  loaders: Loader[],
+  options?: LoaderOptions,
+  context?: LoaderContext
+): any;
+
+/**
+ * Parses `data` synchronously by matching a pre=registered loader
+ */
+export function parseSync(data: SyncDataType, options?: LoaderOptions): any;
+
 /**
  * Parses `data` synchronously using a specified loader
- * @param data
- * @param loaders
- * @param options
- * @param context
  */
 export function parseSync(
   data: SyncDataType,
   loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): any {
+): unknown {
   assert(!context || typeof context === 'object'); // parseSync no longer accepts final url
 
   // Signature: parseSync(data, options)

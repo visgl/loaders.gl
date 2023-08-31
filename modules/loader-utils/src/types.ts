@@ -39,7 +39,9 @@ export type NumberArray = number[] | TypedArray;
 
 export type NumericArray = number[] | TypedArray;
 
-type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
+// FETCH
+
+export type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
 
 // LOADERS
 
@@ -209,9 +211,9 @@ export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderO
     context?: LoaderContext
   ) => DataT;
   /** Parse atomically from a string asynchronously */
-  parseText?: (text: string, options?: LoaderOptionsT) => Promise<DataT>;
+  parseText?: (text: string, options?: LoaderOptionsT, context?: LoaderContext) => Promise<DataT>;
   /** Parse atomically from a string synchronously */
-  parseTextSync?: (text: string, options?: LoaderOptionsT) => DataT;
+  parseTextSync?: (text: string, options?: LoaderOptionsT, context?: LoaderContext) => DataT;
   /** Parse batches of data from an iterator, return an iterator that yield parsed batches. */
   parseInBatches?: (
     iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
