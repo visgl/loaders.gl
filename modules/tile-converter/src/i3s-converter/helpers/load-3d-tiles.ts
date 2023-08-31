@@ -19,7 +19,7 @@ export const loadNestedTileset = async (
   sourceTile: Tiles3DTileJSONPostprocessed,
   tilesetLoadOptions: Tiles3DLoaderOptions
 ): Promise<void> => {
-  const isTileset = isTilesetType(sourceTile.type);
+  const isTileset = isNestedTileset(sourceTile);
   if (!sourceTileset || !sourceTile.contentUrl || !isTileset) {
     return;
   }
@@ -31,7 +31,7 @@ export const loadNestedTileset = async (
       assetGltfUpAxis: (sourceTileset.asset && sourceTileset.asset.gltfUpAxis) || 'Y'
     }
   };
-  const tileContent = await loadWithOptions(
+  const tileContent = await loadFromArchive(
     sourceTile.contentUrl,
     sourceTileset.loader,
     loadOptions
@@ -54,7 +54,7 @@ export const loadTile3DContent = async (
   sourceTile: Tiles3DTileJSONPostprocessed,
   tilesetLoadOptions: Tiles3DLoaderOptions
 ): Promise<Tiles3DTileContent | null> => {
-  const isTileset = isTilesetType(sourceTile.type);
+  const isTileset = isNestedTileset(sourceTile);
   if (!sourceTileset || !sourceTile.contentUrl || isTileset) {
     return null;
   }
@@ -67,7 +67,7 @@ export const loadTile3DContent = async (
       assetGltfUpAxis: (sourceTileset.asset && sourceTileset.asset.gltfUpAxis) || 'Y'
     }
   };
-  const tileContent = await loadWithOptions(
+  const tileContent = await loadFromArchive(
     sourceTile.contentUrl,
     sourceTileset.loader,
     loadOptions
@@ -77,13 +77,13 @@ export const loadTile3DContent = async (
 };
 
 /**
- * Load a resrource with load options and .3tz format support
+ * Load a resource with load options and .3tz format support
  * @param url - resource URL
  * @param loader - loader to parse data (Tiles3DLoader / CesiumIonLoader)
  * @param loadOptions - 3d-tiles loader options
  * @returns 3d-tiles resource
  */
-export async function loadWithOptions(
+export async function loadFromArchive(
   url: string,
   loader: LoaderWithParser,
   loadOptions: Tiles3DLoaderOptions
@@ -114,6 +114,11 @@ export async function loadWithOptions(
   return await load(url, loader, loadOptions);
 }
 
-export function isTilesetType(type?: string) {
-  return type === 'json' || type === '3tz';
+/**
+ * Check if tile is nested tileset
+ * @param tile - 3DTiles header data
+ * @returns true if tile is nested tileset
+ */
+export function isNestedTileset(tile: Tiles3DTileJSONPostprocessed) {
+  return tile?.type === 'json' || tile?.type === '3tz';
 }

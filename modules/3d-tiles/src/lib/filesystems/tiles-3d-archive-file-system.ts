@@ -12,7 +12,10 @@ import {TZ3Archive} from '../../tz3/tz3-archive';
 
 /**
  * FileSystem adapter for a 3tz (3D tiles archive format) file
- * Holds FileProvider object that provides random access to archived files
+ * Holds FileProvider object that provides random access to archived files.
+ * The difference from ZipFileSystem is usage of `@3dtilesIndex1@` index file that increases
+ * access speed to archived files
+ * @see https://github.com/erikdahlstrom/3tz-specification/blob/master/Specification.md
  */
 export class Tiles3DArchiveFileSystem extends ZipFileSystem {
   hashData?: HashElement[] | null;
@@ -26,7 +29,9 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
   }
 
   /**
-   * Implementation of fetch against this file system
+   * Implementation of fetch against this file system.
+   * It tries to take `@3dtilesIndex1@` file from the archive and use it
+   * for faster access to archived files
    * @param filename - name of a file
    * @returns - Response with file data
    */
@@ -66,6 +71,9 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
 
     const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 
+    // '@3dtilesIndex1@' is index file that must be the last in the archive. It allows 
+    // to improve load and read performance when the archive contains a very large number 
+    // of files.
     if (cdFileHeader?.fileName === '@3dtilesIndex1@') {
       const localFileHeader = await parseZipLocalFileHeader(
         cdFileHeader.localHeaderOffset,
