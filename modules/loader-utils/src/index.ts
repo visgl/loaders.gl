@@ -24,7 +24,9 @@ export type {
   TypedArrayConstructor,
   BigTypedArrayConstructor,
   NumberArray,
-  NumericArray
+  NumericArray,
+  // fetch
+  FetchLike
 } from './types';
 
 // GENERAL UTILS

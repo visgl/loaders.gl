@@ -1,9 +1,10 @@
 // loaders.gl, MIT license
 
-import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {DataType, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
-import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
+import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {isResponse} from '../../javascript-utils/is-type';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -14,6 +15,9 @@ import {selectLoader} from './select-loader';
 
 // type LoaderArrayType<T> = T extends (infer Loader)[] ? LoaderOptionsType<Loader> : T
 
+/**
+ * Parses `data` asynchronously using the supplied loaders
+ */
 export async function parse<
   LoaderT extends Loader,
   OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
@@ -24,6 +28,9 @@ export async function parse<
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT>>;
 
+/**
+ * Parses `data` asynchronously by matching one of the supplied loaders
+ */
 export async function parse(
   data: DataType | Promise<DataType>,
   loaders: Loader[],
@@ -31,6 +38,9 @@ export async function parse(
   context?: LoaderContext
 ): Promise<any>;
 
+/**
+ * Parses data asynchronously by matching a pre-registered loader
+ */
 export async function parse(
   data: DataType | Promise<DataType>,
   options?: LoaderOptions
@@ -49,7 +59,7 @@ export async function parse(
   loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<any> {
+): Promise<unknown> {
   assert(!context || typeof context === 'object'); // parse no longer accepts final url
 
   // Signature: parse(data, options, context | url)
@@ -88,7 +98,12 @@ export async function parse(
 
 // TODO: support progress and abort
 // TODO - should accept loader.parseAsyncIterator and concatenate.
-async function parseWithLoader(loader, data, options, context) {
+async function parseWithLoader(
+  loader: Loader,
+  data,
+  options: LoaderOptions,
+  context: LoaderContext
+): Promise<unknown> {
   validateWorkerVersion(loader);
 
   if (isResponse(data)) {
@@ -96,15 +111,17 @@ async function parseWithLoader(loader, data, options, context) {
     const response = data as Response;
     const {ok, redirected, status, statusText, type, url} = response;
     const headers = Object.fromEntries(response.headers.entries());
+    // @ts-expect-error TODO - fix this
     context.response = {headers, ok, redirected, status, statusText, type, url};
   }
 
   data = await getArrayBufferOrStringFromData(data, loader, options);
 
+  const loaderWithParser = loader as LoaderWithParser;
+
   // First check for synchronous text parser, wrap results in promises
-  if (loader.parseTextSync && typeof data === 'string') {
-    options.dataType = 'text';
-    return loader.parseTextSync(data, options, context, loader);
+  if (loaderWithParser.parseTextSync && typeof data === 'string') {
+    return loaderWithParser.parseTextSync(data, options, context);
   }
 
   // If we have a workerUrl and the loader can parse the given options efficiently in a worker
@@ -113,16 +130,16 @@ async function parseWithLoader(loader, data, options, context) {
   }
 
   // Check for asynchronous parser
-  if (loader.parseText && typeof data === 'string') {
-    return await loader.parseText(data, options, context, loader);
+  if (loaderWithParser.parseText && typeof data === 'string') {
+    return await loaderWithParser.parseText(data, options, context);
   }
 
-  if (loader.parse) {
-    return await loader.parse(data, options, context, loader);
+  if (loaderWithParser.parse) {
+    return await loaderWithParser.parse(data, options, context);
   }
 
   // This should not happen, all sync loaders should also offer `parse` function
-  assert(!loader.parseSync);
+  assert(!loaderWithParser.parseSync);
 
   // TBD - If asynchronous parser not available, return null
   throw new Error(`${loader.id} loader - no parser found and worker is disabled`);

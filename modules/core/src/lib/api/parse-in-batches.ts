@@ -1,11 +1,9 @@
+// loaders.gl, MIT license
+
 import type {Batch} from '@loaders.gl/schema';
-import type {
-  BatchableDataType,
-  Loader,
-  LoaderWithParser,
-  LoaderContext,
-  LoaderOptions
-} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderContext, BatchableDataType} from '@loaders.gl/loader-utils';
+import type {LoaderBatchType, LoaderOptionsType} from '@loaders.gl/loader-utils';
 import {assert, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -16,6 +14,37 @@ import {selectLoader} from './select-loader';
 
 // Ensure `parse` is available in context if loader falls back to `parse`
 import {parse} from './parse';
+
+/**
+ * Parses `data` synchronously using a specified loader
+ */
+export async function parseInBatches<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
+  data: BatchableDataType,
+  loader: LoaderT,
+  options?: OptionsT,
+  context?: LoaderContext
+): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+
+/**
+ * Parses `data` using one of the supplied loaders
+ */
+export async function parseInBatches(
+  data: BatchableDataType,
+  loaders: Loader[],
+  options?: LoaderOptions,
+  context?: LoaderContext
+): Promise<AsyncIterable<any>>;
+
+/**
+ * Parses `data` in batches by selecting a pre-registered loader
+ */
+export async function parseInBatches(
+  data: BatchableDataType,
+  options?: LoaderOptions
+): Promise<AsyncIterable<any>>;
 
 /**
  * Parses `data` using a specified loader
@@ -29,7 +58,7 @@ export async function parseInBatches(
   loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<AsyncIterable<any>> {
+): Promise<AsyncIterable<unknown>> {
   assert(!context || typeof context === 'object'); // parseInBatches no longer accepts final url
 
   const loaderArray = Array.isArray(loaders) ? loaders : undefined;
@@ -75,7 +104,7 @@ async function parseWithLoaderInBatches(
   data: BatchableDataType,
   options: LoaderOptions,
   context: LoaderContext
-): Promise<AsyncIterable<any>> {
+): Promise<AsyncIterable<unknown>> {
   const outputIterator = await parseToOutputIterator(loader, data, options, context);
 
   // Generate metadata batch if requested
@@ -112,7 +141,7 @@ async function parseToOutputIterator(
   data: BatchableDataType,
   options: LoaderOptions,
   context: LoaderContext
-): Promise<AsyncIterable<any>> {
+): Promise<AsyncIterable<unknown>> {
   // Get an iterator from the input
   const inputIterator = await getAsyncIterableFromData(data, options);
 

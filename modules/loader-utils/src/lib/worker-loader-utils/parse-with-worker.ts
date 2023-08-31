@@ -34,7 +34,7 @@ export async function parseWithWorker(
   data: any,
   options?: LoaderOptions,
   context?: LoaderContext,
-  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<void>
+  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<unknown>
 ) {
   const name = loader.id; // TODO
   const url = getWorkerURL(loader, options);
