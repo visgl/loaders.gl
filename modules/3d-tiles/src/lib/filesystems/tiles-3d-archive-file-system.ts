@@ -71,8 +71,8 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
 
     const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 
-    // '@3dtilesIndex1@' is index file that must be the last in the archive. It allows 
-    // to improve load and read performance when the archive contains a very large number 
+    // '@3dtilesIndex1@' is index file that must be the last in the archive. It allows
+    // to improve load and read performance when the archive contains a very large number
     // of files.
     if (cdFileHeader?.fileName === '@3dtilesIndex1@') {
       const localFileHeader = await parseZipLocalFileHeader(
