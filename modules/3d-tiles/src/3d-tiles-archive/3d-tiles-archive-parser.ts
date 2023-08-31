@@ -8,7 +8,7 @@ import {
   parseZipLocalFileHeader,
   searchFromTheEnd
 } from '@loaders.gl/zip';
-import {Tiles3DArchive} from './tz3-archive';
+import {Tiles3DArchive} from './3d-tiles-archive-archive';
 
 /**
  * Creates 3tz file handler from raw file
@@ -16,7 +16,7 @@ import {Tiles3DArchive} from './tz3-archive';
  * @param cb is called with information message during parsing
  * @returns 3tz file handler
  */
-export const parse3tz = async (
+export const parse3DTilesArchive = async (
   fileProvider: FileProvider,
   cb?: (msg: string) => void
 ): Promise<Tiles3DArchive> => {
