@@ -19,17 +19,17 @@ const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
  */
 export class Tiles3DArchive {
   /** FileProvider with whe whole file */
-  private zipArchiveFile: FileProvider;
+  private fileProvider: FileProvider;
   /** hash info */
   private hashArray: HashElement[];
 
   /**
    * creates Tiles3DArchive handler
-   * @param zipArchiveFile - FileProvider with whe whole file
+   * @param fileProvider - FileProvider with the whole file
    * @param hashFile - hash info
    */
-  constructor(zipArchiveFile: FileProvider, hashFile: HashElement[]) {
-    this.zipArchiveFile = zipArchiveFile;
+  constructor(fileProvider: FileProvider, hashFile: HashElement[]) {
+    this.fileProvider = fileProvider;
     this.hashArray = hashFile;
   }
 
@@ -48,9 +48,8 @@ export class Tiles3DArchive {
     if (!data) {
       throw new Error('No such file in the archieve');
     }
-    const decompressedFile = Buffer.from(data);
 
-    return decompressedFile.buffer;
+    return data;
   }
 
   /**
@@ -65,12 +64,12 @@ export class Tiles3DArchive {
       return null;
     }
 
-    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.zipArchiveFile);
+    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.fileProvider);
     if (!localFileHeader) {
       return null;
     }
 
-    const compressedFile = await this.zipArchiveFile.slice(
+    const compressedFile = await this.fileProvider.slice(
       localFileHeader.fileDataOffset,
       localFileHeader.fileDataOffset + localFileHeader.compressedSize
     );

@@ -27,7 +27,7 @@ export const Tiles3DArchiveFileLoader: LoaderWithParser<
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/octet-stream', 'application/vnd.maxar.archive.3tz+zip'],
-  parse: parse3tz,
+  parse: parse3DTilesArchive,
   extensions: ['3tz'],
   options: {}
 };
@@ -38,7 +38,7 @@ export const Tiles3DArchiveFileLoader: LoaderWithParser<
  * @param options options
  * @returns requested file
  */
-async function parse3tz(
+async function parse3DTilesArchive(
   data: ArrayBuffer,
   options: Tiles3DArchiveFileLoaderOptions = {}
 ): Promise<ArrayBuffer> {
