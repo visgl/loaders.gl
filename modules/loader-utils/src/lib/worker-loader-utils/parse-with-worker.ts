@@ -4,7 +4,7 @@ import {
   WorkerMessagePayload,
   isBrowser
 } from '@loaders.gl/worker-utils';
-import type {Loader, LoaderOptions, LoaderContext} from '../../types';
+import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
 import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
 
 /**

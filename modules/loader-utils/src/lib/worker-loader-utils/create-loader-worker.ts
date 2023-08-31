@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import type {LoaderWithParser} from '../../types';
+import type {LoaderWithParser} from '../../loader-types';
 import {WorkerBody} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
 

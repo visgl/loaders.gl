@@ -179,7 +179,7 @@ function getVectorTable(
     });
   }
 
-  const geojsonFeatures: object[] = [];
+  const geojsonFeatures: Feature<Geometry | null>[] = [];
   for (const row of values) {
     const geojsonFeature = constructGeoJsonFeature(
       columns,
@@ -196,6 +196,7 @@ function getVectorTable(
   if (projection) {
     return {
       shape: 'object-row-table',
+      // @ts-expect-error TODO - null geometries causing problems...
       data: transformGeoJsonCoords(geojsonFeatures, projection.project),
       schema
     };

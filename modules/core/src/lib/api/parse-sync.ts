@@ -1,7 +1,8 @@
+// loaders.gl, MIT license
+
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LoaderContext, SyncDataType} from '@loaders.gl/loader-utils';
 import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
-import {assert} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -48,8 +49,6 @@ export function parseSync(
   options?: LoaderOptions,
   context?: LoaderContext
 ): unknown {
-  assert(!context || typeof context === 'object'); // parseSync no longer accepts final url
-
   // Signature: parseSync(data, options)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {

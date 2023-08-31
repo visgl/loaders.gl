@@ -4,7 +4,7 @@ import type {Batch} from '@loaders.gl/schema';
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LoaderContext, BatchableDataType} from '@loaders.gl/loader-utils';
 import type {LoaderBatchType, LoaderOptionsType} from '@loaders.gl/loader-utils';
-import {assert, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';
@@ -59,8 +59,6 @@ export async function parseInBatches(
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
-  assert(!context || typeof context === 'object'); // parseInBatches no longer accepts final url
-
   const loaderArray = Array.isArray(loaders) ? loaders : undefined;
 
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
