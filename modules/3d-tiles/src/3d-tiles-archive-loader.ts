@@ -8,7 +8,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** options to load data from 3tz */
 export type Tiles3DArchiveFileLoaderOptions = LoaderOptions & {
-  tz3?: {
+  '3d-tiles-archive'?: {
     /** path inside the 3tz archive */
     path?: string;
   };
@@ -43,5 +43,5 @@ async function parse3DTilesArchive(
   options: Tiles3DArchiveFileLoaderOptions = {}
 ): Promise<ArrayBuffer> {
   const archive = await parse3DTilesArchiveFromProvider(new DataViewFile(new DataView(data)));
-  return archive.getFile(options.tz3?.path ?? '');
+  return archive.getFile(options['3d-tiles-archive']?.path ?? '');
 }
