@@ -43,7 +43,15 @@ export default async function fetchProgress(
 // Forward to original streams controller
 // TODO - this causes a crazy deep "async stack"... rewrite as async iterator?
 // eslint-disable-next-line max-params
-async function read(controller, reader, loadedBytes, totalBytes, onProgress, onDone, onError) {
+async function read(
+  controller: any, 
+  reader: any, 
+  loadedBytes: number, 
+  totalBytes: number, 
+  onProgress: Function, 
+  onDone: Function, 
+  onError: Function
+): Promise<void> {
   try {
     const {done, value} = await reader.read();
     if (done) {

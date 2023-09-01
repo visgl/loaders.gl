@@ -52,7 +52,7 @@ export function getLoaderContext(
 export function getLoadersFromContext(
   loaders: Loader[] | Loader | undefined,
   context?: LoaderContext
-) {
+  ): Loader | Loader[] | undefined {
   // A single loader (non-array) indicates no selection desired. Force select.
   if (loaders && !Array.isArray(loaders)) {
     return loaders;
@@ -68,5 +68,5 @@ export function getLoadersFromContext(
     candidateLoaders = candidateLoaders ? [...candidateLoaders, ...contextLoaders] : contextLoaders;
   }
   // If no loaders, return null to look in globally registered loaders
-  return candidateLoaders && candidateLoaders.length ? candidateLoaders : null;
+  return candidateLoaders && candidateLoaders.length ? candidateLoaders : undefined;
 }

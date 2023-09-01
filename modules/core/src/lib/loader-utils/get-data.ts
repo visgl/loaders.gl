@@ -127,6 +127,7 @@ export async function getAsyncIterableFromData(
   }
 
   if (isAsyncIterable(data)) {
+    // @ts-ignore
     return data[Symbol.asyncIterator]();
   }
 

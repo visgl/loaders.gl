@@ -13,8 +13,11 @@ export function makeStream<ArrayBuffer>(
   source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   options?: ReadableOptions
 ): ReadableType {
+  // @ts-ignore AsyncGenerator
   const iterator = source[Symbol.asyncIterator]
+    // @ts-ignore AsyncGenerator
     ? source[Symbol.asyncIterator]()
+    // @ts-ignore AsyncGenerator
     : source[Symbol.iterator]();
   return new AsyncIterableReadable(iterator, options);
 }

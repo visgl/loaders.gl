@@ -70,7 +70,7 @@ export function parseSync(
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, candidateLoaders);
+  options = normalizeOptions(options, loader, candidateLoaders as Loader[] | undefined);
 
   // Extract a url for auto detection
   const url = getResourceUrl(data);

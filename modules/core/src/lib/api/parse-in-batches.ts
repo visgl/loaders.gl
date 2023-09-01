@@ -121,7 +121,7 @@ async function parseWithLoaderInBatches(
     bytesUsed: 0
   };
 
-  async function* makeMetadataBatchIterator(iterator) {
+  async function* makeMetadataBatchIterator(iterator: Iterable<unknown> | AsyncIterable<unknown>): AsyncIterable<unknown> {
     yield metadataBatch;
     yield* iterator;
   }
