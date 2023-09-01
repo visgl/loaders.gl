@@ -3,7 +3,7 @@
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {LoaderContext} from 'modules/loader-utils/dist';
+import {LoaderContext} from '@loaders.gl/loader-utils';
 
 export type NullLoaderOptions = LoaderOptions & {
   null?: {};

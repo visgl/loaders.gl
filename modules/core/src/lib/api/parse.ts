@@ -16,7 +16,7 @@ import {selectLoader} from './select-loader';
 // type LoaderArrayType<T> = T extends (infer Loader)[] ? LoaderOptionsType<Loader> : T
 
 /**
- * Parses `data` asynchronously using the supplied loaders
+ * Parses `data` asynchronously using the supplied loader
  */
 export async function parse<
   LoaderT extends Loader,
@@ -29,7 +29,7 @@ export async function parse<
 ): Promise<LoaderReturnType<LoaderT>>;
 
 /**
- * Parses `data` asynchronously by matching one of the supplied loaders
+ * Parses `data` asynchronously by matching one of the supplied loader
  */
 export async function parse(
   data: DataType | Promise<DataType>,
@@ -60,8 +60,6 @@ export async function parse(
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<unknown> {
-  assert(!context || typeof context === 'object'); // parse no longer accepts final url
-
   // Signature: parse(data, options, context | url)
   // Uses registered loaders
   if (loaders && !Array.isArray(loaders) && !isLoaderObject(loaders)) {

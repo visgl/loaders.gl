@@ -9,34 +9,11 @@ When using loaders.gl v4.0 on Node.js v18+, you no longer need to import the
 
 ## Upgrading to loaders.gl v4.0
 
-**Polyfills**
-
-If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` 
-function under Node.js that supported fetching from local files:
-- You no longer need to import the `@loaders.gl/polyfills` module to get access to the global `fetch()`function 
-- To fetch from local files, you now need to use `fetchFile()` instead.
-
-```typescript
-import {fetchFile} from '@loaders.gl/core';
-const response = await fetchFile('/path/to/local/file');
-...
-```
-
-Note that `fetchFile` is called by all core `load()` functions unless the fetch function is overridden through
-loader options.
-
-Details: The expectation is that loaders.gl v4.0+ will be used with Node.js version 18 and higher,
-which now provide a built-in browser-compatible `fetch()` function by default.
-This new built-in Node.js `fetch` function does not support reading from the file system,
-and loaders.gl v4.0 aligns with this practice.
-
 **Typed Loaders**
 
 Loaders now return typed data. While this sudden injection of types into previously untyped code can generated type errors in applications that have been making the wrong assumptions about what was returned from loaders, those errors will likely be valid and should just be fixed in the application.
 
 In the interest of offering the most rigorous typing of returned data, some loaders now offer fewer options for the returned data type, and the trend in loaders.gl 3.x of offering a growing selection of return formats (or `shapes`) from each loader has now been reversed, in favor of offering a single core return data type, accompanied by optional conversion functions.
-
-- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
 
 **GLTF**
 
@@ -61,6 +38,27 @@ import {deserializeArrowSchema} from '@loaders.gl/schema-utils`;
 const table = load(url, ParquetLoader);
 const arrowSchema = deserializeArrowSchema(table.schema);
 ```
+
+**Polyfills**
+
+If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` 
+function under Node.js that supported fetching from local files:
+- You no longer need to import the `@loaders.gl/polyfills` module to get access to the global `fetch()`function 
+- To fetch from local files, you now need to use `fetchFile()` instead.
+
+```typescript
+import {fetchFile} from '@loaders.gl/core';
+const response = await fetchFile('/path/to/local/file');
+...
+```
+
+Note that `fetchFile` is called by all core `load()` functions unless the fetch function is overridden through
+loader options.
+
+Details: The expectation is that loaders.gl v4.0+ will be used with Node.js version 18 and higher,
+which now provide a built-in browser-compatible `fetch()` function by default.
+This new built-in Node.js `fetch` function does not support reading from the file system,
+and loaders.gl v4.0 aligns with this practice.
 
 ## Upgrading to v3.4
 

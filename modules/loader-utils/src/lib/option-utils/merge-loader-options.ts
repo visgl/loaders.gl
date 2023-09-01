@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import {LoaderOptions} from '../../types';
+import {LoaderOptions} from '../../loader-types';
 
 /**
  *

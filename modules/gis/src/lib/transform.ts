@@ -1,4 +1,4 @@
-import type {BinaryFeatures, BinaryGeometry} from '@loaders.gl/schema';
+import type {BinaryFeatures, BinaryGeometry, Feature} from '@loaders.gl/schema';
 
 type TransformCoordinate = (coord: number[]) => number[];
 
@@ -44,9 +44,9 @@ function transformBinaryGeometryPositions(binaryGeometry: BinaryGeometry, fn: Tr
  * @return          Transformed GeoJSON features
  */
 export function transformGeoJsonCoords(
-  features: object[],
+  features: Feature[],
   fn: (coord: number[]) => number[]
-): object[] {
+): Feature[] {
   for (const feature of features) {
     // @ts-ignore
     feature.geometry.coordinates = coordMap(feature.geometry.coordinates, fn);
@@ -54,16 +54,16 @@ export function transformGeoJsonCoords(
   return features;
 }
 
-function coordMap(array, fn) {
+function coordMap(array: unknown, fn: (coord: number[]) => number[]): unknown[] {
   if (isCoord(array)) {
-    return fn(array);
+    return fn(array as number[]);
   }
 
-  return array.map((item) => {
+  return (array as unknown[]).map((item) => {
     return coordMap(item, fn);
   });
 }
 
-function isCoord(array) {
-  return Number.isFinite(array[0]) && Number.isFinite(array[1]);
+function isCoord(array: unknown) {
+  return Array.isArray(array) && Number.isFinite(array[0]) && Number.isFinite(array[1]);
 }

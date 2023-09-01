@@ -1,4 +1,4 @@
-import type {LoaderWithParser, LoaderOptions} from './types';
+import type {LoaderWithParser, LoaderOptions} from './loader-types';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline

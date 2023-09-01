@@ -70,15 +70,26 @@ Release Date: TBD, Q3-2022
 
 A major release that brings: 
 
-- Improved typings:`load` and `parse` APIs now infer strict types for both loader options and parsed data from the supplied loader object.
-- Integrates with Apache Arrow JS v9+
-- `Writers` - new writers for several formats.
+Feature Highlights:
+- Typed loaders: loaders now encode the type of both parsed data and options.
+- Type inference: `load*()` and `parse*()` APIs now infer strict types for both loader options and parsed data from the supplied loader object.
 - Schema types that support cross-worker schema and table exchange (a "serialized Apache Arrow" representation).
-- [File format documentation](/docs/formats?README) - provides additional informationa about the various file formats supported by loaders.gl.
+- `Writers` - writers are now provided for a few formats.
+
+Integration:
+- Node.js v18 support
+- Integration with Apache Arrow JS v9+
+
+Documentation:
+- [File format documentation](/docs/formats?README) - a growing list of articles that provide additional information about the various file formats supported by loaders.gl.
 
 **@loaders.gl/core**
 
 - `fetchFile()` now supports fetching from local filesystem in Node.js (The global fetch function is no longer modified to support this).
+
+**@loaders.gl/loader-utils**
+
+- `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()` - new functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
 
 **@loaders.gl/arrow**
 
@@ -87,15 +98,24 @@ A major release that brings:
 
 **@loaders.gl/compression**
 
-- `DeflateCompression` and `GzipCompression` now use [`fflate`](https://101arrowz.github.io/fflate/) instead of [`pako`](http://nodeca.github.io/pako/), providing signficantly better performance and smaller bundle size.
+- `DeflateCompression` and `GzipCompression` now use [`fflate`](https://101arrowz.github.io/fflate/) instead of [`pako`](http://nodeca.github.io/pako/), providing ~20% better performance and smaller bundle size.
 
-**@loaders.gl/gltf**
+**@loaders.gl/3d-tiles**
 
-- Stricter typing (see upgrade-guide)
+- `Tiles3DArchiveLoader`
+- `S2`
+
+**@loaders.gl/tile-converter**
+
+- Support new 3D Tiles extensions
+
+**@loaders.gl/zip**
+
+- `ZipArchive` 
 
 **loaders.gl/polyfills**
 
-- Polyfills no longer installs a 
+- Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills, instead leveraging built-in support in Node.js v18+.
 
 ## v3.4
 

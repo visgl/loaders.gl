@@ -31,6 +31,7 @@
         "items": [
           "developer-guide/dependencies",
           "developer-guide/creating-loaders-and-writers",
+          "developer-guide/composite-loaders",
           "developer-guide/error-handling",
           "developer-guide/dev-env"
         ]
@@ -165,9 +166,17 @@
           "modules/core/api-reference/set-path-prefix",
           "modules/core/api-reference/binary-utilities",
           "modules/core/api-reference/iterator-utilities",
-          "modules/loader-utils/api-reference/request-scheduler",
           "specifications/loader-object-format",
           "specifications/writer-object-format"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/loader-utils",
+        "items": [
+          "modules/loader-utils/README",
+          "modules/loader-utils/api-reference/request-scheduler",
+          "modules/loader-utils/api-reference/parse-with-context"
         ]
       },
       {
