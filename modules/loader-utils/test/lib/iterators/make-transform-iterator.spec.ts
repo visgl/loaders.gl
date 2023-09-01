@@ -65,7 +65,7 @@ function compareArrayBuffers(a, b) {
 }
 
 // Tests that iterator input and non-streaming loader does not crash
-test.only('byteLengthTransform#non-streaming', async (t) => {
+test('byteLengthTransform#non-streaming', async (t) => {
   // Run a streaming digest on all test cases.
   let hash;
 
@@ -82,7 +82,6 @@ test.only('byteLengthTransform#non-streaming', async (t) => {
   let iterator = makeIterator(response);
   iterator = crc32.hashBatches(iterator);
 
-  debugger;
   const batchIterator = await parseInBatches(iterator, ShapefileLoader);
   for await (const batch of batchIterator) {
     t.ok(batch, 'streaming hash is correct');
