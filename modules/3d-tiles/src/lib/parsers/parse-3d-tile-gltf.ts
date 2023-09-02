@@ -1,6 +1,8 @@
-import type {LoaderContext} from '@loaders.gl/loader-utils';
-import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
+// loaders.gl, MIT license
+
+import {parseFromContext, LoaderContext} from '@loaders.gl/loader-utils';
 import {_getMemoryUsageGLTF, GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
+import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import {Tiles3DTileContent} from '../../types';
 
 export async function parseGltf3DTile(
@@ -14,17 +16,15 @@ export async function parseGltf3DTile(
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
   tile.rotateYtoZ = true;
   // Save gltf up axis
-  tile.gltfUpAxis =
-    options?.['3d-tiles'] && options['3d-tiles'].assetGltfUpAxis
-      ? options['3d-tiles'].assetGltfUpAxis
-      : 'Y';
+  tile.gltfUpAxis = options?.['3d-tiles']?.assetGltfUpAxis
+    ? options['3d-tiles'].assetGltfUpAxis
+    : 'Y';
 
   if (options?.['3d-tiles']?.loadGLTF) {
     if (!context) {
       return;
     }
-    const {parse} = context;
-    const gltfWithBuffers = await parse(arrayBuffer, GLTFLoader, options, context);
+    const gltfWithBuffers = await parseFromContext(arrayBuffer, GLTFLoader, options, context);
     tile.gltf = postProcessGLTF(gltfWithBuffers);
     tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
   } else {

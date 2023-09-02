@@ -89,7 +89,11 @@ export async function parse(
   options = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
 
   // Get a context (if already present, will be unchanged)
-  context = getLoaderContext({url, parse, loaders: candidateLoaders}, options, context || null);
+  context = getLoaderContext(
+    {url, _parse: parse, loaders: candidateLoaders},
+    options,
+    context || null
+  );
 
   return await parseWithLoader(loader, data, options, context);
 }

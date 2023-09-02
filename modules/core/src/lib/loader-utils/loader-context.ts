@@ -3,6 +3,9 @@ import {getFetchFunction} from './get-fetch-function';
 import {extractQueryString, stripQueryString} from '../utils/url-utils';
 import {path} from '@loaders.gl/loader-utils';
 
+/** Properties for creating an updated context */
+type LoaderContextProps = Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>;
+
 /**
  * "sub" loaders invoked by other loaders get a "context" injected on `this`
  * The context will inject core methods like `parse` and contain information
@@ -13,7 +16,7 @@ import {path} from '@loaders.gl/loader-utils';
  * @param previousContext
  */
 export function getLoaderContext(
-  context: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>,
+  context: LoaderContextProps,
   options: LoaderOptions,
   parentContext: LoaderContext | null
 ): LoaderContext {

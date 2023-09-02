@@ -2,7 +2,12 @@
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
 /* eslint-disable camelcase */
 
-/* eslint-disable camelcase */
+import type {LoaderContext} from '@loaders.gl/loader-utils';
+import {sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
+
+import {DracoLoader} from '@loaders.gl/draco';
+import {DracoLoaderOptions} from '@loaders.gl/draco';
+
 import type {
   GLTF,
   GLTFAccessor,
@@ -11,10 +16,6 @@ import type {
 } from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
-import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {DracoLoader} from '@loaders.gl/draco';
-import {DracoLoaderOptions, DracoMesh} from '@loaders.gl/draco';
-import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
@@ -99,12 +100,16 @@ async function decompressPrimitive(
   // TODO - remove when `parse` is fixed to handle `byteOffset`s
   const bufferCopy = sliceArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
-  const {parse} = context;
   const dracoOptions: DracoLoaderOptions = {...options};
 
   // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
-  const decodedData = (await parse(bufferCopy, DracoLoader, dracoOptions, context)) as DracoMesh;
+  const decodedData = (await parseFromContext(
+    bufferCopy,
+    DracoLoader,
+    dracoOptions,
+    context
+  ));
 
   const decodedAttributes: {[key: string]: GLTFAccessor} = getGLTFAccessors(decodedData.attributes);
 
