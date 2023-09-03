@@ -6,7 +6,7 @@ import {
 import type {
   GLTF_EXT_feature_metadata_attribute,
   GLTF_EXT_feature_metadata_primitive
-} from 'modules/gltf/src/lib/types/gltf-json-schema';
+} from '@loaders.gl/gltf';
 
 const EXT_MESH_FEATURES = 'EXT_mesh_features';
 const EXT_FEATURE_METADATA = 'EXT_feature_metadata';

@@ -5,11 +5,21 @@ import type {
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
   GLTFImagePostprocessed,
+  GLTFTexturePostprocessed,
   GLTFMeshPrimitivePostprocessed,
-  GLTFMeshPostprocessed,
-  GLTFTexturePostprocessed
+  GLTFMeshPostprocessed
 } from '@loaders.gl/gltf';
 
+import {
+  AttributeStorageInfo,
+  I3SMaterialDefinition,
+  MaterialDefinitionInfo,
+  TextureDefinitionInfo
+} from '@loaders.gl/i3s';
+
+import {TypedArray} from '@loaders.gl/schema';
+import {GL} from '@loaders.gl/math';
+import {Geoid} from '@math.gl/geoid';
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
@@ -27,21 +37,11 @@ import {
   MergedMaterial,
   SharedResourcesArrays
 } from '../types';
-import {
-  AttributeStorageInfo,
-  I3SMaterialDefinition,
-  MaterialDefinitionInfo,
-  TextureDefinitionInfo
-} from '@loaders.gl/i3s';
-import {TypedArray} from '@loaders.gl/schema';
-import {Geoid} from '@math.gl/geoid';
 /** Usage of worker here brings more overhead than advantage */
 import {B3DMAttributesData /*, transformI3SAttributesOnWorker*/} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
-import {GL} from '@loaders.gl/math';
 
 /*
   At the moment of writing the type TypedArrayConstructor is not exported in '@math.gl/types'.
@@ -567,10 +567,10 @@ function convertMesh(
 }
 /**
  * Converts TRIANGLE-STRIPS to independent TRIANGLES
- * @param {MeshPrimitive} primitive - the primitive to get the indices from
+ * @param primitive - the primitive to get the indices from
  * @returns indices of vertices of the independent triangles
  */
-function getIndices(primitive: MeshPrimitive): TypedArray {
+function getIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
   let indices: TypedArray = primitive.indices?.value;
   if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
     /*

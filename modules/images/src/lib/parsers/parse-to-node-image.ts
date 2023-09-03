@@ -17,7 +17,7 @@ type NDArray = {
 type ParseImageNode = (arrayBuffer: ArrayBuffer, mimeType: string) => Promise<NDArray>;
 
 // Use polyfills if installed to parsed image using get-pixels
-export default async function parseToNodeImage(
+export async function parseToNodeImage(
   arrayBuffer: ArrayBuffer,
   options: ImageLoaderOptions
 ): Promise<ImageDataType> {
