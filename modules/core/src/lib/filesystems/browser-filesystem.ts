@@ -109,7 +109,7 @@ export default class BrowserFileSystem implements FileSystem {
   // implements IRandomAccessFileSystem
 
   // RANDOM ACCESS
-  async open(pathname: string, flags, mode?): Promise<any> {
+  async open(pathname: string, flags: unknown, mode?: unknown): Promise<any> {
     return this.files[pathname];
   }
 
@@ -144,8 +144,8 @@ export default class BrowserFileSystem implements FileSystem {
   // PRIVATE
 
   // Supports case independent paths, and file usage tracking
-  _getFile(path, used) {
-    // Prefer case match, but fall back to case indepent.
+  _getFile(path: string, used: boolean): File {
+    // Prefer case match, but fall back to case independent.
     const file = this.files[path] || this.lowerCaseFiles[path];
     if (file && used) {
       this.usedFiles[path] = true;

@@ -13,14 +13,16 @@ test('BrowserFileSystem#fetch', async (t) => {
   if (isBrowser) {
     const fileList = await loadImagesAsFiles();
     const fileSystem = new BrowserFileSystem(fileList);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const {fetch} = fileSystem;
+
     for (const url of IMAGE_URLS) {
       const response = await fetch(url);
       t.ok(response.ok, `fetching file from browser file system: ${url}`);
     }
 
     const response = await fetch('bogus.txt');
-    t.notOk(response.ok, `fetching non-existent file from browser file system fails`);
+    t.notOk(response.ok, 'fetching non-existent file from browser file system fails');
   }
   t.end();
 });
@@ -29,7 +31,7 @@ test('BrowserFileSystem#fetch', async (t) => {
 
 const readFile = (url) => fetchFile(url).then((response) => response.arrayBuffer());
 
-let imagesPromise = null;
+let imagesPromise: Promise<File[]> | null = null;
 
 /**
  * @returns {Promise<File[]>}
