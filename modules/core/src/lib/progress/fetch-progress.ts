@@ -44,12 +44,12 @@ export default async function fetchProgress(
 // TODO - this causes a crazy deep "async stack"... rewrite as async iterator?
 // eslint-disable-next-line max-params
 async function read(
-  controller: any, 
-  reader: any, 
-  loadedBytes: number, 
-  totalBytes: number, 
-  onProgress: Function, 
-  onDone: Function, 
+  controller: any,
+  reader: any,
+  loadedBytes: number,
+  totalBytes: number,
+  onProgress: Function,
+  onDone: Function,
   onError: Function
 ): Promise<void> {
   try {

@@ -86,10 +86,12 @@ export async function parse(
   }
 
   // Normalize options
+  // @ts-expect-error
   options = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
 
   // Get a context (if already present, will be unchanged)
   context = getLoaderContext(
+    // @ts-expect-error
     {url, _parse: parse, loaders: candidateLoaders},
     options,
     context || null

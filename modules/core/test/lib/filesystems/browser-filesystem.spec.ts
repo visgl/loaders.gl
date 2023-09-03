@@ -20,7 +20,7 @@ test('BrowserFileSystem#fetch', async (t) => {
     }
 
     const response = await fetch('bogus.txt');
-    t.notOk(response.ok, `fetching non-existent file from browser file system fails`);
+    t.notOk(response.ok, 'fetching non-existent file from browser file system fails');
   }
   t.end();
 });
@@ -29,7 +29,7 @@ test('BrowserFileSystem#fetch', async (t) => {
 
 const readFile = (url) => fetchFile(url).then((response) => response.arrayBuffer());
 
-let imagesPromise = null;
+let imagesPromise: Promise<File[]> | null = null;
 
 /**
  * @returns {Promise<File[]>}

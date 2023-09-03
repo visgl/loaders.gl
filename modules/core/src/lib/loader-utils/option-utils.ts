@@ -38,7 +38,7 @@ export function getGlobalLoaderOptions(): LoaderOptions {
   // Ensure all default loader options from this library are mentioned
   state.globalOptions = state.globalOptions || {...DEFAULT_LOADER_OPTIONS};
   return state.globalOptions;
-};
+}
 
 /**
  * Set global loader options
@@ -83,7 +83,10 @@ function validateOptions(options: LoaderOptions, loaders: Loader[]): void {
   validateOptionsObject(options, null, DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS, loaders);
   for (const loader of loaders) {
     // Get the scoped, loader specific options from the user supplied options
-    const idOptions: Record<string, unknown> = ((options && options[loader.id]) || {}) as Record<string, unknown>;
+    const idOptions: Record<string, unknown> = ((options && options[loader.id]) || {}) as Record<
+      string,
+      unknown
+    >;
 
     // Get scoped, loader specific default and deprecated options from the selected loader
     const loaderOptions = (loader.options && loader.options[loader.id]) || {};
@@ -148,7 +151,11 @@ function findSimilarOption(optionKey: string, loaders: Loader[]): string {
   return bestSuggestion;
 }
 
-function normalizeOptionsInternal(loader: Loader, options: LoaderOptions, url?: string): LoaderOptions {
+function normalizeOptionsInternal(
+  loader: Loader,
+  options: LoaderOptions,
+  url?: string
+): LoaderOptions {
   const loaderDefaultOptions = loader.options || {};
 
   const mergedOptions = {...loaderDefaultOptions};
@@ -175,8 +182,8 @@ function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions)
       const value = options[key];
       if (isPureObject(value) && isPureObject(mergedOptions[key])) {
         mergedOptions[key] = {
-          ...mergedOptions[key],
-          ...options[key]
+          ...(mergedOptions[key] as object),
+          ...(options[key] as object)
         };
       } else {
         mergedOptions[key] = options[key];

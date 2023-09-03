@@ -52,7 +52,7 @@ export function getLoaderContext(
 export function getLoadersFromContext(
   loaders: Loader[] | Loader | undefined,
   context?: LoaderContext
-  ): Loader | Loader[] | undefined {
+): Loader | Loader[] | undefined {
   // A single loader (non-array) indicates no selection desired. Force select.
   if (loaders && !Array.isArray(loaders)) {
     return loaders;
