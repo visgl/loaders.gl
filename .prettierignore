@@ -7,6 +7,8 @@ node_modules/
 .cache
 public
 
+modules/core/src/iterators/make-stream/make-node-stream.ts
+
 modules/3d-tiles/test/lib/classes/tile-3d-batch-table-hierarchy.spec.ts
 
 modules/bson/src/bson-writer.ts
