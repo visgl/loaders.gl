@@ -85,7 +85,7 @@ export async function extractGLTF(
       const gltfWithBuffers = await parseFromContext(
         tile.gltfArrayBuffer,
         GLTFLoader,
-        options!,
+        options,
         context
       );
       tile.gltf = postProcessGLTF(gltfWithBuffers);

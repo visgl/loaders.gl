@@ -53,8 +53,8 @@ export function getLoadersFromContext(
   loaders: Loader[] | Loader | undefined,
   context?: LoaderContext
 ) {
-  // A single non-array loader is force selected, but only on top-level (context === null)
-  if (!context && loaders && !Array.isArray(loaders)) {
+  // A single loader (non-array) indicates no selection desired. Force select.
+  if (loaders && !Array.isArray(loaders)) {
     return loaders;
   }
 

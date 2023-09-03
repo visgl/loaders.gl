@@ -2,7 +2,7 @@
 
 // TYPES
 
-export {
+export type {
   // misc
   DataType,
   SyncDataType,
@@ -36,7 +36,7 @@ export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from 
 
 // writers
 
-export {Writer, WriterOptions, WriterOptionsType} from './writer-types';
+export type {Writer, WriterOptions, WriterOptionsType} from './writer-types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';

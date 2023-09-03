@@ -32,19 +32,26 @@ export async function* parseShapefileInBatches(
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  // @ts-ignore context must be defined
-  const shapeIterable: any = await parseInBatchesFromContext(asyncIterator, SHPLoader, options);
+  const shapeIterable: any = await parseInBatchesFromContext(
+    asyncIterator,
+    SHPLoader,
+    options,
+    context!
+  );
 
   // parse properties
   let propertyIterable: any;
-  // @ts-ignore context must be defined
-  const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
-  if (dbfResponse.ok) {
-    // @ts-ignore context must be defined
-    propertyIterable = await parseInBatchesFromContext(dbfResponse, DBFLoader, {
-      ...options,
-      dbf: {encoding: cpg || 'latin1'}
-    });
+  const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+  if (dbfResponse?.ok) {
+    propertyIterable = await parseInBatchesFromContext(
+      dbfResponse as any,
+      DBFLoader,
+      {
+        ...options,
+        dbf: {encoding: cpg || 'latin1'}
+      },
+      context!
+    );
   }
 
   // When `options.metadata` is `true`, there's an extra initial `metadata`
@@ -113,19 +120,21 @@ export async function parseShapefile(
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  // @ts-ignore context must be defined
-  const {header, geometries} = await parseFromContext(arrayBuffer, SHPLoader, options, context); // {shp: shx}
+  const {header, geometries} = await parseFromContext(arrayBuffer, SHPLoader, options, context!); // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
   let properties = [];
 
-  // @ts-ignore context must be defined
-  const dbfResponse = await context.fetch(replaceExtension(context.url, 'dbf'));
-  if (dbfResponse.ok) {
-    // @ts-ignore context must be defined
-    properties = await parseFromContext(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
+  const dbfResponse = await context?.fetch(replaceExtension(context?.url!, 'dbf'));
+  if (dbfResponse?.ok) {
+    properties = await parseFromContext(
+      dbfResponse as any,
+      DBFLoader,
+      {dbf: {encoding: cpg || 'latin1'}},
+      context!
+    );
   }
 
   let features = joinProperties(geojsonGeometries, properties);

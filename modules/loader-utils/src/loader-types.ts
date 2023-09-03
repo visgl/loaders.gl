@@ -298,7 +298,7 @@ export async function parseFromContext<
 >(
   data: ArrayBuffer,
   loader: LoaderT,
-  options: OptionsT,
+  options: OptionsT | undefined,
   context: LoaderContext
 ): Promise<LoaderReturnType<LoaderT>>;
 
@@ -308,7 +308,7 @@ export async function parseFromContext<
 export async function parseFromContext(
   data: ArrayBuffer,
   loaders: Loader[],
-  options: LoaderOptions,
+  options: LoaderOptions | undefined,
   context: LoaderContext
 ): Promise<unknown>;
 
@@ -323,7 +323,7 @@ export async function parseFromContext(
 export async function parseFromContext(
   data: ArrayBuffer,
   loaders: Loader | Loader[],
-  options: LoaderOptions,
+  options: LoaderOptions | undefined,
   context: LoaderContext
 ): Promise<unknown> {
   return context._parse(data, loaders, options, context);
@@ -338,7 +338,7 @@ export function parseSyncFromContext<
 >(
   data: ArrayBuffer,
   loader: LoaderT,
-  options: OptionsT,
+  options: OptionsT | undefined,
   context: LoaderContext
 ): LoaderReturnType<LoaderT> {
   if (!context._parseSync) {
@@ -356,7 +356,7 @@ export async function parseInBatchesFromContext<
 >(
   data: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   loader: LoaderT,
-  options: OptionsT,
+  options: OptionsT | undefined,
   context: LoaderContext
 ): Promise<AsyncIterable<LoaderBatchType<LoaderT>>> {
   if (!context._parseInBatches) {
