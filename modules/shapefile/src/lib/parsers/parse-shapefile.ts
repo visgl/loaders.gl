@@ -1,11 +1,11 @@
 // import type {Feature} from '@loaders.gl/gis';
-import type {SHXOutput} from './parse-shx';
-import type {SHPHeader} from './parse-shp-header';
-import type {LoaderContext} from '@loaders.gl/loader-utils';
-import type {ShapefileLoaderOptions} from './types';
-
+import {LoaderContext, parseInBatchesFromContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
+
+import type {SHXOutput} from './parse-shx';
+import type {SHPHeader} from './parse-shp-header';
+import type {ShapefileLoaderOptions} from './types';
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
@@ -32,19 +32,26 @@ export async function* parseShapefileInBatches(
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  // @ts-ignore context must be defined
-  const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, options);
+  const shapeIterable: any = await parseInBatchesFromContext(
+    asyncIterator,
+    SHPLoader,
+    options,
+    context!
+  );
 
   // parse properties
   let propertyIterable: any;
-  // @ts-ignore context must be defined
-  const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
-  if (dbfResponse.ok) {
-    // @ts-ignore context must be defined
-    propertyIterable = await context.parseInBatches(dbfResponse, DBFLoader, {
-      ...options,
-      dbf: {encoding: cpg || 'latin1'}
-    });
+  const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+  if (dbfResponse?.ok) {
+    propertyIterable = await parseInBatchesFromContext(
+      dbfResponse as any,
+      DBFLoader,
+      {
+        ...options,
+        dbf: {encoding: cpg || 'latin1'}
+      },
+      context!
+    );
   }
 
   // When `options.metadata` is `true`, there's an extra initial `metadata`
@@ -113,19 +120,21 @@ export async function parseShapefile(
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  // @ts-ignore context must be defined
-  const {header, geometries} = await context.parse(arrayBuffer, SHPLoader, options); // {shp: shx}
+  const {header, geometries} = await parseFromContext(arrayBuffer, SHPLoader, options, context!); // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
   let properties = [];
 
-  // @ts-ignore context must be defined
-  const dbfResponse = await context.fetch(replaceExtension(context.url, 'dbf'));
-  if (dbfResponse.ok) {
-    // @ts-ignore context must be defined
-    properties = await context.parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
+  const dbfResponse = await context?.fetch(replaceExtension(context?.url!, 'dbf'));
+  if (dbfResponse?.ok) {
+    properties = await parseFromContext(
+      dbfResponse as any,
+      DBFLoader,
+      {dbf: {encoding: cpg || 'latin1'}},
+      context!
+    );
   }
 
   let features = joinProperties(geojsonGeometries, properties);

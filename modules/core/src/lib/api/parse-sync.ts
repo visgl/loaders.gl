@@ -79,7 +79,7 @@ export function parseSync(
     throw new Error('parseSync called parse (which is async');
   };
   context = getLoaderContext(
-    {url, parseSync, parse, loaders: loaders as Loader[]},
+    {url, _parseSync: parse, _parse: parse, loaders: loaders as Loader[]},
     options,
     context || null
   );

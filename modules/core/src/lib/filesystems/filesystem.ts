@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 export type ReadOptions = {};
 
 export type Stat = {

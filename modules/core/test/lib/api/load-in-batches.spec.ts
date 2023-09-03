@@ -51,7 +51,7 @@ test('loadInBatches(options.limit)', async (t) => {
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     limit: 100
   });
-  const rows = [];
+  const rows: unknown[] = [];
   for await (const batch of iterator) {
     rows.push(...batch.data);
   }

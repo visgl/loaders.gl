@@ -24,7 +24,7 @@ test('parseInBatches', async (t) => {
   // @ts-ignore
   batches = await parseInBatches([1, 2], NoOpLoader, {metadata: true});
 
-  const values = [];
+  const values: unknown[] = [];
   metadata = false;
   for await (const batch of batches) {
     if (batch.batchType === 'metadata') {

@@ -86,7 +86,7 @@ export async function parseInBatches(
   // Normalize options
   options = normalizeOptions(options, loader, loaderArray, url);
   context = getLoaderContext(
-    {url, parseInBatches, parse, loaders: loaderArray},
+    {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
     options,
     context || null
   );

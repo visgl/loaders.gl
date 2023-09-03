@@ -2,7 +2,7 @@ import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import {LoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
@@ -73,15 +73,17 @@ export async function parseI3STileContent(
       if (loader === ImageLoader) {
         const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
         try {
-          // @ts-ignore context must be defined
           // Image constructor is not supported in worker thread.
           // Do parsing image data on the main thread by using context to avoid worker issues.
-          content.texture = await context.parse(arrayBuffer, options);
+          const texture = await parseFromContext(arrayBuffer, [], options, context!);
+          // @ts-expect-error
+          content.texture = texture;
         } catch (e) {
           // context object is different between worker and node.js conversion script.
           // To prevent error we parse data in ordinary way if it is not parsed by using context.
+          const texture = await parse(arrayBuffer, loader, options, context);
           // @ts-expect-error
-          content.texture = await parse(arrayBuffer, loader, options);
+          content.texture = texture;
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
         let texture = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);

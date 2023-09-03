@@ -1,6 +1,9 @@
 // loaders.gl, MIT license
 
-import {FetchLike, TransformBatches} from './types';
+import {
+  FetchLike,
+  TransformBatches /* , DataType, SyncDataType, BatchableDataType */
+} from './types';
 
 // LOADERS
 
@@ -213,24 +216,36 @@ export type LoaderContext = {
 
   /** Provides access to any application overrides of fetch() */
   fetch: typeof fetch | FetchLike;
+
   /** TBD */
   response?: Response;
-  /** Parse function. Use instead of importing `core`. In workers, may redirect to main thread */
-  parse: (
+
+  /**
+   * Parse function for subloaders. Avoids importing `core`. In workers, may redirect to main thread
+   */
+  _parse: (
     arrayBuffer: ArrayBuffer,
     loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
   ) => Promise<any>;
-  /** ParseSync function. Use instead of importing `core`. In workers, may redirect to main thread */
-  parseSync?: (
+
+  /**
+   * ParseSync function. Avoids importing `core`. In workers, may redirect to main thread
+   * @deprecated Do not call directly, use `parseSyncFromContext` instead
+   */
+  _parseSync?: (
     arrayBuffer: ArrayBuffer,
     loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
   ) => any;
-  /** ParseInBatches function. Use instead of importing `core`.  */
-  parseInBatches?: (
+
+  /**
+   * ParseInBatches function. Avoids importing `core`.
+   * @deprecated Do not call directly, use `parseInBatchesFromContext` instead
+   */
+  _parseInBatches?: (
     iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
     loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
@@ -283,10 +298,35 @@ export async function parseFromContext<
 >(
   data: ArrayBuffer,
   loader: LoaderT,
-  options: OptionsT,
+  options: OptionsT | undefined,
   context: LoaderContext
-): Promise<LoaderReturnType<LoaderT>> {
-  return context.parse(data, loader, options, context);
+): Promise<LoaderReturnType<LoaderT>>;
+
+/**
+ * Parses `data` asynchronously by matching one of the supplied loader
+ */
+export async function parseFromContext(
+  data: ArrayBuffer,
+  loaders: Loader[],
+  options: LoaderOptions | undefined,
+  context: LoaderContext
+): Promise<unknown>;
+
+/**
+ * Parses `data` using a specified loader
+ * @param data
+ * @param loaders
+ * @param options
+ * @param context
+ */
+// implementation signature
+export async function parseFromContext(
+  data: ArrayBuffer,
+  loaders: Loader | Loader[],
+  options: LoaderOptions | undefined,
+  context: LoaderContext
+): Promise<unknown> {
+  return context._parse(data, loaders, options, context);
 }
 
 /**
@@ -298,13 +338,13 @@ export function parseSyncFromContext<
 >(
   data: ArrayBuffer,
   loader: LoaderT,
-  options: OptionsT,
+  options: OptionsT | undefined,
   context: LoaderContext
 ): LoaderReturnType<LoaderT> {
-  if (!context.parseSync) {
+  if (!context._parseSync) {
     throw new Error('parseSync');
   }
-  return context.parseSync(data, loader, options, context);
+  return context._parseSync(data, loader, options, context);
 }
 
 /**
@@ -314,13 +354,13 @@ export async function parseInBatchesFromContext<
   LoaderT extends Loader,
   OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
 >(
-  data: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  data: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   loader: LoaderT,
-  options: OptionsT,
+  options: OptionsT | undefined,
   context: LoaderContext
 ): Promise<AsyncIterable<LoaderBatchType<LoaderT>>> {
-  if (!context.parseInBatches) {
+  if (!context._parseInBatches) {
     throw new Error('parseInBatches');
   }
-  return context.parseInBatches(data, loader, options, context);
+  return context._parseInBatches(data, loader, options, context);
 }
