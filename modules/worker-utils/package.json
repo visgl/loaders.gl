@@ -33,7 +33,6 @@
     "./dist/es5/lib/node/worker_threads.js": "./dist/es5/lib/node/worker_threads-browser.js",
     "./dist/esm/lib/node/worker_threads.js": "./dist/esm/lib/node/worker_threads-browser.js",
     "./src/lib/node/require-utils.node.ts": "./src/lib/node/require-utils.browser.ts",
-    "./dist/lib/node/require-utils.node.js": "./dist/lib/node/require-utils.browser.js",
     "./dist/es5/lib/node/require-utils.node.js": "./dist/es5/lib/node/require-utils.browser.js",
     "./dist/esm/lib/node/require-utils.node.js": "./dist/esm/lib/node/require-utils.browser.js",
     "./src/lib/process-utils/child-process-proxy.ts": false,
