@@ -46,15 +46,17 @@ export const CompressedTextureWorkerLoader = {
 /**
  * Loader for KTX, DDS, and PVR texture container formats
  */
-export const CompressedTextureLoader = {
+export const CompressedTextureLoader: LoaderWithParser = {
   ...CompressedTextureWorkerLoader,
-  parse: async (arrayBuffer, options) => {
-    if (options['compressed-texture'].useBasis) {
+  parse: async (arrayBuffer, options?: TextureLoaderOptions) => {
+    if (options?.['compressed-texture']?.useBasis) {
+      // @ts-expect-error TODO not allowed to modify inputs
       options.basis = {
         format: {
           alpha: 'BC3',
           noAlpha: 'BC1'
         },
+        // @ts-expect-error TODO not allowed to modify inputs
         ...options.basis,
         containerFormat: 'ktx2',
         module: 'encoder'

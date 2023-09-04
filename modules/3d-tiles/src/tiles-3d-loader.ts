@@ -8,7 +8,7 @@ import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {VERSION} from './lib/utils/version';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
-import {Tiles3DTilesetJSON, Tiles3DTilesetJSONPostprocessed} from './types';
+import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 
 export type Tiles3DLoaderOptions = LoaderOptions &
   // GLTFLoaderOptions & - TODO not yet exported
@@ -29,7 +29,11 @@ export type Tiles3DLoaderOptions = LoaderOptions &
 /**
  * Loader for 3D Tiles
  */
-export const Tiles3DLoader: LoaderWithParser = {
+export const Tiles3DLoader: LoaderWithParser<
+  any, // Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed,
+  never,
+  Tiles3DLoaderOptions
+> = {
   id: '3d-tiles',
   name: '3D Tiles',
   module: '3d-tiles',
@@ -49,7 +53,11 @@ export const Tiles3DLoader: LoaderWithParser = {
 };
 
 /** Parses a tileset or tile */
-async function parse(data, options: Tiles3DLoaderOptions = {}, context?: LoaderContext) {
+async function parse(
+  data,
+  options: Tiles3DLoaderOptions = {},
+  context?: LoaderContext
+): Promise<Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed> {
   // auto detect file type
   const loaderOptions = options['3d-tiles'] || {};
   let isTileset;
@@ -75,6 +83,7 @@ async function parseTileset(
   const normalizedRoot = await normalizeTileHeaders(tilesetJson, basePath, options || {});
   const tilesetJsonPostprocessed: Tiles3DTilesetJSONPostprocessed = {
     ...tilesetJson,
+    shape: 'tileset3d',
     loader: Tiles3DLoader,
     url: tilesetUrl,
     queryString: context?.queryString || '',
@@ -92,14 +101,17 @@ async function parseTile(
   arrayBuffer: ArrayBuffer,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
-) {
+): Promise<Tiles3DTileContent> {
   const tile = {
     content: {
+      shape: 'tile3d',
       featureIds: null
     }
   };
   const byteOffset = 0;
+  // @ts-expect-error
   await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content);
+  // @ts-expect-error
   return tile.content;
 }
 

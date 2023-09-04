@@ -38,7 +38,7 @@ export async function parseComposite3DTile(
   // extract each tile from the byte stream
   tile.tiles = [];
   while (tile.tiles.length < tile.tilesLength && (tile.byteLength || 0) - byteOffset > 12) {
-    const subtile = {};
+    const subtile: Tiles3DTileContent = {shape: 'tile3d'};
     tile.tiles.push(subtile);
     byteOffset = await parse3DTile(arrayBuffer, byteOffset, options, context, subtile);
     // TODO - do we need to add any padding in between tiles?

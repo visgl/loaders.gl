@@ -36,7 +36,7 @@ export async function parse(
   loaders: Loader[],
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<any>;
+): Promise<unknown>;
 
 /**
  * Parses data asynchronously by matching a pre-registered loader
@@ -44,7 +44,7 @@ export async function parse(
 export async function parse(
   data: DataType | Promise<DataType>,
   options?: LoaderOptions
-): Promise<any>;
+): Promise<unknown>;
 
 /**
  * Parses `data` using a specified loader

@@ -27,7 +27,7 @@ const KML_HEADER = `\
 /**
  * Loader for KML (Keyhole Markup Language)
  */
-export const KMLLoader: LoaderWithParser<any, never, KMLLoaderOptions> = {
+export const KMLLoader: LoaderWithParser<ObjectRowTable, never, KMLLoaderOptions> = {
   name: 'KML (Keyhole Markup Language)',
   id: 'kml',
   module: 'kml',
@@ -45,35 +45,32 @@ export const KMLLoader: LoaderWithParser<any, never, KMLLoaderOptions> = {
   }
 };
 
-function parseTextSync(text: string, options?: KMLLoaderOptions) {
+function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = kml(doc);
 
   // backwards compatibility
   const shape = options?.gis?.format || options?.kml?.type || options?.kml?.shape;
   switch (shape) {
-    case 'object-row-table': {
+    // case 'geojson-row-table': {
+    //   const table: GeoJSONRowTable = {
+    //     shape: 'geojson-row-table',
+    //     data: geojson.features
+    //   };
+    //   return table;
+    // }
+    // case 'geojson':
+    //   return geojson;
+    // case 'binary':
+    //   return geojsonToBinary(geojson.features);
+    // case 'raw':
+    //   return doc;
+    case 'object-row-table':
+    default:
       const table: ObjectRowTable = {
         shape: 'object-row-table',
         data: geojson.features
       };
       return table;
-    }
-    case 'geojson-row-table': {
-      const table: GeoJSONRowTable = {
-        shape: 'geojson-row-table',
-        data: geojson.features
-      };
-      return table;
-    }
-    case 'geojson':
-      return geojson;
-    case 'binary':
-      return geojsonToBinary(geojson.features);
-    case 'raw':
-      return doc;
-    default:
-      // Default to geojson for backwards compatibility
-      return geojson;
   }
 }

@@ -70,6 +70,7 @@ export async function parseI3STileContent(
 
     // @ts-expect-error options is not properly typed
     if (options?.i3s.decodeTextures) {
+      // TODO - replace with switch
       if (loader === ImageLoader) {
         const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
         try {
