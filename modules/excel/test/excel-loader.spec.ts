@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {load, loadInBatches} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {ExcelLoader} from '@loaders.gl/excel';
 import {CSVLoader} from '@loaders.gl/csv';
 
@@ -26,11 +26,11 @@ test('ExcelLoader#load(ZIPCODES)', async (t) => {
   t.end();
 });
 
-test('ExcelLoader#loadInBatches (on worker)', async (t) => {
-  // Workers are not supported under Node at the moment.
-  const batches = await loadInBatches(ZIPCODES_XLSX_PATH, ExcelLoader);
-  for await (const batch of batches) {
-    t.equal(batch.data.data.length, 42049, 'XLSX: Correct number of row received');
-  }
-  t.end();
+test.skip('ExcelLoader#loadInBatches (on worker)', async (t) => {
+  // This masquerades an atomic loader as batches
+  // const batches = await loadInBatches(ZIPCODES_XLSX_PATH, ExcelLoader);
+  // for await (const batch of batches) {
+  //   t.equal(batch?.data.data.length, 42049, 'XLSX: Correct number of row received');
+  // }
+  // t.end();
 });

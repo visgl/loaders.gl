@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 export type ReadOptions = {};
 
 export type Stat = {
@@ -36,9 +38,9 @@ export interface FileSystem {
  * A random access file system
  */
 export interface RandomAccessReadFileSystem extends FileSystem {
-  open(path: string, flags, mode?): Promise<any>;
-  close(fd: any): Promise<void>;
-  fstat(fd: any): Promise<Stat>;
+  open(path: string, flags: unknown, mode?: unknown): Promise<any>;
+  close(fd: unknown): Promise<void>;
+  fstat(fd: unknown): Promise<Stat>;
   read(
     fd: any,
     buffer: ArrayBuffer | ArrayBufferView,

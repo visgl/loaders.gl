@@ -1,17 +1,8 @@
+// loaders.gl, MIT license
+
 // TYPES
+
 export type {
-  // loaders
-  Loader,
-  LoaderWithParser,
-  LoaderContext,
-  LoaderOptions,
-  LoaderOptionsType,
-  LoaderReturnType,
-  LoaderBatchType,
-  // writers
-  Writer,
-  WriterOptions,
-  WriterOptionsType,
   // misc
   DataType,
   SyncDataType,
@@ -24,8 +15,28 @@ export type {
   TypedArrayConstructor,
   BigTypedArrayConstructor,
   NumberArray,
-  NumericArray
+  NumericArray,
+  // fetch
+  FetchLike
 } from './types';
+
+// loaders
+
+export type {
+  Loader,
+  LoaderWithParser,
+  LoaderContext,
+  LoaderOptions,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderBatchType
+} from './loader-types';
+
+export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';
+
+// writers
+
+export type {Writer, WriterOptions, WriterOptionsType} from './writer-types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';

@@ -6,6 +6,17 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.21
+
+- feat(core): parseSync, parseInBatches, load, loadInBatches type inference (#2612)
+- feat: More typed loaders (#2607)
+- feat(3d-tiles): 3tz loader (#2578)
+- feat(zip): ZipFileSystem (#2602)
+- chore(i3s): Hash generation moved to @loader.gl/zip (#2599)
+- chore(zip): read file classes (#2601)
+- chore(zip): Compression method added for local header (#2600)
+- chore(compression): Added raw mode for deflate-compresion module (#2598)
+
 ### v4.0.0-alpha.20
 
 - chore(i3s): Hash file utility moved to loader-utils (#2595)

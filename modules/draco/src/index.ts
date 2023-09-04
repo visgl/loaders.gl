@@ -57,6 +57,3 @@ async function parse(arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions): Pr
     dracoParser.destroy();
   }
 }
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckDracoLoader: LoaderWithParser = DracoLoader;

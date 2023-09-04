@@ -8,7 +8,7 @@
 // - Also, should we have hard dependency on gltf module or use injection or auto-discovery for gltf parser?
 
 import {GLTFLoader, postProcessGLTF, _getMemoryUsageGLTF} from '@loaders.gl/gltf';
-import {LoaderContext, sliceArrayBuffer} from '@loaders.gl/loader-utils';
+import {LoaderContext, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {Tiles3DTileContent} from '../../../types';
 import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
 
@@ -74,15 +74,20 @@ export async function extractGLTF(
     if (!context) {
       return;
     }
-    const {parse, fetch} = context;
     if (tile.gltfUrl) {
+      const {fetch} = context;
       const response = await fetch(tile.gltfUrl, options);
       tile.gltfArrayBuffer = await response.arrayBuffer();
       tile.gltfByteOffset = 0;
     }
     if (tile.gltfArrayBuffer) {
       // TODO - Should handle byteOffset... However, not used now...
-      const gltfWithBuffers = await parse(tile.gltfArrayBuffer, GLTFLoader, options, context);
+      const gltfWithBuffers = await parseFromContext(
+        tile.gltfArrayBuffer,
+        GLTFLoader,
+        options,
+        context
+      );
       tile.gltf = postProcessGLTF(gltfWithBuffers);
       tile.gpuMemoryUsageInBytes = _getMemoryUsageGLTF(tile.gltf);
       delete tile.gltfArrayBuffer;

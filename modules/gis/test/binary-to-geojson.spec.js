@@ -94,8 +94,13 @@ test('binary-to-geojson getSingleFeature fail', async (t) => {
   t.end();
 });
 
+// type TestCase = BinaryPolygonGeometry & {
+//   binary?: boolean;
+// };
+
 // Mutates input object
 function parseTestCases(testCases) {
+  /* : Record<string, TestCase>): Record<string, TestCase> { */
   for (const value of Object.values(testCases)) {
     // Convert `binary`, an object with typed arrays output, into typed arrays
     // from regular arrays

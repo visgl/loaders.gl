@@ -1,6 +1,6 @@
 import md5 from 'md5';
 import {FileProvider, parseZipLocalFileHeader, HashElement, findBin} from '@loaders.gl/zip';
-import {DeflateCompression} from '@loaders.gl/compression';
+import {DeflateCompression, NoCompression} from '@loaders.gl/compression';
 
 type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
 
@@ -9,24 +9,27 @@ type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
  */
 const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
   /** No compression */
-  0: async (compressedFile) => compressedFile,
-
+  0: (data) => new NoCompression().decompress(data),
   /** Deflation */
-  8: async (compressedFile) => {
-    const compression = new DeflateCompression({raw: true});
-    const decompressedData = await compression.decompress(compressedFile);
-    return decompressedData;
-  }
+  8: (data) => new DeflateCompression({raw: true}).decompress(data)
 };
 
 /**
  * Class for handling information about 3tz file
  */
-export class TZ3Archive {
-  private tz3Archive: FileProvider;
+export class Tiles3DArchive {
+  /** FileProvider with whe whole file */
+  private fileProvider: FileProvider;
+  /** hash info */
   private hashArray: HashElement[];
-  constructor(tz3Archive: FileProvider, hashFile: HashElement[]) {
-    this.tz3Archive = tz3Archive;
+
+  /**
+   * creates Tiles3DArchive handler
+   * @param fileProvider - FileProvider with the whole file
+   * @param hashFile - hash info
+   */
+  constructor(fileProvider: FileProvider, hashFile: HashElement[]) {
+    this.fileProvider = fileProvider;
     this.hashArray = hashFile;
   }
 
@@ -35,7 +38,7 @@ export class TZ3Archive {
    * @param path - path inside the 3tz
    * @returns buffer with ready to use file
    */
-  async getFile(path: string): Promise<Buffer> {
+  async getFile(path: string): Promise<ArrayBuffer> {
     // sometimes paths are not in lower case when hash file is created,
     // so first we're looking for lower case file name and then for original one
     let data = await this.getFileBytes(path.toLocaleLowerCase());
@@ -45,9 +48,8 @@ export class TZ3Archive {
     if (!data) {
       throw new Error('No such file in the archive');
     }
-    const decompressedFile = Buffer.from(data);
 
-    return decompressedFile;
+    return data;
   }
 
   /**
@@ -62,12 +64,12 @@ export class TZ3Archive {
       return null;
     }
 
-    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.tz3Archive);
+    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.fileProvider);
     if (!localFileHeader) {
       return null;
     }
 
-    const compressedFile = await this.tz3Archive.slice(
+    const compressedFile = await this.fileProvider.slice(
       localFileHeader.fileDataOffset,
       localFileHeader.fileDataOffset + localFileHeader.compressedSize
     );

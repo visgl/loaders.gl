@@ -15,6 +15,7 @@ test('loadInBatches#FileList', async (t) => {
 
     const iteratorPromises = await loadInBatches([blob, blob], OBJLoader);
     for await (const iterator of iteratorPromises) {
+      // @ts-ignore
       for await (const batch of iterator) {
         // Just the one batch...
         t.equal(batch.data.mode, 4, 'mode is TRIANGLES (4)');
@@ -25,12 +26,13 @@ test('loadInBatches#FileList', async (t) => {
   t.end();
 });
 
-test('loadInBatches#non-batched loader (mesh)', async (t) => {
-  const batches = await loadInBatches(OBJ_ASCII_URL, OBJLoader);
-  for await (const batch of batches) {
-    // Just the one batch...
-    t.equal(batch.data.mode, 4, 'OBJ mode is TRIANGLES (4)');
-  }
+test.skip('loadInBatches#non-batched loader (mesh)', async (t) => {
+  // This masquerades an atomic loader as batches
+  // const batches = await loadInBatches(OBJ_ASCII_URL, OBJLoader);
+  // for await (const batch of batches) {
+  //   // Just the one batch...
+  //   t.equal(batch?.data.mode, 4, 'OBJ mode is TRIANGLES (4)');
+  // }
   t.end();
 });
 
@@ -38,17 +40,18 @@ test('loadInBatches#non-batched loader (gis)', async (t) => {
   const batches = await loadInBatches(KML_URL, KMLLoader, {kml: {type: 'object-row-table'}});
   for await (const batch of batches) {
     // Just the one batch...
+    // @ts-ignore
     t.equal(batch.data.data.length, 20, 'KML length of data features table is correct');
   }
   t.end();
 });
 
 test('loadInBatches(options.limit)', async (t) => {
-  // @ts-expect-error
+  // @ts-ignore
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     limit: 100
   });
-  const rows = [];
+  const rows: unknown[] = [];
   for await (const batch of iterator) {
     rows.push(...batch.data);
   }

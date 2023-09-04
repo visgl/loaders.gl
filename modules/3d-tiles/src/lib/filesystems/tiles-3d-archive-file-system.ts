@@ -8,7 +8,7 @@ import {
   parseHashFile,
   parseZipLocalFileHeader
 } from '@loaders.gl/zip';
-import {TZ3Archive} from '../../tz3/tz3-archive';
+import {Tiles3DArchive} from '../../3d-tiles-archive/3d-tiles-archive-archive';
 
 /**
  * FileSystem adapter for a 3tz (3D tiles archive format) file
@@ -42,7 +42,7 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
     }
     await this.parseHashFile();
     if (this.hashData) {
-      const archive = new TZ3Archive(fileProvider, this.hashData);
+      const archive = new Tiles3DArchive(fileProvider, this.hashData);
 
       const fileData = await archive.getFile(filename);
       const response = new Response(fileData);

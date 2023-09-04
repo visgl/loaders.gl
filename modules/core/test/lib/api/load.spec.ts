@@ -1,4 +1,5 @@
 import test from 'tape-promise/tape';
+import {parseFromContext} from '@loaders.gl/loader-utils';
 import {isBrowser, load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
 import {NullWorkerLoader} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
@@ -44,7 +45,7 @@ test('load#auto detect loader', (t) => {
     parse: async (arrayBuffer, options, context) => {
       t.ok(arrayBuffer instanceof ArrayBuffer, 'Got ArrayBuffer');
       t.deepEquals(options.JSON, {option: true}, 'Option is passed through');
-      t.ok(context.parse, 'context is populated');
+      t.ok(context._parse, 'context is populated');
       t.end();
     }
   };
@@ -67,7 +68,7 @@ test('load#load retrieve Response', async (t) => {
     extensions: ['json'],
     parse: async (arrayBuffer, options, context) => {
       t.ok(arrayBuffer instanceof ArrayBuffer, 'Got ArrayBuffer');
-      const data = await context.parse(arrayBuffer, JSONLoader);
+      const data = await parseFromContext(arrayBuffer, JSONLoader, {}, context);
       t.ok(data, 'Read response data');
 
       const {response} = context;
@@ -90,14 +91,12 @@ test('load#load retrieve Response from worker - BROWSER ONLY', async (t) => {
     return;
   }
 
-  const {context} = await load(JSON_URL, NullWorkerLoader, {
-    null: {echoParameters: true},
+  const result = await load(JSON_URL, NullWorkerLoader, {
     _workerType: 'test',
     reuseWorkers: false
   });
 
-  t.ok(context, 'Context passed through by NullWorkerLoader');
-  checkResponse(t, context.response);
+  t.equal(result, null, 'null passed through by NullWorkerLoader');
 
   t.end();
 });

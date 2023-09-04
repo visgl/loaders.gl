@@ -34,5 +34,3 @@ export const ArrowLoader: Loader<ArrowTable, never, ArrowLoaderOptions> = {
     }
   }
 };
-
-export const _typecheckArrowLoader: Loader = ArrowLoader;

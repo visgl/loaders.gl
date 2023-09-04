@@ -101,7 +101,7 @@ test('loadDraco# Pass options to draco loader properly', async (t) => {
   };
   const tile = {};
   const context: LoaderContext = {
-    parse: async (buffer, loader, resultOptions) => {
+    _parse: async (buffer, loader, resultOptions) => {
       t.deepEqual(resultOptions, resultObject);
       t.equal(resultOptions?.['3d-tiles'], undefined);
       t.end();

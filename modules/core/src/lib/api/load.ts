@@ -25,10 +25,7 @@ export async function load<LoaderT extends Loader>(
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT>>;
 
-export async function load<
-  LoaderT extends Loader, // eslint-disable-line  @typescript-eslint/no-unused-vars
-  LoaderOptionsT extends LoaderOptions = LoaderOptions
->(
+export async function load<LoaderOptionsT extends LoaderOptions = LoaderOptions>(
   url: string | DataType,
   loaders: Loader[] | LoaderOptions,
   options?: LoaderOptionsT,
@@ -36,7 +33,7 @@ export async function load<
 ): Promise<any>;
 
 // implementation signature
-export async function load<LoaderOptionsT extends LoaderOptions>(
+export async function load<LoaderOptionsT extends LoaderOptions = LoaderOptions>(
   url: string | DataType,
   loaders?: Loader[] | LoaderOptions,
   options?: LoaderOptionsT,
