@@ -1,5 +1,5 @@
 import {assert} from '@loaders.gl/loader-utils';
-import parseImage from '../parsers/parse-image';
+import {parseImage} from '../parsers/parse-image';
 import {getImageSize} from '../category-api/parsed-image-api';
 import {generateUrl} from './generate-url';
 import {deepLoad, shallowLoad} from './deep-load';
