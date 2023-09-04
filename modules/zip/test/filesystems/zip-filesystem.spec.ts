@@ -6,7 +6,7 @@ import {DataViewFile} from '@loaders.gl/loader-utils';
 import {FileProvider} from '@loaders.gl/loader-utils';
 import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
 
-const ZIP_FILE_PATH = './modules/zip/test/data/test-store.zip';
+const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';
 
 test('zip#ZipFileSystem - initialize from existing fileHandler', async (t) => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);
