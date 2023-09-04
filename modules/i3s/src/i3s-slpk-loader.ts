@@ -1,5 +1,5 @@
-import {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {DataViewFile} from '@loaders.gl/zip';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {DataViewFile} from '@loaders.gl/loader-utils';
 import {parseSLPK as parseSLPKFromProvider} from './lib/parsers/parse-slpk/parse-slpk';
 
 // __VERSION__ is injected by babel-plugin-version-inline

@@ -1,7 +1,7 @@
+import {FileProvider} from '@loaders.gl/loader-utils';
 import {
   parseZipCDFileHeader,
   cdSignature as cdHeaderSignature,
-  FileProvider,
   parseZipLocalFileHeader,
   searchFromTheEnd,
   HashElement,

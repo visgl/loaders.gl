@@ -7,8 +7,6 @@ export type {
   DataType,
   SyncDataType,
   BatchableDataType,
-  IFileSystem,
-  IRandomAccessReadFileSystem,
   // numeric array types
   TypedArray,
   BigTypedArray,
@@ -121,10 +119,17 @@ import * as stream from './lib/node/stream';
 export {stream};
 
 // EXPERIMENTAL
+export {FileSystem, RandomAccessReadFileSystem} from './lib/filesystems/filesystem';
+export {NodeFileSystem as _NodeFileSystem} from './lib/filesystems/node-filesystem';
+
+export type {FileProvider} from './lib/file-provider/file-provider';
+export {isFileProvider} from './lib/file-provider/file-provider';
+export {FileHandleFile} from './lib/file-provider/file-handle-file';
+export {DataViewFile} from './lib/file-provider/data-view-file';
+
 export type {ReadableFile} from './lib/filesystems/readable-file';
 export {makeReadableFile} from './lib/filesystems/readable-file';
 
 export type {WritableFile} from './lib/filesystems/writable-file';
 export {makeWritableFile} from './lib/filesystems/writable-file';
 
-export {default as _NodeFileSystem} from './lib/filesystems/node-filesystem';

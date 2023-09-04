@@ -34,10 +34,8 @@
   },
   "dependencies": {
     "@loaders.gl/compression": "4.0.0-alpha.22",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.22",
     "jszip": "^3.1.5"
-  },
-  "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0-alpha.21"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

@@ -1,4 +1,4 @@
-import {FileProvider} from '@loaders.gl/zip';
+import {FileProvider} from './file-provider';
 import {FileHandle} from './file-handle';
 
 /**

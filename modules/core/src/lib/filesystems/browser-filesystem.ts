@@ -1,4 +1,4 @@
-import type {FileSystem} from './filesystem';
+import type {FileSystem} from '@loaders.gl/loader-utils';
 
 type BrowserFileSystemOptions = {
   fetch?: typeof fetch;
@@ -8,7 +8,7 @@ type BrowserFileSystemOptions = {
  * FileSystem adapter for a browser FileList.
  * Holds a list of browser 'File' objects.
  */
-export default class BrowserFileSystem implements FileSystem {
+export class BrowserFileSystem implements FileSystem {
   private _fetch: typeof fetch;
   private files: {[filename: string]: File} = {};
   private lowerCaseFiles: {[filename: string]: File} = {};

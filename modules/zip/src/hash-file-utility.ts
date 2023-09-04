@@ -1,6 +1,6 @@
 import md5 from 'md5';
+import {FileProvider} from '@loaders.gl/loader-utils';
 import {zipCDFileHeaderGenerator} from './parse-zip/cd-file-header';
-import {FileProvider} from './file-provider/file-provider';
 
 /** Element of hash array */
 export type HashElement = {
