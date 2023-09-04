@@ -20,3 +20,5 @@ export {searchFromTheEnd} from './parse-zip/search-from-the-end';
 
 export type {HashElement} from './hash-file-utility';
 export {compareHashes, parseHashFile, findBin, generateHashInfo} from './hash-file-utility';
+
+export {ZipFileSystem} from './filesystems/zip-filesystem';

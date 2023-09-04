@@ -1,5 +1,6 @@
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/loader-utils';
 import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
@@ -89,7 +90,7 @@ function resolveUri(uri: string = '', basePath: string): string {
     return uri;
   }
 
-  return `${basePath}/${uri}`;
+  return path.resolve(basePath, uri);
 }
 
 export function normalizeTileData(

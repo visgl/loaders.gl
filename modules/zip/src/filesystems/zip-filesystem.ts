@@ -3,12 +3,19 @@ import {FileProvider, isFileProvider} from '../file-provider/file-provider';
 import {FileHandleFile} from '../file-provider/file-handle-file';
 import {ZipCDFileHeader, zipCDFileHeaderGenerator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
+import {DeflateCompression} from '@loaders.gl/compression';
 
 type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
 /** Handling different compression types in zip */
 const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
   /** No compression */
-  0: async (compressedFile) => compressedFile
+  0: async (compressedFile) => compressedFile,
+  /** Deflation */
+  8: async (compressedFile) => {
+    const compression = new DeflateCompression({raw: true});
+    const decompressedData = await compression.decompress(compressedFile);
+    return decompressedData;
+  }
 };
 
 /**
@@ -17,7 +24,8 @@ const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
  */
 export class ZipFileSystem implements FileSystem {
   /** FileProvider instance promise */
-  private fileProvider: Promise<FileProvider | null> = Promise.resolve(null);
+  protected fileProvider: Promise<FileProvider | null> = Promise.resolve(null);
+  public fileName?: string;
 
   /**
    * Constructor
@@ -26,6 +34,7 @@ export class ZipFileSystem implements FileSystem {
   constructor(file: FileProvider | string) {
     // Try to open file in NodeJS
     if (typeof file === 'string') {
+      this.fileName = file;
       if (!isBrowser) {
         this.fileProvider = FileHandleFile.from(file);
       } else {
@@ -40,7 +49,7 @@ export class ZipFileSystem implements FileSystem {
   async destroy() {
     const fileProvider = await this.fileProvider;
     if (fileProvider) {
-      fileProvider.destroy();
+      await fileProvider.destroy();
     }
   }
 
@@ -103,6 +112,7 @@ export class ZipFileSystem implements FileSystem {
     const uncompressedFile = await compressionHandler(compressedFile);
 
     const response = new Response(uncompressedFile);
+    Object.defineProperty(response, 'url', {value: `${this.fileName || ''}/${filename}`});
     return response;
   }
 

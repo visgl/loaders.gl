@@ -46,7 +46,7 @@ export class Tiles3DArchive {
       data = await this.getFileBytes(path);
     }
     if (!data) {
-      throw new Error('No such file in the archieve');
+      throw new Error('No such file in the archive');
     }
 
     return data;
