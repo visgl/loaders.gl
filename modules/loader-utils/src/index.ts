@@ -119,7 +119,7 @@ import * as stream from './lib/node/stream';
 export {stream};
 
 // EXPERIMENTAL
-export {FileSystem, RandomAccessReadFileSystem} from './lib/filesystems/filesystem';
+export type {FileSystem, RandomAccessReadFileSystem} from './lib/filesystems/filesystem';
 export {NodeFileSystem as _NodeFileSystem} from './lib/filesystems/node-filesystem';
 
 export type {FileProvider} from './lib/file-provider/file-provider';

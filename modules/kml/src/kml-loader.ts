@@ -1,6 +1,7 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {geojsonToBinary} from '@loaders.gl/gis';
-import {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
+// import {geojsonToBinary} from '@loaders.gl/gis';
+// import {GeoJSONRowTable} from '@loaders.gl/schema';
+import {FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
 import {kml} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
 
@@ -10,9 +11,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMLLoaderOptions = LoaderOptions & {
   kml?: {
-    shape?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-row-table';
     /** @deprecated. Use options.kml.shape */
-    type?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    type?: 'object-row-table' | 'geojson-row-table';
   };
   gis?: {
     /** @deprecated. Use options.kml.shape */

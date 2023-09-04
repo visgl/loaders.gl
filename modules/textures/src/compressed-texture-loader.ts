@@ -1,4 +1,4 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 import parseBasis from './lib/parsers/parse-basis';
@@ -46,9 +46,9 @@ export const CompressedTextureWorkerLoader = {
 /**
  * Loader for KTX, DDS, and PVR texture container formats
  */
-export const CompressedTextureLoader: LoaderWithParser = {
+export const CompressedTextureLoader: LoaderWithParser<any, never, TextureLoaderOptions> = {
   ...CompressedTextureWorkerLoader,
-  parse: async (arrayBuffer, options?: TextureLoaderOptions) => {
+  parse: async (arrayBuffer: ArrayBuffer, options?: TextureLoaderOptions) => {
     if (options?.['compressed-texture']?.useBasis) {
       // @ts-expect-error TODO not allowed to modify inputs
       options.basis = {
@@ -66,7 +66,3 @@ export const CompressedTextureLoader: LoaderWithParser = {
     return parseCompressedTexture(arrayBuffer);
   }
 };
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCompressedTextureWorkerLoader: Loader = CompressedTextureWorkerLoader;
-export const _TypecheckCompressedTextureLoader: LoaderWithParser = CompressedTextureLoader;

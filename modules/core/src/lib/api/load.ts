@@ -35,7 +35,7 @@ export async function load(
   context?: LoaderContext
 ): Promise<unknown>;
 
-export async function load<(
+export async function load(
   url: string | DataType,
   loaders?: LoaderOptions,
   context?: LoaderContext
