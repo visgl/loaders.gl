@@ -1,4 +1,4 @@
-import {FileProvider} from '../file-provider/file-provider';
+import {FileProvider} from '@loaders.gl/loader-utils';
 
 /** Description of zip signature type */
 export type ZipSignature = [number, number, number, number];

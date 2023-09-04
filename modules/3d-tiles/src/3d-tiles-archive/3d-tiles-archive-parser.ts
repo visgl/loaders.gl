@@ -1,5 +1,5 @@
+import {FileProvider} from '@loaders.gl/loader-utils';
 import {
-  FileProvider,
   HashElement,
   cdSignature as cdHeaderSignature,
   generateHashInfo,

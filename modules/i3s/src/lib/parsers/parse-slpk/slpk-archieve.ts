@@ -1,5 +1,6 @@
 import md5 from 'md5';
-import {FileProvider, parseZipLocalFileHeader, HashElement, findBin} from '@loaders.gl/zip';
+import {FileProvider} from '@loaders.gl/loader-utils';
+import {parseZipLocalFileHeader, HashElement, findBin} from '@loaders.gl/zip';
 import {GZipCompression} from '@loaders.gl/compression';
 
 /** Description of real paths for different file types */

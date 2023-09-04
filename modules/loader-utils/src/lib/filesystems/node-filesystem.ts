@@ -1,5 +1,5 @@
 import * as fs from '../node/fs';
-import {IFileSystem, IRandomAccessReadFileSystem} from '../../types';
+import {FileSystem, RandomAccessReadFileSystem} from './filesystem';
 // import {fetchFile} from "../fetch/fetch-file"
 // import {selectLoader} from "../api/select-loader";
 
@@ -21,8 +21,8 @@ type ReadOptions = {
  * Compatible with BrowserFileSystem.
  * @param options
  */
-export default class NodeFileSystem implements IFileSystem, IRandomAccessReadFileSystem {
-  // implements IFileSystem
+export class NodeFileSystem implements FileSystem, RandomAccessReadFileSystem {
+  // implements FileSystem
   constructor(options: {[key: string]: any}) {
     this.fetch = options._fetch;
   }

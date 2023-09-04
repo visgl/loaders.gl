@@ -3,7 +3,7 @@
 /**
  * Intercepts the Response stream and creates a new Response
  */
-export default async function fetchProgress(
+export async function fetchProgress(
   response: Response | Promise<Response>,
   onProgress: any, // TODO better callback types
   onDone = () => {},

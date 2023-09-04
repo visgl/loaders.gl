@@ -1,11 +1,12 @@
 import test from 'tape-promise/tape';
-import {FileHandleFile} from '../../src/file-provider/file-handle-file';
-import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
-import {fetchFile, isBrowser} from '@loaders.gl/core';
-import {DataViewFile} from '../../src/file-provider/data-view-file';
-import {FileProvider} from '../../src/file-provider/file-provider';
 
-const ZIP_FILE_PATH = './modules/zip/test/data/test-store.zip';
+import {fetchFile, isBrowser} from '@loaders.gl/core';
+import {FileHandleFile} from '@loaders.gl/loader-utils';
+import {DataViewFile} from '@loaders.gl/loader-utils';
+import {FileProvider} from '@loaders.gl/loader-utils';
+import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
+
+const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';
 
 test('zip#ZipFileSystem - initialize from existing fileHandler', async (t) => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);

@@ -1,5 +1,5 @@
-import {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {DataViewFile} from '@loaders.gl/zip';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {DataViewFile} from '@loaders.gl/loader-utils';
 import {parse3DTilesArchive as parse3DTilesArchiveFromProvider} from './3d-tiles-archive/3d-tiles-archive-parser';
 
 // __VERSION__ is injected by babel-plugin-version-inline

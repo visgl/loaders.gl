@@ -1,5 +1,6 @@
-import {FileProvider} from '@loaders.gl/zip';
+import {FileProvider} from './file-provider';
 import {FileHandle} from './file-handle';
+import {resolvePath} from '../path-utils/file-aliases';
 
 /**
  * Provides file data using node fs library
@@ -10,6 +11,7 @@ export class FileHandleFile implements FileProvider {
    * @param path The path to the file in file system
    */
   static async from(path: string): Promise<FileHandleFile> {
+    path = resolvePath(path);
     const fileDescriptor = await FileHandle.open(path);
     return new FileHandleFile(fileDescriptor, fileDescriptor.stat.size);
   }

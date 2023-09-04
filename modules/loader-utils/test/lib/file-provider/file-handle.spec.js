@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import {FileHandle} from '../../src/file-provider/file-handle';
+import {FileHandle} from '@loaders.gl/loader-utils';
 import {promises as fsPromises} from 'fs';
 
 const SLPKUrl = 'modules/i3s/test/data/DA12_subset.slpk';

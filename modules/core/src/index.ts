@@ -11,8 +11,8 @@ export type {
   DataType,
   SyncDataType,
   BatchableDataType,
-  IFileSystem,
-  IRandomAccessReadFileSystem
+  FileSystem,
+  RandomAccessReadFileSystem
 } from '@loaders.gl/loader-utils';
 
 // FILE READING AND WRITING
@@ -53,9 +53,8 @@ export {NullWorkerLoader, NullLoader} from './null-loader';
 export {JSONLoader} from '@loaders.gl/loader-utils';
 
 // EXPERIMENTAL
-export {default as _fetchProgress} from './lib/progress/fetch-progress';
-export {default as _BrowserFileSystem} from './lib/filesystems/browser-filesystem';
-export type {FileSystem} from './lib/filesystems/filesystem';
+export {fetchProgress as _fetchProgress} from './lib/progress/fetch-progress';
+export {BrowserFileSystem as _BrowserFileSystem} from './lib/filesystems/browser-filesystem';
 
 // FOR TESTING
 export {_unregisterLoaders} from './lib/api/register-loaders';

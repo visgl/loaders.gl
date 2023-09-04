@@ -1,10 +1,8 @@
+// loaders.gl, MIT license
+
 export {ZipLoader} from './zip-loader';
 export {ZipWriter} from './zip-writer';
-export {default as TarBuilder} from './tar-builder';
-
-export type {FileProvider} from './file-provider/file-provider';
-export {FileHandleFile} from './file-provider/file-handle-file';
-export {DataViewFile} from './file-provider/data-view-file';
+export {TarBuilder} from './tar-builder';
 
 export {
   parseZipCDFileHeader,
