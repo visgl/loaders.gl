@@ -20,7 +20,8 @@ export async function* parseJSONInBatches(
 
   // TODO fix Schema deduction
   const schema = null; // new Schema([]);
-  const shape = options?.json?.shape || 'row-table';
+  // TODO - detect shape from data?
+  const shape = options?.json?.shape || 'object-row-table';
   // @ts-ignore
   const tableBatchBuilder = new TableBatchBuilder(schema, {
     ...options,

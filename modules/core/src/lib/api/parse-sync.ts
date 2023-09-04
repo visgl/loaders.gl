@@ -33,12 +33,12 @@ export function parseSync(
   loaders: Loader[],
   options?: LoaderOptions,
   context?: LoaderContext
-): any;
+): unknown;
 
 /**
  * Parses `data` synchronously by matching a pre=registered loader
  */
-export function parseSync(data: SyncDataType, options?: LoaderOptions): any;
+export function parseSync(data: SyncDataType, options?: LoaderOptions): unknown;
 
 /**
  * Parses `data` synchronously using a specified loader

@@ -66,39 +66,54 @@ export type Tables<TableType = Table> = {
 // Batches
 
 /** Batch for a general table */
-export type TableBatch = Batch & {
-  data: any;
-  length: number;
-  schema?: Schema;
-  schemaType?: 'explicit' | 'deduced';
-};
+export type TableBatch =
+  | ArrayRowTableBatch
+  | ObjectRowTableBatch
+  | GeoJSONRowTableBatch
+  | ColumnarTableBatch
+  | ArrowTableBatch;
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type ArrayRowTableBatch = TableBatch & {
+export type ArrayRowTableBatch = Batch & {
   shape: 'array-row-table';
+  schema?: Schema;
+  schemaType?: 'explicit' | 'deduced';
   data: any[][];
+  length: number;
 };
 
 /** Batch for a table organized as an array of rows, each row is an object mapping columns to values */
-export type ObjectRowTableBatch = TableBatch & {
+export type ObjectRowTableBatch = Batch & {
   shape: 'object-row-table';
+  schema?: Schema;
+  schemaType?: 'explicit' | 'deduced';
   data: {[columnName: string]: any}[];
+  length: number;
 };
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type GeoJSONRowTableBatch = TableBatch & {
+export type GeoJSONRowTableBatch = Batch & {
   shape: 'geojson-row-table';
+  schema?: Schema;
+  schemaType?: 'explicit' | 'deduced';
   data: Feature[];
+  length: number;
 };
 
 /** Batch for a table organized as a map of columns, each column is an array of value */
-export type ColumnarTableBatch = TableBatch & {
+export type ColumnarTableBatch = Batch & {
   shape: 'columnar-table';
+  schemaType?: 'explicit' | 'deduced';
+  schema?: Schema;
   data: {[columnName: string]: ArrayLike<unknown>};
+  length: number;
 };
 
 /** Batch for a table organized as an Apache Arrow table */
-export type ArrowTableBatch = TableBatch & {
+export type ArrowTableBatch = Batch & {
   shape: 'arrow-table';
+  schemaType?: 'explicit' | 'deduced';
+  schema?: Schema;
   data: RecordBatch;
+  length: number;
 };

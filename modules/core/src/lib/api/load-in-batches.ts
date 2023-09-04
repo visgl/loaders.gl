@@ -39,21 +39,21 @@ export function loadInBatches(
   loaders?: LoaderWithParser | LoaderWithParser[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<AsyncIterable<any>>;
+): Promise<AsyncIterable<unknown>>;
 
 export function loadInBatches(
   files: FileType[] | FileList,
   loaders?: LoaderWithParser | LoaderWithParser[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<AsyncIterable<any>>;
+): Promise<AsyncIterable<unknown>>[];
 
 export function loadInBatches(
   files: FileType | FileType[] | FileList,
   loaders?: LoaderWithParser | LoaderWithParser[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-) {
+): Promise<AsyncIterable<unknown>> | Promise<AsyncIterable<unknown>>[] {
   let loadersArray: LoaderWithParser | LoaderWithParser[] | undefined;
   // Signature: load(url, options)
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
@@ -86,7 +86,7 @@ async function loadOneFileInBatches(
   loaders: LoaderWithParser | LoaderWithParser[],
   options: LoaderOptions,
   fetch: FetchLike
-) {
+): Promise<AsyncIterable<unknown>> {
   if (typeof file === 'string') {
     const url = file;
     const response = await fetch(url);

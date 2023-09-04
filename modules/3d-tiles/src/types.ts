@@ -42,6 +42,7 @@ export type GLTFHeader = {
  * https://github.com/CesiumGS/3d-tiles/tree/main/specification#property-reference
  */
 export type Tiles3DTilesetJSON = {
+  shape: 'tileset3d';
   /** Metadata about the entire tileset.
    * https://github.com/CesiumGS/3d-tiles/tree/main/specification#asset
    */
@@ -202,6 +203,8 @@ export type TilesetProperty = {
 };
 
 export type Tiles3DTileContent = {
+  shape: 'tile3d';
+
   /** Common properties */
   byteOffset?: number;
   type?: string;

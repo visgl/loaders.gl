@@ -99,7 +99,7 @@ test('loadDraco# Pass options to draco loader properly', async (t) => {
     worker: true,
     reuseWorkers: true
   };
-  const tile = {};
+
   const context: LoaderContext = {
     _parse: async (buffer, loader, resultOptions) => {
       t.deepEqual(resultOptions, resultObject);
@@ -117,7 +117,7 @@ test('loadDraco# Pass options to draco loader properly', async (t) => {
     worker: true,
     reuseWorkers: true
   };
-  await loadDraco(tile, dracoData, options, context);
+  await loadDraco({shape: 'tile3d'}, dracoData, options, context);
 });
 
 /*

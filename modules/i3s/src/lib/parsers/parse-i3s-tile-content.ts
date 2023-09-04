@@ -70,6 +70,7 @@ export async function parseI3STileContent(
 
     // @ts-expect-error options is not properly typed
     if (options?.i3s.decodeTextures) {
+      // TODO - replace with switch
       if (loader === ImageLoader) {
         const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
         try {
@@ -82,23 +83,18 @@ export async function parseI3STileContent(
           // context object is different between worker and node.js conversion script.
           // To prevent error we parse data in ordinary way if it is not parsed by using context.
           const texture = await parse(arrayBuffer, loader, options, context);
-          // @ts-expect-error
           content.texture = texture;
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
         let texture = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
         if (loader === BasisLoader) {
-          // @ts-expect-error
           texture = texture[0];
         }
         content.texture = {
           compressed: true,
           mipmaps: false,
-          // @ts-expect-error
           width: texture[0].width,
-          // @ts-expect-error
           height: texture[0].height,
-          // @ts-expect-error
           data: texture
         };
       }

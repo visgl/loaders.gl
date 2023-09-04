@@ -33,7 +33,6 @@ export const CesiumIonLoader: LoaderWithParser = {
   },
   options: {
     'cesium-ion': {
-      // @ts-expect-error
       ...Tiles3DLoader.options['3d-tiles'],
       accessToken: null
     }

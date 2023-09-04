@@ -33,7 +33,13 @@ export async function load(
   loaders: Loader[],
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<any>;
+): Promise<unknown>;
+
+export async function load(
+  url: string | DataType,
+  loaders?: LoaderOptions,
+  context?: LoaderContext
+): Promise<unknown>;
 
 export async function load(url: string | DataType, loaders: LoaderOptions): Promise<any>;
 
@@ -43,7 +49,7 @@ export async function load(
   loaders?: Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<any> {
+): Promise<unknown> {
   let resolvedLoaders: Loader | Loader[];
   let resolvedOptions: LoaderOptions | undefined;
 

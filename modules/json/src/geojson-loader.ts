@@ -38,6 +38,7 @@ export const GeoJSONWorkerLoader: Loader<GeoJSON, TableBatch, GeoJSONLoaderOptio
       shape: 'object-row-table'
     },
     json: {
+      shape: 'object-row-table',
       jsonpaths: ['$', '$.features']
     },
     gis: {

@@ -36,7 +36,7 @@ export async function parseInBatches(
   loaders: Loader[],
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<AsyncIterable<any>>;
+): Promise<AsyncIterable<unknown>>;
 
 /**
  * Parses `data` in batches by selecting a pre-registered loader
@@ -44,7 +44,7 @@ export async function parseInBatches(
 export async function parseInBatches(
   data: BatchableDataType,
   options?: LoaderOptions
-): Promise<AsyncIterable<any>>;
+): Promise<AsyncIterable<unknown>>;
 
 /**
  * Parses `data` using a specified loader

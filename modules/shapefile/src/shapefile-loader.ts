@@ -28,5 +28,3 @@ export const ShapefileLoader: LoaderWithParser<any, any, LoaderOptions> = {
   parse: parseShapefile,
   parseInBatches: parseShapefileInBatches
 };
-
-export const _typecheckShapefileLoader: LoaderWithParser = ShapefileLoader;

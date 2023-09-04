@@ -10,7 +10,7 @@ export async function parseGltf3DTile(
   arrayBuffer: ArrayBuffer,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
-): Promise<void> {
+): Promise<number> {
   // Set flags
   // glTF models need to be rotated from Y to Z up
   // https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#y-up-to-z-up
@@ -22,7 +22,7 @@ export async function parseGltf3DTile(
 
   if (options?.['3d-tiles']?.loadGLTF) {
     if (!context) {
-      return;
+      return arrayBuffer.byteLength;
     }
     const gltfWithBuffers = await parseFromContext(arrayBuffer, GLTFLoader, options, context);
     tile.gltf = postProcessGLTF(gltfWithBuffers);
@@ -30,4 +30,5 @@ export async function parseGltf3DTile(
   } else {
     tile.gltfArrayBuffer = arrayBuffer;
   }
+  return arrayBuffer.byteLength;
 }
