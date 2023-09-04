@@ -190,15 +190,6 @@ export class WMSService extends ImageSource<WMSServiceProps> {
 
   capabilities: WMSCapabilities | null = null;
 
-  /** A list of loaders used by the WMSService methods */
-  readonly loaders = [
-    ImageLoader,
-    WMSErrorLoader,
-    WMSCapabilitiesLoader,
-    WMSFeatureInfoLoader,
-    WMSLayerDescriptionLoader
-  ];
-
   /** Create a WMSService */
   constructor(props: WMSServiceProps) {
     super(props);
