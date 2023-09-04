@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '../src/csv-loader';
 import {getTableLength} from '@loaders.gl/schema';
 
 // Small CSV Sample Files
@@ -22,26 +22,26 @@ test('CSVLoader#loader conformance', (t) => {
 });
 
 test('CSVLoader#load(states.csv)', async (t) => {
-  const rows = await load(CSV_STATES_URL, CSVLoader);
-  t.equal(getTableLength(rows), 110);
+  const table = await load(CSV_STATES_URL, CSVLoader);
+  t.equal(getTableLength(table), 110);
   t.end();
 });
 
 test('CSVLoader#load', async (t) => {
-  const rows = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'object-row-table'}});
-  t.is(getTableLength(rows), 2, 'Got correct table size, correctly inferred no header');
-  t.deepEqual(rows[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+  const table = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'object-row-table'}});
+  t.is(getTableLength(table), 2, 'Got correct table size, correctly inferred no header');
+  t.deepEqual(table.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
 
-  const rows1 = await load(CSV_SAMPLE_URL, CSVLoader, {
+  const table1 = await load(CSV_SAMPLE_URL, CSVLoader, {
     csv: {shape: 'object-row-table', header: true}
   });
-  t.is(getTableLength(rows1), 1, 'Got correct table size, forced first row as header');
-  t.deepEqual(rows1[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
+  t.is(getTableLength(table1), 1, 'Got correct table size, forced first row as header');
+  t.deepEqual(table1.data[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
 
-  const rows2 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'array-row-table'}});
-  t.is(getTableLength(rows2), 2, 'Got correct table size');
+  const table2 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'array-row-table'}});
+  t.is(getTableLength(table2), 2, 'Got correct table size');
   t.deepEqual(
-    rows2,
+    table2.data,
     [
       ['A', 'B', 1],
       ['X', 'Y', 2]
@@ -49,12 +49,12 @@ test('CSVLoader#load', async (t) => {
     'Got correct array content'
   );
 
-  const rows3 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
+  const table3 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(getTableLength(rows3), 2000, 'Got correct table size');
+  t.is(getTableLength(table3), 2000, 'Got correct table size');
   t.deepEqual(
-    rows3[0],
+    table3.data[0],
     {
       TLD: 'ABC',
       'meaning of life': 42,
@@ -63,12 +63,12 @@ test('CSVLoader#load', async (t) => {
     'Got correct first row'
   );
 
-  const rows4 = await load(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
+  const table4 = await load(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(getTableLength(rows4), 499, 'Got correct table size (csv with quotes)');
+  t.is(getTableLength(table4), 499, 'Got correct table size (csv with quotes)');
   t.deepEqual(
-    rows4[0],
+    table4.data[0],
     {
       IncidntNum: 160919032,
       Category: 'VANDALISM',
@@ -87,12 +87,12 @@ test('CSVLoader#load', async (t) => {
 });
 
 test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
-  const rows = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
+  const table = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(getTableLength(rows), 3, 'Got correct table size');
+  t.is(getTableLength(table), 3, 'Got correct table size');
   t.deepEqual(
-    rows,
+    table.data,
     [
       {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2},
       {A: 'y', B: 29, 'A.1': 'z', 'A.1.1': 'y', 'A.2': 'w', 'B.1': 19},
@@ -101,12 +101,12 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
     'dataset should be parsed with the corrected duplicate headers'
   );
 
-  const rows2 = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
+  const table2 = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'array-row-table', header: false}
   });
-  t.is(getTableLength(rows2), 4, 'Got correct table size');
+  t.is(getTableLength(table2), 4, 'Got correct table size');
   t.deepEqual(
-    rows2,
+    table2.data,
     [
       ['A', 'B', 'A', 'A.1', 'A', 'B'],
       ['x', 1, 'y', 'z', 'w', 2],
@@ -120,8 +120,8 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
 // TSV
 
 test('CSVLoader#load(brazil.tsv)', async (t) => {
-  const rows = await load(TSV_BRAZIL, CSVLoader);
-  t.equal(getTableLength(rows), 10);
+  const table = await load(TSV_BRAZIL, CSVLoader);
+  t.equal(getTableLength(table), 10);
   t.end();
 });
 
