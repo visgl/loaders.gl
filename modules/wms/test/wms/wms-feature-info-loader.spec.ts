@@ -13,7 +13,7 @@ test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
   let text =
     '<?xml version="1.0" encoding="UTF-8" ?>' + '<FeatureInfoResponse>' + '</FeatureInfoResponse>';
 
-  let featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  let featureInfo = (await parse(text, WMSFeatureInfoLoader));
   t.equal(featureInfo.features.length, 0, 'Parsing empty FeatureInfoResponse response successful');
 
   // read 1 feature
@@ -23,7 +23,7 @@ test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
     '  <FIELDS OBJECTID="1188" HECTARES="1819.734" ZONENR="5854" NULZONES=" " AREA="18197340.1426" PERIMETER="19177.4073627" SHAPE="NULL" SE_ANNO_CAD_DATA="NULL" SHAPE.AREA="0" SHAPE.LEN="0"/>' +
     '</FeatureInfoResponse>';
 
-  featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  featureInfo = (await parse(text, WMSFeatureInfoLoader));
   t.equal(featureInfo.features.length, 1, 'Parsed 1 feature in total');
 
   t.equal(
@@ -41,7 +41,7 @@ test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
     '  <FIELDS OBJECTID="99" Shape="NULL" LENGTH="378.836" TYPE="Multi-Lane Divided" ADMN_CLASS="Interstate" TOLL_RD="N" RTE_NUM1=" 80" RTE_NUM2=" " ROUTE="Interstate  80" Shape_Length="7.04294883879398"/>' +
     '</FeatureInfoResponse>';
 
-  featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  featureInfo = (await parse(text, WMSFeatureInfoLoader));
 
   t.equal(featureInfo.features.length, 3, 'Parsed 3 features in total');
 
@@ -65,7 +65,7 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
     '	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
     '</msGMLOutput>';
 
-  let featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  let featureInfo = (await parse(text, WMSFeatureInfoLoader));
   t.equal(featureInfo.features.length, 0, 'Parsing empty msGMLOutput response succesfull');
 
   // read 1 feature from 1 layer
@@ -94,7 +94,7 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
     '	</AAA64_layer>' +
     '</msGMLOutput>';
 
-  featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  featureInfo = (await parse(text, WMSFeatureInfoLoader));
 
   t.equal(featureInfo.features.length, 1, 'Parsed 1 feature in total');
 
@@ -163,7 +163,7 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
     '	</AAA62_layer>' +
     '</msGMLOutput>';
 
-  featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  featureInfo = (await parse(text, WMSFeatureInfoLoader));
 
   t.equal(featureInfo.features.length, 2, 'Parsed 2 features in total');
 
@@ -200,7 +200,7 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
     '       </wegbeheerderinfo_layer>' +
     '</msGMLOutput>';
 
-  featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  featureInfo = (await parse(text, WMSFeatureInfoLoader));
 
   // t.equal(
   //   featureInfo.features[0].geometry instanceof OpenLayers.Geometry.MultiLineString,
@@ -250,7 +250,7 @@ test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async (t) => {
     '  </gml:featureMember>' +
     '  </ogcwfs:FeatureCollection>';
 
-  let featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  let featureInfo = (await parse(text, WMSFeatureInfoLoader));
 
   t.equal(
     featureInfo.features.length,
@@ -271,7 +271,7 @@ test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async (t) => {
   text =
     '<?xml version="1.0" encoding="UTF-8"?><wfs:FeatureCollection xmlns="http://www.opengis.net/wfs" xmlns:wfs="http://www.opengis.net/wfs" xmlns:opengeo="http://opengeo.org" xmlns:gml="http://www.opengis.net/gml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://opengeo.org http://demo.opengeo.org:80/geoserver/wfs?service=WFS&amp;version=1.0.0&amp;request=DescribeFeatureType&amp;typeName=opengeo:roads http://www.opengis.net/wfs http://demo.opengeo.org:80/geoserver/schemas/wfs/1.0.0/WFS-basic.xsd"><gml:boundedBy><gml:Box srsName="http://www.opengis.net/gml/srs/epsg.xml#26713"><gml:coordinates xmlns:gml="http://www.opengis.net/gml" decimal="." cs="," ts=" ">591943.9375,4925605 593045.625,4925845</gml:coordinates></gml:Box></gml:boundedBy><gml:featureMember><opengeo:roads fid="roads.90"><opengeo:cat>3</opengeo:cat><opengeo:label>secondary highway, hard surface</opengeo:label><opengeo:the_geom><gml:MultiLineString srsName="http://www.opengis.net/gml/srs/epsg.xml#26713"><gml:lineStringMember><gml:LineString><gml:coordinates xmlns:gml="http://www.opengis.net/gml" decimal="." cs="," ts=" ">593045.60746465,4925605.0059156 593024.32382915,4925606.79305411 592907.54863574,4925624.85647524 592687.35111096,4925670.76834012 592430.76279218,4925678.79393165 592285.97636109,4925715.70811767 592173.39165655,4925761.83511156 592071.1753393,4925793.95523514 591985.96972625,4925831.59842486 591943.98769455,4925844.93220071</gml:coordinates></gml:LineString></gml:lineStringMember></gml:MultiLineString></opengeo:the_geom></opengeo:roads></gml:featureMember></wfs:FeatureCollection>';
 
-  featureInfo = (await parse(text, WMSFeatureInfoLoader)) as WMSFeatureInfo;
+  featureInfo = (await parse(text, WMSFeatureInfoLoader));
 
   t.equal(
     featureInfo.features.length,

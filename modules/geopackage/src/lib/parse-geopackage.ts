@@ -370,8 +370,9 @@ function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
 
   // Loaders should not depend on `core` and the context passed to the main loader doesn't include a
   // `parseSync` option, so instead we call parseSync directly on WKBLoader
-  const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
+  const binaryGeometry = WKBLoader.parseSync?.(arrayBuffer.slice(wkbOffset));
 
+  // @ts-expect-error
   return binaryToGeometry(binaryGeometry);
 }
 

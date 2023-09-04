@@ -20,10 +20,9 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
 /**
  * Loader for the response to the CSW GetCapability request
  */
-export const CSWCapabilitiesLoader = {
+export const CSWCapabilitiesLoader: LoaderWithParser<CSWCapabilities, never, CSWLoaderOptions> = {
   id: 'csw-capabilities',
   name: 'CSW Capabilities',
-
   module: 'wms',
   version: VERSION,
   worker: false,
@@ -42,5 +41,3 @@ function testXMLFile(text: string): boolean {
   // TODO - There could be space first.
   return text.startsWith('<?xml');
 }
-
-export const _typecheckCSWCapabilitiesLoader: LoaderWithParser = CSWCapabilitiesLoader;

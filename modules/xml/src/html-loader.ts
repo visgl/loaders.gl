@@ -12,7 +12,7 @@ export type HTMLLoaderOptions = XMLLoaderOptions;
  * This split enables applications can control whether they want HTML responses to be parsed by the XML loader or not.
  * This loader does not have any additional understanding of the structure of HTML or the document.
  */
-export const HTMLLoader: LoaderWithParser = {
+export const HTMLLoader: LoaderWithParser<any, never, HTMLLoaderOptions> = {
   ...XMLLoader,
   name: 'HTML',
   id: 'html',

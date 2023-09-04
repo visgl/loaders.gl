@@ -1,4 +1,4 @@
-import type {WorkerObject} from '@loaders.gl/worker-utils';
+// import type {WorkerObject} from '@loaders.gl/worker-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -30,5 +30,3 @@ export function compressOnWorker(
 ): Promise<ArrayBuffer> {
   return processOnWorker(CompressionWorker, data, options);
 }
-
-export const _typecheckCompressionWorker: WorkerObject = CompressionWorker;

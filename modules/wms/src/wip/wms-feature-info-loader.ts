@@ -12,7 +12,8 @@ export {WMSFeatureInfo};
 /**
  * Loader for the response to the WMS GetFeatureInfo request
  */
-export const WMSFeatureInfoLoader = {
+// @ts-expect-error
+export const WMSFeatureInfoLoader: LoaderWithParser<WMSFeatureInfo, never, XMLLoaderOptions> = {
   ...WMSCapabilitiesLoader,
 
   id: 'wms-feature-info',

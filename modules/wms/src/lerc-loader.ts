@@ -22,7 +22,7 @@ export type LERCLoaderOptions = LoaderOptions & {
 /**
  * Loader for the LERC raster format
  */
-export const LERCLoader = {
+export const LERCLoader: LoaderWithParser = {
   id: 'lerc',
   name: 'LERC',
 
@@ -46,5 +46,3 @@ async function parseLERC(arrayBuffer: ArrayBuffer, options?: LERCLoaderOptions):
   const pixelBlock = Lerc.decode(arrayBuffer, options?.lerc);
   return pixelBlock;
 }
-
-export const _typecheckLERCLoader: LoaderWithParser = LERCLoader;

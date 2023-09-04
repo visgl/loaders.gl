@@ -18,7 +18,7 @@ const DEFAULT_LOADER_OPTIONS: VideoLoaderOptions = {
   video: {}
 };
 
-export const VideoLoader = {
+export const VideoLoader: LoaderWithParser<HTMLVideoElement, never, VideoLoaderOptions> = {
   name: 'Video',
   id: 'video',
   module: 'video',
@@ -31,5 +31,3 @@ export const VideoLoader = {
   // tests: arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer))),
   options: DEFAULT_LOADER_OPTIONS
 };
-
-export const _typecheckVideoLoader: LoaderWithParser = VideoLoader;

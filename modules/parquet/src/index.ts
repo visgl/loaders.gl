@@ -73,9 +73,6 @@ export {
   convertParquetSchema as convertParquetToArrowSchema
 } from './lib/arrow/convert-schema-from-parquet';
 
-// TESTS
-export const _typecheckParquetLoader: LoaderWithParser = ParquetLoader;
-
 // Geo Metadata
 export {default as geoJSONSchema} from './lib/geo/geoparquet-schema';
 

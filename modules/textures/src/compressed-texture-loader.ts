@@ -20,7 +20,7 @@ const DEFAULT_TEXTURE_LOADER_OPTIONS = {
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
  */
-export const CompressedTextureWorkerLoader = {
+export const CompressedTextureWorkerLoader: Loader<any, never, TextureLoaderOptions> = {
   name: 'Texture Containers',
   id: 'compressed-texture',
   module: 'textures',
@@ -61,7 +61,8 @@ export const CompressedTextureLoader: LoaderWithParser<any, never, TextureLoader
         containerFormat: 'ktx2',
         module: 'encoder'
       };
-      return (await parseBasis(arrayBuffer, options))[0];
+      const result = await parseBasis(arrayBuffer, options);
+      return result[0];
     }
     return parseCompressedTexture(arrayBuffer);
   }

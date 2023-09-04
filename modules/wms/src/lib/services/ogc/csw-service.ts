@@ -244,14 +244,14 @@ export class CSWService extends DataSource<CSWServiceProps> {
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers['content-type'];
     if (!response.ok || CSWErrorLoader.mimeTypes.includes(contentType)) {
-      const error = CSWErrorLoader.parseSync(arrayBuffer, this.props.loadOptions);
+      const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.props.loadOptions);
       throw new Error(error);
     }
   }
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = CSWErrorLoader.parseSync(arrayBuffer, this.props.loadOptions);
+    const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.props.loadOptions);
     return new Error(error);
   }
 }
