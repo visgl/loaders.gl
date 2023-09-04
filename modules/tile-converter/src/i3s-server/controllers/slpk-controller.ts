@@ -1,6 +1,6 @@
 import '@loaders.gl/polyfills';
 import {parseSLPK} from '@loaders.gl/i3s';
-import {FileHandleFile} from '@loaders.gl/zip';
+import {FileHandleFile} from '@loaders.gl/loader-utils';
 
 let slpkArchive;
 

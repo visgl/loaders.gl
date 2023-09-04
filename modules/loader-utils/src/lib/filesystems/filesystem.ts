@@ -51,7 +51,6 @@ export interface RandomAccessReadFileSystem extends FileSystem {
   // ): Promise<{bytesRead: number; buffer: ArrayBuffer}>;
 }
 
-
 /**
  * A FileSystem interface can encapsulate a FileList, a ZipFile, a GoogleDrive etc.
  *

@@ -1,7 +1,9 @@
 import test from 'tape-promise/tape';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
-import {DataViewFile} from '../../src/file-provider/data-view-file';
-import {signature} from '../../src/parse-zip/local-file-header';
+import {DataViewFile} from '@loaders.gl/loader-utils';
+
+// TODO - try hard to avoid use of Node.js Buffer
+export const signature = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 
 test('DataViewFile#slice', async (t) => {
   const provider = new DataViewFile(new DataView(DATA_ARRAY.buffer));

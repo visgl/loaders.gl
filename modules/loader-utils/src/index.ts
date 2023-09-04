@@ -124,6 +124,8 @@ export {NodeFileSystem as _NodeFileSystem} from './lib/filesystems/node-filesyst
 
 export type {FileProvider} from './lib/file-provider/file-provider';
 export {isFileProvider} from './lib/file-provider/file-provider';
+
+export {FileHandle} from './lib/file-provider/file-handle';
 export {FileHandleFile} from './lib/file-provider/file-handle-file';
 export {DataViewFile} from './lib/file-provider/data-view-file';
 
@@ -132,4 +134,3 @@ export {makeReadableFile} from './lib/filesystems/readable-file';
 
 export type {WritableFile} from './lib/filesystems/writable-file';
 export {makeWritableFile} from './lib/filesystems/writable-file';
-
