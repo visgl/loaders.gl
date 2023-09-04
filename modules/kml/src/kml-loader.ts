@@ -27,7 +27,7 @@ const KML_HEADER = `\
 /**
  * Loader for KML (Keyhole Markup Language)
  */
-export const KMLLoader = {
+export const KMLLoader: LoaderWithParser<any, never, KMLLoaderOptions> = {
   name: 'KML (Keyhole Markup Language)',
   id: 'kml',
   module: 'kml',
@@ -77,5 +77,3 @@ function parseTextSync(text: string, options?: KMLLoaderOptions) {
       return geojson;
   }
 }
-
-export const _typecheckKMLLoader: LoaderWithParser = KMLLoader;
