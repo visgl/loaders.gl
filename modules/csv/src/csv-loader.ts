@@ -108,7 +108,7 @@ async function parseCSV(
 
   const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix!, firstRow.length);
 
-  switch (csvOptions.shape) {
+  switch (csvOptions.shape || 'object-row-table') {
     case 'object-row-table':
       return {
         shape: 'object-row-table',
