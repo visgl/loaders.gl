@@ -12,6 +12,7 @@ export type FileReadResult = {
 export class FileHandle {
   private fileDescriptor: number;
   private stats: BigIntStats;
+
   private constructor(fileDescriptor: number, stats: BigIntStats) {
     this.fileDescriptor = fileDescriptor;
     this.stats = stats;
@@ -23,17 +24,17 @@ export class FileHandle {
    * @return Fulfills with a {FileHandle} object.
    */
 
-  static open = async (path: string): Promise<FileHandle> => {
+  static async open(path: string): Promise<FileHandle> {
     const [fd, stats] = await Promise.all([
-      new Promise<number>((s) => {
-        open(path, undefined, undefined, (_err, fd) => s(fd));
+      new Promise<number>((resolve, reject) => {
+        open(path, undefined, undefined, (_err, fd) => (_err ? reject(_err) : resolve(fd)));
       }),
-      new Promise<BigIntStats>((s) => {
-        stat(path, {bigint: true}, (_err, stats) => s(stats));
+      new Promise<BigIntStats>((resolve, reject) => {
+        stat(path, {bigint: true}, (_err, stats) => (_err ? reject(_err) : resolve(stats)));
       })
     ]);
     return new FileHandle(fd, stats);
-  };
+  }
 
   /** Close file */
   async close(): Promise<void> {
