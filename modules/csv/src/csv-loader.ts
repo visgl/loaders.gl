@@ -23,7 +23,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type CSVLoaderOptions = LoaderOptions & {
   csv?: {
     // loaders.gl options
-    shape?: 'array-row-table' | 'object-row-table' | 'columnar-table';
+    shape?: 'array-row-table' | 'object-row-table';
     /** optimizes memory usage but increases parsing time. */
     optimizeMemoryUsage?: boolean;
     columnPrefix?: string;
@@ -104,7 +104,7 @@ async function parseCSV(
   };
 
   const result = Papa.parse(csvText, papaparseConfig);
-  let rows = result.data as any[];
+  const rows = result.data as any[];
 
   const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix!, firstRow.length);
 
