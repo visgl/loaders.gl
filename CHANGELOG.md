@@ -6,6 +6,15 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.22
+
+- fix(zip): @loaders.gl/core dependency (#2620)
+- feat(tile-converter): support 3tz (#2609)
+- chore(core): Reduce use of implicit any, move test files to .ts (#2619)
+- chore: Use parseFromContext in subloaders (#2616)
+- feat(loader-utils): Type safe context parsers for sub loaders (#2613)
+- feat(3d-tiles): some improvements (#2610)
+
 ### v4.0.0-alpha.21
 
 - feat(core): parseSync, parseInBatches, load, loadInBatches type inference (#2612)
