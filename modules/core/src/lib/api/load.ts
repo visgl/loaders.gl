@@ -18,34 +18,39 @@ import {parse} from './parse';
  * @param context
  */
 
-export async function load<LoaderT extends Loader>(
+export async function load<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
   url: string | DataType,
   loader: LoaderT,
-  options?: LoaderOptionsType<LoaderT>,
+  options?: OptionsT,
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT>>;
 
-export async function load<LoaderOptionsT extends LoaderOptions = LoaderOptions>(
+export async function load(
   url: string | DataType,
-  loaders: Loader[] | LoaderOptions,
-  options?: LoaderOptionsT,
+  loaders: Loader[],
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<any>;
 
+export async function load(url: string | DataType, loaders: LoaderOptions): Promise<any>;
+
 // implementation signature
-export async function load<LoaderOptionsT extends LoaderOptions = LoaderOptions>(
+export async function load(
   url: string | DataType,
   loaders?: Loader[] | LoaderOptions,
-  options?: LoaderOptionsT,
+  options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<any> {
   let resolvedLoaders: Loader | Loader[];
-  let resolvedOptions: LoaderOptionsT | undefined;
+  let resolvedOptions: LoaderOptions | undefined;
 
   // Signature: load(url, options)
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     resolvedLoaders = [];
-    resolvedOptions = loaders as LoaderOptionsT;
+    resolvedOptions = loaders as LoaderOptions;
     context = undefined; // context not supported in short signature
   } else {
     resolvedLoaders = loaders as Loader | Loader[];

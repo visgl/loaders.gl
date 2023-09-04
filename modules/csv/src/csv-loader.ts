@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {Batch, TableBatch} from '@loaders.gl/schema';
+import type {TableBatch} from '@loaders.gl/schema';
 
 import {
   AsyncQueue,
@@ -44,26 +44,6 @@ export type CSVLoaderOptions = LoaderOptions & {
   };
 };
 
-const DEFAULT_CSV_LOADER_OPTIONS = {
-  csv: {
-    shape: 'object-row-table',
-    optimizeMemoryUsage: false,
-    // CSV options
-    header: 'auto',
-    columnPrefix: 'column',
-    // delimiter: auto
-    // newline: auto
-    quoteChar: '"',
-    escapeChar: '"',
-    dynamicTyping: true,
-    comments: false,
-    skipEmptyLines: true,
-    // transform: null?
-    delimitersToGuess: [',', '\t', '|', ';']
-    // fastMode: auto
-  }
-};
-
 export const CSVLoader: LoaderWithParser<Table, TableBatch, CSVLoaderOptions> = {
   id: 'csv',
   module: 'csv',
@@ -78,12 +58,30 @@ export const CSVLoader: LoaderWithParser<Table, TableBatch, CSVLoaderOptions> = 
   parseInBatches: parseCSVInBatches,
   // @ts-ignore
   // testText: null,
-  options: DEFAULT_CSV_LOADER_OPTIONS as CSVLoaderOptions
+  options: {
+    csv: {
+      shape: 'object-row-table',
+      optimizeMemoryUsage: false,
+      // CSV options
+      header: 'auto',
+      columnPrefix: 'column',
+      // delimiter: auto
+      // newline: auto
+      quoteChar: '"',
+      escapeChar: '"',
+      dynamicTyping: true,
+      comments: false,
+      skipEmptyLines: true,
+      // transform: null?
+      delimitersToGuess: [',', '\t', '|', ';']
+      // fastMode: auto
+    }
+  }
 };
 
 async function parseCSV(csvText: string, options?: CSVLoaderOptions) {
   // Apps can call the parse method directly, we so apply default options here
-  const csvOptions = {...DEFAULT_CSV_LOADER_OPTIONS.csv, ...options?.csv};
+  const csvOptions = {...CSVLoader.options.csv, ...options?.csv};
 
   const firstRow = readFirstRow(csvText);
   const header: boolean =
@@ -105,7 +103,7 @@ async function parseCSV(csvText: string, options?: CSVLoaderOptions) {
   const result = Papa.parse(csvText, papaparseConfig);
   let {data: rows} = result;
 
-  const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix, firstRow.length);
+  const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix!, firstRow.length);
 
   switch (csvOptions.shape) {
     case 'object-row-table':
@@ -136,7 +134,7 @@ async function parseCSV(csvText: string, options?: CSVLoaderOptions) {
 function parseCSVInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: CSVLoaderOptions
-): AsyncIterable<Batch> {
+): AsyncIterable<TableBatch> {
   // Papaparse does not support standard batch size handling
   // TODO - investigate papaparse chunks mode
   options = {...options};
@@ -145,9 +143,9 @@ function parseCSVInBatches(
   }
 
   // Apps can call the parse method directly, we so apply default options here
-  const csvOptions = {...DEFAULT_CSV_LOADER_OPTIONS.csv, ...options?.csv};
+  const csvOptions = {...CSVLoader.options.csv, ...options?.csv};
 
-  const asyncQueue = new AsyncQueue<Batch>();
+  const asyncQueue = new AsyncQueue<TableBatch>();
 
   let isFirstRow: boolean = true;
   let headerRow: string[] | null = null;
@@ -198,7 +196,7 @@ function parseCSVInBatches(
       if (isFirstRow) {
         isFirstRow = false;
         if (!headerRow) {
-          headerRow = generateHeader(csvOptions.columnPrefix, row.length);
+          headerRow = generateHeader(csvOptions.columnPrefix!, row.length);
         }
         schema = deduceSchema(row, headerRow);
       }
@@ -286,8 +284,8 @@ function readFirstRow(csvText: string): any[] {
  * See the header option in https://www.papaparse.com/docs#config
  * @returns a transform function that returns sanitized names for duplicate fields
  */
-function duplicateColumnTransformer() {
-  const observedColumns = new Set();
+function duplicateColumnTransformer(): (column: string) => string {
+  const observedColumns = new Set<string>();
   return (col) => {
     let colName = col;
     let counter = 1;
