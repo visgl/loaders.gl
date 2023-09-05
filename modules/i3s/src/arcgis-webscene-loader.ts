@@ -1,5 +1,5 @@
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {ArcGisWebSceneData} from './types';
+import type {ArcGISWebSceneData} from './types';
 
 import {parseWebscene} from './lib/parsers/parse-arcgis-webscene';
 
@@ -7,11 +7,13 @@ import {parseWebscene} from './lib/parsers/parse-arcgis-webscene';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
 
+export type ArcGISWebSceneLoaderOptions = LoaderOptions & {};
+
 /**
- * Loader for ArcGis WebScene
+ * Loader for ArcGIS WebScene
  * Spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
  */
-export const ArcGisWebSceneLoader: LoaderWithParser<ArcGisWebSceneData, never, LoaderOptions> = {
+export const ArcGISWebSceneLoader: LoaderWithParser<ArcGISWebSceneData, never, ArcGISWebSceneLoaderOptions> = {
   name: 'ArcGIS Web Scene Loader',
   id: 'arcgis-web-scene',
   module: 'i3s',
@@ -23,9 +25,9 @@ export const ArcGisWebSceneLoader: LoaderWithParser<ArcGisWebSceneData, never, L
 };
 
 /**
- * Parse ArcGis webscene
+ * Parse ArcGIS webscene
  * @param data
  */
-async function parse(data: ArrayBuffer): Promise<ArcGisWebSceneData> {
+async function parse(data: ArrayBuffer): Promise<ArcGISWebSceneData> {
   return parseWebscene(data);
 }

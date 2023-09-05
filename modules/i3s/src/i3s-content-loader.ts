@@ -1,4 +1,4 @@
-import type {LoaderWithParser, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderContext} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
 import {I3STileContent, I3STileOptions, I3STilesetOptions} from './types';
@@ -7,10 +7,11 @@ import {I3STileContent, I3STileOptions, I3STilesetOptions} from './types';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
+
 /**
  * Loader for I3S - Indexed 3D Scene Layer
  */
-export const I3SContentLoader: LoaderWithParser<I3STileContent, never, LoaderOptions> = {
+export const I3SContentLoader: LoaderWithParser<I3STileContent | null, never, I3SLoaderOptions> = {
   name: 'I3S Content (Indexed Scene Layers)',
   id: 'i3s-content',
   module: 'i3s',

@@ -82,10 +82,10 @@ export function normalizeTileNonUrlData(tile : I3SMinimalNodeData): I3STileHeade
   return {...tile, mbs, boundingVolume, lodMetricType, lodMetricValue, type, refine};
 }
 
-export async function normalizeTilesetData(tileset : SceneLayer3D, options : LoaderOptions, context: LoaderContext): Promise<I3STilesetHeader> {
+export async function normalizeTilesetData(tileset : SceneLayer3D, options : LoaderOptions, context: LoaderContext): Promise<I3STileHeader | I3STilesetHeader> {
   const url = context.url;
   let nodePagesTile: I3SNodePagesTiles | undefined;
-  let root: I3STileHeader;
+  let root: I3STileHeader | I3STilesetHeader;
   if (tileset.nodePages) {
     nodePagesTile = new I3SNodePagesTiles(tileset, url, options);
     root = await nodePagesTile.formTileFromNodePages(0);
@@ -109,6 +109,7 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
     basePath: url,
     type: TILESET_TYPE.I3S,
     nodePagesTile,
+    // @ts-expect-error
     root,
     lodMetricType: root.lodMetricType,
     lodMetricValue: root.lodMetricValue

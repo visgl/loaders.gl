@@ -883,16 +883,16 @@ export type FieldInfo = {
   label: string;
 };
 
-export type ArcGisWebSceneData = {
-  header: ArcGisWebScene;
+export type ArcGISWebSceneData = {
+  header: ArcGISWebScene;
   layers: OperationalLayer[];
   unsupportedLayers: OperationalLayer[];
 };
 
 /**
- * ArcGis WebScene spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
+ * ArcGIS WebScene spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
  */
-export type ArcGisWebScene = {
+export type ArcGISWebScene = {
   /**
    * @todo add type.
    * Spec - https://developers.arcgis.com/web-scene-specification/objects/applicationProperties/
@@ -933,7 +933,7 @@ export type ArcGisWebScene = {
    * Spec - https://developers.arcgis.com/web-scene-specification/objects/presentation/
    * @todo Add presentation type.
    */
-  presentation: ArcGisPresentation;
+  presentation: ArcGISPresentation;
   /**
    * An object that provides information about the initial environment settings and viewpoint of the web scene.
    */
@@ -983,7 +983,7 @@ export type ArcGisWebScene = {
 /**
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-webscene-Presentation.html
  */
-type ArcGisPresentation = {
+type ArcGISPresentation = {
   slides: Slide[];
 };
 
@@ -1006,26 +1006,26 @@ type Slide = {
   ground: {
     transparency: number;
   };
-  baseMap: ArcGisBaseMap;
-  visibleLayers: ArcGisVisibleLayer[];
-  viewpoint: ArcGisViewPoint;
+  baseMap: ArcGISBaseMap;
+  visibleLayers: ArcGISVisibleLayer[];
+  viewpoint: ArcGISViewPoint;
 };
 
 /**
  * The basemap of the scene. Only the base and reference layers of the basemap are stored in a slide.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-Basemap.html
  */
-type ArcGisBaseMap = {
+type ArcGISBaseMap = {
   id: string;
   title: string;
-  baseMapLayers: ArcGisBaseMapLayer[];
+  baseMapLayers: ArcGISBaseMapLayer[];
 };
 
 /**
  * The visible layers of the scene.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-webscene-Slide.html#visibleLayers
  */
-type ArcGisVisibleLayer = {
+type ArcGISVisibleLayer = {
   id: string;
   sublayerIds: number[];
 };
@@ -1033,7 +1033,7 @@ type ArcGisVisibleLayer = {
  * The basemap of the scene.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-Basemap.html
  */
-type ArcGisBaseMapLayer = {
+type ArcGISBaseMapLayer = {
   id: string;
   title: string;
   url: string;
@@ -1045,14 +1045,14 @@ type ArcGisBaseMapLayer = {
  * The viewpoint of the slide. This acts like a bookmark, saving a predefined location or point of view from which to view the scene.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-Viewpoint.html
  */
-type ArcGisViewPoint = {
+type ArcGISViewPoint = {
   scale: number;
   rotation?: number;
   /**
    * Spec - https://developers.arcgis.com/web-scene-specification/objects/viewpoint/
    */
   targetGeometry: any;
-  camera: ArcGisCamera;
+  camera: ArcGISCamera;
 };
 
 /**
@@ -1060,7 +1060,7 @@ type ArcGisViewPoint = {
  * It is not associated with device hardware. This class only applies to 3D SceneViews.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-Camera.html
  */
-export type ArcGisCamera = {
+export type ArcGISCamera = {
   position: {
     x: number;
     y: number;
