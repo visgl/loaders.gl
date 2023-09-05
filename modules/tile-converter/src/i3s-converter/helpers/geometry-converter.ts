@@ -1,5 +1,7 @@
 import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {
+  GLTF_EXT_mesh_features,
+  GLTF_EXT_structural_metadata,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
@@ -47,7 +49,8 @@ import {GL} from '@loaders.gl/math';
 import type {GLTFAttributesData, TextureImageProperties, TypedArrayConstructor} from '../types';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
-import {EXT_FEATURE_METADATA, EXT_MESH_FEATURES} from '../../constants';
+
+import {EXT_MESH_FEATURES, EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -1358,10 +1361,12 @@ function convertPropertyTableToAttributeBuffers(
 
   for (const propertyName in propertyTableWithObjectIds) {
     const type = getAttributeType(propertyName, attributeStorageInfo);
-    const value = propertyTableWithObjectIds[propertyName];
-    const attributeBuffer = generateAttributeBuffer(type, value);
+    if (type) {
+      const value = propertyTableWithObjectIds[propertyName];
+      const attributeBuffer = generateAttributeBuffer(type, value);
 
-    attributeBuffers.push(attributeBuffer);
+      attributeBuffers.push(attributeBuffer);
+    }
   }
 
   return attributeBuffers;
@@ -1401,6 +1406,20 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
  */
 function getAttributeType(key: string, attributeStorageInfo: any[]): string {
   const attribute = attributeStorageInfo.find((attr) => attr.name === key);
+  if (!attribute) {
+    console.error(
+      `attribute is null, key=${key}, attributeStorageInfo=${JSON.stringify(
+        attributeStorageInfo,
+        null,
+        2
+      )}`
+    );
+    return '';
+  }
+  if (!attribute.attributeValues) {
+    console.error(`attributeValues is null, attribute=${attribute}`);
+    return '';
+  }
   return attribute.attributeValues.valueType;
 }
 
@@ -1577,8 +1596,8 @@ function generateFeatureIndexAttribute(
  * Find property table in tile
  * For example it can be batchTable for b3dm files or property table in gLTF extension.
  * @param tileContent - 3DTiles tile content
- * @param metadataClass - - user selected feature metadata class name
- * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA
+ * @param metadataClass - user selected feature metadata class name
+ * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA, EXT_MESH_FEATURES or EXT_STRUCTURAL_METADATA
  */
 export function getPropertyTable(
   tileContent: Tiles3DTileContent | null,
@@ -1587,7 +1606,7 @@ export function getPropertyTable(
   if (!tileContent) {
     return null;
   }
-
+  let propertyTable: FeatureTableJson | null;
   const batchTableJson = tileContent?.batchTableJson;
 
   if (batchTableJson) {
@@ -1598,14 +1617,25 @@ export function getPropertyTable(
 
   switch (extensionName) {
     case EXT_MESH_FEATURES: {
-      console.warn('The I3S converter does not yet support the EXT_mesh_features extension');
-      return null;
+      propertyTable = getPropertyTableFromExtMeshFeatures(
+        extension as GLTF_EXT_mesh_features,
+        metadataClass
+      );
+      return propertyTable;
+    }
+    case EXT_STRUCTURAL_METADATA: {
+      propertyTable = getPropertyTableFromExtStructuralMetadata(
+        extension as GLTF_EXT_structural_metadata,
+        metadataClass
+      );
+      return propertyTable;
     }
     case EXT_FEATURE_METADATA: {
-      return getPropertyTableFromExtFeatureMetadata(
+      propertyTable = getPropertyTableFromExtFeatureMetadata(
         extension as GLTF_EXT_feature_metadata_GLTF,
         metadataClass
       );
+      return propertyTable;
     }
     default:
       return null;
@@ -1618,9 +1648,18 @@ export function getPropertyTable(
  */
 function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
   extensionName: null | string;
-  extension: string | GLTF_EXT_feature_metadata_GLTF | null;
+  extension:
+    | string
+    | GLTF_EXT_feature_metadata_GLTF
+    | GLTF_EXT_structural_metadata
+    | GLTF_EXT_mesh_features
+    | null;
 } {
-  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
+  const extensionsWithPropertyTables = [
+    EXT_FEATURE_METADATA,
+    EXT_STRUCTURAL_METADATA,
+    EXT_MESH_FEATURES
+  ];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
   if (!extensionsUsed) {
@@ -1649,6 +1688,8 @@ function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
 /**
  * Handle EXT_feature_metadata to get property table
  * @param extension - global level of EXT_FEATURE_METADATA extension
+ * @param metadataClass - user selected feature metadata class name
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
  */
 function getPropertyTableFromExtFeatureMetadata(
   extension: GLTF_EXT_feature_metadata_GLTF,
@@ -1698,6 +1739,88 @@ function getPropertyTableFromExtFeatureMetadata(
 
   console.warn(
     "The I3S converter couldn't handle EXT_feature_metadata extension: There is neither featureTables, no featureTextures in the extension."
+  );
+  return null;
+}
+
+/**
+ * Handle EXT_structural_metadata to get property table
+ * @param extension - global level of EXT_STRUCTURAL_METADATA extension
+ * @param metadataClass - user selected feature metadata class name
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
+ */
+function getPropertyTableFromExtStructuralMetadata(
+  extension: GLTF_EXT_structural_metadata,
+  metadataClass?: string
+): FeatureTableJson | null {
+  if (extension?.propertyTables) {
+    /**
+     * Take only first feature table to generate attributes storage info object.
+     * TODO: Think about getting data from all feature tables?
+     * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+     * In I3S we should decide which featureIds attribute will be passed to geometry data.
+     */
+    const firstPropertyTable = extension?.propertyTables[0];
+    const propertyTableWithData = {};
+
+    for (const propertyName in firstPropertyTable.properties) {
+      propertyTableWithData[propertyName] = firstPropertyTable.properties[propertyName].data;
+    }
+
+    return propertyTableWithData;
+  }
+
+  if (extension?.propertyTextures) {
+    /**
+     * Take only first feature table to generate attributes storage info object.
+     * TODO: Think about getting data from all feature tables?
+     * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+     * In I3S we should decide which featureIds attribute will be passed to geometry data.
+     */
+    if (extension?.propertyTextures) {
+      const firstPropertyTexture = extension?.propertyTextures[0];
+      const propertyTableWithData = {};
+
+      for (const propertyName in firstPropertyTexture.properties) {
+        propertyTableWithData[propertyName] = firstPropertyTexture.properties[propertyName].data;
+      }
+
+      return propertyTableWithData;
+    }
+  }
+
+  console.warn(
+    "The I3S converter couldn't handle EXT_structural_metadata extension: There is neither propertyTables, no propertyTextures in the extension."
+  );
+  return null;
+}
+
+/**
+ * Handle EXT_mesh_features to get property table
+ * @param extension - global level of EXT_MESH_FEATURES extension
+ * @param metadataClass - user selected feature metadata class name
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
+ */
+function getPropertyTableFromExtMeshFeatures(
+  extension: GLTF_EXT_mesh_features,
+  metadataClass?: string
+): FeatureTableJson | null {
+  if (extension?.featureIds) {
+    const firstFeatureId = extension?.featureIds[0];
+    const propertyTableWithData = {};
+
+    // When firstFeatureId.propertyTable is defined, the property data will be taken from EXT_structural_metadata extension
+    if (!firstFeatureId.propertyTable) {
+      console.warn(
+        'Should be implemented as we have the tileset with Ext_mesh_features not linked with EXT_structural_metadata extension'
+      );
+    }
+
+    return propertyTableWithData;
+  }
+
+  console.warn(
+    "The I3S converter couldn't handle EXT_mesh_features extension: There is no featureIds in the extension."
   );
   return null;
 }

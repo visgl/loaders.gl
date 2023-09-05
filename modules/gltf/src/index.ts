@@ -24,9 +24,6 @@ export type {
   GLTF_EXT_meshopt_compression,
   GLTF_EXT_texture_webp,
   // 3DTiles extensions
-  GLTF_EXT_mesh_features,
-  GLTF_EXT_mesh_features_featureId,
-  GLTF_EXT_mesh_features_featureIdTexture,
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_Schema,
   GLTF_EXT_feature_metadata_Class,
@@ -46,6 +43,17 @@ export type {
   GLTF_EXT_feature_metadata_FeatureIdTexture,
   GLTF_EXT_feature_metadata_FeatureIdTextureAccessor
 } from './lib/types/gltf-json-schema';
+
+export type {GLTF_EXT_structural_metadata} from './lib/types/gltf-ext-structural-metadata-schema';
+
+export type {
+  GLTF_EXT_mesh_features,
+  GLTF_EXT_mesh_features_featureId
+} from './lib/types/gltf-ext-mesh-features-schema';
+
+export {name as EXT_MESH_FEATURES} from './lib/extensions/EXT_mesh_features';
+export {name as EXT_STRUCTURAL_METADATA} from './lib/extensions/EXT_structural_metadata';
+export {name as EXT_FEATURE_METADATA} from './lib/extensions/deprecated/EXT_feature_metadata';
 
 // Postprocessed types (modified GLTF types)
 export type {

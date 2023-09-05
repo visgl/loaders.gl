@@ -48,3 +48,5 @@ export {
   decompressTextureCoordinates,
   zigZagDeltaDecode
 } from './geometry/compression/attribute-compression';
+
+export {emod} from './geometry/utils/coordinates';

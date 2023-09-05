@@ -2,7 +2,7 @@ import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import {GLTFPrimitiveModeString, PreprocessData} from '../types';
 import {GLTF, GLTFLoader, GLTF_EXT_feature_metadata_GLTF} from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
-import {EXT_FEATURE_METADATA} from '../../constants';
+import {EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
 
 /**
  * glTF primitive modes
