@@ -1,5 +1,9 @@
 # I3S Building Scene Layer (BSL)
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.2-blue.svg?style=flat-square" alt="From-v3.2" />
+</p>
+
 A building scene layer can represent the 3D model content based on BIM structuring disciplines such as architectural or structural, and categories such as windows or walls. In I3S [specification](https://github.com/Esri/i3s-spec) BSL is a layer type.
 
 BSL doesn't have content resources. It is a composite layer that consists of multiple sublayers. Every sublayer can be: `group`, `3DObject` or `Point`.

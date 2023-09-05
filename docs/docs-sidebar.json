@@ -393,7 +393,8 @@
         "type": "category",
         "label": "I3S",
         "items": [
-          "modules/i3s/receipts/building-scene-layer"
+          "modules/i3s/receipts/building-scene-layer",
+          "modules/i3s/receipts/attribute-driven-colorization"
         ]
       }
     ]
