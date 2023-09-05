@@ -46,5 +46,5 @@ async function encodeZipAsync(
   } catch (error) {
     options.log.error(`Unable to write zip archive: ${error}`);
     throw error;
-  };
+  }
 }
