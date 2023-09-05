@@ -9,8 +9,6 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ParquetWriterOptions = {};
 
-const DEFAULT_PARQUET_LOADER_OPTIONS = {};
-
 export const ParquetWriter: Writer<Table, TableBatch, ParquetWriterOptions> = {
   name: 'Apache Parquet',
   id: 'parquet',
@@ -20,7 +18,7 @@ export const ParquetWriter: Writer<Table, TableBatch, ParquetWriterOptions> = {
   mimeTypes: ['application/octet-stream'],
   encodeSync,
   binary: true,
-  options: DEFAULT_PARQUET_LOADER_OPTIONS
+  options: {}
 };
 
 function encodeSync(data, options?: ParquetWriterOptions) {

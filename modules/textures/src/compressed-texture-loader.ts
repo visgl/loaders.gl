@@ -1,4 +1,4 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 import parseBasis from './lib/parsers/parse-basis';
@@ -8,13 +8,6 @@ export type TextureLoaderOptions = {
     libraryPath?: string;
     useBasis?: boolean;
   };
-};
-
-const DEFAULT_TEXTURE_LOADER_OPTIONS = {
-  'compressed-texture': {
-    libraryPath: 'libs/',
-    useBasis: false
-  }
 };
 
 /**
@@ -40,7 +33,12 @@ export const CompressedTextureWorkerLoader: Loader<any, never, TextureLoaderOpti
     'application/octet-stream'
   ],
   binary: true,
-  options: DEFAULT_TEXTURE_LOADER_OPTIONS
+  options: {
+    'compressed-texture': {
+      libraryPath: 'libs/',
+      useBasis: false
+    }
+  }
 };
 
 /**
