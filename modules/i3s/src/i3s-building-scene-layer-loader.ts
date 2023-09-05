@@ -11,7 +11,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
 /**
  * Loader for I3S - Building Scene Layer
  */
-export const I3SBuildingSceneLayerLoader: LoaderWithParser<BuildingSceneLayerTileset, never, I3SLoaderOptions> = {
+export const I3SBuildingSceneLayerLoader: LoaderWithParser<
+  BuildingSceneLayerTileset,
+  never,
+  I3SLoaderOptions
+> = {
   name: 'I3S Building Scene Layer',
   id: 'i3s-building-scene-layer',
   module: 'i3s',

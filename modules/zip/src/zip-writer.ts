@@ -6,9 +6,9 @@ import JSZip, {JSZipGeneratorOptions} from 'jszip';
 export type ZipWriterOptions = WriterOptions & {
   zip?: {
     onUpdate?: (metadata: {percent: number}) => void;
-  }, 
+  };
   /** Passthrough options to jszip */
-  jszip?: JSZipGeneratorOptions
+  jszip?: JSZipGeneratorOptions;
 };
 
 /**
@@ -23,7 +23,10 @@ export const ZipWriter: Writer<FileReaderEventMap, never, ZipWriterOptions> = {
   encode: encodeZipAsync
 };
 
-async function encodeZipAsync(fileMap: Record<string, ArrayBuffer>, options: ZipWriterOptions = {}) {
+async function encodeZipAsync(
+  fileMap: Record<string, ArrayBuffer>,
+  options: ZipWriterOptions = {}
+) {
   const jsZip = new JSZip();
   // add files to the zip
   for (const subFileName in fileMap) {
@@ -35,13 +38,13 @@ async function encodeZipAsync(fileMap: Record<string, ArrayBuffer>, options: Zip
   }
 
   // always generate the full zip as an arraybuffer
-  options = {...options, 
-    type: 'arraybuffer'
-  };
-  const {onUpdate = () => {}} = options || {};
+  const jszipOptions: JSZipGeneratorOptions = {...options?.jszip, type: 'arraybuffer'};
+  const {onUpdate = () => {}} = options;
 
-  return jsZip.generateAsync(options?.jszip || {}, onUpdate).catch((error) => {
+  try {
+    return await jsZip.generateAsync(jszipOptions, onUpdate);
+  } catch (error) {
     options.log.error(`Unable to write zip archive: ${error}`);
     throw error;
-  });
+  };
 }

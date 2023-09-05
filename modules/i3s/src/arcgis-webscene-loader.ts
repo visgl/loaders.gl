@@ -13,7 +13,11 @@ export type ArcGISWebSceneLoaderOptions = LoaderOptions & {};
  * Loader for ArcGIS WebScene
  * Spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
  */
-export const ArcGISWebSceneLoader: LoaderWithParser<ArcGISWebSceneData, never, ArcGISWebSceneLoaderOptions> = {
+export const ArcGISWebSceneLoader: LoaderWithParser<
+  ArcGISWebSceneData,
+  never,
+  ArcGISWebSceneLoaderOptions
+> = {
   name: 'ArcGIS Web Scene Loader',
   id: 'arcgis-web-scene',
   module: 'i3s',

@@ -33,7 +33,7 @@ test('ParseI3sTileContent#should parse tile content', async (t) => {
   t.ok(content);
 
   // color array should be colorized by attribute
-  const colorsArray = content?.attributes.colors.value;
+  const colorsArray = content!.attributes.colors.value;
   const testArray = new Uint8Array(9);
   testArray.fill(255);
   t.deepEquals(colorsArray.subarray(0, 9), testArray);
@@ -57,7 +57,7 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
       decodeTextures: true
     }
   });
-  const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
+  const texture = content!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
   if (isBrowser) {
     const supportedFormats = getSupportedGPUTextureFormats();
     if (supportedFormats.has('dxt')) {
@@ -82,7 +82,7 @@ test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async
     i3s: i3sLoaderOptions
   });
   const texture =
-    content?.material.pbrMetallicRoughness.baseColorTexture.texture.source.image.data[0];
+    content!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image.data[0];
   t.ok(texture instanceof Object);
   t.ok(texture.data instanceof Uint8Array);
   t.end();
@@ -101,7 +101,7 @@ test('ParseI3sTileContent#should make PBR material', async (t) => {
       decodeTextures: true
     }
   });
-  const material = content?.material;
+  const material = content!.material;
   t.ok(material.doubleSided);
   t.deepEqual(material.emissiveFactor, [1, 1, 1]);
   t.ok(material.pbrMetallicRoughness);
@@ -139,8 +139,8 @@ test('ParseI3sTileContent#should have featureIds', async (t) => {
     }
   });
   t.ok(content);
-  t.ok(content?.featureIds);
-  t.equal(content?.featureIds.length, 25638);
+  t.ok(content!.featureIds);
+  t.equal(content!.featureIds.length, 25638);
   t.end();
 });
 
@@ -167,7 +167,7 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
       decodeTextures: false
     }
   });
-  const texture = content?.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
+  const texture = content!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
   t.ok(texture instanceof ArrayBuffer);
   if (isBrowser) {
     const supportedFormats = getSupportedGPUTextureFormats();
@@ -193,7 +193,7 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
       decodeTextures: false
     }
   });
-  const texture2 = content2.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
+  const texture2 = content2!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
   t.ok(texture2 instanceof ArrayBuffer);
   t.equal(texture2.byteLength, 7199);
 
@@ -212,7 +212,7 @@ test('ParseI3sTileContent#should colorize by attribute', async (t) => {
   t.ok(content);
 
   // color array should be colorized by attribute
-  const colorsArray = content?.attributes.colors.value;
+  const colorsArray = content!.attributes.colors.value;
   t.deepEquals(colorsArray.subarray(0, 9), [139, 139, 247, 255, 139, 139, 247, 255, 139]);
   const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
   t.deepEquals(
@@ -239,7 +239,7 @@ test('ParseI3sTileContent#should colorize by attribute using mutiplying colors',
   t.ok(content);
 
   // color array should be colorized by attribute using multiplying colors
-  const colorsArray = content?.attributes.colors.value;
+  const colorsArray = content!.attributes.colors.value;
   t.deepEquals(colorsArray.subarray(0, 9), [139, 139, 247, 255, 139, 139, 247, 255, 139]);
   const arrayMiddle = (colorsArray.length - (colorsArray.length % 2)) / 2;
   t.deepEquals(
