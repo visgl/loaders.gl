@@ -64,5 +64,3 @@ async function loadZipEntry(jsZip: any, subFilename: string, options: any = {}) 
     return error;
   }
 }
-
-export const _typecheckZipLoader: LoaderWithParser = ZipLoader;

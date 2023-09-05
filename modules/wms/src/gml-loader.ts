@@ -14,7 +14,7 @@ export type GMLLoaderOptions = LoaderOptions & {
 /**
  * Loader for the response to the GML GetCapability request
  */
-export const GMLLoader = {
+export const GMLLoader: LoaderWithParser = {
   name: 'GML',
   id: 'gml',
 
@@ -36,5 +36,3 @@ function testXMLFile(text: string): boolean {
   // TODO - There could be space first.
   return text.startsWith('<?xml');
 }
-
-export const _typecheckGMLLoader: LoaderWithParser = GMLLoader;

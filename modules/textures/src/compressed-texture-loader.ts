@@ -1,4 +1,4 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 import parseBasis from './lib/parsers/parse-basis';
@@ -10,17 +10,10 @@ export type TextureLoaderOptions = {
   };
 };
 
-const DEFAULT_TEXTURE_LOADER_OPTIONS = {
-  'compressed-texture': {
-    libraryPath: 'libs/',
-    useBasis: false
-  }
-};
-
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
  */
-export const CompressedTextureWorkerLoader = {
+export const CompressedTextureWorkerLoader: Loader<any, never, TextureLoaderOptions> = {
   name: 'Texture Containers',
   id: 'compressed-texture',
   module: 'textures',
@@ -40,7 +33,12 @@ export const CompressedTextureWorkerLoader = {
     'application/octet-stream'
   ],
   binary: true,
-  options: DEFAULT_TEXTURE_LOADER_OPTIONS
+  options: {
+    'compressed-texture': {
+      libraryPath: 'libs/',
+      useBasis: false
+    }
+  }
 };
 
 /**
@@ -61,7 +59,8 @@ export const CompressedTextureLoader: LoaderWithParser<any, never, TextureLoader
         containerFormat: 'ktx2',
         module: 'encoder'
       };
-      return (await parseBasis(arrayBuffer, options))[0];
+      const result = await parseBasis(arrayBuffer, options);
+      return result[0];
     }
     return parseCompressedTexture(arrayBuffer);
   }

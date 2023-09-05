@@ -27,7 +27,7 @@ const GPX_HEADER = `\
 /**
  * Loader for GPX (GPS exchange format)
  */
-export const GPXLoader = {
+export const GPXLoader: LoaderWithParser = {
   name: 'GPX (GPS exchange format)',
   id: 'gpx',
   module: 'kml',
@@ -77,5 +77,3 @@ function parseTextSync(text: string, options?: GPXLoaderOptions) {
       return geojson;
   }
 }
-
-export const _typecheckGPXLoader: LoaderWithParser = GPXLoader;

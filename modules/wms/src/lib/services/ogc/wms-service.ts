@@ -546,14 +546,14 @@ export class WMSService extends ImageSource<WMSServiceProps> {
       const loadOptions = mergeLoaderOptions<WMSLoaderOptions>(this.loadOptions, {
         wms: {throwOnError: true}
       });
-      const error = WMSErrorLoader.parseSync(arrayBuffer, loadOptions);
+      const error = WMSErrorLoader.parseSync?.(arrayBuffer, loadOptions);
       throw new Error(error);
     }
   }
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = WMSErrorLoader.parseSync(arrayBuffer, this.loadOptions);
+    const error = WMSErrorLoader.parseSync?.(arrayBuffer, this.loadOptions);
     return new Error(error);
   }
 }

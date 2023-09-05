@@ -30,5 +30,3 @@ export const ArrowLoader: LoaderWithParser = {
   parseSync,
   parseInBatches: parseArrowInBatches
 };
-
-export const _typecheckArrowLoader: LoaderWithParser = ArrowLoader;

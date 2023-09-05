@@ -4,7 +4,7 @@ import {VERSION} from './lib/utils/version';
 /**
  * Worker loader for the Crunch compressed texture container format
  */
-export const CrunchLoader = {
+export const CrunchLoader: Loader = {
   id: 'crunch',
   name: 'Crunch',
   module: 'textures',
@@ -21,6 +21,3 @@ export const CrunchLoader = {
 };
 
 // We avoid bundling crunch - rare format, only offer worker loader
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCrunchLoader: Loader = CrunchLoader;

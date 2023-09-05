@@ -1,11 +1,13 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import parseWKT from './lib/parse-wkt';
+
+export type WKTLoaderOptions = LoaderOptions;
 
 /**
  * Well-Known text loader
  */
-export const WKTWorkerLoader: Loader = {
+export const WKTWorkerLoader: Loader<unknown, never, WKTLoaderOptions> = {
   name: 'WKT (Well-Known Text)',
   id: 'wkt',
   module: 'wkt',
@@ -23,7 +25,7 @@ export const WKTWorkerLoader: Loader = {
 /**
  * Well-Known text loader
  */
-export const WKTLoader: LoaderWithParser = {
+export const WKTLoader: LoaderWithParser<unknown, never, WKTLoaderOptions> = {
   ...WKTWorkerLoader,
   parse: async (arrayBuffer) => parseWKT(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseWKT

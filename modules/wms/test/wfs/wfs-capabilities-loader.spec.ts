@@ -9,17 +9,17 @@ import test from 'tape-promise/tape';
 
 // @ts-nocheck
 
-import {_WFSCapabilitiesLoader as WFSCapabilitiesLoader, _WFSCapabilities as WFSCapabilities} from '@loaders.gl/wms';
+import {_WFSCapabilitiesLoader as WFSCapabilitiesLoader} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 
 const WFS_CAPABILITIES_RESPONSE_URL =
   '@loaders.gl/wms/test/data/wmts/get-capabilities-response.xml';
 
 test('WFSCapabilitiesLoader#response.xml', async (t) => {
-  const capabilities = (await load(
+  const capabilities = await load(
     WFS_CAPABILITIES_RESPONSE_URL,
     WFSCapabilitiesLoader
-  )) as WFSCapabilities;
+  );
 
   t.equal(typeof capabilities, 'object', 'parsed');
 
@@ -29,10 +29,10 @@ test('WFSCapabilitiesLoader#response.xml', async (t) => {
 // TODO - copied from WMTS
 
 test.skip('WFSCapabilitiesLoader#response.xml#OWS', async (t) => {
-  const capabilities = (await load(
+  const capabilities = await load(
     WFS_CAPABILITIES_RESPONSE_URL,
     WFSCapabilitiesLoader
-  )) as WFSCapabilities;
+  );
 
   // ows:ServiceIdentification
   const serviceIdentification = capabilities.serviceIdentification;
@@ -129,10 +129,10 @@ test.skip('WFSCapabilitiesLoader#response.xml#OWS', async (t) => {
 
 // eslint-disable-next-line max-statements
 test.skip('WFSCapabilitiesLoader#response.xml#layers', async (t) => {
-  const capabilities = (await load(
+  const capabilities = await load(
     WFS_CAPABILITIES_RESPONSE_URL,
     WFSCapabilitiesLoader
-  )) as WFSCapabilities;
+  );
 
   const contents = capabilities.contents;
 
