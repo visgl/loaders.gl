@@ -10,7 +10,7 @@ In terms of geometry, every vertex of the mesh is associated with some feature. 
 
 All that means that it is possible to make some visual effects related to attribute value. It might be text labels, colors, opacity etc.
 
-From 3.4 version loaders.gl provides attributes colorization capability that allows to colorize node mesh by some attribute value.
+From 3.4 version loaders.gl provides attributes colorization capability that allows colorization of node mesh by some attribute value.
 
 The complete case of attributes colorization is done in [I3S Explorer](https://i3s.loaders.gl/viewer?tileset=new-york). It is an open source ReactJS application. See source code on [GitHub](https://github.com/visgl/loaders.gl-showcases).
 
@@ -33,7 +33,7 @@ List and types of attributes might be taken from [`i3sLayer.fields`](https://git
 
 Attributes colorization capability applies linear color gradient. To create this gradient attribute values range is required.
 
-To get minimum and maximum attribute values [statistics](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/statisticsInfo.cmn.md) can be used. The [statistics info JSON](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/statsInfo.cmn.md) has min and max values. Usage of those values allows to set true attribute values range not clamping extremum values.
+To get minimum and maximum attribute values [statistics](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/statisticsInfo.cmn.md) can be used. The [statistics info JSON](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/statsInfo.cmn.md) has min and max values. Usage of those values allows setting true attribute values range not clamping extremum values.
 
 As soon as statistics info is stored in a separated resources, it has to be loaded in a separate request. Statistics is just a JSON data and can be loaded with JSONLoader:
 
