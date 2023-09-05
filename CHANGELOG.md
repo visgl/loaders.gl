@@ -6,6 +6,16 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.23
+
+- chore: Add loader type parameters (#2626)
+- feat(tile-converter): support EXT_mesh_features and EXT_structural_metadata (#2566)
+- feat(core): non-specific parse functions return unknown (#2625)
+- chore(csv): Ensure tests  use typed CSVLoader (#2621)
+- docs(core): Typed loaders (#2624)
+- chore(zip): Remove zip module dependency on @loaders.gl/core (#2622)
+- chore: Clean up module imports, remove default exports in images module (#2617) (#2623)
+
 ### v4.0.0-alpha.22
 
 - fix(zip): @loaders.gl/core dependency (#2620)
