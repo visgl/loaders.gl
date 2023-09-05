@@ -384,5 +384,18 @@
       "modules/tile-converter/cli-reference/slpk-extractor",
       "modules/tile-converter/cli-reference/supported-features"
     ]
+  },
+  {
+    "type": "category",
+    "label": "Receipts",
+    "items": [
+      {
+        "type": "category",
+        "label": "I3S",
+        "items": [
+          "modules/i3s/receipts/building-scene-layer"
+        ]
+      }
+    ]
   }
 ]
