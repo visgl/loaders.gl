@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
+import {isBrowser} from '@loaders.gl/core';
 import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
-import {isBrowser} from '@loaders.gl/core';
 import {TEST_LAYER_URL, TILESET_STUB} from '../test-utils/load-utils';
 
 test('I3SNodePagesTiles#Forms tile header from node pages data', async (t) => {

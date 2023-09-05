@@ -47,5 +47,6 @@ export const loadI3SContent = async (
   };
   const tileContent = await load(sourceTile.contentUrl, I3SLoader, loadOptions);
 
+  // @ts-expect-error
   return tileContent;
 };

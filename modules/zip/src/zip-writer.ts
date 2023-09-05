@@ -1,10 +1,20 @@
-import type {Writer} from '@loaders.gl/loader-utils';
-import JSZip from 'jszip';
+// loaders.gl, MIT license
+
+import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import JSZip, {JSZipGeneratorOptions} from 'jszip';
+
+export type ZipWriterOptions = WriterOptions & {
+  zip?: {
+    onUpdate?: (metadata: {percent: number}) => void;
+  };
+  /** Passthrough options to jszip */
+  jszip?: JSZipGeneratorOptions;
+};
 
 /**
  * Zip exporter
  */
-export const ZipWriter: Writer = {
+export const ZipWriter: Writer<FileReaderEventMap, never, ZipWriterOptions> = {
   name: 'Zip Archive',
   extensions: ['zip'],
   category: 'archive',
@@ -13,7 +23,10 @@ export const ZipWriter: Writer = {
   encode: encodeZipAsync
 };
 
-async function encodeZipAsync(fileMap: any, options: any = {}) {
+async function encodeZipAsync(
+  fileMap: Record<string, ArrayBuffer>,
+  options: ZipWriterOptions = {}
+) {
   const jsZip = new JSZip();
   // add files to the zip
   for (const subFileName in fileMap) {
@@ -21,17 +34,17 @@ async function encodeZipAsync(fileMap: any, options: any = {}) {
 
     // jszip supports both arraybuffer and string data (the main loaders.gl types)
     // https://stuk.github.io/jszip/documentation/api_zipobject/async.html
-    jsZip.file(subFileName, subFileData, options);
+    jsZip.file(subFileName, subFileData, options?.jszip || {});
   }
 
   // always generate the full zip as an arraybuffer
-  options = Object.assign({}, options, {
-    type: 'arraybuffer'
-  });
+  const jszipOptions: JSZipGeneratorOptions = {...options?.jszip, type: 'arraybuffer'};
   const {onUpdate = () => {}} = options;
 
-  return jsZip.generateAsync(options, onUpdate).catch((error) => {
+  try {
+    return await jsZip.generateAsync(jszipOptions, onUpdate);
+  } catch (error) {
     options.log.error(`Unable to write zip archive: ${error}`);
     throw error;
-  });
+  }
 }

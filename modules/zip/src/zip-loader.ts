@@ -1,4 +1,5 @@
-// Zip loader
+// loaders.gl, MIT license
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import JSZip from 'jszip';
 
