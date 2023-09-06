@@ -384,5 +384,19 @@
       "modules/tile-converter/cli-reference/slpk-extractor",
       "modules/tile-converter/cli-reference/supported-features"
     ]
+  },
+  {
+    "type": "category",
+    "label": "Recipes",
+    "items": [
+      {
+        "type": "category",
+        "label": "I3S",
+        "items": [
+          "modules/i3s/recipes/building-scene-layer",
+          "modules/i3s/recipes/attribute-driven-colorization"
+        ]
+      }
+    ]
   }
 ]
