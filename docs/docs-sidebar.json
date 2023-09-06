@@ -387,14 +387,14 @@
   },
   {
     "type": "category",
-    "label": "Receipts",
+    "label": "Recipes",
     "items": [
       {
         "type": "category",
         "label": "I3S",
         "items": [
-          "modules/i3s/receipts/building-scene-layer",
-          "modules/i3s/receipts/attribute-driven-colorization"
+          "modules/i3s/recipes/building-scene-layer",
+          "modules/i3s/recipes/attribute-driven-colorization"
         ]
       }
     ]
