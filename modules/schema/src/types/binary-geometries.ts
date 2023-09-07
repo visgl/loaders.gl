@@ -45,15 +45,19 @@ export type BinaryProperties = {
   fields?: Properties;
 };
 
-export type BinaryPointFeatures = BinaryPointGeometry & BinaryProperties;
-export type BinaryLineFeatures = BinaryLineGeometry & BinaryProperties;
-export type BinaryPolygonFeatures = BinaryPolygonGeometry & BinaryProperties;
+/** Binary feature + binary attributes */
+export type BinaryFeature = BinaryPointFeature | BinaryLineFeature | BinaryPolygonFeature;
+
+export type BinaryPointFeature = BinaryPointGeometry & BinaryProperties;
+export type BinaryLineFeature = BinaryLineGeometry & BinaryProperties;
+export type BinaryPolygonFeature = BinaryPolygonGeometry & BinaryProperties;
+
 
 /**
  * Represent a collection of Features, similar to a GeoJSON FeatureCollection
  */
-export type BinaryFeatures = {
-  points?: BinaryPointFeatures;
-  lines?: BinaryLineFeatures;
-  polygons?: BinaryPolygonFeatures;
+export type BinaryFeatureCollection = {
+  points?: BinaryPointFeature;
+  lines?: BinaryLineFeature;
+  polygons?: BinaryPolygonFeature;
 };

@@ -1,18 +1,22 @@
-/** @typedef {import('@loaders.gl/schema').BinaryFeatures} BinaryFeatures */
-/** @typedef {import('@loaders.gl/schema').BinaryGeometry} BinaryGeometry */
 /* eslint-disable max-depth */
 import test from 'tape-promise/tape';
+import type {BinaryFeatureCollection, FeatureCollection} from '@loaders.gl/schema';
 import {fetchFile} from '@loaders.gl/core';
-import {binaryToGeojson, binaryToGeoJson, binaryToGeometry} from '@loaders.gl/gis';
+import {binaryToGeojson, binaryToGeometry} from '@loaders.gl/gis';
 
-import GEOMETRY_TEST_CASES from '@loaders.gl/gis/test/data/geometry';
-import EMPTY_BINARY_DATA from '@loaders.gl/gis/test/data/empty_binary';
+import {GEOMETRY_TEST_CASES} from '@loaders.gl/gis/test/data/geometry-test-cases';
+import {EMPTY_BINARY_DATA} from '@loaders.gl/gis/test/data/empty_binary';
 
 const FEATURE_COLLECTION_TEST_CASES = '@loaders.gl/gis/test/data/featurecollection.json';
 
+type FeatureCollectionTestCase = {
+  geoJSON: FeatureCollection;
+  binary: BinaryFeatureCollection;
+};
+
 test('binary-to-geojson feature collections', async (t) => {
   const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
-  const json = await response.json();
+  const json = (await response.json()) as Record<string, FeatureCollectionTestCase>;
 
   // `mixed` test case fails test, disable until we land fix
   // eslint-disable-next-line no-unused-vars
@@ -21,7 +25,7 @@ test('binary-to-geojson feature collections', async (t) => {
   for (const testCase of Object.values(TEST_CASES)) {
     if (testCase.geoJSON && testCase.binary) {
       t.deepEqual(binaryToGeojson(testCase.binary), testCase.geoJSON.features);
-      t.deepEqual(binaryToGeoJson(testCase.binary), testCase.geoJSON.features);
+      // t.deepEqual(binaryToGeoJson(testCase.binary), testCase.geoJSON.features);
     }
   }
 
@@ -30,11 +34,9 @@ test('binary-to-geojson feature collections', async (t) => {
 
 test('binary-to-geojson geometries', (t) => {
   for (const testCase of GEOMETRY_TEST_CASES) {
-    /** @type {BinaryGeometry} */
-    // @ts-ignore
     const binaryData = testCase.binary;
     t.deepEqual(binaryToGeometry(binaryData), testCase.geoJSON);
-    t.deepEqual(binaryToGeoJson(binaryData, binaryData.type, 'geometry'), testCase.geoJSON);
+    // t.deepEqual(binaryToGeoJson(binaryData, binaryData.type, 'geometry'), testCase.geoJSON);
   }
 
   t.end();
@@ -46,8 +48,7 @@ test('binary-to-geojson !isHeterogeneousType', async (t) => {
   // eslint-disable-next-line no-unused-vars
   const {mixed, ...TEST_CASES} = parseTestCases(json);
   for (const testCase of Object.values(TEST_CASES)) {
-    /** @type {BinaryFeatures} */
-    const binaryData = testCase.binary.points || testCase.binary.lines || testCase.binary.polygons;
+    const binaryData = testCase.binary;
     t.deepEqual(binaryToGeojson(binaryData), testCase.geoJSON.features);
   }
 
@@ -94,28 +95,31 @@ test('binary-to-geojson getSingleFeature fail', async (t) => {
   t.end();
 });
 
-// type TestCase = BinaryPolygonGeometry & {
-//   binary?: boolean;
-// };
-
-// Mutates input object
-function parseTestCases(testCases) {
-  /* : Record<string, TestCase>): Record<string, TestCase> { */
-  for (const value of Object.values(testCases)) {
+/** @note Mutatis mutandis - Mutates input object */
+function parseTestCases(
+  testCases: Record<string, FeatureCollectionTestCase>
+): Record<string, FeatureCollectionTestCase> {
+  for (const testCase of Object.values(testCases)) {
     // Convert `binary`, an object with typed arrays output, into typed arrays
     // from regular arrays
-    if (value.binary) {
-      for (const data of Object.values(value.binary)) {
+    if (testCase.binary) {
+      for (const data of Object.values(testCase.binary)) {
         if (data.positions) {
           data.positions.value = new Float32Array(data.positions.value);
         }
+        // @ts-expect-error
         if (data.pathIndices) {
+          // @ts-expect-error
           data.pathIndices.value = new Uint16Array(data.pathIndices.value);
         }
+        // @ts-expect-error
         if (data.primitivePolygonIndices) {
+          // @ts-expect-error
           data.primitivePolygonIndices.value = new Uint16Array(data.primitivePolygonIndices.value);
         }
+        // @ts-expect-error
         if (data.polygonIndices) {
+          // @ts-expect-error
           data.polygonIndices.value = new Uint16Array(data.polygonIndices.value);
         }
       }

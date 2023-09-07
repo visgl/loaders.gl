@@ -1,5 +1,6 @@
-/** @type {import('@loaders.gl/schema').BinaryFeatures}  */
-const EMPTY_BINARY_DATA = {
+import {BinaryFeatureCollection} from '@loaders.gl/schema';
+
+export const EMPTY_BINARY_DATA: BinaryFeatureCollection = {
   points: {
     type: 'Point',
     positions: {value: new Float32Array(), size: -Infinity},
@@ -28,5 +29,3 @@ const EMPTY_BINARY_DATA = {
     properties: []
   }
 };
-
-export default EMPTY_BINARY_DATA;

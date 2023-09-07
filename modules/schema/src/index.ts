@@ -122,10 +122,11 @@ export type {
   BinaryAttribute
 } from './types/category-gis';
 export type {
-  BinaryFeatures,
-  BinaryPointFeatures,
-  BinaryLineFeatures,
-  BinaryPolygonFeatures
+  BinaryFeatureCollection,
+  BinaryFeature,
+  BinaryPointFeature,
+  BinaryLineFeature,
+  BinaryPolygonFeature
 } from './types/category-gis';
 
 // SCHEMA
