@@ -1,5 +1,5 @@
 // loaders.gl, MIT license
-import type {ColumnarTable, ArrowTable} from '@loaders.gl/schema';
+import type {ColumnarTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
 import type {Table as ApacheArrowTable} from 'apache-arrow';
 
 /**
@@ -36,5 +36,30 @@ export function convertArrowToColumnarTable(table: ArrowTable): ColumnarTable {
   return {
     shape: 'columnar-table',
     data: columnarTable
+  };
+}
+
+/**
+ *
+ * @note - should be part of schema module
+ */
+export function convertColumnarToRowFormatTable(columnarTable: ColumnarTable): ObjectRowTable {
+  const tableKeys = Object.keys(columnarTable);
+  const tableRowsCount = columnarTable[tableKeys[0]].length;
+
+  const rowFormatTable: {}[] = [];
+
+  for (let index = 0; index < tableRowsCount; index++) {
+    const tableItem = {};
+    for (let keyIndex = 0; keyIndex < tableKeys.length; keyIndex++) {
+      const fieldName = tableKeys[keyIndex];
+      tableItem[fieldName] = columnarTable[fieldName][index];
+    }
+    rowFormatTable.push(tableItem);
+  }
+
+  return {
+    shape: 'object-row-table',
+    data: rowFormatTable
   };
 }

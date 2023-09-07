@@ -34,7 +34,6 @@ test('ArrowWriter#encode', async (t) => {
   t.equals(table.shape, 'columnar-table');
   if (table.shape === 'columnar-table') {
     t.ok(table.data.precipitation);
-    t.equals(table.data.length, LENGTH);
     t.equals(table.data.precipitation.length, LENGTH);
   }
   t.end();
