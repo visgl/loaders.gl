@@ -29,6 +29,8 @@ function noTransform(...coords) {
   return coords;
 }
 
+export type {Geometry};
+
 export type ParseGMLOptions = {
   transformCoords?: Function;
   stride?: 2 | 3 | 4;

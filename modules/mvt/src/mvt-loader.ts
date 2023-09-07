@@ -2,7 +2,7 @@ import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MVTLoaderOptions} from './lib/types';
 // import type {
 //   Feature,
-//   BinaryFeatures,
+//   BinaryFeatureCollection,
 //   GeoJSONRowTable,
 //   Geometry,
 //   GeoJsonProperties
@@ -17,7 +17,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * Worker loader for the Mapbox Vector Tile format
  */
 export const MVTWorkerLoader: Loader<
-  any, // BinaryFeatures | GeoJSONRowTable | Feature<Geometry, GeoJsonProperties>,
+  any, // BinaryFeatureCollection | GeoJSONRowTable | Feature<Geometry, GeoJsonProperties>,
   never,
   MVTLoaderOptions
 > = {
@@ -49,7 +49,7 @@ export const MVTWorkerLoader: Loader<
  * Loader for the Mapbox Vector Tile format
  */
 export const MVTLoader: LoaderWithParser<
-  any, // BinaryFeatures | GeoJSONRowTable | Feature<Geometry, GeoJsonProperties>,
+  any, // BinaryFeatureCollection | GeoJSONRowTable | Feature<Geometry, GeoJsonProperties>,
   never,
   MVTLoaderOptions
 > = {

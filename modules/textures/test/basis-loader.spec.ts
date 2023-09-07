@@ -78,7 +78,7 @@ test('BasisLoader#auto-select a target format', async (t) => {
     t.ok(image.compressed, 'Basis transcodes to compressed texture');
   } else {
     t.notOk(image.format, 'Basis transcodes to RGB565 in NodeJS');
-    t.notOk(image.compressed, "Basis can't transcode to compressed texture in NodeJS");
+    t.notOk(image.compressed, 'Basis can\'t transcode to compressed texture in NodeJS');
   }
 
   t.end();
