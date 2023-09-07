@@ -11,7 +11,7 @@ import {
 } from 'apache-arrow';
 import {ColumnarTableBatchAggregator} from '@loaders.gl/schema';
 
-export default class ArrowTableBatchAggregator extends ColumnarTableBatchAggregator {
+export class ArrowTableBatchAggregator extends ColumnarTableBatchAggregator {
   arrowSchema: Schema | null;
 
   constructor(schema, options) {

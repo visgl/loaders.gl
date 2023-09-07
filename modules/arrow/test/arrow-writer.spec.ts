@@ -31,10 +31,11 @@ test('ArrowWriter#encode', async (t) => {
 
   const table = parseSync(arrayBuffer, ArrowLoader);
   t.ok(table);
-  t.ok(table.date);
-  t.ok(table.precipitation);
-  t.equals(table.date.length, LENGTH);
-  t.equals(table.precipitation.length, LENGTH);
-
+  t.equals(table.shape, 'columnar-table');
+  if (table.shape === 'columnar-table') {
+    t.ok(table.data.precipitation);
+    t.equals(table.data.length, LENGTH);
+    t.equals(table.data.precipitation.length, LENGTH);
+  }
   t.end();
 });

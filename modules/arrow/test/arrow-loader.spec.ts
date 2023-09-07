@@ -25,11 +25,14 @@ test('ArrowLoader#loader conformance', (t) => {
 });
 
 test('ArrowLoader#parseSync(simple.arrow)', async (t) => {
-  const columns = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {worker: false});
+  const arrowTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {worker: false});
   // Check loader specific results
-  t.ok(columns.bar, 'bar column loaded');
-  t.ok(columns.baz, 'baz column loaded');
-  t.ok(columns.foo, 'foo column loaded');
+  t.equal(arrowTable.shape, 'columnar-table');
+  if (arrowTable.shape === 'columnar-table') {
+    t.ok(arrowTable.data.bar, 'bar column loaded');
+    t.ok(arrowTable.data.baz, 'baz column loaded');
+    t.ok(arrowTable.data.foo, 'foo column loaded');
+  }
   t.end();
 });
 
@@ -40,9 +43,12 @@ test('ArrowLoader#parseSync(simple.arrow) type="object-row-table"', async (t) =>
       shape: 'object-row-table'
     }
   });
-  t.ok(rowFormatTable, 'Row based table loaded');
-  t.equal(rowFormatTable.length, 5);
-  t.deepEqual(rowFormatTable[0], {foo: 1, bar: 1, baz: 'aa'});
+  t.equal(rowFormatTable.shape, 'object-row-table');
+  if (rowFormatTable.shape === 'object-row-table') {
+    t.ok(rowFormatTable, 'Row based table loaded');
+    t.equal(rowFormatTable.data.length, 5);
+    t.deepEqual(rowFormatTable.data[0], {foo: 1, bar: 1, baz: 'aa'});
+  }
   t.end();
 });
 
@@ -56,7 +62,10 @@ test('ArrowLoader#parseSync(dictionary.arrow)', async (t) => {
 test('ArrowLoader#parse(fetchFile(struct).arrow)', async (t) => {
   const columns = await parse(fetchFile(ARROW_STRUCT), ArrowLoader);
   // Check loader specific results
-  t.ok(columns.struct_nullable, 'struct_nullable loaded');
+  t.equal(columns.shape, 'columnar-table');
+  if (columns.shape === 'columnar-table') {
+    t.ok(columns.data.struct_nullable, 'struct_nullable loaded');
+  }
   t.end();
 });
 
