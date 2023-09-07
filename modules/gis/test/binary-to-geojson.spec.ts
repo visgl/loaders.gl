@@ -19,7 +19,7 @@ test('binary-to-geojson feature collections', async (t) => {
   const json = (await response.json()) as Record<string, FeatureCollectionTestCase>;
 
   // `mixed` test case fails test, disable until we land fix
-  // eslint-disable-next-line no-unused-vars @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   const {mixed, ...TEST_CASES} = parseTestCases(json);
 
   for (const testCase of Object.values(TEST_CASES)) {
@@ -45,7 +45,7 @@ test('binary-to-geojson geometries', (t) => {
 test('binary-to-geojson !isHeterogeneousType', async (t) => {
   const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
   const json = await response.json();
-  // eslint-disable-next-line no-unused-vars @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   const {mixed, ...TEST_CASES} = parseTestCases(json);
   for (const testCase of Object.values(TEST_CASES)) {
     const binaryData = testCase.binary;
