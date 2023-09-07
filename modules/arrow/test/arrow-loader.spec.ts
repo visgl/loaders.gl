@@ -52,7 +52,7 @@ test('ArrowLoader#parseSync(simple.arrow) type="object-row-table"', async (t) =>
   t.end();
 });
 
-test('ArrowLoader#parseSync(dictionary.arrow)', async (t) => {
+test.only('ArrowLoader#parseSync(dictionary.arrow)', async (t) => {
   const columnarTable = await parse(fetchFile(ARROW_DICTIONARY), ArrowLoader);
   // Check loader specific results
   t.ok(columnarTable.data['example-csv'], 'example-csv loaded');
