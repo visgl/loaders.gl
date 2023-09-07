@@ -59,3 +59,7 @@ type EncodeURLtoURL = (
 export type WriterOptionsType<T = Writer> = T extends Writer<unknown, unknown, infer Options>
   ? Options
   : never;
+/** Typescript helper to extract data type from a generic loader type */
+export type WriterInputType<T = Writer> = T extends Writer<infer Return, any, any> ? Return : never;
+/** Typescript helper to extract batch type from a generic loader type */
+export type WriterBatchType<T = Writer> = T extends Writer<any, infer Batch, any> ? Batch : never;

@@ -1,4 +1,5 @@
-import {Writer, WriterOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
+import type {Writer, WriterOptions, WriterOptionsType, WriterInputType} from '@loaders.gl/loader-utils';
+import {canEncodeWithWorker} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
@@ -9,13 +10,17 @@ import {getLoaderOptions} from './loader-options';
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export async function encode(
-  data: unknown,
-  writer: Writer,
-  options?: WriterOptions
+export async function encode<
+WriterT extends Writer,
+OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(
+  data: WriterInputType<WriterT>,
+  writer: WriterT,
+  options?: OptionsT
 ): Promise<ArrayBuffer> {
   const globalOptions = getLoaderOptions() as WriterOptions;
   // const globalOptions: WriterOptions = {}; // getWriterOptions();
+  // @ts-ignore
   options = {...globalOptions, ...options};
   if (canEncodeWithWorker(writer, options)) {
     return await processOnWorker(writer, data, options);
@@ -72,7 +77,8 @@ export async function encode(
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSync(data: unknown, writer: Writer, options?: WriterOptions): ArrayBuffer {
+export function encodeSyncWriter<WriterT extends Writer, OptionsT extends WriterOptions = WriterOptionsType<WriterT>>(
+  data: WriterInputType<WriterT>, writer: WriterT, options?: OptionsT): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
   }
@@ -85,10 +91,11 @@ export function encodeSync(data: unknown, writer: Writer, options?: WriterOption
  * It is not optimized for performance. Data maybe converted from text to binary and back.
  * @throws if the writer does not generate text output
  */
-export async function encodeText(
-  data: unknown,
-  writer: Writer,
-  options?: WriterOptions
+export async function encodeText<WriterT extends Writer, OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(
+  data: WriterInputType<WriterT>,
+  writer: WriterT,
+  options?: OptionsT
 ): Promise<string> {
   if (writer.text && writer.encodeText) {
     return await writer.encodeText(data, options);
@@ -105,10 +112,11 @@ export async function encodeText(
 /**
  * Encode loaded data into a sequence (iterator) of binary ArrayBuffers using the specified Writer.
  */
-export function encodeInBatches(
+export function encodeInBatches<WriterT extends Writer, OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(
   data: unknown,
-  writer: Writer,
-  options?: WriterOptions
+  writer: WriterT,
+  options?: OptionsT
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);
@@ -123,11 +131,12 @@ export function encodeInBatches(
  * Encode data stored in a file (on disk) to another file.
  * @note Node.js only. This function enables using command-line converters as "writers".
  */
-export async function encodeURLtoURL(
+export async function encodeURLtoURL<WriterT extends Writer, OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(
   inputUrl: string,
   outputUrl: string,
-  writer: Writer,
-  options?: WriterOptions
+  writer: WriterT,
+  options?: OptionsT
 ): Promise<string> {
   inputUrl = resolvePath(inputUrl);
   outputUrl = resolvePath(outputUrl);
