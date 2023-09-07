@@ -3,7 +3,7 @@ import type {
   FlatFeature,
   Feature,
   GeojsonGeometryInfo,
-  BinaryFeatures,
+  BinaryFeatureCollection,
   GeoJSONRowTable
 } from '@loaders.gl/schema';
 import Protobuf from 'pbf';
@@ -47,7 +47,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOp
   }
 }
 
-function parseToBinary(arrayBuffer: ArrayBuffer, options: MVTOptions): BinaryFeatures {
+function parseToBinary(arrayBuffer: ArrayBuffer, options: MVTOptions): BinaryFeatureCollection {
   const [flatGeoJsonFeatures, geometryInfo] = parseToFlatGeoJson(arrayBuffer, options);
 
   const binaryData = flatGeojsonToBinary(flatGeoJsonFeatures, geometryInfo);
