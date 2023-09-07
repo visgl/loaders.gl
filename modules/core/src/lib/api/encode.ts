@@ -1,4 +1,9 @@
-import type {Writer, WriterOptions, WriterOptionsType, WriterInputType} from '@loaders.gl/loader-utils';
+import type {
+  Writer,
+  WriterOptions,
+  WriterOptionsType,
+  WriterInputType
+} from '@loaders.gl/loader-utils';
 import {canEncodeWithWorker} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
@@ -11,13 +16,9 @@ import {getLoaderOptions} from './loader-options';
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
 export async function encode<
-WriterT extends Writer,
-OptionsT extends WriterOptions = WriterOptionsType<WriterT>
->(
-  data: WriterInputType<WriterT>,
-  writer: WriterT,
-  options?: OptionsT
-): Promise<ArrayBuffer> {
+  WriterT extends Writer,
+  OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(data: WriterInputType<WriterT>, writer: WriterT, options?: OptionsT): Promise<ArrayBuffer> {
   const globalOptions = getLoaderOptions() as WriterOptions;
   // const globalOptions: WriterOptions = {}; // getWriterOptions();
   // @ts-ignore
@@ -77,8 +78,10 @@ OptionsT extends WriterOptions = WriterOptionsType<WriterT>
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSyncWriter<WriterT extends Writer, OptionsT extends WriterOptions = WriterOptionsType<WriterT>>(
-  data: WriterInputType<WriterT>, writer: WriterT, options?: OptionsT): ArrayBuffer {
+export function encodeSync<
+  WriterT extends Writer,
+  OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(data: WriterInputType<WriterT>, writer: WriterT, options?: OptionsT): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
   }
@@ -91,12 +94,10 @@ export function encodeSyncWriter<WriterT extends Writer, OptionsT extends Writer
  * It is not optimized for performance. Data maybe converted from text to binary and back.
  * @throws if the writer does not generate text output
  */
-export async function encodeText<WriterT extends Writer, OptionsT extends WriterOptions = WriterOptionsType<WriterT>
->(
-  data: WriterInputType<WriterT>,
-  writer: WriterT,
-  options?: OptionsT
-): Promise<string> {
+export async function encodeText<
+  WriterT extends Writer,
+  OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(data: WriterInputType<WriterT>, writer: WriterT, options?: OptionsT): Promise<string> {
   if (writer.text && writer.encodeText) {
     return await writer.encodeText(data, options);
   }
@@ -112,12 +113,10 @@ export async function encodeText<WriterT extends Writer, OptionsT extends Writer
 /**
  * Encode loaded data into a sequence (iterator) of binary ArrayBuffers using the specified Writer.
  */
-export function encodeInBatches<WriterT extends Writer, OptionsT extends WriterOptions = WriterOptionsType<WriterT>
->(
-  data: unknown,
-  writer: WriterT,
-  options?: OptionsT
-): AsyncIterable<ArrayBuffer> {
+export function encodeInBatches<
+  WriterT extends Writer,
+  OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(data: unknown, writer: WriterT, options?: OptionsT): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);
     // @ts-expect-error
@@ -131,13 +130,10 @@ export function encodeInBatches<WriterT extends Writer, OptionsT extends WriterO
  * Encode data stored in a file (on disk) to another file.
  * @note Node.js only. This function enables using command-line converters as "writers".
  */
-export async function encodeURLtoURL<WriterT extends Writer, OptionsT extends WriterOptions = WriterOptionsType<WriterT>
->(
-  inputUrl: string,
-  outputUrl: string,
-  writer: WriterT,
-  options?: OptionsT
-): Promise<string> {
+export async function encodeURLtoURL<
+  WriterT extends Writer,
+  OptionsT extends WriterOptions = WriterOptionsType<WriterT>
+>(inputUrl: string, outputUrl: string, writer: WriterT, options?: OptionsT): Promise<string> {
   inputUrl = resolvePath(inputUrl);
   outputUrl = resolvePath(outputUrl);
   if (isBrowser || !writer.encodeURLtoURL) {

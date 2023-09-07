@@ -1013,6 +1013,7 @@ export default class I3SConverter {
 
           if (this.generateTextures) {
             formats.push({name: '0', format: 'jpg'});
+            // @ts-expect-error TODO - fix
             const decodedFromKTX2TextureData = encode(texture.image!.data[0], ImageWriter);
             await this.writeTextureFile(
               decodedFromKTX2TextureData,

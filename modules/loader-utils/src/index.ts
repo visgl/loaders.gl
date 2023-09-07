@@ -34,7 +34,13 @@ export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from 
 
 // writers
 
-export type {Writer, WriterOptions, WriterOptionsType} from './writer-types';
+export type {
+  Writer,
+  WriterOptions,
+  WriterOptionsType,
+  WriterInputType,
+  WriterBatchType
+} from './writer-types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
