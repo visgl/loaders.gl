@@ -2,8 +2,8 @@
 import {BinaryGeometry, Geometry} from '@loaders.gl/schema';
 
 export type GeometryTestCase = {
-  binary: BinaryGeometry, 
-  geoJSON: Geometry
+  binary: BinaryGeometry;
+  geoJSON: Geometry;
 };
 
 export const GEOMETRY_TEST_CASES: GeometryTestCase[] = [

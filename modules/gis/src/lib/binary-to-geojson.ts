@@ -23,7 +23,6 @@ import type {
   MultiPolygon
 } from '@loaders.gl/schema';
 
-
 // Note:L We do not handle GeometryCollection, define a limited Geometry type that always has coordinates.
 // type FeatureGeometry = Point | MultiPoint | LineString | MultiLineString | Polygon | MultiPolygon;
 

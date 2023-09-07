@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 
+export type {MVTLoaderOptions} from './lib/types';
 export {MVTLoader, MVTWorkerLoader} from './mvt-loader';
 
 // GeoJSONTiler

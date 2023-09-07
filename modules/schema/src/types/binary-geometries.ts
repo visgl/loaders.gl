@@ -52,7 +52,6 @@ export type BinaryPointFeature = BinaryPointGeometry & BinaryProperties;
 export type BinaryLineFeature = BinaryLineGeometry & BinaryProperties;
 export type BinaryPolygonFeature = BinaryPolygonGeometry & BinaryProperties;
 
-
 /**
  * Represent a collection of Features, similar to a GeoJSON FeatureCollection
  */

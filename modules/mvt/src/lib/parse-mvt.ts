@@ -159,6 +159,7 @@ function getDecodedFeature(
   layerName: string
 ): MVTMapboxCoordinates {
   const decodedFeature = feature.toGeoJSON(
+    // @ts-expect-error What is going on here?
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinates
   );
 
@@ -181,6 +182,7 @@ function getDecodedFeatureBinary(
   layerName: string
 ): FlatFeature {
   const decodedFeature = feature.toBinaryCoordinates(
+    // @ts-expect-error What is going on here?
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinatesBinary
   );
 

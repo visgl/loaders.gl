@@ -1,6 +1,6 @@
-/** @typedef {import('@loaders.gl/schema').BinaryFeatures} BinaryFeatures */
+// import type {BinaryFeatureCollection} from '@loaders.gl/schema';
 import test from 'tape-promise/tape';
-import {MVTLoader} from '@loaders.gl/mvt';
+import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
 import {TEST_EXPORTS} from '../src/lib/binary-vector-tile/vector-tile-feature';
@@ -101,7 +101,7 @@ for (const binary of [true, false]) {
     const response = await fetchFile(MVT_POINTS_DATA_URL);
     const mvtArrayBuffer = await response.arrayBuffer();
 
-    const loaderOptions = {
+    const loaderOptions: MVTLoaderOptions = {
       mvt: {
         coordinates: 'wgs84',
         tileIndex: {
@@ -132,7 +132,7 @@ for (const binary of [true, false]) {
     const response = await fetchFile(MVT_LINES_DATA_URL);
     const mvtArrayBuffer = await response.arrayBuffer();
 
-    const loaderOptions = {
+    const loaderOptions: MVTLoaderOptions = {
       mvt: {
         coordinates: 'wgs84',
         tileIndex: {
@@ -163,7 +163,7 @@ for (const binary of [true, false]) {
     const response = await fetchFile(MVT_POLYGONS_DATA_URL);
     const mvtArrayBuffer = await response.arrayBuffer();
 
-    const loaderOptions = {
+    const loaderOptions: MVTLoaderOptions = {
       mvt: {
         coordinates: 'wgs84',
         tileIndex: {
@@ -195,7 +195,7 @@ test('Should raise an error when coordinates param is wgs84 and tileIndex is mis
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const loaderOptions = {
+  const loaderOptions: MVTLoaderOptions = {
     mvt: {coordinates: 'wgs84'}
   };
 
@@ -208,7 +208,7 @@ test('Should add layer name to custom property', async (t) => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const loaderOptions = {
+  const loaderOptions: MVTLoaderOptions = {
     mvt: {layerProperty: 'layerSource'}
   };
 
@@ -222,7 +222,7 @@ test('Should return features from selected layers when layers property is provid
   const response = await fetchFile(MVT_MULTIPLE_LAYERS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const loaderOptions = {
+  const loaderOptions: MVTLoaderOptions = {
     mvt: {layers: ['layer1']}
   };
 
