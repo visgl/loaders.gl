@@ -8,7 +8,7 @@ import type {
 import type {GLTF_EXT_structural_metadata_PropertyTable} from '../types/gltf-ext-structural-metadata-schema';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
-import {getPrimitiveTextureData, primitivePropertyDataToAttributes} from './data-processing';
+import {getPrimitiveTextureData, primitivePropertyDataToAttributes} from './utils/3d-tiles-utils';
 import {getPropertyTablePopulated} from './EXT_structural_metadata';
 
 const EXT_MESH_FEATURES_NAME = 'EXT_mesh_features';

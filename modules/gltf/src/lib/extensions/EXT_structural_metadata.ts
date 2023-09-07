@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
 import type {GLTF, GLTFTextureInfoMetadata, GLTFMeshPrimitive} from '../types/gltf-json-schema';
 import type {
   GLTF_EXT_structural_metadata_Schema,
@@ -11,8 +12,6 @@ import type {
   GLTF_EXT_structural_metadata_PropertyTable_Property,
   GLTF_EXT_structural_metadata_Primitive
 } from '../types/gltf-ext-structural-metadata-schema';
-
-import type {TypedArray} from '@loaders.gl/schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
@@ -20,8 +19,9 @@ import {
   convertRawBufferToMetadataArray,
   getPrimitiveTextureData,
   primitivePropertyDataToAttributes,
-  getArrayElementByteSize
-} from './data-processing';
+  getArrayElementByteSize,
+  getOffsetsTypedArray
+} from './utils/3d-tiles-utils';
 
 const EXT_STRUCTURAL_METADATA_NAME = 'EXT_structural_metadata';
 export const name = EXT_STRUCTURAL_METADATA_NAME;
@@ -301,52 +301,28 @@ function processPropertyTable(
  * @param {GLTFScenegraph} scenegraph - Instance of the class for structured access to GLTF data.
  * @param {GLTF_EXT_structural_metadata_Schema} schema - Schema object
  * @param {GLTF_EXT_structural_metadata_ClassProperty} classProperty - class property object
- * @param {GLTF_EXT_structural_metadata_PropertyTable_Property} propertyTableProperty
+ * @param {GLTF_EXT_structural_metadata_PropertyTable_Property} - propertyTable's property metadata
  * @param {number} numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
  * @returns {string[] | number[] | string[][] | number[][]}
  */
-/* eslint complexity: ["error", 17]*/
 function getPropertyDataFromBinarySource(
   scenegraph: GLTFScenegraph,
   schema: GLTF_EXT_structural_metadata_Schema,
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   numberOfElements: number,
   propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property
-): string[] | number[] | string[][] | number[][] {
-  let data: string[] | number[] | string[][] | number[][] = [];
+): string[] | BigTypedArray | string[][] | BigTypedArray[] {
+  let data: string[] | BigTypedArray | string[][] | BigTypedArray[] = [];
   const valuesBufferView = propertyTableProperty.values;
   const valuesDataBytes: Uint8Array = scenegraph.getTypedArrayForBufferView(valuesBufferView);
 
-  let arrayOffsets: TypedArray | null = null;
-  if (
-    classProperty.array &&
-    // `count` is a number of array elements. May only be defined when `array` is true.
-    typeof classProperty.count === 'undefined' && // If `count` is NOT defined, it's a VARIABLE-length array
-    typeof propertyTableProperty.arrayOffsets !== 'undefined' && // `arrayOffsets` is an index of the buffer view containing offsets for variable-length arrays.
-    typeof propertyTableProperty.arrayOffsetType !== 'undefined'
-  ) {
-    // Data are in a VARIABLE-length array
-    arrayOffsets = getOffsetArray(
-      scenegraph,
-      propertyTableProperty.arrayOffsets,
-      propertyTableProperty.arrayOffsetType,
-      numberOfElements
-    );
-  }
-
-  let stringOffsets: TypedArray | null = null;
-  if (
-    typeof propertyTableProperty.stringOffsets !== 'undefined' && // `stringOffsets` is an index of the buffer view containing offsets for strings.
-    typeof propertyTableProperty.stringOffsetType !== 'undefined'
-  ) {
-    // Data are in a FIXED-length array
-    stringOffsets = getOffsetArray(
-      scenegraph,
-      propertyTableProperty.stringOffsets,
-      propertyTableProperty.stringOffsetType,
-      numberOfElements
-    );
-  }
+  const arrayOffsets = getArrayOffsets(
+    scenegraph,
+    classProperty,
+    propertyTableProperty,
+    numberOfElements
+  );
+  const stringOffsets = getStringOffsets(scenegraph, propertyTableProperty, numberOfElements);
 
   switch (classProperty.type) {
     case 'SCALAR':
@@ -391,29 +367,66 @@ function getPropertyDataFromBinarySource(
 }
 
 /**
- * Gets offset array from `arrayOffsets` or `stringOffsets`.
- * @param {GLTFScenegraph} scenegraph - Instance of the class for structured access to GLTF data.
- * @param {number} offsets - Buffer view index
- * @param offsetType - The type of values in `arrayOffsets` or `stringOffsets`.
- * @param {number} numberOfElements - The number of elements in each property array.
- * @returns {TypedArray}
+ * Parse propertyTable.property.arrayOffsets
+ * @param scenegraph - Instance of the class for structured access to GLTF data.
+ * @param classProperty - class property object
+ * @param propertyTableProperty - propertyTable's property metadata
+ * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
+ * @returns typed array with offset values
+ * @see https://github.com/CesiumGS/glTF/blob/2976f1183343a47a29e4059a70961371cd2fcee8/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json#L21
  */
-function getOffsetArray(
+function getArrayOffsets(
   scenegraph: GLTFScenegraph,
-  offsets: number,
-  offsetType: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64',
+  classProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
   numberOfElements: number
-): TypedArray {
-  const arrayOffsetsBufferView = offsets;
-  const arrayOffsetsBytes = scenegraph.getTypedArrayForBufferView(arrayOffsetsBufferView);
+): TypedArray | null {
+  if (
+    classProperty.array &&
+    // `count` is a number of array elements. May only be defined when `array` is true.
+    // If `count` is NOT defined, it's a VARIABLE-length array
+    typeof classProperty.count === 'undefined' &&
+    // `arrayOffsets` is an index of the buffer view containing offsets for variable-length arrays.
+    typeof propertyTableProperty.arrayOffsets !== 'undefined' &&
+    typeof propertyTableProperty.arrayOffsetType !== 'undefined'
+  ) {
+    // Data are in a VARIABLE-length array
+    return getOffsetsTypedArray(
+      scenegraph,
+      propertyTableProperty.arrayOffsets,
+      propertyTableProperty.arrayOffsetType,
+      numberOfElements
+    );
+  }
+  return null;
+}
 
-  const arrayOffsets = convertRawBufferToMetadataArray(
-    arrayOffsetsBytes,
-    'SCALAR', // offsets consist of ONE component
-    offsetType,
-    numberOfElements + 1 // The number of offsets is equal to the property table `count` plus one.
-  );
-  return arrayOffsets;
+/**
+ * Parse propertyTable.property.stringOffsets
+ * @param scenegraph - Instance of the class for structured access to GLTF data
+ * @param propertyTableProperty - propertyTable's property metadata
+ * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table
+ * @returns typed array with offset values
+ * @see https://github.com/CesiumGS/glTF/blob/2976f1183343a47a29e4059a70961371cd2fcee8/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json#L29C10-L29C23
+ */
+function getStringOffsets(
+  scenegraph: GLTFScenegraph,
+  propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
+  numberOfElements: number
+): TypedArray | null {
+  if (
+    typeof propertyTableProperty.stringOffsets !== 'undefined' && // `stringOffsets` is an index of the buffer view containing offsets for strings.
+    typeof propertyTableProperty.stringOffsetType !== 'undefined'
+  ) {
+    // Data are in a FIXED-length array
+    return getOffsetsTypedArray(
+      scenegraph,
+      propertyTableProperty.stringOffsets,
+      propertyTableProperty.stringOffsetType,
+      numberOfElements
+    );
+  }
+  return null;
 }
 
 /**
@@ -422,28 +435,42 @@ function getOffsetArray(
  * @param {number} numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
  * @param {Uint8Array} valuesDataBytes - data taken from values property of the property table property.
  * @param {TypedArray | null} arrayOffsets - offsets for variable-length arrays. It's null for fixed-length arrays or scalar types.
- * @returns {number[] | number[][]}
+ * @returns property values in a typed array or in an array of typed arrays
  */
 function getPropertyDataNumeric(
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   numberOfElements: number,
   valuesDataBytes: Uint8Array,
   arrayOffsets: TypedArray | null
-): number[] | number[][] {
+): BigTypedArray | BigTypedArray[] {
   const isArray = classProperty.array;
   const arrayCount = classProperty.count;
 
   const elementSize = getArrayElementByteSize(classProperty.type, classProperty.componentType);
   const elementCount = valuesDataBytes.byteLength / elementSize;
 
-  let valuesData: TypedArray;
+  let valuesData: BigTypedArray | null;
   if (classProperty.componentType) {
     valuesData = convertRawBufferToMetadataArray(
       valuesDataBytes,
       classProperty.type,
-      classProperty.componentType, // The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types.
+      // The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types.
+      classProperty.componentType as
+        | 'INT8'
+        | 'UINT8'
+        | 'INT16'
+        | 'UINT16'
+        | 'INT32'
+        | 'UINT32'
+        | 'INT64'
+        | 'UINT64'
+        | 'FLOAT32'
+        | 'FLOAT64',
       elementCount
     );
+    if (!valuesData) {
+      valuesData = valuesDataBytes;
+    }
   } else {
     // The spec doesn't provide any info what to do if componentType is not set.
     valuesData = valuesDataBytes;
@@ -467,65 +494,52 @@ function getPropertyDataNumeric(
     return [];
   }
 
-  // Single value (not an array)
-  const attributeValueArray: number[] = [];
-  for (let index = 0; index < numberOfElements; index++) {
-    const value = valuesData[index];
-    attributeValueArray.push(value);
-  }
-  return attributeValueArray;
+  return valuesData;
 }
 
 function handleVariableLengthArrayNumeric(
-  valuesData: TypedArray,
+  valuesData: BigTypedArray,
   numberOfElements: number,
   arrayOffsets: TypedArray,
   valuesDataBytesLength: number,
   elementSize: number
-) {
-  const attributeValueArray: number[][] = [];
+): BigTypedArray[] {
+  const attributeValueArray: BigTypedArray[] = [];
   for (let index = 0; index < numberOfElements; index++) {
-    const array: number[] = [];
     const arrayOffset = arrayOffsets[index];
     const arrayByteSize = arrayOffsets[index + 1] - arrayOffsets[index];
-    if (arrayByteSize + arrayOffset <= valuesDataBytesLength) {
-      const typedArrayOffset = arrayOffset / elementSize;
-      const elementCount = arrayByteSize / elementSize;
-      for (let i = 0; i < elementCount; i++) {
-        const value = valuesData[typedArrayOffset + i];
-        array.push(value);
-      }
+    if (arrayByteSize + arrayOffset > valuesDataBytesLength) {
+      break;
     }
-    attributeValueArray.push(array);
+    const typedArrayOffset = arrayOffset / elementSize;
+    const elementCount = arrayByteSize / elementSize;
+
+    attributeValueArray.push(valuesData.slice(typedArrayOffset, typedArrayOffset + elementCount));
   }
   return attributeValueArray;
 }
 
 function handleFixedLengthArrayNumeric(
-  valuesData: TypedArray,
+  valuesData: BigTypedArray,
   numberOfElements: number,
   arrayCount: number
-) {
-  const attributeValueArray: number[][] = [];
+): BigTypedArray[] {
+  const attributeValueArray: BigTypedArray[] = [];
   for (let index = 0; index < numberOfElements; index++) {
-    const array: number[] = [];
-    for (let i = 0; i < arrayCount; i++) {
-      const value = valuesData[i];
-      array.push(value);
-    }
-    attributeValueArray.push(array);
+    const elementOffset = index * arrayCount;
+    attributeValueArray.push(valuesData.slice(elementOffset, elementOffset + arrayCount));
   }
   return attributeValueArray;
 }
 
 /**
  * Decodes properties of string type from binary sourse.
- * @param {GLTF_EXT_structural_metadata_ClassProperty} classProperty - class property object
- * @param {number} numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
- * @param {Uint8Array} valuesDataBytes - data taken from values property of the property table property.
- * @param {TypedArray | null} arrayOffsets - offsets for variable-length arrays. It's null for fixed-length arrays or scalar types.
- * @param {TypedArray | null} stringOffsets - index of the buffer view containing offsets for strings. It should be available for string type.
- * @returns {string[] | string[][]}
+ * @param classProperty - class property object
+ * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
+ * @param valuesDataBytes - data taken from values property of the property table property.
+ * @param arrayOffsets - offsets for variable-length arrays. It's null for fixed-length arrays or scalar types.
+ * @param stringOffsets - index of the buffer view containing offsets for strings. It should be available for string type.
+ * @returns string property values
  */
 function getPropertyDataString(
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
@@ -577,11 +591,6 @@ function getPropertyDataENUM(
   valuesDataBytes: Uint8Array,
   arrayOffsets: TypedArray | null
 ): string[] | string[][] {
-  const data: string[] = [];
-
-  const isArray = classProperty.array;
-  const arrayCount = classProperty.count;
-
   const enumType = classProperty.enumType;
   // Enum ID as declared in the `enums` dictionary. Required when `type` is `ENUM`.
   if (!enumType) {
@@ -600,14 +609,17 @@ function getPropertyDataENUM(
   const enumValueType = enumEntry.valueType || 'UINT16';
   const elementSize = getArrayElementByteSize(classProperty.type, enumValueType);
   const elementCount = valuesDataBytes.byteLength / elementSize;
-  const valuesData: TypedArray = convertRawBufferToMetadataArray(
+  let valuesData: BigTypedArray | null = convertRawBufferToMetadataArray(
     valuesDataBytes,
     classProperty.type,
     enumValueType,
     elementCount
   );
+  if (!valuesData) {
+    valuesData = valuesDataBytes;
+  }
 
-  if (isArray) {
+  if (classProperty.array) {
     if (arrayOffsets) {
       // VARIABLE-length array
       return handleVariableLengthArrayENUM(
@@ -619,6 +631,8 @@ function getPropertyDataENUM(
         enumEntry
       );
     }
+
+    const arrayCount = classProperty.count;
     if (arrayCount) {
       // FIXED-length array
       return handleFixedLengthArrayENUM(valuesData, numberOfElements, arrayCount, enumEntry);
@@ -627,20 +641,12 @@ function getPropertyDataENUM(
   }
 
   // Single value (not an array)
-  for (let index = 0; index < numberOfElements; index++) {
-    const enumValue = valuesData[index];
-    const enumObject = getEnumByValue(enumEntry, enumValue);
-    if (enumObject) {
-      data.push(enumObject.name);
-    }
-  }
-
-  return data;
+  return getEnumsArray(valuesData, 0, numberOfElements, enumEntry);
 }
 
 /* eslint max-params: ["error", 6]*/
 function handleVariableLengthArrayENUM(
-  valuesData: TypedArray,
+  valuesData: BigTypedArray,
   numberOfElements: number,
   arrayOffsets: TypedArray,
   valuesDataBytesLength: number,
@@ -649,47 +655,61 @@ function handleVariableLengthArrayENUM(
 ) {
   const attributeValueArray: string[][] = [];
   for (let index = 0; index < numberOfElements; index++) {
-    const array: string[] = [];
     const arrayOffset = arrayOffsets[index];
     const arrayByteSize = arrayOffsets[index + 1] - arrayOffsets[index];
-    if (arrayByteSize + arrayOffset <= valuesDataBytesLength) {
-      const typedArrayOffset = arrayOffset / elementSize;
-      const elementCount = arrayByteSize / elementSize;
-      for (let i = 0; i < elementCount; i++) {
-        const value = valuesData[typedArrayOffset + i];
-
-        const enumObject = getEnumByValue(enumEntry, value);
-        if (enumObject) {
-          array.push(enumObject.name);
-        }
-      }
+    if (arrayByteSize + arrayOffset > valuesDataBytesLength) {
+      break;
     }
+
+    const typedArrayOffset = arrayOffset / elementSize;
+    const elementCount = arrayByteSize / elementSize;
+    const array: string[] = getEnumsArray(valuesData, typedArrayOffset, elementCount, enumEntry);
     attributeValueArray.push(array);
   }
   return attributeValueArray;
 }
 
 function handleFixedLengthArrayENUM(
-  valuesData: TypedArray,
+  valuesData: BigTypedArray,
   numberOfElements: number,
   arrayCount: number,
   enumEntry: GLTF_EXT_structural_metadata_Enum
 ) {
   const attributeValueArray: string[][] = [];
   for (let index = 0; index < numberOfElements; index++) {
-    const array: string[] = [];
-    for (let i = 0; i < arrayCount; i++) {
-      const value = valuesData[i];
-
-      const enumObject = getEnumByValue(enumEntry, value);
-      if (enumObject) {
-        array.push(enumObject.name);
-      }
-    }
+    const elementOffset = arrayCount * index;
+    const array: string[] = getEnumsArray(valuesData, elementOffset, arrayCount, enumEntry);
     attributeValueArray.push(array);
   }
   return attributeValueArray;
 }
+
+function getEnumsArray(
+  valuesData: BigTypedArray,
+  offset: number,
+  count: number,
+  enumEntry: GLTF_EXT_structural_metadata_Enum
+): string[] {
+  const array: string[] = [];
+  for (let i = 0; i < count; i++) {
+    // At the moment we don't support BigInt. It requires additional calculations logic
+    // and might be an issue in Safari
+    if (valuesData instanceof BigInt64Array || valuesData instanceof BigUint64Array) {
+      array.push('');
+    } else {
+      const value = valuesData[offset + i];
+
+      const enumObject = getEnumByValue(enumEntry, value);
+      if (enumObject) {
+        array.push(enumObject.name);
+      } else {
+        array.push('');
+      }
+    }
+  }
+  return array;
+}
+
 /**
  * Find the property table by class name.
  * @param {GLTF_EXT_structural_metadata_PropertyTable[]} propertyTables

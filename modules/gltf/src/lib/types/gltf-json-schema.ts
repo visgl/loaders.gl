@@ -1057,7 +1057,7 @@ export type GLTF_EXT_feature_metadata_FeatureTableProperty = {
   bufferView: number;
 
   /** The type of values in arrayOffsetBufferView and stringOffsetBufferView. */
-  offsetType?: string; // default: "UINT32"
+  offsetType?: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string; // default: "UINT32"
   /**
    * The index of the buffer view containing offsets for variable-length arrays.
    * The number of offsets is equal to the feature table count plus one.

@@ -9,12 +9,14 @@ import type {
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_TextureAccessor
 } from '../../types/gltf-json-schema';
+import type {TypedArray} from '@loaders.gl/schema';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {getImageData} from '@loaders.gl/images';
 import {GLTFMeshPrimitive} from '../../types/gltf-json-schema';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
 import {emod} from '@loaders.gl/math';
+import {getOffsetsTypedArray} from '../utils/3d-tiles-utils';
 
 /** Extension name */
 const EXT_FEATURE_METADATA_NAME = 'EXT_feature_metadata';
@@ -133,14 +135,43 @@ function getPropertyDataFromBinarySource(
   switch (schemaProperty.type) {
     case 'STRING': {
       // stringOffsetBufferView should be available for string type.
-      const stringOffsetBufferView = featureTableProperty.stringOffsetBufferView!;
-      const offsetsData = scenegraph.getTypedArrayForBufferView(stringOffsetBufferView);
+      // const stringOffsetBufferView = featureTableProperty.stringOffsetBufferView!;
+      // const offsetsData = scenegraph.getTypedArrayForBufferView(stringOffsetBufferView);
+      const offsetsData = getStringOffsets(scenegraph, featureTableProperty, numberOfFeatures);
+      if (!offsetsData) {
+        return [];
+      }
       return getStringAttributes(dataArray, offsetsData, numberOfFeatures);
     }
     default:
   }
 
   return dataArray;
+}
+
+/**
+ * Parse propertyTable.property.stringOffsets
+ * @param scenegraph - Instance of the class for structured access to GLTF data
+ * @param propertyTableProperty - propertyTable's property metadata
+ * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table
+ * @returns typed array with offset values
+ * @see https://github.com/CesiumGS/glTF/blob/2976f1183343a47a29e4059a70961371cd2fcee8/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json#L29C10-L29C23
+ */
+function getStringOffsets(
+  scenegraph: GLTFScenegraph,
+  featureTableProperty: GLTF_EXT_feature_metadata_FeatureTableProperty,
+  numberOfElements: number
+): TypedArray | null {
+  if (typeof featureTableProperty.stringOffsetBufferView !== 'undefined') {
+    // Data are in a FIXED-length array
+    return getOffsetsTypedArray(
+      scenegraph,
+      featureTableProperty.stringOffsetBufferView,
+      featureTableProperty.offsetType || 'UINT32', // UINT32 is default by the spec
+      numberOfElements
+    );
+  }
+  return null;
 }
 
 /**
@@ -371,24 +402,16 @@ function findFeatureTextureByName(
  */
 function getStringAttributes(
   data: Uint8Array,
-  offsetsData: Uint8Array,
+  offsetsData: TypedArray,
   stringsCount: number
 ): string[] {
   const stringsArray: string[] = [];
   const textDecoder = new TextDecoder('utf8');
 
-  let stringOffset = 0;
-  const bytesPerStringSize = 4;
-
   for (let index = 0; index < stringsCount; index++) {
-    // TODO check if it is multiplication on bytesPerStringSize is valid operation?
-    const stringByteSize =
-      offsetsData[(index + 1) * bytesPerStringSize] - offsetsData[index * bytesPerStringSize];
-    const stringData = data.subarray(stringOffset, stringByteSize + stringOffset);
+    const stringData = data.slice(offsetsData[index], offsetsData[index + 1]);
     const stringAttribute = textDecoder.decode(stringData);
-
     stringsArray.push(stringAttribute);
-    stringOffset += stringByteSize;
   }
 
   return stringsArray;
