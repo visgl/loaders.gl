@@ -219,6 +219,13 @@ function getStringOffsets(
   return null;
 }
 
+/**
+ * Parse numeric property values
+ * @param valuesDataBytes - values data array
+ * @param propertyType - type of the property
+ * @param elementCount - number of rows in the featureTable
+ * @returns Number data in a typed array
+ */
 function getNumericAttributes(
   valuesDataBytes: Uint8Array,
   propertyType:
@@ -233,7 +240,7 @@ function getNumericAttributes(
     | 'FLOAT32'
     | 'FLOAT64',
   elementCount: number
-) {
+): BigTypedArray {
   let valuesData = convertRawBufferToMetadataArray(
     valuesDataBytes,
     'SCALAR',
