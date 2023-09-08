@@ -129,14 +129,10 @@ function getPropertyDataFromBinarySource(
   featureTableProperty: GLTF_EXT_feature_metadata_FeatureTableProperty
 ): Uint8Array | string[] {
   const bufferView = featureTableProperty.bufferView;
-  // TODO think maybe we shouldn't get data only in Uint8Array format.
   const dataArray: Uint8Array = scenegraph.getTypedArrayForBufferView(bufferView);
 
   switch (schemaProperty.type) {
     case 'STRING': {
-      // stringOffsetBufferView should be available for string type.
-      // const stringOffsetBufferView = featureTableProperty.stringOffsetBufferView!;
-      // const offsetsData = scenegraph.getTypedArrayForBufferView(stringOffsetBufferView);
       const offsetsData = getStringOffsets(scenegraph, featureTableProperty, numberOfFeatures);
       if (!offsetsData) {
         return [];
@@ -150,12 +146,12 @@ function getPropertyDataFromBinarySource(
 }
 
 /**
- * Parse propertyTable.property.stringOffsets
+ * Parse featureTable.property.stringOffsetBufferView
  * @param scenegraph - Instance of the class for structured access to GLTF data
  * @param propertyTableProperty - propertyTable's property metadata
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table
  * @returns typed array with offset values
- * @see https://github.com/CesiumGS/glTF/blob/2976f1183343a47a29e4059a70961371cd2fcee8/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json#L29C10-L29C23
+ * @see https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_feature_metadata/schema/featureTable.property.schema.json#L50C10-L50C32
  */
 function getStringOffsets(
   scenegraph: GLTFScenegraph,
@@ -167,7 +163,7 @@ function getStringOffsets(
     return getOffsetsTypedArray(
       scenegraph,
       featureTableProperty.stringOffsetBufferView,
-      featureTableProperty.offsetType || 'UINT32', // UINT32 is default by the spec
+      featureTableProperty.offsetType || 'UINT32', // UINT32 is the default by the spec
       numberOfElements
     );
   }

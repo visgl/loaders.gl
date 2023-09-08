@@ -101,11 +101,11 @@ export function getOffsetsTypedArray(
 
 /**
  * Converts raw bytes that are in the buffer to an array of the type defined by the schema.
- * @param {Uint8Array} data - raw bytes in the buffer
- * @param {string} attributeType - SCALAR, VECN, MATN
- * @param {string} componentType - type of the component in elements, e.g. 'UINT8' or 'FLOAT32'
- * @param {number} elementCount - number of elements in the array. Default value is 1.
- * @returns {TypedArray} Data array
+ * @param data - raw bytes in the buffer
+ * @param attributeType - SCALAR, VECN, MATN
+ * @param componentType - type of the component in elements, e.g. 'UINT8' or 'FLOAT32'
+ * @param elementCount - number of elements in the array. Default value is 1.
+ * @returns Data array
  */
 export function convertRawBufferToMetadataArray(
   data: Uint8Array,
@@ -141,10 +141,10 @@ export function convertRawBufferToMetadataArray(
 /**
  * Processes data encoded in the texture associated with the primitive.
  * If Ext_mesh_featues is combined with the Ext_structural_metadata, propertyTable will also be processed.
- * @param {GLTFScenegraph} scenegraph - Instance of the class for structured access to GLTF data.
- * @param {GLTFTextureInfoMetadata} textureInfo - reference to the texture where extension data are stored.
- * @param {GLTFMeshPrimitive} primitive - primitive object in the mesh
- * @returns {number[] | null} Array of data taken. Null if data can't be taken from the texture.
+ * @param scenegraph - Instance of the class for structured access to GLTF data.
+ * @param textureInfo - reference to the texture where extension data are stored.
+ * @param primitive - primitive object in the mesh
+ * @returns Array of data taken. Null if data can't be taken from the texture.
  */
 export function getPrimitiveTextureData(
   scenegraph: GLTFScenegraph,
@@ -206,11 +206,11 @@ export function getPrimitiveTextureData(
  * Puts property data to attributes.
  * It creates corresponding buffer, bufferView and accessor
  * so the data can be accessed like regular data stored in buffers.
- * @param {GLTFScenegraph} scenegraph - scenegraph object
- * @param {string} attributeName - name of the attribute
- * @param {number[]} propertyData - property data to store
- * @param {number[]} featureTable - an array where unique data from the property data are being stored
- * @param {GLTFMeshPrimitive} primitive - primitive object
+ * @param scenegraph - scenegraph object
+ * @param attributeName - name of the attribute
+ * @param propertyData - property data to store
+ * @param featureTable - an array where unique data from the property data are being stored
+ * @param primitive - primitive object
  */
 export function primitivePropertyDataToAttributes(
   scenegraph: GLTFScenegraph,
@@ -253,12 +253,12 @@ export function primitivePropertyDataToAttributes(
 
 /**
  * Gets the value from the texture by coordinates provided.
- * @param {ImageType} parsedImage - image where the data are stored.
- * @param {string | undefined} mimeType - MIME type
- * @param {Float32Array} textureCoordinates - uv coordinates to access data in the image.
- * @param {number} index - index of uv coordinates in the array textureCoordinates
- * @param {channels} channels - image channels where data are stored. Channels of an RGBA texture are numbered 0..3 respectively.
- * @returns {number} Value taken from the image.
+ * @param parsedImage - image where the data are stored.
+ * @param mimeType - MIME type
+ * @param textureCoordinates - uv coordinates to access data in the image.
+ * @param index - index of uv coordinates in the array textureCoordinates
+ * @param channels - image channels where data are stored. Channels of an RGBA texture are numbered 0..3 respectively.
+ * @returns Value taken from the image.
  */
 function getImageValueByCoordinates(
   parsedImage: ImageType,
