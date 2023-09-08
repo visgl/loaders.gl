@@ -1,3 +1,4 @@
+// loaders.gl, MIT license
 // Minimal support to load tilsets from the Cesium ION services
 
 import {fetchFile} from '@loaders.gl/core';

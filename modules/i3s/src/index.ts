@@ -47,3 +47,6 @@ export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
 export {I3SNodePageLoader} from './i3s-node-page-loader';
 export {ArcGISWebSceneLoader} from './arcgis-webscene-loader';
 export {parseSLPK} from './lib/parsers/parse-slpk/parse-slpk';
+
+// EXPERIMENTAL EXPORTS
+export {ArcGISI3SService} from './services/arcgis-i3s-service';
