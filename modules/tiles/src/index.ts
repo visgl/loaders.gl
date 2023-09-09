@@ -22,4 +22,4 @@ export {
 } from './constants';
 
 // EXPERIMENTAL EXPORTS
-export {Tile3DService} from './services/tile3d-service';
+export {Tiles3DService} from './services/tiles-3d-service';

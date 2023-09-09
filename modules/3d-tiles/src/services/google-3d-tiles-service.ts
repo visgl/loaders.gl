@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import {Tile3DService} from '@loaders.gl/tiles';
+import {Tiles3DService} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '../tiles-3d-loader';
 
 export type GoogleAsset = {
@@ -23,7 +23,7 @@ const ASSET_CATALOG: GoogleAsset[] = [
  * attribution should be visible (right now displayed with a grayish color, unnoticeable with Google 3d tiles)
  * Google logo should be displayed on the bottom left side (where FSQ watermark is located).
  */
-export class Google3DTilesService extends Tile3DService {
+export class Google3DTilesService extends Tiles3DService {
   readonly id = 'google';
   readonly name = 'Google 3D Tiles';
   readonly urlKey = 'google';

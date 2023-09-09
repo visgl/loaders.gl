@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import {Tile3DService} from '@loaders.gl/tiles';
+import {Tiles3DService} from '@loaders.gl/tiles';
 import {CesiumIonLoader} from '../cesium-ion-loader';
 import {fetchFile} from '@loaders.gl/core';
 
@@ -37,7 +37,7 @@ export type IONAssetMetadata = {
  * Attribution for Cesium ion.
  * @see https://cesium.com/legal/terms-of-service/
  */
-export class CesiumIONService extends Tile3DService {
+export class CesiumIONService extends Tiles3DService {
   readonly id = 'cesium';
   readonly name = 'Cesium ion';
   readonly urlKey = 'ion.cesium';
