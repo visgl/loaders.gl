@@ -3,6 +3,20 @@
 import {Tile3DService} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '../tiles-3d-loader';
 
+export type GoogleAsset = {
+  id: string;
+  url: string;
+  name: string;
+};
+
+const ASSET_CATALOG: GoogleAsset[] = [
+  {
+    id: '1',
+    url: 'https://tile.googleapis.com/v1/3dtiles/root.json',
+    name: 'Google 3D Tiles'
+  }
+];
+
 /**
  * @see https://developers.google.com/maps/documentation/tile/policies
  * attribution shouldn't be hidden (right now dataset attribution is only partly shown and expanded on hover).
@@ -18,17 +32,21 @@ export class Google3DTilesService extends Tile3DService {
     title: 'Built with Google Maps.',
     url: '',
     logoUrl:
-      'https://developers.google.com/static/maps/documentation/images/google_on_non_white.png',
-    height: 16
+      'https://developers.google.com/static/maps/documentation/images/google_on_non_white.png'
   };
 
   readonly loader = Tiles3DLoader;
+  readonly minZoom = 8;
 
-  isSupported(mapState: any): boolean {
-    return mapState.globe?.enabled || mapState.zoom < 8;
+  getLoadOptions() {
+    return {fetch: {headers: {'X-GOOG-API-KEY': this.accessToken}}};
   }
 
-  async getMetadata(): Promise<any> {
+  async getAssetCatalog(): Promise<GoogleAsset[]> {
+    return ASSET_CATALOG;
+  }
+
+  async getAssetMetadata(assetId: string): Promise<any> {
     if (!this.accessToken) {
       throw new Error(`No access token for ${this.name}`);
     }
@@ -36,6 +54,7 @@ export class Google3DTilesService extends Tile3DService {
     if (!response.ok) {
       throw new Error(`Failed to fetch ${this.name} ${response.status}`);
     }
-    return {name: this.name, ...(await response.json())};
+    const json = await response.json();
+    return {name: this.name, ...json};
   }
 }

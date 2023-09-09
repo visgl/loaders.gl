@@ -49,4 +49,4 @@ export {ArcGISWebSceneLoader} from './arcgis-webscene-loader';
 export {parseSLPK} from './lib/parsers/parse-slpk/parse-slpk';
 
 // EXPERIMENTAL EXPORTS
-export {ArcGISI3SService} from './services/arcgis-i3s-service';
+export {ArcGISI3SService as _ArcGISI3SService} from './services/arcgis-i3s-service';

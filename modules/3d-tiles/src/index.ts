@@ -30,5 +30,5 @@ export type {
 export type {Tiles3DLoaderOptions} from './tiles-3d-loader';
 
 // EXPERIMENTAL SERVICES
-export {Google3DTilesService} from './services/google-3d-tiles-service';
-export {CesiumIONService} from './services/cesium-ion-service';
+export {Google3DTilesService as _Google3DTilesService} from './services/google-3d-tiles-service';
+export {CesiumIONService as _CesiumIONService} from './services/cesium-ion-service';

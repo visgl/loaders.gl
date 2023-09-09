@@ -15,11 +15,14 @@ export class ArcGISI3SService extends Tile3DService {
   urlKey = 'arcgis';
   attribution = {
     title: 'Powered by Esri.',
-    url: 'https://arcgis.com/',
-    height: 16
+    url: 'https://arcgis.com/'
   };
 
   loader = I3SLoader;
+
+  async getAssetCatalog(): Promise<unknown[]> {
+    return [];
+  }
 
   async getMetadata(): Promise<any> {
     const response = await fetch(this.url);
