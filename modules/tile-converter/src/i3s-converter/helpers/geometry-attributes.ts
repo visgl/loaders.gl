@@ -1,4 +1,9 @@
-import type {GeometryAttributes, ConvertedAttributes, GroupedByFeatureIdAttributes} from '../types';
+import type {
+  GeometryAttributes,
+  ConvertedAttributes,
+  GroupedByFeatureIdAttributes,
+  GroupedAttributes
+} from '../types';
 import {concatenateTypedArrays} from '@loaders.gl/loader-utils';
 
 const VALUES_PER_VERTEX = 3;
@@ -125,6 +130,11 @@ function makeAttributeObjects(attributes: GeometryAttributes): GroupedByFeatureI
   let colorsList = new Uint8Array(colors);
   let texCoordsList = new Float32Array(texCoords);
   let uvRegionsList = new Uint16Array(uvRegions);
+  let positionsOffset = 0;
+  let normalsOffset = 0;
+  let colorsOffset = 0;
+  let uvRegionsOffset = 0;
+  let texCoordsOffset = 0;
 
   for (let index = 0; index < featureIds.length; index++) {
     const startIndex = faceRange[index * 2];
@@ -138,21 +148,21 @@ function makeAttributeObjects(attributes: GeometryAttributes): GroupedByFeatureI
 
     groupedData.push({
       featureId: featureIds[index],
-      positions: positionsList.slice(0, positionsCount),
-      normals: normalsList.slice(0, normalsCount),
-      colors: colorsList.slice(0, colorsCount),
-      uvRegions: uvRegionsList.slice(0, uvRegionsCount),
-      texCoords: texCoordsList.slice(0, texCoordsCount)
+      positions: positionsList.subarray(positionsOffset, positionsOffset + positionsCount),
+      normals: normalsList.subarray(normalsOffset, normalsOffset + normalsCount),
+      colors: colorsList.subarray(colorsOffset, colorsOffset + colorsCount),
+      uvRegions: uvRegionsList.subarray(uvRegionsOffset, uvRegionsOffset + uvRegionsCount),
+      texCoords: texCoordsList.subarray(texCoordsOffset, texCoordsOffset + texCoordsCount)
     });
 
-    positionsList = positionsList.slice(positionsCount);
-    normalsList = normalsList.slice(normalsCount);
-    colorsList = colorsList.slice(colorsCount);
-    uvRegionsList = uvRegionsList.slice(uvRegionsCount);
-    texCoordsList = texCoordsList.slice(texCoordsCount);
+    positionsOffset += positionsCount;
+    normalsOffset += normalsCount;
+    colorsOffset += colorsCount;
+    uvRegionsOffset += uvRegionsCount;
+    texCoordsOffset += texCoordsCount;
   }
 
-  return groupedData.sort((first, second) => first.featureId - second.featureId);
+  return groupedData;
 }
 
 /**
@@ -195,33 +205,33 @@ function getSliceAttributeCount(
 function unifyObjectsByFeatureId(
   sortedData: GroupedByFeatureIdAttributes[]
 ): GroupedByFeatureIdAttributes[] {
-  const uniqueObjects: GroupedByFeatureIdAttributes[] = [];
-
-  for (let index = 0; index < sortedData.length; index++) {
-    const currentObject = sortedData[index];
-    const existingObject = uniqueObjects.find((obj) => obj.featureId === currentObject.featureId);
-
+  const groupedMetadata: {
+    featureId: number;
+    length: number;
+    attributes: GroupedByFeatureIdAttributes[];
+  }[] = [];
+  for (const data of sortedData) {
+    const existingObject = groupedMetadata.find((obj) => obj.featureId === data.featureId);
     if (existingObject) {
-      existingObject.positions = concatenateTypedArrays(
-        existingObject.positions,
-        currentObject.positions
-      );
-      existingObject.normals = concatenateTypedArrays(
-        existingObject.normals,
-        currentObject.normals
-      );
-      existingObject.colors = concatenateTypedArrays(existingObject.colors, currentObject.colors);
-      existingObject.texCoords = concatenateTypedArrays(
-        existingObject.texCoords,
-        currentObject.texCoords
-      );
-      existingObject.uvRegions = concatenateTypedArrays(
-        existingObject.uvRegions,
-        currentObject.uvRegions
-      );
+      existingObject.length += data.positions.length / 3;
+      existingObject.attributes.push(data);
     } else {
-      uniqueObjects.push(currentObject);
+      groupedMetadata.push({
+        featureId: data.featureId,
+        length: data.positions.length / 3,
+        attributes: [data]
+      });
     }
+  }
+
+  const uniqueObjects: GroupedByFeatureIdAttributes[] = [];
+  for (const metatada of groupedMetadata) {
+    const attributes = concatenateAttributes(metatada.attributes);
+
+    uniqueObjects.push({
+      featureId: metatada.featureId,
+      ...attributes
+    });
   }
 
   return uniqueObjects;
@@ -238,12 +248,6 @@ function groupAttributesAndRangesByFeatureId(
 ): GeometryAttributes {
   const firstAttributeObject = unifiedObjects[0];
   const featureIds = [firstAttributeObject.featureId || 0];
-
-  let positions = new Float32Array(firstAttributeObject.positions);
-  let normals = new Float32Array(firstAttributeObject.normals);
-  let colors = new Uint8Array(firstAttributeObject.colors);
-  let uvRegions = new Uint16Array(firstAttributeObject.uvRegions);
-  let texCoords = new Float32Array(firstAttributeObject.texCoords);
   const range = [0];
 
   let objIndex = 0;
@@ -253,12 +257,6 @@ function groupAttributesAndRangesByFeatureId(
     const currentAttributesObject = unifiedObjects[index];
     featureIds.push(currentAttributesObject.featureId || 0);
 
-    positions = concatenateTypedArrays(positions, currentAttributesObject.positions);
-    normals = concatenateTypedArrays(normals, currentAttributesObject.normals);
-    colors = concatenateTypedArrays(colors, currentAttributesObject.colors);
-    uvRegions = concatenateTypedArrays(uvRegions, currentAttributesObject.uvRegions);
-    texCoords = concatenateTypedArrays(texCoords, currentAttributesObject.texCoords);
-
     const groupedObject = unifiedObjects[objIndex];
     range.push(groupedObject.positions.length / POSITIONS_AND_NORMALS_PER_TRIANGLE - 1 + sum);
     range.push(groupedObject.positions.length / POSITIONS_AND_NORMALS_PER_TRIANGLE + sum);
@@ -267,8 +265,43 @@ function groupAttributesAndRangesByFeatureId(
     objIndex += 1;
   }
 
-  range.push(positions.length / POSITIONS_AND_NORMALS_PER_TRIANGLE - 1);
+  const attributes = concatenateAttributes(unifiedObjects);
+
+  range.push(attributes.positions.length / POSITIONS_AND_NORMALS_PER_TRIANGLE - 1);
 
   const faceRange = new Uint32Array(range);
-  return {faceRange, featureIds, positions, normals, colors, uvRegions, texCoords, featureCount};
+  return {faceRange, featureIds, featureCount, ...attributes};
+}
+
+/**
+ * Concatenate attributes typed arrays
+ * @param attributes - grouped by featureId typed arrays
+ * @returns - concatenated typed array list
+ */
+function concatenateAttributes(attributes: GroupedByFeatureIdAttributes[]): GroupedAttributes {
+  const positionGroups = attributes.map(({positions}) => positions);
+  const positions =
+    positionGroups.length > 1 ? concatenateTypedArrays(...positionGroups) : positionGroups[0];
+
+  const normalGroups = attributes.map(({normals}) => normals);
+  const normals =
+    normalGroups.length > 1 ? concatenateTypedArrays(...normalGroups) : normalGroups[0];
+
+  const colorGroups = attributes.map(({colors}) => colors);
+  const colors = colorGroups.length > 1 ? concatenateTypedArrays(...colorGroups) : colorGroups[0];
+
+  const texCoordGroups = attributes.map(({texCoords}) => texCoords);
+  const texCoords =
+    texCoordGroups.length > 1 ? concatenateTypedArrays(...texCoordGroups) : texCoordGroups[0];
+
+  const uvRegionGroups = attributes.map(({uvRegions}) => uvRegions);
+  const uvRegions =
+    uvRegionGroups.length > 1 ? concatenateTypedArrays(...uvRegionGroups) : uvRegionGroups[0];
+  return {
+    positions,
+    normals,
+    colors,
+    texCoords,
+    uvRegions
+  };
 }
