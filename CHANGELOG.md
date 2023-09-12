@@ -6,6 +6,23 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.24
+
+- fix(tile-converter): geometry attributes reordering performance (#2640)
+- fix(tile-converter): EXT_feature_metadata conversion (#2639)
+- feat(gltf): EXT_feature_metadata - numeric types support (#2634)
+- chore(gltf): 3d-tiles extensions refactoring (#2633)
+- chore(draco): Upgrade to draco3d v1.5.6 (#2638)
+- Fix browser exclude (#2596)
+- docs: Consolidate whats-new (merge duplications) (#2637)
+- feat(arrow): upgrade to apache-arrow v13 (#2632)
+- feat(arrow): Typed apache arrow loader (#2631)
+- chore: More typed loaders (#2630)
+- chore(gis): Add typescript types (#2629)
+- docs(i3s): fix formats and english (#2628)
+- docs(i3s): I3S receipts (#2627)
+- chore: Type 3d-tile and I3S loaders. (#2606)
+
 ### v4.0.0-alpha.23
 
 - chore: Add loader type parameters (#2626)

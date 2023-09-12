@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/math",
-  "version": "4.0.0-alpha.23",
+  "version": "4.0.0-alpha.24",
   "description": "Experimental math classes for loaders.gl",
   "license": "MIT",
   "publishConfig": {
@@ -31,8 +31,8 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/math\""
   },
   "dependencies": {
-    "@loaders.gl/images": "4.0.0-alpha.23",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.23",
+    "@loaders.gl/images": "4.0.0-alpha.24",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.24",
     "@math.gl/core": "^3.5.1"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
