@@ -246,6 +246,11 @@ async function _makeNodeResources({
 
   let featureIdsMap: Record<string, number> = {};
   if (propertyTable) {
+    /**
+     * 3DTiles has featureIndices unique only for one tile.
+     * In I3S featureIds are unique layer-wide. We create featureIds from all feature properties.
+     * If 3DTiles features has equal set of properties they are considered as same feature in I3S.
+     */
     featureIdsMap = makeFeatureIdsUnique(
       featureIds,
       convertedAttributes.featureIndices,
