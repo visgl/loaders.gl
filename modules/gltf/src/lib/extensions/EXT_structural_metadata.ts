@@ -20,7 +20,8 @@ import {
   getPrimitiveTextureData,
   primitivePropertyDataToAttributes,
   getArrayElementByteSize,
-  getOffsetsTypedArray
+  getOffsetsTypedArray,
+  NumericComponentType
 } from './utils/3d-tiles-utils';
 
 const EXT_STRUCTURAL_METADATA_NAME = 'EXT_structural_metadata';
@@ -317,7 +318,7 @@ function processPropertyTable(
 }
 
 /**
- * Decodes properties from binary sourse based on property type.
+ * Decodes a propertyTable column from binary source based on property type
  * @param scenegraph - Instance of the class for structured access to GLTF data.
  * @param schema - Schema object
  * @param classProperty - class property object
@@ -336,13 +337,17 @@ function getPropertyDataFromBinarySource(
   const valuesBufferView = propertyTableProperty.values;
   const valuesDataBytes: Uint8Array = scenegraph.getTypedArrayForBufferView(valuesBufferView);
 
-  const arrayOffsets = getArrayOffsets(
+  const arrayOffsets = getArrayOffsetsForProperty(
     scenegraph,
     classProperty,
     propertyTableProperty,
     numberOfElements
   );
-  const stringOffsets = getStringOffsets(scenegraph, propertyTableProperty, numberOfElements);
+  const stringOffsets = getStringOffsetsForProperty(
+    scenegraph,
+    propertyTableProperty,
+    numberOfElements
+  );
 
   switch (classProperty.type) {
     case 'SCALAR':
@@ -387,7 +392,7 @@ function getPropertyDataFromBinarySource(
 }
 
 /**
- * Parse propertyTable.property.arrayOffsets
+ * Parse propertyTable.property.arrayOffsets that are offsets of sub-arrays in a flatten array of values
  * @param scenegraph - Instance of the class for structured access to GLTF data.
  * @param classProperty - class property object
  * @param propertyTableProperty - propertyTable's property metadata
@@ -395,7 +400,7 @@ function getPropertyDataFromBinarySource(
  * @returns typed array with offset values
  * @see https://github.com/CesiumGS/glTF/blob/2976f1183343a47a29e4059a70961371cd2fcee8/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json#L21
  */
-function getArrayOffsets(
+function getArrayOffsetsForProperty(
   scenegraph: GLTFScenegraph,
   classProperty: GLTF_EXT_structural_metadata_ClassProperty,
   propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
@@ -429,7 +434,7 @@ function getArrayOffsets(
  * @returns typed array with offset values
  * @see https://github.com/CesiumGS/glTF/blob/2976f1183343a47a29e4059a70961371cd2fcee8/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json#L29C10-L29C23
  */
-function getStringOffsets(
+function getStringOffsetsForProperty(
   scenegraph: GLTFScenegraph,
   propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
   numberOfElements: number
@@ -475,17 +480,7 @@ function getPropertyDataNumeric(
       valuesDataBytes,
       classProperty.type,
       // The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types.
-      classProperty.componentType as
-        | 'INT8'
-        | 'UINT8'
-        | 'INT16'
-        | 'UINT16'
-        | 'INT32'
-        | 'UINT32'
-        | 'INT64'
-        | 'UINT64'
-        | 'FLOAT32'
-        | 'FLOAT64',
+      classProperty.componentType as NumericComponentType,
       elementCount
     );
     if (!valuesData) {
@@ -499,7 +494,7 @@ function getPropertyDataNumeric(
   if (isArray) {
     if (arrayOffsets) {
       // VARIABLE-length array
-      return handleVariableLengthArrayNumeric(
+      return parseVariableLengthArrayNumeric(
         valuesData,
         numberOfElements,
         arrayOffsets,
@@ -509,7 +504,7 @@ function getPropertyDataNumeric(
     }
     if (arrayCount) {
       // FIXED-length array
-      return handleFixedLengthArrayNumeric(valuesData, numberOfElements, arrayCount);
+      return parseFixedLengthArrayNumeric(valuesData, numberOfElements, arrayCount);
     }
     return [];
   }
@@ -518,7 +513,9 @@ function getPropertyDataNumeric(
 }
 
 /**
- * Parse variable-length array data
+ * Parse variable-length array data.
+ * In this case every value of the property in the table will be an array
+ * of arbitrary length
  * @param valuesData - values in a flat typed array
  * @param numberOfElements - number of rows in the property table
  * @param arrayOffsets - offsets of nested arrays in the flat values array
@@ -526,7 +523,7 @@ function getPropertyDataNumeric(
  * @param valueSize - value size in bytes
  * @returns array of typed arrays
  */
-function handleVariableLengthArrayNumeric(
+function parseVariableLengthArrayNumeric(
   valuesData: BigTypedArray,
   numberOfElements: number,
   arrayOffsets: TypedArray,
@@ -549,12 +546,14 @@ function handleVariableLengthArrayNumeric(
 
 /**
  * Parse fixed-length array data
+ * In this case every value of the property in the table will be an array
+ * of constant length equal to `arrayCount`
  * @param valuesData - values in a flat typed array
  * @param numberOfElements - number of rows in the property table
  * @param arrayCount - nested arrays length
  * @returns array of typed arrays
  */
-function handleFixedLengthArrayNumeric(
+function parseFixedLengthArrayNumeric(
   valuesData: BigTypedArray,
   numberOfElements: number,
   arrayCount: number
@@ -657,7 +656,7 @@ function getPropertyDataENUM(
   if (classProperty.array) {
     if (arrayOffsets) {
       // VARIABLE-length array
-      return handleVariableLengthArrayENUM({
+      return parseVariableLengthArrayENUM({
         valuesData,
         numberOfElements,
         arrayOffsets,
@@ -670,7 +669,7 @@ function getPropertyDataENUM(
     const arrayCount = classProperty.count;
     if (arrayCount) {
       // FIXED-length array
-      return handleFixedLengthArrayENUM(valuesData, numberOfElements, arrayCount, enumEntry);
+      return parseFixedLengthArrayENUM(valuesData, numberOfElements, arrayCount, enumEntry);
     }
     return [];
   }
@@ -689,7 +688,7 @@ function getPropertyDataENUM(
  * @param params.enumEntry - enums dictionary
  * @returns nested strings array
  */
-function handleVariableLengthArrayENUM(params: {
+function parseVariableLengthArrayENUM(params: {
   valuesData: BigTypedArray;
   numberOfElements: number;
   arrayOffsets: TypedArray;
@@ -729,7 +728,7 @@ function handleVariableLengthArrayENUM(params: {
  * @param enumEntry - enums dictionary
  * @returns  nested strings array
  */
-function handleFixedLengthArrayENUM(
+function parseFixedLengthArrayENUM(
   valuesData: BigTypedArray,
   numberOfElements: number,
   arrayCount: number,

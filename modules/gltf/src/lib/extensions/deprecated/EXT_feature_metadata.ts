@@ -146,7 +146,8 @@ function getPropertyDataFromBinarySource(
 }
 
 /**
- * Parse featureTable.property.stringOffsetBufferView
+ * Parse featureTable.property.stringOffsetBufferView.
+ * String offsets is an array of offsets of strings in the united array of characters
  * @param scenegraph - Instance of the class for structured access to GLTF data
  * @param propertyTableProperty - propertyTable's property metadata
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table
