@@ -480,7 +480,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
         attributesLength: 2,
         featureCount: 12,
         nonCompressedGeometryByteLength: 11324,
-        compressedGeometryByteLength: 5701,
+        compressedGeometryByteLength: 5700,
         texture: {
           mimeType: 'image/jpeg',
           width: 512,
