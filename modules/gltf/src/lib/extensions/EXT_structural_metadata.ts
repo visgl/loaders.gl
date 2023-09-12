@@ -20,8 +20,8 @@ import {
   getPrimitiveTextureData,
   primitivePropertyDataToAttributes,
   getArrayElementByteSize,
-  getOffsetsTypedArray,
-  NumericComponentType
+  NumericComponentType,
+  getOffsetsForProperty
 } from './utils/3d-tiles-utils';
 
 const EXT_STRUCTURAL_METADATA_NAME = 'EXT_structural_metadata';
@@ -416,7 +416,7 @@ function getArrayOffsetsForProperty(
     typeof propertyTableProperty.arrayOffsetType !== 'undefined'
   ) {
     // Data are in a VARIABLE-length array
-    return getOffsetsTypedArray(
+    return getOffsetsForProperty(
       scenegraph,
       propertyTableProperty.arrayOffsets,
       propertyTableProperty.arrayOffsetType,
@@ -444,7 +444,7 @@ function getStringOffsetsForProperty(
     typeof propertyTableProperty.stringOffsetType !== 'undefined'
   ) {
     // Data are in a FIXED-length array
-    return getOffsetsTypedArray(
+    return getOffsetsForProperty(
       scenegraph,
       propertyTableProperty.stringOffsets,
       propertyTableProperty.stringOffsetType,

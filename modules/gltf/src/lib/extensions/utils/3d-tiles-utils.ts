@@ -82,7 +82,7 @@ export function getArrayElementByteSize(attributeType, componentType): number {
  * @param numberOfElements - The number of elements in each property array.
  * @returns array with values offsets
  */
-export function getOffsetsTypedArray(
+export function getOffsetsForProperty(
   scenegraph: GLTFScenegraph,
   bufferViewIndex: number,
   offsetType: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string,
