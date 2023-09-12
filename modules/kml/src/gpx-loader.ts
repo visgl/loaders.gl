@@ -27,7 +27,7 @@ const GPX_HEADER = `\
 /**
  * Loader for GPX (GPS exchange format)
  */
-export const GPXLoader: LoaderWithParser = {
+export const GPXLoader: LoaderWithParser<any, never, GPXLoaderOptions> = {
   name: 'GPX (GPS exchange format)',
   id: 'gpx',
   module: 'kml',

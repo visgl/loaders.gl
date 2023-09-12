@@ -27,7 +27,7 @@ const TCX_HEADER = `\
 /**
  * Loader for TCX (Training Center XML) - Garmin GPS track format
  */
-export const TCXLoader: LoaderWithParser = {
+export const TCXLoader: LoaderWithParser<any, never, TCXLoaderOptions> = {
   name: 'TCX (Training Center XML)',
   id: 'tcx',
   module: 'kml',

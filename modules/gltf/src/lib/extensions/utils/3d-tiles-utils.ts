@@ -16,6 +16,18 @@ import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
 import {emod} from '@loaders.gl/math';
 
+export type NumericComponentType =
+  | 'INT8'
+  | 'UINT8'
+  | 'INT16'
+  | 'UINT16'
+  | 'INT32'
+  | 'UINT32'
+  | 'INT64'
+  | 'UINT64'
+  | 'FLOAT32'
+  | 'FLOAT64';
+
 const ATTRIBUTE_TYPE_TO_COMPONENTS = {
   SCALAR: 1,
   VEC2: 2,
@@ -70,7 +82,7 @@ export function getArrayElementByteSize(attributeType, componentType): number {
  * @param numberOfElements - The number of elements in each property array.
  * @returns array with values offsets
  */
-export function getOffsetsTypedArray(
+export function getOffsetsForProperty(
   scenegraph: GLTFScenegraph,
   bufferViewIndex: number,
   offsetType: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string,
@@ -110,17 +122,7 @@ export function getOffsetsTypedArray(
 export function convertRawBufferToMetadataArray(
   data: Uint8Array,
   attributeType: string,
-  componentType:
-    | 'INT8'
-    | 'UINT8'
-    | 'INT16'
-    | 'UINT16'
-    | 'INT32'
-    | 'UINT32'
-    | 'INT64'
-    | 'UINT64'
-    | 'FLOAT32'
-    | 'FLOAT64',
+  componentType: NumericComponentType,
   elementCount: number = 1
 ): BigTypedArray | null {
   const numberOfComponents = ATTRIBUTE_TYPE_TO_COMPONENTS[attributeType];

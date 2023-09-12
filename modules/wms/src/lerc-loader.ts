@@ -22,7 +22,7 @@ export type LERCLoaderOptions = LoaderOptions & {
 /**
  * Loader for the LERC raster format
  */
-export const LERCLoader: LoaderWithParser = {
+export const LERCLoader: LoaderWithParser<LERCData, never, LERCLoaderOptions> = {
   id: 'lerc',
   name: 'LERC',
 

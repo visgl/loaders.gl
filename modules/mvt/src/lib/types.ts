@@ -14,13 +14,13 @@ type MVTWgs84CoordinatesOptions = {
   /**
    * When set to `wgs84`, the parser will return a flat array of GeoJSON objects with coordinates in longitude, latitude decoded from the provided tile index.
    */
-  coordinates: 'wgs84';
+  coordinates?: 'wgs84';
 
   /**
    * Mandatory with `wgs84` coordinates option. An object containing tile index values (`x`, `y`,
    * `z`) to reproject features' coordinates into WGS84.
    */
-  tileIndex: {x: number; y: number; z: number};
+  tileIndex?: {x: number; y: number; z: number};
 };
 
 export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOptions) & {

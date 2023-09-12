@@ -5,9 +5,56 @@ import {
   getTableRowAsArray,
   getTableRowAsObject
 } from './table-accessors';
-import {Table, ArrayRowTable, ObjectRowTable, ColumnarTable} from '../../../types/category-table';
+import {
+  Table,
+  ArrayRowTable,
+  ObjectRowTable,
+  ColumnarTable,
+  ArrowTable
+} from '../../../types/category-table';
 import {deduceTableSchema} from './table-schema';
 import {makeColumnFromField} from './table-column';
+
+export function convertTable(table: Table, shape: 'object-row-table'): ObjectRowTable;
+export function convertTable(table: Table, shape: 'array-row-table'): ArrayRowTable;
+export function convertTable(table: Table, shape: 'columnar-table'): ColumnarTable;
+export function convertTable(table: Table, shape: 'arrow-table'): ArrowTable;
+
+/**
+ * Convert a table to a different shape
+ * @param table
+ * @param shape
+ * @returns
+ */
+export function convertTable(
+  table: Table,
+  shape: 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow-table'
+) {
+  switch (shape) {
+    case 'object-row-table':
+      return makeObjectRowTable(table);
+    case 'array-row-table':
+      return makeArrayRowTable(table);
+    case 'columnar-table':
+      return makeColumnarTable(table);
+    case 'arrow-table':
+      return makeArrowTable(table);
+    default:
+      throw new Error(shape);
+  }
+}
+
+/**
+ * Convert a table to apache arrow format
+ * @note this depends on the `@loaders.gl/arrow module being imported
+ */
+export function makeArrowTable(table: Table): Table {
+  const _makeArrowTable = globalThis.__luma?._makeArrowTable;
+  if (!_makeArrowTable) {
+    throw new Error('');
+  }
+  return _makeArrowTable(table);
+}
 
 /** Convert any simple table into columnar format */
 export function makeColumnarTable(table: Table): ColumnarTable {
@@ -70,3 +117,28 @@ export function makeObjectRowTable(table: Table): ObjectRowTable {
     data
   };
 }
+
+/**
+/**
+ *
+ * @note - should be part of schema module
+export function convertColumnarToRowFormatTable(columnarTable: ColumnarTable): ObjectRowTable {
+  const tableKeys = ;
+  const tableRowsCount = columnarTable[tableKeys[0]].length;
+
+  const objectRows: ObjectRowTable['data'] = [];
+
+  for (let index = 0; index < tableRowsCount; index++) {
+    const objectRow = {};
+    for (const fieldName of Object.keys(columnarTable.data)) {
+      objectRow[fieldName] = columnarTable[fieldName][index];
+    }
+    objectRows.push(objectRow);
+  }
+
+  return {
+    shape: 'object-row-table',
+    data: objectRows
+  };
+}
+ */

@@ -1,4 +1,4 @@
-import type {BinaryFeatures, BinaryGeometry, Feature} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection, BinaryGeometry, Feature} from '@loaders.gl/schema';
 
 type TransformCoordinate = (coord: number[]) => number[];
 
@@ -9,9 +9,9 @@ type TransformCoordinate = (coord: number[]) => number[];
  * @return Transformed binary features
  */
 export function transformBinaryCoords(
-  binaryFeatures: BinaryFeatures,
+  binaryFeatures: BinaryFeatureCollection,
   transformCoordinate: TransformCoordinate
-): BinaryFeatures {
+): BinaryFeatureCollection {
   if (binaryFeatures.points) {
     transformBinaryGeometryPositions(binaryFeatures.points, transformCoordinate);
   }

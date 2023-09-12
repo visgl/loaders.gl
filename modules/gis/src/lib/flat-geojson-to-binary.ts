@@ -2,8 +2,8 @@
 import {earcut} from '@math.gl/polygon';
 import type {
   BinaryAttribute,
-  BinaryFeatures,
-  BinaryPolygonFeatures,
+  BinaryFeatureCollection,
+  BinaryPolygonFeature,
   FlatFeature,
   FlatPoint,
   FlatLineString,
@@ -485,8 +485,8 @@ function makeAccessorObjects(
   lines: Lines,
   polygons: Polygons,
   coordLength: number
-): BinaryFeatures {
-  const binaryFeatures = {
+): BinaryFeatureCollection {
+  const binaryFeatures: BinaryFeatureCollection = {
     points: {
       ...points,
       positions: {value: points.positions, size: coordLength},
@@ -510,10 +510,10 @@ function makeAccessorObjects(
       globalFeatureIds: {value: polygons.globalFeatureIds, size: 1},
       featureIds: {value: polygons.featureIds, size: 1},
       numericProps: wrapProps(polygons.numericProps, 1)
-    } as BinaryPolygonFeatures
+    } as BinaryPolygonFeature // triangles not expected
   };
 
-  if (polygons.triangles) {
+  if (binaryFeatures.polygons && polygons.triangles) {
     binaryFeatures.polygons.triangles = {value: new Uint32Array(polygons.triangles), size: 1};
   }
 

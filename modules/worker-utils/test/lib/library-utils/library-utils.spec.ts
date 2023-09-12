@@ -6,7 +6,7 @@ const LATEST = 'beta';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
 
 const DRACO_DECODER_URL =
-  'https://www.gstatic.com/draco/versioned/decoders/1.5.5/draco_decoder.wasm';
+  'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder.wasm';
 
 test('getLibraryUrl # should return URL', (t) => {
   const result = getLibraryUrl(DRACO_DECODER_URL);
