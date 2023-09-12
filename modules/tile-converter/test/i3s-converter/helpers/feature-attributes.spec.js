@@ -5,7 +5,7 @@ import {
 } from '../../../src/i3s-converter/helpers/feature-attributes';
 
 test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async (t) => {
-  const featureIds = [0, 1, 3];
+  const featureIdsMap = {0: 0, 1: 1, 3: 3};
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock', 'Frames'],
     color: ['red', 'green', 'blue', 'white']
@@ -14,7 +14,7 @@ test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatt
     component: ['Wall', 'Roof', 'Frames'],
     color: ['red', 'green', 'white']
   };
-  const result = flattenPropertyTableByFeatureIds(featureIds, propertyTable);
+  const result = flattenPropertyTableByFeatureIds(featureIdsMap, propertyTable);
   t.deepEqual(result, expectedResult);
 });
 

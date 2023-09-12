@@ -9,26 +9,26 @@ import {
 } from '@loaders.gl/i3s';
 
 /**
- * Takes attributes from property table based on featureIds.
+ * Takes attributes from property table based on featureIdsMap.
  * If there is no property value for particular featureId (index) the property will be null.
  * Example:
  * Initial data:
- *   OBJECTID: [0, 1, 5]
+ *   OBJECTID: {0: 0, 3: 33, 4: 333}
  *   component: ['Windows', 'Frames', 'Wall', 'Roof', 'Skylight']
  * Result:
- *   OBJECTID: [0, 1, 5]
- *   component: ['Windows', 'Frames', 'null']
- * @param featureIds
+ *   OBJECTID: [0, 33, 333]
+ *   component: ['Windows', 'Roof', 'Skylight']
+ * @param featureIdsMap
  * @param propertyTable
  */
 export function flattenPropertyTableByFeatureIds(
-  featureIds: number[],
+  featureIdsMap: Record<string, number>,
   propertyTable: FeatureTableJson
 ): FeatureTableJson {
   const resultPropertyTable: FeatureTableJson = {};
   for (const propertyName in propertyTable) {
     const properties = propertyTable[propertyName];
-    resultPropertyTable[propertyName] = getPropertiesByFeatureIds(properties, featureIds);
+    resultPropertyTable[propertyName] = getPropertiesByFeatureIds(properties, featureIdsMap);
   }
 
   return resultPropertyTable;
@@ -37,14 +37,17 @@ export function flattenPropertyTableByFeatureIds(
 /**
  * Getting properties by featureId index
  * @param properties
- * @param featureIds
+ * @param featureIdsMap
  */
-function getPropertiesByFeatureIds(properties: unknown[], featureIds: number[]): unknown[] {
+function getPropertiesByFeatureIds(
+  properties: unknown[],
+  featureIdsMap: Record<string, number>
+): unknown[] {
   const resultProperties: unknown[] = [];
 
   if (properties) {
-    for (const featureId of featureIds) {
-      const property = properties[featureId] || null;
+    for (const featureIdKey in featureIdsMap) {
+      const property = properties[featureIdKey] || null;
       resultProperties.push(property);
     }
   }
