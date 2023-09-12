@@ -54,10 +54,24 @@ Would have an index looking like this:
 | r36  | `0b00000000` (=0)  | `1`    |
 */
 
-// @ts-nocheck
+/** @todo these types are an incorrect mess */
+export type POTreeTileHeader = {
+  childCount: number;
+  name: string;
+  childMask: number;
+};
+
+/** @todo these types are an incorrect mess */
+export type POTreeNode = {
+  header: POTreeTileHeader;
+  name: string;
+  pointCount: number;
+  children: POTreeNode[];
+  childrenByIndex: POTreeNode[];
+};
 
 // load hierarchy
-export default function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer) {
+export function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer) {
   const tileHeaders = parseBinaryChunk(arrayBuffer);
   return buildHierarchy(tileHeaders);
 }
@@ -66,15 +80,16 @@ export default function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer) {
 function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
   const dataView = new DataView(arrayBuffer);
 
-  const stack = [];
+  const stack: POTreeNode[] = [];
 
   // Get root mask
-  const topTileHeader = {};
+  // @ts-expect-error
+  const topTileHeader: POTreeTileNode = {};
   byteOffset = decodeRow(dataView, byteOffset, topTileHeader);
 
   stack.push(topTileHeader);
 
-  const tileHeaders = [];
+  const tileHeaders: POTreeTileHeader[] = [];
 
   while (stack.length > 0) {
     const snode = stack.shift();
@@ -82,10 +97,12 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
 
     for (let i = 0; i < 8; i++) {
       if (snode && (snode.header.childMask & mask) !== 0) {
-        const tileHeader = {};
+        // @ts-expect-error
+        const tileHeader: POTreeTileHeader = {};
         byteOffset = decodeRow(dataView, byteOffset, tileHeader);
         tileHeader.name = snode.name + i;
 
+        // @ts-expect-error
         stack.push(tileHeader);
         tileHeaders.push(tileHeader);
         snode.header.childCount++;
@@ -112,7 +129,7 @@ function decodeRow(dataView, byteOffset, tileHeader) {
 }
 
 // Resolves the binary rows into a hierarchy (tree structure)
-function buildHierarchy(tileHeaders, options = {}) {
+function buildHierarchy(tileHeaders, options: {spacing?: number} = {}): POTreeNode {
   const DEFAULT_OPTIONS = {spacing: 100}; // TODO assert instead of default?
   options = {...DEFAULT_OPTIONS, ...options};
 
@@ -132,7 +149,7 @@ function buildHierarchy(tileHeaders, options = {}) {
     tileHeader.hasChildren = tileHeader.header.childCount;
     tileHeader.children = [];
     tileHeader.childrenByIndex = new Array(8).fill(null);
-    tileHeader.spacing = options.spacing / Math.pow(2, level);
+    tileHeader.spacing = (options?.spacing || 0) / Math.pow(2, level);
     // tileHeader.boundingVolume = Utils.createChildAABB(parentNode.boundingBox, index);
 
     if (parentNode) {

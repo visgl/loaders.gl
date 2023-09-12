@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {BinaryFeatures, Feature} from '@loaders.gl/schema';
+import {BinaryFeatureCollection, Feature} from '@loaders.gl/schema';
 import {transformBinaryCoords, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 
@@ -33,7 +33,7 @@ test('gis#reproject GeoJSON', (t) => {
 
 test('gis#reproject binary', (t) => {
   const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
-  const binaryData: BinaryFeatures = {
+  const binaryData: BinaryFeatureCollection = {
     points: {
       type: 'Point',
       positions: {value: new Float32Array([-74, 41]), size: 2},
@@ -46,7 +46,7 @@ test('gis#reproject binary', (t) => {
     }
   };
 
-  const expectedBinaryData: BinaryFeatures = {
+  const expectedBinaryData: BinaryFeatureCollection = {
     points: {
       type: 'Point',
       positions: {value: new Float32Array([-8237642.318702244, 5012341.663847514]), size: 2},

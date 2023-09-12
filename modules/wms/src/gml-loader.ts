@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Geometry} from './lib/parsers/gml/parse-gml';
 import {parseGML} from './lib/parsers/gml/parse-gml';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -14,7 +15,7 @@ export type GMLLoaderOptions = LoaderOptions & {
 /**
  * Loader for the response to the GML GetCapability request
  */
-export const GMLLoader: LoaderWithParser = {
+export const GMLLoader: LoaderWithParser<Geometry | null, never, GMLLoaderOptions> = {
   name: 'GML',
   id: 'gml',
 

@@ -1,8 +1,12 @@
-/** @typedef {import('@loaders.gl/schema').BinaryGeometry} BinaryGeometry*/
-/** @typedef {import('@loaders.gl/schema').Geometry} Geometry */
+// loaders.gl, MIT license
+import {BinaryGeometry, Geometry} from '@loaders.gl/schema';
 
-/** @type {{binary: BinaryGeometry, geoJSON: Geometry}[]} */
-export default [
+export type GeometryTestCase = {
+  binary: BinaryGeometry;
+  geoJSON: Geometry;
+};
+
+export const GEOMETRY_TEST_CASES: GeometryTestCase[] = [
   {
     binary: {
       positions: {value: new Float32Array([100, 0]), size: 2},

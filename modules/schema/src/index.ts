@@ -54,6 +54,7 @@ export {
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 
 export {makeTableFromData} from './lib/table/simple-table/make-table';
+export {convertTable} from './lib/table/simple-table/convert-table';
 export {deduceTableSchema} from './lib/table/simple-table/table-schema';
 export {convertToObjectRow, convertToArrayRow} from './lib/table/simple-table/row-utils';
 export {getDataTypeFromArray} from './lib/table/simple-table/data-type';
@@ -124,10 +125,11 @@ export type {
   BinaryAttribute
 } from './types/category-gis';
 export type {
-  BinaryFeatures,
-  BinaryPointFeatures,
-  BinaryLineFeatures,
-  BinaryPolygonFeatures
+  BinaryFeatureCollection,
+  BinaryFeature,
+  BinaryPointFeature,
+  BinaryLineFeature,
+  BinaryPolygonFeature
 } from './types/category-gis';
 
 // SCHEMA

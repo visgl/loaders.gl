@@ -48,8 +48,8 @@ test.skip('loadImageTextureArray#mipLevels=auto', async (t) => {
   );
   t.equal(images.length, 1, 'loadArray loaded 1 image');
   images.every((imageMips) => {
-    t.equal(imageMips.length, 10, `array of mip images has correct length`);
-    t.ok(imageMips.every(isImage), `entry is a valid array of mip images`);
+    t.equal(imageMips.length, 10, 'array of mip images has correct length');
+    t.ok(imageMips.every(isImage), 'entry is a valid array of mip images');
   });
   t.end();
 });
@@ -82,7 +82,7 @@ test.skip('loadImageTextureCube#mipLevels=auto', async (t) => {
   t.equal(Object.keys(imageCube).length, 6, 'image cube has 6 images');
   for (const face in imageCube) {
     const imageMips = imageCube[face];
-    t.equal(imageMips.length, 10, `array of mip images has correct length`);
+    t.equal(imageMips.length, 10, 'array of mip images has correct length');
     // t.ok(imageMips.every(isImage) `face ${face} is a valid array of mip images`);
   }
   t.end();
