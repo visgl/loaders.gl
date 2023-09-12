@@ -207,18 +207,15 @@ function unifyObjectsByFeatureId(
 ): GroupedByFeatureIdAttributes[] {
   const groupedMetadata: {
     featureId: number;
-    length: number;
     attributes: GroupedByFeatureIdAttributes[];
   }[] = [];
   for (const data of sortedData) {
     const existingObject = groupedMetadata.find((obj) => obj.featureId === data.featureId);
     if (existingObject) {
-      existingObject.length += data.positions.length / 3;
       existingObject.attributes.push(data);
     } else {
       groupedMetadata.push({
         featureId: data.featureId,
-        length: data.positions.length / 3,
         attributes: [data]
       });
     }
