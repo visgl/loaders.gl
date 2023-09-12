@@ -1,11 +1,32 @@
-import type {GLTFTextureInfoMetadata, GLTFMeshPrimitive} from '../types/gltf-json-schema';
-import type {TypedArray} from '@loaders.gl/schema';
+/**
+ * loaders.gl, MIT license
+ *
+ * Shared code for 3DTiles extensions:
+ * * EXT_feature_metadata
+ * * EXT_mesh_features
+ * * EXT_structural_metadata
+ */
+
+import type {GLTFTextureInfoMetadata, GLTFMeshPrimitive} from '../../types/gltf-json-schema';
+import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
 import type {ImageType} from '@loaders.gl/images';
 
-import {GLTFScenegraph} from '../api/gltf-scenegraph';
-import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
+import {GLTFScenegraph} from '../../api/gltf-scenegraph';
+import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
 import {emod} from '@loaders.gl/math';
+
+export type NumericComponentType =
+  | 'INT8'
+  | 'UINT8'
+  | 'INT16'
+  | 'UINT16'
+  | 'INT32'
+  | 'UINT32'
+  | 'INT64'
+  | 'UINT64'
+  | 'FLOAT32'
+  | 'FLOAT64';
 
 const ATTRIBUTE_TYPE_TO_COMPONENTS = {
   SCALAR: 1,
@@ -54,38 +75,78 @@ export function getArrayElementByteSize(attributeType, componentType): number {
 }
 
 /**
+ * Gets offset array from `arrayOffsets` or `stringOffsets`.
+ * @param scenegraph - Instance of the class for structured access to GLTF data.
+ * @param bufferViewIndex - Buffer view index
+ * @param offsetType - The type of values in `arrayOffsets` or `stringOffsets`.
+ * @param numberOfElements - The number of elements in each property array.
+ * @returns array with values offsets
+ */
+export function getOffsetsForProperty(
+  scenegraph: GLTFScenegraph,
+  bufferViewIndex: number,
+  offsetType: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string,
+  numberOfElements: number
+): TypedArray | null {
+  if (
+    offsetType !== 'UINT8' &&
+    offsetType !== 'UINT16' &&
+    offsetType !== 'UINT32' &&
+    offsetType !== 'UINT64'
+  ) {
+    return null;
+  }
+  const arrayOffsetsBytes = scenegraph.getTypedArrayForBufferView(bufferViewIndex);
+  const arrayOffsets = convertRawBufferToMetadataArray(
+    arrayOffsetsBytes,
+    'SCALAR', // offsets consist of ONE component
+    offsetType,
+    numberOfElements + 1 // The number of offsets is equal to the property table `count` plus one.
+  );
+
+  // We don't support BigInt offsets at the moment. It requires additional logic and potential issues in Safari
+  if (arrayOffsets instanceof BigInt64Array || arrayOffsets instanceof BigUint64Array) {
+    return null;
+  }
+  return arrayOffsets;
+}
+
+/**
  * Converts raw bytes that are in the buffer to an array of the type defined by the schema.
- * @param {Uint8Array} typedArray - raw bytes in the buffer
- * @param {string} attributeType - SCALAR, VECN, MATN
- * @param {string} componentType - type of the component in elements, e.g. 'UINT8' or 'FLOAT32'
- * @param {number} elementCount - number of elements in the array. Default value is 1.
- * @returns {TypedArray} Data array
+ * @param data - raw bytes in the buffer
+ * @param attributeType - SCALAR, VECN, MATN
+ * @param componentType - type of the component in elements, e.g. 'UINT8' or 'FLOAT32'
+ * @param elementCount - number of elements in the array. Default value is 1.
+ * @returns Data array
  */
 export function convertRawBufferToMetadataArray(
-  typedArray: Uint8Array,
+  data: Uint8Array,
   attributeType: string,
-  componentType: string,
+  componentType: NumericComponentType,
   elementCount: number = 1
-): TypedArray {
+): BigTypedArray | null {
   const numberOfComponents = ATTRIBUTE_TYPE_TO_COMPONENTS[attributeType];
   const ArrayType = ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY[componentType];
-  const length = elementCount * numberOfComponents;
   const size = ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE[componentType];
-  // the buffer view `byteOffset` must be aligned to a multiple of the `componentType` size.
-  const offset =
-    typedArray.byteOffset % size
-      ? Math.ceil(typedArray.byteOffset / size) * size
-      : typedArray.byteOffset;
-  return new ArrayType(typedArray.buffer, offset, length);
+  const length = elementCount * numberOfComponents;
+  const byteLength = length * size;
+  let buffer = data.buffer;
+  let offset = data.byteOffset;
+  if (offset % size !== 0) {
+    const bufferArray = new Uint8Array(buffer);
+    buffer = bufferArray.slice(offset, offset + byteLength).buffer;
+    offset = 0;
+  }
+  return new ArrayType(buffer, offset, length);
 }
 
 /**
  * Processes data encoded in the texture associated with the primitive.
  * If Ext_mesh_featues is combined with the Ext_structural_metadata, propertyTable will also be processed.
- * @param {GLTFScenegraph} scenegraph - Instance of the class for structured access to GLTF data.
- * @param {GLTFTextureInfoMetadata} textureInfo - reference to the texture where extension data are stored.
- * @param {GLTFMeshPrimitive} primitive - primitive object in the mesh
- * @returns {number[] | null} Array of data taken. Null if data can't be taken from the texture.
+ * @param scenegraph - Instance of the class for structured access to GLTF data.
+ * @param textureInfo - reference to the texture where extension data are stored.
+ * @param primitive - primitive object in the mesh
+ * @returns Array of data taken. Null if data can't be taken from the texture.
  */
 export function getPrimitiveTextureData(
   scenegraph: GLTFScenegraph,
@@ -147,11 +208,11 @@ export function getPrimitiveTextureData(
  * Puts property data to attributes.
  * It creates corresponding buffer, bufferView and accessor
  * so the data can be accessed like regular data stored in buffers.
- * @param {GLTFScenegraph} scenegraph - scenegraph object
- * @param {string} attributeName - name of the attribute
- * @param {number[]} propertyData - property data to store
- * @param {number[]} featureTable - an array where unique data from the property data are being stored
- * @param {GLTFMeshPrimitive} primitive - primitive object
+ * @param scenegraph - scenegraph object
+ * @param attributeName - name of the attribute
+ * @param propertyData - property data to store
+ * @param featureTable - an array where unique data from the property data are being stored
+ * @param primitive - primitive object
  */
 export function primitivePropertyDataToAttributes(
   scenegraph: GLTFScenegraph,
@@ -194,12 +255,12 @@ export function primitivePropertyDataToAttributes(
 
 /**
  * Gets the value from the texture by coordinates provided.
- * @param {ImageType} parsedImage - image where the data are stored.
- * @param {string | undefined} mimeType - MIME type
- * @param {Float32Array} textureCoordinates - uv coordinates to access data in the image.
- * @param {number} index - index of uv coordinates in the array textureCoordinates
- * @param {channels} channels - image channels where data are stored. Channels of an RGBA texture are numbered 0..3 respectively.
- * @returns {number} Value taken from the image.
+ * @param parsedImage - image where the data are stored.
+ * @param mimeType - MIME type
+ * @param textureCoordinates - uv coordinates to access data in the image.
+ * @param index - index of uv coordinates in the array textureCoordinates
+ * @param channels - image channels where data are stored. Channels of an RGBA texture are numbered 0..3 respectively.
+ * @returns Value taken from the image.
  */
 function getImageValueByCoordinates(
   parsedImage: ImageType,
