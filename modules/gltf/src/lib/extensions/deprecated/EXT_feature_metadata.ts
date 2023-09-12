@@ -9,14 +9,14 @@ import type {
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_TextureAccessor
 } from '../../types/gltf-json-schema';
-import type {TypedArray} from '@loaders.gl/schema';
+import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {getImageData} from '@loaders.gl/images';
 import {GLTFMeshPrimitive} from '../../types/gltf-json-schema';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
 import {emod} from '@loaders.gl/math';
-import {getOffsetsForProperty} from '../utils/3d-tiles-utils';
+import {convertRawBufferToMetadataArray, getOffsetsForProperty} from '../utils/3d-tiles-utils';
 
 /** Extension name */
 const EXT_FEATURE_METADATA_NAME = 'EXT_feature_metadata';
@@ -127,27 +127,76 @@ function getPropertyDataFromBinarySource(
   schemaProperty: GLTF_EXT_feature_metadata_ClassProperty,
   numberOfFeatures: number,
   featureTableProperty: GLTF_EXT_feature_metadata_FeatureTableProperty
-): Uint8Array | string[] {
+): BigTypedArray | string[] {
   const bufferView = featureTableProperty.bufferView;
   const dataArray: Uint8Array = scenegraph.getTypedArrayForBufferView(bufferView);
 
-  switch (schemaProperty.type) {
-    case 'STRING': {
-      const offsetsData = getStringOffsets(scenegraph, featureTableProperty, numberOfFeatures);
-      if (!offsetsData) {
-        return [];
-      }
-      return getStringAttributes(dataArray, offsetsData, numberOfFeatures);
+  if (schemaProperty.type === 'STRING') {
+    const offsetsData = getStringOffsets(scenegraph, featureTableProperty, numberOfFeatures);
+    if (!offsetsData) {
+      return [];
     }
-    default:
+    return getStringAttributes(dataArray, offsetsData, numberOfFeatures);
+  } else if (isNumericProperty(schemaProperty.type)) {
+    return getNumericAttributes(
+      dataArray,
+      schemaProperty.type as
+        | 'INT8'
+        | 'UINT8'
+        | 'INT16'
+        | 'UINT16'
+        | 'INT32'
+        | 'UINT32'
+        | 'INT64'
+        | 'UINT64'
+        | 'FLOAT32'
+        | 'FLOAT64',
+      numberOfFeatures
+    );
   }
 
   return dataArray;
 }
 
 /**
+ * Check if the feature table property is of numeric type
+ * @param schemaPropertyType - feature table property
+ * @returns true if property is numeric, else - false
+ */
+function isNumericProperty(
+  schemaPropertyType:
+    | 'INT8'
+    | 'UINT8'
+    | 'INT16'
+    | 'UINT16'
+    | 'INT32'
+    | 'UINT32'
+    | 'INT64'
+    | 'UINT64'
+    | 'FLOAT32'
+    | 'FLOAT64'
+    | 'BOOLEAN'
+    | 'STRING'
+    | 'ENUM'
+    | 'ARRAY'
+    | string
+): boolean {
+  return [
+    'UINT8',
+    'INT16',
+    'UINT16',
+    'INT32',
+    'UINT32',
+    'INT64',
+    'UINT64',
+    'FLOAT32',
+    'FLOAT64'
+  ].includes(schemaPropertyType);
+}
+
+/**
  * Parse featureTable.property.stringOffsetBufferView.
- * String offsets is an array of offsets of strings in the united array of characters
+ * String offsets is an array of offsets of strings in the united array of charactersz
  * @param scenegraph - Instance of the class for structured access to GLTF data
  * @param propertyTableProperty - propertyTable's property metadata
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table
@@ -169,6 +218,41 @@ function getStringOffsets(
     );
   }
   return null;
+}
+
+/**
+ * Parse numeric property values
+ * @param valuesDataBytes - values data array
+ * @param propertyType - type of the property
+ * @param elementCount - number of rows in the featureTable
+ * @returns Number data in a typed array
+ */
+function getNumericAttributes(
+  valuesDataBytes: Uint8Array,
+  propertyType:
+    | 'INT8'
+    | 'UINT8'
+    | 'INT16'
+    | 'UINT16'
+    | 'INT32'
+    | 'UINT32'
+    | 'INT64'
+    | 'UINT64'
+    | 'FLOAT32'
+    | 'FLOAT64',
+  elementCount: number
+): BigTypedArray {
+  let valuesData = convertRawBufferToMetadataArray(
+    valuesDataBytes,
+    'SCALAR',
+    // The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types.
+    propertyType,
+    elementCount
+  );
+  if (!valuesData) {
+    valuesData = valuesDataBytes;
+  }
+  return valuesData;
 }
 
 /**
