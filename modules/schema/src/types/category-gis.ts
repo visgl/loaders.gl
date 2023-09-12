@@ -40,10 +40,11 @@ export type {
   BinaryLineGeometry,
   BinaryPolygonGeometry,
   BinaryProperties,
-  BinaryFeatures,
-  BinaryPointFeatures,
-  BinaryLineFeatures,
-  BinaryPolygonFeatures
+  BinaryFeatureCollection,
+  BinaryFeature,
+  BinaryPointFeature,
+  BinaryLineFeature,
+  BinaryPolygonFeature
 } from './binary-geometries';
 
 /** Aggregate information for converting GeoJSON into other formats */

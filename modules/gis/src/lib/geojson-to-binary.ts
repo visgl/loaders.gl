@@ -1,5 +1,5 @@
 import type {Feature} from '@loaders.gl/schema';
-import type {BinaryFeatures} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection} from '@loaders.gl/schema';
 
 import {extractGeometryInfo} from './extract-geometry-info';
 import {geojsonToFlatGeojson} from './geojson-to-flat-geojson';
@@ -25,7 +25,7 @@ export type GeojsonToBinaryOptions = {
 export function geojsonToBinary(
   features: Feature[],
   options: GeojsonToBinaryOptions = {fixRingWinding: true, triangulate: true}
-): BinaryFeatures {
+): BinaryFeatureCollection {
   const geometryInfo = extractGeometryInfo(features);
   const coordLength = geometryInfo.coordLength;
   const {fixRingWinding} = options;

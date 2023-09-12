@@ -1,10 +1,16 @@
+// loaders.gl, MIT license
+
 import type {
   BinaryGeometry,
-  BinaryFeatures,
   BinaryGeometryType,
-  BinaryPointFeatures,
-  BinaryLineFeatures,
-  BinaryPolygonFeatures,
+  BinaryPointGeometry,
+  BinaryLineGeometry,
+  BinaryPolygonGeometry,
+  BinaryFeatureCollection,
+  BinaryFeature,
+  // BinaryPointFeature,
+  // BinaryLineFeature,
+  // BinaryPolygonFeature,
   BinaryAttribute
 } from '@loaders.gl/schema';
 import type {Feature, Geometry, Position, GeoJsonProperties} from '@loaders.gl/schema';
@@ -34,7 +40,7 @@ type BinaryToGeoJsonOptions = {
  * @return GeoJSON objects
  */
 export function binaryToGeojson(
-  data: BinaryFeatures,
+  data: BinaryFeatureCollection,
   options?: BinaryToGeoJsonOptions
 ): Feature[] | Feature {
   const globalFeatureId = options?.globalFeatureId;
@@ -44,28 +50,29 @@ export function binaryToGeojson(
   return parseFeatures(data, options?.type);
 }
 
-/** @deprecated use `binaryToGeojson` or `binaryToGeometry` instead */
+/** @deprecated use `binaryToGeojson` or `binaryToGeometry` instead *
 export function binaryToGeoJson(
-  data: BinaryGeometry | BinaryFeatures,
+  data: BinaryGeometry | BinaryFeatureCollection,
   type?: BinaryGeometryType,
   format: 'feature' | 'geometry' = 'feature'
 ): Geometry | Feature[] {
   switch (format) {
     case 'feature':
-      return parseFeatures(data as BinaryFeatures, type);
+      return parseFeatures(data as BinaryFeatureCollection, type);
     case 'geometry':
-      return binaryToGeometry(data as BinaryGeometry);
+      return binaryToGeometry(data as any);
     default:
       throw new Error(format);
   }
 }
+*/
 
 /**
  * Return a single feature from a binary geometry representation as GeoJSON
  * @param data   geometry data in binary representation
  * @return GeoJSON feature
  */
-function getSingleFeature(data: BinaryFeatures, globalFeatureId: number): Feature {
+function getSingleFeature(data: BinaryFeatureCollection, globalFeatureId: number): Feature {
   const dataArray = normalizeInput(data);
   for (const data of dataArray) {
     let lastIndex = 0;
@@ -93,7 +100,7 @@ function getSingleFeature(data: BinaryFeatures, globalFeatureId: number): Featur
   throw new Error(`featureId:${globalFeatureId} not found`);
 }
 
-function parseFeatures(data: BinaryFeatures, type?: BinaryGeometryType): Feature[] {
+function parseFeatures(data: BinaryFeatureCollection, type?: BinaryGeometryType): Feature[] {
   const dataArray = normalizeInput(data, type);
   return parseFeatureCollection(dataArray);
 }
@@ -117,22 +124,10 @@ export function binaryToGeometry(
   }
 }
 
-type BinaryFeature = BinaryPointFeatures | BinaryLineFeatures | BinaryPolygonFeatures;
-type BinaryFeaturesArray = BinaryFeature[];
-
 // Normalize features
 // Return an array of data objects, each of which have a type key
-function normalizeInput(data: BinaryFeatures, type?: BinaryGeometryType): BinaryFeaturesArray {
-  const isHeterogeneousType = Boolean(data.points || data.lines || data.polygons);
-
-  if (!isHeterogeneousType) {
-    // @ts-expect-error This is a legacy check which allowed `data` to be an instance of the values
-    // here. Aka the new data.points, data.lines, or data.polygons.
-    data.type = type || parseType(data);
-    return [data] as BinaryFeaturesArray;
-  }
-
-  const features: BinaryFeaturesArray = [];
+function normalizeInput(data: BinaryFeatureCollection, type?: BinaryGeometryType): BinaryFeature[] {
+  const features: BinaryFeature[] = [];
   if (data.points) {
     data.points.type = 'Point';
     features.push(data.points);
@@ -150,7 +145,7 @@ function normalizeInput(data: BinaryFeatures, type?: BinaryGeometryType): Binary
 }
 
 /** Parse input binary data and return an array of GeoJSON Features */
-function parseFeatureCollection(dataArray): Feature[] {
+function parseFeatureCollection(dataArray: BinaryFeature[]): Feature[] {
   const features: Feature[] = [];
   for (const data of dataArray) {
     if (data.featureIds.value.length === 0) {
@@ -180,7 +175,7 @@ function parseFeatureCollection(dataArray): Feature[] {
 }
 
 /** Parse input binary data and return a single GeoJSON Feature */
-function parseFeature(data, startIndex?: number, endIndex?: number): Feature {
+function parseFeature(data: BinaryFeature, startIndex?: number, endIndex?: number): Feature {
   const geometry = binaryToGeometry(data, startIndex, endIndex);
   const properties = parseProperties(data, startIndex, endIndex);
   const fields = parseFields(data, startIndex, endIndex);
@@ -203,7 +198,7 @@ function parseProperties(data, startIndex: number = 0, endIndex?: number): GeoJs
 
 /** Parse binary data of type Polygon */
 function polygonToGeoJson(
-  data,
+  data: BinaryPolygonGeometry,
   startIndex: number = -Infinity,
   endIndex: number = Infinity
 ): Polygon | MultiPolygon {
@@ -245,7 +240,7 @@ function polygonToGeoJson(
 
 /** Parse binary data of type LineString */
 function lineStringToGeoJson(
-  data,
+  data: BinaryLineGeometry,
   startIndex: number = -Infinity,
   endIndex: number = Infinity
 ): LineString | MultiLineString {
@@ -268,7 +263,7 @@ function lineStringToGeoJson(
 }
 
 /** Parse binary data of type Point */
-function pointToGeoJson(data, startIndex, endIndex): Point | MultiPoint {
+function pointToGeoJson(data: BinaryPointGeometry, startIndex, endIndex): Point | MultiPoint {
   const {positions} = data;
   const coordinates = ringToGeoJson(positions, startIndex, endIndex);
   const multi = coordinates.length > 1;
@@ -305,17 +300,4 @@ function ringToGeoJson(
     ringCoordinates.push(coord);
   }
   return ringCoordinates;
-}
-
-// Deduce geometry type of data object
-function parseType(data) {
-  if (data.pathIndices) {
-    return 'LineString';
-  }
-
-  if (data.polygonIndices) {
-    return 'Polygon';
-  }
-
-  return 'Point';
 }

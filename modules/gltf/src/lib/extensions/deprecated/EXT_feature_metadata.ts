@@ -16,7 +16,7 @@ import {GLTFMeshPrimitive} from '../../types/gltf-json-schema';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
 import {emod} from '@loaders.gl/math';
-import {convertRawBufferToMetadataArray, getOffsetsTypedArray} from '../utils/3d-tiles-utils';
+import {convertRawBufferToMetadataArray, getOffsetsForProperty} from '../utils/3d-tiles-utils';
 
 /** Extension name */
 const EXT_FEATURE_METADATA_NAME = 'EXT_feature_metadata';
@@ -195,7 +195,8 @@ function isNumericProperty(
 }
 
 /**
- * Parse featureTable.property.stringOffsetBufferView
+ * Parse featureTable.property.stringOffsetBufferView.
+ * String offsets is an array of offsets of strings in the united array of charactersz
  * @param scenegraph - Instance of the class for structured access to GLTF data
  * @param propertyTableProperty - propertyTable's property metadata
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table
@@ -209,7 +210,7 @@ function getStringOffsets(
 ): TypedArray | null {
   if (typeof featureTableProperty.stringOffsetBufferView !== 'undefined') {
     // Data are in a FIXED-length array
-    return getOffsetsTypedArray(
+    return getOffsetsForProperty(
       scenegraph,
       featureTableProperty.stringOffsetBufferView,
       featureTableProperty.offsetType || 'UINT32', // UINT32 is the default by the spec

@@ -1,11 +1,12 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowLoaderOptions} from './arrow-loader';
+import {ArrowTable, ArrowTableBatch, ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
+import {TableBatchBuilder} from '@loaders.gl/schema';
 import {ArrowLoader as ArrowWorkerLoader} from './arrow-loader';
 import parseSync from './lib/parse-arrow-sync';
 import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 
-import {TableBatchBuilder} from '@loaders.gl/schema';
-import ArrowTableBatchAggregator from './lib/arrow-table-batch';
+import {ArrowTableBatchAggregator} from './lib/arrow-table-batch';
 
 // Make the ArrowBatch type available
 TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
@@ -23,7 +24,11 @@ export type {ArrowLoaderOptions};
 export {ArrowWorkerLoader};
 
 /** ArrowJS table loader */
-export const ArrowLoader: LoaderWithParser = {
+export const ArrowLoader: LoaderWithParser<
+  ArrowTable | ColumnarTable | ObjectRowTable,
+  ArrowTableBatch,
+  ArrowLoaderOptions
+> = {
   ...ArrowWorkerLoader,
   parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
     parseSync(arraybuffer, options),
