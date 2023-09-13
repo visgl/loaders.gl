@@ -163,9 +163,12 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async (t) => {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, 2, 'Got correct batch size');
 
-    t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
-    t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
-    t.ok(validateColumn(batch.data.column3, batch.length, 'float'), 'column 2 valid');
+    t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
+    if (batch.shape === 'columnar-table') {
+      t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
+      t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
+      t.ok(validateColumn(batch.data.column3, batch.length, 'float'), 'column 2 valid');
+    }
 
     batchCount++;
   }
@@ -187,16 +190,18 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, batchSize, 'Got correct batch size');
 
-    t.ok(validateColumn(batch.data.TLD, batch.length, 'string'), 'column TLD valid');
-    t.ok(
-      validateColumn(batch.data['meaning of life'], batch.length, 'float'),
-      'column meaning of life valid'
-    );
-    t.ok(
-      validateColumn(batch.data.placeholder, batch.length, 'string'),
-      'column placeholder valid'
-    );
-
+    t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
+    if (batch.shape === 'columnar-table') {
+      t.ok(validateColumn(batch.data.TLD, batch.length, 'string'), 'column TLD valid');
+      t.ok(
+        validateColumn(batch.data['meaning of life'], batch.length, 'float'),
+        'column meaning of life valid'
+      );
+      t.ok(
+        validateColumn(batch.data.placeholder, batch.length, 'string'),
+        'column placeholder valid'
+      );
+    }
     batchCount++;
     if (batchCount === 5) {
       break;
@@ -306,14 +311,17 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
   let rowCount = 0;
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, 2, 'Got correct batch size');
+    t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
+    if (batch.shape === 'columnar-table') {
+      t.equal(batch.data.length, 2, 'Got correct batch size');
 
-    t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
-    t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
-    t.ok(
-      validateColumn(batch.data.column3, batch.length, 'string'),
-      'column 2 is a string and is valid'
-    );
+      t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
+      t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
+      t.ok(
+        validateColumn(batch.data.column3, batch.length, 'string'),
+        'column 2 is a string and is valid'
+      );
+    }
 
     rowCount = rowCount + batch.length;
   }

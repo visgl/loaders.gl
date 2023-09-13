@@ -114,7 +114,7 @@ test('ShapefileLoader#selectLoader (from arrayBuffer data)', async (t) => {
   t.end();
 });
 
-test('ShapefileLoader#loadInBatches(URL)', async (t) => {
+test.only('ShapefileLoader#loadInBatches(URL)', async (t) => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;

@@ -1,7 +1,8 @@
 // loaders.gl, MIT license
 
-import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow';
-import type {Batch, Schema} from './schema';
+import type {Table as ApacheArrowTable} from 'apache-arrow';
+import type {Schema} from './schema';
+import type {Batch} from './batch';
 import type {Feature} from './category-gis';
 
 // Idea was to just import types, but it seems
@@ -102,7 +103,8 @@ export type GeoJSONTableBatch = Batch & {
   shape: 'geojson-table';
   schema?: Schema;
   schemaType?: 'explicit' | 'deduced';
-  data: Feature[];
+  type: 'FeatureCollection';
+  features: Feature[];
   length: number;
 };
 
@@ -120,6 +122,7 @@ export type ArrowTableBatch = Batch & {
   shape: 'arrow-table';
   schemaType?: 'explicit' | 'deduced';
   schema?: Schema;
-  data: RecordBatch;
+  data: ApacheArrowTable;
+  // recordBatch: RecordBatch;
   length: number;
 };

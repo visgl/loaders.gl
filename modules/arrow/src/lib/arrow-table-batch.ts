@@ -1,5 +1,6 @@
 import type {ArrowTableBatch} from '@loaders.gl/schema';
 import {
+  Table as ApacheArrowTable,
   Schema,
   Field,
   RecordBatch,
@@ -40,7 +41,7 @@ export class ArrowTableBatchAggregator extends ColumnarTableBatchAggregator {
       return {
         shape: 'arrow-table',
         batchType: 'data',
-        data: recordBatch,
+        data: new ApacheArrowTable([recordBatch]),
         length: batch.length
       };
     }

@@ -9,7 +9,9 @@ export type {
   AnyArray
 } from './types/types';
 
-export type {Schema, Field, DataType, Batch, SchemaMetadata, FieldMetadata} from './types/schema';
+export type {Schema, Field, DataType, SchemaMetadata, FieldMetadata} from './types/schema';
+
+export type {Batch} from './types/batch';
 
 // TABLE CATEGORY TYPES
 export type {

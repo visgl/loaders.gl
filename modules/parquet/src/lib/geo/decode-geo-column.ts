@@ -3,8 +3,8 @@
 import type {ArrayRowTable, GeoJSONTable, ObjectRowTable, Schema} from '@loaders.gl/schema';
 import type {Feature, Geometry} from '@loaders.gl/schema';
 import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema';
-import {binaryToGeometry} from '@loaders.gl/gis';
-import {WKBLoader, WKTLoader} from '@loaders.gl/wkt';
+// import {binaryToGeometry} from '@loaders.gl/gis';
+import {HexWKBLoader, WKTLoader} from '@loaders.gl/wkt';
 
 import {GeoColumnMetadata, getGeoMetadata} from './decode-geo-metadata';
 
@@ -25,7 +25,7 @@ export function convertWKBTableToGeoJSON(
   const length = getTableLength(table);
   for (let rowIndex = 0; rowIndex < length; rowIndex++) {
     const row = getTableRowAsObject(table, rowIndex);
-    const geometry = parseGeometry(row[primaryColumn], columnMetadata);
+    const geometry = parseGeometry(row[primaryColumn] as string, columnMetadata);
     delete row[primaryColumn];
     const feature: Feature = {type: 'Feature', geometry: geometry!, properties: row};
     features.push(feature);
@@ -34,13 +34,13 @@ export function convertWKBTableToGeoJSON(
   return {shape: 'geojson-table', schema, type: 'FeatureCollection', features};
 }
 
-function parseGeometry(geometry: any, columnMetadata: GeoColumnMetadata): Geometry | null {
+function parseGeometry(geometry: string, columnMetadata: GeoColumnMetadata): Geometry | null {
   switch (columnMetadata.encoding) {
     case 'wkt':
-      return WKTLoader.parseSync?.(geometry) || null;
+      return WKTLoader.parseTextSync?.(geometry) || null;
     case 'wkb':
     default:
-      const binaryGeometry = WKBLoader.parseSync?.(geometry);
-      return binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
+      const geojson = HexWKBLoader.parseTextSync?.(geometry, {wkb: {shape: 'geometry'}}) as unknown as Geometry;
+      return geojson; // binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
   }
 }

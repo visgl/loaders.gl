@@ -1,6 +1,5 @@
-// @ts-nocheck
 import test from 'tape-promise/tape';
-import BinaryChunkReader from '@loaders.gl/shapefile/lib/streaming/binary-chunk-reader';
+import {_BinaryChunkReader as BinaryChunkReader} from '@loaders.gl/shapefile';
 
 const buf1 = new Uint8Array([1, 2, 3]).buffer;
 const buf2 = new Uint8Array([4, 5, 6]).buffer;
@@ -82,13 +81,13 @@ test('BinaryChunkReader#getDataView single source array', (t) => {
   reader.write(buf3);
 
   let view = reader.getDataView(2);
-  t.equals(view.getUint8(0), 1);
-  t.equals(view.getUint8(1), 2);
+  t.equals(view?.getUint8(0), 1);
+  t.equals(view?.getUint8(1), 2);
 
   reader.skip(2);
   view = reader.getDataView(2);
-  t.equals(view.getUint8(0), 5);
-  t.equals(view.getUint8(1), 6);
+  t.equals(view?.getUint8(0), 5);
+  t.equals(view?.getUint8(1), 6);
   t.end();
 });
 
@@ -100,14 +99,14 @@ test('BinaryChunkReader#getDataView multiple source arrays', (t) => {
 
   reader.skip(2);
   let view = reader.getDataView(2);
-  t.equals(view.getUint8(0), 3);
-  t.equals(view.getUint8(1), 4);
+  t.equals(view?.getUint8(0), 3);
+  t.equals(view?.getUint8(1), 4);
 
   view = reader.getDataView(4);
-  t.equals(view.getUint8(0), 5);
-  t.equals(view.getUint8(1), 6);
-  t.equals(view.getUint8(2), 7);
-  t.equals(view.getUint8(3), 8);
+  t.equals(view?.getUint8(0), 5);
+  t.equals(view?.getUint8(1), 6);
+  t.equals(view?.getUint8(2), 7);
+  t.equals(view?.getUint8(3), 8);
   t.end();
 });
 

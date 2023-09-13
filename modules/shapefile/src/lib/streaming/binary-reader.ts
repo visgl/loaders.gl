@@ -1,4 +1,6 @@
-export default class BinaryReader {
+// loaders.gl, MIT license
+
+export class BinaryReader {
   offset: number;
   arrayBuffer: ArrayBuffer;
 
