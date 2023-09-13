@@ -385,7 +385,7 @@ export async function convertAttributes(
 }
 
 /**
- * Gltf has hierarchical structure of nodes. This function converts nodes starting from those which are in gltf scene object.
+ * glTF has hierarchical structure of nodes. This function converts nodes starting from those which are in gltf scene object.
  *   The goal is applying tranformation matrix for all children. Functions "convertNodes" and "convertNode" work together recursively.
  * @param nodes - gltf nodes array
  * @param images - gltf images array
@@ -1053,7 +1053,7 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
 
 /**
  * Converts from `alphaMode` material property from GLTF to I3S format
- * @param gltfAlphaMode Gltf material `alphaMode` property
+ * @param gltfAlphaMode glTF material `alphaMode` property
  * @returns I3SMaterialDefinition.alphaMode property
  */
 function convertAlphaMode(
