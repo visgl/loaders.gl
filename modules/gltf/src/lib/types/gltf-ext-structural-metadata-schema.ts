@@ -115,7 +115,8 @@ export type GLTF_EXT_structural_metadata_ClassProperty = {
     | 'MAT4'
     | 'BOOLEAN'
     | 'STRING'
-    | 'ENUM';
+    | 'ENUM'
+    | string;
 
   /** The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types. */
   componentType?:
@@ -128,7 +129,8 @@ export type GLTF_EXT_structural_metadata_ClassProperty = {
     | 'INT64'
     | 'UINT64'
     | 'FLOAT32'
-    | 'FLOAT64';
+    | 'FLOAT64'
+    | string;
 
   /** Enum ID as declared in the `enums` dictionary. Required when `type` is `ENUM`. */
   enumType?: string;
@@ -261,12 +263,12 @@ export type GLTF_EXT_structural_metadata_PropertyTable_Property = {
   /**
    * The type of values in `arrayOffsets`.
    */
-  arrayOffsetType?: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64';
+  arrayOffsetType?: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string;
 
   /**
    * The type of values in `stringOffsets`.
    */
-  stringOffsetType?: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64';
+  stringOffsetType?: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string;
   /**
    * An offset to apply to property values.
    * Only applicable when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`.

@@ -244,12 +244,18 @@ async function _makeNodeResources({
   const {faceRange, featureIds, positions, normals, colors, uvRegions, texCoords, featureCount} =
     generateAttributes(convertedAttributes);
 
-  if (tileContent.batchTableJson) {
-    makeFeatureIdsUnique(
+  let featureIdsMap: Record<string, number> = {};
+  if (propertyTable) {
+    /**
+     * 3DTiles has featureIndices unique only for one tile.
+     * In I3S featureIds are unique layer-wide. We create featureIds from all feature properties.
+     * If 3DTiles features has equal set of properties they are considered as same feature in I3S.
+     */
+    featureIdsMap = makeFeatureIdsUnique(
       featureIds,
       convertedAttributes.featureIndices,
       featuresHashArray,
-      tileContent.batchTableJson
+      propertyTable
     );
   }
 
@@ -291,6 +297,7 @@ async function _makeNodeResources({
   if (attributeStorageInfo && propertyTable) {
     attributes = convertPropertyTableToAttributeBuffers(
       featureIds,
+      featureIdsMap,
       propertyTable,
       attributeStorageInfo
     );
@@ -1252,17 +1259,18 @@ function generateImageId(texture: GLTFTexturePostprocessed, nodeId: number) {
  * @param featureIndices
  * @param featuresHashArray
  * @param batchTable
- * @returns {void}
+ * @returns propertyTable indices to map featureIds
  */
 function makeFeatureIdsUnique(
   featureIds: number[],
   featureIndices: number[],
   featuresHashArray: string[],
   batchTable: {[key: string]: any}
-) {
+): Record<string, number> {
   const replaceMap = getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray);
   replaceIndicesByUnique(featureIndices, replaceMap);
   replaceIndicesByUnique(featureIds, replaceMap);
+  return replaceMap;
 }
 
 /**
@@ -1276,8 +1284,8 @@ function getFeaturesReplaceMap(
   featureIds: any[],
   batchTable: object,
   featuresHashArray: any[]
-): Record<string, any> {
-  const featureMap: Record<string, any> = {};
+): Record<string, number> {
+  const featureMap: Record<string, number> = {};
 
   for (let index = 0; index < featureIds.length; index++) {
     const oldFeatureId = featureIds[index];
@@ -1329,7 +1337,7 @@ function getOrCreateUniqueFeatureId(
  * @param featureMap
  * @returns
  */
-function replaceIndicesByUnique(indicesArray: any[], featureMap: Record<string, []>) {
+function replaceIndicesByUnique(indicesArray: number[], featureMap: Record<string, number>) {
   for (let index = 0; index < indicesArray.length; index++) {
     indicesArray[index] = featureMap[indicesArray[index]];
   }
@@ -1344,6 +1352,7 @@ function replaceIndicesByUnique(indicesArray: any[], featureMap: Record<string, 
  */
 function convertPropertyTableToAttributeBuffers(
   featureIds: number[],
+  featureIdsMap: Record<string, number>,
   propertyTable: FeatureTableJson,
   attributeStorageInfo: AttributeStorageInfo[]
 ): any[] {
@@ -1351,7 +1360,7 @@ function convertPropertyTableToAttributeBuffers(
 
   const needFlattenPropertyTable = checkPropertiesLength(featureIds, propertyTable);
   const properties = needFlattenPropertyTable
-    ? flattenPropertyTableByFeatureIds(featureIds, propertyTable)
+    ? flattenPropertyTableByFeatureIds(featureIdsMap, propertyTable)
     : propertyTable;
 
   const propertyTableWithObjectIds = {

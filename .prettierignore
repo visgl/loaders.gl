@@ -17,6 +17,7 @@ modules/bson/src/lib/encoders/encode-bson.ts
 modules/bson/src/lib/parsers/parse-bson.ts
 modules/bson/test/data/js-bson/corrupt.ts
 
+modules/parquet/src/buffer-polyfill/buffer.ts
 modules/parquet/test
 
 examples/experimental/gltf-with-raw-webgl/

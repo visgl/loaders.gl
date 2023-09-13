@@ -7,6 +7,7 @@ import test from 'tape-promise/tape';
 import {Matrix4} from '@math.gl/core';
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {areNumberArraysEqual} from '../../utils/compareArrays';
 
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
@@ -259,18 +260,3 @@ test('tile-converter(i3s)#calculateTransformProps', async (t) => {
 
   t.end();
 });
-
-const EPSILON = 0.000000001;
-function areNumberArraysEqual(array1, array2) {
-  let result = true;
-  if (array1.length !== array2.length) {
-    return false;
-  }
-  for (let i = 0; i < array1.length; i++) {
-    if (Math.abs(array1[i] - array2[i]) > EPSILON) {
-      result = false;
-      break;
-    }
-  }
-  return result;
-}

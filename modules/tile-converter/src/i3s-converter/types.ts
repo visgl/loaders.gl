@@ -106,10 +106,8 @@ export type GeometryAttributes = {
   featureCount: number;
 };
 
-/** Geometry attributes specific for the particular feature */
-export type GroupedByFeatureIdAttributes = {
-  /** Feature Id */
-  featureId: number;
+/** Geometry attributes applicable for reordering by featureId */
+export type GroupedAttributes = {
   /** POSITION attribute value */
   positions: Float32Array;
   /** NORMAL attribute value */
@@ -120,6 +118,12 @@ export type GroupedByFeatureIdAttributes = {
   uvRegions: Uint16Array;
   /** TEXCOORD_0 attribute value */
   texCoords: Float32Array;
+};
+
+/** Geometry attributes specific for the particular feature */
+export type GroupedByFeatureIdAttributes = GroupedAttributes & {
+  /** Feature Id */
+  featureId: number;
 };
 
 /** Shared resources made from GLTF material */

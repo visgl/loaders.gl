@@ -1,7 +1,9 @@
 // COMMON CATEGORY
 export type {
   TypedArray,
+  BigTypedArray,
   TypedArrayConstructor,
+  BigTypedArrayConstructor,
   NumberArray,
   ArrayType,
   AnyArray

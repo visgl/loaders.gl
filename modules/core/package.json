@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "4.0.0-alpha.23",
+  "version": "4.0.0-alpha.24",
   "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
   "publishConfig": {
@@ -25,12 +25,9 @@
     "fs": false,
     "stream": false,
     "./src/lib/fetch/fetch-file.node.ts": false,
-    "./dist/lib/fetch/fetch-file.node.js": false,
     "./dist/es5/lib/fetch/fetch-file.node.js": false,
     "./dist/esm/lib/fetch/fetch-file.node.js": false,
     "./src/iterators/make-stream/make-node-stream.ts": "./src/iterators/make-stream/make-dom-stream.ts",
-    "./src/iterators/make-stream/make-node-stream.js": "./src/iterators/make-stream/make-dom-stream.js",
-    "./dist/iterators/make-stream/make-node-stream.js": "./dist/iterators/make-stream/make-dom-stream.js",
     "./dist/es5/iterators/make-stream/make-node-stream.js": "./dist/es5/iterators/make-stream/make-dom-stream.js",
     "./dist/esm/iterators/make-stream/make-node-stream.js": "./dist/esm/iterators/make-stream/make-dom-stream.js"
   },
@@ -47,8 +44,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.23",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.23",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.24",
+    "@loaders.gl/worker-utils": "4.0.0-alpha.24",
     "@probe.gl/log": "^4.0.2"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
