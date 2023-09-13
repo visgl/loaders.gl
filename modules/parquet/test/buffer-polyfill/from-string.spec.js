@@ -40,6 +40,7 @@ test('do not write partial utf16 code units', function (t) {
   t.end()
 })
 
+// eslint-disable-next-line max-statements
 test('handle partial utf16 code points when encoding to utf8 the way node does', function (t) {
   const text = '\uD83D\uDE38' + '\uD83D\uDC4D'
 
@@ -86,6 +87,7 @@ test('handle partial utf16 code points when encoding to utf8 the way node does',
   t.end()
 })
 
+// eslint-disable-next-line max-statements
 test('handle invalid utf16 code points when encoding to utf8 the way node does', function (t) {
   const text = 'a' + '\uDE38\uD83D' + 'b'
 

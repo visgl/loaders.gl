@@ -6,6 +6,7 @@ import {BufferPolyfill} from '@loaders.gl/parquet';
 
 test('buffer.write string should get parsed as number', function (t) {
   const b = new BufferPolyfill(64)
+  // @ts-expect-error
   b.writeUInt16LE('1003', 0)
   t.equal(b.readUInt16LE(0), 1003)
   t.end()
@@ -48,14 +49,14 @@ test('hex of write{Uint,Int}{8,16,32}{LE,BE}', function (t) {
         const z = endianesses[k]
 
         const v1 = new BufferPolyfill(y / 8)
-        const writefn = 'write' + x + y + z
+        const writefn = `write${  x  }${y  }${z}`
         const val = (x === 'Int') ? -3 : 3
         v1[writefn](val, 0)
         t.equal(
           v1.toString('hex'),
           hex.shift()
         )
-        const readfn = 'read' + x + y + z
+        const readfn = `read${  x  }${y  }${z}`
         t.equal(
           v1[readfn](0),
           reads.shift()

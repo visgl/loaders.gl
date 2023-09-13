@@ -3,13 +3,24 @@
 // Authors: https://github.com/feross/buffer/blob/master/AUTHORS.md
 
 export class Buffer extends Uint8Array {
-  length: number
+  length: number;
   write(string: string, offset?: number, length?: number, encoding?: string): number;
   toString(encoding?: string, start?: number, end?: number): string;
-  toJSON(): { type: 'Buffer', data: any[] };
+  toJSON(): {type: 'Buffer'; data: any[]};
   equals(otherBuffer: Buffer): boolean;
-  compare(otherBuffer: Uint8Array, targetStart?: number, targetEnd?: number, sourceStart?: number, sourceEnd?: number): number;
-  copy(targetBuffer: Buffer, targetStart?: number, sourceStart?: number, sourceEnd?: number): number;
+  compare(
+    otherBuffer: Uint8Array,
+    targetStart?: number,
+    targetEnd?: number,
+    sourceStart?: number,
+    sourceEnd?: number
+  ): number;
+  copy(
+    targetBuffer: Buffer,
+    targetStart?: number,
+    sourceStart?: number,
+    sourceEnd?: number
+  ): number;
   slice(start?: number, end?: number): Buffer;
   writeUIntLE(value: number, offset: number, byteLength: number, noAssert?: boolean): number;
   writeUIntBE(value: number, offset: number, byteLength: number, noAssert?: boolean): number;
@@ -20,10 +31,10 @@ export class Buffer extends Uint8Array {
   // readIntLE(offset: number, byteLength: number, noAssert?: boolean): number;
   // readIntBE(offset: number, byteLength: number, noAssert?: boolean): number;
   // readUInt8(offset: number, noAssert?: boolean): number;
-  // readUInt16LE(offset: number, noAssert?: boolean): number;
-  // readUInt16BE(offset: number, noAssert?: boolean): number;
-  // readUInt32LE(offset: number, noAssert?: boolean): number;
-  // readUInt32BE(offset: number, noAssert?: boolean): number;
+  readUInt16LE(offset: number, noAssert?: boolean): number;
+  readUInt16BE(offset: number, noAssert?: boolean): number;
+  readUInt32LE(offset: number, noAssert?: boolean): number;
+  readUInt32BE(offset: number, noAssert?: boolean): number;
   readBigUInt64LE(offset: number): BigInt;
   readBigUInt64BE(offset: number): BigInt;
   readInt8(offset: number, noAssert?: boolean): number;

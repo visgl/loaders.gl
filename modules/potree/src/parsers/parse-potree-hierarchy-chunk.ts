@@ -70,6 +70,8 @@ export type POTreeNode = {
   childrenByIndex: POTreeNode[];
 };
 
+type POTreeTileNode = POTreeNode;
+
 // load hierarchy
 export function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer) {
   const tileHeaders = parseBinaryChunk(arrayBuffer);
