@@ -47,8 +47,8 @@ test('CSVLoader#load', async (t) => {
   }
 
   const table2 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'array-row-table'}});
-  t.assert(table2.shape === 'object-row-table', 'Got correct table shape');
-  if (table2.shape === 'object-row-table') {
+  t.assert(table2.shape === 'array-row-table', 'Got correct table shape');
+  if (table2.shape === 'array-row-table') {
     t.is(getTableLength(table2), 2, 'Got correct table size');
     t.deepEqual(
       table2.data,
@@ -124,8 +124,8 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
   const table2 = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'array-row-table', header: false}
   });
-  t.assert(table2.shape === 'object-row-table', 'Got correct table shape');
-  if (table2.shape === 'object-row-table') {
+  t.assert(table2.shape === 'array-row-table', 'Got correct table shape');
+  if (table2.shape === 'array-row-table') {
     t.is(getTableLength(table2), 4, 'Got correct table size');
     t.deepEqual(
       table2.data,
