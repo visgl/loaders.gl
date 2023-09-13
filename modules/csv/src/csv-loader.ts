@@ -166,7 +166,7 @@ function parseCSVInBatches(
     skipEmptyLines: false,
 
     // step is called on every row
-    // eslint-disable-next-line complexity
+    // eslint-disable-next-line complexity, max-statements
     step(results) {
       let row = results.data;
 

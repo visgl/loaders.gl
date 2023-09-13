@@ -9,9 +9,7 @@ const SLPKUrl = 'modules/i3s/test/data/DA12_subset.slpk';
 test('FileHandleFile#slice', async (t) => {
   if (!isBrowser) {
     const provider = await FileHandleFile.from(SLPKUrl);
-    console.error('FileHandleFile#slice');
     t.equals(Buffer.from(await provider.slice(0n, 4n)).compare(signature), 0);
-    console.error('FileHandleFile#slice');
   }
   t.end();
 });
