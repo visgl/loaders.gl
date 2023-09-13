@@ -95,7 +95,7 @@ An input glTF resource may contain [EXT_feature_metadata](https://github.com/Ces
 
 Those extensions provide the structural metadata storage. Metadata - represented as entities and properties - may be closely associated with parts of 3D content, with data representations appropriate for large, distributed datasets. For the most detailed use cases, properties allow vertex- and texel-level associations; higher-level property associations are also supported.
 
-One glTF resource might include more than one metadata classes. That means that parts of a mesh might be associated with different sets of properties.
+One glTF resource might include more than one metadata class. That means that parts of a mesh might be associated with different sets of properties.
 For example, the glTF might have `bridges` and `buildings` classes. In that case, one part of the mesh is related to `bridges` properties (eg. `construction_year`, `type`) and another part of the mesh is related to `buildings` properties (eg. `construction_year`, `height`, `number_of_floors`, `ownership`).
 
 On another side there is an output I3S layer that doesn't support structural metadata and multiple classes. I3S has [feature attributes](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md) metadata that is the same for every node in the layer. So I3S can consume only one set of properties.
