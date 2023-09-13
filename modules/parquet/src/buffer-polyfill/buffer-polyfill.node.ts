@@ -1,7 +1,7 @@
 // luma.gl, MIT license
 
 const Buffer_ = Buffer;
-export {Buffer_ as Buffer}
+export {Buffer_ as Buffer};
 export {BufferPolyfill} from './buffer-polyfill.browser';
 
 export function installBufferPolyfill() {
