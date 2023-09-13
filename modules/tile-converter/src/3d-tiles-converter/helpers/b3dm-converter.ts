@@ -33,7 +33,7 @@ export default class B3dmConverter {
     i3sAttributesData: I3SAttributesData,
     featureAttributes: any = null
   ): Promise<ArrayBuffer> {
-    const gltf = await this.buildGltf(i3sAttributesData, featureAttributes);
+    const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes);
     const b3dm = encodeSync(
       {
         gltfEncoded: new Uint8Array(gltf),
@@ -51,7 +51,7 @@ export default class B3dmConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded glb content
    */
-  async buildGltf(
+  async buildGLTF(
     i3sAttributesData: I3SAttributesData,
     featureAttributes: any
   ): Promise<ArrayBuffer> {
@@ -59,8 +59,8 @@ export default class B3dmConverter {
     const {material, attributes, indices: originalIndices, modelMatrix} = tileContent;
     const gltfBuilder = new GLTFScenegraph();
 
-    const textureIndex = await this._addI3sTextureToGltf(tileContent, textureFormat, gltfBuilder);
-    const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(material, textureIndex);
+    const textureIndex = await this._addI3sTextureToGLTF(tileContent, textureFormat, gltfBuilder);
+    const pbrMaterialInfo = this._convertI3sMaterialToGLTFMaterial(material, textureIndex);
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
 
     const positions = attributes.positions;
@@ -115,7 +115,7 @@ export default class B3dmConverter {
    * @param {GLTFScenegraph} gltfBuilder - gltfScenegraph instance to construct GLTF
    * @returns {Promise<number | null>} - GLTF texture index
    */
-  async _addI3sTextureToGltf(tileContent, textureFormat, gltfBuilder) {
+  async _addI3sTextureToGLTF(tileContent, textureFormat, gltfBuilder) {
     const {texture, material, attributes} = tileContent;
     let textureIndex = null;
     let selectedTexture = texture;
@@ -222,7 +222,7 @@ export default class B3dmConverter {
    * @param {number | null} textureIndex - texture index in GLTF
    * @returns {object} GLTF material
    */
-  _convertI3sMaterialToGltfMaterial(material, textureIndex) {
+  _convertI3sMaterialToGLTFMaterial(material, textureIndex) {
     const isTextureIndexExists = textureIndex !== null;
 
     if (!material) {
@@ -248,7 +248,7 @@ export default class B3dmConverter {
     }
 
     if (textureIndex !== null) {
-      material = this._setGltfTexture(material, textureIndex);
+      material = this._setGLTFTexture(material, textureIndex);
     }
 
     return material;
@@ -260,7 +260,7 @@ export default class B3dmConverter {
    * @param {number} textureIndex - texture index in GLTF
    * @returns {void}
    */
-  _setGltfTexture(materialDefinition, textureIndex) {
+  _setGLTFTexture(materialDefinition, textureIndex) {
     const material = {
       ...materialDefinition,
       pbrMetallicRoughness: {...materialDefinition.pbrMetallicRoughness}

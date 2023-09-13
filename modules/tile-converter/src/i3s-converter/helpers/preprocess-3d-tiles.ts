@@ -43,8 +43,8 @@ export const analyzeTileContent = async (
   if (!gltf) {
     return defaultResult;
   }
-  const meshTopologyTypes = getMeshTypesFromGltf(gltf);
-  const metadataClasses = getMetadataClassesFromGltf(gltf);
+  const meshTopologyTypes = getMeshTypesFromGLTF(gltf);
+  const metadataClasses = getMetadataClassesFromGLTF(gltf);
   return {
     meshTopologyTypes,
     metadataClasses
@@ -56,7 +56,7 @@ export const analyzeTileContent = async (
  * @param gltfJson - JSON part of GLB content
  * @returns array of mesh types found
  */
-const getMeshTypesFromGltf = (gltfJson: GLTF): Set<GLTFPrimitiveModeString> => {
+const getMeshTypesFromGLTF = (gltfJson: GLTF): Set<GLTFPrimitiveModeString> => {
   const result: Set<GLTFPrimitiveModeString> = new Set();
   for (const mesh of gltfJson.meshes || []) {
     for (const primitive of mesh.primitives) {
@@ -75,7 +75,7 @@ const getMeshTypesFromGltf = (gltfJson: GLTF): Set<GLTFPrimitiveModeString> => {
  * @param gltfJson - JSON part of GLB content
  * @returns array of classes
  */
-const getMetadataClassesFromGltf = (gltfJson: GLTF): Set<string> => {
+const getMetadataClassesFromGLTF = (gltfJson: GLTF): Set<string> => {
   const result: Set<string> = new Set();
 
   const classes = (gltfJson.extensions?.[EXT_FEATURE_METADATA] as GLTF_EXT_feature_metadata_GLTF)
