@@ -41,7 +41,7 @@ export interface RandomAccessReadFileSystem extends FileSystem {
   open(path: string, flags: unknown, mode?: unknown): Promise<any>;
   close(fd: unknown): Promise<void>;
   fstat(fd: unknown): Promise<Stat>;
-  read(fd: any, options?: ReadOptions): Promise<{bytesRead: number; buffer: Buffer}>;
+  read(fd: any, options?: ReadOptions): Promise<{bytesRead: number; buffer: Uint8Array}>;
   // read(
   //   fd: any,
   //   buffer: ArrayBuffer | ArrayBufferView,

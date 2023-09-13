@@ -52,9 +52,12 @@ export function parseFlatGeobuf(
     }
 
     case 'columnar-table': // binary + some JS arrays
-      return {shape: 'columnar-table', data: parseFlatGeobufToBinary(arrayBuffer, options)};
+      const binary = parseFlatGeobufToBinary(arrayBuffer, options);
+      // @ts-expect-error
+      return {shape: 'columnar-table', data: binary};
 
     case 'binary':
+      // @ts-expect-error
       return parseFlatGeobufToBinary(arrayBuffer, options);
 
     default:
@@ -62,7 +65,7 @@ export function parseFlatGeobuf(
   }
 }
 
-function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions) {
+function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) {
   // TODO: reproject binary features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
@@ -73,7 +76,7 @@ function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLo
 
 function parseFlatGeobufToGeoJSON(
   arrayBuffer: ArrayBuffer,
-  options: FlatGeobufLoaderOptions
+  options: FlatGeobufLoaderOptions = {}
 ): Feature[] {
   if (arrayBuffer.byteLength === 0) {
     return [];
@@ -126,6 +129,7 @@ function parseFlatGeobufInBatchesToBinary(stream, options: FlatGeobufLoaderOptio
   // TODO: reproject binary streaming features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
+  // @ts-expect-error
   const iterator = deserializeGeneric(stream, binaryFromFeature);
   return iterator;
 }

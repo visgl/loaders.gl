@@ -20,6 +20,8 @@ type ObjectSchema = {[key: string]: ObjectField} | ObjectField[];
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+const DEFAULT_CSV_SHAPE = 'object-row-table';
+
 export type CSVLoaderOptions = LoaderOptions & {
   csv?: {
     // loaders.gl options
@@ -60,7 +62,7 @@ export const CSVLoader: LoaderWithParser<Table, TableBatch, CSVLoaderOptions> = 
   // testText: null,
   options: {
     csv: {
-      shape: 'object-row-table',
+      shape: DEFAULT_CSV_SHAPE, // 'object-row-table'
       optimizeMemoryUsage: false,
       // CSV options
       header: 'auto',
@@ -108,7 +110,7 @@ async function parseCSV(
 
   const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix!, firstRow.length);
 
-  const shape = csvOptions.shape || 'object-row-table';
+  const shape = csvOptions.shape || DEFAULT_CSV_SHAPE;
   switch (shape) {
     case 'object-row-table':
       return {
@@ -202,6 +204,8 @@ function parseCSVInBatches(
         row = JSON.parse(JSON.stringify(row));
       }
 
+      const shape = csvOptions.shape || DEFAULT_CSV_SHAPE;
+
       // Add the row
       tableBatchBuilder =
         tableBatchBuilder ||
@@ -209,7 +213,7 @@ function parseCSVInBatches(
           // @ts-expect-error TODO this is not a proper schema
           schema,
           {
-            shape: csvOptions.shape || 'array-row-table',
+            shape,
             ...options
           }
         );
