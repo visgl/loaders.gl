@@ -1,12 +1,9 @@
 // loaders.gl, MIT license
-import {Buffer} from './buffer';
+export {Buffer} from './buffer-polyfill.node'; 
+export {BufferPolyfill} from './buffer-polyfill.node';
 
-export {Buffer};
-export {Buffer as BufferPolyfill};
+export {installBufferPolyfill} from './buffer-polyfill.node';
 
-export function installBufferPolyfill() {
-  // @ts-ignore
-  globalThis.Buffer = globalThis.Buffer || Buffer;
-}
+// import { installBufferPolyfill } from "./buffer-polyfill.node";
 
-installBufferPolyfill();
+// installBufferPolyfill();

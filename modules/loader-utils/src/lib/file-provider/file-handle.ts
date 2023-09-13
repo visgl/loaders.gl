@@ -29,19 +29,23 @@ export class FileHandle {
       new Promise<number>((resolve, reject) => {
         fs.open(path, undefined, undefined, (_err, fd) => (_err ? reject(_err) : resolve(fd)));
       }),
-      new Promise<fs.BigIntStats>((resolve, reject) => {
-        fs.stat(path, {bigint: true}, (_err, stats) => (_err ? reject(_err) : resolve(stats)));
-      })
+      fs.stat(path, {bigint: true})
+      // new Promise<fs.BigIntStats>((resolve, reject) => {
+      //   console.error(fs.stat)
+      //   fs.stat(path, {bigint: true}, (_err, stats) => (_err ? reject(_err) : resolve(stats)));
+      //   console.error(fs.open)
+      // })
     ]);
     return new FileHandle(fd, stats);
   }
 
   /** Close file */
   async close(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      // @ts-expect-error
-      fs.close(this.fileDescriptor, (_err) => resolve());
-    });
+    return fs.close(this.fileDescriptor);
+    // return new Promise<void>((resolve) => {
+    //   // @ts-expect-error
+    //   fs.close(this.fileDescriptor, (_err) => resolve());
+    // });
   }
 
   /**

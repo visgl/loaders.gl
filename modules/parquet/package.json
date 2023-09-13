@@ -38,6 +38,9 @@
     "tls": false,
     "stream": false,
     "fs": false,
+    "./src/buffer-polyfill/buffer-polyfill.node.ts": "./src/browser-polyfill/browser-polyfill.browser.ts",
+    "./dist/es5/buffer-polyfill/buffer-polyfill.node.js": "./dist/es5/browser-polyfill/browser-polyfill.browser.js",
+    "./dist/esm/buffer-polyfill/buffer-polyfill.node.js": "./dist/esm/browser-polyfill/browser-polyfill.browser.js",
     "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts",
     "./dist/es5/lib/wasm/load-wasm/load-wasm-node.js": "./dist/es5/lib/wasm/load-wasm/load-wasm-browser.js",
     "./dist/esm/lib/wasm/load-wasm/load-wasm-node.js": "./dist/esm/lib/wasm/load-wasm/load-wasm-browser.js"

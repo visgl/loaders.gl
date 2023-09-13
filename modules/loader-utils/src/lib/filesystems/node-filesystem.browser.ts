@@ -44,8 +44,8 @@ export class NodeFileSystem implements FileSystem, RandomAccessReadFileSystem {
     return 0;
   }
 
-  async close(fd: number): Promise<void> {
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async close(fd: number): Promise<void> {}
 
   async fstat(fd: number): Promise<Stat> {
     return {size: 0, isDirectory: () => false};
