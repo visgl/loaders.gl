@@ -108,7 +108,8 @@ async function parseCSV(
 
   const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix!, firstRow.length);
 
-  switch (csvOptions.shape || 'object-row-table') {
+  const shape = csvOptions.shape || 'object-row-table';
+  switch (shape) {
     case 'object-row-table':
       return {
         shape: 'object-row-table',
@@ -119,8 +120,9 @@ async function parseCSV(
         shape: 'array-row-table',
         data: rows.map((row) => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow)))
       };
+    default:
+      throw new Error(shape);
   }
-  throw new Error(csvOptions.shape);
 }
 
 // TODO - support batch size 0 = no batching/single batch?

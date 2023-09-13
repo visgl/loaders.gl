@@ -34,6 +34,7 @@
     "./dist/es5/lib/node/fs.js": "./dist/es5/lib/node/fs.browser.js",
     "./dist/esm/lib/node/fs.js": "./dist/esm/lib/node/fs.browser.js",
     "./src/lib/node/stream.ts": "./src/lib/node/stream.browser.ts",
+    "./src/lib/node/stream.js": "./src/lib/node/stream.browser.js",
     "./dist/es5/lib/node/stream.js": "./dist/es5/lib/node/stream.browser.js",
     "./dist/esm/lib/node/stream.js": "./dist/esm/lib/node/stream.browser.js",
     "fs": false,

@@ -8,7 +8,7 @@ import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/cjs/gener
 
 import {fromGeometry as binaryFromGeometry} from './binary-geometries';
 import {FlatGeobufLoaderOptions} from './types';
-import {GeoJSONRowTable, Feature} from '@loaders.gl/schema';
+import {GeoJSONTable, Feature} from '@loaders.gl/schema';
 
 // TODO: reproject binary features
 function binaryFromFeature(feature, header) {
@@ -36,9 +36,9 @@ export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options?: FlatGeobufLo
   const shape = options?.gis?.format || options?.flatgeobuf?.shape;
 
   switch (shape) {
-    case 'geojson-row-table': {
-      const table: GeoJSONRowTable = {
-        shape: 'geojson-row-table',
+    case 'geojson-table': {
+      const table: GeoJSONTable = {
+        shape: 'geojson-table',
         data: parseFlatGeobufToGeoJSON(arrayBuffer, options)
       };
       return table;

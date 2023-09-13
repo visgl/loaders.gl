@@ -1,6 +1,6 @@
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import type {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
+import type {GeoJSONTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
 import {gpx} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
 
@@ -10,13 +10,13 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GPXLoaderOptions = LoaderOptions & {
   gpx?: {
-    shape?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
     /** @deprecated. Use options.gpx.shape */
-    type?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    type?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
   };
   gis?: {
     /** @deprecated. Use options.gpx.shape */
-    format?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    format?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
   };
 };
 
@@ -59,10 +59,11 @@ function parseTextSync(text: string, options?: GPXLoaderOptions) {
       };
       return table;
     }
-    case 'geojson-row-table': {
-      const table: GeoJSONRowTable = {
-        shape: 'geojson-row-table',
-        data: geojson.features
+    case 'geojson-table': {
+      const table: GeoJSONTable = {
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        features: geojson.features
       };
       return table;
     }

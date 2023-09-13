@@ -17,7 +17,7 @@ export type {
   RowTable,
   ArrayRowTable,
   ObjectRowTable,
-  GeoJSONRowTable,
+  GeoJSONTable,
   ColumnarTable,
   ArrowTable,
   Tables
@@ -26,7 +26,7 @@ export type {
   TableBatch,
   ArrayRowTableBatch,
   ObjectRowTableBatch,
-  GeoJSONRowTableBatch,
+  GeoJSONTableBatch,
   ColumnarTableBatch,
   ArrowTableBatch
 } from './types/category-table';

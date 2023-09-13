@@ -62,7 +62,7 @@ export class ArrowLikeTable {
   // }
 
   get data() {
-    return this.table.data;
+    return this.table.shape === 'geojson-table' ? this.table.features : this.table.data;
   }
 
   get numCols(): number {

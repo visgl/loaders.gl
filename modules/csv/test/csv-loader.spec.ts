@@ -27,62 +27,79 @@ test('CSVLoader#load(states.csv)', async (t) => {
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('CSVLoader#load', async (t) => {
   const table = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'object-row-table'}});
-  t.is(getTableLength(table), 2, 'Got correct table size, correctly inferred no header');
-  t.deepEqual(table.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+  t.assert(table.shape === 'object-row-table', 'Got correct table shape');
+  if (table.shape === 'object-row-table') {
+    t.is(getTableLength(table), 2, 'Got correct table size, correctly inferred no header');
+    t.deepEqual(table.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+  }
 
   const table1 = await load(CSV_SAMPLE_URL, CSVLoader, {
     csv: {shape: 'object-row-table', header: true}
   });
-  t.is(getTableLength(table1), 1, 'Got correct table size, forced first row as header');
-  t.deepEqual(table1.data[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
+
+  t.assert(table1.shape === 'object-row-table', 'Got correct table shape');
+  if (table1.shape === 'object-row-table') {
+    t.is(getTableLength(table1), 1, 'Got correct table size, forced first row as header');
+    t.deepEqual(table1.data[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
+  }
 
   const table2 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'array-row-table'}});
-  t.is(getTableLength(table2), 2, 'Got correct table size');
-  t.deepEqual(
-    table2.data,
-    [
-      ['A', 'B', 1],
-      ['X', 'Y', 2]
-    ],
-    'Got correct array content'
-  );
+  t.assert(table2.shape === 'object-row-table', 'Got correct table shape');
+  if (table2.shape === 'object-row-table') {
+    t.is(getTableLength(table2), 2, 'Got correct table size');
+    t.deepEqual(
+      table2.data,
+      [
+        ['A', 'B', 1],
+        ['X', 'Y', 2]
+      ],
+      'Got correct array content'
+    );
+  }
 
   const table3 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(getTableLength(table3), 2000, 'Got correct table size');
-  t.deepEqual(
-    table3.data[0],
-    {
-      TLD: 'ABC',
-      'meaning of life': 42,
-      placeholder: 'Lorem ipsum dolor sit'
-    },
-    'Got correct first row'
-  );
+  t.assert(table3.shape === 'object-row-table', 'Got correct table shape');
+  if (table3.shape === 'object-row-table') {
+    t.is(getTableLength(table3), 2000, 'Got correct table size');
+    t.deepEqual(
+      table3.data[0],
+      {
+        TLD: 'ABC',
+        'meaning of life': 42,
+        placeholder: 'Lorem ipsum dolor sit'
+      },
+      'Got correct first row'
+    );
+  }
 
   const table4 = await load(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(getTableLength(table4), 499, 'Got correct table size (csv with quotes)');
-  t.deepEqual(
-    table4.data[0],
-    {
-      IncidntNum: 160919032,
-      Category: 'VANDALISM',
-      Descript: 'MALICIOUS MISCHIEF, VANDALISM OF VEHICLES',
-      DayOfWeek: 'Friday',
-      DateTime: '11/11/16 7:00',
-      PdDistrict: 'MISSION',
-      Address: '1400 Block of UTAH ST',
-      Resolution: 'NONE',
-      Longitude: -122.4052518,
-      Latitude: 37.75152496
-    },
-    'Got correct first row (csv with quotes)'
-  );
+  t.assert(table4.shape === 'object-row-table', 'Got correct table shape');
+  if (table4.shape === 'object-row-table') {
+    t.is(getTableLength(table4), 499, 'Got correct table size (csv with quotes)');
+    t.deepEqual(
+      table4.data[0],
+      {
+        IncidntNum: 160919032,
+        Category: 'VANDALISM',
+        Descript: 'MALICIOUS MISCHIEF, VANDALISM OF VEHICLES',
+        DayOfWeek: 'Friday',
+        DateTime: '11/11/16 7:00',
+        PdDistrict: 'MISSION',
+        Address: '1400 Block of UTAH ST',
+        Resolution: 'NONE',
+        Longitude: -122.4052518,
+        Latitude: 37.75152496
+      },
+      'Got correct first row (csv with quotes)'
+    );
+  }
   t.end();
 });
 
@@ -90,31 +107,37 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
   const table = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(getTableLength(table), 3, 'Got correct table size');
-  t.deepEqual(
-    table.data,
-    [
-      {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2},
-      {A: 'y', B: 29, 'A.1': 'z', 'A.1.1': 'y', 'A.2': 'w', 'B.1': 19},
-      {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2}
-    ],
-    'dataset should be parsed with the corrected duplicate headers'
-  );
+  t.assert(table.shape === 'object-row-table', 'Got correct table shape');
+  if (table.shape === 'object-row-table') {
+    t.is(getTableLength(table), 3, 'Got correct table size');
+    t.deepEqual(
+      table.data,
+      [
+        {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2},
+        {A: 'y', B: 29, 'A.1': 'z', 'A.1.1': 'y', 'A.2': 'w', 'B.1': 19},
+        {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2}
+      ],
+      'dataset should be parsed with the corrected duplicate headers'
+    );
+  }
 
   const table2 = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'array-row-table', header: false}
   });
-  t.is(getTableLength(table2), 4, 'Got correct table size');
-  t.deepEqual(
-    table2.data,
-    [
-      ['A', 'B', 'A', 'A.1', 'A', 'B'],
-      ['x', 1, 'y', 'z', 'w', 2],
-      ['y', 29, 'z', 'y', 'w', 19],
-      ['x', 1, 'y', 'z', 'w', 2]
-    ],
-    'dataset should be parsed correctly as the array rows'
-  );
+  t.assert(table2.shape === 'object-row-table', 'Got correct table shape');
+  if (table2.shape === 'object-row-table') {
+    t.is(getTableLength(table2), 4, 'Got correct table size');
+    t.deepEqual(
+      table2.data,
+      [
+        ['A', 'B', 'A', 'A.1', 'A', 'B'],
+        ['x', 1, 'y', 'z', 'w', 2],
+        ['y', 29, 'z', 'y', 'w', 19],
+        ['x', 1, 'y', 'z', 'w', 2]
+      ],
+      'dataset should be parsed correctly as the array rows'
+    );
+  }
 });
 
 // TSV
