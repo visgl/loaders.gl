@@ -62,6 +62,8 @@ export {ParquetWasmWriter} from './parquet-wasm-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 
+export {BufferPolyfill} from './buffer-polyfill';
+
 export {preloadCompressions} from './parquetjs/compression';
 
 export {ParquetSchema} from './parquetjs/schema/schema';
