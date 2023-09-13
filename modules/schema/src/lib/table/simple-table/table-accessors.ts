@@ -11,8 +11,10 @@ export function getTableLength(table: Table): number {
   switch (table.shape) {
     case 'array-row-table':
     case 'object-row-table':
-    case 'geojson-row-table':
       return table.data.length;
+
+    case 'geojson-table':
+      return table.features.length;
 
     case 'arrow-table':
       return table.data.numRows;
@@ -42,12 +44,11 @@ export function getTableNumCols(table: Table): number {
     case 'array-row-table':
       return table.data[0].length;
     case 'object-row-table':
-    case 'geojson-row-table':
       return Object.keys(table.data[0]).length;
-
+    case 'geojson-table':
+      return Object.keys(table.features[0]).length;
     case 'columnar-table':
       return Object.keys(table.data).length;
-
     case 'arrow-table':
       return table.data.numCols;
     default:
@@ -63,8 +64,10 @@ export function getTableCell(table: Table, rowIndex: number, columnName: string)
       return table.data[rowIndex][columnIndex];
 
     case 'object-row-table':
-    case 'geojson-row-table':
       return table.data[rowIndex][columnName];
+
+    case 'geojson-table':
+      return table.features[rowIndex][columnName];
 
     case 'columnar-table':
       const column = table.data[columnName];
@@ -88,13 +91,16 @@ export function getTableCellAt(table: Table, rowIndex: number, columnIndex: numb
       return table.data[rowIndex][columnIndex];
 
     case 'object-row-table':
-    case 'geojson-row-table':
-      let columnName = getTableColumnName(table, columnIndex);
-      return table.data[rowIndex][columnName];
+      const columnName1 = getTableColumnName(table, columnIndex);
+      return table.data[rowIndex][columnName1];
+
+    case 'geojson-table':
+      const columnName2 = getTableColumnName(table, columnIndex);
+      return table.features[rowIndex][columnName2];
 
     case 'columnar-table':
-      columnName = getTableColumnName(table, columnIndex);
-      const column = table.data[columnName];
+      const columnName3 = getTableColumnName(table, columnIndex);
+      const column = table.data[columnName3];
       return column[rowIndex];
 
     case 'arrow-table':
@@ -112,7 +118,8 @@ export function getTableRowShape(table: Table): 'array-row-table' | 'object-row-
     case 'object-row-table':
       return table.shape;
 
-    case 'geojson-row-table':
+    case 'geojson-table':
+      // TODO - this is not correct, geojson-table is not a row table
       return 'object-row-table';
 
     case 'columnar-table':
@@ -156,11 +163,21 @@ export function getTableRowAsObject(
       return copy ? Object.fromEntries(Object.entries(table.data[rowIndex])) : table.data[rowIndex];
 
     case 'array-row-table':
-    case 'geojson-row-table':
       if (table.schema) {
         const objectRow: {[columnName: string]: unknown} = target || {};
         for (let i = 0; i < table.schema.fields.length; i++) {
           objectRow[table.schema.fields[i].name] = table.data[rowIndex][i];
+        }
+        return objectRow;
+      }
+      throw new Error('no schema');
+
+    case 'geojson-table':
+      if (table.schema) {
+        const objectRow: {[columnName: string]: unknown} = target || {};
+        // TODO - should lift properties to top level
+        for (let i = 0; i < table.schema.fields.length; i++) {
+          objectRow[table.schema.fields[i].name] = table.features[rowIndex][i];
         }
         return objectRow;
       }
@@ -214,7 +231,6 @@ export function getTableRowAsArray(
       return copy ? Array.from(table.data[rowIndex]) : table.data[rowIndex];
 
     case 'object-row-table':
-    case 'geojson-row-table':
       if (table.schema) {
         const arrayRow: unknown[] = target || [];
         for (let i = 0; i < table.schema.fields.length; i++) {
@@ -224,6 +240,18 @@ export function getTableRowAsArray(
       }
       // Warning: just slap on the values, this risks mismatches between rows
       return Object.values(table.data[rowIndex]);
+
+    case 'geojson-table':
+      if (table.schema) {
+        const arrayRow: unknown[] = target || [];
+        // TODO - should lift properties to top level
+        for (let i = 0; i < table.schema.fields.length; i++) {
+          arrayRow[i] = table.features[rowIndex][table.schema.fields[i].name];
+        }
+        return arrayRow;
+      }
+      // Warning: just slap on the values, this risks mismatches between rows
+      return Object.values(table.features[rowIndex]);
 
     case 'columnar-table':
       if (table.schema) {

@@ -36,7 +36,7 @@ export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOption
    * be included in the output. If `null`, features from all layers are returned.
    */
   layers?: string[];
-  shape?: 'geojson-row-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
+  shape?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
 };
 
 export type MVTMapboxGeometry = {
@@ -64,6 +64,6 @@ export type MVTLoaderOptions = LoaderOptions & {
      */
     binary?: boolean;
     /** @deprecated. Use options.mvt.shape */
-    format?: 'geojson-row-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
+    format?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
   };
 };

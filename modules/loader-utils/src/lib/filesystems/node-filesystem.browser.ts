@@ -24,37 +24,31 @@ type ReadOptions = {
 export class NodeFileSystem implements FileSystem, RandomAccessReadFileSystem {
   // implements FileSystem
   constructor(options: {[key: string]: any}) {
-    this.fetch = options._fetch;
+    throw new Error('Can\'t instantiate NodeFileSystem in browser');
   }
 
   async readdir(dirname = '.', options?: {}): Promise<any[]> {
-    return await fs.readdir(dirname, options);
+    return [];
   }
 
   async stat(path: string, options?: {}): Promise<Stat> {
-    const info = await fs.stat(path, options);
-    return {size: Number(info.size), isDirectory: () => false, info};
+    return {size: 0, isDirectory: () => false};
   }
 
   async fetch(path: string, options: {[key: string]: any}) {
-    // Falls back to handle https:/http:/data: etc fetches
-    // eslint-disable-next-line
-    const fallbackFetch = options.fetch || this.fetch;
-    return fallbackFetch(path, options);
+    return globalThis.fetch(path, options);
   }
 
   // implements IRandomAccessFileSystem
   async open(path: string, flags: string | number, mode?: any): Promise<number> {
-    return await fs.open(path, flags);
+    return 0;
   }
 
-  async close(fd: number): Promise<void> {
-    return await fs.close(fd);
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async close(fd: number): Promise<void> {}
 
   async fstat(fd: number): Promise<Stat> {
-    const info = await fs.fstat(fd);
-    return info;
+    return {size: 0, isDirectory: () => false};
   }
 
   async read(
@@ -62,18 +56,6 @@ export class NodeFileSystem implements FileSystem, RandomAccessReadFileSystem {
     // @ts-ignore Possibly null
     {buffer = null, offset = 0, length = buffer.byteLength, position = null}: ReadOptions
   ): Promise<{bytesRead: number; buffer: Uint8Array}> {
-    let totalBytesRead = 0;
-    // Read in loop until we get required number of bytes
-    while (totalBytesRead < length) {
-      const {bytesRead} = await fs.read(
-        fd,
-        buffer,
-        offset + totalBytesRead,
-        length - totalBytesRead,
-        position + totalBytesRead
-      );
-      totalBytesRead += bytesRead;
-    }
-    return {bytesRead: totalBytesRead, buffer};
+    return {bytesRead: 0, buffer: new Uint8Array(0)};
   }
 }

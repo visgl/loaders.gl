@@ -1,10 +1,10 @@
 // loaders.gl, MIT license
 
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {GeoJSON, GeoJSONRowTable, TableBatch} from '@loaders.gl/schema';
+import type {GeoJSON, GeoJSONTable, TableBatch} from '@loaders.gl/schema';
 import type {JSONLoaderOptions} from './json-loader';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {parseJSONSync} from './lib/parsers/parse-json';
+// import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -65,11 +65,25 @@ function parseTextSync(text: string, options?: GeoJSONLoaderOptions) {
   options = {...GeoJSONLoader.options, ...options};
   options.geojson = {...GeoJSONLoader.options.geojson, ...options.geojson};
   options.gis = options.gis || {};
-  const table = parseJSONSync(text, options) as GeoJSONRowTable;
-  table.shape = 'geojson-row-table';
+
+  let geojson;
+  try {
+    geojson = JSON.parse(text);
+  } catch {
+    geojson = {};
+  }
+
+  const table: GeoJSONTable = {
+    shape: 'geojson-table',
+    // TODO - deduce schema from geojson
+    // TODO check that parsed data is of type FeatureCollection
+    type: 'FeatureCollection',
+    features: geojson?.features || []
+  };
+
   switch (options.gis.format) {
     case 'binary':
-      return geojsonToBinary(table.data);
+      return geojsonToBinary(table.features);
     default:
       return table;
   }

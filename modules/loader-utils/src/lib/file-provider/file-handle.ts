@@ -1,4 +1,4 @@
-import {read, open, close, stat, BigIntStats} from 'fs';
+import * as fs from '../node/fs';
 
 /** file reading result */
 export type FileReadResult = {
@@ -11,9 +11,9 @@ export type FileReadResult = {
 /** Object handling file info */
 export class FileHandle {
   private fileDescriptor: number;
-  private stats: BigIntStats;
+  private stats: fs.BigIntStats;
 
-  private constructor(fileDescriptor: number, stats: BigIntStats) {
+  private constructor(fileDescriptor: number, stats: fs.BigIntStats) {
     this.fileDescriptor = fileDescriptor;
     this.stats = stats;
   }
@@ -27,20 +27,25 @@ export class FileHandle {
   static async open(path: string): Promise<FileHandle> {
     const [fd, stats] = await Promise.all([
       new Promise<number>((resolve, reject) => {
-        open(path, undefined, undefined, (_err, fd) => (_err ? reject(_err) : resolve(fd)));
+        fs.open(path, undefined, undefined, (_err, fd) => (_err ? reject(_err) : resolve(fd)));
       }),
-      new Promise<BigIntStats>((resolve, reject) => {
-        stat(path, {bigint: true}, (_err, stats) => (_err ? reject(_err) : resolve(stats)));
-      })
+      fs.stat(path, {bigint: true})
+      // new Promise<fs.BigIntStats>((resolve, reject) => {
+      //   console.error(fs.stat)
+      //   fs.stat(path, {bigint: true}, (_err, stats) => (_err ? reject(_err) : resolve(stats)));
+      //   console.error(fs.open)
+      // })
     ]);
     return new FileHandle(fd, stats);
   }
 
   /** Close file */
   async close(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      close(this.fileDescriptor, (_err) => resolve());
-    });
+    return fs.close(this.fileDescriptor);
+    // return new Promise<void>((resolve) => {
+    //   // @ts-expect-error
+    //   fs.close(this.fileDescriptor, (_err) => resolve());
+    // });
   }
 
   /**
@@ -62,13 +67,13 @@ export class FileHandle {
     position: number | bigint
   ): Promise<FileReadResult> => {
     return new Promise((s) => {
-      read(this.fileDescriptor, buffer, offset, length, position, (_err, bytesRead, buffer) =>
+      fs.read(this.fileDescriptor, buffer, offset, length, position, (_err, bytesRead, buffer) =>
         s({bytesRead, buffer})
       );
     });
   };
 
-  get stat(): BigIntStats {
+  get stat(): fs.BigIntStats {
     return this.stats;
   }
 }

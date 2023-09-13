@@ -4,8 +4,16 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-type FlatGeobufLoaderOptions = LoaderOptions & {
-  flatgeobuf: {};
+export type FlatGeobufLoaderOptions = LoaderOptions & {
+  flatgeobuf?: {
+    shape?: 'geojson-table' | 'columnar-table' | 'geojson-table' | 'geojson' | 'binary';
+  };
+  gis?: {
+    reproject?: boolean;
+    _targetCrs?: string;
+    /** @deprecated Use options.flatgeobuf.shape */
+    format?: never;
+  };
 };
 
 export const FlatGeobufLoader: Loader<any, any, FlatGeobufLoaderOptions> = {

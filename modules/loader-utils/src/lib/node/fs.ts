@@ -1,13 +1,16 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
 import fs from 'fs';
+import fsPromises from 'fs/promises';
 import {toArrayBuffer} from './buffer';
 import {promisify2, promisify3} from './promisify';
 
-export type {Stats, ReadStream, WriteStream} from 'fs';
+export type {BigIntStats, Stats} from 'fs';
+export type {ReadStream, WriteStream} from 'fs';
+
 /** Wrapper for Node.js fs method */
 export const readdir: any = promisify2(fs.readdir);
 /** Wrapper for Node.js fs method */
-export const stat: any = promisify2(fs.stat);
+export const stat: any = fsPromises.stat;
 export const statSync = fs.statSync;
 
 /** Wrapper for Node.js fs method */

@@ -4,7 +4,7 @@ import type {
   Feature,
   GeojsonGeometryInfo,
   BinaryFeatureCollection,
-  GeoJSONRowTable
+  GeoJSONTable
 } from '@loaders.gl/schema';
 import Protobuf from 'pbf';
 
@@ -29,15 +29,16 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOp
   switch (shape) {
     case 'columnar-table': // binary + some JS arrays
       return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions)};
-    case 'geojson-row-table': {
-      const table: GeoJSONRowTable = {
-        shape: 'geojson-row-table',
-        data: parseToGeojson(arrayBuffer, mvtOptions)
+    case 'geojson-table': {
+      const table: GeoJSONTable = {
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        features: parseToGeojsonFeatures(arrayBuffer, mvtOptions)
       };
       return table;
     }
     case 'geojson':
-      return parseToGeojson(arrayBuffer, mvtOptions);
+      return parseToGeojsonFeatures(arrayBuffer, mvtOptions);
     case 'binary-geometry':
       return parseToBinary(arrayBuffer, mvtOptions);
     case 'binary':
@@ -101,7 +102,7 @@ function parseToFlatGeoJson(
   return [features, geometryInfo];
 }
 
-function parseToGeojson(arrayBuffer: ArrayBuffer, options: MVTOptions): Feature[] {
+function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): Feature[] {
   if (arrayBuffer.byteLength <= 0) {
     return [];
   }

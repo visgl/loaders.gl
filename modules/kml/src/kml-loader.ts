@@ -1,6 +1,6 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {geojsonToBinary} from '@loaders.gl/gis';
-// import {GeoJSONRowTable} from '@loaders.gl/schema';
+// import {GeoJSONTable} from '@loaders.gl/schema';
 import {FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
 import {kml} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
@@ -11,13 +11,13 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMLLoaderOptions = LoaderOptions & {
   kml?: {
-    shape?: 'object-row-table' | 'geojson-row-table';
+    shape?: 'object-row-table' | 'geojson-table';
     /** @deprecated. Use options.kml.shape */
-    type?: 'object-row-table' | 'geojson-row-table';
+    type?: 'object-row-table' | 'geojson-table';
   };
   gis?: {
     /** @deprecated. Use options.kml.shape */
-    format?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    format?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
   };
 };
 
@@ -53,9 +53,9 @@ function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable
   // backwards compatibility
   const shape = options?.gis?.format || options?.kml?.type || options?.kml?.shape;
   switch (shape) {
-    // case 'geojson-row-table': {
-    //   const table: GeoJSONRowTable = {
-    //     shape: 'geojson-row-table',
+    // case 'geojson-table': {
+    //   const table: GeoJSONTable = {
+    //     shape: 'geojson-table',
     //     data: geojson.features
     //   };
     //   return table;

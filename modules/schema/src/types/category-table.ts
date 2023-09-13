@@ -15,12 +15,12 @@ export type Table =
   | RowTable
   | ArrayRowTable
   | ObjectRowTable
-  | GeoJSONRowTable
+  | GeoJSONTable
   | ColumnarTable
   | ArrowTable;
 
 /** A table organized as an array of rows */
-export type RowTable = ArrayRowTable | ObjectRowTable | GeoJSONRowTable;
+export type RowTable = ArrayRowTable | ObjectRowTable | GeoJSONTable;
 
 /** A table organized as an array of rows, each row is an array of values */
 export type ArrayRowTable = {
@@ -36,11 +36,17 @@ export type ObjectRowTable = {
   data: {[columnName: string]: any}[];
 };
 
-/** A table organized as an array of rows, each row is a GeoJSON Feature */
-export type GeoJSONRowTable = {
-  shape: 'geojson-row-table';
+/**
+ * A table organized as an array of rows, each row is a GeoJSON Feature
+ * @note For compatibility with GeoJSON, rows are stored in `table.features` instead of `table.data`
+ */
+export type GeoJSONTable = {
+  shape: 'geojson-table';
   schema?: Schema;
-  data: Feature[];
+  /** For compatibility with GeoJSON, the type field must always be set to `FeatureCollection` */
+  type: 'FeatureCollection';
+  /** For compatibility with GeoJSON, rows are stored in `table.features` instead of `table.data` */
+  features: Feature[];
 };
 
 /** A table organized as a map of columns, each column is an array of value */
@@ -69,7 +75,7 @@ export type Tables<TableType = Table> = {
 export type TableBatch =
   | ArrayRowTableBatch
   | ObjectRowTableBatch
-  | GeoJSONRowTableBatch
+  | GeoJSONTableBatch
   | ColumnarTableBatch
   | ArrowTableBatch;
 
@@ -92,8 +98,8 @@ export type ObjectRowTableBatch = Batch & {
 };
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type GeoJSONRowTableBatch = Batch & {
-  shape: 'geojson-row-table';
+export type GeoJSONTableBatch = Batch & {
+  shape: 'geojson-table';
   schema?: Schema;
   schemaType?: 'explicit' | 'deduced';
   data: Feature[];
