@@ -69,7 +69,9 @@ function parseTextSync(text: string, options?: GeoJSONLoaderOptions) {
   let geojson;
   try {
     geojson = JSON.parse(text);
-  } catch {}
+  } catch {
+    geojson = {};
+  }
 
   const table: GeoJSONTable = {
     shape: 'geojson-table',
