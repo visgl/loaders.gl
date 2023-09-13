@@ -16,7 +16,10 @@ import {EXT_STRUCTURAL_METADATA, EXT_MESH_FEATURES, EXT_FEATURE_METADATA} from '
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 
 /**
- * Get featureTexture by metadataClass
+ * Get featureTexture by a metadata class.
+ * Metadata classes come from a structural metadata extesion (EXT_feature_metadata or EXT_structural_metadata).
+ * The glTF might contain multiple texel-level metadata textures related to different classes. Having only one metadata class
+ * selected to convert to I3S, we have to pick only one texture to convert to per-vertex property.
  * @param tileContent - 3d tile content
  * @param metadataClass - user selected feature metadata class name
  * @returns featureTexture key
