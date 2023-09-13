@@ -9,6 +9,8 @@ public
 
 modules/core/src/iterators/make-stream/make-node-stream.ts
 
+modules/loader-utils/src/lib/filesystems/node-filesystem.browser.ts
+
 modules/3d-tiles/test/lib/classes/tile-3d-batch-table-hierarchy.spec.ts
 
 modules/bson/src/bson-writer.ts
