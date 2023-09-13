@@ -18,12 +18,12 @@ The tile-converter is capable to convert 3D tiles data of formats [3DTiles](http
 
 ## Input data source types
 
-| Specification | Data source type         | Status        |
-| ------------- | ------------------------ | ------------- |
-| `I3S`         | SLPK                     | Not supported |
-| `I3S`         | HTTP REST service        | Supported     |
-| `3DTiles`     | Local file system folder | Supported     |
-| `3DTiles`     | Cesium ION URL           | Supported     |
+| Specification | Data source type         | Status                          |
+| ------------- | ------------------------ | ------------------------------- |
+| `I3S`         | SLPK                     | Supported as local HTTP service |
+| `I3S`         | HTTP REST service        | Supported                       |
+| `3DTiles`     | Local file system folder | Supported                       |
+| `3DTiles`     | Cesium ION URL           | Supported                       |
 
 ## Versions
 
@@ -46,9 +46,9 @@ Some 3DTiles vNext extensions are supported as input data.
 | `3DTiles`  | `3DTILES_implicit_tiling`    | Supported                |
 | `3DTiles`  | `3DTILES_bounding_volume_S2` | Supported                |
 | `3DTIles`  | `3DTILES_metadata`           | Not applicable for `I3S` |
-| `glTF`     | `EXT_mesh_features`          | In progress              |
-| `glTF`     | `EXT_feature_metadata`       | In progress              |
-| `glTF`     | `EXT_structural_metadata`    | In progress              |
+| `glTF`     | `EXT_mesh_features`          | Supported                |
+| `glTF`     | `EXT_feature_metadata`       | Supported                |
+| `glTF`     | `EXT_structural_metadata`    | Supported                |
 
 ## Internal data types
 
