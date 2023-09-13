@@ -84,7 +84,31 @@ NodeJS 14 or higher is required.
 | split-nodes               | \*                        |                           | The converter will generate new node for every PBR material in the glTF file. Prevent merge of similar materials that could lead to incorrect visualization. By default, the converter tries to merge PBR materials to create one node for all primitives in a glTF file. Note can cause refinement issues because "leaf" nodes are generated in the middle of the nodes tree tree                                                                                                                                                                                                                                                                                                                                                                                |
 | generate-textures         | \*                        |                           | Create compressed KTX2 textures if non-compressed (JPG, PNG) texture is presented in the input tileset or generate JPG texture if compressed KTX2 is presented in the input tileset                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | generate-bounding-volumes | \*                        |                           | Create new OBB and MBS bounding volumes from geometry instead of conversion it from the source tile bounding volume                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| metadata-class            | \*                        |                           | Set metadata class related to EXT_feature_metadata or EXT_structural_meatadata. See [Schema class](#schema-class-selection) extensions                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | validate                  | \*                        |                           | Perform counting of all tiles. Check whether a particular child node fits into the parent one or not. If not, warn about it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+
+## Metadata class selection
+
+_This topic is applicable only for source type "3DTILES"._
+
+An input glTF resource may contain [EXT_feature_metadata](https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata/README.md) or [EXT_structural_metadata](https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/README.md) extensions.
+
+Those extensions provide the structural metadata storage. Metadata - represented as entities and properties - may be closely associated with parts of 3D content, with data representations appropriate for large, distributed datasets. For the most detailed use cases, properties allow vertex- and texel-level associations; higher-level property associations are also supported.
+
+One glTF resource might include more than one metadata class. That means that parts of a mesh might be associated with different sets of properties.
+For example, the glTF might have `bridges` and `buildings` classes. In that case, one part of the mesh is related to `bridges` properties (eg. `construction_year`, `type`) and another part of the mesh is related to `buildings` properties (eg. `construction_year`, `height`, `number_of_floors`, `ownership`).
+
+On another side there is an output I3S layer that doesn't support structural metadata and multiple classes. I3S has [feature attributes](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md) metadata that is the same for every node in the layer. So I3S can consume only one set of properties.
+
+In case when the input 3DTiles dataset has multiple metadata classes, the tile-converter provides a promt to select one class from the list:
+
+![Metadata class selection](metadata-class-selection-promt.png)
+
+If the wanted class is known before the conversion it is possible to skip the prompt with setting `metadata-class` option. For example:
+
+```bash
+npx tile-converter --input-type 3DTILES --tileset ..... --metadata-class bridges
+```
 
 ## Running local server to handle I3S layer
 

@@ -72,6 +72,9 @@ const getMeshTypesFromGLTF = (gltfJson: GLTF): Set<GLTFPrimitiveModeString> => {
 
 /**
  * Get feature metadata classes from glTF
+ * The tileset might contain multiple metadata classes provided by EXT_feature_metadata and EXT_structural_metadata extensions.
+ * Every class is a set of properties. But I3S can consume only one set of properties.
+ * On the pre-process we collect all classes from the tileset in order to show the prompt to select one class for conversion to I3S.
  * @param gltfJson - JSON part of GLB content
  * @returns array of classes
  */
