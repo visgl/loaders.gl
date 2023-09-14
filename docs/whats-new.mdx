@@ -64,6 +64,15 @@
 
 - [roadmap](./roadmap) for more details on planned development.
 
+## v4.1 (In Early Development)
+
+Release Date: Target Q1 204
+
+**@loaders.gl/compression**
+
+- `DeflateCompression` and `GzipCompression` now use [`fflate`](https://101arrowz.github.io/fflate/) instead of [`pako`](http://nodeca.github.io/pako/), providing ~20% better performance and smaller bundle size.
+
+
 ## v4.0 (In Development)
 
 Release Date: TBD, Target Sep 2023
@@ -83,49 +92,74 @@ Integration:
 Documentation:
 - [File format documentation](/docs/formats?README) - a growing list of articles that provide additional information about the various file formats supported by loaders.gl.
 
+### Common Modules
+
 **@loaders.gl/core**
 
-- `fetchFile()` now supports fetching from local filesystem in Node.js (The global fetch function is no longer modified to support this).
+- `fetchFile()` now supports fetching from local filesystem in Node.js 
+- Since `@loaders.gl/polyfills` no longer modifies the global fetch function to support local filesystem access.
 
-**@loaders.gl/3d-tiles**
+**@loaders.gl/schema**
 
-- [`Implicit Tiling 1.1`](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling) support
+- The loaders.gl schema and type system is now a fully serializable counterpart to the Apache Arrow schema and type system. 
+- Among other things, this simplifies transferring schemas between workers.
+
+**loaders.gl/polyfills**
+
+- Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging built-in support in Node.js v18+.
+
+**@loaders.gl/loader-utils**
+
+- New functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
+- `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()`
+
+### Loader Modules
 
 **@loaders.gl/gltf**
 
 - More glTF 2.0 extensions support:
   - [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) - for 1.1 3DTiles attributes support
 
-**@loaders.gl/loader-utils**
-
-- `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()` - new functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
-
-**@loaders.gl/schema**
-
-- The loaders.gl schema and type system is now a fully serializable counterpart to the Apache Arrow schema and type system. 
-- This is a breaking change that e.g. simplifies transferring schemas between workers.
-
-**@loaders.gl/compression**
-
-- `DeflateCompression` and `GzipCompression` now use [`fflate`](https://101arrowz.github.io/fflate/) instead of [`pako`](http://nodeca.github.io/pako/), providing ~20% better performance and smaller bundle size.
-
 **@loaders.gl/arrow**
 
 - Now uses `apache-arrow` v13. 
 - Apache Arrow v9 is a breaking change. 
-
-Be aware that Apache Arrow JS v9 is a major breaking change compared with Apache Arrow v4 which is used by loaders.gl v3, so if you are using the Arrow API directly you will need to upgrade.
+- Be aware that Apache Arrow JS v9 is a major breaking change compared with Apache Arrow v4 which is used by loaders.gl v3, so if you are using the Arrow API directly you will need to upgrade.
 
 **@loaders.gl/csv**
 
-- New `CSVWriter` allows export of any table in CSV format.
+- New [`CSVWriter`](docs/modules/csv/api-reference/csv-writer) allows export of any table in CSV format.
+
+**@laoders.gl/json**
+
+- New [`JSONWriter`](docs/modules/json/api-reference/json-writer) allows export of any table in JSON format.
+- New [`NDJSONWriter`](docs/modules/json/api-reference/ndjson-writer) allows export of any table in NDJSON format.
+- New [`GeoJSONWriter`](docs/modules/json/api-reference/geojson-writer) allows export of any table in GeoJSON format.
+- New [`NDGeoJSONWriter`](docs/modules/json/api-reference/ndgeojson-writer) allows export of any table in NDGeoJSON format.
 
 **@loaders.gl/draco**
 
 - Now uses the [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release) _decoders_
 - Note: Still uses the draco3d `v1.4.1` _encoder_ to avoid performance regression.
 
+**@loaders.gl/wkt**
+
+- New [`WKTCRSLoader`](docs/modules/wkt/api-reference/wkt-crs-loader) (WKT Coordinate Reference System loader)
+- New [`WKTCRSWriter`](docs/modules/wkt/api-reference/wkt-crs-writer) (WKT Coordinate Reference System writer)
+
+**@loaders.gl/zip**
+
+- `ZipArchive` 
+
+### Tile Modules
+
+**@loaders.gl/3d-tiles**
+
+- [`Implicit Tiling 1.1`](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling) support
+
 **@loaders.gl/tile-converter**
+
+- Support new 3D Tiles extensions
 
 - Сonversion of S2 bounding volume [3DTILES_bounding_volume_S2](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_bounding_volume_S2/README.md) into [Oriented Bounding Boxes format (OBB)](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/obb.cmn.md)
 - Support conversion of non-indexed geometry
@@ -141,20 +175,6 @@ Be aware that Apache Arrow JS v9 is a major breaking change compared with Apache
 - tile-converter performance and usability optimizations:
   - Exclude Tileset 3D and Tile 3D classes during conversion (it gives a RAM usage improvement)
   - Tile-converter: offline conversion. No internet is required during the conversion process
-
-**@loaders.gl/zip**
-
-- `ZipArchive` 
-
-**loaders.gl/polyfills**
-
-- Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills, instead leveraging built-in support in Node.js v18+.
-
-- New `JSONWriter` allows export of any table in JSON format.
-- New `NDJSONWriter` allows export of any table in NDJSON format.
-- New `GeoJSONWriter` allows export of any table in GeoJSON format.
-- New `NDGeoJSONWriter` allows export of any table in NDGeoJSON format.
-
 
 ## v3.4
 

@@ -2,12 +2,20 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 /* global TextEncoder */
-import type {Writer} from '@loaders.gl/loader-utils';
+import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
-import type {JSONWriterOptions} from './lib/encoders/json-encoder';
 import {encodeTableAsJSON} from './lib/encoders/json-encoder';
 
-export type {JSONWriterOptions};
+export type JSONWriterOptions = WriterOptions & {
+  json?: {
+    shape?: 'object-row-table' | 'array-row-table';
+    wrapper?: (table: TableJSON) => unknown;
+  };
+};
+
+type RowArray = unknown[];
+type RowObject = {[key: string]: unknown};
+type TableJSON = RowArray[] | RowObject[];
 
 export const JSONWriter: Writer<Table, TableBatch, JSONWriterOptions> = {
   id: 'json',
@@ -20,5 +28,5 @@ export const JSONWriter: Writer<Table, TableBatch, JSONWriterOptions> = {
   text: true,
   encode: async (table: Table, options: JSONWriterOptions) =>
     new TextEncoder().encode(encodeTableAsJSON(table, options)).buffer,
-  encodeText: (table: Table, options: JSONWriterOptions) => encodeTableAsJSON(table, options)
+  encodeTextSync: (table: Table, options: JSONWriterOptions) => encodeTableAsJSON(table, options)
 };

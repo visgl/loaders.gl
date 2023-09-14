@@ -5,16 +5,9 @@ import {Feature, getTableLength} from '@loaders.gl/schema';
 import {Table, TableBatch, getTableRowAsObject} from '@loaders.gl/schema';
 import {detectGeometryColumnIndex, getRowPropertyObject} from './encode-utils';
 import {Utf8ArrayBufferEncoder} from './utf8-encoder';
+import type {GeoJSONWriterOptions} from '../../geojson-writer';
 
 type Row = {[key: string]: unknown};
-
-export type GeoJSONWriterOptions = {
-  geojson?: {
-    featureArray?: boolean;
-    geometryColumn?: number | null;
-  };
-  chunkSize?: number;
-};
 
 /**
  * Encode a table as GeoJSON
@@ -24,6 +17,7 @@ export async function* encodeTableAsGeojsonInBatches(
   batchIterator: AsyncIterable<TableBatch>, // | Iterable<TableBatch>,
   inputOpts: GeoJSONWriterOptions = {}
 ): AsyncIterable<ArrayBuffer> {
+  // @ts-expect-error
   const options: Required<GeoJSONWriterOptions> = {geojson: {}, chunkSize: 10000, ...inputOpts};
 
   const utf8Encoder = new Utf8ArrayBufferEncoder(options.chunkSize);

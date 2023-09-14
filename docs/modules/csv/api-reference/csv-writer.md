@@ -1,5 +1,9 @@
 # CSVWriter
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
+</p>
+
 Writes tabular data into comma-separated value and [delimiter-separated value](https://en.wikipedia.org/wiki/Delimiter-separated_values) encoding.
 
 | Loader         | Characteristic                                      |

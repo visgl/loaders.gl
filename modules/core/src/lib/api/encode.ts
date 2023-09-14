@@ -99,7 +99,26 @@ export async function encodeText(
     return new TextDecoder().decode(arrayBuffer);
   }
 
-  throw new Error('Writer could not encode data as text');
+  throw new Error(`Writer ${writer.name} could not encode data as text`);
+}
+
+/**
+ * Encode loaded data to text using the specified Writer
+ * @note This is a convenience function not intended for production use on large input data.
+ * It is not optimized for performance. Data maybe converted from text to binary and back.
+ * @throws if the writer does not generate text output
+ */
+export function encodeTextSync(data: unknown, writer: Writer, options?: WriterOptions): string {
+  if (writer.text && writer.encodeTextSync) {
+    return writer.encodeTextSync(data, options);
+  }
+
+  if (writer.text && writer.encodeSync) {
+    const arrayBuffer = encodeSync(data, writer, options);
+    return new TextDecoder().decode(arrayBuffer);
+  }
+
+  throw new Error(`Writer ${writer.name} could not encode data as text`);
 }
 
 /**

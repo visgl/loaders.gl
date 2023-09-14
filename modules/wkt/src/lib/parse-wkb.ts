@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import type {
   TypedArray,
   BinaryGeometry,
@@ -13,7 +15,7 @@ const NUM_DIMENSIONS = {
   3: 4 // 4D (ZM)
 };
 
-export default function parseWKB(arrayBuffer: ArrayBuffer): BinaryGeometry {
+export function parseWKB(arrayBuffer: ArrayBuffer): BinaryGeometry {
   const view = new DataView(arrayBuffer);
   let offset = 0;
 

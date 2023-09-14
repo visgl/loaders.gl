@@ -1,6 +1,6 @@
 import {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 
-interface TestCase {
+export interface TestCase {
   /** Geometry in WKT */
   wkt: string;
 

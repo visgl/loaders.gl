@@ -35,25 +35,20 @@ export type Writer<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOpt
 
   // encodeText?: EncodeText;
   // encode?: Encode;
-  encodeSync?: EncodeSync;
-  // encodeInBatches?: EncodeInBatches;
-  encodeURLtoURL?: EncodeURLtoURL;
-
   encode?(data: DataT, options?: WriterOptionsT): Promise<ArrayBuffer>;
-  encodeText?(table: DataT, options?: WriterOptionsT): Promise<string> | string;
-  encodeInBatches?(data: AsyncIterable<any>, options?: WriterOptionsT): AsyncIterable<ArrayBuffer>;
-};
+  encodeSync?(data: DataT, options?: WriterOptionsT): ArrayBuffer;
 
-//  type Encode = (data: any, options?: WriterOptions) => Promise<ArrayBuffer>;
-type EncodeSync = (data: any, options?: WriterOptions) => ArrayBuffer;
-// TODO
-// type EncodeText = Function;
-// type EncodeInBatches = Function;
-type EncodeURLtoURL = (
-  inputUrl: string,
-  outputUrl: string,
-  options?: WriterOptions
-) => Promise<string>;
+  encodeText?(table: DataT, options?: WriterOptionsT): Promise<string>;
+  encodeTextSync?(table: DataT, options?: WriterOptionsT): string;
+
+  encodeInBatches?(data: AsyncIterable<any>, options?: WriterOptionsT): AsyncIterable<ArrayBuffer>;
+
+  encodeURLtoURL?: (
+    inputUrl: string,
+    outputUrl: string,
+    options?: WriterOptionsT
+  ) => Promise<string>;
+};
 
 /** Typescript helper to extract the writer options type from a generic writer type */
 export type WriterOptionsType<T = Writer> = T extends Writer<unknown, unknown, infer Options>

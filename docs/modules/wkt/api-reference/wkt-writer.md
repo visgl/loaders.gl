@@ -1,5 +1,7 @@
 # WKTWriter
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 Writer for the [Well-known text] format for representation of geometry.
 
 | Loader         | Characteristic                                                                              |
@@ -9,6 +11,13 @@ Writer for the [Well-known text] format for representation of geometry.
 | File Format    | [Well Known Text](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry) |
 | Data Format    | [Geometry](/docs/specifications/category-gis)                                               |
 | Supported APIs | `encode`, `encodeSync`                                                                      |
+
+## Installation
+
+```bash
+npm install @loaders.gl/wkt
+npm install @loaders.gl/core
+```
 
 ## Usage
 

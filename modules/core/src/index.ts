@@ -37,7 +37,8 @@ export {loadInBatches} from './lib/api/load-in-batches';
 
 // ENCODING (ENCODING AND WRITING)
 export {encodeTable, encodeTableAsText, encodeTableInBatches} from './lib/api/encode-table';
-export {encode, encodeSync, encodeInBatches, encodeText, encodeURLtoURL} from './lib/api/encode';
+export {encode, encodeSync, encodeInBatches, encodeURLtoURL} from './lib/api/encode';
+export {encodeText, encodeTextSync} from './lib/api/encode';
 export {save, saveSync} from './lib/api/save';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)

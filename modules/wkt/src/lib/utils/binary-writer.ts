@@ -4,7 +4,7 @@
 const LE = true;
 const BE = false;
 
-export default class BinaryWriter {
+export class BinaryWriter {
   arrayBuffer: ArrayBuffer;
   dataView: DataView;
   byteOffset: number = 0;

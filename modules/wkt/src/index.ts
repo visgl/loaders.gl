@@ -1,4 +1,10 @@
+// loaders.gl, MIT license
+
 export {WKBLoader, WKBWorkerLoader} from './wkb-loader';
+export {WKBWriter} from './wkb-writer';
+
 export {WKTLoader, WKTWorkerLoader} from './wkt-loader';
 export {WKTWriter} from './wkt-writer';
-export {WKBWriter} from './wkb-writer';
+
+export {WKTCRSLoader} from './wkt-crs-loader';
+export {WKTCRSWriter} from './wkt-crs-writer';

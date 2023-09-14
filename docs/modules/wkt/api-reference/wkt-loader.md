@@ -1,5 +1,7 @@
 # WKTLoader
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
@@ -17,6 +19,13 @@ Loader and writer for the [Well-known text][wkt] format for representation of ge
 | Supported APIs        | `load`, `parse`, `parseSync`                                                                                 |
 | Decoder Type          | Synchronous                                                                                                  |
 | Worker Thread Support | Yes [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)](http://shields.io) |
+
+## Installation
+
+```bash
+npm install @loaders.gl/wkt
+npm install @loaders.gl/core
+```
 
 ## Usage
 
