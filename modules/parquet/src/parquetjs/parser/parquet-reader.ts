@@ -12,23 +12,20 @@ import {
   ParquetCompression,
   ParquetColumnChunk,
   PrimitiveType,
-  ParquetOptions
+  ParquetReaderContext
 } from '../schema/declare';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
 import {decodeDataPages, decodePage} from './decoders';
 
 export type ParquetReaderProps = {
   defaultDictionarySize?: number;
+  preserveBinary?: boolean;
 };
 
 /** Properties for initializing a ParquetRowGroupReader */
 export type ParquetIterationProps = {
   /** Filter allowing some columns to be dropped */
   columnList?: string[] | string[][];
-};
-
-const DEFAULT_PROPS: Required<ParquetReaderProps> = {
-  defaultDictionarySize: 1e6
 };
 
 /**
@@ -38,13 +35,18 @@ const DEFAULT_PROPS: Required<ParquetReaderProps> = {
  * rows from a parquet file use the ParquetReader instead
  */
 export class ParquetReader {
+  static defaultProps: Required<ParquetReaderProps> = {
+    defaultDictionarySize: 1e6,
+    preserveBinary: false
+  };
+
   props: Required<ParquetReaderProps>;
   file: ReadableFile;
   metadata: Promise<FileMetaData> | null = null;
 
   constructor(file: ReadableFile, props?: ParquetReaderProps) {
     this.file = file;
-    this.props = {...DEFAULT_PROPS, ...props};
+    this.props = {...ParquetReader.defaultProps, ...props};
   }
 
   close(): void {
@@ -163,6 +165,7 @@ export class ParquetReader {
     const metadataBuf = await this.file.read(metadataOffset, metadataSize);
     // let metadata = new parquet_thrift.FileMetaData();
     // parquet_util.decodeThrift(metadata, metadataBuf);
+
     const {metadata} = decodeFileMetadata(metadataBuf);
     return metadata;
   }
@@ -218,7 +221,7 @@ export class ParquetReader {
       );
     }
 
-    const options: ParquetOptions = {
+    const context: ParquetReaderContext = {
       type,
       rLevelMax: field.rLevelMax,
       dLevelMax: field.dLevelMax,
@@ -235,24 +238,24 @@ export class ParquetReader {
     if (dictionaryPageOffset) {
       const dictionaryOffset = Number(dictionaryPageOffset);
       // Getting dictionary from column chunk to iterate all over indexes to get dataPage values.
-      dictionary = await this.getDictionary(dictionaryOffset, options, pagesOffset);
+      dictionary = await this.getDictionary(dictionaryOffset, context, pagesOffset);
     }
 
-    dictionary = options.dictionary?.length ? options.dictionary : dictionary;
+    dictionary = context.dictionary?.length ? context.dictionary : dictionary;
     const pagesBuf = await this.file.read(pagesOffset, pagesSize);
-    return await decodeDataPages(pagesBuf, {...options, dictionary});
+    return await decodeDataPages(pagesBuf, {...context, dictionary});
   }
 
   /**
    * Getting dictionary for allows to flatten values by indices.
    * @param dictionaryPageOffset
-   * @param options
+   * @param context
    * @param pagesOffset
    * @returns
    */
   async getDictionary(
     dictionaryPageOffset: number,
-    options: ParquetOptions,
+    context: ParquetReaderContext,
     pagesOffset: number
   ): Promise<string[]> {
     if (dictionaryPageOffset === 0) {
@@ -273,7 +276,7 @@ export class ParquetReader {
     const pagesBuf = await this.file.read(dictionaryPageOffset, dictionarySize);
 
     const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};
-    const decodedPage = await decodePage(cursor, options);
+    const decodedPage = await decodePage(cursor, context);
 
     return decodedPage.dictionary!;
   }

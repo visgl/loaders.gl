@@ -2,14 +2,7 @@
 import {global, isBrowser, isWorker} from '../env-utils/globals';
 import * as node from '../node/require-utils.node';
 import {assert} from '../env-utils/assert';
-import {VERSION as __VERSION__} from '../env-utils/version';
-
-/**
- * TODO - unpkg.com doesn't seem to have a `latest` specifier for alpha releases...
- * 'beta' on beta branch, 'latest' on prod branch
- */
-const LATEST = 'beta';
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
+import {VERSION} from '../env-utils/version';
 
 const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 

@@ -3,7 +3,28 @@ import {Schema, Field} from '@loaders.gl/schema';
 
 /* eslint-disable camelcase */
 
-/** A geoarrow / geoparquet geo metadata object (stored in stringified form in the top level metadata 'geo' key) */
+type GeometryType =
+  | 'Point'
+  | 'LineString'
+  | 'Polygon'
+  | 'MultiPoint'
+  | 'MultiLineString'
+  | 'MultiPolygon'
+  | 'GeometryCollection'
+  | 'Point Z'
+  | 'LineString Z'
+  | 'Polygon Z'
+  | 'MultiPoint Z'
+  | 'MultiLineString Z'
+  | 'MultiPolygon Z'
+  | 'GeometryCollection Z';
+
+/**
+ * A geoarrow / geoparquet geo metadata object
+ * (stored in stringified form in the top level metadata 'geo' key)
+ * @see https://github.com/opengeospatial/geoparquet/blob/main/format-specs/geoparquet.md
+ * @see https://github.com/geoarrow/geoarrow/blob/main/metadata.md
+ * */
 export type GeoMetadata = {
   version?: string;
   primary_column?: string;
@@ -13,30 +34,53 @@ export type GeoMetadata = {
 
 /** A geoarrow / geoparquet geo metadata for one geometry column  */
 export type GeoColumnMetadata = {
-  bounding_box?:
-    | [number, number, number, number]
-    | [number, number, number, number, number, number];
-  crs?: string;
-  geometry_type?: string[];
-  edges?: string;
+  encoding: 'wkb' | 'wkt';
+  geometry_types: GeometryType[];
+  crs?: object | null;
+  orientation?: 'counterclockwise';
+  bbox?: [number, number, number, number] | [number, number, number, number, number, number];
+  edges?: 'planar' | 'spherical';
+  epoch?: number;
   [key: string]: unknown;
 };
+
+/** Parse a key with stringified arrow metadata */
+export function parseJSONStringMetadata(
+  schema: Schema,
+  metadataKey: string
+): Record<string, unknown> | null {
+  const stringifiedMetadata = schema.metadata[metadataKey];
+  if (!stringifiedMetadata) {
+    return null;
+  }
+
+  try {
+    const metadata = JSON.parse(stringifiedMetadata);
+    if (!metadata || typeof metadata !== 'object') {
+      return null;
+    }
+    return metadata;
+  } catch {
+    return null;
+  }
+}
+
+export function unpackJSONStringMetadata(schema: Schema, metadataKey: string): void {
+  const json = parseJSONStringMetadata(schema, metadataKey);
+  for (const [key, value] of Object.entries(json || {})) {
+    schema.metadata[`${metadataKey}.${key}`] =
+      typeof value === 'string' ? value : JSON.stringify(value);
+  }
+}
+
+// GEO METADATA
 
 /**
  * Reads the GeoMetadata object from the metadata
  * @note geoarrow / parquet schema is stringified into a single key-value pair in the parquet metadata */
 export function getGeoMetadata(schema: Schema): GeoMetadata | null {
-  const stringifiedGeoMetadata = schema.metadata.geo;
-  if (!stringifiedGeoMetadata) {
-    return null;
-  }
-
-  try {
-    const geoMetadata = JSON.parse(stringifiedGeoMetadata) as GeoMetadata;
-    return geoMetadata;
-  } catch {
-    return null;
-  }
+  const geoMetadata = parseJSONStringMetadata(schema, 'geo') as GeoMetadata;
+  return geoMetadata;
 }
 
 /**
@@ -83,6 +127,7 @@ export function unpackGeoMetadata(schema: Schema): void {
   }
 }
 
+// eslint-disable-next-line complexity
 function unpackGeoFieldMetadata(field: Field, columnMetadata): void {
   for (const [key, value] of Object.entries(columnMetadata || {})) {
     switch (key) {
@@ -90,7 +135,28 @@ function unpackGeoFieldMetadata(field: Field, columnMetadata): void {
         setFieldMetadata(field, `geo.${key}`, (value as string[]).join(','));
         break;
       case 'bbox':
+        setFieldMetadata(field, `geo.crs.${key}`, JSON.stringify(value));
+        break;
       case 'crs':
+        for (const [crsKey, crsValue] of Object.entries(value || {})) {
+          switch (crsKey) {
+            case 'id':
+              const crsId =
+                typeof crsValue === 'object'
+                  ? `${crsValue?.authority}:${crsValue?.code}`
+                  : JSON.stringify(crsValue);
+              setFieldMetadata(field, `geo.crs.${crsKey}`, crsId);
+              break;
+            default:
+              setFieldMetadata(
+                field,
+                `geo.crs.${crsKey}`,
+                typeof crsValue === 'string' ? crsValue : JSON.stringify(crsValue)
+              );
+              break;
+          }
+        }
+        break;
       case 'edges':
       default:
         setFieldMetadata(

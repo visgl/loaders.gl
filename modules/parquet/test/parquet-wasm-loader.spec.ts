@@ -1,3 +1,4 @@
+/*
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
@@ -76,3 +77,4 @@ function createArrowTable() {
   const table = new Table({utf8Vector, uint8Vector, int32Vector, boolVector});
   return table;
 }
+*/

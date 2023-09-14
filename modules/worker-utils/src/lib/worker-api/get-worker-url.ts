@@ -3,10 +3,7 @@
 import type {WorkerObject, WorkerOptions} from '../../types';
 import {assert} from '../env-utils/assert';
 import {isBrowser} from '../env-utils/globals';
-import {VERSION as __VERSION__} from '../env-utils/version';
-
-const NPM_TAG = 'beta'; // 'beta', or 'latest' on release-branch
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
+import {VERSION, NPM_TAG} from '../env-utils/version';
 
 /**
  * Gets worker object's name (for debugging in Chrome thread inspector window)

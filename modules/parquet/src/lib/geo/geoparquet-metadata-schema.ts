@@ -7,7 +7,7 @@
  * @see https://github.com/geoarrow/geoarrow/blob/main/metadata.md
  * @see https://github.com/opengeospatial/geoparquet/blob/main/format-specs/geoparquet.md
  */
-export default {
+export const GEOPARQUET_METADATA_JSON_SCHEMA = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'GeoParquet',
   description: 'Parquet metadata included in the geo field.',

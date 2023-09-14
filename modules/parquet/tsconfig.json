@@ -10,6 +10,8 @@
   "references": [
     {"path": "../compression"},
     {"path": "../loader-utils"},
-    {"path": "../schema"}
+    {"path": "../schema"},
+    {"path": "../gis"},
+    {"path": "../wkt"}
   ]
 }

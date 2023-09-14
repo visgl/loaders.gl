@@ -1,44 +1,71 @@
 // import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {ColumnarTableBatch} from '@loaders.gl/schema';
 import {makeReadableFile} from '@loaders.gl/loader-utils';
-import {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
+import {GeoJSONTable, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
+import {getSchemaFromParquetReader} from './get-parquet-schema';
+import {installBufferPolyfill} from '../../buffer-polyfill';
+import {convertWKBTableToGeoJSON} from '../geo/decode-geo-column';
 
 export async function parseParquet(
   arrayBuffer: ArrayBuffer,
   options?: ParquetLoaderOptions
-): Promise<ObjectRowTable> {
+): Promise<ObjectRowTable | GeoJSONTable> {
+  installBufferPolyfill();
   const blob = new Blob([arrayBuffer]);
+  const file = makeReadableFile(blob);
+  const reader = new ParquetReader(file, {
+    preserveBinary: options?.parquet?.preserveBinary
+  });
+
+  const schema = await getSchemaFromParquetReader(reader);
 
   const rows: ParquetRow[] = [];
-  for await (const batch of parseParquetFileInBatches(blob, options)) {
+
+  const rowBatches = reader.rowBatchIterator(options?.parquet);
+  for await (const rowBatch of rowBatches) {
     // we have only one input batch so return
-    for (const row of batch.data) {
+    for (const row of rowBatch) {
       rows.push(row);
     }
   }
-
-  return {
+  const objectRowTable: ObjectRowTable = {
     shape: 'object-row-table',
-    // TODO - spread can fail for very large number of batches
+    schema,
     data: rows
   };
+
+  const shape = options?.parquet?.shape;
+  switch (shape) {
+    case 'object-row-table':
+      return objectRowTable;
+
+    case 'geojson-table':
+      try {
+        return convertWKBTableToGeoJSON(objectRowTable, schema);
+      } catch (error) {
+        return objectRowTable;
+      }
+
+    default:
+      throw new Error(shape);
+  }
 }
 
 export async function* parseParquetFileInBatches(
-  blob: Blob,
+  reader: ParquetReader,
   options?: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
-  const file = makeReadableFile(blob);
-  const reader = new ParquetReader(file);
+  const schema = await getSchemaFromParquetReader(reader);
   const rowBatches = reader.rowBatchIterator(options?.parquet);
   for await (const rows of rowBatches) {
     yield {
-      shape: 'object-row-table',
-      data: rows,
       batchType: 'data',
+      shape: 'object-row-table',
+      schema,
+      data: rows,
       length: rows.length
     };
   }
