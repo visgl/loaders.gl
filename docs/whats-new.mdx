@@ -87,6 +87,15 @@ Documentation:
 
 - `fetchFile()` now supports fetching from local filesystem in Node.js (The global fetch function is no longer modified to support this).
 
+**@loaders.gl/3d-tiles**
+
+- [`Implicit Tiling 1.1`](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling) support
+
+**@loaders.gl/gltf**
+
+- More glTF 2.0 extensions support:
+  - [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) - for 1.1 3DTiles attributes support
+
 **@loaders.gl/loader-utils**
 
 - `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()` - new functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
@@ -111,11 +120,6 @@ Be aware that Apache Arrow JS v9 is a major breaking change compared with Apache
 
 - New `CSVWriter` allows export of any table in CSV format.
 
-**@loaders.gl/3d-tiles**
-
-- `Tiles3DArchiveLoader`
-- `S2`
-
 **@loaders.gl/draco**
 
 - Now uses the [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release) _decoders_
@@ -123,7 +127,20 @@ Be aware that Apache Arrow JS v9 is a major breaking change compared with Apache
 
 **@loaders.gl/tile-converter**
 
-- Support new 3D Tiles extensions
+- Сonversion of S2 bounding volume [3DTILES_bounding_volume_S2](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_bounding_volume_S2/README.md) into [Oriented Bounding Boxes format (OBB)](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/obb.cmn.md)
+- Support conversion of non-indexed geometry
+- [3DTiles archive format (.3tz)](https://github.com/Maxar-Corp/3tz-specification/tree/main) support for conversion into I3S
+- Better [SLPK (I3S archive format)](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#scene-layer-packages-) support:
+  - Support Large SLPK (>2gb) input for tile-converter
+  - Hash generation for SLPKs without a hash
+  - [`i3s-server`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/i3s-server.md) (part of tile-converter npm package) - serve SLPKs as a local HTTP server
+  - [`slpk-extractor`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/slpk-extractor.md) (part of tile-converter npm package) - extract an SLPK to a dataset that can be served via `i3s-server`
+- Pre-processing for conversion 3DTiles > I3S:
+  - Detect topology type (for example TRIANGLE and TRIANGLE_STRIP will pass further for conversion, POINT or TRIANGLE_FAN will notify this mesh type is not supported for conversion)
+  - Detect attributes classes for `EXT_feature_metadata` and for `EXT_mesh_features` extensions. Choose a class to convert in CLI with arrow keys.
+- tile-converter performance and usability optimizations:
+  - Exclude Tileset 3D and Tile 3D classes during conversion (it gives a RAM usage improvement)
+  - Tile-converter: offline conversion. No internet is required during the conversion process
 
 **@loaders.gl/zip**
 
@@ -137,11 +154,6 @@ Be aware that Apache Arrow JS v9 is a major breaking change compared with Apache
 - New `NDJSONWriter` allows export of any table in NDJSON format.
 - New `GeoJSONWriter` allows export of any table in GeoJSON format.
 - New `NDGeoJSONWriter` allows export of any table in NDGeoJSON format.
-
-
-**@loaders.gl/tile-converter**
-
-- Support new 3D Tiles extensions
 
 
 ## v3.4
@@ -225,13 +237,13 @@ Release Date: February 17, 2023.
 **@loaders.gl/3d-tiles**
 
 - Limited support for [3D Tiles Next](https://github.com/CesiumGS/3d-tiles/tree/main/next):
-- [`3DTILES_content_gltf`](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_content_gltf) extension support.
-- [`3DTILES_implicit_tiling`](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling) extension support.
+- [`3DTILES_content_gltf`](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_content_gltf) extension support (glTF 2.0 extensions support is enabled in 3d tiles archives).
+- [`3DTILES_implicit_tiling`](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling) extension support (quick access to tiles by tile coordinates).
 
 **@loaders.gl/gltf**
 
 - `GLTFLoader` glTF extension support:
-  - [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) - can now optionally be processed and removed during load by transforming UV coordinates. Useful if renderer or post processing stage does not have support for this extension.
+  - [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) - textures can now optionally be processed and removed during load by transforming UV coordinates. Useful if renderer or post processing stage does not have support for this extension.
 
 **@loaders.gl/draco**
 
@@ -253,12 +265,11 @@ Release Date: February 17, 2023.
 - Now leverages Node.js workers to increase conversion speed.
 - Limited support for converting `3D Tiles Next` source tilesets:
   - [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension support. Support of KTX2 textures.
-  - [`KHR_texture_transform`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform) glTF extension support.
-  - [`EXT_feature_metadata`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata) extension support.
-  - [`EXT_mesh_features`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features) extension support.
+  - [`KHR_texture_transform`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform) glTF extension support. Supported as input.
+  - [`EXT_feature_metadata`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata) extension support. Support converting attributes from **3D Tiles Next**  to I3S.
 - New conversion options:
   - `split-nodes` - create multiple I3S nodes from one glTF file when the source glTF has multiple materials.
-  - `instant-node-writing` - memory usage management option. Keep JSON resources on disk instead of memory in cost of conversion speed.
+  - `instant-node-writing` - RAM usage management option. Keep JSON resources on disk instead of memory in cost of conversion speed.
 
 ## v3.2
 
