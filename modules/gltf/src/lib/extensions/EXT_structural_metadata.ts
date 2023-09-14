@@ -1,3 +1,5 @@
+// GLTF EXTENSION: EXT_structural_metadata
+// https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata
 /* eslint-disable camelcase */
 import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
 import type {GLTF, GLTFTextureInfoMetadata, GLTFMeshPrimitive} from '../types/gltf-json-schema';
@@ -7,7 +9,7 @@ import type {
   GLTF_EXT_structural_metadata_Enum,
   GLTF_EXT_structural_metadata_EnumValue,
   GLTF_EXT_structural_metadata_PropertyTable,
-  GLTF_EXT_structural_metadata,
+  GLTF_EXT_structural_metadata_GLTF,
   GLTF_EXT_structural_metadata_PropertyTexture,
   GLTF_EXT_structural_metadata_PropertyTable_Property,
   GLTF_EXT_structural_metadata_Primitive
@@ -100,7 +102,7 @@ export function getPropertyTablePopulated(
   scenegraph: GLTFScenegraph,
   propertyTableIndex: number
 ): GLTF_EXT_structural_metadata_PropertyTable {
-  const extension: GLTF_EXT_structural_metadata | null = scenegraph.getExtension(
+  const extension: GLTF_EXT_structural_metadata_GLTF | null = scenegraph.getExtension(
     EXT_STRUCTURAL_METADATA_NAME
   );
   const propertyTable = extension?.propertyTables?.[propertyTableIndex];
@@ -119,7 +121,7 @@ export function getPropertyTablePopulated(
  * @param options - loader options.
  */
 function decodeExtStructuralMetadata(scenegraph: GLTFScenegraph, options: GLTFLoaderOptions): void {
-  const extension: GLTF_EXT_structural_metadata | null = scenegraph.getExtension(
+  const extension: GLTF_EXT_structural_metadata_GLTF | null = scenegraph.getExtension(
     EXT_STRUCTURAL_METADATA_NAME
   );
   if (!extension?.schema) {
@@ -180,7 +182,7 @@ function processPrimitivePropertyTextures(
   scenegraph: GLTFScenegraph,
   propertyTextures: GLTF_EXT_structural_metadata_PropertyTexture[],
   primitive: GLTFMeshPrimitive,
-  extension: GLTF_EXT_structural_metadata
+  extension: GLTF_EXT_structural_metadata_GLTF
 ): void {
   if (!propertyTextures) {
     return;
@@ -210,7 +212,7 @@ function processPrimitivePropertyTexture(
   scenegraph: GLTFScenegraph,
   propertyTexture: GLTF_EXT_structural_metadata_PropertyTexture,
   primitive: GLTFMeshPrimitive,
-  extension: GLTF_EXT_structural_metadata
+  extension: GLTF_EXT_structural_metadata_GLTF
 ): void {
   if (!propertyTexture.properties) {
     return;

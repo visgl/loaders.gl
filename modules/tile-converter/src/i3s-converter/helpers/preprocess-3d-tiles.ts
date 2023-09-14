@@ -1,6 +1,12 @@
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import {GLTFPrimitiveModeString, PreprocessData} from '../types';
-import {GLTF, GLTFLoader, GLTF_EXT_feature_metadata_GLTF} from '@loaders.gl/gltf';
+import {
+  EXT_STRUCTURAL_METADATA,
+  GLTF,
+  GLTFLoader,
+  GLTF_EXT_feature_metadata_GLTF,
+  GLTF_EXT_structural_metadata_GLTF
+} from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
 import {EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
 
@@ -78,11 +84,23 @@ const getMeshTypesFromGLTF = (gltfJson: GLTF): Set<GLTFPrimitiveModeString> => {
 const getMetadataClassesFromGLTF = (gltfJson: GLTF): Set<string> => {
   const result: Set<string> = new Set();
 
-  const classes = (gltfJson.extensions?.[EXT_FEATURE_METADATA] as GLTF_EXT_feature_metadata_GLTF)
-    ?.schema?.classes;
+  // Try to parse from EXT_feature_metadata
+  const extFeatureMetadataClasses = (
+    gltfJson.extensions?.[EXT_FEATURE_METADATA] as GLTF_EXT_feature_metadata_GLTF
+  )?.schema?.classes;
 
-  if (classes) {
-    for (const classKey of Object.keys(classes)) {
+  if (extFeatureMetadataClasses) {
+    for (const classKey of Object.keys(extFeatureMetadataClasses)) {
+      result.add(classKey);
+    }
+  }
+
+  // Try to parse from EXT_structural_metadata
+  const extStructuralMetadataClasses = (
+    gltfJson.extensions?.[EXT_STRUCTURAL_METADATA] as GLTF_EXT_structural_metadata_GLTF
+  )?.schema?.classes;
+  if (extStructuralMetadataClasses) {
+    for (const classKey of Object.keys(extStructuralMetadataClasses)) {
       result.add(classKey);
     }
   }
