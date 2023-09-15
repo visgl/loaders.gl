@@ -1,5 +1,6 @@
+// loaders.gl, MIT license
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
-// eslint-disable-next-line import/no-unresolved
+
 import type {Feature, Geometry} from '@loaders.gl/schema';
 
 /**
@@ -7,7 +8,7 @@ import type {Feature, Geometry} from '@loaders.gl/schema';
  * @param geojson
  * @returns string
  */
-export default function encodeWKT(geometry: Geometry | Feature): string {
+export function encodeWKT(geometry: Geometry | Feature): string {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
   }

@@ -27,7 +27,7 @@ test('JSONWriter#encodeTableAsText - data table, row objects', async (t) => {
 
 test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async (t) => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
-    shape: 'object-row-table'
+    json: {shape: 'object-row-table'}
   });
   t.equal(
     encodedText,
@@ -40,7 +40,7 @@ test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async 
 
 test('JSONWriter#encodeTableAsText - data table, row arrays', async (t) => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
-    shape: 'array-row-table'
+    json: {shape: 'array-row-table'}
   });
   t.equal(
     encodedText,
@@ -53,8 +53,7 @@ test('JSONWriter#encodeTableAsText - data table, row arrays', async (t) => {
 
 test.skip('JSONWriter#encodeTableAsText - data table, wrapper', async (t) => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
-    wrapper: (table) => ({wrapped: true, table}),
-    shape: 'array-row-table'
+    json: {shape: 'array-row-table', wrapper: (table) => ({wrapped: true, table})}
   });
   t.equal(
     encodedText,

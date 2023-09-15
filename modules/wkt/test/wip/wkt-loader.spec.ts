@@ -1,8 +1,9 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 
 import test from 'tape-promise/tape';
-import parseWKT from '../../src/lib/parse-wkt';
+import {parseWKT} from '../../src/lib/parse-wkt';
 import {fetchFile} from '@loaders.gl/core';
+import fuzzer from 'fuzzer';
 
 const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/wkt/test/data/geometrycollection.wkt';
 const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/wkt/test/data/geometrycollection.geojson';

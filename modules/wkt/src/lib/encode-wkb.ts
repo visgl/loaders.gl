@@ -14,7 +14,7 @@ import type {
   GeometryCollection
 } from '@loaders.gl/schema';
 
-import BinaryWriter from './utils/binary-writer';
+import {BinaryWriter} from './utils/binary-writer';
 
 /**
  * Integer code for geometry type
@@ -49,7 +49,7 @@ interface WKBOptions {
  * @param geojson A GeoJSON Feature or Geometry
  * @returns string
  */
-export default function encodeWKB(
+export function encodeWKB(
   geometry: Geometry | Feature,
   options: WKBOptions | {wkb: WKBOptions} = {}
 ): ArrayBuffer {

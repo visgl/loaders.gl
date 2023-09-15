@@ -1,18 +1,16 @@
 // loaders.gl, MIT license
 
 /* global TextEncoder */
-import type {Writer} from '@loaders.gl/loader-utils';
+import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
-import type {CSVWriterOptions} from './lib/encoders/encode-csv';
 import {encodeTableAsCSV} from './lib/encoders/encode-csv';
 
-export type {CSVWriterOptions};
-
-const DEFAULT_WRITER_OPTIONS: Required<CSVWriterOptions> = {
-  csv: {
-    useDisplayNames: false
-  },
-  useDisplayNames: false
+export type CSVWriterOptions = WriterOptions & {
+  csv?: {
+    useDisplayNames?: boolean;
+  };
+  /** @deprecated */
+  useDisplayNames?: boolean;
 };
 
 export const CSVWriter: Writer<Table, TableBatch, CSVWriterOptions> = {
@@ -22,9 +20,15 @@ export const CSVWriter: Writer<Table, TableBatch, CSVWriterOptions> = {
   name: 'CSV',
   extensions: ['csv'],
   mimeTypes: ['text/csv'],
-  options: DEFAULT_WRITER_OPTIONS,
+  options: {
+    csv: {
+      useDisplayNames: false
+    },
+    /** @deprecated use csv.displayNames */
+    useDisplayNames: false
+  },
   text: true,
   encode: async (table, options) =>
     new TextEncoder().encode(encodeTableAsCSV(table, options)).buffer,
-  encodeText: (table, options) => encodeTableAsCSV(table, options)
+  encodeTextSync: (table, options) => encodeTableAsCSV(table, options)
 };

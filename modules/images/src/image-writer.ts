@@ -6,9 +6,9 @@ import {VERSION} from './lib/utils/version';
 import {encodeImage} from './lib/encoders/encode-image';
 
 export type ImageWriterOptions = WriterOptions & {
-  image: {
-    mimeType: 'image/png';
-    jpegQuality: null;
+  image?: {
+    mimeType?: 'image/png';
+    jpegQuality?: number | null;
   };
 };
 

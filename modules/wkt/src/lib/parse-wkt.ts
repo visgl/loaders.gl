@@ -1,4 +1,7 @@
+// loaders.gl, MIT license
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
+
+import {Geometry} from '@loaders.gl/schema';
 
 /* eslint-disable */
 // @ts-nocheck
@@ -10,10 +13,10 @@ const tuples = new RegExp('^' + numberRegexp.source + '(\\s' + numberRegexp.sour
 /**
  * Parse WKT and return GeoJSON.
  *
- * @param {string} _ A WKT geometry
- * @return {?Object} A GeoJSON geometry object
+ * @param input A WKT geometry string
+ * @return A GeoJSON geometry object
  **/
-export default function parseWKT(input) {
+export function parseWKT(input: string): Geometry {
   const parts = input.split(';');
   let _ = parts.pop();
   const srid = (parts.shift() || '').split('=').pop();
@@ -21,7 +24,7 @@ export default function parseWKT(input) {
   let i = 0;
 
   function $(re) {
-    const match = _.substring(i).match(re);
+    const match = _?.substring(i).match(re);
     if (!match) return null;
     else {
       i += match[0].length;
@@ -30,7 +33,7 @@ export default function parseWKT(input) {
   }
 
   function crs(obj) {
-    if (obj && srid.match(/\d+/)) {
+    if (obj && srid?.match(/\d+/)) {
       obj.crs = {
         type: 'name',
         properties: {
@@ -46,12 +49,12 @@ export default function parseWKT(input) {
     $(/^\s*/);
   }
 
-  function multicoords() {
+  function multicoords(): number[][] | null {
     white();
     let depth = 0;
-    const rings = [];
+    const rings: number[][] = [];
     const stack = [rings];
-    let pointer = rings;
+    let pointer: any = rings;
     let elem;
 
     while ((elem = $(/^(\()/) || $(/^(\))/) || $(/^(,)/) || $(tuples))) {
@@ -86,9 +89,9 @@ export default function parseWKT(input) {
     return rings;
   }
 
-  function coords() {
-    const list = [];
-    let item;
+  function coords(): number[][] | null {
+    const list: number[][] = [];
+    let item: any;
     let pt;
     while ((pt = $(tuples) || $(/^(,)/))) {
       if (pt === ',') {
@@ -107,7 +110,7 @@ export default function parseWKT(input) {
     return list.length ? list : null;
   }
 
-  function point() {
+  function point(): Geometry | null {
     if (!$(/^(point(\sz)?)/i)) return null;
     white();
     if (!$(/^(\()/)) return null;
@@ -121,10 +124,10 @@ export default function parseWKT(input) {
     };
   }
 
-  function multipoint() {
+  function multipoint(): Geometry | null {
     if (!$(/^(multipoint)/i)) return null;
     white();
-    const newCoordsFormat = _.substring(_.indexOf('(') + 1, _.length - 1)
+    const newCoordsFormat = _?.substring(_?.indexOf('(') + 1, _.length - 1)
       .replace(/\(/g, '')
       .replace(/\)/g, '');
     _ = 'MULTIPOINT (' + newCoordsFormat + ')';
@@ -137,7 +140,7 @@ export default function parseWKT(input) {
     };
   }
 
-  function multilinestring() {
+  function multilinestring(): Geometry | null {
     if (!$(/^(multilinestring)/i)) return null;
     white();
     const c = multicoords();
@@ -145,11 +148,12 @@ export default function parseWKT(input) {
     white();
     return {
       type: 'MultiLineString',
+      // @ts-expect-error
       coordinates: c
     };
   }
 
-  function linestring() {
+  function linestring(): Geometry | null {
     if (!$(/^(linestring(\sz)?)/i)) return null;
     white();
     if (!$(/^(\()/)) return null;
@@ -162,31 +166,33 @@ export default function parseWKT(input) {
     };
   }
 
-  function polygon() {
+  function polygon(): Geometry | null {
     if (!$(/^(polygon(\sz)?)/i)) return null;
     white();
     const c = multicoords();
     if (!c) return null;
     return {
       type: 'Polygon',
+      // @ts-expect-error
       coordinates: c
     };
   }
 
-  function multipolygon() {
+  function multipolygon(): Geometry | null {
     if (!$(/^(multipolygon)/i)) return null;
     white();
     const c = multicoords();
     if (!c) return null;
     return {
       type: 'MultiPolygon',
+      // @ts-expect-error
       coordinates: c
     };
   }
 
-  function geometrycollection() {
-    const geometries = [];
-    let geometry;
+  function geometrycollection(): Geometry | null {
+    const geometries: Geometry[] = [];
+    let geometry: Geometry | null;
 
     if (!$(/^(geometrycollection)/i)) return null;
     white();
@@ -206,7 +212,7 @@ export default function parseWKT(input) {
     };
   }
 
-  function root() {
+  function root(): Geometry | null {
     return (
       point() ||
       linestring() ||

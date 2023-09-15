@@ -1,6 +1,10 @@
 # GeoJSONWriter
 
-Streaming loader for GeoJSON encoded files.
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
+</p>
+
+Streaming writer for GeoJSON encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |

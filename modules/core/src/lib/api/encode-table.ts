@@ -48,7 +48,7 @@ export async function encodeTableAsText<WriterT extends Writer = Writer>(
     const arrayBuffer = await encodeTable(data, writer, options);
     return new TextDecoder().decode(arrayBuffer);
   }
-  throw new Error('Writer could not encode data as text');
+  throw new Error(`Writer ${writer.name} could not encode data as text`);
 }
 
 export function encodeTableInBatches<WriterT extends Writer = Writer>(

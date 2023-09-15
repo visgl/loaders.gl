@@ -7,7 +7,7 @@ import {encodeKTX2BasisTexture} from './lib/encoders/encode-ktx2-basis-texture';
 
 /** @todo should be in basis sub-object */
 export type KTX2BasisWriterOptions = WriterOptions & {
-  ['ktx2-basis-writer']: {
+  ['ktx2-basis-writer']?: {
     useSRGB?: boolean;
     qualityLevel?: number;
     encodeUASTC?: boolean;
@@ -37,6 +37,3 @@ export const KTX2BasisWriter: Writer<ImageDataType, unknown, KTX2BasisWriterOpti
 
   encode: encodeKTX2BasisTexture
 };
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckKTX2TextureWriter: Writer = KTX2BasisWriter;

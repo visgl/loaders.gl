@@ -50,6 +50,20 @@
   },
   {
     "type": "category",
+    "label": "Tutorials",
+    "items": [
+      {
+        "type": "category",
+        "label": "I3S",
+        "items": [
+          "modules/i3s/recipes/building-scene-layer",
+          "modules/i3s/recipes/attribute-driven-colorization"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "category",
     "label": "Formats",
     "items": [
       "formats/README",
@@ -57,6 +71,8 @@
       "modules/csv/formats/csv",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
+      "modules/json/formats/geojson",
+      "modules/json/formats/geojson-geometry",
       "modules/gltf/formats/glb",
       "modules/gltf/formats/gltf",
       "modules/parquet/formats/parquet",
@@ -69,6 +85,9 @@
       "modules/wms/formats/wfs",
       "modules/wms/formats/gml",
       "modules/wms/formats/lerc",
+      "modules/wkt/formats/wkt",
+      "modules/wkt/formats/wkb",
+      "modules/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
       "modules/zip/formats/zip"
     ]
@@ -135,6 +154,8 @@
       "modules/wkt/api-reference/wkb-writer",
       "modules/wkt/api-reference/wkt-loader",
       "modules/wkt/api-reference/wkt-writer",
+      "modules/wkt/api-reference/wkt-crs-loader",
+      "modules/wkt/api-reference/wkt-crs-writer",
       "modules/wms/api-reference/wms-capabilities-loader",
       "modules/xml/api-reference/xml-loader",
       "modules/zip/api-reference/zip-loader",
@@ -383,20 +404,6 @@
       "modules/tile-converter/cli-reference/i3s-server",
       "modules/tile-converter/cli-reference/slpk-extractor",
       "modules/tile-converter/cli-reference/supported-features"
-    ]
-  },
-  {
-    "type": "category",
-    "label": "Recipes",
-    "items": [
-      {
-        "type": "category",
-        "label": "I3S",
-        "items": [
-          "modules/i3s/recipes/building-scene-layer",
-          "modules/i3s/recipes/attribute-driven-colorization"
-        ]
-      }
     ]
   }
 ]
