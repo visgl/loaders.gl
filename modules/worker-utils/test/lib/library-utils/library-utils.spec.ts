@@ -1,9 +1,6 @@
 import test from 'tape-promise/tape';
 import {getLibraryUrl, isBrowser} from '@loaders.gl/worker-utils';
-import {VERSION as __VERSION__} from '../../../src/lib/env-utils/version';
-
-const LATEST = 'beta';
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : LATEST;
+import {VERSION} from '../../../src/lib/env-utils/version';
 
 const DRACO_DECODER_URL =
   'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder.wasm';
