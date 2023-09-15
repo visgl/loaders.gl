@@ -1,18 +1,20 @@
 {
   "private": true,
+  "name": "loadersgl-gltf-with-deckgl-example",
+  "version": "1.0.0",
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
     "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.9.0",
-    "@deck.gl/mesh-layers": "^8.9.0",
-    "@deck.gl/react": "^8.9.0",
-    "@loaders.gl/core": "^4.0.0-alpha.8",
-    "@loaders.gl/gltf": "^4.0.0-alpha.8",
-    "@luma.gl/constants": "^8.5.4",
-    "@luma.gl/experimental": "^8.5.4",
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/mesh-layers": "^8.9.28",
+    "@deck.gl/react": "^8.9.28",
+    "@loaders.gl/core": "4.0.0-alpha.23",
+    "@loaders.gl/gltf": "4.0.0-alpha.23",
+    "@luma.gl/constants": "^8.5.21",
+    "@luma.gl/experimental": "^8.5.21",
     "maplibre-gl": "^2.4.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",

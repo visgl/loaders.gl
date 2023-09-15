@@ -17,13 +17,13 @@
   "dependencies": {
     "@algolia/autocomplete-js": "^1.8.3",
     "@arcgis/core": "^4.25.0",
-    "@deck.gl/arcgis": "^8.9.7",
-    "@deck.gl/core": "^8.9.7",
-    "@deck.gl/extensions": "^8.9.7",
-    "@deck.gl/geo-layers": "^8.9.7",
-    "@deck.gl/layers": "^8.9.7",
-    "@deck.gl/mesh-layers": "^8.9.7",
-    "@deck.gl/react": "^8.9.7",
+    "@deck.gl/arcgis": "^8.9.28",
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/extensions": "^8.9.28",
+    "@deck.gl/geo-layers": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@deck.gl/mesh-layers": "^8.9.28",
+    "@deck.gl/react": "^8.9.28",
     "@esri/react-arcgis": "^5.2.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
@@ -66,6 +66,10 @@
     "babel-plugin-styled-components": "^2.0.0",
     "prism-react-renderer": "^1.2.1",
     "ts-node": "~10.9.1"
+  },
+  "browser": {
+    "fs": false,
+    "path": false
   },
   "browserslist": [
     ">0.2% and supports async-functions",

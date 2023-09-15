@@ -26,6 +26,11 @@ export const FlatGeobufLoader: Loader<any, any, FlatGeobufLoaderOptions> = {
   mimeTypes: ['application/octet-stream'],
   category: 'geometry',
   options: {
-    flatgeobuf: {}
+    flatgeobuf: {
+      shape: 'geojson-table'
+    },
+    gis: {
+      reproject: false
+    }
   }
 };

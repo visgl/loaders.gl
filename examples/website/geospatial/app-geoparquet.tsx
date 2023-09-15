@@ -1,3 +1,5 @@
+import {}
+
 import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Map} from 'react-map-gl';
@@ -7,27 +9,15 @@ import DeckGL from '@deck.gl/react';
 import {MapController} from '@deck.gl/core/typed';
 import {GeoJsonLayer} from '@deck.gl/layers/typed';
 
+import {load, Loader} from '@loaders.gl/core';
+import {ParquetLoader} from '@loaders.gl/parquet';
+// import {GeoPackageLoader} from '@loaders.gl/geopackage';
+// import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
+// registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
+const LOADERS: Loader[] = [ParquetLoader];
+
 import ControlPanel from './components/control-panel';
 import FileUploader from './components/file-uploader';
-
-import {Table, GeoJSON} from '@loaders.gl/schema';
-import {Loader, load, /* registerLoaders */} from '@loaders.gl/core';
-import {ParquetLoader} from '@loaders.gl/parquet';
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
-import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
-// registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
-const LOADERS: Loader[] = [ParquetLoader, GeoPackageLoader, FlatGeobufLoader];
-const LOADER_OPTIONS = {
-  worker: false,
-  gis: {
-    reproject: true,
-    _targetCrs: 'WGS84'
-  },
-  parquet: {
-    shape: 'geojson-table'
-  }
-}
-
 import type {Example} from './examples';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
 
@@ -46,13 +36,13 @@ type AppProps = {
 
 type AppState = {
   examples: Record<string, Record<string, Example>>,
-  // CURRENT VIEW POINT / CAMERA POSITION
+  // CURRENT VIEW POINT / CAMERA POSITIO
   viewState: Record<string, number>,
 
   // EXAMPLE STATE
   selectedExample: string,
   selectedLoader: string,
-  loadedTable: Table | null
+  uploadedFile: null
 }
 
 /**
@@ -83,45 +73,36 @@ export default class App extends PureComponent<AppProps, AppState> {
       viewState: INITIAL_VIEW_STATE,
 
       // EXAMPLE STATE
-      selectedExample: INITIAL_EXAMPLE_NAME,
-      selectedLoader: INITIAL_LOADER_NAME,
-      loadedTable: null
+      selectedExample,
+      selectedLoader,
+      uploadedFile: null
     };
 
     this._onExampleChange = this._onExampleChange.bind(this);
     this._onFileRemoved = this._onFileRemoved.bind(this);
     this._onFileSelected = this._onFileSelected.bind(this);
-    // this._onFileUploaded = this._onFileUploaded.bind(this);
     this._onViewStateChange = this._onViewStateChange.bind(this);
+    // this._onFileUploaded = this._onFileUploaded.bind(this);
   }
 
   _onViewStateChange({viewState}) {
     this.setState({viewState});
   }
 
-  async _onExampleChange(args: {selectedLoader: string, selectedExample: string, example: Example}) {
-    const {selectedLoader, selectedExample, example} = args
-
-    const url = example.data;
-    console.log('Loading', url);
-    const data = await load(url, LOADERS, LOADER_OPTIONS) as Table;
-    console.log('Loaded data', data);
-
+  _onExampleChange({selectedLoader, selectedExample, example}) {
     const {viewState} = example;
-    this.setState({selectedLoader, selectedExample, viewState, loadedTable: data});
+    this.setState({selectedLoader, selectedExample, viewState});
   }
 
   _onFileRemoved() {
-    this.setState({loadedTable: null});
+    this.setState({uploadedFile: null});
   }
 
   async _onFileSelected(uploadedFile: File) {
-    console.log('Loading', uploadedFile.name);
-    const data = await load(uploadedFile, LOADERS, LOADER_OPTIONS) as Table;
-    console.log('Loaded data', data);
+    const data = await load(uploadedFile, LOADERS[0]);
     this.setState({
       selectedExample: uploadedFile.name,
-      loadedTable: data
+      uploadedFile: data
     });
   }
 
@@ -133,11 +114,11 @@ export default class App extends PureComponent<AppProps, AppState> {
   // }
 
   _renderControlPanel() {
-    const {examples, selectedExample, viewState, selectedLoader} = this.state;
+    const {selectedExample, viewState, selectedLoader} = this.state;
 
     return (
       <ControlPanel
-        examples={examples}
+        examples={EXAMPLES}
         selectedExample={selectedExample}
         selectedLoader={selectedLoader}
         onExampleChange={this._onExampleChange}
@@ -146,40 +127,53 @@ export default class App extends PureComponent<AppProps, AppState> {
           long/lat: {viewState.longitude.toFixed(5)},{viewState.latitude.toFixed(5)}, zoom:
           {viewState.zoom.toFixed(2)}
         </div>
-        {<FileUploader onFileSelected={this._onFileSelected} onFileRemoved={this._onFileRemoved} />}
+        {<FileUploader onFileUpSelected={this._onFileSelected} onFileRemoved={this._onFileRemoved} />}
       </ControlPanel>
     );
   }
 
   _renderLayer() {
-    const {examples, selectedExample, selectedLoader, loadedTable} = this.state;
+    const {selectedExample, selectedLoader, uploadedFile} = this.state;
 
-    const geojson = loadedTable as GeoJSON;
-    console.warn('Rendering layer with', geojson);
+    let layerData;
+    if (uploadedFile) {
+      layerData = uploadedFile;
+    } else if (EXAMPLES[selectedLoader][selectedExample]) {
+      layerData = EXAMPLES[selectedLoader][selectedExample].data;
+    } else {
+      layerData = EXAMPLES[INITIAL_LOADER_NAME][INITIAL_EXAMPLE_NAME].data;
+    }
+
     return [
       new GeoJsonLayer({
         id: `geojson-${selectedExample}(${selectedLoader})`,
-        data: geojson,
-        opacity: 1.0,
+        data: layerData,
+        loaders: LOADERS,
+        loadOptions: {
+          worker: false,
+          gis: {
+            format: 'geojson',
+            reproject: true,
+            _targetCrs: 'WGS84'
+          }
+        },
+        dataTransform: (data, previousData) => {
+          if (typeof data === 'object' && !Array.isArray(data) && !data.type) {
+            return Object.values(data).flat();
+          }
+          return data;
+        },
+        opacity: 0.8,
         stroked: false,
         filled: true,
         extruded: true,
         wireframe: true,
-        // getElevation: (f) => Math.sqrt(f.properties.valuePerSqm) * 10,
-        getFillColor: [255, 0, 0],
-        getLineColor: [0, 0, 255],
+        getElevation: (f) => Math.sqrt(f.properties.valuePerSqm) * 10,
+        getFillColor: [255, 255, 255],
+        getLineColor: [0, 0, 0],
         getLineWidth: 3,
-        pointRadiusScale: 200,
-        getPointRadius: 100,
-        getPointRadiusUnits: 'pixels',
         lineWidthUnits: 'pixels',
-        pickable: true,
-        // dataTransform: (data, previousData) => {
-        //   if (typeof data === 'object' && !Array.isArray(data) && !data.type) {
-        //     return Object.values(data).flat();
-        //   }
-        // return data;
-        // }
+        pickable: true
       })
     ];
   }

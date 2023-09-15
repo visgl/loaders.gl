@@ -1,4 +1,6 @@
 {
+  "name": "loadersgl-gallery",
+  "version": "1.0.0",
   "description": "Gallery of simple HTML page examples for loaders.gl",
   "license": "MIT",
   "private": true,

@@ -1,6 +1,6 @@
 {
-  "name": "loaders.gl-example-pointcloud-loaders",
   "private": true,
+  "name": "loaders.gl-example-pointcloud-loaders",
   "version": "3.3.0",
   "license": "MIT",
   "scripts": {
@@ -9,15 +9,15 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/react": "^8.9.7",
-    "@deck.gl/core": "^8.9.7",
-    "@deck.gl/layers": "^8.9.7",
-    "@loaders.gl/core": "^4.0.0-alpha.8",
-    "@loaders.gl/draco": "^4.0.0-alpha.8",
-    "@loaders.gl/las": "^4.0.0-alpha.8",
-    "@loaders.gl/obj": "^4.0.0-alpha.8",
-    "@loaders.gl/pcd": "^4.0.0-alpha.8",
-    "@loaders.gl/ply": "^4.0.0-alpha.8",
+    "@deck.gl/react": "^8.9.28",
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@loaders.gl/core": "4.0.0-alpha.23",
+    "@loaders.gl/draco": "4.0.0-alpha.23",
+    "@loaders.gl/las": "4.0.0-alpha.23",
+    "@loaders.gl/obj": "4.0.0-alpha.23",
+    "@loaders.gl/pcd": "4.0.0-alpha.23",
+    "@loaders.gl/ply": "4.0.0-alpha.23",
     "prop-types": "^15.7.2",
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
@@ -25,6 +25,6 @@
   },
   "devDependencies": {
     "typescript": "^5.0.4",
-    "vite": "^2.7.1"
+    "vite": "^4.4.9"
   }
 }
