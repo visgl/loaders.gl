@@ -20,7 +20,6 @@
     "KML"
   ],
   "workspaces": [
-    "examples/**/*",
     "modules/*"
   ],
   "scripts": {
