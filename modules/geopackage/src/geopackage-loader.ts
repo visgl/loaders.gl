@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {Tables, ObjectRowTable} from '@loaders.gl/schema';
+import {Tables, GeoJSONTable} from '@loaders.gl/schema';
 import {parseGeoPackage, DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -9,9 +9,14 @@ import {parseGeoPackage, DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 const VERSION = 'latest';
 
 export type GeoPackageLoaderOptions = LoaderOptions & {
+  /** Options for the geopackage loader */
   geopackage?: {
+    /** Shape of returned data */
+    shape?: 'geojson-table' | 'tables';
+    /** Name of table to load (defaults to first table), unless shape==='tables' */
+    table?: string;
     /** Use null in Node */
-    sqlJsCDN: string | null;
+    sqlJsCDN?: string | null;
   };
   gis?: {
     reproject?: boolean;
@@ -20,7 +25,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
 };
 
 export const GeoPackageLoader: LoaderWithParser<
-  Tables<ObjectRowTable>,
+  GeoJSONTable | Tables<GeoJSONTable>,
   never,
   GeoPackageLoaderOptions
 > = {
@@ -34,7 +39,8 @@ export const GeoPackageLoader: LoaderWithParser<
   parse: parseGeoPackage,
   options: {
     geopackage: {
-      sqlJsCDN: DEFAULT_SQLJS_CDN
+      sqlJsCDN: DEFAULT_SQLJS_CDN,
+      shape: 'geojson-table'
     },
     gis: {}
   }

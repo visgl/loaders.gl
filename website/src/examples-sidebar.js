@@ -21,6 +21,7 @@
       items: [
         'textures',
         // 'gltf',
+        'geoparquet',
         'geospatial',
         'wms',
         'pointcloud'

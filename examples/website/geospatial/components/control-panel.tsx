@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {INITIAL_EXAMPLE_NAME, INITIAL_LOADER_NAME} from '../examples';
+import {Example, INITIAL_EXAMPLE_NAME, INITIAL_LOADER_NAME} from '../examples';
 
 const Container = styled.div`
   display: flex;
@@ -25,22 +25,29 @@ const DropDown = styled.select`
   margin-bottom: 6px;
 `;
 
-const propTypes = {
-  examples: PropTypes.object,
-  selectedExample: PropTypes.string,
-  selectedLoader: PropTypes.string,
-  onExampleChange: PropTypes.func
-};
+type PropTypes = React.PropsWithChildren<{
+  examples: Record<string, Record<string, Example>>;
+  droppedFile: File | null;
+  selectedExample: Example | null;
+  selectedLoader: string | null;
+  onExampleChange: (args: {
+    selectedLoader: string;
+    selectedExample: string;
+    example: Example;
+  }) => void;
+}>;
 
-const defaultProps = {
-  examples: {},
-  droppedFile: null,
-  selectedExample: null,
-  selectedLoader: null,
-  onChange: () => {}
-};
+export default class ControlPanel extends PureComponent<PropTypes> {
+  static defaultProps: PropTypes = {
+    examples: {},
+    droppedFile: null,
+    selectedExample: null,
+    selectedLoader: null,
+    onExampleChange: () => {}
+  };
 
-export default class ControlPanel extends PureComponent {
+  _autoSelected: boolean;
+
   constructor(props) {
     super(props);
     this._autoSelected = false;
@@ -77,7 +84,7 @@ export default class ControlPanel extends PureComponent {
       <DropDown
         value={selectedValue}
         onChange={(evt) => {
-          const loaderExample = evt.target.value;
+          const loaderExample = evt.target.value as string;
           const value = loaderExample.split('.');
           const loaderName = value[0];
           const exampleName = value[1];
@@ -129,6 +136,3 @@ export default class ControlPanel extends PureComponent {
     );
   }
 }
-
-ControlPanel.propTypes = propTypes;
-ControlPanel.defaultProps = defaultProps;

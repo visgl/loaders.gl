@@ -1,6 +1,6 @@
 // fs wrapper (promisified fs + avoids bundling fs in browsers)
-import fs from 'fs';
-import fsPromises from 'fs/promises';
+import * as fs from 'fs';
+import * as fsPromises from 'fs/promises';
 import {toArrayBuffer} from './buffer';
 import {promisify2, promisify3} from './promisify';
 

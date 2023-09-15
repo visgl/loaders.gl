@@ -46,6 +46,7 @@ const config = {
       {
         debug: true,
         resolve: {
+          fallback: {path: false, fs: false},
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
             examples: resolve('../examples'),
@@ -116,7 +117,7 @@ const config = {
           // new webpack.EnvironmentPlugin(['MapboxAccessToken', 'GoogleMapsAPIKey', 'GoogleMapsMapId']),
           // These modules break server side bundling
           new webpack.IgnorePlugin({
-            resourceRegExp: /asciify-image/
+            resourceRegExp: /sql/
           })
         ],
         module: {
@@ -191,7 +192,7 @@ const config = {
           {
             to: '/showcase',
             position: 'left',
-            label: 'Showcase',
+            label: 'Showcase'
           },
           {
             to: 'https://medium.com/vis-gl',

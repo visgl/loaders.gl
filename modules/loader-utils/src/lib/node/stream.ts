@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import stream from 'stream';
+import * as stream from 'stream';
 
 export type {Writable} from 'stream';
 

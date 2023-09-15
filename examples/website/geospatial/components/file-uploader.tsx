@@ -1,7 +1,6 @@
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import ParsedFile from './parse-file';
+import ParsedFile from './parsed-file';
 
 const Container = styled.div`
   display: flex;
@@ -24,12 +23,16 @@ const FileContainer = styled.div`
   width: 270px;
 `;
 
-const propTypes = {
-  onFileRemoved: PropTypes.func,
-  onFileUploaded: PropTypes.func
+type FileUploaderProps = {
+  onFileRemoved: Function,
+  onFileSelected: Function
 };
 
-export default class FileUploader extends PureComponent {
+type FileUploaderState = {
+  uploadedFile: File | null;
+}
+
+export default class FileUploader extends PureComponent<FileUploaderProps, FileUploaderState> {
   constructor(props) {
     super(props);
 
@@ -54,7 +57,7 @@ export default class FileUploader extends PureComponent {
   }
 
   render() {
-    const {onFileUploaded} = this.props;
+    const {onFileSelected} = this.props;
     const {uploadedFile} = this.state;
 
     return (
@@ -67,12 +70,10 @@ export default class FileUploader extends PureComponent {
           </Container>
         )}
         <FileContainer>
-          {uploadedFile && <ParsedFile file={uploadedFile} onFileUploaded={onFileUploaded} />}
+          {uploadedFile && <ParsedFile file={uploadedFile} onFileSelected={onFileSelected} />}
           {uploadedFile && <button onClick={this.handleCleanFile}>Clean</button>}
         </FileContainer>
       </div>
     );
   }
 }
-
-FileUploader.propTypes = propTypes;

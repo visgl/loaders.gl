@@ -8,6 +8,7 @@ import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {isResponse} from '../../javascript-utils/is-type';
 import {normalizeOptions} from '../loader-utils/option-utils';
+import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
@@ -109,6 +110,8 @@ async function parseWithLoader(
   context: LoaderContext
 ): Promise<unknown> {
   validateWorkerVersion(loader);
+
+  options = mergeLoaderOptions(loader.options, options);
 
   if (isResponse(data)) {
     // Serialize to support passing the response to web worker

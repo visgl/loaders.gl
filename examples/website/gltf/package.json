@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "gltf-loaders-example",
   "description": "glTF loader using luma.gl for rendering.",
   "contributors": [
@@ -6,22 +7,21 @@
   ],
   "version": "0.0.0",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/core": "^4.0.0-alpha.8",
-    "@loaders.gl/gltf": "^4.0.0-alpha.8",
-    "@luma.gl/constants": "^8.5.4",
-    "@luma.gl/core": "^8.5.4",
-    "@luma.gl/experimental": "^8.5.4",
+    "@loaders.gl/core": "4.0.0-alpha.23",
+    "@loaders.gl/gltf": "4.0.0-alpha.23",
+    "@luma.gl/constants": "^8.5.21",
+    "@luma.gl/core": "^8.5.21",
+    "@luma.gl/experimental": "^8.5.21",
     "@math.gl/core": "^3.5.1"
   },
   "devDependencies": {
     "typescript": "^5.0.4",
-    "vite": "^2.7.1"
+    "vite": "^4.4.9"
   }
 }
