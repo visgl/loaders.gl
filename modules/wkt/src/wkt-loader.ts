@@ -4,8 +4,15 @@ import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-u
 import {VERSION} from './lib/utils/version';
 import {parseWKT} from './lib/parse-wkt';
 import {Geometry} from '@loaders.gl/schema';
+import {isWKT, WKT_MAGIC_STRINGS} from './lib/parse-wkt';
 
-export type WKTLoaderOptions = LoaderOptions;
+export type WKTLoaderOptions = LoaderOptions & {
+  /** Options for the WKT parser */
+  wkt?: {
+    /** Whether to add any CRS, if found, as undocumented CRS property on the return geometry */
+    crs?: boolean;
+  };
+};
 
 /**
  * Well-Known text loader
@@ -20,8 +27,12 @@ export const WKTWorkerLoader: Loader<Geometry, never, WKTLoaderOptions> = {
   mimeTypes: ['text/plain'],
   category: 'geometry',
   text: true,
+  tests: WKT_MAGIC_STRINGS,
+  testText: isWKT,
   options: {
-    wkt: {}
+    wkt: {
+      crs: true
+    }
   }
 };
 
@@ -30,6 +41,6 @@ export const WKTWorkerLoader: Loader<Geometry, never, WKTLoaderOptions> = {
  */
 export const WKTLoader: LoaderWithParser<Geometry, never, WKTLoaderOptions> = {
   ...WKTWorkerLoader,
-  parse: async (arrayBuffer) => parseWKT(new TextDecoder().decode(arrayBuffer)),
+  parse: async (arrayBuffer, options) => parseWKT(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: parseWKT
 };
