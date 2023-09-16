@@ -41,6 +41,10 @@ test('parseWKB Z', async (t) => {
     if (testCase.wkbXdr && testCase.binary) {
       t.deepEqual(parseWKB(testCase.wkbXdr), testCase.binary);
     }
+
+    // if (testCase.wkbXdr && testCase.binary && testCase.geoJSON) {
+    //   t.deepEqual(parseSync(testCase.wkbXdr, WKBLoader, {wkb: {shape: 'geometry'}}), testCase.geoJSON);
+    // }
   }
 
   t.end();

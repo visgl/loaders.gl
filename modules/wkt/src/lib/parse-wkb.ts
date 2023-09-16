@@ -3,8 +3,11 @@ import type {
   BinaryGeometry,
   BinaryPointGeometry,
   BinaryLineGeometry,
-  BinaryPolygonGeometry
+  BinaryPolygonGeometry,
+  Geometry
 } from '@loaders.gl/schema';
+import {binaryToGeometry} from '@loaders.gl/gis';
+import type {WKBLoaderOptions} from '../wkb-loader';
 
 const NUM_DIMENSIONS = {
   0: 2, // 2D
@@ -13,7 +16,23 @@ const NUM_DIMENSIONS = {
   3: 4 // 4D (ZM)
 };
 
-export default function parseWKB(arrayBuffer: ArrayBuffer): BinaryGeometry {
+export function parseWKB(
+  arrayBuffer: ArrayBuffer,
+  options?: WKBLoaderOptions
+): BinaryGeometry | Geometry {
+  const binaryGeometry = parseWKBToBinary(arrayBuffer, options);
+  const shape = options?.wkb?.shape || 'binary-geometry';
+  switch (shape) {
+    case 'binary-geometry':
+      return binaryGeometry;
+    case 'geometry':
+      return binaryToGeometry(binaryGeometry);
+    default:
+      throw new Error(shape);
+  }
+}
+
+function parseWKBToBinary(arrayBuffer: ArrayBuffer, options?: WKBLoaderOptions): BinaryGeometry {
   const view = new DataView(arrayBuffer);
   let offset = 0;
 
