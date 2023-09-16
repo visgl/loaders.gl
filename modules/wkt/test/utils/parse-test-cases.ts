@@ -36,6 +36,9 @@ interface ParsedTestCase {
   /** Geometry in WKT */
   wkt: string;
 
+  /** Geometry in WKB, stored in hex */
+  wkbHex: string;
+
   /** Geometry in WKB */
   wkb: ArrayBuffer;
 
@@ -44,6 +47,9 @@ interface ParsedTestCase {
 
   /** Geometry in WKB XDR (big endian) */
   wkbXdr: ArrayBuffer;
+
+  /** Geometry in WKB, stored in hex */
+  wkbHexXdr: string;
 
   /** Geometry in EWKB XDR (big endian) */
   ewkbXdr: ArrayBuffer;
@@ -106,6 +112,8 @@ export function parseTestCases(
     const parsedTestCase: ParsedTestCase = {
       wkt,
       geoJSON,
+      wkbHex: wkb,
+      wkbHexXdr: wkbXdr,
       wkb: hexStringToArrayBuffer(wkb),
       ewkb: hexStringToArrayBuffer(ewkb),
       twkb: hexStringToArrayBuffer(twkb),

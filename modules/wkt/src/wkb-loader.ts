@@ -3,14 +3,18 @@
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseWKB} from './lib/parse-wkb';
-import {BinaryGeometry} from '@loaders.gl/schema';
+import {BinaryGeometry, Geometry} from '@loaders.gl/schema';
 
-export type WKBLoaderOptions = LoaderOptions;
+export type WKBLoaderOptions = LoaderOptions & {
+  wkb?: {
+    shape: 'binary-geometry' | 'geometry';
+  };
+};
 
 /**
  * Worker loader for WKB (Well-Known Binary)
  */
-export const WKBWorkerLoader: Loader<BinaryGeometry, never, WKBLoaderOptions> = {
+export const WKBWorkerLoader: Loader<BinaryGeometry | Geometry, never, WKBLoaderOptions> = {
   name: 'WKB',
   id: 'wkb',
   module: 'wkt',
@@ -20,14 +24,16 @@ export const WKBWorkerLoader: Loader<BinaryGeometry, never, WKBLoaderOptions> = 
   extensions: ['wkb'],
   mimeTypes: [],
   options: {
-    wkb: {}
+    wkb: {
+      shape: 'binary-geometry'
+    }
   }
 };
 
 /**
  * Loader for WKB (Well-Known Binary)
  */
-export const WKBLoader: LoaderWithParser<BinaryGeometry, never, WKBLoaderOptions> = {
+export const WKBLoader: LoaderWithParser<BinaryGeometry | Geometry, never, WKBLoaderOptions> = {
   ...WKBWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer) => parseWKB(arrayBuffer),
   parseSync: parseWKB
