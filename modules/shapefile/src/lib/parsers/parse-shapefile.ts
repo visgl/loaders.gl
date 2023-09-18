@@ -93,11 +93,11 @@ export async function* parseShapefileInBatches(
     if (!propertyIterator) {
       geometries = item;
     } else {
-      ({geometries, properties} = item;
+      ({geometries, properties} = item);
     }
 
-    const geojsonGeometries = parseGeometries(row.geometries);
-    let features = joinProperties(geojsonGeometries, row.properties);
+    const geojsonGeometries = parseGeometries(geometries);
+    let features = joinProperties(geojsonGeometries, properties);
     if (reproject) {
       // @ts-ignore
       features = reprojectFeatures(features, prj, _targetCrs);

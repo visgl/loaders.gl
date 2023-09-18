@@ -40,7 +40,9 @@ function parseGeometry(geometry: string, columnMetadata: GeoColumnMetadata): Geo
       return WKTLoader.parseTextSync?.(geometry) || null;
     case 'wkb':
     default:
-      const geojson = HexWKBLoader.parseTextSync?.(geometry, {wkb: {shape: 'geometry'}}) as unknown as Geometry;
+      const geojson = HexWKBLoader.parseTextSync?.(geometry, {
+        wkb: {shape: 'geometry'}
+      }) as unknown as Geometry;
       return geojson; // binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
   }
 }

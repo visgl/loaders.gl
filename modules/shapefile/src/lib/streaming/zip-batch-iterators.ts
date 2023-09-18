@@ -31,7 +31,7 @@ export async function* zipBatchIterators(
         // @ts-expect-error
         batch1Data.push(...value);
       }
-    } 
+    }
     if (batch2Data.length === 0 && !iterator2Done) {
       const {value, done} = await iterator2.next();
       if (done) {
