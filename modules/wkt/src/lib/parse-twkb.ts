@@ -147,7 +147,7 @@ function parseGeometry(
     case WKBGeometryType.GeometryCollection:
       return parseGeometryCollection(binaryReader, context);
     default:
-      throw new Error(`GeometryType ${  geometryType  } not supported`);
+      throw new Error(`GeometryType ${geometryType} not supported`);
   }
 }
 

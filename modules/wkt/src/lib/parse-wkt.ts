@@ -107,7 +107,7 @@ function addCRS(obj: Geometry | null, srid?: string): Geometry | null {
 // GEOMETRIES
 
 function parsePoint(state: ParseWKTState): Geometry | null {
-  if (!$(/^(parsePoint(\sz)?)/i, state)) {
+  if (!$(/^(POINT(\sz)?)/i, state)) {
     return null;
   }
   white(state);
@@ -129,7 +129,7 @@ function parsePoint(state: ParseWKTState): Geometry | null {
 }
 
 function parseMultiPoint(state: ParseWKTState): Geometry | null {
-  if (!$(/^(parseMultiPoint)/i, state)) {
+  if (!$(/^(MULTIPOINT)/i, state)) {
     return null;
   }
   white(state);
@@ -148,23 +148,8 @@ function parseMultiPoint(state: ParseWKTState): Geometry | null {
   };
 }
 
-function parseMultiLineString(state: ParseWKTState): Geometry | null {
-  if (!$(/^(parseMultiLineString)/i, state)) return null;
-  white(state);
-  const c = multicoords(state);
-  if (!c) {
-    return null;
-  }
-  white(state);
-  return {
-    type: 'MultiLineString',
-    // @ts-expect-error
-    coordinates: c
-  };
-}
-
 function parseLineString(state: ParseWKTState): Geometry | null {
-  if (!$(/^(parseLineString(\sz)?)/i, state)) {
+  if (!$(/^(LINESTRING(\sz)?)/i, state)) {
     return null;
   }
   white(state);
@@ -184,8 +169,23 @@ function parseLineString(state: ParseWKTState): Geometry | null {
   };
 }
 
+function parseMultiLineString(state: ParseWKTState): Geometry | null {
+  if (!$(/^(MULTILINESTRING)/i, state)) return null;
+  white(state);
+  const c = multicoords(state);
+  if (!c) {
+    return null;
+  }
+  white(state);
+  return {
+    type: 'MultiLineString',
+    // @ts-expect-error
+    coordinates: c
+  };
+}
+
 function parsePolygon(state: ParseWKTState): Geometry | null {
-  if (!$(/^(parsePolygon(\sz)?)/i, state)) {
+  if (!$(/^(POLYGON(\sz)?)/i, state)) {
     return null;
   }
   white(state);
@@ -201,7 +201,7 @@ function parsePolygon(state: ParseWKTState): Geometry | null {
 }
 
 function parseMultiPolygon(state: ParseWKTState): Geometry | null {
-  if (!$(/^(parseMultiPolygon)/i, state)) {
+  if (!$(/^(MULTIPOLYGON)/i, state)) {
     return null;
   }
   white(state);
@@ -220,7 +220,7 @@ function parseGeometryCollection(state: ParseWKTState): Geometry | null {
   const geometries: Geometry[] = [];
   let geometry: Geometry | null;
 
-  if (!$(/^(parseGeometryCollection)/i, state)) {
+  if (!$(/^(GEOMETRYCOLLECTION)/i, state)) {
     return null;
   }
   white(state);
