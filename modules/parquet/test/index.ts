@@ -1,7 +1,5 @@
 import './init';
 
-import './buffer-polyfill';
-
 // parquetjs unit test suite
 import './parquetjs/codec-plain.spec';
 import './parquetjs/codec-rle.spec';

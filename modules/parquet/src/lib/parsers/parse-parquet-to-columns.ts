@@ -1,23 +1,25 @@
 // loaders.gl, MIT license
 
-// import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
 import {makeReadableFile} from '@loaders.gl/loader-utils';
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {ParquetRowGroup} from '../../parquetjs/schema/declare';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
-import {convertParquetSchema} from '../arrow/convert-schema-from-parquet';
 import {materializeColumns} from '../../parquetjs/schema/shred';
-// import {convertParquetRowGroupToColumns} from '../arrow/convert-row-group-to-columns';
-import {unpackGeoMetadata} from '../geo/decode-geo-metadata';
+import {getSchemaFromParquetReader} from './get-parquet-schema';
+import {installBufferPolyfill} from '../../buffer-polyfill';
 
 export async function parseParquetInColumns(
   arrayBuffer: ArrayBuffer,
   options?: ParquetLoaderOptions
 ): Promise<ColumnarTable> {
+  installBufferPolyfill();
   const blob = new Blob([arrayBuffer]);
-  for await (const batch of parseParquetFileInColumnarBatches(blob, options)) {
+  const file = makeReadableFile(blob);
+  const reader = new ParquetReader(file);
+
+  for await (const batch of parseParquetFileInColumnarBatches(reader, options)) {
     return {
       shape: 'columnar-table',
       schema: batch.schema,
@@ -28,24 +30,24 @@ export async function parseParquetInColumns(
 }
 
 export async function* parseParquetFileInColumnarBatches(
-  blob: Blob,
+  reader: ParquetReader,
   options?: ParquetLoaderOptions
 ): AsyncIterable<ColumnarTableBatch> {
-  const file = makeReadableFile(blob);
-  const reader = new ParquetReader(file);
+  // Extract schema and geo metadata
+  const schema = await getSchemaFromParquetReader(reader);
+
   const parquetSchema = await reader.getSchema();
-  const parquetMetadata = await reader.getFileMetadata();
-  const schema = convertParquetSchema(parquetSchema, parquetMetadata);
-  unpackGeoMetadata(schema);
+
+  // Iterate over row batches
   const rowGroups = reader.rowGroupIterator(options?.parquet);
   for await (const rowGroup of rowGroups) {
-    yield convertRowGroupToTableBatch(parquetSchema, rowGroup, schema);
+    yield convertRowGroupToTableBatch(rowGroup, parquetSchema, schema);
   }
 }
 
 function convertRowGroupToTableBatch(
-  parquetSchema: ParquetSchema,
   rowGroup: ParquetRowGroup,
+  parquetSchema: ParquetSchema,
   schema: Schema
 ): ColumnarTableBatch {
   // const data = convertParquetRowGroupToColumns(schema, rowGroup);

@@ -64,13 +64,12 @@
     "Note: newer prettier breaks on typescript import type"
   ],
   "resolutions": {
-    "@luma.gl/core": "8.5.20",
     "tape": "4.11.0",
     "prettier": "2.3.1",
     "typescript": "^5.0.4"
   },
   "volta": {
-    "node": "16.19.1",
+    "node": "16.20.2",
     "yarn": "1.22.19"
   }
 }
