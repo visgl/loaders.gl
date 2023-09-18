@@ -6,6 +6,20 @@ const EWKB_FLAG_SRID = 0x20000000;
 
 const MAX_SRID = 10000; // TBD: Assume no more than 10K SRIDs are defined
 
+/**
+ * Integer code for geometry types in WKB and related formats
+ * Reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
+ */
+export enum WKBGeometryType {
+  Point = 1,
+  LineString = 2,
+  Polygon = 3,
+  MultiPoint = 4,
+  MultiLineString = 5,
+  MultiPolygon = 6,
+  GeometryCollection = 7
+}
+
 /** Parsed WKB header */
 export type WKBHeader = {
   /** WKB variant */

@@ -1,7 +1,7 @@
 
 # Shapefile
 
-- *[`@loaders.gl/shapefile`](/docs/modules/shapefile/formats/shapefile)*
+- *[`@loaders.gl/shapefile`](/docs/modules/shapefile)*
 - *https://www.clicketyclick.dk/databases/xbase/format/data_types.html*
 - *http://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm*
 - *http://webhelp.esri.com/arcgisdesktop/9.3/index.cfm?TopicName=Geoprocessing_considerations_for_shapefile_output*

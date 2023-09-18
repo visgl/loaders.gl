@@ -56,36 +56,205 @@ export function parseWKT(input: string, options?: ParseWKTOptions): Geometry {
   return parseWKTToGeometry(input, options)!;
 }
 
-type ParseWKTContext = {
+/** State of parser, passed around between parser functions */
+type ParseWKTState = {
   parts: string[];
   _: string | undefined;
   i: number;
 };
 
-function $(regexp: RegExp, context: ParseWKTContext) {
-  const match = context._?.substring(context.i).match(regexp);
-  if (!match) return null;
-  else {
-    context.i += match[0].length;
-    return match[0];
+/** Parse into GeoJSON geometry */
+function parseWKTToGeometry(input: string, options?: ParseWKTOptions): Geometry | null {
+  const parts = input.split(';');
+  let _ = parts.pop();
+  const srid = (parts.shift() || '').split('=').pop();
+
+  const state: ParseWKTState = {parts, _, i: 0};
+
+  const geometry = parseGeometry(state);
+
+  return options?.wkt?.crs ? addCRS(geometry, srid) : geometry;
+}
+
+function parseGeometry(state: ParseWKTState): Geometry | null {
+  return (
+    parsePoint(state) ||
+    parseLineString(state) ||
+    parsePolygon(state) ||
+    parseMultiPoint(state) ||
+    parseMultiLineString(state) ||
+    parseMultiPolygon(state) ||
+    parseGeometryCollection(state)
+  );
+}
+
+/** Adds a coordinate reference system as an undocumented  */
+function addCRS(obj: Geometry | null, srid?: string): Geometry | null {
+  if (obj && srid?.match(/\d+/)) {
+    const crs = {
+      type: 'name',
+      properties: {
+        name: 'urn:ogc:def:crs:EPSG::' + srid
+      }
+    };
+    // @ts-expect-error we assign an undocumented property on the geometry
+    obj.crs = crs;
   }
+
+  return obj;
 }
 
-function white(context: ParseWKTContext) {
-  $(/^\s*/, context);
+// GEOMETRIES
+
+function parsePoint(state: ParseWKTState): Geometry | null {
+  if (!$(/^(POINT(\sz)?)/i, state)) {
+    return null;
+  }
+  white(state);
+  if (!$(/^(\()/, state)) {
+    return null;
+  }
+  const c = coords(state);
+  if (!c) {
+    return null;
+  }
+  white(state);
+  if (!$(/^(\))/, state)) {
+    return null;
+  }
+  return {
+    type: 'Point',
+    coordinates: c[0]
+  };
 }
 
-function multicoords(context: ParseWKTContext): number[][] | null {
-  white(context);
+function parseMultiPoint(state: ParseWKTState): Geometry | null {
+  if (!$(/^(MULTIPOINT)/i, state)) {
+    return null;
+  }
+  white(state);
+  const newCoordsFormat = state._?.substring(state._?.indexOf('(') + 1, state._.length - 1)
+    .replace(/\(/g, '')
+    .replace(/\)/g, '');
+  state._ = 'MULTIPOINT (' + newCoordsFormat + ')';
+  const c = multicoords(state);
+  if (!c) {
+    return null;
+  }
+  white(state);
+  return {
+    type: 'MultiPoint',
+    coordinates: c
+  };
+}
+
+function parseLineString(state: ParseWKTState): Geometry | null {
+  if (!$(/^(LINESTRING(\sz)?)/i, state)) {
+    return null;
+  }
+  white(state);
+  if (!$(/^(\()/, state)) {
+    return null;
+  }
+  const c = coords(state);
+  if (!c) {
+    return null;
+  }
+  if (!$(/^(\))/, state)) {
+    return null;
+  }
+  return {
+    type: 'LineString',
+    coordinates: c
+  };
+}
+
+function parseMultiLineString(state: ParseWKTState): Geometry | null {
+  if (!$(/^(MULTILINESTRING)/i, state)) return null;
+  white(state);
+  const c = multicoords(state);
+  if (!c) {
+    return null;
+  }
+  white(state);
+  return {
+    type: 'MultiLineString',
+    // @ts-expect-error
+    coordinates: c
+  };
+}
+
+function parsePolygon(state: ParseWKTState): Geometry | null {
+  if (!$(/^(POLYGON(\sz)?)/i, state)) {
+    return null;
+  }
+  white(state);
+  const c = multicoords(state);
+  if (!c) {
+    return null;
+  }
+  return {
+    type: 'Polygon',
+    // @ts-expect-error
+    coordinates: c
+  };
+}
+
+function parseMultiPolygon(state: ParseWKTState): Geometry | null {
+  if (!$(/^(MULTIPOLYGON)/i, state)) {
+    return null;
+  }
+  white(state);
+  const c = multicoords(state);
+  if (!c) {
+    return null;
+  }
+  return {
+    type: 'MultiPolygon',
+    // @ts-expect-error
+    coordinates: c
+  };
+}
+
+function parseGeometryCollection(state: ParseWKTState): Geometry | null {
+  const geometries: Geometry[] = [];
+  let geometry: Geometry | null;
+
+  if (!$(/^(GEOMETRYCOLLECTION)/i, state)) {
+    return null;
+  }
+  white(state);
+
+  if (!$(/^(\()/, state)) {
+    return null;
+  }
+  while ((geometry = parseGeometry(state))) {
+    geometries.push(geometry);
+    white(state);
+    $(/^(,)/, state);
+    white(state);
+  }
+  if (!$(/^(\))/, state)) {
+    return null;
+  }
+
+  return {
+    type: 'GeometryCollection',
+    geometries: geometries
+  };
+}
+
+// COORDINATES
+
+function multicoords(state: ParseWKTState): number[][] | null {
+  white(state);
   let depth = 0;
   const rings: number[][] = [];
   const stack = [rings];
   let pointer: any = rings;
   let elem;
 
-  while (
-    (elem = $(/^(\()/, context) || $(/^(\))/, context) || $(/^(,)/, context) || $(tuples, context))
-  ) {
+  while ((elem = $(/^(\()/, state) || $(/^(\))/, state) || $(/^(,)/, state) || $(tuples, state))) {
     if (elem === '(') {
       stack.push(pointer);
       pointer = [];
@@ -109,7 +278,7 @@ function multicoords(context: ParseWKTContext): number[][] | null {
     } else {
       return null;
     }
-    white(context);
+    white(state);
   }
 
   if (depth !== 0) return null;
@@ -117,11 +286,11 @@ function multicoords(context: ParseWKTContext): number[][] | null {
   return rings;
 }
 
-function coords(context: ParseWKTContext): number[][] | null {
+function coords(state: ParseWKTState): number[][] | null {
   const list: number[][] = [];
   let item: any;
   let pt;
-  while ((pt = $(tuples, context) || $(/^(,)/, context))) {
+  while ((pt = $(tuples, state) || $(/^(,)/, state))) {
     if (pt === ',') {
       list.push(item);
       item = [];
@@ -129,7 +298,7 @@ function coords(context: ParseWKTContext): number[][] | null {
       if (!item) item = [];
       Array.prototype.push.apply(item, pt.split(/\s/g).map(parseFloat));
     }
-    white(context);
+    white(state);
   }
 
   if (item) list.push(item);
@@ -137,181 +306,18 @@ function coords(context: ParseWKTContext): number[][] | null {
 
   return list.length ? list : null;
 }
-/** Parse into GeoJSON geometry */
-function parseWKTToGeometry(input: string, options?: ParseWKTOptions): Geometry | null {
-  const parts = input.split(';');
-  let _ = parts.pop();
-  const srid = (parts.shift() || '').split('=').pop();
 
-  const context: ParseWKTContext = {parts, _, i: 0};
+// HELPERS
 
-  const geometry = getGeometry(context);
-
-  return options?.wkt?.crs ? addCRS(geometry, srid) : geometry;
+function $(regexp: RegExp, state: ParseWKTState) {
+  const match = state._?.substring(state.i).match(regexp);
+  if (!match) return null;
+  else {
+    state.i += match[0].length;
+    return match[0];
+  }
 }
 
-function getGeometry(context: ParseWKTContext): Geometry | null {
-  return (
-    point(context) ||
-    linestring(context) ||
-    polygon(context) ||
-    multipoint(context) ||
-    multilinestring(context) ||
-    multipolygon(context) ||
-    geometrycollection(context)
-  );
-}
-
-/** Adds a coordinate reference system as an undocumented  */
-function addCRS(obj: Geometry | null, srid?: string): Geometry | null {
-  if (obj && srid?.match(/\d+/)) {
-    const crs = {
-      type: 'name',
-      properties: {
-        name: 'urn:ogc:def:crs:EPSG::' + srid
-      }
-    };
-    // @ts-expect-error we assign an undocumented property on the geometry
-    obj.crs = crs;
-  }
-
-  return obj;
-}
-
-function point(context: ParseWKTContext): Geometry | null {
-  if (!$(/^(point(\sz)?)/i, context)) {
-    return null;
-  }
-  white(context);
-  if (!$(/^(\()/, context)) {
-    return null;
-  }
-  const c = coords(context);
-  if (!c) {
-    return null;
-  }
-  white(context);
-  if (!$(/^(\))/, context)) {
-    return null;
-  }
-  return {
-    type: 'Point',
-    coordinates: c[0]
-  };
-}
-
-function multipoint(context: ParseWKTContext): Geometry | null {
-  if (!$(/^(multipoint)/i, context)) {
-    return null;
-  }
-  white(context);
-  const newCoordsFormat = context._?.substring(context._?.indexOf('(') + 1, context._.length - 1)
-    .replace(/\(/g, '')
-    .replace(/\)/g, '');
-  context._ = 'MULTIPOINT (' + newCoordsFormat + ')';
-  const c = multicoords(context);
-  if (!c) {
-    return null;
-  }
-  white(context);
-  return {
-    type: 'MultiPoint',
-    coordinates: c
-  };
-}
-
-function multilinestring(context: ParseWKTContext): Geometry | null {
-  if (!$(/^(multilinestring)/i, context)) return null;
-  white(context);
-  const c = multicoords(context);
-  if (!c) {
-    return null;
-  }
-  white(context);
-  return {
-    type: 'MultiLineString',
-    // @ts-expect-error
-    coordinates: c
-  };
-}
-
-function linestring(context: ParseWKTContext): Geometry | null {
-  if (!$(/^(linestring(\sz)?)/i, context)) {
-    return null;
-  }
-  white(context);
-  if (!$(/^(\()/, context)) {
-    return null;
-  }
-  const c = coords(context);
-  if (!c) {
-    return null;
-  }
-  if (!$(/^(\))/, context)) {
-    return null;
-  }
-  return {
-    type: 'LineString',
-    coordinates: c
-  };
-}
-
-function polygon(context: ParseWKTContext): Geometry | null {
-  if (!$(/^(polygon(\sz)?)/i, context)) {
-    return null;
-  }
-  white(context);
-  const c = multicoords(context);
-  if (!c) {
-    return null;
-  }
-  return {
-    type: 'Polygon',
-    // @ts-expect-error
-    coordinates: c
-  };
-}
-
-function multipolygon(context: ParseWKTContext): Geometry | null {
-  if (!$(/^(multipolygon)/i, context)) {
-    return null;
-  }
-  white(context);
-  const c = multicoords(context);
-  if (!c) {
-    return null;
-  }
-  return {
-    type: 'MultiPolygon',
-    // @ts-expect-error
-    coordinates: c
-  };
-}
-
-function geometrycollection(context: ParseWKTContext): Geometry | null {
-  const geometries: Geometry[] = [];
-  let geometry: Geometry | null;
-
-  if (!$(/^(geometrycollection)/i, context)) {
-    return null;
-  }
-  white(context);
-
-  if (!$(/^(\()/, context)) {
-    return null;
-  }
-  while ((geometry = getGeometry(context))) {
-    geometries.push(geometry);
-    white(context);
-    $(/^(,)/, context);
-    white(context);
-  }
-  if (!$(/^(\))/, context)) {
-    return null;
-  }
-
-  return {
-    type: 'GeometryCollection',
-    geometries: geometries
-  };
+function white(state: ParseWKTState) {
+  $(/^\s*/, state);
 }

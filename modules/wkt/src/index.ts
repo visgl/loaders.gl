@@ -3,6 +3,9 @@
 export {WKBLoader, WKBWorkerLoader} from './wkb-loader';
 export {WKBWriter} from './wkb-writer';
 
+export {TWKBLoader} from './twkb-loader';
+export {TWKBWriter} from './twkb-writer';
+
 export {HexWKBLoader} from './hex-wkb-loader';
 
 export {WKTLoader, WKTWorkerLoader} from './wkt-loader';
