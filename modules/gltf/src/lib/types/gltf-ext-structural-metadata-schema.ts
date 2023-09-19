@@ -5,7 +5,7 @@ import {GLTFTextureInfoMetadata} from './gltf-json-schema';
 /**
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/glTF.EXT_structural_metadata.schema.json
  */
-export type GLTF_EXT_structural_metadata = {
+export type GLTF_EXT_structural_metadata_GLTF = {
   /** An object defining classes and enums. */
   schema?: GLTF_EXT_structural_metadata_Schema;
   /** A uri to an external schema file. */
