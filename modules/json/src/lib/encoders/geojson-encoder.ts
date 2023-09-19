@@ -32,7 +32,6 @@ export async function* encodeTableAsGeojsonInBatches(
 
   let start = 0;
   for await (const tableBatch of batchIterator) {
-    debugger;
     const end = start + getTableLength(tableBatch);
 
     // Deduce geometry column if not already done
