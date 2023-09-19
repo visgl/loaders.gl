@@ -3,8 +3,7 @@ import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
   GLTF_EXT_feature_metadata_FeatureIdTexture,
   GLTF_EXT_feature_metadata_GLTF,
-  GLTF_EXT_feature_metadata_Primitive,
-  GLTF_EXT_structural_metadata
+  GLTF_EXT_feature_metadata_Primitive
 } from '@loaders.gl/gltf';
 
 import type {GLTF_EXT_mesh_features} from '@loaders.gl/gltf';
@@ -12,7 +11,7 @@ import type {GLTF_EXT_mesh_features} from '@loaders.gl/gltf';
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../types';
 import {emod} from '@loaders.gl/math';
-import {EXT_STRUCTURAL_METADATA, EXT_MESH_FEATURES, EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
+import {EXT_MESH_FEATURES, EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 
 /**
@@ -75,34 +74,11 @@ export function handleBatchIdsExtensions(
         );
       case EXT_MESH_FEATURES:
         return handleExtMeshFeaturesExtension(attributes, extensionData as GLTF_EXT_mesh_features);
-      case EXT_STRUCTURAL_METADATA:
-        return handleExtStructuralMetadataExtension(
-          attributes,
-          extensionData as GLTF_EXT_structural_metadata
-        );
-
       default:
         return [];
     }
   }
 
-  return [];
-}
-
-function handleExtStructuralMetadataExtension(
-  attributes: {
-    [key: string]: GLTFAccessorPostprocessed;
-  },
-  extStructuralMetadata: GLTF_EXT_structural_metadata
-): NumericArray {
-  // Take only first extension object to get batchIds attribute name.
-  const dataAttributeNames = extStructuralMetadata?.dataAttributeNames;
-  if (dataAttributeNames?.length) {
-    // Let's use the first element of the array
-    // TODO: What to do with others if any?
-    const batchIdsAttribute = attributes[dataAttributeNames[0]];
-    return batchIdsAttribute.value;
-  }
   return [];
 }
 

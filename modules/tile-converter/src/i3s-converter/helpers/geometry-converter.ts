@@ -1,7 +1,7 @@
 import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {
   GLTF_EXT_mesh_features,
-  GLTF_EXT_structural_metadata,
+  GLTF_EXT_structural_metadata_GLTF,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
@@ -1625,16 +1625,9 @@ export function getPropertyTable(
   const {extensionName, extension} = getPropertyTableExtension(tileContent);
 
   switch (extensionName) {
-    case EXT_MESH_FEATURES: {
-      propertyTable = getPropertyTableFromExtMeshFeatures(
-        extension as GLTF_EXT_mesh_features,
-        metadataClass
-      );
-      return propertyTable;
-    }
     case EXT_STRUCTURAL_METADATA: {
       propertyTable = getPropertyTableFromExtStructuralMetadata(
-        extension as GLTF_EXT_structural_metadata,
+        extension as GLTF_EXT_structural_metadata_GLTF,
         metadataClass
       );
       return propertyTable;
@@ -1660,7 +1653,7 @@ function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
   extension:
     | string
     | GLTF_EXT_feature_metadata_GLTF
-    | GLTF_EXT_structural_metadata
+    | GLTF_EXT_structural_metadata_GLTF
     | GLTF_EXT_mesh_features
     | null;
 } {
@@ -1759,7 +1752,7 @@ function getPropertyTableFromExtFeatureMetadata(
  * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
  */
 function getPropertyTableFromExtStructuralMetadata(
-  extension: GLTF_EXT_structural_metadata,
+  extension: GLTF_EXT_structural_metadata_GLTF,
   metadataClass?: string
 ): FeatureTableJson | null {
   if (extension?.propertyTables) {
@@ -1800,36 +1793,6 @@ function getPropertyTableFromExtStructuralMetadata(
 
   console.warn(
     "The I3S converter couldn't handle EXT_structural_metadata extension: There is neither propertyTables, no propertyTextures in the extension."
-  );
-  return null;
-}
-
-/**
- * Handle EXT_mesh_features to get property table
- * @param extension - global level of EXT_MESH_FEATURES extension
- * @param metadataClass - user selected feature metadata class name
- * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
- */
-function getPropertyTableFromExtMeshFeatures(
-  extension: GLTF_EXT_mesh_features,
-  metadataClass?: string
-): FeatureTableJson | null {
-  if (extension?.featureIds) {
-    const firstFeatureId = extension?.featureIds[0];
-    const propertyTableWithData = {};
-
-    // When firstFeatureId.propertyTable is defined, the property data will be taken from EXT_structural_metadata extension
-    if (!firstFeatureId.propertyTable) {
-      console.warn(
-        'Should be implemented as we have the tileset with Ext_mesh_features not linked with EXT_structural_metadata extension'
-      );
-    }
-
-    return propertyTableWithData;
-  }
-
-  console.warn(
-    "The I3S converter couldn't handle EXT_mesh_features extension: There is no featureIds in the extension."
   );
   return null;
 }

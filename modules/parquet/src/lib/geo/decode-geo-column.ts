@@ -44,5 +44,8 @@ function parseGeometry(geometry: string, columnMetadata: GeoColumnMetadata): Geo
         wkb: {shape: 'geometry'}
       }) as unknown as Geometry;
       return geojson; // binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
+      // const binaryGeometry = WKBLoader.parseSync?.(geometry);
+      // ts-ignore
+      // return binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
   }
 }
