@@ -4,7 +4,7 @@ import {TWKBLoader, isTWKB} from '@loaders.gl/wkt';
 import {parseTestCases} from './utils/parse-test-cases';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ.json';
+// const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ.json';
 
 test.only('TWKBLoader#2D', async (t) => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
@@ -21,7 +21,12 @@ test.only('TWKBLoader#2D', async (t) => {
       t.ok(isTWKB(testCase.twkb), 'isTWKB(2D)');
       const geometry = {...testCase.geoJSON};
       // TODO - Weird empty geometry case, is that coorrect per spec?
-      if (geometry.coordinates.length === 1 && geometry.coordinates[0].length === 1 && geometry.coordinates[0][0].length === 0) {
+      // @ts-ignore
+      if (
+        geometry.coordinates.length === 1 &&
+        geometry.coordinates[0].length === 1 &&
+        geometry.coordinates[0][0].length === 0
+      ) {
         geometry.coordinates = [];
       }
       t.deepEqual(parseSync(testCase.twkb, TWKBLoader), geometry);

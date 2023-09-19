@@ -14,7 +14,6 @@ export {HexWKBLoader} from './hex-wkb-loader';
 export {TWKBLoader} from './twkb-loader';
 export {TWKBWriter} from './twkb-writer';
 
-
 // EXPERIMENTAL APIs
 export {isWKT} from './lib/parse-wkt';
 
