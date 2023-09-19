@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
+import {getTableLength} from '@loaders.gl/schema';
 import {JSONLoader} from '@loaders.gl/json';
 
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
@@ -81,7 +82,7 @@ test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
     // batchCount++;
     rowCount += batch.length;
     // byteLength = batch.bytesUsed;
-    t.equal(batch.jsonpath.toString(), '$.features', 'correct jsonpath on batch');
+    t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
   }
 
   // t.skip(batchCount <= 3, 'Correct number of batches received');
@@ -172,7 +173,7 @@ test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
 
   let rowCount = 0;
   for await (const batch of iterator) {
-    rowCount += batch.data.length;
+    rowCount += getTableLength(batch);
     // t.equal(Object.values(batch.data[0]).length, 10);
   }
   t.equal(rowCount, 247);

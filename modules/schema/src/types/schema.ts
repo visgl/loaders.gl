@@ -1,7 +1,5 @@
 // loaders.gl, MIT license
 
-import type {RecordBatch} from 'apache-arrow';
-
 /** For dictionary type */
 export type KeyType = 'int8' | 'int16' | 'int32' | 'uint8' | 'uint16' | 'uint32';
 
@@ -79,19 +77,4 @@ export type Field = {
 export type Schema = {
   fields: Field[];
   metadata: SchemaMetadata;
-};
-
-export type Batch = {
-  batchType: 'data' | 'metadata' | 'partial-result' | 'final-result';
-  batch?: number;
-  mimeType?: string;
-  shape: string;
-  data: any;
-  recordBatch?: RecordBatch;
-  length: number;
-  schema?: Schema;
-  bytesUsed?: number;
-  count?: number;
-  cursor?: number;
-  [key: string]: any;
 };

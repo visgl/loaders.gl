@@ -58,7 +58,7 @@ export async function parseInBatches(
   loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<AsyncIterable<unknown>> {
+): Promise<AsyncIterable<unknown> | Iterable<unknown>> {
   const loaderArray = Array.isArray(loaders) ? loaders : undefined;
 
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
@@ -79,8 +79,7 @@ export async function parseInBatches(
   const loader = await selectLoader(data as ArrayBuffer, loaders as Loader | Loader[], options);
   // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
-    // @ts-ignore
-    return null;
+    return [];
   }
 
   // Normalize options

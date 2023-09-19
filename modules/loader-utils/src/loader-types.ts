@@ -246,7 +246,7 @@ export type LoaderContext = {
    * @deprecated Do not call directly, use `parseInBatchesFromContext` instead
    */
   _parseInBatches?: (
-    iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer> | Response,
     loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
@@ -354,7 +354,7 @@ export async function parseInBatchesFromContext<
   LoaderT extends Loader,
   OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
 >(
-  data: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
+  data: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer> | Response,
   loader: LoaderT,
   options: OptionsT | undefined,
   context: LoaderContext

@@ -33,5 +33,8 @@ export const SHPLoader: LoaderWithParser = {
   ...SHPWorkerLoader,
   parse: async (arrayBuffer, options?) => parseSHP(arrayBuffer, options),
   parseSync: parseSHP,
-  parseInBatches: parseSHPInBatches
+  parseInBatches: (
+    arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    options
+  ) => parseSHPInBatches(arrayBufferIterator, options)
 };

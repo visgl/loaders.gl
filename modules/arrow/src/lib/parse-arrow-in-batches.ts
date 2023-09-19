@@ -1,6 +1,6 @@
 // TODO - this import defeats the sophisticated typescript checking in ArrowJS
 import {ArrowTableBatch} from '@loaders.gl/schema';
-import {RecordBatchReader} from 'apache-arrow';
+import {RecordBatchReader, Table as ApacheArrowTable} from 'apache-arrow';
 // import {isIterable} from '@loaders.gl/core';
 
 /**
@@ -34,7 +34,7 @@ export function parseArrowInBatches(
         const arrowTabledBatch: ArrowTableBatch = {
           shape: 'arrow-table',
           batchType: 'data',
-          data: recordBatch,
+          data: new ApacheArrowTable([recordBatch]),
           length: recordBatch.data.length
         };
         // processBatch(recordBatch);
