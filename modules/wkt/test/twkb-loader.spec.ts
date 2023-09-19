@@ -21,10 +21,11 @@ test('TWKBLoader#2D', async (t) => {
       t.ok(isTWKB(testCase.twkb), 'isTWKB(2D)');
       const geometry = {...testCase.geoJSON};
       // TODO - Weird empty geometry case, is that coorrect per spec?
-      // @ts-ignore
       if (
         geometry.coordinates.length === 1 &&
+        // @ts-ignore
         geometry.coordinates[0].length === 1 &&
+        // @ts-ignore
         geometry.coordinates[0][0].length === 0
       ) {
         geometry.coordinates = [];
