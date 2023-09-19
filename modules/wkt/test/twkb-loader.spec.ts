@@ -6,7 +6,7 @@ import {parseTestCases} from './utils/parse-test-cases';
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
 // const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ.json';
 
-test.only('TWKBLoader#2D', async (t) => {
+test('TWKBLoader#2D', async (t) => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
