@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-export type BinaryChunkReaderOptions = {
+export type BinaryChunkReaderProps = {
   maxRewindBytes: number;
 };
 
@@ -11,7 +11,7 @@ export class BinaryChunkReader {
   ended: boolean;
   maxRewindBytes: number;
 
-  constructor(options?: BinaryChunkReaderOptions) {
+  constructor(options?: BinaryChunkReaderProps) {
     const {maxRewindBytes = 0} = options || {};
 
     /** current global offset into current array buffer*/

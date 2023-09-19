@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
 import {DBFLoader} from '@loaders.gl/shapefile';
@@ -38,7 +41,7 @@ test('Shapefile JS DBF tests', async (t) => {
     const {features} = await response.json();
 
     for (let i = 0; i < features.length; i++) {
-      t.deepEqual(output[i], features[i].properties, testFileName);
+      t.deepEqual(output.data[i], features[i].properties, testFileName);
     }
   }
 

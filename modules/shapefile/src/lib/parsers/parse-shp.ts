@@ -1,9 +1,10 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {BinaryGeometry} from '@loaders.gl/schema';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {parseSHPHeader, SHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
-import {SHPLoaderOptions} from './types';
-
 const LITTLE_ENDIAN = true;
 const BIG_ENDIAN = false;
 
@@ -19,9 +20,16 @@ const STATE = {
   ERROR: 3
 };
 
-type SHPResult = {
-  geometries: (BinaryGeometry | null)[];
+/**
+ * A complete or partial result from the SHP file parser.
+ * @note When received as a batch, the `geometries` array will only contain the geometries in that batch.
+ */
+export type SHPResult = {
+  /** Metadata from the SHP file header */
   header?: SHPHeader;
+  /** Some rows may have no geometry */
+  geometries: (BinaryGeometry | null)[];
+  /** Error, if detected */
   error?: string;
   progress: {
     bytesUsed: number;
@@ -31,8 +39,14 @@ type SHPResult = {
   currentIndex: number;
 };
 
+export type SHPParserOptions = {
+  shp?: {
+    _maxDimensions?: number;
+  };
+};
+
 class SHPParser {
-  options?: SHPLoaderOptions = {};
+  options: SHPParserOptions;
   binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
   state = STATE.EXPECTING_HEADER;
   result: SHPResult = {
@@ -47,7 +61,7 @@ class SHPParser {
     currentIndex: NaN
   };
 
-  constructor(options?: SHPLoaderOptions) {
+  constructor(options: SHPParserOptions = {}) {
     this.options = options;
   }
 
@@ -67,12 +81,12 @@ class SHPParser {
   }
 }
 
-export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): BinaryGeometry[] {
+export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPParserOptions): SHPResult {
+  // BinaryGeometry[] {
   const shpParser = new SHPParser(options);
   shpParser.write(arrayBuffer);
   shpParser.end();
 
-  // @ts-ignore
   return shpParser.result;
 }
 
@@ -83,25 +97,26 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): 
  */
 export async function* parseSHPInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: SHPLoaderOptions
-): AsyncGenerator<BinaryGeometry | object> {
+  options?: SHPParserOptions
+): AsyncGenerator<BinaryGeometry | object> | AsyncIterable<SHPResult> {
+
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.header) {
       headerReturned = true;
-      yield parser.result.header;
+      yield parser.result;
     }
 
     if (parser.result.geometries.length > 0) {
-      yield parser.result.geometries;
+      yield parser.result;
       parser.result.geometries = [];
     }
   }
   parser.end();
   if (parser.result.geometries.length > 0) {
-    yield parser.result.geometries;
+    yield parser.result;
   }
 
   return;
@@ -125,7 +140,7 @@ function parseState(
   state: number,
   result: SHPResult,
   binaryReader: BinaryChunkReader,
-  options?: SHPLoaderOptions
+  options?: SHPParserOptions
 ): number {
   // eslint-disable-next-line no-constant-condition
   while (true) {

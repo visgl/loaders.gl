@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {
   setLoaderOptions,
@@ -52,11 +55,10 @@ test('ShapefileLoader#load (from browser File objects)', async (t) => {
     for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
       const fileList = SHAPEFILE_JS_TEST_FILES[testFileName];
       const fileSystem = new BrowserFileSystem(fileList);
-      const {fetch} = fileSystem;
       const filename = `${testFileName}.shp`;
-      // @ts-ignore
-      const data = await load(filename, ShapefileLoader, {fetch});
-      // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      const data = await load(filename, ShapefileLoader, {fetch: fileSystem.fetch});
+      t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
       testShapefileData(t, testFileName, data);
     }
@@ -98,6 +100,7 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async (t) => {
     const shpFeature = data.data[i];
     const jsonFeature = json.features[i];
     const jsonPointGeom = projection.project(jsonFeature.geometry.coordinates);
+    // @ts-ignore coordinates does not exist on GeometryCollection, but on all others
     tapeEqualsEpsilon(t, shpFeature.geometry.coordinates, jsonPointGeom, 0.00001);
   }
 
@@ -155,7 +158,7 @@ test('ShapefileLoader#loadInBatches(File)', async (t) => {
     const batches = await loadInBatches(file, ShapefileLoader, {fetch: fileSystem.fetch});
     let data;
     for await (const batch of batches) {
-      data = batch;
+      data = batch.data;
     }
     await testShapefileData(t, testFileName, data);
   }
@@ -169,7 +172,7 @@ test('ShapefileLoader#loadInBatches when options.metadata: true', async (t) => {
   const batches = await loadInBatches(filename, ShapefileLoader, {metadata: true});
   let data;
   for await (const batch of batches) {
-    data = batch;
+    data = batch.data;
     // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
   }
   await testShapefileData(t, testFileName, data);
@@ -179,7 +182,7 @@ test('ShapefileLoader#loadInBatches when options.metadata: true', async (t) => {
 
 async function getFileList(testFileName) {
   const EXTENSIONS = ['.shp', '.shx', '.dbf', '.cpg', '.prj'];
-  const fileList = [];
+  const fileList: File[] = [];
   for (const extension of EXTENSIONS) {
     const filename = `${testFileName}${extension}`;
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${filename}`);

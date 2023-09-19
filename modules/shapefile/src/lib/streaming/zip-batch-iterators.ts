@@ -42,14 +42,22 @@ export async function* zipBatchIterators(
       }
     }
 
-    const batchData = extractBatchData(batch1Data, batch2Data);
-    if (batchData) {
+    // const batchData = extractBatchData(batch1Data, batch2Data);
+    // if (batchData) {
+    //   yield {
+    //     batchType: 'data',
+    //     shape,
+    //     length: batchData.length,
+    //     data: batchData
+    //   };
+    const batch = extractBatchData(batch1.data, batch2.data);
+    if (batch) {
       yield {
-        batchType: 'data',
-        shape,
-        length: batchData.length,
-        data: batchData
-      };
+        batchType: 'data', 
+        shape: 'object-row-table', 
+        length: 0, 
+        data: batch
+      }
     }
   }
 }
@@ -61,14 +69,14 @@ export async function* zipBatchIterators(
  * @param batch2
  * @return array | null
  */
-function extractBatchData(batch1: any[], batch2: any[]): any[] | null {
+function extractBatchData(batch1: unknown[], batch2: unknown[]): unknown[][] | null {
   const batchLength: number = Math.min(batch1.length, batch2.length);
   if (batchLength === 0) {
     return null;
   }
 
   // Non interleaved arrays
-  const batch: any[] = [batch1.slice(0, batchLength), batch2.slice(0, batchLength)];
+  const batch: unknown[][] = [batch1.slice(0, batchLength), batch2.slice(0, batchLength)];
 
   // Modify the 2 batches
   batch1.splice(0, batchLength);
