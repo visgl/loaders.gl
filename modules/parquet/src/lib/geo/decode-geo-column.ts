@@ -41,6 +41,7 @@ function parseGeometry(geometry: any, columnMetadata: GeoColumnMetadata): Geomet
     case 'wkb':
     default:
       const binaryGeometry = WKBLoader.parseSync?.(geometry);
+      // @ts-ignore
       return binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
   }
 }

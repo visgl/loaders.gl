@@ -60,7 +60,7 @@ export class BinaryReader {
     let nextByte;
     do {
       // TODO - this needs to be accessed via data view?
-      nextByte = this.arrayBuffer[this.byteOffset + bytesRead];
+      nextByte = this.dataView.getUint8(this.byteOffset + bytesRead);
       result += (nextByte & 0x7f) << (7 * bytesRead);
       bytesRead++;
     } while (nextByte >= 0x80);

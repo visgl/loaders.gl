@@ -1,8 +1,7 @@
 import test from 'tape-promise/tape';
 import {fetchFile, parseSync} from '@loaders.gl/core';
-import {WKBLoader} from '@loaders.gl/wkt';
+import {WKBLoader, isWKB} from '@loaders.gl/wkt';
 import {parseTestCases} from './utils/parse-test-cases';
-import {isWKB} from '../src/lib/parse-wkb-header';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ.json';
