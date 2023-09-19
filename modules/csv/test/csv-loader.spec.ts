@@ -279,8 +279,8 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
   batchCount = 0;
   for await (const batch of iterator) {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.shape, 'array-row-table', 'Got correct batch shape');
-    if (batch.shape === 'array-row-table') {
+    t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
+    if (batch.shape === 'object-row-table') {
       t.equal(batch.length, 2, 'Got correct batch size');
       t.deepEqual(batch.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
     }
@@ -330,7 +330,7 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
     t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
     if (batch.shape === 'columnar-table') {
-      t.equal(batch.data.length, 2, 'Got correct batch size');
+      t.equal(getTableLength(batch), 2, 'Got correct batch size');
 
       t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
       t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');

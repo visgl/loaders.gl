@@ -1,7 +1,9 @@
 import test from 'tape-promise/tape';
 import {loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
-import {RecordBatch} from 'apache-arrow';
+import {CSVLoader} from '../src/csv-loader';
+// import {CSVLoader} from '@loaders.gl/csv';
+// import {RecordBatch} from 'apache-arrow';
+import {Table as ApacheArrowTable} from 'apache-arrow';
 // import {Schema, Field, RecordBatch, Float32Vector} from 'apache-arrow';
 
 // Small CSV Sample Files
@@ -20,7 +22,7 @@ test('CSVLoader#loadInBatches(numbers-100.csv, arrow)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.ok(batch.data instanceof RecordBatch, 'returns arrow RecordBatch');
+    t.ok(batch.data instanceof ApacheArrowTable, 'returns arrow RecordBatch');
     t.comment(`BATCH: ${batch.length}`);
     batchCount++;
   }
@@ -40,7 +42,7 @@ test('CSVLoader#loadInBatches(numbers-10000.csv, arrow)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.ok(batch.data instanceof RecordBatch, 'returns arrow RecordBatch');
+    t.ok(batch.data instanceof ApacheArrowTable, 'returns arrow RecordBatch');
     t.comment(`BATCH: ${batch.length}`);
     batchCount++;
   }

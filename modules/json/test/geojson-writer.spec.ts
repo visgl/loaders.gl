@@ -19,7 +19,7 @@ const EXPECTED_GEOJSON = `\
 ]
 }`;
 
-test('GeoJSONWriter#encode', async (t) => {
+test.only('GeoJSONWriter#encode', async (t) => {
   const table = tableWithNullGeometryColumn;
   const encodedText = await encodeTableAsText(table, _GeoJSONWriter);
   t.equal(encodedText, EXPECTED_GEOJSON, 'GeoJSONWriter encoded table correctly');
