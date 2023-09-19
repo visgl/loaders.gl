@@ -1,7 +1,7 @@
 // import type {Feature} from '@loaders.gl/gis';
 import {LoaderContext, parseInBatchesFromContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
-import {ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {BinaryGeometry, Geometry, ObjectRowTableBatch} from '@loaders.gl/schema';
 import {Proj4Projection} from '@math.gl/proj4';
 
 import type {SHXOutput} from './parse-shx';
@@ -81,19 +81,19 @@ export async function* parseShapefileInBatches(
     ? zipBatchIterators(shapeIterator, propertyIterator, 'object-row-table')
     : shapeIterator;
 
-  const iterable: AsyncIterable<ObjectRowTableBatch> = {
+  const zippedBatchIterable: AsyncIterable<ObjectRowTableBatch> = {
     [Symbol.asyncIterator]() {
       return zippedIterator;
     }
   };
 
-  for await (const item of iterable) {
+  for await (const batch of zippedBatchIterable) {
     let geometries: any;
     let properties: any;
     if (!propertyIterator) {
-      geometries = item;
+      geometries = batch;
     } else {
-      ({geometries, properties} = item);
+      [geometries, properties] = batch.data;
     }
 
     const geojsonGeometries = parseGeometries(geometries);
@@ -166,7 +166,7 @@ export async function parseShapefile(
  * @param geometries
  * @returns geometries as an array
  */
-function parseGeometries(geometries: any[]): any[] {
+function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
   const geojsonGeometries: any[] = [];
   for (const geom of geometries) {
     geojsonGeometries.push(binaryToGeometry(geom));
@@ -181,7 +181,7 @@ function parseGeometries(geometries: any[]): any[] {
  * @param  properties [description]
  * @return [description]
  */
-function joinProperties(geometries: object[], properties: object[]): Feature[] {
+function joinProperties(geometries: Geometry[], properties: object[]): Feature[] {
   const features: Feature[] = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];
@@ -222,7 +222,7 @@ function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: 
  */
 // eslint-disable-next-line max-statements
 export async function loadShapefileSidecarFiles(
-  options?: object,
+  options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): Promise<{
   shx?: SHXOutput;

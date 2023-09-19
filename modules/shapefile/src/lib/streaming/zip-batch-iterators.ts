@@ -67,7 +67,7 @@ function extractBatchData(batch1: any[], batch2: any[]): any[] | null {
   }
 
   // Non interleaved arrays
-  const batch: any[] = [...batch1.slice(0, batchLength), ...batch2.slice(0, batchLength)];
+  const batch: any[] = [batch1.slice(0, batchLength), batch2.slice(0, batchLength)];
 
   // Modify the 2 batches
   batch1.splice(0, batchLength);
