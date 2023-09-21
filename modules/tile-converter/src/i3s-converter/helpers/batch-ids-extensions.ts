@@ -94,19 +94,19 @@ function handleExtMeshFeaturesExtension(
   },
   extMeshFeatures: GLTF_EXT_mesh_features
 ): NumericArray {
-  const dataAttributeNames = extMeshFeatures?.dataAttributeNames;
-  if (dataAttributeNames?.length) {
-    // Let's use the first element of the array
-    // TODO: What to do with others if any?
-    const batchIdsAttribute = attributes[dataAttributeNames[0]];
-    return batchIdsAttribute.value;
+  for (let ids of extMeshFeatures.featureIds) {
+    if (typeof ids.propertyTable !== 'undefined') {
+      // propertyTable is an index that can be 0
+      // return the first featureID set that corresponts to property table.
+      return ids.data as NumericArray;
+    }
   }
   return [];
 }
 
 /**
  * Get batchIds from EXT_feature_metadata extension.
- * Docs - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata
+ * @see - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata
  * @param attributes - glTF attributes
  * @param extFeatureMetadata - primitive-level EXT_FEATURE_METADATA extension data
  * @param textures - texture images
@@ -161,7 +161,7 @@ function handleExtFeatureMetadataExtension(
 
 /**
  * Generates implicit feature ids
- * Spec - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#implicit-feature-ids
+ * @see - https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata#implicit-feature-ids
  * @param featuresCount
  * @param constant
  * @param devisor

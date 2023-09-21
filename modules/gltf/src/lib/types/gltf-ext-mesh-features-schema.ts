@@ -3,23 +3,21 @@ import {GLTFTextureInfoMetadata} from './gltf-json-schema';
 
 /**
  * EXT_mesh_features extension types
- * This is a primitive-level extension
+ * This is a primitive-level extension.
+ * An object describing feature IDs for a mesh primitive.
  * @see https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
  * or https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/mesh.primitive.EXT_mesh_features.schema.json
- * An object describing feature IDs for a mesh primitive.
  */
 export type GLTF_EXT_mesh_features = {
   /** An array of feature ID sets. */
   featureIds: GLTF_EXT_mesh_features_featureId[];
   extensions?: Record<string, unknown>;
   extras?: unknown;
-  /** For internal usage */
-  dataAttributeNames?: string[];
 };
 
 /**
- * @see https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/featureId.schema.json
  * Feature IDs stored in an attribute or texture.
+ * @see https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/featureId.schema.json
  */
 export type GLTF_EXT_mesh_features_featureId = {
   /** The number of unique features in the attribute or texture. */
@@ -43,6 +41,6 @@ export type GLTF_EXT_mesh_features_featureId = {
   extensions?: Record<string, unknown>;
   extras?: unknown;
 
-  /** For internal usage */
+  /** This is not part of the spec. GLTFLoader loads feature tables data into this property */
   data?: unknown;
 };

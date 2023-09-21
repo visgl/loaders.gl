@@ -12,7 +12,7 @@ import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
 import type {ImageType} from '@loaders.gl/images';
 
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
-import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
+import {getComponentTypeFromArray, getFloat32ArrayForAccessor} from '../../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
 import {emod} from '@loaders.gl/math';
 
@@ -80,7 +80,7 @@ export function getArrayElementByteSize(attributeType, componentType): number {
  * @param bufferViewIndex - Buffer view index
  * @param offsetType - The type of values in `arrayOffsets` or `stringOffsets`.
  * @param numberOfElements - The number of elements in each property array.
- * @returns array with values offsets
+ * @returns Array of values offsets. The number of offsets in the array is equal to `numberOfElements` plus one.
  */
 export function getOffsetsForProperty(
   scenegraph: GLTFScenegraph,
@@ -113,10 +113,10 @@ export function getOffsetsForProperty(
 
 /**
  * Converts raw bytes that are in the buffer to an array of the type defined by the schema.
- * @param data - raw bytes in the buffer
- * @param attributeType - SCALAR, VECN, MATN
- * @param componentType - type of the component in elements, e.g. 'UINT8' or 'FLOAT32'
- * @param elementCount - number of elements in the array. Default value is 1.
+ * @param data - Raw bytes in the buffer.
+ * @param attributeType - SCALAR, VECN, MATN.
+ * @param componentType - Type of the component in elements, e.g. 'UINT8' or 'FLOAT32'.
+ * @param elementCount - Number of elements in the array. Default value is 1.
  * @returns Data array
  */
 export function convertRawBufferToMetadataArray(
@@ -144,8 +144,8 @@ export function convertRawBufferToMetadataArray(
  * Processes data encoded in the texture associated with the primitive.
  * If Ext_mesh_featues is combined with the Ext_structural_metadata, propertyTable will also be processed.
  * @param scenegraph - Instance of the class for structured access to GLTF data.
- * @param textureInfo - reference to the texture where extension data are stored.
- * @param primitive - primitive object in the mesh
+ * @param textureInfo - Reference to the texture where extension data are stored.
+ * @param primitive - Primitive object in the mesh.
  * @returns Array of data taken. Null if data can't be taken from the texture.
  */
 export function getPrimitiveTextureData(
@@ -170,15 +170,14 @@ export function getPrimitiveTextureData(
 
   const texCoordAccessorKey = `TEXCOORD_${textureInfo.texCoord || 0}`;
   const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
-  const texCoordBufferView = scenegraph.getBufferView(texCoordAccessorIndex);
-  const texCoordArray: Uint8Array = scenegraph.getTypedArrayForBufferView(texCoordBufferView);
 
-  // textureCoordinates array contains UV coordinates of the actual data stored in the texture
-  const textureCoordinates: Float32Array = new Float32Array(
-    texCoordArray.buffer,
-    texCoordArray.byteOffset,
-    texCoordArray.length / 4
+  const textureCoordinates: Float32Array | null = getFloat32ArrayForAccessor(
+    scenegraph.gltf,
+    texCoordAccessorIndex
   );
+  if (!textureCoordinates) {
+    return null;
+  }
 
   const textureIndex: number = textureInfo.index;
   const imageIndex = json.textures?.[textureIndex]?.source;
@@ -208,11 +207,11 @@ export function getPrimitiveTextureData(
  * Puts property data to attributes.
  * It creates corresponding buffer, bufferView and accessor
  * so the data can be accessed like regular data stored in buffers.
- * @param scenegraph - scenegraph object
- * @param attributeName - name of the attribute
- * @param propertyData - property data to store
- * @param featureTable - an array where unique data from the property data are being stored
- * @param primitive - primitive object
+ * @param scenegraph - Scenegraph object.
+ * @param attributeName - Name of the attribute.
+ * @param propertyData - Property data to store.
+ * @param featureTable - Array where unique data from the property data are being stored.
+ * @param primitive - Primitive object.
  */
 export function primitivePropertyDataToAttributes(
   scenegraph: GLTFScenegraph,
@@ -221,7 +220,10 @@ export function primitivePropertyDataToAttributes(
   featureTable: number[],
   primitive: GLTFMeshPrimitive
 ): void {
-  if (propertyData === null) return;
+  // No reason to create an empty buffer if there is no property data to store.
+  if (!propertyData?.length) {
+    return;
+  }
   /*
     featureTable will contain unique values, e.g.
     propertyData = [24, 35, 28, 24]
@@ -255,11 +257,11 @@ export function primitivePropertyDataToAttributes(
 
 /**
  * Gets the value from the texture by coordinates provided.
- * @param parsedImage - image where the data are stored.
- * @param mimeType - MIME type
+ * @param parsedImage - Image where the data are stored.
+ * @param mimeType - MIME type.
  * @param textureCoordinates - uv coordinates to access data in the image.
- * @param index - index of uv coordinates in the array textureCoordinates
- * @param channels - image channels where data are stored. Channels of an RGBA texture are numbered 0..3 respectively.
+ * @param index - Index of uv coordinates in the array textureCoordinates.
+ * @param channels - Image channels where data are stored. Channels of an RGBA texture are numbered 0..3 respectively.
  * @returns Value taken from the image.
  */
 function getImageValueByCoordinates(
@@ -267,14 +269,14 @@ function getImageValueByCoordinates(
   mimeType: string | undefined,
   textureCoordinates: Float32Array,
   index: number,
-  channels: number[] = [0]
+  channels: number[] | string = [0]
 ) {
-  const CHANNELS_MAP = [
-    {offset: 0, shift: 0},
-    {offset: 1, shift: 8},
-    {offset: 2, shift: 16},
-    {offset: 3, shift: 24}
-  ];
+  const CHANNELS_MAP = {
+    r: {offset: 0, shift: 0},
+    g: {offset: 1, shift: 8},
+    b: {offset: 2, shift: 16},
+    a: {offset: 3, shift: 24}
+  };
 
   const u = textureCoordinates[index];
   const v = textureCoordinates[index + 1];
@@ -285,7 +287,16 @@ function getImageValueByCoordinates(
   const offset = coordinatesToOffset(u, v, parsedImage, components);
   let value: number = 0;
   for (const c of channels) {
-    const map = CHANNELS_MAP[c];
+    /*
+    According to the EXT_feature_metadata extension specification:
+      Channels are labeled by rgba and are swizzled with a string of 1-4 characters.
+    According to the EXT_mesh_features extension specification:
+      The channels array contains non-negative integer values corresponding to channels of the source texture that the feature ID consists of.
+      Channels of an RGBA texture are numbered 0–3 respectively.
+    Function getImageValueByCoordinates is used to process both extensions. 
+    So, there should be possible to get the element of CHANNELS_MAP by either index (0, 1, 2, 3) or key (r, g, b, a).
+    */
+    const map = typeof c === 'number' ? Object.values(CHANNELS_MAP)[c] : CHANNELS_MAP[c];
     const imageOffset = offset + map.offset;
     const imageData = getImageData(parsedImage);
     if (imageData.data.length <= imageOffset) {
@@ -298,12 +309,12 @@ function getImageValueByCoordinates(
 }
 
 /**
- * Retrieves the offset in the image where the data are stored
- * @param u - u-coordinate
- * @param v - v-coordinate
- * @param parsedImage - image where the data are stored
- * @param componentsCount - number of components the data consists of.
- * @returns offset in the image where the data are stored
+ * Retrieves the offset in the image where the data are stored.
+ * @param u - u-coordinate.
+ * @param v - v-coordinate.
+ * @param parsedImage - Image where the data are stored.
+ * @param componentsCount - Number of components the data consists of.
+ * @returns Offset in the image where the data are stored.
  */
 function coordinatesToOffset(
   u: number,
