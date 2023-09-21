@@ -287,7 +287,15 @@ function getImageValueByCoordinates(
   const offset = coordinatesToOffset(u, v, parsedImage, components);
   let value: number = 0;
   for (const c of channels) {
-    // We can get the element of CHANNELS_MAP by either index (0, 1, 2, 3) or key (r, g, b, a)
+    /*
+    According to the EXT_feature_metadata extension specification:
+      Channels are labeled by rgba and are swizzled with a string of 1-4 characters.
+    According to the EXT_mesh_features extension specification:
+      The channels array contains non-negative integer values corresponding to channels of the source texture that the feature ID consists of.
+      Channels of an RGBA texture are numbered 0–3 respectively.
+    Function getImageValueByCoordinates is used to process both extensions. 
+    So, there should be possible to get the element of CHANNELS_MAP by either index (0, 1, 2, 3) or key (r, g, b, a).
+    */
     const map = typeof c === 'number' ? Object.values(CHANNELS_MAP)[c] : CHANNELS_MAP[c];
     const imageOffset = offset + map.offset;
     const imageData = getImageData(parsedImage);
