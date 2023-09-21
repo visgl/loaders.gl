@@ -656,7 +656,6 @@ export default class I3SConverter {
         We will append new attributes only in case the property table is updated.
         According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
         "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer, which is the same for every node in the layer."
-        But the specification of ver 2.1 doesn't have such a requirement ("...the same for every node...")
       */
       this._convertPropertyTableToNodeAttributes(propertyTable);
     }
@@ -1167,7 +1166,6 @@ export default class I3SConverter {
         We will append new attributes only in case the property table is updated.
         According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
         "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer, which is the same for every node in the layer."
-        But the specification of ver 2.1 doesn't have such a requirement ("...the same for every node...")
       */
       const found = this.layers0!.attributeStorageInfo!.find((element) => element.name === key);
       if (!found) {

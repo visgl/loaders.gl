@@ -47,8 +47,8 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   // KHR_binary_gltf,
 
   // 2.0
-  EXT_mesh_features,
   EXT_structural_metadata,
+  EXT_mesh_features,
   EXT_meshopt_compression,
   EXT_texture_webp,
   // Basisu should come after webp, we want basisu to be preferred if both are provided

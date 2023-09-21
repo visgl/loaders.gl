@@ -98,7 +98,8 @@ test('gltf#EXT_structural_metadata - Should decode', async (t) => {
     }
   };
 
-  await decodeExtensions(GLTF_WITH_EXTENSION);
+  const options = { gltf: { loadImages: true, loadBuffers: true } };
+  await decodeExtensions(GLTF_WITH_EXTENSION, options);
 
   const expectedJson = {
     extensionsUsed: ['EXT_structural_metadata', 'EXT_mesh_features'],

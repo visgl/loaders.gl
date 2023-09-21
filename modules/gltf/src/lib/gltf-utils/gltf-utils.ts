@@ -1,5 +1,8 @@
 import {assert} from '../utils/assert';
+
+import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
+import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
 
 /**
  * Memory needed to store texture and all mipmap levels 1 + 1/4 + 1/16 + 1/64 + ...
@@ -83,6 +86,38 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
   const byteLength = accessor.count * components * bytesPerComponent;
   assert(byteLength >= 0 && byteLength <= bufferView.byteLength);
   return {ArrayType, length, byteLength};
+}
+
+export function getFloat32ArrayForAccessor(gltfData: GLTFWithBuffers, texCoordAccessor: number): Float32Array | null {
+  const accessor = gltfData.json.accessors?.[texCoordAccessor];
+  if (accessor && accessor.bufferView) {
+    // Get `bufferView` of the `accessor`
+    const bufferView = gltfData.json.bufferViews?.[accessor.bufferView];
+    if (bufferView) {
+      // Get `arrayBuffer` the `bufferView` look at
+      const {arrayBuffer, byteOffset: bufferByteOffset} = gltfData.buffers[bufferView.buffer];
+      // Resulting byteOffset is sum of the buffer, accessor and bufferView byte offsets
+      const byteOffset =
+        (bufferByteOffset || 0) + (accessor.byteOffset || 0) + (bufferView.byteOffset || 0);
+      // Deduce TypedArray type and its length from `accessor` and `bufferView` data
+      const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
+      // Number of bytes each component occupies
+      const bytes = BYTES[accessor.componentType];
+      // Number of components. For the `TEXCOORD_0` with `VEC2` type, it must return 2
+      const components = COMPONENTS[accessor.type];
+      // Multiplier to calculate the address of the `TEXCOORD_0` element in the arrayBuffer
+      const elementAddressScale = bufferView.byteStride || bytes * components;
+      // Data transform to Float32Array
+      const result = new Float32Array(length);
+      for (let i = 0; i < accessor.count; i++) {
+        // Take [u, v] couple from the arrayBuffer
+        const uv = new ArrayType(arrayBuffer, byteOffset + i * elementAddressScale, 2);
+        result.set(uv, i * components);
+      }
+      return result;
+    }
+  }
+  return null;
 }
 
 /**

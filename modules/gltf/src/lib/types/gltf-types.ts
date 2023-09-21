@@ -29,6 +29,10 @@ type GLTFExternalImage =
       data: Uint8Array;
     };
 
+export type FeatureTableJson = {
+  [key: string]: any[];
+};
+
 export type {
   GLTF,
   GLTFAccessor,

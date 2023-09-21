@@ -22,8 +22,11 @@ export type {
   GLTF_KHR_draco_mesh_compression,
   GLTF_KHR_texture_basisu,
   GLTF_EXT_meshopt_compression,
-  GLTF_EXT_texture_webp,
-  // 3DTiles extensions
+  GLTF_EXT_texture_webp
+} from './lib/types/gltf-json-schema';
+
+// 3DTiles extensions
+export type {
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_Schema,
   GLTF_EXT_feature_metadata_Class,
@@ -42,7 +45,7 @@ export type {
   GLTF_EXT_feature_metadata_FeatureIdAttributeFeatureIds,
   GLTF_EXT_feature_metadata_FeatureIdTexture,
   GLTF_EXT_feature_metadata_FeatureIdTextureAccessor
-} from './lib/types/gltf-json-schema';
+} from './lib/types/gltf-ext-feature-metadata-schema';
 
 export type {GLTF_EXT_structural_metadata_GLTF} from './lib/types/gltf-ext-structural-metadata-schema';
 
@@ -54,6 +57,8 @@ export type {
 export {name as EXT_MESH_FEATURES} from './lib/extensions/EXT_mesh_features';
 export {name as EXT_STRUCTURAL_METADATA} from './lib/extensions/EXT_structural_metadata';
 export {name as EXT_FEATURE_METADATA} from './lib/extensions/deprecated/EXT_feature_metadata';
+export {getPropertyTableFromExtFeatureMetadata} from './lib/extensions/deprecated/EXT_feature_metadata';
+export {getPropertyTableFromExtStructuralMetadata} from './lib/extensions/EXT_structural_metadata';
 
 // Postprocessed types (modified GLTF types)
 export type {
@@ -67,7 +72,7 @@ export type {
   GLTFTexturePostprocessed
 } from './lib/types/gltf-postprocessed-schema';
 
-export type {GLTFWithBuffers} from './lib/types/gltf-types';
+export type {GLTFWithBuffers, FeatureTableJson} from './lib/types/gltf-types';
 
 // glTF loader/writer definition objects
 export {GLTFLoader} from './gltf-loader';

@@ -17,6 +17,7 @@ import './lib/extensions/KHR_materials_unlit.spec';
 import './lib/extensions/KHR_texture_transform.spec';
 import './lib/extensions/EXT_feature_metadata.spec';
 import './lib/extensions/EXT_structural_metadata.spec';
+import './lib/extensions/EXT_mesh_features.spec';
 
 import './glb-loader.spec';
 import './glb-writer.spec';

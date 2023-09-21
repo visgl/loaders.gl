@@ -1,11 +1,9 @@
-import type {GLTFPostprocessed} from '@loaders.gl/gltf';
+import type {GLTFPostprocessed, FeatureTableJson} from '@loaders.gl/gltf';
+export type {FeatureTableJson};
+
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {TILESET_TYPE, LOD_METRIC_TYPE, TILE_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
-
-export type FeatureTableJson = {
-  [key: string]: any[];
-};
 
 export type B3DMContent = {
   batchTableJson?: FeatureTableJson;

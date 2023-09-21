@@ -3,6 +3,7 @@ import {GLTFTextureInfoMetadata} from './gltf-json-schema';
 /* eslint-disable camelcase */
 
 /**
+ * glTF extension that provides structural metadata about vertices, texels, and features in a glTF asset.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/glTF.EXT_structural_metadata.schema.json
  */
 export type GLTF_EXT_structural_metadata_GLTF = {
@@ -16,11 +17,12 @@ export type GLTF_EXT_structural_metadata_GLTF = {
   propertyTextures?: GLTF_EXT_structural_metadata_PropertyTexture[];
   /** "An array of property attribute definitions, which may be referenced by index. */
   propertyAttributes?: GLTF_EXT_structural_metadata_PropertyAttribute[];
-  /** For internal usage */
+  /** This is not part of the spec. GLTFLoader loads names of attributes crated into this property */
   dataAttributeNames?: string[];
 };
 
 /**
+ * An object defining classes and enums.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/schema.schema.json
  */
 export type GLTF_EXT_structural_metadata_Schema = {
@@ -40,8 +42,8 @@ export type GLTF_EXT_structural_metadata_Schema = {
   enums?: {
     [key: string]: GLTF_EXT_structural_metadata_Enum;
   };
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
 /**
@@ -53,15 +55,19 @@ export type GLTF_EXT_structural_metadata_Enum = {
   name?: string;
   /** The description of the enum. */
   description?: string;
-  /** The type of the integer enum value. */
-  valueType?: 'INT8' | 'UINT8' | 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'INT64' | 'UINT64'; // default: "UINT16"
+  /**
+   * The type of the integer enum value.
+   * Default value is 'UINT16'
+  */
+  valueType?: 'INT8' | 'UINT8' | 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'INT64' | 'UINT64';
   /** An array of enum values. Duplicate names or duplicate integer values are not allowed. */
   values: GLTF_EXT_structural_metadata_EnumValue[];
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
 /**
+ * An enum value.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/enum.value.schema.json
  */
 export type GLTF_EXT_structural_metadata_EnumValue = {
@@ -71,11 +77,12 @@ export type GLTF_EXT_structural_metadata_EnumValue = {
   description?: string;
   /** The integer enum value. */
   value: number;
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
 /**
+ * A class containing a set of properties.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/class.schema.json
  */
 export type GLTF_EXT_structural_metadata_Class = {
@@ -90,11 +97,12 @@ export type GLTF_EXT_structural_metadata_Class = {
   properties: {
     [key: string]: GLTF_EXT_structural_metadata_ClassProperty;
   };
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
 /**
+ * A class property.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/class.property.schema.json
  */
 export type GLTF_EXT_structural_metadata_ClassProperty = {
@@ -185,8 +193,9 @@ export type GLTF_EXT_structural_metadata_ClassProperty = {
    * If not required, individual entities may include `noData` values, or the entire property may be omitted.
    * As a result, `noData` has no effect on a required property.
    * Client implementations may use required properties to make performance optimizations.
+   * Default value is false.
    */
-  required?: boolean; // default false;
+  required?: boolean;
 
   /**
    * A `noData` value represents missing data — also known as a sentinel value — wherever it appears.
@@ -201,10 +210,14 @@ export type GLTF_EXT_structural_metadata_ClassProperty = {
    * The semantic cannot be used by other properties in the class.
    */
   semantic?: string;
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
+/**
+ * Properties conforming to a class, organized as property values stored in binary columnar arrays.
+ * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.schema.json
+ */
 export type GLTF_EXT_structural_metadata_PropertyTable = {
   /** The name of the property table, e.g. for display purposes. */
   name?: string;
@@ -220,11 +233,12 @@ export type GLTF_EXT_structural_metadata_PropertyTable = {
   properties?: {
     [key: string]: GLTF_EXT_structural_metadata_PropertyTable_Property;
   };
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
 /**
+ * An array of binary property values.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json
  */
 export type GLTF_EXT_structural_metadata_PropertyTable_Property = {
@@ -262,11 +276,13 @@ export type GLTF_EXT_structural_metadata_PropertyTable_Property = {
   stringOffsets?: number;
   /**
    * The type of values in `arrayOffsets`.
+   * Default value is 'UINT32'
    */
   arrayOffsetType?: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string;
 
   /**
    * The type of values in `stringOffsets`.
+   * Default value is 'UINT32'
    */
   stringOffsetType?: 'UINT8' | 'UINT16' | 'UINT32' | 'UINT64' | string;
   /**
@@ -293,13 +309,14 @@ export type GLTF_EXT_structural_metadata_PropertyTable_Property = {
    * This is the minimum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied.
    */
   min?: number | number[];
-  extensions?: Record<string, any>;
-  extras?: any;
-  /** For internal usage */
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
+  /** This is not part of the spec. GLTFLoader loads feature tables data into this property */
   data?: unknown;
 };
 
 /**
+ * Properties conforming to a class, organized as property values stored in textures.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTexture.schema.json
  */
 export type GLTF_EXT_structural_metadata_PropertyTexture = {
@@ -322,11 +339,12 @@ export type GLTF_EXT_structural_metadata_PropertyTexture = {
   properties?: {
     [key: string]: GLTFTextureInfoMetadata;
   };
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
 /**
+ * Properties conforming to a class, organized as property values stored in attributes.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyAttribute.schema.json
  */
 export type GLTF_EXT_structural_metadata_PropertyAttribute = {
@@ -340,13 +358,14 @@ export type GLTF_EXT_structural_metadata_PropertyAttribute = {
    * Required properties must be included in this dictionary.
    */
   properties?: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
 
 /**
+ * Structural metadata about a glTF primitive.
  * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/mesh.primitive.EXT_structural_metadata.schema.json
  */
 export type GLTF_EXT_structural_metadata_Primitive = {
@@ -354,6 +373,6 @@ export type GLTF_EXT_structural_metadata_Primitive = {
   propertyTextures?: number[];
   /** An array of indexes of property attributes in the root `EXT_structural_metadata` object. */
   propertyAttributes?: number[];
-  extensions?: Record<string, any>;
-  extras?: any;
+  extensions?: Record<string, unknown>;
+  extras?: unknown;
 };
