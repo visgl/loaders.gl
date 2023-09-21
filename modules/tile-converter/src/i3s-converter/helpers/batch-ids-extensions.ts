@@ -95,7 +95,8 @@ function handleExtMeshFeaturesExtension(
   extMeshFeatures: GLTF_EXT_mesh_features
 ): NumericArray {
   for (let ids of extMeshFeatures.featureIds) {
-    if (typeof ids.propertyTable !== "undefined") { // propertyTable is an index that can be 0
+    if (typeof ids.propertyTable !== 'undefined') {
+      // propertyTable is an index that can be 0
       // return the first featureID set that corresponts to property table.
       return ids.data as NumericArray;
     }

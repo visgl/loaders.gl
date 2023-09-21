@@ -74,8 +74,9 @@ export function getPropertyTableFromExtStructuralMetadata(
     return propertyTableWithData;
   }
 
+  // eslint-disable-next-line no-console
   console.warn(
-    "Can't get property table from EXT_structural_metadata extension. There is neither propertyTables, nor propertyTextures in the extension."
+    'Cannot get property table from EXT_structural_metadata extension. There is neither propertyTables, nor propertyTextures in the extension.'
   );
   return null;
 }
@@ -189,7 +190,7 @@ function decodeExtStructuralMetadata(scenegraph: GLTFScenegraph, options: GLTFLo
 /**
  * Processes the data stored in the textures
  * @param scenegraph - Instance of the class for structured access to GLTF data.
- * @param extension - Top-level extension. 
+ * @param extension - Top-level extension.
  */
 function decodePropertyTextures(
   scenegraph: GLTFScenegraph,
@@ -210,7 +211,7 @@ function decodePropertyTextures(
 /**
  * Processes the data stored in the property tables.
  * @param scenegraph - Instance of the class for structured access to GLTF data.
- * @param extension - Top-level extension. 
+ * @param extension - Top-level extension.
  */
 function decodePropertyTables(
   scenegraph: GLTFScenegraph,

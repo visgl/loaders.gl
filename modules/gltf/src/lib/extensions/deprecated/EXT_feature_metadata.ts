@@ -80,8 +80,9 @@ export function getPropertyTableFromExtFeatureMetadata(
     }
   }
 
+  // eslint-disable-next-line no-console
   console.warn(
-    "Can't get property table from EXT_feature_metadata extension. There is neither featureTables, nor featureTextures in the extension."
+    'Cannot get property table from EXT_feature_metadata extension. There is neither featureTables, nor featureTextures in the extension.'
   );
   return null;
 }
@@ -381,10 +382,13 @@ function processPrimitiveTextures(
   const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
   // textureCoordinates contains UV coordinates of the actual data stored in the texture
   // accessor.count is a number of UV pairs (they are stored as VEC2)
-  const textureCoordinates: Float32Array | null = getFloat32ArrayForAccessor(scenegraph.gltf, texCoordAccessorIndex);
-    if (!textureCoordinates) {
-      return;
-    }
+  const textureCoordinates: Float32Array | null = getFloat32ArrayForAccessor(
+    scenegraph.gltf,
+    texCoordAccessorIndex
+  );
+  if (!textureCoordinates) {
+    return;
+  }
 
   const textureIndex = featureTextureProperty.texture.index;
   const texture = json.textures?.[textureIndex];

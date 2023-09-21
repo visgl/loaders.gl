@@ -58,7 +58,7 @@ export type GLTF_EXT_structural_metadata_Enum = {
   /**
    * The type of the integer enum value.
    * Default value is 'UINT16'
-  */
+   */
   valueType?: 'INT8' | 'UINT8' | 'INT16' | 'UINT16' | 'INT32' | 'UINT32' | 'INT64' | 'UINT64';
   /** An array of enum values. Duplicate names or duplicate integer values are not allowed. */
   values: GLTF_EXT_structural_metadata_EnumValue[];

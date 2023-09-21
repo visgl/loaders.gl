@@ -1654,16 +1654,9 @@ export function getPropertyTable(
  */
 function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
   extensionName: null | string;
-  extension:
-    | string
-    | GLTF_EXT_feature_metadata_GLTF
-    | GLTF_EXT_structural_metadata_GLTF
-    | null;
+  extension: string | GLTF_EXT_feature_metadata_GLTF | GLTF_EXT_structural_metadata_GLTF | null;
 } {
-  const extensionsWithPropertyTables = [
-    EXT_FEATURE_METADATA,
-    EXT_STRUCTURAL_METADATA
-  ];
+  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
   if (!extensionsUsed) {

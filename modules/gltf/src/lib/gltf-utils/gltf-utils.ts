@@ -88,7 +88,10 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
   return {ArrayType, length, byteLength};
 }
 
-export function getFloat32ArrayForAccessor(gltfData: GLTFWithBuffers, texCoordAccessor: number): Float32Array | null {
+export function getFloat32ArrayForAccessor(
+  gltfData: GLTFWithBuffers,
+  texCoordAccessor: number
+): Float32Array | null {
   const accessor = gltfData.json.accessors?.[texCoordAccessor];
   if (accessor && accessor.bufferView) {
     // Get `bufferView` of the `accessor`

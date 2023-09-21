@@ -171,10 +171,13 @@ export function getPrimitiveTextureData(
   const texCoordAccessorKey = `TEXCOORD_${textureInfo.texCoord || 0}`;
   const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
 
-  const textureCoordinates: Float32Array | null = getFloat32ArrayForAccessor(scenegraph.gltf, texCoordAccessorIndex);
-    if (!textureCoordinates) {
-      return null;
-    }
+  const textureCoordinates: Float32Array | null = getFloat32ArrayForAccessor(
+    scenegraph.gltf,
+    texCoordAccessorIndex
+  );
+  if (!textureCoordinates) {
+    return null;
+  }
 
   const textureIndex: number = textureInfo.index;
   const imageIndex = json.textures?.[textureIndex]?.source;
@@ -285,7 +288,7 @@ function getImageValueByCoordinates(
   let value: number = 0;
   for (const c of channels) {
     // We can get the element of CHANNELS_MAP by either index (0, 1, 2, 3) or key (r, g, b, a)
-    const map = typeof c === "number" ? Object.values(CHANNELS_MAP)[c] : CHANNELS_MAP[c];
+    const map = typeof c === 'number' ? Object.values(CHANNELS_MAP)[c] : CHANNELS_MAP[c];
     const imageOffset = offset + map.offset;
     const imageData = getImageData(parsedImage);
     if (imageData.data.length <= imageOffset) {
