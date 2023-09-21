@@ -1,5 +1,5 @@
 import {Field, ObjectRowTable} from '@loaders.gl/schema';
-import BinaryChunkReader from '../streaming/binary-chunk-reader';
+import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {
   DBFLoaderOptions,
   DBFResult,

@@ -161,7 +161,7 @@ export async function encodeURLtoURL(
  * @todo TODO - this is an unacceptable hack!!!
  */
 function getIterator(data: any): Iterable<{table: any; start: number; end: number}> {
-  const dataIterator = [{table: data, start: 0, end: data.length}];
+  const dataIterator = [{...data, start: 0, end: data.length}];
   return dataIterator;
 }
 

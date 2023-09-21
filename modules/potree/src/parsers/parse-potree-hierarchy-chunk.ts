@@ -70,7 +70,7 @@ export type POTreeNode = {
   childrenByIndex: POTreeNode[];
 };
 
-type POTreeTileNode = POTreeNode;
+// type POTreeTileNode = POTreeNode;
 
 // load hierarchy
 export function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer) {
@@ -86,7 +86,7 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
 
   // Get root mask
   // @ts-expect-error
-  const topTileHeader: POTreeTileNode = {};
+  const topTileHeader: POTreeNode = {};
   byteOffset = decodeRow(dataView, byteOffset, topTileHeader);
 
   stack.push(topTileHeader);

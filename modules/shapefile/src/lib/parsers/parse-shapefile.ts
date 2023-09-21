@@ -1,6 +1,7 @@
 // import type {Feature} from '@loaders.gl/gis';
 import {LoaderContext, parseInBatchesFromContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import type {BinaryGeometry, Geometry, ObjectRowTableBatch} from '@loaders.gl/schema';
 import {Proj4Projection} from '@math.gl/proj4';
 
 import type {SHXOutput} from './parse-shx';
@@ -32,19 +33,22 @@ export async function* parseShapefileInBatches(
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const shapeIterable: any = await parseInBatchesFromContext(
+  const shapeIterable = await parseInBatchesFromContext(
     asyncIterator,
     SHPLoader,
     options,
     context!
   );
 
+  const shapeIterator: AsyncIterator<any> =
+    shapeIterable[Symbol.asyncIterator]?.() || shapeIterable[Symbol.iterator]?.();
+
   // parse properties
-  let propertyIterable: any;
+  let propertyIterator: AsyncIterator<any> | null = null;
   const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
   if (dbfResponse?.ok) {
-    propertyIterable = await parseInBatchesFromContext(
-      dbfResponse as any,
+    const propertyIterable = await parseInBatchesFromContext(
+      dbfResponse,
       DBFLoader,
       {
         ...options,
@@ -52,39 +56,44 @@ export async function* parseShapefileInBatches(
       },
       context!
     );
+    propertyIterator =
+      propertyIterable[Symbol.asyncIterator]?.() || propertyIterable[Symbol.iterator]();
   }
 
   // When `options.metadata` is `true`, there's an extra initial `metadata`
   // object before the iterator starts. zipBatchIterators expects to receive
   // batches of Array objects, and will fail with non-iterable batches, so it's
   // important to skip over the first batch.
-  let shapeHeader = (await shapeIterable.next()).value;
+  let shapeHeader = (await shapeIterator.next()).value;
   if (shapeHeader && shapeHeader.batchType === 'metadata') {
-    shapeHeader = (await shapeIterable.next()).value;
+    shapeHeader = (await shapeIterator.next()).value;
   }
 
   let dbfHeader: {batchType?: string} = {};
-  if (propertyIterable) {
-    dbfHeader = (await propertyIterable.next()).value;
+  if (propertyIterator) {
+    dbfHeader = (await propertyIterator.next()).value;
     if (dbfHeader && dbfHeader.batchType === 'metadata') {
-      dbfHeader = (await propertyIterable.next()).value;
+      dbfHeader = (await propertyIterator.next()).value;
     }
   }
 
-  let iterator: any;
-  if (propertyIterable) {
-    iterator = zipBatchIterators(shapeIterable, propertyIterable);
-  } else {
-    iterator = shapeIterable;
-  }
+  const zippedIterator: AsyncIterator<ObjectRowTableBatch> = propertyIterator
+    ? zipBatchIterators(shapeIterator, propertyIterator, 'object-row-table')
+    : shapeIterator;
 
-  for await (const item of iterator) {
+  const zippedBatchIterable: AsyncIterable<ObjectRowTableBatch> = {
+    [Symbol.asyncIterator]() {
+      return zippedIterator;
+    }
+  };
+
+  for await (const batch of zippedBatchIterable) {
     let geometries: any;
     let properties: any;
-    if (!propertyIterable) {
-      geometries = item;
+    if (!propertyIterator) {
+      geometries = batch;
     } else {
-      [geometries, properties] = item;
+      [geometries, properties] = batch.data;
     }
 
     const geojsonGeometries = parseGeometries(geometries);
@@ -157,7 +166,7 @@ export async function parseShapefile(
  * @param geometries
  * @returns geometries as an array
  */
-function parseGeometries(geometries: any[]): any[] {
+function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
   const geojsonGeometries: any[] = [];
   for (const geom of geometries) {
     geojsonGeometries.push(binaryToGeometry(geom));
@@ -172,7 +181,7 @@ function parseGeometries(geometries: any[]): any[] {
  * @param  properties [description]
  * @return [description]
  */
-function joinProperties(geometries: object[], properties: object[]): Feature[] {
+function joinProperties(geometries: Geometry[], properties: object[]): Feature[] {
   const features: Feature[] = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];
@@ -213,7 +222,7 @@ function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: 
  */
 // eslint-disable-next-line max-statements
 export async function loadShapefileSidecarFiles(
-  options?: object,
+  options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): Promise<{
   shx?: SHXOutput;

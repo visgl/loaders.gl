@@ -15,13 +15,9 @@ Loaders now return typed data. While this sudden injection of types into previou
 
 In the interest of offering the most rigorous typing of returned data, some loaders now offer fewer options for the returned data type, and the trend in loaders.gl 3.x of offering a growing selection of return formats (or `shapes`) from each loader has now been reversed, in favor of offering a single core return data type, accompanied by optional conversion functions.
 
-**GLTF**
-
-- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
-
 **Apache Arrow JS** 
 
-loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_. 
+loaders.gl now imports `apache-arrow` v13 which is a major upgrade. Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_). 
 
 If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes. 
 
@@ -59,6 +55,14 @@ Details: The expectation is that loaders.gl v4.0+ will be used with Node.js vers
 which now provide a built-in browser-compatible `fetch()` function by default.
 This new built-in Node.js `fetch` function does not support reading from the file system,
 and loaders.gl v4.0 aligns with this practice.
+
+**@loaders.gl/arrow**
+
+- Batches now contain a Table with a single `RecordBatch` (instead of just a `RecordBatch`).
+
+**@loaders.gl/gltf**
+
+- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
 
 ## Upgrading to v3.4
 

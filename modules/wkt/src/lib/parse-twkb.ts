@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz
 
-import type {BinaryGeometry, Geometry, GeometryCollection} from '@loaders.gl/schema';
+import type {Geometry, GeometryCollection} from '@loaders.gl/schema';
 import type {Point, LineString, Polygon} from '@loaders.gl/schema';
 import type {MultiPoint, MultiLineString, MultiPolygon} from '@loaders.gl/schema';
 import {BinaryReader} from './utils/binary-reader';
@@ -24,14 +24,6 @@ export function isTWKB(arrayBuffer: ArrayBuffer): boolean {
   }
 
   return true;
-}
-
-/**
- * Parse a TWKB encoded array buffer
- * @param arrayBuffer
- */
-export function parseTWKB(arrayBuffer: ArrayBuffer): BinaryGeometry {
-  throw new Error('not implemented');
 }
 
 /** State passed around between parsing functions, extracted from the header */
@@ -158,7 +150,7 @@ function parsePoint(reader: BinaryReader, context: ParseTWKBState): Point {
     return {type: 'Point', coordinates: []};
   }
 
-  return {type: 'Point', coordinates: parsePointCoordinates(reader, context)};
+  return {type: 'Point', coordinates: readFirstPoint(reader, context)};
 }
 
 function parseLineString(reader: BinaryReader, context: ParseTWKBState): LineString {
@@ -185,14 +177,12 @@ function parsePolygon(reader: BinaryReader, context: ParseTWKBState): Polygon {
 
   const ringCount = reader.readVarInt();
 
-  const polygons: number[][][] = [];
-
   const previousPoint = makePreviousPoint(context);
 
-  const exteriorRingCount = reader.readVarInt();
+  const exteriorRingLength = reader.readVarInt();
   const exteriorRing: number[][] = [];
 
-  for (let i = 0; i < exteriorRingCount; i++) {
+  for (let i = 0; i < exteriorRingLength; i++) {
     exteriorRing.push(parseNextPoint(reader, context, previousPoint));
   }
 
@@ -208,7 +198,7 @@ function parsePolygon(reader: BinaryReader, context: ParseTWKBState): Polygon {
     polygon.push(interiorRing);
   }
 
-  return {type: 'Polygon', coordinates: polygons};
+  return {type: 'Polygon', coordinates: polygon};
 }
 
 function parseMultiPoint(reader: BinaryReader, context: ParseTWKBState): MultiPoint {
@@ -269,14 +259,14 @@ function parseMultiPolygon(reader: BinaryReader, context: ParseTWKBState): Multi
       exteriorRing.push(parseNextPoint(reader, context, previousPoint));
     }
 
-    const polygon: number[][][] = [exteriorRing];
+    const polygon: number[][][] = exteriorRing ? [exteriorRing] : [];
 
     for (let j = 1; j < ringCount; j++) {
       const interiorRing: number[][] = [];
 
-      const interiorRingCount = reader.readVarInt();
+      const interiorRingLength = reader.readVarInt();
 
-      for (let k = 0; k < interiorRingCount; k++) {
+      for (let k = 0; k < interiorRingLength; k++) {
         interiorRing.push(parseNextPoint(reader, context, previousPoint));
       }
 
@@ -330,7 +320,7 @@ function makePreviousPoint(context: ParseTWKBState): number[] {
   return makePointCoordinates(0, 0, context.hasZ ? 0 : undefined, context.hasM ? 0 : undefined);
 }
 
-function parsePointCoordinates(reader: BinaryReader, context: ParseTWKBState): number[] {
+function readFirstPoint(reader: BinaryReader, context: ParseTWKBState): number[] {
   const x = zigZagDecode(reader.readVarInt()) / context.precisionFactor;
   const y = zigZagDecode(reader.readVarInt()) / context.precisionFactor;
   const z = context.hasZ ? zigZagDecode(reader.readVarInt()) / context.zPrecisionFactor : undefined;

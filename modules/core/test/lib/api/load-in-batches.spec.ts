@@ -53,6 +53,7 @@ test('loadInBatches(options.limit)', async (t) => {
   });
   const rows: unknown[] = [];
   for await (const batch of iterator) {
+    // @ts-ignore CSVLoader types are not made available here due to potential circular dependency in tsconfigs
     rows.push(...batch.data);
   }
   t.is(rows.length, 100, 'Got the correct table size with options.limit');

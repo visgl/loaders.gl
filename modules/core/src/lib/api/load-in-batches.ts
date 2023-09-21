@@ -4,7 +4,8 @@ import type {
   LoaderWithParser,
   LoaderOptions,
   LoaderContext,
-  FetchLike
+  FetchLike,
+  BatchableDataType
 } from '@loaders.gl/loader-utils';
 import type {LoaderBatchType, LoaderOptionsType} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -90,9 +91,13 @@ async function loadOneFileInBatches(
   if (typeof file === 'string') {
     const url = file;
     const response = await fetch(url);
-    // @ts-expect-error
-    return await parseInBatches(response, loaders, options);
+    // pick right overload
+    return Array.isArray(loaders)
+      ? await parseInBatches(response, loaders, options)
+      : await parseInBatches(response, loaders, options);
   }
-  // @ts-expect-error TODO
-  return await parseInBatches(file, loaders, options);
+  // pick right overload
+  return Array.isArray(loaders)
+    ? await parseInBatches(file as BatchableDataType, loaders, options)
+    : await parseInBatches(file as BatchableDataType, loaders, options);
 }
