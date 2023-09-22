@@ -93,7 +93,7 @@ export function getFloat32ArrayForAccessor(
   texCoordAccessor: number
 ): Float32Array | null {
   const accessor = gltfData.json.accessors?.[texCoordAccessor];
-  if (accessor && accessor.bufferView) {
+  if (accessor && typeof accessor.bufferView !== 'undefined') {
     // Get `bufferView` of the `accessor`
     const bufferView = gltfData.json.bufferViews?.[accessor.bufferView];
     if (bufferView) {
