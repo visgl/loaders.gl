@@ -300,9 +300,9 @@ test('gltf#EXT_feature_metadata - Should handle feature texture attributes', asy
       accessors: [
         {
           bufferView: 0,
-          componentType: 5125,
-          count: 8,
-          type: 'SCALAR'
+          componentType: 5126,
+          count: 4,
+          type: 'VEC2'
         }
       ],
       buffers: [
