@@ -6,6 +6,27 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.25
+
+- fix(gltf): tests for ext-feature-metadata (#2656)
+- fix(gltf, converter): make ext-mesh-features independent from ext-structural-metadata (#2655)
+- batch types (#2645)
+- chore(twkb): Add TWKBLoader tests (#2653)
+- feat(tile-converter): select metadata class from EXT_structural_metadata (#2647)
+- feat: new geoparquet example (#2646)
+- feat(wkt): Add TWKBLoader/Writer (#2028)
+- feat(wkb): Auto-detect WKB dialect and encoding (#2184)
+- feat(wkb): New HexWKBLoader for hex encoded WKB (#2652)
+- chore(worker-utils): Improve version handling (#2651)
+- chore: geoparquet prep (#2650)
+- feat(wkt): Add WKTCRSLoader/Writer (#2649)
+- docs(release-notes): Loaders 4.0 upcoming release notes (#2648)
+- docs: Add whats-new and upgrade-guide to arrowjs docs (#2636)
+- feat(schema): Make geojson-table compatible with GeoJSON (#2644)
+- docs(tile-converter): metadata class selection (#2642)
+- chore(tile-converter): rename (#2641)
+- chore(parquet): Add Buffer polyfill to parquet to avoid bundler complications (#2643)
+
 ### v4.0.0-alpha.24
 
 - fix(tile-converter): geometry attributes reordering performance (#2640)
