@@ -13,7 +13,7 @@ test('TWKBLoader#2D', async (t) => {
   // TODO parseWKB outputs TypedArrays; testCase contains regular arrays
   for (const testCase of Object.values(TEST_CASES)) {
     if (testCase.geoJSON.type === 'GeometryCollection') {
-      continue;
+      continue; // eslint-disable-line
     }
 
     // Big endian
