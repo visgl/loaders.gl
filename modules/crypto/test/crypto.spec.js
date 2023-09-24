@@ -48,7 +48,7 @@ test('crypto#atomic hashes', async (t) => {
       const cryptoHash = getHash(algorithm);
 
       // @ts-expect-error
-      const hash = await cryptoHash.hash(tc, 'base64'.data);
+      const hash = await cryptoHash.hash(tc.data, 'base64');
       const expectedHash = tc.digests[algorithm];
       t.equal(hash, expectedHash, `${algorithm} hash is correct for ${tc.title}`);
     }

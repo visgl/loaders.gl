@@ -24,6 +24,6 @@ test('encodeHexToBase64', (t) => {
 });
 
 test('encodeBase64ToHex', (t) => {
-  t.equal(encodeBase64('D4XXQQ==', 'hex'), 'f85d741');
+  t.equal(encodeBase64('D4XXQQ==', 'hex'), '0f85d741');
   t.end();
 });
