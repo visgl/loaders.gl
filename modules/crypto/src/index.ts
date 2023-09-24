@@ -1,4 +1,8 @@
-// import type {WorkerObject} from '@loaders.gl/worker-utils';
+// loaders.gl, MIT license
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export {CRC32Hash} from './lib/crc32-hash';
 export {CRC32CHash} from './lib/crc32c-hash';
@@ -7,12 +11,6 @@ export {SHA256Hash} from './lib/sha256-hash';
 
 export {CryptoHash} from './lib/crypto-hash';
 export {NodeHash} from './lib/node-hash';
-
-export {hexToBase64 as _hexToBase64, toHex as _toHex} from './lib/utils/digest-utils';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /**
  * Small, fast worker for CRC32, CRC32c and MD5 Hashes
@@ -40,3 +38,8 @@ export const CryptoJSWorker = {
     cryptojs: {}
   }
 };
+
+// EXPERIMENTAL
+
+export {encodeNumber, encodeHex, encodeBase64} from './lib/utils/digest-utils';
+export {asciiToBase64, base64ToAscii} from './lib/utils/base64-utils';

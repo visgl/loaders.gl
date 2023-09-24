@@ -206,7 +206,7 @@ export async function generateHash128FromZip(inputZipFile: string, outputFile: s
     const content = zipEntry[_data].compressedContent;
     if (zipEntry.dir) continue; // eslint-disable-line no-continue
     // eslint-disable-next-line no-undef
-    const hash = await new MD5Hash().hash(Buffer.from(relativePath.toLowerCase()));
+    const hash = await new MD5Hash().hash(Buffer.from(relativePath.toLowerCase()), 'base64');
     // eslint-disable-next-line no-undef
     hashTable.push({key: atob(hash), value: content.byteOffset});
   }

@@ -56,6 +56,12 @@ which now provide a built-in browser-compatible `fetch()` function by default.
 This new built-in Node.js `fetch` function does not support reading from the file system,
 and loaders.gl v4.0 aligns with this practice.
 
+---
+
+**@loaders.gl/crupto**
+
+- All hashes now require an encoding parameter. To get previous behavior, just specify `'base64'`.
+
 **@loaders.gl/arrow**
 
 - Batches now contain a Table with a single `RecordBatch` (instead of just a `RecordBatch`).

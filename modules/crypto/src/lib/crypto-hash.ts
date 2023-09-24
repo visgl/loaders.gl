@@ -53,17 +53,20 @@ export class CryptoHash extends Hash {
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  async hash(input: ArrayBuffer): Promise<string> {
+  async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
     await this.preload();
     // arrayBuffer is accepted, even though types and docs say no
     // https://stackoverflow.com/questions/25567468/how-to-decrypt-an-arraybuffer
     // @ts-expect-error
     const typedWordArray = CryptoJS.lib.WordArray.create(input);
-    return this._hash.update(typedWordArray).finalize().toString(CryptoJS.enc.Base64);
+    // Map our encoding constant to Crypto library
+    const enc = encoding === 'base64' ? CryptoJS.enc.Base64 : CryptoJS.enc.Hex;
+    return this._hash.update(typedWordArray).finalize().toString(enc);
   }
 
   async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     await this.preload();
     for await (const chunk of asyncIterator) {
@@ -74,7 +77,9 @@ export class CryptoHash extends Hash {
       this._hash.update(typedWordArray);
       yield chunk;
     }
-    const hash = this._hash.finalize().toString(CryptoJS.enc.Base64);
-    this.options?.crypto?.onEnd?.({hash});
+    // Map our encoding constant to Crypto library
+    const enc = encoding === 'base64' ? CryptoJS.enc.Base64 : CryptoJS.enc.Hex;
+    const digest = this._hash.finalize().toString(enc);
+    this.options?.crypto?.onEnd?.({hash: digest});
   }
 }

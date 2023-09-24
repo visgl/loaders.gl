@@ -34,7 +34,7 @@ export class NodeHash extends Hash {
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  async hash(input: ArrayBuffer): Promise<string> {
+  async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
     await this.preload();
     const algorithm = this.options?.crypto?.algorithm?.toLowerCase();
     try {
@@ -47,7 +47,8 @@ export class NodeHash extends Hash {
   }
 
   async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     await this.preload();
     const hash = createHash(this.options?.crypto?.algorithm?.toLowerCase());
@@ -57,6 +58,8 @@ export class NodeHash extends Hash {
       hash.update(inputArray);
       yield chunk;
     }
-    this.options?.crypto?.onEnd?.({hash: hash.digest('base64')});
+    // We can pass our encoding constant directly to Node.js digest as it already supports `hex` and `base64`
+    const digest = hash.digest(encoding);
+    this.options?.crypto?.onEnd?.({hash: digest});
   }
 }

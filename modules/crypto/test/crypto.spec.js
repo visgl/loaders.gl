@@ -48,7 +48,7 @@ test('crypto#atomic hashes', async (t) => {
       const cryptoHash = getHash(algorithm);
 
       // @ts-expect-error
-      const hash = await cryptoHash.hash(tc.data);
+      const hash = await cryptoHash.hash(tc, 'base64'.data);
       const expectedHash = tc.digests[algorithm];
       t.equal(hash, expectedHash, `${algorithm} hash is correct for ${tc.title}`);
     }
@@ -98,14 +98,14 @@ test('NodeHash#hash', async (t) => {
   if (!isBrowser) {
     const cryptoHash = new NodeHash({crypto: {algorithm: 'SHA256'}});
 
-    let hash = await cryptoHash.hash(binaryData);
+    let hash = await cryptoHash.hash(binaryData, 'base64');
     t.equal(
       hash,
       'gsoMi29gqdIBCEdTdRJW8VPFx5PQyFPTF4Lv7TJ4eQw=',
       'binary data SHA256 hash is correct'
     );
 
-    hash = await cryptoHash.hash(repeatedData);
+    hash = await cryptoHash.hash(repeatedData, 'base64');
     t.equal(
       hash,
       'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s=',
