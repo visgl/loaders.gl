@@ -1,7 +1,7 @@
 import {FileSystem, isBrowser} from '@loaders.gl/loader-utils';
 import {FileProvider, isFileProvider} from '@loaders.gl/loader-utils';
 import {FileHandleFile} from '@loaders.gl/loader-utils';
-import {ZipCDFileHeader, zipCDFileHeaderGenerator} from '../parse-zip/cd-file-header';
+import {ZipCDFileHeader, makeZipCDHeaderIterator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {DeflateCompression} from '@loaders.gl/compression';
 
@@ -63,7 +63,7 @@ export class ZipFileSystem implements FileSystem {
       throw new Error('No data detected in the zip archive');
     }
     const fileNames: string[] = [];
-    const zipCDIterator = zipCDFileHeaderGenerator(fileProvider);
+    const zipCDIterator = makeZipCDHeaderIterator(fileProvider);
     for await (const cdHeader of zipCDIterator) {
       fileNames.push(cdHeader.fileName);
     }
@@ -126,7 +126,7 @@ export class ZipFileSystem implements FileSystem {
     if (!fileProvider) {
       throw new Error('No data detected in the zip archive');
     }
-    const zipCDIterator = zipCDFileHeaderGenerator(fileProvider);
+    const zipCDIterator = makeZipCDHeaderIterator(fileProvider);
     let result: ZipCDFileHeader | null = null;
     for await (const cdHeader of zipCDIterator) {
       if (cdHeader.fileName === filename) {
