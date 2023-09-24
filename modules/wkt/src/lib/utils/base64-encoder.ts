@@ -25,7 +25,7 @@ export class Base64Encoder {
     return Math.ceil(array.byteLength / 4) * 3;
   }
 
-  decode(array: Uint8Array, target?: ArrayBuffer) {}
+  decode(array: Uint8Array, target?: ArrayBuffer) {} // eslint-disable-line
 }
 
 /*

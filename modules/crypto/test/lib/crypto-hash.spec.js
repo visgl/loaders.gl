@@ -14,7 +14,10 @@ test('CryptoHash#hash(CSV, against external hash)', async (t) => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
-  const hash = await new CryptoHash({modules: {CryptoJS}, crypto: {algorithm: 'MD5'}}).hash(data);
+  const hash = await new CryptoHash({modules: {CryptoJS}, crypto: {algorithm: 'MD5'}}).hash(
+    data,
+    'base64'
+  );
   t.equal(hash, CSV_MD5, 'repeated data MD5 hash is correct');
 
   t.end();
@@ -56,11 +59,11 @@ test('CryptoHash#hash(MD5 = default)', async (t) => {
     crypto: {algorithm: 'MD5'}
   });
 
-  let hash = await cryptoHash.hash(binaryData);
+  let hash = await cryptoHash.hash(binaryData, 'base64');
 
   t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'binary data MD5 hash is correct');
 
-  hash = await cryptoHash.hash(repeatedData);
+  hash = await cryptoHash.hash(repeatedData, 'base64');
   t.equal(
     hash,
     // '2d4uZUoLXXO/XWJGnrVl5Q==',

@@ -26,8 +26,10 @@ export function isTWKB(arrayBuffer: ArrayBuffer): boolean {
   return true;
 }
 
-/** State passed around between parsing functions, extracted from the header */
-type ParseTWKBState = {
+/** Passed around between parsing functions, extracted from the header */
+type TWKBHeader = {
+  geometryType: WKBGeometryType;
+
   hasBoundingBox: boolean;
   hasSizeAttribute: boolean;
   hasIdList: boolean;
@@ -49,6 +51,33 @@ type ParseTWKBState = {
 export function parseTWKBGeometry(arrayBuffer: ArrayBuffer): Geometry {
   const binaryReader = new BinaryReader(arrayBuffer);
 
+  const context = parseTWKBHeader(binaryReader);
+
+  if (context.hasSizeAttribute) {
+    binaryReader.readVarInt();
+  }
+
+  if (context.hasBoundingBox) {
+    let dimensions = 2;
+
+    if (context.hasZ) {
+      dimensions++;
+    }
+    if (context.hasM) {
+      dimensions++;
+    }
+
+    // TODO why are we throwing away these datums?
+    for (let i = 0; i < dimensions; i++) {
+      binaryReader.readVarInt();
+      binaryReader.readVarInt();
+    }
+  }
+
+  return parseGeometry(binaryReader, context, context.geometryType);
+}
+
+function parseTWKBHeader(binaryReader: BinaryReader): TWKBHeader {
   const type = binaryReader.readUInt8();
   const metadataHeader = binaryReader.readUInt8();
 
@@ -76,7 +105,9 @@ export function parseTWKBGeometry(arrayBuffer: ArrayBuffer): Geometry {
     mPrecisionFactor = Math.pow(10, mPrecision);
   }
 
-  const context: ParseTWKBState = {
+  return {
+    geometryType,
+
     precision,
     precisionFactor: Math.pow(10, precision),
 
@@ -93,34 +124,11 @@ export function parseTWKBGeometry(arrayBuffer: ArrayBuffer): Geometry {
     mPrecision,
     mPrecisionFactor
   };
-
-  if (context.hasSizeAttribute) {
-    binaryReader.readVarInt();
-  }
-
-  if (context.hasBoundingBox) {
-    let dimensions = 2;
-
-    if (context.hasZ) {
-      dimensions++;
-    }
-    if (context.hasM) {
-      dimensions++;
-    }
-
-    // TODO why are we throwing away these datums?
-    for (let i = 0; i < dimensions; i++) {
-      binaryReader.readVarInt();
-      binaryReader.readVarInt();
-    }
-  }
-
-  return parseGeometry(binaryReader, context, geometryType);
 }
 
 function parseGeometry(
   binaryReader: BinaryReader,
-  context: ParseTWKBState,
+  context: TWKBHeader,
   geometryType: WKBGeometryType
 ): Geometry {
   switch (geometryType) {
@@ -145,7 +153,7 @@ function parseGeometry(
 
 // GEOMETRIES
 
-function parsePoint(reader: BinaryReader, context: ParseTWKBState): Point {
+function parsePoint(reader: BinaryReader, context: TWKBHeader): Point {
   if (context.isEmpty) {
     return {type: 'Point', coordinates: []};
   }
@@ -153,7 +161,7 @@ function parsePoint(reader: BinaryReader, context: ParseTWKBState): Point {
   return {type: 'Point', coordinates: readFirstPoint(reader, context)};
 }
 
-function parseLineString(reader: BinaryReader, context: ParseTWKBState): LineString {
+function parseLineString(reader: BinaryReader, context: TWKBHeader): LineString {
   if (context.isEmpty) {
     return {type: 'LineString', coordinates: []};
   }
@@ -170,7 +178,7 @@ function parseLineString(reader: BinaryReader, context: ParseTWKBState): LineStr
   return {type: 'LineString', coordinates: points};
 }
 
-function parsePolygon(reader: BinaryReader, context: ParseTWKBState): Polygon {
+function parsePolygon(reader: BinaryReader, context: TWKBHeader): Polygon {
   if (context.isEmpty) {
     return {type: 'Polygon', coordinates: []};
   }
@@ -201,7 +209,7 @@ function parsePolygon(reader: BinaryReader, context: ParseTWKBState): Polygon {
   return {type: 'Polygon', coordinates: polygon};
 }
 
-function parseMultiPoint(reader: BinaryReader, context: ParseTWKBState): MultiPoint {
+function parseMultiPoint(reader: BinaryReader, context: TWKBHeader): MultiPoint {
   if (context.isEmpty) {
     return {type: 'MultiPoint', coordinates: []};
   }
@@ -217,7 +225,7 @@ function parseMultiPoint(reader: BinaryReader, context: ParseTWKBState): MultiPo
   return {type: 'MultiPoint', coordinates};
 }
 
-function parseMultiLineString(reader: BinaryReader, context: ParseTWKBState): MultiLineString {
+function parseMultiLineString(reader: BinaryReader, context: TWKBHeader): MultiLineString {
   if (context.isEmpty) {
     return {type: 'MultiLineString', coordinates: []};
   }
@@ -240,7 +248,7 @@ function parseMultiLineString(reader: BinaryReader, context: ParseTWKBState): Mu
   return {type: 'MultiLineString', coordinates};
 }
 
-function parseMultiPolygon(reader: BinaryReader, context: ParseTWKBState): MultiPolygon {
+function parseMultiPolygon(reader: BinaryReader, context: TWKBHeader): MultiPolygon {
   if (context.isEmpty) {
     return {type: 'MultiPolygon', coordinates: []};
   }
@@ -280,10 +288,7 @@ function parseMultiPolygon(reader: BinaryReader, context: ParseTWKBState): Multi
 }
 
 /** Geometry collection not yet supported */
-function parseGeometryCollection(
-  reader: BinaryReader,
-  context: ParseTWKBState
-): GeometryCollection {
+function parseGeometryCollection(reader: BinaryReader, context: TWKBHeader): GeometryCollection {
   return {type: 'GeometryCollection', geometries: []};
   /**
   if (context.isEmpty) {
@@ -316,11 +321,11 @@ function makePointCoordinates(x: number, y: number, z?: number, m?: number): num
   return (z !== undefined ? (m !== undefined ? [x, y, z, m] : [x, y, z]) : [x, y]) as number[];
 }
 
-function makePreviousPoint(context: ParseTWKBState): number[] {
+function makePreviousPoint(context: TWKBHeader): number[] {
   return makePointCoordinates(0, 0, context.hasZ ? 0 : undefined, context.hasM ? 0 : undefined);
 }
 
-function readFirstPoint(reader: BinaryReader, context: ParseTWKBState): number[] {
+function readFirstPoint(reader: BinaryReader, context: TWKBHeader): number[] {
   const x = zigZagDecode(reader.readVarInt()) / context.precisionFactor;
   const y = zigZagDecode(reader.readVarInt()) / context.precisionFactor;
   const z = context.hasZ ? zigZagDecode(reader.readVarInt()) / context.zPrecisionFactor : undefined;
@@ -333,7 +338,7 @@ function readFirstPoint(reader: BinaryReader, context: ParseTWKBState): number[]
  */
 function parseNextPoint(
   reader: BinaryReader,
-  context: ParseTWKBState,
+  context: TWKBHeader,
   previousPoint: number[]
 ): number[] {
   previousPoint[0] += zigZagDecode(reader.readVarInt()) / context.precisionFactor;

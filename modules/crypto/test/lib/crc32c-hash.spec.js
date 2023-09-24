@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {CRC32CHash, _hexToBase64, _toHex} from '@loaders.gl/crypto';
+import {CRC32CHash, encodeNumber} from '@loaders.gl/crypto';
 import TEST_CASES from './crc32c-test-cases.json';
 
 test('crc32c#additional tests', async (t) => {
@@ -13,14 +13,14 @@ test('crc32c#additional tests', async (t) => {
       const mediaType = tc.charset ? `charset=${tc.charset}` : 'base64';
       const response = await fetchFile(`data:${mediaType},${tc.input}`);
       tc.arrayBuffer = await response.arrayBuffer();
-      tc.expected = _hexToBase64(_toHex(tc.want));
+      tc.expected = encodeNumber(tc.want, 'base64');
     }
-    set.expected = _hexToBase64(_toHex(set));
+    set.expected = encodeNumber(set, 'base64');
 
     // Run the test cases
     for (const tc of set.cases) {
       if (tc.expected && !tc.charset) {
-        const hash = await new CRC32CHash().hash(tc.arrayBuffer);
+        const hash = await new CRC32CHash().hash(tc.arrayBuffer, 'base64');
         t.equals(
           hash,
           tc.expected,
