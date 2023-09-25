@@ -24,6 +24,7 @@ test('buffer.compare', function (t) {
 test('buffer.compare argument validation', function (t) {
   t.throws(function () {
     const b = new BufferPolyfill(1)
+    // @ts-expect-error throws
     BufferPolyfill.compare(b, 'abc')
   })
 
