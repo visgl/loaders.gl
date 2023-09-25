@@ -10,7 +10,8 @@ import {
   Mbs,
   I3SMinimalNodeData,
   Node3DIndexDocument,
-  SceneLayer3D
+  SceneLayer3D,
+  I3SParseOptions
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import { I3SLoader } from '../../i3s-loader';
@@ -90,8 +91,8 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
     nodePagesTile = new I3SNodePagesTiles(tileset, url, options);
     root = await nodePagesTile.formTileFromNodePages(0);
   } else {
-    // @ts-expect-error options is not properly typed
-    const rootNodeUrl = getUrlWithToken(`${url}/nodes/root`, options.i3s?.token);
+    const parseOptions = options.i3s as I3SParseOptions;
+    const rootNodeUrl = getUrlWithToken(`${url}/nodes/root`, parseOptions.token);
     // eslint-disable-next-line no-use-before-define
     root = await load(rootNodeUrl, I3SLoader, {
       ...options,
