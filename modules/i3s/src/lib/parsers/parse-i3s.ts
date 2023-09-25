@@ -91,7 +91,7 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
     root = await nodePagesTile.formTileFromNodePages(0);
   } else {
     // @ts-expect-error options is not properly typed
-    const rootNodeUrl = getUrlWithToken(`${tileset.url}/nodes/root`, options.i3s?.token);
+    const rootNodeUrl = getUrlWithToken(`${url}/nodes/root`, options.i3s?.token);
     // eslint-disable-next-line no-use-before-define
     root = await load(rootNodeUrl, I3SLoader, {
       ...options,
