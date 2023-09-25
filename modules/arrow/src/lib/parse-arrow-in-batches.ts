@@ -53,6 +53,5 @@ export function parseArrowInBatches(
 //     values[name] = batch.getChildAt(index)?.toArray();
 //   });
 //   return {
-
 //   };
 // }

@@ -7,7 +7,7 @@ GeoJSON is a format for encoding a variety of geographic data structures togethe
 
 ## Geometries
 
-Since GeoJSON geometries can be independently useful they are described on a [separate page](./geojson-geometries).
+Since GeoJSON geometries can be independently useful they are described on a [separate page](./geojson-geometry).
 
 ## Alternatives
 
