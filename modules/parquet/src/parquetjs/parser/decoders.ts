@@ -448,11 +448,23 @@ async function decodeDictionaryPage(
     context as ParquetCodecOptions
   );
 
+  // Makes it look a little easier
+  let values: any[];
   if (context?.preserveBinary) {
-    return decodedDictionaryValues.map((d) =>
-      // Convert to ArrayBuffer
-      Buffer.isBuffer(d) ? d.buffer.slice(d.byteOffset, d.byteLength) : d.toString()
-    );
+    values = decodedDictionaryValues.map((d) => preserveBinary(d));
+  } else {
+    values = decodedDictionaryValues.map((d) => d.toString());
   }
-  return decodedDictionaryValues.map((d) => d.toString());
+  return values;
+}
+
+function preserveBinary(d: any): ArrayBuffer | ArrayBufferView | string {
+  if (ArrayBuffer.isView(d)) {
+    return d;
+  }
+  // Convert to ArrayBuffer
+  if (Buffer.isBuffer(d)) {
+    return d.buffer.slice(d.byteOffset, d.byteLength);
+  }
+  return d.toString();
 }

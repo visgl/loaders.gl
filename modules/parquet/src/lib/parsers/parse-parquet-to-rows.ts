@@ -14,6 +14,7 @@ export async function parseParquet(
   options?: ParquetLoaderOptions
 ): Promise<ObjectRowTable | GeoJSONTable> {
   installBufferPolyfill();
+
   const blob = new Blob([arrayBuffer]);
   const file = makeReadableFile(blob);
   const reader = new ParquetReader(file, {

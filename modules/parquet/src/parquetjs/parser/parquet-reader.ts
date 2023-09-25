@@ -228,7 +228,9 @@ export class ParquetReader {
       compression,
       column: field,
       numValues: colChunk.meta_data?.num_values,
-      dictionary: []
+      dictionary: [],
+      // Options - TBD is this the right place for these?
+      preserveBinary: this.props.preserveBinary
     };
 
     let dictionary;

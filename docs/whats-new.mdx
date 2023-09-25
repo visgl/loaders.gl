@@ -62,51 +62,30 @@
   </tbody>
 </table>
 
-- [roadmap](./roadmap) for more details on planned development.
-
-## v4.1 (In Early Development)
-
-Release Date: Target Q1 204
-
-**@loaders.gl/compression**
-
-- `DeflateCompression` and `GzipCompression` now use [`fflate`](https://101arrowz.github.io/fflate/) instead of [`pako`](http://nodeca.github.io/pako/), providing ~20% better performance and smaller bundle size.
-
 
 ## v4.0 (In Development)
 
-Release Date: TBD, Target Sep 2023
+Release Date: TBD, Target Oct 2023
 
 A major release that brings: 
 
 Feature Highlights:
-- Typed loaders: loaders now encode the type of both parsed data and options.
-- Type inference: `load*()` and `parse*()` APIs now infer strict types for both loader options and parsed data from the supplied loader object.
-- Schema types that support cross-worker schema and table exchange (a "serialized Apache Arrow" representation).
-- `Writers` - writers are now provided for a few formats.
+- **Typed loaders** The **`load()`** and **`parse()`** APIs now infer strict types for loader options and return data from the supplied loader object.
+- **Serializable schema types** that support serialization and deserialization (e.g. between workers and main-thread).
+- **Writers** - writers are now provided for a few formats, such as CSV, GeoJSON etc.
+- **Node.js v18** support
+- **Apache Arrow JS v13**
+- **[File format documentation](/docs/formats?README)** - new articles provide information about the file formats supported by loaders.gl loaders.
 
-Integration:
-- Node.js v18 support
-- Integration with Apache Arrow JS v9+
-
-Documentation:
-- [File format documentation](/docs/formats?README) - a growing list of articles that provide additional information about the various file formats supported by loaders.gl.
-
-### Common Modules
+### 4.0 Core Module Updates
 
 **@loaders.gl/core**
 
 - `fetchFile()` now supports fetching from local filesystem in Node.js 
-- Since `@loaders.gl/polyfills` no longer modifies the global fetch function to support local filesystem access.
 
 **@loaders.gl/schema**
 
-- The loaders.gl schema and type system is now a fully serializable counterpart to the Apache Arrow schema and type system. 
-- Among other things, this simplifies transferring schemas between workers.
-
-**loaders.gl/polyfills**
-
-- Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging built-in support in Node.js v18+.
+- The loaders.gl schema and type system is serializable counterpart to the Apache Arrow schema and type system. This simplifies transferring schemas between workers.
 
 **@loaders.gl/loader-utils**
 
@@ -117,68 +96,73 @@ Documentation:
 
 - All hashes now accept an encoding parameter allowing the app to choose between `'hex'` and `'base64'` encoding (rather than getting `'base64'` by default).
 
-### Loader Modules
+**loaders.gl/polyfills**
+
+- Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging the built-in `fetch()` support in Node.js v18+.
+
+### 4.0 Loader Module Updates
 
 **@loaders.gl/gltf**
 
-- More glTF 2.0 extensions support:
-  - [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) - for 1.1 3DTiles attributes support
+- New glTF 2.0 extensions support:
+  - 3DTiles v1.1 attributes supported through [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md)
 
 **@loaders.gl/arrow**
 
-- Now uses `apache-arrow` v13. 
-- Apache Arrow v9 is a breaking change. 
-- Be aware that Apache Arrow JS v9 is a major breaking change compared with Apache Arrow v4 which is used by loaders.gl v3, so if you are using the Arrow API directly you will need to upgrade.
+- Upgrades to latest `apache-arrow` v13. 
 
 **@loaders.gl/csv**
 
-- New [`CSVWriter`](docs/modules/csv/api-reference/csv-writer) allows export of any table in CSV format.
+- New [`CSVWriter`](docs/modules/csv/api-reference/csv-writer) allows export of tables in CSV format.
 
 **@laoders.gl/json**
 
-- New [`JSONWriter`](docs/modules/json/api-reference/json-writer) allows export of any table in JSON format.
-- New [`NDJSONWriter`](docs/modules/json/api-reference/ndjson-writer) allows export of any table in NDJSON format.
-- New [`GeoJSONWriter`](docs/modules/json/api-reference/geojson-writer) allows export of any table in GeoJSON format.
-- New [`NDGeoJSONWriter`](docs/modules/json/api-reference/ndgeojson-writer) allows export of any table in NDGeoJSON format.
+- New [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer) allows export of tables in GeoJSON format.
+- New `JSONWriter` allows export of tables in JSON format.
+- New `NDJSONWriter` allows export of tables in NDJSON format.
+- New `NDGeoJSONWriter` allows export of tables in NDGeoJSON format.
 
 **@loaders.gl/draco**
 
-- Now uses the [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release) _decoders_
-- Note: Still uses the draco3d `v1.4.1` _encoder_ to avoid performance regression.
+- Upgrades decoders to [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release).
 
 **@loaders.gl/wkt**
 
-- New [`WKTCRSLoader`](docs/modules/wkt/api-reference/wkt-crs-loader) (WKT Coordinate Reference System loader)
-- New [`WKTCRSWriter`](docs/modules/wkt/api-reference/wkt-crs-writer) (WKT Coordinate Reference System writer)
+- New [`WKTCRSLoader`](/docs/modules/wkt/api-reference/wkt-crs-loader) (WKT Coordinate Reference System loader)
+- New [`WKTCRSWriter`](/docs/modules/wkt/api-reference/wkt-crs-writer) (WKT Coordinate Reference System writer)
+- New [`TWKBLoader`](/docs/modules/wkt/api-reference/twkb-loader) (Tiny Well-Known Binary loader)
+- New [`TWKBWriter`](/docs/modules/wkt/api-reference/twkb-writer) (Tiny Well-Known Binary writer)
+- New [`HexWKBLoader`](/docs/modules/wkt/api-reference/hex-wkb-loader) (Hex Well-Known Binary loader)
 
 **@loaders.gl/zip**
 
-- `ZipArchive` 
+- `ZipArchive` - can now open large zip archives and read only index or individual paths without loading entire file (in Node.js).
 
-### Tile Modules
+### 4.0 Tile Module Updates
 
 **@loaders.gl/3d-tiles**
 
-- [`Implicit Tiling 1.1`](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling) support
+- [Implicit Tiling 1.1](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling) support
 
 **@loaders.gl/tile-converter**
 
-- Support new 3D Tiles extensions
+- **Offline Mode** - offline conversion. No internet is required during the conversion process.
+- New command-line tools
+  - [`i3s-server`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/i3s-server.md) - serve SLPKs as a local HTTP server
+  - [`slpk-extractor`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/slpk-extractor.md) - extract an SLPK to a dataset that can be served via `i3s-server`
 
+- Support new 3D Tiles extensions
 - Сonversion of S2 bounding volume [3DTILES_bounding_volume_S2](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_bounding_volume_S2/README.md) into [Oriented Bounding Boxes format (OBB)](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/obb.cmn.md)
 - Support conversion of non-indexed geometry
 - [3DTiles archive format (.3tz)](https://github.com/Maxar-Corp/3tz-specification/tree/main) support for conversion into I3S
-- Better [SLPK (I3S archive format)](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#scene-layer-packages-) support:
+- Better [I3S archive format (SLPK)](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#scene-layer-packages-) support:
   - Support Large SLPK (>2gb) input for tile-converter
   - Hash generation for SLPKs without a hash
-  - [`i3s-server`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/i3s-server.md) (part of tile-converter npm package) - serve SLPKs as a local HTTP server
-  - [`slpk-extractor`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/slpk-extractor.md) (part of tile-converter npm package) - extract an SLPK to a dataset that can be served via `i3s-server`
 - Pre-processing for conversion 3DTiles > I3S:
   - Detect topology type (for example TRIANGLE and TRIANGLE_STRIP will pass further for conversion, POINT or TRIANGLE_FAN will notify this mesh type is not supported for conversion)
   - Detect attributes classes for `EXT_feature_metadata` and for `EXT_mesh_features` extensions. Choose a class to convert in CLI with arrow keys.
 - tile-converter performance and usability optimizations:
   - Exclude Tileset 3D and Tile 3D classes during conversion (it gives a RAM usage improvement)
-  - Tile-converter: offline conversion. No internet is required during the conversion process
 
 ## v3.4
 
@@ -277,7 +261,7 @@ Release Date: February 17, 2023.
 **@loaders.gl/wms** (New module)
 
 - New module for parsing WMS (Web Management Service) server responses:
-- [`WMSCapabilitiesLoader`](modules/json/docs/api-reference/wms-capabilities-loader)
+- [`WMSCapabilitiesLoader`](modules/wms/docs/api-reference/wms-capabilities-loader)
 
 **@loaders.gl/xml** (New module)
 

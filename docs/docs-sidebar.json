@@ -130,6 +130,7 @@
       "modules/json/api-reference/json-loader",
       "modules/json/api-reference/ndjson-loader",
       "modules/json/api-reference/geojson-loader",
+      "modules/json/api-reference/geojson-writer",
       "modules/json/api-reference/ndgeojson-loader",
       "modules/kml/api-reference/gpx-loader",
       "modules/kml/api-reference/kml-loader",

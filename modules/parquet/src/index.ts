@@ -1,5 +1,7 @@
 // loaders.gl, MIT license
 
+export {Buffer} from './buffer-polyfill/install-buffer-polyfill';
+
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {
   ObjectRowTable,

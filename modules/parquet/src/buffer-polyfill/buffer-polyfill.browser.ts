@@ -1,11 +1,11 @@
 // luma.gl, MIT license
 
-export {Buffer, Buffer as BufferPolyfill} from './buffer';
-
-import {Buffer} from './buffer';
+import {Buffer as BufferPolyfill} from './buffer';
 
 /** Install Node.js Buffer polyfill (NO-OP in Node.js) */
-export function installBufferPolyfill() {
+export function installBufferPolyfill(): typeof Buffer {
   // @ts-ignore
-  globalThis.Buffer = globalThis.Buffer || Buffer;
+  globalThis.Buffer = globalThis.Buffer || BufferPolyfill;
+  // @ts-ignore
+  return globalThis.Buffer;
 }

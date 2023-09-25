@@ -17,14 +17,10 @@
     },
     {
       type: 'category',
-      label: 'Loaders',
+      label: 'Geospatial Loaders',
       items: [
-        'textures',
-        // 'gltf',
-        'geoparquet',
         'geospatial',
-        'wms',
-        'pointcloud'
+        'wms'
       ],
     },
     {
@@ -37,6 +33,15 @@
         '3d-tiles'
       ]
     },
+    {
+      type: 'category',
+      label: 'General Loaders',
+      items: [
+        'textures',
+        // 'gltf',
+        'pointcloud'
+      ],
+    }
     // {
     //   type: 'category',
     //   label: 'Benchmarks',

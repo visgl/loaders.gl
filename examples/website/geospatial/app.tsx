@@ -12,11 +12,16 @@ import FileUploader from './components/file-uploader';
 
 import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load, /* registerLoaders */} from '@loaders.gl/core';
-import {ParquetLoader} from '@loaders.gl/parquet';
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
+import {Buffer, ParquetLoader} from '@loaders.gl/parquet';
+// import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 // registerLoaders([GeoPackageLoader, FlatGeobufLoader]);
-const LOADERS: Loader[] = [ParquetLoader, GeoPackageLoader, FlatGeobufLoader];
+globalThis.Buffer = Buffer;
+const LOADERS: Loader[] = [
+  ParquetLoader, 
+  FlatGeobufLoader,
+  // GeoPackageLoader, 
+];
 const LOADER_OPTIONS = {
   worker: false,
   gis: {
@@ -24,7 +29,8 @@ const LOADER_OPTIONS = {
     _targetCrs: 'WGS84'
   },
   parquet: {
-    shape: 'geojson-table'
+    shape: 'geojson-table',
+    preserveBinary: true
   }
 }
 
@@ -160,26 +166,27 @@ export default class App extends PureComponent<AppProps, AppState> {
       new GeoJsonLayer({
         id: `geojson-${selectedExample}(${selectedLoader})`,
         data: geojson,
+
+        pickable: true,
+        autoHighlight: true,
+        highlightColor: [0, 255, 0],
+
+        // Visuals
         opacity: 1.0,
         stroked: false,
         filled: true,
         extruded: true,
         wireframe: true,
-        // getElevation: (f) => Math.sqrt(f.properties.valuePerSqm) * 10,
-        getFillColor: [255, 0, 0],
+        // getElevation: (f) => Math.sqrt(f?.properties?.valuePerSqm) * 10,
+        // lines
         getLineColor: [0, 0, 255],
         getLineWidth: 3,
-        pointRadiusScale: 200,
-        getPointRadius: 100,
-        getPointRadiusUnits: 'pixels',
         lineWidthUnits: 'pixels',
-        pickable: true,
-        // dataTransform: (data, previousData) => {
-        //   if (typeof data === 'object' && !Array.isArray(data) && !data.type) {
-        //     return Object.values(data).flat();
-        //   }
-        // return data;
-        // }
+        // point fills
+        getFillColor: [255, 0, 0],
+        getPointRadius: 100,
+        pointRadiusScale: 500,
+        // pointRadiusUnits: 'pixels',
       })
     ];
   }
@@ -195,6 +202,16 @@ export default class App extends PureComponent<AppProps, AppState> {
           viewState={viewState}
           onViewStateChange={this._onViewStateChange}
           controller={{type: MapController, maxPitch: 85}}
+          getTooltip={({object}) => object && {
+            html: `\
+<h2>${object.properties?.name}</h2>
+<div>${object.geometry?.coordinates?.[0]}</div>
+<div>${object.geometry?.coordinates?.[1]}</div>`,
+            style: {
+              backgroundColor: '#ddd',
+              fontSize: '0.8em'
+            }
+          }}
         >
           <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
 
