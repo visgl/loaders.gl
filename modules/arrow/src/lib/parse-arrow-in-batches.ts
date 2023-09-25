@@ -1,5 +1,5 @@
 // TODO - this import defeats the sophisticated typescript checking in ArrowJS
-import {ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTableBatch} from './arrow-table';
 import {RecordBatchReader, Table as ApacheArrowTable} from 'apache-arrow';
 // import {isIterable} from '@loaders.gl/core';
 

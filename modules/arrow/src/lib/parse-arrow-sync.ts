@@ -1,4 +1,5 @@
-import type {ArrowTable, ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from './arrow-table';
 import {convertTable} from '@loaders.gl/schema';
 import {tableFromIPC} from 'apache-arrow';
 import type {ArrowLoaderOptions} from '../arrow-loader';
