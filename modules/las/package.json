@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/las",
-  "version": "4.0.0-alpha.25",
+  "version": "4.0.0-alpha.26",
   "description": "Framework-independent loader for the LAS and LAZ formats",
   "license": "MIT",
   "publishConfig": {
@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.25",
-    "@loaders.gl/schema": "4.0.0-alpha.25",
+    "@loaders.gl/loader-utils": "4.0.0-alpha.26",
+    "@loaders.gl/schema": "4.0.0-alpha.26",
     "apache-arrow": "^13.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"

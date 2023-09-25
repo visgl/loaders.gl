@@ -6,6 +6,11 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-alpha.26
+
+- Fixes for deck.gl 8.10 (#2658)
+- feat(crypto): Add encoding parameter for hashes (#2657)
+
 ### v4.0.0-alpha.25
 
 - fix(gltf): tests for ext-feature-metadata (#2656)
