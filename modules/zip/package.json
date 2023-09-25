@@ -32,7 +32,8 @@
   "dependencies": {
     "@loaders.gl/compression": "4.0.0-alpha.25",
     "@loaders.gl/loader-utils": "4.0.0-alpha.25",
-    "jszip": "^3.1.5"
+    "jszip": "^3.1.5",
+    "md5": "^2.3.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

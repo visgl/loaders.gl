@@ -17,7 +17,8 @@ export function getTableLength(table: Table): number {
       return table.features.length;
 
     case 'arrow-table':
-      return table.data.numRows;
+      const arrowTable = table.data as any;
+      return arrowTable.numRows;
 
     case 'columnar-table':
       for (const column of Object.values(table.data)) {
@@ -50,7 +51,8 @@ export function getTableNumCols(table: Table): number {
     case 'columnar-table':
       return Object.keys(table.data).length;
     case 'arrow-table':
-      return table.data.numCols;
+      const arrowTable = table.data as any;
+      return arrowTable.numCols;
     default:
       throw new Error('table');
   }
@@ -74,10 +76,11 @@ export function getTableCell(table: Table, rowIndex: number, columnName: string)
       return column[rowIndex];
 
     case 'arrow-table':
-      const arrowColumnIndex = table.data.schema.fields.findIndex(
+      const arrowTable = table.data as any;
+      const arrowColumnIndex = arrowTable.schema.fields.findIndex(
         (field) => field.name === columnName
       );
-      return table.data.getChildAt(arrowColumnIndex)?.get(rowIndex);
+      return arrowTable.getChildAt(arrowColumnIndex)?.get(rowIndex);
 
     default:
       throw new Error('todo');
@@ -104,7 +107,8 @@ export function getTableCellAt(table: Table, rowIndex: number, columnIndex: numb
       return column[rowIndex];
 
     case 'arrow-table':
-      return table.data.getChildAt(columnIndex)?.get(rowIndex);
+      const arrowTable = table.data as any;
+      return arrowTable.getChildAt(columnIndex)?.get(rowIndex);
 
     default:
       throw new Error('todo');
@@ -201,9 +205,10 @@ export function getTableRowAsObject(
       }
 
     case 'arrow-table':
+      const arrowTable = table.data as any;
       const objectRow: {[columnName: string]: unknown} = target || {};
-      const row = table.data.get(rowIndex);
-      const schema = table.data.schema;
+      const row = arrowTable.get(rowIndex);
+      const schema = arrowTable.schema;
       for (let i = 0; i < schema.fields.length; i++) {
         objectRow[schema.fields[i].name] = row?.[schema.fields[i].name];
       }
@@ -272,9 +277,10 @@ export function getTableRowAsArray(
       }
 
     case 'arrow-table':
+      const arrowTable = table.data as any;
       const arrayRow: unknown[] = target || [];
-      const row = table.data.get(rowIndex);
-      const schema = table.data.schema;
+      const row = arrowTable.get(rowIndex);
+      const schema = arrowTable.schema;
       for (let i = 0; i < schema.fields.length; i++) {
         arrayRow[i] = row?.[schema.fields[i].name];
       }

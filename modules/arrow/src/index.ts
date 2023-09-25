@@ -1,6 +1,10 @@
+// loaders.gl, MIT
+
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowLoaderOptions} from './arrow-loader';
-import {ArrowTable, ArrowTableBatch, ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {ArrowTableBatch, ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from './lib/arrow-table';
+
 import {TableBatchBuilder} from '@loaders.gl/schema';
 import {ArrowLoader as ArrowWorkerLoader} from './arrow-loader';
 import parseSync from './lib/parse-arrow-sync';
@@ -12,6 +16,7 @@ import {ArrowTableBatchAggregator} from './lib/arrow-table-batch';
 TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
 
 // Types
+export type {ArrowTable, ArrowTableBatch} from './lib/arrow-table';
 export {VECTOR_TYPES} from './types';
 
 // Arrow writer

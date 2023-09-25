@@ -1,15 +1,14 @@
 // loaders.gl, MIT license
 
-import type {Table as ApacheArrowTable} from 'apache-arrow';
 import type {Schema} from './schema';
 import type {Batch} from './batch';
 import type {Feature} from './category-gis';
 
-// Idea was to just import types, but it seems
-// Seems this triggers more bundling and build issues than it is worth...
-// import type {Table as ApacheArrowTable, RecordBatch} from 'apache-arrow';
-// type ApacheArrowTable = any;
-// type RecordBatch = any;
+// Avoid a big dependency, apparently even a type import can pull in a lot of code
+// import type {Table as ApacheArrowTable} from 'apache-arrow';
+
+type ApacheArrowTable = unknown;
+type ApacheRecordBatch = unknown;
 
 /** A general table */
 export type Table =
@@ -122,7 +121,6 @@ export type ArrowTableBatch = Batch & {
   shape: 'arrow-table';
   schemaType?: 'explicit' | 'deduced';
   schema?: Schema;
-  data: ApacheArrowTable;
-  // recordBatch: RecordBatch;
+  data: ApacheRecordBatch;
   length: number;
 };
