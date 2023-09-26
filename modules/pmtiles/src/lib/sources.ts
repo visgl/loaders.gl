@@ -1,8 +1,9 @@
+/*
 import {fetchFile} from '@loaders.gl/core';
 
 import {Source as PMTilesSource, RangeResponse} from 'pmtiles';
 
-/** @note "source" here is a PMTiles library type, referring to  */
+/** @note "source" here is a PMTiles library type, referring to  *
 export function makeSource(data: string | Blob, fetch?) {
   if (typeof data === 'string') {
     return new FetchSource(data, fetch);
@@ -24,7 +25,6 @@ export class BlobSource implements PMTilesSource {
 
   // TODO - how is this used?
   getKey() {
-    // @ts-expect-error
     return this.blob.url || '';
   }
 
@@ -63,7 +63,7 @@ export class FetchSource implements PMTilesSource {
     }
 
     let response = await fetch(this.url, {
-      signal: signal,
+      signal,
       headers: {Range: `bytes=${offset}-${offset + length - 1}`}
     });
 
@@ -76,7 +76,7 @@ export class FetchSource implements PMTilesSource {
         // some well-behaved backends, e.g. DigitalOcean CDN, respond with 200 instead of 206
         // but we also need to detect no support for Byte Serving which is returning the whole file
         const content_length = response.headers.get('Content-Length');
-        if (!content_length || +content_length > length) {
+        if (!content_length || Number(content_length) > length) {
           if (controller) {
             controller.abort();
           }
@@ -92,12 +92,12 @@ export class FetchSource implements PMTilesSource {
         // See https://github.com/protomaps/PMTiles/issues/90
         if (offset === 0) {
           const content_range = response.headers.get('Content-Range');
-          if (!content_range || !content_range.startsWith('bytes */')) {
+          if (!content_range || !content_range.startsWith('bytes *')) {
             throw Error('Missing content-length on 416 response');
           }
-          const actual_length = +content_range.substr(8);
+          const actual_length = Number(content_range.substr(8));
           response = await fetch(this.url, {
-            signal: signal,
+            signal,
             headers: {Range: `bytes=0-${actual_length - 1}`}
           });
         }
