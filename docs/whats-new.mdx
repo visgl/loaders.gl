@@ -69,47 +69,29 @@ Release Date: TBD, Target Oct 2023
 
 A major release that brings: 
 
-Feature Highlights:
-- **Typed loaders** The **`load()`** and **`parse()`** APIs now infer strict types for loader options and return data from the supplied loader object.
-- **Serializable schema types** that support serialization and deserialization (e.g. between workers and main-thread).
-- **Writers** - writers are now provided for a few formats, such as CSV, GeoJSON etc.
-- **Node.js v18** support
-- **Apache Arrow JS v13**
-- **[File format documentation](/docs/formats?README)** - new articles provide information about the file formats supported by loaders.gl loaders.
+- **Typed loaders** The **`load()`** and **`parse()`** APIs now infer types from the supplied loader.
+- **More Writers** loaders are complemented by writers for formats such as CSV, GeoJSON etc.
+- **Node.js v18** support.
+- **[File format documentation](/docs/formats?README)** - articles describing the file formats supported by loaders.gl.
 
-### 4.0 Core Module Updates
+### Loader Module Updates
 
-**@loaders.gl/core**
+**@loaders.gl/pmtiles** - NEW
 
-- `fetchFile()` now supports fetching from local filesystem in Node.js 
+- Supports the [PMTiles](/docs/modules/pmtiles/formats/pmtiles) format.
+- New experimental [`PMTilesLoader`](/docs/modules/parquet/api-reference/parquet-loader)
+- New experimental [`PMTilesService`](/docs/modules/parquet/api-reference/parquet-loader)
+- New [PMTiles example](/examples/pmtiles).
 
-**@loaders.gl/schema**
+**@loaders.gl/parquet** 
 
-- The loaders.gl schema and type system is serializable counterpart to the Apache Arrow schema and type system. This simplifies transferring schemas between workers.
-
-**@loaders.gl/loader-utils**
-
-- New functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
-- `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()`
-
-**@loaders.gl/crypto**
-
-- All hashes now accept an encoding parameter allowing the app to choose between `'hex'` and `'base64'` encoding (rather than getting `'base64'` by default).
-
-**loaders.gl/polyfills**
-
-- Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging the built-in `fetch()` support in Node.js v18+.
-
-### 4.0 Loader Module Updates
-
-**@loaders.gl/gltf**
-
-- New glTF 2.0 extensions support:
-  - 3DTiles v1.1 attributes supported through [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md)
+- Supports the [Parquet](/docs/modules/parquet/formats/parquet) and [GeoParquet](/docs/modules/parquet/formats/geoparquet) file formats.
+- [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) now supports loading GeoParquet files.
+- New [GeoParquet example](/examples/geospatial).
 
 **@loaders.gl/arrow**
 
-- Upgrades to latest `apache-arrow` v13. 
+- Now uses latest [`apache-arrow` v13](/docs/arrowjs/whats-new#v130). 
 
 **@loaders.gl/csv**
 
@@ -122,10 +104,6 @@ Feature Highlights:
 - New `NDJSONWriter` allows export of tables in NDJSON format.
 - New `NDGeoJSONWriter` allows export of tables in NDGeoJSON format.
 
-**@loaders.gl/draco**
-
-- Upgrades decoders to [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release).
-
 **@loaders.gl/wkt**
 
 - New [`WKTCRSLoader`](/docs/modules/wkt/api-reference/wkt-crs-loader) (WKT Coordinate Reference System loader)
@@ -136,13 +114,22 @@ Feature Highlights:
 
 **@loaders.gl/zip**
 
-- `ZipArchive` - can now open large zip archives and read only index or individual paths without loading entire file (in Node.js).
+- `ZipArchive` - now opens large zip archives without loading entire file (in Node.js).
 
-### 4.0 Tile Module Updates
+**@loaders.gl/gltf**
+
+- Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) gltF extensions for 3D Tiles v1.1.
 
 **@loaders.gl/3d-tiles**
 
-- [Implicit Tiling 1.1](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling) support
+- 3D Tiles v1.1 [Implicit Tiling](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling)
+- 3D Tiles v1.1 attributes (via the new glTF extensions).
+
+**@loaders.gl/draco**
+
+- Decoders upgraded to [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release).
+
+### Tile Converter Updates
 
 **@loaders.gl/tile-converter**
 
@@ -163,6 +150,30 @@ Feature Highlights:
   - Detect attributes classes for `EXT_feature_metadata` and for `EXT_mesh_features` extensions. Choose a class to convert in CLI with arrow keys.
 - tile-converter performance and usability optimizations:
   - Exclude Tileset 3D and Tile 3D classes during conversion (it gives a RAM usage improvement)
+
+### Core Module Updates
+
+**@loaders.gl/core**
+
+- `fetchFile()` now supports fetching from local filesystem in Node.js 
+
+**@loaders.gl/schema**
+
+- The loaders.gl schema and type system is serializable counterpart to the Apache Arrow schema and type system. This simplifies transferring schemas between workers.
+
+**@loaders.gl/crypto**
+
+- All hashes now accept an encoding parameter allowing the app to choose between `'hex'` and `'base64'` encoding (rather than getting `'base64'` by default).
+
+**@loaders.gl/loader-utils**
+
+- New functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
+- `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()`
+
+**loaders.gl/polyfills**
+
+- Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging the built-in `fetch()` support in Node.js v18+.
+
 
 ## v3.4
 

@@ -1,36 +1,34 @@
 # Upgrade Guide
 
-## Upgrading to Node.js v18+
+## Upgrading to loaders.gl v4.0
 
-loaders.gl v3 does not support Node.js versions higher than v16.
+**Node.js v18+**
 
 When using loaders.gl v4.0 on Node.js v18+, you no longer need to import the 
-`@loaders.gl/polyfills` module to get access to the global `fetch()`function 
-
-## Upgrading to loaders.gl v4.0
+`@loaders.gl/polyfills` module to get access to the global `fetch()`function.
 
 **Typed Loaders**
 
-Loaders now return typed data. While this sudden injection of types into previously untyped code can generated type errors in applications that have been making the wrong assumptions about what was returned from loaders, those errors will likely be valid and should just be fixed in the application.
+Loaders now return typed data. This sudden injection of types into previously untyped code can generated type errors in applications. These type errors will typically mean have been making wrong or unsafe assumptions about what is being returned from the loader in question. That is, those errors will likely be valid and should be fixed in the application.
 
-In the interest of offering the most rigorous typing of returned data, some loaders now offer fewer options for the returned data type, and the trend in loaders.gl 3.x of offering a growing selection of return formats (or `shapes`) from each loader has now been reversed, in favor of offering a single core return data type, accompanied by optional conversion functions.
+Some loaders can return different formats, often controlled with the loader options `shape` parameter. Note that many returned data types now include a `shape` field which contain a string value the specifies the shape of the data. By checking this field you can quickly determine which type of data was returned.
 
 **Apache Arrow JS** 
 
-loaders.gl now imports `apache-arrow` v13 which is a major upgrade. Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_). 
+loaders.gl now imports `apache-arrow` v13 which is a major upgrade but Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_). 
 
 If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes. 
 
 On the upside, the new Apache Arrow API is more modular and "tree shakeable" (meaning that only the Apache Arrow functionality your application is actually using is included in your application bundle). 
 
-Unfortunately, Apache Arrow JS does yet not come with great release or upgrade notes, however the changes are fairly superficial and relatively easy to work through.
+Since Apache Arrow JS does yet not come with upgrade notes, you can refer to the [loaders.gl Arrow documentation](/docs/arrowjs/upgrade-guide).
 
 **Table Schemas** 
 
 If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" loaders.gl schemas. You can recover an Arrow schema as follows
 
 ```typescript
-import {deserializeArrowSchema} from '@loaders.gl/schema-utils`;
+import {deserializeArrowSchema} from '@loaders.gl/schema-utils';
 const table = load(url, ParquetLoader);
 const arrowSchema = deserializeArrowSchema(table.schema);
 ```
@@ -58,7 +56,7 @@ and loaders.gl v4.0 aligns with this practice.
 
 ---
 
-**@loaders.gl/crupto**
+**@loaders.gl/crypto**
 
 - All hashes now require an encoding parameter. To get previous behavior, just specify `'base64'`.
 
