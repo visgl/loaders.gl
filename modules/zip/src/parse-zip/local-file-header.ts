@@ -39,7 +39,11 @@ export const parseZipLocalFileHeader = async (
   headerOffset: bigint,
   buffer: FileProvider
 ): Promise<ZipLocalFileHeader | null> => {
-  if (Buffer.from(await buffer.slice(headerOffset, headerOffset + 4n)).compare(Buffer.from(signature)) !== 0) {
+  if (
+    Buffer.from(await buffer.slice(headerOffset, headerOffset + 4n)).compare(
+      Buffer.from(signature)
+    ) !== 0
+  ) {
     return null;
   }
 

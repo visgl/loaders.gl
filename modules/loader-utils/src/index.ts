@@ -145,7 +145,11 @@ export type {ImageSourceProps, ImageSourceMetadata} from './lib/sources/image-so
 export type {GetImageParameters} from './lib/sources/image-source';
 export {ImageSource} from './lib/sources/image-source';
 
-export type {TileSourceProps, TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
+export type {
+  TileSourceProps,
+  TileSourceMetadata,
+  GetTileParameters
+} from './lib/sources/tile-source';
 export {TileSource} from './lib/sources/tile-source';
 
 export type {ImageTileSourceProps} from './lib/sources/image-tile-source';

@@ -4,7 +4,7 @@
 import {DataSource, DataSourceProps} from './data-source';
 
 /**
- * Normalized capabilities of an Image service 
+ * Normalized capabilities of an Image service
  * Sources are expected to normalize the response to capabilities
  * @example
  *  A WMS service would normalize the response to the WMS `GetCapabilities` data structure extracted from WMS XML response

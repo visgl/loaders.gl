@@ -498,7 +498,7 @@ export class WMSService extends ImageSource<WMSServiceProps> {
         break;
 
       default:
-        // do nothing
+      // do nothing
     }
 
     key = key.toUpperCase();

@@ -31,14 +31,13 @@ export class BlobSource implements PMTilesSource {
   async getBytes(offset: number, length: number, signal?: AbortSignal): Promise<RangeResponse> {
     const data = await this.blob.arrayBuffer();
     return {
-      data,
+      data
       // etag: response.headers.get('ETag') || undefined,
       // cacheControl: response.headers.get('Cache-Control') || undefined,
       // expires: response.headers.get('Expires') || undefined
     };
   }
 }
-
 
 export class FetchSource implements PMTilesSource {
   url: string;
