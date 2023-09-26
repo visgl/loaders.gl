@@ -4,8 +4,8 @@ import {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 
-import type {ImageSourceMetadata, GetImageParameters} from '../../sources/image-source';
-import {ImageSource} from '../../sources/image-source';
+import type {ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
+import {ImageSource} from '@loaders.gl/loader-utils';
 
 /** Template URL string should contain `${width}` etc which will be substituted. */
 export type ImageServiceProps = {

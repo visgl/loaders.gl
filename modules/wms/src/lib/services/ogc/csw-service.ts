@@ -2,8 +2,8 @@
 
 /* eslint-disable camelcase */
 
-import type {DataSourceProps} from '../../sources/data-source';
-import {DataSource} from '../../sources/data-source';
+import type {DataSourceProps} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/loader-utils';
 
 import type {CSWCapabilities} from '../../../csw-capabilities-loader';
 import {CSWCapabilitiesLoader} from '../../../csw-capabilities-loader';

@@ -78,6 +78,8 @@
       "@loaders.gl/parquet/test": ["modules/parquet/test"],
       "@loaders.gl/pcd": ["modules/pcd/src"],
       "@loaders.gl/pcd/test": ["modules/pcd/test"],
+      "@loaders.gl/pmtiles": ["modules/pmtiles/src"],
+      "@loaders.gl/pmtiles/test": ["modules/pmtiles/test"],
       "@loaders.gl/ply": ["modules/ply/src"],
       "@loaders.gl/ply/test": ["modules/ply/test"],
       "@loaders.gl/potree": ["modules/potree/src"],

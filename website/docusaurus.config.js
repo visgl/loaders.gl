@@ -78,6 +78,7 @@ const config = {
             '@loaders.gl/parquet': resolve('../modules/parquet/src'),
             '@loaders.gl/pcd': resolve('../modules/pcd/src'),
             '@loaders.gl/ply': resolve('../modules/ply/src'),
+            '@loaders.gl/pmtiles': resolve('../modules/pmtiles/src'),
             '@loaders.gl/polyfills': resolve('../modules/polyfills/src'),
             '@loaders.gl/potree': resolve('../modules/potree/src'),
             '@loaders.gl/schema': resolve('../modules/schema/src'),

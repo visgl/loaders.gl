@@ -50,10 +50,14 @@ import '@loaders.gl/tiles/test';
 import '@loaders.gl/geopackage/test';
 import '@loaders.gl/gis/test';
 import '@loaders.gl/kml/test';
-import '@loaders.gl/mvt/test';
 import '@loaders.gl/shapefile/test';
 import '@loaders.gl/wkt/test';
 import '@loaders.gl/wms/test';
+
+import '@loaders.gl/mvt/test';
+
+// Range request archive style formats
+import '@loaders.gl/pmtiles/test';
 
 // Table Formats
 import '@loaders.gl/schema/test';

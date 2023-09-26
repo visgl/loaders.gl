@@ -1,12 +1,13 @@
 // loaders.gl, MIT license
 
-import type {ImageType} from '@loaders.gl/images';
+// import type {ImageType} from '@loaders.gl/images';
 import {DataSource, DataSourceProps} from './data-source';
 
 /**
  * Normalized capabilities of an Image service
+ * Sources are expected to normalize the response to capabilities
  * @example
- *  The WMSService will normalize the response to the WMS `GetCapabilities` data structure extracted from WMS XML response
+ *  A WMS service would normalize the response to the WMS `GetCapabilities` data structure extracted from WMS XML response
  *  into an TileSourceMetadata.
  */
 export type TileSourceMetadata = {
@@ -23,6 +24,9 @@ export type TileSourceMetadata = {
   };
 };
 
+/**
+ * Description of one data layer in the image source
+ */
 export type TileSourceLayer = {
   name: string;
   title?: string;
@@ -31,6 +35,9 @@ export type TileSourceLayer = {
   layers: TileSourceLayer[];
 };
 
+/**
+ * Generic parameters for requesting an image from an image source
+ */
 export type GetTileParameters = {
   /** Layers to render */
   layers: string | string[];
@@ -48,7 +55,25 @@ export type GetTileParameters = {
   format?: 'image/png';
 };
 
-type TileSourceProps = DataSourceProps;
+export type TileLoadParameters = {
+  index: {x: number; y: number; z: number};
+  id: string;
+  bbox: TileBoundingBox;
+  zoom?: number;
+  url?: string | null;
+  signal?: AbortSignal;
+  userData?: Record<string, any>;
+};
+
+/** deck.gl compatible bounding box */
+export type TileBoundingBox = NonGeoBoundingBox | GeoBoundingBox;
+export type GeoBoundingBox = {west: number; north: number; east: number; south: number};
+export type NonGeoBoundingBox = {left: number; top: number; right: number; bottom: number};
+
+/**
+ * Props for a TileSource
+ */
+export type TileSourceProps = DataSourceProps;
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) extents
@@ -57,5 +82,8 @@ type TileSourceProps = DataSourceProps;
  */
 export abstract class TileSource<PropsT extends TileSourceProps> extends DataSource<PropsT> {
   abstract getMetadata(): Promise<TileSourceMetadata>;
-  abstract getTile(parameters: GetTileParameters): Promise<ImageType>;
+  /** Flat parameters */
+  abstract getTile(parameters: GetTileParameters): Promise<unknown>;
+  /** deck.gl compatible method */
+  abstract getTileData(parameters: TileLoadParameters): Promise<unknown>;
 }
