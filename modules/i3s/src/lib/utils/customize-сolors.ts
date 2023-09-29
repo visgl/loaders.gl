@@ -5,6 +5,7 @@ import {load} from '@loaders.gl/core';
 import {getAttributeValueType, I3SAttributeLoader} from '../../i3s-attribute-loader';
 import {I3SLoaderOptions} from '../../i3s-loader';
 import {getUrlWithToken} from './url-utils';
+import {I3STileAttributes} from '../parsers/parse-i3s-attribute';
 
 /**
  * Modify vertex colors array to visualize 3D objects in a attribute driven way
@@ -127,7 +128,7 @@ async function loadFeatureAttributeData(
   {attributeUrls}: I3STileOptions,
   {attributeStorageInfo}: I3STilesetOptions,
   options?: I3SLoaderOptions
-): Promise<{[key: string]: string[] | Uint32Array | Uint16Array | Float64Array | null} | null> {
+): Promise<I3STileAttributes | null> {
   const attributeIndex = attributeStorageInfo.findIndex(({name}) => attributeName === name);
   if (attributeIndex === -1) {
     return null;
@@ -139,6 +140,5 @@ async function loadFeatureAttributeData(
     attributeType
   });
 
-  // @ts-expect-error TODO action engine
   return objectIdAttributeData;
 }
