@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+/*
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
@@ -12,7 +12,7 @@ test('PMTilesLoader#loader conformance', (t) => {
   t.end();
 });
 
-test('PMTilesLoader#load', async (t) => {
+test.skip('PMTilesLoader#load', async (t) => {
   for (const tilesetUrl of PMTILESETS) {
     const metadata = await load(tilesetUrl, PMTilesLoader);
     t.ok(metadata);

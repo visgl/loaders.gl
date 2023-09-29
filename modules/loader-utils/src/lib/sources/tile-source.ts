@@ -8,11 +8,26 @@
  *  into an TileSourceMetadata.
  */
 export type TileSourceMetadata = {
-  name: string;
+  format?: string;
+  formatHeader?: unknown;
+
+  /** Name of the tileset (extracted from JSON metadata if available) */
+  name?: string;
   title?: string;
   abstract?: string;
-  keywords: string[];
-  layer: {
+  keywords?: string[];
+  /** Attribution string (extracted from JSON metadata if available) */
+  attributions?: string[];
+
+  /** Minimal zoom level of tiles in this tileset */
+  minZoom?: number;
+  /** Maximal zoom level of tiles in this tileset */
+  maxZoom?: number;
+  /** Bounding box of tiles in this tileset `[[w, s], [e, n]]`  */
+  boundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
+
+  /** Layer information */
+  layer?: {
     name: string;
     title?: string;
     srs?: string[];

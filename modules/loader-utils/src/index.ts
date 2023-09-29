@@ -150,8 +150,8 @@ export type {
   TileSourceMetadata,
   GetTileParameters
 } from './lib/sources/tile-source';
-export {TileSource} from './lib/sources/tile-source';
+export type {TileSource} from './lib/sources/tile-source';
 
-export {ImageTileSource} from './lib/sources/image-tile-source';
+export type {ImageTileSource} from './lib/sources/image-tile-source';
 
-export {VectorTileSource} from './lib/sources/vector-tile-source';
+export type {VectorTileSource} from './lib/sources/vector-tile-source';

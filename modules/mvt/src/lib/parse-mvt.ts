@@ -25,7 +25,8 @@ import VectorTileFeatureMapBox from './mapbox-vector-tile/vector-tile-feature';
 export default function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
   const mvtOptions = normalizeOptions(options);
 
-  const shape = options?.gis?.format || options?.mvt?.shape;
+  const shape: string | undefined =
+    options?.gis?.format || options?.mvt?.shape || (options?.shape as string);
   switch (shape) {
     case 'columnar-table': // binary + some JS arrays
       return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions)};
@@ -44,7 +45,7 @@ export default function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOp
     case 'binary':
       return parseToBinary(arrayBuffer, mvtOptions);
     default:
-      throw new Error(shape);
+      throw new Error(shape || 'undefined shape');
   }
 }
 

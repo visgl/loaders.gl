@@ -6,8 +6,9 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react/typed';
 import {MapView} from '@deck.gl/core/typed';
 import {TileLayer} from '@deck.gl/geo-layers/typed';
-import {BitmapLayer, PathLayer} from '@deck.gl/layers/typed';
-import {PMTilesImageSource} from '@loaders.gl/pmtiles';
+import {BitmapLayer, GeoJsonLayer} from '@deck.gl/layers/typed';
+import {} from '@deck.gl/geo-layers/typed';
+import {PMTilesSource} from '@loaders.gl/pmtiles';
 
 const INITIAL_VIEW_STATE = {
   latitude: 47.65,
@@ -36,58 +37,82 @@ const LINK_STYLE = {
 /* global window */
 const devicePixelRatio = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
 
-function getTooltip({tile}) {
-  if (tile) {
-    const {x, y, z} = tile.index;
-    return `tile: x: ${x}, y: ${y}, z: ${z}`;
-  }
-  return null;
-}
-
-// const vectorTileSource = new PMTilesVectorSource({
-//   url: "https://r2-public.protomaps.com/protomaps-sample-datasets/nz-buildings-v3.pmtiles",
-//   attributions: ["© Land Information New Zealand"],
+// export const rasterTileSource = new PMTilesSource({
+//   url:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles"
+//   // tileSize: [512,512]
 // });
 
-const rasterTileSource = new PMTilesImageSource({
-  url:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles"
-  // attributions:["https://github.com/tilezen/joerd/blob/master/docs/attribution.md"],
-  // tileSize: [512,512]
+export const vectorTileSource = new PMTilesSource({
+  url: "https://r2-public.protomaps.com/protomaps-sample-datasets/nz-buildings-v3.pmtiles",
+  attributions: ["© Land Information New Zealand"],
 });
 
+const tileSource = vectorTileSource;
+
+let metadata = await tileSource.metadata;
+
 export default function App({showBorder = false, onTilesLoad = null}) {
+  console.log(metadata.name, metadata.attributions?.[0]);
+  console.debug(metadata);
+
+  const initialViewState = INITIAL_VIEW_STATE;
+  initialViewState.zoom = metadata.centerZoom;
+  if (metadata.center[0] !== 0 && metadata.center[1] !== 0) {
+    initialViewState.longitude = metadata.center[0];
+    initialViewState.latitude = metadata.center[1];
+  }
+
   const tileLayer = new TileLayer({
-    // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tile_servers
-    data: [
-      'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
-    ],
-    getTileData: rasterTileSource.getTileData,
-    // Since these OSM tiles support HTTP/2, we can make many concurrent requests
-    // and we aren't limited by the browser to a certain number per domain.
+    getTileData: tileSource.getTileData,
+    // Assume the pmtiles file support HTTP/2, so we aren't limited by the browser to a certain number per domain.
     maxRequests: 20,
 
     pickable: true,
     onViewportLoad: onTilesLoad,
     autoHighlight: showBorder,
     highlightColor: [60, 60, 60, 40],
-    // https://wiki.openstreetmap.org/wiki/Zoom_levels
-    minZoom: 0,
-    maxZoom: 19,
+    minZoom: metadata.minZoom,
+    maxZoom: metadata.maxZoom,
     tileSize: 256,
     zoomOffset: devicePixelRatio === 1 ? -1 : 0,
-    renderSubLayers: props => {
-      const {
-        bbox: {west, south, east, north}
-      } = props.tile;
+    renderSubLayers
+  });
 
-      return [
-        new BitmapLayer(props, {
+  return (
+    <DeckGL
+      layers={[tileLayer]}
+      views={new MapView({repeat: true})}
+      initialViewState={initialViewState}
+      controller={true}
+      getTooltip={getTooltip}
+    >
+      <div style={COPYRIGHT_LICENSE_STYLE}>
+        {metadata.attributions?.map(attribution => <div key={attribution}>{attribution}</div>)}
+      </div>
+    </DeckGL>
+  );
+}
+
+function renderSubLayers(props) {
+    const {bbox: {west, south, east, north}} = props.tile;
+
+    switch (metadata.mimeType) {
+      case 'application/vnd.mapbox-vector-tile':
+        console.log(props.data)
+        return new GeoJsonLayer({
+          id: `${props.id}-geojson`,
+          data: props.data,
+          pickable: true,
+          getFillColor: [0, 190, 80, 255],
+        });
+
+      default:
+        return new BitmapLayer(props, {
           data: null,
           image: props.data,
-          bounds: [west, south, east, north]
-        }),
+          bounds: [west, south, east, north],
+          pickable: true
+        });
         // showBorder &&
         //   new PathLayer({
         //     id: `${props.id}-border`,
@@ -104,26 +129,16 @@ export default function App({showBorder = false, onTilesLoad = null}) {
         //     getColor: [255, 0, 0],
         //     widthMinPixels: 4
         //   })
-      ];
-    }
-  });
+  }
+}
 
-  return (
-    <DeckGL
-      layers={[tileLayer]}
-      views={new MapView({repeat: true})}
-      initialViewState={INITIAL_VIEW_STATE}
-      controller={true}
-      getTooltip={getTooltip}
-    >
-      <div style={COPYRIGHT_LICENSE_STYLE}>
-        {'© '}
-        <a style={LINK_STYLE} href="http://www.openstreetmap.org/copyright" target="blank">
-          OpenStreetMap contributors
-        </a>
-      </div>
-    </DeckGL>
-  );
+function getTooltip(info) {
+  // console.log(info);
+  if (info.tile) {
+    const {x, y, z} = info.tile.index;
+    return `tile: x: ${x}, y: ${y}, z: ${z}`;
+  }
+  return null;
 }
 
 export function renderToDOM(container) {
