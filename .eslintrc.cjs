@@ -1,9 +1,9 @@
-const {getESLintConfig, deepMerge} = require('ocular-dev-tools');
-
-const defaultConfig = getESLintConfig({react: '16.8.2'});
+const {getESLintConfig} = require('ocular-dev-tools/configuration');
 
 // Make any changes to default config here
-const config = deepMerge(defaultConfig, {
+const config = getESLintConfig({
+  react: '16.8.2',
+
   parserOptions: {
     project: ['./tsconfig.json']
   },

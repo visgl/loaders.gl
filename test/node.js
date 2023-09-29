@@ -1,6 +1,4 @@
-require('@babel/register')({
-  extensions: ['.js', '.jsx', '.ts', '.tsx']
-});
+import {version} from '../lerna.json';
 
 // Determine Node version
 let version = 10;
@@ -12,8 +10,8 @@ if (typeof process !== 'undefined') {
 // Note: This constant will be inlined by babel plugin during transpilation
 // But for node we read it from lerna.json
 // @ts-ignore TS2339: Property does not exist on type 'Global'
-global.__VERSION__ = require('../lerna.json').version;
+global.__VERSION__ = version;
 // @ts-ignore TS2339: Property does not exist on type 'Global'
 global.nodeVersion = version;
 
-require('./modules');
+import './modules';

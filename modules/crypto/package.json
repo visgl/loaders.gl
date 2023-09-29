@@ -3,6 +3,7 @@
   "version": "4.0.0-alpha.26",
   "description": "Cryptographic/hashing plugins for loaders.gl",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -18,8 +19,15 @@
     "point cloud"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -27,8 +35,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker && npm run build-worker-node",
-    "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap",
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker && npm run build-worker-node",
+    "build-bundle": "ocular-bundle ./src/index.ts",
     "build-worker": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker.js --target=esnext --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker-node.js --platform=node --target=esnext,node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },

@@ -3,6 +3,7 @@
   "version": "4.0.0-alpha.26",
   "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -18,8 +19,15 @@
     "point cloud"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "browser": {
     "fs": false,
@@ -37,8 +45,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker && npm run build-worker-node",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker && npm run build-worker-node",
+    "build-bundle": "ocular-bundle ./src/index.ts",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
   },

@@ -1,18 +1,22 @@
-/** @typedef {import('ocular-dev-tools').OcularConfig} OcularConfig */
-const {resolve} = require('path');
+import {resolve} from 'path';
 
-/** @type {OcularConfig} */
-const config = {
+export default {
   aliases: {
-    test: resolve(__dirname, 'test')
+    test: resolve('./test')
   },
 
-  browserTest: {
-    server: {wait: 5000}
+  typescript: {
+    project: 'tsconfig.build.json'
   },
 
-  babel: {
-    // extensions: ['.js', '.jsx', '.mjs', '.ts', '.tsx']
+  bundle: {
+    globalName: 'loader',
+    externals: ["fs", "path", "util", "stream", "crypto", "http", "https"],
+    target: ['supports async-functions', 'not dead'],
+    format: 'umd',
+    globals: {
+      '@loaders.gl/*': 'globalThis.loaders'
+    }
   },
 
   lint: {
@@ -31,5 +35,3 @@ const config = {
     size: 'test/size/import-nothing.js'
   }
 };
-
-module.exports = config;
