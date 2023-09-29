@@ -1,8 +1,5 @@
 // loaders.gl, MIT license
 
-// import type {ImageType} from '@loaders.gl/images';
-import {DataSource, DataSourceProps} from './data-source';
-
 /**
  * Normalized capabilities of an Image service
  * Sources are expected to normalize the response to capabilities
@@ -73,17 +70,17 @@ export type NonGeoBoundingBox = {left: number; top: number; right: number; botto
 /**
  * Props for a TileSource
  */
-export type TileSourceProps = DataSourceProps;
+export type TileSourceProps = {};
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) extents
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export abstract class TileSource<PropsT extends TileSourceProps> extends DataSource<PropsT> {
-  abstract getMetadata(): Promise<TileSourceMetadata>;
+export interface TileSource<MetadataT extends TileSourceMetadata> {
+  getMetadata(): Promise<MetadataT>;
   /** Flat parameters */
-  abstract getTile(parameters: GetTileParameters): Promise<unknown>;
-  /** deck.gl compatible method */
-  abstract getTileData(parameters: TileLoadParameters): Promise<unknown>;
+  getTile(parameters: GetTileParameters): Promise<unknown>;
+  /** deck.gl style parameters */
+  getTileData(parameters: TileLoadParameters): Promise<unknown | null>;
 }

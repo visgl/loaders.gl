@@ -1,12 +1,19 @@
-/* eslint-disable max-len */
-import test from 'tape-promise/tape';
-import {PMTilesImageSource} from '@loaders.gl/pmtiles';
+// loaders.gl, MIT license
 
-test('cache getHeader', async (t) => {
-  const source = new PMTilesImageSource({
-    url: '@loaders.gl/pmtiles/test/data/test_fixture_1.pmtiles'
-  }); // , '1');
-  t.ok(source);
+import test from 'tape-promise/tape';
+import {PMTilesSource} from '@loaders.gl/pmtiles';
+
+import {PMTILESETS} from './data/tilesets';
+
+test('PMTilesSource', async (t) => {
+  for (const tilesetUrl of PMTILESETS) {
+    const source = new PMTilesSource({
+      url: tilesetUrl
+    });
+    t.ok(source);
+    const metadata = await source.getMetadata();
+    t.ok(metadata);
+  }
 });
 
-// TBA
+// TBA - TILE LOADING TESTS

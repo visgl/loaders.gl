@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
-export type {PMTilesImageSourceProps} from './pmtiles-source';
-export {PMTilesImageSource} from './pmtiles-source';
+export type {PMTilesSourceProps} from './pmtiles-source';
+export {PMTilesSource} from './pmtiles-source';
 
 // EXPERIMENTAL
 export {PMTilesLoader} from './pmtiles-loader';

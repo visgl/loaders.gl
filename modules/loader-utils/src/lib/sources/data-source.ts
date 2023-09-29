@@ -9,7 +9,7 @@ export type DataSourceProps = {
 };
 
 /** base class of all data sources */
-export abstract class DataSource<PropsT extends DataSourceProps> {
+export abstract class DataSource<PropsT extends DataSourceProps = DataSourceProps> {
   /** A resolved fetch function extracted from loadOptions prop */
   fetch: (url: string, options?: RequestInit) => Promise<Response>;
   /** The actual load options, if calling a loaders.gl loader */

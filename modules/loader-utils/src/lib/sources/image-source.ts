@@ -2,17 +2,7 @@
 
 import type {DataSourceProps} from './data-source';
 import {DataSource} from './data-source';
-
-/** data images @note duplicates definition in images/schema to avoid circular deps */
-export type ImageDataType = {
-  data: Uint8Array;
-  width: number;
-  height: number;
-  compressed?: boolean;
-};
-
-/** Supported Image Types @note duplicates definition in images/schema to avoid circular deps */
-export type ImageType = ImageBitmap | ImageDataType | HTMLImageElement;
+import {ImageType} from './utils/image-type';
 
 /**
  * Normalized capabilities of an Image service
