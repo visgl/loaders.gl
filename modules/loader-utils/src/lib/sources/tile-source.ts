@@ -1,8 +1,5 @@
 // loaders.gl, MIT license
 
-// import type {ImageType} from '@loaders.gl/images';
-import {DataSource, DataSourceProps} from './data-source';
-
 /**
  * Normalized capabilities of an Image service
  * Sources are expected to normalize the response to capabilities
@@ -11,11 +8,26 @@ import {DataSource, DataSourceProps} from './data-source';
  *  into an TileSourceMetadata.
  */
 export type TileSourceMetadata = {
-  name: string;
+  format?: string;
+  formatHeader?: unknown;
+
+  /** Name of the tileset (extracted from JSON metadata if available) */
+  name?: string;
   title?: string;
   abstract?: string;
-  keywords: string[];
-  layer: {
+  keywords?: string[];
+  /** Attribution string (extracted from JSON metadata if available) */
+  attributions?: string[];
+
+  /** Minimal zoom level of tiles in this tileset */
+  minZoom?: number;
+  /** Maximal zoom level of tiles in this tileset */
+  maxZoom?: number;
+  /** Bounding box of tiles in this tileset `[[w, s], [e, n]]`  */
+  boundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
+
+  /** Layer information */
+  layer?: {
     name: string;
     title?: string;
     srs?: string[];
@@ -73,17 +85,17 @@ export type NonGeoBoundingBox = {left: number; top: number; right: number; botto
 /**
  * Props for a TileSource
  */
-export type TileSourceProps = DataSourceProps;
+export type TileSourceProps = {};
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) extents
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export abstract class TileSource<PropsT extends TileSourceProps> extends DataSource<PropsT> {
-  abstract getMetadata(): Promise<TileSourceMetadata>;
+export interface TileSource<MetadataT extends TileSourceMetadata> {
+  getMetadata(): Promise<MetadataT>;
   /** Flat parameters */
-  abstract getTile(parameters: GetTileParameters): Promise<unknown>;
-  /** deck.gl compatible method */
-  abstract getTileData(parameters: TileLoadParameters): Promise<unknown>;
+  getTile(parameters: GetTileParameters): Promise<unknown>;
+  /** deck.gl style parameters */
+  getTileData(parameters: TileLoadParameters): Promise<unknown | null>;
 }

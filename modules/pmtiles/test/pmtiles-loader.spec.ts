@@ -1,12 +1,22 @@
-/* eslint-disable max-len */
+/*
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
+import {load} from '@loaders.gl/core';
 import {PMTilesLoader} from '@loaders.gl/pmtiles';
-// import {PMTiles, SharedPromiseCache} from 'pmtiles';
+
+import {PMTILESETS} from './data/tilesets';
 
 test('PMTilesLoader#loader conformance', (t) => {
   validateLoader(t, PMTilesLoader, 'PMTilesLoader');
+  t.end();
+});
+
+test.skip('PMTilesLoader#load', async (t) => {
+  for (const tilesetUrl of PMTILESETS) {
+    const metadata = await load(tilesetUrl, PMTilesLoader);
+    t.ok(metadata);
+  }
   t.end();
 });
 

@@ -9,6 +9,8 @@
   },
   "references": [
     {"path": "../loader-utils"},
-    {"path": "../schema"}
+    {"path": "../schema"},
+    {"path": "../images"},
+    {"path": "../mvt"}
   ]
 }
