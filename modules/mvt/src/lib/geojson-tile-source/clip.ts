@@ -8,6 +8,13 @@ import {createFeature} from './feature';
 
 /* eslint-disable no-continue */
 
+export class Slice extends Array<number> {
+  size?: number;
+  start?: number;
+  end?: number;
+}
+
+
 /**
  * Clip features between two vertical or horizontal axis-parallel lines:
  *     |        |
@@ -82,7 +89,7 @@ export function clip(
     if (newGeometry.length) {
       if (options.lineMetrics && type === 'LineString') {
         for (const line of newGeometry) {
-          clipped.push(createFeature(feature.id, type, line, feature.tags));
+          clipped.push(createFeature(feature.id, type, line, feature.properties));
         }
         continue;
       }
@@ -100,7 +107,7 @@ export function clip(
         type = newGeometry.length === 3 ? 'Point' : 'MultiPoint';
       }
 
-      clipped.push(createFeature(feature.id, type, newGeometry, feature.tags));
+      clipped.push(createFeature(feature.id, type, newGeometry, feature.properties));
     }
   }
 
@@ -208,12 +215,6 @@ function clipLine(
   if (slice.length) {
     newGeom.push(slice);
   }
-}
-
-class Slice extends Array<number> {
-  size?: number;
-  start?: number;
-  end?: number;
 }
 
 function newSlice(line: {size: number; start: number; end: number}): Slice {

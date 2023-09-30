@@ -1,6 +1,6 @@
-# GeoJSONTiler
+# GeoJSONTileSource
 
-The `GeoJSONTiler` slices large GeoJSON data into small vector tiles on the fly.
+The `GeoJSONTileSource` slices large GeoJSON data into small vector tiles on the fly.
 
 The primary intended use case is to enable rendering and interacting with large geospatial datasets
 in the browser (without requiring data to be pre-tiled and tiles to be served from a server).
@@ -15,7 +15,7 @@ retain the minimum level of detail appropriate for each zoom level
 (shapes are simplified and tiny polygons and line segments are filtered out).
 
 <!--
-There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to test out **GeoJSONTiler** on different data. Just drag any GeoJSON on the page, watching the console.
+There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to test out **GeoJSONTileSource** on different data. Just drag any GeoJSON on the page, watching the console.
 --->
 
 ### Install
@@ -31,10 +31,10 @@ TBD - Or use a browser build directly:
 ### Usage
 
 ```typescript
-import {GeoJSONTiler} from '@loaders.gl/mvt';
+import {GeoJSONTileSource} from '@loaders.gl/mvt';
 
 // build an initial index of tiles
-const tileSource = new GeoJSONTiler(geoJSON);
+const tileSource = new GeoJSONTileSource(geoJSON);
 
 // request a particular tile
 const features = tileSource.getTile(z, x, y).features;
@@ -63,8 +63,8 @@ although the defaults are sensible and work well for most use cases.
 
 
 ```typescript
-import {GeoJSONTiler} from '@loaders.gl/mvt`
-const tileSource = new GeoJSONTiler(parsedGeojson, {
+import {GeoJSONTileSource} from '@loaders.gl/mvt`
+const tileSource = new GeoJSONTileSource(parsedGeojson, {
 	indexMaxZoom: 5,  // max zoom in the initial tile index
 	maxZoom: 14,      // max zoom to preserve detail on; can't be higher than 24
 	tolerance: 3,     // simplification tolerance (higher means simpler)
@@ -80,7 +80,7 @@ const tileSource = new GeoJSONTiler(parsedGeojson, {
 
 Remarks:
 
-- GeoJSONTiler only operates on zoom levels up to 24.
+- GeoJSONTileSource only operates on zoom levels up to 24.
 - `generateId` and `promoteId` cannot both be specified at the same time.
 - The `promoteId` and `generateId` options ignore existing `id` values on the feature objects.
 - By default, tiles at zoom levels above `indexMaxZoom` are generated on the fly, but you can pre-generate all possible tiles for `data` by setting `indexMaxZoom` and `maxZoom` to the same value, setting `indexMaxPoints` to `0`, and then accessing the resulting tile coordinates from the `tileCoords` property of `tileSource`.

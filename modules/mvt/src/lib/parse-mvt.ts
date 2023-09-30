@@ -8,7 +8,8 @@ import type {
   Feature,
   GeojsonGeometryInfo,
   BinaryFeatureCollection,
-  GeoJSONTable
+  GeoJSONTable,
+  ColumnarTable
 } from '@loaders.gl/schema';
 import Protobuf from 'pbf';
 
@@ -27,14 +28,19 @@ import {VectorTileFeature as VectorTileFeatureMapBox} from './mapbox-vector-tile
  * @param options
  * @returns A GeoJSON geometry object or a binary representation
  */
-export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
+export default function parseMVT(
+  arrayBuffer: ArrayBuffer,
+  options?: MVTLoaderOptions
+): Feature[] | BinaryFeatureCollection | GeoJSONTable | ColumnarTable {
+
   const mvtOptions = normalizeOptions(options);
 
   const shape: string | undefined =
     options?.gis?.format || options?.mvt?.shape || (options?.shape as string);
   switch (shape) {
-    case 'columnar-table': // binary + some JS arrays
-      return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions)};
+    case 'columnar-table': // TODO - binary + some JS arrays
+      return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions) as any};
+
     case 'geojson-table': {
       const table: GeoJSONTable = {
         shape: 'geojson-table',
@@ -43,12 +49,16 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
       };
       return table;
     }
+
     case 'geojson':
       return parseToGeojsonFeatures(arrayBuffer, mvtOptions);
+
     case 'binary-geometry':
       return parseToBinary(arrayBuffer, mvtOptions);
+
     case 'binary':
       return parseToBinary(arrayBuffer, mvtOptions);
+
     default:
       throw new Error(shape || 'undefined shape');
   }

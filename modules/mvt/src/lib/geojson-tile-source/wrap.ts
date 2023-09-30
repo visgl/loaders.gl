@@ -7,6 +7,12 @@ import type {GeoJSONTileFeature} from './tile';
 import {clip} from './clip';
 import {createFeature} from './feature';
 
+export class FlatPointsArray extends Array<number> {
+  size?: number;
+  start?: number;
+  end?: number;
+}
+
 /**
  * Options for wrap()
  */
@@ -57,35 +63,38 @@ function shiftFeatureCoords(features: GeoJSONTileFeature[], offset: number): Geo
 
     let newGeometry;
 
-    if (type === 'Point' || type === 'MultiPoint' || type === 'LineString') {
-      newGeometry = shiftCoords(feature.geometry, offset);
-    } else if (type === 'MultiLineString' || type === 'Polygon') {
-      newGeometry = [];
-      for (const line of feature.geometry) {
-        newGeometry.push(shiftCoords(line, offset));
-      }
-    } else if (type === 'MultiPolygon') {
-      newGeometry = [];
-      for (const polygon of feature.geometry) {
-        const newPolygon: Points = [];
-        for (const line of polygon) {
-          // @ts-expect-error TODO
-          newPolygon.push(shiftCoords(line, offset));
+    switch (type) {
+      case 'Point':
+      case 'MultiPoint':
+      case 'LineString':
+        newGeometry = shiftCoords(feature.geometry, offset);
+        break;
+
+      case 'MultiLineString':
+      case 'Polygon':
+        newGeometry = [];
+        for (const line of feature.geometry) {
+          newGeometry.push(shiftCoords(line, offset));
         }
-        newGeometry.push(newPolygon);
-      }
+        break;
+
+      case 'MultiPolygon':
+        newGeometry = [];
+        for (const polygon of feature.geometry) {
+          const newPolygon: FlatPointsArray = [];
+          for (const line of polygon) {
+            // @ts-expect-error TODO
+            newPolygon.push(shiftCoords(line, offset));
+          }
+          newGeometry.push(newPolygon);
+        }
+        break;
     }
 
-    newFeatures.push(createFeature(feature.id, type, newGeometry, feature.tags));
+    newFeatures.push(createFeature(feature.id, type, newGeometry, feature.properties));
   }
 
   return newFeatures;
-}
-
-class Points extends Array<number> {
-  size?: number;
-  start?: number;
-  end?: number;
 }
 
 /**
@@ -94,8 +103,8 @@ class Points extends Array<number> {
  * @param offset
  * @returns
  */
-function shiftCoords(points: Points, offset: number): Points {
-  const newPoints: Points = [];
+function shiftCoords(points: FlatPointsArray, offset: number): FlatPointsArray {
+  const newPoints: FlatPointsArray = [];
   newPoints.size = points.size;
 
   if (points.start !== undefined) {

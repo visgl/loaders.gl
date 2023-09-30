@@ -11,10 +11,10 @@ import {parseTileJSON} from './lib/parse-tilejson';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type TileJSONLoaderOptions = LoaderOptions & {
-  /** Options for the TileJSONLoader */
+  /** Options for TileJSONLoader */
   tilejson?: {
-    /** Max number of unique values */
-    maxValues?: number;
+    /** Max number of sample values per column. false means no sample values */
+    maxValues?: number | false;
   };
 };
 

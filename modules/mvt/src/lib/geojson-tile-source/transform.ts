@@ -19,20 +19,20 @@ export function transformTile(tile: GeoJSONTile, extent: number): GeoJSONTile {
   const ty = tile.y;
 
   for (const feature of tile.features) {
-    const geom = feature.geometry;
+    const geometry = feature.geometry;
     const type = feature.type;
 
     feature.geometry = [];
 
     if (type === 1) {
-      for (let j = 0; j < geom.length; j += 2) {
-        feature.geometry.push(transformPoint(geom[j], geom[j + 1], extent, z2, tx, ty));
+      for (let j = 0; j < geometry.length; j += 2) {
+        feature.geometry.push(transformPoint(geometry[j], geometry[j + 1], extent, z2, tx, ty));
       }
     } else {
-      for (let j = 0; j < geom.length; j++) {
+      for (let j = 0; j < geometry.length; j++) {
         const ring: number[][] = [];
-        for (let k = 0; k < geom[j].length; k += 2) {
-          ring.push(transformPoint(geom[j][k], geom[j][k + 1], extent, z2, tx, ty));
+        for (let k = 0; k < geometry[j].length; k += 2) {
+          ring.push(transformPoint(geometry[j][k], geometry[j][k + 1], extent, z2, tx, ty));
         }
         feature.geometry.push(ring);
       }

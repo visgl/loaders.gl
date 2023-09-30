@@ -3,15 +3,12 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-// import type {Feature} from '@loaders.gl/schema';
-
-export type GeoJSONTileFeature = {
-  type: any;
-  geometry: any;
+export type GeoJSONTileFeature = GeoJSONTileGeometry & {
+  type: 'Point' | 'LineString' | 'Polygon' | 'MultiPoint' | 'MultiLineString' | 'MultiPolygon';
 
   // book keeping
-  id?: string;
-  tags?: string[];
+  id: string | number | null;
+  properties?: Record<string, unknown>;
 
   // spatial extents
   minX: number;
@@ -20,10 +17,27 @@ export type GeoJSONTileFeature = {
   maxY: number;
 };
 
+export type GeoJSONTileGeometry = GeoJSONTilePointGeometry | GeoJSONTileLineGeometry | GeoJSONTilePolygonGeometry;
+
+export type GeoJSONTilePointGeometry = {
+  simplifiedType: 1;
+  geometry: number[];
+}
+
+export type GeoJSONTileLineGeometry = {
+  simplifiedType: 1;
+  geometry: number[][];
+}
+
+export type GeoJSONTilePolygonGeometry = {
+  simplifiedType: 1;
+  geometry: number[][][];
+}
+
 export type GeoJSONTile = {
   features: GeoJSONTileFeature[]; // Feature[]; Doesn't seem JSON compatible??
   type?: number;
-  tags?: Record<string, string>;
+  properties?: Record<string, unknown>;
 
   // tile coordinates
   x: number;
@@ -77,59 +91,71 @@ export function createTile(features: any[], z, tx, ty, options: CreateTileOption
 }
 
 // eslint-disable-next-line complexity, max-statements
-function addFeature(tile: GeoJSONTile, feature, tolerance: number, options: CreateTileOptions) {
-  const geom = feature.geometry;
-  const type = feature.type;
-  const simplified: number[] = [];
-
+function addFeature(tile: GeoJSONTile, feature: GeoJSONTileFeature, tolerance: number, options: CreateTileOptions) {
   tile.minX = Math.min(tile.minX, feature.minX);
   tile.minY = Math.min(tile.minY, feature.minY);
   tile.maxX = Math.max(tile.maxX, feature.maxX);
   tile.maxY = Math.max(tile.maxY, feature.maxY);
 
-  if (type === 'Point' || type === 'MultiPoint') {
-    for (let i = 0; i < geom.length; i += 3) {
-      simplified.push(geom[i], geom[i + 1]);
+  const simplified: number[] = [];
+
+  const geometry = feature.geometry;
+  const type = feature.type;
+
+  switch (type) {
+  case 'Point': 
+  case 'MultiPoint':
+    for (let i = 0; i < geometry.length; i += 3) {
+      simplified.push(geometry[i], geometry[i + 1]);
       tile.numPoints++;
       tile.numSimplified++;
     }
-  } else if (type === 'LineString') {
-    addLine(simplified, geom, tile, tolerance, false, false);
-  } else if (type === 'MultiLineString' || type === 'Polygon') {
-    for (let i = 0; i < geom.length; i++) {
-      addLine(simplified, geom[i], tile, tolerance, type === 'Polygon', i === 0);
+    break;
+
+  case 'LineString':
+    addLine(simplified, geometry, tile, tolerance, false, false);
+    break;
+
+  case 'MultiLineString': 
+  case 'Polygon':
+    for (let i = 0; i < geometry.length; i++) {
+      addLine(simplified, geometry[i], tile, tolerance, type === 'Polygon', i === 0);
     }
-  } else if (type === 'MultiPolygon') {
-    for (let k = 0; k < geom.length; k++) {
-      const polygon = geom[k];
-      for (let i = 0; i < polygon.length; i++) {
-        addLine(simplified, polygon[i], tile, tolerance, true, i === 0);
+    break;
+
+  case 'MultiPolygon':
+    for (const polygon of geometry) {
+      for (const point of polygon) {
+        addLine(simplified, point, tile, tolerance, true, i === 0);
       }
     }
+    break;
   }
 
   if (simplified.length) {
-    let tags = feature.tags || null;
+    let properties: Record<string, unknown> | undefined = feature.properties;
 
     if (type === 'LineString' && options.lineMetrics) {
-      tags = {};
-      for (const key in feature.tags) tags[key] = feature.tags[key];
+      properties = {};
+      for (const key in feature.properties) {
+        properties[key] = feature.properties[key];
+      }
       // eslint-disable-next-line camelcase
-      tags.mapbox_clip_start = geom.start / geom.size;
+      properties.mapbox_clip_start = geometry.start / geometry.size;
       // eslint-disable-next-line camelcase
-      tags.mapbox_clip_end = geom.end / geom.size;
+      properties.mapbox_clip_end = geometry.end / geometry.size;
     }
 
-    // @ts-expect-error TODO - create sub type?
     const tileFeature: GeoJSONTileFeature = {
       geometry: simplified,
-      type:
+      type,
+      simplifiedType: 
         type === 'Polygon' || type === 'MultiPolygon'
           ? 3
           : type === 'LineString' || type === 'MultiLineString'
             ? 2
             : 1,
-      tags
+      properties
     };
     if (feature.id !== null) {
       tileFeature.id = feature.id;
@@ -140,8 +166,8 @@ function addFeature(tile: GeoJSONTile, feature, tolerance: number, options: Crea
 
 // eslint-disable-next-line max-params, max-statements
 function addLine(
-  result,
-  geom,
+  result: number[],
+  geometry,
   tile: GeoJSONTile,
   tolerance: number,
   isPolygon: boolean,
@@ -149,22 +175,24 @@ function addLine(
 ): void {
   const sqTolerance = tolerance * tolerance;
 
-  if (tolerance > 0 && geom.size < (isPolygon ? sqTolerance : tolerance)) {
-    tile.numPoints += geom.length / 3;
+  if (tolerance > 0 && geometry.size < (isPolygon ? sqTolerance : tolerance)) {
+    tile.numPoints += geometry.length / 3;
     return;
   }
 
   const ring: number[] = [];
 
-  for (let i = 0; i < geom.length; i += 3) {
-    if (tolerance === 0 || geom[i + 2] > sqTolerance) {
+  for (let i = 0; i < geometry.length; i += 3) {
+    if (tolerance === 0 || geometry[i + 2] > sqTolerance) {
       tile.numSimplified++;
-      ring.push(geom[i], geom[i + 1]);
+      ring.push(geometry[i], geometry[i + 1]);
     }
     tile.numPoints++;
   }
 
-  if (isPolygon) rewind(ring, isOuter);
+  if (isPolygon) {
+    rewind(ring, isOuter);
+  }
 
   result.push(ring);
 }

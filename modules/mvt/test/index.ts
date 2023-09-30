@@ -9,4 +9,10 @@ import './tilejson-loader.spec';
 import './mvt-source.spec';
 
 // geojson-vt
-import './lib/geojson-tiler';
+import './lib/geojson-vt/clip.spec';
+import './lib/geojson-vt/simplify.spec';
+import './lib/geojson-vt/multi-world.spec';
+import './lib/geojson-vt/get-tile.spec';
+import './lib/geojson-vt/full.spec';
+
+import './geojson-tile-source.spec';
