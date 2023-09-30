@@ -5,9 +5,30 @@ import {ImageLoader} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 
 import {PMTiles} from 'pmtiles';
-// import type {pPMTilesMetadata} from './lib/parse-pmtiles';
-import {PMTilesMetadata, parsePMTilesHeader} from './lib/parse-pmtiles';
+
+import type {PMTilesMetadata} from './lib/parse-pmtiles';
+import {parsePMTilesHeader} from './lib/parse-pmtiles';
 import {TileLoadParameters} from 'modules/loader-utils/src/lib/sources/tile-source';
+
+/**
+ * WIP - Loader for pmtiles metadata
+ * @note loads metadata only. To load individual tiles, use PMTilesSource
+export const PMTilesLoader: LoaderWithParser<PMTilesMetadata, never, PMTilesLoaderOptions> = {
+  name: 'PMTiles',
+  id: 'pmtiles',
+  module: 'pmtiles',
+  version: VERSION,
+  worker: true,
+  extensions: ['pmtiles'],
+  mimeTypes: ['application/octet-stream'],
+  options: {
+    pmtiles: {}
+  },
+  parse: async (arrayBuffer, options) => {
+    throw new Error('not implemented');
+  }
+};
+ */
 
 export type PMTilesSourceProps = DataSourceProps & {
   url: string;

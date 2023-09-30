@@ -75,8 +75,11 @@
       "modules/json/formats/geojson-geometry",
       "modules/gltf/formats/glb",
       "modules/gltf/formats/gltf",
+      "modules/mvt/formats/mvt",
+      "modules/mvt/formats/tilejson",
       "modules/parquet/formats/parquet",
       "modules/parquet/formats/geoparquet",
+      "modules/pmtiles/formats/pmtiles",
       "modules/shapefile/formats/shapefile",
       "modules/textures/formats/compressed-textures",
       "modules/wms/formats/csw",
@@ -109,6 +112,13 @@
           "specifications/category-3d-tiles"
         ]
       },
+      {
+        "type": "category",
+        "label": "Sources and Services",
+        "items": [
+          "modules/pmtiles/api-reference/pmtiles-source"
+        ]
+      },
       "modules/3d-tiles/api-reference/tiles-3d-loader",
       "modules/3d-tiles/api-reference/cesium-ion-loader",
       "modules/arrow/api-reference/arrow-loader",
@@ -137,6 +147,7 @@
       "modules/kml/api-reference/tcx-loader",
       "modules/las/api-reference/las-loader",
       "modules/mvt/api-reference/mvt-loader",
+      "modules/mvt/api-reference/tilejson-loader",
       "modules/obj/api-reference/obj-loader",
       "modules/parquet/api-reference/parquet-loader",
       "modules/pcd/api-reference/pcd-loader",
@@ -316,6 +327,11 @@
         "type": "category",
         "label": "@loaders.gl/ply",
         "items": ["modules/ply/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/pmtiles",
+        "items": ["modules/pmtiles/README"]
       },
       {
         "type": "category",

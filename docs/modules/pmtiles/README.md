@@ -1,3 +1,3 @@
 # @loaders.gl/pmtiles
 
-Support for loading [pmtiles](https://protomaps.com/docs/pmtiles) format tiles.
+Support for loading [pmtiles](./format/pmtiles) format tiles.

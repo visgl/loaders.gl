@@ -7,29 +7,29 @@ import {TEST_EXPORTS} from '../src/lib/binary-vector-tile/vector-tile-feature';
 
 const {classifyRings} = TEST_EXPORTS;
 
-const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/points_4-2-6.mvt';
-const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/lines_2-2-1.mvt';
-const MVT_POLYGONS_DATA_URL = '@loaders.gl/mvt/test/data/polygons_10-133-325.mvt';
+const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/mvt/points_4-2-6.mvt';
+const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/mvt/lines_2-2-1.mvt';
+const MVT_POLYGONS_DATA_URL = '@loaders.gl/mvt/test/data/mvt/polygons_10-133-325.mvt';
 const MVT_POLYGON_ZERO_SIZE_HOLE_DATA_URL =
-  '@loaders.gl/mvt/test/data/polygon_with_zero_size_hole.mvt';
+  '@loaders.gl/mvt/test/data/mvt/polygon_with_zero_size_hole.mvt';
 const MVT_MULTIPLE_LAYERS_DATA_URL =
-  '@loaders.gl/mvt/test/data/lines_10-501-386_multiplelayers.mvt';
-const WITH_FEATURE_ID = '@loaders.gl/mvt/test/data/with_feature_id.mvt';
+  '@loaders.gl/mvt/test/data/mvt/lines_10-501-386_multiplelayers.mvt';
+const WITH_FEATURE_ID = '@loaders.gl/mvt/test/data/mvt/with_feature_id.mvt';
 
 // Geometry Array Results
 
-import decodedPolygonsGeometry from '@loaders.gl/mvt/test/results/decoded_mvt_polygons_array.json';
+import decodedPolygonsGeometry from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_polygons_array.json';
 
 // GeoJSON Results
-import decodedPointsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_points.json';
-import decodedLinesGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_lines.json';
-import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/results/decoded_mvt_polygons.json';
+import decodedPointsGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_points.json';
+import decodedLinesGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_lines.json';
+import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_polygons.json';
 
 // Rings
-import ringsSingleRing from '@loaders.gl/mvt/test/data/rings_single_ring.json';
-import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings_ring_and_hole.json';
-import ringsTwoRings from '@loaders.gl/mvt/test/data/rings_two_rings.json';
-import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings_zero_size_hole.json';
+import ringsSingleRing from '@loaders.gl/mvt/test/data/rings/rings_single_ring.json';
+import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings/rings_ring_and_hole.json';
+import ringsTwoRings from '@loaders.gl/mvt/test/data/rings/rings_two_rings.json';
+import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings/rings_zero_size_hole.json';
 
 setLoaderOptions({
   _workerType: 'test'

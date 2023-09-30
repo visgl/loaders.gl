@@ -17,6 +17,7 @@
     "@deck.gl/extensions": "8.9.28",
     "@deck.gl/react": "^8.9.28",
     "@loaders.gl/core": "4.0.0-alpha.26",
+    "@monaco-editor/react": "^4.5.0",
     "mapbox-gl": "npm:empty-npm-package@^1.0.0",
     "maplibre-gl": "^2.4.0",
     "react": "^18.0.0",

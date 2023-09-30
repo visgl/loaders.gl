@@ -69,29 +69,26 @@ Release Date: TBD, Target Oct 2023
 
 A major release that brings: 
 
-- **Typed loaders** The **`load()`** and **`parse()`** APIs now infer types from the supplied loader.
-- **More Writers** loaders are complemented by writers for formats such as CSV, GeoJSON etc.
-- **Node.js v18** support.
-- **[File format documentation](/docs/formats?README)** - articles describing the file formats supported by loaders.gl.
+- **Typed loaders** - The **`load()`** and **`parse()`** APIs now infer types from the supplied loader.
+- **Writers** - More loader moduls now provide writers for formats such as CSV, GeoJSON etc.
+- **File format documentation** - articles describing the [file formats](/docs/formats?README) supported by loaders.gl.
+- **Node.js v18**
 
 ### Loader Module Updates
 
 **@loaders.gl/pmtiles** - NEW
 
-- Supports the [PMTiles](/docs/modules/pmtiles/formats/pmtiles) format.
-- New experimental [`PMTilesLoader`](/docs/modules/parquet/api-reference/parquet-loader)
-- New experimental [`PMTilesService`](/docs/modules/parquet/api-reference/parquet-loader)
+- New [`PMTilesSource`](/docs/modules/pmtiles/api-reference/pmtiles-service) supports the [PMTiles](/docs/modules/pmtiles/formats/pmtiles) format.
 - New [PMTiles example](/examples/pmtiles).
 
 **@loaders.gl/parquet** 
 
-- Supports the [Parquet](/docs/modules/parquet/formats/parquet) and [GeoParquet](/docs/modules/parquet/formats/geoparquet) file formats.
-- [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) now supports loading GeoParquet files.
+- The [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) now supports loading [GeoParquet](/docs/modules/parquet/formats/geoparquet) files.
 - New [GeoParquet example](/examples/geospatial).
 
-**@loaders.gl/arrow**
+**@loaders.gl/mvt**
 
-- Now uses latest [`apache-arrow` v13](/docs/arrowjs/whats-new#v130). 
+- New [`TileJSONLoader`](/docs/modules/mvt/api-reference/tilejson-loader) adds supports for the [TileJSON](/docs/modules/mvt/formats/tilejson) format.
 
 **@loaders.gl/csv**
 
@@ -114,42 +111,24 @@ A major release that brings:
 
 **@loaders.gl/zip**
 
-- `ZipArchive` - now opens large zip archives without loading entire file (in Node.js).
+- `ZipArchive` - now enables file-by-file reads from large zip archives without loading entire archive into memory (in Node.js).
 
 **@loaders.gl/gltf**
 
-- Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) gltF extensions for 3D Tiles v1.1.
+- Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions for 3D Tiles v1.1.
 
 **@loaders.gl/3d-tiles**
 
 - 3D Tiles v1.1 [Implicit Tiling](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling)
-- 3D Tiles v1.1 attributes (via the new glTF extensions).
+- 3D Tiles v1.1 attributes (via the new [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions).
+
+**@loaders.gl/arrow**
+
+- Now uses latest [`apache-arrow` v13](/docs/arrowjs/whats-new#v130). 
 
 **@loaders.gl/draco**
 
 - Decoders upgraded to [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release).
-
-### Tile Converter Updates
-
-**@loaders.gl/tile-converter**
-
-- **Offline Mode** - offline conversion. No internet is required during the conversion process.
-- New command-line tools
-  - [`i3s-server`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/i3s-server.md) - serve SLPKs as a local HTTP server
-  - [`slpk-extractor`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/slpk-extractor.md) - extract an SLPK to a dataset that can be served via `i3s-server`
-
-- Support new 3D Tiles extensions
-- Сonversion of S2 bounding volume [3DTILES_bounding_volume_S2](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_bounding_volume_S2/README.md) into [Oriented Bounding Boxes format (OBB)](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/obb.cmn.md)
-- Support conversion of non-indexed geometry
-- [3DTiles archive format (.3tz)](https://github.com/Maxar-Corp/3tz-specification/tree/main) support for conversion into I3S
-- Better [I3S archive format (SLPK)](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#scene-layer-packages-) support:
-  - Support Large SLPK (>2gb) input for tile-converter
-  - Hash generation for SLPKs without a hash
-- Pre-processing for conversion 3DTiles > I3S:
-  - Detect topology type (for example TRIANGLE and TRIANGLE_STRIP will pass further for conversion, POINT or TRIANGLE_FAN will notify this mesh type is not supported for conversion)
-  - Detect attributes classes for `EXT_feature_metadata` and for `EXT_mesh_features` extensions. Choose a class to convert in CLI with arrow keys.
-- tile-converter performance and usability optimizations:
-  - Exclude Tileset 3D and Tile 3D classes during conversion (it gives a RAM usage improvement)
 
 ### Core Module Updates
 
@@ -174,6 +153,28 @@ A major release that brings:
 
 - Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging the built-in `fetch()` support in Node.js v18+.
 
+### Tile Converter Updates
+
+**@loaders.gl/tile-converter**
+
+- New command-line tools for working with I3S archive format (SLPK) files
+  - [`i3s-server`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/i3s-server.md) - serve SLPKs as a local HTTP server
+  - [`slpk-extractor`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/slpk-extractor.md) - extract an SLPK to a dataset that can be served via `i3s-server`
+
+- `tile-converter` tool has been improved:
+  - **Offline Mode** - offline conversion. No internet is required during the conversion process.
+  - RAM usage improvements
+  - Can now convert large I3S SLPKs (>2GB) to 3D Tiles.
+
+- 3D TILES \<-\> I3S conversion improvements:
+  - Now converts S2 bounding volume [3DTILES_bounding_volume_S2](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_bounding_volume_S2/README.md) into [Oriented Bounding Boxes format (OBB)](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/obb.cmn.md)
+  - Now converts non-indexed 3D TILES geometries
+  - Now reads [3DTiles archive format (.3tz)](https://github.com/Maxar-Corp/3tz-specification/tree/main) as input for conversion into I3S
+- Improved support for [I3S archive format (SLPK)](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#scene-layer-packages-)
+  - Hash generation for SLPKs without a hash
+- Pre-processing for conversion 3DTiles > I3S:
+  - Detect topology type (for example TRIANGLE and TRIANGLE_STRIP will pass further for conversion, POINT or TRIANGLE_FAN will notify this mesh type is not supported for conversion)
+  - Detect attributes classes for `EXT_feature_metadata` and for `EXT_mesh_features` extensions. Choose a class to convert in CLI with arrow keys.
 
 ## v3.4
 
