@@ -1,14 +1,16 @@
 // loaders.gl, MIT license
 
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react/typed';
 import {MapView} from '@deck.gl/core/typed';
 import {TileLayer} from '@deck.gl/geo-layers/typed';
 import {BitmapLayer, GeoJsonLayer} from '@deck.gl/layers/typed';
-import {} from '@deck.gl/geo-layers/typed';
-import {PMTilesSource} from '@loaders.gl/pmtiles';
+import {PMTilesSource, PMTilesMetadata} from '@loaders.gl/pmtiles';
+
+import {ControlPanel} from './components/control-panel';
+import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
 
 const INITIAL_VIEW_STATE = {
   latitude: 47.65,
@@ -49,11 +51,20 @@ export const vectorTileSource = new PMTilesSource({
 
 const tileSource = vectorTileSource;
 
-let metadata = await tileSource.metadata;
-
 export default function App({showBorder = false, onTilesLoad = null}) {
-  console.log(metadata.name, metadata.attributions?.[0]);
-  console.debug(metadata);
+
+  const [metadata, setMetadata] = useState<PMTilesMetadata | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const metadata = await tileSource.metadata;
+      setMetadata(metadata)
+    })();
+  }, []);
+
+  if (!metadata) {
+    return <div />;
+  }
 
   const initialViewState = INITIAL_VIEW_STATE;
   initialViewState.zoom = metadata.centerZoom;
@@ -75,30 +86,36 @@ export default function App({showBorder = false, onTilesLoad = null}) {
     maxZoom: metadata.maxZoom,
     tileSize: 256,
     zoomOffset: devicePixelRatio === 1 ? -1 : 0,
-    renderSubLayers
+    renderSubLayers,
+
+    // Custom prop
+    metadata
   });
 
   return (
-    <DeckGL
-      layers={[tileLayer]}
-      views={new MapView({repeat: true})}
-      initialViewState={initialViewState}
-      controller={true}
-      getTooltip={getTooltip}
-    >
-      <div style={COPYRIGHT_LICENSE_STYLE}>
-        {metadata.attributions?.map(attribution => <div key={attribution}>{attribution}</div>)}
-      </div>
-    </DeckGL>
+    <div style={{position: 'relative', height: '100%'}}>
+      {renderControlPanel({metadata})}
+      <DeckGL
+        layers={[tileLayer]}
+        views={new MapView({repeat: true})}
+        initialViewState={initialViewState}
+        controller={true}
+        getTooltip={getTooltip}
+      >
+        <div style={COPYRIGHT_LICENSE_STYLE}>
+          {metadata.attributions?.map(attribution => <div key={attribution}>{attribution}</div>)}
+        </div>
+      </DeckGL>
+    </div>
   );
 }
 
 function renderSubLayers(props) {
     const {bbox: {west, south, east, north}} = props.tile;
 
-    switch (metadata.mimeType) {
+    switch (props.metadata.mimeType) {
       case 'application/vnd.mapbox-vector-tile':
-        console.log(props.data)
+        // console.log(props.data)
         return new GeoJsonLayer({
           id: `${props.id}-geojson`,
           data: props.data,
@@ -130,6 +147,28 @@ function renderSubLayers(props) {
         //     widthMinPixels: 4
         //   })
   }
+}
+
+function renderControlPanel(props) {
+  const {selectedExample, viewState, selectedCategory, loading, metadata, error} = props;
+
+  return (
+    <ControlPanel
+      title="Tileset Metadata"
+      metadata={JSON.stringify(metadata, null, 2)}
+      examples={EXAMPLES}
+      selectedExample={selectedExample}
+      selectedCategory={selectedCategory}
+      onExampleChange={() => {}}
+      loading={loading}
+    >
+      {error ? <div style={{color: 'red'}}>{error}</div> : ''}
+      <pre style={{textAlign: 'center', margin: 0}}>
+        { /* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */ }
+        { /* viewState.zoom.toFixed(2) */ }
+      </pre>
+    </ControlPanel>
+  );
 }
 
 function getTooltip(info) {

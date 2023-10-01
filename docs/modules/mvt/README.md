@@ -1,6 +1,6 @@
 # Overview
 
-The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](https://github.com/mapbox/vector-tile-spec) format, a protobuf-encoded format that defines geospatial geometries.
+The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](./formats/mapbox-vector-tile.md) format, a protobuf-encoded format that defines geospatial geometries.
 
 The modules also provides a `GeoJSONTiler` class that can serve up equivalent parsed
 tiles from an in-memory `GeoJSON` file.

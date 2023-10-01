@@ -12,7 +12,7 @@ const testfiles = {
   // See `data/fetch_data.py`
 };
 
-const DATA_PATH = '@loaders.gl/mvt/test/data/';
+const DATA_PATH = '@loaders.gl/mvt/test/data/mvt';
 
 // Benchmark to compare old method of parsing binary
 // format via an intermediate geojson step with the

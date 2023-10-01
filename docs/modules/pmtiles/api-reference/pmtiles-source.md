@@ -1,21 +1,21 @@
 # PMTilesSource
 
-The `PMTilesSource` parses simple meshes in the Polygon File Format or the Stanford Triangle Format.
+The `PMTilesSource` reads individual tiles from a PMTiles archive file.
 
 | Loader                | Characteristic                                |
-| --------------------- | --------------------------------------------- |
-| File Extension        | `.ply`                                        |
-| File Type             | Binary/Text                                   |
-| File Format           | [PLY](http://paulbourke.net/dataformats/ply/) |
-| Data Format           | [Mesh](/docs/specifications/category-mesh)  |
-| Decoder Type          | Synchronous                                   |
-| Worker Thread Support | Yes                                           |
-| Streaming Support     | No                                            |
+| --------------------- | ----------------------------------------------- |
+| File Extension        | `.pmtiles`                                      |
+| File Type             | Binary Archive                                  |
+| File Format           | [PMTiles](/docs/modules/pmtiles/format/pmtiles) |
+| Data Format           | Metadata                                        |
+| Decoder Type          | Asynchronous                                     |
+| Worker Thread Support | No                                              |
+| Streaming Support     | No                                              |
 
 ## Usage
 
 ```typescript
-import {PMTilesSource} from '@loaders.gl/ply';
+import {PMTilesSource} from '@loaders.gl/pmtiles';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, PMTilesSource, options);

@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
@@ -9,6 +11,38 @@ import {PMTiles, Source, RangeResponse} from 'pmtiles';
 import type {PMTilesMetadata} from './lib/parse-pmtiles';
 import {parsePMTilesHeader} from './lib/parse-pmtiles';
 import {TileLoadParameters} from 'modules/loader-utils/src/lib/sources/tile-source';
+
+// export const PMTilesService: Service = {
+//   name: 'PMTiles',
+//   id: 'pmtiles',
+//   module: 'pmtiles',
+//   // version: VERSION,
+//   extensions: ['pmtiles'],
+//   mimeTypes: ['application/octet-stream'],
+//   options: {
+//     pmtiles: {}
+//   }
+// };
+
+/**
+ * WIP - Loader for pmtiles metadata
+ * @note loads metadata only. To load individual tiles, use PMTilesSource
+export const PMTilesLoader: LoaderWithParser<PMTilesMetadata, never, PMTilesLoaderOptions> = {
+  name: 'PMTiles',
+  id: 'pmtiles',
+  module: 'pmtiles',
+  version: VERSION,
+  worker: true,
+  extensions: ['pmtiles'],
+  mimeTypes: ['application/octet-stream'],
+  options: {
+    pmtiles: {}
+  },
+  parse: async (arrayBuffer, options) => {
+    throw new Error('not implemented');
+  }
+};
+ */
 
 export type PMTilesSourceProps = DataSourceProps & {
   url: string | Blob;
