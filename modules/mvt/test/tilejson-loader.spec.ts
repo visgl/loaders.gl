@@ -11,7 +11,7 @@ test('TileJSONLoader#loader conformance', (t) => {
   t.end();
 });
 
-test.only('TileJSONLoader#load', async (t) => {
+test('TileJSONLoader#load', async (t) => {
   for (const tileJSON of TILEJSONS) {
     const metadata = await load(tileJSON.url, TileJSONLoader);
     t.ok(metadata.layers);
