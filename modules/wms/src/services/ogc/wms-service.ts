@@ -5,10 +5,9 @@ import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 
-import type {ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
+import type {Service, ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
 import {ImageSource} from '@loaders.gl/loader-utils';
 import type {ImageServiceProps} from '../../lib/services/image-service';
-import {Service} from '../../lib/services/service';
 
 import type {WMSCapabilities} from '../../wms-capabilities-loader';
 import type {WMSFeatureInfo} from '../../wip/wms-feature-info-loader';

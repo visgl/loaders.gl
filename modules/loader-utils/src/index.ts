@@ -137,6 +137,8 @@ export type {WritableFile} from './lib/filesystems/writable-file';
 export {makeWritableFile} from './lib/filesystems/writable-file';
 
 // EXPERIMENTAL: DATA SOURCES
+export type {Service} from './service-types';
+
 export type {DataSourceProps} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 

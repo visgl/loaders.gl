@@ -1,8 +1,7 @@
 // loaders.gl, MIT license
 
-import {ImageSource} from '@loaders.gl/loader-utils';
+import {ImageSource, Service} from '@loaders.gl/loader-utils';
 import {ImageServiceProps} from './image-service';
-import {Service} from './service';
 
 export type CreateImageServiceProps = ImageServiceProps & {
   type?: string | 'auto';

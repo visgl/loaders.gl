@@ -74,7 +74,7 @@ export {WMSSource, WMSService} from './services/ogc/wms-service';
 // ArcGIS Services
 
 export {getArcGISServices as _getArcGISServices} from './services/arcgis/arcgis-server';
-export {ArcGISImageServer as _ArcGISImageServer} from './services/arcgis/arcgis-image-service';
+export {ArcGISImageService as _ArcGISImageService} from './services/arcgis/arcgis-image-service';
 
 // LERC - Limited Error Raster Compression
 // TODO - restore once esbuild bundling issues have been resolved

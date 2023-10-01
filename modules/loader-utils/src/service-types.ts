@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import {ImageSource, ImageSourceProps} from '@loaders.gl/loader-utils';
+import type {ImageSource, ImageSourceProps} from './lib/sources/image-source';
 
 /** Export interface source */
 export interface Service<SourceT = ImageSource, SourcePropsT = ImageSourceProps> {
