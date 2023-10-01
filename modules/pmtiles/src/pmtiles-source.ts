@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
@@ -9,6 +11,18 @@ import {PMTiles} from 'pmtiles';
 import type {PMTilesMetadata} from './lib/parse-pmtiles';
 import {parsePMTilesHeader} from './lib/parse-pmtiles';
 import {TileLoadParameters} from 'modules/loader-utils/src/lib/sources/tile-source';
+
+// export const PMTilesService: Service = {
+//   name: 'PMTiles',
+//   id: 'pmtiles',
+//   module: 'pmtiles',
+//   // version: VERSION,
+//   extensions: ['pmtiles'],
+//   mimeTypes: ['application/octet-stream'],
+//   options: {
+//     pmtiles: {}
+//   }
+// };
 
 /**
  * WIP - Loader for pmtiles metadata
