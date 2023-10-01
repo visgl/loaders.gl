@@ -87,6 +87,9 @@ export type ImageSourceProps = DataSourceProps;
 export abstract class ImageSource<
   PropsT extends ImageSourceProps = ImageSourceProps
 > extends DataSource<PropsT> {
+  static type: string = 'template';
+  static testURL = (url: string): boolean => false;
+
   abstract getMetadata(): Promise<ImageSourceMetadata>;
   abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
 }

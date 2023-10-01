@@ -2,10 +2,14 @@
 
 import {ImageType} from '@loaders.gl/images';
 import type {ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
-import type {ImageSourceProps} from '@loaders.gl/loader-utils';
-import {ImageSource} from '@loaders.gl/loader-utils';
 
-export type ArcGISImageServerProps = ImageSourceProps & {
+import type {ImageServiceProps} from '../../lib/services/image-service';
+import {ImageService} from '../../lib/services/image-service';
+
+// import type {ImageSourceProps} from '@loaders.gl/loader-utils';
+// import {ImageSource} from '@loaders.gl/loader-utils';
+
+export type ArcGISImageServerProps = ImageServiceProps & {
   url: string;
 };
 
@@ -14,7 +18,7 @@ export type ArcGISImageServerProps = ImageSourceProps & {
  * Note - exports a big API, that could be exposed here if there is a use case
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/image-service.htm
  */
-export class ArcGISImageServer extends ImageSource<ArcGISImageServerProps> {
+export class ArcGISImageServer extends ImageService<ArcGISImageServerProps> {
   static type: 'arcgis-image-server' = 'arcgis-image-server';
   static testURL = (url: string): boolean => url.toLowerCase().includes('ImageServer');
 
