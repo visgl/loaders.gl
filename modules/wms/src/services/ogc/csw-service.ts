@@ -5,16 +5,16 @@
 import type {DataSourceProps} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
-import type {CSWCapabilities} from '../../../csw-capabilities-loader';
-import {CSWCapabilitiesLoader} from '../../../csw-capabilities-loader';
+import type {CSWCapabilities} from '../../csw-capabilities-loader';
+import {CSWCapabilitiesLoader} from '../../csw-capabilities-loader';
 
-import type {CSWRecords} from '../../../csw-records-loader';
-import {CSWRecordsLoader} from '../../../csw-records-loader';
+import type {CSWRecords} from '../../csw-records-loader';
+import {CSWRecordsLoader} from '../../csw-records-loader';
 
-import type {CSWDomain} from '../../../csw-domain-loader';
-import {CSWDomainLoader} from '../../../csw-domain-loader';
+import type {CSWDomain} from '../../csw-domain-loader';
+import {CSWDomainLoader} from '../../csw-domain-loader';
 
-import {WMSErrorLoader as CSWErrorLoader} from '../../../wms-error-loader';
+import {WMSErrorLoader as CSWErrorLoader} from '../../wms-error-loader';
 
 type CSWCommonParameters = {
   /** In case the endpoint supports multiple services */

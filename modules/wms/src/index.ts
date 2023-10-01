@@ -55,23 +55,26 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 export type {ImageType} from '@loaders.gl/images';
 
-export type {ImageServiceType} from './lib/create-image-source';
-export {createImageSource} from './lib/create-image-source';
+export type {CreateImageServiceProps} from './lib/services/create-image-service';
+export {createImageService} from './lib/services/create-image-service';
+
+export type {ImageServiceType} from './services/create-image-source';
+export {createImageSource} from './services/create-image-source';
 
 // Generic (Template URL) Services
 
-export type {ImageServiceProps} from './lib/services/generic/image-service';
-export {ImageService} from './lib/services/generic/image-service';
+export type {ImageServiceProps} from './lib/services/image-service';
+export {ImageService} from './lib/services/image-service';
 
 // OGC Services
 
-export {CSWService} from './lib/services/ogc/csw-service';
-export {WMSService} from './lib/services/ogc/wms-service';
+export {CSWService} from './services/ogc/csw-service';
+export {WMSSource, WMSService} from './services/ogc/wms-service';
 
 // ArcGIS Services
 
-export {getArcGISServices as _getArcGISServices} from './lib/services/arcgis/arcgis-server';
-export {ArcGISImageServer as _ArcGISImageServer} from './lib/services/arcgis/arcgis-image-service';
+export {getArcGISServices as _getArcGISServices} from './services/arcgis/arcgis-server';
+export {ArcGISImageService as _ArcGISImageService} from './services/arcgis/arcgis-image-service';
 
 // LERC - Limited Error Raster Compression
 // TODO - restore once esbuild bundling issues have been resolved
