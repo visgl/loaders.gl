@@ -47,7 +47,7 @@
     "@types/tape-promise": "^4.0.1",
     "base64-inline-loader": "^1.1.1",
     "base64-loader": "^1.0.0",
-    "ocular-dev-tools": "2.0.0-alpha.15",
+    "ocular-dev-tools": "2.0.0-alpha.16",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1"
   },
