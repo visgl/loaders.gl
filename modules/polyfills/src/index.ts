@@ -1,8 +1,7 @@
 /* eslint-disable dot-notation */
-import {isBrowser} from './utils/globals';
+import {isBrowser} from './utils/is-browser';
 
 import {TextDecoder, TextEncoder} from './lib/encoding';
-import {allSettled} from './promise/all-settled';
 
 // Node specific
 import * as base64 from './node/buffer/btoa.node';
