@@ -6,6 +6,21 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-beta.1
+
+- feat(tile-converter): support of 64-bit int (#2670)
+- feat(gltf): added support of arrays to ext-feature-metadata (#2663)
+- feat(mvt): Add TileJSONLoader (#2666)
+- feat(pmtiles): Create PMTileSource from Blob (#2668)
+- feat(wms): Separate WMSSource and WMSService (#2667)
+- fix: remove unused ts directive (#2665)
+- Move master to 4.0-beta tags (#2661)
+- feat(pmtools): Add vector tile support (#2664)
+- docs: Improved release notes
+- feat(pmtiles): Support for pmtiles format (#2662)
+- Website: Geoparquet example (#2660)
+- fix(parse-i3s): getting root node url for normalizeTilesetData without nodepages (#2659)
+
 ### v4.0.0-alpha.26
 
 - Fixes for deck.gl 8.10 (#2658)

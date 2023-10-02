@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zip",
-  "version": "4.0.0-alpha.26",
+  "version": "4.0.0-beta.1",
   "description": "Zip Archive Loader",
   "license": "MIT",
   "publishConfig": {
@@ -30,8 +30,8 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/compression": "4.0.0-alpha.26",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.26",
+    "@loaders.gl/compression": "4.0.0-beta.1",
+    "@loaders.gl/loader-utils": "4.0.0-beta.1",
     "jszip": "^3.1.5",
     "md5": "^2.3.0"
   },
