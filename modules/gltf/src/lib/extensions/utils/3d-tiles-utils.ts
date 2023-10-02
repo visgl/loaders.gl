@@ -124,7 +124,7 @@ export function convertRawBufferToMetadataArray(
   attributeType: string,
   componentType: NumericComponentType,
   elementCount: number = 1
-): BigTypedArray | null {
+): BigTypedArray {
   const numberOfComponents = ATTRIBUTE_TYPE_TO_COMPONENTS[attributeType];
   const ArrayType = ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY[componentType];
   const size = ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE[componentType];
@@ -142,7 +142,6 @@ export function convertRawBufferToMetadataArray(
 
 /**
  * Processes data encoded in the texture associated with the primitive.
- * If Ext_mesh_featues is combined with the Ext_structural_metadata, propertyTable will also be processed.
  * @param scenegraph - Instance of the class for structured access to GLTF data.
  * @param textureInfo - Reference to the texture where extension data are stored.
  * @param primitive - Primitive object in the mesh.
@@ -333,4 +332,99 @@ function coordinatesToOffset(
   // components is a number of channels in the image
   const offset = (indY * w + indX) * components;
   return offset;
+}
+
+/**
+ * Parses variable-length array data.
+ * In this case every value of the property in the table will be an array
+ * of arbitrary length.
+ * @param valuesData - Values in a flat typed array.
+ * @param numberOfElements - Number of rows in the property table.
+ * @param arrayOffsets - Offsets of nested arrays in the flat values array.
+ * @param valuesDataBytesLength - Data byte length.
+ * @param valueSize - Value size in bytes.
+ * @returns Array of typed arrays.
+ */
+export function parseVariableLengthArrayNumeric(
+  valuesData: BigTypedArray,
+  numberOfElements: number,
+  arrayOffsets: TypedArray,
+  valuesDataBytesLength: number,
+  valueSize: number
+): BigTypedArray[] {
+  const attributeValueArray: BigTypedArray[] = [];
+  for (let index = 0; index < numberOfElements; index++) {
+    const arrayOffset = arrayOffsets[index];
+    const arrayByteSize = arrayOffsets[index + 1] - arrayOffsets[index];
+    if (arrayByteSize + arrayOffset > valuesDataBytesLength) {
+      break;
+    }
+    const typedArrayOffset = arrayOffset / valueSize;
+    const elementCount = arrayByteSize / valueSize;
+    attributeValueArray.push(valuesData.slice(typedArrayOffset, typedArrayOffset + elementCount));
+  }
+  return attributeValueArray;
+}
+
+/**
+ * Parses fixed-length array data.
+ * In this case every value of the property in the table will be an array
+ * of constant length equal to `arrayCount`.
+ * @param valuesData - Values in a flat typed array.
+ * @param numberOfElements - Number of rows in the property table.
+ * @param arrayCount - Nested arrays length.
+ * @returns Array of typed arrays.
+ */
+export function parseFixedLengthArrayNumeric(
+  valuesData: BigTypedArray,
+  numberOfElements: number,
+  arrayCount: number
+): BigTypedArray[] {
+  const attributeValueArray: BigTypedArray[] = [];
+  for (let index = 0; index < numberOfElements; index++) {
+    const elementOffset = index * arrayCount;
+    attributeValueArray.push(valuesData.slice(elementOffset, elementOffset + arrayCount));
+  }
+  return attributeValueArray;
+}
+
+/**
+ * Decodes properties of string type from binary source.
+ * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
+ * @param valuesDataBytes - Data taken from values property of the property table property.
+ * @param arrayOffsets - Offsets for variable-length arrays. It's null for fixed-length arrays or scalar types.
+ * @param stringOffsets - Index of the buffer view containing offsets for strings. It should be available for string type.
+ * @returns String property values
+ */
+export function getPropertyDataString(
+  numberOfElements: number,
+  valuesDataBytes: Uint8Array,
+  arrayOffsets: TypedArray | null,
+  stringOffsets: TypedArray | null
+): string[] | string[][] {
+  if (arrayOffsets) {
+    // TODO: implement it as soon as we have the corresponding tileset
+    throw new Error('Not implemented - arrayOffsets for strings is specified');
+  }
+
+  if (stringOffsets) {
+    const stringsArray: string[] = [];
+    const textDecoder = new TextDecoder('utf8');
+
+    let stringOffset = 0;
+    for (let index = 0; index < numberOfElements; index++) {
+      const stringByteSize = stringOffsets[index + 1] - stringOffsets[index];
+
+      if (stringByteSize + stringOffset <= valuesDataBytes.length) {
+        const stringData = valuesDataBytes.subarray(stringOffset, stringByteSize + stringOffset);
+        const stringAttribute = textDecoder.decode(stringData);
+
+        stringsArray.push(stringAttribute);
+        stringOffset += stringByteSize;
+      }
+    }
+
+    return stringsArray;
+  }
+  return [];
 }
