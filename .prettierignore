@@ -10,6 +10,7 @@ public
 modules/core/src/iterators/make-stream/make-node-stream.ts
 
 modules/loader-utils/src/lib/filesystems/node-filesystem.browser.ts
+modules/loader-utils/src/lib/filesystems/node-filesystem.ts
 
 modules/3d-tiles/test/lib/classes/tile-3d-batch-table-hierarchy.spec.ts
 
@@ -39,8 +40,6 @@ modules/obj/src/lib/get-obj-schema.ts
 modules/mvt/src/lib/geojson-tiler/tile.ts
 
 modules/parquet/test
-
-modules/polyfills/src/lib/filesystems/node-filesystem.ts
 
 modules/textures/test/basis-loader.spec.ts
 
