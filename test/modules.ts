@@ -4,11 +4,8 @@
 
 import ALIASES from './aliases.js';
 import {_addAliases} from '@loaders.gl/loader-utils';
-import {installFilePolyfills} from '@loaders.gl/polyfills';
 
 _addAliases(ALIASES);
-// Install polyfills (primarily for Node)
-installFilePolyfills();
 
 // Utility modules
 import '@loaders.gl/polyfills/test';

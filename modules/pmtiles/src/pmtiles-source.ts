@@ -4,7 +4,8 @@ import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 
-import {PMTiles} from 'pmtiles';
+import * as pmtiles from 'pmtiles';
+const {PMTiles} = pmtiles;
 // import type {pPMTilesMetadata} from './lib/parse-pmtiles';
 import {PMTilesMetadata, parsePMTilesHeader} from './lib/parse-pmtiles';
 import {TileLoadParameters} from 'modules/loader-utils/src/lib/sources/tile-source';
@@ -20,7 +21,7 @@ export type PMTilesSourceProps = DataSourceProps & {
  */
 export class PMTilesSource extends DataSource implements ImageTileSource, VectorTileSource {
   props: PMTilesSourceProps;
-  pmtiles: PMTiles;
+  pmtiles: pmtiles.PMTiles;
   metadata: Promise<PMTilesMetadata>;
 
   constructor(props: PMTilesSourceProps) {

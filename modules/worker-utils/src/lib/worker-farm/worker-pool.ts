@@ -154,6 +154,7 @@ export default class WorkerPool {
       // Wait for the app to signal that the job is complete, then return worker to queue
       try {
         await job.result;
+      } catch {
       } finally {
         this.returnWorkerToQueue(workerThread);
       }

@@ -68,7 +68,7 @@ export function validateMeshCategoryData(t, data) {
   t.equals(data.shape, 'columnar-table');
   t.ok(data.data);
   let hasAttributes = false;
-  let attributesError = null;
+  let attributesError = false;
   for (const attributeName in data.data) {
     hasAttributes = true;
     const value = data.data[attributeName];

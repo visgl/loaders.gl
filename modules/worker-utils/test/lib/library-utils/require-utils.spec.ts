@@ -4,11 +4,13 @@
 
 import test from 'tape-promise/tape';
 import fs from 'fs';
+import path from 'path';
 import {isBrowser} from '@loaders.gl/worker-utils';
 import {requireFromFile, requireFromString} from '../../../src/lib/node/require-utils.node';
 
-const MODULE_URL = `${__dirname}/fixture/module.js`;
-const SUBMODULE_URL = `${__dirname}/fixture/submodule.js`;
+const DIR = path.dirname(import.meta.url);
+const MODULE_URL = `${DIR}/fixture/module.js`;
+const SUBMODULE_URL = `${DIR}/fixture/submodule.js`;
 
 test('require-utils', (tt) => {
   if (isBrowser) {

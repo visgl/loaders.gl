@@ -1,4 +1,4 @@
-import test from 'tape';
+import test, {Test as TapeTest} from 'tape';
 import {tapeEquals, tapeEqualsEpsilon} from './tape-assertions';
 
 /**
@@ -6,7 +6,10 @@ import {tapeEquals, tapeEqualsEpsilon} from './tape-assertions';
  * @see https://jestjs.io/docs/expect
  */
 class TestCase {
-  constructor(t, result) {
+  t: TapeTest;
+  result: any;
+
+  constructor(t: TapeTest, result: any) {
     this.t = t;
     this.result = result;
   }
@@ -47,11 +50,11 @@ class TestCase {
   }
 }
 
-const descriptions = [];
+const descriptions: string[] = [];
 let description = '';
-let currentTest;
+let currentTest: TapeTest;
 
-export function describe(string, func) {
+export function describe(string: string, func: Function) {
   descriptions.push(string);
   description = descriptions.join('#');
   func();

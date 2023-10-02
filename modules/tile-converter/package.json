@@ -46,8 +46,7 @@
     "join-images": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-converter-bundle && npm run build-slpk-extractor-bundle && npm run build-i3s-server-bundle",
-    "build-bundle": "ocular-bundle ./src/index.ts",
+    "pre-build": "npm run build-converter-bundle && npm run build-slpk-extractor-bundle && npm run build-i3s-server-bundle",
     "build-converter-bundle": "esbuild src/converter-cli.ts --outfile=dist/converter.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-slpk-extractor-bundle": "esbuild src/slpk-extractor-cli.ts --outfile=dist/slpk-extractor.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-i3s-server-bundle": "esbuild src/i3s-server/bin/www.ts --outfile=dist/esm/i3s-server/bin/i3s-server.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\""

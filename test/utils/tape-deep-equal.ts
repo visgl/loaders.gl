@@ -1,7 +1,7 @@
 import Test from 'tape';
 
 // Tape uses `deep-equal` module which throws exceptions, so replace...
-function tapeDeepEqual(a, b, msg, extra) {
+function tapeDeepEqual(a: any, b: any, msg: string, extra?: any) {
   // @ts-ignore
   const that = this; // eslint-disable-line no-invalid-this
   that._assert(deepEqual(a, b), {
@@ -16,7 +16,7 @@ function tapeDeepEqual(a, b, msg, extra) {
 Test.prototype.deepEqual = Test.prototype.deepEquals = Test.prototype.isEquivalent = Test.prototype.same = tapeDeepEqual;
 
 // Compare two objects, partial deep equal
-export function deepEqual(a, b) {
+export function deepEqual(a: any, b: any): boolean {
   if (a === b) {
     return true;
   }

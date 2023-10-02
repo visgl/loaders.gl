@@ -11,7 +11,7 @@ export default {
 
   bundle: {
     globalName: 'loader',
-    externals: ["fs", "path", "util", "stream", "crypto", "http", "https"],
+    externals: ["fs", "path", "util", "events", "stream", "crypto", "http", "https"],
     target: ['supports async-functions', 'not dead'],
     format: 'umd',
     globals: {
@@ -28,8 +28,8 @@ export default {
   webpack: {},
 
   entry: {
-    test: 'test/node.js',
-    'test-browser': 'test/browser.js',
+    test: 'test/node.ts',
+    'test-browser': 'test/browser.ts',
     bench: 'test/bench/node.js',
     'bench-browser': 'test/bench/browser.js',
     size: 'test/size/import-nothing.js'
