@@ -40,6 +40,8 @@ modules/mvt/src/lib/geojson-tiler/tile.ts
 
 modules/parquet/test
 
+modules/polyfills/src/lib/filesystems/node-filesystem.ts
+
 modules/textures/test/basis-loader.spec.ts
 
 modules/xml/test/sax-ts/testcases/attribute-name.spec.ts
