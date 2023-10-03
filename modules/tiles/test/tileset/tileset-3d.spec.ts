@@ -162,9 +162,18 @@ test('Tileset3D#url set up correctly given path with query string', async (t) =>
       '/test/data/Tilesets/TilesetOfTilesets/tileset2.json?param3=3&session=sesh&param1=1&param2=2&v=1.2.3',
       'child url content parameters preserved'
     );
+    t.equals(tileset.getTileUrl(tile.contentUrl).endsWith('?'), false);
   } else {
     t.fail('no tile');
   }
+  t.end();
+});
+
+test('Tileset3D#getTileUrl should not ends with sign ?', async (t) => {
+  const path = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset2.json';
+  const tilesetJson = await load(path, Tiles3DLoader);
+  const tileset = new Tileset3D(tilesetJson);
+  t.equals(tileset.getTileUrl(tileset.url).endsWith('?'), false);
   t.end();
 });
 
