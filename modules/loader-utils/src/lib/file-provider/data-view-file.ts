@@ -21,7 +21,6 @@ export class DataViewFile implements FileProvider {
     this.file = file;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   async destroy(): Promise<void> {}
 
   /**

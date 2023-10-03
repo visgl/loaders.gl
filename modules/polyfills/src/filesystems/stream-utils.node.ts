@@ -1,14 +1,16 @@
 // loaders.gl, MIT license
 
 import zlib from 'zlib';
+import {Readable} from 'stream';
 
-import {toArrayBuffer} from './decode-data-uri.node';
+const isArrayBuffer = (x) => x && x instanceof ArrayBuffer;
+const isBuffer = (x) => x && x instanceof Buffer;
 
 /**
  *
  */
-export function decompressReadStream(readStream, headers) {
-  switch (headers.get('content-encoding')) {
+export function decompressReadStream(readStream: Readable, headers?: Headers) {
+  switch (headers?.get('content-encoding')) {
     case 'br':
       return readStream.pipe(zlib.createBrotliDecompress());
     case 'gzip':
@@ -76,4 +78,41 @@ export function concatenateArrayBuffers(sources: (ArrayBuffer | Uint8Array)[]): 
 
   // We work with ArrayBuffers, discard the typed array wrapper
   return result.buffer;
+}
+
+/**
+ * @param data
+ * @todo Duplicate of core
+ */
+export function toArrayBuffer(data: unknown): ArrayBuffer {
+  if (isArrayBuffer(data)) {
+    return data as ArrayBuffer;
+  }
+
+  // TODO - per docs we should just be able to call buffer.buffer, but there are issues
+  if (isBuffer(data)) {
+    // @ts-expect-error
+    const typedArray = new Uint8Array(data);
+    return typedArray.buffer;
+  }
+
+  // Careful - Node Buffers will look like ArrayBuffers (keep after isBuffer)
+  if (ArrayBuffer.isView(data)) {
+    return data.buffer;
+  }
+
+  if (typeof data === 'string') {
+    const text = data;
+    const uint8Array = new TextEncoder().encode(text);
+    return uint8Array.buffer;
+  }
+
+  // HACK to support Blob polyfill
+  // @ts-expect-error
+  if (data && typeof data === 'object' && data._toArrayBuffer) {
+    // @ts-expect-error
+    return data._toArrayBuffer();
+  }
+
+  throw new Error(`toArrayBuffer(${JSON.stringify(data, null, 2).slice(10)})`);
 }

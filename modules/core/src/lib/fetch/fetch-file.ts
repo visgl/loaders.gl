@@ -2,7 +2,6 @@
 
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';
-import * as node from './fetch-file.node';
 
 export function isNodePath(url: string): boolean {
   return !isRequestURL(url) && !isDataURL(url);
@@ -29,8 +28,13 @@ export async function fetchFile(
     const url = resolvePath(urlOrData);
 
     // Support fetching from local file system
-    if (isNodePath(url) && node?.fetchFileNode) {
-      return node.fetchFileNode(url, fetchOptions);
+    if (isNodePath(url)) {
+      if (!globalThis.loaders?.fetchNode) {
+        throw new Error(
+          'fetchFile: globalThis.loaders.fetchNode not defined. Install @loaders.gl/polyfills'
+        );
+      }
+      return globalThis.loaders?.fetchNode(url, fetchOptions);
     }
 
     // Call global fetch

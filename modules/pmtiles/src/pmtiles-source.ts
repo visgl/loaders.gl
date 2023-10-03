@@ -12,37 +12,36 @@ import type {PMTilesMetadata} from './lib/parse-pmtiles';
 import {parsePMTilesHeader} from './lib/parse-pmtiles';
 import {TileLoadParameters} from 'modules/loader-utils/src/lib/sources/tile-source';
 
-// export const PMTilesService: Service = {
-//   name: 'PMTiles',
-//   id: 'pmtiles',
-//   module: 'pmtiles',
-//   // version: VERSION,
-//   extensions: ['pmtiles'],
-//   mimeTypes: ['application/octet-stream'],
-//   options: {
-//     pmtiles: {}
-//   }
-// };
+const VERSION = '1.0.0';
 
-/**
- * WIP - Loader for pmtiles metadata
- * @note loads metadata only. To load individual tiles, use PMTilesSource
-export const PMTilesLoader: LoaderWithParser<PMTilesMetadata, never, PMTilesLoaderOptions> = {
+export type Service = {
+  name: string;
+  id: string;
+  module: string;
+  version: string;
+  extensions: string[];
+  mimeTypes: string[];
+  options: Record<string, unknown>;
+};
+
+export type ServiceWithSource<SourceT, SourcePropsT> = Service & {
+  _source?: SourceT;
+  _sourceProps?: SourcePropsT;
+  createSource: (props: SourcePropsT) => SourceT;
+};
+
+export const PMTilesService: ServiceWithSource<PMTilesSource, PMTilesSourceProps> = {
   name: 'PMTiles',
   id: 'pmtiles',
   module: 'pmtiles',
   version: VERSION,
-  worker: true,
   extensions: ['pmtiles'],
   mimeTypes: ['application/octet-stream'],
   options: {
     pmtiles: {}
   },
-  parse: async (arrayBuffer, options) => {
-    throw new Error('not implemented');
-  }
+  createSource: (props: PMTilesSourceProps) => new PMTilesSource(props)
 };
- */
 
 export type PMTilesSourceProps = DataSourceProps & {
   url: string | Blob;
