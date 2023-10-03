@@ -348,9 +348,12 @@ export class Tileset3D {
     if (isDataUrl) {
       return tilePath;
     }
-    return `${tilePath}${tilePath.includes('?') ? '&' : this.queryParams.length ? '?' : ''}${
-      this.queryParams
-    }`;
+
+    let tileUrl = tilePath;
+    if (this.queryParams.length) {
+      tileUrl = `${tilePath}${tilePath.includes('?') ? '&' : '?'}${this.queryParams}`;
+    }
+    return tileUrl;
   }
 
   // TODO CESIUM specific
