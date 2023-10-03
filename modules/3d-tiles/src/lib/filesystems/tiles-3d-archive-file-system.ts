@@ -35,7 +35,7 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
    * @returns - Response with file data
    */
   async fetch(filename: string): Promise<Response> {
-    const fileProvider = await this.fileProvider;
+    const fileProvider = this.fileProvider;
     if (!fileProvider) {
       throw new Error('No data detected in the zip archive');
     }
@@ -61,7 +61,7 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
       return;
     }
 
-    const fileProvider = await this.fileProvider;
+    const fileProvider = this.fileProvider;
     if (!fileProvider) {
       throw new Error('No data detected in the zip archive');
     }

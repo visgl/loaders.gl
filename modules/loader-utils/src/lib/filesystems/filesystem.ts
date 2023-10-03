@@ -31,7 +31,7 @@ export interface RandomAccessFileSystem extends FileSystem {
   readonly writable: boolean;
 
   /** Open a readable file */
-  openReadableFile(path: string, flags?: 'a'): Promise<ReadableFile>;
+  openReadableFile(path: string, flags?: 'r'): Promise<ReadableFile>;
 
   /** Open a writable file */
   openWritableFile(path: string, flags?: 'w' | 'wx', mode?: number): Promise<WritableFile>;

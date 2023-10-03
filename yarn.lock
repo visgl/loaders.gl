@@ -1970,10 +1970,26 @@
     "@loaders.gl/worker-utils" "3.4.14"
     "@probe.gl/stats" "^4.0.1"
 
+"@loaders.gl/loader-utils@4.0.0-beta.1":
+  version "4.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/loader-utils/-/loader-utils-4.0.0-beta.1.tgz#4234d9d5f7227dc4324bfb1c9348a471f87fbb55"
+  integrity sha512-nf/fKHoZaEYsM/sOwGpWz+Gou+0wN/GQRp0KpLXRLn6OZIxbYiMsM0jjYfDzQQ3qzv02la3R809BfJ+miaY3pw==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    "@loaders.gl/worker-utils" "4.0.0-beta.1"
+    "@probe.gl/stats" "^4.0.2"
+
 "@loaders.gl/worker-utils@3.4.14":
   version "3.4.14"
   resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-3.4.14.tgz#5391a416a3d60e03b9edcedb285af44312d40d2e"
   integrity sha512-PUSwxoAYbskisXd0KfYEQ902b0igBA2UAWdP6PzPvY+tJmobfh74dTNwrrBQ1rGXQxxmGx6zc6/ksX6mlIzIrg==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+
+"@loaders.gl/worker-utils@4.0.0-beta.1":
+  version "4.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/worker-utils/-/worker-utils-4.0.0-beta.1.tgz#64a8c3ddf54bbed0231bc0b0901aa8c1b6e08c2c"
+  integrity sha512-GCQqs//ehUXH4vSYC/CffZTY/T/j/dFNhoT3WEWgSXuOAVNh6ovYt/NnKNe6kLMw94dCMnafFKK0hc3XB0WIrQ==
   dependencies:
     "@babel/runtime" "^7.3.1"
 

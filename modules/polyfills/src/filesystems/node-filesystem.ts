@@ -24,9 +24,13 @@ export class NodeFileSystem implements RandomAccessFileSystem {
     return await fsPromise.readdir(dirname, options);
   }
 
-  async stat(path: string, options?: {}): Promise<Stat> {
-    const info = await fsPromise.stat(path, options);
-    return {size: Number(info.size), isDirectory: info.isDirectory()};
+  async stat(path: string): Promise<Stat> {
+    const info = await fsPromise.stat(path, {bigint: true});
+    return {
+      size: Number(info.size),
+      bigsize: info.size,
+      isDirectory: info.isDirectory()
+    };
   }
 
   async unlink(path: string): Promise<void> {
@@ -38,7 +42,7 @@ export class NodeFileSystem implements RandomAccessFileSystem {
   }
 
   // implements IRandomAccessFileSystem
-  async openReadableFile(path: string, flags: 'a' = 'a'): Promise<NodeFile> {
+  async openReadableFile(path: string, flags: 'r' = 'r'): Promise<NodeFile> {
     return new NodeFile(path, flags);
   }
 

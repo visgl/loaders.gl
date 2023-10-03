@@ -1,5 +1,6 @@
 /**
  * Interface for providing file data
+ * @deprecated - will be replaced with ReadableFile
  */
 export interface FileProvider {
   /**

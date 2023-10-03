@@ -12,7 +12,10 @@ const toNumber = (bigint: bigint) => {
   return Number(bigint);
 };
 
-/** Provides file data using DataView */
+/**
+ * Provides file data using DataView
+ * @deprecated - will be replaced with ReadableFile
+ */
 export class DataViewFile implements FileProvider {
   /** The DataView from which data is provided */
   private file: DataView;
