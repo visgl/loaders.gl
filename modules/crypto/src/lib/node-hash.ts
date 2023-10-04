@@ -1,6 +1,6 @@
 // This dependency is too big, application must provide it
 import {Hash} from './hash';
-import {createHash} from 'crypto'; // Node.js builtin
+import * as crypto from 'crypto'; // Node.js builtin
 
 type CryptoHashOptions = {
   crypto: {
@@ -38,7 +38,10 @@ export class NodeHash extends Hash {
     await this.preload();
     const algorithm = this.options?.crypto?.algorithm?.toLowerCase();
     try {
-      const hash = createHash(algorithm);
+      if (!crypto.createHash) {
+        throw new Error('crypto.createHash not available');
+      }
+      const hash = crypto.createHash?.(algorithm);
       const inputArray = new Uint8Array(input);
       return hash.update(inputArray).digest('base64');
     } catch (error) {
@@ -51,7 +54,10 @@ export class NodeHash extends Hash {
     encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     await this.preload();
-    const hash = createHash(this.options?.crypto?.algorithm?.toLowerCase());
+    if (!crypto.createHash) {
+      throw new Error('crypto.createHash not available');
+    }
+    const hash = crypto.createHash?.(this.options?.crypto?.algorithm?.toLowerCase());
     for await (const chunk of asyncIterator) {
       // https://stackoverflow.com/questions/25567468/how-to-decrypt-an-arraybuffer
       const inputArray = new Uint8Array(chunk);

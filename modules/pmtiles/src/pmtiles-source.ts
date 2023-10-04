@@ -1,8 +1,15 @@
+// loaders.gl, MIT license
+
 import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
+
+// import {PMTiles, Source, RangeResponse} from 'pmtiles';
+
+// import type {PMTilesMetadata} from './lib/parse-pmtiles';
+// import {parsePMTilesHeader} from './lib/parse-pmtiles';
 
 import * as pmtiles from 'pmtiles';
 const {PMTiles} = pmtiles;
@@ -10,11 +17,69 @@ const {PMTiles} = pmtiles;
 import {PMTilesMetadata, parsePMTilesHeader} from './lib/parse-pmtiles';
 import {TileLoadParameters} from 'modules/loader-utils/src/lib/sources/tile-source';
 
+// export const PMTilesService: Service = {
+//   name: 'PMTiles',
+//   id: 'pmtiles',
+//   module: 'pmtiles',
+//   // version: VERSION,
+//   extensions: ['pmtiles'],
+//   mimeTypes: ['application/octet-stream'],
+//   options: {
+//     pmtiles: {}
+//   }
+// };
+
+/**
+ * WIP - Loader for pmtiles metadata
+ * @note loads metadata only. To load individual tiles, use PMTilesSource
+export const PMTilesLoader: LoaderWithParser<PMTilesMetadata, never, PMTilesLoaderOptions> = {
+  name: 'PMTiles',
+  id: 'pmtiles',
+  module: 'pmtiles',
+  version: VERSION,
+  worker: true,
+  extensions: ['pmtiles'],
+  mimeTypes: ['application/octet-stream'],
+  options: {
+    pmtiles: {}
+  },
+  parse: async (arrayBuffer, options) => {
+    throw new Error('not implemented');
+  }
+};
+ */
+
 export type PMTilesSourceProps = DataSourceProps & {
-  url: string;
+  url: string | Blob;
   attributions?: string[];
 };
 
+export class BlobSource implements pmtiles.Source {
+  blob: Blob;
+  key: string;
+
+  constructor(blob: Blob, key: string) {
+    this.blob = blob;
+    this.key = key;
+  }
+
+  // TODO - how is this used?
+  getKey() {
+    // @ts-expect-error url is only defined on File subclass
+    return this.blob.url || '';
+  }
+
+  async getBytes(offset: number, length: number, signal?: AbortSignal): Promise<pmtiles.RangeResponse> {
+    const slice = this.blob.slice(offset, offset + length);
+    const data = await slice.arrayBuffer();
+    return {
+      data
+      // etag: response.headers.get('ETag') || undefined,
+      // cacheControl: response.headers.get('Cache-Control') || undefined,
+      // expires: response.headers.get('Expires') || undefined
+    };
+  }
+}
 /**
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
@@ -27,7 +92,8 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   constructor(props: PMTilesSourceProps) {
     super(props);
     this.props = props;
-    const url = resolvePath(props.url);
+    const url =
+      typeof props.url === 'string' ? resolvePath(props.url) : new BlobSource(props.url, 'pmtiles');
     this.pmtiles = new PMTiles(url);
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();

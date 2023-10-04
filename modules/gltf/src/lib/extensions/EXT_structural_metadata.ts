@@ -24,7 +24,10 @@ import {
   primitivePropertyDataToAttributes,
   getArrayElementByteSize,
   NumericComponentType,
-  getOffsetsForProperty
+  getOffsetsForProperty,
+  parseVariableLengthArrayNumeric,
+  parseFixedLengthArrayNumeric,
+  getPropertyDataString
 } from './utils/3d-tiles-utils';
 
 const EXT_STRUCTURAL_METADATA_NAME = 'EXT_structural_metadata';
@@ -137,30 +140,6 @@ const extensions = {
   }
 }
 */
-
-/**
- * Returns the property table populated with the data taken according to the extension schema.
- * @param scenegraph - Instance of the class for structured access to GLTF data.
- * @param propertyTableIndex - Index of the property table to locate.
- * @returns Property table populated with the data.
- * Throws an exception if no property table was found for propertyTableIndex provided.
- */
-export function getPropertyTablePopulated(
-  scenegraph: GLTFScenegraph,
-  propertyTableIndex: number
-): GLTF_EXT_structural_metadata_PropertyTable {
-  const extension: GLTF_EXT_structural_metadata_GLTF | null = scenegraph.getExtension(
-    EXT_STRUCTURAL_METADATA_NAME
-  );
-  const propertyTable = extension?.propertyTables?.[propertyTableIndex];
-  if (extension?.schema && propertyTable) {
-    processPropertyTable(scenegraph, extension.schema, propertyTable);
-    return propertyTable;
-  }
-  throw new Error(
-    `Incorrect data in the EXT_structural_metadata extension: no property table with index ${propertyTableIndex}`
-  );
-}
 
 /**
  * Decodes feature metadata from extension.
@@ -447,13 +426,7 @@ function getPropertyDataFromBinarySource(
       throw new Error(`Not implemented - classProperty.type=${classProperty.type}`);
     }
     case 'STRING': {
-      data = getPropertyDataString(
-        classProperty,
-        numberOfElements,
-        valuesDataBytes,
-        arrayOffsets,
-        stringOffsets
-      );
+      data = getPropertyDataString(numberOfElements, valuesDataBytes, arrayOffsets, stringOffsets);
       break;
     }
     case 'ENUM': {
@@ -554,7 +527,7 @@ function getPropertyDataNumeric(
   const elementSize = getArrayElementByteSize(classProperty.type, classProperty.componentType);
   const elementCount = valuesDataBytes.byteLength / elementSize;
 
-  let valuesData: BigTypedArray | null;
+  let valuesData: BigTypedArray;
   if (classProperty.componentType) {
     valuesData = convertRawBufferToMetadataArray(
       valuesDataBytes,
@@ -563,9 +536,6 @@ function getPropertyDataNumeric(
       classProperty.componentType as NumericComponentType,
       elementCount
     );
-    if (!valuesData) {
-      valuesData = valuesDataBytes;
-    }
   } else {
     // The spec doesn't provide any info what to do if componentType is not set.
     valuesData = valuesDataBytes;
@@ -590,103 +560,6 @@ function getPropertyDataNumeric(
   }
 
   return valuesData;
-}
-
-/**
- * Parses variable-length array data.
- * In this case every value of the property in the table will be an array
- * of arbitrary length.
- * @param valuesData - Values in a flat typed array.
- * @param numberOfElements - Number of rows in the property table.
- * @param arrayOffsets - Offsets of nested arrays in the flat values array.
- * @param valuesDataBytesLength - Data byte length.
- * @param valueSize - Value size in bytes.
- * @returns Array of typed arrays.
- */
-function parseVariableLengthArrayNumeric(
-  valuesData: BigTypedArray,
-  numberOfElements: number,
-  arrayOffsets: TypedArray,
-  valuesDataBytesLength: number,
-  valueSize: number
-): BigTypedArray[] {
-  const attributeValueArray: BigTypedArray[] = [];
-  for (let index = 0; index < numberOfElements; index++) {
-    const arrayOffset = arrayOffsets[index];
-    const arrayByteSize = arrayOffsets[index + 1] - arrayOffsets[index];
-    if (arrayByteSize + arrayOffset > valuesDataBytesLength) {
-      break;
-    }
-    const typedArrayOffset = arrayOffset / valueSize;
-    const elementCount = arrayByteSize / valueSize;
-    attributeValueArray.push(valuesData.slice(typedArrayOffset, typedArrayOffset + elementCount));
-  }
-  return attributeValueArray;
-}
-
-/**
- * Parses fixed-length array data.
- * In this case every value of the property in the table will be an array
- * of constant length equal to `arrayCount`.
- * @param valuesData - Values in a flat typed array.
- * @param numberOfElements - Number of rows in the property table.
- * @param arrayCount - Nested arrays length.
- * @returns Array of typed arrays.
- */
-function parseFixedLengthArrayNumeric(
-  valuesData: BigTypedArray,
-  numberOfElements: number,
-  arrayCount: number
-): BigTypedArray[] {
-  const attributeValueArray: BigTypedArray[] = [];
-  for (let index = 0; index < numberOfElements; index++) {
-    const elementOffset = index * arrayCount;
-    attributeValueArray.push(valuesData.slice(elementOffset, elementOffset + arrayCount));
-  }
-  return attributeValueArray;
-}
-
-/**
- * Decodes properties of string type from binary source.
- * @param classProperty - Class property object.
- * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
- * @param valuesDataBytes - Data taken from values property of the property table property.
- * @param arrayOffsets - Offsets for variable-length arrays. It's null for fixed-length arrays or scalar types.
- * @param stringOffsets - Index of the buffer view containing offsets for strings. It should be available for string type.
- * @returns String property values
- */
-function getPropertyDataString(
-  classProperty: GLTF_EXT_structural_metadata_ClassProperty,
-  numberOfElements: number,
-  valuesDataBytes: Uint8Array,
-  arrayOffsets: TypedArray | null,
-  stringOffsets: TypedArray | null
-): string[] | string[][] {
-  if (arrayOffsets) {
-    // TODO: implement it as soon as we have the corresponding tileset
-    throw new Error(`Not implemented - classProperty.type=${classProperty.type}`);
-  }
-
-  if (stringOffsets) {
-    const stringsArray: string[] = [];
-    const textDecoder = new TextDecoder('utf8');
-
-    let stringOffset = 0;
-    for (let index = 0; index < numberOfElements; index++) {
-      const stringByteSize = stringOffsets[index + 1] - stringOffsets[index];
-
-      if (stringByteSize + stringOffset <= valuesDataBytes.length) {
-        const stringData = valuesDataBytes.subarray(stringOffset, stringByteSize + stringOffset);
-        const stringAttribute = textDecoder.decode(stringData);
-
-        stringsArray.push(stringAttribute);
-        stringOffset += stringByteSize;
-      }
-    }
-
-    return stringsArray;
-  }
-  return [];
 }
 
 /**

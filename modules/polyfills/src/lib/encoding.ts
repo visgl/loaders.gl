@@ -8,7 +8,7 @@
 import indexes from './encoding-indexes';
 // Note: Aaian character indices add half a megabyte to bundle. Ignore, since we really only want the built-in UTF8...
 // import indexes from './encoding-indexes-asian.js';
-global['encoding-indexes'] = indexes || {};
+globalThis['encoding-indexes'] = indexes || {};
 
 //
 // Utilities
@@ -720,10 +720,10 @@ function indexPointerFor(code_point, index) {
  * @return {(!Array.<number>|!Array.<Array.<number>>)}
  *  */
 function index(name) {
-  if (!('encoding-indexes' in global)) {
+  if (!('encoding-indexes' in globalThis)) {
     throw Error('Indexes missing.' + ' Did you forget to include encoding-indexes.js first?');
   }
-  return global['encoding-indexes'][name];
+  return globalThis['encoding-indexes'][name];
 }
 
 /**
@@ -1121,7 +1121,7 @@ function TextEncoder(label, options) {
     // Standard behavior.
     enc._encoding = getEncoding('utf-8');
 
-    if (label !== undefined && 'console' in global) {
+    if (label !== undefined && 'console' in globalThis) {
       console.warn('TextEncoder constructor called with encoding label, ' + 'which is ignored.');
     }
   }
@@ -1483,7 +1483,7 @@ function SingleByteEncoder(index, options) {
 }
 
 (function () {
-  if (!('encoding-indexes' in global)) return;
+  if (!('encoding-indexes' in globalThis)) return;
   encodings.forEach(function (category) {
     if (category.heading !== 'Legacy single-byte encodings') return;
     category.encodings.forEach(function (encoding) {
@@ -3077,8 +3077,8 @@ decoders['x-user-defined'] = function (options) {
 };
 
 // FORK
-// if (!global['TextEncoder']) global['TextEncoder'] = TextEncoder;
-// if (!global['TextDecoder']) global['TextDecoder'] = TextDecoder;
+// if (!globalThis['TextEncoder']) globalThis['TextEncoder'] = TextEncoder;
+// if (!globalThis['TextDecoder']) globalThis['TextDecoder'] = TextDecoder;
 // babel.config.js skip transpiling files in `libs/`
 // module.exports = {TextEncoder, TextDecoder};
 export {TextEncoder, TextDecoder};

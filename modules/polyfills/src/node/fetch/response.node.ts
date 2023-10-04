@@ -20,7 +20,7 @@ const isReadableNodeStream = (x) =>
  *
  * See https://developer.mozilla.org/en-US/docs/Web/API/Response
  */
-import {Readable} from 'stream';
+import * as stream from 'stream';
 
 export class Response {
   readonly ok: boolean;
@@ -53,9 +53,9 @@ export class Response {
     if (isReadableNodeStream(body)) {
       this._body = decompressReadStream(body, headers);
     } else if (typeof body === 'string') {
-      this._body = Readable.from([new TextEncoder().encode(body)]);
+      this._body = stream.Readable.from([new TextEncoder().encode(body)]);
     } else {
-      this._body = Readable.from([body || new ArrayBuffer(0)]);
+      this._body = stream.Readable.from([body || new ArrayBuffer(0)]);
     }
   }
 

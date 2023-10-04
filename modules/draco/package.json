@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/draco",
-  "version": "4.0.0-alpha.26",
+  "version": "4.0.0-beta.2",
   "description": "Framework-independent loader and writer for Draco compressed meshes and point clouds",
   "license": "MIT",
   "type": "module",
@@ -51,13 +51,13 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.26",
-    "@loaders.gl/schema": "4.0.0-alpha.26",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.26",
+    "@loaders.gl/loader-utils": "4.0.0-beta.2",
+    "@loaders.gl/schema": "4.0.0-beta.2",
+    "@loaders.gl/worker-utils": "4.0.0-beta.2",
     "draco3d": "1.5.5"
   },
   "devDependencies": {
-    "@loaders.gl/polyfills": "4.0.0-alpha.26"
+    "@loaders.gl/polyfills": "4.0.0-beta.2"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

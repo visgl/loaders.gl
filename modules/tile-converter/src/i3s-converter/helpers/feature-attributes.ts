@@ -88,13 +88,13 @@ const OBJECT_ID_TYPE = 'OBJECTID';
 /**
  * Get the attribute type for attributeStorageInfo https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
  * @param key - attribute's key
- * @param attribute - attribute's type in propertyTable
+ * @param attribute - attribute taken from propertyTable
  */
-export function getAttributeType(key: string, attribute: string): string {
+export function getAttributeType(key: string, attribute: unknown): string {
   if (key === OBJECT_ID_TYPE) {
     return OBJECT_ID_TYPE;
   }
-  if (typeof attribute === STRING_TYPE) {
+  if (typeof attribute === STRING_TYPE || typeof attribute === 'bigint') {
     return STRING_TYPE;
   } else if (typeof attribute === 'number') {
     return Number.isInteger(attribute) ? SHORT_INT_TYPE : DOUBLE_TYPE;

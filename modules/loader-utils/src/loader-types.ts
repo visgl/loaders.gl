@@ -166,6 +166,7 @@ export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderO
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => Promise<DataT>;
+  parseFile?: (file: Blob, options?: LoaderOptionsT, context?: LoaderContext) => Promise<DataT>;
   /** Parse atomically from an arraybuffer synchronously */
   parseSync?: (
     arrayBuffer: ArrayBuffer,
