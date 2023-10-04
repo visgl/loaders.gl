@@ -67,11 +67,6 @@ if (!isBrowser && !('_parseImageNode' in globalThis) && parseImageNode) {
   globalThis['_imageFormatsNode'] = NODE_FORMAT_SUPPORT;
 }
 
-if (!('allSettled' in Promise)) {
-  // @ts-ignore
-  Promise.allSettled = allSettled;
-}
-
 // DEPRECATED POLYFILL:
 // - Node v18+: No, not needed
 // - Node v16 and lower: Yes
