@@ -20,3 +20,6 @@ export {
   TILESET_TYPE,
   LOD_METRIC_TYPE
 } from './constants';
+
+// EXPERIMENTAL EXPORTS
+export {Tiles3DService} from './services/tiles-3d-service';
