@@ -1,8 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import '@loaders.gl/polyfills';
-import {isBrowser} from '../../src/utils/globals';
-import {fetchFile} from '@loaders.gl/core';
+import {isBrowser, fetchFile} from '@loaders.gl/core';
 import {parseImageNode} from '../../src/node/images/parse-image.node';
 
 const images = [
