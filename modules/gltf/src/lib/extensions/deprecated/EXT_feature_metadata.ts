@@ -71,10 +71,6 @@ export function getPropertyTableFromExtFeatureMetadata(
     }
   }
 
-  // eslint-disable-next-line no-console
-  // console.warn(
-  //   'Cannot get property table from EXT_feature_metadata extension. There is neither featureTables, nor featureTextures in the extension.'
-  // );
   return null;
 }
 

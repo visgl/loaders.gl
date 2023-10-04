@@ -71,10 +71,6 @@ export function getPropertyTableFromExtStructuralMetadata(
     }
   }
 
-  // eslint-disable-next-line no-console
-  // console.warn(
-  //   'Cannot get property table from EXT_structural_metadata extension. There is neither propertyTables, nor propertyTextures in the extension.'
-  // );
   return null;
 }
 
