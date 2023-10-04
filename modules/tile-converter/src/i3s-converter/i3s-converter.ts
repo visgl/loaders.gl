@@ -1155,6 +1155,16 @@ export default class I3SConverter {
    * @param propertyTable - Table with layer meta data.
    */
   private _convertPropertyTableToNodeAttributes(propertyTable: FeatureTableJson): void {
+    /*
+      We will append attributes if only the attributeStorageInfo doesn't contain anything.
+      If it already has attributes, return from the function.
+      According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
+      "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer,
+      which is the same for every node in the layer."
+    */
+    if (this.layers0!.attributeStorageInfo?.length) {
+      return;
+    }
     let attributeIndex = 0;
     const propertyTableWithObjectId = {
       OBJECTID: [0],
@@ -1162,32 +1172,24 @@ export default class I3SConverter {
     };
 
     for (const key in propertyTableWithObjectId) {
-      /*
-        We will append new attributes only in case the property table is updated.
-        According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
-        "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer, which is the same for every node in the layer."
-      */
-      const found = this.layers0!.attributeStorageInfo!.find((element) => element.name === key);
-      if (!found) {
-        const firstAttribute = propertyTableWithObjectId[key][0];
-        const attributeType = getAttributeType(key, firstAttribute);
+      const firstAttribute = propertyTableWithObjectId[key][0];
+      const attributeType = getAttributeType(key, firstAttribute);
 
-        const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
-          attributeIndex,
-          key,
-          attributeType
-        );
-        const fieldAttributeType = getFieldAttributeType(attributeType);
-        const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
-        const popupInfo = createPopupInfo(propertyTableWithObjectId);
+      const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
+        attributeIndex,
+        key,
+        attributeType
+      );
+      const fieldAttributeType = getFieldAttributeType(attributeType);
+      const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
+      const popupInfo = createPopupInfo(propertyTableWithObjectId);
 
-        this.layers0!.attributeStorageInfo!.push(storageAttribute);
-        this.layers0!.fields!.push(fieldAttribute);
-        this.layers0!.popupInfo = popupInfo;
-        this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
-      }
-      attributeIndex += 1;
+      this.layers0!.attributeStorageInfo!.push(storageAttribute);
+      this.layers0!.fields!.push(fieldAttribute);
+      this.layers0!.popupInfo = popupInfo;
+      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
     }
+    attributeIndex += 1;
   }
 
   /**
