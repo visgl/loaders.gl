@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/pmtiles",
-  "version": "4.0.0-beta.1",
+  "version": "4.0.0-beta.2",
   "description": "Framework-independent loader for the pmtiles format",
   "license": "MIT",
   "publishConfig": {
@@ -32,10 +32,10 @@
     "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
   },
   "dependencies": {
-    "@loaders.gl/images": "4.0.0-beta.1",
-    "@loaders.gl/loader-utils": "4.0.0-beta.1",
-    "@loaders.gl/mvt": "4.0.0-beta.1",
-    "@loaders.gl/schema": "4.0.0-beta.1",
+    "@loaders.gl/images": "4.0.0-beta.2",
+    "@loaders.gl/loader-utils": "4.0.0-beta.2",
+    "@loaders.gl/mvt": "4.0.0-beta.2",
+    "@loaders.gl/schema": "4.0.0-beta.2",
     "pmtiles": "^2.7.2"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"

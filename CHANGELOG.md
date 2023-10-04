@@ -6,6 +6,11 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-beta.2
+
+- fix: getting tile url with empty query params (#2671)
+- chore(polyfills): Start moving Node.js code into polyfills (#2669)
+
 ### v4.0.0-beta.1
 
 - feat(tile-converter): support of 64-bit int (#2670)

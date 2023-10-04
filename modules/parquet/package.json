@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/parquet",
-  "version": "4.0.0-beta.1",
+  "version": "4.0.0-beta.2",
   "description": "Framework-independent loader for Apache Parquet files",
   "license": "MIT",
   "publishConfig": {
@@ -49,12 +49,12 @@
     "base64-js and ieee754 are used by buffer polyfill"
   ],
   "dependencies": {
-    "@loaders.gl/bson": "4.0.0-beta.1",
-    "@loaders.gl/compression": "4.0.0-beta.1",
-    "@loaders.gl/gis": "4.0.0-beta.1",
-    "@loaders.gl/loader-utils": "4.0.0-beta.1",
-    "@loaders.gl/schema": "4.0.0-beta.1",
-    "@loaders.gl/wkt": "4.0.0-beta.1",
+    "@loaders.gl/bson": "4.0.0-beta.2",
+    "@loaders.gl/compression": "4.0.0-beta.2",
+    "@loaders.gl/gis": "4.0.0-beta.2",
+    "@loaders.gl/loader-utils": "4.0.0-beta.2",
+    "@loaders.gl/schema": "4.0.0-beta.2",
+    "@loaders.gl/wkt": "4.0.0-beta.2",
     "async-mutex": "^0.2.2",
     "base64-js": "^1.3.1",
     "brotli": "^1.3.2",
