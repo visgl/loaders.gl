@@ -20,15 +20,15 @@ export async function loadArchive(fullLayerPath: string): Promise<void> {
  * @param url - I3S HTTP URL
  * @returns  - file content
  */
-export async function getFileByUrl(url: string): Promise<Buffer | null> {
+export async function getFileByUrl(url: string): Promise<ArrayBuffer | null> {
   const trimmedPath = /^\/?(.*)\/?$/.exec(url);
-  let uncompressedFile: Buffer | null = null;
   if (trimmedPath) {
     try {
-      uncompressedFile = await slpkArchive.getFile(trimmedPath[1], 'http');
+      const uncompressedFile = await slpkArchive.getFile(trimmedPath[1], 'http');
+      return uncompressedFile;
     } catch {
       // TODO - log error?
     }
   }
-  return uncompressedFile;
+  return null;
 }

@@ -1,4 +1,5 @@
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProvider, compareArrayBuffers} from '@loaders.gl/loader-utils';
+import {ZipSignature} from './search-from-the-end';
 
 /**
  * zip local file header info
@@ -27,7 +28,7 @@ const FILE_NAME_LENGTH_OFFSET = 26n;
 const EXTRA_FIELD_LENGTH_OFFSET = 28n;
 const FILE_NAME_OFFSET = 30n;
 
-export const signature = [0x50, 0x4b, 0x03, 0x04];
+export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
 
 /**
  * Parses local file header of zip file
@@ -39,11 +40,8 @@ export const parseZipLocalFileHeader = async (
   headerOffset: bigint,
   buffer: FileProvider
 ): Promise<ZipLocalFileHeader | null> => {
-  if (
-    Buffer.from(await buffer.slice(headerOffset, headerOffset + 4n)).compare(
-      Buffer.from(signature)
-    ) !== 0
-  ) {
+  const magicBytes = await buffer.slice(headerOffset, headerOffset + 4n);
+  if (!compareArrayBuffers(magicBytes, signature)) {
     return null;
   }
 

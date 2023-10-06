@@ -62,6 +62,9 @@ export class Tiles3DArchive {
     const arrayBuffer = new TextEncoder().encode(path).buffer;
     const nameHash = await new MD5Hash().hash(arrayBuffer, 'hex');
     const byteOffset = this.hashTable[nameHash];
+    if (byteOffset === undefined) {
+      return null;
+    }
 
     const localFileHeader = await parseZipLocalFileHeader(byteOffset, this.fileProvider);
     if (!localFileHeader) {

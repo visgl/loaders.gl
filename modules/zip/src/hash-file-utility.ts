@@ -29,29 +29,6 @@ function bufferToHex(buffer: ArrayBuffer, start: number, length: number): string
 }
 
 /**
- * generates hash info from central directory
- * @param fileProvider - provider of the archive
- * @returns ready to use hash info
- */
-export async function getHashMapFromZipArchive(
-  fileProvider: FileProvider
-): Promise<Record<string, bigint>> {
-  const zipCDIterator = makeZipCDHeaderIterator(fileProvider);
-  const md5Hash = new MD5Hash();
-  const textEncoder = new TextEncoder();
-
-  const hashMap: Record<string, bigint> = {};
-  for await (const cdHeader of zipCDIterator) {
-    const filename = cdHeader.fileName.split('\\').join('/').toLocaleLowerCase();
-    const arrayBuffer = textEncoder.encode(filename).buffer;
-    const md5 = await md5Hash.hash(arrayBuffer, 'hex');
-    hashMap[md5] = cdHeader.localHeaderOffset;
-  }
-  return hashMap;
-}
-
-//
-/**
  * generates hash info from zip files "central directory"
  * @param fileProvider - provider of the archive
  * @returns ready to use hash info

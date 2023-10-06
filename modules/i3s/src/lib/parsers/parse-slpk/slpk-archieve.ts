@@ -45,8 +45,8 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
 export class SLPKArchive {
   /** A DataView representation of the archive */
   private slpkArchive: FileProvider;
-  // Maps hex-encoded md5 hashes to bigint offsets into the archive
-  private hashedOffsetMap: Record<string, bigint>;
+  // Maps hex-encoded md5 filename hashes to bigint offsets into the archive
+  private hashTable: Record<string, bigint>;
   /** Array of hashes and offsets into archive */
   // hashToOffsetMap: Record<string, number>;
 
@@ -54,9 +54,9 @@ export class SLPKArchive {
   protected _textDecoder = new TextDecoder();
   protected _md5Hash = new MD5Hash();
 
-  constructor(slpkArchive: FileProvider, hashedOffsetMap: Record<string, bigint>) {
+  constructor(slpkArchive: FileProvider, hashTable: Record<string, bigint>) {
     this.slpkArchive = slpkArchive;
-    this.hashedOffsetMap = hashedOffsetMap;
+    this.hashTable = hashTable;
   }
 
   /**
@@ -65,7 +65,7 @@ export class SLPKArchive {
    * @param mode - currently only raw mode supported
    * @returns buffer with ready to use file
    */
-  async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
+  async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<ArrayBuffer> {
     if (mode === 'http') {
       const extensions = PATH_DESCRIPTIONS.find((val) => val.test.test(path))?.extensions;
       if (extensions) {
@@ -77,18 +77,18 @@ export class SLPKArchive {
           }
         }
         if (data) {
-          return Buffer.from(data);
+          return data;
         }
       }
     }
     if (mode === 'raw') {
       const decompressedFile = await this.getDataByPath(`${path}.gz`);
       if (decompressedFile) {
-        return Buffer.from(decompressedFile);
+        return decompressedFile;
       }
       const fileWithoutCompression = await this.getFileBytes(path);
       if (fileWithoutCompression) {
-        return Buffer.from(fileWithoutCompression);
+        return fileWithoutCompression;
       }
     }
 
@@ -116,7 +116,7 @@ export class SLPKArchive {
       const decompressedData = await compression.decompress(data);
       return decompressedData;
     }
-    return Buffer.from(data);
+    return data;
   }
 
   /**
@@ -128,7 +128,7 @@ export class SLPKArchive {
     const binaryPath = this._textEncoder.encode(path);
     const nameHash = await this._md5Hash.hash(binaryPath.buffer, 'hex');
 
-    const offset = this.hashedOffsetMap[nameHash];
+    const offset = this.hashTable[nameHash];
     if (offset === undefined) {
       return undefined;
     }
