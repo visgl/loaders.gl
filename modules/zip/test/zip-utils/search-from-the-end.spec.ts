@@ -8,7 +8,7 @@ test('SLPKLoader#searchFromTheEnd', async (t) => {
   t.equals(
     await searchFromTheEnd(
       new DataViewFile(new DataView(DATA_ARRAY.buffer)),
-      [0x50, 0x4b, 0x03, 0x04]
+      new Uint8Array([0x50, 0x4b, 0x03, 0x04])
     ),
     0n
   );

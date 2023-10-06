@@ -27,7 +27,7 @@ test('tile-converter(i3s-server)#getFileByUrl return null if file is not loaded'
   t.end();
 });
 
-test.only('tile-converter(i3s-server)#getFileByUrl return files content', async (t) => {
+test('tile-converter(i3s-server)#getFileByUrl return files content', async (t) => {
   if (isBrowser) {
     t.end();
     return;

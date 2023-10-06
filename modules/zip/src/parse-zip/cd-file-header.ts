@@ -55,7 +55,7 @@ export const parseZipCDFileHeader = async (
   const filenameBytes = await file.slice(
     headerOffset + CD_FILE_NAME_OFFSET,
     headerOffset + CD_FILE_NAME_OFFSET + BigInt(fileNameLength)
-  )
+  );
   const fileName = new TextDecoder().decode(filenameBytes);
 
   const extraOffset = headerOffset + CD_FILE_NAME_OFFSET + BigInt(fileNameLength);

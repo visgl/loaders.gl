@@ -31,9 +31,7 @@ const ZIP64_CD_START_OFFSET_OFFSET = 48n;
 export const parseEoCDRecord = async (file: FileProvider): Promise<ZipEoCDRecord> => {
   const zipEoCDOffset = await searchFromTheEnd(file, eoCDSignature);
 
-  let cdRecordsNumber = BigInt(
-    await file.getUint16(zipEoCDOffset + CD_RECORDS_NUMBER_OFFSET)
-  );
+  let cdRecordsNumber = BigInt(await file.getUint16(zipEoCDOffset + CD_RECORDS_NUMBER_OFFSET));
   let cdStartOffset = BigInt(await file.getUint32(zipEoCDOffset + CD_START_OFFSET_OFFSET));
 
   if (cdStartOffset === BigInt(0xffffffff) || cdRecordsNumber === BigInt(0xffffffff)) {
@@ -43,7 +41,9 @@ export const parseEoCDRecord = async (file: FileProvider): Promise<ZipEoCDRecord
     if (!compareArrayBuffers(magicBytes, zip64EoCDLocatorSignature)) {
       throw new Error('zip64 EoCD locator not found');
     }
-    const zip64EoCDOffset = await file.getBigUint64(zip64EoCDLocatorOffset + ZIP64_EOCD_START_OFFSET_OFFSET);
+    const zip64EoCDOffset = await file.getBigUint64(
+      zip64EoCDLocatorOffset + ZIP64_EOCD_START_OFFSET_OFFSET
+    );
 
     const endOfCDMagicBytes = await file.slice(zip64EoCDOffset, zip64EoCDOffset + 4n);
     if (!compareArrayBuffers(endOfCDMagicBytes, zip64EoCDSignature.buffer)) {
