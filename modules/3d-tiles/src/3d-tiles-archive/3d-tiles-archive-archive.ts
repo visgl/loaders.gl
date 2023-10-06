@@ -1,7 +1,7 @@
-import md5 from 'md5';
 import {FileProvider} from '@loaders.gl/loader-utils';
-import {parseZipLocalFileHeader, HashElement, findBin} from '@loaders.gl/zip';
+import {MD5Hash} from '@loaders.gl/crypto';
 import {DeflateCompression, NoCompression} from '@loaders.gl/compression';
+import {parseZipLocalFileHeader} from '@loaders.gl/zip';
 
 type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
 
@@ -22,16 +22,16 @@ export class Tiles3DArchive {
   /** FileProvider with whe whole file */
   private fileProvider: FileProvider;
   /** hash info */
-  private hashArray: HashElement[];
+  private hashTable: Record<string, bigint>;
 
   /**
    * creates Tiles3DArchive handler
    * @param fileProvider - FileProvider with the whole file
-   * @param hashFile - hash info
+   * @param hashTable - hash info
    */
-  constructor(fileProvider: FileProvider, hashFile: HashElement[]) {
+  constructor(fileProvider: FileProvider, hashTable: Record<string, bigint>) {
     this.fileProvider = fileProvider;
-    this.hashArray = hashFile;
+    this.hashTable = hashTable;
   }
 
   /**
@@ -47,7 +47,7 @@ export class Tiles3DArchive {
       data = await this.getFileBytes(path);
     }
     if (!data) {
-      throw new Error('No such file in the archive');
+      throw new Error(`No such file in the archive: ${path}`);
     }
 
     return data;
@@ -59,13 +59,11 @@ export class Tiles3DArchive {
    * @returns buffer with the raw file data
    */
   private async getFileBytes(path: string): Promise<ArrayBuffer | null> {
-    const nameHash = Buffer.from(md5(path), 'hex');
-    const fileInfo = findBin(nameHash, this.hashArray); // implement binary search
-    if (!fileInfo) {
-      return null;
-    }
+    const arrayBuffer = new TextEncoder().encode(path).buffer;
+    const nameHash = await new MD5Hash().hash(arrayBuffer, 'hex');
+    const byteOffset = this.hashTable[nameHash];
 
-    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.fileProvider);
+    const localFileHeader = await parseZipLocalFileHeader(byteOffset, this.fileProvider);
     if (!localFileHeader) {
       return null;
     }

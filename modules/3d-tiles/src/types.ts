@@ -301,9 +301,9 @@ export type Tiles3DTileContent = {
  */
 export type Subtree = {
   /** An array of buffers. */
-  buffers: Buffer[];
+  buffers: GLTFStyleBuffer[];
   /** An array of buffer views. */
-  bufferViews: BufferView[];
+  bufferViews: GLTFStyleBufferView[];
   /** The availability of tiles in the subtree. The availability bitstream is a 1D boolean array where tiles are ordered by their level in the subtree and Morton index
    * within that level. A tile's availability is determined by a single bit, 1 meaning a tile exists at that spatial index, and 0 meaning it does not.
    * The number of elements in the array is `(N^subtreeLevels - 1)/(N - 1)` where N is 4 for subdivision scheme `QUADTREE` and 8 for `OCTREE`.
@@ -356,14 +356,14 @@ export type ExplicitBitstream = Uint8Array;
  */
 export type SubdivisionScheme = 'QUADTREE' | 'OCTREE';
 
-type Buffer = {
+type GLTFStyleBuffer = {
   name: string;
   uri?: string;
   byteLength: number;
 };
 
 /** Subtree buffer view */
-export type BufferView = {
+export type GLTFStyleBufferView = {
   buffer: number;
   byteOffset: number;
   byteLength: number;

@@ -101,7 +101,9 @@ export const parseZipCDFileHeader = async (
  * Create iterator over files of zip archive
  * @param fileProvider - file provider that provider random access to the file
  */
-export async function* zipCDFileHeaderGenerator(fileProvider: FileProvider) {
+export async function* makeZipCDHeaderIterator(
+  fileProvider: FileProvider
+): AsyncIterable<ZipCDFileHeader> {
   const {cdStartOffset} = await parseEoCDRecord(fileProvider);
   let cdHeader = await parseZipCDFileHeader(cdStartOffset, fileProvider);
   while (cdHeader) {

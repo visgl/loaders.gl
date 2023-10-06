@@ -4,8 +4,7 @@ import {
   cdSignature as cdHeaderSignature,
   searchFromTheEnd,
   parseZipCDFileHeader,
-  HashElement,
-  parseHashFile,
+  parseHashTable,
   parseZipLocalFileHeader
 } from '@loaders.gl/zip';
 import {Tiles3DArchive} from '../../3d-tiles-archive/3d-tiles-archive-archive';
@@ -18,7 +17,7 @@ import {Tiles3DArchive} from '../../3d-tiles-archive/3d-tiles-archive-archive';
  * @see https://github.com/erikdahlstrom/3tz-specification/blob/master/Specification.md
  */
 export class Tiles3DArchiveFileSystem extends ZipFileSystem {
-  hashData?: HashElement[] | null;
+  hashTable?: Record<string, bigint> | null;
 
   /**
    * Constructor
@@ -40,9 +39,9 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
     if (!fileProvider) {
       throw new Error('No data detected in the zip archive');
     }
-    await this.parseHashFile();
-    if (this.hashData) {
-      const archive = new Tiles3DArchive(fileProvider, this.hashData);
+    await this.parseHashTable();
+    if (this.hashTable) {
+      const archive = new Tiles3DArchive(fileProvider, this.hashTable);
 
       const fileData = await archive.getFile(filename);
       const response = new Response(fileData);
@@ -57,8 +56,8 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
    * to files inside the archive
    * @returns void
    */
-  private async parseHashFile(): Promise<void> {
-    if (this.hashData !== undefined) {
+  private async parseHashTable(): Promise<void> {
+    if (this.hashTable !== undefined) {
       return;
     }
 
@@ -89,9 +88,9 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
         fileDataOffset + localFileHeader.compressedSize
       );
 
-      this.hashData = parseHashFile(hashFile);
+      this.hashTable = parseHashTable(hashFile);
     } else {
-      this.hashData = null;
+      this.hashTable = null;
     }
   }
 }

@@ -1,6 +1,6 @@
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {DataViewFile} from '@loaders.gl/loader-utils';
-import {parseSLPK as parseSLPKFromProvider} from './lib/parsers/parse-slpk/parse-slpk';
+import {parseSLPKArchive as parseSLPKFromProvider} from './lib/parsers/parse-slpk/parse-slpk';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -25,7 +25,7 @@ export const SLPKLoader: LoaderWithParser<ArrayBuffer, never, SLPKLoaderOptions>
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
-  parse: parseSLPK,
+  parse: parseSLPKArchive,
   extensions: ['slpk'],
   options: {}
 };
@@ -37,7 +37,7 @@ export const SLPKLoader: LoaderWithParser<ArrayBuffer, never, SLPKLoaderOptions>
  * @returns requested file
  */
 
-async function parseSLPK(data: ArrayBuffer, options: SLPKLoaderOptions = {}) {
+async function parseSLPKArchive(data: ArrayBuffer, options: SLPKLoaderOptions = {}) {
   return (await parseSLPKFromProvider(new DataViewFile(new DataView(data)))).getFile(
     options.slpk?.path ?? '',
     options.slpk?.pathMode
