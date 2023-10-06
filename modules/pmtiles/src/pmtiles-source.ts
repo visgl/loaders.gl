@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
 
-import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
+import type {TileLoadParameters, GetTileParameters} from '@loaders.gl/loader-utils';
+import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
@@ -10,7 +11,6 @@ import {PMTiles, Source, RangeResponse} from 'pmtiles';
 
 import type {PMTilesMetadata} from './lib/parse-pmtiles';
 import {parsePMTilesHeader} from './lib/parse-pmtiles';
-import {TileLoadParameters} from 'modules/loader-utils/src/lib/sources/tile-source';
 
 const VERSION = '1.0.0';
 
