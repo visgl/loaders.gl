@@ -50,7 +50,7 @@ export async function encode(
   if (!isBrowser && writer.encodeURLtoURL) {
     // TODO - how to generate filenames with correct extensions?
     const tmpInputFilename = getTemporaryFilename('input');
-    const file = new NodeFile(tmpInputFilename, "w");
+    const file = new NodeFile(tmpInputFilename, 'w');
     await file.write(data as ArrayBuffer);
 
     const tmpOutputFilename = getTemporaryFilename('output');
