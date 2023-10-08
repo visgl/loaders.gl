@@ -1,5 +1,4 @@
-//
-import {fs} from '@loaders.gl/loader-utils';
+// loaders.gl, MIT license
 
 /**
  * Reads a chunk from a random access file
@@ -9,13 +8,10 @@ import {fs} from '@loaders.gl/loader-utils';
  * @returns
  */
 export async function readArrayBuffer(
-  file: Blob | ArrayBuffer | string | number,
+  file: Blob | ArrayBuffer | string,
   start: number,
   length: number
 ): Promise<ArrayBuffer> {
-  if (typeof file === 'number') {
-    return await fs._readToArrayBuffer(file, start, length);
-  }
   // TODO - we can do better for ArrayBuffer and string
   if (!(file instanceof Blob)) {
     file = new Blob([file]);

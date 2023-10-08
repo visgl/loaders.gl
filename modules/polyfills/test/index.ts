@@ -11,5 +11,7 @@ import './file/blob-polyfill.spec';
 import './file/file-polyfill.spec';
 import './promise/all-settled.spec';
 
+import './filesystems/fetch-node.spec';
+import './filesystems/node-file.spec';
 import './filesystems/node-filesystem.spec';
 import './filesystems/fetch-node.spec';

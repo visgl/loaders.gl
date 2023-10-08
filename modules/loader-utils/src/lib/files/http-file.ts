@@ -5,6 +5,7 @@ import {ReadableFile, Stat} from './file';
 export class HttpFile implements ReadableFile {
   readonly handle: string;
   readonly size: number = 0;
+  readonly bigsize: bigint = 0n;
   readonly url: string;
 
   constructor(url: string) {
@@ -19,13 +20,15 @@ export class HttpFile implements ReadableFile {
     if (!response.ok) {
       throw new Error(`Failed to fetch HEAD ${this.handle}`);
     }
+    const size = parseInt(response.headers.get('Content-Length') || '0');
     return {
-      size: parseInt(response.headers.get('Content-Length') || '0'),
+      size,
+      bigsize: BigInt(size),
       isDirectory: false
     };
   }
 
-  async read(offset: number, length: number): Promise<ArrayBuffer> {
+  async read(offset: number | bigint, length: number): Promise<ArrayBuffer> {
     const response = await this.fetchRange(offset, length);
     const arrayBuffer = await response.arrayBuffer();
     return arrayBuffer;
@@ -40,7 +43,14 @@ export class HttpFile implements ReadableFile {
    * @see https://github.com/protomaps/PMTiles
    */
   // eslint-disable-next-line complexity
-  async fetchRange(offset: number, length: number, signal?: AbortSignal): Promise<Response> {
+  async fetchRange(
+    offset: number | bigint,
+    length: number,
+    signal?: AbortSignal
+  ): Promise<Response> {
+    const nOffset = Number(offset);
+    const nLength = Number(length);
+
     let controller: AbortController | undefined;
     if (!signal) {
       // ToDO why is it so important to abort in case 200?
@@ -52,7 +62,7 @@ export class HttpFile implements ReadableFile {
     const url = this.handle;
     let response = await fetch(url, {
       signal,
-      headers: {Range: `bytes=${offset}-${offset + length - 1}`}
+      headers: {Range: `bytes=${nOffset}-${nOffset + nLength - 1}`}
     });
 
     switch (response.status) {

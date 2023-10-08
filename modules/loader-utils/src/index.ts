@@ -110,22 +110,11 @@ export {promisify1, promisify2} from './lib/node/promisify';
 import * as path from './lib/path-utils/path';
 export {path};
 
-// Use instead of importing 'fs' to avoid node dependencies`
-import * as fs from './lib/node/fs';
-export {fs};
-
 // Use instead of importing 'stream' to avoid node dependencies`
 import * as stream from './lib/node/stream';
 export {stream};
 
 // EXPERIMENTAL: FILE SYSTEMS
-
-export type {FileProvider} from './lib/file-provider/file-provider';
-export {isFileProvider} from './lib/file-provider/file-provider';
-
-export {FileHandle} from './lib/file-provider/file-handle';
-export {FileHandleFile} from './lib/file-provider/file-handle-file';
-export {DataViewFile} from './lib/file-provider/data-view-file';
 
 export type {ReadableFile, WritableFile, Stat} from './lib/files/file';
 export {BlobFile} from './lib/files/blob-file';
@@ -134,6 +123,12 @@ export {NodeFileFacade as NodeFile} from './lib/files/node-file-facade';
 
 export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesystem';
 export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-filesystem-facade';
+
+// TODO - replace with ReadableFile
+export type {FileProvider} from './lib/file-provider/file-provider';
+export {isFileProvider} from './lib/file-provider/file-provider';
+export {FileHandleFile} from './lib/file-provider/file-handle-file';
+export {DataViewFile} from './lib/file-provider/data-view-file';
 
 // EXPERIMENTAL: DATA SOURCES
 export type {Service} from './service-types';

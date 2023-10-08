@@ -1,8 +1,7 @@
 import {Writer, WriterOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers, resolvePath, NodeFile} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
-import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
-import {writeFile} from '../fetch/write-file';
 import {fetchFile} from '../fetch/fetch-file';
 import {getLoaderOptions} from './loader-options';
 
@@ -51,7 +50,8 @@ export async function encode(
   if (!isBrowser && writer.encodeURLtoURL) {
     // TODO - how to generate filenames with correct extensions?
     const tmpInputFilename = getTemporaryFilename('input');
-    await writeFile(tmpInputFilename, data as ArrayBuffer);
+    const file = new NodeFile(tmpInputFilename, 'w');
+    await file.write(data as ArrayBuffer);
 
     const tmpOutputFilename = getTemporaryFilename('output');
 

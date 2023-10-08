@@ -1,17 +1,25 @@
+// loaders.gl, MIT license
+
 export type Stat = {
   size: number;
+  bigsize: bigint;
   isDirectory: boolean;
 };
 
 export interface ReadableFile {
   /** The underlying file handle (Blob, Node.js file descriptor etc) */
-  handle: unknown;
+  readonly handle: unknown;
   /** Length of file in bytes, if available */
-  size: number;
+  readonly size: number;
+  /** Length of file in bytes, if available */
+  readonly bigsize: bigint;
+  /** Url, if available */
+  readonly url: string;
+
   /** Read data */
-  read(start?: number, end?: number): Promise<ArrayBuffer>;
+  read(start?: number | bigint, length?: number): Promise<ArrayBuffer>;
   /** Read data */
-  fetchRange?(offset: number, length: number, signal?: AbortSignal): Promise<Response>;
+  fetchRange?(offset: number | bigint, length: number, signal?: AbortSignal): Promise<Response>;
   /** Get information about file */
   stat?(): Promise<Stat>;
   /** Close the file */
@@ -21,7 +29,7 @@ export interface ReadableFile {
 export interface WritableFile {
   handle: unknown;
   /** Write to file. The number of bytes written will be returned */
-  write: (arrayBuffer: ArrayBuffer, offset?: number, length?: number) => Promise<number>;
+  write: (arrayBuffer: ArrayBuffer, offset?: number | bigint, length?: number) => Promise<number>;
   /** Get information about the file */
   stat?(): Promise<Stat>;
   /** Close the file */

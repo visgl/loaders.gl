@@ -82,7 +82,7 @@ const getFileProvider = async (fileName: string) => {
     const file = await fileResponse.arrayBuffer();
     fileProvider = new DataViewFile(new DataView(file));
   } else {
-    fileProvider = await FileHandleFile.from(ZIP_FILE_PATH);
+    fileProvider = new FileHandleFile(ZIP_FILE_PATH);
   }
   return fileProvider;
 };
