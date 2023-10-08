@@ -38,7 +38,7 @@ export default class SLPKExtractor {
     }
     const {inputUrl} = options;
 
-    const provider = await FileHandleFile.from(inputUrl);
+    const provider = new FileHandleFile(inputUrl);
 
     let localHeader = await parseZipLocalFileHeader(0n, provider);
     while (localHeader) {

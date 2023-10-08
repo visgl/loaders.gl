@@ -11,16 +11,19 @@ export type {
   DataType,
   SyncDataType,
   BatchableDataType,
+  ReadableFile,
+  WritableFile,
+  Stat,
   FileSystem,
-  RandomAccessReadFileSystem
+  RandomAccessFileSystem
 } from '@loaders.gl/loader-utils';
 
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
 
 export {readArrayBuffer} from './lib/fetch/read-array-buffer';
-export {readFileSync} from './lib/fetch/read-file';
-export {writeFile, writeFileSync} from './lib/fetch/write-file';
+// export {readFileSync} from './lib/fetch/read-file';
+// export {writeFile, writeFileSync} from './lib/fetch/write-file';
 
 // CONFIGURATION
 export {setLoaderOptions, getLoaderOptions} from './lib/api/loader-options';
@@ -39,7 +42,6 @@ export {loadInBatches} from './lib/api/load-in-batches';
 export {encodeTable, encodeTableAsText, encodeTableInBatches} from './lib/api/encode-table';
 export {encode, encodeSync, encodeInBatches, encodeURLtoURL} from './lib/api/encode';
 export {encodeText, encodeTextSync} from './lib/api/encode';
-export {save, saveSync} from './lib/api/save';
 
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';

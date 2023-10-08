@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 import {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
-import {makeReadableFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/loader-utils';
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {ParquetRowGroup} from '../../parquetjs/schema/declare';
@@ -16,7 +16,7 @@ export async function parseParquetInColumns(
 ): Promise<ColumnarTable> {
   installBufferPolyfill();
   const blob = new Blob([arrayBuffer]);
-  const file = makeReadableFile(blob);
+  const file = new BlobFile(blob);
   const reader = new ParquetReader(file);
 
   for await (const batch of parseParquetFileInColumnarBatches(reader, options)) {

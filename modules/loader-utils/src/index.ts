@@ -110,31 +110,25 @@ export {promisify1, promisify2} from './lib/node/promisify';
 import * as path from './lib/path-utils/path';
 export {path};
 
-// Use instead of importing 'fs' to avoid node dependencies`
-import * as fs from './lib/node/fs';
-export {fs};
-
 // Use instead of importing 'stream' to avoid node dependencies`
 import * as stream from './lib/node/stream';
 export {stream};
 
 // EXPERIMENTAL: FILE SYSTEMS
 
-export type {FileSystem, RandomAccessReadFileSystem} from './lib/filesystems/filesystem';
-export {NodeFileSystem as _NodeFileSystem} from './lib/filesystems/node-filesystem';
+export type {ReadableFile, WritableFile, Stat} from './lib/files/file';
+export {BlobFile} from './lib/files/blob-file';
+export {HttpFile} from './lib/files/http-file';
+export {NodeFileFacade as NodeFile} from './lib/files/node-file-facade';
 
+export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesystem';
+export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-filesystem-facade';
+
+// TODO - replace with ReadableFile
 export type {FileProvider} from './lib/file-provider/file-provider';
 export {isFileProvider} from './lib/file-provider/file-provider';
-
-export {FileHandle} from './lib/file-provider/file-handle';
 export {FileHandleFile} from './lib/file-provider/file-handle-file';
 export {DataViewFile} from './lib/file-provider/data-view-file';
-
-export type {ReadableFile} from './lib/filesystems/readable-file';
-export {makeReadableFile} from './lib/filesystems/readable-file';
-
-export type {WritableFile} from './lib/filesystems/writable-file';
-export {makeWritableFile} from './lib/filesystems/writable-file';
 
 // EXPERIMENTAL: DATA SOURCES
 export type {Service} from './service-types';

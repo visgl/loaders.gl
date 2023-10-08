@@ -1,7 +1,7 @@
 import {FileSystem, isBrowser} from '@loaders.gl/loader-utils';
 import {FileProvider, isFileProvider} from '@loaders.gl/loader-utils';
 import {FileHandleFile} from '@loaders.gl/loader-utils';
-import {ZipCDFileHeader, zipCDFileHeaderGenerator} from '../parse-zip/cd-file-header';
+import {ZipCDFileHeader, makeZipCDHeaderIterator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {DeflateCompression} from '@loaders.gl/compression';
 
@@ -24,7 +24,7 @@ const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
  */
 export class ZipFileSystem implements FileSystem {
   /** FileProvider instance promise */
-  protected fileProvider: Promise<FileProvider | null> = Promise.resolve(null);
+  protected fileProvider: FileProvider | null = null;
   public fileName?: string;
 
   /**
@@ -36,20 +36,19 @@ export class ZipFileSystem implements FileSystem {
     if (typeof file === 'string') {
       this.fileName = file;
       if (!isBrowser) {
-        this.fileProvider = FileHandleFile.from(file);
+        this.fileProvider = new FileHandleFile(file);
       } else {
         throw new Error('Cannot open file for random access in a WEB browser');
       }
     } else if (isFileProvider(file)) {
-      this.fileProvider = Promise.resolve(file);
+      this.fileProvider = file;
     }
   }
 
   /** Clean up resources */
   async destroy() {
-    const fileProvider = await this.fileProvider;
-    if (fileProvider) {
-      await fileProvider.destroy();
+    if (this.fileProvider) {
+      await this.fileProvider.destroy();
     }
   }
 
@@ -58,12 +57,11 @@ export class ZipFileSystem implements FileSystem {
    * @returns array of file names
    */
   async readdir(): Promise<string[]> {
-    const fileProvider = await this.fileProvider;
-    if (!fileProvider) {
+    if (!this.fileProvider) {
       throw new Error('No data detected in the zip archive');
     }
     const fileNames: string[] = [];
-    const zipCDIterator = zipCDFileHeaderGenerator(fileProvider);
+    const zipCDIterator = makeZipCDHeaderIterator(this.fileProvider);
     for await (const cdHeader of zipCDIterator) {
       fileNames.push(cdHeader.fileName);
     }
@@ -86,14 +84,13 @@ export class ZipFileSystem implements FileSystem {
    * @returns - Response with file data
    */
   async fetch(filename: string): Promise<Response> {
-    const fileProvider = await this.fileProvider;
-    if (!fileProvider) {
+    if (!this.fileProvider) {
       throw new Error('No data detected in the zip archive');
     }
     const cdFileHeader = await this.getCDFileHeader(filename);
     const localFileHeader = await parseZipLocalFileHeader(
       cdFileHeader.localHeaderOffset,
-      fileProvider
+      this.fileProvider
     );
     if (!localFileHeader) {
       throw new Error('Local file header has not been found in the zip archive`');
@@ -104,7 +101,7 @@ export class ZipFileSystem implements FileSystem {
       throw Error('Only Deflation compression is supported');
     }
 
-    const compressedFile = await fileProvider.slice(
+    const compressedFile = await this.fileProvider.slice(
       localFileHeader.fileDataOffset,
       localFileHeader.fileDataOffset + localFileHeader.compressedSize
     );
@@ -122,11 +119,10 @@ export class ZipFileSystem implements FileSystem {
    * @returns central directory file header
    */
   private async getCDFileHeader(filename: string): Promise<ZipCDFileHeader> {
-    const fileProvider = await this.fileProvider;
-    if (!fileProvider) {
+    if (!this.fileProvider) {
       throw new Error('No data detected in the zip archive');
     }
-    const zipCDIterator = zipCDFileHeaderGenerator(fileProvider);
+    const zipCDIterator = makeZipCDHeaderIterator(this.fileProvider);
     let result: ZipCDFileHeader | null = null;
     for await (const cdHeader of zipCDIterator) {
       if (cdHeader.fileName === filename) {

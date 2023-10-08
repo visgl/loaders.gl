@@ -1,6 +1,6 @@
-import md5 from 'md5';
+import {MD5Hash} from '@loaders.gl/crypto';
 import {FileProvider} from '@loaders.gl/loader-utils';
-import {parseZipLocalFileHeader, HashElement, findBin} from '@loaders.gl/zip';
+import {parseZipLocalFileHeader} from '@loaders.gl/zip';
 import {GZipCompression} from '@loaders.gl/compression';
 
 /** Description of real paths for different file types */
@@ -43,11 +43,20 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
  * Class for handling information about slpk file
  */
 export class SLPKArchive {
+  /** A DataView representation of the archive */
   private slpkArchive: FileProvider;
-  private hashArray: HashElement[];
-  constructor(slpkArchive: FileProvider, hashFile: HashElement[]) {
+  // Maps hex-encoded md5 filename hashes to bigint offsets into the archive
+  private hashTable: Record<string, bigint>;
+  /** Array of hashes and offsets into archive */
+  // hashToOffsetMap: Record<string, number>;
+
+  protected _textEncoder = new TextEncoder();
+  protected _textDecoder = new TextDecoder();
+  protected _md5Hash = new MD5Hash();
+
+  constructor(slpkArchive: FileProvider, hashTable: Record<string, bigint>) {
     this.slpkArchive = slpkArchive;
-    this.hashArray = hashFile;
+    this.hashTable = hashTable;
   }
 
   /**
@@ -56,7 +65,7 @@ export class SLPKArchive {
    * @param mode - currently only raw mode supported
    * @returns buffer with ready to use file
    */
-  async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<Buffer> {
+  async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<ArrayBuffer> {
     if (mode === 'http') {
       const extensions = PATH_DESCRIPTIONS.find((val) => val.test.test(path))?.extensions;
       if (extensions) {
@@ -68,22 +77,22 @@ export class SLPKArchive {
           }
         }
         if (data) {
-          return Buffer.from(data);
+          return data;
         }
       }
     }
     if (mode === 'raw') {
       const decompressedFile = await this.getDataByPath(`${path}.gz`);
       if (decompressedFile) {
-        return Buffer.from(decompressedFile);
+        return decompressedFile;
       }
       const fileWithoutCompression = await this.getFileBytes(path);
       if (fileWithoutCompression) {
-        return Buffer.from(fileWithoutCompression);
+        return fileWithoutCompression;
       }
     }
 
-    throw new Error('No such file in the archieve');
+    throw new Error(`No such file in the archive: ${path}`);
   }
 
   /**
@@ -107,22 +116,24 @@ export class SLPKArchive {
       const decompressedData = await compression.decompress(data);
       return decompressedData;
     }
-    return Buffer.from(data);
+    return data;
   }
 
   /**
-   * Trying to get raw file data by adress
+   * Trying to get raw file data by address
    * @param path - path inside the archive
    * @returns buffer with the raw file data
    */
   private async getFileBytes(path: string): Promise<ArrayBuffer | undefined> {
-    const nameHash = Buffer.from(md5(path), 'hex');
-    const fileInfo = findBin(nameHash, this.hashArray); // implement binary search
-    if (!fileInfo) {
+    const binaryPath = this._textEncoder.encode(path);
+    const nameHash = await this._md5Hash.hash(binaryPath.buffer, 'hex');
+
+    const offset = this.hashTable[nameHash];
+    if (offset === undefined) {
       return undefined;
     }
 
-    const localFileHeader = await parseZipLocalFileHeader(fileInfo.offset, this.slpkArchive);
+    const localFileHeader = await parseZipLocalFileHeader(offset, this.slpkArchive);
     if (!localFileHeader) {
       return undefined;
     }
@@ -133,8 +144,5 @@ export class SLPKArchive {
     );
 
     return compressedFile;
-  }
-  findBin(nameHash: Buffer) {
-    throw new Error('Method not implemented.');
   }
 }

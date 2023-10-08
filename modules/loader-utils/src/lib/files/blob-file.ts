@@ -1,0 +1,32 @@
+// loaders.gl, MIT license
+
+import {ReadableFile} from './file';
+
+export class BlobFile implements ReadableFile {
+  readonly handle: Blob;
+  readonly size: number;
+  readonly bigsize: bigint;
+  readonly url: string;
+
+  constructor(blob: Blob | File | ArrayBuffer) {
+    this.handle = blob instanceof ArrayBuffer ? new Blob([blob]) : blob;
+    this.size = blob instanceof ArrayBuffer ? blob.byteLength : blob.size;
+    this.bigsize = BigInt(this.size);
+    this.url = blob instanceof File ? blob.name : '';
+  }
+
+  async close() {}
+
+  async stat() {
+    return {
+      size: this.handle.size,
+      bigsize: BigInt(this.handle.size),
+      isDirectory: false
+    };
+  }
+
+  async read(start: number, length: number): Promise<ArrayBuffer> {
+    const arrayBuffer = await this.handle.slice(start, start + length).arrayBuffer();
+    return arrayBuffer;
+  }
+}

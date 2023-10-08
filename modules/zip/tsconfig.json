@@ -10,6 +10,7 @@
   "references": [
     {"path": "../loader-utils"},
     {"path": "../core"},
-    {"path": "../compression"}
+    {"path": "../compression"},
+    {"path": "../crypto"}
   ]
 }

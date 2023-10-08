@@ -1,87 +1,38 @@
 // loaders.gl, MIT license
 
-export type ReadOptions = {};
-
-export type Stat = {
-  size: number;
-  isDirectory: () => boolean;
-};
+import {ReadableFile, WritableFile} from '../files/file';
 
 /**
  * A FileSystem interface can encapsulate various file sources,
- * a FileList, a ZipFile, a GoogleDrive etc.
+ * a FileList, a Node.js filesystem, a ZipFile, a GoogleDrive etc.
  */
 export interface FileSystem {
-  /**
-   * Return a list of file names
-   * @param dirname directory name. file system root directory if omitted
-   */
+  /** Return a list of file names in a "directory" */
   readdir(dirname?: string, options?: {recursive?: boolean}): Promise<string[]>;
 
-  /**
-   * Gets information from a local file from the filesystem
-   * @param filename file name to stat
-   * @param options currently unused
-   * @throws if filename is not in local filesystem
-   */
+  /** Gets information from a local file from the filesystem */
   stat(filename: string, options?: object): Promise<{size: number}>;
 
-  /**
-   * Fetches a local file from the filesystem (or a URL)
-   * @param filename
-   * @param options
-   */
-  fetch(filename: RequestInfo, options?: RequestInit): Promise<Response>;
+  /** Removes a file from the file system */
+  unlink?(path: string): Promise<void>;
+
+  /** Fetches the full contents of a file from the filesystem (or a URL) */
+  fetch(path: string, options?: RequestInit): Promise<Response>;
 }
 
 /**
- * A random access file system
+ * A random access file system, open readable and/or writable files
  */
-export interface RandomAccessReadFileSystem extends FileSystem {
-  open(path: string, flags: unknown, mode?: unknown): Promise<any>;
-  close(fd: unknown): Promise<void>;
-  fstat(fd: unknown): Promise<Stat>;
-  read(fd: any, options?: ReadOptions): Promise<{bytesRead: number; buffer: Uint8Array}>;
-  // read(
-  //   fd: any,
-  //   buffer: ArrayBuffer | ArrayBufferView,
-  //   offset?: number,
-  //   length?: number,
-  //   position?: number
-  // ): Promise<{bytesRead: number; buffer: ArrayBuffer}>;
+export interface RandomAccessFileSystem extends FileSystem {
+  /** Can open readable files */
+  readonly readable: boolean;
+
+  /** Can open writable files */
+  readonly writable: boolean;
+
+  /** Open a readable file */
+  openReadableFile(path: string, flags?: 'r'): Promise<ReadableFile>;
+
+  /** Open a writable file */
+  openWritableFile(path: string, flags?: 'w' | 'wx', mode?: number): Promise<WritableFile>;
 }
-
-/**
- * A FileSystem interface can encapsulate a FileList, a ZipFile, a GoogleDrive etc.
- *
-export interface IFileSystem {
-  /**
-   * Return a list of file names
-   * @param dirname directory name. file system root directory if omitted
-   *
-  readdir(dirname?: string, options?: {recursive?: boolean}): Promise<string[]>;
-
-  /**
-   * Gets information from a local file from the filesystem
-   * @param filename file name to stat
-   * @param options currently unused
-   * @throws if filename is not in local filesystem
-   *
-  stat(filename: string, options?: object): Promise<{size: number}>;
-
-  /**
-   * Fetches a local file from the filesystem (or a URL)
-   * @param filename
-   * @param options
-   *
-  fetch(filename: string, options?: object): Promise<Response>;
-}
-
-type ReadOptions = {buffer?: ArrayBuffer; offset?: number; length?: number; position?: number};
-export interface IRandomAccessReadFileSystem extends IFileSystem {
-  open(path: string, flags: string | number, mode?: any): Promise<any>;
-  close(fd: any): Promise<void>;
-  fstat(fd: any): Promise<object>;
-  read(fd: any, options?: ReadOptions): Promise<{bytesRead: number; buffer: Buffer}>;
-}
-*/

@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import path from 'path';
+import {path} from '@loaders.gl/loader-utils';
 import {getFileByUrl, loadArchive} from '../../../src/i3s-server/controllers/slpk-controller';
 
 const URL_PREFIX = '';
@@ -32,7 +32,6 @@ test('tile-converter(i3s-server)#getFileByUrl return files content', async (t) =
     t.end();
     return;
   }
-
   const FULL_LAYER_PATH = path.join(process.cwd(), SLPK_URL); // eslint-disable-line no-undef
   await loadArchive(FULL_LAYER_PATH);
 

@@ -46,4 +46,6 @@ export {I3SAttributeLoader, loadFeatureAttributes} from './i3s-attribute-loader'
 export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
 export {I3SNodePageLoader} from './i3s-node-page-loader';
 export {ArcGISWebSceneLoader} from './arcgis-webscene-loader';
-export {parseSLPK} from './lib/parsers/parse-slpk/parse-slpk';
+
+export type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
+export {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';

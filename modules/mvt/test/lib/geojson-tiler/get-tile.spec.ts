@@ -28,7 +28,6 @@ const square = [
 
 test('GeoJSONVT#getTile#us-states.json', async (t) => {
   const log = console.log;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   console.log = function () {};
 
   const geojson = await getJSON('us-states.json');

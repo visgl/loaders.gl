@@ -4,9 +4,8 @@ import {
   cdSignature as cdHeaderSignature,
   parseZipLocalFileHeader,
   searchFromTheEnd,
-  HashElement,
-  parseHashFile,
-  generateHashInfo
+  parseHashTable,
+  makeHashTableFromZipHeaders
 } from '@loaders.gl/zip';
 import {SLPKArchive} from './slpk-archieve';
 
@@ -16,21 +15,22 @@ import {SLPKArchive} from './slpk-archieve';
  * @param cb is called with information message during parsing
  * @returns slpk file handler
  */
-export const parseSLPK = async (
+export async function parseSLPKArchive(
   fileProvider: FileProvider,
   cb?: (msg: string) => void
-): Promise<SLPKArchive> => {
+): Promise<SLPKArchive> {
   const hashCDOffset = await searchFromTheEnd(fileProvider, cdHeaderSignature);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 
-  let hashData: HashElement[];
+  let hashTable: Record<string, bigint>;
   if (cdFileHeader?.fileName !== '@specialIndexFileHASH128@') {
-    cb?.('SLPK doesnt contain hash file');
-    hashData = await generateHashInfo(fileProvider);
-    cb?.('hash info has been composed according to central directory records');
+    hashTable = await makeHashTableFromZipHeaders(fileProvider);
+    cb?.(
+      'SLPK doesnt contain hash file, hash info has been composed according to zip archive headers'
+    );
   } else {
-    cb?.('SLPK contains hash file');
+    // cb?.('SLPK contains hash file');
     const localFileHeader = await parseZipLocalFileHeader(
       cdFileHeader.localHeaderOffset,
       fileProvider
@@ -45,8 +45,8 @@ export const parseSLPK = async (
       fileDataOffset + localFileHeader.compressedSize
     );
 
-    hashData = parseHashFile(hashFile);
+    hashTable = parseHashTable(hashFile);
   }
 
-  return new SLPKArchive(fileProvider, hashData);
-};
+  return new SLPKArchive(fileProvider, hashTable);
+}

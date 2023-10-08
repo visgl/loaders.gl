@@ -1,7 +1,7 @@
 import {FileProvider} from '@loaders.gl/loader-utils';
 
 /** Description of zip signature type */
-export type ZipSignature = [number, number, number, number];
+export type ZipSignature = Uint8Array;
 
 /**
  * looking for the last occurrence of the provided

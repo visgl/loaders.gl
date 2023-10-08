@@ -10,4 +10,7 @@ import './images-node/images-node.spec';
 import './file/blob-polyfill.spec';
 import './file/file-polyfill.spec';
 
+import './filesystems/fetch-node.spec';
+import './filesystems/node-file.spec';
 import './filesystems/node-filesystem.spec';
+import './filesystems/fetch-node.spec';

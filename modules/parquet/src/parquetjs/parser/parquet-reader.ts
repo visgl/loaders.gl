@@ -134,7 +134,8 @@ export class ParquetReader {
 
   /** Metadata is stored in the footer */
   async readHeader(): Promise<void> {
-    const buffer = await this.file.read(0, PARQUET_MAGIC.length);
+    const arrayBuffer = await this.file.read(0, PARQUET_MAGIC.length);
+    const buffer = Buffer.from(arrayBuffer);
     const magic = buffer.toString();
     switch (magic) {
       case PARQUET_MAGIC:
@@ -149,7 +150,8 @@ export class ParquetReader {
   /** Metadata is stored in the footer */
   async readFooter(): Promise<FileMetaData> {
     const trailerLen = PARQUET_MAGIC.length + 4;
-    const trailerBuf = await this.file.read(this.file.size - trailerLen, trailerLen);
+    const arrayBuffer = await this.file.read(this.file.size - trailerLen, trailerLen);
+    const trailerBuf = Buffer.from(arrayBuffer);
 
     const magic = trailerBuf.slice(4).toString();
     if (magic !== PARQUET_MAGIC) {
@@ -162,7 +164,8 @@ export class ParquetReader {
       throw new Error(`Invalid metadata size ${metadataOffset}`);
     }
 
-    const metadataBuf = await this.file.read(metadataOffset, metadataSize);
+    const arrayBuffer2 = await this.file.read(metadataOffset, metadataSize);
+    const metadataBuf = Buffer.from(arrayBuffer2);
     // let metadata = new parquet_thrift.FileMetaData();
     // parquet_util.decodeThrift(metadata, metadataBuf);
 
@@ -244,7 +247,8 @@ export class ParquetReader {
     }
 
     dictionary = context.dictionary?.length ? context.dictionary : dictionary;
-    const pagesBuf = await this.file.read(pagesOffset, pagesSize);
+    const arrayBuffer = await this.file.read(pagesOffset, pagesSize);
+    const pagesBuf = Buffer.from(arrayBuffer);
     return await decodeDataPages(pagesBuf, {...context, dictionary});
   }
 
@@ -275,7 +279,8 @@ export class ParquetReader {
       this.file.size - dictionaryPageOffset,
       this.props.defaultDictionarySize
     );
-    const pagesBuf = await this.file.read(dictionaryPageOffset, dictionarySize);
+    const arrayBuffer = await this.file.read(dictionaryPageOffset, dictionarySize);
+    const pagesBuf = Buffer.from(arrayBuffer);
 
     const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};
     const decodedPage = await decodePage(cursor, context);

@@ -58,7 +58,7 @@ and loaders.gl v4.0 aligns with this practice.
 
 **@loaders.gl/crypto**
 
-- All hashes now require an encoding parameter. To get previous behavior, just specify `'base64'`.
+- All hashes now require an encoding parameter. To get previous behavior, just specify `.hash...(..., 'base64')`.
 
 **@loaders.gl/arrow**
 
