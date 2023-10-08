@@ -11,8 +11,11 @@ export type {
   DataType,
   SyncDataType,
   BatchableDataType,
+  ReadableFile,
+  WritableFile,
+  Stat,
   FileSystem,
-  RandomAccessReadFileSystem
+  RandomAccessFileSystem
 } from '@loaders.gl/loader-utils';
 
 // FILE READING AND WRITING

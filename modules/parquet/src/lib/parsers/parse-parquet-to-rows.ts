@@ -1,6 +1,6 @@
 // import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {ColumnarTableBatch} from '@loaders.gl/schema';
-import {makeReadableFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/loader-utils';
 import {GeoJSONTable, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
@@ -16,7 +16,7 @@ export async function parseParquet(
   installBufferPolyfill();
 
   const blob = new Blob([arrayBuffer]);
-  const file = makeReadableFile(blob);
+  const file = new BlobFile(blob);
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary
   });

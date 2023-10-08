@@ -12,3 +12,4 @@ import './file/file-polyfill.spec';
 import './promise/all-settled.spec';
 
 import './filesystems/node-filesystem.spec';
+import './filesystems/fetch-node.spec';

@@ -488,7 +488,6 @@ const CUSTOM_TESTS = [
       Papa.parse(BASE_PATH + 'long-sample.csv', {
         download: true,
         chunkSize: 500,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         beforeFirstChunk(chunk) {},
         step(response) {
           updates++;
