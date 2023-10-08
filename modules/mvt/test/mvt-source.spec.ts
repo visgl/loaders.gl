@@ -4,16 +4,16 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 
 import {TILESETS} from './data/tilesets';
-import {MVTTilesSource} from '@loaders.gl/mvt';
+import {MVTSource} from '@loaders.gl/mvt';
 
-test('MVTTilesSource#urls', async (t) => {
+test('MVTSource#urls', async (t) => {
   if (!isBrowser) {
-    t.comment('MVTTilesSource currently only supported in browser');
+    t.comment('MVTSource currently only supported in browser');
     t.end();
     return;
   }
   for (const tilesetUrl of TILESETS) {
-    const source = new MVTTilesSource({url: tilesetUrl});
+    const source = new MVTSource({url: tilesetUrl});
     t.ok(source);
     const metadata = await source.getMetadata();
     t.ok(metadata);
@@ -22,14 +22,14 @@ test('MVTTilesSource#urls', async (t) => {
   t.end();
 });
 
-test('MVTTilesSource#Blobs', async (t) => {
+test('MVTSource#Blobs', async (t) => {
   if (!isBrowser) {
-    t.comment('MVTTilesSource currently only supported in browser');
+    t.comment('MVTSource currently only supported in browser');
     t.end();
     return;
   }
   for (const tilesetUrl of TILESETS) {
-    const source = new MVTTilesSource({url: tilesetUrl});
+    const source = new MVTSource({url: tilesetUrl});
     t.ok(source);
     const metadata = await source.getMetadata();
     t.ok(metadata);

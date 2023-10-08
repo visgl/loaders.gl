@@ -7,6 +7,8 @@ export type {TileJSON} from './lib/parse-tilejson';
 export type {TileJSONLoaderOptions} from './tilejson-loader';
 export {TileJSONLoader} from './tilejson-loader';
 
+export {MVTSource} from './mvt-source';
+
 // GeoJSONTiler
 
 export type {GeoJSONTilerOptions} from './lib/geojson-tiler/geojson-tiler';

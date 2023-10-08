@@ -8,7 +8,7 @@ import {MVTLoader, MVTLoaderOptions, TileJSONLoader, TileJSON} from '@loaders.gl
 
 import {TileLoadParameters} from '@loaders.gl/loader-utils';
 
-export type MVTTilesSourceProps = DataSourceProps & {
+export type MVTSourceProps = DataSourceProps & {
   url: string;
   attributions?: string[];
 };
@@ -17,13 +17,13 @@ export type MVTTilesSourceProps = DataSourceProps & {
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
-export class MVTTilesSource extends DataSource implements ImageTileSource, VectorTileSource {
-  props: MVTTilesSourceProps;
+export class MVTSource extends DataSource implements ImageTileSource, VectorTileSource {
+  props: MVTSourceProps;
   url: string;
   schema: 'tms' | 'xyz' = 'tms';
   metadata: Promise<TileJSON | null>;
 
-  constructor(props: MVTTilesSourceProps) {
+  constructor(props: MVTSourceProps) {
     super(props);
     this.props = props;
     this.url = resolvePath(props.url);
@@ -33,12 +33,12 @@ export class MVTTilesSource extends DataSource implements ImageTileSource, Vecto
 
   // @ts-ignore - Metadata type misalignment
   async getMetadata(): Promise<TileJSON | null> {
-    const metadataUrl = this.getMetadataUrl(); 
+    const metadataUrl = this.getMetadataUrl();
     const response = await this.fetch(metadataUrl);
     if (!response.ok) {
       return null;
     }
-    const tileJSON = await response.text()
+    const tileJSON = await response.text();
     const metadata = TileJSONLoader.parseTextSync?.(JSON.stringify(tileJSON)) || null;
     // metadata.attributions = [...this.props.attributions, ...(metadata.attributions || [])];
     return metadata;
