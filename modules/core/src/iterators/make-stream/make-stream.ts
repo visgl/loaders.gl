@@ -15,6 +15,10 @@ export function makeStream<ArrayBuffer>(
   source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   options?: MakeStreamOptions
 ): ReadableStream {
+  if (globalThis.loaders.makeNodeStream) {
+    return globalThis.loaders.makeNodeStream(source, options);
+  }
+
   // TODO - add AsyncGenerator to parameter types?
   const iterator = (source as AsyncGenerator<ArrayBuffer>)[Symbol.asyncIterator]
     ? (source as AsyncIterable<ArrayBuffer>)[Symbol.asyncIterator]()

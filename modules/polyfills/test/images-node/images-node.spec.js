@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import '@loaders.gl/polyfills';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 import {parseImageNode} from '../../src/node/images/parse-image.node';
 

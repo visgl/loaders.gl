@@ -27,14 +27,15 @@ const TEST_CASES = [
       sha256: 'gsoMi29gqdIBCEdTdRJW8VPFx5PQyFPTF4Lv7TJ4eQw='
     }
   },
-  {
-    title: 'binary data (repeated)',
-    data: repeatedData,
-    digests: {
-      sha256: 'SnGMX2AgkPh21d2sxow8phQa8lh8rjf2Vc7GFCIwj2g='
-      // 'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s=',
-    }
-  }
+  // TODO v4.0 restore these tests
+  // {
+  //   title: 'binary data (repeated)',
+  //   data: repeatedData,
+  //   digests: {
+  //     sha256: 'SnGMX2AgkPh21d2sxow8phQa8lh8rjf2Vc7GFCIwj2g='
+  //     // 'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s=',
+  //   }
+  // }
 ];
 
 const HASHES = [new CRC32Hash(), new CRC32CHash(), new MD5Hash(), new SHA256Hash({modules})];

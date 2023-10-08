@@ -1,5 +1,4 @@
 import test from 'tape-promise/tape';
-import '@loaders.gl/polyfills';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 
 const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/';

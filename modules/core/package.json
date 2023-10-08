@@ -31,13 +31,7 @@
   "sideEffects": false,
   "browser": {
     "fs": false,
-    "stream": false,
-    "./src/lib/fetch/fetch-file.node.ts": false,
-    "./dist/es5/lib/fetch/fetch-file.node.js": false,
-    "./dist/esm/lib/fetch/fetch-file.node.js": false,
-    "./src/iterators/make-stream/make-node-stream.ts": "./src/iterators/make-stream/make-dom-stream.ts",
-    "./dist/es5/iterators/make-stream/make-node-stream.js": "./dist/es5/iterators/make-stream/make-dom-stream.js",
-    "./dist/esm/iterators/make-stream/make-node-stream.js": "./dist/esm/iterators/make-stream/make-dom-stream.js"
+    "stream": false
   },
   "files": [
     "src",

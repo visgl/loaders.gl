@@ -15,7 +15,7 @@ test('toArrayBuffer', (t) => {
   buffer = toArrayBuffer(typedArray.buffer);
   t.ok(buffer instanceof ArrayBuffer, 'returns ArrayBuffer from ArrayBuffer');
 
-  if (isBrowser) {
+  if (!isBrowser) {
     buffer = toArrayBuffer(Buffer.from(typedArray.buffer));
     t.ok(buffer instanceof ArrayBuffer, 'returns ArrayBuffer from Buffer');
   }

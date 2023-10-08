@@ -1,8 +1,7 @@
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import '@loaders.gl/polyfills';
-// eslint-disable-next-line import/named
-import {fetchNode} from '@loaders.gl/polyfills';
+
+const {fetchNode} = globalThis.loaders || {};
 
 const GITHUB_MASTER = 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/';
 const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;

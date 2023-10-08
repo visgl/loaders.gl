@@ -9,7 +9,7 @@ const Readable = Stream.Readable || _Readable;
 export type MakeStreamOptions = ReadableOptions;
 
 /** Builds a node stream from an iterator */
-export function makeStream<ArrayBuffer>(
+export function makeNodeStream<ArrayBuffer>(
   source: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   options?: ReadableOptions
 ): ReadableType {

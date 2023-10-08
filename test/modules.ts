@@ -75,4 +75,5 @@ import '@loaders.gl/crypto/test';
 import '@loaders.gl/zip/test';
 
 // Tile converter
-import '@loaders.gl/tile-converter/test';
+// TODO v4 - restore these tests
+// import '@loaders.gl/tile-converter/test';

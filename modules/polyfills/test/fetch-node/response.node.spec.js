@@ -1,7 +1,6 @@
 // Based on https://github.com/github/fetch under MIT license
 
 import test from 'tape-promise/tape';
-import '@loaders.gl/polyfills';
 import {isBrowser} from '@loaders.gl/core';
 
 if (!isBrowser) {

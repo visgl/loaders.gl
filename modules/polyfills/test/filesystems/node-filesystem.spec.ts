@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 
 import test from 'tape-promise/tape';
-import {NodeFileSystem} from '@loaders.gl/polyfills';
+import {NodeFilesystem} from '@loaders.gl/loader-utils'
 
 import {isBrowser} from '@loaders.gl/core';
 
