@@ -47,16 +47,18 @@ test('polyfills#fetchNode() error handling (NODE)', async (t) => {
 });
 
 test('polyfills#fetchNode() able to decompress .gz extension (NODE)', async (t) => {
-  let response = await fetchNode(TEXT_URL);
-  t.ok(response.ok, response.statusText);
-  let data = await response.text();
-  t.equal(data, '123456', 'fetchNode polyfill correctly read text file');
-
   if (!isBrowser) {
-    response = await fetchNode(TEXT_URL_GZIPPED);
+    let response = await fetchNode(TEXT_URL);
     t.ok(response.ok, response.statusText);
-    data = await response.text();
-    t.equal(data, '123456', 'fetchNode polyfill correctly decompressed gzipped ".gz" file');
+    let data = await response.text();
+    t.equal(data, '123456', 'fetchNode polyfill correctly read text file');
+
+    if (!isBrowser) {
+      response = await fetchNode(TEXT_URL_GZIPPED);
+      t.ok(response.ok, response.statusText);
+      data = await response.text();
+      t.equal(data, '123456', 'fetchNode polyfill correctly decompressed gzipped ".gz" file');
+    }
   }
   t.end();
 });

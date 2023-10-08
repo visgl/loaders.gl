@@ -29,12 +29,12 @@ export async function fetchFile(
 
     // Support fetching from local file system
     if (isNodePath(url)) {
-      if (!globalThis.loaders?.fetchNode) {
-        throw new Error(
-          'fetchFile: globalThis.loaders.fetchNode not defined. Install @loaders.gl/polyfills'
-        );
+      if (globalThis.loaders?.fetchNode) {
+        return globalThis.loaders?.fetchNode(url, fetchOptions);
       }
-      return globalThis.loaders?.fetchNode(url, fetchOptions);
+      // throw new Error(
+      //   'fetchFile: globalThis.loaders.fetchNode not defined. Install @loaders.gl/polyfills'
+      // );
     }
 
     // Call global fetch
