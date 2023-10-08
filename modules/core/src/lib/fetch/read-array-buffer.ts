@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+
 /**
  * Reads a chunk from a random access file
  * @param file
