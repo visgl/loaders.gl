@@ -102,7 +102,7 @@ export class Tile3D {
   private _expireDate: any = null;
   private _expiredContent: any = null;
 
-  private _boundingBox?: CartographicBounds;
+  private _boundingBox?: CartographicBounds = undefined;
 
   /** updated every frame for tree traversal and rendering optimizations: */
   public _distanceToCamera: number = 0;

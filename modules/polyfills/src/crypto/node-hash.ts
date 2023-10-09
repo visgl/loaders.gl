@@ -1,5 +1,5 @@
 // This dependency is too big, application must provide it
-import {Hash} from './hash';
+import {Hash} from '@loaders.gl/loader-utils';
 import * as crypto from 'crypto'; // Node.js builtin
 
 type CryptoHashOptions = {

@@ -8,12 +8,12 @@ import {isBrowser} from '@loaders.gl/core';
 if (!isBrowser) {
 
   test('NodeFileSystem#import', (t) => {
-    if (!NodeFileSystem) {
+    if (!NodeFilesystem) {
       t.comment('NodeFileSystem not defined');
       t.end();
       return;
     }
-    t.ok(NodeFileSystem, 'NodeFileSystem defined');
+    t.ok(NodeFilesystem, 'NodeFileSystem defined');
     t.end();
   });
 

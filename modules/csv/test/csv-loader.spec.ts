@@ -160,7 +160,7 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, 2, 'Got correct batch size');
 
     t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
@@ -187,7 +187,7 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, batchSize, 'Got correct batch size');
 
     t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
@@ -217,7 +217,7 @@ test('CSVLoader#loadInBatches(sample.csv, array-rows)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.shape, 'array-row-table', 'Got correct batch shape');
     if (batch.shape === 'array-row-table') {
       t.equal(batch.length, 2, 'Got correct batch size');
@@ -262,7 +262,7 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.shape, 'array-row-table', 'Got correct batch shape');
     if (batch.shape === 'array-row-table') {
       t.equal(batch.length, 2, 'Got correct batch size');
@@ -278,7 +278,7 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
 
   batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
     if (batch.shape === 'object-row-table') {
       t.equal(batch.length, 2, 'Got correct batch size');
@@ -304,7 +304,7 @@ test('CSVLoader#loadInBatches(no header, row format, prefix)', async (t) => {
   for await (const batch of iterator) {
     t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
     if (batch.shape === 'object-row-table') {
-      t.comment(JSON.stringify(batch.data[0]));
+      // t.comment(JSON.stringify(batch.data[0]));
       t.ok(batch.data[0].column_1, 'first column has a value');
       t.ok(batch.data[0].column_2, 'second column has a value value');
       t.ok(batch.data[0].column_3, 'third column has a value');
@@ -327,7 +327,7 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
 
   let rowCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
     if (batch.shape === 'columnar-table') {
       t.equal(getTableLength(batch), 2, 'Got correct batch size');

@@ -1,6 +1,6 @@
 import {CRC32Hash, CRC32CHash, MD5Hash, SHA256Hash, CryptoHash} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
-import * as CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js';
 
 export default async function cryptoBench(bench) {
   const {binaryData} = getBinaryData();

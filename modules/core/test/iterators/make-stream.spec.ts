@@ -10,7 +10,6 @@ test('asyncIteratorToStream#fetch from asyncIteratorStream', async (t) => {
     const concatenatedData = concatenateArrayBuffers(...data);
 
     const stream = makeStream(data);
-    // @ts-expect-error stream can be either Node or DOM stream
     const response = new Response(stream);
     const arrayBuffer = await response.arrayBuffer();
 
@@ -25,7 +24,6 @@ test('asyncIteratorToStream#makeIterator(iteratorToStream())', async (t) => {
   const concatenatedData = concatenateArrayBuffers(...data);
 
   const stream = makeStream(data);
-  // @ts-expect-error stream can be either Node or DOM stream
   const streamIterator = makeIterator(stream);
 
   const chunks = await concatenateArrayBuffersAsync(streamIterator);
