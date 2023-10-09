@@ -19,11 +19,12 @@ import type {
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 import {
-  getAccessorArrayTypeAndLength,
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray
-} from '../gltf-utils/gltf-utils';
+  getTypedArrayForBufferView as _getTypedArrayForBufferView,
+  getTypedArrayForImageData as _getTypedArrayForImageData,
+  getTypedArrayForAccessor as _getTypedArrayForAccessor
+} from '../gltf-utils/get-typed-array';
 
 type Extension = {[key: string]: any};
 
@@ -185,19 +186,8 @@ export class GLTFScenegraph {
    * @returns a `Uint8Array`
    */
   getTypedArrayForBufferView(bufferView: number | object): Uint8Array {
-    bufferView = this.getBufferView(bufferView);
-    // @ts-ignore
-    const bufferIndex = bufferView.buffer;
-
-    // Get hold of the arrayBuffer
-    // const buffer = this.getBuffer(bufferIndex);
-    const binChunk = this.gltf.buffers[bufferIndex];
-    assert(binChunk);
-
-    // @ts-ignore
-    const byteOffset = (bufferView.byteOffset || 0) + binChunk.byteOffset;
-    // @ts-ignore
-    return new Uint8Array(binChunk.arrayBuffer, byteOffset, bufferView.byteLength);
+    const gltfBufferView = this.getBufferView(bufferView);
+    return _getTypedArrayForBufferView(this.gltf.json, this.gltf.buffers, gltfBufferView);
   }
 
   /** Accepts accessor index or accessor object
@@ -205,34 +195,17 @@ export class GLTFScenegraph {
    */
   getTypedArrayForAccessor(accessor: number | object): any {
     // @ts-ignore
-    accessor = this.getAccessor(accessor);
-    // @ts-ignore
-    const bufferView = this.getBufferView(accessor.bufferView);
-    const buffer = this.getBuffer(bufferView.buffer);
-    // @ts-ignore
-    const arrayBuffer = buffer.data;
-
-    // Create a new typed array as a view into the combined buffer
-    const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
-    // @ts-ignore
-    const byteOffset = bufferView.byteOffset + accessor.byteOffset;
-    return new ArrayType(arrayBuffer, byteOffset, length);
+    const gltfAccessor = this.getAccessor(accessor);
+    return _getTypedArrayForAccessor(this.gltf.json, this.gltf.buffers, gltfAccessor);
   }
 
-  /** accepts accessor index or accessor object
-   * returns a `Uint8Array`
+  /** Accepts image index or image object
+   * @returns a `Uint8Array`
    */
   getTypedArrayForImageData(image: number | object): Uint8Array {
     // @ts-ignore
-    image = this.getAccessor(image);
-    // @ts-ignore
-    const bufferView = this.getBufferView(image.bufferView);
-    const buffer = this.getBuffer(bufferView.buffer);
-    // @ts-ignore
-    const arrayBuffer = buffer.data;
-
-    const byteOffset = bufferView.byteOffset || 0;
-    return new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
+    const gltfImage = this.getImage(image);
+    return _getTypedArrayForImageData(this.gltf.json, this.gltf.buffers, gltfImage);
   }
 
   // MODIFERS

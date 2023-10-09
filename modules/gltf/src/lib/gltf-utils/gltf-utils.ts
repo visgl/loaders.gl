@@ -1,7 +1,5 @@
 import {assert} from '../utils/assert';
 
-import type {TypedArray} from '@loaders.gl/schema';
-import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
 import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
 
@@ -89,57 +87,6 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
   const componentByteSize = BYTES[accessor.componentType];
   const numberOfComponentsInElement = COMPONENTS[accessor.type];
   return {ArrayType, length, byteLength, componentByteSize, numberOfComponentsInElement};
-}
-
-/**
- * Gets data pointed by the accessor.
- * @param gltfData - gltf content of a GLTF tile.
- * @param accessorIndex - Index of the accessor.
- * @returns a typed array with type that matches the types.
- */
-export function getTypedArrayForAccessor(
-  gltfData: GLTFWithBuffers,
-  accessorIndex: number
-): TypedArray | null {
-  const gltfAccessor = gltfData.json.accessors?.[accessorIndex];
-  if (gltfAccessor && typeof gltfAccessor.bufferView !== 'undefined') {
-    // Get `bufferView` of the `accessor`
-    const bufferView = gltfData.json.bufferViews?.[gltfAccessor.bufferView];
-    if (bufferView) {
-      // Get `arrayBuffer` the `bufferView` looks at
-      const {arrayBuffer, byteOffset: bufferByteOffset} = gltfData.buffers[bufferView.buffer];
-      // Resulting byteOffset is sum of the buffer, accessor and bufferView byte offsets
-      const byteOffset =
-        (bufferByteOffset || 0) + (gltfAccessor.byteOffset || 0) + (bufferView.byteOffset || 0);
-      // Deduce TypedArray type and its length from `accessor` and `bufferView` data
-      const {ArrayType, length, componentByteSize, numberOfComponentsInElement} =
-        getAccessorArrayTypeAndLength(gltfAccessor, bufferView);
-      // 'length' is a whole number of components of all elements in the buffer pointed by the accessor
-      // Multiplier to calculate the address of the element in the arrayBuffer
-      const elementByteSize = componentByteSize * numberOfComponentsInElement;
-      const elementAddressScale = bufferView.byteStride || elementByteSize;
-      // Creare an array of component's type where all components (not just elements) will reside
-      if (
-        typeof bufferView.byteStride === 'undefined' ||
-        bufferView.byteStride === elementByteSize
-      ) {
-        // No iterleaving
-        const result: TypedArray = new ArrayType(arrayBuffer, byteOffset, length);
-        return result;
-      }
-      const result: TypedArray = new ArrayType(length);
-      for (let i = 0; i < gltfAccessor.count; i++) {
-        const values = new ArrayType(
-          arrayBuffer,
-          byteOffset + i * elementAddressScale,
-          numberOfComponentsInElement
-        );
-        result.set(values, i * numberOfComponentsInElement);
-        return result;
-      }
-    }
-  }
-  return null;
 }
 
 /**
