@@ -358,6 +358,8 @@ export type GLTFTextureInfo = {
   index: GLTFId;
   /**
    * The set index of texture's TEXCOORD attribute used for texture coordinate mapping.
+   * Default is 0
+   * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/specification/2.0/schema/textureInfo.schema.json
    */
   texCoord?: number;
   extensions?: Record<string, any>;
@@ -371,6 +373,11 @@ export type GLTFTextureInfo = {
  * https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
  */
 export type GLTFTextureInfoMetadata = GLTFTextureInfo & {
+  /**
+   * For EXT_structural_metadata and Ext_mesh_features the channels default is [0]
+   * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features/schema/featureIdTexture.schema.json
+   * @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTexture.property.schema.json
+   */
   channels: number[] | string;
   /** For internal usage */
   data?: unknown;
