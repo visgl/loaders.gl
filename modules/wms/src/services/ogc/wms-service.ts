@@ -363,6 +363,7 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
     wmsParameters: WMSGetFeatureInfoParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
+    wmsParameters = this._getWMS130Parameters(wmsParameters);
     const options: Required<WMSGetFeatureInfoParameters> = {
       version: this.wmsParameters.version,
       // query_layers: [],
