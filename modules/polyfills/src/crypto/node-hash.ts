@@ -1,5 +1,5 @@
 // This dependency is too big, application must provide it
-import {Hash} from '@loaders.gl/loader-utils';
+import {Hash} from '@loaders.gl/crypto';
 import * as crypto from 'crypto'; // Node.js builtin
 
 type CryptoHashOptions = {
@@ -35,7 +35,7 @@ export class NodeHash extends Hash {
    * @returns base64 encoded hash
    */
   async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
-    await this.preload();
+    // await this.preload();
     const algorithm = this.options?.crypto?.algorithm?.toLowerCase();
     try {
       if (!crypto.createHash) {
@@ -53,7 +53,7 @@ export class NodeHash extends Hash {
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
     encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
-    await this.preload();
+    // await this.preload();
     if (!crypto.createHash) {
       throw new Error('crypto.createHash not available');
     }

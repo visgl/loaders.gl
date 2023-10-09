@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../crypto"},
     {"path": "../images"},
     {"path": "../loader-utils"},
     {"path": "../worker-utils"}
