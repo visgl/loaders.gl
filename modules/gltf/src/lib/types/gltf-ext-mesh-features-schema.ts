@@ -34,7 +34,9 @@ export type GLTF_EXT_mesh_features_featureId = {
    * (e.g. a value of `0` corresponds to `_FEATURE_ID_0`).
    */
   attribute?: number;
-  /** A texture containing feature IDs. */
+  /** A texture containing feature IDs.
+   * @see https://github.com/CesiumGS/glTF/blob/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features/schema/featureIdTexture.schema.json
+   */
   texture?: GLTFTextureInfoMetadata;
   /** The index of the property table containing per-feature property values. Only applicable when using the `EXT_structural_metadata` extension. */
   propertyTable?: number;
