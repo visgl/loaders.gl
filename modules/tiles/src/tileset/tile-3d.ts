@@ -161,6 +161,8 @@ export class Tile3D {
     this.type = header.type;
     this.contentUrl = header.contentUrl;
 
+    this.traverser.options.maximumScreenSpaceError = tileset.options.maximumScreenSpaceError;
+
     this._initializeLodMetric(header);
     this._initializeTransforms(header);
     this._initializeBoundingVolumes(header);
