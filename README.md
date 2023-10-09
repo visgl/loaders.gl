@@ -16,7 +16,7 @@ loaders.gl is extensively documented on the [loaders.gl](https://loaders.gl) web
 
 ## Contributing 
 
-See [CONTRIBUTING.md].
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
