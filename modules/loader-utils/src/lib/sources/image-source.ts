@@ -28,7 +28,7 @@ export type ImageSourceLayer = {
   /** Coordinate systems supported by this layer */
   crs?: string[];
   /** layer limits in unspecified CRS:84-like lng/lat, for quick access w/o CRS calculations. */
-  geographicBoundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
+  boundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
   /** Sub layers of this layer */
   layers?: ImageSourceLayer[];
 };
@@ -40,31 +40,7 @@ export type GetImageParameters = {
   /** Styling */
   styles?: unknown;
   /** bounding box of the requested map image */
-  bbox: [number, number, number, number];
-  /** pixel width of returned image */
-  width: number;
-  /** pixels */
-  height: number;
-  /** crs for the image (not the bounding box) */
-  crs?: string;
-  /** requested format for the return image */
-  format?: 'image/png';
-};
-
-// Attempt to break down GetImageParameters
-export type ImageFilters = {
-  /** Layers to render */
-  layers: string | string[];
-  /** Styling */
-  styles?: unknown;
-};
-
-export type ImageRegion = {
-  /** bounding box of the requested map image */
-  bbox: [number, number, number, number];
-};
-
-export type ImageFormat = {
+  boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
   /** pixel width of returned image */
   width: number;
   /** pixels */

@@ -49,7 +49,7 @@ export class ImageService<
 
   /** Break up bounding box in east, north, south, west */
   protected getGranularParameters(parameters: GetImageParameters): Record<string, unknown> {
-    const [east, north, west, south] = parameters.bbox;
+    const [[east, north], [west, south]] = parameters.boundingBox;
     return {...parameters, east, north, south, west};
   }
 

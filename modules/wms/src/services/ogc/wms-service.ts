@@ -65,8 +65,10 @@ export type WMSGetCapabilitiesParameters = {
 export type WMSGetMapParameters = {
   /** In case the endpoint supports multiple WMS versions */
   version?: '1.3.0' | '1.1.1';
-  /** bounding box of the requested map image */
-  bbox: [number, number, number, number];
+  /** bounding box of the requested map image `[[w, s], [e, n]]`  */
+  boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
+  // /** bounding box of the requested map image */
+  // bbox: [number, number, number, number];
   /** pixel width of returned image */
   width: number;
   /** pixels */
@@ -87,17 +89,17 @@ export type WMSGetMapParameters = {
   elevation?: string;
 };
 
-/** GetMap parameters that are specific to the current view */
-export type WMSGetMapViewParameters = {
-  /** pixel width of returned image */
-  width: number;
-  /** pixels */
-  height: number;
-  /** bounding box of the requested map image */
-  bbox: [number, number, number, number];
-  /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
-  crs?: string;
-};
+// /** GetMap parameters that are specific to the current view */
+// export type WMSGetMapViewParameters = {
+//   /** pixel width of returned image */
+//   width: number;
+//   /** pixels */
+//   height: number;
+//   /** bounding box of the requested map image */
+//   bbox: [number, number, number, number];
+//   /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
+//   crs?: string;
+// };
 
 /**
  * Parameters for GetFeatureInfo
@@ -493,6 +495,16 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
         }
         break;
 
+      case 'boundingBox':
+        // Coordinate order is flipped for certain CRS in WMS 1.3.0
+        let boundingBox = value as [[number, number], [number, number]];
+        let bbox2: number[] | null = [...boundingBox[0], ...boundingBox[1]];
+        bbox2 = this._flipBoundingBox(boundingBox, wmsParameters);
+        if (bbox2) {
+          value = bbox2;
+        }
+        break;
+  
       case 'bbox':
         // Coordinate order is flipped for certain CRS in WMS 1.3.0
         const bbox = this._flipBoundingBox(value, wmsParameters);
