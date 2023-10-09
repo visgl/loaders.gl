@@ -2,10 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import ALIASES from './aliases.js';
-import {_addAliases} from '@loaders.gl/loader-utils';
-
-_addAliases(ALIASES);
+import './init-tests';
 
 // Utility modules
 import '@loaders.gl/polyfills/test';
