@@ -12,7 +12,7 @@ If you consider opening a PR, here is some documentation to get you started:
 
 To contribute, you will likely want to clone the loaders.gl repository and start by making sure you can install, build and run tests.
 
-See the [developer guide](https://loaders.gl/docs/dev-env) on the loaders.gl website for more information on how to get your environment set up for loaders.gl development, including for Linux and Windows.
+See the [developer guide](https://loaders.gl/docs/developer-guide/dev-env) on the loaders.gl website for more information on how to get your environment set up for loaders.gl development, including for Linux and Windows.
 
 ## Community Governance
 

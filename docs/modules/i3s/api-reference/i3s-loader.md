@@ -178,7 +178,7 @@ const viewport = new WebMercatorViewport({latitude, longitude, zoom, ...})
 tileset3d.update(viewport);
 
 // Viewport changes (pan zoom etc)
-tileset3d.update(viewport);
+tileset3d.selectTiles(viewport);
 
 // Visible tiles
 const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
