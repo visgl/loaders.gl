@@ -10,7 +10,7 @@ const MINI_BSON_URL = '@loaders.gl/bson/test/data/js-bson/test.bson';
 
 test('BSONLoader#load(test.bson)', async (t) => {
   const data = await load(MINI_BSON_URL, BSONLoader);
-  t.comment(JSON.stringify(data));
+  // t.comment(JSON.stringify(data));
   t.ok(data, 'Data received');
   t.end();
 });

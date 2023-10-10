@@ -4,7 +4,7 @@ import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl
 import {fetchFile, loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 import {CryptoHash} from '@loaders.gl/crypto';
-import * as CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js';
 
 const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 /** Externally computed hash: `openssl md5 -binary sample-very-long.json | openssl base64` */

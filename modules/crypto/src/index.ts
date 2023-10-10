@@ -4,13 +4,16 @@
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+export {Hash} from './lib/hash';
+
 export {CRC32Hash} from './lib/crc32-hash';
 export {CRC32CHash} from './lib/crc32c-hash';
 export {MD5Hash} from './lib/md5-hash';
 export {SHA256Hash} from './lib/sha256-hash';
 
 export {CryptoHash} from './lib/crypto-hash';
-export {NodeHash} from './lib/node-hash';
+// TODO - moved to polyfills
+// export {NodeHash} from './lib/node-hash';
 
 /**
  * Small, fast worker for CRC32, CRC32c and MD5 Hashes

@@ -1,8 +1,10 @@
 // loaders.gl, MIT license
 
-import {Source, PMTiles, Header, TileType} from 'pmtiles';
 import type {TileJSON} from '@loaders.gl/mvt';
 import {TileJSONLoader} from '@loaders.gl/mvt';
+// import {Source, PMTiles, Header, TileType} from 'pmtiles';
+import * as pmtiles from 'pmtiles';
+const {PMTiles, TileType} = pmtiles;
 
 /** Metadata describing a PMTiles file */
 export type PMTilesMetadata = {
@@ -15,7 +17,7 @@ export type PMTilesMetadata = {
   /** Version of pm tiles format used by this tileset */
   formatVersion: number;
   /** PMTiles format specific header */
-  formatHeader?: Header;
+  formatHeader?: pmtiles.Header;
   /** MIME type for tile contents. Unknown tile types will return 'application/octet-stream */
   mimeType:
     | 'application/vnd.mapbox-vector-tile'
@@ -25,7 +27,7 @@ export type PMTilesMetadata = {
     | 'image/avif'
     | 'application/octet-stream';
   /** The original numeric tile type constant specified in the PMTiles tileset */
-  tileType: TileType;
+  tileType: pmtiles.TileType;
   /** Minimal zoom level of tiles in this tileset */
   minZoom: number;
   /** Maximal zoom level of tiles in this tileset */
@@ -47,7 +49,7 @@ export type ParsePMTilesOptions = {
   tileZxy?: [number, number, number];
 };
 
-export async function loadPMTilesHeader(source: Source): Promise<PMTilesMetadata> {
+export async function loadPMTilesHeader(source: pmtiles.Source): Promise<PMTilesMetadata> {
   const pmTiles = new PMTiles(source);
   const header = await pmTiles.getHeader();
   const metadata = await pmTiles.getMetadata();
@@ -59,7 +61,7 @@ export async function loadPMTilesHeader(source: Source): Promise<PMTilesMetadata
 }
 
 export async function loadPMTile(
-  source: Source,
+  source: pmtiles.Source,
   options: ParsePMTilesOptions
 ): Promise<ArrayBuffer | undefined> {
   const pmTiles = new PMTiles(source);
@@ -72,7 +74,7 @@ export async function loadPMTile(
 }
 
 export function parsePMTilesHeader(
-  header: Header,
+  header: pmtiles.Header,
   tilejsonMetadata: Record<string, unknown> | null,
   options?: {includeFormatHeader?: boolean}
 ): PMTilesMetadata {
@@ -122,7 +124,7 @@ export function parsePMTilesHeader(
 
 /** Extract a MIME type for tiles from vector tile header  */
 function decodeTileType(
-  tileType: TileType
+  tileType: pmtiles.TileType
 ):
   | 'application/vnd.mapbox-vector-tile'
   | 'image/png'

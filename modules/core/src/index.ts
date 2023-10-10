@@ -49,7 +49,7 @@ export {RequestScheduler} from '@loaders.gl/loader-utils';
 
 // ITERATOR UTILS
 export {makeIterator} from './iterators/make-iterator/make-iterator';
-export {makeStream} from './iterators/make-stream/make-node-stream';
+export {makeStream} from './iterators/make-stream/make-stream';
 
 // CORE LOADERS
 export {NullWorkerLoader, NullLoader} from './null-loader';

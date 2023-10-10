@@ -3,6 +3,7 @@
   "version": "4.0.0-beta.2",
   "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -18,8 +19,15 @@
     "TextDecoder"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": [
     "src",
     "dist",
@@ -32,11 +40,12 @@
     "./dist/esm/index.js": "./dist/es5/index.browser.js"
   },
   "scripts": {
-    "pre-build": "npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
+    "build-bundle": "ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.0.0-beta.1",
+    "@loaders.gl/crypto": "4.0.0-beta.2",
+    "@loaders.gl/loader-utils": "4.0.0-beta.2",
     "@babel/runtime": "^7.3.1",
     "buffer": "^6.0.3",
     "get-pixels": "^3.3.2",

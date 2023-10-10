@@ -1,6 +1,8 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
+import * as fs from 'fs';
+
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {isBrowser, makeIterator, resolvePath} from '@loaders.gl/core';
 import {setLoaderOptions, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
@@ -103,7 +105,6 @@ test('ArrowLoader#parseInBatches(Stream)', async (t) => {
     t.end();
     return;
   }
-  const fs = require('fs');
   const stream = fs.createReadStream(resolvePath(ARROW_BIOGRID_NODES));
   const asyncIterator = await parseInBatches(makeIterator(stream), ArrowLoader);
   for await (const batch of asyncIterator) {

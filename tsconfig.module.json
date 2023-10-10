@@ -3,8 +3,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "build": true,
-    "target": "es2020",
-    "module": "commonjs",
     "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,

@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {CRC32CHash, encodeNumber} from '@loaders.gl/crypto';
-import TEST_CASES from './crc32c-test-cases.json';
+import TEST_CASES from './crc32c-test-cases.json' assert {type: 'json'};
 
 test('crc32c#additional tests', async (t) => {
   for (const type in TEST_CASES) {

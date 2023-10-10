@@ -34,7 +34,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = auto)', async 
     byteLength = batch.bytesUsed;
   }
 
-  t.comment(JSON.stringify(batchCount));
+  // t.comment(JSON.stringify(batchCount));
   t.equal(batchCount, 11, 'Correct number of batches received');
   t.equal(rowCount, 11, 'Correct number of row received');
   t.equal(byteLength, 701, 'Correct number of bytes received');

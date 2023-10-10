@@ -9,6 +9,9 @@ import {atob, btoa} from './node/buffer/btoa.node';
 import {encodeImageNode} from './node/images/encode-image.node';
 import {parseImageNode, NODE_FORMAT_SUPPORT} from './node/images/parse-image.node';
 
+// STREAM POLYFILLS
+export {makeNodeStream} from './streams/make-node-stream';
+
 // FILESYSTEM POLYFILLS
 export {NodeFile} from './filesystems/node-file';
 export {NodeFileSystem} from './filesystems/node-filesystem';
@@ -23,7 +26,7 @@ export {FileReaderPolyfill} from './node/file/file-reader';
 export {FilePolyfill} from './node/file/file';
 export {installFilePolyfills} from './node/file/install-file-polyfills';
 
-const {versions} = require('node:process');
+import {versions} from 'node:process';
 export const nodeVersion = parseInt(versions.node.split('.')[0]);
 
 if (isBrowser) {
@@ -33,8 +36,12 @@ if (isBrowser) {
   );
 }
 
-// FILESYSTEM POLYFILLS
 globalThis.loaders = globalThis.loaders || {};
+
+// STREAM POLYFILLS
+globalThis.loaders.makeNodeStream = makeNodeStream;
+
+// FILESYSTEM POLYFILLS
 globalThis.loaders.NodeFile = NodeFile;
 globalThis.loaders.NodeFileSystem = NodeFileSystem;
 globalThis.loaders.fetchNode = fetchNode;
@@ -85,6 +92,7 @@ if (!('_parseImageNode' in globalThis) && parseImageNode) {
 import {Headers as HeadersNode} from './node/fetch/headers.node';
 import {Response as ResponseNode} from './node/fetch/response.node';
 import {fetchNode as fetchNodePolyfill} from './node/fetch/fetch.node';
+import {makeNodeStream} from './streams/make-node-stream';
 
 if (nodeVersion < 18) {
   if (!('Headers' in globalThis) && HeadersNode) {

@@ -7,10 +7,11 @@ import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 
-import {PMTiles, Source, RangeResponse} from 'pmtiles';
-
 import type {PMTilesMetadata} from './lib/parse-pmtiles';
 import {parsePMTilesHeader} from './lib/parse-pmtiles';
+
+import * as pmtiles from 'pmtiles';
+const {PMTiles} = pmtiles;
 
 const VERSION = '1.0.0';
 
@@ -48,7 +49,7 @@ export type PMTilesSourceProps = DataSourceProps & {
   attributions?: string[];
 };
 
-export class BlobSource implements Source {
+export class BlobSource implements pmtiles.Source {
   blob: Blob;
   key: string;
 
@@ -63,7 +64,11 @@ export class BlobSource implements Source {
     return this.blob.url || '';
   }
 
-  async getBytes(offset: number, length: number, signal?: AbortSignal): Promise<RangeResponse> {
+  async getBytes(
+    offset: number,
+    length: number,
+    signal?: AbortSignal
+  ): Promise<pmtiles.RangeResponse> {
     const slice = this.blob.slice(offset, offset + length);
     const data = await slice.arrayBuffer();
     return {
@@ -80,7 +85,7 @@ export class BlobSource implements Source {
  */
 export class PMTilesSource extends DataSource implements ImageTileSource, VectorTileSource {
   props: PMTilesSourceProps;
-  pmtiles: PMTiles;
+  pmtiles: pmtiles.PMTiles;
   metadata: Promise<PMTilesMetadata>;
 
   constructor(props: PMTilesSourceProps) {

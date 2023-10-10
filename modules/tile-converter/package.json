@@ -3,6 +3,7 @@
   "version": "4.0.0-beta.2",
   "description": "Converter",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -16,8 +17,15 @@
     "i3s"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "bin": {
     "tile-converter": "./bin/converter.js",
@@ -38,8 +46,7 @@
     "join-images": false
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-converter-bundle && npm run build-slpk-extractor-bundle && npm run build-i3s-server-bundle",
-    "build-bundle": "esbuild ./src/index.ts --bundle --outfile=dist/dist.min.js --platform=node  --external:join-images",
+    "pre-build": "npm run build-converter-bundle && npm run build-slpk-extractor-bundle && npm run build-i3s-server-bundle",
     "build-converter-bundle": "esbuild src/converter-cli.ts --outfile=dist/converter.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-slpk-extractor-bundle": "esbuild src/slpk-extractor-cli.ts --outfile=dist/slpk-extractor.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-i3s-server-bundle": "esbuild src/i3s-server/bin/www.ts --outfile=dist/esm/i3s-server/bin/i3s-server.min.js --platform=node --target=esnext,node14 --external:join-images --minify --bundle --define:__VERSION__=\\\"$npm_package_version\\\""

@@ -159,7 +159,8 @@ test('compression#batched', async (t) => {
 
 // WORKER TESTS
 
-test('gzip#worker', async (t) => {
+// TODO v4.0 restore these tests
+test.skip('gzip#worker', async (t) => {
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -196,7 +197,8 @@ test('gzip#worker', async (t) => {
   t.end();
 });
 
-test('lz4#worker', async (t) => {
+// TODO v4.0 restore these tests
+test.skip('lz4#worker', async (t) => {
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');

@@ -18,18 +18,19 @@ const WITH_FEATURE_ID = '@loaders.gl/mvt/test/data/mvt/with_feature_id.mvt';
 
 // Geometry Array Results
 
-import decodedPolygonsGeometry from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_polygons_array.json';
+// // GeoJSON Results
+import decodedPolygonsGeometry from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_polygons_array.json' assert {type: 'json'};
 
 // GeoJSON Results
-import decodedPointsGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_points.json';
-import decodedLinesGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_lines.json';
-import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_polygons.json';
+import decodedPointsGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_points.json' assert {type: 'json'};
+import decodedLinesGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_lines.json' assert {type: 'json'};
+import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_polygons.json' assert {type: 'json'};
 
 // Rings
-import ringsSingleRing from '@loaders.gl/mvt/test/data/rings/rings_single_ring.json';
-import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings/rings_ring_and_hole.json';
-import ringsTwoRings from '@loaders.gl/mvt/test/data/rings/rings_two_rings.json';
-import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings/rings_zero_size_hole.json';
+import ringsSingleRing from '@loaders.gl/mvt/test/data/rings/rings_single_ring.json' assert {type: 'json'};
+import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings/rings_ring_and_hole.json' assert {type: 'json'};
+import ringsTwoRings from '@loaders.gl/mvt/test/data/rings/rings_two_rings.json' assert {type: 'json'};
+import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings/rings_zero_size_hole.json' assert {type: 'json'};
 
 setLoaderOptions({
   _workerType: 'test'
