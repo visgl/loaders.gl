@@ -4,7 +4,7 @@
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {load} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // import {loadTileset} from '../utils/load-utils';
 
@@ -170,7 +170,7 @@ test('Tileset3D#one viewport traversal', async (t) => {
     if (tileLoadCounter > 0) {
       clearInterval(setIntervalId);
       tileset.update(viewport);
-      t.equals(tileset.selectedTiles.length, 1);
+      t.equals(tileset.selectedTileGroups.length, 1);
     }
   }, 100);
 });
@@ -186,7 +186,7 @@ test('Tileset3D#onTraversalComplete', async (t) => {
       tileLoadCounter++;
     },
     onTraversalComplete: (selectedTiles) => {
-      return selectedTiles.filter((tile) => tile.depth === 1);
+      return selectedTiles.filter((tile) => tile instanceof Tile3D && tile.depth === 1);
     }
   });
   tileset.update(viewport);
@@ -196,7 +196,7 @@ test('Tileset3D#onTraversalComplete', async (t) => {
     if (tileLoadCounter > 0) {
       clearInterval(setIntervalId);
       tileset.update(viewport);
-      t.equals(tileset.selectedTiles.length, 4);
+      t.equals(tileset.selectedTileGroups.length, 4);
     }
   }, 100);
 });
@@ -219,13 +219,17 @@ test('Tileset3D#two viewports traversal', async (t) => {
     if (tileLoadCounter > 2) {
       clearInterval(setIntervalId);
       tileset.update(viewports);
-      t.equals(tileset.selectedTiles.length, 6);
+      t.equals(tileset.selectedTileGroups.length, 6);
       t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view0')).length,
+        tileset.selectedTileGroups.filter(
+          (tile) => tile instanceof Tile3D && tile.viewportIds.includes('view0')
+        ).length,
         1
       );
       t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
+        tileset.selectedTileGroups.filter(
+          (tile) => tile instanceof Tile3D && tile.viewportIds.includes('view1')
+        ).length,
         5
       );
     }
@@ -255,13 +259,17 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
     if (tileLoadCounter > 1) {
       clearInterval(setIntervalId);
       tileset.update(viewports);
-      t.equals(tileset.selectedTiles.length, 5);
+      t.equals(tileset.selectedTileGroups.length, 5);
       t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view0')).length,
+        tileset.selectedTileGroups.filter(
+          (tile) => tile instanceof Tile3D && tile.viewportIds.includes('view0')
+        ).length,
         5
       );
       t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
+        tileset.selectedTileGroups.filter(
+          (tile) => tile instanceof Tile3D && tile.viewportIds.includes('view1')
+        ).length,
         5
       );
     }
@@ -287,7 +295,7 @@ test('Tileset3D#loadTiles option', async (t) => {
     if (tileLoadCounter > 0) {
       clearInterval(setIntervalId);
       tileset.update(viewport);
-      t.equals(tileset.selectedTiles.length, 1);
+      t.equals(tileset.selectedTileGroups.length, 1);
       tileLoadCounter = 0;
 
       viewport = VIEWPORTS[1];

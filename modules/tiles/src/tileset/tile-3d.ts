@@ -129,6 +129,19 @@ export class Tile3D {
   _visitedFrame: number = 0;
   _inRequestVolume: boolean = false;
   _lodJudge: any = null; // TODO i3s specific, needs to remove
+  _intersectsCullingVolume: boolean = false;
+
+  // the ID of the highest tile in the hierarchy that this tile is replacing
+  // for example:
+  //                 1. Full replace    2. Replace and add    3. Add and replace
+  //                     A (REPLACE)        A (REPLACE)           A (ADD)
+  //                     |                  |                     |
+  //                     B (REPLACE)        B (ADD)               B (REPLACE)
+  //                     |                  |                     |
+  //                     C                  C                     C
+  //
+  // replacedTileId is:  A                  undefined             B
+  _replacedTileId?: string;
 
   /**
    * @constructs
@@ -480,6 +493,7 @@ export class Tile3D {
     this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
     this._visible = this._visibilityPlaneMask !== CullingVolume.MASK_OUTSIDE;
     this._inRequestVolume = this.insideViewerRequestVolume(frameState);
+    this._intersectsCullingVolume = this.intersectsCullingVolume(frameState);
 
     this._frameNumber = frameState.frameNumber;
     this.viewportIds = viewportIds;
@@ -595,6 +609,11 @@ export class Tile3D {
     return (
       !viewerRequestVolume || viewerRequestVolume.distanceSquaredTo(frameState.camera.position) <= 0
     );
+  }
+
+  intersectsCullingVolume(frameState: FrameState) {
+    const cullingVolume = frameState.cullingVolume;
+    return cullingVolume.computeVisibility(this.boundingVolume) >= 0;
   }
 
   // TODO Cesium specific

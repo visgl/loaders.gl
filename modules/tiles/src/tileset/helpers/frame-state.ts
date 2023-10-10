@@ -3,6 +3,7 @@ import {Vector3} from '@math.gl/core';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {GeospatialViewport, Viewport} from '../../types';
+import {TileGroup3D} from '../tile-group-3d';
 
 export type FrameState = {
   camera: {
@@ -89,28 +90,49 @@ export function getFrameState(viewport: GeospatialViewport, frameNumber: number)
   };
 }
 
+export function countTiles(groups: (Tile3D | TileGroup3D)[]): number {
+  return groups.reduce(
+    (total, group) => total + (group instanceof Tile3D ? 1 : group.tiles.length),
+    /* initial value */ 0
+  );
+}
+
+export function flattenTileGroups(groups: (Tile3D | TileGroup3D)[]): Tile3D[] {
+  return groups.flatMap((group) => (group instanceof Tile3D ? group : group.tiles));
+}
+
 /**
  * Limit `tiles` array length with `maximumTilesSelected` number.
  * The criteria for this filtering is distance of a tile center
  * to the `frameState.viewport`'s longitude and latitude
- * @param tiles - tiles array to filter
+ * @param tileGroups - tiles array to filter
  * @param frameState - frameState to calculate distances
  * @param maximumTilesSelected - maximal amount of tiles in the output array
  * @returns new tiles array
  */
 export function limitSelectedTiles(
-  tiles: Tile3D[],
+  tileGroups: (Tile3D | TileGroup3D)[],
   maximumTilesSelected: number
-): [Tile3D[], Tile3D[]] {
-  if (maximumTilesSelected === 0 || tiles.length <= maximumTilesSelected) {
-    return [tiles, []];
+): [(Tile3D | TileGroup3D)[], (Tile3D | TileGroup3D)[]] {
+  if (maximumTilesSelected === 0 || countTiles(tileGroups) <= maximumTilesSelected) {
+    return [tileGroups, []];
   }
 
-  tiles.sort((a, b) => a._displayPriority - b._displayPriority);
+  tileGroups.sort((a, b) => a._displayPriority - b._displayPriority);
 
-  const selectedTiles: Tile3D[] = tiles.splice(0, maximumTilesSelected);
+  let i = 0;
+  let selectedTilesCount = 0;
+  for (i = 0; i < tileGroups.length; i++) {
+    const tile = tileGroups[i];
+    selectedTilesCount += tile instanceof Tile3D ? 1 : tile.tiles.length;
+    if (selectedTilesCount >= maximumTilesSelected) {
+      break;
+    }
+  }
 
-  return [selectedTiles, tiles];
+  const selectedTileGroups = tileGroups.splice(0, i);
+
+  return [selectedTileGroups, tileGroups];
 }
 
 function commonSpacePlanesToWGS84(viewport) {

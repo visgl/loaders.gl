@@ -4,6 +4,7 @@ import type {Tile3D} from './tile-3d';
 import {ManagedArray} from '../utils/managed-array';
 import {TILE_REFINEMENT} from '../constants';
 import {FrameState} from './helpers/frame-state';
+import {TileGroup3D} from './tile-group-3d';
 
 export type TilesetTraverserProps = {
   loadSiblings?: boolean;
@@ -32,7 +33,7 @@ export class TilesetTraverser {
   root: any = null;
 
   // tiles should be rendered
-  selectedTiles: Record<string, Tile3D> = {};
+  selectedTileGroups: Record<string, Tile3D | TileGroup3D> = {};
   // tiles should be loaded from server
   requestedTiles: Record<string, Tile3D> = {};
   // tiles does not have render content
@@ -63,6 +64,7 @@ export class TilesetTraverser {
 
     // reset result
     this.reset();
+    root.tileset.intersectsRequestVolume = false;
 
     // update tile (visibility and expiration)
     this.updateTile(root, frameState);
@@ -73,7 +75,7 @@ export class TilesetTraverser {
 
   reset() {
     this.requestedTiles = {};
-    this.selectedTiles = {};
+    this.selectedTileGroups = {};
     this.emptyTiles = {};
     this._traversalStack.reset();
     this._emptyTraversalStack.reset();
@@ -228,7 +230,21 @@ export class TilesetTraverser {
     if (this.shouldSelectTile(tile)) {
       // The tile can be selected right away and does not require traverseAndSelect
       tile._selectedFrame = frameState.frameNumber;
-      this.selectedTiles[tile.id] = tile;
+      if (tile._replacedTileId) {
+        if (!this.selectedTileGroups.hasOwnProperty(tile._replacedTileId)) {
+          this.selectedTileGroups[tile._replacedTileId] = new TileGroup3D();
+        }
+        const selected = this.selectedTileGroups[tile._replacedTileId];
+        if (!(selected instanceof TileGroup3D)) {
+          console.warn(
+            `Expected selected tile ${tile.id} with replacedTileId ${tile._replacedTileId} to have a TileGroup3D`
+          );
+          return;
+        }
+        selected.addTile(tile);
+        return;
+      }
+      this.selectedTileGroups[tile.id] = tile;
     }
   }
 
@@ -238,12 +254,21 @@ export class TilesetTraverser {
       tile._requestedFrame = frameState.frameNumber;
       tile._loadPriority = tile._getLoadPriority();
       this.requestedTiles[tile.id] = tile;
+
+      // Tileset structure and tile refinement modes are assumed to be static, so it should
+      // only be necessary to set the replacedTileId once, on load.
+      if (tile.parent?.refine === TILE_REFINEMENT.REPLACE) {
+        tile._replacedTileId = tile.parent._replacedTileId ?? tile.parent.id;
+      }
     }
   }
 
   // cache tile
   touchTile(tile: Tile3D, frameState: FrameState): void {
     tile.tileset._cache.touch(tile);
+
+    tile.tileset.intersectsCullingVolume =
+      tile.tileset.intersectsCullingVolume || tile._intersectsCullingVolume;
 
     // update priority if we havn't already this frame
     if (tile._touchedFrame !== frameState.frameNumber) {
