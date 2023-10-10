@@ -1,25 +1,28 @@
+// loaders.gl, MIT license
+
 import {Proj4Projection} from '@math.gl/proj4';
 import {transformGeoJsonCoords} from '@loaders.gl/gis';
 
-import {deserialize as deserializeGeoJson} from 'flatgeobuf/lib/cjs/geojson';
-import {deserialize as deserializeGeneric} from 'flatgeobuf/lib/cjs/generic';
-import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/cjs/generic/feature';
-
 import type {FlatGeobufLoaderOptions} from '../flatgeobuf-loader';
 import type {GeoJSONTable, Feature, Table} from '@loaders.gl/schema';
-import {fromGeometry as binaryFromGeometry} from './binary-geometries';
-// import {Feature} from 'flatgeobuf/lib/cjs/feature_generated';
+import {fgbToBinaryGeometry} from './binary-geometries';
+
+import {geojson, generic, Feature as FBGFeature, HeaderMeta as FGBHeader} from 'flatgeobuf';
+import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/mjs/generic/feature';
+const deserializeGeoJson = geojson.deserialize;
+const deserializeGeneric = generic.deserialize;
+// const parsePropertiesBinary = FlatgeobufFeature.parseProperties;
 
 // TODO: reproject binary features
-function binaryFromFeature(feature, header) {
+function binaryFromFeature(feature: FBGFeature, header: FGBHeader) {
   const geometry = feature.geometry();
 
   // FlatGeobuf files can only hold a single geometry type per file, otherwise
   // GeometryType is GeometryCollection
   // I believe geometry.type() is null (0) except when the geometry type isn't
   // known in the header?
-  const geometryType = header.geometryType || geometry.type();
-  const parsedGeometry = binaryFromGeometry(geometry, geometryType);
+  const geometryType = header.geometryType || geometry?.type();
+  const parsedGeometry = fgbToBinaryGeometry(geometry, geometryType);
   // @ts-expect-error this looks wrong
   parsedGeometry.properties = parsePropertiesBinary(feature, header.columns);
 
@@ -69,8 +72,7 @@ function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLo
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
   const array = new Uint8Array(arrayBuffer);
-  // @ts-expect-error this looks wrong
-  return deserializeGeneric(array, binaryFromFeature);
+  return deserializeGeneric(array, fgbToBinaryGeometry);
 }
 
 function parseFlatGeobufToGeoJSON(

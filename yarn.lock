@@ -2667,6 +2667,11 @@
     unbzip2-stream "1.4.3"
     yargs "17.7.1"
 
+"@repeaterjs/repeater@3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@repeaterjs/repeater/-/repeater-3.0.4.tgz#a04d63f4d1bf5540a41b01a921c9a7fddc3bd1ca"
+  integrity sha512-AW8PKd6iX3vAZ0vA43nOUOnbq/X5ihgU+mSXXqunMkeQADGiqw/PY0JNeYtD5sr0PAy51YPgAPbDoeapv9r8WA==
+
 "@rollup/pluginutils@^4.2.0":
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/@rollup/pluginutils/-/pluginutils-4.2.1.tgz#e6c6c3aba0744edce3fb2074922d3776c0af2a6d"
@@ -6103,24 +6108,19 @@ flat-cache@^3.0.4:
     flatted "^3.1.0"
     rimraf "^3.0.2"
 
-flatbuffers@1.12.0:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/flatbuffers/-/flatbuffers-1.12.0.tgz#72e87d1726cb1b216e839ef02658aa87dcef68aa"
-  integrity sha512-c7CZADjRcl6j0PlvFy0ZqXQ67qSEZfrVPynmnL+2zPc+NtMvrF8Y0QceMo7QqnSPc7+uWjUIAbvCQ5WIKlMVdQ==
-
 flatbuffers@23.5.26:
   version "23.5.26"
   resolved "https://registry.yarnpkg.com/flatbuffers/-/flatbuffers-23.5.26.tgz#01358e272a61239f0faf3bfbe4e014f3ace9d746"
   integrity sha512-vE+SI9vrJDwi1oETtTIFldC/o9GsVKRM+s6EL0nQgxXlYV1Vc4Tk30hj4xGICftInKQKj1F3up2n8UbIVobISQ==
 
-flatgeobuf@3.6.5:
-  version "3.6.5"
-  resolved "https://registry.yarnpkg.com/flatgeobuf/-/flatgeobuf-3.6.5.tgz#756b9c0c2beb4acea4ea0a1ee1caada98463320b"
-  integrity sha512-qROJAh5iC0ueDBB4Q7WRL11mTmueinjAfMjgirxV8JI5JK4QV2Uht1naJVY3AP5+QSHhyxSnVuZl6MLapLiXzw==
+flatgeobuf@3.27.0:
+  version "3.27.0"
+  resolved "https://registry.yarnpkg.com/flatgeobuf/-/flatgeobuf-3.27.0.tgz#1c1834661c5a6ecfbae78ff8369bc244a65d12b0"
+  integrity sha512-UcCmsxBZD/mBjWryLfFjaPkeIpvjJbEr1wGVaWeYfF76NGsZ53KlEZ5hQP9NRt615vuymp/OKBlTqvAU/Zx19w==
   dependencies:
-    flatbuffers "1.12.0"
+    "@repeaterjs/repeater" "3.0.4"
+    flatbuffers "23.5.26"
     slice-source "0.4.1"
-    stream-buffers "3.0.2"
 
 flatted@^3.1.0:
   version "3.2.7"
@@ -10688,11 +10688,6 @@ stop-iteration-iterator@^1.0.0:
   integrity sha512-iCGQj+0l0HOdZ2AEeBADlsRC+vsnDsZsbdSiH1yNSjcfKM7fdpCMfqAL/dwF5BLiw/XhRft/Wax6zQbhq2BcjQ==
   dependencies:
     internal-slot "^1.0.4"
-
-stream-buffers@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/stream-buffers/-/stream-buffers-3.0.2.tgz#5249005a8d5c2d00b3a32e6e0a6ea209dc4f3521"
-  integrity sha512-DQi1h8VEBA/lURbSwFtEHnSTb9s2/pwLEaFuNhXwy1Dx3Sa0lOuYT2yNUr4/j2fs8oCAMANtrZ5OrPZtyVs3MQ==
 
 stream-each@^1.1.0:
   version "1.2.3"
