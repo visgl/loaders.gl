@@ -1,15 +1,13 @@
 // loaders.gl, MIT license
 
-import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
+import type {TileLoadParameters, GetTileParameters} from '@loaders.gl/loader-utils';
+import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 
 // import {PMTiles, Source, RangeResponse} from 'pmtiles';
-
-// import type {PMTilesMetadata} from './lib/parse-pmtiles';
-// import {parsePMTilesHeader} from './lib/parse-pmtiles';
 
 import * as pmtiles from 'pmtiles';
 const {PMTiles} = pmtiles;
