@@ -10,7 +10,6 @@ const images = [
 ];
 
 if (!isBrowser) {
-
   test('Node image polyfills', (t) => {
     // @ts-ignore
     t.equals(typeof _encodeImageNode, 'function', 'global._encodeImageNode successfully installed');
@@ -31,5 +30,4 @@ if (!isBrowser) {
     }
     t.end();
   });
-
 }

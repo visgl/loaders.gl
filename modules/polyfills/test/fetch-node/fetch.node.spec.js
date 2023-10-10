@@ -16,7 +16,6 @@ const REDIRECT_URL =
   'https://github.com/visgl/deck.gl-data/raw/master/3d-tiles/RoyalExhibitionBuilding/1/1.pnts';
 
 if (!isBrowser) {
-
   test('polyfills#fetch() (NODE)', async (t) => {
     if (!isBrowser) {
       const response = await fetch(PLY_CUBE_ATT_URL);
@@ -141,5 +140,4 @@ if (!isBrowser) {
     }
     t.end();
   });
-
 }

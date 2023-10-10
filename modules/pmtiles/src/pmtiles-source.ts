@@ -68,7 +68,11 @@ export class BlobSource implements pmtiles.Source {
     return this.blob.url || '';
   }
 
-  async getBytes(offset: number, length: number, signal?: AbortSignal): Promise<pmtiles.RangeResponse> {
+  async getBytes(
+    offset: number,
+    length: number,
+    signal?: AbortSignal
+  ): Promise<pmtiles.RangeResponse> {
     const slice = this.blob.slice(offset, offset + length);
     const data = await slice.arrayBuffer();
     return {

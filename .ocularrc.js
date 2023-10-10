@@ -11,7 +11,7 @@ export default {
 
   bundle: {
     globalName: 'loader',
-    externals: ["fs", "path", "util", "events", "stream", "crypto", "http", "https"],
+    externals: ['fs', 'path', 'util', 'events', 'stream', 'crypto', 'http', 'https'],
     target: ['supports async-functions', 'not dead'],
     format: 'umd',
     globals: {

@@ -26,7 +26,7 @@ const TEST_CASES = [
     digests: {
       sha256: 'gsoMi29gqdIBCEdTdRJW8VPFx5PQyFPTF4Lv7TJ4eQw='
     }
-  },
+  }
   // TODO v4.0 restore these tests
   // {
   //   title: 'binary data (repeated)',
@@ -95,7 +95,7 @@ test('crypto#streaming hashes', async (t) => {
 
 // EXTRA TESTS NOT COVERED BY TEST CASES
 
-// TODO v4.0 
+// TODO v4.0
 // test.skip('NodeHash#hash', async (t) => {
 //   if (!isBrowser) {
 //     const cryptoHash = new NodeHash({crypto: {algorithm: 'SHA256'}});

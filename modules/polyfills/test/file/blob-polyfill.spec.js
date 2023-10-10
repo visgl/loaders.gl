@@ -4,7 +4,6 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 
 if (!isBrowser) {
-
   test('test basic', async (t) => {
     t.isEqual(typeof Blob, 'function');
   });
