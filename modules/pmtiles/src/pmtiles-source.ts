@@ -7,13 +7,11 @@ import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 
-// import {PMTiles, Source, RangeResponse} from 'pmtiles';
+import type {PMTilesMetadata} from './lib/parse-pmtiles';
+import {parsePMTilesHeader} from './lib/parse-pmtiles';
 
 import * as pmtiles from 'pmtiles';
 const {PMTiles} = pmtiles;
-// import type {pPMTilesMetadata} from './lib/parse-pmtiles';
-import {PMTilesMetadata, parsePMTilesHeader} from './lib/parse-pmtiles';
-import {TileLoadParameters} from 'modules/loader-utils/src/lib/sources/tile-source';
 
 const VERSION = '1.0.0';
 
