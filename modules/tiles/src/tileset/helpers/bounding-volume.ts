@@ -18,6 +18,10 @@ const scratchPoint = new Vector3();
 const scratchScale = new Vector3();
 const scratchNorthWest = new Vector3();
 const scratchSouthEast = new Vector3();
+const scratchCenter = new Vector3();
+const scratchXAxis = new Vector3();
+const scratchYAxis = new Vector3();
+const scratchZAxis = new Vector3();
 // const scratchRectangle = new Rectangle();
 // const scratchOrientedBoundingBox = new OrientedBoundingBox();
 // const scratchTransform = new Matrix4();
@@ -29,7 +33,7 @@ const scratchSouthEast = new Vector3();
  * @param [result] The object onto which to store the result.
  * @returns The modified result parameter or a new TileBoundingVolume instance if none was provided.
  */
-export function createBoundingVolume(boundingVolumeHeader, transform, result) {
+export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
 
   // boundingVolume schema:
@@ -51,13 +55,29 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
       [degrees(east), degrees(south), maxHeight],
       scratchSouthEast
     );
-    const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyScalar(0.5);
-    const radius = new Vector3().subVectors(northWest, southEast).len() / 2.0;
+    const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyByScalar(0.5);
+    Ellipsoid.WGS84.cartesianToCartographic(centerInCartesian, scratchCenter);
 
-    // TODO improve region boundingVolume
-    // for now, create a sphere as the boundingVolume instead of box
-    return createSphere(
-      [centerInCartesian[0], centerInCartesian[1], centerInCartesian[2], radius],
+    Ellipsoid.WGS84.cartographicToCartesian(
+      [degrees(east), scratchCenter[1], scratchCenter[2]],
+      scratchXAxis
+    );
+    Ellipsoid.WGS84.cartographicToCartesian(
+      [scratchCenter[0], degrees(north), scratchCenter[2]],
+      scratchYAxis
+    );
+    Ellipsoid.WGS84.cartographicToCartesian(
+      [scratchCenter[0], scratchCenter[1], maxHeight],
+      scratchZAxis
+    );
+
+    return createBox(
+      [
+        ...centerInCartesian,
+        ...scratchXAxis.subtract(centerInCartesian),
+        ...scratchYAxis.subtract(centerInCartesian),
+        ...scratchZAxis.subtract(centerInCartesian)
+      ],
       new Matrix4()
     );
   }
@@ -106,7 +126,7 @@ export function getCartographicBounds(
   throw new Error('Unkown boundingVolume type');
 }
 
-function createBox(box, transform, result) {
+function createBox(box, transform, result?) {
   // https://math.gl/modules/culling/docs/api-reference/oriented-bounding-box
   // 1. A half-axes based representation.
   // box: An array of 12 numbers that define an oriented bounding box.
