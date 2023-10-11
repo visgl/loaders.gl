@@ -59,9 +59,9 @@
     "Note: prettier 3 required for JSON import assertions"
   ],
   "resolutions": {
-    "prettier": "3.0.3",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser" : "^6.0.0",
+    "prettier": "3.0.3",
     "typescript": "^5.2.2"
   },
   "volta": {

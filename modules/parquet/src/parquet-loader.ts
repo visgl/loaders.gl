@@ -9,6 +9,8 @@ import type {
   GeoJSONTableBatch
 } from '@loaders.gl/schema';
 
+export {Buffer} from './buffer-polyfill/install-buffer-polyfill';
+
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -57,7 +59,7 @@ export const ParquetLoader: Loader<
   }
 };
 
-export const ParquetColumnnarLoader: Loader<
+export const ParquetColumnarLoader: Loader<
   ColumnarTable,
   ColumnarTableBatch,
   ParquetLoaderOptions
@@ -74,3 +76,9 @@ export const ParquetColumnnarLoader: Loader<
   tests: ['PAR1', 'PARE'],
   options: ParquetLoader.options
 };
+
+// Defeat tree shaking
+// @ts-ignore
+ParquetLoader.Buffer = Buffer;
+// @ts-ignore
+ParquetColumnarLoader.Buffer = Buffer;

@@ -10,6 +10,8 @@ export function installBufferPolyfill(): typeof Buffer {
     globalThis.Buffer = BufferPolyfill;
     return BufferPolyfill as unknown as typeof Buffer;
   }
+
+  globalThis.process = globalThis.process || {};
   // Buffer is a global variable in Node.js
   return Buffer_;
 }
