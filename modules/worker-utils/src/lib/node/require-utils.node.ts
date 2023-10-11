@@ -67,6 +67,7 @@ export function requireFromString(
     appendPaths?: string[];
   }
 ): any {
+  console.error('requireFromString');
   if (typeof filename === 'object') {
     options = filename;
     filename = '';
@@ -79,7 +80,8 @@ export function requireFromString(
   // @ts-ignore
   const paths = Module._nodeModulePaths(path.dirname(filename));
 
-  const parent = module.parent;
+  const parent = typeof module !== 'undefined' && module?.parent;
+  
   // @ts-ignore
   const newModule = new Module(filename, parent);
   newModule.filename = filename;
