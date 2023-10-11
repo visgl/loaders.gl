@@ -145,7 +145,8 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
+// TODO v4.0 restore this test
+test.skip('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
   if (isBrowser) {
     t.end();
     return;

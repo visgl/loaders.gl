@@ -50,7 +50,8 @@ export async function requireFromFile(filename: string): Promise<any> {
   if (!filename.startsWith('/')) {
     filename = `${process.cwd()}/${filename}`;
   }
-  return require(filename);
+  const code = await fs.readFileSync(filename, 'utf8');
+  return requireFromString(code);
 }
 
 // Dynamically require from string
@@ -67,7 +68,6 @@ export function requireFromString(
     appendPaths?: string[];
   }
 ): any {
-  console.error('requireFromString');
   if (typeof filename === 'object') {
     options = filename;
     filename = '';
