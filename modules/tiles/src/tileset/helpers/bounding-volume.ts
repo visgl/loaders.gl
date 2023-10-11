@@ -42,44 +42,7 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
     return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
-    // [west, south, east, north, minimum height, maximum height]
-    // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
-    // Heights are in meters above (or below) the WGS 84 ellipsoid.
-    const [west, south, east, north, minHeight, maxHeight] = boundingVolumeHeader.region;
-
-    const northWest = Ellipsoid.WGS84.cartographicToCartesian(
-      [degrees(west), degrees(north), minHeight],
-      scratchNorthWest
-    );
-    const southEast = Ellipsoid.WGS84.cartographicToCartesian(
-      [degrees(east), degrees(south), maxHeight],
-      scratchSouthEast
-    );
-    const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyByScalar(0.5);
-    Ellipsoid.WGS84.cartesianToCartographic(centerInCartesian, scratchCenter);
-
-    Ellipsoid.WGS84.cartographicToCartesian(
-      [degrees(east), scratchCenter[1], scratchCenter[2]],
-      scratchXAxis
-    );
-    Ellipsoid.WGS84.cartographicToCartesian(
-      [scratchCenter[0], degrees(north), scratchCenter[2]],
-      scratchYAxis
-    );
-    Ellipsoid.WGS84.cartographicToCartesian(
-      [scratchCenter[0], scratchCenter[1], maxHeight],
-      scratchZAxis
-    );
-
-    return createBox(
-      [
-        ...centerInCartesian,
-        ...scratchXAxis.subtract(centerInCartesian),
-        ...scratchYAxis.subtract(centerInCartesian),
-        ...scratchZAxis.subtract(centerInCartesian)
-      ],
-      new Matrix4()
-    );
+    return createObbFromRegion(boundingVolumeHeader.region);
   }
 
   if (boundingVolumeHeader.sphere) {
@@ -254,6 +217,52 @@ function createSphere(sphere, transform, result?) {
   }
 
   return new BoundingSphere(center, radius);
+}
+
+/**
+ * Create OrientedBoundingBox instance from region 3D tiles bounding volume
+ * @param region - region 3D tiles bounding volume
+ * @returns OrientedBoundingBox instance
+ */
+function createObbFromRegion(region: number[]): OrientedBoundingBox {
+  // [west, south, east, north, minimum height, maximum height]
+  // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
+  // Heights are in meters above (or below) the WGS 84 ellipsoid.
+  const [west, south, east, north, minHeight, maxHeight] = region;
+
+  const northWest = Ellipsoid.WGS84.cartographicToCartesian(
+    [degrees(west), degrees(north), minHeight],
+    scratchNorthWest
+  );
+  const southEast = Ellipsoid.WGS84.cartographicToCartesian(
+    [degrees(east), degrees(south), maxHeight],
+    scratchSouthEast
+  );
+  const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyByScalar(0.5);
+  Ellipsoid.WGS84.cartesianToCartographic(centerInCartesian, scratchCenter);
+
+  Ellipsoid.WGS84.cartographicToCartesian(
+    [degrees(east), scratchCenter[1], scratchCenter[2]],
+    scratchXAxis
+  );
+  Ellipsoid.WGS84.cartographicToCartesian(
+    [scratchCenter[0], degrees(north), scratchCenter[2]],
+    scratchYAxis
+  );
+  Ellipsoid.WGS84.cartographicToCartesian(
+    [scratchCenter[0], scratchCenter[1], maxHeight],
+    scratchZAxis
+  );
+
+  return createBox(
+    [
+      ...centerInCartesian,
+      ...scratchXAxis.subtract(centerInCartesian),
+      ...scratchYAxis.subtract(centerInCartesian),
+      ...scratchZAxis.subtract(centerInCartesian)
+    ],
+    new Matrix4()
+  );
 }
 
 /**
