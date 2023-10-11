@@ -390,10 +390,11 @@ test('gltf#EXT_feature_metadata - Should handle feature texture attributes', asy
   };
 
   t.deepEqual(GLTF_WITH_TEXTURES.buffers[1], expectedResult.buf);
+
+  const featureTextures = GLTF_WITH_TEXTURES.json.extensions.EXT_feature_metadata.featureTextures;
   t.deepEqual(
-    GLTF_WITH_TEXTURES.json.extensions.EXT_feature_metadata.featureTextures[
-      'r3dm::uncertainty_ce90sum'
-    ].properties['r3dm::uncertainty_ce90sum'].data,
+    // @ts-expect-error
+    featureTextures['r3dm::uncertainty_ce90sum'].properties['r3dm::uncertainty_ce90sum'].data,
     expectedResult.data
   );
   t.end();
@@ -612,14 +613,15 @@ test('gltf#EXT_feature_metadata - Should handle arrays', async (t) => {
     nameData: ['never_classified', 'undef', '', '', '', '', 'building', 'untrusted_ground']
   };
 
+  const EXT_feature_metadata = GLTF_WITH_EXTENSION.json.extensions.EXT_feature_metadata;
   t.deepEqual(
-    GLTF_WITH_EXTENSION.json.extensions.EXT_feature_metadata.featureTables['owt::lulc'].properties
-      .color.data,
+    // @ts-expect-error
+    EXT_feature_metadata.featureTables['owt::lulc'].properties.color.data,
     expectedResult.colorData
   );
   t.deepEqual(
-    GLTF_WITH_EXTENSION.json.extensions.EXT_feature_metadata.featureTables['owt::lulc'].properties
-      .name.data,
+    // @ts-expect-error
+    EXT_feature_metadata.featureTables['owt::lulc'].properties.name.data,
     expectedResult.nameData
   );
   t.end();

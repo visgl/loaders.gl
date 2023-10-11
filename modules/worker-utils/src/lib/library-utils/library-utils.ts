@@ -84,9 +84,16 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   }
 
   if (!isBrowser) {
+    // TODO - Node doesn't yet support dynamic import from https URLs
+    // try {
+    //   return await import(libraryUrl);
+    // } catch (error) {
+    //   console.error(error);
+    // }
     try {
       return node && node.requireFromFile && (await node.requireFromFile(libraryUrl));
-    } catch {
+    } catch (error) {
+      console.error(error);
       return null;
     }
   }

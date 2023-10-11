@@ -21,6 +21,5 @@ import './lib/extensions/EXT_mesh_features.spec';
 
 import './glb-loader.spec';
 import './glb-writer.spec';
-// TODO v4.0 restore these tests
-// import './gltf-loader.spec';
-// import './gltf-writer.spec';
+import './gltf-loader.spec';
+import './gltf-writer.spec';
