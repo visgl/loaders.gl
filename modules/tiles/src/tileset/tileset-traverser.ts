@@ -258,7 +258,9 @@ export class TilesetTraverser {
       // Tileset structure and tile refinement modes are assumed to be static, so it should
       // only be necessary to set the replacedTileId once, on load.
       if (tile.parent?.refine === TILE_REFINEMENT.REPLACE) {
-        tile._replacedTileId = tile.parent._replacedTileId ?? tile.parent.id;
+        // The root tile of a tileset does not have an ID, so when the tileset root is a REPLACE
+        // tile , its children set the _replacedTileId to the URL for the whole tileset.
+        tile._replacedTileId = tile.parent._replacedTileId ?? tile.parent.id ?? tile.tileset.url;
       }
     }
   }
