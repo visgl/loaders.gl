@@ -10885,7 +10885,7 @@ tape-promise@^4.0.0:
     is-promise "^2.1.0"
     onetime "^2.0.0"
 
-tape@4.16.1, tape@^4.11.0:
+tape@^4.11.0:
   version "4.16.1"
   resolved "https://registry.yarnpkg.com/tape/-/tape-4.16.1.tgz#8d511b3a0be1a30441885972047c1dac822fd9be"
   integrity sha512-U4DWOikL5gBYUrlzx+J0oaRedm2vKLFbtA/+BRAXboGWpXO7bMP8ddxlq3Cse2bvXFQ0jZMOj6kk3546mvCdFg==

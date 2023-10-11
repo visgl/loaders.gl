@@ -5,8 +5,8 @@
 import test from 'tape-promise/tape';
 import * as fs from 'fs';
 import * as path from 'path';
-import {isBrowser} from '@loaders.gl/worker-utils';
-import {requireFromFile, requireFromString} from '../../../src/lib/node/require-utils.node';
+import {isBrowser} from '@loaders.gl/core';
+import {requireFromFile, requireFromString} from '../../src/load-library/require-utils.node';
 
 const DIR = path?.dirname?.(import.meta.url) || '.';
 const MODULE_URL = `${DIR}/fixture/module.js`;

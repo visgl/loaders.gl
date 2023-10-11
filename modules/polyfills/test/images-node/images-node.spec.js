@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
-import {parseImageNode} from '../../src/node/images/parse-image.node';
+import {parseImageNode} from '../../src/images/parse-image.node';
 
 const images = [
   ['@loaders.gl/images/test/data/img1-preview.png', 'image/png'],

@@ -68,6 +68,7 @@ export function requireFromString(
     appendPaths?: string[];
   }
 ): any {
+  console.error('requireFromString');
   if (typeof filename === 'object') {
     options = filename;
     filename = '';
