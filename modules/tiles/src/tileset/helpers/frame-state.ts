@@ -123,8 +123,8 @@ export function limitSelectedTiles(
   let i = 0;
   let selectedTilesCount = 0;
   for (i = 0; i < tileGroups.length; i++) {
-    const tile = tileGroups[i];
-    selectedTilesCount += tile instanceof Tile3D ? 1 : tile.tiles.length;
+    const group = tileGroups[i];
+    selectedTilesCount += group instanceof Tile3D ? 1 : group.tiles.length;
     if (selectedTilesCount >= maximumTilesSelected) {
       break;
     }
