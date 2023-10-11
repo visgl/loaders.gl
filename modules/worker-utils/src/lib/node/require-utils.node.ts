@@ -81,7 +81,7 @@ export function requireFromString(
   const paths = Module._nodeModulePaths(path.dirname(filename));
 
   const parent = typeof module !== 'undefined' && module?.parent;
-  
+
   // @ts-ignore
   const newModule = new Module(filename, parent);
   newModule.filename = filename;
