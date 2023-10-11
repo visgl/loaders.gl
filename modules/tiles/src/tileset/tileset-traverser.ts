@@ -267,9 +267,6 @@ export class TilesetTraverser {
   touchTile(tile: Tile3D, frameState: FrameState): void {
     tile.tileset._cache.touch(tile);
 
-    tile.tileset.intersectsCullingVolume =
-      tile.tileset.intersectsCullingVolume || tile._intersectsCullingVolume;
-
     // update priority if we havn't already this frame
     if (tile._touchedFrame !== frameState.frameNumber) {
       tile._displayPriority = tile._getDisplayPriority();

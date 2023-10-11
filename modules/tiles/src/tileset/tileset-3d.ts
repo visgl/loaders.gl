@@ -259,7 +259,6 @@ export class Tileset3D {
 
   /** Hold traversal results */
   selectedTileGroups: (Tile3D | TileGroup3D)[] = [];
-  intersectsCullingVolume: boolean = false;
 
   // TRAVERSAL
   traverseCounter: number = 0;
