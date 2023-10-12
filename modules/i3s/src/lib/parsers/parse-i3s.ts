@@ -84,7 +84,8 @@ export function normalizeTileNonUrlData(tile : I3SMinimalNodeData): I3STileHeade
 }
 
 export async function normalizeTilesetData(tileset : SceneLayer3D, options : LoaderOptions, context: LoaderContext): Promise<I3STileHeader | I3STilesetHeader> {
-  const url = context.url;
+  const urlObj = new URL(context.url || '');
+  const url = `${urlObj.origin}${urlObj.pathname}`;
   let nodePagesTile: I3SNodePagesTiles | undefined;
   let root: I3STileHeader | I3STilesetHeader;
   if (tileset.nodePages) {

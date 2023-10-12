@@ -58,17 +58,20 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context): Promise<
     throw new Error('Files with .slpk extention currently are not supported by I3SLoader');
   }
 
+  const urlObj = new URL(url);
+  const urlWithoutParams = `${urlObj.origin}${urlObj.pathname}`;
+
   // auto detect file type based on url
   let isTileset;
   if (options.i3s.isTileset === 'auto') {
-    isTileset = TILESET_REGEX.test(url);
+    isTileset = TILESET_REGEX.test(urlWithoutParams);
   } else {
     isTileset = options.i3s.isTileset;
   }
 
   let isTileHeader;
   if (options.isTileHeader === 'auto') {
-    isTileHeader = TILE_HEADER_REGEX.test(url);
+    isTileHeader = TILE_HEADER_REGEX.test(urlWithoutParams);
   } else {
     isTileHeader = options.i3s.isTileHeader;
   }
