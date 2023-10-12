@@ -6,6 +6,6 @@ export class TileGroup3D {
 
   addTile(tile: Tile3D) {
     this.tiles.push(tile);
-    this._displayPriority = Math.min(this._displayPriority, tile._screenSpaceError);
+    this._displayPriority = Math.min(this._displayPriority, tile._displayPriority);
   }
 }

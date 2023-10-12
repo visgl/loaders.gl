@@ -9,18 +9,11 @@ import {Stats} from '@probe.gl/stats';
 import {RequestScheduler, path, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
-import {
-  FrameState,
-  countTiles,
-  flattenTileGroups,
-  getFrameState,
-  limitSelectedTiles
-} from './helpers/frame-state';
+import {FrameState, getFrameState} from './helpers/frame-state';
 import {getZoomFromBoundingVolume, getZoomFromExtent, getZoomFromFullExtent} from './helpers/zoom';
 
 import type {GeospatialViewport, Viewport} from '../types';
 import {Tile3D} from './tile-3d';
-import {TileGroup3D} from './tile-group-3d';
 import {TILESET_TYPE} from '../constants';
 
 import {TilesetTraverser} from './tileset-traverser';
@@ -28,6 +21,7 @@ import {TilesetTraverser} from './tileset-traverser';
 // TODO - these should be moved into their respective modules
 import {Tileset3DTraverser} from './format-3d-tiles/tileset-3d-traverser';
 import {I3STilesetTraverser} from './format-i3s/i3s-tileset-traverser';
+import {GroupedTilesArray} from './grouped-tiles.array';
 
 export type TilesetJSON = any;
 
@@ -80,7 +74,7 @@ export type Tileset3DProps = {
   onTileUnload?: (tile: Tile3D) => any;
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
   contentLoader?: (tile: Tile3D) => Promise<void>;
-  onTraversalComplete?: (selectedTileGroups: (Tile3D | TileGroup3D)[]) => (Tile3D | TileGroup3D)[];
+  onTraversalComplete?: (selectedTileGroups: GroupedTilesArray) => GroupedTilesArray;
   displayPriorityFunc?: (tile: Tile3D) => number;
 };
 
@@ -105,7 +99,7 @@ type Props = {
   /** Callback. Indicates this a tile's content failed to load */
   onTileError: (tile: Tile3D, message: string, url: string) => void;
   /** Callback. Allows post-process selectedTiles right after traversal. */
-  onTraversalComplete: (selectedTileGroups: (Tile3D | TileGroup3D)[]) => (Tile3D | TileGroup3D)[];
+  onTraversalComplete: (selectedTileGroups: GroupedTilesArray) => GroupedTilesArray;
   /** The maximum screen space error used to drive level of detail refinement. */
   maximumScreenSpaceError: number;
   viewportTraversersMap: Record<string, any> | null;
@@ -136,7 +130,7 @@ const DEFAULT_PROPS: Props = {
   onTileLoad: () => {},
   onTileUnload: () => {},
   onTileError: () => {},
-  onTraversalComplete: (selectedTileGroups: (Tile3D | TileGroup3D)[]) => selectedTileGroups,
+  onTraversalComplete: (selectedTileGroups: GroupedTilesArray) => selectedTileGroups,
   contentLoader: undefined,
   displayPriorityFunc: undefined,
   viewDistanceScale: 1.0,
@@ -258,7 +252,7 @@ export class Tileset3D {
   private _pendingCount: number = 0;
 
   /** Hold traversal results */
-  selectedTileGroups: (Tile3D | TileGroup3D)[] = [];
+  selectedTileGroups = new GroupedTilesArray();
 
   // TRAVERSAL
   traverseCounter: number = 0;
@@ -482,19 +476,15 @@ export class Tileset3D {
       this.frameStateData[id] = {selectedTileGroups: [], _requestedTiles: [], _emptyTiles: []};
     }
     const currentFrameStateData = this.frameStateData[id];
-    const selectedTileGroups = Object.values(this._traverser.selectedTileGroups);
-    const [filteredSelectedTiles, unselectedTileGroups] = limitSelectedTiles(
-      selectedTileGroups,
+    const tiles = new GroupedTilesArray(Object.values(this._traverser.selectedTileGroups));
+    const selectedTiles = tiles.spliceHighestPriorityTilesOrGroups(
       this.options.maximumTilesSelected
     );
-    currentFrameStateData.selectedTileGroups = filteredSelectedTiles;
-    for (const group of unselectedTileGroups) {
-      if (group instanceof Tile3D) {
-        group.unselect();
-      } else {
-        group.tiles.forEach((tile) => tile.unselect());
-      }
-    }
+    currentFrameStateData.selectedTileGroups = selectedTiles;
+
+    // Since the selectedTiles have been popped from the array, the remaining tiles can all
+    // be unselected.
+    tiles.forEach((tile) => tile.unselect());
 
     currentFrameStateData._requestedTiles = Object.values(this._traverser.requestedTiles);
     currentFrameStateData._emptyTiles = Object.values(this._traverser.emptyTiles);
@@ -511,24 +501,22 @@ export class Tileset3D {
    * Update tiles relying on data from all traversers
    */
   _updateTiles(): void {
-    this.selectedTileGroups = [];
+    this.selectedTileGroups = new GroupedTilesArray();
     this._requestedTiles = [];
     this._emptyTiles = [];
 
     for (const frameStateKey in this.frameStateData) {
       const frameStateDataValue = this.frameStateData[frameStateKey];
-      this.selectedTileGroups = this.selectedTileGroups.concat(
-        frameStateDataValue.selectedTileGroups
-      );
+      this.selectedTileGroups.addTilesOrGroups(frameStateDataValue.selectedTileGroups);
       this._requestedTiles = this._requestedTiles.concat(frameStateDataValue._requestedTiles);
       this._emptyTiles = this._emptyTiles.concat(frameStateDataValue._emptyTiles);
     }
 
     this.selectedTileGroups = this.options.onTraversalComplete(this.selectedTileGroups);
 
-    for (const tile of flattenTileGroups(this.selectedTileGroups)) {
+    this.selectedTileGroups.forEach((tile) => {
       this._tiles[tile.id] = tile;
-    }
+    });
 
     this._loadTiles();
     this._unloadTiles();
@@ -555,7 +543,7 @@ export class Tileset3D {
   _updateStats(): void {
     let tilesRenderable = 0;
     let pointsRenderable = 0;
-    for (const tile of flattenTileGroups(this.selectedTileGroups)) {
+    this.selectedTileGroups.forEach((tile) => {
       if (tile.contentAvailable && tile.content) {
         tilesRenderable++;
         if (tile.content.pointCount) {
@@ -565,9 +553,9 @@ export class Tileset3D {
           pointsRenderable += tile.content.vertexCount;
         }
       }
-    }
+    });
 
-    this.stats.get(TILES_IN_VIEW).count = countTiles(this.selectedTileGroups);
+    this.stats.get(TILES_IN_VIEW).count = this.selectedTileGroups.numTiles();
     this.stats.get(TILES_RENDERABLE).count = tilesRenderable;
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
   }
