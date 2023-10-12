@@ -13,6 +13,7 @@ import type {ImageType} from '@loaders.gl/images';
 
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
+import {getTypedArrayForAccessor} from '../../gltf-utils/get-typed-array';
 import {getImageData} from '@loaders.gl/images';
 import {emod} from '@loaders.gl/math';
 
@@ -171,9 +172,11 @@ export function getPrimitiveTextureData(
   */
   const texCoordAccessorKey = `TEXCOORD_${textureInfo.texCoord || 0}`;
   const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
-
-  const textureCoordinates: TypedArray | null =
-    scenegraph.getTypedArrayForAccessor(texCoordAccessorIndex);
+  const textureCoordinates: TypedArray | null = getTypedArrayForAccessor(
+    scenegraph.gltf.json,
+    scenegraph.gltf.buffers,
+    texCoordAccessorIndex
+  );
   if (!textureCoordinates) {
     return null;
   }
