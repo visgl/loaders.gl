@@ -13,7 +13,7 @@ export type GLTFWithBuffers = {
   images?: GLTFExternalImage[];
 };
 
-type GLTFExternalBuffer = {
+export type GLTFExternalBuffer = {
   arrayBuffer: ArrayBuffer;
   byteOffset: number;
   byteLength: number;
