@@ -1,6 +1,23 @@
 import {Node3DIndexDocument, SceneLayer3D} from '../../types';
 
 /**
+ * Return URL seperated from search params
+ * @param url - URL that might have search params
+ * @returns url without search params
+ */
+export function getUrlWithoutParams(url: string): string {
+  let urlWithoutParams;
+
+  try {
+    const urlObj = new URL(url);
+    urlWithoutParams = `${urlObj.origin}${urlObj.pathname}`;
+  } catch (e) {
+    // do nothing
+  }
+  return urlWithoutParams || url;
+}
+
+/**
  * Generates url with token if it is exists.
  * @param url
  * @param token
