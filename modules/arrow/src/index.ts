@@ -12,6 +12,10 @@ import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 
 import {ArrowTableBatchAggregator} from './lib/arrow-table-batch';
 
+// SCHEMA
+
+export {getArrowType} from './schema/arrow-type-utils';
+
 // Make the ArrowBatch type available
 TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
 

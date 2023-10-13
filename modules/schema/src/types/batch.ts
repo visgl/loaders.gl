@@ -1,7 +1,9 @@
 // loaders.gl, MIT license
 
 import {Schema} from './schema';
-import type {RecordBatch} from 'apache-arrow';
+// import type {RecordBatch} from 'apache-arrow';
+
+type ApacheRecordBatch = unknown;
 
 /**
  * A batch of data (or metadata/schema), from a streaming loader
@@ -18,7 +20,7 @@ export type Batch = {
   /** Data in this batch */
   data: unknown;
   /**  If this is an arrow table. @deprecated Use `data` */
-  recordBatch?: RecordBatch;
+  recordBatch?: ApacheRecordBatch;
   /** Length of data in this batch */
   length: number;
 
