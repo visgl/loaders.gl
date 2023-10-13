@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import type {TypedArray} from '../../../types/types';
+import type {TypedArray} from '@loaders.gl/schema';
 import {
   DataType,
   Float32,

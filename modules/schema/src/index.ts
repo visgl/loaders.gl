@@ -178,6 +178,5 @@ export {
 
 // SCHEMA UTILS
 export {getTypeInfo} from './lib/table/arrow-api/get-type-info';
-export {getArrowType} from './lib/table/arrow/arrow-type-utils';
 
 export {default as AsyncQueue} from './lib/utils/async-queue';

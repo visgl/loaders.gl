@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import type {DataType, Field, Schema, SchemaMetadata} from '../../../types/schema';
+import type {DataType, Field, Schema, SchemaMetadata} from '@loaders.gl/schema';
 import {
   Field as ArrowField,
   Schema as ArrowSchema,
@@ -38,7 +38,7 @@ import {
   IntervalYearMonth,
   FixedSizeList,
   Struct
-} from 'apache-arrow/Arrow.dom';
+} from 'apache-arrow';
 
 export function serializeArrowSchema(arrowSchema: ArrowSchema): Schema {
   return {
