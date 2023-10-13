@@ -11,6 +11,7 @@ const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTex
 const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
 const TILESET_WITH_FAILING_CONTENT =
   '@loaders.gl/tile-converter/test/data/failing-content-error/tileset.json';
+const TILESET_CDB_YEMEN = '@loaders.gl/3d-tiles/test/data/VNext/cdb-yemen-cut/tileset.json';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -365,5 +366,26 @@ test('tile-converter(i3s)#proceed with failing content', async (t) => {
     t.notOk(nodePage.nodes[5].mesh);
   }
   await cleanUpPath('data/FailingContent');
+  t.end();
+});
+
+test('tile-converter(i3s)#convert with --metadata-class option', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_CDB_YEMEN,
+      outputPath: 'data',
+      tilesetName: 'CDB_Yemen',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH,
+      metadataClass: 'CDBMaterialsClass'
+    });
+    const nodePageJson = await fs.readFile(
+      'data/CDB_Yemen/SceneServer/layers/0/nodepages/0/index.json',
+      'utf8'
+    );
+    t.ok(nodePageJson);
+  }
+  await cleanUpPath('data/CDB_Yemen');
   t.end();
 });

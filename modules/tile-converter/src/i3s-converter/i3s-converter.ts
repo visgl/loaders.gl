@@ -194,6 +194,7 @@ export default class I3SConverter {
     instantNodeWriting?: boolean;
     inquirer?: Promise<unknown>;
     metadataClass?: string;
+    analyzeOnly?: boolean;
   }): Promise<string> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE);
@@ -216,7 +217,8 @@ export default class I3SConverter {
       instantNodeWriting = false,
       mergeMaterials = true,
       inquirer,
-      metadataClass
+      metadataClass,
+      analyzeOnly = false
     } = options;
     this.options = {
       maxDepth,
@@ -259,11 +261,15 @@ export default class I3SConverter {
       }
       this.sourceTileset = await loadFromArchive(tilesetUrl, this.Loader, this.loadOptions);
 
-      const preprocessResult = await this.preprocessConversion();
+      const preprocessResult =
+        this.Loader === Tiles3DLoader || analyzeOnly ? await this.preprocessConversion() : true;
 
-      if (preprocessResult) {
-        await this._createAndSaveTileset(outputPath, tilesetName);
-        await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+      if (preprocessResult && !analyzeOnly) {
+        const selectMetadataClassResult = await this.selectMetadataClass();
+        if (selectMetadataClassResult) {
+          await this._createAndSaveTileset(outputPath, tilesetName);
+          await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+        }
       }
     } catch (error) {
       throw error;
@@ -317,31 +323,6 @@ export default class I3SConverter {
       return false;
     }
 
-    if (metadataClasses.size > 1) {
-      if (this.options.metadataClass?.length) {
-        console.log(`${this.options.metadataClass} has been selected`);
-      } else if (this.options.inquirer) {
-        const result = await this.options.inquirer.prompt([
-          {
-            name: 'metadataClass',
-            type: 'list',
-            message: 'Select feature metadata data class to convert...',
-            choices: Array.from(metadataClasses)
-          }
-        ]);
-        this.options.metadataClass = result.metadataClass;
-        console.log(`${result.metadataClass} has been selected`);
-      } else {
-        console.log(
-          `A feature metadata class has not been selected. Start the converter with option "--metadata-class". For example, "npx tile-converter ... --metadata-class ${
-            Array.from(metadataClasses)[0]
-          }"`
-        );
-        console.log(`------------------------------------------------`);
-        return false;
-      }
-    }
-
     return true;
   }
 
@@ -379,6 +360,39 @@ export default class I3SConverter {
     mergePreprocessData(this.preprocessData, tilePreprocessData);
 
     return null;
+  }
+
+  /**
+   * Select metadata class associated with the set of feature attributes
+   * @returns true if the metadata class has been successfully selected
+   */
+  private async selectMetadataClass() {
+    const {metadataClasses} = this.preprocessData;
+    if (metadataClasses.size > 1) {
+      if (this.options.metadataClass?.length) {
+        console.log(`${this.options.metadataClass} has been selected`);
+      } else if (this.options.inquirer) {
+        const result = await this.options.inquirer.prompt([
+          {
+            name: 'metadataClass',
+            type: 'list',
+            message: 'Select feature metadata data class to convert...',
+            choices: Array.from(metadataClasses)
+          }
+        ]);
+        this.options.metadataClass = result.metadataClass;
+        console.log(`${result.metadataClass} has been selected`);
+      } else {
+        console.log(
+          `A feature metadata class has not been selected. Start the converter with option "--metadata-class". For example, "npx tile-converter ... --metadata-class ${
+            Array.from(metadataClasses)[0]
+          }"`
+        );
+        console.log(`------------------------------------------------`);
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

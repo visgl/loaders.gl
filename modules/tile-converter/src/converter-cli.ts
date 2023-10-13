@@ -52,6 +52,8 @@ type TileConversionOptions = {
   slpk: boolean;
   /** Feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
   metadataClass?: string;
+  /** With this options the tileset content will be analyzed without conversion */
+  analyzeOnly?: boolean;
 };
 
 /* During validation we check that particular options are defined so they can't be undefined */
@@ -137,6 +139,9 @@ function printHelp(): void {
   );
   console.log('--generate-bounding-volumes [Generate obb and mbs bounding volumes from geometry]');
   console.log(
+    '--analyze-only [Analyze the input tileset content without conversion, default: false]'
+  );
+  console.log(
     '--metadata-class [One of the list of feature metadata classes, detected by converter on "analyze" stage, default: not set]'
   );
   console.log('--validate [Enable validation]');
@@ -180,6 +185,8 @@ async function convert(options: ValidatedTileConversionOptions) {
         generateBoundingVolumes: options.generateBoundingVolumes,
         validate: options.validate,
         instantNodeWriting: options.instantNodeWriting,
+        metadataClass: options.metadataClass,
+        analyzeOnly: options.analyzeOnly,
         inquirer
       });
       break;
@@ -196,26 +203,35 @@ async function convert(options: ValidatedTileConversionOptions) {
  */
 function validateOptions(options: TileConversionOptions): ValidatedTileConversionOptions {
   const mandatoryOptionsWithExceptions: {
-    [key: string]: () => void;
+    [key: string]: {
+      getMessage: () => void;
+      condition?: (optionValue: any) => boolean;
+    };
   } = {
-    name: () => console.log('Missed: --name [Tileset name]'),
-    output: () => console.log('Missed: --output [Output path name]'),
-    sevenZipExe: () => console.log('Missed: --7zExe [7z archiver executable path]'),
-    egm: () => console.log('Missed: --egm [*.pgm earth gravity model file path]'),
-    tileset: () => console.log('Missed: --tileset [tileset.json file]'),
-    inputType: () =>
-      console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]')
+    name: {
+      getMessage: () => console.log('Missed: --name [Tileset name]'),
+      condition: (value: any) => Boolean(value) || Boolean(options.analyzeOnly)
+    },
+    output: {getMessage: () => console.log('Missed: --output [Output path name]')},
+    sevenZipExe: {getMessage: () => console.log('Missed: --7zExe [7z archiver executable path]')},
+    egm: {getMessage: () => console.log('Missed: --egm [*.pgm earth gravity model file path]')},
+    tileset: {getMessage: () => console.log('Missed: --tileset [tileset.json file]')},
+    inputType: {
+      getMessage: () =>
+        console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]'),
+      condition: (value) =>
+        Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase())
+    }
   };
   const exceptions: (() => void)[] = [];
   for (const mandatoryOption in mandatoryOptionsWithExceptions) {
     const optionValue = options[mandatoryOption];
-    const isWrongInputType =
-      Boolean(optionValue) &&
-      mandatoryOption === 'inputType' &&
-      !Object.values(TILESET_TYPE).includes(optionValue.toUpperCase());
 
-    if (!optionValue || isWrongInputType) {
-      exceptions.push(mandatoryOptionsWithExceptions[mandatoryOption]);
+    const conditionFunc = mandatoryOptionsWithExceptions[mandatoryOption].condition;
+    const testValue = conditionFunc ? conditionFunc(optionValue) : optionValue;
+
+    if (!testValue) {
+      exceptions.push(mandatoryOptionsWithExceptions[mandatoryOption].getMessage);
     }
   }
   if (exceptions.length) {
@@ -297,8 +313,12 @@ function parseOptions(args: string[]): TileConversionOptions {
         case '--generate-bounding-volumes':
           opts.generateBoundingVolumes = getBooleanValue(index, args);
           break;
+        case '--analyze-only':
+          opts.analyzeOnly = getBooleanValue(index, args);
+          break;
         case '--metadata-class':
           opts.metadataClass = getStringValue(index, args);
+          break;
         case '--help':
           printHelp();
           break;
