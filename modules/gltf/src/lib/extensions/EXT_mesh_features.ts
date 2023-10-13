@@ -64,7 +64,7 @@ function processMeshPrimitiveFeatures(
   }
 
   for (const featureId of featureIds) {
-    let featureIdData: NumericArray | null = null;
+    let featureIdData: NumericArray;
     // Process "Feature ID by Vertex"
     if (typeof featureId.attribute !== 'undefined') {
       const accessorKey = `_FEATURE_ID_${featureId.attribute}`;
@@ -85,6 +85,7 @@ function processMeshPrimitiveFeatures(
       In this case, the featureCount must match the number of vertices of the mesh primitive.
       */
       // TODO: At the moment of writing we don't have a tileset with the data of that kind. Implement it later.
+      featureIdData = [];
     }
 
     featureId.data = featureIdData;

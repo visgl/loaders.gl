@@ -151,7 +151,7 @@ export function getPrimitiveTextureData(
   scenegraph: GLTFScenegraph,
   textureInfo: GLTFTextureInfoMetadata,
   primitive: GLTFMeshPrimitive
-): number[] | null {
+): number[] {
   /*
     texture.index is an index for the "textures" array.
     The texture object referenced by this index looks like this:
@@ -171,11 +171,7 @@ export function getPrimitiveTextureData(
   */
   const texCoordAccessorKey = `TEXCOORD_${textureInfo.texCoord || 0}`;
   const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
-  const textureCoordinates: TypedArray | null =
-    scenegraph.getTypedArrayForAccessor(texCoordAccessorIndex);
-  if (!textureCoordinates) {
-    return null;
-  }
+  const textureCoordinates: TypedArray = scenegraph.getTypedArrayForAccessor(texCoordAccessorIndex);
 
   const json = scenegraph.gltf.json;
   const textureIndex: number = textureInfo.index;
@@ -199,7 +195,7 @@ export function getPrimitiveTextureData(
       return textureData;
     }
   }
-  return null;
+  return [];
 }
 
 /**
