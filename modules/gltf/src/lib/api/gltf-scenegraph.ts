@@ -19,14 +19,9 @@ import type {
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
-import {
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray
-} from '../gltf-utils/gltf-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 
-import {
-  getTypedArrayForAccessor as _getTypedArrayForAccessor
-} from '../gltf-utils/get-typed-array';
+import {getTypedArrayForAccessor as _getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
 
 type Extension = {[key: string]: any};
 
