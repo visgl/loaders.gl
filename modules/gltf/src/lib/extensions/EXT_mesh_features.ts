@@ -11,7 +11,6 @@ import type {
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getPrimitiveTextureData} from './utils/3d-tiles-utils';
-import {getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
 
 const EXT_MESH_FEATURES_NAME = 'EXT_mesh_features';
 export const name = EXT_MESH_FEATURES_NAME;
@@ -70,11 +69,7 @@ function processMeshPrimitiveFeatures(
     if (typeof featureId.attribute !== 'undefined') {
       const accessorKey = `_FEATURE_ID_${featureId.attribute}`;
       const accessorIndex = primitive.attributes[accessorKey];
-      featureIdData = getTypedArrayForAccessor(
-        scenegraph.gltf.json,
-        scenegraph.gltf.buffers,
-        accessorIndex
-      );
+      featureIdData = scenegraph.getTypedArrayForAccessor(accessorIndex);
     }
 
     // Process "Feature ID by Texture Coordinates"
