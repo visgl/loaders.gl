@@ -42,11 +42,11 @@ export function getTypedArrayForAccessor(
 ): TypedArray {
   const gltfAccessor = typeof accessor === 'number' ? json.accessors?.[accessor] : accessor;
   if (!gltfAccessor) {
-    throw new Error(`No Accessor ${accessor}`);
+    throw new Error(`No gltf accessor ${accessor}`);
   }
   const bufferView = json.bufferViews?.[gltfAccessor.bufferView || 0];
   if (!bufferView) {
-    throw new Error(`No Buffer View for Accessor ${bufferView}`);
+    throw new Error(`No gltf buffer view for accessor ${bufferView}`);
   }
   // Get `arrayBuffer` the `bufferView` looks at
   const {arrayBuffer, byteOffset: bufferByteOffset} = buffers[bufferView.buffer];
