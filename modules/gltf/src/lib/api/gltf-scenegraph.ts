@@ -19,10 +19,12 @@ import type {
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
-import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 import {
-  getTypedArrayForBufferView as _getTypedArrayForBufferView,
-  getTypedArrayForImageData as _getTypedArrayForImageData,
+  getAccessorTypeFromSize,
+  getComponentTypeFromArray
+} from '../gltf-utils/gltf-utils';
+
+import {
   getTypedArrayForAccessor as _getTypedArrayForAccessor
 } from '../gltf-utils/get-typed-array';
 
@@ -186,8 +188,19 @@ export class GLTFScenegraph {
    * @returns a `Uint8Array`
    */
   getTypedArrayForBufferView(bufferView: number | object): Uint8Array {
-    const gltfBufferView = this.getBufferView(bufferView);
-    return _getTypedArrayForBufferView(this.gltf.json, this.gltf.buffers, gltfBufferView);
+    bufferView = this.getBufferView(bufferView);
+    // @ts-ignore
+    const bufferIndex = bufferView.buffer;
+
+    // Get hold of the arrayBuffer
+    // const buffer = this.getBuffer(bufferIndex);
+    const binChunk = this.gltf.buffers[bufferIndex];
+    assert(binChunk);
+
+    // @ts-ignore
+    const byteOffset = (bufferView.byteOffset || 0) + binChunk.byteOffset;
+    // @ts-ignore
+    return new Uint8Array(binChunk.arrayBuffer, byteOffset, bufferView.byteLength);
   }
 
   /** Accepts accessor index or accessor object
@@ -199,13 +212,20 @@ export class GLTFScenegraph {
     return _getTypedArrayForAccessor(this.gltf.json, this.gltf.buffers, gltfAccessor);
   }
 
-  /** Accepts image index or image object
-   * @returns a `Uint8Array`
+  /** accepts accessor index or accessor object
+   * returns a `Uint8Array`
    */
   getTypedArrayForImageData(image: number | object): Uint8Array {
     // @ts-ignore
-    const gltfImage = this.getImage(image);
-    return _getTypedArrayForImageData(this.gltf.json, this.gltf.buffers, gltfImage);
+    image = this.getAccessor(image);
+    // @ts-ignore
+    const bufferView = this.getBufferView(image.bufferView);
+    const buffer = this.getBuffer(bufferView.buffer);
+    // @ts-ignore
+    const arrayBuffer = buffer.data;
+
+    const byteOffset = bufferView.byteOffset || 0;
+    return new Uint8Array(arrayBuffer, byteOffset, bufferView.byteLength);
   }
 
   // MODIFERS
