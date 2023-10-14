@@ -1,6 +1,7 @@
 // GLTF EXTENSION: EXT_mesh_features
 // https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
 /* eslint-disable camelcase */
+import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {GLTF, GLTFMeshPrimitive} from '../types/gltf-json-schema';
 import {GLTFLoaderOptions} from '../../gltf-loader';
 import type {
@@ -63,12 +64,12 @@ function processMeshPrimitiveFeatures(
   }
 
   for (const featureId of featureIds) {
-    let featureIdData: number[] | null = null;
+    let featureIdData: NumericArray;
     // Process "Feature ID by Vertex"
     if (typeof featureId.attribute !== 'undefined') {
       const accessorKey = `_FEATURE_ID_${featureId.attribute}`;
       const accessorIndex = primitive.attributes[accessorKey];
-      featureIdData = scenegraph.getTypedArrayForAccessor(accessorIndex) as number[];
+      featureIdData = scenegraph.getTypedArrayForAccessor(accessorIndex);
     }
 
     // Process "Feature ID by Texture Coordinates"
@@ -84,6 +85,7 @@ function processMeshPrimitiveFeatures(
       In this case, the featureCount must match the number of vertices of the mesh primitive.
       */
       // TODO: At the moment of writing we don't have a tileset with the data of that kind. Implement it later.
+      featureIdData = [];
     }
 
     featureId.data = featureIdData;

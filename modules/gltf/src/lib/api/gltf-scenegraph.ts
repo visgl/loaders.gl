@@ -19,11 +19,9 @@ import type {
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
-import {
-  getAccessorArrayTypeAndLength,
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray
-} from '../gltf-utils/gltf-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
+
+import {getTypedArrayForAccessor as _getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
 
 type Extension = {[key: string]: any};
 
@@ -205,18 +203,8 @@ export class GLTFScenegraph {
    */
   getTypedArrayForAccessor(accessor: number | object): any {
     // @ts-ignore
-    accessor = this.getAccessor(accessor);
-    // @ts-ignore
-    const bufferView = this.getBufferView(accessor.bufferView);
-    const buffer = this.getBuffer(bufferView.buffer);
-    // @ts-ignore
-    const arrayBuffer = buffer.data;
-
-    // Create a new typed array as a view into the combined buffer
-    const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
-    // @ts-ignore
-    const byteOffset = bufferView.byteOffset + accessor.byteOffset;
-    return new ArrayType(arrayBuffer, byteOffset, length);
+    const gltfAccessor = this.getAccessor(accessor);
+    return _getTypedArrayForAccessor(this.gltf.json, this.gltf.buffers, gltfAccessor);
   }
 
   /** accepts accessor index or accessor object

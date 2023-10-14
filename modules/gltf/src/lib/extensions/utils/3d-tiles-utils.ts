@@ -12,7 +12,7 @@ import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
 import type {ImageType} from '@loaders.gl/images';
 
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
-import {getComponentTypeFromArray, getFloat32ArrayForAccessor} from '../../gltf-utils/gltf-utils';
+import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
 import {emod} from '@loaders.gl/math';
 
@@ -151,7 +151,7 @@ export function getPrimitiveTextureData(
   scenegraph: GLTFScenegraph,
   textureInfo: GLTFTextureInfoMetadata,
   primitive: GLTFMeshPrimitive
-): number[] | null {
+): number[] {
   /*
     texture.index is an index for the "textures" array.
     The texture object referenced by this index looks like this:
@@ -160,24 +160,20 @@ export function getPrimitiveTextureData(
     "source": 0
     }
     "sampler" is an index for the "samplers" array
-    "source" is an index for the "images" array that contains data. These data are stored in rgba channels of the image.
+    "source" is an index for the "images" array that contains data stored in rgba channels of the image.
 
     texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
-    The value of "TEXCOORD_1" is an accessor that is used to get coordinates. These coordinates are being used to get data from the image.
+    The value of "TEXCOORD_1" is an accessor that is used to get coordinates.
+    These coordinates are being used to get data from the image.
+    
+    Default for texture.texCoord is 0
+    @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/specification/2.0/schema/textureInfo.schema.json
   */
-  const json = scenegraph.gltf.json;
-
   const texCoordAccessorKey = `TEXCOORD_${textureInfo.texCoord || 0}`;
   const texCoordAccessorIndex = primitive.attributes[texCoordAccessorKey];
+  const textureCoordinates: TypedArray = scenegraph.getTypedArrayForAccessor(texCoordAccessorIndex);
 
-  const textureCoordinates: Float32Array | null = getFloat32ArrayForAccessor(
-    scenegraph.gltf,
-    texCoordAccessorIndex
-  );
-  if (!textureCoordinates) {
-    return null;
-  }
-
+  const json = scenegraph.gltf.json;
   const textureIndex: number = textureInfo.index;
   const imageIndex = json.textures?.[textureIndex]?.source;
   if (typeof imageIndex !== 'undefined') {
@@ -199,7 +195,7 @@ export function getPrimitiveTextureData(
       return textureData;
     }
   }
-  return null;
+  return [];
 }
 
 /**
@@ -260,13 +256,17 @@ export function primitivePropertyDataToAttributes(
  * @param mimeType - MIME type.
  * @param textureCoordinates - uv coordinates to access data in the image.
  * @param index - Index of uv coordinates in the array textureCoordinates.
- * @param channels - Image channels where data are stored. Channels of an RGBA texture are numbered 0..3 respectively.
+ * @param channels - Image channels where data are stored.
+ *  Channels of an RGBA texture are numbered 0..3 respectively.
+ *  For Ext_mesh_features and EXT_strucural_metadata the channels default is [0]
+ *  @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features/schema/featureIdTexture.schema.json
+ *  @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTexture.property.schema.json
  * @returns Value taken from the image.
  */
 function getImageValueByCoordinates(
   parsedImage: ImageType,
   mimeType: string | undefined,
-  textureCoordinates: Float32Array,
+  textureCoordinates: TypedArray,
   index: number,
   channels: number[] | string = [0]
 ) {
