@@ -36,7 +36,7 @@
     "@loaders.gl/gis": "4.0.0-beta.2",
     "@loaders.gl/schema": "4.0.0-beta.2",
     "@loaders.gl/wkt": "4.0.0-beta.2",
-    "@math.gl/proj4": "4.0.0-beta.1",
+    "@math.gl/proj4": "^4.0.0",
     "@types/sql.js": "^1.4.2",
     "sql.js": "1.5.0"
   },
