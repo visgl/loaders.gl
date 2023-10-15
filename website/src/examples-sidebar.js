@@ -19,18 +19,24 @@
       type: 'category',
       label: 'Geospatial Loaders',
       items: [
-        'geospatial',
-        'pmtiles',
-        'wms'
+        'geoparquet'
       ],
     },
     {
       type: 'category',
-      label: 'Tiled Loaders',
+      label: 'Tile Loaders and Services',
       items: [
-        'i3s',
-        'i3s-debug',
-        'i3s-arcgis',
+        'pmtiles',
+        'wms'
+      ]
+    },
+    {
+      type: 'category',
+      label: '3D Tile Loaders',
+      items: [
+        // 'i3s',
+        // 'i3s-debug',
+        // 'i3s-arcgis',
         '3d-tiles'
       ]
     },

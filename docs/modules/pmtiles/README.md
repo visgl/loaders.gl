@@ -1,3 +1,3 @@
 # @loaders.gl/pmtiles
 
-Support for loading [pmtiles](./format/pmtiles) format tiles.
+Support for loading [pmtiles](./formats/pmtiles) format tiles.
