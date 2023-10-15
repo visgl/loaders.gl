@@ -3,7 +3,7 @@
 
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import {decodeDataUri} from '../../src/node/fetch/utils/decode-data-uri.node';
+import {decodeDataUri} from '../../src/fetch/decode-data-uri';
 
 const toString = (arrayBuffer) => new TextDecoder().decode(arrayBuffer);
 

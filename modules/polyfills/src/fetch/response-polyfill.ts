@@ -1,8 +1,8 @@
 // loaders.gl, MIT license
 
-import {assert} from '../../utils/assert';
-import {decompressReadStream, concatenateReadStream} from '../../filesystems/stream-utils.node';
-import {Headers} from './headers.node';
+import {assert} from '../utils/assert';
+import {decompressReadStream, concatenateReadStream} from '../filesystems/stream-utils.node';
+import {Headers} from './headers-polyfill';
 
 const isBoolean = (x) => typeof x === 'boolean';
 const isFunction = (x) => typeof x === 'function';

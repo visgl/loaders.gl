@@ -14,8 +14,6 @@ export type TypedIntArray =
   | Uint16Array
   | Int32Array
   | Uint32Array
-  | Int32Array
-  | Uint32Array
   | Uint8ClampedArray;
 
 export type TypedFloatArray = Float32Array | Float64Array;

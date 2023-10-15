@@ -15,8 +15,6 @@ if (typeof process !== 'undefined') {
 // @ts-ignore TS2339: Property does not exist on type 'Global'
 global.nodeVersion = nodeVersion;
 
-import {installFilePolyfills} from '@loaders.gl/polyfills';
-// Install polyfills
-installFilePolyfills();
+import '@loaders.gl/polyfills';
 
 import './modules';

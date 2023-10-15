@@ -1,33 +1,29 @@
 /* eslint-disable dot-notation */
 import {isBrowser} from './utils/is-browser';
 
-import {TextDecoder, TextEncoder} from './lib/encoding';
+import {TextDecoder, TextEncoder} from './text-encoder/text-encoder';
 
 // Node specific
-import {atob, btoa} from './node/buffer/btoa.node';
+import {atob, btoa} from './buffer/btoa.node';
 
-import {encodeImageNode} from './node/images/encode-image.node';
-import {parseImageNode, NODE_FORMAT_SUPPORT} from './node/images/parse-image.node';
-
-// STREAM POLYFILLS
-export {makeNodeStream} from './streams/make-node-stream';
+import {encodeImageNode} from './images/encode-image.node';
+import {parseImageNode, NODE_FORMAT_SUPPORT} from './images/parse-image.node';
 
 // FILESYSTEM POLYFILLS
-export {NodeFile} from './filesystems/node-file';
-export {NodeFileSystem} from './filesystems/node-filesystem';
-export {fetchNode} from './filesystems/fetch-node';
 import {NodeFile} from './filesystems/node-file';
 import {NodeFileSystem} from './filesystems/node-filesystem';
 import {fetchNode} from './filesystems/fetch-node';
 
-// export {ReadableStreamPolyfill} from './node/file/readable-stream';
-// export {BlobPolyfill} from './node/file/blob';
-export {FileReaderPolyfill} from './node/file/file-reader';
-export {FilePolyfill} from './node/file/file';
-export {installFilePolyfills} from './node/file/install-file-polyfills';
-
+// NODE VERSION
 import {versions} from 'node:process';
 export const nodeVersion = parseInt(versions.node.split('.')[0]);
+
+// STREAM POLYFILLS
+import {makeNodeStream} from './streams/make-node-stream';
+
+// BLOB AND FILE POLYFILLS
+export {Blob_ as Blob} from './file/install-blob-polyfills';
+export {File_ as File} from './file/install-file-polyfills';
 
 if (isBrowser) {
   // eslint-disable-next-line no-console
@@ -39,6 +35,7 @@ if (isBrowser) {
 globalThis.loaders = globalThis.loaders || {};
 
 // STREAM POLYFILLS
+export {makeNodeStream} from './streams/make-node-stream';
 globalThis.loaders.makeNodeStream = makeNodeStream;
 
 // FILESYSTEM POLYFILLS
@@ -89,24 +86,23 @@ if (!('_parseImageNode' in globalThis) && parseImageNode) {
 // - Node v16 and lower: Yes
 // - Browsers (evergreen): Not needed.
 // - IE11: No. This polyfill is node only, install external polyfill
-import {Headers as HeadersNode} from './node/fetch/headers.node';
-import {Response as ResponseNode} from './node/fetch/response.node';
-import {fetchNode as fetchNodePolyfill} from './node/fetch/fetch.node';
-import {makeNodeStream} from './streams/make-node-stream';
+import {Headers as HeadersNode} from './fetch/headers-polyfill';
+import {Response as ResponseNode} from './fetch/response-polyfill';
+import {fetchNode as fetchNodePolyfill} from './fetch/fetch-polyfill';
 
 if (nodeVersion < 18) {
   if (!('Headers' in globalThis) && HeadersNode) {
-    // @ts-expect-error
+    // @ts-ignore
     globalThis.Headers = HeadersNode;
   }
 
   if (!('Response' in globalThis) && ResponseNode) {
-    // @ts-expect-error
+    // @ts-ignore
     globalThis.Response = ResponseNode;
   }
 
   if (!('fetch' in globalThis) && fetchNodePolyfill) {
-    // @ts-expect-error
+    // @ts-ignore
     globalThis.fetch = fetchNodePolyfill;
   }
 }

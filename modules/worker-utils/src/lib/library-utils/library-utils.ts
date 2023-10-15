@@ -93,6 +93,7 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
     try {
       return node && node.requireFromFile && (await node.requireFromFile(libraryUrl));
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
       return null;
     }
