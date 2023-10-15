@@ -24,9 +24,9 @@ export async function parseToNodeImage(
   const {mimeType} = getBinaryImageMetadata(arrayBuffer) || {};
 
   // @ts-ignore
-  const _parseImageNode: ParseImageNode = globalThis._parseImageNode;
-  assert(_parseImageNode); // '@loaders.gl/polyfills not installed'
+  const parseImageNode: ParseImageNode = globalThis.loaders?.parseImageNode;
+  assert(parseImageNode); // '@loaders.gl/polyfills not installed'
 
   // @ts-expect-error TODO should we throw error in this case?
-  return await _parseImageNode(arrayBuffer, mimeType);
+  return await parseImageNode(arrayBuffer, mimeType);
 }

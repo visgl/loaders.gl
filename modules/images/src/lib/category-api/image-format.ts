@@ -61,9 +61,9 @@ export function isImageFormatSupported(mimeType: string): boolean {
 function checkNodeImageFormatSupport(mimeType: string): boolean {
   /** @deprecated Remove these in 4.0 and rely on polyfills to inject them */
   const NODE_FORMAT_SUPPORT = ['image/png', 'image/jpeg', 'image/gif'];
-  // @ts-ignore
-  const {_parseImageNode, _imageFormatsNode = NODE_FORMAT_SUPPORT} = globalThis;
-  return Boolean(_parseImageNode) && _imageFormatsNode.includes(mimeType);
+  const parseImageNode = globalThis.loaders?.parseImageNode;
+  const imageFormatsNode = globalThis.loaders?.imageFormatsNode || NODE_FORMAT_SUPPORT;
+  return Boolean(parseImageNode) && imageFormatsNode.includes(mimeType);
 }
 
 /** Checks image format support synchronously.

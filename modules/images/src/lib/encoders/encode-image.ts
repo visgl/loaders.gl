@@ -3,7 +3,7 @@ import {ImageDataType} from '../../types';
 import {getImageSize} from '../category-api/parsed-image-api';
 
 // @ts-ignore TS2339: Property does not exist on type
-const {_encodeImageNode} = globalThis;
+const encodeImageNode = globalThis.loaders?.encodeImageNode;
 
 /**
  * Returns data bytes representing a compressed image in PNG or JPG format,
@@ -20,8 +20,8 @@ export async function encodeImage(
   options = options || {};
   options.image = options.image || ({} as {[key: string]: any});
 
-  return _encodeImageNode
-    ? _encodeImageNode(image, {type: options.image.mimeType})
+  return encodeImageNode
+    ? encodeImageNode(image, {type: options.image.mimeType})
     : encodeImageInBrowser(image, options);
 }
 
