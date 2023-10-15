@@ -1,6 +1,5 @@
 /* global importScripts */
 import {isBrowser, isWorker} from '../env-utils/globals';
-import * as node from '../node/require-utils.node';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';
 
@@ -84,14 +83,10 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   }
 
   if (!isBrowser) {
-    // TODO - Node doesn't yet support dynamic import from https URLs
-    // try {
-    //   return await import(libraryUrl);
-    // } catch (error) {
-    //   console.error(error);
-    // }
     try {
-      return node && node.requireFromFile && (await node.requireFromFile(libraryUrl));
+      // TODO - Node doesn't yet support dynamic import from https URLs
+      // return await import(libraryUrl);
+      return await globalThis.loaders?.requireFromFile?.(libraryUrl);
     } catch (error) {
       console.error(error); // eslint-disable-line no-console
       return null;
@@ -129,7 +124,10 @@ async function loadScriptFromFile(libraryUrl) {
 // we could create a`LibraryLoader` or`ModuleLoader`
 function loadLibraryFromString(scriptSource: string, id: string): null | any {
   if (!isBrowser) {
-    return node.requireFromString && node.requireFromString(scriptSource, id);
+    return (
+      globalThis.loaders?.requireFromString &&
+      globalThis.loaders?.requireFromString(scriptSource, id)
+    );
   }
 
   if (isWorker) {
@@ -168,11 +166,11 @@ function combineWorkerWithLibrary(worker, jsContent) {
 */
 
 async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
-  if (!node.readFileAsArrayBuffer || url.startsWith('http')) {
+  if (!globalThis.loaders?.readFileAsArrayBuffer || url.startsWith('http')) {
     const response = await fetch(url);
     return await response.arrayBuffer();
   }
-  return await node.readFileAsArrayBuffer(url);
+  return await globalThis.loaders?.readFileAsArrayBuffer(url);
 }
 
 /**
@@ -181,9 +179,9 @@ async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
  * @returns
  */
 async function loadAsText(url: string): Promise<string> {
-  if (!node.readFileAsText || url.startsWith('http')) {
+  if (!globalThis.loaders?.readFileAsText || url.startsWith('http')) {
     const response = await fetch(url);
     return await response.text();
   }
-  return await node.readFileAsText(url);
+  return await globalThis.loaders?.readFileAsText(url);
 }

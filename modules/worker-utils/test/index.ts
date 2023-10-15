@@ -1,7 +1,9 @@
+// loaders.gl, MIT license
+
 import './lib/async-queue/async-queue.spec';
 
-// import './lib/library-utils/require-utils.spec';
-import './lib/library-utils/library-utils.spec';
+// TESTED by polyfills?
+// import './lib/library-utils/library-utils.spec';
 
 import './lib/worker-utils/get-transfer-list.spec';
 import './lib/worker-utils/get-loadable-worker-url.spec';
