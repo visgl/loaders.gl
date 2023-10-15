@@ -20,7 +20,7 @@ export function toArrayBuffer(buffer) {
 /**
  * Convert (copy) ArrayBuffer to Buffer
  */
-export function toBuffer(binaryData: ArrayBuffer | ArrayBuffer | Buffer): Buffer {
+export function toBuffer(binaryData: ArrayBuffer | Buffer): Buffer {
   if (Buffer.isBuffer(binaryData)) {
     return binaryData;
   }

@@ -38,6 +38,14 @@ const config = getESLintConfig({
       {
         files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
         rules: {
+          // typescript-eslint 6.0
+          '@typescript-eslint/no-unsafe-argument': 0,
+          '@typescript-eslint/no-redundant-type-constituents': 0,
+          '@typescript-eslint/no-unsafe-enum-comparison': 1,
+          '@typescript-eslint/no-duplicate-type-constituents': 1,
+          '@typescript-eslint/no-base-to-string': 1,
+          '@typescript-eslint/no-loss-of-precision': 1,
+
           // For parquet module
           '@typescript-eslint/no-non-null-assertion': 0,
           '@typescript-eslint/no-non-null-asserted-optional-chain': 0,

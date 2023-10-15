@@ -18,8 +18,6 @@ type TypedArrayConstructor =
   | Uint16ArrayConstructor
   | Int32ArrayConstructor
   | Uint32ArrayConstructor
-  | Int32ArrayConstructor
-  | Uint32ArrayConstructor
   | Float32ArrayConstructor
   | Float64ArrayConstructor;
 

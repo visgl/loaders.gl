@@ -6,7 +6,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type FlatGeobufLoaderOptions = LoaderOptions & {
   flatgeobuf?: {
-    shape?: 'geojson-table' | 'columnar-table' | 'geojson-table' | 'geojson' | 'binary';
+    shape?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary';
   };
   gis?: {
     reproject?: boolean;

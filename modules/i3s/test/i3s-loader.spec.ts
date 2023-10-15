@@ -27,8 +27,7 @@ test('I3SLoader#Load tile content', async (t) => {
   t.end();
 });
 
-// TODO v4 restore these tests
-test.skip('I3SLoader#DRACO geometry', async (t) => {
+test('I3SLoader#DRACO geometry', async (t) => {
   const content = await loadI3STileContent({
     i3s: {useDracoGeometry: true},
     loadOptions: {worker: false}

@@ -63,7 +63,7 @@ export type CSWServiceProps = DataSourceProps & {
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
 export class CSWService extends DataSource<CSWServiceProps> {
-  static type: 'csw' = 'csw';
+  static readonly type = 'csw';
   static testURL = (url: string): boolean => url.toLowerCase().includes('csw');
 
   capabilities: CSWCapabilities | null = null;

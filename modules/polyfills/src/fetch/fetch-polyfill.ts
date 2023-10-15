@@ -2,9 +2,9 @@
 
 import http from 'http';
 import https from 'https';
-import {Response} from './response.node';
-import {Headers} from './headers.node';
-import {decodeDataUri} from './utils/decode-data-uri.node';
+import {Response} from './response-polyfill';
+import {Headers} from './headers-polyfill';
+import {decodeDataUri} from './decode-data-uri';
 
 const isDataURL = (url: string): boolean => url.startsWith('data:');
 const isRequestURL = (url: string): boolean => url.startsWith('http:') || url.startsWith('https:');
