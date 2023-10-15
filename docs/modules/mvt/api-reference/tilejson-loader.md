@@ -6,7 +6,7 @@ The `PMTilesLoader` parses header/metadata from a pmtiles archive
 | --------------------- | -------------------------------------------------- |
 | File Extension        | `.json`                                            |
 | File Type             | Text                                               |
-| File Format           | [TileJSON](/docs/modules/pmtiles/formats/tilejson) |
+| File Format           | [TileJSON](/docs/modules/mvt/formats/tilejson) |
 | Data Format           | TileJSON                                           |
 | Decoder Type          | Synchronous                                        |
 | Worker Thread Support | No                                                 |
