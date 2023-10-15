@@ -45,7 +45,7 @@ test('polyfills#fetchNode() error handling (NODE)', async (t) => {
   t.end();
 });
 
-test.only('polyfills#fetchNode() able to decompress .gz extension (NODE)', async (t) => {
+test('polyfills#fetchNode() able to decompress .gz extension (NODE)', async (t) => {
   if (!isBrowser) {
     let response = await fetchNode(TEXT_URL);
     t.ok(response.ok, response.statusText);
