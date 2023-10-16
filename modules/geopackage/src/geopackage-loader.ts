@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {Tables, GeoJSONTable} from '@loaders.gl/schema';
 import {parseGeoPackage, DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
@@ -40,7 +41,7 @@ export const GeoPackageLoader: LoaderWithParser<
   options: {
     geopackage: {
       sqlJsCDN: DEFAULT_SQLJS_CDN,
-      shape: 'geojson-table'
+      shape: 'tables'
     },
     gis: {}
   }

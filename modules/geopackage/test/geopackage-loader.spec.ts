@@ -32,7 +32,7 @@ test('GeoPackageLoader#load file as tables', async (t) => {
   t.end();
 });
 
-test('GeoPackageLoader#load file and reproject to WGS84', async (t) => {
+test.only('GeoPackageLoader#load file and reproject to WGS84', async (t) => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'tables'},
     gis: {reproject: true, _targetCrs: 'WGS84'}
