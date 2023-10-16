@@ -1,3 +1,4 @@
+import {SchemaClassProperty} from '../types';
 import type {FeatureTableJson} from '@loaders.gl/3d-tiles';
 import {
   Attribute,
@@ -103,6 +104,27 @@ export function getAttributeType(key: string, attribute: unknown): string {
 }
 
 /**
+ * Get the attribute type for attributeStorageInfo according to the schema
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
+ * @param {SchemaClassProperty} schema - attribute's schema
+ * @returns attribute's type
+ */
+export function getAttributeTypeBasedOnSchema(schema: SchemaClassProperty): string {
+  if (
+    schema.array ||
+    schema.propertyType === STRING_TYPE ||
+    schema.propertyType === 'INT64' ||
+    schema.propertyType === 'UINT64'
+  ) {
+    return STRING_TYPE;
+  } else if (schema.propertyType === 'FLOAT32' || schema.propertyType === 'FLOAT64') {
+    return DOUBLE_TYPE;
+  } else {
+    return SHORT_INT_TYPE;
+  }
+}
+
+/**
  * Generate storage attribute for map segmentation.
  * @param attributeIndex - order index of attribute (f_0, f_1 ...).
  * @param key - attribute key from propertyTable.
@@ -175,10 +197,10 @@ export function createFieldAttribute(key: string, fieldAttributeType: ESRIField)
 
 /**
  * Generate popup info to show metadata on the map.
- * @param propertyTable - table data with OBJECTID.
+ * @param propertyNames - array of property name including OBJECTID.
  * @return data for correct rendering of popup.
  */
-export function createPopupInfo(propertyTable: FeatureTableJson): PopupInfo {
+export function createPopupInfo(propertyNames: string[]): PopupInfo {
   const title = '{OBJECTID}';
   const mediaInfos = [];
   const fieldInfos: FieldInfo[] = [];
@@ -188,12 +210,12 @@ export function createPopupInfo(propertyTable: FeatureTableJson): PopupInfo {
   }[] = [];
   const expressionInfos = [];
 
-  for (const key in propertyTable) {
+  for (const propertyName of propertyNames) {
     fieldInfos.push({
-      fieldName: key,
+      fieldName: propertyName,
       visible: true,
       isEditable: false,
-      label: key
+      label: propertyName
     });
   }
   popupElements.push({

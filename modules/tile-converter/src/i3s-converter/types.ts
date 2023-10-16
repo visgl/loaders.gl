@@ -183,17 +183,35 @@ export enum GLTFPrimitiveModeString {
   TRIANGLE_FAN = 'TRIANGLE_FAN'
 }
 
+export type SchemaClassProperty = {
+  propertyType: string;
+  array: boolean;
+};
+
+export type SchemaClass = {
+  schemaId?: string;
+  classId: string;
+  /** GLTF_EXT_structural_metadata_Class or GLTF_EXT_feature_metadata_Class */
+  classObject: unknown;
+  /** Information on properties taken from schema classes */
+  properties: {[key: string]: SchemaClassProperty};
+};
+
 /** Preprocessed data gathered from child tiles binary content */
 export type PreprocessData = {
   /** Mesh topology types used in gltf primitives of the tileset */
   meshTopologyTypes: Set<GLTFPrimitiveModeString>;
   /**
-   * Featrue metadata classes found in glTF extensions
+   * Feature metadata classes found in glTF extensions
    * The tileset might contain multiple metadata classes provided by EXT_feature_metadata and EXT_structural_metadata extensions.
    * Every class is a set of properties. But I3S can consume only one set of properties.
    * On the pre-process we collect all classes from the tileset in order to show the prompt to select one class for conversion to I3S.
    */
   metadataClasses: Set<string>;
+  /**
+   * Schemas of feature metadata classes found in glTF extensions
+   */
+  schemaClasses: SchemaClass[];
 };
 
 /** Texture image properties required for conversion */

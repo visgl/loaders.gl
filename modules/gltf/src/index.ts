@@ -47,7 +47,10 @@ export type {
   GLTF_EXT_feature_metadata_FeatureIdTextureAccessor
 } from './lib/types/gltf-ext-feature-metadata-schema';
 
-export type {GLTF_EXT_structural_metadata_GLTF} from './lib/types/gltf-ext-structural-metadata-schema';
+export type {
+  GLTF_EXT_structural_metadata_GLTF,
+  GLTF_EXT_structural_metadata_Schema
+} from './lib/types/gltf-ext-structural-metadata-schema';
 
 export type {
   GLTF_EXT_mesh_features,

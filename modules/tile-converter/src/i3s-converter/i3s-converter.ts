@@ -55,6 +55,8 @@ import {
   GLTFPrimitiveModeString,
   I3SConvertedResources,
   PreprocessData,
+  SchemaClass,
+  SchemaClassProperty,
   SharedResourcesArrays
 } from './types';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
@@ -65,6 +67,7 @@ import {
   createFieldAttribute,
   createPopupInfo,
   getAttributeType,
+  getAttributeTypeBasedOnSchema,
   getFieldAttributeType
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
@@ -135,7 +138,8 @@ export default class I3SConverter {
   compressList: string[] | null = null;
   preprocessData: PreprocessData = {
     meshTopologyTypes: new Set(),
-    metadataClasses: new Set()
+    metadataClasses: new Set(),
+    schemaClasses: new Array<SchemaClass>()
   };
 
   constructor() {
@@ -649,14 +653,22 @@ export default class I3SConverter {
     let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
     const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
-
-    if (propertyTable) {
-      /*
-        Call the convertion procedure even if the node attributes have been already created.
-        We will append new attributes only in case the property table is updated.
-        According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
-        "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer, which is the same for every node in the layer."
-      */
+    /*
+      First, try to create Attribute storage info based on the schema.
+      The information about a type and a name of attributes has been collected
+      from extension schemas (if any) provided in all tiles so it corresponds to the complete tileset.
+      It's done during the 'analize' stage of the convertion procedure.
+      This information is stored in 'this.preprocessData.schemaClasses'.
+    */
+    const convertedUsingSchema = this._convertSchemaClassesToNodeAttributes();
+    /*
+      In case the tileset doesn't have either EXT_structural_metadata or EXT_feature_metadata
+      that can be a source of attribute information
+      convertedUsingSchema will be false.
+      We will collect attribute information for node attributes from the property table
+      taken from each tile.
+    */
+    if (propertyTable && !convertedUsingSchema) {
       this._convertPropertyTableToNodeAttributes(propertyTable);
     }
 
@@ -1151,29 +1163,43 @@ export default class I3SConverter {
   }
 
   /**
-   * Do conversion of 3DTiles property table to I3s node attributes.
-   * @param propertyTable - Table with layer meta data.
+   * Creates attribute storage info based on the information
+   * collected while analizing extension schemas in 3DTiles.
+   * @return true if attribute storage info is successfully created, false - otherwise.
    */
-  private _convertPropertyTableToNodeAttributes(propertyTable: FeatureTableJson): void {
-    /*
-      We will append attributes if only the attributeStorageInfo doesn't contain anything.
-      If it already has attributes, return from the function.
-      According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
-      "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer,
-      which is the same for every node in the layer."
-    */
-    if (this.layers0!.attributeStorageInfo?.length) {
-      return;
+  private _convertSchemaClassesToNodeAttributes(): boolean {
+    if (!this.options.metadataClass) {
+      // No info about metadataClass. So, use _convertPropertyTableToNodeAttributes.
+      return false;
     }
+    if (this.layers0!.attributeStorageInfo!.length) {
+      // attributeStorageInfo has already created based on schema (because we know metadataClass)
+      return true;
+    }
+
+    const schemaClasses = this.preprocessData.schemaClasses;
+    let properties: {[key: string]: SchemaClassProperty} | null = null;
+    for (const schemaClass of schemaClasses) {
+      if (schemaClass.classId === this.options.metadataClass) {
+        properties = schemaClass.properties;
+        break;
+      }
+    }
+    if (!properties) {
+      throw new Error(
+        `Can't find the class specified in the options ${this.options.metadataClass}`
+      );
+    }
+
     let attributeIndex = 0;
-    const propertyTableWithObjectId = {
+    const propertiesWithObjectId = {
       OBJECTID: [0],
-      ...propertyTable
+      ...properties
     };
 
-    for (const key in propertyTableWithObjectId) {
-      const firstAttribute = propertyTableWithObjectId[key][0];
-      const attributeType = getAttributeType(key, firstAttribute);
+    for (const key in propertiesWithObjectId) {
+      const attribute = propertiesWithObjectId[key];
+      const attributeType = getAttributeTypeBasedOnSchema(attribute);
 
       const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
         attributeIndex,
@@ -1182,14 +1208,55 @@ export default class I3SConverter {
       );
       const fieldAttributeType = getFieldAttributeType(attributeType);
       const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
-      const popupInfo = createPopupInfo(propertyTableWithObjectId);
+      const popupInfo = createPopupInfo(Object.keys(propertiesWithObjectId));
 
       this.layers0!.attributeStorageInfo!.push(storageAttribute);
       this.layers0!.fields!.push(fieldAttribute);
       this.layers0!.popupInfo = popupInfo;
       this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+      attributeIndex += 1;
     }
-    attributeIndex += 1;
+
+    return true;
+  }
+
+  /**
+   * Converts 3DTiles property table to I3s node attributes.
+   * @param propertyTable - Table with layer meta data.
+   */
+  private _convertPropertyTableToNodeAttributes(propertyTable: FeatureTableJson): void {
+    let attributeIndex = 0;
+    const propertyTableWithObjectId = {
+      OBJECTID: [0],
+      ...propertyTable
+    };
+
+    for (const key in propertyTableWithObjectId) {
+      /*
+        We will append new attributes only in case the property table contains
+        properties that have not been added to the attribute storage info yet.
+      */
+      const found = this.layers0!.attributeStorageInfo!.find((element) => element.name === key);
+      if (!found) {
+        const firstAttribute = propertyTableWithObjectId[key][0];
+        const attributeType = getAttributeType(key, firstAttribute);
+
+        const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
+          attributeIndex,
+          key,
+          attributeType
+        );
+        const fieldAttributeType = getFieldAttributeType(attributeType);
+        const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
+        const popupInfo = createPopupInfo(Object.keys(propertyTableWithObjectId));
+
+        this.layers0!.attributeStorageInfo!.push(storageAttribute);
+        this.layers0!.fields!.push(fieldAttribute);
+        this.layers0!.popupInfo = popupInfo;
+        this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+      }
+      attributeIndex += 1;
+    }
   }
 
   /**
