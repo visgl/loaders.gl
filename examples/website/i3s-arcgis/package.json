@@ -17,8 +17,8 @@
     "@deck.gl/layers": "^8.9.28",
     "@deck.gl/mesh-layers": "^8.9.28",
     "@esri/react-arcgis": "^5.2.0",
-    "@loaders.gl/core": "4.0.0-alpha.23",
-    "@loaders.gl/i3s": "4.0.0-alpha.23",
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/i3s": "4.0.0-beta.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },

@@ -76,6 +76,10 @@ globalThis.loaders.encodeImageNode = encodeImageNode;
 globalThis.loaders.parseImageNode = parseImageNode;
 globalThis.loaders.imageFormatsNode = NODE_FORMAT_SUPPORT;
 
+// Deprecated, remove after republish
+globalThis._parseImageNode = parseImageNode;
+globalThis._imageFormatsNode = NODE_FORMAT_SUPPORT;
+
 // LOAD LIBRARY
 
 import {
