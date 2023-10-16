@@ -500,7 +500,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
   t.end();
 });
 
-test.only('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be converted to a node attibute of type string', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be converted to a node attibute of type string', async (t) => {
   if (isBrowser) {
     t.end();
     return;
