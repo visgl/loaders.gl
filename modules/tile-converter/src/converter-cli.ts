@@ -53,7 +53,7 @@ type TileConversionOptions = {
   /** Feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
   metadataClass?: string;
   /** With this options the tileset content will be analyzed without conversion */
-  analyzeOnly?: boolean;
+  analyze?: boolean;
 };
 
 /* During validation we check that particular options are defined so they can't be undefined */
@@ -138,9 +138,7 @@ function printHelp(): void {
     '--generate-textures [Enable KTX2 textures generation if only one of (JPG, PNG) texture is provided or generate JPG texture if only KTX2 is provided]'
   );
   console.log('--generate-bounding-volumes [Generate obb and mbs bounding volumes from geometry]');
-  console.log(
-    '--analyze-only [Analyze the input tileset content without conversion, default: false]'
-  );
+  console.log('--analyze [Analyze the input tileset content without conversion, default: false]');
   console.log(
     '--metadata-class [One of the list of feature metadata classes, detected by converter on "analyze" stage, default: not set]'
   );
@@ -186,7 +184,7 @@ async function convert(options: ValidatedTileConversionOptions) {
         validate: options.validate,
         instantNodeWriting: options.instantNodeWriting,
         metadataClass: options.metadataClass,
-        analyzeOnly: options.analyzeOnly,
+        analyze: options.analyze,
         inquirer
       });
       break;
@@ -210,7 +208,7 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
   } = {
     name: {
       getMessage: () => console.log('Missed: --name [Tileset name]'),
-      condition: (value: any) => Boolean(value) || Boolean(options.analyzeOnly)
+      condition: (value: any) => Boolean(value) || Boolean(options.analyze)
     },
     output: {getMessage: () => console.log('Missed: --output [Output path name]')},
     sevenZipExe: {getMessage: () => console.log('Missed: --7zExe [7z archiver executable path]')},
@@ -313,8 +311,8 @@ function parseOptions(args: string[]): TileConversionOptions {
         case '--generate-bounding-volumes':
           opts.generateBoundingVolumes = getBooleanValue(index, args);
           break;
-        case '--analyze-only':
-          opts.analyzeOnly = getBooleanValue(index, args);
+        case '--analyze':
+          opts.analyze = getBooleanValue(index, args);
           break;
         case '--metadata-class':
           opts.metadataClass = getStringValue(index, args);

@@ -194,7 +194,7 @@ export default class I3SConverter {
     instantNodeWriting?: boolean;
     inquirer?: Promise<unknown>;
     metadataClass?: string;
-    analyzeOnly?: boolean;
+    analyze?: boolean;
   }): Promise<string> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE);
@@ -218,7 +218,7 @@ export default class I3SConverter {
       mergeMaterials = true,
       inquirer,
       metadataClass,
-      analyzeOnly = false
+      analyze = false
     } = options;
     this.options = {
       maxDepth,
@@ -262,9 +262,9 @@ export default class I3SConverter {
       this.sourceTileset = await loadFromArchive(tilesetUrl, this.Loader, this.loadOptions);
 
       const preprocessResult =
-        this.Loader === Tiles3DLoader || analyzeOnly ? await this.preprocessConversion() : true;
+        this.Loader === Tiles3DLoader || analyze ? await this.preprocessConversion() : true;
 
-      if (preprocessResult && !analyzeOnly) {
+      if (preprocessResult && !analyze) {
         const selectMetadataClassResult = await this.selectMetadataClass();
         if (selectMetadataClassResult) {
           await this._createAndSaveTileset(outputPath, tilesetName);
