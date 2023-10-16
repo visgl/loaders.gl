@@ -7,7 +7,11 @@ import type {
   GLTFMeshPostprocessed,
   GLTFTexturePostprocessed,
   GLTF_EXT_feature_metadata_GLTF,
-  GLTF_EXT_structural_metadata_GLTF
+  GLTF_EXT_feature_metadata_FeatureTable,
+  GLTF_EXT_feature_metadata_FeatureTexture,
+  GLTF_EXT_structural_metadata_GLTF,
+  GLTF_EXT_structural_metadata_PropertyTable,
+  GLTF_EXT_structural_metadata_PropertyTexture
 } from '@loaders.gl/gltf';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
@@ -49,12 +53,7 @@ import type {GLTFAttributesData, TextureImageProperties, TypedArrayConstructor} 
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 
-import {
-  EXT_FEATURE_METADATA,
-  EXT_STRUCTURAL_METADATA,
-  getPropertyTableFromExtFeatureMetadata,
-  getPropertyTableFromExtStructuralMetadata
-} from '@loaders.gl/gltf';
+import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -1646,6 +1645,104 @@ export function getPropertyTable(
     default:
       return null;
   }
+}
+
+/**
+ * Handles EXT_structural_metadata to get property table.
+ * @param extension - Global level of EXT_STRUCTURAL_METADATA extension.
+ * @param metadataClass - User selected feature metadata class name.
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
+ */
+export function getPropertyTableFromExtStructuralMetadata(
+  extension: GLTF_EXT_structural_metadata_GLTF,
+  metadataClass?: string
+): FeatureTableJson | null {
+  /**
+   * Note, 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+   * In I3S we should decide which featureIds attribute will be passed to geometry data.
+   * So, we take only the feature table / feature texture to generate attributes storage info object.
+   * If the user has selected the metadataClass, the table with the corresponding class will be used,
+   * or just the first one otherwise.
+   */
+  if (extension.propertyTables) {
+    for (const propertyTable of extension.propertyTables) {
+      if (propertyTable.class === metadataClass || !metadataClass) {
+        return getPropertyData(propertyTable);
+      }
+    }
+  }
+
+  if (extension.propertyTextures) {
+    for (const propertyTexture of extension.propertyTextures) {
+      if (propertyTexture.class === metadataClass || !metadataClass) {
+        return getPropertyData(propertyTexture);
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Handles EXT_feature_metadata to get property table.
+ * @param extension - Global level of EXT_FEATURE_METADATA extension.
+ * @param metadataClass - User selected feature metadata class name.
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
+ */
+export function getPropertyTableFromExtFeatureMetadata(
+  extension: GLTF_EXT_feature_metadata_GLTF,
+  metadataClass?: string
+): FeatureTableJson | null {
+  /**
+   * Note, 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+   * In I3S we should decide which featureIds attribute will be passed to geometry data.
+   * So, we take only the feature table / feature texture to generate attributes storage info object.
+   * If the user has selected the metadataClass, the table with the corresponding class will be used,
+   * or just the first one otherwise.
+   */
+  if (extension.featureTables) {
+    for (const featureTableName in extension.featureTables) {
+      const featureTable = extension.featureTables[featureTableName];
+      if (featureTable.class === metadataClass || !metadataClass) {
+        return getPropertyData(featureTable);
+      }
+    }
+  }
+
+  if (extension.featureTextures) {
+    for (const featureTextureName in extension.featureTextures) {
+      const featureTexture = extension.featureTextures[featureTextureName];
+      if (featureTexture.class === metadataClass || !metadataClass) {
+        return getPropertyData(featureTexture);
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Gets data from Property Table or Property Texture
+ * @param {
+ *  | GLTF_EXT_structural_metadata_PropertyTable
+ *  | GLTF_EXT_structural_metadata_PropertyTexture
+ *  | GLTF_EXT_feature_metadata_FeatureTable
+ *  | GLTF_EXT_feature_metadata_FeatureTexture
+ * } featureObject
+ * @returns Table containing property data
+ */
+function getPropertyData<
+  Type extends
+    | GLTF_EXT_structural_metadata_PropertyTable
+    | GLTF_EXT_structural_metadata_PropertyTexture
+    | GLTF_EXT_feature_metadata_FeatureTable
+    | GLTF_EXT_feature_metadata_FeatureTexture
+>(featureObject: Type) {
+  const propertyTableWithData = {};
+  for (const propertyName in featureObject.properties) {
+    propertyTableWithData[propertyName] = featureObject.properties[propertyName].data;
+  }
+  return propertyTableWithData;
 }
 
 /**

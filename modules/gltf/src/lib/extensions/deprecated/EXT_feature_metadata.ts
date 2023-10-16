@@ -11,7 +11,6 @@ import type {
   GLTF_EXT_feature_metadata_Schema
 } from '../../types/gltf-ext-feature-metadata-schema';
 import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
-import type {FeatureTableJson} from '../../types/gltf-types';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {GLTFMeshPrimitive} from '../../types/gltf-json-schema';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
@@ -34,59 +33,6 @@ export const name = EXT_FEATURE_METADATA_NAME;
 export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
   decodeExtFeatureMetadata(scenegraph, options);
-}
-
-/**
- * Handles EXT_feature_metadata to get property table.
- * @param extension - Global level of EXT_FEATURE_METADATA extension.
- * @param metadataClass - User selected feature metadata class name.
- * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
- */
-export function getPropertyTableFromExtFeatureMetadata(
-  extension: GLTF_EXT_feature_metadata_GLTF,
-  metadataClass?: string
-): FeatureTableJson | null {
-  /**
-   * Note, 3dTiles is able to have multiple featureId attributes and multiple feature tables.
-   * In I3S we should decide which featureIds attribute will be passed to geometry data.
-   * So, we take only the feature table / feature texture to generate attributes storage info object.
-   * If the user has selected the metadataClass, the table with the corresponding class will be used,
-   * or just the first one otherwise.
-   */
-  if (extension.featureTables) {
-    for (const featureTableName in extension.featureTables) {
-      const featureTable = extension.featureTables[featureTableName];
-      if (featureTable.class === metadataClass || !metadataClass) {
-        return getPropertyData(featureTable);
-      }
-    }
-  }
-
-  if (extension.featureTextures) {
-    for (const featureTextureName in extension.featureTextures) {
-      const featureTexture = extension.featureTextures[featureTextureName];
-      if (featureTexture.class === metadataClass || !metadataClass) {
-        return getPropertyData(featureTexture);
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Gets data from Feature Table or Feature Texture
- * @param {GLTF_EXT_feature_metadata_FeatureTable | GLTF_EXT_feature_metadata_FeatureTexture} featureObject
- * @returns Table containing feature data
- */
-function getPropertyData<
-  Type extends GLTF_EXT_feature_metadata_FeatureTable | GLTF_EXT_feature_metadata_FeatureTexture
->(featureObject: Type) {
-  const propertyTableWithData = {};
-  for (const propertyName in featureObject.properties) {
-    propertyTableWithData[propertyName] = featureObject.properties[propertyName].data;
-  }
-  return propertyTableWithData;
 }
 
 /**

@@ -15,7 +15,6 @@ import type {
   GLTF_EXT_structural_metadata_Primitive
 } from '../types/gltf-ext-structural-metadata-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
-import type {FeatureTableJson} from '../types/gltf-types';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {
@@ -36,59 +35,6 @@ export const name = EXT_STRUCTURAL_METADATA_NAME;
 export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
   decodeExtStructuralMetadata(scenegraph, options);
-}
-
-/**
- * Handles EXT_structural_metadata to get property table.
- * @param extension - Global level of EXT_STRUCTURAL_METADATA extension.
- * @param metadataClass - User selected feature metadata class name.
- * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
- */
-export function getPropertyTableFromExtStructuralMetadata(
-  extension: GLTF_EXT_structural_metadata_GLTF,
-  metadataClass?: string
-): FeatureTableJson | null {
-  /**
-   * Note, 3dTiles is able to have multiple featureId attributes and multiple feature tables.
-   * In I3S we should decide which featureIds attribute will be passed to geometry data.
-   * So, we take only the feature table / feature texture to generate attributes storage info object.
-   * If the user has selected the metadataClass, the table with the corresponding class will be used,
-   * or just the first one otherwise.
-   */
-  if (extension.propertyTables) {
-    for (const propertyTable of extension.propertyTables) {
-      if (propertyTable.class === metadataClass || !metadataClass) {
-        return getPropertyData(propertyTable);
-      }
-    }
-  }
-
-  if (extension.propertyTextures) {
-    for (const propertyTexture of extension.propertyTextures) {
-      if (propertyTexture.class === metadataClass || !metadataClass) {
-        return getPropertyData(propertyTexture);
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Gets data from Property Table or Property Texture
- * @param {GLTF_EXT_structural_metadata_PropertyTable | GLTF_EXT_structural_metadata_PropertyTexture} featureObject
- * @returns Table containing property data
- */
-function getPropertyData<
-  Type extends
-    | GLTF_EXT_structural_metadata_PropertyTable
-    | GLTF_EXT_structural_metadata_PropertyTexture
->(featureObject: Type) {
-  const propertyTableWithData = {};
-  for (const propertyName in featureObject.properties) {
-    propertyTableWithData[propertyName] = featureObject.properties[propertyName].data;
-  }
-  return propertyTableWithData;
 }
 
 /*
