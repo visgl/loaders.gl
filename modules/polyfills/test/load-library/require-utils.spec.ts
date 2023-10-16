@@ -50,11 +50,7 @@ test('polyfills#require-utils', (tt) => {
     t.end();
   });
 
-<<<<<<< HEAD
   test.skip('polyfills#requireFromString#should have appended and preppended paths', (t) => {
-=======
-  test.only('polyfills#requireFromString#should have appended and preppended paths', (t) => {
->>>>>>> 1b9bf5ad0 (chore(worker-utils): Move Node require utils to polyfills)
     const code = fs.readFileSync(SUBMODULE_URL, 'utf8');
     const result = requireFromString(code, SUBMODULE_URL, {
       appendPaths: ['append'],

@@ -1899,7 +1899,6 @@ function writeDouble(buf: Buffer, value, offset, littleEndian, noAssert): number
 }
 
 // CUSTOM ERRORS
-// =============
 
 // Simplified versions from Node, changed for Buffer-only usage
 const errors: Record<string, any> = {};
@@ -1991,7 +1990,6 @@ function addNumericalSeparator(val) {
 }
 
 // CHECK FUNCTIONS
-// ===============
 
 function checkBounds(buf, offset, byteLength) {
   validateNumber(offset, 'offset');
@@ -2040,7 +2038,6 @@ function boundsError(value, length, type?) {
 }
 
 // HELPER FUNCTIONS
-// ================
 
 const INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
 
