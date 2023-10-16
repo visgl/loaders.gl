@@ -604,10 +604,8 @@ export class Tileset3D {
         ymin + (ymax - ymin) / 2,
         zmin + (zmax - zmin) / 2
       );
-      this.cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(
-        this.cartographicCenter,
-        new Vector3()
-      );
+      this.cartesianCenter = new Vector3();
+      Ellipsoid.WGS84.cartographicToCartesian(this.cartographicCenter, this.cartesianCenter);
       this.zoom = getZoomFromFullExtent(fullExtent, this.cartographicCenter, this.cartesianCenter);
       return;
     }
@@ -616,10 +614,8 @@ export class Tileset3D {
     if (extent) {
       const [xmin, ymin, xmax, ymax] = extent;
       this.cartographicCenter = new Vector3(xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2, 0);
-      this.cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(
-        this.cartographicCenter,
-        new Vector3()
-      );
+      this.cartesianCenter = new Vector3();
+      Ellipsoid.WGS84.cartographicToCartesian(this.cartographicCenter, this.cartesianCenter);
       this.zoom = getZoomFromExtent(extent, this.cartographicCenter, this.cartesianCenter);
       return;
     }
@@ -650,7 +646,8 @@ export class Tileset3D {
 
     // cartographic coordinates are undefined at the center of the ellipsoid
     if (center[0] !== 0 || center[1] !== 0 || center[2] !== 0) {
-      this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+      this.cartographicCenter = new Vector3();
+      Ellipsoid.WGS84.cartesianToCartographic(center, this.cartographicCenter);
     } else {
       this.cartographicCenter = new Vector3(0, 0, -Ellipsoid.WGS84.radii[0]);
     }
