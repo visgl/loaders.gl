@@ -173,7 +173,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.deepEqual(batchIds, expectedResult);
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty batchIds for compressed texture', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty batchIds for compressed texture', (t) => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])},
     TEXCOORD_0: {

@@ -45,7 +45,9 @@ Converts a tileset to I3S format
 - `options.generateTextures: boolean` Whether the converter should generate additional texture of another format. For non-compressed source texture format (JPG, PNG) the converter creates additional KTX2 texture. For compressed source texture (KTX2) the converter creates additional JPG texture. To encode and decode KTX2 [Basis Universal Supercompressed GPU Texture Codec](https://github.com/BinomialLLC/basis_universal) is used.
 - `options.generateBoundingVolumes: boolean` Whether the converter generate new bounding volumes from the mesh vertices. The default behavior is convertion bounding volumes (box, sphere or region) from 3DTiles tileset data. If this option is set `true` the converter will ignore source bounding volume and generate new bounding volume (oriented bounding box and minimal bounding sphere) from the geometry POSITION attribute.
 - `options.instantNodeWriting: boolean` Whether the converter should keep JSON resources ([3DNodeIndexDocuments](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DNodeIndexDocument.cmn) and [nodePages](https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn)) on disk during conversion. The default behavior is the converter keeps JSON resources in memory till the end of conversion. Those resources need to be updated during conversion (adding child nodes and neighbor nodes). If this option is set `true` the converter will keep JSON resources on disk all the time. Use this option for large datasets when the nodes tree is large and "memory overflow" error occurs. Instant node writing saves memory usage in cost of conversion speed (>2 times slower).
-- `options.validate` Enable Validation
+- `options.metadataClass: string` One of the list of feature metadata classes, detected by converter on "analyze" stage
+- `options.analyze: boolean` Analyze the input tileset content without conversion.
+- `options.validate: boolean` Enable Validation.
 
 ### Validation
 
