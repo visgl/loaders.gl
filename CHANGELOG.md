@@ -6,6 +6,27 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-beta.3
+
+- feat(tile-converter): --analyze-only option (#2694)
+- fix(tiles): cartographicToCartesan syntax (#2690)
+- chore(website): Restore website (#2689)
+- fix(wms): WMS 1.3.0 compatability on GetFeatureInfo (#2680)
+- chore: Prep for Node18 support (#2699)
+- chore: math.gl@4.0.0 (#2698)
+- fix(gltf): fix of getTypedArrayForAccessor in gltf-scenegraph (#2683)
+- chore(schema): Move arrow dependencies to arrow module (#2697)
+- chore: Upgrade to math.gl@4.0.0-beta.1. Remove gl-matrix (#2696)
+- chore: Restore library loading (#2686)
+- fix(tiles): convert region to obb (#2685)
+- feat: Move to ES modules, upgrade dev-tools (#2681)
+- feat(mvt): Add MVTSource (#2674)
+- chore(core): Remove writeSync, save and fs dependencies (#2678)
+- feat(loader-utils): Refactor FileSystem to be independent of fs (#2676)
+- chore: Remove Buffer usage (#2675)
+- chore(zip): Refactor zip content hash tables (#2500)
+- chore(polyfills): Remove Promise.allSettled polyfill (#2672)
+
 ### v4.0.0-beta.2
 
 - fix: getting tile url with empty query params (#2671)

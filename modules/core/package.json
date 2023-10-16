@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "4.0.0-beta.2",
+  "version": "4.0.0-beta.3",
   "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
   "type": "module",
@@ -46,8 +46,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-beta.2",
-    "@loaders.gl/worker-utils": "4.0.0-beta.2",
+    "@loaders.gl/loader-utils": "4.0.0-beta.3",
+    "@loaders.gl/worker-utils": "4.0.0-beta.3",
     "@probe.gl/log": "^4.0.2"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
