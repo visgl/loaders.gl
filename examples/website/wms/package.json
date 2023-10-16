@@ -12,8 +12,8 @@
   "dependencies": {
     "@deck.gl/core": "^8.9.28",
     "@deck.gl/geo-layers": "^8.9.28",
-    "@loaders.gl/core": "4.0.0-alpha.23",
-    "@loaders.gl/wms": "4.0.0-alpha.23",
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/wms": "4.0.0-beta.3",
     "@monaco-editor/react": "^4.5.0",
     "deck.gl": "^8.9.0",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",

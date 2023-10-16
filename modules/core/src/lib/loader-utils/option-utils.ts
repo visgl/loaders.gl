@@ -6,7 +6,7 @@ import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 
 /**
- * Global state for loaders.gl. Stored on `global.loaders._state`
+ * Global state for loaders.gl. Stored on `globalThis.loaders._state`
  */
 type GlobalLoaderState = {
   loaderRegistry: Loader[];

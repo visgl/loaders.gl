@@ -6,8 +6,8 @@ import {TextDecoder, TextEncoder} from './text-encoder/text-encoder';
 // Node specific
 import {atob, btoa} from './buffer/btoa.node';
 
-import {encodeImageNode} from './images/encode-image.node';
-import {parseImageNode, NODE_FORMAT_SUPPORT} from './images/parse-image.node';
+import {encodeImageNode} from './images/encode-image-node';
+import {parseImageNode, NODE_FORMAT_SUPPORT} from './images/parse-image-node';
 
 // FILESYSTEM POLYFILLS
 import {NodeFile} from './filesystems/node-file';
@@ -72,14 +72,27 @@ if (!('btoa' in globalThis) && btoa) {
 // These are not official polyfills but used by the @loaders.gl/images module if installed
 // TODO - is there an appropriate Image API we could polyfill using an adapter?
 
-if (!('_encodeImageNode' in globalThis) && encodeImageNode) {
-  globalThis['_encodeImageNode'] = encodeImageNode;
-}
+globalThis.loaders.encodeImageNode = encodeImageNode;
+globalThis.loaders.parseImageNode = parseImageNode;
+globalThis.loaders.imageFormatsNode = NODE_FORMAT_SUPPORT;
 
-if (!('_parseImageNode' in globalThis) && parseImageNode) {
-  globalThis['_parseImageNode'] = parseImageNode;
-  globalThis['_imageFormatsNode'] = NODE_FORMAT_SUPPORT;
-}
+// Deprecated, remove after republish
+globalThis._parseImageNode = parseImageNode;
+globalThis._imageFormatsNode = NODE_FORMAT_SUPPORT;
+
+// LOAD LIBRARY
+
+import {
+  readFileAsArrayBuffer,
+  readFileAsText,
+  requireFromFile,
+  requireFromString
+} from './load-library/require-utils.node';
+
+globalThis.loaders.readFileAsArrayBuffer = readFileAsArrayBuffer;
+globalThis.loaders.readFileAsText = readFileAsText;
+globalThis.loaders.requireFromFile = requireFromFile;
+globalThis.loaders.requireFromString = requireFromString;
 
 // DEPRECATED POLYFILL:
 // - Node v18+: No, not needed

@@ -9,8 +9,8 @@
     "build": "webpack build"
   },
   "dependencies": {
-    "@loaders.gl/core": "4.0.0-alpha.23",
-    "@loaders.gl/obj": "^4.0.0-alpha.8"
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/obj": "4.0.0-beta.3"
   },
   "devDependencies": {
     "html-webpack-plugin": "^5.5.0",

@@ -4,7 +4,7 @@ const packageInfo = JSON.parse(readFileSync('./lerna.json', 'utf-8'));
 // Note: This constant will be inlined by babel plugin during transpilation
 // But for node we read it from lerna.json
 // @ts-ignore TS2339: Property does not exist on type 'Global'
-global.__VERSION__ = packageInfo.version;
+globalThis.__VERSION__ = packageInfo.version;
 
 // Determine Node version
 let nodeVersion = 10;
@@ -13,7 +13,7 @@ if (typeof process !== 'undefined') {
   nodeVersion = (matches && parseFloat(matches[1])) || nodeVersion;
 }
 // @ts-ignore TS2339: Property does not exist on type 'Global'
-global.nodeVersion = nodeVersion;
+globalThis.nodeVersion = nodeVersion;
 
 import '@loaders.gl/polyfills';
 

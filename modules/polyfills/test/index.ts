@@ -14,3 +14,5 @@ import './filesystems/fetch-node.spec';
 import './filesystems/node-file.spec';
 import './filesystems/node-filesystem.spec';
 import './filesystems/fetch-node.spec';
+
+import './load-library/require-utils.spec';

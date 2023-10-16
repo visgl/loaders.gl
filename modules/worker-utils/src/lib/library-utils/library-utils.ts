@@ -1,5 +1,5 @@
 /* global importScripts */
-import {global, isBrowser, isWorker} from '../env-utils/globals';
+import {isBrowser, isWorker} from '../env-utils/globals';
 import * as node from '../node/require-utils.node';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';
@@ -134,7 +134,7 @@ function loadLibraryFromString(scriptSource: string, id: string): null | any {
 
   if (isWorker) {
     // Use lvalue trick to make eval run in global scope
-    eval.call(global, scriptSource); // eslint-disable-line no-eval
+    eval.call(globalThis, scriptSource); // eslint-disable-line no-eval
     // https://stackoverflow.com/questions/9107240/1-evalthis-vs-evalthis-in-javascript
     // http://perfectionkills.com/global-eval-what-are-the-options/
     return null;

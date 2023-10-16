@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
-import {parseImageNode} from '../../src/images/parse-image.node';
+import {parseImageNode} from '../../src/images/parse-image-node';
 
 const images = [
   ['@loaders.gl/images/test/data/img1-preview.png', 'image/png'],
@@ -12,9 +12,17 @@ const images = [
 if (!isBrowser) {
   test('Node image polyfills', (t) => {
     // @ts-ignore
-    t.equals(typeof _encodeImageNode, 'function', 'global._encodeImageNode successfully installed');
+    t.equals(
+      typeof globalThis.loaders?.encodeImageNode,
+      'function',
+      'encodeImageNode successfully installed'
+    );
     // @ts-ignore
-    t.equals(typeof _parseImageNode, 'function', 'global._parseImageNode successfully installed');
+    t.equals(
+      typeof globalThis.loaders?.parseImageNode,
+      'function',
+      'parseImageNode successfully installed'
+    );
 
     t.end();
   });

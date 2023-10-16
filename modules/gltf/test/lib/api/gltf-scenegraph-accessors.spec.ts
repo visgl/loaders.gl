@@ -80,7 +80,7 @@ test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
   t.end();
 });
 
-test('GLTFScenegraph#Typed Arrays sgould be taken by Accessor', async (t) => {
+test('GLTFScenegraph#Typed Arrays should be taken by Accessor', async (t) => {
   const GLB_ACCESSOR_URL = '@loaders.gl/gltf/test/data/glb/DamagedHelmet.glb';
   const testDataSet = [
     {
