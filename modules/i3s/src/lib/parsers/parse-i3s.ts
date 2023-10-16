@@ -3,7 +3,7 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {load} from '@loaders.gl/core';
 import {TILE_TYPE, TILE_REFINEMENT, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../helpers/i3s-nodepages-tiles';
-import {generateTileAttributeUrls, getUrlWithToken} from '../utils/url-utils';
+import {generateTileAttributeUrls, getUrlWithToken, getUrlWithoutParams} from '../utils/url-utils';
 import {
   I3STilesetHeader,
   I3STileHeader,
@@ -84,7 +84,7 @@ export function normalizeTileNonUrlData(tile : I3SMinimalNodeData): I3STileHeade
 }
 
 export async function normalizeTilesetData(tileset : SceneLayer3D, options : LoaderOptions, context: LoaderContext): Promise<I3STileHeader | I3STilesetHeader> {
-  const url = context.url;
+  const url = getUrlWithoutParams(context.url || '');
   let nodePagesTile: I3SNodePagesTiles | undefined;
   let root: I3STileHeader | I3STilesetHeader;
   if (tileset.nodePages) {
