@@ -111,16 +111,19 @@ A major release that brings:
 
 **@loaders.gl/zip**
 
-- `ZipArchive` - now enables file-by-file reads from large zip archives without loading entire archive into memory (in Node.js).
+- `ZipArchive` - now enables file-by-file reads from large zip archives without loading the entire archive into memory (in Node.js).
+- Allows for hash generation for I3S Archive format (SLPK).
 
 **@loaders.gl/gltf**
 
-- Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions for 3D Tiles v1.1.
+- Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions for 3D Tiles v1.1. This completes 3D Tiles datasets attribute load support (adding to the current EXT_feature_metadata support). Attribute data can be used for "feature picking" capabilities of i3s viewers.
+
 
 **@loaders.gl/3d-tiles**
 
 - 3D Tiles v1.1 [Implicit Tiling](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling)
 - 3D Tiles v1.1 attributes (via the new [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions).
+- New 3tz loader to load [3D Tiles archive format](https://github.com/Maxar-Corp/3tz-specification/blob/main/Specification.md). With this, 3D Tiles archives data can be browsed as a file system (using random access into 3tz files) in any loaders.gl-based app
 
 **@loaders.gl/arrow**
 
@@ -143,6 +146,11 @@ A major release that brings:
 **@loaders.gl/crypto**
 
 - All hashes now accept an encoding parameter allowing the app to choose between `'hex'` and `'base64'` encoding (rather than getting `'base64'` by default).
+
+**@loaders.gl/i3s**
+
+- New SLPK-loader allows the load of SLPK files into a web app using loaders.gl (like i3s explorer)
+- "Multiply" mode added to the existing "replace" mode for colourization by attribute for i3s datasets
 
 **@loaders.gl/loader-utils**
 
@@ -175,6 +183,7 @@ A major release that brings:
 - Pre-processing for conversion 3DTiles > I3S:
   - Detect topology type (for example TRIANGLE and TRIANGLE_STRIP will pass further for conversion, POINT or TRIANGLE_FAN will notify this mesh type is not supported for conversion)
   - Detect attributes classes for `EXT_feature_metadata` and for `EXT_mesh_features` extensions. Choose a class to convert in CLI with arrow keys.
+  - "--skip-analyze" option for users to skip right to dataset conversion
 
 ## v3.4
 
