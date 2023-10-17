@@ -130,6 +130,18 @@ export class Tile3D {
   _inRequestVolume: boolean = false;
   _lodJudge: any = null; // TODO i3s specific, needs to remove
 
+  // the ID of the highest tile in the hierarchy that this tile is replacing
+  // for example:
+  //                 1. Full replace    2. Replace and add    3. Add and replace
+  //                     A (REPLACE)        A (REPLACE)           A (ADD)
+  //                     |                  |                     |
+  //                     B (REPLACE)        B (ADD)               B (REPLACE)
+  //                     |                  |                     |
+  //                     C                  C                     C
+  //
+  // replacedTileId is:  A                  undefined             B
+  _replacedTileId?: string;
+
   /**
    * @constructs
    * Create a Tile3D instance

@@ -9,7 +9,7 @@ import {Stats} from '@probe.gl/stats';
 import {RequestScheduler, path, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
-import {FrameState, getFrameState, limitSelectedTiles} from './helpers/frame-state';
+import {FrameState, getFrameState} from './helpers/frame-state';
 import {getZoomFromBoundingVolume, getZoomFromExtent, getZoomFromFullExtent} from './helpers/zoom';
 
 import type {GeospatialViewport, Viewport} from '../types';
@@ -21,6 +21,7 @@ import {TilesetTraverser} from './tileset-traverser';
 // TODO - these should be moved into their respective modules
 import {Tileset3DTraverser} from './format-3d-tiles/tileset-3d-traverser';
 import {I3STilesetTraverser} from './format-i3s/i3s-tileset-traverser';
+import {GroupedTilesArray} from './grouped-tiles.array';
 
 export type TilesetJSON = any;
 
@@ -73,7 +74,7 @@ export type Tileset3DProps = {
   onTileUnload?: (tile: Tile3D) => any;
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
   contentLoader?: (tile: Tile3D) => Promise<void>;
-  onTraversalComplete?: (selectedTiles: Tile3D[]) => Tile3D[];
+  onTraversalComplete?: (selectedTileGroups: GroupedTilesArray) => GroupedTilesArray;
   displayPriorityFunc?: (tile: Tile3D) => number;
 };
 
@@ -98,7 +99,7 @@ type Props = {
   /** Callback. Indicates this a tile's content failed to load */
   onTileError: (tile: Tile3D, message: string, url: string) => void;
   /** Callback. Allows post-process selectedTiles right after traversal. */
-  onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
+  onTraversalComplete: (selectedTileGroups: GroupedTilesArray) => GroupedTilesArray;
   /** The maximum screen space error used to drive level of detail refinement. */
   maximumScreenSpaceError: number;
   viewportTraversersMap: Record<string, any> | null;
@@ -129,7 +130,7 @@ const DEFAULT_PROPS: Props = {
   onTileLoad: () => {},
   onTileUnload: () => {},
   onTileError: () => {},
-  onTraversalComplete: (selectedTiles: Tile3D[]) => selectedTiles,
+  onTraversalComplete: (selectedTileGroups: GroupedTilesArray) => selectedTileGroups,
   contentLoader: undefined,
   displayPriorityFunc: undefined,
   viewDistanceScale: 1.0,
@@ -251,7 +252,7 @@ export class Tileset3D {
   private _pendingCount: number = 0;
 
   /** Hold traversal results */
-  selectedTiles: Tile3D[] = [];
+  selectedTileGroups = new GroupedTilesArray();
 
   // TRAVERSAL
   traverseCounter: number = 0;
@@ -472,18 +473,22 @@ export class Tileset3D {
   _onTraversalEnd(frameState: FrameState): void {
     const id = frameState.viewport.id;
     if (!this.frameStateData[id]) {
-      this.frameStateData[id] = {selectedTiles: [], _requestedTiles: [], _emptyTiles: []};
+      this.frameStateData[id] = {
+        selectedTileGroups: new GroupedTilesArray(),
+        _requestedTiles: [],
+        _emptyTiles: []
+      };
     }
     const currentFrameStateData = this.frameStateData[id];
-    const selectedTiles = Object.values(this._traverser.selectedTiles);
-    const [filteredSelectedTiles, unselectedTiles] = limitSelectedTiles(
-      selectedTiles,
+    const tiles = new GroupedTilesArray(Object.values(this._traverser.selectedTileGroups));
+    const selectedTiles = tiles.spliceHighestPriorityTilesOrGroups(
       this.options.maximumTilesSelected
     );
-    currentFrameStateData.selectedTiles = filteredSelectedTiles;
-    for (const tile of unselectedTiles) {
-      tile.unselect();
-    }
+    currentFrameStateData.selectedTileGroups = selectedTiles;
+
+    // Since the selectedTiles have been popped from the array, the remaining tiles can all
+    // be unselected.
+    tiles.forEach((tile) => tile.unselect());
 
     currentFrameStateData._requestedTiles = Object.values(this._traverser.requestedTiles);
     currentFrameStateData._emptyTiles = Object.values(this._traverser.emptyTiles);
@@ -500,37 +505,26 @@ export class Tileset3D {
    * Update tiles relying on data from all traversers
    */
   _updateTiles(): void {
-    this.selectedTiles = [];
+    this.selectedTileGroups = new GroupedTilesArray();
     this._requestedTiles = [];
     this._emptyTiles = [];
 
     for (const frameStateKey in this.frameStateData) {
       const frameStateDataValue = this.frameStateData[frameStateKey];
-      this.selectedTiles = this.selectedTiles.concat(frameStateDataValue.selectedTiles);
+      this.selectedTileGroups.addTilesOrGroups(frameStateDataValue.selectedTileGroups);
       this._requestedTiles = this._requestedTiles.concat(frameStateDataValue._requestedTiles);
       this._emptyTiles = this._emptyTiles.concat(frameStateDataValue._emptyTiles);
     }
 
-    this.selectedTiles = this.options.onTraversalComplete(this.selectedTiles);
+    this.selectedTileGroups = this.options.onTraversalComplete(this.selectedTileGroups);
 
-    for (const tile of this.selectedTiles) {
+    this.selectedTileGroups.forEach((tile) => {
       this._tiles[tile.id] = tile;
-    }
+    });
 
     this._loadTiles();
     this._unloadTiles();
     this._updateStats();
-  }
-
-  _tilesChanged(oldSelectedTiles: Tile3D[], selectedTiles: Tile3D[]): boolean {
-    if (oldSelectedTiles.length !== selectedTiles.length) {
-      return true;
-    }
-    const set1 = new Set(oldSelectedTiles.map((t) => t.id));
-    const set2 = new Set(selectedTiles.map((t) => t.id));
-    let changed = oldSelectedTiles.filter((x) => !set2.has(x.id)).length > 0;
-    changed = changed || selectedTiles.filter((x) => !set1.has(x.id)).length > 0;
-    return changed;
   }
 
   _loadTiles(): void {
@@ -553,7 +547,7 @@ export class Tileset3D {
   _updateStats(): void {
     let tilesRenderable = 0;
     let pointsRenderable = 0;
-    for (const tile of this.selectedTiles) {
+    this.selectedTileGroups.forEach((tile) => {
       if (tile.contentAvailable && tile.content) {
         tilesRenderable++;
         if (tile.content.pointCount) {
@@ -563,9 +557,9 @@ export class Tileset3D {
           pointsRenderable += tile.content.vertexCount;
         }
       }
-    }
+    });
 
-    this.stats.get(TILES_IN_VIEW).count = this.selectedTiles.length;
+    this.stats.get(TILES_IN_VIEW).count = this.selectedTileGroups.numTiles();
     this.stats.get(TILES_RENDERABLE).count = tilesRenderable;
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
   }

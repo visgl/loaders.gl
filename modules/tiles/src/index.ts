@@ -3,6 +3,7 @@
 export type {Tileset3DProps} from './tileset/tileset-3d';
 export {Tileset3D} from './tileset/tileset-3d';
 export {Tile3D} from './tileset/tile-3d';
+export {GroupedTilesArray} from './tileset/grouped-tiles.array';
 
 export {TilesetTraverser} from './tileset/tileset-traverser';
 export {TilesetCache} from './tileset/tileset-cache';

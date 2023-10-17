@@ -1,4 +1,3 @@
-import {Tile3D} from '@loaders.gl/tiles';
 import {Vector3} from '@math.gl/core';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -87,30 +86,6 @@ export function getFrameState(viewport: GeospatialViewport, frameNumber: number)
     frameNumber, // TODO: This can be the same between updates, what number is unique for between updates?
     sseDenominator: 1.15 // Assumes fovy = 60 degrees
   };
-}
-
-/**
- * Limit `tiles` array length with `maximumTilesSelected` number.
- * The criteria for this filtering is distance of a tile center
- * to the `frameState.viewport`'s longitude and latitude
- * @param tiles - tiles array to filter
- * @param frameState - frameState to calculate distances
- * @param maximumTilesSelected - maximal amount of tiles in the output array
- * @returns new tiles array
- */
-export function limitSelectedTiles(
-  tiles: Tile3D[],
-  maximumTilesSelected: number
-): [Tile3D[], Tile3D[]] {
-  if (maximumTilesSelected === 0 || tiles.length <= maximumTilesSelected) {
-    return [tiles, []];
-  }
-
-  tiles.sort((a, b) => a._displayPriority - b._displayPriority);
-
-  const selectedTiles: Tile3D[] = tiles.splice(0, maximumTilesSelected);
-
-  return [selectedTiles, tiles];
 }
 
 function commonSpacePlanesToWGS84(viewport) {
