@@ -7,7 +7,7 @@ import convertB3dmToI3sGeometry, {
 } from '../../../src/i3s-converter/helpers/geometry-converter';
 import {PGMLoader} from '../../../src/pgm-loader';
 import {createdStorageAttribute} from '../../../src/i3s-converter/helpers/feature-attributes';
-import {BoundingSphere} from '@math.gl/culling';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Matrix4} from '@math.gl/core';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
@@ -22,6 +22,7 @@ const TRIANGLE_STRIP_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/TriangleStrip/lod1_0.b3dm';
 const HELSINKI_GLB_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/helsinki-glb-8-meshopt/0/0.glb';
+const BASEGLOBE_GLB_FILE_PATH = '@loaders.gl/tile-converter/test/data/baseglobe/0/0/0/0.glb';
 
 setLoaderOptions({
   _worker: 'test'
@@ -490,6 +491,76 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
       },
       t
     );
+  } finally {
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
+  t.end();
+});
+
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be converted to a node attibute of type string', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
+
+  /*
+  This is "color" attributes that is actually an array[8] of arrays[3] of UINT8:
+  255,0,0
+  255,255,0
+  255,125,0
+  0,255,0
+  0,255,125
+  63,255,0
+  63,170,0
+  0,0,255
+  It should be converted to the following attributes buffer:
+  */
+  const expectedArray = new Uint8Array([
+    8, 0, 0, 0, 72, 0, 0, 0, 8, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0, 8, 0, 0, 0, 10, 0, 0, 0, 9, 0, 0,
+    0, 9, 0, 0, 0, 8, 0, 0, 0, 50, 53, 53, 44, 48, 44, 48, 0, 50, 53, 53, 44, 50, 53, 53, 44, 48, 0,
+    50, 53, 53, 44, 49, 50, 53, 44, 48, 0, 48, 44, 50, 53, 53, 44, 48, 0, 48, 44, 50, 53, 53, 44,
+    49, 50, 53, 0, 54, 51, 44, 50, 53, 53, 44, 48, 0, 54, 51, 44, 49, 55, 48, 44, 48, 0, 48, 44, 48,
+    44, 50, 53, 53, 0
+  ]);
+
+  let nodeId = 1;
+  const addNodeToNodePage = async () => nodeId++;
+  const featuresHashArray = [];
+  const draco = true;
+  const generageBoundingVolumes = false;
+  const shouldMergeMaterials = false;
+  const tileContent = await load(BASEGLOBE_GLB_FILE_PATH, Tiles3DLoader);
+  const metadataClass = 'owt_lulc';
+  const propertyTable = getPropertyTable(tileContent, metadataClass);
+  const tileTransform = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  const center = [3189000, 0, -433.4];
+  const halfAxes = [
+    1673260.3982534984, 0, 1521488.2883266362, 0, 45, 0, -1595354.0829185273, 0, 1595787.497284685
+  ];
+  const tileBoundingVolume = new OrientedBoundingBox(center, halfAxes);
+  const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
+  const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
+  try {
+    const convertedResources = await convertB3dmToI3sGeometry(
+      tileContent,
+      tileTransform,
+      tileBoundingVolume,
+      addNodeToNodePage,
+      propertyTable,
+      featuresHashArray,
+      attributeStorageInfo,
+      draco,
+      generageBoundingVolumes,
+      shouldMergeMaterials,
+      geoidHeightModel,
+      {},
+      metadataClass
+    );
+    const attributes = convertedResources?.[0].attributes?.[1];
+    t.deepEquals(new Uint8Array(attributes || []), expectedArray, 'Array represents ');
   } finally {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
