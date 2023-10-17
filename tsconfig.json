@@ -112,6 +112,7 @@
   },
   "exclude":[
     "modules/**/src/libs",
+    "modules/*/bin/**",
     "modules/*/dist/**",
     "modules/**/wip/**",
     "examples",
