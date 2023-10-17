@@ -2,7 +2,13 @@ import {Tile3D} from './tile-3d';
 import {TileGroup3D} from './tile-group-3d';
 
 export class GroupedTilesArray {
-  constructor(private readonly array: (Tile3D | TileGroup3D)[] = []) {}
+  private array: (Tile3D | TileGroup3D)[];
+
+  constructor(array?: (Tile3D | TileGroup3D)[]) {
+    // For some reason, the more concise 'private array: (Tile3D | TileGroup3D)[] = []'
+    // causes tests and imports to fail with errors about 'unexpected reserved keyword "private"'.
+    this.array = array ?? [];
+  }
 
   addTileOrGroup(other: Tile3D | TileGroup3D) {
     this.array.push(other);
@@ -56,14 +62,22 @@ export class GroupedTilesArray {
       return undefined;
     }
 
+    const highestPriority = this.array[minIndex];
+
+    // Remove the highest priority element from the array.
     this.array.splice(minIndex, 1);
 
-    return this.array[minIndex];
+    return highestPriority;
   }
 
   spliceHighestPriorityTilesOrGroups(maxNumTiles: number): GroupedTilesArray {
     if (maxNumTiles === 0 || this.numTiles() <= maxNumTiles) {
-      return this;
+      // Ensure that in all execution paths, the spliced tiles are returned in a
+      // separate object, while the (in this case, empty set of) unspliced tiles
+      // remain in the original object.
+      const selected = this.array;
+      this.array = [];
+      return new GroupedTilesArray(selected);
     }
 
     this.array.sort((a, b) => a._displayPriority - b._displayPriority);

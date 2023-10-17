@@ -473,7 +473,11 @@ export class Tileset3D {
   _onTraversalEnd(frameState: FrameState): void {
     const id = frameState.viewport.id;
     if (!this.frameStateData[id]) {
-      this.frameStateData[id] = {selectedTileGroups: [], _requestedTiles: [], _emptyTiles: []};
+      this.frameStateData[id] = {
+        selectedTileGroups: new GroupedTilesArray(),
+        _requestedTiles: [],
+        _emptyTiles: []
+      };
     }
     const currentFrameStateData = this.frameStateData[id];
     const tiles = new GroupedTilesArray(Object.values(this._traverser.selectedTileGroups));
