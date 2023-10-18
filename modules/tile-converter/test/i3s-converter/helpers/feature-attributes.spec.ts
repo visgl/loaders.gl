@@ -42,7 +42,7 @@ test('tile-converter(i3s)#checkPropertiesLength - Should return true if properie
   t.deepEqual(result, true);
 });
 
-test.only('tile-converter(i3s)#getSchemaClassProperties - Should return attributes type taken from the extension schema', async (t) => {
+test('tile-converter(i3s)#getSchemaClassProperties - Should return attributes type taken from the extension schema', async (t) => {
   const gltfJson = {
     extensions: {
       EXT_structural_metadata: {
