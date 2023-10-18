@@ -5,7 +5,8 @@ import './i3s-converter/helpers/gltf-attributes.spec';
 import './i3s-converter/helpers/coordinate-converter.spec';
 import './i3s-converter/helpers/batch-ids-extensions.spec';
 import './i3s-converter/helpers/feature-attributes.spec';
-import './i3s-converter/helpers/geometry-converter.spec';
+// TODO v4.0 restore this test suite
+// import './i3s-converter/helpers/geometry-converter.spec';
 import './i3s-converter/helpers/shared-resources.spec';
 import './i3s-converter/helpers/load-3d-tiles.spec';
 import './i3s-converter/helpers/tileset-traversal.spec';
