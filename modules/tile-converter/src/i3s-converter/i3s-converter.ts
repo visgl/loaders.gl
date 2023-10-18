@@ -12,8 +12,7 @@ import type {
   SceneLayer3D,
   BoundingVolumes,
   MaxScreenThresholdSQ,
-  NodeInPage,
-  AttributeStorageInfo
+  NodeInPage
 } from '@loaders.gl/i3s';
 import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -55,20 +54,16 @@ import {
   GLTFPrimitiveModeString,
   I3SConvertedResources,
   PreprocessData,
-  SchemaClass,
-  SchemaClassProperty,
+  AttributePropertySet,
   SharedResourcesArrays
 } from './types';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
-  createdStorageAttribute,
-  createFieldAttribute,
-  createPopupInfo,
   getAttributeType,
-  getAttributeTypeBasedOnSchema,
-  getFieldAttributeType
+  getAttributePropertiesFromSchema,
+  createStorageAttributes
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
 import {
@@ -138,8 +133,7 @@ export default class I3SConverter {
   compressList: string[] | null = null;
   preprocessData: PreprocessData = {
     meshTopologyTypes: new Set(),
-    metadataClasses: new Set(),
-    schemaClasses: new Array<SchemaClass>()
+    metadataClasses: new Set()
   };
 
   constructor() {
@@ -653,24 +647,7 @@ export default class I3SConverter {
     let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
     const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
-    /*
-      First, try to create Attribute storage info based on the schema.
-      The information about a type and a name of attributes has been collected
-      from extension schemas (if any) provided in all tiles so it corresponds to the complete tileset.
-      It's done during the 'analize' stage of the convertion procedure.
-      This information is stored in 'this.preprocessData.schemaClasses'.
-    */
-    const convertedUsingSchema = this._convertSchemaClassesToNodeAttributes();
-    /*
-      In case the tileset doesn't have either EXT_structural_metadata or EXT_feature_metadata
-      that can be a source of attribute information
-      convertedUsingSchema will be false.
-      We will collect attribute information for node attributes from the property table
-      taken from each tile.
-    */
-    if (propertyTable && !convertedUsingSchema) {
-      this._convertPropertyTableToNodeAttributes(propertyTable);
-    }
+    this.createAttributeStorageInfo(tileContent, propertyTable);
 
     const resourcesData = await this._convertResources(
       sourceTile,
@@ -1163,100 +1140,75 @@ export default class I3SConverter {
   }
 
   /**
-   * Creates attribute storage info based on the information
-   * collected while analizing extension schemas in 3DTiles.
-   * @return true if attribute storage info is successfully created, false - otherwise.
+   * Creates attribute storage info based on either extension schema or property table.
+   * @param tileContent - content of the source tile
+   * @param propertyTable - feature properties from EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA
    */
-  private _convertSchemaClassesToNodeAttributes(): boolean {
-    if (!this.options.metadataClass) {
-      // No info about metadataClass. So, use _convertPropertyTableToNodeAttributes.
-      return false;
-    }
-    if (this.layers0!.attributeStorageInfo!.length) {
-      // attributeStorageInfo has already created based on schema (because we know metadataClass)
-      return true;
-    }
-
-    const schemaClasses = this.preprocessData.schemaClasses;
-    let properties: {[key: string]: SchemaClassProperty} | null = null;
-    for (const schemaClass of schemaClasses) {
-      if (schemaClass.classId === this.options.metadataClass) {
-        properties = schemaClass.properties;
-        break;
+  private createAttributeStorageInfo(
+    tileContent: Tiles3DTileContent | null,
+    propertyTable: FeatureTableJson | null
+  ): void {
+    /*
+    In case the tileset doesn't have either EXT_structural_metadata or EXT_feature_metadata
+    that can be a source of attribute information so metadataClass is not specified
+    we will collect attribute information for node attributes from the property table
+    taken from each tile.
+    */
+    let attributePropertySet: AttributePropertySet | null = null;
+    if (this.options.metadataClass) {
+      if (!this.layers0!.attributeStorageInfo!.length && tileContent?.gltf) {
+        attributePropertySet = getAttributePropertiesFromSchema(
+          tileContent.gltf,
+          this.options.metadataClass
+        );
+      }
+    } else {
+      if (propertyTable) {
+        attributePropertySet = this.getAttributePropertyFromPropertyTable(propertyTable);
       }
     }
-    if (!properties) {
-      throw new Error(
-        `Can't find the class specified in the options ${this.options.metadataClass}`
+
+    if (attributePropertySet) {
+      this.layers0!.popupInfo = createStorageAttributes(
+        attributePropertySet,
+        this.layers0!.attributeStorageInfo,
+        this.layers0!.fields
       );
-    }
-
-    let attributeIndex = 0;
-    const propertiesWithObjectId = {
-      OBJECTID: [0],
-      ...properties
-    };
-
-    for (const key in propertiesWithObjectId) {
-      const attribute = propertiesWithObjectId[key];
-      const attributeType = getAttributeTypeBasedOnSchema(attribute);
-
-      const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
-        attributeIndex,
-        key,
-        attributeType
-      );
-      const fieldAttributeType = getFieldAttributeType(attributeType);
-      const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
-      const popupInfo = createPopupInfo(Object.keys(propertiesWithObjectId));
-
-      this.layers0!.attributeStorageInfo!.push(storageAttribute);
-      this.layers0!.fields!.push(fieldAttribute);
-      this.layers0!.popupInfo = popupInfo;
       this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
-      attributeIndex += 1;
     }
-
-    return true;
   }
 
   /**
-   * Converts 3DTiles property table to I3s node attributes.
+   * Gets the extension schema selected by the schema class name 'metadataClass'.
    * @param propertyTable - Table with layer meta data.
+   * @returns set of class property types
+   * @example of returned object:
+   * {
+   *   "opt_uint8":  { "propertyType": "Int32" },
+   *   "opt_uint64": { "propertyType": "string" }
+   * }
    */
-  private _convertPropertyTableToNodeAttributes(propertyTable: FeatureTableJson): void {
-    let attributeIndex = 0;
-    const propertyTableWithObjectId = {
-      OBJECTID: [0],
-      ...propertyTable
-    };
-
-    for (const key in propertyTableWithObjectId) {
+  private getAttributePropertyFromPropertyTable(
+    propertyTable: FeatureTableJson | null
+  ): AttributePropertySet | null {
+    if (!propertyTable) {
+      return null;
+    }
+    const attributePropertySet: AttributePropertySet = {};
+    // Create attributePropertySet based on the first element of each property.
+    for (const key in propertyTable) {
       /*
         We will append new attributes only in case the property table contains
         properties that have not been added to the attribute storage info yet.
       */
       const found = this.layers0!.attributeStorageInfo!.find((element) => element.name === key);
       if (!found) {
-        const firstAttribute = propertyTableWithObjectId[key][0];
-        const attributeType = getAttributeType(key, firstAttribute);
-
-        const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
-          attributeIndex,
-          key,
-          attributeType
-        );
-        const fieldAttributeType = getFieldAttributeType(attributeType);
-        const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
-        const popupInfo = createPopupInfo(Object.keys(propertyTableWithObjectId));
-
-        this.layers0!.attributeStorageInfo!.push(storageAttribute);
-        this.layers0!.fields!.push(fieldAttribute);
-        this.layers0!.popupInfo = popupInfo;
-        this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+        const firstAttribute = propertyTable[key][0];
+        const attributeType = getAttributeType(firstAttribute);
+        attributePropertySet[key] = {attributeType: attributeType};
       }
-      attributeIndex += 1;
     }
+    return attributePropertySet;
   }
 
   /**

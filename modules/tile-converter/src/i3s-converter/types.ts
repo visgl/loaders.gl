@@ -183,18 +183,14 @@ export enum GLTFPrimitiveModeString {
   TRIANGLE_FAN = 'TRIANGLE_FAN'
 }
 
-export type SchemaClassProperty = {
-  propertyType: string;
-  array: boolean;
+export type AttributeProperty = {
+  attributeType: string;
+  attributeDescription?: string;
+  attributeName?: string;
 };
 
-export type SchemaClass = {
-  schemaId?: string;
-  classId: string;
-  /** GLTF_EXT_structural_metadata_Class or GLTF_EXT_feature_metadata_Class */
-  classObject: unknown;
-  /** Information on properties taken from schema classes */
-  properties: {[key: string]: SchemaClassProperty};
+export type AttributePropertySet = {
+  [key: string]: AttributeProperty;
 };
 
 /** Preprocessed data gathered from child tiles binary content */
@@ -208,10 +204,6 @@ export type PreprocessData = {
    * On the pre-process we collect all classes from the tileset in order to show the prompt to select one class for conversion to I3S.
    */
   metadataClasses: Set<string>;
-  /**
-   * Schemas of feature metadata classes found in glTF extensions
-   */
-  schemaClasses: SchemaClass[];
 };
 
 /** Texture image properties required for conversion */

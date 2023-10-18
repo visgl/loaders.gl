@@ -1,13 +1,11 @@
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
-import {GLTFPrimitiveModeString, PreprocessData, SchemaClass, SchemaClassProperty} from '../types';
+import {GLTFPrimitiveModeString, PreprocessData} from '../types';
 import {
   EXT_STRUCTURAL_METADATA,
   GLTF,
   GLTFLoader,
   GLTF_EXT_feature_metadata_GLTF,
-  GLTF_EXT_feature_metadata_Schema,
-  GLTF_EXT_structural_metadata_GLTF,
-  GLTF_EXT_structural_metadata_Schema
+  GLTF_EXT_structural_metadata_GLTF
 } from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
 import {EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
@@ -37,8 +35,7 @@ export const analyzeTileContent = async (
 ): Promise<PreprocessData> => {
   const defaultResult = {
     meshTopologyTypes: new Set<GLTFPrimitiveModeString>(),
-    metadataClasses: new Set<string>(),
-    schemaClasses: new Array<SchemaClass>()
+    metadataClasses: new Set<string>()
   };
   if (!tileContent?.gltfArrayBuffer) {
     return defaultResult;
@@ -54,11 +51,9 @@ export const analyzeTileContent = async (
   }
   const meshTopologyTypes = getMeshTypesFromGLTF(gltf);
   const metadataClasses = getMetadataClassesFromGLTF(gltf);
-  const schemaClasses = getSchemaClassesFromGLTF(gltf);
   return {
     meshTopologyTypes,
-    metadataClasses,
-    schemaClasses
+    metadataClasses
   };
 };
 
@@ -117,126 +112,6 @@ const getMetadataClassesFromGLTF = (gltfJson: GLTF): Set<string> => {
 };
 
 /**
- * Get schemas of feature metadata classes from glTF
- * On the pre-process we collect schemas of all classes from the tileset
- * in order to have the complete information on all properties (attributes).
- * @param gltfJson - JSON part of GLB content
- * @returns array of schemas
- */
-const getSchemaClassesFromGLTF = (gltfJson: GLTF): Array<SchemaClass> => {
-  let result: Array<SchemaClass> = new Array<SchemaClass>();
-
-  // Try to parse from EXT_feature_metadata
-  const extFeatureMetadataSchema = (
-    gltfJson.extensions?.[EXT_FEATURE_METADATA] as GLTF_EXT_feature_metadata_GLTF
-  )?.schema;
-  if (extFeatureMetadataSchema) {
-    getSchemaClassesForExtFeatureMetadata(extFeatureMetadataSchema, result);
-  }
-  // Try to parse from EXT_structural_metadata
-  const extStructuralMetadataSchema = (
-    gltfJson.extensions?.[EXT_STRUCTURAL_METADATA] as GLTF_EXT_structural_metadata_GLTF
-  )?.schema;
-  if (extStructuralMetadataSchema) {
-    getSchemaClassesForExtStructuralMetadata(extStructuralMetadataSchema, result);
-  }
-
-  return result;
-};
-
-/**
- * Gets all schemas from Ext_feature_metadata classes
- * @param schema - Schema of the Ext_feature_metadata class
- * @param schemaClassArray - destination array containg schema processed
- */
-const getSchemaClassesForExtFeatureMetadata = (
-  schema: GLTF_EXT_feature_metadata_Schema,
-  schemaClassArray: Array<SchemaClass>
-): void => {
-  const schemaClasses = schema?.classes;
-
-  if (schemaClasses) {
-    for (const classKey of Object.keys(schemaClasses)) {
-      let schemaClass = schemaClassArray.find((item) => item.classId === classKey);
-      if (!schemaClass) {
-        const classObject = schemaClasses[classKey];
-        const schemaClassProperties: {[key: string]: SchemaClassProperty} = {};
-        for (const propertyName in classObject.properties) {
-          const property = classObject.properties[propertyName];
-          const schemaClassProperty: SchemaClassProperty = {
-            propertyType: property.componentType
-              ? [
-                  'INT8',
-                  'INT16',
-                  'UINT16',
-                  'INT32',
-                  'UINT32',
-                  'INT64',
-                  'UINT64',
-                  'FLOAT32',
-                  'FLOAT64',
-                  'UINT8'
-                ].includes(property.componentType)
-                ? property.componentType
-                : 'string'
-              : 'string',
-
-            array: property.type === 'ARRAY'
-          };
-          schemaClassProperties[propertyName] = schemaClassProperty;
-        }
-        schemaClass = {
-          schemaId: undefined,
-          classId: classKey,
-          classObject: classObject,
-          properties: schemaClassProperties
-        };
-        schemaClassArray.push(schemaClass);
-      }
-    }
-  }
-};
-
-/**
- * Gets all schemas from Ext_structural_metadata classes
- * @param schema - Schema of the Ext_feature_metadata class
- * @param schemaClassArray - destination array containg schema processed
- */
-const getSchemaClassesForExtStructuralMetadata = (
-  schema: GLTF_EXT_structural_metadata_Schema,
-  schemaClassArray: Array<SchemaClass>
-): void => {
-  const schemaClasses = schema?.classes;
-
-  if (schemaClasses) {
-    for (const classKey of Object.keys(schemaClasses)) {
-      let schemaClass = schemaClassArray.find(
-        (item) => item.schemaId === schema.id && item.classId === classKey
-      );
-      if (!schemaClass) {
-        const classObject = schemaClasses[classKey];
-        const schemaClassProperties: {[key: string]: SchemaClassProperty} = {};
-        for (const propertyName in classObject.properties) {
-          const property = classObject.properties[propertyName];
-          const schemaClassProperty: SchemaClassProperty = {
-            propertyType: property.array ? 'string' : property.componentType || 'string',
-            array: !!property.array
-          };
-          schemaClassProperties[propertyName] = schemaClassProperty;
-        }
-        schemaClass = {
-          schemaId: schema.id,
-          classId: classKey,
-          classObject: classObject,
-          properties: schemaClassProperties
-        };
-        schemaClassArray.push(schemaClass);
-      }
-    }
-  }
-};
-
-/**
  * Merge object2 into object1
  * @param object1
  * @param object2
@@ -251,17 +126,5 @@ export const mergePreprocessData = (object1: PreprocessData, object2: Preprocess
   // Merge feature metadata classes
   for (const metadataClass of object2.metadataClasses) {
     object1.metadataClasses.add(metadataClass);
-  }
-
-  // Merge schema classes
-  for (const schemaClass of object2.schemaClasses) {
-    const classObject = object1.schemaClasses.find(
-      (item) =>
-        (!schemaClass.schemaId || item.schemaId === schemaClass.schemaId) &&
-        item.classId === schemaClass.classId
-    );
-    if (!classObject) {
-      object1.schemaClasses.push(schemaClass);
-    }
   }
 };

@@ -31,8 +31,7 @@ test('tile-converter(i3s)#mergePreprocessData', async (t) => {
   targetMetadataClassesSet.add('metadata_class');
   const target = {
     meshTopologyTypes: targetMeshTypeSet,
-    metadataClasses: targetMetadataClassesSet,
-    schemaClasses: []
+    metadataClasses: targetMetadataClassesSet
   };
 
   const meshTypeSet = new Set<GLTFPrimitiveModeString>();
@@ -41,8 +40,7 @@ test('tile-converter(i3s)#mergePreprocessData', async (t) => {
   metadataClassesSet.add('metadata_class_2');
   mergePreprocessData(target, {
     meshTopologyTypes: meshTypeSet,
-    metadataClasses: metadataClassesSet,
-    schemaClasses: []
+    metadataClasses: metadataClassesSet
   });
   t.deepEqual(Array.from(target.meshTopologyTypes), ['POINTS', 'TRIANGLES']);
   t.deepEqual(Array.from(target.metadataClasses), ['metadata_class', 'metadata_class_2']);

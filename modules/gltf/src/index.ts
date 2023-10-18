@@ -51,7 +51,9 @@ export type {
   GLTF_EXT_structural_metadata_GLTF,
   GLTF_EXT_structural_metadata_Schema,
   GLTF_EXT_structural_metadata_PropertyTable,
-  GLTF_EXT_structural_metadata_PropertyTexture
+  GLTF_EXT_structural_metadata_PropertyTexture,
+  GLTF_EXT_structural_metadata_Class,
+  GLTF_EXT_structural_metadata_ClassProperty
 } from './lib/types/gltf-ext-structural-metadata-schema';
 
 export type {

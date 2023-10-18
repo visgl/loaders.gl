@@ -1,6 +1,6 @@
-import {SchemaClassProperty} from '../types';
+import type {AttributeProperty, AttributePropertySet} from '../types';
 import type {FeatureTableJson} from '@loaders.gl/3d-tiles';
-import {
+import type {
   Attribute,
   AttributeStorageInfo,
   ESRIField,
@@ -8,6 +8,15 @@ import {
   FieldInfo,
   PopupInfo
 } from '@loaders.gl/i3s';
+import type {
+  GLTFPostprocessed,
+  GLTF_EXT_feature_metadata_GLTF,
+  GLTF_EXT_feature_metadata_ClassProperty,
+  GLTF_EXT_structural_metadata_GLTF,
+  GLTF_EXT_structural_metadata_ClassProperty
+} from '@loaders.gl/gltf';
+
+import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 
 /**
  * Takes attributes from property table based on featureIdsMap.
@@ -91,37 +100,13 @@ const OBJECT_ID_TYPE = 'OBJECTID';
  * @param key - attribute's key
  * @param attribute - attribute taken from propertyTable
  */
-export function getAttributeType(key: string, attribute: unknown): string {
-  if (key === OBJECT_ID_TYPE) {
-    return OBJECT_ID_TYPE;
-  }
+export function getAttributeType(attribute: unknown): string {
   if (typeof attribute === STRING_TYPE || typeof attribute === 'bigint') {
     return STRING_TYPE;
   } else if (typeof attribute === 'number') {
     return Number.isInteger(attribute) ? SHORT_INT_TYPE : DOUBLE_TYPE;
   }
   return STRING_TYPE;
-}
-
-/**
- * Get the attribute type for attributeStorageInfo according to the schema
- * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
- * @param {SchemaClassProperty} schema - attribute's schema
- * @returns attribute's type
- */
-export function getAttributeTypeBasedOnSchema(schema: SchemaClassProperty): string {
-  if (
-    schema.array ||
-    schema.propertyType === STRING_TYPE ||
-    schema.propertyType === 'INT64' ||
-    schema.propertyType === 'UINT64'
-  ) {
-    return STRING_TYPE;
-  } else if (schema.propertyType === 'FLOAT32' || schema.propertyType === 'FLOAT64') {
-    return DOUBLE_TYPE;
-  } else {
-    return SHORT_INT_TYPE;
-  }
 }
 
 /**
@@ -271,4 +256,178 @@ function setupDoubleAttribute(storageAttribute: AttributeStorageInfo): void {
     valueType: 'Float64',
     valuesPerElement: 1
   };
+}
+
+/**
+ * Gets attribute's types from the extension schema selected by the class name 'metadataClass'.
+ * @param gltfJson - JSON part of GLB content
+ * @param metadataClass - name of the schema class
+ * @returns set of attribute's types
+ * @example of returned object:
+ * {
+ *   "opt_uint8":  { "propertyType": "Int32" },
+ *   "opt_uint64": { "propertyType": "string" }
+ * }
+ */
+export const getAttributePropertiesFromSchema = (
+  gltfJson: GLTFPostprocessed,
+  metadataClass: string
+): AttributePropertySet | null => {
+  const schemaClassProperties: AttributePropertySet = {};
+  const extFeatureMetadataSchemaClass = (
+    gltfJson.extensions?.[EXT_FEATURE_METADATA] as GLTF_EXT_feature_metadata_GLTF
+  )?.schema?.classes?.[metadataClass];
+  if (extFeatureMetadataSchemaClass) {
+    for (let propertyName in extFeatureMetadataSchemaClass.properties) {
+      const property = extFeatureMetadataSchemaClass.properties[propertyName];
+      const attributeProperty = getAttributeTypeFromExtFeatureMetadata(property);
+      schemaClassProperties[propertyName] = attributeProperty;
+    }
+    return schemaClassProperties;
+  }
+
+  const extStructuralMetadataSchemaClass = (
+    gltfJson.extensions?.[EXT_STRUCTURAL_METADATA] as GLTF_EXT_structural_metadata_GLTF
+  )?.schema?.classes?.[metadataClass];
+  if (extStructuralMetadataSchemaClass) {
+    for (let propertyName in extStructuralMetadataSchemaClass.properties) {
+      const property = extStructuralMetadataSchemaClass.properties[propertyName];
+      const attributeProperty = getAttributeTypeFromExtStructuralMetadata(property);
+      schemaClassProperties[propertyName] = attributeProperty;
+    }
+    return schemaClassProperties;
+  }
+
+  return null;
+};
+
+/**
+ * Gets the attribute type for attributeStorageInfo according to the extension class schema
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
+ * @param property - schema of the class property for Ext_feature_metadata
+ * @returns attribute's type
+ */
+const getAttributeTypeFromExtFeatureMetadata = (
+  property: GLTF_EXT_feature_metadata_ClassProperty
+): AttributeProperty => {
+  let attributeType: string;
+  switch (property.type) {
+    case 'INT8':
+    case 'UINT8':
+    case 'INT16':
+    case 'UINT16':
+    case 'INT32':
+    case 'UINT32':
+      attributeType = SHORT_INT_TYPE;
+      break;
+
+    case 'FLOAT32':
+    case 'FLOAT64':
+      attributeType = DOUBLE_TYPE;
+      break;
+
+    case 'INT64':
+    case 'UINT64':
+    case 'BOOLEAN':
+    case 'ENUM':
+    case 'STRING':
+    case 'ARRAY':
+      attributeType = STRING_TYPE;
+      break;
+
+    default:
+      attributeType = STRING_TYPE;
+      break;
+  }
+  const attributeProperty: AttributeProperty = {
+    attributeType: attributeType,
+    attributeName: property.name,
+    attributeDescription: property.description
+  };
+  return attributeProperty;
+};
+
+/**
+ * Gets the attribute type for attributeStorageInfo according to the extension class schema
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
+ * @param property - schema of the class property for Ext_structural_metadata
+ * @returns attribute's type
+ */
+const getAttributeTypeFromExtStructuralMetadata = (
+  property: GLTF_EXT_structural_metadata_ClassProperty
+): AttributeProperty => {
+  let attributeType: string;
+  attributeType = '';
+  if (property.array) {
+    attributeType = STRING_TYPE;
+  } else {
+    switch (property.componentType) {
+      case 'INT8':
+      case 'UINT8':
+      case 'INT16':
+      case 'UINT16':
+      case 'INT32':
+      case 'UINT32':
+        attributeType = SHORT_INT_TYPE;
+        break;
+
+      case 'FLOAT32':
+      case 'FLOAT64':
+        attributeType = DOUBLE_TYPE;
+        break;
+
+      case 'INT64':
+      case 'UINT64':
+        attributeType = STRING_TYPE;
+        break;
+
+      default:
+        attributeType = STRING_TYPE;
+        break;
+    }
+  }
+  const attributeProperty: AttributeProperty = {
+    attributeType: attributeType,
+    attributeName: property.name,
+    attributeDescription: property.description
+  };
+  return attributeProperty;
+};
+
+/**
+ * Creates Attribute Storage Info objects based on attribute's types
+ * @param attributePropertySet - set of attribute's types
+ * @param attributeStorageInfo - array where Attribute Storage Info objects are being stored
+ * @param fields - array where attribute fields are being stored
+ * @returns PopupInfo object
+ */
+export function createStorageAttributes(
+  attributePropertySet: AttributePropertySet,
+  attributeStorageInfo: AttributeStorageInfo[] | undefined,
+  fields: Field[] | undefined
+): PopupInfo {
+  const attributesWithObjectId: AttributePropertySet = {
+    OBJECTID: {attributeType: OBJECT_ID_TYPE},
+    ...attributePropertySet
+  };
+
+  let attributeIndex = 0;
+  for (const key in attributesWithObjectId) {
+    const attributeProperty = attributesWithObjectId[key];
+    const attributeType = attributeProperty.attributeType;
+
+    const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
+      attributeIndex,
+      key,
+      attributeType
+    );
+    const fieldAttributeType = getFieldAttributeType(attributeType);
+    const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
+
+    attributeStorageInfo!.push(storageAttribute);
+    fields!.push(fieldAttribute);
+    attributeIndex += 1;
+  }
+  const popupInfo = createPopupInfo(Object.keys(attributesWithObjectId));
+  return popupInfo;
 }
