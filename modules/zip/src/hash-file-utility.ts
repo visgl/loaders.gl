@@ -43,6 +43,11 @@ export async function makeHashTableFromZipHeaders(
   const hashTable: Record<string, bigint> = {};
 
   for await (const cdHeader of zipCDIterator) {
+    // Some archivers add records with size=0 for directories,
+    // so we remove it in order to shorten the hash info and fastern the search
+    if (cdHeader.compressedSize === 0n) {
+      continue;
+    }
     const filename = cdHeader.fileName.split('\\').join('/').toLocaleLowerCase();
     const arrayBuffer = textEncoder.encode(filename).buffer;
     const md5 = await md5Hash.hash(arrayBuffer, 'hex');
