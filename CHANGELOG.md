@@ -6,6 +6,13 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-beta.4
+
+- fix(tile-converter): cli tools (#2707)
+- feat(tile-converter): test for conversion arrays to attribute of string type (#2703)
+- chore(polyfills): Consolidate node code (#2701)
+- fix(i3s): handle search params in I3SLoader (#2692)
+
 ### v4.0.0-beta.3
 
 - feat(tile-converter): --analyze-only option (#2694)
