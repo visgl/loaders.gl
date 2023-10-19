@@ -1653,7 +1653,7 @@ export function getPropertyTable(
  * @param metadataClass - User selected feature metadata class name.
  * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
  */
-export function getPropertyTableFromExtStructuralMetadata(
+function getPropertyTableFromExtStructuralMetadata(
   extension: GLTF_EXT_structural_metadata_GLTF,
   metadataClass?: string
 ): FeatureTableJson | null {
@@ -1689,7 +1689,7 @@ export function getPropertyTableFromExtStructuralMetadata(
  * @param metadataClass - User selected feature metadata class name.
  * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
  */
-export function getPropertyTableFromExtFeatureMetadata(
+function getPropertyTableFromExtFeatureMetadata(
   extension: GLTF_EXT_feature_metadata_GLTF,
   metadataClass?: string
 ): FeatureTableJson | null {

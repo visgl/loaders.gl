@@ -182,7 +182,7 @@ export function createFieldAttribute(key: string, fieldAttributeType: ESRIField)
 
 /**
  * Generate popup info to show metadata on the map.
- * @param propertyNames - array of property name including OBJECTID.
+ * @param propertyNames - array of property names including OBJECTID.
  * @return data for correct rendering of popup.
  */
 export function createPopupInfo(propertyNames: string[]): PopupInfo {
