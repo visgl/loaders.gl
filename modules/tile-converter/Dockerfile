@@ -26,14 +26,14 @@ FROM node:16-alpine
 
 # copy pgm and dist converter
 WORKDIR /loaders-bundle
-COPY ./modules/tile-converter/dist/converter.min.js .
+COPY ./modules/tile-converter/dist/converter.min.cjs .
 
 # install dependencies
 # join-images npm package related to the specific version of sharp
 RUN npm install sharp@^0.30.4
-RUN node converter.min.js --install-dependencies
+RUN node converter.min.cjs --install-dependencies
 
 # install zip to be able to create SLPK files
 RUN apk --no-cache add zip unzip
 
-ENTRYPOINT ["node", "converter.min.js"]
+ENTRYPOINT ["node", "converter.min.cjs"]
