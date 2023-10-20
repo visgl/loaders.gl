@@ -11,6 +11,8 @@ before calling any loaders.gl functions.
 
 Loaders now return typed data. This addition of types into previously untyped code can generated type errors in existing applications. These type errors can just be a result of the typescript compiler making sure your application knows what it is doing, but they can also mean that you have been making wrong or unsafe assumptions about what is being returned from the loader in question. We recommend you review the errors rather than just defeat them with comments as some may be valid and should be fixed in the application.
 
+**Shape of Returned Data**
+
 Some loaders can return multiple formats, often controlled with the loader options `shape` parameter. Note that many returned data types now also include a `shape` field which contain a string value the specifies the shape of the data. This goal is that this should result in a "discriminated union". Switching on the `returnedData.shape` field will then allow typescript to correctly determine which type of data was returned.
 
 **Apache Arrow JS** 
@@ -55,25 +57,34 @@ and loaders.gl v4.0 aligns with this practice.
 
 ---
 
+Loader module changes, in order of estimated impact to applications:
+
 **@loaders.gl/images**
 
-- `loadImage()` has moved to `loaders.gl/textures` (the new version is more powerful).
+- `loadImage()` has moved to `loaders.gl/textures`.
 
-**@loaders.gl/arrow**
+**@loaders.gl/gltf**
 
-- Batches now contain a Table with a single `RecordBatch` (instead of just a `RecordBatch`).
+- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
 
 **@loaders.gl/crypto**
 
 - All hashes now require an encoding parameter. To get previous behavior, just specify `.hash...(..., 'base64')`.
 
+**@loaders.gl/arrow**
+
+- Batches now contain a Table with a single `RecordBatch` (instead of just a `RecordBatch`).
+
 **@loaders.gl/geopackage**
 
-- `options.gis.format` => `options.geopackage.shape`: The default data format returned is now `options.geopackage.shape: 'tables'`, which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
+- `options.geopackage.shape` replaces all other format specification optiojs, such as `options.gis.format`
+- `options.geopackage.shape: 'tables'`, The default data format returned is now `tables` which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
 
-**@loaders.gl/gltf**
+**@loaders.gl/klm**
 
-- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
+- `options.kml.shape` replaces all other mechanisms for specifying format of returned data (`.format` etc), and aligns with the `geojson-table` table shape as this is compatible with a GeoJSON `FeatureCollection`.
+- `options.gpx.shape` same changes as `options.shape.kml`
+- `options.tcx.shape` same changes as `options.shape.kml`
 
 ## Upgrading to v3.4
 
