@@ -16,6 +16,10 @@ test('GPXLoader#parse', async (t) => {
   const resp = await fetchFile(`${GPX_URL}.geojson`);
   const geojson = await resp.json();
 
-  t.deepEqual(data.shape === 'geojson-table' && data.features, geojson.features, 'Data matches GeoJSON');
+  t.deepEqual(
+    data.shape === 'geojson-table' && data.features,
+    geojson.features,
+    'Data matches GeoJSON'
+  );
   t.end();
 });

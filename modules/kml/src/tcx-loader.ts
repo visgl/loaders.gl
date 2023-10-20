@@ -48,7 +48,10 @@ export const TCXLoader: LoaderWithParser<
   }
 };
 
-function parseTextSync(text: string, options?: TCXLoaderOptions): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
+function parseTextSync(
+  text: string,
+  options?: TCXLoaderOptions
+): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = tcx(doc);
 
