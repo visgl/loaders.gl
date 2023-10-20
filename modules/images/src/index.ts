@@ -24,6 +24,3 @@ export {
 // EXPERIMENTAL
 export {getSupportedImageFormats} from './lib/category-api/image-format';
 export {isImageFormatSupported} from './lib/category-api/image-format';
-
-// DEPRECATED - Remove in V4 (fix dependency in luma.gl)
-export {loadImage} from './lib/texture-api/load-image';

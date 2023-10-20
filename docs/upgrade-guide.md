@@ -4,14 +4,14 @@
 
 **Node.js v18+**
 
-When using loaders.gl v4.0 on Node.js v18+, you no longer need to import the 
-`@loaders.gl/polyfills` module to get access to the global `fetch()`function.
+When using loaders.gl on Node.js your application should import the `@loaders.gl/polyfills` module
+before calling any loaders.gl functions.
 
 **Typed Loaders**
 
-Loaders now return typed data. This sudden injection of types into previously untyped code can generated type errors in applications. These type errors will typically mean have been making wrong or unsafe assumptions about what is being returned from the loader in question. That is, those errors will likely be valid and should be fixed in the application.
+Loaders now return typed data. This addition of types into previously untyped code can generated type errors in existing applications. These type errors can just be a result of the typescript compiler making sure your application knows what it is doing, but they can also mean that you have been making wrong or unsafe assumptions about what is being returned from the loader in question. We recommend you review the errors rather than just defeat them with comments as some may be valid and should be fixed in the application.
 
-Some loaders can return different formats, often controlled with the loader options `shape` parameter. Note that many returned data types now include a `shape` field which contain a string value the specifies the shape of the data. By checking this field you can quickly determine which type of data was returned.
+Some loaders can return multiple formats, often controlled with the loader options `shape` parameter. Note that many returned data types now also include a `shape` field which contain a string value the specifies the shape of the data. This goal is that this should result in a "discriminated union". Switching on the `returnedData.shape` field will then allow typescript to correctly determine which type of data was returned.
 
 **Apache Arrow JS** 
 
@@ -25,7 +25,7 @@ Since Apache Arrow JS does yet not come with upgrade notes, you can refer to the
 
 **Table Schemas** 
 
-If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" loaders.gl schemas. You can recover an Arrow schema as follows
+If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" lower-overhead loaders.gl schemas. You can recover Arrow schemas as follows
 
 ```typescript
 import {deserializeArrowSchema} from '@loaders.gl/schema-utils';
@@ -36,9 +36,8 @@ const arrowSchema = deserializeArrowSchema(table.schema);
 **Polyfills**
 
 If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` 
-function under Node.js that supported fetching from local files:
-- You no longer need to import the `@loaders.gl/polyfills` module to get access to the global `fetch()`function 
-- To fetch from local files, you now need to use `fetchFile()` instead.
+function under Node.js that supported fetching from local files.
+loaders.gl v4 uses the built-in fetch in Node.js v18+ (which doesn't support fetching from local files), so fetch from local files, you now need to use `fetchFile()` instead.
 
 ```typescript
 import {fetchFile} from '@loaders.gl/core';
@@ -55,6 +54,10 @@ This new built-in Node.js `fetch` function does not support reading from the fil
 and loaders.gl v4.0 aligns with this practice.
 
 ---
+
+**@loaders.gl/images**
+
+- `loadImage()` has moved to `loaders.gl/textures` (the new version is more powerful).
 
 **@loaders.gl/arrow**
 

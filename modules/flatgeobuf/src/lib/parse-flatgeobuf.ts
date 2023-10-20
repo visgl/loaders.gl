@@ -37,10 +37,9 @@ export function parseFlatGeobuf(
   arrayBuffer: ArrayBuffer,
   options?: FlatGeobufLoaderOptions
 ): Table {
-  const shape = options?.gis?.format || options?.flatgeobuf?.shape;
+  const shape = options?.flatgeobuf?.shape;
 
   switch (shape) {
-    case 'geojson':
     case 'geojson-table': {
       const features = parseFlatGeobufToGeoJSON(arrayBuffer, options);
       const table: GeoJSONTable = {
@@ -118,11 +117,15 @@ function parseFlatGeobufToGeoJSON(
  */
 // eslint-disable-next-line complexity
 export function parseFlatGeobufInBatches(stream, options: FlatGeobufLoaderOptions) {
-  if (options && options.gis && options.gis.format === 'binary') {
-    return parseFlatGeobufInBatchesToBinary(stream, options);
+  const shape = options.flatgeobuf?.shape;
+  switch (shape) {
+    case 'binary':
+      return parseFlatGeobufInBatchesToBinary(stream, options);
+    case 'geojson-table':
+      return parseFlatGeobufInBatchesToGeoJSON(stream, options);
+    default:
+      throw new Error(shape);
   }
-
-  return parseFlatGeobufInBatchesToGeoJSON(stream, options);
 }
 
 function parseFlatGeobufInBatchesToBinary(stream, options: FlatGeobufLoaderOptions) {

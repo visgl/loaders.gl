@@ -163,6 +163,7 @@ A major release that brings:
 
 **loaders.gl/polyfills**
 
+- Polyfills now contains Node dependent code for other modules, minimizing the risk of Node.js-dependency related bundling complications when using other loaders.gl modules in the browser.
 - Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging the built-in `fetch()` support in Node.js v18+.
 
 ### Tile Converter Updates

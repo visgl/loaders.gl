@@ -45,16 +45,6 @@ export const GLTFLoader: LoaderWithParser<GLTFWithBuffers, never, GLBLoaderOptio
 
     // common?
     log: console // eslint-disable-line
-  },
-  deprecatedOptions: {
-    fetchImages: 'gltf.loadImages',
-    createImages: 'gltf.loadImages',
-    decompress: 'gltf.decompressMeshes',
-    postProcess: 'gltf.postProcess',
-    gltf: {
-      decompress: 'gltf.decompressMeshes',
-      postProcess: 'removed in v4'
-    }
   }
 };
 

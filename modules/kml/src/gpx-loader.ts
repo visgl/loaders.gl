@@ -1,6 +1,11 @@
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import type {GeoJSONTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
+import type {
+  GeoJSONTable,
+  FeatureCollection,
+  ObjectRowTable,
+  BinaryFeatureCollection
+} from '@loaders.gl/schema';
 import {gpx} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
 
@@ -10,13 +15,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GPXLoaderOptions = LoaderOptions & {
   gpx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
-    /** @deprecated. Use options.gpx.shape */
-    type?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
-  };
-  gis?: {
-    /** @deprecated. Use options.gpx.shape */
-    format?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'binary' | 'raw';
   };
 };
 
@@ -27,7 +26,11 @@ const GPX_HEADER = `\
 /**
  * Loader for GPX (GPS exchange format)
  */
-export const GPXLoader: LoaderWithParser<any, never, GPXLoaderOptions> = {
+export const GPXLoader: LoaderWithParser<
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | Document,
+  never,
+  GPXLoaderOptions
+> = {
   name: 'GPX (GPS exchange format)',
   id: 'gpx',
   module: 'kml',
@@ -49,7 +52,7 @@ function parseTextSync(text: string, options?: GPXLoaderOptions) {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = gpx(doc);
 
-  const shape = options?.gis?.format || options?.gpx?.type || options?.gpx?.shape;
+  const shape = options?.gpx?.shape;
 
   switch (shape) {
     case 'object-row-table': {
@@ -67,14 +70,11 @@ function parseTextSync(text: string, options?: GPXLoaderOptions) {
       };
       return table;
     }
-    case 'geojson':
-      return geojson;
     case 'binary':
       return geojsonToBinary(geojson.features);
     case 'raw':
       return doc;
     default:
-      // Default to geojson for backwards compatibility
-      return geojson;
+      throw new Error(shape);
   }
 }

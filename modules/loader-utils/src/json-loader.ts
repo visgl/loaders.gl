@@ -25,7 +25,7 @@ export const JSONLoader: LoaderWithParser<Table, TableBatch, JSONLoaderOptions> 
   options: {}
 };
 
-// TODO - deprecated
+// TODO - Better error handling!
 function parseTextSync(text) {
   return JSON.parse(text);
 }
