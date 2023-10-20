@@ -80,6 +80,5 @@ export {getArcGISServices as _getArcGISServices} from './services/arcgis/arcgis-
 export {ArcGISImageService as _ArcGISImageService} from './services/arcgis/arcgis-image-service';
 
 // LERC - Limited Error Raster Compression
-// TODO - restore once esbuild bundling issues have been resolved
-// export type {LERCData} from './lib/lerc/lerc-types';
-// export {LERCLoader} from './lerc-loader';
+export type {LERCData} from './lib/parsers/lerc/lerc-types';
+export {LERCLoader} from './lerc-loader';

@@ -8,7 +8,7 @@ import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
 // import {LERCLoader, LERCData} from '@loaders.gl/wms';
-import type {LERCData} from '../../src/lib/lerc/lerc-types';
+// import type {LERCData} from '../../src/lib/parsers/lerc/lerc-types';
 import {LERCLoader} from '../../src/lerc-loader';
 import {parse, isBrowser} from '@loaders.gl/core';
 
@@ -36,7 +36,7 @@ test('LERCLoader#4D sanity', async (t) => {
     t.end();
     return;
   }
-  const result = (await parse(LERC_DATA_4D, LERCLoader)) as LERCData;
+  const result = await parse(LERC_DATA_4D, LERCLoader);
 
   // test default decoding
 
@@ -68,9 +68,9 @@ test('LERCLoader#4D sanity', async (t) => {
     return;
   }
   // test interleaved flag
-  const bipResult = (await parse(LERC_DATA_4D, LERCLoader, {
+  const bipResult = await parse(LERC_DATA_4D, LERCLoader, {
     lerc: {returnInterleaved: true}
-  })) as LERCData;
+  });
   t.equal(bipResult.pixels[0].slice(0, 6).join(','), '13,57,68,14,59,80', 'returnInterleaved');
 
   t.end();
