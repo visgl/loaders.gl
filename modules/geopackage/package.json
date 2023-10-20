@@ -31,6 +31,9 @@
     "dist",
     "README.md"
   ],
+  "browser": {
+    "fs": false
+  },
   "scripts_comments": [
     "build-bundle: ocular-bundle does not seem to respect --external and --define options"
   ],

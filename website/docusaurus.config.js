@@ -96,7 +96,7 @@ const config = {
             '@loaders.gl/worker-utils': resolve('../modules/worker-utils/src'),
             '@loaders.gl/xml': resolve('../modules/xml/src'),
             '@loaders.gl/zarr': resolve('../modules/zarr/src'),
-            '@loaders.gl/zip': resolve('../modules/zip/src')
+            '@loaders.gl/zip': resolve('../modules/zip/src'),
 
             // '@deck.gl/react': resolve()
             // '@deck.gl/layers'

@@ -61,18 +61,18 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       }
     }
   },
-  // GeoPackage: {
-  //   Rivers: {
-  //     format: 'geopackage',
-  //     data: 'https://raw.githubusercontent.com/ngageoint/geopackage-js/master/test/fixtures/rivers.gpkg',
-  //     viewState: {
-  //       ...VIEW_STATE,
-  //       longitude: -4.65,
-  //       latitude: 0,
-  //       zoom: 1.76
-  //     }
-  //   }
-  // },
+  GeoPackage: {
+    Rivers: {
+      format: 'geopackage',
+      data: 'https://raw.githubusercontent.com/ngageoint/geopackage-js/master/test/fixtures/rivers.gpkg',
+      viewState: {
+        ...VIEW_STATE,
+        longitude: -4.65,
+        latitude: 0,
+        zoom: 1.76
+      }
+    }
+  },
   FlatGeobuf: {
     Countries: {
       format: 'flatgeobuf',

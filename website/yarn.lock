@@ -2086,6 +2086,19 @@
     "@loaders.gl/worker-utils" "4.0.0-beta.3"
     draco3d "1.5.5"
 
+"@loaders.gl/geopackage@4.0.0-beta.3":
+  version "4.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/geopackage/-/geopackage-4.0.0-beta.3.tgz#27e085ec71dd111d5da41d30b1a7d3f713044983"
+  integrity sha512-SbteiIWRX+lqyr4bgU70h198sA6GoTvxWFDLRqPVLmbDtL6J9eGu9rRqylYHqdo85w1kbRurur0JzKSVlbTYnw==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    "@loaders.gl/gis" "4.0.0-beta.3"
+    "@loaders.gl/schema" "4.0.0-beta.3"
+    "@loaders.gl/wkt" "4.0.0-beta.3"
+    "@math.gl/proj4" "^4.0.0"
+    "@types/sql.js" "^1.4.2"
+    sql.js "1.5.0"
+
 "@loaders.gl/gis@3.4.14", "@loaders.gl/gis@^3.4.13":
   version "3.4.14"
   resolved "https://registry.yarnpkg.com/@loaders.gl/gis/-/gis-3.4.14.tgz#a9b3eed45e2a4465a754e3404061222c51b1334a"
@@ -2095,6 +2108,17 @@
     "@loaders.gl/schema" "3.4.14"
     "@mapbox/vector-tile" "^1.3.1"
     "@math.gl/polygon" "^3.5.1"
+    pbf "^3.2.1"
+
+"@loaders.gl/gis@4.0.0-beta.3":
+  version "4.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/gis/-/gis-4.0.0-beta.3.tgz#bc73dc4279e372967862b067b4513ad0b95e1983"
+  integrity sha512-B1mnbrY23I0zc7Ht49jNA7fuSDs9uFwc9g9SLY84qw6aTJsiiK+P/7VLHPXwZ0ormdlgwlDE1/zwBTYYOBIVsQ==
+  dependencies:
+    "@loaders.gl/loader-utils" "4.0.0-beta.3"
+    "@loaders.gl/schema" "4.0.0-beta.3"
+    "@mapbox/vector-tile" "^1.3.1"
+    "@math.gl/polygon" "^4.0.0"
     pbf "^3.2.1"
 
 "@loaders.gl/gltf@3.4.14", "@loaders.gl/gltf@^3.4.13":
@@ -2288,6 +2312,14 @@
     "@math.gl/geospatial" "^4.0.0"
     "@math.gl/web-mercator" "^4.0.0"
     "@probe.gl/stats" "^4.0.2"
+
+"@loaders.gl/wkt@4.0.0-beta.3":
+  version "4.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/wkt/-/wkt-4.0.0-beta.3.tgz#cf08f9700943488b9c6a191b51981ce61e37fe65"
+  integrity sha512-eLQBTA0G4mUepSmSMwd+UrWDyHLlpCNNJdBIanJRh3YE1UUy0JzRbLf6+KIc0VURUoScK3IDFC7EIjSSaV4RVQ==
+  dependencies:
+    "@loaders.gl/loader-utils" "4.0.0-beta.3"
+    "@loaders.gl/schema" "4.0.0-beta.3"
 
 "@loaders.gl/wms@^3.4.13":
   version "3.4.14"
@@ -2601,6 +2633,23 @@
   integrity sha512-FivQ1ZnYcAss1wVifOkHP/ZnlfQy1IL/769uzNtiHxwUbW0kZG3yyOZ9I7fwyzR5Hvqt3ErJKHjSYZr0uVlz5g==
   dependencies:
     "@math.gl/core" "3.6.3"
+
+"@math.gl/polygon@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@math.gl/polygon/-/polygon-4.0.0.tgz#17d2b1c7569d5a7fd1cde67e885d77e5742c23ec"
+  integrity sha512-BsseetloYtSZkphH5Fqn02uCL9UWsD26DNLfGhvd2farhU9BaJnn0JGuZnRWT/rf+glZZcDJkyqHq5pDnSX/BQ==
+  dependencies:
+    "@math.gl/core" "4.0.0"
+
+"@math.gl/proj4@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@math.gl/proj4/-/proj4-4.0.0.tgz#5073be8eedfb61decca9cb20d07116bee37748f4"
+  integrity sha512-gMVTlhzb1Mbq1F32jDph2nJivkipcGNU+Nx+jovFT9shplXwXeEdZxObjngYCtQiZEM3HqFFTbTnA1YhhZsG7A==
+  dependencies:
+    "@babel/runtime" "^7.12.0"
+    "@math.gl/core" "4.0.0"
+    "@types/proj4" "^2.5.0"
+    proj4 "2.6.2"
 
 "@math.gl/sun@^3.6.2":
   version "3.6.3"
@@ -4205,6 +4254,11 @@
   resolved "https://registry.yarnpkg.com/@types/crypto-js/-/crypto-js-4.1.3.tgz#7f2fa22857ae2b5d3221edcba9644f67f8ea984c"
   integrity sha512-YP1sYYayLe7Eg5oXyLLvOLfxBfZ5Fgpz6sVWkpB18wDMywCLPWmqzRz+9gyuOoLF0fzDTTFwlyNbx7koONUwqA==
 
+"@types/emscripten@*":
+  version "1.39.9"
+  resolved "https://registry.yarnpkg.com/@types/emscripten/-/emscripten-1.39.9.tgz#cbe73a8d153fc714a2e3177fbda2d7332d45efa7"
+  integrity sha512-ILdWj4XYtNOqxJaW22NEQx2gJsLfV5ncxYhhGX1a1H1lXl2Ta0gUz7QOnOoF1xQbJwWDjImi8gXN9mKdIf6n9g==
+
 "@types/eslint-scope@^3.7.3":
   version "3.7.4"
   resolved "https://registry.yarnpkg.com/@types/eslint-scope/-/eslint-scope-3.7.4.tgz#37fc1223f0786c39627068a12e94d6e6fc61de16"
@@ -4376,6 +4430,11 @@
   resolved "https://registry.yarnpkg.com/@types/pbf/-/pbf-3.0.2.tgz#8d291ad68b4b8c533e96c174a2e3e6399a59ed61"
   integrity sha512-EDrLIPaPXOZqDjrkzxxbX7UlJSeQVgah3i0aA4pOSzmK9zq3BIh7/MZIQxED7slJByvKM4Gc6Hypyu2lJzh3SQ==
 
+"@types/proj4@^2.5.0":
+  version "2.5.4"
+  resolved "https://registry.yarnpkg.com/@types/proj4/-/proj4-2.5.4.tgz#ca6e77fcd05c31238a3c4ecc9eb2de3d1d20613b"
+  integrity sha512-AAqZQKgOGuEmhlfLgues7anx0vcZg+0xKE8UggfVnWJSKk4xdVm+Rg1q2q7YmqoZS51BJ5jTcCyYQqIGdxa8FQ==
+
 "@types/prop-types@*":
   version "15.7.5"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.5.tgz#5f19d2b85a98e9558036f6a3cacc8819420f05cf"
@@ -4477,6 +4536,14 @@
   resolved "https://registry.yarnpkg.com/@types/sockjs/-/sockjs-0.3.33.tgz#570d3a0b99ac995360e3136fd6045113b1bd236f"
   integrity sha512-f0KEEe05NvUnat+boPTZ0dgaLZ4SfSouXUgv5noUiefG2ajgKjmETo9ZJyuqsl7dfl2aHlLJUiki6B4ZYldiiw==
   dependencies:
+    "@types/node" "*"
+
+"@types/sql.js@^1.4.2":
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/@types/sql.js/-/sql.js-1.4.7.tgz#991a07279e0564d114cac72d008e64793cc9ecfd"
+  integrity sha512-6NsC/6ECtyVdkEAw1jJcY44uFagQtL9dj+RxN8WceGcbON/E53IP/+/7zah2NnfzNzLnjAViiGLccWuAuKotgw==
+  dependencies:
+    "@types/emscripten" "*"
     "@types/node" "*"
 
 "@types/unist@*", "@types/unist@^2.0.0", "@types/unist@^2.0.2", "@types/unist@^2.0.3":
@@ -8047,6 +8114,11 @@ methods@~1.1.2:
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
   integrity sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==
 
+mgrs@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/mgrs/-/mgrs-1.0.0.tgz#fb91588e78c90025672395cb40b25f7cd6ad1829"
+  integrity sha512-awNbTOqCxK1DBGjalK3xqWIstBZgN6fxsMSiXLs9/spqWkF2pAhb2rrYCFSsr1/tT7PhcDGjZndG8SWYn0byYA==
+
 micromatch@^4.0.2, micromatch@^4.0.4, micromatch@^4.0.5:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-4.0.5.tgz#bc8999a7cbbf77cdc89f132f6e467051b49090c6"
@@ -8957,6 +9029,14 @@ process-nextick-args@~2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"
   integrity sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==
+
+proj4@2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/proj4/-/proj4-2.6.2.tgz#4665d7cbc30fd356375007c2fed53b07dbda1d67"
+  integrity sha512-Pn0+HZtXb4JzuN8RR0VM7yyseegiYHbXkF+2FOdGpzRojcZ1BTjWxOh7qfp2vH0EyLu8pvcrhLxidwzgyUy/Gw==
+  dependencies:
+    mgrs "1.0.0"
+    wkt-parser "^1.2.4"
 
 promise@^7.1.1:
   version "7.3.1"
@@ -9989,6 +10069,11 @@ sql.js@1.5.0:
   resolved "https://registry.yarnpkg.com/sql.js/-/sql.js-1.5.0.tgz#6625c3e41115194f6bfab80a5e53647f1378c3fb"
   integrity sha512-Qqr6HgX/hCDpLFWdN0BNoNpYQ2c1tOl1c3HGI0cshjaFSAWszKICuLZ9CyFUvRFPpEGW8RzHzwuXWWvXVGTKBg==
 
+sql.js@1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/sql.js/-/sql.js-1.8.0.tgz#cb45d957e17a2239662fe2f614c9b678990867a6"
+  integrity sha512-3HD8pSkZL+5YvYUI8nlvNILs61ALqq34xgmF+BHpqxe68yZIJ1H+sIVIODvni25+CcxHUxDyrTJUL0lE/m7afw==
+
 stable@^0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/stable/-/stable-0.1.8.tgz#836eb3c8382fe2936feaf544631017ce7d47a3cf"
@@ -10864,6 +10949,11 @@ wildcard@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/wildcard/-/wildcard-2.0.0.tgz#a77d20e5200c6faaac979e4b3aadc7b3dd7f8fec"
   integrity sha512-JcKqAHLPxcdb9KM49dufGXn2x3ssnfjbcaQdLlfZsL9rH9wgDQjUtDxbo8NE0F6SFvydeu1VhZe7hZuHsB2/pw==
+
+wkt-parser@^1.2.4:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/wkt-parser/-/wkt-parser-1.3.3.tgz#46b4e3032dd9c86907f7e630b57e3c6ea2bb772b"
+  integrity sha512-ZnV3yH8/k58ZPACOXeiHaMuXIiaTk1t0hSUVisbO0t4RjA5wPpUytcxeyiN2h+LZRrmuHIh/1UlrR9e7DHDvTw==
 
 wrap-ansi@^7.0.0:
   version "7.0.0"

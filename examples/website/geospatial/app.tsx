@@ -14,12 +14,12 @@ import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load, /* registerLoaders */} from '@loaders.gl/core';
 import {ParquetLoader} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
-// import {GeoPackageLoader} from '@loaders.gl/geopackage';
+import {GeoPackageLoader} from '@loaders.gl/geopackage';
 
 const LOADERS: Loader[] = [
   ParquetLoader, 
   FlatGeobufLoader,
-  // GeoPackageLoader, 
+  GeoPackageLoader
 ];
 const LOADER_OPTIONS = {
   worker: false,
@@ -30,6 +30,10 @@ const LOADER_OPTIONS = {
   parquet: {
     shape: 'geojson-table',
     preserveBinary: true
+  },
+  'geopackage': {
+    shape: 'geojson-table',
+    // table: 'FEATURESriversds'
   }
 }
 

@@ -19,7 +19,10 @@
       type: 'category',
       label: 'Geospatial Loaders',
       items: [
-        'geoparquet'
+        'geoparquet',
+        'geopackage',
+        'flatgeobuf',
+        'geojson'
       ],
     },
     {
