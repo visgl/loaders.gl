@@ -161,8 +161,7 @@ test('tile-converter(i3s)#should create sharedResources json file', async (t) =>
   t.end();
 });
 
-// TODO v4.0 restore this test
-test.skip('tile-converter(i3s)#should generate KTX2 texture', async (t) => {
+test('tile-converter(i3s)#should generate KTX2 texture', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -205,8 +204,7 @@ test.skip('tile-converter(i3s)#should generate KTX2 texture', async (t) => {
   t.end();
 });
 
-// TODO v4.0 restore this test
-test.skip('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
+test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {formats: [{name: '1', format: 'ktx2'}]},
@@ -239,8 +237,7 @@ test.skip('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is p
   t.end();
 });
 
-// TODO v4.0 restore this test
-test.skip('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
+test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
