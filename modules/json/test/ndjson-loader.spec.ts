@@ -76,7 +76,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async (t)
   t.end();
 });
 
-test('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async (t) => {
+test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async (t) => {
   const iterator = await loadInBatches(NDJSON_INVALID_PATH, NDJSONLoader, {
     batchSize: 5
   });

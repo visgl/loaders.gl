@@ -82,6 +82,7 @@ test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
     // batchCount++;
     rowCount += batch.length;
     // byteLength = batch.bytesUsed;
+    // @ts-ignore
     t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
   }
 

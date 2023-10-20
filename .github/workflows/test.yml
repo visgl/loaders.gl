@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16]
+        node-version: [16, 18]
 
     steps:
       - uses: actions/checkout@v3
@@ -33,7 +33,7 @@ jobs:
           npm run test ci
 
       - name: Coveralls
-        if: matrix.node-version == 16
+        if: matrix.node-version == 18
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

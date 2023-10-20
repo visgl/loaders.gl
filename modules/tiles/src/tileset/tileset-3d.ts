@@ -935,6 +935,7 @@ export class Tileset3D {
   _initializeI3STileset() {
     // @ts-expect-error
     if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
+      // @ts-ignore
       this._queryParams.token = this.loadOptions.i3s.token as string;
     }
   }

@@ -14,6 +14,7 @@ export async function fetchSpy(
   if (typeof input === 'string') {
     requestInits[input] = init;
   }
+  // @ts-ignore
   return originalFetch(input, init);
 }
 

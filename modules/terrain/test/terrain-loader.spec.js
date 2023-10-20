@@ -23,7 +23,6 @@ test('TerrainLoader#loader objects', async (t) => {
 });
 
 test('TerrainLoader#parse mapbox martini', async (t) => {
-  console.error(globalThis.loaders);
   const data = await load(MAPBOX_TERRAIN_PNG_URL, TerrainLoader, {
     terrain: {
       elevationDecoder: {

@@ -62,6 +62,7 @@ export const loadTile3DContent = async (
   const loadOptions = {
     ...tilesetLoadOptions,
     [sourceTileset.loader.id]: {
+      // @ts-ignore
       ...(tilesetLoadOptions[sourceTileset.loader.id] || {}),
       isTileset,
       assetGltfUpAxis: (sourceTileset.asset && sourceTileset.asset.gltfUpAxis) || 'Y'
