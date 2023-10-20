@@ -91,12 +91,3 @@ export {GLBWriter} from './glb-writer';
 export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
-
-/** @deprecated */
-// export type {GLTFMesh as Mesh} from './lib/types/gltf-json-schema';
-/** @deprecated */
-// export type {GLTFNodePostprocessed as Node} from './lib/types/gltf-postprocessed-schema';
-/** @deprecated */
-// export type {GLTFAccessorPostprocessed as Accessor} from './lib/types/gltf-postprocessed-schema';
-// /** @deprecated */
-// export type {GLTFImagePostprocessed as Image} from './lib/types/gltf-postprocessed-schema';

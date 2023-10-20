@@ -113,7 +113,7 @@ c,3`
   },
   {
     name: 'table with display names (explicit options)',
-    options: {useDisplayNames: true},
+    options: {csv: {useDisplayNames: true}},
     input: makeTestTable([
       [{name: 'id', type: 'utf8', metadata: {displayName: 'foo'}}, ['a', 'b', 'c']],
       [{name: 'val_uint', type: 'uint32', metadata: {displayName: 'bar'}}, [1, 2, 3]]
@@ -125,7 +125,7 @@ c,3`
   },
   {
     name: 'table with display names (explicit suppression)',
-    options: {useDisplayNames: false},
+    options: {csv: {useDisplayNames: false}},
     input: makeTestTable([
       [{name: 'id', type: 'utf8', metadata: {displayName: 'foo'}}, ['a', 'b', 'c']],
       [{name: 'val_uint', type: 'uint32', metadata: {displayName: 'bar'}}, [1, 2, 3]]

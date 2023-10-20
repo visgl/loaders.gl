@@ -74,10 +74,7 @@ export type Tiles3DTilesetJSON = {
 
 /** TilesetJSON postprocessed by Tiles3DLoader */
 export type Tiles3DTilesetJSONPostprocessed = Omit<Tiles3DTilesetJSON, 'root'> & {
-  /**
-   * Loader used
-   * @deprecated
-   */
+  /** @deprecated Loader used */
   loader: LoaderWithParser;
   /** URL used to load a tileset resource */
   url: string;

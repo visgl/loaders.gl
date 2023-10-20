@@ -34,6 +34,7 @@ test('gis#reproject GeoJSON', (t) => {
 test('gis#reproject binary', (t) => {
   const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
   const binaryData: BinaryFeatureCollection = {
+    shape: 'binary-feature-collection',
     points: {
       type: 'Point',
       positions: {value: new Float32Array([-74, 41]), size: 2},
@@ -47,6 +48,7 @@ test('gis#reproject binary', (t) => {
   };
 
   const expectedBinaryData: BinaryFeatureCollection = {
+    shape: 'binary-feature-collection',
     points: {
       type: 'Point',
       positions: {value: new Float32Array([-8237642.318702244, 5012341.663847514]), size: 2},

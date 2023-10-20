@@ -24,9 +24,8 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   loadBuffers?: boolean;
   decompressMeshes?: boolean;
   excludeExtensions?: string[];
-
   /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
-  postProcess?: false;
+  postProcess?: never;
 };
 
 /** Check if an array buffer appears to contain GLTF data */

@@ -335,9 +335,9 @@ export class Tileset3D {
   }
 
   /** @deprecated */
-  setOptions(options: Tileset3DProps): void {
-    this.options = {...this.options, ...options};
-  }
+  // setOptions(options: Tileset3DProps): void {
+  //   this.options = {...this.options, ...options};
+  // }
 
   /**
    * Return a loadable tile url for a specific tile subpath

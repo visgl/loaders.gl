@@ -37,8 +37,8 @@ export type WMSCapabilities = {
   requests: Record<string, WMSRequest>;
   /** Information about any exceptions that the service will report (HTTP status != 2xx) */
   exceptions?: WMSExceptions;
-  /** Only if `options.raw`: raw untyped JSON parsed from XML. Can include information not extracted in the typed response. */
-  raw?: Record<string, unknown>;
+  /** Only if `options.json`: raw untyped JSON parsed from XML. Can include information not extracted in the typed response. */
+  json?: Record<string, unknown>;
   /** Only if `options.xml`, the unparsed XML string can be requested */
   xml?: string;
 };
@@ -147,12 +147,9 @@ export type ParseWMSCapabilitiesOptions = {
   /** Add inherited layer information to sub layers */
   inheritedLayerProps?: boolean;
   /** Include the "raw" JSON (parsed but untyped, unprocessed XML). May contain additional fields */
-  includeRawData?: boolean;
+  includeRawJSON?: boolean;
   /** Include the original XML document text. May contain additional information. */
   includeXMLText?: boolean;
-  /** @deprecated Use includeRawData` */
-  raw?: boolean;
-  // xml options are passed through to xml loader
 };
 
 /**
@@ -177,8 +174,8 @@ export function parseWMSCapabilities(
     // Not yet implemented
   }
 
-  if (options?.includeRawData || options?.raw) {
-    capabilities.raw = xmlCapabilities;
+  if (options?.includeRawJSON) {
+    capabilities.json = xmlCapabilities;
   }
 
   if (options?.includeXMLText) {
