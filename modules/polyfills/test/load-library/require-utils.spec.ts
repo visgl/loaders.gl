@@ -57,7 +57,6 @@ test('polyfills#require-utils', (tt) => {
       prependPaths: ['prepend']
     });
 
-    console.error(result);
     t.ok(result);
     t.equal(result.paths.indexOf('append'), result.paths.length - 1);
     t.equal(result.paths.indexOf('prepend'), 0);
