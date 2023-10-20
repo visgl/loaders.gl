@@ -27,7 +27,7 @@ const GPX_HEADER = `\
  * Loader for GPX (GPS exchange format)
  */
 export const GPXLoader: LoaderWithParser<
-  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | Document,
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
   never,
   GPXLoaderOptions
 > = {
@@ -48,7 +48,10 @@ export const GPXLoader: LoaderWithParser<
   }
 };
 
-function parseTextSync(text: string, options?: GPXLoaderOptions) {
+function parseTextSync(
+  text: string,
+  options?: GPXLoaderOptions
+): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = gpx(doc);
 
@@ -72,8 +75,7 @@ function parseTextSync(text: string, options?: GPXLoaderOptions) {
     }
     case 'binary':
       return geojsonToBinary(geojson.features);
-    case 'raw':
-      return doc;
+
     default:
       throw new Error(shape);
   }

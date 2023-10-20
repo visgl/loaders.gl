@@ -88,7 +88,7 @@ This can be useful e.g. when building applications that cannot access CDNs or wh
 
 ## Composite Loaders and Workers (Advanced)
 
-loaders.gl supports sub-loader invocation from worker loaders. This is somewhat experimental
+loaders.gl supports sub-loader invocation from worker loaders.
 
 A worker loader starts a seperate thread with a javascript bundle that only contains the code for that loader, so a worker loader needs to call the main thread (and indirectly, potentially another worker thread with another worrker loader) to parse using a sub-loader, properly transferring data into and back from the other thread.
 

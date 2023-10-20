@@ -104,6 +104,9 @@ function parseTestCases(
     // from regular arrays
     if (testCase.binary) {
       for (const data of Object.values(testCase.binary)) {
+        if (data === 'binary-feature-collection') {
+          continue;
+        }
         if (data.positions) {
           data.positions.value = new Float32Array(data.positions.value);
         }

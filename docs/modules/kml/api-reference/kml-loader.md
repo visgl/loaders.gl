@@ -1,6 +1,6 @@
 # KMLLoader
 
-![ogc-logo](../../images/logos/ogc-logo-60.png)
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 The `KMLLoader` parses [KML files][kml_wikipedia] into GeoJSON. From Wikipedia:
 

@@ -22,7 +22,7 @@
           "developer-guide/loader-categories",
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",
-          "developer-guide/polyfills"
+          "developer-guide/node"
         ]
       },
       {
@@ -79,6 +79,7 @@
       "modules/kml/formats/kml",
       "modules/kml/formats/gpx",
       "modules/kml/formats/tcx",
+      "modules/las/formats/las",
       "modules/mvt/formats/mvt",
       "modules/mvt/formats/tilejson",
       "modules/parquet/formats/parquet",

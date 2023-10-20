@@ -52,7 +52,7 @@ to load data from the right place. It is not intended to support general applica
 
 ## Alias resolution
 
-`fetchFile()` also resolves any aliases set by the `_addAliases` function. This is experimental
+`fetchFile()` also resolves any aliases set by the `_addAliases` function. This internal
 functionality is mainly intended for and used by loaders.gl own test cases, to allow paths
 to test data file to be specified in terms of which loaders.gl module they are located in.
 

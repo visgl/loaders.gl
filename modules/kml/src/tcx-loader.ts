@@ -27,7 +27,7 @@ const TCX_HEADER = `\
  * Loader for TCX (Training Center XML) - Garmin GPS track format
  */
 export const TCXLoader: LoaderWithParser<
-  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | Document,
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
   never,
   TCXLoaderOptions
 > = {
@@ -48,7 +48,7 @@ export const TCXLoader: LoaderWithParser<
   }
 };
 
-function parseTextSync(text: string, options?: TCXLoaderOptions) {
+function parseTextSync(text: string, options?: TCXLoaderOptions): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = tcx(doc);
 
@@ -73,9 +73,6 @@ function parseTextSync(text: string, options?: TCXLoaderOptions) {
     }
     case 'binary':
       return geojsonToBinary(geojson.features);
-
-    case 'raw':
-      return doc;
 
     default:
       throw new Error(shape);
