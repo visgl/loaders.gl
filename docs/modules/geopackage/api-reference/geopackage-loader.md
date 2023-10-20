@@ -18,6 +18,8 @@ GeoPackage loader
 
 ## Usage
 
+To load all tables in a geopackage file as GeoJSON:
+
 ```typescript
 import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
 import {load} from '@loaders.gl/core';
@@ -25,33 +27,36 @@ import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
 
 const optionsAsTable: GeoPackageLoaderOptions = {
   geopackage: {
+    shape: 'tables',
     sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
-  },
-  gis: {
-    format: 'tables'
   }
 };
-const tablesData: Tables<ObjectRowTable> = await load(url, GeoPackageLoader, optionsAsTable);
+const tablesData: Tables<GeoJSONTable> = await load(url, GeoPackageLoader, optionsAsTable);
+```
 
+To load a specific table named `feature_table` in a geopackage file as GeoJSON:
+
+```typescript
 const optionsAsGeoJson: GeoPackageLoaderOptions = {
   geopackage: {
-    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
-  },
-  gis: {
-    format: 'geojson'
+    shape: 'geojson',
+    table: 'feature_table',
+    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/',
   }
 };
-const geoJsonData: Record<string, Feature[]> = await load(url, GeoPackageLoader, optionsAsGeoJson);
+
+const geoJsonData: GeoJSONTable = await load(url, GeoPackageLoader, optionsAsGeoJson);
+
 ```
 
 ## Options
 
 | Option                | Type   | Default                                                  | Description                                                                                                            |
 | --------------------- | ------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `options.shape`       | String | `'tables'` \| '`geojson-table'`                          | Output format.                                                                                                         |
+| `options.table`       | String | N/A                                                      | name of table to load                                                                                                  | Output format. |
 | `geopackage.sqlJsCDN` | String | `'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackageLoader is called on a file. |
-| `options.gis.format`  | String | `'tables'`                                               | Output format for data. If set to `geojson`                                                                            |
 
-- `geopackage.sqlJsCDN`: As of March 2022, SQL.js versions 1.6.0, 1.6.1, and 1.6.2 were tested as not working. Therefore this library pins to use of SQL.js version 1.5.0, and requires the WASM bundle from the same version.
 
 ## Output
 
@@ -65,7 +70,11 @@ The `GeoPackageLoader` currently loads all features from all vector tables.
 
   Returns `Record<string, Feature[]>`, an object mapping from table name to an array of GeoJSON features. The `Feature` type is defined in `@loaders.gl/schema`.
 
+## Remarks
+
+- `options.geopackage.sqlJsCDN`: As of March 2022, SQL.js versions 1.6.0, 1.6.1, and 1.6.2 were tested as not working.
+
 ## Future Work
 
-- Select a single vector layer/table to load. Right now all vector tables are loaded. This would fit well in the two-stage loader process, where the first stage reads metadata from the file (i.e. the list of available layers) and the second stage loads one or more
+- Select a single vector layer/table to load. This could would fit well in the two-stage loader process, where the first stage reads metadata from the file (i.e. the list of available layers) and the second stage loads one or more tables.
 - Binary and GeoJSON output. Right now the output is GeoJSON-only, and is contained within an object mapping table names to geometry data. This is the same problem as we discussed previously for MVT, where with GeoPackage especially it's decently likely to only desire a portion of the layers contained in the file.

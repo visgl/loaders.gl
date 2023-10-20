@@ -29,6 +29,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/geopackage": "4.0.0-beta.3",
     "@loaders.gl/i3s": "4.0.0-beta.3",
     "@loaders.gl/las": "4.0.0-beta.3",
     "@loaders.gl/loader-utils": "4.0.0-beta.3",
@@ -54,7 +55,7 @@
     "react-color": "^2.19.3",
     "react-dom": "^18.0.0",
     "react-map-gl": "^7.0.0",
-    "sql.js": "1.5.0",
+    "sql.js": "1.8.0",
     "styled-components": "^5.3.3"
   },
   "devDependencies": {

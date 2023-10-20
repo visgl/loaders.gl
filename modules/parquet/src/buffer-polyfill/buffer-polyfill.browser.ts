@@ -8,10 +8,5 @@ export function installBufferPolyfill(): typeof Buffer {
   globalThis.Buffer = globalThis.Buffer || BufferPolyfill;
 
   // @ts-ignore
-  globalThis.process = globalThis.process || {};
-  // @ts-ignore
-  globalThis.process.env = globalThis.process.env || {};
-
-  // @ts-ignore
   return globalThis.Buffer;
 }

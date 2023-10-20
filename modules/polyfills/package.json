@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/polyfills",
-  "version": "4.0.0-beta.3",
+  "version": "4.0.0-beta.4",
   "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
   "type": "module",
@@ -34,10 +34,10 @@
     "README.md"
   ],
   "browser": {
+    "fs": false,
+    "path": false,
     "./src/index.ts": "./src/index.browser.ts",
-    "./dist/index.js": "./dist/index.browser.js",
-    "./dist/es5/index.js": "./dist/es5/index.browser.js",
-    "./dist/esm/index.js": "./dist/es5/index.browser.js"
+    "./dist/index.js": "./dist/index.browser.js"
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
@@ -45,8 +45,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/crypto": "4.0.0-beta.3",
-    "@loaders.gl/loader-utils": "4.0.0-beta.3",
+    "@loaders.gl/crypto": "4.0.0-beta.4",
+    "@loaders.gl/loader-utils": "4.0.0-beta.4",
     "buffer": "^6.0.3",
     "get-pixels": "^3.3.2",
     "ndarray": "^1.0.18",

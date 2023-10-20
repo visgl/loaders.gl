@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "4.0.0-beta.3",
+  "version": "4.0.0-beta.4",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "type": "module",
@@ -38,13 +38,10 @@
     "path": false,
     "fs": false,
     "./src/lib/node/worker_threads.ts": "./src/lib/node/worker_threads-browser.ts",
-    "./dist/es5/lib/node/worker_threads.js": "./dist/es5/lib/node/worker_threads-browser.js",
-    "./dist/esm/lib/node/worker_threads.js": "./dist/esm/lib/node/worker_threads-browser.js",
+    "./dist/lib/node/worker_threads.js": "./dist/lib/node/worker_threads-browser.js",
     "./src/lib/node/require-utils.node.ts": false,
-    "./dist/es5/lib/node/require-utils.node.js": false,
-    "./dist/esm/lib/node/require-utils.node.js": false,
+    "./dist/lib/node/require-utils.node.js": false,
     "./src/lib/process-utils/child-process-proxy.ts": false,
-    "./dist/es5/lib/process-utils/child-process-proxy.js": false,
     "./dist/esm/lib/process-utils/child-process-proxy.js": false
   },
   "scripts": {
