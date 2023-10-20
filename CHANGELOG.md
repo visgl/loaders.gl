@@ -6,6 +6,16 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-beta.5
+
+- Path fix (#2709)
+- fix(gltf, tile-converter): attributeStorageInfo, use class name (#2673)
+- chore: Add CI for Node 20 (#2712)
+- fix(tile-converter): enable tests (#2708)
+- chore: Bump to Node 18 (#2711)
+- docs (whats-new): Update whats-new.mdx for 4.0 loaders.gl release (#2702)
+- feat(geopackage): Upgrade and modernize (#2704)
+
 ### v4.0.0-beta.4
 
 - fix(tile-converter): cli tools (#2707)
