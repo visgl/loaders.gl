@@ -9,11 +9,11 @@ import './init-tests';
 // import '@loaders.gl/worker-utils/test';
 import '@loaders.gl/math/test';
 
-// // Core
+// Core
 import '@loaders.gl/loader-utils/test';
 // import '@loaders.gl/core/test';
 
-// // Image Formats
+// Image Formats
 import '@loaders.gl/images/test';
 import '@loaders.gl/textures/test';
 // import '@loaders.gl/video/test';
@@ -21,7 +21,7 @@ import '@loaders.gl/textures/test';
 // import '@loaders.gl/zarr/test';
 import '@loaders.gl/netcdf/test';
 
-// // Pointcloud/Mesh Formats
+// Pointcloud/Mesh Formats
 import '@loaders.gl/draco/test';
 // import '@loaders.gl/las/test';
 import '@loaders.gl/obj/test';
@@ -29,10 +29,10 @@ import '@loaders.gl/pcd/test';
 import '@loaders.gl/ply/test';
 import '@loaders.gl/terrain/test';
 
-// // Scenegraph Formats
+// Scenegraph Formats
 import '@loaders.gl/gltf/test';
 
-// // 3D Tile Formats
+// 3D Tile Formats
 import '@loaders.gl/3d-tiles/test';
 import '@loaders.gl/i3s/test';
 import '@loaders.gl/potree/test';
@@ -61,12 +61,12 @@ import '@loaders.gl/json/test';
 import '@loaders.gl/excel/test';
 import '@loaders.gl/parquet/test';
 
-// // unstructured (JSON) formats
-// // JSON listed in tabular loaders since it optionally supports that category
+// unstructured (JSON) formats
+// JSON listed in tabular loaders since it optionally supports that category
 import '@loaders.gl/bson/test';
 import '@loaders.gl/xml/test';
 
-// // Archive Formats
+// Archive Formats
 import '@loaders.gl/compression/test';
 import '@loaders.gl/crypto/test';
 import '@loaders.gl/zip/test';
