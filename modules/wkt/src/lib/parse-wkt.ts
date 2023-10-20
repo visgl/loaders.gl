@@ -178,6 +178,7 @@ function parseMultiLineString(state: ParseWKTState): Geometry | null {
   }
   white(state);
   return {
+    // @ts-ignore
     type: 'MultiLineString',
     // @ts-expect-error
     coordinates: c
@@ -194,6 +195,7 @@ function parsePolygon(state: ParseWKTState): Geometry | null {
     return null;
   }
   return {
+    // @ts-ignore
     type: 'Polygon',
     // @ts-expect-error
     coordinates: c
