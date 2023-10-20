@@ -183,16 +183,6 @@ export enum GLTFPrimitiveModeString {
   TRIANGLE_FAN = 'TRIANGLE_FAN'
 }
 
-export type AttributeProperty = {
-  attributeType: string;
-  attributeDescription?: string;
-  attributeName?: string;
-};
-
-export type AttributePropertySet = {
-  [key: string]: AttributeProperty;
-};
-
 /** Preprocessed data gathered from child tiles binary content */
 export type PreprocessData = {
   /** Mesh topology types used in gltf primitives of the tileset */

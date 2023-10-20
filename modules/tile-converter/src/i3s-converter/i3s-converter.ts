@@ -12,7 +12,8 @@ import type {
   SceneLayer3D,
   BoundingVolumes,
   MaxScreenThresholdSQ,
-  NodeInPage
+  NodeInPage,
+  Attribute
 } from '@loaders.gl/i3s';
 import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -54,16 +55,18 @@ import {
   GLTFPrimitiveModeString,
   I3SConvertedResources,
   PreprocessData,
-  AttributePropertySet,
   SharedResourcesArrays
 } from './types';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
-  getAttributeType,
-  getAttributePropertiesFromSchema,
-  createStorageAttributes
+  getAttributeTypesFromPropertyTable,
+  getAttributeTypesFromSchema,
+  createdStorageAttribute,
+  getFieldAttributeType,
+  createFieldAttribute,
+  createPopupInfo
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
 import {
@@ -1154,61 +1157,72 @@ export default class I3SConverter {
     we will collect attribute information for node attributes from the property table
     taken from each tile.
     */
-    let attributePropertySet: AttributePropertySet | null = null;
+    let attributeTypesMap: Record<string, Attribute> | null = null;
     if (this.options.metadataClass) {
       if (!this.layers0!.attributeStorageInfo!.length && tileContent?.gltf) {
-        attributePropertySet = getAttributePropertiesFromSchema(
+        attributeTypesMap = getAttributeTypesFromSchema(
           tileContent.gltf,
           this.options.metadataClass
         );
       }
     } else {
       if (propertyTable) {
-        attributePropertySet = this.getAttributePropertyFromPropertyTable(propertyTable);
+        attributeTypesMap = getAttributeTypesFromPropertyTable(propertyTable);
       }
     }
 
-    if (attributePropertySet) {
-      this.layers0!.popupInfo = createStorageAttributes(
-        attributePropertySet,
-        this.layers0!.attributeStorageInfo,
-        this.layers0!.fields
-      );
-      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+    if (attributeTypesMap) {
+      this.createStorageAttributes(attributeTypesMap);
     }
   }
 
   /**
-   * Gets the extension schema selected by the schema class name 'metadataClass'.
-   * @param propertyTable - Table with layer meta data.
-   * @returns set of class property types
-   * @example of returned object:
-   * {
-   *   "opt_uint8":  { "propertyType": "Int32" },
-   *   "opt_uint64": { "propertyType": "string" }
-   * }
+   * Creates Attribute Storage Info objects based on attribute's types
+   * @param attributeTypesMap - set of attribute's types
    */
-  private getAttributePropertyFromPropertyTable(
-    propertyTable: FeatureTableJson | null
-  ): AttributePropertySet | null {
-    if (!propertyTable) {
-      return null;
+  private createStorageAttributes(attributeTypesMap: Record<string, Attribute>): void {
+    if (!Object.keys(attributeTypesMap).length) {
+      return;
     }
-    const attributePropertySet: AttributePropertySet = {};
-    // Create attributePropertySet based on the first element of each property.
-    for (const key in propertyTable) {
+    const attributeTypes: Record<string, Attribute> = {
+      OBJECTID: 'OBJECTID',
+      ...attributeTypesMap
+    };
+
+    let isUpdated = false;
+    let attributeIndex = this.layers0!.attributeStorageInfo!.length;
+    for (const key in attributeTypes) {
       /*
-        We will append new attributes only in case the property table contains
-        properties that have not been added to the attribute storage info yet.
+      We will append a new attribute only in case it has not been added to the attribute storage info yet.
       */
-      const found = this.layers0!.attributeStorageInfo!.find((element) => element.name === key);
-      if (!found) {
-        const firstAttribute = propertyTable[key][0];
-        const attributeType = getAttributeType(firstAttribute);
-        attributePropertySet[key] = {attributeType: attributeType};
+      const elementFound = this.layers0!.attributeStorageInfo!.find(
+        (element) => element.name === key
+      );
+      if (!elementFound) {
+        const attributeType = attributeTypes[key];
+
+        const storageAttribute = createdStorageAttribute(attributeIndex, key, attributeType);
+        const fieldAttributeType = getFieldAttributeType(attributeType);
+        const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
+
+        this.layers0!.attributeStorageInfo!.push(storageAttribute);
+        this.layers0!.fields!.push(fieldAttribute);
+        attributeIndex += 1;
+        isUpdated = true;
       }
     }
-    return attributePropertySet;
+    if (isUpdated) {
+      /*
+      The attributeStorageInfo is updated. So, popupInfo should be recreated.
+      Use attributeStorageInfo as a source of attribute names to create the popupInfo.
+    */
+      const attributeNames: string[] = [];
+      for (let info of this.layers0!.attributeStorageInfo!) {
+        attributeNames.push(info.name);
+      }
+      this.layers0!.popupInfo = createPopupInfo(attributeNames);
+      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+    }
   }
 
   /**
