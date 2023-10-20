@@ -373,7 +373,6 @@ const getAttributeTypeFromExtStructuralMetadata = (
   property: GLTF_EXT_structural_metadata_ClassProperty
 ): Attribute => {
   let attributeType: Attribute;
-  attributeType = '';
   if (property.array) {
     attributeType = STRING_TYPE;
   } else {
