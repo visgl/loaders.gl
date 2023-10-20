@@ -47,7 +47,14 @@ export type {
   GLTF_EXT_feature_metadata_FeatureIdTextureAccessor
 } from './lib/types/gltf-ext-feature-metadata-schema';
 
-export type {GLTF_EXT_structural_metadata_GLTF} from './lib/types/gltf-ext-structural-metadata-schema';
+export type {
+  GLTF_EXT_structural_metadata_GLTF,
+  GLTF_EXT_structural_metadata_Schema,
+  GLTF_EXT_structural_metadata_PropertyTable,
+  GLTF_EXT_structural_metadata_PropertyTexture,
+  GLTF_EXT_structural_metadata_Class,
+  GLTF_EXT_structural_metadata_ClassProperty
+} from './lib/types/gltf-ext-structural-metadata-schema';
 
 export type {
   GLTF_EXT_mesh_features,
@@ -57,8 +64,6 @@ export type {
 export {name as EXT_MESH_FEATURES} from './lib/extensions/EXT_mesh_features';
 export {name as EXT_STRUCTURAL_METADATA} from './lib/extensions/EXT_structural_metadata';
 export {name as EXT_FEATURE_METADATA} from './lib/extensions/deprecated/EXT_feature_metadata';
-export {getPropertyTableFromExtFeatureMetadata} from './lib/extensions/deprecated/EXT_feature_metadata';
-export {getPropertyTableFromExtStructuralMetadata} from './lib/extensions/EXT_structural_metadata';
 
 // Postprocessed types (modified GLTF types)
 export type {

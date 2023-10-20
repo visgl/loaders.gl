@@ -29,7 +29,10 @@ test('tile-converter(i3s)#mergePreprocessData', async (t) => {
   targetMeshTypeSet.add(GLTF_PRIMITIVE_MODES[0]);
   const targetMetadataClassesSet = new Set<string>();
   targetMetadataClassesSet.add('metadata_class');
-  const target = {meshTopologyTypes: targetMeshTypeSet, metadataClasses: targetMetadataClassesSet};
+  const target = {
+    meshTopologyTypes: targetMeshTypeSet,
+    metadataClasses: targetMetadataClassesSet
+  };
 
   const meshTypeSet = new Set<GLTFPrimitiveModeString>();
   meshTypeSet.add(GLTF_PRIMITIVE_MODES[4]);

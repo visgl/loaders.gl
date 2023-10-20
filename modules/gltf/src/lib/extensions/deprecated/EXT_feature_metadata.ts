@@ -11,7 +11,6 @@ import type {
   GLTF_EXT_feature_metadata_Schema
 } from '../../types/gltf-ext-feature-metadata-schema';
 import type {BigTypedArray, TypedArray} from '@loaders.gl/schema';
-import type {FeatureTableJson} from '../../types/gltf-types';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {GLTFMeshPrimitive} from '../../types/gltf-json-schema';
 import {GLTFLoaderOptions} from '../../../gltf-loader';
@@ -34,65 +33,6 @@ export const name = EXT_FEATURE_METADATA_NAME;
 export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
   decodeExtFeatureMetadata(scenegraph, options);
-}
-
-/**
- * Handles EXT_feature_metadata to get property table.
- * @param extension - Global level of EXT_FEATURE_METADATA extension.
- * @param metadataClass - User selected feature metadata class name.
- * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
- */
-export function getPropertyTableFromExtFeatureMetadata(
-  extension: GLTF_EXT_feature_metadata_GLTF,
-  metadataClass?: string
-): FeatureTableJson | null {
-  if (extension.featureTables) {
-    /**
-     * Take only first feature table to generate attributes storage info object.
-     * TODO: Think about getting data from all feature tables?
-     * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
-     * In I3S we should decide which featureIds attribute will be passed to geometry data.
-     */
-    const firstFeatureTableName = Object.keys(extension.featureTables)?.[0];
-
-    if (firstFeatureTableName) {
-      const featureTable = extension.featureTables[firstFeatureTableName];
-      const propertyTable = {};
-
-      for (const propertyName in featureTable.properties) {
-        propertyTable[propertyName] = featureTable.properties[propertyName].data;
-      }
-
-      return propertyTable;
-    }
-  }
-
-  if (extension.featureTextures) {
-    let featureTexture: string | undefined;
-    for (const textureKey in extension.featureTextures) {
-      const texture = extension.featureTextures[textureKey];
-      if (texture.class === metadataClass) {
-        featureTexture = textureKey;
-      }
-    }
-
-    if (typeof featureTexture === 'string') {
-      const featureTable = extension.featureTextures[featureTexture];
-      const propertyTable = {};
-
-      for (const propertyName in featureTable.properties) {
-        propertyTable[propertyName] = featureTable.properties[propertyName].data;
-      }
-
-      return propertyTable;
-    }
-  }
-
-  // eslint-disable-next-line no-console
-  console.warn(
-    'Cannot get property table from EXT_feature_metadata extension. There is neither featureTables, nor featureTextures in the extension.'
-  );
-  return null;
 }
 
 /**

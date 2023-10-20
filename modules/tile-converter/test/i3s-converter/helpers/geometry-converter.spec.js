@@ -434,6 +434,26 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
   t.end();
 });
 
+test('tile-converter(i3s)#getPropertyTable - should get the property table from EXT_feature_metadata extension', async (t) => {
+  const propertyTableExpected = {
+    'r3dm::uncertainty_ce90sum': [33, 35, 29, 32, 24, 28, 25, 39, 30, 34, 27, 36, 31, 37, 23]
+  };
+
+  if (isBrowser) {
+    t.end();
+    return;
+  }
+  const tileContent = await load(MUSCATATUCK_GLB_FILE_PATH, Tiles3DLoader);
+  const propertyTable = getPropertyTable(tileContent, 'r3dm::uncertainty_ce90sum');
+  t.deepEquals(propertyTable, propertyTableExpected, 'Returns property table');
+
+  // Clean up worker pools
+  const workerFarm = WorkerFarm.getWorkerFarm({});
+  workerFarm.destroy();
+
+  t.end();
+});
+
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async (t) => {
   if (isBrowser) {
     t.end();
