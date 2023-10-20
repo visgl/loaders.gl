@@ -56,13 +56,17 @@ and loaders.gl v4.0 aligns with this practice.
 
 ---
 
+**@loaders.gl/arrow**
+
+- Batches now contain a Table with a single `RecordBatch` (instead of just a `RecordBatch`).
+
 **@loaders.gl/crypto**
 
 - All hashes now require an encoding parameter. To get previous behavior, just specify `.hash...(..., 'base64')`.
 
-**@loaders.gl/arrow**
+**@loaders.gl/geopackage**
 
-- Batches now contain a Table with a single `RecordBatch` (instead of just a `RecordBatch`).
+- `options.gis.format` => `options.geopackage.shape`: The default data format returned is now `options.geopackage.shape: 'tables'`, which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
 
 **@loaders.gl/gltf**
 

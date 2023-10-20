@@ -20,12 +20,14 @@ import {
   GeoPackageGeometryTypes
 } from './types';
 
+const SQL_JS_VERSION = '1.8.0';
+
 /**
  * We pin to the same version as sql.js that we use.
  * As of March 2022, versions 1.6.0, 1.6.1, and 1.6.2 of sql.js appeared not to work.
  */
 export const DEFAULT_SQLJS_CDN = isBrowser
-  ? 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
+  ? `https://cdnjs.cloudflare.com/ajax/libs/sql.js/${SQL_JS_VERSION}/`
   : null;
 
 // https://www.geopackage.org/spec121/#flags_layout
@@ -42,7 +44,7 @@ const ENVELOPE_BYTE_LENGTHS = {
 };
 
 // Documentation: https://www.geopackage.org/spec130/index.html#table_column_data_types
-const SQL_TYPE_MAPPING: {[type in SQLiteTypes | GeoPackageGeometryTypes]: DataType} = {
+const SQL_TYPE_MAPPING: Record<SQLiteTypes | GeoPackageGeometryTypes, DataType> = {
   BOOLEAN: 'bool',
   TINYINT: 'int8',
   SMALLINT: 'int16',

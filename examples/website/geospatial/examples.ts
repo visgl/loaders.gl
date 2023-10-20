@@ -36,6 +36,18 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
         latitude: -29.76,
         zoom: 1.76
       }
+    },
+    NZBuildingFootprints: {
+      format: 'geoparquet',
+      data: 'https://storage.googleapis.com/open-geodata/linz-examples/nz-building-outlines.parquet',
+      viewState: {
+        latitude: 47.65,
+        longitude: 7,
+        zoom: 4.5,
+        maxZoom: 20,
+        maxPitch: 89,
+        bearing: 0
+      }
     }
   },
   GeoJSON: {
@@ -49,18 +61,18 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       }
     }
   },
-  // GeoPackage: {
-  //   Rivers: {
-  //     format: 'geopackage',
-  //     data: 'https://raw.githubusercontent.com/ngageoint/geopackage-js/master/test/fixtures/rivers.gpkg',
-  //     viewState: {
-  //       ...VIEW_STATE,
-  //       longitude: -4.65,
-  //       latitude: 0,
-  //       zoom: 1.76
-  //     }
-  //   }
-  // },
+  GeoPackage: {
+    Rivers: {
+      format: 'geopackage',
+      data: 'https://raw.githubusercontent.com/ngageoint/geopackage-js/master/test/fixtures/rivers.gpkg',
+      viewState: {
+        ...VIEW_STATE,
+        longitude: -4.65,
+        latitude: 0,
+        zoom: 1.76
+      }
+    }
+  },
   FlatGeobuf: {
     Countries: {
       format: 'flatgeobuf',
