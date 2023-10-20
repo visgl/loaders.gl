@@ -1723,12 +1723,7 @@ function getPropertyTableFromExtFeatureMetadata(
 
 /**
  * Gets data from Property Table or Property Texture
- * @param {
- *  | GLTF_EXT_structural_metadata_PropertyTable
- *  | GLTF_EXT_structural_metadata_PropertyTexture
- *  | GLTF_EXT_feature_metadata_FeatureTable
- *  | GLTF_EXT_feature_metadata_FeatureTexture
- * } featureObject
+ * @param featureObject - property table or texture from the extension
  * @returns Table containing property data
  */
 function getPropertyData<

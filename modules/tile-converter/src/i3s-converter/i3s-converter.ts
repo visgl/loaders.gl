@@ -1165,10 +1165,8 @@ export default class I3SConverter {
           this.options.metadataClass
         );
       }
-    } else {
-      if (propertyTable) {
-        attributeTypesMap = getAttributeTypesFromPropertyTable(propertyTable);
-      }
+    } else if (propertyTable) {
+      attributeTypesMap = getAttributeTypesFromPropertyTable(propertyTable);
     }
 
     if (attributeTypesMap) {
