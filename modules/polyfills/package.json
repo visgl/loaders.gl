@@ -37,9 +37,7 @@
     "fs": false,
     "path": false,
     "./src/index.ts": "./src/index.browser.ts",
-    "./dist/index.js": "./dist/index.browser.js",
-    "./dist/es5/index.js": "./dist/es5/index.browser.js",
-    "./dist/esm/index.js": "./dist/es5/index.browser.js"
+    "./dist/index.js": "./dist/index.browser.js"
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
