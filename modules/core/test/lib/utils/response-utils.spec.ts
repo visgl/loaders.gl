@@ -7,8 +7,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {
   makeResponse,
   checkResponse,
-  checkResponseSync,
-  getResponseError
+  checkResponseSync
 } from '@loaders.gl/core/lib/utils/response-utils';
 
 test('Response', async (t) => {
