@@ -24,7 +24,6 @@
     "outDir": "dist"
   },
   "references": [
-    {"path": "../core"},
     {"path": "../loader-utils"},
     {"path": "../math"}
   ]
