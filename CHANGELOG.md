@@ -23,7 +23,7 @@
 - chore(polyfills): Consolidate node code (#2701)
 - fix(i3s): handle search params in I3SLoader (#2692)
 
-### v4.0.0-beta.3
+### v4.0.0-beta.6
 
 - feat(tile-converter): --analyze-only option (#2694)
 - fix(tiles): cartographicToCartesan syntax (#2690)
