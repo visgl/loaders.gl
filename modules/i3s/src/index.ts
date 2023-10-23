@@ -37,6 +37,8 @@ export type {
 } from './types';
 export type {I3SLoaderOptions} from './i3s-loader';
 
+export {AttributeType} from './types';
+
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
 
 export {I3SLoader} from './i3s-loader';

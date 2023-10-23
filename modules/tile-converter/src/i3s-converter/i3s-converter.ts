@@ -1,5 +1,7 @@
 // loaders.gl, MIT license
 
+import AttributeMetadataInfo from './attribute-metadata-info';
+
 import type {
   FeatureTableJson,
   Tiles3DLoaderOptions,
@@ -61,12 +63,8 @@ import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
-  getAttributeTypesFromPropertyTable,
-  getAttributeTypesFromSchema,
-  createdStorageAttribute,
-  getFieldAttributeType,
-  createFieldAttribute,
-  createPopupInfo
+  getAttributeTypesMapFromPropertyTable,
+  getAttributeTypesMapFromSchema
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
 import {
@@ -93,6 +91,7 @@ const CESIUM_DATASET_PREFIX = 'https://';
  * Converter from 3d-tiles tileset to i3s layer
  */
 export default class I3SConverter {
+  attributeMetadataInfo: AttributeMetadataInfo;
   nodePages: NodePages;
   options: any;
   layers0Path: string;
@@ -140,6 +139,7 @@ export default class I3SConverter {
   };
 
   constructor() {
+    this.attributeMetadataInfo = new AttributeMetadataInfo();
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE, this);
     this.options = {};
     this.layers0Path = '';
@@ -1174,65 +1174,22 @@ export default class I3SConverter {
     let attributeTypesMap: Record<string, Attribute> | null = null;
     if (this.options.metadataClass) {
       if (!this.layers0!.attributeStorageInfo!.length && tileContent?.gltf) {
-        attributeTypesMap = getAttributeTypesFromSchema(
+        attributeTypesMap = getAttributeTypesMapFromSchema(
           tileContent.gltf,
           this.options.metadataClass
         );
       }
     } else if (propertyTable) {
-      attributeTypesMap = getAttributeTypesFromPropertyTable(propertyTable);
+      attributeTypesMap = getAttributeTypesMapFromPropertyTable(propertyTable);
     }
 
     if (attributeTypesMap) {
-      this.createStorageAttributes(attributeTypesMap);
-    }
-  }
+      // Add new storage attributes, fields and create popupInfo
+      this.attributeMetadataInfo.addMetadataInfo(attributeTypesMap);
+      this.layers0!.attributeStorageInfo = this.attributeMetadataInfo.attributeStorageInfo;
+      this.layers0!.fields = this.attributeMetadataInfo.fields;
+      this.layers0!.popupInfo = this.attributeMetadataInfo.popupInfo;
 
-  /**
-   * Creates Attribute Storage Info objects based on attribute's types
-   * @param attributeTypesMap - set of attribute's types
-   */
-  private createStorageAttributes(attributeTypesMap: Record<string, Attribute>): void {
-    if (!Object.keys(attributeTypesMap).length) {
-      return;
-    }
-    const attributeTypes: Record<string, Attribute> = {
-      OBJECTID: 'OBJECTID',
-      ...attributeTypesMap
-    };
-
-    let isUpdated = false;
-    let attributeIndex = this.layers0!.attributeStorageInfo!.length;
-    for (const key in attributeTypes) {
-      /*
-      We will append a new attribute only in case it has not been added to the attribute storage info yet.
-      */
-      const elementFound = this.layers0!.attributeStorageInfo!.find(
-        (element) => element.name === key
-      );
-      if (!elementFound) {
-        const attributeType = attributeTypes[key];
-
-        const storageAttribute = createdStorageAttribute(attributeIndex, key, attributeType);
-        const fieldAttributeType = getFieldAttributeType(attributeType);
-        const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
-
-        this.layers0!.attributeStorageInfo!.push(storageAttribute);
-        this.layers0!.fields!.push(fieldAttribute);
-        attributeIndex += 1;
-        isUpdated = true;
-      }
-    }
-    if (isUpdated) {
-      /*
-      The attributeStorageInfo is updated. So, popupInfo should be recreated.
-      Use attributeStorageInfo as a source of attribute names to create the popupInfo.
-    */
-      const attributeNames: string[] = [];
-      for (let info of this.layers0!.attributeStorageInfo!) {
-        attributeNames.push(info.name);
-      }
-      this.layers0!.popupInfo = createPopupInfo(attributeNames);
       this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
     }
   }
