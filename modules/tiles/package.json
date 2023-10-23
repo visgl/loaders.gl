@@ -49,9 +49,6 @@
     "@math.gl/web-mercator": "^4.0.0",
     "@probe.gl/stats": "^4.0.2"
   },
-  "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-beta.6"
-  },
   "devDependencies": {
     "@deck.gl/core": "^8.9.0"
   },

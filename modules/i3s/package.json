@@ -54,8 +54,5 @@
     "@math.gl/culling": "^4.0.0",
     "@math.gl/geospatial": "^4.0.0"
   },
-  "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-beta.3"
-  },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

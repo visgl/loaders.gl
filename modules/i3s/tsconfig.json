@@ -8,7 +8,6 @@
     "outDir": "dist"
   },
   "references": [
-    {"path": "../core"},
     {"path": "../compression"},
     {"path": "../crypto"},
     {"path": "../draco"},
