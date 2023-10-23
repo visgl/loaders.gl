@@ -26,7 +26,7 @@ export declare enum GeometryType {
 
 export function fgbToBinaryFeature(geometry: FGBFeature | null, type: GeometryType) {
   const fgbGeometry: FGBGeometry | null = geometry?.geometry() || null;
-  return null;
+  return fgbToBinaryGeometry(fgbGeometry, type);
 }
 
 export function fgbToBinaryGeometry(geometry: FGBGeometry | null, type: GeometryType) {
