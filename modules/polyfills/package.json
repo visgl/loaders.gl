@@ -24,7 +24,7 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index-node.cjs",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     }
   },
@@ -42,7 +42,7 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-node-bundle",
     "build-bundle": "ocular-bundle ./src/index.ts",
-    "build-node-bundle": "esbuild src/index.ts --outfile=dist/index-node.cjs --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-node-bundle": "esbuild src/index.ts --outfile=dist/index.cjs --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
