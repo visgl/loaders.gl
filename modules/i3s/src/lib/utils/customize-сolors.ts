@@ -1,5 +1,5 @@
-import type {MeshAttribute} from '@loaders.gl/schema';
-import type {COLOR, I3STileOptions, I3STilesetOptions} from '../../types';
+import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
+import type {AttributeStorageInfo, COLOR, Field, I3STileContent} from '../../types';
 
 import {load} from '@loaders.gl/core';
 import {getAttributeValueType, I3SAttributeLoader} from '../../i3s-attribute-loader';
@@ -18,16 +18,37 @@ import {I3STileAttributes} from '../parsers/parse-i3s-attribute';
  */
 export async function customizeColors(
   colors: MeshAttribute,
-  featureIds: MeshAttribute,
-  tileOptions: I3STileOptions,
-  tilesetOptions: I3STilesetOptions,
+  featureIds: TypedArray,
+  attributeUrls: string[],
+  fields: Field[],
+  attributeStorageInfo: AttributeStorageInfo[],
+  content: I3STileContent,
+  inlineColoring: boolean,
   options?: I3SLoaderOptions
 ): Promise<MeshAttribute> {
   if (!options?.i3s?.colorsByAttribute) {
     return colors;
   }
 
-  const colorizeAttributeField = tilesetOptions.fields.find(
+  const resultColors = inlineColoring
+    ? colors
+    : {
+        ...colors,
+        value: colors.value.slice()
+      };
+
+  if (!content.originalColorsAttributes) {
+    content.originalColorsAttributes = {
+      ...colors,
+      value: colors.value.slice()
+    };
+  } else if (options.i3s.colorsByAttribute.mode === 'multiply') {
+    resultColors.value = content.originalColorsAttributes.value.slice();
+  }
+
+  content.customColors = options.i3s.colorsByAttribute;
+
+  const colorizeAttributeField = fields.find(
     ({name}) => name === options?.i3s?.colorsByAttribute?.attributeName
   );
   if (
@@ -41,23 +62,23 @@ export async function customizeColors(
 
   const colorizeAttributeData = await loadFeatureAttributeData(
     colorizeAttributeField.name,
-    tileOptions,
-    tilesetOptions,
+    attributeUrls,
+    attributeStorageInfo,
     options
   );
   if (!colorizeAttributeData) {
     return colors;
   }
 
-  const objectIdField = tilesetOptions.fields.find(({type}) => type === 'esriFieldTypeOID');
+  const objectIdField = fields.find(({type}) => type === 'esriFieldTypeOID');
   if (!objectIdField) {
     return colors;
   }
 
   const objectIdAttributeData = await loadFeatureAttributeData(
     objectIdField.name,
-    tileOptions,
-    tilesetOptions,
+    attributeUrls,
+    attributeStorageInfo,
     options
   );
   if (!objectIdAttributeData) {
@@ -75,25 +96,25 @@ export async function customizeColors(
     );
   }
 
-  for (let i = 0; i < featureIds.value.length; i++) {
-    const color = attributeValuesMap[featureIds.value[i]];
+  for (let i = 0; i < featureIds.length; i++) {
+    const color = attributeValuesMap[featureIds[i]];
     if (!color) {
       continue; // eslint-disable-line no-continue
     }
 
     /* eslint max-statements: ["error", 30] */
-    /* eslint complexity: ["error", 12] */
+    /* eslint complexity: ["error", 14] */
     if (options.i3s.colorsByAttribute.mode === 'multiply') {
       // multiplying original mesh and calculated for attribute rgba colors in range 0-255
       color.forEach((colorItem, index) => {
-        colors.value[i * 4 + index] = (colors.value[i * 4 + index] * colorItem) / 255;
+        resultColors.value[i * 4 + index] = (resultColors.value[i * 4 + index] * colorItem) / 255;
       });
     } else {
-      colors.value.set(color, i * 4);
+      resultColors.value.set(color, i * 4);
     }
   }
 
-  return colors;
+  return resultColors;
 }
 
 /**
@@ -125,8 +146,8 @@ function calculateColorForAttribute(attributeValue: number, options?: I3SLoaderO
  */
 async function loadFeatureAttributeData(
   attributeName: string,
-  {attributeUrls}: I3STileOptions,
-  {attributeStorageInfo}: I3STilesetOptions,
+  attributeUrls: string[],
+  attributeStorageInfo: AttributeStorageInfo[],
   options?: I3SLoaderOptions
 ): Promise<I3STileAttributes | null> {
   const attributeIndex = attributeStorageInfo.findIndex(({name}) => attributeName === name);

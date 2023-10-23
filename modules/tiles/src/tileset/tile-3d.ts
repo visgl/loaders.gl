@@ -538,6 +538,47 @@ export class Tile3D {
   }
 
   /**
+   * Update tile colors with the custom colors assigned to the I3S Loader
+   * @returns {Promise<{isColored: boolean; id: string}>} Result of the tile colorization - isColored: true/false and tile id
+   */
+  async colorizeTile(): Promise<{isColored: boolean; id: string}> {
+    const loaderOptions = this.tileset.loader.options.i3s as any;
+    const loadOptions = {
+      i3s: {...(this.tileset.loadOptions as any).i3s}
+    };
+    const result = {isColored: false, id: this.id};
+
+    if (
+      loaderOptions.customizeColors &&
+      this.content.customColors !== loadOptions.i3s.colorsByAttribute
+    ) {
+      // const colorsByAttribute = (this.tileset.loadOptions.i3s as any).colorsByAttribute;
+      if (this.content && loadOptions.i3s.colorsByAttribute) {
+        const newColors = await loaderOptions.customizeColors(
+          this.content.attributes.colors,
+          this.content.featureIds,
+          this.header.attributeUrls,
+          this.tileset.tileset.fields,
+          this.tileset.tileset.attributeStorageInfo,
+          this.content,
+          false,
+          loadOptions
+        );
+        // Make sure custom colors is not changed during async customizeColors execution
+        if (this.content.customColors === loadOptions.i3s.colorsByAttribute) {
+          this.content.attributes.colors = newColors;
+          result.isColored = true;
+        }
+      } else if (this.content && this.content.originalColorsAttributes) {
+        this.content.attributes.colors.value = this.content.originalColorsAttributes.value.slice();
+        this.content.customColors = null;
+        result.isColored = true;
+      }
+    }
+    return result;
+  }
+
+  /**
    * Computes the tile's camera-space z-depth.
    * @param frameState The frame state.
    * @returns The distance, in meters.

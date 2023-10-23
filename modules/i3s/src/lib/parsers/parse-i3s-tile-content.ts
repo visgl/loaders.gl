@@ -1,5 +1,5 @@
 import type {TypedArray} from '@loaders.gl/schema';
-import {load, parse} from '@loaders.gl/core';
+import {fetchFile, load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {LoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
@@ -65,8 +65,7 @@ export async function parseI3STileContent(
     // @ts-expect-error options is not properly typed
     const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
     const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-    const fetch = context?.fetch!; // Options already resolved?
-    const response = await fetch(url); // options?.fetch
+    const response = await fetchFile(url, options?.fetch as RequestInit);
     const arrayBuffer = await response.arrayBuffer();
 
     // @ts-expect-error options is not properly typed
@@ -209,9 +208,12 @@ async function parseI3SNodeGeometry(
 
   attributes.color = await customizeColors(
     attributes.color,
-    attributes.id,
-    tileOptions,
-    tilesetOptions,
+    attributes.id.value,
+    tileOptions.attributeUrls,
+    tilesetOptions.fields,
+    tilesetOptions.attributeStorageInfo,
+    content,
+    true,
     options
   );
 
