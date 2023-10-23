@@ -1,6 +1,10 @@
-import {GroupedTilesArray, TILE_REFINEMENT, Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import test from 'tape-promise/tape';
 import {Vector3} from '@math.gl/core';
-import {TileGroup3D} from '../../dist/tileset/tile-group-3d';
+import {TileGroup3D} from '../../src/tileset/tile-group-3d';
+import {Tile3D} from '../../src/tileset/tile-3d';
+import {Tileset3D} from '../../src/tileset/tileset-3d';
+import {TILE_REFINEMENT} from '../../src/constants';
+import {GroupedTilesArray} from '../../src/tileset/grouped-tiles.array';
 
 const unitSphere = () => ({
   center: new Vector3(0, 0, 0),
