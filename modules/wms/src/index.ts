@@ -78,7 +78,3 @@ export {WMSSource, WMSService} from './services/ogc/wms-service';
 
 export {getArcGISServices as _getArcGISServices} from './services/arcgis/arcgis-server';
 export {ArcGISImageService as _ArcGISImageService} from './services/arcgis/arcgis-image-service';
-
-// LERC - Limited Error Raster Compression
-export type {LERCData} from './lib/parsers/lerc/lerc-types';
-export {LERCLoader} from './lerc-loader';
