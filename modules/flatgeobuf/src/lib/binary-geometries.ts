@@ -61,7 +61,7 @@ function parsePoint(geometry: FGBGeometry) {
 function parseLines(geometry: FGBGeometry) {
   const xy = geometry.xyArray();
   const z = geometry.zArray();
-  const positions = blitArrays(xy, z);
+  const positions = blitArrays(xy!, z!);
 
   // If endsArray is null, a single LineString. Otherwise, contains the end
   // indices of each part of the MultiLineString. geometry.endsArray() omits the
@@ -92,7 +92,7 @@ function parsePolygons(geometry: FGBGeometry) {
   ends.unshift(0);
 
   const primitivePolygonIndices = {value: new Uint16Array(ends), size: 1};
-  const polygonIndices = {value: new Uint16Array([0, xy.length / 2]), size: 1};
+  const polygonIndices = {value: new Uint16Array([0, xy!.length / 2]), size: 1};
 
   return {
     positions,
@@ -167,7 +167,7 @@ function blitArrays(xy: Float64Array, z: Float64Array): {value: Float64Array; si
   }
 
   if (z.length * 2 !== xy.length) {
-    throw new Error("Z array must be half XY array's length");
+    throw new Error('Z array must be half XY array\'s length');
   }
   const totalLength = xy.length + z.length;
 

@@ -22,7 +22,7 @@ function binaryFromFeature(feature: FBGFeature, header: FGBHeader) {
   // I believe geometry.type() is null (0) except when the geometry type isn't
   // known in the header?
   const geometryType = header.geometryType || geometry?.type();
-  const parsedGeometry = fgbToBinaryGeometry(geometry, geometryType);
+  const parsedGeometry = fgbToBinaryGeometry(geometry, geometryType!);
   // @ts-expect-error this looks wrong
   parsedGeometry.properties = parsePropertiesBinary(feature, header.columns);
 
@@ -72,6 +72,7 @@ function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLo
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
   const array = new Uint8Array(arrayBuffer);
+  // @ts-expect-error
   return deserializeGeneric(array, fgbToBinaryGeometry);
 }
 
