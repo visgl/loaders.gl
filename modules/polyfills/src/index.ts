@@ -94,6 +94,8 @@ globalThis.loaders.readFileAsText = readFileAsText;
 globalThis.loaders.requireFromFile = requireFromFile;
 globalThis.loaders.requireFromString = requireFromString;
 
+export {installFilePolyfills} from './file/install-file-polyfills';
+
 // DEPRECATED POLYFILL:
 // - Node v18+: No, not needed
 // - Node v16 and lower: Yes
