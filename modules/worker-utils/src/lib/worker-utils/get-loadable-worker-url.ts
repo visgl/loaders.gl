@@ -54,8 +54,6 @@ function getLoadableWorkerURLFromURL(url: string): string {
  * @returns loadable url
  */
 function getLoadableWorkerURLFromSource(workerSource: string): string {
-  // NOTE: webworkify was previously used
-  // const blob = webworkify(workerSource, {bare: true});
   const blob = new Blob([workerSource], {type: 'application/javascript'});
   return URL.createObjectURL(blob);
 }

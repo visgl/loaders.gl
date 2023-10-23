@@ -127,7 +127,7 @@ export async function getAsyncIterableFromData(
   }
 
   if (isAsyncIterable(data)) {
-    return data[Symbol.asyncIterator]();
+    return data as AsyncIterable<ArrayBuffer>;
   }
 
   return getIterableFromData(data);

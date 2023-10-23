@@ -10,27 +10,27 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 /*
     utils.js
-    ========
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
  */
 var utils = {
-  URL: window.URL || window.webkitURL || window.mozURL || window.msURL,
+  URL: globalThis.URL || globalThis.webkitURL || globalThis.mozURL || globalThis.msURL,
   getUserMedia: (function () {
+    if (!globalThis.navigator) return globalThis.navigator;
     const getUserMedia =
-      navigator.getUserMedia ||
-      navigator.webkitGetUserMedia ||
-      navigator.mozGetUserMedia ||
-      navigator.msGetUserMedia;
-    return getUserMedia ? getUserMedia.bind(navigator) : getUserMedia;
+      globalThis.navigator.getUserMedia ||
+      globalThis.navigator.webkitGetUserMedia ||
+      globalThis.navigator.mozGetUserMedia ||
+      globalThis.navigator.msGetUserMedia;
+    return getUserMedia ? getUserMedia.bind(globalThis.navigator) : getUserMedia;
   })(),
   requestAnimFrame:
-    window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame,
+    globalThis.requestAnimationFrame ||
+    globalThis.webkitRequestAnimationFrame ||
+    globalThis.mozRequestAnimationFrame ||
+    globalThis.oRequestAnimationFrame ||
+    globalThis.msRequestAnimationFrame,
   requestTimeout: function requestTimeout(callback, delay) {
     callback = callback || utils.noop;
     delay = delay || 0;
@@ -49,14 +49,14 @@ var utils = {
     return handle;
   },
   Blob:
-    window.Blob ||
-    window.BlobBuilder ||
-    window.WebKitBlobBuilder ||
-    window.MozBlobBuilder ||
-    window.MSBlobBuilder,
+    globalThis.Blob ||
+    globalThis.BlobBuilder ||
+    globalThis.WebKitBlobBuilder ||
+    globalThis.MozBlobBuilder ||
+    globalThis.MSBlobBuilder,
   btoa: (function () {
     const btoa =
-      window.btoa ||
+      globalThis.btoa ||
       function (input) {
         let output = '';
         let i = 0;
@@ -87,7 +87,7 @@ var utils = {
         }
         return output;
       };
-    return btoa ? btoa.bind(window) : utils.noop;
+    return btoa ? btoa.bind(globalThis) : utils.noop;
   })(),
   isObject: function isObject(obj) {
     return obj && Object.prototype.toString.call(obj) === '[object Object]';
@@ -113,16 +113,16 @@ var utils = {
       return el && el.getContext && el.getContext('2d');
     },
     webworkers: function webworkers() {
-      return window.Worker;
+      return globalThis.Worker;
     },
     blob: function blob() {
       return utils.Blob;
     },
     Uint8Array: function Uint8Array() {
-      return window.Uint8Array;
+      return globalThis.Uint8Array;
     },
     Uint32Array: function Uint32Array() {
-      return window.Uint32Array;
+      return globalThis.Uint32Array;
     },
     videoCodecs: (function () {
       const testEl = document.createElement('video');
@@ -266,7 +266,6 @@ const utils$2 = Object.freeze({
 });
 /*
     error.js
-    ========
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -310,23 +309,23 @@ var error = {
     },
     {
       condition: utils.isFunction(utils.URL),
-      errorCode: 'window.URL',
-      errorMsg: 'The window.URL API is not supported in your browser'
+      errorCode: 'globalThis.URL',
+      errorMsg: 'The globalThis.URL API is not supported in your browser'
     },
     {
       condition: utils.isSupported.blob(),
-      errorCode: 'window.Blob',
-      errorMsg: 'The window.Blob File API is not supported in your browser'
+      errorCode: 'globalThis.Blob',
+      errorMsg: 'The globalThis.Blob File API is not supported in your browser'
     },
     {
       condition: utils.isSupported.Uint8Array(),
-      errorCode: 'window.Uint8Array',
-      errorMsg: 'The window.Uint8Array function constructor is not supported in your browser'
+      errorCode: 'globalThis.Uint8Array',
+      errorMsg: 'The globalThis.Uint8Array function constructor is not supported in your browser'
     },
     {
       condition: utils.isSupported.Uint32Array(),
-      errorCode: 'window.Uint32Array',
-      errorMsg: 'The window.Uint32Array function constructor is not supported in your browser'
+      errorCode: 'globalThis.Uint32Array',
+      errorMsg: 'The globalThis.Uint32Array function constructor is not supported in your browser'
     }
   ],
   messages: {
@@ -341,7 +340,6 @@ const error$2 = Object.freeze({
 });
 /*
     defaultOptions.js
-    =================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -384,7 +382,6 @@ const defaultOptions$2 = Object.freeze({
 });
 /*
     isSupported.js
-    ==============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -395,7 +392,6 @@ function isSupported() {
 }
 /*
     isWebCamGIFSupported.js
-    =======================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -405,7 +401,6 @@ function isWebCamGIFSupported() {
 }
 /*
     isSupported.js
-    ==============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -419,7 +414,6 @@ function isSupported$1() {
 }
 /*
     isExistingVideoGIFSupported.js
-    ==============================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -447,7 +441,6 @@ function isExistingVideoGIFSupported(codecs) {
 }
 /*
     NeuQuant.js
-    ===========
   */
 /*
  * NeuQuant Neural-Net Quantization Algorithm
@@ -899,7 +892,6 @@ function NeuQuant() {
 }
 /*
     processFrameWorker.js
-    =====================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -907,7 +899,7 @@ function NeuQuant() {
 function workerCode() {
   const self = this;
   try {
-    self.onmessage = function (ev) {
+    globalThis.onmessage = function (ev) {
       const data = ev.data || {};
       let response;
       if (data.gifshot) {
@@ -980,7 +972,6 @@ function workerCode() {
 }
 /*
     gifWriter.js
-    ============
   */
 // (c) Dean McNamee <dean@gmail.com>, 2013.
 //
@@ -1302,7 +1293,6 @@ function gifWriter(buf, width, height, gopts) {
 }
 /*
     animatedGIF.js
-    ==============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -1611,7 +1601,6 @@ AnimatedGIF.prototype = {
 };
 /*
     getBase64GIF.js
-    ===============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -1629,7 +1618,6 @@ function getBase64GIF(animatedGifInstance, callback) {
 }
 /*
     existingImages.js
-    =================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -1643,7 +1631,7 @@ function existingImages() {
   let imagesLength = obj.imagesLength;
   const skipObj = {
     getUserMedia: true,
-    'window.URL': true
+    'globalThis.URL': true
   };
   const errorObj = error.validate(skipObj);
   const loadedImages = [];
@@ -1726,7 +1714,6 @@ function existingImages() {
 }
 /*
     screenShot.js
-    =============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -1915,7 +1902,6 @@ const screenShot = {
 };
 /*
     videoStream.js
-    ==============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2165,7 +2151,6 @@ var videoStream = {
 };
 /*
     stopVideoStreaming.js
-    =====================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2176,7 +2161,6 @@ function stopVideoStreaming(options) {
 }
 /*
     createAndGetGIF.js
-    ==================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2229,7 +2213,6 @@ function createAndGetGIF(obj, callback) {
 }
 /*
     existingVideo.js
-    ================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2242,7 +2225,7 @@ function existingVideo() {
   const options = obj.options;
   const skipObj = {
     getUserMedia: true,
-    'window.URL': true
+    'globalThis.URL': true
   };
   const errorObj = error.validate(skipObj);
   const loadedImages = 0;
@@ -2284,7 +2267,6 @@ function existingVideo() {
 }
 /*
     existingWebcam.js
-    =================
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2321,7 +2303,6 @@ function existingWebcam() {
 }
 /*
     createGIF.js
-    ============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2370,7 +2351,6 @@ function createGIF(userOptions, callback) {
 }
 /*
     takeSnapShot.js
-    ===============
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
@@ -2392,7 +2372,6 @@ function takeSnapShot(userOptions, callback) {
 }
 /*
     API.js
-    ======
   */
 /* Copyright  2017 Yahoo Inc.
  * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.

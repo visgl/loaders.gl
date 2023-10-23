@@ -3,6 +3,7 @@ import {
   copyPaddedStringToDataView,
   copyPaddedArrayBufferToDataView
 } from '@loaders.gl/loader-utils';
+// import type {GLB} from '../types/glb-types';
 
 const MAGIC_glTF = 0x46546c67; // glTF in ASCII
 const MAGIC_JSON = 0x4e4f534a; // JSON in ASCII
@@ -10,10 +11,26 @@ const MAGIC_BIN = 0x004e4942; // BIN\0 in ASCII
 
 const LE = true; // Binary GLTF is little endian.
 
-// Encode the full GLB buffer with header etc
-// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#
-// glb-file-format-specification
-export default function encodeGLBSync(glb, dataView, byteOffset = 0, options = {}) {
+export type GLBEncodeOptions = {};
+
+/**
+ * Encode the full GLB buffer with header etc
+ *
+ * @param glb
+ * @param dataView - if `null`, does not encode but just calculates length
+ * @param byteOffset
+ * @param options
+ * @returns
+ *
+ * @see https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#glb-file-format-specification
+ * @todo type GLB argument
+ */
+export function encodeGLBSync(
+  glb,
+  dataView: DataView | null,
+  byteOffset = 0,
+  options: GLBEncodeOptions = {}
+) {
   const {magic = MAGIC_glTF, version = 2, json = {}, binary} = glb;
 
   const byteOffsetStart = byteOffset;

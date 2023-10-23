@@ -11,14 +11,14 @@ type TarBuilderOptions = {
 /**
  * Build a tar file by adding files
  */
-export default class TARBuilder {
+export class TarBuilder {
   static get properties() {
     return {
       id: 'tar',
       name: 'TAR',
       extensions: ['tar'],
       mimeTypes: ['application/x-tar'],
-      builder: TARBuilder,
+      builder: TarBuilder,
       options: TAR_BUILDER_OPTIONS
     };
   }

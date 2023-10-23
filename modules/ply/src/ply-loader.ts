@@ -1,5 +1,6 @@
 // PLY Loader
-import type {Loader} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {PLYMesh} from './lib/ply-types';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -10,11 +11,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * links: ['http://paulbourke.net/dataformats/ply/',
  * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
  */
-export const PLYLoader = {
+export const PLYLoader: Loader<PLYMesh, never, LoaderOptions> = {
   name: 'PLY',
   id: 'ply',
   module: 'ply',
-  shapes: ['mesh', 'gltf', 'columnar-table'],
+  // shapes: ['mesh', 'gltf', 'columnar-table'],
   version: VERSION,
   worker: true,
   extensions: ['ply'],
@@ -26,5 +27,3 @@ export const PLYLoader = {
     ply: {}
   }
 };
-
-export const _typecheckPLYLoader: Loader = PLYLoader;

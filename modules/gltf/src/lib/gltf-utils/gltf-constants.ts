@@ -1,4 +1,4 @@
-const COMPONENTS = {
+export const COMPONENTS = {
   SCALAR: 1,
   VEC2: 2,
   VEC3: 3,
@@ -8,7 +8,7 @@ const COMPONENTS = {
   MAT4: 16
 };
 
-const BYTES = {
+export const BYTES = {
   5120: 1, // BYTE
   5121: 1, // UNSIGNED_BYTE
   5122: 2, // SHORT

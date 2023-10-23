@@ -1,6 +1,7 @@
+// loaders.gl, MIT license
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
-// import type {DracoMeshData} from './types';
 import {VERSION} from './lib/utils/version';
 
 export type DracoLoaderOptions = LoaderOptions & {
@@ -9,6 +10,7 @@ export type DracoLoaderOptions = LoaderOptions & {
     libraryPath?: string;
     extraAttributes?;
     attributeNameEntry?: string;
+    workerUrl?: string;
   };
 };
 
@@ -24,11 +26,11 @@ const DEFAULT_DRACO_OPTIONS: DracoLoaderOptions = {
 /**
  * Worker loader for Draco3D compressed geometries
  */
-export const DracoLoader = {
+export const DracoLoader: Loader<DracoMesh, never, DracoLoaderOptions> = {
   name: 'Draco',
   id: 'draco',
   module: 'draco',
-  shapes: ['mesh'],
+  // shapes: ['mesh'],
   version: VERSION,
   worker: true,
   extensions: ['drc'],
@@ -37,5 +39,3 @@ export const DracoLoader = {
   tests: ['DRACO'],
   options: DEFAULT_DRACO_OPTIONS
 };
-
-export const _TypecheckDracoLoader: Loader = DracoLoader;

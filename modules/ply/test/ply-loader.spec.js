@@ -50,10 +50,12 @@ test('PLYLoader#parse(binary)', async (t) => {
 });
 
 test('PLYLoader#parse(ascii)', async (t) => {
-  const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader);
+  const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader, {worker: false});
 
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
+  t.equal(data.attributes.confidence.value.length, 35947, 'confidence attribute was found');
+  t.equal(data.attributes.intensity.value.length, 35947, 'intensity attribute was found');
   t.end();
 });
 
@@ -63,6 +65,8 @@ test('PLYLoader#parseSync(binary)', async (t) => {
 
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
+  t.equal(data.attributes.confidence.value.length, 35947, 'confidence attribute was found');
+  t.equal(data.attributes.intensity.value.length, 35947, 'intensity attribute was found');
   t.end();
 });
 

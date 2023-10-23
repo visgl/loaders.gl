@@ -1,32 +1,30 @@
 {
+  "private": true,
+  "name": "loaders.gl-example-pointcloud-loaders",
+  "version": "3.3.0",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --progress --hot --open"
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/react": "^8.5.0",
-    "@deck.gl/core": "^8.5.0",
-    "@deck.gl/layers": "^8.5.0",
-    "@loaders.gl/core": "2.2.0",
-    "@loaders.gl/draco": "2.2.0",
-    "@loaders.gl/las": "2.2.0",
-    "@loaders.gl/obj": "2.2.0",
-    "@loaders.gl/pcd": "2.2.0",
-    "@loaders.gl/ply": "^2.1.1",
+    "@deck.gl/react": "^8.9.28",
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/draco": "4.0.0-beta.3",
+    "@loaders.gl/las": "4.0.0-beta.3",
+    "@loaders.gl/obj": "4.0.0-beta.3",
+    "@loaders.gl/pcd": "4.0.0-beta.3",
+    "@loaders.gl/ply": "4.0.0-beta.3",
     "prop-types": "^15.7.2",
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.0",
-    "@babel/preset-react": "^7.0.0",
-    "babel-loader": "^8.0.5",
-    "babel-plugin-inline-import": "^3.0.0",
-    "html-webpack-plugin": "^3.2.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.11"
+    "typescript": "^5.0.4",
+    "vite": "^4.4.9"
   }
 }

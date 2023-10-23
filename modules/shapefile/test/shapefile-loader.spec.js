@@ -56,7 +56,7 @@ test('ShapefileLoader#load (from browser File objects)', async (t) => {
       const filename = `${testFileName}.shp`;
       // @ts-ignore
       const data = await load(filename, ShapefileLoader, {fetch});
-      t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
+      // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
       testShapefileData(t, testFileName, data);
     }
@@ -69,7 +69,7 @@ test('ShapefileLoader#load (from files or URLs)', async (t) => {
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const data = await load(filename, ShapefileLoader);
-    t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
+    // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
     await testShapefileData(t, testFileName, data);
   }
@@ -84,7 +84,7 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async (t) => {
   const data = await load(filename, ShapefileLoader, {
     gis: {reproject: true, _targetCrs: 'EPSG:3857'}
   });
-  t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
+  // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
   // Compare with parsed json
   // This is a special case with reprojected coordinates; otherwise use the

@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/core",
-  "version": "4.0.0-alpha.4",
-  "description": "Framework-independent loaders for 3D graphics formats",
+  "version": "4.0.0-beta.6",
+  "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -18,16 +19,19 @@
     "point cloud"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "browser": {
     "fs": false,
-    "stream": false,
-    "./src/iterators/make-stream/make-node-stream.ts": false,
-    "./src/iterators/make-stream/make-node-stream.js": false,
-    "./dist/es5/iterators/make-stream/make-node-stream.js": false,
-    "./dist/esm/iterators/make-stream/make-node-stream.js": false
+    "stream": false
   },
   "files": [
     "src",
@@ -35,14 +39,16 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
-    "build-worker": "esbuild src/workers/null-worker.ts --bundle --outfile=dist/null-worker.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker && npm run build-worker-node",
+    "build-bundle": "ocular-bundle ./src/index.ts",
+    "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.4",
-    "probe.gl": "^3.4.0"
-  }
+    "@loaders.gl/loader-utils": "4.0.0-beta.6",
+    "@loaders.gl/worker-utils": "4.0.0-beta.6",
+    "@probe.gl/log": "^4.0.2"
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

@@ -8,15 +8,15 @@ export {CRC32Hash, CRC32CHash};
 
 createWorker(async (data, options = {}) => {
   // @ts-ignore
-  const {operation} = options;
+  const {operation, encoding = 'base64'} = options;
 
   switch (operation) {
     case 'crc32':
-      return await new CRC32Hash(options).hash(data);
+      return await new CRC32Hash(options).hash(data, encoding);
     case 'crc32c':
-      return await new CRC32CHash(options).hash(data);
+      return await new CRC32CHash(options).hash(data, encoding);
     case 'md5':
-      return await new MD5Hash(options).hash(data);
+      return await new MD5Hash(options).hash(data, encoding);
     default:
       throw new Error(`invalid option: ${operation}`);
   }

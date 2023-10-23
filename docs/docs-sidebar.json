@@ -1,0 +1,433 @@
+[
+  {
+    "type": "category",
+    "label": "Overview",
+    "items": [
+      "README",
+      "developer-guide/get-started",
+      "whats-new",
+      "upgrade-guide"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Developer Guide",
+    "items": [
+      {
+        "type": "category",
+        "label": "Basics",
+        "items": [
+          "developer-guide/using-loaders",
+          "developer-guide/using-writers",
+          "developer-guide/loader-categories",
+          "developer-guide/using-worker-loaders",
+          "developer-guide/using-streaming-loaders",
+          "developer-guide/node"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Advanced Topics",
+        "items": [
+          "developer-guide/dependencies",
+          "developer-guide/creating-loaders-and-writers",
+          "developer-guide/composite-loaders",
+          "developer-guide/error-handling",
+          "developer-guide/dev-env"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Concepts",
+        "items": [
+          "developer-guide/concepts/binary-data",
+          "developer-guide/concepts/streaming",
+          "developer-guide/concepts/async-iterators",
+          "developer-guide/concepts/worker-threads"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Tutorials",
+    "items": [
+      {
+        "type": "category",
+        "label": "I3S",
+        "items": [
+          "modules/i3s/recipes/building-scene-layer",
+          "modules/i3s/recipes/attribute-driven-colorization"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Formats",
+    "items": [
+      "formats/README",
+      "modules/bson/formats/bson",
+      "modules/csv/formats/csv",
+      "modules/pcd/formats/pcd",
+      "modules/ply/formats/ply",
+      "modules/json/formats/geojson",
+      "modules/json/formats/geojson-geometry",
+      "modules/gltf/formats/glb",
+      "modules/gltf/formats/gltf",
+      "modules/geopackage/formats/geopackage",
+      "modules/kml/formats/kml",
+      "modules/kml/formats/gpx",
+      "modules/kml/formats/tcx",
+      "modules/las/formats/las",
+      "modules/mvt/formats/mvt",
+      "modules/mvt/formats/tilejson",
+      "modules/parquet/formats/parquet",
+      "modules/parquet/formats/geoparquet",
+      "modules/pmtiles/formats/pmtiles",
+      "modules/shapefile/formats/shapefile",
+      "modules/textures/formats/compressed-textures",
+      "modules/wms/formats/csw",
+      "modules/wms/formats/wms",
+      "modules/wms/formats/wmts",
+      "modules/wms/formats/wfs",
+      "modules/wms/formats/gml",
+      "modules/wms/formats/lerc",
+      "modules/wkt/formats/wkt",
+      "modules/wkt/formats/wkb",
+      "modules/wkt/formats/wkt-crs",
+      "modules/xml/formats/xml",
+      "modules/zip/formats/zip"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Loader Catalog",
+    "items": [
+      {
+        "type": "category",
+        "label": "Loader Categories",
+        "items": [
+          "specifications/category-json",
+          "specifications/category-table",
+          "specifications/category-image",
+          "specifications/category-gis",
+          "specifications/category-mesh",
+          "specifications/category-scenegraph",
+          "specifications/category-3d-tiles"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Sources and Services",
+        "items": [
+          "modules/pmtiles/api-reference/pmtiles-source"
+        ]
+      },
+      "modules/3d-tiles/api-reference/tiles-3d-loader",
+      "modules/3d-tiles/api-reference/cesium-ion-loader",
+      "modules/arrow/api-reference/arrow-loader",
+      "modules/arrow/api-reference/arrow-writer",
+      "modules/bson/api-reference/bson-loader",
+      "modules/bson/api-reference/bson-writer",
+      "modules/csv/api-reference/csv-loader",
+      "modules/draco/api-reference/draco-loader",
+      "modules/draco/api-reference/draco-writer",
+      "modules/flatgeobuf/api-reference/flatgeobuf-loader",
+      "modules/geopackage/api-reference/geopackage-loader",
+      "modules/gltf/api-reference/gltf-loader",
+      "modules/gltf/api-reference/gltf-writer",
+      "modules/gltf/api-reference/glb-loader",
+      "modules/gltf/api-reference/glb-writer",
+      "modules/i3s/api-reference/i3s-loader",
+      "modules/images/api-reference/image-loader",
+      "modules/images/api-reference/image-writer",
+      "modules/json/api-reference/json-loader",
+      "modules/json/api-reference/ndjson-loader",
+      "modules/json/api-reference/geojson-loader",
+      "modules/json/api-reference/geojson-writer",
+      "modules/json/api-reference/ndgeojson-loader",
+      "modules/kml/api-reference/gpx-loader",
+      "modules/kml/api-reference/kml-loader",
+      "modules/kml/api-reference/tcx-loader",
+      "modules/las/api-reference/las-loader",
+      "modules/mvt/api-reference/mvt-loader",
+      "modules/mvt/api-reference/tilejson-loader",
+      "modules/obj/api-reference/obj-loader",
+      "modules/parquet/api-reference/parquet-loader",
+      "modules/pcd/api-reference/pcd-loader",
+      "modules/ply/api-reference/ply-loader",
+      "modules/terrain/api-reference/quantized-mesh-loader",
+      "modules/shapefile/api-reference/shapefile-loader",
+      "modules/terrain/api-reference/terrain-loader",
+      "modules/textures/api-reference/basis-loader",
+      "modules/textures/api-reference/compressed-texture-loader",
+      "modules/textures/api-reference/compressed-texture-writer",
+      "modules/textures/api-reference/ktx2-basis-texture-writer",
+      "modules/textures/api-reference/crunch-loader",
+      "modules/textures/api-reference/npy-loader",
+      "modules/video/api-reference/video-loader",
+      "modules/wkt/api-reference/wkt-loader",
+      "modules/wkt/api-reference/wkt-writer",
+      "modules/wkt/api-reference/wkb-loader",
+      "modules/wkt/api-reference/wkb-writer",
+      "modules/wkt/api-reference/twkb-loader",
+      "modules/wkt/api-reference/twkb-writer",
+      "modules/wkt/api-reference/wkt-crs-loader",
+      "modules/wkt/api-reference/wkt-crs-writer",
+      "modules/wms/api-reference/wms-capabilities-loader",
+      "modules/xml/api-reference/xml-loader",
+      "modules/zip/api-reference/zip-loader",
+      "modules/zip/api-reference/zip-writer"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Submodule API Reference",
+    "items": [
+      {
+        "type": "category",
+        "label": "@loaders.gl/core",
+        "items": [
+          "modules/core/README",
+          "modules/core/api-reference/loader-options",
+          "modules/core/api-reference/load",
+          "modules/core/api-reference/load-in-batches",
+          "modules/core/api-reference/parse",
+          "modules/core/api-reference/parse-sync",
+          "modules/core/api-reference/parse-in-batches",
+          "modules/core/api-reference/select-loader",
+          "modules/core/api-reference/set-loader-options",
+          "modules/core/api-reference/register-loaders",
+          "modules/core/api-reference/encode",
+          "modules/core/api-reference/save",
+          "modules/core/api-reference/fetch-file",
+          "modules/core/api-reference/write-file",
+          "modules/core/api-reference/set-path-prefix",
+          "modules/core/api-reference/binary-utilities",
+          "modules/core/api-reference/iterator-utilities",
+          "specifications/loader-object-format",
+          "specifications/writer-object-format"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/loader-utils",
+        "items": [
+          "modules/loader-utils/README",
+          "modules/loader-utils/api-reference/request-scheduler",
+          "modules/loader-utils/api-reference/parse-with-context"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/3d-tiles",
+        "items": ["modules/3d-tiles/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/arrow",
+        "items": ["modules/arrow/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/bson",
+        "items": ["modules/bson/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/csv",
+        "items": ["modules/csv/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/compression",
+        "items": [
+          "modules/compression/README",
+          "modules/compression/api-reference/compression",
+          "modules/compression/api-reference/brotli-compression",
+          "modules/compression/api-reference/deflate-compression",
+          "modules/compression/api-reference/gzip-compression",
+          "modules/compression/api-reference/lz4-compression",
+          "modules/compression/api-reference/lzo-compression",
+          "modules/compression/api-reference/no-compression",
+          "modules/compression/api-reference/snappy-compression",
+          "modules/compression/api-reference/zstd-compression"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/crypto",
+        "items": [
+          "modules/crypto/README",
+          "modules/crypto/api-reference/hash",
+          "modules/crypto/api-reference/crc32-hash",
+          "modules/crypto/api-reference/crc32c-hash",
+          "modules/crypto/api-reference/md5-hash",
+          "modules/crypto/api-reference/sha256-hash"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/draco",
+        "items": ["modules/draco/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/gltf",
+        "items": [
+          "modules/gltf/README",
+          "modules/gltf/api-reference/gltf-scenegraph",
+          "modules/gltf/api-reference/post-process-gltf"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/i3s",
+        "items": ["modules/i3s/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/images",
+        "items": [
+          "modules/images/README",
+          "modules/images/api-reference/parsed-image-api",
+          "modules/images/api-reference/binary-image-api"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/json",
+        "items": ["modules/json/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/kml",
+        "items": ["modules/kml/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/las",
+        "items": ["modules/las/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/mvt",
+        "items": ["modules/mvt/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/obj",
+        "items": ["modules/obj/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/parquet",
+        "items": ["modules/parquet/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/pcd",
+        "items": ["modules/pcd/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/ply",
+        "items": ["modules/ply/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/pmtiles",
+        "items": ["modules/pmtiles/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/polyfills",
+        "items": ["modules/polyfills/api-reference/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/shapefile",
+        "items": [
+          "modules/shapefile/README",
+          "modules/shapefile/api-reference/shp-loader",
+          "modules/shapefile/api-reference/dbf-loader"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/tiles",
+        "items": [
+          "modules/tiles/README",
+          "modules/tiles/api-reference/tileset-3d",
+          "modules/tiles/api-reference/tile-3d"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/tile-converter",
+        "items": [
+          "modules/tile-converter/README",
+          "modules/tile-converter/api-reference/3d-tiles-converter",
+          "modules/tile-converter/api-reference/i3s-converter",
+          "modules/tile-converter/api-reference/build-instructions",
+          "modules/tile-converter/api-reference/tile-converter-bundle"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/textures",
+        "items": [
+          "modules/textures/README",
+          "modules/textures/api-reference/load-image",
+          "modules/textures/api-reference/load-image-array",
+          "modules/textures/api-reference/load-image-cube"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/video",
+        "items": ["modules/video/README", "modules/video/api-reference/gif-builder"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/wkt",
+        "items": ["modules/wkt/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/wms",
+        "items": [
+          "modules/wms/README",
+          "modules/wms/api-reference/csw-service",
+          "modules/wms/api-reference/wms-service",
+          "modules/wms/api-reference/wms-capabilities-loader"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/xml",
+        "items": [
+          "modules/xml/README",
+          "modules/xml/api-reference/xml-loader",
+          "modules/xml/api-reference/html-loader"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/zip",
+        "items": ["modules/zip/README"]
+      }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Command-Line Reference",
+    "items": [
+      "modules/tile-converter/cli-reference/tile-converter",
+      "modules/tile-converter/cli-reference/i3s-server",
+      "modules/tile-converter/cli-reference/slpk-extractor",
+      "modules/tile-converter/cli-reference/supported-features"
+    ]
+  }
+]

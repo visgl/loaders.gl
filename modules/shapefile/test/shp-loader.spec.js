@@ -67,7 +67,9 @@ test('Shapefile JS Polygon tests', async (t) => {
     const json = await response.json();
 
     for (let i = 0; i < json.features.length; i++) {
-      const expBinary = geojsonToBinary([json.features[i]]).polygons;
+      // SHP outer ring winding order is CW, while GeoJSON is CCW. For test disable
+      // the default geojsonToBinary ring winding fix to keep test data intact
+      const expBinary = geojsonToBinary([json.features[i]], {fixRingWinding: false}).polygons;
       // @ts-ignore
       t.deepEqual(output.geometries[i].positions, expBinary.positions);
       // @ts-ignore

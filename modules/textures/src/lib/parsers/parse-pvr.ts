@@ -1,7 +1,8 @@
-import {TextureLevel} from '../../types';
 /* eslint-disable camelcase */
 // Forked from PicoGL: https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
+
+import type {TextureLevel} from '@loaders.gl/schema';
 import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 

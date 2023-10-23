@@ -9,12 +9,15 @@
   },
   "references": [
     {"path": "../core"},
+    {"path": "../compression"},
+    {"path": "../crypto"},
     {"path": "../draco"},
     {"path": "../gltf"},
     {"path": "../images"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
     {"path": "../textures"},
-    {"path": "../tiles"}
+    {"path": "../tiles"},
+    {"path": "../zip"}
   ]
 }

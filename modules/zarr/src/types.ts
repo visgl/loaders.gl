@@ -1,7 +1,7 @@
 /* eslint-disable */
 import {DTYPE_LOOKUP} from './lib/zarr-pixel-source';
-export type SupportedDtype = typeof DTYPE_LOOKUP[keyof typeof DTYPE_LOOKUP];
-export type SupportedTypedArray = InstanceType<typeof globalThis[`${SupportedDtype}Array`]>;
+export type SupportedDtype = (typeof DTYPE_LOOKUP)[keyof typeof DTYPE_LOOKUP];
+export type SupportedTypedArray = InstanceType<(typeof globalThis)[`${SupportedDtype}Array`]>;
 
 interface Multiscale {
   datasets: {path: string}[];

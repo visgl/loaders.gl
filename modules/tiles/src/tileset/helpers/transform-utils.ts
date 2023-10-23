@@ -1,3 +1,5 @@
+// loaders.gl, MIT license
+
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {assert} from '@loaders.gl/loader-utils';

@@ -1,31 +1,25 @@
 {
-  "name": "loaders.gl-example-textures-tester",
   "private": true,
-  "version": "4.0.0-alpha.4",
+  "name": "loaders.gl-example-textures-tester",
+  "version": "3.3.0",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --progress --hot --open",
-    "start-local-luma": "webpack-dev-server --env.local --env.esnext --env.luma --progress --hot --open"
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/core": "^3.0",
-    "@loaders.gl/images": "^3.0",
-    "@loaders.gl/textures": "^3.0",
-    "@luma.gl/core": "^8.5.4",
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/images": "4.0.0-beta.3",
+    "@loaders.gl/textures": "4.0.0-beta.3",
+    "@luma.gl/core": "^8.5.21",
     "prop-types": "^15.7.2",
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.0",
-    "@babel/preset-react": "^7.0.0",
-    "babel-loader": "^8.0.5",
-    "babel-plugin-inline-import": "^3.0.0",
-    "html-webpack-plugin": "^3.2.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.11"
+    "typescript": "^5.0.4",
+    "vite": "^4.4.9"
   }
 }

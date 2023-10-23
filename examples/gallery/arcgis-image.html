@@ -1,0 +1,110 @@
+<!-- Forked from @jwasilgeo's https://codepen.io/jwasilgeo/pen/XWZRKoj CodePen under MIT license -->
+<!doctype html>
+<style>
+  body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .deck-tooltip {
+    font-size: 0.8em;
+    font-family: Helvetica, Arial, sans-serif;
+  }  
+</style>
+<body>
+</body>
+<script src="https://unpkg.com/@loaders.gl/core@3.3.0/dist/dist.min.js"></script>
+<script src="https://unpkg.com/@loaders.gl/wms@3.3.0-alpha.10/dist/dist.min.js"></script>
+<script src="https://unpkg.com/deck.gl@8.8.1/dist.min.js"></script>
+<script>
+// https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer
+// https://developers.arcgis.com/javascript/latest/sample-code/layers-imagerylayer/
+// https://developers.arcgis.com/rest/services-reference/enterprise/export-image.htm
+
+/*
+ * https://deck.gl/docs/api-reference/layers/bitmap-layer
+ */
+const { DeckGL, BitmapLayer } = deck;
+
+let timeoutId;
+const debounce = (ms, fn) => {
+  clearTimeout(timeoutId);
+  timeoutId = setTimeout(() => fn(), ms);
+};
+
+const deckInstance = new DeckGL({
+  mapStyle: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  initialViewState: {
+    longitude: -122.4,
+    latitude: 37.74,
+    zoom: 9,
+    minZoom: 3,
+    maxZoom: 20,
+    pitch: 0,
+    bearing: 0
+  },
+  controller: true,
+
+  onLoad: function () {
+    const viewport = deckInstance.getViewports()[0];
+    const bounds = viewport.getBounds();
+    const { width, height } = viewport;
+    updateBitmapLayer(deckInstance, bounds, width, height);
+
+    console.log("TODO: onLoad event only once", {
+      bounds,
+      width,
+      height
+    });
+  },
+
+  onViewStateChange: function (e) {
+    if (!deckInstance.viewManager || !deckInstance.getViewports().length) {
+      return;
+    }
+
+    updateBitmapLayer(deckInstance, bounds, width, height);
+
+    console.log("onViewStateChange", {
+      bounds,
+      width,
+      height
+    });
+  },
+
+  onResize: function ({ width, height }) {
+    const viewport = deckInstance.getViewports()[0];
+    const bounds = viewport.getBounds();
+    updateBitmapLayer(deckInstance, bounds, width, height);
+
+    console.log("onResize with debounce", {
+      bounds,
+      width,
+      height
+    });
+  }
+
+});
+
+function updateBitmapLayer(deckInstance, bounds, width, height) {
+  const url = `https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&bboxSR=4326&size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image`;
+  const imageService = null;
+  const imageUrl = imageService ? getImageURL({width, height, bounds}) : url;
+
+  // to reduce jankiness, preload image instead of passing URL to layer
+
+  debounce(500, async () => {
+    const layer = new BitmapLayer({
+      id: "BitmapLayer",
+      bounds: bounds,
+      image: imageUrl,
+      opacity: 0.5
+    });
+    deckInstance.setProps({ layers: [layer] });
+  });
+}
+
+
+</script>

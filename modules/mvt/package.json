@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/mvt",
   "description": "Loader for Mapbox Vector Tiles",
-  "version": "4.0.0-alpha.4",
+  "version": "4.0.0-beta.6",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -18,8 +19,15 @@
     "Mapbox Vector Tiles"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -27,17 +35,20 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/bundle.js",
-    "build-worker": "esbuild src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js"
+    "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle -- --env=dev",
+    "build-bundle": "ocular-bundle ./src/index.ts",
+    "build-worker": "esbuild src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.0-alpha.4",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.4",
-    "@math.gl/polygon": "^3.5.1",
+    "@loaders.gl/gis": "4.0.0-beta.6",
+    "@loaders.gl/images": "4.0.0-beta.6",
+    "@loaders.gl/loader-utils": "4.0.0-beta.6",
+    "@loaders.gl/schema": "4.0.0-beta.6",
+    "@math.gl/polygon": "^4.0.0",
     "pbf": "^3.2.1"
   },
   "devDependencies": {
     "@types/pbf": "^3.0.2"
-  }
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

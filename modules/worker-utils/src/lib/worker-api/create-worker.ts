@@ -24,8 +24,7 @@ export type ProcessOnMainThread = (
  * Set up a WebWorkerGlobalScope to talk with the main thread
  */
 export function createWorker(process: Process, processInBatches?: ProcessInBatches): void {
-  // Check that we are actually in a worker thread
-  if (typeof self === 'undefined') {
+  if (!WorkerBody.inWorkerThread()) {
     return;
   }
 

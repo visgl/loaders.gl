@@ -1,5 +1,7 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
+import type {I3SLoaderOptions} from './i3s-loader';
+import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {getUrlWithToken} from './lib/utils/url-utils';
 
@@ -8,25 +10,24 @@ import {getUrlWithToken} from './lib/utils/url-utils';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const EMPTY_VALUE = '';
 const REJECTED_STATUS = 'rejected';
+
 /**
  * Loader for I3S attributes
  */
-export const I3SAttributeLoader: LoaderWithParser = {
+export const I3SAttributeLoader: LoaderWithParser<I3STileAttributes, never, I3SLoaderOptions> = {
   name: 'I3S Attribute',
   id: 'i3s-attribute',
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/binary'],
-  parse,
+  parse: async (arrayBuffer: ArrayBuffer, options?: LoaderOptions) => parseI3STileAttribute(arrayBuffer, options),
   extensions: ['bin'],
   options: {},
   binary: true
 };
 
-async function parse(data, options) {
-  data = parseI3STileAttribute(data, options);
-  return data;
-}
+
+// TODO - these seem to use the loader rather than being part of the loader. Move to different file...
 
 /**
  * Load attributes based on feature id
@@ -39,7 +40,7 @@ async function parse(data, options) {
 export async function loadFeatureAttributes(tile, featureId, options = {}) {
   const {attributeStorageInfo, attributeUrls, tilesetFields} = getAttributesData(tile);
 
-  if (!attributeStorageInfo || !attributeUrls || !featureId) {
+  if (!attributeStorageInfo || !attributeUrls || featureId < 0) {
     return null;
   }
 
@@ -87,7 +88,7 @@ function getAttributesData(tile) {
  * @param {Object} attribute
  * @returns {String}
  */
-function getAttributeValueType(attribute) {
+export function getAttributeValueType(attribute) {
   if (attribute.hasOwnProperty('objectIds')) {
     return 'Oid32';
   } else if (attribute.hasOwnProperty('attributeValues')) {

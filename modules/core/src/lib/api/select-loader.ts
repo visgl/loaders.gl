@@ -1,9 +1,12 @@
 import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import {compareArrayBuffers, path} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
-import {getResourceUrlAndType} from '../utils/resource-utils';
+import {log} from '../utils/log';
+import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
 import {getRegisteredLoaders} from './register-loaders';
 import {isBlob} from '../../javascript-utils/is-type';
+import {stripQueryString} from '../utils/url-utils';
+import {TypedArray} from '@loaders.gl/schema';
 
 const EXT_PATTERN = /\.([^.]+)$/;
 
@@ -103,36 +106,56 @@ export function selectLoaderSync(
 }
 
 /** Implements loaders selection logic */
+// eslint-disable-next-line complexity
 function selectLoaderInternal(
   data: Response | Blob | ArrayBuffer | string,
   loaders: Loader[],
   options?: LoaderOptions,
   context?: LoaderContext
 ) {
-  const {url, type} = getResourceUrlAndType(data);
+  const url = getResourceUrl(data);
+  const type = getResourceMIMEType(data);
 
-  const testUrl = url || context?.url;
+  const testUrl = stripQueryString(url) || context?.url;
 
   let loader: Loader | null = null;
+  let reason: string = '';
 
   // if options.mimeType is supplied, it takes precedence
   if (options?.mimeType) {
     loader = findLoaderByMIMEType(loaders, options?.mimeType);
+    reason = `match forced by supplied MIME type ${options?.mimeType}`;
   }
+
   // Look up loader by url
   loader = loader || findLoaderByUrl(loaders, testUrl);
+  reason = reason || (loader ? `matched url ${testUrl}` : '');
+
   // Look up loader by mime type
   loader = loader || findLoaderByMIMEType(loaders, type);
+  reason = reason || (loader ? `matched MIME type ${type}` : '');
+
   // Look for loader via initial bytes (Note: not always accessible (e.g. Response, stream, async iterator)
+  // @ts-ignore Blob | Response
   loader = loader || findLoaderByInitialBytes(loaders, data);
+  // @ts-ignore Blob | Response
+  reason = reason || (loader ? `matched initial data ${getFirstCharacters(data)}` : '');
+
   // Look up loader by fallback mime type
-  loader = loader || findLoaderByMIMEType(loaders, options?.fallbackMimeType);
+  if (options?.fallbackMimeType) {
+    loader = loader || findLoaderByMIMEType(loaders, options?.fallbackMimeType);
+    reason = reason || (loader ? `matched fallback MIME type ${type}` : '');
+  }
+
+  if (reason) {
+    log.log(1, `selectLoader selected ${loader?.name}: ${reason}.`);
+  }
 
   return loader;
 }
 
 /** Check HTTP Response */
-function validHTTPResponse(data: any): boolean {
+function validHTTPResponse(data: unknown): boolean {
   // HANDLE HTTP status
   if (data instanceof Response) {
     // 204 - NO CONTENT. This handles cases where e.g. a tile server responds with 204 for a missing tile
@@ -144,13 +167,15 @@ function validHTTPResponse(data: any): boolean {
 }
 
 /** Generate a helpful message to help explain why loader selection failed. */
-function getNoValidLoaderMessage(data): string {
-  const {url, type} = getResourceUrlAndType(data);
+function getNoValidLoaderMessage(data: string | ArrayBuffer | Response | Blob): string {
+  const url = getResourceUrl(data);
+  const type = getResourceMIMEType(data);
 
   let message = 'No valid loader found (';
   message += url ? `${path.filename(url)}, ` : 'no url provided, ';
   message += `MIME type: ${type ? `"${type}"` : 'not provided'}, `;
   // First characters are only accessible when called on data (string or arrayBuffer).
+  // @ts-ignore Blob | Response
   const firstCharacters: string = data ? getFirstCharacters(data) : '';
   message += firstCharacters ? ` first bytes: "${firstCharacters}"` : 'first bytes: not available';
   message += ')';
@@ -185,7 +210,7 @@ function findLoaderByExtension(loaders: Loader[], extension: string): Loader | n
   return null;
 }
 
-function findLoaderByMIMEType(loaders, mimeType) {
+function findLoaderByMIMEType(loaders: Loader[], mimeType: string): Loader | null {
   for (const loader of loaders) {
     if (loader.mimeTypes && loader.mimeTypes.includes(mimeType)) {
       return loader;
@@ -200,7 +225,7 @@ function findLoaderByMIMEType(loaders, mimeType) {
   return null;
 }
 
-function findLoaderByInitialBytes(loaders, data) {
+function findLoaderByInitialBytes(loaders: Loader[], data: string | ArrayBuffer): Loader | null {
   if (!data) {
     return null;
   }
@@ -226,27 +251,32 @@ function findLoaderByInitialBytes(loaders, data) {
   return null;
 }
 
-function testDataAgainstText(data, loader) {
+function testDataAgainstText(data: string, loader: Loader): boolean {
   if (loader.testText) {
     return loader.testText(data);
   }
 
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some((test) => data.startsWith(test));
+  return tests.some((test) => data.startsWith(test as string));
 }
 
-function testDataAgainstBinary(data, byteOffset, loader) {
+function testDataAgainstBinary(data: ArrayBuffer, byteOffset: number, loader: Loader): boolean {
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
   return tests.some((test) => testBinary(data, byteOffset, loader, test));
 }
 
-function testBinary(data, byteOffset, loader, test) {
+function testBinary(
+  data: ArrayBuffer,
+  byteOffset: number,
+  loader: Loader,
+  test?: ArrayBuffer | string | ((b: ArrayBuffer) => boolean)
+): boolean {
   if (test instanceof ArrayBuffer) {
     return compareArrayBuffers(test, data, test.byteLength);
   }
   switch (typeof test) {
     case 'function':
-      return test(data, loader);
+      return test(data);
 
     case 'string':
       // Magic bytes check: If `test` is a string, check if binary data starts with that strings
@@ -258,7 +288,7 @@ function testBinary(data, byteOffset, loader, test) {
   }
 }
 
-function getFirstCharacters(data, length: number = 5) {
+function getFirstCharacters(data: string | ArrayBuffer | TypedArray, length: number = 5) {
   if (typeof data === 'string') {
     return data.slice(0, length);
   } else if (ArrayBuffer.isView(data)) {
@@ -271,7 +301,7 @@ function getFirstCharacters(data, length: number = 5) {
   return '';
 }
 
-function getMagicString(arrayBuffer, byteOffset, length) {
+function getMagicString(arrayBuffer: ArrayBuffer, byteOffset: number, length: number): string {
   if (arrayBuffer.byteLength < byteOffset + length) {
     return '';
   }

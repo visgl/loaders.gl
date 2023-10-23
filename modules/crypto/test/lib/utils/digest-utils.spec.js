@@ -1,24 +1,29 @@
 import test from 'tape-promise/tape';
-import {_toHex, _hexToBase64} from '@loaders.gl/crypto';
-import TEST_CASES from '../crc32c-test-cases.json';
+import {encodeNumber, encodeHex, encodeBase64} from '@loaders.gl/crypto';
+import TEST_CASES from '../crc32c-test-cases.json' assert {type: 'json'};
 
-test('hexToBase64', (t) => {
+test('encodeHexToBase64#crc32 test cases', (t) => {
   for (const type in TEST_CASES) {
     const set = TEST_CASES[type];
 
     for (const tc of set.cases) {
       if (!tc.charset) {
-        tc.expected = _hexToBase64(_toHex(tc.want));
-        t.ok(tc.expected, `${tc.want} converted to ${tc.expected}`);
+        tc.expected = encodeNumber(tc.want, 'base64');
+        t.ok(tc.expected, `${tc.want} encodeed to ${tc.expected}`);
       }
     }
 
-    set.expected = _hexToBase64(set.want.toString(16));
+    set.expected = encodeHex(set.want.toString(16), 'base64');
   }
   t.end();
 });
 
-test('hexToBase64#convert zero leading hex correctly', (t) => {
-  t.equal(_hexToBase64('f85d741'), 'D4XXQQ==');
+test('encodeHexToBase64', (t) => {
+  t.equal(encodeHex('f85d741', 'base64'), 'D4XXQQ==', 'encode zero leading hex correctly');
+  t.end();
+});
+
+test('encodeBase64ToHex', (t) => {
+  t.equal(encodeBase64('D4XXQQ==', 'hex'), '0f85d741');
   t.end();
 });

@@ -2,7 +2,7 @@ import type {ImageLoaderOptions} from '../../image-loader';
 import {getBlobOrSVGDataUrl} from './svg-utils';
 
 // Parses html image from array buffer
-export default async function parseToImage(
+export async function parseToImage(
   arrayBuffer: ArrayBuffer,
   options: ImageLoaderOptions,
   url?: string

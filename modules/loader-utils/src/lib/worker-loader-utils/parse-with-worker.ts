@@ -1,5 +1,10 @@
-import type {WorkerJob, WorkerMessageType, WorkerMessagePayload} from '@loaders.gl/worker-utils';
-import type {Loader, LoaderOptions, LoaderContext} from '../../types';
+import {
+  WorkerJob,
+  WorkerMessageType,
+  WorkerMessagePayload,
+  isBrowser
+} from '@loaders.gl/worker-utils';
+import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
 import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
 
 /**
@@ -9,6 +14,11 @@ import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
  */
 export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
   if (!WorkerFarm.isSupported()) {
+    return false;
+  }
+
+  // Node workers are still experimental
+  if (!isBrowser && !options?._nodeWorkers) {
     return false;
   }
 
@@ -24,7 +34,7 @@ export async function parseWithWorker(
   data: any,
   options?: LoaderOptions,
   context?: LoaderContext,
-  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<void>
+  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<unknown>
 ) {
   const name = loader.id; // TODO
   const url = getWorkerURL(loader, options);
@@ -33,8 +43,10 @@ export async function parseWithWorker(
   const workerPool = workerFarm.getWorkerPool({name, url});
 
   // options.log object contains functions which cannot be transferred
+  // context.fetch & context.parse functions cannot be transferred
   // TODO - decide how to handle logging on workers
   options = JSON.parse(JSON.stringify(options));
+  context = JSON.parse(JSON.stringify(context || {}));
 
   const job = await workerPool.startJob(
     'process-on-worker',
@@ -45,7 +57,8 @@ export async function parseWithWorker(
   job.postMessage('process', {
     // @ts-ignore
     input: data,
-    options
+    options,
+    context
   });
 
   const result = await job.result;

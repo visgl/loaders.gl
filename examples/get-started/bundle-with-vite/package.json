@@ -1,0 +1,19 @@
+{
+  "name": "bundle-with-vite",
+  "description": "Minimal example of using loaders.gl with vite.",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/gltf": "4.0.0-beta.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.4",
+    "vite": "^4.4.9"
+  }
+}

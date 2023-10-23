@@ -10,14 +10,29 @@ import Tile3DBatchTable from '../classes/tile-3d-batch-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 import {parse3DTileGLTFViewSync, extractGLTF} from './helpers/parse-3d-tile-gltf-view';
+import {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
+import {LoaderContext} from '@loaders.gl/loader-utils';
+import {Tiles3DTileContent} from '../../types';
 
-export async function parseInstancedModel3DTile(tile, arrayBuffer, byteOffset, options, context) {
+export async function parseInstancedModel3DTile(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options?: Tiles3DLoaderOptions,
+  context?: LoaderContext
+): Promise<number> {
   byteOffset = parseInstancedModel(tile, arrayBuffer, byteOffset, options, context);
-  await extractGLTF(tile, tile.gltfFormat, options, context);
+  await extractGLTF(tile, tile.gltfFormat || 0, options, context);
   return byteOffset;
 }
 
-function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
+function parseInstancedModel(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options?: Tiles3DLoaderOptions,
+  context?: LoaderContext
+): number {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
   if (tile.version !== 1) {
     throw new Error(`Instanced 3D Model version ${tile.version} is not supported`);
@@ -36,7 +51,7 @@ function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
   byteOffset = parse3DTileGLTFViewSync(tile, arrayBuffer, byteOffset, options);
 
   // TODO - Is the feature table sometimes optional or can check be moved into table header parser?
-  if (tile.featureTableJsonByteLength === 0) {
+  if (!tile?.header?.featureTableJsonByteLength || tile.header.featureTableJsonByteLength === 0) {
     throw new Error('i3dm parser: featureTableJsonByteLength is zero.');
   }
 
@@ -64,23 +79,13 @@ function parseInstancedModel(tile, arrayBuffer, byteOffset, options, context) {
 }
 
 // eslint-disable-next-line max-statements, complexity
-function extractInstancedAttributes(tile, featureTable, batchTable, instancesLength) {
-  // Create model instance collection
-  const collectionOptions = {
-    instances: new Array(instancesLength),
-    batchTable: tile._batchTable,
-    cull: false, // Already culled by 3D Tiles
-    url: undefined,
-    // requestType: RequestType.TILES3D,
-    gltf: undefined,
-    basePath: undefined,
-    incrementallyLoadTextures: false,
-    // TODO - tileset is not available at this stage, tile is parsed independently
-    // upAxis: (tileset && tileset._gltfUpAxis) || [0, 1, 0],
-    forwardAxis: [1, 0, 0]
-  };
-
-  const instances = collectionOptions.instances;
+function extractInstancedAttributes(
+  tile: Tiles3DTileContent,
+  featureTable: Tile3DFeatureTable,
+  batchTable: Tile3DBatchTable,
+  instancesLength: number
+) {
+  const instances = new Array(instancesLength);
   const instancePosition = new Vector3();
   const instanceNormalRight = new Vector3();
   const instanceNormalUp = new Vector3();
@@ -92,8 +97,8 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
   const instanceTransform = new Matrix4();
   const scratch1 = [];
   const scratch2 = [];
-  const scratchVector1 = new Vector3();
-  const scratchVector2 = new Vector3();
+  const scratch3 = [];
+  const scratch4 = [];
 
   for (let i = 0; i < instancesLength; i++) {
     let position;
@@ -113,8 +118,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
       const quantizedVolumeOffset = featureTable.getGlobalProperty(
         'QUANTIZED_VOLUME_OFFSET',
         GL.FLOAT,
-        3,
-        scratchVector1
+        3
       );
       if (!quantizedVolumeOffset) {
         throw new Error(
@@ -125,8 +129,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
       const quantizedVolumeScale = featureTable.getGlobalProperty(
         'QUANTIZED_VOLUME_SCALE',
         GL.FLOAT,
-        3,
-        scratchVector2
+        3
       );
       if (!quantizedVolumeScale) {
         throw new Error(
@@ -166,12 +169,14 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
         'NORMAL_UP_OCT32P',
         GL.UNSIGNED_SHORT,
         2,
+        i,
         scratch1
       );
       tile.octNormalRight = featureTable.getProperty(
         'NORMAL_RIGHT_OCT32P',
         GL.UNSIGNED_SHORT,
         2,
+        i,
         scratch2
       );
 
@@ -209,7 +214,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
 
     // Get the instance scale
     instanceScale.set(1.0, 1.0, 1.0);
-    const scale = featureTable.getProperty('SCALE', GL.FLOAT, 1, i);
+    const scale = featureTable.getProperty('SCALE', GL.FLOAT, 1, i, scratch3);
     if (Number.isFinite(scale)) {
       instanceScale.multiplyByScalar(scale);
     }
@@ -222,7 +227,7 @@ function extractInstancedAttributes(tile, featureTable, batchTable, instancesLen
     instanceTranslationRotationScale.scale = instanceScale;
 
     // Get the batchId
-    let batchId = featureTable.getProperty('BATCH_ID', GL.UNSIGNED_SHORT, 1, i);
+    let batchId = featureTable.getProperty('BATCH_ID', GL.UNSIGNED_SHORT, 1, i, scratch4);
     if (batchId === undefined) {
       // If BATCH_ID semantic is undefined, batchId is just the instance number
       batchId = i;

@@ -1,4 +1,4 @@
-## Using Workers
+# Using Worker Loaders
 
 Most loaders.gl loaders can perform parsing on JavaScript worker threads.
 This means that the main thread will not block during parsing and can continue
@@ -20,7 +20,7 @@ particularly useful when adding loaders that are only used occasionally by your
 application.
 
 More details on advantages and complications with worker thread based loading the
-[Worker Threads](./concepts/worker-threads.md) article in the concepts section.
+[Worker Threads](./concepts/worker-threads) article in the concepts section.
 
 ## Processing Data on Workers
 
@@ -36,7 +36,7 @@ The `DracoLoader` is an example of a worker enabled loader.
 It parses data on worker threads by default. To load two Draco encoded meshes
 _in parallel_ on worker threads, just use the `DracoLoader` as follows:
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {DracoLoader} from '@loaders.gl/draco';
 
@@ -49,7 +49,7 @@ async function loadInParallel(url1, url2) {
 
 Applications can use the `worker: false` option to disable worker loaders, for instance to simplify debugging of parsing issues:
 
-```js
+```typescript
 async function loadWithoutWorker(url1) {
   const data = await load(url1, DracoLoader, {worker: false});
 }
@@ -60,7 +60,7 @@ async function loadWithoutWorker(url1) {
 Applications reuse already created workers by default. To avoid `enlarge memory arrays` error it is really nesessary to disable it if you need to load multiple datasets in a sequence.
 This functionality can be disabled by `reuseWorkers: false` option:
 
-```js
+```typescript
 async function loadwWithoutWorker(url1) {
   const data = await load(url1, DracoLoader, {worker: true, reuseWorkers: false});
 }
@@ -88,7 +88,7 @@ This can be useful e.g. when building applications that cannot access CDNs or wh
 
 ## Composite Loaders and Workers (Advanced)
 
-loaders.gl supports sub-loader invocation from worker loaders. This is somewhat experimental
+loaders.gl supports sub-loader invocation from worker loaders.
 
 A worker loader starts a seperate thread with a javascript bundle that only contains the code for that loader, so a worker loader needs to call the main thread (and indirectly, potentially another worker thread with another worrker loader) to parse using a sub-loader, properly transferring data into and back from the other thread.
 

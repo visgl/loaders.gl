@@ -8,9 +8,9 @@ import {isBrowser} from '@loaders.gl/loader-utils';
 
 // TODO hack - trick filesaver.js to skip loading under node
 const savedNavigatorExists = 'navigator' in global;
-const savedNavigator = global.navigator;
+const savedNavigator = globalThis.navigator;
 if (!isBrowser) {
-  global.navigator = {userAgent: 'MSIE 9.'};
+  globalThis.navigator = {userAgent: 'MSIE 9.'};
 }
 
 // Need to use `require` to ensure our modification of global code above happens first
@@ -18,9 +18,9 @@ const saveAs = require('filesaver.js');
 
 if (!isBrowser) {
   if (savedNavigatorExists) {
-    global.navigator = savedNavigator;
+    globalThis.navigator = savedNavigator;
   } else {
-    delete global.navigator;
+    delete globalThis.navigator;
   }
 }
 // END hack

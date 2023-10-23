@@ -1,7 +1,10 @@
+// loaders.gl, MIT license
+
 import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {getFetchFunction} from '../loader-utils/option-utils';
+import {getFetchFunction} from '../loader-utils/get-fetch-function';
 
 import {parse} from './parse';
 
@@ -14,22 +17,54 @@ import {parse} from './parse';
  * @param options
  * @param context
  */
+
+export async function load<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
+  url: string | DataType,
+  loader: LoaderT,
+  options?: OptionsT,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
+export async function load(
+  url: string | DataType,
+  loaders: Loader[],
+  options?: LoaderOptions,
+  context?: LoaderContext
+): Promise<unknown>;
+
+export async function load(
+  url: string | DataType,
+  loaders?: LoaderOptions,
+  context?: LoaderContext
+): Promise<unknown>;
+
+export async function load(url: string | DataType, loaders: LoaderOptions): Promise<any>;
+
 // implementation signature
 export async function load(
   url: string | DataType,
-  loaders?: Loader | Loader[] | LoaderOptions,
+  loaders?: Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<any> {
+): Promise<unknown> {
+  let resolvedLoaders: Loader | Loader[];
+  let resolvedOptions: LoaderOptions | undefined;
+
   // Signature: load(url, options)
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
+    resolvedLoaders = [];
+    resolvedOptions = loaders as LoaderOptions;
     context = undefined; // context not supported in short signature
-    options = loaders as LoaderOptions;
-    loaders = undefined;
+  } else {
+    resolvedLoaders = loaders as Loader | Loader[];
+    resolvedOptions = options;
   }
 
   // Select fetch function
-  const fetch = getFetchFunction(options);
+  const fetch = getFetchFunction(resolvedOptions);
 
   // at this point, `url` could be already loaded binary data
   let data = url;
@@ -41,9 +76,13 @@ export async function load(
 
   if (isBlob(url)) {
     // The fetch response object will contain blob.name
+    // @ts-expect-error TODO - This may not work for overridden fetch functions
     data = await fetch(url);
   }
 
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
-  return await parse(data, loaders, options);
+  // return await parse(data, loaders as Loader[], options);
+  return Array.isArray(resolvedLoaders)
+    ? await parse(data, resolvedLoaders, resolvedOptions) // loader array overload
+    : await parse(data, resolvedLoaders, resolvedOptions); // single loader overload
 }

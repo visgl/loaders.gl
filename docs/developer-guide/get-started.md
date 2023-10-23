@@ -16,7 +16,7 @@ yarn add @loaders.gl/gltf
 
 You can import a loader and use it directly with `parse`. Note that `parse` can accept a `fetch` response object as the source of data to be parsed:
 
-```js
+```typescript
 import {parse} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 const data = await parse(fetch('data.csv'), CSVLoader);
@@ -24,7 +24,7 @@ const data = await parse(fetch('data.csv'), CSVLoader);
 
 You can register loaders after importing them
 
-```js
+```typescript
 import {registerLoaders} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 registerLoaders(CSVLoader);
@@ -32,7 +32,7 @@ registerLoaders(CSVLoader);
 
 Then, in the same file (or some other file in the same app) that needs to load CSV, you no longer need to supply the loader to `parse`. It will autodetect the pre-registered loader:
 
-```js
+```typescript
 import {parse} from '@loaders.gl/core';
 
 // The pre-registered CSVLoader gets auto selected based on file extension...
@@ -55,7 +55,7 @@ To build on Edge and IE11, `TextEncoder` and `TextDecoder` must be polyfilled. T
 yarn install @loaders.gl/polyfills
 ```
 
-```js
+```typescript
 import '@loaders.gl/polyfills';
 ```
 

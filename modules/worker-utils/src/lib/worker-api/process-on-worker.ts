@@ -7,8 +7,8 @@ import type {
 } from '../../types';
 import type WorkerJob from '../worker-farm/worker-job';
 import WorkerFarm from '../worker-farm/worker-farm';
-import {removeNontransferableOptions} from '../worker-utils/remove-nontransferable-options';
 import {getWorkerURL, getWorkerName} from './get-worker-url';
+import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
 
 type ProcessOnWorkerOptions = WorkerOptions & {
   jobName?: string;
@@ -41,10 +41,14 @@ export async function processOnWorker(
   context: WorkerContext = {}
 ): Promise<any> {
   const name = getWorkerName(worker);
-  const url = getWorkerURL(worker, options);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
-  const workerPool = workerFarm.getWorkerPool({name, url});
+  const {source} = options;
+  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
+  if (!source) {
+    workerPoolProps.url = getWorkerURL(worker, options);
+  }
+  const workerPool = workerFarm.getWorkerPool(workerPoolProps);
 
   const jobName = options.jobName || worker.name;
   const job = await workerPool.startJob(
@@ -54,7 +58,7 @@ export async function processOnWorker(
   );
 
   // Kick off the processing in the worker
-  const transferableOptions = removeNontransferableOptions(options);
+  const transferableOptions = getTransferListForWriter(options);
   job.postMessage('process', {input: data, options: transferableOptions});
 
   const result = await job.result;

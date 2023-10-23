@@ -1,4 +1,5 @@
-import type {FileSystem} from './filesystem';
+import type {FileSystem, ReadableFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/loader-utils';
 
 type BrowserFileSystemOptions = {
   fetch?: typeof fetch;
@@ -8,7 +9,7 @@ type BrowserFileSystemOptions = {
  * FileSystem adapter for a browser FileList.
  * Holds a list of browser 'File' objects.
  */
-export default class BrowserFileSystem implements FileSystem {
+export class BrowserFileSystem implements FileSystem {
   private _fetch: typeof fetch;
   private files: {[filename: string]: File} = {};
   private lowerCaseFiles: {[filename: string]: File} = {};
@@ -109,18 +110,30 @@ export default class BrowserFileSystem implements FileSystem {
   // implements IRandomAccessFileSystem
 
   // RANDOM ACCESS
-  async open(pathname: string, flags, mode?): Promise<any> {
-    return this.files[pathname];
+  async openReadableFile(pathname: string, flags: unknown): Promise<ReadableFile> {
+    return new BlobFile(this.files[pathname]);
   }
 
-  /**
+  // PRIVATE
+
+  // Supports case independent paths, and file usage tracking
+  _getFile(path: string, used: boolean): File {
+    // Prefer case match, but fall back to case independent.
+    const file = this.files[path] || this.lowerCaseFiles[path];
+    if (file && used) {
+      this.usedFiles[path] = true;
+    }
+    return file;
+  }
+}
+/*
    * Read a range into a buffer
    * @todo - handle position memory
    * @param buffer is the buffer that the data (read from the fd) will be written to.
    * @param offset is the offset in the buffer to start writing at.
    * @param length is an integer specifying the number of bytes to read.
    * @param position is an argument specifying where to begin reading from in the file. If position is null, data will be read from the current file position, and the file position will be updated. If position is an integer, the file position will remain unchanged.
-   */
+   *
   async read(
     fd: any,
     buffer: ArrayBuffer,
@@ -140,16 +153,4 @@ export default class BrowserFileSystem implements FileSystem {
   }
 
   // fstat(fd: number): Promise<object>; // Stat
-
-  // PRIVATE
-
-  // Supports case independent paths, and file usage tracking
-  _getFile(path, used) {
-    // Prefer case match, but fall back to case indepent.
-    const file = this.files[path] || this.lowerCaseFiles[path];
-    if (file && used) {
-      this.usedFiles[path] = true;
-    }
-    return file;
-  }
-}
+  */

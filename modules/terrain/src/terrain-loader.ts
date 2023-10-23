@@ -1,21 +1,29 @@
 import type {Loader} from '@loaders.gl/loader-utils';
+import type {ImageLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
+import {TerrainOptions} from './lib/parse-terrain';
+import {Mesh} from '@loaders.gl/schema';
+
+export type TerrainLoaderOptions = ImageLoaderOptions & {
+  terrain?: TerrainOptions;
+};
+
 /**
- * Worker loader for quantized meshes
+ * Worker loader for image encoded terrain
  */
-export const TerrainLoader = {
+export const TerrainLoader: Loader<Mesh, never, TerrainLoaderOptions> = {
   name: 'Terrain',
   id: 'terrain',
   module: 'terrain',
   version: VERSION,
   worker: true,
-  extensions: ['png', 'pngraw'],
-  mimeTypes: ['image/png'],
+  extensions: ['png', 'pngraw', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'],
+  mimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'],
   options: {
     terrain: {
       tesselator: 'auto',
-      bounds: null,
+      bounds: undefined!,
       meshMaxError: 10,
       elevationDecoder: {
         rScaler: 1,
@@ -23,12 +31,7 @@ export const TerrainLoader = {
         bScaler: 0,
         offset: 0
       },
-      skirtHeight: null
+      skirtHeight: undefined
     }
   }
 };
-
-/**
- * Loader for quantized meshes
- */
-export const _typecheckTerrainWorkerLoader: Loader = TerrainLoader;

@@ -3,10 +3,11 @@
 The **master** branch is the active development branch.
 
 Building loaders.gl locally from the source requires node.js `>=10`.
-We use [yarn](https://yarnpkg.com/en/docs/install) to manage the dependencies.
+We use [yarn classic](https://yarnpkg.com/en/docs/install) to manage the dependencies.
 
 ```bash
 git checkout master
+yarn
 yarn bootstrap
 ```
 
@@ -50,21 +51,29 @@ To get the headless tests working: `export DISPLAY=:99.0; sh -e /etc/init.d/xvfb
 
 You will of course need to install the basic JavaScript development tools. Unless you are new to JavaScript development you most likely already have these in place. The following should work on a linux system.
 
-### Install Node and NPM
+### Install Node and NPM using NVM (recommended)
+
+- `https://www.liquidweb.com/kb/how-to-install-nvm-node-version-manager-for-node-js-on-ubuntu-12-04-lts/`
+- `https://github.com/nvm-sh/nvm#install--update-script`
+- `https://github.com/nvm-sh/nvm/releases`
+```bash
+nvm install 16
+nvm use 16
+```
+(Node 16 is currently recommeded for building and development of loaders 3.3. NPM comes with the NodeJS in this case)
+
+#### Optional: Install Node and NPM manually
 
 ```bash
 sudo apt update
 sudo apt install nodejs
+sudo apt install npm
 ```
-
-### Option: Install NVM
-
-- `https://www.liquidweb.com/kb/how-to-install-nvm-node-version-manager-for-node-js-on-ubuntu-12-04-lts/`
-- `https://github.com/nvm-sh/nvm/releases`
 
 ### Install yarn
 
 https://www.hostinger.com/tutorials/how-to-install-yarn-on-ubuntu/
+(yarn version needed is 1.22.19 or the latest stable 1.xx.xx)
 
 ```bash
 sudo apt update
@@ -76,4 +85,11 @@ yarn –version
 
 ```bash
 sudo apt-get install jq
+```
+
+### Install build-essential package
+This step might be required for some systems that do not have required packages pre-installed.
+
+```bash
+sudo apt-get install build-essential
 ```

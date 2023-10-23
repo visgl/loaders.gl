@@ -98,7 +98,8 @@ export interface ParquetField {
   fields?: Record<string, ParquetField>;
 }
 
-export interface ParquetOptions {
+/** @todo better name, this is an internal type? */
+export interface ParquetReaderContext {
   type: ParquetType;
   rLevelMax: number;
   dLevelMax: number;
@@ -106,34 +107,44 @@ export interface ParquetOptions {
   column: ParquetField;
   numValues?: Int64;
   dictionary?: ParquetDictionary;
-}
-
-export interface ParquetData {
-  dlevels: number[];
-  rlevels: number[];
-  values: any[];
-  count: number;
-  pageHeaders: PageHeader[];
+  /** If true, binary values are not converted to strings */
+  preserveBinary?: boolean;
 }
 
 export interface ParquetPageData {
   dlevels: number[];
   rlevels: number[];
-  values: any[];
+  /** Actual column chunks */
+  values: any[]; // ArrayLike<any>;
   count: number;
   dictionary?: ParquetDictionary;
+  /** The "raw" page header from the file */
   pageHeader: PageHeader;
 }
 
-export interface ParquetRecord {
+export interface ParquetRow {
   [key: string]: any;
 }
 
-export class ParquetBuffer {
+/** @
+ * Holds data for one row group (column chunks) */
+export class ParquetRowGroup {
+  /** Number of rows in this page */
   rowCount: number;
-  columnData: Record<string, ParquetData>;
-  constructor(rowCount: number = 0, columnData: Record<string, ParquetData> = {}) {
+  /** Map of Column chunks */
+  columnData: Record<string, ParquetColumnChunk>;
+
+  constructor(rowCount: number = 0, columnData: Record<string, ParquetColumnChunk> = {}) {
     this.rowCount = rowCount;
     this.columnData = columnData;
   }
+}
+
+/** Holds the data for one column chunk */
+export interface ParquetColumnChunk {
+  dlevels: number[];
+  rlevels: number[];
+  values: any[];
+  count: number;
+  pageHeaders: PageHeader[];
 }

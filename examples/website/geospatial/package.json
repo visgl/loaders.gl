@@ -1,36 +1,32 @@
 {
+  "private": true,
+  "name": "geospatial-loaders-example",
+  "description": "Minimal example of using loaders.gl with vite.",
+  "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.5.0",
-    "@deck.gl/layers": "^8.5.0",
-    "@deck.gl/react": "^8.5.0",
-    "@loaders.gl/geopackage": "3.0.1",
-    "@loaders.gl/core": "3.0.0-beta.8",
-    "@loaders.gl/flatgeobuf": "3.0.1",
-    "react": "^16.8.0",
-    "react-color": "^2.19.3",
-    "react-dom": "^16.8.0",
-    "react-map-gl": "^5.0.0",
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@deck.gl/react": "^8.9.28",
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/flatgeobuf": "4.0.0-beta.3",
+    "@loaders.gl/geopackage": "4.0.0-beta.3",
+    "@loaders.gl/parquet": "4.0.0-beta.3",
+    "mapbox-gl": "npm:empty-npm-package@^1.0.0",
+    "maplibre-gl": "^2.4.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-map-gl": "^7.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "@babel/cli": "7.14.8",
-    "@babel/core": "7.15.0",
-    "@babel/preset-env": "7.15.0",
-    "@babel/preset-react": "7.14.5",
-    "@babel/plugin-transform-runtime": "7.15.0",
-    "@babel/runtime": "7.15.3",
-    "babel-eslint": "10.1.0",
-    "babel-loader": "^8.0.5",
-    "babel-plugin-inline-import": "^3.0.0",
-    "babel-polyfill": "^6.26.0",
-    "eslint-plugin-react": "^7.10",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.11"
+    "typescript": "^5.0.4",
+    "vite": "^4.4.9"
   }
 }

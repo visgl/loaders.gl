@@ -1,6 +1,6 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
-import fs from 'fs';
-import {Writable} from 'stream';
+import {stream} from '@loaders.gl/loader-utils';
+import * as fs from 'fs';
 
 export function load(name: string): any {
   return (module || (global as any)).require(name);
@@ -14,7 +14,7 @@ export interface WriteStreamOptions {
   start?: number;
 }
 
-export function oswrite(os: Writable, buf: Buffer): Promise<void> {
+export function oswrite(os: stream.Writable, buf: Buffer): Promise<void> {
   return new Promise((resolve, reject) => {
     os.write(buf, (err) => {
       if (err) {
@@ -26,7 +26,7 @@ export function oswrite(os: Writable, buf: Buffer): Promise<void> {
   });
 }
 
-export function osclose(os: Writable): Promise<void> {
+export function osclose(os: stream.Writable): Promise<void> {
   return new Promise((resolve, reject) => {
     (os as any).close((err: any) => {
       if (err) {

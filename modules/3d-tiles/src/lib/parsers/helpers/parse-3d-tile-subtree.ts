@@ -1,5 +1,5 @@
-import type {Subtree, ExplicitBitstream} from '../../../types';
-import {fetchFile} from '@loaders.gl/core';
+import type {Subtree, Availability} from '../../../types';
+import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 
 const SUBTREE_FILE_MAGIC = 0x74627573;
 const SUBTREE_FILE_VERSION = 1;
@@ -11,7 +11,11 @@ const SUBTREE_FILE_VERSION = 1;
  * @returns
  */
 // eslint-disable-next-line max-statements
-export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Subtree> {
+export default async function parse3DTilesSubtree(
+  data: ArrayBuffer,
+  options: LoaderOptions | undefined,
+  context: LoaderContext | undefined
+): Promise<Subtree> {
   const magic = new Uint32Array(data.slice(0, 4));
 
   if (magic[0] !== SUBTREE_FILE_MAGIC) {
@@ -38,57 +42,78 @@ export default async function parse3DTilesSubtree(data: ArrayBuffer): Promise<Su
     internalBinaryBuffer = data.slice(24 + jsonByteLength);
   }
 
-  if ('bufferView' in subtree.tileAvailability) {
-    subtree.tileAvailability.explicitBitstream = await getExplicitBitstream(
+  await loadExplicitBitstream(subtree, subtree.tileAvailability, internalBinaryBuffer, context);
+  if (Array.isArray(subtree.contentAvailability)) {
+    for (const contentAvailability of subtree.contentAvailability) {
+      await loadExplicitBitstream(subtree, contentAvailability, internalBinaryBuffer, context);
+    }
+  } else {
+    await loadExplicitBitstream(
       subtree,
-      'tileAvailability',
-      internalBinaryBuffer
+      subtree.contentAvailability,
+      internalBinaryBuffer,
+      context
     );
   }
-
-  if ('bufferView' in subtree.contentAvailability) {
-    subtree.contentAvailability.explicitBitstream = await getExplicitBitstream(
-      subtree,
-      'contentAvailability',
-      internalBinaryBuffer
-    );
-  }
-
-  if ('bufferView' in subtree.childSubtreeAvailability) {
-    subtree.childSubtreeAvailability.explicitBitstream = await getExplicitBitstream(
-      subtree,
-      'childSubtreeAvailability',
-      internalBinaryBuffer
-    );
-  }
+  await loadExplicitBitstream(
+    subtree,
+    subtree.childSubtreeAvailability,
+    internalBinaryBuffer,
+    context
+  );
 
   return subtree;
 }
 
 /**
- * Get explicit bitstream for subtree availability data.
- * @param subtree
- * @param name
- * @param internalBinaryBuffer
+ * Load explicit bitstream for subtree availability data.
+ * @param subtree - subtree data
+ * @param availabilityObject - tileAvailability / contentAvailability / childSubtreeAvailability object
+ * @param internalBinaryBuffer - subtree binary buffer
+ * @param context - loaders.gl context
  */
-async function getExplicitBitstream(
+async function loadExplicitBitstream(
   subtree: Subtree,
-  name: string,
-  internalBinaryBuffer: ArrayBuffer
-): Promise<ExplicitBitstream> {
-  const bufferViewIndex = subtree[name].bufferView;
+  availabilityObject: Availability,
+  internalBinaryBuffer: ArrayBuffer,
+  context: LoaderContext | undefined
+): Promise<void> {
+  const bufferViewIndex = Number.isFinite(availabilityObject.bitstream)
+    ? availabilityObject.bitstream
+    : availabilityObject.bufferView;
+
+  if (typeof bufferViewIndex !== 'number') {
+    return;
+  }
+
   const bufferView = subtree.bufferViews[bufferViewIndex];
   const buffer = subtree.buffers[bufferView.buffer];
 
+  if (!context?.baseUrl) {
+    throw new Error('Url is not provided');
+  }
+
+  if (!context.fetch) {
+    throw new Error('fetch is not provided');
+  }
+
   // External bitstream loading
   if (buffer.uri) {
-    const response = await fetchFile(buffer.uri);
+    const bufferUri = `${context?.baseUrl || ''}/${buffer.uri}`;
+    const response = await context.fetch(bufferUri);
     const data = await response.arrayBuffer();
-    // Return view of bitstream.
-    return new Uint8Array(data, bufferView.byteOffset, bufferView.byteLength);
+    availabilityObject.explicitBitstream = new Uint8Array(
+      data,
+      bufferView.byteOffset,
+      bufferView.byteLength
+    );
+    return;
   }
-  // Return view of bitstream.
-  return new Uint8Array(internalBinaryBuffer, bufferView.byteOffset, bufferView.byteLength);
+  availabilityObject.explicitBitstream = new Uint8Array(
+    internalBinaryBuffer,
+    bufferView.byteOffset,
+    bufferView.byteLength
+  );
 }
 
 /**

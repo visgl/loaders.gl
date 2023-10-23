@@ -51,23 +51,26 @@ test('KMLLoader#parse', async (t) => {
 });
 
 test('KMLLoader#parse(text)', async (t) => {
-  const data = await load(KML_URL, KMLLoader, {gis: {format: 'geojson'}});
-  t.equal(data.type, 'FeatureCollection', 'FeatureCollection found');
-  t.equal(data.features.length, 20, 'Features were found');
-
-  const feature = data.features[0];
-  t.ok(Number.isFinite(feature.geometry.coordinates[0]));
-  t.ok(Number.isFinite(feature.geometry.coordinates[1]));
-  t.ok(Number.isFinite(feature.geometry.coordinates[2]));
-
+  const table = await load(KML_URL, KMLLoader, {kml: {shape: 'object-row-table'}});
+  t.equal(table.shape, 'object-row-table', 'shape is object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 20, 'Features were found');
+    const feature = table.data[0];
+    t.ok(Number.isFinite(feature.geometry.coordinates[0]));
+    t.ok(Number.isFinite(feature.geometry.coordinates[1]));
+    t.ok(Number.isFinite(feature.geometry.coordinates[2]));
+  }
   t.end();
 });
 
-test('KMLLoader#parse', async (t) => {
-  const data = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {gis: {format: 'geojson'}});
+test('KMLLoader#parse(geojson-table)', async (t) => {
+  const table = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {
+    gis: {format: 'geojson-table'}
+  });
   const resp = await fetchFile(`${KML_LINESTRING_URL}.geojson`);
   const geojson = await resp.json();
-
-  t.deepEqual(data, geojson, 'Data matches GeoJSON');
+  if (table.shape === 'geojson-table') {
+    t.deepEqual(table.features, geojson.features, 'Data matches GeoJSON');
+  }
   t.end();
 });

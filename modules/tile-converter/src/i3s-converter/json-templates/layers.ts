@@ -1,76 +1,6 @@
 import transform from 'json-map-transform';
 import {STORE} from './store';
 
-const PLAIN_GEOMETRY_DEFINITION = () => ({
-  offset: 8,
-  position: {
-    type: 'Float32',
-    component: 3
-  },
-  normal: {
-    type: 'Float32',
-    component: 3
-  },
-  uv0: {
-    type: 'Float32',
-    component: 2
-  },
-  color: {
-    type: 'UInt8',
-    component: 4
-  },
-  featureId: {
-    binding: 'per-feature',
-    type: 'UInt64',
-    component: 1
-  },
-  faceRange: {
-    binding: 'per-feature',
-    type: 'UInt32',
-    component: 2
-  }
-});
-
-const PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0 = () => ({
-  offset: 8,
-  position: {
-    type: 'Float32',
-    component: 3
-  },
-  normal: {
-    type: 'Float32',
-    component: 3
-  },
-  color: {
-    type: 'UInt8',
-    component: 4
-  },
-  featureId: {
-    binding: 'per-feature',
-    type: 'UInt64',
-    component: 1
-  },
-  faceRange: {
-    binding: 'per-feature',
-    type: 'UInt32',
-    component: 2
-  }
-});
-
-const COMPRESSED_GEOMETRY_DEFINITION = () => ({
-  compressedAttributes: {
-    encoding: 'draco',
-    attributes: ['position', 'normal', 'uv0', 'color', 'feature-index']
-  }
-});
-
-const COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0 = () => ({
-  compressedAttributes: {
-    encoding: 'draco',
-    attributes: ['position', 'normal', 'color', 'feature-index']
-  }
-});
-
 const SPATIAL_REFERENCE = () => ({
   wkid: {
     path: 'wkid',
@@ -115,6 +45,27 @@ const NODE_PAGES = () => ({
   }
 });
 
+const FULL_EXTENT = () => ({
+  xmin: {
+    path: 'xmin'
+  },
+  ymin: {
+    path: 'ymin'
+  },
+  xmax: {
+    path: 'xmax'
+  },
+  ymax: {
+    path: 'ymax'
+  },
+  zmin: {
+    path: 'zmin'
+  },
+  zmax: {
+    path: 'zmax'
+  }
+});
+
 export const LAYERS = () => ({
   version: {
     path: 'version',
@@ -147,6 +98,10 @@ export const LAYERS = () => ({
     path: 'store',
     transform: (val) => transform(val, STORE)
   },
+  fullExtent: {
+    path: 'fullExtent',
+    transform: (val) => transform(val, FULL_EXTENT())
+  },
   heightModelInfo: {
     path: 'heightModelInfo',
     transform: (val) => transform(val, HEIGHT_MODEL_INFO())
@@ -164,27 +119,8 @@ export const LAYERS = () => ({
     default: []
   },
   geometryDefinitions: {
-    path: 'compressGeometry',
-    transform: (val) => {
-      const result = [{geometryBuffers: []}, {geometryBuffers: []}];
-
-      // @ts-expect-error
-      result[0].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION());
-      // @ts-expect-error
-      result[1].geometryBuffers.push(PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0());
-      if (val) {
-        // @ts-expect-error
-        result[0].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION());
-        // @ts-expect-error
-        result[1].geometryBuffers.push(COMPRESSED_GEOMETRY_DEFINITION_WITHOUT_UV0());
-      }
-      return result;
-    },
-    default: [
-      {
-        geometryBuffers: [PLAIN_GEOMETRY_DEFINITION(), PLAIN_GEOMETRY_DEFINITION_WITHOUT_UV0()]
-      }
-    ]
+    path: 'geometryDefinitions',
+    default: []
   },
   attributeStorageInfo: {
     path: 'attributeStorageInfo',

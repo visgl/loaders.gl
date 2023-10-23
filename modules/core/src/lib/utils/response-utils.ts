@@ -1,5 +1,5 @@
 import {isResponse} from '../../javascript-utils/is-type';
-import {getResourceContentLength, getResourceUrlAndType} from './resource-utils';
+import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
 
 /**
  * Returns a Response object
@@ -22,7 +22,8 @@ export async function makeResponse(resource: any): Promise<Response> {
 
   // `new Response(File)` does not preserve content-type and URL
   // so we add them here
-  const {url, type} = getResourceUrlAndType(resource);
+  const url = getResourceUrl(resource);
+  const type = getResourceMIMEType(resource);
   if (type) {
     headers['content-type'] = type;
   }
@@ -65,7 +66,7 @@ export async function checkResponse(response: Response): Promise<void> {
 export function checkResponseSync(response: Response): void {
   if (!response.ok) {
     let message = `${response.status} ${response.statusText}`;
-    message = message.length > 60 ? `${message.slice(60)}...` : message;
+    message = message.length > 60 ? `${message.slice(0, 60)}...` : message;
     throw new Error(message);
   }
 }
@@ -81,7 +82,7 @@ async function getResponseError(response): Promise<string> {
       text += ` ${await response.text()}`;
     }
     message += text;
-    message = message.length > 60 ? `${message.slice(60)}...` : message;
+    message = message.length > 60 ? `${message.slice(0, 60)}...` : message;
   } catch (error) {
     // eslint forbids return in a finally statement, so we just catch here
   }

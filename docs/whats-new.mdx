@@ -1,0 +1,852 @@
+# What's New
+
+<table style={{border: 0}} align="center">
+  <tbody>
+    <tr>
+      <td>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/mvt-layer.jpg"
+        />
+        <p>
+          <i>
+            MVTLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer"
+            >
+              MVTLayer
+            </a>
+          </i>{' '}
+          (v2.1)
+        </p>
+      </td>
+      <td>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/terrain.jpg"
+        />
+        <p>
+          <i>
+            TerrainLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer"
+            >
+              TerrainLayer
+            </a>
+          </i>{' '}
+          (v2.1)
+        </p>
+      </td>
+      <td>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif"
+        />
+        <p>
+          <i>
+            I3SLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer"
+            >
+              Tile3DLayer
+            </a>{' '}
+            + I3S
+          </i>{' '}
+          (v2.1)
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+## v4.0 (In Development)
+
+Release Date: TBD, Target Oct 2023
+
+A major release that brings: 
+
+- **Typed loaders** - The **`load()`** and **`parse()`** APIs now infer types from the supplied loader.
+- **Writers** - More loader moduls now provide writers for formats such as CSV, GeoJSON etc.
+- **File format documentation** - articles describing the [file formats](/docs/formats?README) supported by loaders.gl.
+- **Node.js v18**
+
+### Loader Module Updates
+
+**@loaders.gl/pmtiles** - NEW
+
+- New [`PMTilesSource`](/docs/modules/pmtiles/api-reference/pmtiles-source) supports the [PMTiles](/docs/modules/pmtiles/formats/pmtiles) format.
+- New [PMTiles example](/examples/pmtiles).
+
+**@loaders.gl/parquet** 
+
+- The [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) now supports loading [GeoParquet](/docs/modules/parquet/formats/geoparquet) files.
+- New [GeoParquet example](/examples/geospatial).
+
+**@loaders.gl/mvt**
+
+- New [`TileJSONLoader`](/docs/modules/mvt/api-reference/tilejson-loader) adds supports for the [TileJSON](/docs/modules/mvt/formats/tilejson) format.
+
+**@loaders.gl/csv**
+
+- New [`CSVWriter`](docs/modules/csv/api-reference/csv-writer) allows export of tables in CSV format.
+
+**@laoders.gl/json**
+
+- New [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer) allows export of tables in GeoJSON format.
+- New `JSONWriter` allows export of tables in JSON format.
+- New `NDJSONWriter` allows export of tables in NDJSON format.
+- New `NDGeoJSONWriter` allows export of tables in NDGeoJSON format.
+
+**@loaders.gl/wkt**
+
+- New [`WKTCRSLoader`](/docs/modules/wkt/api-reference/wkt-crs-loader) (WKT Coordinate Reference System loader)
+- New [`WKTCRSWriter`](/docs/modules/wkt/api-reference/wkt-crs-writer) (WKT Coordinate Reference System writer)
+- New [`TWKBLoader`](/docs/modules/wkt/api-reference/twkb-loader) (Tiny Well-Known Binary loader)
+- New [`TWKBWriter`](/docs/modules/wkt/api-reference/twkb-writer) (Tiny Well-Known Binary writer)
+- New [`HexWKBLoader`](/docs/modules/wkt/api-reference/hex-wkb-loader) (Hex Well-Known Binary loader)
+
+**@loaders.gl/zip**
+
+- `ZipArchive` - now enables file-by-file reads from large zip archives without loading the entire archive into memory (in Node.js).
+- Supports hash-info generation from Zip Central Directory Headers. Used in I3S Archive format (SLPK) and 3D Tiles Archive format (3TZ).
+
+**@loaders.gl/gltf**
+
+- Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions for 3D Tiles v1.1. This completes 3D Tiles datasets attribute load support (adding to the current EXT_feature_metadata support). Attribute data can be used for "feature picking" capabilities of i3s viewers.
+
+
+**@loaders.gl/3d-tiles**
+
+- 3D Tiles v1.1 [Implicit Tiling](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling)
+- 3D Tiles v1.1 attributes (via the new [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions).
+- New 3tz loader to load [3D Tiles archive format](https://github.com/Maxar-Corp/3tz-specification/blob/main/Specification.md). With this, 3D Tiles archives data can be browsed as a file system (using random access into 3tz files) in any loaders.gl-based app
+
+**@loaders.gl/arrow**
+
+- Now uses latest [`apache-arrow` v13](/docs/arrowjs/whats-new#v130). 
+
+**@loaders.gl/draco**
+
+- Decoders upgraded to [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release).
+
+**@loaders.gl/geopackage**
+
+- Now uses latest `sql.js` v1.8.0.
+
+### Core Module Updates
+
+**@loaders.gl/core**
+
+- `fetchFile()` now supports fetching from local filesystem in Node.js 
+
+**@loaders.gl/schema**
+
+- The loaders.gl schema and type system is serializable counterpart to the Apache Arrow schema and type system. This simplifies transferring schemas between workers.
+
+**@loaders.gl/crypto**
+
+- All hashes now accept an encoding parameter allowing the app to choose between `'hex'` and `'base64'` encoding (rather than getting `'base64'` by default).
+
+**@loaders.gl/i3s**
+
+- New SLPK-loader allows the load of SLPK files into a web app using loaders.gl (like i3s explorer)
+- "Multiply" mode added to the existing "replace" mode for colourization by attribute for i3s datasets
+
+**@loaders.gl/loader-utils**
+
+- New functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
+- `parseWithContext()`, `parseSyncWithContext()` and `parseInBatchesWithContext()`
+
+**loaders.gl/polyfills**
+
+- Polyfills now contains Node dependent code for other modules, minimizing the risk of Node.js-dependency related bundling complications when using other loaders.gl modules in the browser.
+- Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging the built-in `fetch()` support in Node.js v18+.
+
+### Tile Converter Updates
+
+**@loaders.gl/tile-converter**
+
+- New command-line tools for working with I3S archive format (SLPK) files
+  - [`i3s-server`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/i3s-server.md) - serve SLPKs as a local HTTP server
+  - [`slpk-extractor`](https://github.com/visgl/loaders.gl/blob/master/docs/modules/tile-converter/cli-reference/slpk-extractor.md) - extract an SLPK to a dataset that can be served via `i3s-server`
+
+- `tile-converter` tool has been improved:
+  - **Offline Mode** - offline conversion. No internet is required during the conversion process.
+  - RAM usage improvements
+  - Can now convert large I3S SLPKs (>2GB) to 3D Tiles.
+
+- 3D TILES \<-\> I3S conversion improvements:
+  - Now converts S2 bounding volume [3DTILES_bounding_volume_S2](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_bounding_volume_S2/README.md) into [Oriented Bounding Boxes format (OBB)](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/obb.cmn.md)
+  - Now converts non-indexed 3D TILES geometries
+  - Now reads [3DTiles archive format (.3tz)](https://github.com/Maxar-Corp/3tz-specification/tree/main) as input for conversion into I3S
+- Improved support for [I3S archive format (SLPK)](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md#scene-layer-packages-)
+  - Hash generation for SLPKs without a hash
+- Pre-processing for conversion 3DTiles > I3S:
+  - Detect topology type (for example TRIANGLE and TRIANGLE_STRIP will pass further for conversion, POINT or TRIANGLE_FAN will notify this mesh type is not supported for conversion)
+  - Detect attributes classes for `EXT_feature_metadata` and for `EXT_mesh_features` extensions. Choose a class to convert in CLI with arrow keys.
+  - New tile-converter "--analyze" option for users to only run the analysis without running conversion afterwards
+
+## v3.4
+
+Release Date: May 16, 2023.
+
+*For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.4-release/CHANGELOG.md).*
+
+**General Improvements**
+
+- New website, built with docusaurus.
+- Typescript upgraded to v5.0.
+- Examples upgraded to React v18, deck.gl v8.9, react-map-gl v7.0.
+
+**@loaders.gl/core**
+
+- query strings - for loaders that need to pass their query strings to subloaders, `LoaderContext` now provides a `queryString` field.
+
+**@loaders.gl/bson** (New module)
+
+- New module supporting the [BSON](/docs/modules/bson/formats/bson) (Binary JSON) format.
+- [`BSONLoader`](/docs/modules/bson/api-reference/bson-loader) - loads BSON encoded binary data into a "JSON like" JavaScript structure
+- [`BSONWriter`](/docs/modules/bson/api-reference/bson-writer) - writes a JSON like JavaScript structure into a BSON encoded binary data block.
+
+**@loaders.gl/images**
+
+- [`ImageLoader`](/docs/modules/images/api-reference/image-loader) now supports for loading images in the AVIF image format.
+- [`getSupportedImageTypes()`](/docs/modules/images/api-reference/parsed-image-api#getsupportedimagetypes) New function returns a list of MIME types of supported image formats
+- [`isImageFormatSupported()`](/docs/modules/images/api-reference/parsed-image-api#isimagetypesupported) New function tests if a specific image format is supported in the current environment (mainly required for WebP and AVIF).
+
+**@loaders.gl/gis**
+
+- `triangulate` parameter added to `geojsonToBinary()`.
+
+**@loaders.gl/pcd**
+
+- [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader) now supports loading `intensity` and `label` columns if present in the PCD file.
+
+**@loaders.gl/ply**
+
+- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) now supports custom attributes such as `intensity` and `confidence` if present in the PLY file.
+
+**@loaders.gl/tiles**
+
+- Improved handling of query parameters for tilesets and subtiles.
+- Preserves internal session URL parameter to support Google 3D Tiles.
+
+**@loaders.gl/wms**
+
+- [`WMSService`](modules/wms/api-reference/wms-service)
+  - WMS version 1.3.0 is now the default. When connecting to older servers, version dependent parameters, coordinate conventions etc are remapped under the hood.
+  - HTTP Authentication: `loadOptions` now enables overriding fetch options, including supplying an HTTP `Authentication` header.
+  - Transparent rendering: The `transparent` prop is now  enabling requesting images that are transparent where there is no data.
+  - Pre-specified parameters (`layers`, `crs` etc) can now be specified during construction, no longer need to repeatedly pass them to `getMap` etc methods.
+- [`WMSCapabilitiesLoader`](modules/wms/api-reference/wms-capabilities-loader)
+  - Now handles version 1.3.0, and when loading older capabilities, fields and parameters that have changed across WMS versions are automatically remapped to 1.3.0 equivalents (`CRS` vs `SRS` etc).
+  - Extracts more information (such as `version`, `abstract` fields, layer bounding boxes, available `dimensions` (time etc) and flags (`opaque`, `queryable`, `cascaded`), MIME types for `exceptions`) etc.
+- [`CSWService`](modules/wms/api-reference/csw-service)
+  - New service supporting the [**CSW (Catalog Services for the Web)**](modules/wms/formats/csw) protocol.
+  - Enables applications to discover available services (including WMS).
+- `WMSCapabilities` type has some breaking changes, please refer to the upgrade guide.
+  
+**@loaders.gl/xml**
+
+- [`HTMLLoader`](modules/xml/api-reference/html-loader) - New minimal HTML loader, intended for small ad-hoc use cases such as extracting an error message or a link from a short HTML page.
+
+**@loaders.gl/tile-converter**
+
+- Support `TRIANGLE_STRIP` mesh topology type during 3DTiles -> I3S conversion
+
+## v3.3
+
+Release Date: February 17, 2023.
+
+*For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.3-release/CHANGELOG.md).*
+
+**General Improvements**
+
+- **vite bundler** - Most examples are now bundled with vite. vite is now an officially supported bundler for loaders.gl.
+
+**@loaders.gl/3d-tiles**
+
+- Limited support for [3D Tiles Next](https://github.com/CesiumGS/3d-tiles/tree/main/next):
+- [`3DTILES_content_gltf`](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_content_gltf) extension support (glTF 2.0 extensions support is enabled in 3d tiles archives).
+- [`3DTILES_implicit_tiling`](https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling) extension support (quick access to tiles by tile coordinates).
+
+**@loaders.gl/gltf**
+
+- `GLTFLoader` glTF extension support:
+  - [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md) - textures can now optionally be processed and removed during load by transforming UV coordinates. Useful if renderer or post processing stage does not have support for this extension.
+
+**@loaders.gl/draco**
+
+- Now uses the [draco3d `v1.5.5`](https://github.com/google/draco#version-155-release) _decoders_
+- Note: Still uses the draco3d `v1.4.1` _encoder_ to avoid performance regression.
+
+**@loaders.gl/wms** (New module)
+
+- New module for parsing WMS (Web Management Service) server responses:
+- [`WMSCapabilitiesLoader`](modules/wms/docs/api-reference/wms-capabilities-loader)
+
+**@loaders.gl/xml** (New module)
+
+- New module for parsing XML (eXtensible Markup Language)
+- [`XMLLoader`](modules/xml/api-reference/xml-loader)
+
+**@loaders.gl/tile-converter**
+
+- Now leverages Node.js workers to increase conversion speed.
+- Limited support for converting `3D Tiles Next` source tilesets:
+  - [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension support. Support of KTX2 textures.
+  - [`KHR_texture_transform`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform) glTF extension support. Supported as input.
+  - [`EXT_feature_metadata`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_feature_metadata) extension support. Support converting attributes from **3D Tiles Next**  to I3S.
+- New conversion options:
+  - `split-nodes` - create multiple I3S nodes from one glTF file when the source glTF has multiple materials.
+  - `instant-node-writing` - RAM usage management option. Keep JSON resources on disk instead of memory in cost of conversion speed.
+
+## v3.2
+
+Release Date: May 12, 2022.
+
+*For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.2-release/CHANGELOG.md).*
+
+**@loaders.gl/arrow**
+
+- ArrowLoader now recognizes recommended Arrow MIME types `application/vnd.apache.arrow.file`, `application/vnd.apache.arrow.stream`.
+
+**@loaders.gl/json**
+
+- [`GeoJSONLoader`](modules/json/api-reference/geojson-loader)
+- [`NDJSONLoader`](modules/json/api-reference/ndjson-loader) - Now supports JSONL, JSONSeq etc.
+- [`NDGeoJSONLoader`](modules/json/api-reference/ndgeojson-loader) - Now supports JSONL, JSONSeq etc.
+
+**@loaders.gl/geopackage**
+
+- The `GeopackageLoader` now supports `tables` as well as `geojson` output data shapes, defaulting to `tables`. This is configurable via `options.gis.format`.
+
+**@loaders.gl/gltf**
+
+- `EXT_meshopt_compression` extension support.
+
+**@loaders.gl/terrain**
+
+- Fix winding order of "skirt" geometries, to prevent them from being incorrectly hidden by GPU face culling during rendering.
+
+**@loaders.gl/worker-utils**
+
+- Experimental support for Node.js workers.
+
+**@loaders.gl/wkb**
+
+- The `WKBWriter` supports options within a `wkb` key, instead of at the top level.
+
+**@loaders.gl/textures**
+
+- Upgrade `basis_universal` libraries to [v1.16.3](https://github.com/BinomialLLC/basis_universal/releases/tag/1.16.3).
+
+## v3.1
+
+Release Date: Dec 7, 2021.
+
+*For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.1-release/CHANGELOG.md).*
+
+**@loaders.gl/textures**
+
+- Parse KTX2 with BasisLoader.
+- New `KTX2BasisWriter` enables transcoding textures to basis (works both in browser and Node).
+- Upgrade `basis_universal` libraries to [v1.15](https://github.com/BinomialLLC/basis_universal/releases/tag/v1_15).
+
+**@loaders.gl/gltf**
+
+- `GTLTLoader` now decodes Basis super compressed textures if present (via the [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension).
+
+**@loaders.gl/i3s**
+
+- Support KTX2-Basis textures.
+
+**@loaders.gl/json**
+
+- New [`NDJSONLoader`](modules/json/api-reference/ndjson-loader) which handles new-line delimited JSON files.
+
+**@loaders.gl/csv**
+
+- `CSVLoader` now recognizes TSV files via `.tsv` file extension or the `text/tab-separated-values` MIME type.
+
+**@loaders.gl/flatgeobuf**
+
+- The experimental [`FlatgeobufLoader`](modules/flatgeobuf/api-reference/flatgeobuf-loader) is now documented.
+
+**@loaders.gl/parquet** NEW
+
+- New experimental [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader)
+
+**@loaders.gl/pcd**
+
+- `PCDLoader` now supports compressed binary data.
+
+**@loaders.gl/wkt**
+
+- New `WKBWriter` for encoding GeoJSON geometries to WKB.
+
+## v3.0
+
+Release Date: July 13, 2021.
+
+loaders.gl v3.0 is a major release, that adds a range of new loaders and features and continues the transition of the loaders.gl code base to typescript. Some deprecated APIs have been removed, check the upgrade guide for breaking changes.
+
+*For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.0-release/CHANGELOG.md).*
+
+**General improvements**
+
+- New loader option: `options.<loader>.shape` to control format of data. Will gradually be supported by all loaders.
+- TypeScript: improved types for many loaders.gl APIs.
+- TypeScript: many loaders now export a `LoaderOptions` type that can be used to typecheck loader options, e.g `import type {CSVLoaderOptions}` from `@loaders.gl/csv`.
+
+**@loaders.gl/core**
+
+- New loader option: `options.mimeType` to override loader selection.
+- New loader option: `options.fallbackMimeType` to control fallback loader selection.
+- New loader option: `options.limit` to limit number of rows returned during batched parsing.
+- New `processOnWorker()` function allows applications to run certain non-loader tasks (such as compression and decompression) on workers.
+
+**@loaders.gl/compression**
+
+- New compressions: `brotli`, `snappy`, `LZO` (limited).
+- New `CompressionWorker` exports enable compression and decompression on worker threads using the new `processOnWorker()` function.
+- Improved API (see upgrade guide)
+
+**@loaders.gl/crypto**
+
+- New `CryptoWorker` export enables CRC32, CRC32c and MD5 hashing on worker threads using the new `processOnWorker()` function.
+
+**@loaders.gl/csv**
+
+- `options.csv.type` can be explicitly set to
+  - `'object-row-table'` (default) transforms rows to JS objects with the header row as keys.
+  - `'array-row-table'` in which the row will be returned as an array of values.
+- Duplicate column names will have a counter suffix added to ensure that they are unique.
+
+**@loaders.gl/gis**
+
+- Added `getSingleFeature()` function for extracting a single GeoJSON feature from a `BinaryGeometry`
+
+**@loaders.gl/draco**
+
+- Updated to `draco3d@1.4.1`
+- Supports binary array fields in draco metadata.
+- Significant performance improvements for loading and decoding.
+
+**@loaders.gl/json**
+
+- Removed deprecated json parse option `_rootObjectBatches`. Use loader option `metadata` instead.
+- Replaced `batch.batchType` `root-object-batch-partial` with `partial-result`.
+- Replaced `batch.batchType` `root-object-batch-complete` with `final-result`.
+
+**@loaders.gl/kml**
+
+- `KMLLoader` - updated loader, now works under Node.js.
+- `GPXLoader`, `TCXLoader` - new loaders to parse common formats for recorded GPS tracks.
+
+**@loaders.gl/arrow**
+
+- Upgrades `apache-arrow` version to 4.0.0
+
+**@loaders.gl/excel** NEW
+
+- New table category loader for Excel spreadsheets in both binary `.xls`, `.xlsb` and XML-based `.xlsx` formats.
+
+**@loaders.gl/i3s**
+
+- Thanks to a major contribution from Esri, the `I3SLoader` now offers full I3S 1.7 support including:
+  - page nodes
+  - compressed geometry
+  - compressed textures
+  - attributes (object picking)
+
+**@loaders.gl/mvt**
+
+- Binary output is now 2-3X faster for large datasets thanks to parsing directly from PBF to binary, rather than going through GeoJSON as an intermediate representation. Speed comparison on some example data sets (MVT tiles parsed per second):
+
+|                    | Via GeoJSON | Direct | Speed increase |
+| ------------------ | ----------- | ------ | -------------- |
+| Block groups       | 2.86/s      | 5.57/s | 1.94X          |
+| Census layer       | 6.09/s      | 11.9/s | 1.95X          |
+| Counties Layer     | 72.5/s      | 141/s  | 1.94X          |
+| Usa Zip Code Layer | 8.45/s      | 20.3/s | 2.4X           |
+
+_Benchmarks ran using scripts on a 2012 MacBook Pro, 2.3 GHz Intel Core i7, 8 GB, measuring parsing time of MVTLoader only (network time and rendering is not included)_
+
+- When using the MVTLoader with `binary: true` the triangulation of polygons is performed in a worker, speeding up loading of polygon geometries and easing the work on the main thread.
+
+**@loaders.gl/terrain**
+
+- New `options.terrain.tesselator` option in `TerrainLoader` for selecting desired method of mesh generation. Use `'martini'` for a faster method that works in most cases or `'delatin'`, which is slower but supports non-square images.
+
+**@loaders.gl/textures** NEW
+
+- [`textures`](https://loaders.gl/examples/textures) website example shows which compressed texture formats work on the current device.
+- `CompressedTextureLoader` now supports KTX2, DDS and PVR containers.
+- `BasisLoader` with latest binaries.
+- `CrunchLoader`
+- `CompressedTextureWriter` is available (for Node.js only)
+- Texture loading API for multi-image-based textures `loadImageTexture`, `loadImageTextureArray`, `loadImageTextureCube`
+- A new `NPYLoader` to parse N-dimensional arrays generated by the NumPy Python library for high bit depth data and image textures.
+
+**@loaders.gl/tile-converter** NEW
+
+- Thanks to a major contribution from Esri, the new `tile-converter` module implements conversion between the OGC 3D tiles and the OGC I3S tileset formats, through:
+  - A `tile-converter` CLI tool for automated batch conversion of multi-terabyte tilesets.
+  - A docker image to facilitate easy installs of the converter.
+  - A Node.js converter class API is also available for programmatic use.
+
+## v2.3
+
+Release Date: October 12, 2020
+
+This release brings a new Shapefile loader, compression codecs (Zlib, LZ4, Zstandard), support for binary output from geospatial loaders, and a range of improvements supporting loaders.gl integration with kepler.gl, a major geospatial application.
+
+**@loaders.gl/shapefile** NEW
+
+- A new loader for the ESRI Shapefile format has been added. It loads `.SHP` and (if available) `.DBF`, `.CPG` and `.PRJ` files and returns a geojson like geometry.
+
+**@loaders.gl/compression** NEW
+
+- A new module with compression/decompression transforms for compression codecs (Zlib, LZ4, Zstandard). As always, these work reliably in both browsers and Node.js.
+
+**@loaders.gl/crypto** NEW
+
+- A new module for calculating cryptographic hashes (MD5, SHA256 etc). Provided transforms enables hashes to be calculated incrementally, e.g. on incoming binary chunks while streaming data into `parseInBatches`.
+
+**@loaders.gl/draco**
+
+- Draco3D libraries are upgraded to version 1.3.6.
+- Draco metadata can now be encoded and decoded.
+- Custom Draco attributes are now decoded.
+
+**@loaders.gl/gltf**
+
+- `GLBLoader` can now read older GLB v1 files in addition to GLB v2.
+- `GLTFLoader` now offers optional, partial support for reading older glTF v1 files and automatically converting them to glTF v2 format (via `options.glt.normalize`).
+
+**@loaders.gl/json**
+
+- Binary output is now available for the `GeoJsonLoader`, via `options.gis.format: 'binary'`.
+
+**@loaders.gl/kml**
+
+- Binary output is now available for the `KMLLoader`, via `options.gis.format: 'binary'`.
+
+**@loaders.gl/las**
+
+- Uses a newer version of the `laz-perf` parser (1.4.4).
+
+**@loaders.gl/mvt**
+
+- Binary output is now available for the Mapbox Vector Tiles `MVTLoader`, via `options.gis.format: 'binary'`.
+
+**@loaders.gl/core**
+
+- `parseInBatches()` now allows the caller to specify "transforms" that shoud be applied on the input data before parsing, via `options.transforms`. See the new crypto and compression modules for available transforms to calculate cryptographic hashes on / decompress "streaming" data.
+- `parseInBatches()` can now be called on all loaders. Non-batched loaders will just return a single batch.
+- `options.fetch` (`load`, `parse` etc.) can now be used to supply a either a `fetch` options object or a custom `fetch` function.
+- (BREAKING) `selectLoader()` is now async and returns a `Promise` that resolves to a loader.
+- `selectLoader()` can now select loaders through content sniffing of `Blob` and `File` objects.
+- `selectLoaderSync()` has been added for situations when calling an async function is not practial.
+
+**@loaders.gl/polyfills**
+
+- `fetch` polyfill: Files with `.gz` extension are automatically decompressed with gzip. The extension reported in the `fetch` response has the `.gz` extension removed.
+- `fetch` polyfill: Improved robustness and error handling in Node.js when opening unreadable or non-existent files. Underlying errors (`ENOEXIST`, `EISDIR` etc) are now caught and reported in `Response.statusText`.
+- `Blob` and `File`, new experimental polyfills.
+
+## v2.2
+
+Framework and loader improvements based on usage in applications.
+
+Release Date: June 18, 2020
+
+**General Improvements**
+
+- Typescript type definitions (`d.ts` files) are now provided for some loaders.gl modules that export APIs (functions and classes).
+
+**@loaders.gl/core**
+
+- `parseInBatches` a new `options.metadata` option adds an initial batch with metadata about what data format is being loaded.
+- `selectLoader` (and `parse` etc) now recognizes unique unregistered MIME types (e.g `application/x.ply`) for every loader. This enable applications that can set `content-type` headers to have precise control over loader selection.
+
+**@loaders.gl/images**
+
+The `ImageLoader` now loads images as `Imagebitmap` by default on browsers that support `ImageBitmap` (Chrome and Firefox). The performance improvements are dramatic, which can be verified in the new [benchmark example](https://loaders.gl/examples/benchmarks).
+
+**@loaders.gl/i3s**
+
+Addresses a number of compatibility issues with different I3S tilesets that have been reported by users.
+
+**@loaders.gl/terrain**
+
+A new `QuantizedMeshLoader` has been added to the `terrain` module to decode the [Quantized Mesh](https://github.com/CesiumGS/quantized-mesh) format.
+
+**@loaders.gl/video** (new loader module)
+
+An experimental new module with video loading and GIF generation support.
+
+**@loaders.gl/wkt**
+
+A new `WKBLoader` has been added to the `wkt` module to decode the [Well-Known Binary](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary) format.
+
+Worker support for the `WKTLoader`, designed to support future binary data improvements.
+
+**@loaders.gl/json**
+
+- `parseInBatches` now accepts `options.json.jsonpaths` to specify which array should be streamed using limited JSONPath syntax (e.g. `'$.features'` for GeoJSON).
+- `parseInBatches` returned batches now contain a `batch.bytesUsed` field to enable progress bars.
+- `parseInBatches` partial and final result batches are now generated when setting the `metadata: true` options.
+- `.geojson` files can now alternatively be parsed by a new experimental `GeoJSONLoader` (exported with an underscore as `_GeoJSONLoader`), introduced to support future binary data improvements.
+
+**@loaders.gl/csv**
+
+- `parseInBatches` now returns a `batch.bytesUsed` field to enable progress bars.
+- Header auto-detection available via `options.csv.header: 'auto'`.
+
+**@loaders.gl/arrow**
+
+Updated to use `apache-arrow` version `0.17.0`.
+
+**@loaders.gl/3d-tiles**
+
+The `Tile3DLoader` now installs the `DracoLoader`. The application no longer needs to import and register the `DracoWorkerLoader`.
+
+**@loaders.gl/gltf**
+
+The `GLTFLoader` now installs the `DracoLoader`. The application no longer needs to import and register the `DracoWorkerLoader`.
+
+**@loaders.gl/polyfills**
+
+- The `fetch` and `Response` polyfills for Node.js have been significantly improved, supporting more types of input and parameters with higher fidelity
+- The `fetch` polyfill now automatically add the `accept-encoding` header and automatically decompresses `gzip`, `brotli` and `deflate` compressed responses.
+
+## v2.1
+
+Release Date: Mar 16, 2020
+
+This release adds a number of new geospatial format loaders. The new loaders enables rendering frameworks to visualize various geospatial datasets.
+
+**@loaders.gl/i3s** (new loader module)
+
+- A new loader module for [I3S](https://github.com/Esri/i3s-spec) tiles is added to the 3D Tiles family. Checkout the San Francisco Buildings [example](https://loaders.gl/examples/i3s). This is a collaboration with ESRI and Tamrat Belayneh [@Tamrat-B](https://github.com/Tamrat-B)
+
+**@loaders.gl/mvt** (new loader module)
+
+- A new loader module for loading [Mapbox Vector Tiles](https://github.com/mapbox/vector-tile-spec). Development was led by contributors from [CARTO](https://carto.com/),
+
+**@loaders.gl/terrain** (new loader module)
+
+- A new loader module for reconstructing mesh surfaces from height map images. Check out the [example](https://github.com/visgl/deck.gl/tree/master/examples/website/terrain) with deck.gl's [`TerrainLayer`](https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer).
+
+**@loaders.gl/wkt** (new loader module)
+
+- A new loader module for the Well-Known Text geometry format.
+
+**@loaders.gl/core**
+
+- The `load` and `parse` functions can now read data directly from `Stream` objects both in node and browser.
+
+**@loaders.gl/arrow**
+
+- The ArrowJS dependency has been upgraded to v0.16.
+- The ArrowJS API documentation in the loaders.gl website has been improved.
+
+**@loaders.gl/images**
+
+- Images can now be loaded as data: Using the `ImageLoader` with `options.image.type: 'data'` parameter will return an _image data object_ with width, height and a typed array containing the image data (instead of an opaque `Image` or `ImageBitmap` instance).
+- `ImageBitmap` loading now works reliably, use `ImageLoader` with `options.image.type: 'imagebitmap'`.
+
+**@loaders.gl/json**
+
+- The streaming JSON loader now has an experimental option `_rootObjectBatches` that returns the top-level JSON object containing the JSON array being streamed, as additional first (partial) and last (complete) batches.
+
+**Mesh Category**
+
+- Add `boundingBox` to [mesh category](/docs/specifications/category-mesh) header
+
+## v2.0
+
+Release Date: Dec 20, 2019
+
+The 2.0 release brings potentially dramatic bundle size savings through dynamic loading of loaders and workers, significant overhauls to several loaders including , image loading improvements and the glTF loader, and a powerful loader composition system.
+
+- **Loader-Specific Options** Each loader now defines its own sub object in the options object. This makes it possible to cleanly specify options for multiple loaders at the same time. This is helpful when loaders.gl auto-selects a pre-registered loader or when passing options to a sub-loader when using a composite loader.
+
+- **Smaller Loaders** Big loaders such as `DracoLoader` and `BasisLoader` that use large libraries (e.g. WASM/WebAssembly or emscripten/C++ transpiled to JavaScript) now load those libraries dynamically from `unpkg.com` CDN resulting in dramatic bundle size savings. E.g the bundle size impact of the `DracoLoader` was reduced from > 1MB to just over 10KB.
+
+- **Worker Loaders**
+
+  - Ease-of-use: Worker loading is provided by the main loader objects. It is not necessary to import the `...WorkerLoader` objects to enable worker loading (but see below about bundle size)
+  - Performance: Loading on worker threads is now the default: All worker enabled loaders now run on worker threads by default (set `options.worker: false` to disable worker-thread loading and run the loader on the main thread).
+  - Debugging: Development builds of workers are now available on `unpkg.com` CDN, eabling debugging of worker loaders.
+  - Bundle size: Workers are no longer bundled, but loaded from from the `unpkg.com` CDN.
+  - Bundle size: Note that the old `...WorkerLoader` classes are still available. Using these can save even more bundle space since during tree-shaking since they do not depend on the non-worker parser.
+
+- **Composite Loaders**
+  - The new _composite loader_ architecture enables complex loaders like `Tiles3DLoader` and `GLTFLoader` to be composed from more primitive loaders without losing the ability to run some parts on worker, pass arguments to sub-loaders etc.
+
+**@loaders.gl/basis** NEW 
+- A new module for the basis format that enables. This module also provides a `CompressedImageLoader` for more traditional compressed images.
+
+**@loaders.gl/json** NEW 
+- A new streaming `JSONLoader` that supports batched (i.e. streaming) parsing from standard JSON files, e.g. geojson. No need to reformat your files as line delimited JSON.
+
+**@loaders.gl/gltf** 
+  - the `GLTFLoader` is now a "composite loader". The perhaps most important change is that `load(url, GLTFLoader)` also loads all sub-assets, including images, Draco compressed meshes, etc making the loaded data easier for applications to use.
+
+**@loaders.gl/images**
+  - **New ImageLoader options** `options: {image: {}}` contain common options that apply across the category
+  - `options.image.type`, Ability to control loaded image type enabling faster `ImageBitmap` instances to be loaded via `type: 'imagebitmap`. Default `auto` setting returns traditional HTML image objects.
+  - Image Decoding. `options.image.decodeHTML: true` - `ImageLoader` now ensures HTML images are completely decoded and ready to be used when the image is returned (by calling `Image.decode()`).
+  - **Parsed Image API** Since the type of images returned by the `ImageLoader` depends on the `{image: {type: ...}}` option, a set of functions are provided to work portably with loaded images: `isImage()`, `getImageType()`, `getImageData()`, ...
+  - **Binary Image API** Separate API to work with unparsed images in binary data form: `isBinaryImage()`, `getBinaryImageType()`, `getBinaryImageSize()`, ...
+  - **"Texture" Loading API** New methods `loadImages` and `loadImageCube` can signficantly simplify loading of arrays of arrays of (mipmapped) images that are often used in 3D applications. These methods allow an entire complex of images (e.g. 6 cube faces with 10 mip images each) to be loaded using a single async call.
+  - **Improved Node.js support** More image test cases are now run in both browser and Node.js and a couple of important Node.js issues were uncovered and fixed.
+
+## v1.3
+
+Release Date: Sep 13, 2019
+
+The 1.3 release is focused on production quality 3D tiles support, maturing the v2 glTF parser, and provides some improvements to the core API.
+
+<table style={{border: 0}} align="center">
+  <tbody>
+    <tr>
+      <td style={{textAlign: 'center'}}>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/loaders.gl/master/website/static/images/example-3d-tiles.png"
+        />
+        <p>
+          <strong>Tiles3DLoader</strong>
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+**`@loaders.gl/3d-tiles`**
+
+- **Tile3DLayer moved to deck.gl**
+
+  - The `Tile3DLayer` can now be imported from `@deck.gl/geo-layers`, and no longer needs to be copied from the loaders.gl `3d-tiles` example
+
+- **Batched 3D Model Tile Support**
+
+  - `b3dm` tiles can now be loaded and displayed by the `Tile3DLayer` (in addition to `pnts` tiles).
+
+- **Performance Tracking**
+
+  - `Tileset3D` now contain a `stats` object which tracks the loading process to help profile big tilesets.
+  - Easily displayed in your UI via the `@probe.gl/stats-widget` module (see 3d-tiles example).
+
+- **Request Scheduling**
+  - The `Tileset3D` class now cancels loads for not-yet loaded tiles that are no longer in view).
+  - Scheduling dramatically improves loading performance when panning/zooming through large tilesets.
+
+**@loaders.gl/gltf**
+
+- **Version 2 Improvements**
+  - Select the new glTF parser by passing `options.gltf.parserVersion: 2` to the `GLTFLoader`.
+  - Many improvements to the v2 glTF parser.
+
+**@loaders.gl/core**
+
+- **Loader Selection Improvements**
+
+  - The loader selection mechanism is now exposed to apps through the new `selectLoader` API.
+  - Loaders can now examine the first bytes of a file
+  - This complements the existing URL extension based auto detection mechanisms.
+
+- **Worker Thread Pool**
+  - Now reuses worker threads. Performance gains by avoiding worker startup overhead.
+  - Worker threads are named, easy to track in debugger
+  - Worker based loaders can now call `parse` recursively to delegate parsing of embedded data (e.g. glTF, Draco) to other loaders
+
+## v1.2
+
+The 1.2 release is a smaller release that resolves various issues encountered while using 1.1.
+
+Release Date: Aug 8, 2019
+
+- `@loaders.gl/core`: File Type Auto Detection now supports binary files
+- `@loaders.gl/polyfills`: Fixed `TextEncoder` warnings
+- `@loaders.gl/arrow`: Improved Node 8 support
+- `@loaders.gl/images`: Image file extensions now added to loader object
+- `@loaders.gl/gltf`: Generate default sampler parameters if none provided in gltf file
+
+**@loaders.gl/3d-tiles** (EXPERIMENTAL)
+
+- Support for dynamic traversal of 3D tilesets (automatically loads and unloads tiles based on viewer position and view frustum).
+- Support for loading tilesets from Cesium ION servers.
+- Asynchronous tileset loading
+- Auto centering of view based on tileset bounding volumes
+- deck.gl `Tile3DLayer` class provided in examples.
+
+## v1.1
+
+The 1.1 release addresses a number of gaps in original loaders.gl release, introduces the `GLTFLoader`, and initiates work on 3DTiles support.
+
+Release Date: May 30, 2019
+
+<table style={{border: 0}} align="center">
+  <tbody>
+    <tr>
+      <td style={{textAlign: 'center'}}>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/loaders.gl/master/website/static/images/example-gltf.jpg"
+        />
+        <p>
+          <strong>GLTFLoader</strong>
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+**@loaders.gl/core**
+
+- `fetchFile` function - Can now read browser `File` objects (from drag and drop or file selection dialogs).
+- `isImage(arrayBuffer [, mimeType])` function - can now accept a MIME type as second argument.
+
+**@loaders.gl/images**
+
+- `getImageMIMEType(arrayBuffer)` function ( EW) - returns the MIME type of the image in the supplied `ArrayBuffer`.
+- `isImage(arrayBuffer [, mimeType])` function - can now accept a MIME type as second argument.
+
+**@loaders.gl/gltf**
+
+- The glTF module has been refactored with the aim of simplifying the loaded data and orthogonalizing the API.
+- "Embedded' GLB data (GLBs inside other binary formats) can now be parsed (e.g. the glTF parser can now extract embedded glTF inside 3D tile files).
+
+- New classes/functions:
+  - [`GLTFScenegraph`](//api-reference/gltf/gltf-scenegraph) class NEW - A helper class that provides methods for structured access to and modification/creation of glTF data.
+  - [`postProcessGLTF`](//api-reference/gltf/post-process-gltf) function ( EW) - Function that performs a set of transformations on loaded glTF data that simplify application processing.
+  - [`GLBLoader`](//api-reference/gltf/glb-loader)/[`GLBWriter`]NEW - loader/writer pair that enables loading/saving custom (non-glTF) data in the binary GLB format.
+  - [`GLTFLoader`](//api-reference/gltf/gltf-loader), letting application separately handle post-processing.
+
+**@loaders.gl/3d-tiles** (NEW MODULE)
+
+- Support for the 3D tiles format is being developed in the new `@loaders.gl/3d-tiles` module.
+- Loading of individual point cloud tiles, including support for Draco compression and compact color formats such as RGB565 is supported.
+
+**@loaders.gl/polyfills** (NEW MODULE)
+
+Node support now requires importing `@loaders.gl/polyfills` before use. This reduces the number of dependencies, bundle size and potential build complications when using other loaders.gl modules when not using Node.js support.
+
+**@loaders.gl/loader-utils** (NEW MODULE)
+
+Helper functions for loaders have been broken out from `@loaders.gl/core`. Individual loaders no longer depend on`@loaders.gl/core` but only on `@loaders.gl/loader-utils`.
+
+## v1.0
+
+Release Date: April 2019
+
+First Official Release

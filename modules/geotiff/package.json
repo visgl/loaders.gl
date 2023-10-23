@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/geotiff",
-  "version": "4.0.0-alpha.4",
+  "version": "4.0.0-beta.6",
   "description": "Framework-independent loaders for tiff and geotiff",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -19,8 +20,15 @@
     "geotiff"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -29,14 +37,15 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "# npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap --external:{fs,http,https}"
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
+    "build-bundle": "ocular-bundle ./src/index.ts"
   },
   "dependencies-disabled": {
     "geotiff": "ilan-gold/geotiff.js#ilan-gold/viv_094"
   },
   "dependencies": {
-    "fast-xml-parser": "^3.16.0",
+    "fast-xml-parser": "^4.2.5",
     "geotiff": "^1.0.4"
-  }
+  },
+  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

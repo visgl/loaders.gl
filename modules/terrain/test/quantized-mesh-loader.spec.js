@@ -18,8 +18,7 @@ test('QuantizedMeshLoader#loader objects', async (t) => {
 });
 
 test('QuantizedMeshLoader#parse tile-with-extensions', async (t) => {
-  const options = {};
-  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, options);
+  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader);
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
@@ -52,8 +51,7 @@ test('QuantizedMeshWorkerLoader#tile-with-extensions', async (t) => {
     return;
   }
 
-  const options = {};
-  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshWorkerLoader, options);
+  const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshWorkerLoader);
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
   t.equal(data.mode, 4, 'mode is TRIANGLES (4)');

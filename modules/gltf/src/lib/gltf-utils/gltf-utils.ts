@@ -1,5 +1,14 @@
 import {assert} from '../utils/assert';
 
+import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
+import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
+
+/**
+ * Memory needed to store texture and all mipmap levels 1 + 1/4 + 1/16 + 1/64 + ...
+ * Minimum 1.33, but due to GPU layout may be 1.5
+ */
+const MIPMAP_FACTOR = 1.33;
+
 const TYPES = ['SCALAR', 'VEC2', 'VEC3', 'VEC4'];
 
 type TypedArrayConstructor =
@@ -7,8 +16,6 @@ type TypedArrayConstructor =
   | Uint8ArrayConstructor
   | Int16ArrayConstructor
   | Uint16ArrayConstructor
-  | Int32ArrayConstructor
-  | Uint32ArrayConstructor
   | Int32ArrayConstructor
   | Uint32ArrayConstructor
   | Float32ArrayConstructor
@@ -75,5 +82,31 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
   const length = accessor.count * components;
   const byteLength = accessor.count * components * bytesPerComponent;
   assert(byteLength >= 0 && byteLength <= bufferView.byteLength);
-  return {ArrayType, length, byteLength};
+  const componentByteSize = BYTES[accessor.componentType];
+  const numberOfComponentsInElement = COMPONENTS[accessor.type];
+  return {ArrayType, length, byteLength, componentByteSize, numberOfComponentsInElement};
+}
+
+/**
+ * Calculate the GPU memory used by a GLTF tile, for both buffer and texture memory
+ * @param gltf - the gltf content of a GLTF tile
+ * @returns - total memory usage in bytes
+ */
+export function getMemoryUsageGLTF(gltf: GLTFPostprocessed): number {
+  let {images, bufferViews} = gltf;
+  images = images || [];
+  bufferViews = bufferViews || [];
+  const imageBufferViews = images.map((i) => i.bufferView);
+  bufferViews = bufferViews.filter((view) => !imageBufferViews.includes(view as any));
+
+  const bufferMemory = bufferViews.reduce((acc, view) => acc + view.byteLength, 0);
+
+  // Assume each pixel of the texture is 4 channel with mimmaps (which add 33%)
+  // TODO correctly handle compressed textures
+  const pixelCount = images.reduce((acc, image) => {
+    // @ts-ignore
+    const {width, height} = (image as any).image;
+    return acc + width * height;
+  }, 0);
+  return bufferMemory + Math.ceil(4 * pixelCount * MIPMAP_FACTOR);
 }

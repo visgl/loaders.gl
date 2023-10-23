@@ -1,0 +1,21 @@
+{
+  "name": "loaders.gl-experimental-basis-example",
+  "description": "Minimal example of using loaders.gl with basis.",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server --progress --hot --open -d",
+    "start-local": "webpack-dev-server --env.local --progress --hot --open"
+  },
+  "dependencies": {
+    "@loaders.gl/textures": "4.0.0-beta.3",
+    "@loaders.gl/core": "4.0.0-beta.3"
+  },
+  "devDependencies": {
+    "babel-plugin-inline-import": "^3.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.3.0",
+    "webpack-dev-server": "^3.1.1"
+  }
+}

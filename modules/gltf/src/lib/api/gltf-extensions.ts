@@ -1,27 +1,38 @@
 /* eslint-disable camelcase */
-import {GLTF} from '../types/gltf-types';
+import {GLTF} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 // GLTF 1.0 extensions (decode only)
 // import * as KHR_binary_gltf from './KHR_draco_mesh_compression';
+
+// GLTF 2.0 Vendor extensions
+import * as EXT_mesh_features from '../extensions/EXT_mesh_features';
+import * as EXT_structural_metadata from '../extensions/EXT_structural_metadata';
 
 // GLTF 2.0 Khronos extensions (decode/encode)
 import * as EXT_meshopt_compression from '../extensions/EXT_meshopt_compression';
 import * as EXT_texture_webp from '../extensions/EXT_texture_webp';
 import * as KHR_texture_basisu from '../extensions/KHR_texture_basisu';
 import * as KHR_draco_mesh_compression from '../extensions/KHR_draco_mesh_compression';
+import * as KHR_texture_transform from '../extensions/KHR_texture_transform';
 
 // Deprecated. These should be handled by rendering library (e.g. luma.gl), not the loader.
 import * as KHR_lights_punctual from '../extensions/deprecated/KHR_lights_punctual';
 import * as KHR_materials_unlit from '../extensions/deprecated/KHR_materials_unlit';
 import * as KHR_techniques_webgl from '../extensions/deprecated/KHR_techniques_webgl';
-
-// Vendor extensions
+import * as EXT_feature_metadata from '../extensions/deprecated/EXT_feature_metadata';
 
 type GLTFExtensionPlugin = {
   name: string;
   preprocess?: (gltfData: {json: GLTF}, options: GLTFLoaderOptions, context) => void;
-  decode?: (gltfData: {json: GLTF}, options: GLTFLoaderOptions, context) => Promise<void>;
+  decode?: (
+    gltfData: {
+      json: GLTF;
+      buffers: {arrayBuffer: ArrayBuffer; byteOffset: number; byteLength: number}[];
+    },
+    options: GLTFLoaderOptions,
+    context
+  ) => Promise<void>;
   encode?: (gltfData: {json: GLTF}, options: GLTFLoaderOptions) => void;
 };
 
@@ -36,6 +47,8 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   // KHR_binary_gltf,
 
   // 2.0
+  EXT_structural_metadata,
+  EXT_mesh_features,
   EXT_meshopt_compression,
   EXT_texture_webp,
   // Basisu should come after webp, we want basisu to be preferred if both are provided
@@ -43,7 +56,9 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   KHR_draco_mesh_compression,
   KHR_lights_punctual,
   KHR_materials_unlit,
-  KHR_techniques_webgl
+  KHR_techniques_webgl,
+  KHR_texture_transform,
+  EXT_feature_metadata
 ];
 
 /** Call before any resource loading starts */

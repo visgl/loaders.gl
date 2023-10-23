@@ -1,6 +1,6 @@
 # Creating New Loaders and Writers
 
-> See the a detailed specification of the [loader object format API reference](docs/specifications/loader-object-format).
+> See the a detailed specification of the [loader object format API reference](/docs/specifications/loader-object-format).
 
 ## Overview
 
@@ -10,7 +10,7 @@ Applications can also create new loader objects. E.g. if you have existing JavaS
 
 You would give a name to the loader object, define what file extension(s) it uses, and define a parser function.
 
-```js
+```typescript
 export default {
   name: 'JSON',
   extensions: ['json'],
@@ -36,32 +36,20 @@ In general, it is recommended that loaders are "standalone" and avoid importing 
 
 ## Creating Composite Loaders
 
-loaders.gl enables loaders to call other loaders (referred to as "sub-loaders" in this section). This enables loaders for "composite formats" to be "composed" out of loaders for the primitive parts.
+loaders.gl enables loaders to call other loaders (referred to as "sub-loaders" in this section). 
+This enables loaders for "composite formats" to be "composed" out of loaders for the primitive parts.
+For more information see [Composite Loaders](./composite-loaders).
 
-Good examples of sub-loaders are the `GLTFLoader` which can delegate Draco mesh decoding to the `DracoLoader` and image decoding to the various `ImageLoaders` and the `BasisLoader`.
+## Accessing the Response object
 
-Naturally, Composite loaders can call other composite loaders, which is for instance used by the `Tiles3DLoader` which uses the `GLTFLoader` to parse embedded glTF data in certain tiles.
+Loaders will often use the [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) to retrieve data. In most cases, a loader will only be concerned with the data payload, but in some cases it may be desirable to access the underlying [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) object, available on the `context` parameter.
 
-## Calling loaders inside loaders
+An example of accessing a HTTP header.
 
-To call another loader, a loader should use the appropriate `parse` function provided in the `context` parameter.
-
-A conceptual example of a 3D Tiles loader calling the `GLTFLoader` with some additional options.
-
-```js
-export async function parse3DTile(arrayBuffer, options, context) {
-  const tile = {};
-  // Extract embedded GLB (if present) into `tile.gltfArrayBuffer`
-  ...
-  if (tile.gltfArrayBuffer) {
-    const {parse} = context;
-    tile.gltf = await parse(tile.gltfArrayBuffer, GLTFLoader, {
-      gltf: {...}
-    });
-  }
+```typescript
+export async function parseWithHeader(arrayBuffer, options, context) {
+  const {parse, response} = context;
+  const contentLength = response.headers.get('content-length');
+  const data = await parse(arrayBuffer, JSONLoader);
 }
 ```
-
-Remarks:
-
-- While a loader could potentially import `parse` from `@loaders.gl/core` to invoke a sub-loader, it is discouraged, not only from a dependency management reasons, but it prevents loaders.gl from properly handling parameters and allow worker-loaders to call other loaders.

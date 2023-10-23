@@ -1,13 +1,17 @@
 import test from 'tape-promise/tape';
 import {I3SConverter} from '@loaders.gl/tile-converter';
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 import {promises as fs} from 'fs';
 
 import {cleanUpPath} from '../utils/file-utils';
+import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
 const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
+const TILESET_WITH_FAILING_CONTENT =
+  '@loaders.gl/tile-converter/test/data/failing-content-error/tileset.json';
+const TILESET_CDB_YEMEN = '@loaders.gl/3d-tiles/test/data/VNext/cdb-yemen-cut/tileset.json';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -17,14 +21,46 @@ const TEST_TEXTURE_MATERIAL = {
   alphaMode: 'opaque',
   pbrMetallicRoughness: {
     roughnessFactor: 1,
-    metallicFactor: 0,
+    metallicFactor: 1,
     baseColorTexture: {
       textureSetDefinitionId: 0
     }
   }
 };
 
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', async (t) => {
+const TEST_FULL_EXTENT = {
+  xmin: -75.61412210800641,
+  ymin: 40.040956941636935,
+  xmax: -75.61006638801986,
+  ymax: 40.04410424800317,
+  zmin: 0,
+  zmax: 20
+};
+
+setLoaderOptions({
+  _worker: 'test'
+});
+
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async (t) => {
+  const converter = new I3SConverter();
+  const tilesetJson = await converter.convert({
+    inputUrl: TILESET_URL,
+    outputPath: 'data',
+    tilesetName: 'BatchedColors',
+    slpk: false,
+    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+    egmFilePath: PGM_FILE_PATH
+  });
+  if (!isBrowser) {
+    t.ok(tilesetJson);
+    await cleanUpPath('data/BatchedColors');
+  } else {
+    t.equals(tilesetJson, BROWSER_ERROR_MESSAGE);
+  }
+  t.end();
+});
+
+test('tile-converter(i3s)#should create Draco compressed geometry', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -32,11 +68,9 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
       outputPath: 'data',
       tilesetName: 'BatchedColors',
       slpk: false,
-      inputType: '3dtiles',
+      draco: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-      egmFilePath: PGM_FILE_PATH,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      egmFilePath: PGM_FILE_PATH
     });
     t.ok(tilesetJson);
   }
@@ -44,7 +78,7 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset', asy
   t.end();
 });
 
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with validation', async (t) => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validation', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -52,12 +86,9 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
       outputPath: 'data',
       tilesetName: 'BatchedColors',
       slpk: true,
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH,
-      validate: true,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      validate: true
     });
     t.ok(tilesetJson);
   }
@@ -65,14 +96,13 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
   t.end();
 });
 
-test('tile-converter - Converters#root node should not contain geometry and textures', async (t) => {
+test('tile-converter(i3s)#root node should not contain geometry and textures', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -90,14 +120,13 @@ test('tile-converter - Converters#root node should not contain geometry and text
   t.end();
 });
 
-test('tile-converter - Converters#should create SceneServer path', async (t) => {
+test('tile-converter(i3s)#should create SceneServer path', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
       inputUrl: TILESET_URL,
       outputPath: 'data',
       tilesetName: 'BatchedColors',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -110,14 +139,13 @@ test('tile-converter - Converters#should create SceneServer path', async (t) => 
   t.end();
 });
 
-test('tile-converter - Converters#should create sharedResources json file', async (t) => {
+test('tile-converter(i3s)#should create sharedResources json file', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -133,7 +161,7 @@ test('tile-converter - Converters#should create sharedResources json file', asyn
   t.end();
 });
 
-test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
+test('tile-converter(i3s)#should generate KTX2 texture', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -141,6 +169,13 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
           {name: '0', format: 'jpg'},
           {name: '1', format: 'ktx2'}
         ]
+      },
+      {
+        formats: [
+          {name: '0', format: 'jpg'},
+          {name: '1', format: 'ktx2'}
+        ],
+        atlas: true
       }
     ];
 
@@ -149,7 +184,6 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
-      inputType: '3dtiles',
       generateTextures: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
@@ -170,12 +204,11 @@ test('tile-converter - Converters#should generate KTX2 texture', async (t) => {
   t.end();
 });
 
-test('tile-converter - Converters#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
+test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
-      {
-        formats: [{name: '1', format: 'ktx2'}]
-      }
+      {formats: [{name: '1', format: 'ktx2'}]},
+      {formats: [{name: '1', format: 'ktx2'}], atlas: true}
     ];
 
     const converter = new I3SConverter();
@@ -183,7 +216,6 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
       inputUrl: TILESET_WITH_KTX_2_TEXTURE,
       outputPath: 'data',
       tilesetName: 'ktx2_only',
-      inputType: '3dtiles',
       generateTextures: false,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
@@ -205,7 +237,7 @@ test('tile-converter - Converters#Should not generate JPG texture if only KTX2 i
   t.end();
 });
 
-test('tile-converter - Converters#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
+test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -213,6 +245,13 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
           {name: '1', format: 'ktx2'},
           {name: '0', format: 'jpg'}
         ]
+      },
+      {
+        formats: [
+          {name: '1', format: 'ktx2'},
+          {name: '0', format: 'jpg'}
+        ],
+        atlas: true
       }
     ];
 
@@ -221,7 +260,6 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
       inputUrl: TILESET_WITH_KTX_2_TEXTURE,
       outputPath: 'data',
       tilesetName: 'jpg_and_ktx2',
-      inputType: '3dtiles',
       generateTextures: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
@@ -243,14 +281,13 @@ test('tile-converter - Converters#Should generate JPG texture if only KTX2 is pr
   t.end();
 });
 
-test('tile-converter - Converters#should create only unique materials', async (t) => {
+test('tile-converter(i3s)#should create only unique materials', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
       inputUrl: TILESET_WITH_TEXTURES,
       outputPath: 'data',
       tilesetName: 'BatchedTextured',
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH
     });
@@ -267,7 +304,7 @@ test('tile-converter - Converters#should create only unique materials', async (t
   t.end();
 });
 
-test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async (t) => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async (t) => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -276,14 +313,81 @@ test('tile-converter - Converters#converts 3d-tiles tileset to i3s tileset with 
       tilesetName: 'BatchedColors',
       generateBoundingVolumes: true,
       slpk: false,
-      inputType: '3dtiles',
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-      egmFilePath: PGM_FILE_PATH,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      egmFilePath: PGM_FILE_PATH
     });
     t.ok(tilesetJson);
   }
   await cleanUpPath('data/BatchedColors');
+  t.end();
+});
+
+test('tile-converter(i3s)#layer json should contain fullExtent field', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_TEXTURES,
+      outputPath: 'data',
+      tilesetName: 'BatchedTextured',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const layerJson = await fs.readFile(
+      'data/BatchedTextured/SceneServer/layers/0/index.json',
+      'utf8'
+    );
+    const layer = JSON.parse(layerJson);
+    t.ok(layer.fullExtent);
+    for (const key in layer.fullExtent) {
+      t.equal(layer.fullExtent[key], TEST_FULL_EXTENT[key]);
+    }
+  }
+  await cleanUpPath('data/BatchedTextured');
+  t.end();
+});
+
+test('tile-converter(i3s)#proceed with failing content', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_WITH_FAILING_CONTENT,
+      outputPath: 'data',
+      tilesetName: 'FailingContent',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const nodePageJson = await fs.readFile(
+      'data/FailingContent/SceneServer/layers/0/nodepages/0/index.json',
+      'utf8'
+    );
+    const nodePage = JSON.parse(nodePageJson);
+    t.ok(nodePage.nodes[1].mesh);
+    t.notOk(nodePage.nodes[2].mesh);
+    t.notOk(nodePage.nodes[3].mesh);
+    t.notOk(nodePage.nodes[4].mesh);
+    t.notOk(nodePage.nodes[5].mesh);
+  }
+  await cleanUpPath('data/FailingContent');
+  t.end();
+});
+
+test('tile-converter(i3s)#convert with --metadata-class option', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_CDB_YEMEN,
+      outputPath: 'data',
+      tilesetName: 'CDB_Yemen',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH,
+      metadataClass: 'CDBMaterialsClass'
+    });
+    const nodePageJson = await fs.readFile(
+      'data/CDB_Yemen/SceneServer/layers/0/nodepages/0/index.json',
+      'utf8'
+    );
+    t.ok(nodePageJson);
+  }
+  await cleanUpPath('data/CDB_Yemen');
   t.end();
 });

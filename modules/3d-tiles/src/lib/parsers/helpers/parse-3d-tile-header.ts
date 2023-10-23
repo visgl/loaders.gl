@@ -1,6 +1,8 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
+import {Tiles3DTileContent} from '../../../types';
+
 const SIZEOF_UINT32 = 4;
 
 /* PARSE FIXED HEADER:
@@ -10,7 +12,11 @@ Populates
   version,
   byteLength
  */
-export function parse3DTileHeaderSync(tile, arrayBuffer, byteOffset = 0) {
+export function parse3DTileHeaderSync(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number = 0
+) {
   const view = new DataView(arrayBuffer);
 
   tile.magic = view.getUint32(byteOffset, true);

@@ -1,88 +1,123 @@
 /* eslint-disable dot-notation */
-import {DOMParser} from '@xmldom/xmldom';
-import {isBrowser, global} from './utils/globals';
+import {isBrowser} from './utils/is-browser';
 
-import {TextDecoder, TextEncoder} from './lib/encoding';
-import {allSettled} from './promise/all-settled';
+import {TextDecoder, TextEncoder} from './text-encoder/text-encoder';
 
 // Node specific
-import * as base64 from './node/buffer/btoa.node';
+import {atob, btoa} from './buffer/btoa.node';
 
-import HeadersNode from './node/fetch/headers.node';
-import ResponseNode from './node/fetch/response.node';
-import fetchNode from './node/fetch/fetch.node';
+import {encodeImageNode} from './images/encode-image-node';
+import {parseImageNode, NODE_FORMAT_SUPPORT} from './images/parse-image-node';
 
-import {encodeImageNode} from './node/images/encode-image.node';
-import {parseImageNode} from './node/images/parse-image.node';
+// FILESYSTEM POLYFILLS
+import {NodeFile} from './filesystems/node-file';
+import {NodeFileSystem} from './filesystems/node-filesystem';
+import {fetchNode} from './filesystems/fetch-node';
 
-export {ReadableStreamPolyfill} from './node/file/readable-stream';
-export {BlobPolyfill} from './node/file/blob';
-export {FileReaderPolyfill} from './node/file/file-reader';
-export {FilePolyfill} from './node/file/file';
-export {installFilePolyfills} from './node/file/install-file-polyfills';
+// NODE VERSION
+import {versions} from 'node:process';
+export const nodeVersion = parseInt(versions.node.split('.')[0]);
+
+// STREAM POLYFILLS
+import {makeNodeStream} from './streams/make-node-stream';
+
+// BLOB AND FILE POLYFILLS
+export {Blob_ as Blob} from './file/install-blob-polyfills';
+export {File_ as File} from './file/install-file-polyfills';
+
+if (isBrowser) {
+  // eslint-disable-next-line no-console
+  console.error(
+    'loaders.gl: The @loaders.gl/polyfills should only be used in Node.js environments'
+  );
+}
+
+globalThis.loaders = globalThis.loaders || {};
+
+// STREAM POLYFILLS
+export {makeNodeStream} from './streams/make-node-stream';
+globalThis.loaders.makeNodeStream = makeNodeStream;
+
+// FILESYSTEM POLYFILLS
+globalThis.loaders.NodeFile = NodeFile;
+globalThis.loaders.NodeFileSystem = NodeFileSystem;
+globalThis.loaders.fetchNode = fetchNode;
 
 // POLYFILLS: TextEncoder, TextDecoder
 // - Recent Node versions have these classes but virtually no encodings unless special build.
 // - Browser: Edge, IE11 do not have these
 
-const installTextEncoder = !isBrowser || !('TextEncoder' in global);
-if (installTextEncoder) {
-  global['TextEncoder'] = TextEncoder;
+if (!globalThis.TextEncoder) {
+  // @ts-expect-error
+  globalThis.TextEncoder = TextEncoder;
 }
 
-const installTextDecoder = !isBrowser || !('TextDecoder' in global);
-if (installTextDecoder) {
-  global['TextDecoder'] = TextDecoder;
+if (!globalThis.TextDecoder) {
+  // @ts-expect-error
+  globalThis.TextDecoder = TextDecoder;
 }
 
 // POLYFILLS: btoa, atob
 // - Node: Yes
 // - Browser: No
 
-if (!isBrowser && !('atob' in global) && base64.atob) {
-  global['atob'] = base64.atob;
+if (!('atob' in globalThis) && atob) {
+  globalThis['atob'] = atob;
 }
-if (!isBrowser && !('btoa' in global) && base64.btoa) {
-  global['btoa'] = base64.btoa;
-}
-
-// POLYFILL: fetch
-// - Node: Yes
-// - Browser: No. For This polyfill is node only, IE11 etc, install external polyfill
-
-if (!isBrowser && !('Headers' in global) && HeadersNode) {
-  global['Headers'] = HeadersNode;
-}
-
-if (!isBrowser && !('Response' in global) && ResponseNode) {
-  global['Response'] = ResponseNode;
-}
-
-if (!isBrowser && !('fetch' in global) && fetchNode) {
-  global['fetch'] = fetchNode;
-}
-
-// POLYFILL: DOMParser
-// - Node: Yes
-// - Browser: No
-
-if (!isBrowser && !('DOMParser' in global) && DOMParser) {
-  global['DOMParser'] = DOMParser;
+if (!('btoa' in globalThis) && btoa) {
+  globalThis['btoa'] = btoa;
 }
 
 // NODE IMAGE FUNCTIONS:
 // These are not official polyfills but used by the @loaders.gl/images module if installed
 // TODO - is there an appropriate Image API we could polyfill using an adapter?
 
-if (!isBrowser && !('_encodeImageNode' in global) && encodeImageNode) {
-  global['_encodeImageNode'] = encodeImageNode;
-}
+globalThis.loaders.encodeImageNode = encodeImageNode;
+globalThis.loaders.parseImageNode = parseImageNode;
+globalThis.loaders.imageFormatsNode = NODE_FORMAT_SUPPORT;
 
-if (!isBrowser && !('_parseImageNode' in global) && parseImageNode) {
-  global['_parseImageNode'] = parseImageNode;
-}
+// Deprecated, remove after republish
+globalThis._parseImageNode = parseImageNode;
+globalThis._imageFormatsNode = NODE_FORMAT_SUPPORT;
 
-if (!('allSettled' in Promise)) {
-  // @ts-ignore
-  Promise.allSettled = allSettled;
+// LOAD LIBRARY
+
+import {
+  readFileAsArrayBuffer,
+  readFileAsText,
+  requireFromFile,
+  requireFromString
+} from './load-library/require-utils.node';
+
+globalThis.loaders.readFileAsArrayBuffer = readFileAsArrayBuffer;
+globalThis.loaders.readFileAsText = readFileAsText;
+globalThis.loaders.requireFromFile = requireFromFile;
+globalThis.loaders.requireFromString = requireFromString;
+
+export {installFilePolyfills} from './file/install-file-polyfills';
+
+// DEPRECATED POLYFILL:
+// - Node v18+: No, not needed
+// - Node v16 and lower: Yes
+// - Browsers (evergreen): Not needed.
+// - IE11: No. This polyfill is node only, install external polyfill
+import {Headers as HeadersNode} from './fetch/headers-polyfill';
+import {Response as ResponseNode} from './fetch/response-polyfill';
+import {fetchNode as fetchNodePolyfill} from './fetch/fetch-polyfill';
+
+if (nodeVersion < 18) {
+  if (!('Headers' in globalThis) && HeadersNode) {
+    // @ts-ignore
+    globalThis.Headers = HeadersNode;
+  }
+
+  if (!('Response' in globalThis) && ResponseNode) {
+    // @ts-ignore
+    globalThis.Response = ResponseNode;
+  }
+
+  if (!('fetch' in globalThis) && fetchNodePolyfill) {
+    // @ts-ignore
+    globalThis.fetch = fetchNodePolyfill;
+  }
 }

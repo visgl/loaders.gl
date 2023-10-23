@@ -1,13 +1,20 @@
-import {encode, encodeSync} from '@loaders.gl/core';
+import type {I3STileContent} from '@loaders.gl/i3s';
+import {encodeSync} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
-import {ImageWriter} from '@loaders.gl/images';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
+import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
+
+export type I3SAttributesData = {
+  tileContent: I3STileContent;
+  box: number[];
+  textureFormat: string;
+};
 
 /**
  * Converts content of an I3S node to *.b3dm's file content
@@ -22,15 +29,17 @@ export default class B3dmConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded content
    */
-  async convert(i3sTile: Object, attributes: any = null): Promise<ArrayBuffer> {
-    this.i3sTile = i3sTile;
-    const gltf = await this.buildGltf(i3sTile);
+  async convert(
+    i3sAttributesData: I3SAttributesData,
+    featureAttributes: any = null
+  ): Promise<ArrayBuffer> {
+    const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes);
     const b3dm = encodeSync(
       {
         gltfEncoded: new Uint8Array(gltf),
         type: 'b3dm',
-        featuresLength: this._getFeaturesLength(attributes),
-        batchTable: attributes
+        featuresLength: this._getFeaturesLength(featureAttributes),
+        batchTable: featureAttributes
       },
       Tile3DWriter
     );
@@ -42,19 +51,16 @@ export default class B3dmConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded glb content
    */
-  async buildGltf(i3sTile): Promise<ArrayBuffer> {
-    const {
-      material,
-      attributes,
-      indices: originalIndices,
-      cartesianOrigin,
-      cartographicOrigin,
-      modelMatrix
-    } = i3sTile.content;
+  async buildGLTF(
+    i3sAttributesData: I3SAttributesData,
+    featureAttributes: any
+  ): Promise<ArrayBuffer> {
+    const {tileContent, textureFormat, box} = i3sAttributesData;
+    const {material, attributes, indices: originalIndices, modelMatrix} = tileContent;
     const gltfBuilder = new GLTFScenegraph();
 
-    const textureIndex = await this._addI3sTextureToGltf(i3sTile, gltfBuilder);
-    const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(material, textureIndex);
+    const textureIndex = await this._addI3sTextureToGLTF(tileContent, textureFormat, gltfBuilder);
+    const pbrMaterialInfo = this._convertI3sMaterialToGLTFMaterial(material, textureIndex);
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
 
     const positions = attributes.positions;
@@ -67,17 +73,24 @@ export default class B3dmConverter {
       );
     }
 
+    const cartesianOrigin = new Vector3(box);
+    const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
+      cartesianOrigin,
+      new Vector3()
+    );
+
     attributes.positions.value = this._normalizePositions(
       positionsValue,
       cartesianOrigin,
       cartographicOrigin,
       modelMatrix
     );
+    this._createBatchIds(tileContent, featureAttributes);
     if (attributes.normals && !this._checkNormals(attributes.normals.value)) {
       delete attributes.normals;
     }
     const indices =
-      originalIndices || this._generateSynteticIndices(positionsValue.length / positions.size);
+      originalIndices || generateSyntheticIndices(positionsValue.length / positions.size);
     const meshIndex = gltfBuilder.addMesh({
       attributes,
       indices,
@@ -102,11 +115,8 @@ export default class B3dmConverter {
    * @param {GLTFScenegraph} gltfBuilder - gltfScenegraph instance to construct GLTF
    * @returns {Promise<number | null>} - GLTF texture index
    */
-  async _addI3sTextureToGltf(i3sTile, gltfBuilder) {
-    const {
-      content: {texture, material, attributes},
-      header: {textureFormat}
-    } = i3sTile;
+  async _addI3sTextureToGLTF(tileContent, textureFormat, gltfBuilder) {
+    const {texture, material, attributes} = tileContent;
     let textureIndex = null;
     let selectedTexture = texture;
     if (!texture && material) {
@@ -117,8 +127,7 @@ export default class B3dmConverter {
     }
     if (selectedTexture) {
       const mimeType = this._deduceMimeTypeFromFormat(textureFormat);
-      const imageBuffer = await encode(selectedTexture, ImageWriter);
-      const imageIndex = gltfBuilder.addImage(imageBuffer, mimeType);
+      const imageIndex = gltfBuilder.addImage(selectedTexture, mimeType);
       textureIndex = gltfBuilder.addTexture({imageIndex});
       delete attributes.colors;
     }
@@ -163,40 +172,28 @@ export default class B3dmConverter {
   }
 
   /**
-   * Generate batchId attribute from faceRanges.
-   * @param {Uint32Array} faceRanges - the source array
-   * @returns {Float32Array} batchId list.
+   * Create _BATCHID attribute
+   * @param {Object} i3sContent - the source object
+   * @returns {void}
    */
-  _generateBatchId(faceRanges) {
-    const batchIdArraySize = (faceRanges[faceRanges.length - 1] + 1) * 3;
-    const batchId = new Float32Array(batchIdArraySize);
-    let rangeIndex = 0;
-    let currentBatchId = 0;
-
-    for (let index = 0; index < faceRanges.length / 2; index++) {
-      const fromIndex = faceRanges[rangeIndex] * 3;
-      const untilPosition = (faceRanges[rangeIndex + 1] + 1) * 3;
-
-      batchId.fill(currentBatchId, fromIndex, untilPosition);
-      rangeIndex += 2;
-      currentBatchId += 1;
+  _createBatchIds(i3sContent, featureAttributes) {
+    const {featureIds} = i3sContent;
+    const {OBJECTID: objectIds} = featureAttributes || {};
+    if (!featureIds || !objectIds) {
+      return;
     }
-    return batchId;
-  }
 
-  /**
-   * luma.gl can not work without indices now:
-   * https://github.com/visgl/luma.gl/blob/d8cad75b9f8ca3e578cf078ed9d19e619c2ddbc9/modules/experimental/src/gltf/gltf-instantiator.js#L115
-   * This method generates syntetic indices array: [0, 1, 2, 3, .... , vertexCount-1]
-   * @param {number} vertexCount - vertex count in the geometry
-   * @returns {Uint32Array} indices array.
-   */
-  _generateSynteticIndices(vertexCount) {
-    const result = new Uint32Array(vertexCount);
-    for (let index = 0; index < vertexCount; index++) {
-      result.set([index], index);
+    for (let i = 0; i < featureIds.length; i++) {
+      const featureId = featureIds[i];
+      const batchId = objectIds.indexOf(featureId);
+      featureIds[i] = batchId;
     }
-    return result;
+
+    i3sContent.attributes._BATCHID = {
+      size: 1,
+      byteOffset: 0,
+      value: featureIds
+    };
   }
 
   /**
@@ -211,6 +208,8 @@ export default class B3dmConverter {
         return 'image/jpeg';
       case 'png':
         return 'image/png';
+      case 'ktx2':
+        return 'image/ktx2';
       default:
         console.warn(`Unexpected texture format in I3S: ${format}`); // eslint-disable-line no-console, no-undef
         return 'image/jpeg';
@@ -223,7 +222,7 @@ export default class B3dmConverter {
    * @param {number | null} textureIndex - texture index in GLTF
    * @returns {object} GLTF material
    */
-  _convertI3sMaterialToGltfMaterial(material, textureIndex) {
+  _convertI3sMaterialToGLTFMaterial(material, textureIndex) {
     const isTextureIndexExists = textureIndex !== null;
 
     if (!material) {
@@ -249,7 +248,7 @@ export default class B3dmConverter {
     }
 
     if (textureIndex !== null) {
-      material = this._setGltfTexture(material, textureIndex);
+      material = this._setGLTFTexture(material, textureIndex);
     }
 
     return material;
@@ -261,7 +260,7 @@ export default class B3dmConverter {
    * @param {number} textureIndex - texture index in GLTF
    * @returns {void}
    */
-  _setGltfTexture(materialDefinition, textureIndex) {
+  _setGLTFTexture(materialDefinition, textureIndex) {
     const material = {
       ...materialDefinition,
       pbrMetallicRoughness: {...materialDefinition.pbrMetallicRoughness}

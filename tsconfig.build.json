@@ -8,6 +8,7 @@
   "references": [
     {"path": "modules/3d-tiles"},
     {"path": "modules/arrow"},
+    {"path": "modules/bson"},
     {"path": "modules/compression"},
     {"path": "modules/core"},
     {"path": "modules/crypto"},
@@ -32,6 +33,7 @@
     {"path": "modules/parquet"},
     {"path": "modules/pcd"},
     {"path": "modules/ply"},
+    {"path": "modules/pmtiles"},
     {"path": "modules/polyfills"},
     {"path": "modules/potree"},
     {"path": "modules/schema"},
@@ -42,7 +44,9 @@
     {"path": "modules/tiles"},
     {"path": "modules/video"},
     {"path": "modules/wkt"},
+    {"path": "modules/wms"},
     {"path": "modules/worker-utils"},
+    {"path": "modules/xml"},
     {"path": "modules/zarr"},
     {"path": "modules/zip"}
   ],

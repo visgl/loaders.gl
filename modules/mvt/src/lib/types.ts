@@ -1,98 +1,69 @@
-export type MvtOptions = {
-  coordinates: string | number[];
-  tileIndex: {x: number; y: number; z: number};
-  layerProperty: string | number;
-  layerName: string;
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
+
+/** For local coordinates, the tileIndex is not required */
+type MVTLocalCoordinatesOptions = {
+  /**
+   * When set to `local`, the parser will return a flat array of GeoJSON objects with local coordinates decoded from tile origin.
+   */
+  coordinates: 'local';
+  tileIndex: null;
 };
 
-export type MvtBinaryGeometry = {
-  data: number[];
-  lines: any[];
-  areas?: number[];
-  type?: string;
-  id?: number;
+/** In WGS84 coordinates, the tileIndex is required */
+type MVTWgs84CoordinatesOptions = {
+  /**
+   * When set to `wgs84`, the parser will return a flat array of GeoJSON objects with coordinates in longitude, latitude decoded from the provided tile index.
+   */
+  coordinates?: 'wgs84';
+
+  /**
+   * Mandatory with `wgs84` coordinates option. An object containing tile index values (`x`, `y`,
+   * `z`) to reproject features' coordinates into WGS84.
+   */
+  tileIndex?: {x: number; y: number; z: number};
 };
 
-export type MvtMapboxGeometry = {
+export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOptions) & {
+  shape?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
+  /**
+   * When non-`null`, the layer name of each feature is added to
+   * `feature.properties[layerProperty]`. (A `feature.properties` object is created if the feature
+   * has no existing properties). If set to `null`, a layer name property will not be added.
+   */
+  layerProperty?: string | number;
+
+  /**
+   * Optional list of layer names. If not `null`, only features belonging to the named layers will
+   * be included in the output. If `null`, features from all layers are returned.
+   */
+  layers?: string[];
+};
+
+export type MVTMapboxGeometry = {
   type?: string;
   id?: number;
   length: number;
   coordinates?: any[];
 };
 
-export type MvtBinaryCoordinates = {
-  type: string;
-  geometry: MvtBinaryGeometry;
-  properties: {[x: string]: string | number | boolean | null};
-  id?: number;
-};
-
-export type MvtMapboxCoordinates = {
+export type MVTMapboxCoordinates = {
   type: string;
   geometry: {
     type: string;
-    coordinates: MvtMapboxGeometry;
+    coordinates: MVTMapboxGeometry;
   };
   properties: {[x: string]: string | number | boolean | null};
   id?: number;
 };
 
-export type MvtPropArrayConstructor =
-  | Float32ArrayConstructor
-  | Float64ArrayConstructor
-  | ArrayConstructor;
-
-export type MvtBinaryOptions = {
-  numericPropKeys: string[];
-  propArrayTypes: {[key: string]: MvtPropArrayConstructor};
-  PositionDataType: Float32ArrayConstructor;
-};
-
-export type MvtFirstPassedData = {
-  pointPositionsCount: number;
-  pointFeaturesCount: number;
-  linePositionsCount: number;
-  linePathsCount: number;
-  lineFeaturesCount: number;
-  polygonPositionsCount: number;
-  polygonObjectsCount: number;
-  polygonRingsCount: number;
-  polygonFeaturesCount: number;
-};
-
-export type MvtPoints = {
-  positions: Float32Array;
-  globalFeatureIds: Uint16Array | Uint32Array;
-  featureIds: Uint16Array | Uint32Array;
-  numericProps: object;
-  properties: {}[];
-  fields: {
-    id?: number;
-  }[];
-};
-
-export type MvtLines = {
-  pathIndices: Uint16Array | Uint32Array;
-  positions: Float32Array;
-  globalFeatureIds: Uint16Array | Uint32Array;
-  featureIds: Uint16Array | Uint32Array;
-  numericProps: object;
-  properties: {}[];
-  fields: {
-    id?: number;
-  }[];
-};
-
-export type MvtPolygons = {
-  polygonIndices: Uint16Array | Uint32Array;
-  primitivePolygonIndices: Uint16Array | Uint32Array;
-  positions: Float32Array;
-  triangles: number[];
-  globalFeatureIds: Uint16Array | Uint32Array;
-  featureIds: Uint16Array | Uint32Array;
-  numericProps: object;
-  properties: {}[];
-  fields: {
-    id?: number;
-  }[];
+export type MVTLoaderOptions = LoaderOptions & {
+  mvt?: MVTOptions;
+  gis?: {
+    /**
+     * When set to `true`, the parser will output the data in binary format. This is equivalent to loading the data as GeoJSON and then applying [geojsonToBinary](https://loaders.gl/modules/gis/docs/api-reference/geojson-to-binary).
+     */
+    binary?: boolean;
+    /** @deprecated. Use options.mvt.shape */
+    format?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
+  };
 };

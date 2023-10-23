@@ -2,6 +2,762 @@
 
 ## v4.0 Prerelease
 
+> The official 4.0 alpha track starts with alpha.6
+> The early pre-release track was abandoned due to build incompatibility problems.
+> release info (#2491))
+
+### v4.0.0-beta.5
+
+- Path fix (#2709)
+- fix(gltf, tile-converter): attributeStorageInfo, use class name (#2673)
+- chore: Add CI for Node 20 (#2712)
+- fix(tile-converter): enable tests (#2708)
+- chore: Bump to Node 18 (#2711)
+- docs (whats-new): Update whats-new.mdx for 4.0 loaders.gl release (#2702)
+- feat(geopackage): Upgrade and modernize (#2704)
+
+### v4.0.0-beta.4
+
+- fix(tile-converter): cli tools (#2707)
+- feat(tile-converter): test for conversion arrays to attribute of string type (#2703)
+- chore(polyfills): Consolidate node code (#2701)
+- fix(i3s): handle search params in I3SLoader (#2692)
+
+### v4.0.0-beta.3
+
+- feat(tile-converter): --analyze-only option (#2694)
+- fix(tiles): cartographicToCartesan syntax (#2690)
+- chore(website): Restore website (#2689)
+- fix(wms): WMS 1.3.0 compatability on GetFeatureInfo (#2680)
+- chore: Prep for Node18 support (#2699)
+- chore: math.gl@4.0.0 (#2698)
+- fix(gltf): fix of getTypedArrayForAccessor in gltf-scenegraph (#2683)
+- chore(schema): Move arrow dependencies to arrow module (#2697)
+- chore: Upgrade to math.gl@4.0.0-beta.1. Remove gl-matrix (#2696)
+- chore: Restore library loading (#2686)
+- fix(tiles): convert region to obb (#2685)
+- feat: Move to ES modules, upgrade dev-tools (#2681)
+- feat(mvt): Add MVTSource (#2674)
+- chore(core): Remove writeSync, save and fs dependencies (#2678)
+- feat(loader-utils): Refactor FileSystem to be independent of fs (#2676)
+- chore: Remove Buffer usage (#2675)
+- chore(zip): Refactor zip content hash tables (#2500)
+- chore(polyfills): Remove Promise.allSettled polyfill (#2672)
+
+### v4.0.0-beta.2
+
+- fix: getting tile url with empty query params (#2671)
+- chore(polyfills): Start moving Node.js code into polyfills (#2669)
+
+### v4.0.0-beta.1
+
+- feat(tile-converter): support of 64-bit int (#2670)
+- feat(gltf): added support of arrays to ext-feature-metadata (#2663)
+- feat(mvt): Add TileJSONLoader (#2666)
+- feat(pmtiles): Create PMTileSource from Blob (#2668)
+- feat(wms): Separate WMSSource and WMSService (#2667)
+- fix: remove unused ts directive (#2665)
+- Move master to 4.0-beta tags (#2661)
+- feat(pmtools): Add vector tile support (#2664)
+- docs: Improved release notes
+- feat(pmtiles): Support for pmtiles format (#2662)
+- Website: Geoparquet example (#2660)
+- fix(parse-i3s): getting root node url for normalizeTilesetData without nodepages (#2659)
+
+### v4.0.0-alpha.26
+
+- Fixes for deck.gl 8.10 (#2658)
+- feat(crypto): Add encoding parameter for hashes (#2657)
+
+### v4.0.0-alpha.25
+
+- fix(gltf): tests for ext-feature-metadata (#2656)
+- fix(gltf, converter): make ext-mesh-features independent from ext-structural-metadata (#2655)
+- batch types (#2645)
+- chore(twkb): Add TWKBLoader tests (#2653)
+- feat(tile-converter): select metadata class from EXT_structural_metadata (#2647)
+- feat: new geoparquet example (#2646)
+- feat(wkt): Add TWKBLoader/Writer (#2028)
+- feat(wkb): Auto-detect WKB dialect and encoding (#2184)
+- feat(wkb): New HexWKBLoader for hex encoded WKB (#2652)
+- chore(worker-utils): Improve version handling (#2651)
+- chore: geoparquet prep (#2650)
+- feat(wkt): Add WKTCRSLoader/Writer (#2649)
+- docs(release-notes): Loaders 4.0 upcoming release notes (#2648)
+- docs: Add whats-new and upgrade-guide to arrowjs docs (#2636)
+- feat(schema): Make geojson-table compatible with GeoJSON (#2644)
+- docs(tile-converter): metadata class selection (#2642)
+- chore(tile-converter): rename (#2641)
+- chore(parquet): Add Buffer polyfill to parquet to avoid bundler complications (#2643)
+
+### v4.0.0-alpha.24
+
+- fix(tile-converter): geometry attributes reordering performance (#2640)
+- fix(tile-converter): EXT_feature_metadata conversion (#2639)
+- feat(gltf): EXT_feature_metadata - numeric types support (#2634)
+- chore(gltf): 3d-tiles extensions refactoring (#2633)
+- chore(draco): Upgrade to draco3d v1.5.6 (#2638)
+- Fix browser exclude (#2596)
+- docs: Consolidate whats-new (merge duplications) (#2637)
+- feat(arrow): upgrade to apache-arrow v13 (#2632)
+- feat(arrow): Typed apache arrow loader (#2631)
+- chore: More typed loaders (#2630)
+- chore(gis): Add typescript types (#2629)
+- docs(i3s): fix formats and english (#2628)
+- docs(i3s): I3S receipts (#2627)
+- chore: Type 3d-tile and I3S loaders. (#2606)
+
+### v4.0.0-alpha.23
+
+- chore: Add loader type parameters (#2626)
+- feat(tile-converter): support EXT_mesh_features and EXT_structural_metadata (#2566)
+- feat(core): non-specific parse functions return unknown (#2625)
+- chore(csv): Ensure tests  use typed CSVLoader (#2621)
+- docs(core): Typed loaders (#2624)
+- chore(zip): Remove zip module dependency on @loaders.gl/core (#2622)
+- chore: Clean up module imports, remove default exports in images module (#2617) (#2623)
+
+### v4.0.0-alpha.22
+
+- fix(zip): @loaders.gl/core dependency (#2620)
+- feat(tile-converter): support 3tz (#2609)
+- chore(core): Reduce use of implicit any, move test files to .ts (#2619)
+- chore: Use parseFromContext in subloaders (#2616)
+- feat(loader-utils): Type safe context parsers for sub loaders (#2613)
+- feat(3d-tiles): some improvements (#2610)
+
+### v4.0.0-alpha.21
+
+- feat(core): parseSync, parseInBatches, load, loadInBatches type inference (#2612)
+- feat: More typed loaders (#2607)
+- feat(3d-tiles): 3tz loader (#2578)
+- feat(zip): ZipFileSystem (#2602)
+- chore(i3s): Hash generation moved to @loader.gl/zip (#2599)
+- chore(zip): read file classes (#2601)
+- chore(zip): Compression method added for local header (#2600)
+- chore(compression): Added raw mode for deflate-compresion module (#2598)
+
+### v4.0.0-alpha.20
+
+- chore(i3s): Hash file utility moved to loader-utils (#2595)
+- chore(i3s): Zip parse refactoring (#2594)
+- fix(core): fetchOptions regression (#2591)
+- chore(tile-converter): remove CesiumION tokens (#2592)
+- feat(tile-converter): select metadata classes (#2590)
+- fix(tile-converter): featureIds + uvRegions (#2588)
+
+### v4.0.0-alpha.19
+
+- fix(tile-converter): CLI startup script (#2587)
+- feat(tile-converter): i3s - offline conversion (#2579)
+- Handle empty childless tiles in TilesetTraverser (#2584)
+- fix(i3s): add to tileset data (#2585)
+- fix(tile-converter): fix loading buffers in preprocess-3d-tiles (#2572)
+
+### v4.0.0-alpha.18
+
+- fix(tile-converter): skip failing content (#2576)
+- fix: Bump and remove @xmldom/xmldom (input validation issue) (#2582)
+- docs(tile-converter): Add documentation for SLPK Extractor (#2567)
+- chore(core): Refactor fetchFile to handle Node.js local file loading (#2575)
+- chore(tile-converter): 3dtiles - exclude Tile3D and Tileset3D (#2574)
+
+### v4.0.0-alpha.17
+
+- docs(chore): core API documentation improvements (#2573)
+- Add triangulate property to geojsonToBinary (#2571)
+- fix(obj): Improved vertex colors parsing (#2569)
+
+### v4.0.0-alpha.16
+
+- chore(tile-converter): create SLPK hash during serve (#2565)
+- docs(tile-converter): I3S Server (#2564)
+- chore(tile-converter): i3s-server tests (#2563)
+- chore(deps): bump semver in /test/apps/typescript-test (#2544)
+- chore(deps): bump semver from 5.7.1 to 5.7.2 (#2545)
+- chore(tile-converter): i3s-server convert to ts (#2562)
+
+### v4.0.0-alpha.15
+
+- chore(tile-converter): bump i3s-server deps (#2561)
+- chore(tile-converter): Support for SLPKs larger than 2 Gb (#2547)
+- feat(tile-converter): i3s-server bundle (#2555)
+- chore(deps): bump semver from 5.7.1 to 5.7.2 in /website (#2546)
+- fix(docs): JSONLoader \_rootObjectBatches removed but not mentioned in upgrade guide (#2558)
+- chore(deps): bump word-wrap in /test/apps/typescript-test (#2559)
+- fix(tile-converter): CesiumION tileset URL (#2560)
+- chore: update CHANGELOG.md (#2551)
+- chore(tile-converter): update i3s-server manual (#2552)
+
+### v4.0.0-alpha.14
+
+- fix(3d-tiles): implicit tiling v1.1 (#2549)
+- fix(tile-converter): i3s->3dtiles regression (#2550)
+
+### v4.0.0-alpha.13
+
+- fix(gltf): 3D tiles extension types & docs (#2542)
+- fix(tile-converter): failing test (#2540)
+- chore: bump fast-xml-parser (#2538)
+- fix(3d-tiles): implicit tiling v1.1 (#2539)
+
+### v4.0.0-alpha.12
+
+- fix(tile-converter): proceed failed tiles (#2536)
+- fix(3d-tiles): implicit tiling relative paths (#2535)
+
+### v4.0.0-alpha.11
+
+- chore(tile-converter): add tests (#2534)
+- chore(tile-converter): unified tests naming (#2533)
+- feat(CLI): Extract SLPK (#2515)
+
+### v4.0.0-alpha.10
+
+- fix(tile-converter): install deps on windows (#2532)
+
+### v4.0.0-alpha.9
+
+- fix(worker-utils): child process - ignore warnings (#2529)
+- fix: update dependencies (#2528)
+
+### v4.0.0-alpha.8
+
+- Update supported-features.md (#2525)
+- chore(tile-converter): preprocess stage for I3SConverter (#2520)
+- chore(tile-converter): i3s-converter - mitigate "tiles" module dependency (#2517)
+- chore(3d-tiles): tile content type (#2516)
+- feat(i3s): Add an option to multiply colors by attribute (#2519)
+- feat(tile-converter): support attributes data from textures (#2511)
+- chore(3d-tiles): improve JSON types (#2509)
+- chore(slpk): slpk mode for server implemented (#2486)
+- fix(tile-converter): node workers error (#2504)
+
+### v4.0.0-alpha.7
+
+- fix(tile-converter): reject POINT mesh type (#2501)
+- fix(i3s): Dependency path error (#2499)
+- fix(i3s): add md5 to i3s module (#2479)
+- chore: Node worker cleanup (#2495)
+- chore: move DOMParser dep from polyfills to kml module (#2496)
+- fix(wms): Avoid breaking normalized ImageSource metadata (#2492)
+- docs: Upgrade guide for WMMSCapabilities, link to CHANGELOG for patch release info (#2491)
+- fix(wms): undefined fields can be set to undefined strings (#2489)
+- fix(tiles): Improved query params handling (#2490)
+- fix(hero example): change dataset url (#2484)
+- fix(tiles): isLoaded has breaking change (#2485)
+- fix: dependency issue (#2480)
+- chore: Cleanup after 4.0 fast forward (#2481)
+- cleanup
+- chore(gltf): Add types for post processed gltf (#2468)
+- feat(3d-tiles): Tiles3DLoaderOptions (#2471)
+- feat(gltf): Typed glTF loader, separate post processing (#2472)
+- docs: more formats (#2467)
+- docs: Add formats section (#2466)
+- docs: Add ArrowJS docs (#2453)
+
+### v4.0.0-alpha.6
+
+- feat: Typed loaders (#2448)
+- chore: Bump math.gl and probe.gl (#2444)
+- feat(parquet): Columnar loader (#2447)
+- Update whats-new.md
+- Update whats-new.md
+- docs: Update what's new for 4.0 (#2277)
+- feat: Improve Loader typing (v4) (#2325)
+- feat: Improve Writer typing (v4) (#2320)
+- feat: Add JSON and CSV writers (#2319)
+- feat(schema): Use standard objects for serialized metadata (#2318)
+- chore(schema): Split types and utils (#2317)
+- feat(schema): Add table accessors (v4) (#2316)
+- chore(arrow): bump apache-arrow to 9.0.0. Temporarily disable arrow workers. (#2276)
+- fix(examples): wms control panel height (#2443)
+- feat(website): add hero example (#2441)
+- feat(wms): Replace EPSG:4326 with CRS:84 in WMS 1.3.0 (#2439)
+- feat(tile-converter): support TRIANGLE-STRIP (#2428)
+
+## v3.4
+
+### v3.4.9
+
+- fix(obj): Improved OBJ vertex colors parsing (#2569)
+
+### 3.4.2
+
+- docs: Upgrade guide for `WMSCapabilities` type, link to CHANGELOG for patch release info
+- fix(wms): undefined fields can be set to `undefined` strings (#2489)
+- fix(tiles): Improved query params handling (#2490)
+
+### v3.4.1
+
+### v3.4.0
+
+### v3.4.0-alpha.5
+
+- feat(wms): Support for layer dimension metadata (#2475)
+- docs(slpk): TSDoc comments (#2460)
+- chore(tiles): Another round of type improvements (#2462)
+- Compute memory usage for GLTF tiles (#2458)
+- fix(wkb): TypeError: Cannot use 'in' operator to search for 'wkb' in undefined (#2463)
+- chore(tiles): Improved TypeScript types (#2461)
+- Tiles3DLoader: pass query parameters used on tileset request onto tile requests (#2252)
+- docs: tilesetUrl change (#2408)
+- docs(tile-converter): features compatibility (#2454)
+- Fix handling of query parameters in tile url (#2456)
+- docs(whats-new): tile-converter updates (#2455)
+- chore(slpk): implementation of slpk parser (#2409)
+- fix(wms): fix type exports (#2452)
+
+### v3.4.0-alpha.4
+
+- chore: Remove deck.gl test dependency (#2451)
+- fix(tile-converter): Remove luma.gl dependency (#2450)
+- feat(wms): coordinate flipping for WMS 1.3.0 (#2442)
+- fix(examples): wms control panel height (#2443)
+- feat(website): add hero example (#2441)
+- feat(wms): Replace EPSG:4326 with CRS:84 in WMS 1.3.0 (#2439)
+- feat(tile-converter): support TRIANGLE-STRIP (#2428)
+
+### v3.4.0-alpha.3
+
+- feat(wms): More closely follow spec, extract more capabilities (#2437)
+- fix(website): examples pictures (#2435)
+- fix: yarn dependency issues (#2436)
+- docs: whats-new remove subheaders from old releases
+- Update whats-new.mdx
+- Update whats-new.mdx
+- feat(wms): WMSCapabilities now includes `version` and `abstract` fields (#2434)
+- fix(website): i3s debug stats issue (#2433)
+- fix(wms-example): height of side panel (#2432)
+- fix(docs): developing on a new ubuntu install (#2430)
+- fix(website): minor style issues (#2431)
+- fix(website examples): stats widget issue (#2429)
+- fix(docs): dead links (#2424)
+- feat(website): add showcase (#2427)
+- fix(tile-converter): tile-converter dependencies changed and tests enabled (#2422)
+- update monaco deps in example and website (#2421)
+- chore(parquet): Use BSONLoader (#2416)
+- fix(tile-converter): Dockerfile (#2407)
+- fix docusaurus footer links typo (#2419)
+- Fix yarn.lock (#2418)
+- feat(bson): New BSONLoader module (#2415)
+- feat(wms): Extract more data from capabilitiies (#2417)
+- (geoparquet-example) fix(docs): core readme (#2414)
+- fix(docs): Specification, API Reference and Loader Catalog links (#2413)
+- fix(website-examples): height of the images (#2412)
+- Fixes for docs, including partial fix for arcgis example (#2410)
+- feat(website): Add local search (#2406)
+- docs: 3.4 release notes and WMS (#2404)
+- feat(website): Add redirects to unbreak pre-docusaurus links (#2405)
+- feat(wms): Use WMS 1.3.0 as default (#2400)
+- (feat)tiles: add boundingBox to Tile3D class (#2401)
+- chore(deps): bump http-cache-semantics from 4.1.0 to 4.1.1 in /website (#2403)
+- docs: Docusaurus deploy, remove gatsby folder (#2402)
+- chore: fix vite deps + add missing types to loader-utils/src/types.ts (#2396)
+- feat(wms): WMS 1.3.0 preparations, WMS example upgrade (#2399)
+- feat(pcd): support intensity and label (#2398)
+- feat(ply): Support arbitrary columns (intensity, confidence etc). (#2397)
+- feat(docs): Most examples now running on docusaurus website (#2394)
+- feat(docs): Add examples to docusaurus website (#2393)
+
+### v3.4.0-alpha.2
+
+- feat(3d-tiles): support s2 bounding volume (#2376)
+- feat(parquet): Extract geoparquet metadata (#2391)
+- fix(website): Working docusaurus docs (#2392)
+- feat(parquet): columnar loading (#2390)
+- fix(tile-converter): install dependencies crash (#2384)
+- fix(tile-converter): node 18 compatibility (#2385)
+- feat(wms): Pass through authorization load options (#2388)
+- docs(i3s): Update i3s-loader.md (#2386)
+- feat(wms): Support specifying WMS protocol version. (#2389)
+- chore(wms): Code reorganization (#2387)
+- chore: Bump to probe.gl@4.0.1 (#2371)
+- chore(deps): bump webpack from 5.75.0 to 5.76.1 in /website (#2383)
+- chore(deps): bump @sideway/formula in /website-gatsby (#2378)
+- chore: Add docusaurus website boilerplate (#2377)
+- chore(loader-utils): Improve LoaderOption typings (#2365)
+- fix(website): I3S as hero example (#2370)
+- feat(xml): Improved HTMLLoader (#2375)
+- feat(images): initial AVIF support (#2369)
+- feature(wms): Add CSWService class (OGC Catalog Service for the Web) (#2374)
+- chore: Update example dependencies to 3.3.1 (#2367)
+- chore: Cleanup load options in tests (#2366)
+- fix(loader-utils): Fix incorrect browser field for 'utils' (#2363) (#2364)
+- chore: update CHANGELOG
+
+## v3.3
+
+### v3.3.0
+
+- feat(examples): Add URL loading to glTF example
+- fix(website): Disable glTF example due to gatsby typescript issues (#2361)
+- chore(tiles): Code cleanup (#2358)
+
+### v3.3.0-alpha.14
+
+- chore(wms): Streamline ImageService APIs (#2357)
+- feat(wms): ArcGIS data sources (#2340)
+- chore(tile-converter): add Docker guide (#2355)
+- example(wms): Fixes to ImageryLayer (#2356)
+- chore(polyfills): Split Node fetch polyfill into request and file versions (#2354)
+- chore(parquet): Clean up parquet code base (#2349)
+- chore: Upgrade github actions to v3 (#2353)
+- fix(wms): Unbundle LERCLoader to unblock esbuild applications (#2351)
+- feat(loader-utils): Add ReadableFile, WritableFile (#2350)
+- chore(examples): update 3d-tiles examples (#2348)
+- control panel styling; misc. auto formatting app (#2347)
+
+### v3.3.0-alpha.13
+
+- feat(wms): AdHocImageSource - initial URL template support (#2346)
+- website: bump luma & fix I3S Debug (#2343)
+- feat(wms): LERCLoader (#2342)
+- fix(tile-converter): handle joinImages errors (#2345)
+- feat(wms): ImageSource class, WMS doc cleanup (#2344)
+- docs: fix formatting (#2341)
+- chore(wms): Add more services to WMS example (#2337)
+- chore(deps): bump http-cache-semantics in /test/apps/typescript-test (#2339)
+- fix(tile-converter): Mark join-images as --external to avoid bundling (#2338)
+- Update whats-new.md
+- docs: update release notes (#2336)
+- example: Working WMS website example (#2332)
+- docs(tile-converter): update docs for new options (#2335)
+
+### v3.3.0-alpha.12
+
+- chore(parse-basis): add level size field (#2334)
+
+### v3.3.0-alpha.11
+
+- Added link to showcases prod (#2330)
+- examples: Bundle examples with vite (#2331)
+- fix(tile-converter): memory leak (#2329)
+- chore(deps): bump ua-parser-js from 0.7.23 to 0.7.33 in /website (#2322)
+- examples(wms): Add minimal image and tile layer visualizations (#2323)
+- feat(wms): WMSService class (#2327)
+- fix(examples): 3d-tiles CesiumION URL (#2326)
+- feat(wms): WMSErrorLoader plus fixes (#2324)
+- feat(wms): Minor fixes. Improve WFS, WMTS and GML docs. (#2321)
+- Update wms.md
+- Update README.md
+- feat(ogc): Add initial OGC support (WMS, WFS, WMTS and GML) (#2314)
+- chore: enable tests (#2313)
+
+### v3.3.0-alpha.10
+
+- feat(tile-converter): i3s - merge materials (#2311)
+
+### v3.3.0-alpha.9
+
+- feat(wms): Loaders for additional WMS response types. (#2312)
+- chore(i3sLoader): Handling unsupported point cloud layer (#2310)
+- fix(i3s): parse not compressed attributes (#2308)
+- feat(tile-converter): save 3DNodeIndexDocument and nodepage (#2307)
+- feat(draco): Upgrade to v1.5.5 (#2296)
+- fix(tile-converter): instant writing in queue (#2306)
+- chore(i3s): add types for arcgis slides (#2299)
+- fix(i3s-converter): fix default arrays in shared-resources.ts (#2298)
+
+### v3.3.0-alpha.8
+
+- feat(tiles): detect content formats (#2288)
+- chore: Replace probe.gl with @probe.gl (#2297)
+- chore: Run coveralls on Node 16 (#2295)
+- fix(json): Syntax fix in JSONLoader docs (#2270)
+- fix(core): Update type for registerLoaders to accept a single Loader (#2261)
+- feat(wms): New WMS loader module (#2292)
+- chore(deps): bump @xmldom/xmldom from 0.7.6 to 0.7.7 (#2287)
+- chore(deps): bump loader-utils from 1.4.1 to 1.4.2 in /website (#2290)
+- chore(mvt): convert GeoJSONTiler to TypeScript (#2294)
+- feat(mvt): automatic tile generation from GeoJSON (geojson-vt fork). (#2293)
+- fix(tile-converter): lint error (#2289)
+- feat(xml): New XML loader module (#2291)
+
+### v3.3.0-alpha.7
+
+- fix(tile-converter): always calculate refinement percentage (#2286)
+- chore(deps): bump socket.io-parser from 3.3.2 to 3.3.3 in /website (#2285)
+- chore(deps): bump loader-utils from 1.4.0 to 1.4.1 in /website (#2284)
+- fix(Shapefile): Ignore TS7053 in parseRow function (#2264)
+- fix(tile-converter): i3s - fix fullExtent calculation (#2281)
+- fix(tile-converter): i3s - handle file path with "\" (#2283)
+- Stat type changed to default 'count' (#2262)
+
+### v3.3.0-alpha.6
+
+- chore(arcgis-webscene-loader): handle usupported layers (#2273)
+- chore: typescript 4.8.4 (#2275)
+- NPY: Add check that buffer is long enough (#2271)
+- deck.gl compatible Viewport type (#2259)
+- fix(tiles): Viewport type (#2258)
+
+### v3.3.0-alpha.5
+
+- fix(tile-converter): 3DTiles - generage batchIds (#2257)
+- chore(i3s): export more types (#2255)
+
+### v3.3.0-alpha.4
+
+- feat(i3s): colorize by attribute (#2254)
+- fix(gltf): add diffuseTex support to v1.0 (#2250)
+- fix(tile-converter): comment out transform attributes worker (#2253)
+- fix: tests (#2251)
+- chore(tile-conveter): i3s - geometry conversion tests (#2249)
+- feat(tile-converter): parallel siblings conversion (#2246)
+- fix(website): revert breaking commit (#2248)
+- chore(i3s): add statistic types (#2247)
+- fix(3d-tiles): add options to normalizeTileHeaders (#2241)
+- fix(tile-converter): types (#2242)
+- fix(tile-converter): install deps test (#2243)
+- fix(polyfills): jpeg parser returns Buffer (#2244)
+- fix(implicit-tiling): handle child tiles (#2240)
+- feat(tile-converter): enable loader workers (#2234)
+
+### v3.3.0-alpha.3
+
+- feat(i3s): content loader worker for Node.js (#2237)
+- chore(tiles): fix lint warning (#2235)
+- fix(parse-i3s-tile-content): move initial value inside function (#2230)
+
+### v3.3.0-alpha.2
+
+- fix(worker-utils): check node worker properly (#2232)
+- chore(i3s): fix naming (#2222)
+- feat(tile-converter): add EXT_feature_metadata initial properties support (#2224)
+- feat(draco): loader worker for NodeJS (#2228)
+- feat(textures): basis loader worker for NodeJS (#2229)
+- fix(video) ReferenceError: navigator is not defined (#2227)
+- feat(gltf): add initial "EXT_feature_metadata" extension support (#2221)
+- docs(pcd): fix pcd-loader example `PCDloader` spelling (#2226)
+- [tiles] Fix culling volume calculation from viewport (#2223)
+- fix(draco-builder): handle object metadata properly (#2209)
+- pass i3s loader only required options (#2188)
+- fix(tiles): i3s traverser for multiple viewports (#2213)
+- fix(tile-converter): memory overflow (#2217)
+- chore(polyfills): add export for \_fetchNode (#2195)
+- chore(deps): bump devcert from 1.1.3 to 1.2.2 in /website (#2220)
+- chore(deps): bump moment from 2.29.2 to 2.29.4 in /website (#2219)
+
+### v3.3.0-alpha.1
+
+- fix(3d-tiles): prevent crash when cartographic center is undefined (#2212)
+- fix(3d-tiles): add support for absolute content-uris (#2211)
+- chore(deps): bump gatsby-plugin-mdx from 2.14.0 to 2.14.1 in /website (#2192)
+- chore(deps): bump terser from 4.8.0 to 4.8.1 (#2214)
+- fix(tile-converter): remove batchIds extensions warning (#2215)
+- chore(tiles): distanceToCamera & screenSpaceError getters (#2190)
+- feat(tile-converter): add EXT_feature_metadata extension support (#2208)
+- Fix type imports in math module (#2204)
+- fix(video): window undefined (#2198)
+- chore: peer dependency major version only (#2166)
+- chore(deps-dev): bump sharp from 0.27.1 to 0.30.5 in /website (#2189)
+- chore(deps): bump eventsource from 1.1.0 to 1.1.1 (#2187)
+- feat(converter-cli): support equal sign in the converter options (#2171)
+- fix(i3s): textures - no headers in Request (#2183)
+- fix(tile-converter): worker receives corrupted buffer (#2185)
+- fix(tiles): i3s tile register (#2181)
+- fix(schema): failing imports from apache-arrow (#2179)
+- feat(gltf): KHR_texture_transform (#2175)
+- fix(worker-utils): Vite build(#2178)
+- fix(ci): remove node12 from workflows (#2173)
+
+## v3.2 Prerelease
+
+### v3.2.0-alpha.4
+
+- feat(i3s-stats): add tiles total metric to i3s (#2118)
+- feat(webscene): ArcGIS WebScene loader (#2158)
+- chore(tile-converter): improve tile converter error message (#2156)
+- fix(tiles): isLoaded criteria (#2167)
+- chore(tile-converter): full extent appears in json file (#2165)
+
+### v3.2.0-alpha.3
+
+- WASM-based parquet (#2103)
+- chore(statistics): add vertex count statistics (#2163)
+- fix(parse-i3s-content): calculate content length properly (#2162)
+- chore(tile-converter): cli refactoring (#2160)
+- fix(tile-converter): import polyfills (#2159)
+- chore(tile-converter): refactoring (#2157)
+- Append Response to context when parsing (#2128)
+- fix(tile-converter): node transformation order (#2153)
+- feature(tile-converter): ktx2 writer worker (#2154)
+- fix(gltf): v1 texture normalization (#2155)
+- chore(deps): bump async from 2.6.3 to 2.6.4 (#2151)
+
+## v3.2.0-alpha.2
+
+- fix(website): broken examples (#2132)
+- fix(tile-converter): extent calculation (#2148)
+- fix(tile-converter): async root node loading (#2149)
+- fix(gltf-attributes): node mesh issue (#2147)
+- docs(gltf): EXT_meshopt_compression (#2145)
+- feat(i3s): async root node loading (#2138)
+- feat(tile-converter): writing queue (#2133)
+- chore(deps): bump moment from 2.29.1 to 2.29.2 in /website (#2143)
+- feat(showcase): add new page for website (#2130)
+- feat(tile-converter): add 3d-tiles attributes worker (#2146)
+- feat(tiles): execute traversal optimization (#2139)
+- fix(tile-converter): fetch data from server on a specific port (#2135)
+- fix(gltf): meshopt compression extension (#2140)
+- chore(deps): bump minimist from 1.2.5 to 1.2.6 in /test/apps/typescript-test (#2141)
+- chore(deps): bump minimist from 1.2.5 to 1.2.6 (#2142)
+- feat(tile-converter): add i3s attributes worker (#2136)
+- chore: refinement-tile-converter-documentation (#2134)
+- feat(tile-converter): draco writer worker (#2107)
+- feat(core): getLoaderOptions (#2123)
+- fix some postProcessGLTF and glTF Extensions urls (#2121)
+- fix: error message truncation in checkResponse (#2119)
+- feat(textures): worker for ktx2 basis writer (#2115)
+- chore(textures): update what's new in basis_universal (#2112)
+- chore(tile-converter): ts and refactoring (#2116)
+- chore: sync loaders version (#2117)
+- chore(tile-converter): typescript (#2113)
+- chore(basis): update basis libs (#2111)
+- WKB encoder follow up (#2022)
+- feat(draco): writer worker (#2106)
+- Update loaders to accept shape option (#2102)
+
+## v3.2.0-alpha-1
+
+- Pin sql.js 1.5.0 in GeoPackageLoader (#2101)
+- Add Geopackage to geospatial example (#2100)
+- Return tables from geopackage loader (#2098)
+- chore: Remove spurious JS files (#2032)
+- chore: Update master to 3.2.0 alpha track (#2099)
+- feat(json): Support more streaming JSON formats (WIP) (#2016)
+- fix(examples): vancouver data is geojson not geopackage (#2097)
+- feat(draco): writer worker (#2090)
+- fix(examples): 3d-tiles-with-three Tileset3D import (#2094)
+- perf(tiles): traversal debounce, i3s-lod optimization (#2086)
+- chore(compression): unblock tests (#2088)
+- feat(arrow): Add arrow MIME types (#2082)
+- fix(terrain): swap winding order of skirts to match winding order of terrain (#2085)
+- test(crypto): nodejs worker (#2079)
+- fix(crypto): switch tests on (#2077)
+- chore(worker-utils): Additional node worker prep (#2076)
+- chore(worker-utils): Initial prep for node workers (#2075)
+- fix(tile-converter): simultaneous file writing (#2074)
+- feat(core): Add debug logging for selectLoader (#2069)
+- fix(parse-i3s-tile-content): I3S conversion issue without draco (#2064)
+- Replased uber links (#2056)
+- chore(tile-converter): update docs (#2055)
+- fix(terrain): skirting misses last edge (#2045)
+- fix(tiles): init zoom calculation (#2046)
+- fix(tile-converter,i3s-app): default value of pbr + app picking (#2044)
+- fix(examples): 3d-tiles Tileset Demos URLs (#2051)
+- Fix MVTLoader bug when WGS84 is used (#2052)
+- fix(tile-converter): duplicated texture output (#2048)
+- chore(i3s-loader): add fetch option (#2050)
+- TerrainLoader support for more image formats (#2040)
+- chore(tile-converter): add ts to node-debug file (#2038)
+- chore(tile-converter): add ts to geometry-attributes file (#2037)
+- chore(i3s-converter): add ts for helper function (#2036)
+
+## v4.0 Prerelease
+
+## v4.0.0-alpha.5
+
+- feat(tile-converter): add transformation matrix generation for node (#2034)
+- feat(examples): i3s - terrain elevation support (#2020)
+- feat(obj): MTLLoader (#2033)
+- docs(wkt): Add some format notes (#2029)
+- fix: Alternate approach to bundler issues (#2026)
+- fix: Added `__VERSION__` definitions to build-worker scripts (#2030)
+- Remove node-stream-polyfill (#2023)
+- feat(wkt): WKB writer (#2017)
+- Fix(docs): Update 3.1 release date in the whats new page (#2015)
+- Update geojson-to-binary docs (#2013)
+- fix: Rename bundle.js to dist.min.js (#2009)
+- Unify geojsonToBinary & MVTLoader (#2003)
+- rollup fixes (#2011)
+- chore: bump probe.gl@3.5.0 (#2010)
+- chore: Fix bundler examples versions (#2006)
+- fix(textures): Avoid using \_\_dirname in texturee-encoder (#2005)
+- feat(3dtiles-implicit-tiling): add region bounding volume calculation for child tiles (#2002)
+- chore(examples): Update get-started-rollup example dependencies. (#2001)
+- feat(textures): schema based typings (#1983)
+- feat(pcd): pcd loader support for compressed binary data (#1995)
+- fix(docs): Fix markdown tables (#1999)
+- fix(3d-tiles): max-statements warning (#1996)
+- fix(textures): crunch loader (#1997)
+- fix(tiles): culling relative to viewport center (#1991)
+- feat(tile-converter): Keep KTX2 texture as it is while I3S -> 3DTiles conversion (#1992)
+- fix(i3s-app, i3s-debug-app): move terrain layer data to global scope (#1985)
+- fix(examples): i3s - move terrain data to global scope (#1985)
+- chore(zip): Remove dependency on @loaders.gl/core (#1989)
+- chore(gltf): Remove dependency on @loaders.gl/core (#1988)
+- chore(arrow): Remove dependency on @loaders.gl/core (#1987)
+- chore(ply): Remove dependency on @loaders.gl/core (#1986)
+- chore(tile converter): refactoring (#1981)
+- fix(tile-converter): change converter options (#1975)
+- chore(tile-converter): Enable typescript check of tile-converter test folder (#1980)
+- chore(tile-converter): Convert most remaining files to .ts (#1977)
+- chore(gltf): Enable typescript checking of gltf/test folder (#1978)
+- chore(2d-tiles): Enable typescript check of 3d-tiles test folder (#1979)
+- chore(deps): bump url-parse from 1.4.7 to 1.5.3 in /website (#1972)
+- fix(tile-converter): add build script for docker image of tile-converter (#1974)
+- fix(tile-converter): json-map-transform templates mutation (#1976)
+- feat(tile-converter): add '--generate-bounding-volume' flag (#1973)
+- doc,test(3d-tiles): glTF content extension (#1948)
+- feat(tile-converter): add "--generate-texture" flag (#1966)
+- chore(deps): bump path-parse from 1.0.6 to 1.0.7 in /website (#1971)
+- chore(deps): bump ws from 5.2.2 to 5.2.3 in /website (#1962)
+- chore(deps): bump prismjs from 1.23.0 to 1.25.0 in /website (#1961)
+- chore(deps): bump axios from 0.21.1 to 0.21.4 in /website (#1960)
+- chore(deps): bump object-path from 0.11.5 to 0.11.8 in /website (#1959)
+- chore(deps): bump tmpl from 1.0.4 to 1.0.5 in /website (#1958)
+- fix(examples): textures GL_EXTENSIONS_CONSTANTS (#1970)
+- fix(textures, worker-utils): deck.gl compatibility (#1956)
+- fix(gltf): parse interleaved buffer (#1968)
+- fix(i3s-app, i3s-debug-app): set max zoom property for terrain layer (#1965)
+- feat(i3s-debug-app): add terrain layer (#1964)
+- chore(i3s): types (#1945)
+- fix(examples): i3s-app - building explorer visibility (#1957)
+- feat(i3s-app): add terrain layer (#1955)
+- Detect when 64 bit precision is required for a numericProp in MVTLoader (#1952)
+- fix(examples): i3s debug - coordinate system related issues (#1954)
+- feat(3dtiles-implicit-tiling): add more tests (#1950)
+- feat(3dtiles-implicit-tiling): parse implicit tiling structure (#1938)
+- Allow top-level workerUrl for CompressionWorker (#1949)
+- chore: types refactoring (#1947)
+- feat(tile-conveter): 3dtiles->i3s converter glTF content (#1946)
+- fix(i3s): repeating textures (uv0>1 || uv0<0) (#1935)
+- fix(tile-converter): enable converter after typing changes (#1941)
+- chore(parse-i3s-tile-content): TS, refactor. (#1926)
+- chore(shapefile): add benchmarks (#898)
+- fix(polyfills): Slow performance in response.arrayBuffer() (#1944)
+- feat(flatgeobuf): Binary parsing (#1942)
+- examples: Add vite example (#1943)
+- chore: Run CI on Node 16 (#1940)
+- fix: temporarily revert to ocular-build (#1939)
+- feat(gis): Update gis category docs (#1431)
+- feat(json): rebuild json path (#877)
+- fix(tile-converter): black models issue (#1936)
+- feat(3d-tiles): content glTF extension (#1933)
+- feat(3d-tiles_implicit_tiling): add subtree loader (#1924)
+- feat: enable tsbuild (#1930)
+- chore: Move all libs to esbuild (#1877)
+- fix(website): natsby-theme-ocular@1.2.5 ignores .tsconfig.json (#1929)
+- build(deps): bump xmldom 0.5.0 to @xmldom/xmldom 0.7.5 (#1923)
+- docs(parquet): Parquet loader docs (#1836)
+- chore(docs): Improve whats new (#1928)
+- docs: mention ktx2-basis support (#1925)
+- docs(textures): 3.1 updates (#1922)
+- feat: Proper typescript monorepo references (#1920)
+- chrore(test-apps): remove husky (#1919)
+- chore(parse-i3s-tile-content): refactor constants (#1911)
+- chore(deps): bump jszip from 3.6.0 to 3.7.0 (#1918)
+- feat: Generate d.ts typings (#1907)
+- chore: Add typescript tests (#1908)
+- chore(tile-converter): use Tiles3DLoader for local data (#1913)
+- fix(tile-converter): i3s->3dtiles - model matrix transformation (#1902)
+- fix(website/tile-converter): parsing textures (#1901)
+- chore(examples): i3s - cleanup (#1904)
+- feat(examples): i3s - fork deck components (#1898)
+- fix(3dtiles-converter): fix texture parsing for I3S-> 3DTiles conversion (#1897)
+
 ## v4.0.0-alpha.4
 
 - fix(i3s): coordinate system option - backward compatibility (#1900)
@@ -861,23 +1617,23 @@
 
 #### v2.3.0-alpha.9
 
-    CI: fix cache (#891)
-    CI: add cache to .travis.yml (#890)
-    bump ocular-dev-tools: no generator transpile in es6 dist (#889)
-    pcd: color and normal attribute fixes (#888)
-    crypto: fix transform iterators (#887)
-    pcd: Fix color = 0 after loading (#886)
-    core: `parseInBatches` support for `options.transforms` (#883)
+- CI: fix cache (#891)
+- CI: add cache to .travis.yml (#890)
+- bump ocular-dev-tools: no generator transpile in es6 dist (#889)
+- pcd: color and normal attribute fixes (#888)
+- crypto: fix transform iterators (#887)
+- pcd: Fix color = 0 after loading (#886)
+- core: `parseInBatches` support for `options.transforms` (#883)
 
 #### v2.3.0-alpha.8
 
-    crypto: Add crc32c transform (#882)
-    Remove duplicate shapefile worker loader files (#881)
-    flatgeobuf: New module for flatgeobuf format (#880)
-    Docs: contributing.md cleanup (#878)
-    Use template contributing.md (#753)
-    crypto: fixes and cleanup (#876)
-    Fix name of indices returned from SHPLoader (#875)
+- crypto: Add crc32c transform (#882)
+- Remove duplicate shapefile worker loader files (#881)
+- flatgeobuf: New module for flatgeobuf format (#880)
+- Docs: contributing.md cleanup (#878)
+- Use template contributing.md (#753)
+- crypto: fixes and cleanup (#876)
+- Fix name of indices returned from SHPLoader (#875)
 
 #### v2.3.0-alpha.7
 

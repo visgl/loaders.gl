@@ -4,8 +4,14 @@
 // Attribute compression and decompression functions.
 
 import {Vector2, Vector3, clamp, _MathUtils} from '@math.gl/core';
-import {Vector4} from '../types';
 import {assert} from '../utils/assert';
+
+type Vector4 = {
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+};
 
 const RIGHT_SHIFT = 1.0 / 256.0;
 const LEFT_SHIFT = 256.0;

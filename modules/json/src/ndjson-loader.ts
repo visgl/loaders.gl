@@ -1,40 +1,33 @@
-import type {Batch} from '@loaders.gl/schema';
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseNDJSONSync from './lib/parse-ndjson';
-import parseNDJSONInBatches from './lib/parse-ndjson-in-batches';
+// loaders.gl, MIT license
+
+import {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import {ObjectRowTable, ArrayRowTable, TableBatch} from '@loaders.gl/schema';
+import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
+import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export const NDJSONLoader = {
+export const NDJSONLoader: LoaderWithParser<
+  ObjectRowTable | ArrayRowTable,
+  TableBatch,
+  LoaderOptions
+> = {
   name: 'NDJSON',
   id: 'ndjson',
   module: 'json',
   version: VERSION,
-  extensions: ['ndjson'],
-  mimeTypes: ['application/x-ndjson'],
+  extensions: ['ndjson', 'jsonl'],
+  mimeTypes: [
+    'application/x-ndjson',
+    'application/jsonlines', // https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html#cm-batch
+    'application/json-seq'
+  ],
   category: 'table',
   text: true,
-  parse,
-  parseTextSync,
-  parseInBatches,
+  parse: async (arrayBuffer: ArrayBuffer) => parseNDJSONSync(new TextDecoder().decode(arrayBuffer)),
+  parseTextSync: parseNDJSONSync,
+  parseInBatches: parseNDJSONInBatches,
   options: {}
 };
-
-async function parse(arrayBuffer: ArrayBuffer) {
-  return parseTextSync(new TextDecoder().decode(arrayBuffer));
-}
-
-function parseTextSync(text: string) {
-  return parseNDJSONSync(text);
-}
-
-function parseInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: LoaderOptions
-): AsyncIterable<Batch> {
-  return parseNDJSONInBatches(asyncIterator, options);
-}
-
-export const _typecheckNDJSONLoader: LoaderWithParser = NDJSONLoader;

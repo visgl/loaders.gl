@@ -1,12 +1,13 @@
 // TODO - this import defeats the sophisticated typescript checking in ArrowJS
-import {RecordBatchReader} from 'apache-arrow';
+import type {ArrowTableBatch} from './arrow-table';
+import {RecordBatchReader, Table as ApacheArrowTable} from 'apache-arrow';
 // import {isIterable} from '@loaders.gl/core';
 
 /**
  */
 export function parseArrowInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-): AsyncIterable<any> {
+): AsyncIterable<ArrowTableBatch> {
   // Creates the appropriate RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
 
@@ -25,25 +26,32 @@ export function parseArrowInBatches(
   }
   */
 
-  async function* makeArrowAsyncIterator() {
+  async function* makeArrowAsyncIterator(): AsyncIterator<ArrowTableBatch> {
+    // @ts-ignore
     const readers = RecordBatchReader.readAll(asyncIterator);
     for await (const reader of readers) {
-      for await (const batch of reader) {
-        yield processBatch(batch);
+      for await (const recordBatch of reader) {
+        const arrowTabledBatch: ArrowTableBatch = {
+          shape: 'arrow-table',
+          batchType: 'data',
+          data: new ApacheArrowTable([recordBatch]),
+          length: recordBatch.data.length
+        };
+        // processBatch(recordBatch);
+        yield arrowTabledBatch;
       }
       break; // only processing one stream of batches
     }
   }
-  return makeArrowAsyncIterator();
+
+  return makeArrowAsyncIterator() as any; // as AsyncIterator<ArrowTableBatch>;
 }
 
-function processBatch(batch) {
-  const values = {
-    metadata: batch.schema.metadata,
-    length: batch.length
-  };
-  batch.schema.fields.forEach(({name}, index) => {
-    values[name] = batch.getChildAt(index).toArray();
-  });
-  return values;
-}
+// function processBatch(batch: RecordBatch): ArrowTableBatch {
+//   const values = {};
+//   batch.schema.fields.forEach(({name}, index) => {
+//     values[name] = batch.getChildAt(index)?.toArray();
+//   });
+//   return {
+//   };
+// }

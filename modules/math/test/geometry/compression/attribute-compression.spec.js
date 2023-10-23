@@ -88,28 +88,28 @@ it('throws oct encode result undefined', () => {
 it('throws oct encode non unit vector', () => {
   const nonUnitLengthVector = new Vector3(2.0, 0.0, 0.0);
   const result = new Vector2();
-  expect(() => octEncode(nonUnitLengthVector, result)).toThrow();
+  expect(() => octEncode(nonUnitLengthVector, result)).toThrow('');
 });
 
 it('throws oct encode zero length vector', () => {
   const result = new Vector2();
-  expect(() => octEncode(Vector3.ZERO, result)).toThrow();
+  expect(() => octEncode(Vector3.ZERO, result)).toThrow('');
 });
 
 it('throws oct decode result undefined', () => {
   const result = undefined;
   // @ts-ignore
-  expect(() => octDecode(0, 0, result)).toThrow();
+  expect(() => octDecode(0, 0, result)).toThrow('');
 });
 
 it('throws oct decode x out of bounds', () => {
   const result = new Vector3();
-  expect(() => octDecode(256, 0, result)).toThrow();
+  expect(() => octDecode(256, 0, result)).toThrow('');
 });
 
 it('throws oct decode y out of bounds', () => {
   const result = new Vector3();
-  expect(() => octDecode(0, 256, result)).toThrow();
+  expect(() => octDecode(0, 256, result)).toThrow('');
 });
 
 it('throws 4-component oct decode out of bounds', () => {
@@ -756,11 +756,11 @@ it('throws when zigZagDeltaDecode has an undefined vBuffer', () => {
 });
 
 it('throws when zigZagDeltaDecode has unequal uBuffer and vBuffer length', () => {
-  expect(() => zigZagDeltaDecode(new Uint16Array(10), new Uint16Array(11))).toThrow();
+  expect(() => zigZagDeltaDecode(new Uint16Array(10), new Uint16Array(11))).toThrow('');
 });
 
 it('throws when zigZagDeltaDecode has unequal uBuffer, vBuffer, and heightBuffer length', () => {
   expect(() =>
     zigZagDeltaDecode(new Uint16Array(10), new Uint16Array(10), new Uint16Array(11))
-  ).toThrow();
+  ).toThrow('');
 });

@@ -59,3 +59,31 @@ function isTransferable(object: unknown) {
   }
   return false;
 }
+
+/**
+ * Recursively drop non serializable values like functions and regexps.
+ * @param object
+ */
+export function getTransferListForWriter(object: object | null): object {
+  if (object === null) {
+    return {};
+  }
+  const clone = Object.assign({}, object);
+
+  Object.keys(clone).forEach((key) => {
+    // Typed Arrays and Arrays are passed with no change
+    if (
+      typeof object[key] === 'object' &&
+      !ArrayBuffer.isView(object[key]) &&
+      !(object[key] instanceof Array)
+    ) {
+      clone[key] = getTransferListForWriter(object[key]);
+    } else if (typeof clone[key] === 'function' || clone[key] instanceof RegExp) {
+      clone[key] = {};
+    } else {
+      clone[key] = object[key];
+    }
+  });
+
+  return clone;
+}

@@ -1,0 +1,29 @@
+{
+  "name": "bundle-with-rollup",
+  "version": "0.0.0",
+  "description": "Minimal working example of using loaders.gl with rollup.",
+  "private": true,
+  "license": "MIT",
+  "contributors": [
+    "@nshen"
+  ],
+  "scripts": {
+    "start": "yarn build; serve",
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "serve": "serve public"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/obj": "4.0.0-beta.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-alias": "^4.0.3",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "rollup": "^3.17.0",
+    "serve": "^14.2.0",
+    "typescript": "^5.0.4"
+  }
+}

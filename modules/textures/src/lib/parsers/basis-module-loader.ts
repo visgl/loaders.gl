@@ -1,12 +1,15 @@
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
-
-// @ts-nocheck
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
-const BASIS_CDN_ENCODER_WASM = `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm`;
-const BASIS_CDN_ENCODER_JS = `https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js`;
+export const BASIS_EXTERNAL_LIBRARIES = {
+  /** Basis transcoder, javascript wrapper part */
+  TRANSCODER: 'basis_transcoder.js',
+  /** Basis transcoder, compiled web assembly part */
+  TRANSCODER_WASM: 'basis_transcoder.wasm',
+  /** Basis encoder, javascript wrapper part */
+  ENCODER: 'basis_encoder.js',
+  /** Basis encoder, compiled web assembly part */
+  ENCODER_WASM: 'basis_encoder.wasm'
+};
 
 let loadBasisTranscoderPromise;
 
@@ -15,13 +18,13 @@ let loadBasisTranscoderPromise;
  * @param options
  * @returns {BasisFile} promise
  */
-export async function loadBasisTrascoderModule(options) {
+export async function loadBasisTranscoderModule(options) {
   const modules = options.modules || {};
   if (modules.basis) {
     return modules.basis;
   }
 
-  loadBasisTranscoderPromise = loadBasisTranscoderPromise || loadBasisTrascoder(options);
+  loadBasisTranscoderPromise = loadBasisTranscoderPromise || loadBasisTranscoder(options);
   return await loadBasisTranscoderPromise;
 }
 
@@ -30,19 +33,19 @@ export async function loadBasisTrascoderModule(options) {
  * @param options
  * @returns {BasisFile} promise
  */
-async function loadBasisTrascoder(options) {
+async function loadBasisTranscoder(options) {
   let BASIS = null;
   let wasmBinary = null;
 
   [BASIS, wasmBinary] = await Promise.all([
-    await loadLibrary('basis_transcoder.js', 'textures', options),
-    await loadLibrary('basis_transcoder.wasm', 'textures', options)
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.TRANSCODER, 'textures', options),
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.TRANSCODER_WASM, 'textures', options)
   ]);
 
   // Depends on how import happened...
   // @ts-ignore TS2339: Property does not exist on type
   BASIS = BASIS || globalThis.BASIS;
-  return await initializeBasisTrascoderModule(BASIS, wasmBinary);
+  return await initializeBasisTranscoderModule(BASIS, wasmBinary);
 }
 
 /**
@@ -51,7 +54,7 @@ async function loadBasisTrascoder(options) {
  * @param wasmBinary - wasm part of the module
  * @returns {BasisFile} promise
  */
-function initializeBasisTrascoderModule(BasisModule, wasmBinary) {
+function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
   const options: {wasmBinary?} = {};
 
   if (wasmBinary) {
@@ -95,8 +98,8 @@ async function loadBasisEncoder(options) {
   let wasmBinary = null;
 
   [BASIS_ENCODER, wasmBinary] = await Promise.all([
-    await loadLibrary(BASIS_CDN_ENCODER_JS, 'textures', options),
-    await loadLibrary(BASIS_CDN_ENCODER_WASM, 'textures', options)
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.ENCODER, 'textures', options),
+    await loadLibrary(BASIS_EXTERNAL_LIBRARIES.ENCODER_WASM, 'textures', options)
   ]);
 
   // Depends on how import happened...

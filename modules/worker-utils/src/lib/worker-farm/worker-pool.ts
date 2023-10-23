@@ -1,5 +1,5 @@
 import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
-import {isMobile} from '../env-utils/globals';
+import {isMobile, isBrowser} from '../env-utils/globals';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
 
@@ -52,6 +52,11 @@ export default class WorkerPool {
   private idleQueue: WorkerThread[] = [];
   private count = 0;
   private isDestroyed = false;
+
+  /** Checks if workers are supported on this platform */
+  static isSupported(): boolean {
+    return WorkerThread.isSupported();
+  }
 
   /**
    * @param processor - worker function
@@ -149,6 +154,9 @@ export default class WorkerPool {
       // Wait for the app to signal that the job is complete, then return worker to queue
       try {
         await job.result;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(`Worker exception: ${error}`);
       } finally {
         this.returnWorkerToQueue(workerThread);
       }
@@ -165,7 +173,15 @@ export default class WorkerPool {
    */
   returnWorkerToQueue(worker: WorkerThread) {
     const shouldDestroyWorker =
-      this.isDestroyed || !this.reuseWorkers || this.count > this._getMaxConcurrency();
+      // Workers on Node.js prevent the process from exiting.
+      // Until we figure out how to close them before exit, we always destroy them
+      !isBrowser ||
+      // If the pool is destroyed, there is no reason to keep the worker around
+      this.isDestroyed ||
+      // If the app has disabled worker reuse, any completed workers should be destroyed
+      !this.reuseWorkers ||
+      // If concurrency has been lowered, this worker might be surplus to requirements
+      this.count > this._getMaxConcurrency();
 
     if (shouldDestroyWorker) {
       worker.destroy();

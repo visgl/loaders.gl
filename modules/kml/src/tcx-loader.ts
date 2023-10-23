@@ -1,13 +1,22 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
+import type {
+  GeoJSONTable,
+  FeatureCollection,
+  ObjectRowTable,
+  BinaryFeatureCollection
+} from '@loaders.gl/schema';
 import {tcx} from '@tmcw/togeojson';
+import {DOMParser} from '@xmldom/xmldom';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type TCXLoaderOptions = LoaderOptions & {
-  tcx?: {};
+  tcx?: {
+    shape?: 'object-row-table' | 'geojson-table' | 'binary' | 'raw';
+  };
 };
 
 const TCX_HEADER = `\
@@ -17,7 +26,11 @@ const TCX_HEADER = `\
 /**
  * Loader for TCX (Training Center XML) - Garmin GPS track format
  */
-export const TCXLoader = {
+export const TCXLoader: LoaderWithParser<
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
+  never,
+  TCXLoaderOptions
+> = {
   name: 'TCX (Training Center XML)',
   id: 'tcx',
   module: 'kml',
@@ -26,35 +39,45 @@ export const TCXLoader = {
   mimeTypes: ['application/vnd.garmin.tcx+xml'],
   text: true,
   tests: [TCX_HEADER],
-  parse: async (arrayBuffer, options) =>
+  parse: async (arrayBuffer, options?: TCXLoaderOptions) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
     tcx: {},
-    gis: {format: 'geojson'}
+    gis: {}
   }
 };
 
-function parseTextSync(text: string, options: any = {}) {
+function parseTextSync(
+  text: string,
+  options?: TCXLoaderOptions
+): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = tcx(doc);
+  const geojson: FeatureCollection = tcx(doc);
 
-  switch (options?.tcx?.type) {
-    case 'object-row-table':
-      return geojson.features;
-    default:
-  }
+  // backwards compatibility
+  const shape = options?.tcx?.shape;
 
-  switch (options?.gis?.format) {
-    case 'geojson':
-      return geojson;
+  switch (shape) {
+    case 'object-row-table': {
+      const table: ObjectRowTable = {
+        shape: 'object-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
+    case 'geojson-table': {
+      const table: GeoJSONTable = {
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        features: geojson.features
+      };
+      return table;
+    }
     case 'binary':
       return geojsonToBinary(geojson.features);
-    case 'raw':
-      return doc;
+
     default:
-      throw new Error();
+      throw new Error(shape);
   }
 }
-
-export const _typecheckTCXLoader: LoaderWithParser = TCXLoader;

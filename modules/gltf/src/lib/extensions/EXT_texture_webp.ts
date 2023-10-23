@@ -2,11 +2,11 @@
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/EXT_TEXTURE_WEBP
 /* eslint-disable camelcase */
 
-import type {GLTF, GLTF_EXT_texture_webp} from '../types/gltf-types';
+import type {GLTF, GLTF_EXT_texture_webp} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
-import {_isImageFormatSupported} from '@loaders.gl/images';
-import GLTFScenegraph from '../api/gltf-scenegraph';
+import {isImageFormatSupported} from '@loaders.gl/images';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
 
 const EXT_TEXTURE_WEBP = 'EXT_texture_webp';
 
@@ -20,7 +20,7 @@ export const name = EXT_TEXTURE_WEBP;
 export function preprocess(gltfData: {json: GLTF}, options: GLTFLoaderOptions): void {
   const scenegraph = new GLTFScenegraph(gltfData);
 
-  if (!_isImageFormatSupported('image/webp')) {
+  if (!isImageFormatSupported('image/webp')) {
     if (scenegraph.getRequiredExtensions().includes(EXT_TEXTURE_WEBP)) {
       throw new Error(`gltf: Required extension ${EXT_TEXTURE_WEBP} not supported by browser`);
     }
@@ -35,6 +35,7 @@ export function preprocess(gltfData: {json: GLTF}, options: GLTFLoaderOptions): 
       EXT_TEXTURE_WEBP
     );
     if (extension) {
+      // TODO - if multiple texture extensions are present which one wins?
       texture.source = extension.source;
     }
     scenegraph.removeObjectExtension(texture, EXT_TEXTURE_WEBP);

@@ -9,7 +9,8 @@ export const IMAGES_DATA = [
       {format: 'GIF', src: 'shannon.gif'},
       {format: 'PNG', src: 'shannon.png'},
       {format: 'BMP', src: 'shannon.bmp'},
-      {format: 'WEBP', src: 'shannon.webp'}
+      {format: 'WEBP', src: 'shannon.webp'},
+      {format: 'AVIF', src: 'shannon.avif'}
     ]
   },
   {
@@ -42,7 +43,7 @@ export const IMAGES_DATA = [
     ]
   },
   {
-    formatName: 'DDS: S3 Texture Compression (WEBGL_compressed_texture_s3tc',
+    formatName: 'DDS: S3 Texture Compression (WEBGL_compressed_texture_s3tc)',
     description: 'S3 (aka DXTn, DXTC, or BCn).',
     availability: 'Common on desktop GPUs. DXT5 is usually the preferred version',
     link: 'https://en.wikipedia.org/wiki/S3_Texture_Compression',

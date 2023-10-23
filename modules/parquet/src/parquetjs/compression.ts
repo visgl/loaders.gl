@@ -8,20 +8,33 @@ import {
   GZipCompression,
   SnappyCompression,
   BrotliCompression,
-  LZOCompression,
+  // LZOCompression,
   LZ4Compression,
   ZstdCompression
 } from '@loaders.gl/compression';
 
 import {ParquetCompression} from './schema/declare';
-import {toArrayBuffer, toBuffer} from './utils/buffer-utils';
+
+/** We can't use loaders-util buffer handling since we are dependent on buffers even in the browser */
+function toBuffer(arrayBuffer: ArrayBuffer): Buffer {
+  return Buffer.from(arrayBuffer);
+}
+
+function toArrayBuffer(buffer: Buffer): ArrayBuffer {
+  // TODO - per docs we should just be able to call buffer.buffer, but there are issues
+  if (Buffer.isBuffer(buffer)) {
+    const typedArray = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.length);
+    return typedArray.slice().buffer;
+  }
+  return buffer;
+}
 
 // TODO switch to worker compression to avoid bundling...
 
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 // import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
-import lzo from 'lzo';
+// import lzo from 'lzo';
 // import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
@@ -33,12 +46,15 @@ const modules = {
   //     throw new Error('brotli compress');
   //   }
   // },
-  lz4js,
-  lzo
+  lz4js
+  // lzo
   // 'zstd-codec': ZstdCodec
 };
 
-// See https://github.com/apache/parquet-format/blob/master/Compression.md
+/**
+ * See https://github.com/apache/parquet-format/blob/master/Compression.md
+ */
+// @ts-expect-error
 export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression> = {
   UNCOMPRESSED: new NoCompression(),
   GZIP: new GZipCompression(),
@@ -47,7 +63,8 @@ export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression
   // TODO: Understand difference between LZ4 and LZ4_RAW
   LZ4: new LZ4Compression({modules}),
   LZ4_RAW: new LZ4Compression({modules}),
-  LZO: new LZOCompression({modules}),
+  //
+  // LZO: new LZOCompression({modules}),
   ZSTD: new ZstdCompression({modules})
 };
 

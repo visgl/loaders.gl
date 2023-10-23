@@ -1,7 +1,7 @@
 // CRC32
 import {Hash} from './hash';
 import CRC32 from './algorithms/crc32';
-import {toHex, hexToBase64} from './utils/digest-utils';
+import {encodeNumber} from './utils/digest-utils';
 
 /**
  * Calculates CRC32 Cryptographic Hash
@@ -23,28 +23,26 @@ export class CRC32Hash extends Hash {
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  async hash(input: ArrayBuffer): Promise<string> {
-    return this.hashSync(input);
+  async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
+    return this.hashSync(input, encoding);
   }
 
-  hashSync(input: ArrayBuffer): string {
+  hashSync(input: ArrayBuffer, encoding: 'hex' | 'base64'): string {
     this._hash.update(input);
-    const hashValue = this._hash.finalize();
-    const hex = toHex(hashValue);
-    const hash = hexToBase64(hex);
-    return hash;
+    const digest = this._hash.finalize();
+    return encodeNumber(digest, encoding);
   }
 
   async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     for await (const chunk of asyncIterator) {
       this._hash.update(chunk);
       yield chunk;
     }
-    const hashValue = this._hash.finalize();
-    const hex = toHex(hashValue);
-    const hash = hexToBase64(hex);
+    const digest = this._hash.finalize();
+    const hash = encodeNumber(digest, encoding);
     this.options.crypto?.onEnd?.({hash});
   }
 }

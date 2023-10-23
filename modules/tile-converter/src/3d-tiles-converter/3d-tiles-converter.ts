@@ -1,12 +1,16 @@
-import type {AttributeStorageInfo, FeatureAttribute, NodeReference} from '@loaders.gl/i3s';
-import type {Node3D} from '@loaders.gl/3d-tiles';
+import type {
+  AttributeStorageInfo,
+  FeatureAttribute,
+  NodeReference,
+  I3STilesetHeader
+} from '@loaders.gl/i3s';
+import type {Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
 
 import {join} from 'path';
 import process from 'process';
 import transform from 'json-map-transform';
-import {load} from '@loaders.gl/core';
+import {load, isBrowser} from '@loaders.gl/core';
 import {I3SLoader, I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
-import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
 import {Geoid} from '@math.gl/geoid';
 
 import {PGMLoader} from '../pgm-loader';
@@ -15,8 +19,13 @@ import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversio
 import {writeFile, removeDir} from '../lib/utils/file-utils';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
-import B3dmConverter from './helpers/b3dm-converter';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
+import {BROWSER_ERROR_MESSAGE} from '../constants';
+import B3dmConverter, {I3SAttributesData} from './helpers/b3dm-converter';
+import {I3STileHeader} from '@loaders.gl/i3s/src/types';
+import {loadI3SContent} from './helpers/load-i3s';
+import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
 
 const I3S = 'I3S';
 
@@ -29,8 +38,18 @@ export default class Tiles3DConverter {
   vertexCounter: number;
   conversionStartTime: [number, number];
   geoidHeightModel: Geoid | null;
-  sourceTileset: Tileset3D | null;
-  attributeStorageInfo: AttributeStorageInfo | null;
+  sourceTileset: I3STilesetHeader | null;
+  attributeStorageInfo?: AttributeStorageInfo[] | null;
+  workerSource: {[key: string]: string} = {};
+  loaderOptions: I3SLoaderOptions = {
+    _nodeWorkers: true,
+    reuseWorkers: true,
+    i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false},
+    // We need to load local fs workers because nodejs can't load workers from the Internet
+    'i3s-content': {
+      workerUrl: './modules/i3s/dist/i3s-content-worker-node.js'
+    }
+  };
 
   constructor() {
     this.options = {};
@@ -40,6 +59,7 @@ export default class Tiles3DConverter {
     this.geoidHeightModel = null;
     this.sourceTileset = null;
     this.attributeStorageInfo = null;
+    this.workerSource = {};
   }
 
   /**
@@ -55,9 +75,13 @@ export default class Tiles3DConverter {
     inputUrl: string;
     outputPath: string;
     tilesetName: string;
-    maxDepth: number;
+    maxDepth?: number;
     egmFilePath: string;
   }): Promise<any> {
+    if (isBrowser) {
+      console.log(BROWSER_ERROR_MESSAGE);
+      return BROWSER_ERROR_MESSAGE;
+    }
     const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath} = options;
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth};
@@ -66,18 +90,19 @@ export default class Tiles3DConverter {
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
     console.log('Loading egm file completed!'); // eslint-disable-line
 
-    const sourceTilesetJson = await load(inputUrl, I3SLoader, {});
-    this.sourceTileset = new Tileset3D(sourceTilesetJson, {
-      loadOptions: {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}}
-    });
+    this.sourceTileset = await load(inputUrl, I3SLoader, this.loaderOptions);
 
-    const rootNode = this.sourceTileset.root!;
-    if (!rootNode.header.obb) {
-      rootNode.header.obb = createObbFromMbs(rootNode.header.mbs);
+    if (!this.sourceTileset) {
+      return;
+    }
+
+    const rootNode = this.sourceTileset?.root;
+    if (!rootNode.obb) {
+      rootNode.obb = createObbFromMbs(rootNode.mbs);
     }
 
     this.tilesetPath = join(`${outputPath}`, `${tilesetName}`);
-    this.attributeStorageInfo = sourceTilesetJson.attributeStorageInfo;
+    this.attributeStorageInfo = this.sourceTileset.attributeStorageInfo;
     // Removing the tilesetPath needed to exclude erroneous files after conversion
     try {
       await removeDir(this.tilesetPath);
@@ -85,9 +110,9 @@ export default class Tiles3DConverter {
       // do nothing
     }
 
-    const rootTile: Node3D = {
+    const rootTile: Tiles3DTileJSON = {
       boundingVolume: {
-        box: i3sObbTo3dTilesObb(rootNode.header.obb, this.geoidHeightModel)
+        box: i3sObbTo3dTilesObb(rootNode.obb, this.geoidHeightModel)
       },
       geometricError: convertScreenThresholdToGeometricError(rootNode),
       children: []
@@ -99,6 +124,74 @@ export default class Tiles3DConverter {
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
 
     this._finishConversion({slpk: false, outputPath, tilesetName});
+
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
+  /**
+   * Convert particular I3S Node
+   * @param parentSourceNode the parent node tile object (@loaders.gl/tiles/Tile3D)
+   * @param parentNode object in resulting tileset
+   * @param level a current level of a tree depth
+   * @param childNodeInfo child node to convert
+   */
+  private async convertChildNode(
+    parentSourceNode: I3STileHeader,
+    parentNode: Tiles3DTileJSON,
+    level: number,
+    childNodeInfo: NodeReference
+  ): Promise<void> {
+    const sourceChild = await this._loadChildNode(parentSourceNode, childNodeInfo);
+    if (sourceChild.contentUrl) {
+      const content = await loadI3SContent(this.sourceTileset, sourceChild, this.loaderOptions);
+
+      if (!content) {
+        await this._addChildren(sourceChild, parentNode, level + 1);
+        return;
+      }
+
+      this.vertexCounter += content?.vertexCount || 0;
+
+      let featureAttributes: FeatureAttribute | null = null;
+      if (this.attributeStorageInfo) {
+        featureAttributes = await this._loadChildAttributes(sourceChild, this.attributeStorageInfo);
+      }
+
+      if (!sourceChild.obb) {
+        sourceChild.obb = createObbFromMbs(sourceChild.mbs);
+      }
+
+      const boundingVolume = {
+        box: i3sObbTo3dTilesObb(sourceChild.obb, this.geoidHeightModel)
+      };
+      const child: Tiles3DTileJSON = {
+        boundingVolume,
+        geometricError: convertScreenThresholdToGeometricError(sourceChild),
+        children: []
+      };
+
+      const i3sAttributesData: I3SAttributesData = {
+        tileContent: content,
+        box: boundingVolume.box,
+        textureFormat: sourceChild.textureFormat
+      };
+
+      const b3dmConverter = new B3dmConverter();
+      const b3dm = await b3dmConverter.convert(i3sAttributesData, featureAttributes);
+
+      child.content = {
+        uri: `${sourceChild.id}.b3dm`,
+        boundingVolume
+      };
+      await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.b3dm`);
+      parentNode.children.push(child);
+
+      await this._addChildren(sourceChild, child, level + 1);
+    } else {
+      await this._addChildren(sourceChild, parentNode, level + 1);
+    }
   }
 
   /**
@@ -108,52 +201,18 @@ export default class Tiles3DConverter {
    * @param level a current level of a tree depth
    */
   private async _addChildren(
-    parentSourceNode: Tile3D,
-    parentNode: Node3D,
+    parentSourceNode: I3STileHeader,
+    parentNode: Tiles3DTileJSON,
     level: number
   ): Promise<void> {
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
-    for (const childNodeInfo of parentSourceNode.header.children || []) {
-      const sourceChild = await this._loadChildNode(parentSourceNode, childNodeInfo);
-      parentSourceNode.children.push(sourceChild);
-      if (sourceChild.contentUrl) {
-        await this.sourceTileset!._loadTile(sourceChild);
-        this.vertexCounter += sourceChild.content.vertexCount;
-
-        let attributes: FeatureAttribute | null = null;
-        if (this.attributeStorageInfo) {
-          attributes = await this._loadChildAttributes(sourceChild, this.attributeStorageInfo);
-        }
-
-        if (!sourceChild.header.obb) {
-          sourceChild.header.obb = createObbFromMbs(sourceChild.header.mbs);
-        }
-
-        const boundingVolume = {
-          box: i3sObbTo3dTilesObb(sourceChild.header.obb, this.geoidHeightModel)
-        };
-        const child: Node3D = {
-          boundingVolume,
-          geometricError: convertScreenThresholdToGeometricError(sourceChild),
-          children: []
-        };
-
-        const b3dm = await new B3dmConverter().convert(sourceChild, attributes);
-        child.content = {
-          uri: `${sourceChild.id}.b3dm`,
-          boundingVolume
-        };
-        await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.b3dm`);
-        parentNode.children.push(child);
-
-        sourceChild.unloadContent();
-        await this._addChildren(sourceChild, child, level + 1);
-      } else {
-        await this._addChildren(sourceChild, parentNode, level + 1);
-      }
+    const promises: Promise<void>[] = [];
+    for (const childNodeInfo of parentSourceNode.children || []) {
+      promises.push(this.convertChildNode(parentSourceNode, parentNode, level, childNodeInfo));
     }
+    await Promise.all(promises);
   }
 
   /**
@@ -162,29 +221,31 @@ export default class Tiles3DConverter {
    * @param childNodeInfo child information from 3DNodeIndexDocument
    *   (https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodeReference.cmn.md)
    */
-  private async _loadChildNode(parentNode: Tile3D, childNodeInfo: NodeReference): Promise<Tile3D> {
+  private async _loadChildNode(
+    parentNode: I3STileHeader,
+    childNodeInfo: NodeReference
+  ): Promise<I3STileHeader> {
     let header;
-    if (this.sourceTileset!.tileset.nodePages) {
+    if (this.sourceTileset?.nodePagesTile) {
       console.log(`Node conversion: ${childNodeInfo.id}`); // eslint-disable-line no-console,no-undef
-      header = await this.sourceTileset!.tileset.nodePagesTile.formTileFromNodePages(
-        childNodeInfo.id
+      header = await this.sourceTileset.nodePagesTile.formTileFromNodePages(
+        parseInt(childNodeInfo.id)
       );
     } else {
-      const {loader} = this.sourceTileset!;
       const nodeUrl = this._relativeUrlToFullUrl(parentNode.url, childNodeInfo.href!);
       // load metadata
       const options = {
         i3s: {
-          ...this.sourceTileset!.loadOptions,
+          ...this.loaderOptions,
           isTileHeader: true,
           loadContent: false
         }
       };
 
       console.log(`Node conversion: ${nodeUrl}`); // eslint-disable-line no-console,no-undef
-      header = await load(nodeUrl, loader, options);
+      header = await load(nodeUrl, I3SLoader, options);
     }
-    return new Tile3D(this.sourceTileset!, header, parentNode);
+    return header;
   }
 
   /**
@@ -192,7 +253,7 @@ export default class Tiles3DConverter {
    * @param baseUrl the base url. A resulting url will be related from this url
    * @param relativeUrl a realtive url of a resource
    */
-  private _relativeUrlToFullUrl(baseUrl: string, relativeUrl: string): string {
+  private _relativeUrlToFullUrl(baseUrl: string = '', relativeUrl: string): string {
     let resultArray = baseUrl.split('/');
     const relativeUrlArray = relativeUrl.split('/');
     for (const folder of relativeUrlArray) {
@@ -216,11 +277,11 @@ export default class Tiles3DConverter {
    * @returns Promise of attributes object.
    */
   private async _loadChildAttributes(
-    sourceChild: Tile3D,
-    attributeStorageInfo: AttributeStorageInfo
+    sourceChild: I3STileHeader,
+    attributeStorageInfo: AttributeStorageInfo[]
   ): Promise<FeatureAttribute> {
     const promises: any[] = [];
-    const {attributeUrls} = sourceChild.header;
+    const {attributeUrls = []} = sourceChild;
 
     for (let index = 0; index < attributeUrls.length; index++) {
       const inputUrl = attributeUrls[index];

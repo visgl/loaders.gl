@@ -1,0 +1,325 @@
+{
+  "token": null,
+  "isTileset": false,
+  "isTileHeader": false,
+  "tile": null,
+  "tileset": null,
+  "_tileOptions": {
+    "attributeUrls": [
+      "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/attributes/f_0/0",
+      "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/attributes/f_1/0",
+      "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/attributes/f_2/0",
+      "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/attributes/f_3/0",
+      "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/attributes/f_4/0",
+      "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/attributes/f_5/0",
+      "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/attributes/f_6/0",
+      "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/attributes/f_7/0"
+    ],
+    "textureUrl": "https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal_3DObjects_subset_1_v17_ktx2/SceneServer/layers/0/nodes/313/textures/2",
+    "textureFormat": "ktx2",
+    "textureLoaderOptions": {
+      "basis": {
+        "format": "astc-4x4",
+        "containerFormat": "ktx2",
+        "module": "encoder"
+      }
+    },
+    "materialDefinition": {
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "textureSetDefinitionId": 1
+        },
+        "metallicFactor": 0
+      }
+    },
+    "isDracoGeometry": true,
+    "mbs": [-73.56987719328482, 45.50447701642578, 58.509745640680194, 89.27916513499362]
+  },
+  "_tilesetOptions": {
+    "store": {
+      "id": "0",
+      "profile": "meshpyramids",
+      "version": "1.8",
+      "resourcePattern": ["3dNodeIndexDocument", "SharedResource", "Geometry", "Attributes"],
+      "rootNode": "./nodes/root",
+      "extent": [-73.57173833148829, 45.49709997720347, -73.56029246939103, 45.506587419180505],
+      "indexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+      "vertexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+      "normalReferenceFrame": "earth-centered",
+      "textureEncoding": ["image/jpeg", "image/ktx2"],
+      "lodType": "MeshPyramid",
+      "lodModel": "node-switching",
+      "defaultGeometrySchema": {
+        "header": [
+          {
+            "property": "vertexCount",
+            "type": "UInt32"
+          },
+          {
+            "property": "featureCount",
+            "type": "UInt32"
+          }
+        ],
+        "topology": "PerAttributeArray",
+        "ordering": ["position", "normal", "uv0", "color", "region"],
+        "vertexAttributes": {
+          "position": {
+            "valueType": "Float32",
+            "valuesPerElement": 3
+          },
+          "normal": {
+            "valueType": "Float32",
+            "valuesPerElement": 3
+          },
+          "uv0": {
+            "valueType": "Float32",
+            "valuesPerElement": 2
+          },
+          "color": {
+            "valueType": "UInt8",
+            "valuesPerElement": 4
+          },
+          "region": {
+            "valueType": "UInt16",
+            "valuesPerElement": 4
+          }
+        },
+        "featureAttributeOrder": ["id", "faceRange"],
+        "featureAttributes": {
+          "id": {
+            "valueType": "UInt64",
+            "valuesPerElement": 1
+          },
+          "faceRange": {
+            "valueType": "UInt32",
+            "valuesPerElement": 2
+          }
+        }
+      }
+    },
+    "attributeStorageInfo": [
+      {
+        "key": "f_0",
+        "name": "OBJECTID",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Oid32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_1",
+        "name": "BuildingShellFID",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "valuesPerElement": 1,
+          "encoding": "UTF-8"
+        }
+      },
+      {
+        "key": "f_2",
+        "name": "name",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "valuesPerElement": 1,
+          "encoding": "UTF-8"
+        }
+      },
+      {
+        "key": "f_3",
+        "name": "description",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "valuesPerElement": 1,
+          "encoding": "UTF-8"
+        }
+      },
+      {
+        "key": "f_4",
+        "name": "attribution",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "valuesPerElement": 1,
+          "encoding": "UTF-8"
+        }
+      },
+      {
+        "key": "f_5",
+        "name": "buildingFID",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "valuesPerElement": 1,
+          "encoding": "UTF-8"
+        }
+      },
+      {
+        "key": "f_6",
+        "name": "generator",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "valuesPerElement": 1,
+          "encoding": "UTF-8"
+        }
+      },
+      {
+        "key": "f_7",
+        "name": "protectionLevel",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Int16",
+          "valuesPerElement": 1
+        }
+      }
+    ],
+    "fields": [
+      {
+        "name": "OBJECTID",
+        "type": "esriFieldTypeOID",
+        "alias": "OBJECTID"
+      },
+      {
+        "name": "BuildingShellFID",
+        "type": "esriFieldTypeString",
+        "alias": "BuildingShell Feature ID"
+      },
+      {
+        "name": "name",
+        "type": "esriFieldTypeString",
+        "alias": "Name"
+      },
+      {
+        "name": "description",
+        "type": "esriFieldTypeString",
+        "alias": "Description"
+      },
+      {
+        "name": "attribution",
+        "type": "esriFieldTypeString",
+        "alias": "Attribution/Source"
+      },
+      {
+        "name": "buildingFID",
+        "type": "esriFieldTypeString",
+        "alias": "Building FID"
+      },
+      {
+        "name": "generator",
+        "type": "esriFieldTypeString",
+        "alias": "Source"
+      },
+      {
+        "name": "protectionLevel",
+        "type": "esriFieldTypeInteger",
+        "alias": "Protection level"
+      }
+    ]
+  },
+  "useDracoGeometry": true,
+  "useCompressedTextures": true,
+  "decodeTextures": true,
+  "coordinateSystem": 3,
+  "colorsByAttribute": null
+}

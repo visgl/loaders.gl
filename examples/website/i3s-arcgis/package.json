@@ -1,26 +1,29 @@
 {
+  "private": true,
+  "name": "i3s-arcgis-loaders-example",
+  "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open",
-    "start-local-deck": "webpack-dev-server --env.local --env.esnext --env.deck --progress --hot --open",
-    "start-local-luma": "webpack-dev-server --env.local --env.esnext --env.luma --progress --hot --open",
-    "start-local-math": "webpack-dev-server --env.local --env.esnext --env.math --progress --hot --open",
-    "generate": "node ./generate-index/index.js"
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/arcgis": "^8.5.0",
-    "@deck.gl/core": "^8.5.0",
-    "@deck.gl/geo-layers": "^8.5.0",
-    "@deck.gl/layers": "^8.5.0",
-    "@deck.gl/mesh-layers": "^8.5.0",
-    "@loaders.gl/core": "2.2.0",
-    "@loaders.gl/i3s": "2.2.0"
+    "@arcgis/core": "^4.25.0",
+    "@deck.gl/arcgis": "^8.9.28",
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/extensions": "^8.9.28",
+    "@deck.gl/geo-layers": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@deck.gl/mesh-layers": "^8.9.28",
+    "@esri/react-arcgis": "^5.2.0",
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/i3s": "4.0.0-beta.3",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "babel-plugin-inline-import": "^3.0.0",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.11"
+    "typescript": "^5.0.4",
+    "vite": "^4.4.9"
   }
 }

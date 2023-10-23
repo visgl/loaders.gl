@@ -1,53 +1,44 @@
-import type {Batch} from '@loaders.gl/schema';
+// loaders.gl, MIT license
+
+import type {Table, TableBatch} from '@loaders.gl/schema';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseJSONSync from './lib/parse-json';
-import parseJSONInBatches from './lib/parse-json-in-batches';
+import {parseJSONSync} from './lib/parsers/parse-json';
+import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+type ParseJSONOptions = {
+  shape: 'object-row-table'; // TODO - 'auto'?
+  table?: boolean;
+  jsonpaths?: string[];
+};
 
 /**
  * @param table -
  * @param jsonpaths -
  */
 export type JSONLoaderOptions = LoaderOptions & {
-  json?: {
-    shape?: 'row-table';
-    table?: false;
-    jsonpaths?: string[];
-  };
+  json?: ParseJSONOptions;
 };
 
-const DEFAULT_JSON_LOADER_OPTIONS = {
+const DEFAULT_JSON_LOADER_OPTIONS: {json: Required<ParseJSONOptions>} = {
   json: {
-    shape: 'row-table',
+    shape: 'object-row-table',
     table: false,
     jsonpaths: []
     // batchSize: 'auto'
   }
 };
 
-export const JSONLoader: LoaderWithParser = {
+export const JSONLoader: LoaderWithParser<Table, TableBatch, JSONLoaderOptions> = {
   name: 'JSON',
   id: 'json',
   module: 'json',
   version: VERSION,
   extensions: ['json', 'geojson'],
   mimeTypes: ['application/json'],
-  // TODO - support various line based JSON formats
-  /*
-  extensions: {
-    json: null,
-    jsonl: {stream: true},
-    ndjson: {stream: true}
-  },
-  mimeTypes: {
-    'application/json': null,
-    'application/json-seq': {stream: true},
-    'application/x-ndjson': {stream: true}
-  },
-  */
   category: 'table',
   text: true,
   parse,
@@ -68,7 +59,7 @@ function parseTextSync(text: string, options?: JSONLoaderOptions) {
 function parseInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: JSONLoaderOptions
-): AsyncIterable<Batch> {
+): AsyncIterable<TableBatch> {
   const jsonOptions = {...options, json: {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options?.json}};
   return parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions);
 }

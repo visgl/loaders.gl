@@ -5,7 +5,6 @@ import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
 import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {
-  I3STilesetHeader,
   LodSelection,
   NodePage,
   NodeInPage,
@@ -14,33 +13,39 @@ import {
   I3SMaterialDefinition,
   I3STextureFormat,
   MeshGeometry,
-  I3STileHeader
+  I3STileHeader,
+  SceneLayer3D
 } from '../../types';
 
 /**
  * class I3SNodePagesTiles - loads nodePages and form i3s tiles from them
  */
 export default class I3SNodePagesTiles {
-  tileset: I3STilesetHeader;
+  tileset: SceneLayer3D;
   nodePages: NodePage[] = [];
   pendingNodePages: {promise: Promise<NodePage>; status: 'Pending' | 'Done'}[] = [];
   nodesPerPage: number;
   options: LoaderOptions;
   lodSelectionMetricType?: string;
   textureDefinitionsSelectedFormats: ({format: I3STextureFormat; name: string} | null)[] = [];
+  nodesInNodePages: number;
+  url: string;
   private textureLoaderOptions: {[key: string]: any} = {};
 
   /**
    * @constructs
    * Create a I3SNodePagesTiles instance.
    * @param tileset - i3s tileset header ('layers/0')
+   * @param url - tileset url
    * @param options - i3s loader options
    */
-  constructor(tileset: I3STilesetHeader, options: LoaderOptions) {
+  constructor(tileset: SceneLayer3D, url: string = '', options: LoaderOptions) {
     this.tileset = {...tileset}; // spread the tileset to avoid circular reference
+    this.url = url;
     this.nodesPerPage = tileset.nodePages?.nodesPerPage || 64;
     this.lodSelectionMetricType = tileset.nodePages?.lodSelectionMetricType;
     this.options = options;
+    this.nodesInNodePages = 0;
 
     this.initSelectedFormatsForTextureDefinitions(tileset);
   }
@@ -53,7 +58,8 @@ export default class I3SNodePagesTiles {
     const pageIndex = Math.floor(id / this.nodesPerPage);
     if (!this.nodePages[pageIndex] && !this.pendingNodePages[pageIndex]) {
       const nodePageUrl = getUrlWithToken(
-        `${this.tileset.url}/nodepages/${pageIndex}`,
+        `${this.url}/nodepages/${pageIndex}`,
+        // @ts-expect-error this.options is not properly typed
         this.options.i3s?.token
       );
       this.pendingNodePages[pageIndex] = {
@@ -61,6 +67,7 @@ export default class I3SNodePagesTiles {
         promise: load(nodePageUrl, I3SNodePageLoader, this.options)
       };
       this.nodePages[pageIndex] = await this.pendingNodePages[pageIndex].promise;
+      this.nodesInNodePages += this.nodePages[pageIndex].nodes.length;
       this.pendingNodePages[pageIndex].status = 'Done';
     }
     if (this.pendingNodePages[pageIndex].status === 'Pending') {
@@ -74,14 +81,19 @@ export default class I3SNodePagesTiles {
    * Forms tile header using node and tileset data
    * @param id - id of node through all node pages
    */
-  // eslint-disable-next-line complexity
+  // eslint-disable-next-line complexity, max-statements
   async formTileFromNodePages(id: number): Promise<I3STileHeader> {
     const node: NodeInPage = await this.getNodeById(id);
     const children: {id: string; obb: Obb}[] = [];
+    const childNodesPromises: Promise<NodeInPage>[] = [];
     for (const child of node.children || []) {
-      const childNode = await this.getNodeById(child);
+      childNodesPromises.push(this.getNodeById(child));
+    }
+
+    const childNodes = await Promise.all(childNodesPromises);
+    for (const childNode of childNodes) {
       children.push({
-        id: child.toString(),
+        id: childNode.index.toString(),
         obb: childNode.obb
       });
     }
@@ -105,11 +117,15 @@ export default class I3SNodePagesTiles {
       materialDefinition = nodeMaterialDefinition;
       textureFormat = textureData.format || textureFormat;
       if (textureData.name) {
-        textureUrl = `${this.tileset.url}/nodes/${node.mesh.material.resource}/textures/${textureData.name}`;
+        textureUrl = `${this.url}/nodes/${node.mesh.material.resource}/textures/${textureData.name}`;
       }
 
       if (this.tileset.attributeStorageInfo) {
-        attributeUrls = generateTilesetAttributeUrls(this.tileset, node.mesh.attribute.resource);
+        attributeUrls = generateTilesetAttributeUrls(
+          this.tileset,
+          this.url,
+          node.mesh.attribute.resource
+        );
       }
     }
 
@@ -143,6 +159,7 @@ export default class I3SNodePagesTiles {
     const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
     let geometryIndex = -1;
     // Try to find DRACO geometryDefinition of `useDracoGeometry` option is set
+    // @ts-expect-error this.options is not properly typed
     if (this.options.i3s && this.options.i3s.useDracoGeometry) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
         (buffer) => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
@@ -159,7 +176,7 @@ export default class I3SNodePagesTiles {
         geometryDefinition.geometryBuffers[geometryIndex].compressedAttributes
       );
       result = {
-        url: `${this.tileset.url}/nodes/${meshGeometryData.resource}/geometries/${geometryIndex}`,
+        url: `${this.url}/nodes/${meshGeometryData.resource}/geometries/${geometryIndex}`,
         isDracoGeometry
       };
     }
@@ -224,7 +241,7 @@ export default class I3SNodePagesTiles {
    * @param tileset - I3S layer data
    * @returns
    */
-  private initSelectedFormatsForTextureDefinitions(tileset: I3STilesetHeader): void {
+  private initSelectedFormatsForTextureDefinitions(tileset: SceneLayer3D): void {
     this.textureDefinitionsSelectedFormats = [];
     const possibleI3sFormats = this.getSupportedTextureFormats();
     const textureSetDefinitions = tileset.textureSetDefinitions || [];
@@ -257,6 +274,7 @@ export default class I3SNodePagesTiles {
    */
   private getSupportedTextureFormats(): I3STextureFormat[] {
     const formats: I3STextureFormat[] = [];
+    // @ts-expect-error this.options is not properly typed
     if (!this.options.i3s || this.options.i3s.useCompressedTextures) {
       // I3S 1.7 selection
       const supportedCompressedFormats = getSupportedGPUTextureFormats();

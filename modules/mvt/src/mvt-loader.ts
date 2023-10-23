@@ -1,4 +1,12 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {MVTLoaderOptions} from './lib/types';
+// import type {
+//   Feature,
+//   BinaryFeatureCollection,
+//   GeoJSONTable,
+//   Geometry,
+//   GeoJsonProperties
+// } from '@loaders.gl/schema';
 import parseMVT from './lib/parse-mvt';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -8,7 +16,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /**
  * Worker loader for the Mapbox Vector Tile format
  */
-export const MVTWorkerLoader: Loader = {
+export const MVTWorkerLoader: Loader<
+  any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
+  never,
+  MVTLoaderOptions
+> = {
   name: 'Mapbox Vector Tile',
   id: 'mvt',
   module: 'mvt',
@@ -16,6 +28,7 @@ export const MVTWorkerLoader: Loader = {
   // Note: ArcGIS uses '.pbf' extension and 'application/octet-stream'
   extensions: ['mvt', 'pbf'],
   mimeTypes: [
+    // https://www.iana.org/assignments/media-types/application/vnd.mapbox-vector-tile
     'application/vnd.mapbox-vector-tile',
     'application/x-protobuf'
     // 'application/octet-stream'
@@ -24,9 +37,10 @@ export const MVTWorkerLoader: Loader = {
   category: 'geometry',
   options: {
     mvt: {
+      shape: 'geojson',
       coordinates: 'local',
       layerProperty: 'layerName',
-      layers: null,
+      layers: undefined,
       tileIndex: null
     }
   }
@@ -35,9 +49,13 @@ export const MVTWorkerLoader: Loader = {
 /**
  * Loader for the Mapbox Vector Tile format
  */
-export const MVTLoader: LoaderWithParser = {
+export const MVTLoader: LoaderWithParser<
+  any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
+  never,
+  MVTLoaderOptions
+> = {
   ...MVTWorkerLoader,
-  parse: async (arrayBuffer, options) => parseMVT(arrayBuffer, options),
+  parse: async (arrayBuffer, options?: MVTLoaderOptions) => parseMVT(arrayBuffer, options),
   parseSync: parseMVT,
   binary: true
 };

@@ -3,7 +3,7 @@
  */
 export type WorkerOptions = {
   // Worker farm options
-  CDN?: string;
+  CDN?: string | null;
   worker?: boolean;
   maxConcurrency?: number;
   maxMobileConcurrency?: number;
@@ -35,7 +35,7 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
-  options: object;
+  options: {[key: string]: any};
   deprecatedOptions?: object;
 
   process?: Process;
@@ -71,6 +71,7 @@ export type WorkerMessageType =
 export type WorkerMessagePayload = {
   id?: number;
   options?: {[key: string]: any};
+  context?: {[key: string]: any};
   input?: any; // Transferable;
   result?: any; // Transferable
   error?: string;

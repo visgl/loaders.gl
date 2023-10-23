@@ -6,10 +6,16 @@
 // @author Filipe Caixeta / http://filipecaixeta.com.br
 // @author Mugen87 / https://github.com/Mugen87
 
+import {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/schema';
-import type {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
-import type {PCDHeader} from './pcd-types';
+import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
+import type {PCDHeader, PCDMesh} from './pcd-types';
+
+type MeshHeader = {
+  vertexCount: number;
+  boundingBox: [[number, number, number], [number, number, number]];
+};
 
 type NormalizedAttributes = {
   POSITION: {
@@ -37,7 +43,7 @@ const LITTLE_ENDIAN: boolean = true;
  * @param data
  * @returns
  */
-export default function parsePCD(data: ArrayBufferLike) {
+export default function parsePCD(data: ArrayBufferLike): PCDMesh {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
   const pcdHeader = parsePCDHeader(textData);
@@ -55,6 +61,9 @@ export default function parsePCD(data: ArrayBufferLike) {
       break;
 
     case 'binary_compressed':
+      attributes = parsePCDBinaryCompressed(pcdHeader, data);
+      break;
+
     default:
       throw new Error(`PCD: ${pcdHeader.data} files are not supported`);
   }
@@ -63,7 +72,7 @@ export default function parsePCD(data: ArrayBufferLike) {
 
   const header = getMeshHeader(pcdHeader, attributes);
 
-  const metadata = new Map([
+  const metadata = Object.fromEntries([
     ['mode', '0'],
     ['boundingBox', JSON.stringify(header.boundingBox)]
   ]);
@@ -71,19 +80,18 @@ export default function parsePCD(data: ArrayBufferLike) {
   const schema = getPCDSchema(pcdHeader, metadata);
 
   return {
-    loaderData: {
-      header: pcdHeader
-    },
+    loader: 'pcd',
+    loaderData: pcdHeader,
     header,
     schema,
     mode: 0, // POINTS
-    indices: null,
+    topology: 'point-list',
     attributes
   };
 }
 
 // Create a header that contains common data for PointCloud category loaders
-function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): Partial<PCDHeader> {
+function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): MeshHeader {
   if (typeof pcdHeader.width === 'number' && typeof pcdHeader.height === 'number') {
     const pointCount = pcdHeader.width * pcdHeader.height; // Supports "organized" point sets
     return {
@@ -91,7 +99,10 @@ function getMeshHeader(pcdHeader: PCDHeader, attributes: NormalizedAttributes): 
       boundingBox: getMeshBoundingBox(attributes)
     };
   }
-  return pcdHeader;
+  return {
+    vertexCount: pcdHeader.vertexCount,
+    boundingBox: pcdHeader.boundingBox
+  };
 }
 
 /**
@@ -118,6 +129,22 @@ function getMeshAttributes(attributes: HeaderAttributes): {[attributeName: strin
     // TODO - RGBA
     normalizedAttributes.COLOR_0 = {
       value: new Uint8Array(attributes.color),
+      size: 3
+    };
+  }
+
+  if (attributes.intensity && attributes.intensity.length > 0) {
+    // TODO - RGBA
+    normalizedAttributes.COLOR_0 = {
+      value: new Uint8Array(attributes.color),
+      size: 3
+    };
+  }
+
+  if (attributes.label && attributes.label.length > 0) {
+    // TODO - RGBA
+    normalizedAttributes.COLOR_0 = {
+      value: new Uint8Array(attributes.label),
       size: 3
     };
   }
@@ -236,11 +263,13 @@ function parsePCDHeader(data: string): PCDHeader {
  * @param textData
  * @returns [attributes]
  */
-/* eslint-enable complexity, max-statements */
+// eslint-enable-next-line complexity, max-statements
 function parsePCDASCII(pcdHeader: PCDHeader, textData: string): HeaderAttributes {
   const position: number[] = [];
   const normal: number[] = [];
   const color: number[] = [];
+  const intensity: number[] = [];
+  const label: number[] = [];
 
   const offset = pcdHeader.offset;
   const pcdData = textData.substr(pcdHeader.headerLen);
@@ -271,6 +300,14 @@ function parsePCDASCII(pcdHeader: PCDHeader, textData: string): HeaderAttributes
         normal.push(parseFloat(line[offset.normal_y]));
         normal.push(parseFloat(line[offset.normal_z]));
       }
+
+      if (offset.intensity !== undefined) {
+        intensity.push(parseFloat(line[offset.intensity]));
+      }
+
+      if (offset.label !== undefined) {
+        label.push(parseInt(line[offset.label]));
+      }
     }
   }
 
@@ -286,6 +323,8 @@ function parsePCDBinary(pcdHeader: PCDHeader, data: ArrayBufferLike): HeaderAttr
   const position: number[] = [];
   const normal: number[] = [];
   const color: number[] = [];
+  const intensity: number[] = [];
+  const label: number[] = [];
 
   const dataview = new DataView(data, pcdHeader.headerLen);
   const offset = pcdHeader.offset;
@@ -308,7 +347,117 @@ function parsePCDBinary(pcdHeader: PCDHeader, data: ArrayBufferLike): HeaderAttr
       normal.push(dataview.getFloat32(row + offset.normal_y, LITTLE_ENDIAN));
       normal.push(dataview.getFloat32(row + offset.normal_z, LITTLE_ENDIAN));
     }
+
+    if (offset.intensity !== undefined) {
+      intensity.push(dataview.getFloat32(row + offset.intensity, LITTLE_ENDIAN));
+    }
+
+    if (offset.label !== undefined) {
+      label.push(dataview.getInt32(row + offset.label, LITTLE_ENDIAN));
+    }
   }
 
-  return {position, normal, color};
+  return {position, normal, color, intensity, label};
+}
+
+/** Parse compressed PCD data in in binary_compressed form ( https://pointclouds.org/documentation/tutorials/pcd_file_format.html)
+ * from https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/PCDLoader.js
+ * @license MIT (http://opensource.org/licenses/MIT)
+ * @param pcdHeader
+ * @param data
+ * @returns [attributes]
+ */
+// eslint-enable-next-line complexity, max-statements
+function parsePCDBinaryCompressed(pcdHeader: PCDHeader, data: ArrayBufferLike): HeaderAttributes {
+  const position: number[] = [];
+  const normal: number[] = [];
+  const color: number[] = [];
+  const intensity: number[] = [];
+  const label: number[] = [];
+
+  const sizes = new Uint32Array(data.slice(pcdHeader.headerLen, pcdHeader.headerLen + 8));
+  const compressedSize = sizes[0];
+  const decompressedSize = sizes[1];
+  const decompressed = decompressLZF(
+    new Uint8Array(data, pcdHeader.headerLen + 8, compressedSize),
+    decompressedSize
+  );
+  const dataview = new DataView(decompressed.buffer);
+
+  const offset = pcdHeader.offset;
+
+  for (let i = 0; i < pcdHeader.points; i++) {
+    if (offset.x !== undefined) {
+      position.push(
+        dataview.getFloat32(pcdHeader.points * offset.x + pcdHeader.size[0] * i, LITTLE_ENDIAN)
+      );
+      position.push(
+        dataview.getFloat32(pcdHeader.points * offset.y + pcdHeader.size[1] * i, LITTLE_ENDIAN)
+      );
+      position.push(
+        dataview.getFloat32(pcdHeader.points * offset.z + pcdHeader.size[2] * i, LITTLE_ENDIAN)
+      );
+    }
+
+    if (offset.rgb !== undefined) {
+      color.push(
+        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 0) / 255.0
+      );
+      color.push(
+        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 1) / 255.0
+      );
+      color.push(
+        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 2) / 255.0
+      );
+    }
+
+    if (offset.normal_x !== undefined) {
+      normal.push(
+        dataview.getFloat32(
+          pcdHeader.points * offset.normal_x + pcdHeader.size[4] * i,
+          LITTLE_ENDIAN
+        )
+      );
+      normal.push(
+        dataview.getFloat32(
+          pcdHeader.points * offset.normal_y + pcdHeader.size[5] * i,
+          LITTLE_ENDIAN
+        )
+      );
+      normal.push(
+        dataview.getFloat32(
+          pcdHeader.points * offset.normal_z + pcdHeader.size[6] * i,
+          LITTLE_ENDIAN
+        )
+      );
+    }
+
+    if (offset.intensity !== undefined) {
+      const intensityIndex = pcdHeader.fields.indexOf('intensity');
+      intensity.push(
+        dataview.getFloat32(
+          pcdHeader.points * offset.intensity + pcdHeader.size[intensityIndex] * i,
+          LITTLE_ENDIAN
+        )
+      );
+    }
+
+    if (offset.label !== undefined) {
+      const labelIndex = pcdHeader.fields.indexOf('label');
+      label.push(
+        dataview.getInt32(
+          pcdHeader.points * offset.label + pcdHeader.size[labelIndex] * i,
+          LITTLE_ENDIAN
+        )
+      );
+    }
+  }
+
+  return {
+    position,
+    normal,
+    color,
+    intensity,
+    label
+  };
 }

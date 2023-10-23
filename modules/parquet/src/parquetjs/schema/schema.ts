@@ -4,14 +4,14 @@ import {PARQUET_CODECS} from '../codecs';
 import {PARQUET_COMPRESSION_METHODS} from '../compression';
 import {
   FieldDefinition,
-  ParquetBuffer,
+  ParquetRowGroup,
   ParquetCompression,
   ParquetField,
-  ParquetRecord,
+  ParquetRow,
   RepetitionType,
   SchemaDefinition
 } from './declare';
-import {materializeRecords, shredBuffer, shredRecord} from './shred';
+import {materializeRows, shredBuffer, shredRecord} from './shred';
 import {PARQUET_LOGICAL_TYPES} from './types';
 
 /**
@@ -70,12 +70,12 @@ export class ParquetSchema {
     return branch;
   }
 
-  shredRecord(record: ParquetRecord, buffer: ParquetBuffer): void {
-    shredRecord(this, record, buffer);
+  shredRecord(row: ParquetRow, rowGroup: ParquetRowGroup): void {
+    shredRecord(this, row, rowGroup);
   }
 
-  materializeRecords(buffer: ParquetBuffer): ParquetRecord[] {
-    return materializeRecords(this, buffer);
+  materializeRows(rowGroup: ParquetRowGroup): ParquetRow[] {
+    return materializeRows(this, rowGroup);
   }
 
   compress(type: ParquetCompression): this {
@@ -84,7 +84,7 @@ export class ParquetSchema {
     return this;
   }
 
-  buffer(): ParquetBuffer {
+  rowGroup(): ParquetRowGroup {
     return shredBuffer(this);
   }
 }

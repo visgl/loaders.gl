@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import type {LoaderWithParser} from '../../types';
+import type {LoaderWithParser, LoaderOptions, LoaderContext} from '../../loader-types';
 import {WorkerBody} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
 
@@ -11,7 +11,7 @@ let requestId = 0;
  */
 export function createLoaderWorker(loader: LoaderWithParser) {
   // Check that we are actually in a worker thread
-  if (typeof self === 'undefined') {
+  if (!WorkerBody.inWorkerThread()) {
     return;
   }
 
@@ -21,14 +21,16 @@ export function createLoaderWorker(loader: LoaderWithParser) {
         try {
           // validateLoaderVersion(loader, data.source.split('@')[1]);
 
-          const {input, options = {}} = payload;
+          const {input, options = {}, context = {}} = payload;
 
           const result = await parseData({
             loader,
             arrayBuffer: input,
             options,
+            // @ts-expect-error fetch missing
             context: {
-              parse: parseOnMainThread
+              ...context,
+              _parse: parseOnMainThread
             }
           });
           WorkerBody.postMessage('done', {result});
@@ -42,7 +44,12 @@ export function createLoaderWorker(loader: LoaderWithParser) {
   };
 }
 
-function parseOnMainThread(arrayBuffer: ArrayBuffer, options: {[key: string]: any}): Promise<void> {
+function parseOnMainThread(
+  arrayBuffer: ArrayBuffer,
+  loader: any,
+  options?: LoaderOptions,
+  context?: LoaderContext
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const id = requestId++;
 
@@ -82,7 +89,17 @@ function parseOnMainThread(arrayBuffer: ArrayBuffer, options: {[key: string]: an
 // TODO - Why not support async loader.parse* funcs here?
 // TODO - Why not reuse a common function instead of reimplementing loader.parse* selection logic? Keeping loader small?
 // TODO - Lack of appropriate parser functions can be detected when we create worker, no need to wait until parse
-async function parseData({loader, arrayBuffer, options, context}) {
+async function parseData({
+  loader,
+  arrayBuffer,
+  options,
+  context
+}: {
+  loader: LoaderWithParser;
+  arrayBuffer: ArrayBuffer;
+  options: LoaderOptions;
+  context: LoaderContext;
+}) {
   let data;
   let parser;
   if (loader.parseSync || loader.parse) {

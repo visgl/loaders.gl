@@ -1,0 +1,23 @@
+{
+  "name": "bundle-with-webpack-5",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Minimal example of using loaders.gl with webpack 5.",
+  "private": true,
+  "scripts": {
+    "start": "webpack serve --hot --open",
+    "build": "webpack build"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/obj": "4.0.0-beta.3"
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.5.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1"
+  }
+}

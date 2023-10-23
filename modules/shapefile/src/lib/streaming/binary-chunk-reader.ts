@@ -1,10 +1,16 @@
-export default class BinaryChunkReader {
+// loaders.gl, MIT license
+
+export type BinaryChunkReaderOptions = {
+  maxRewindBytes: number;
+};
+
+export class BinaryChunkReader {
   offset: number;
   arrayBuffers: ArrayBuffer[];
   ended: boolean;
   maxRewindBytes: number;
 
-  constructor(options?: {[key: string]: any}) {
+  constructor(options?: BinaryChunkReaderOptions) {
     const {maxRewindBytes = 0} = options || {};
 
     /** current global offset into current array buffer*/
@@ -106,7 +112,6 @@ export default class BinaryChunkReader {
     }
 
     if (!bufferOffsets) {
-      // @ts-ignore
       return null;
     }
 

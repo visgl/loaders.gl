@@ -3,7 +3,7 @@
 
 import VectorTileFeature from './vector-tile-feature';
 import Protobuf from 'pbf';
-import {MvtFirstPassedData} from '../types';
+import {GeojsonGeometryInfo} from '@loaders.gl/schema';
 
 export default class VectorTileLayer {
   version: number;
@@ -36,10 +36,10 @@ export default class VectorTileLayer {
    * return feature `i` from this layer as a `VectorTileFeature`
    *
    * @param index
-   * @param firstPassData
+   * @param geometryInfo
    * @returns {VectorTileFeature}
    */
-  feature(i: number, firstPassData: MvtFirstPassedData): VectorTileFeature {
+  feature(i: number, geometryInfo: GeojsonGeometryInfo): VectorTileFeature {
     if (i < 0 || i >= this._features.length) {
       throw new Error('feature index out of bounds');
     }
@@ -53,7 +53,7 @@ export default class VectorTileLayer {
       this.extent,
       this._keys,
       this._values,
-      firstPassData
+      geometryInfo
     );
   }
 }

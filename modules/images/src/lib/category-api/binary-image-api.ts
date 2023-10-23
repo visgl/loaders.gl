@@ -1,10 +1,7 @@
 // Attributions
 // * Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
-// TODO: make these functions work for Node.js buffers?
-// Quarantine references to Buffer to prevent bundler from adding big polyfills
-// import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
-// TODO - this should be handled in @loaders.gl/polyfills
+import {getISOBMFFMediaType} from './parse-isobmff-binary';
 
 /** MIME type, width and height extracted from binary compressed image data */
 export type BinaryImageMetadata = {
@@ -19,7 +16,7 @@ const LITTLE_ENDIAN = true;
 /**
  * Extracts `{mimeType, width and height}` from a memory buffer containing a known image format
  * Currently supports `image/png`, `image/jpeg`, `image/bmp` and `image/gif`.
- * @param binaryData image file memory to parse
+ * @param binaryData: DataView | ArrayBuffer image file memory to parse
  * @returns metadata or null if memory is not a valid image file format layout.
  */
 export function getBinaryImageMetadata(
@@ -30,13 +27,30 @@ export function getBinaryImageMetadata(
     getPngMetadata(dataView) ||
     getJpegMetadata(dataView) ||
     getGifMetadata(dataView) ||
-    getBmpMetadata(dataView)
+    getBmpMetadata(dataView) ||
+    getISOBMFFMetadata(dataView)
   );
+}
+
+// ISOBMFF
+
+function getISOBMFFMetadata(binaryData: DataView | ArrayBuffer): BinaryImageMetadata | null {
+  const buffer = new Uint8Array(binaryData instanceof DataView ? binaryData.buffer : binaryData);
+  const mediaType = getISOBMFFMediaType(buffer);
+  if (!mediaType) {
+    return null;
+  }
+  return {
+    mimeType: mediaType.mimeType,
+    // TODO - decode width and height
+    width: 0,
+    height: 0
+  };
 }
 
 // PNG
 
-function getPngMetadata(binaryData) {
+function getPngMetadata(binaryData: DataView | ArrayBuffer): BinaryImageMetadata | null {
   const dataView = toDataView(binaryData);
   // Check file contains the first 4 bytes of the PNG signature.
   const isPng = dataView.byteLength >= 24 && dataView.getUint32(0, BIG_ENDIAN) === 0x89504e47;
@@ -56,7 +70,7 @@ function getPngMetadata(binaryData) {
 
 // Extract size from a binary GIF file
 // TODO: GIF is not this simple
-function getGifMetadata(binaryData) {
+function getGifMetadata(binaryData: DataView | ArrayBuffer): BinaryImageMetadata | null {
   const dataView = toDataView(binaryData);
   // Check first 4 bytes of the GIF signature ("GIF8").
   const isGif = dataView.byteLength >= 10 && dataView.getUint32(0, BIG_ENDIAN) === 0x47494638;
@@ -75,7 +89,7 @@ function getGifMetadata(binaryData) {
 // BMP
 
 // TODO: BMP is not this simple
-export function getBmpMetadata(binaryData) {
+export function getBmpMetadata(binaryData: DataView | ArrayBuffer): BinaryImageMetadata | null {
   const dataView = toDataView(binaryData);
   // Check magic number is valid (first 2 characters should be "BM").
   // The mandatory bitmap file header is 14 bytes long.
@@ -99,7 +113,7 @@ export function getBmpMetadata(binaryData) {
 // JPEG
 
 // Extract width and height from a binary JPEG file
-function getJpegMetadata(binaryData) {
+function getJpegMetadata(binaryData: DataView | ArrayBuffer): BinaryImageMetadata | null {
   const dataView = toDataView(binaryData);
   // Check file contains the JPEG "start of image" (SOI) marker
   // followed by another marker.

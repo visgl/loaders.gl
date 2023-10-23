@@ -1,23 +1,12 @@
 /* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
-import type {GeoPackageLoaderOptions} from '../geopackage-loader';
-import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import {WKBLoader} from '@loaders.gl/wkt';
-import {
-  Schema,
-  Field,
-  Geometry,
-  DataType,
-  Bool,
-  Utf8,
-  Float64,
-  Int32,
-  Int8,
-  Int16,
-  Float32,
-  Binary
-} from '@loaders.gl/schema';
+import {Schema, Field, Geometry, DataType, Tables, GeoJSONTable, Feature} from '@loaders.gl/schema';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
+import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
+
+import type {GeoPackageLoaderOptions} from '../geopackage-loader';
 import {
   GeometryColumnsRow,
   ContentsRow,
@@ -27,8 +16,19 @@ import {
   DataColumnsRow,
   DataColumnsMapping,
   PragmaTableInfoRow,
-  SQLiteTypes
+  SQLiteTypes,
+  GeoPackageGeometryTypes
 } from './types';
+
+const SQL_JS_VERSION = '1.8.0';
+
+/**
+ * We pin to the same version as sql.js that we use.
+ * As of March 2022, versions 1.6.0, 1.6.1, and 1.6.2 of sql.js appeared not to work.
+ */
+export const DEFAULT_SQLJS_CDN = isBrowser
+  ? `https://cdnjs.cloudflare.com/ajax/libs/sql.js/${SQL_JS_VERSION}/`
+  : null;
 
 // https://www.geopackage.org/spec121/#flags_layout
 const ENVELOPE_BYTE_LENGTHS = {
@@ -44,45 +44,75 @@ const ENVELOPE_BYTE_LENGTHS = {
 };
 
 // Documentation: https://www.geopackage.org/spec130/index.html#table_column_data_types
-const SQL_TYPE_MAPPING: {[type in SQLiteTypes]: typeof DataType} = {
-  BOOLEAN: Bool,
-  TINYINT: Int8,
-  SMALLINT: Int16,
-  MEDIUMINT: Int32,
-  INT: Int32,
-  INTEGER: Int32,
-  FLOAT: Float32,
-  DOUBLE: Float64,
-  REAL: Float64,
-  TEXT: Utf8,
-  BLOB: Binary,
-  DATE: Utf8,
-  DATETIME: Utf8,
-  GEOMETRY: Binary
+const SQL_TYPE_MAPPING: Record<SQLiteTypes | GeoPackageGeometryTypes, DataType> = {
+  BOOLEAN: 'bool',
+  TINYINT: 'int8',
+  SMALLINT: 'int16',
+  MEDIUMINT: 'int32',
+  INT: 'int32',
+  INTEGER: 'int32',
+  FLOAT: 'float32',
+  DOUBLE: 'float64',
+  REAL: 'float64',
+  TEXT: 'utf8',
+  BLOB: 'binary',
+  DATE: 'utf8',
+  DATETIME: 'utf8',
+  GEOMETRY: 'binary',
+  POINT: 'binary',
+  LINESTRING: 'binary',
+  POLYGON: 'binary',
+  MULTIPOINT: 'binary',
+  MULTILINESTRING: 'binary',
+  MULTIPOLYGON: 'binary',
+  GEOMETRYCOLLECTION: 'binary'
 };
 
-export default async function parseGeoPackage(
+export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-) {
-  const {sqlJsCDN = 'https://sql.js.org/dist/'} = options?.geopackage || {};
+): Promise<GeoJSONTable | Tables<GeoJSONTable>> {
+  const {sqlJsCDN = DEFAULT_SQLJS_CDN} = options?.geopackage || {};
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
 
   const db = await loadDatabase(arrayBuffer, sqlJsCDN);
   const tables = listVectorTables(db);
   const projections = getProjections(db);
 
-  // Mapping from tableName to geojson feature collection
-  const result = {};
-  for (const table of tables) {
-    const {table_name: tableName} = table;
-    result[tableName] = getVectorTable(db, tableName, projections, {
-      reproject,
-      _targetCrs
-    });
-  }
+  const selectedTable = tables.find((table) => table.table_name === options?.geopackage?.table);
+  const tableName = selectedTable ? selectedTable.table_name : tables[0].table_name;
 
-  return result;
+  const shape = options?.geopackage?.shape;
+  switch (shape) {
+    case 'geojson-table':
+      return getVectorTable(db, tableName, projections, {
+        reproject,
+        _targetCrs
+      });
+
+    case 'tables':
+      // Mapping from tableName to geojson feature collection
+      const outputTables: Tables<GeoJSONTable> = {
+        shape: 'tables',
+        tables: []
+      };
+
+      for (const table of tables) {
+        const {table_name: tableName} = table;
+        outputTables.tables.push({
+          name: tableName,
+          table: getVectorTable(db, tableName, projections, {
+            reproject,
+            _targetCrs
+          })
+        });
+      }
+
+      return outputTables;
+
+    default:
+      throw new Error(shape);
+  }
 }
 
 /**
@@ -147,7 +177,7 @@ function getVectorTable(
   tableName: string,
   projections: ProjectionMapping,
   {reproject, _targetCrs}: {reproject: boolean; _targetCrs: string}
-): object {
+): GeoJSONTable {
   const dataColumns = getDataColumns(db, tableName);
   const geomColumn = getGeometryColumn(db, tableName);
   const featureIdColumn = getFeatureIdName(db, tableName);
@@ -165,7 +195,7 @@ function getVectorTable(
     });
   }
 
-  const geojsonFeatures: object[] = [];
+  const geojsonFeatures: Feature<Geometry | null>[] = [];
   for (const row of values) {
     const geojsonFeature = constructGeoJsonFeature(
       columns,
@@ -178,12 +208,24 @@ function getVectorTable(
     geojsonFeatures.push(geojsonFeature);
   }
 
-  const schema = getArrowSchema(db, tableName);
+  const schema = getSchema(db, tableName);
   if (projection) {
-    return {geojsonFeatures: transformGeoJsonCoords(geojsonFeatures, projection.project), schema};
+    return {
+      shape: 'geojson-table',
+      type: 'FeatureCollection',
+      // @ts-expect-error TODO - null geometries causing problems...
+      features: transformGeoJsonCoords(geojsonFeatures, projection.project),
+      schema
+    };
   }
 
-  return {geojsonFeatures, schema};
+  return {
+    shape: 'geojson-table',
+    schema,
+    type: 'FeatureCollection',
+    // @ts-expect-error TODO - null features
+    features: geojsonFeatures
+  };
 }
 
 /**
@@ -220,7 +262,7 @@ function constructGeoJsonFeature(
   geomColumn: GeometryColumnsRow,
   dataColumns: DataColumnsMapping,
   featureIdColumn: string
-) {
+): Feature<Geometry | null> {
   // Find feature id
   const idIdx = columns.indexOf(featureIdColumn);
   const id = row[idIdx];
@@ -290,7 +332,7 @@ function getGeopackageVersion(db: Database): string | null {
   const userVersionQuery = db.exec('PRAGMA user_version;')[0];
   const userVersionInt = userVersionQuery.values[0][0];
 
-  if (userVersionInt && userVersionInt < 10300) {
+  if (userVersionInt && typeof userVersionInt === 'number' && userVersionInt < 10300) {
     return '1.2';
   }
 
@@ -328,7 +370,7 @@ function getFeatureIdName(db: Database, tableName: string): string | null {
  * See: https://www.geopackage.org/spec121/#gpb_format
  *
  * @param arrayBuffer geometry buffer
- * @return {object} GeoJSON geometry (in original CRS)
+ * @return GeoJSON geometry (in original CRS)
  */
 function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
   const view = new DataView(arrayBuffer);
@@ -351,8 +393,9 @@ function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
 
   // Loaders should not depend on `core` and the context passed to the main loader doesn't include a
   // `parseSync` option, so instead we call parseSync directly on WKBLoader
-  const binaryGeometry = WKBLoader.parseSync(arrayBuffer.slice(wkbOffset));
+  const binaryGeometry = WKBLoader.parseSync?.(arrayBuffer.slice(wkbOffset));
 
+  // @ts-expect-error
   return binaryToGeometry(binaryGeometry);
 }
 
@@ -438,16 +481,17 @@ function getDataColumns(db: Database, tableName: string): DataColumnsMapping | n
  * @param tableName  table name
  * @returns Arrow-like Schema
  */
-function getArrowSchema(db: Database, tableName: string): Schema {
+function getSchema(db: Database, tableName: string): Schema {
   const stmt = db.prepare(`PRAGMA table_info(\`${tableName}\`)`);
 
   const fields: Field[] = [];
   while (stmt.step()) {
     const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
-    const {name, type, notnull} = pragmaTableInfo;
-    const field = new Field(name, new SQL_TYPE_MAPPING[type](), !notnull);
+    const {name, type: sqlType, notnull} = pragmaTableInfo;
+    const type = SQL_TYPE_MAPPING[sqlType];
+    const field = {name, type, nullable: !notnull};
     fields.push(field);
   }
 
-  return new Schema(fields);
+  return {fields, metadata: {}};
 }

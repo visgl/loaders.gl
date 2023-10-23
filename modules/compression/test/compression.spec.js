@@ -8,10 +8,10 @@ import {
   ZstdCompression,
   SnappyCompression,
   BrotliCompression,
-  LZOCompression,
+  // LZOCompression,
   CompressionWorker
 } from '@loaders.gl/compression';
-import {processOnWorker, isBrowser} from '@loaders.gl/worker-utils';
+import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {getData, compareArrayBuffers} from './utils/test-utils';
 
@@ -20,7 +20,7 @@ import {getData, compareArrayBuffers} from './utils/test-utils';
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
-import lzo from 'lzo';
+// import lzo from 'lzo';
 import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
@@ -33,7 +33,7 @@ const modules = {
     }
   },
   lz4js,
-  lzo,
+  // lzo,
   'zstd-codec': ZstdCodec
 };
 
@@ -76,7 +76,7 @@ const COMPRESSIONS = [
   new BrotliCompression({modules}),
   new DeflateCompression({modules}),
   new GZipCompression({modules}),
-  new LZOCompression({modules}),
+  // new LZOCompression({modules}),
   new LZ4Compression({modules}),
   new SnappyCompression({modules}),
   new ZstdCompression({modules})
@@ -159,12 +159,8 @@ test('compression#batched', async (t) => {
 
 // WORKER TESTS
 
+// TODO v4.0 restore these tests
 test.skip('gzip#worker', async (t) => {
-  if (!isBrowser) {
-    t.end();
-    return;
-  }
-
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -192,15 +188,17 @@ test.skip('gzip#worker', async (t) => {
   t.equal(decompressdData.byteLength, 100000, 'Length correct');
 
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
+
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
   t.end();
 });
 
+// TODO v4.0 restore these tests
 test.skip('lz4#worker', async (t) => {
-  if (!isBrowser) {
-    t.end();
-    return;
-  }
-
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -222,6 +220,12 @@ test.skip('lz4#worker', async (t) => {
   t.equal(decompressdData.byteLength, 100000, 'Length correct');
 
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
+
+  if (!isBrowser) {
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
   t.end();
 });
 

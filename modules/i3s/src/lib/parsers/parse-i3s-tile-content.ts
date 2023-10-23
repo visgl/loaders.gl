@@ -2,25 +2,28 @@ import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import {LoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
 import {
-  I3STilesetHeader,
-  I3STileHeader,
   FeatureAttribute,
   VertexAttribute,
   I3SMeshAttributes,
   I3SMeshAttribute,
   TileContentTexture,
   HeaderAttributeProperty,
-  I3SMaterialDefinition
+  I3SMaterialDefinition,
+  I3STileContent,
+  I3STileOptions,
+  I3STilesetOptions
 } from '../../types';
 import {getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
+import {I3SLoaderOptions} from '../../i3s-loader';
+import {customizeColors} from '../utils/customize-сolors';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -42,38 +45,53 @@ const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
-  tile: I3STileHeader,
-  tileset: I3STilesetHeader,
+  tileOptions: I3STileOptions,
+  tilesetOptions: I3STilesetOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-) {
-  tile.content = tile.content || {};
-  tile.content.featureIds = tile.content.featureIds || null;
+): Promise<I3STileContent> {
+  const content: I3STileContent = {
+    attributes: {},
+    indices: null,
+    featureIds: [],
+    vertexCount: 0,
+    modelMatrix: new Matrix4(),
+    coordinateSystem: 0,
+    byteLength: 0,
+    texture: null
+  };
 
-  tile.content.attributes = {};
-
-  if (tile.textureUrl) {
-    const url = getUrlWithToken(tile.textureUrl, options?.i3s?.token);
-    const loader = getLoaderForTextureFormat(tile.textureFormat);
-    const response = await fetch(url);
+  if (tileOptions.textureUrl) {
+    // @ts-expect-error options is not properly typed
+    const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
+    const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
+    const fetchFunc = context?.fetch || fetch;
+    const response = await fetchFunc(url); // options?.fetch
     const arrayBuffer = await response.arrayBuffer();
 
+    // @ts-expect-error options is not properly typed
     if (options?.i3s.decodeTextures) {
+      // TODO - replace with switch
       if (loader === ImageLoader) {
-        const options = {...tile.textureLoaderOptions, image: {type: 'data'}};
+        const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
         try {
-          // @ts-ignore context must be defined
           // Image constructor is not supported in worker thread.
           // Do parsing image data on the main thread by using context to avoid worker issues.
-          tile.content.texture = await context.parse(arrayBuffer, options);
+          const texture = await parseFromContext(arrayBuffer, [], options, context!);
+          // @ts-expect-error
+          content.texture = texture;
         } catch (e) {
           // context object is different between worker and node.js conversion script.
           // To prevent error we parse data in ordinary way if it is not parsed by using context.
-          tile.content.texture = await parse(arrayBuffer, loader, options);
+          const texture = await parse(arrayBuffer, loader, options, context);
+          content.texture = texture;
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        const texture = await load(arrayBuffer, loader, tile.textureLoaderOptions);
-        tile.content.texture = {
+        let texture = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
+        if (loader === BasisLoader) {
+          texture = texture[0];
+        }
+        content.texture = {
           compressed: true,
           mipmaps: false,
           width: texture[0].width,
@@ -82,37 +100,34 @@ export async function parseI3STileContent(
         };
       }
     } else {
-      tile.content.texture = arrayBuffer;
+      content.texture = arrayBuffer;
     }
   }
 
-  tile.content.material = makePbrMaterial(tile.materialDefinition, tile.content.texture);
-  if (tile.content.material) {
-    tile.content.texture = null;
+  content.material = makePbrMaterial(tileOptions.materialDefinition, content.texture);
+  if (content.material) {
+    content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, tile, tileset, options);
+  return await parseI3SNodeGeometry(arrayBuffer, content, tileOptions, tilesetOptions, options);
 }
 
 /* eslint-disable max-statements */
 async function parseI3SNodeGeometry(
   arrayBuffer: ArrayBuffer,
-  tile: I3STileHeader,
-  tileset: I3STilesetHeader,
-  options?: LoaderOptions
-) {
-  if (!tile.content) {
-    return tile;
-  }
-
-  const content = tile.content;
+  content: I3STileContent,
+  tileOptions: I3STileOptions,
+  tilesetOptions: I3STilesetOptions,
+  options?: I3SLoaderOptions
+): Promise<I3STileContent> {
+  const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
   let vertexCount: number;
   let byteOffset: number = 0;
   let featureCount: number = 0;
   let indices: TypedArray | undefined;
 
-  if (tile.isDracoGeometry) {
+  if (tileOptions.isDracoGeometry) {
     const decompressedGeometry: DracoMesh = await parse(arrayBuffer, DracoLoader, {
       draco: {
         attributeNameEntry: I3S_ATTRIBUTE_TYPE
@@ -152,9 +167,9 @@ async function parseI3SNodeGeometry(
       ordering: attributesOrder,
       featureAttributes,
       featureAttributeOrder
-    } = tileset.store.defaultGeometrySchema;
+    } = tilesetOptions.store.defaultGeometrySchema;
     // First 8 bytes reserved for header (vertexCount and featureCount)
-    const headers = parseHeaders(tileset, arrayBuffer);
+    const headers = parseHeaders(arrayBuffer, tilesetOptions);
     byteOffset = headers.byteOffset;
     vertexCount = headers.vertexCount;
     featureCount = headers.featureCount;
@@ -184,7 +199,7 @@ async function parseI3SNodeGeometry(
     !options?.i3s?.coordinateSystem ||
     options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
   ) {
-    const enuMatrix = parsePositions(attributes.position, tile);
+    const enuMatrix = parsePositions(attributes.position, tileOptions);
     content.modelMatrix = enuMatrix.invert();
     content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
   } else {
@@ -192,17 +207,25 @@ async function parseI3SNodeGeometry(
     content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
   }
 
+  attributes.color = await customizeColors(
+    attributes.color,
+    attributes.id,
+    tileOptions,
+    tilesetOptions,
+    options
+  );
+
   content.attributes = {
     positions: attributes.position,
     normals: attributes.normal,
     colors: normalizeAttribute(attributes.color), // Normalize from UInt8
     texCoords: attributes.uv0,
-    uvRegions: normalizeAttribute(attributes.uvRegion) // Normalize from UInt16
+    uvRegions: normalizeAttribute(attributes.uvRegion || attributes.region) // Normalize from UInt16
   };
   content.indices = indices || null;
 
   if (attributes.id && attributes.id.value) {
-    tile.content.featureIds = attributes.id.value;
+    content.featureIds = attributes.id.value;
   }
 
   // Remove undefined attributes
@@ -213,9 +236,9 @@ async function parseI3SNodeGeometry(
   }
 
   content.vertexCount = vertexCount;
-  content.byteLength = arrayBuffer.byteLength;
+  content.byteLength = contentByteLength;
 
-  return tile;
+  return content;
 }
 
 /**
@@ -270,12 +293,12 @@ function normalizeAttribute(attribute: I3SMeshAttribute): I3SMeshAttribute {
   return attribute;
 }
 
-function parseHeaders(tileset: I3STilesetHeader, arrayBuffer: ArrayBuffer) {
+function parseHeaders(arrayBuffer: ArrayBuffer, options: I3STilesetOptions) {
   let byteOffset = 0;
   // First 8 bytes reserved for header (vertexCount and featurecount)
   let vertexCount = 0;
   let featureCount = 0;
-  for (const {property, type} of tileset.store.defaultGeometrySchema.header) {
+  for (const {property, type} of options.store.defaultGeometrySchema.header) {
     const TypedArrayTypeHeader = getConstructorForDataFormat(type);
     switch (property) {
       case HeaderAttributeProperty.vertexCount:
@@ -304,7 +327,7 @@ function normalizeAttributes(
   arrayBuffer: ArrayBuffer,
   byteOffset: number,
   vertexAttributes: VertexAttribute | FeatureAttribute,
-  vertexCount: number,
+  attributeCount: number,
   attributesOrder: string[]
 ) {
   const attributes: I3SMeshAttributes = {};
@@ -314,44 +337,46 @@ function normalizeAttributes(
     if (vertexAttributes[attribute]) {
       const {valueType, valuesPerElement}: {valueType: string; valuesPerElement: number} =
         vertexAttributes[attribute];
-      // update count and byteOffset count by calculating from defaultGeometrySchema + binnary content
-      const count = vertexCount;
       // protect from arrayBuffer read overunns by NOT assuming node has regions always even though its declared in defaultGeometrySchema.
       // In i3s 1.6: client is required to decide that based on ./shared resource of the node (materialDefinitions.[Mat_id].params.vertexRegions == true)
       // In i3s 1.7 the property has been rolled into the 3d scene layer json/node pages.
       // Code below does not account when the bytelength is actually bigger than
       // the calculated value (b\c the tile potentially could have mesh segmentation information).
       // In those cases tiles without regions could fail or have garbage values.
-      if (byteOffset + count * valuesPerElement > arrayBuffer.byteLength) {
+      if (
+        byteOffset + attributeCount * valuesPerElement * sizeOf(valueType) <=
+        arrayBuffer.byteLength
+      ) {
+        const buffer = arrayBuffer.slice(byteOffset);
+        let value: TypedArray;
+
+        if (valueType === 'UInt64') {
+          value = parseUint64Values(buffer, attributeCount * valuesPerElement, sizeOf(valueType));
+        } else {
+          const TypedArrayType = getConstructorForDataFormat(valueType);
+          value = new TypedArrayType(buffer, 0, attributeCount * valuesPerElement);
+        }
+
+        attributes[attribute] = {
+          value,
+          type: GL_TYPE_MAP[valueType],
+          size: valuesPerElement
+        };
+
+        switch (attribute) {
+          case 'color':
+            attributes.color.normalized = true;
+            break;
+          case 'position':
+          case 'region':
+          case 'normal':
+          default:
+        }
+
+        byteOffset = byteOffset + attributeCount * valuesPerElement * sizeOf(valueType);
+      } else if (attribute !== 'uv0') {
         break;
       }
-      const buffer = arrayBuffer.slice(byteOffset);
-      let value: TypedArray;
-
-      if (valueType === 'UInt64') {
-        value = parseUint64Values(buffer, count * valuesPerElement, sizeOf(valueType));
-      } else {
-        const TypedArrayType = getConstructorForDataFormat(valueType);
-        value = new TypedArrayType(buffer, 0, count * valuesPerElement);
-      }
-
-      attributes[attribute] = {
-        value,
-        type: GL_TYPE_MAP[valueType],
-        size: valuesPerElement
-      };
-
-      switch (attribute) {
-        case 'color':
-          attributes.color.normalized = true;
-          break;
-        case 'position':
-        case 'region':
-        case 'normal':
-        default:
-      }
-
-      byteOffset = byteOffset + count * valuesPerElement * sizeOf(valueType);
     }
   }
 
@@ -388,8 +413,8 @@ function parseUint64Values(
   return new Uint32Array(values);
 }
 
-function parsePositions(attribute: I3SMeshAttribute, tile: I3STileHeader): Matrix4 {
-  const mbs = tile.mbs;
+function parsePositions(attribute: I3SMeshAttribute, options: I3STileOptions): Matrix4 {
+  const mbs = options.mbs;
   const value = attribute.value;
   const metadata = attribute.metadata;
   const enuMatrix = new Matrix4();

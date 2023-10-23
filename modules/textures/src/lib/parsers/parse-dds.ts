@@ -1,4 +1,4 @@
-import type {TextureLevel} from '../../types';
+import type {TextureLevel} from '@loaders.gl/schema';
 import {assert} from '@loaders.gl/loader-utils';
 import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';

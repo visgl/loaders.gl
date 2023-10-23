@@ -1,4 +1,5 @@
 import type {LoaderWithParser, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import type {I3SLoaderOptions} from './i3s-loader';
 import type {BuildingSceneLayerTileset} from './types';
 
 import {parseBuildingSceneLayer} from './lib/parsers/parse-i3s-building-scene-layer';
@@ -10,7 +11,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
 /**
  * Loader for I3S - Building Scene Layer
  */
-export const I3SBuildingSceneLayerLoader: LoaderWithParser = {
+export const I3SBuildingSceneLayerLoader: LoaderWithParser<
+  BuildingSceneLayerTileset,
+  never,
+  I3SLoaderOptions
+> = {
   name: 'I3S Building Scene Layer',
   id: 'i3s-building-scene-layer',
   module: 'i3s',

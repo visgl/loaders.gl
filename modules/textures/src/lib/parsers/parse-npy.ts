@@ -1,22 +1,47 @@
-type NumpyHeader = {descr: string; shape: number[]};
+// import type {TextureLevel} from '@loaders.gl/schema';
+import {TypedArray} from '@math.gl/types';
+// import {TypedArrayConstructor} from "@math.gl/types";
 
-function systemIsLittleEndian() {
-  const a = new Uint32Array([0x12345678]);
-  const b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
-  return !(b[0] === 0x12);
-}
+// TODO move to math.gl
+type TypedArrayConstructor =
+  | typeof Int8Array
+  | typeof Uint8Array
+  | typeof Int16Array
+  | typeof Uint16Array
+  | typeof Int32Array
+  | typeof Uint32Array
+  | typeof Float32Array
+  | typeof Float64Array;
 
-const LITTLE_ENDIAN_OS = systemIsLittleEndian();
+const a = new Uint32Array([0x12345678]);
+const b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+const isLittleEndian = !(b[0] === 0x12);
 
-// The basic string format consists of 3 characters:
-// 1. a character describing the byteorder of the data (<: little-endian, >: big-endian, |: not-relevant)
-// 2. a character code giving the basic type of the array
-// 3. an integer providing the number of bytes the type uses.
-// https://numpy.org/doc/stable/reference/arrays.interface.html
-//
-// Here I only include the second and third characters, and check endianness
-// separately
-const DTYPES: Record<string, any> = {
+const LITTLE_ENDIAN_OS = isLittleEndian;
+
+/** One numpy "tile" */
+export type NPYTile = {
+  /** tile header */
+  header: NumpyHeader;
+  /** data in tile */
+  data: TypedArray;
+};
+
+type NumpyHeader = {
+  descr: string;
+  shape: number[];
+};
+
+/**
+ * The basic string format consists of 3 characters:
+ * 1. a character describing the byteorder of the data (<: little-endian, >: big-endian, |: not-relevant)
+ * 2. a character code giving the basic type of the array
+ * 3. an integer providing the number of bytes the type uses.
+ * https://numpy.org/doc/stable/reference/arrays.interface.html
+ *
+ * Here I only include the second and third characters, and check endianness separately
+ */
+const DTYPES: Record<string, TypedArrayConstructor> = {
   u1: Uint8Array,
   i1: Int8Array,
   u2: Uint16Array,
@@ -27,31 +52,27 @@ const DTYPES: Record<string, any> = {
   f8: Float64Array
 };
 
-export function parseNPY(arrayBuffer: ArrayBuffer, options?: unknown) {
-  if (!arrayBuffer) {
-    return null;
-  }
-
+export function parseNPY(arrayBuffer: ArrayBuffer, options?: {}): NPYTile {
   const view = new DataView(arrayBuffer);
   const {header, headerEndOffset} = parseHeader(view);
 
   const numpyType = header.descr;
   const ArrayType = DTYPES[numpyType.slice(1, 3)];
   if (!ArrayType) {
-    // eslint-disable-next-line no-console, no-undef
-    console.warn(`Decoding of npy dtype not implemented: ${numpyType}`);
-    return null;
+    throw new Error(`Unimplemented type ${numpyType}`);
   }
 
   const nArrayElements = header.shape?.reduce((a: number, b: number): number => a * b);
   const arrayByteLength = nArrayElements * ArrayType.BYTES_PER_ELEMENT;
 
+  if (arrayBuffer.byteLength < headerEndOffset + arrayByteLength) {
+    throw new Error('Buffer overflow');
+  }
   const data = new ArrayType(arrayBuffer.slice(headerEndOffset, headerEndOffset + arrayByteLength));
 
   // Swap endianness if needed
   if ((numpyType[0] === '>' && LITTLE_ENDIAN_OS) || (numpyType[0] === '<' && !LITTLE_ENDIAN_OS)) {
-    // eslint-disable-next-line no-console, no-undef
-    console.warn('Data is wrong endianness, byte swapping not yet implemented.');
+    throw new Error('Incorrect endianness');
   }
 
   return {
@@ -71,12 +92,12 @@ function parseHeader(view: DataView): {header: NumpyHeader; headerEndOffset: num
   // const minorVersion = view.getUint8(7);
 
   let offset = 8;
-  let headerLength;
+  let headerLength: number;
   if (majorVersion >= 2) {
-    headerLength = view.getUint32(8, true);
+    headerLength = view.getUint32(offset, true);
     offset += 4;
   } else {
-    headerLength = view.getUint16(8, true);
+    headerLength = view.getUint16(offset, true);
     offset += 2;
   }
 
