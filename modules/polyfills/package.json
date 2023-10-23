@@ -49,12 +49,12 @@
     "@loaders.gl/crypto": "4.0.0-beta.6",
     "@loaders.gl/loader-utils": "4.0.0-beta.6",
     "buffer": "^6.0.3",
-    "get-pixels": "^3.3.2",
-    "ndarray": "^1.0.18",
-    "save-pixels": "^2.3.2",
-    "stream-to-async-iterator": "^0.2.0",
+    "get-pixels": "^3.3.3",
+    "ndarray": "^1.0.19",
+    "save-pixels": "^2.3.6",
+    "stream-to-async-iterator": "^1.0.0",
     "through": "^2.3.8",
-    "web-streams-polyfill": "^3.0.0"
+    "web-streams-polyfill": "^3.2.1"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
