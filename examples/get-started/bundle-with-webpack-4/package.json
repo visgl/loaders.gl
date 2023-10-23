@@ -1,13 +1,14 @@
 {
   "name": "bundle-with-webpack-4",
+  "version": "1.0.0",
   "description": "Minimal example of using loaders.gl with webpack 4.",
   "private": true,
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open -d"
   },
   "dependencies": {
-    "@loaders.gl/core": "^3.3.1",
-    "@loaders.gl/obj": "^3.3.1"
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/obj": "4.0.0-beta.3"
   },
   "devDependencies": {
     "webpack": "^4.42.0",

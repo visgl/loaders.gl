@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/textures",
-  "version": "3.4.0-alpha.4",
+  "version": "4.0.0-beta.6",
   "description": "Framework-independent loaders for compressed and super compressed (basis) textures ",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -22,8 +23,15 @@
     "basis"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -32,28 +40,28 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-libs && npm run build-worker && npm run build-bundle",
+    "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-workers",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "npm run build-basis-worker && npm run build-basis-nodejs-worker && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-nodejs-worker",
-    "build-basis-worker": "esbuild src/workers/basis-worker.ts --bundle --outfile=dist/basis-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-basis-nodejs-worker": "esbuild src/workers/basis-nodejs-worker.ts --platform=node --target=esnext,node12 --bundle --outfile=dist/basis-nodejs-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-npy-worker": "esbuild src/workers/npy-worker.ts --bundle --outfile=dist/npy-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-compressed-texture-worker": "esbuild src/workers/compressed-texture-worker.ts --bundle --outfile=dist/compressed-texture-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-crunch-worker": "esbuild src/workers/crunch-worker.ts --bundle --outfile=dist/crunch-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-ktx2-basis-writer-worker": "esbuild src/workers/ktx2-basis-writer-worker.ts --bundle --outfile=dist/ktx2-basis-writer-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-ktx2-basis-writer-nodejs-worker": "esbuild src/workers/ktx2-basis-writer-nodejs-worker.ts --platform=node --target=esnext,node12 --bundle --outfile=dist/ktx2-basis-writer-nodejs-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-bundle": "ocular-bundle ./src/index.ts",
+    "build-workers": "npm run build-basis-worker && npm run build-basis-worker-node && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-worker-node",
+    "build-basis-worker": "esbuild src/workers/basis-worker.ts --outfile=dist/basis-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-basis-worker-node": "esbuild src/workers/basis-worker-node.ts --outfile=dist/basis-worker-node.js --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-ktx2-basis-writer-worker": "esbuild src/workers/ktx2-basis-writer-worker.ts --outfile=dist/ktx2-basis-writer-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-ktx2-basis-writer-worker-node": "esbuild src/workers/ktx2-basis-writer-worker-node.ts --outfile=dist/ktx2-basis-writer-worker-node.js --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-npy-worker": "esbuild src/workers/npy-worker.ts --outfile=dist/npy-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-compressed-texture-worker": "esbuild src/workers/compressed-texture-worker.ts --target=esnext --bundle --outfile=dist/compressed-texture-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-crunch-worker": "esbuild src/workers/crunch-worker.ts --outfile=dist/crunch-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/images": "3.4.0-alpha.4",
-    "@loaders.gl/loader-utils": "3.4.0-alpha.4",
-    "@loaders.gl/schema": "3.4.0-alpha.4",
-    "@loaders.gl/worker-utils": "3.4.0-alpha.4",
+    "@loaders.gl/images": "4.0.0-beta.6",
+    "@loaders.gl/loader-utils": "4.0.0-beta.6",
+    "@loaders.gl/schema": "4.0.0-beta.6",
+    "@loaders.gl/worker-utils": "4.0.0-beta.6",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
   },
   "devDependencies": {
-    "@loaders.gl/polyfills": "3.4.0-alpha.4"
+    "@loaders.gl/polyfills": "4.0.0-beta.6"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

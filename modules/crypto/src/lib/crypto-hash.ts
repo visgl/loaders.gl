@@ -1,5 +1,3 @@
-// This dependency is too big, application must provide it
-import type * as CryptoJSNamespace from 'crypto-js';
 import {Hash} from './hash';
 
 type CryptoHashOptions = {
@@ -10,7 +8,7 @@ type CryptoHashOptions = {
   };
 };
 
-let CryptoJS: typeof CryptoJSNamespace;
+let CryptoJS: any;
 
 /**
  * A transform that calculates Cryptographic Hash using Crypto JS library
@@ -36,9 +34,9 @@ export class CryptoHash extends Hash {
   async preload(): Promise<void> {
     if (!CryptoJS) {
       CryptoJS = this.options?.modules?.CryptoJS;
-      if (!CryptoJS) {
-        throw new Error(this.name);
-      }
+    }
+    if (!CryptoJS) {
+      throw new Error(this.name);
     }
     if (!this._hash) {
       const algo = CryptoJS.algo[this._algorithm];
@@ -53,28 +51,31 @@ export class CryptoHash extends Hash {
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  async hash(input: ArrayBuffer): Promise<string> {
+  async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
     await this.preload();
     // arrayBuffer is accepted, even though types and docs say no
     // https://stackoverflow.com/questions/25567468/how-to-decrypt-an-arraybuffer
-    // @ts-expect-error
     const typedWordArray = CryptoJS.lib.WordArray.create(input);
-    return this._hash.update(typedWordArray).finalize().toString(CryptoJS.enc.Base64);
+    // Map our encoding constant to Crypto library
+    const enc = encoding === 'base64' ? CryptoJS.enc.Base64 : CryptoJS.enc.Hex;
+    return this._hash.update(typedWordArray).finalize().toString(enc);
   }
 
   async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     await this.preload();
     for await (const chunk of asyncIterator) {
       // arrayBuffer is accepted, even though types and docs say no
       // https://stackoverflow.com/questions/25567468/how-to-decrypt-an-arraybuffer
-      // @ts-expect-error
       const typedWordArray = CryptoJS.lib.WordArray.create(chunk);
       this._hash.update(typedWordArray);
       yield chunk;
     }
-    const hash = this._hash.finalize().toString(CryptoJS.enc.Base64);
-    this.options?.crypto?.onEnd?.({hash});
+    // Map our encoding constant to Crypto library
+    const enc = encoding === 'base64' ? CryptoJS.enc.Base64 : CryptoJS.enc.Hex;
+    const digest = this._hash.finalize().toString(enc);
+    this.options?.crypto?.onEnd?.({hash: digest});
   }
 }

@@ -1,4 +1,6 @@
+// loaders.gl, MIT license
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable} from './lib/arrow-table';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -10,19 +12,13 @@ export type ArrowLoaderOptions = LoaderOptions & {
   };
 };
 
-const DEFAULT_ARROW_LOADER_OPTIONS = {
-  arrow: {
-    shape: 'columnar-table'
-  }
-};
-
 /** ArrowJS table loader */
-export const ArrowLoader = {
+export const ArrowLoader: Loader<ArrowTable, never, ArrowLoaderOptions> = {
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',
   version: VERSION,
-  worker: true,
+  // worker: true,
   category: 'table',
   extensions: ['arrow', 'feather'],
   mimeTypes: [
@@ -32,7 +28,9 @@ export const ArrowLoader = {
   ],
   binary: true,
   tests: ['ARROW'],
-  options: DEFAULT_ARROW_LOADER_OPTIONS
+  options: {
+    arrow: {
+      shape: 'columnar-table'
+    }
+  }
 };
-
-export const _typecheckArrowLoader: Loader = ArrowLoader;

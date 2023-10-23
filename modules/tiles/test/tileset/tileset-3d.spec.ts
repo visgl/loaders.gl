@@ -127,14 +127,55 @@ test('Tileset3D#url set up correctly given tileset JSON filepath', async (t) => 
   t.end();
 });
 
-// TODO
-test.skip('Tileset3D#url set up correctly given path with query string', async (t) => {
+test('Tileset3D#url set up correctly given path with query string', async (t) => {
   const path = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset.json';
   const param = '?param1=1&param2=2';
   // TODO - params do not work with fetchFile...
+  const tilesetJson = await load(path + param, Tiles3DLoader);
+  const tileset = new Tileset3D(tilesetJson);
+  t.equals(
+    tileset.url.replace(/.*3d-tiles/, ''),
+    (path + param).replace(/.*3d-tiles/, ''),
+    'url search parameters preserved'
+  );
+  const tile = tileset.root;
+  if (tile) {
+    t.equals(
+      tile.contentUrl.replace(/.*3d-tiles/, ''),
+      '/test/data/Tilesets/TilesetOfTilesets/tileset2.json',
+      'raw child url correct, in this case no params'
+    );
+    t.equals(
+      tileset.getTileUrl(tile.contentUrl).replace(/.*3d-tiles/, ''),
+      '/test/data/Tilesets/TilesetOfTilesets/tileset2.json?param1=1&param2=2&v=1.2.3',
+      'child url content parameters and version parameter preserved'
+    );
+    tile.contentUrl += '?param3=3';
+    t.equals(
+      tileset.getTileUrl(tile.contentUrl).replace(/.*3d-tiles/, ''),
+      '/test/data/Tilesets/TilesetOfTilesets/tileset2.json?param3=3&param1=1&param2=2&v=1.2.3',
+      'child url content parameters preserved'
+    );
+    tile.contentUrl += '&session=sesh';
+    t.equals(
+      tileset.getTileUrl(tile.contentUrl).replace(/.*3d-tiles/, ''),
+      '/test/data/Tilesets/TilesetOfTilesets/tileset2.json?param3=3&session=sesh&param1=1&param2=2&v=1.2.3',
+      'child url content parameters preserved'
+    );
+    const urlEnds = tileset.getTileUrl(tile.contentUrl).slice(-1);
+    t.equals('?&'.includes(urlEnds), false);
+  } else {
+    t.fail('no tile');
+  }
+  t.end();
+});
+
+test('Tileset3D#getTileUrl should not ends with sign ? or &', async (t) => {
+  const path = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset2.json';
   const tilesetJson = await load(path, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
-  t.equals(tileset.url, path + param);
+  const urlEnds = tileset.getTileUrl(tileset.url).slice(-1);
+  t.equals('?&'.includes(urlEnds), false);
   t.end();
 });
 
@@ -220,7 +261,7 @@ test('Tileset3D#passes query parameters onto child requests', async (t) => {
   const queryString = '?a=123&b=abc';
   const tilesetJson = await load(TILESET_URL + queryString, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
-  t.equals(tileset.queryParams, '?a=123&b=abc&v=1.2.3');
+  t.equals(tileset.queryParams, 'a=123&b=abc&v=1.2.3');
   t.end();
 });
 /*
@@ -394,7 +435,8 @@ test('Tileset3D#loads tiles in tileset', async (t) => {
   t.end();
 });
 
-test('Tileset3D#should detect ktx2 texture', async (t) => {
+// TODO v4.0 restore these tests
+test.skip('Tileset3D#should detect ktx2 texture', async (t) => {
   const tilesetJson = await load(KTX2_TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
 

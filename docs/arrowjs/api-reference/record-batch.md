@@ -1,5 +1,7 @@
 # RecordBatch
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
 ## Overview
 
 A Record Batch in Apache Arrow is a collection of equal-length array instances.
@@ -20,7 +22,7 @@ const recordBatch = RecordBatch.from(arrays);
 
 ## Inheritance
 
-`RecordBatch` extends [`StructVector`](docs-arrow/api-reference/struct-vector) extends [`BaseVector`](docs-arrow/api-reference/vector)
+`RecordBatch` extends [`StructVector`](/docs/arrowjs/api-reference/struct-vector) extends [`BaseVector`](/docs/arrowjs/api-reference/vector)
 
 
 ## Members

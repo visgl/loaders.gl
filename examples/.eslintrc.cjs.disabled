@@ -1,0 +1,4 @@
+module.exports = {
+  react: '18.0.0',
+  extends: ['plugin:react/recommended']
+};

@@ -16,23 +16,39 @@ The name of the hash algorithm
 
 ## Methods
 
-#### `preload(): Promise<void>`
+#### `preload()`
+
+`preload(): Promise<void>`
 
 Asynchronously loads required libraries. For some hash classes this must be completed before
 `hashSync()` is available.
 
-#### `hash(data: ArrayBuffer): Promise<ArrayBuffer>`
+#### `hash()`
+
+```typescript
+  hash.hash(data: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<ArrayBuffer>
+```
 
 Asynchronously hashes data.
 
-#### `hashSync(data: ArrayBuffer): ArrayBuffer`
+#### `hashSync()`
+
+```typescript
+  hash.hashSync(data: ArrayBuffer, encoding: 'hex' | 'base64'): ArrayBuffer
+```
 
 Synchronously hashes data.
 
-For some hashions `preload()` must have been called and completed before
+:::caution
+For some hash sub classes, `preload()` must have been called and completed before
 synchronous operations are available.
+:::
 
-#### `hashBatches(data: AsyncIterable<ArrayBuffer>): AsyncIterable<ArrayBuffer>`
+#### `hashInBactches()`
+
+```typescript
+  hash.hashBatches(data: AsyncIterable<ArrayBuffer>, encoding: 'hex' | 'base64'): AsyncIterable<ArrayBuffer>
+```
 
 Asynchronously hashes data in batches.
 

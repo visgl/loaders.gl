@@ -102,7 +102,7 @@ export class Tile3D {
   private _expireDate: any = null;
   private _expiredContent: any = null;
 
-  private _boundingBox?: CartographicBounds;
+  private _boundingBox?: CartographicBounds = undefined;
 
   /** updated every frame for tree traversal and rendering optimizations: */
   public _distanceToCamera: number = 0;
@@ -126,9 +126,7 @@ export class Tile3D {
   _stackLength: number = 0;
   _visitedFrame: number = 0;
   _inRequestVolume: boolean = false;
-
-  // TODO i3s specific, needs to remove
-  // private _lodJudge: any = null;
+  _lodJudge: any = null; // TODO i3s specific, needs to remove
 
   /**
    * @constructs

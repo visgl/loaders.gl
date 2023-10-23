@@ -1,5 +1,7 @@
 # Overview
 
+![ogc-logo](../../images/logos/ogc-logo-60.png)
+
 The `@loaders.gl/i3s` module supports loading and traversing Indexed 3d Scene Layer (I3S).
 
 References
@@ -25,8 +27,6 @@ To handle the complex dynamic tile selection and loading required to performantl
 - [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) to work with the loaded tileset.
 - [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) to access data for a specific tile.
 
-## Remarks
-
-`@loaders.gl/3s` is still under experimental, and mainly support decoding `MeshPyramids` (3D Object and Integrated Mesh) profiles.
-
 ## Attribution
+
+MIT license, code is written for loaders.gl.

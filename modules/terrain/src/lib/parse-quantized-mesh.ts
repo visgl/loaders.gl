@@ -1,6 +1,69 @@
-import {getMeshBoundingBox} from '@loaders.gl/schema';
+import {Mesh, getMeshBoundingBox} from '@loaders.gl/schema';
 import decode, {DECODING_STEPS} from './decode-quantized-mesh';
 import {addSkirt} from './helpers/skirt';
+
+export type ParseQuantizedMeshOptions = {
+  bounds?: [number, number, number, number];
+  skirtHeight?: number | null;
+};
+
+export function parseQuantizedMesh(
+  arrayBuffer: ArrayBuffer,
+  options: ParseQuantizedMeshOptions = {}
+): Mesh {
+  const {bounds} = options;
+  // Don't parse edge indices or format extensions
+  const {
+    header,
+    vertexData,
+    triangleIndices: originalTriangleIndices,
+    westIndices,
+    northIndices,
+    eastIndices,
+    southIndices
+  } = decode(arrayBuffer, DECODING_STEPS.triangleIndices);
+  let triangleIndices = originalTriangleIndices;
+  let attributes = getMeshAttributes(vertexData, header, bounds);
+
+  // Compute bounding box before adding skirt so that z values are not skewed
+  // TODO: Find bounding box from header, instead of doing extra pass over
+  // vertices.
+  const boundingBox = getMeshBoundingBox(attributes);
+
+  if (options?.skirtHeight) {
+    const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
+      attributes,
+      triangleIndices,
+      options.skirtHeight,
+      {
+        westIndices,
+        northIndices,
+        eastIndices,
+        southIndices
+      }
+    );
+    attributes = newAttributes;
+    triangleIndices = newTriangles;
+  }
+
+  return {
+    // Data return by this loader implementation
+    loaderData: {
+      header: {}
+    },
+    header: {
+      // @ts-ignore
+      vertexCount: triangleIndices.length,
+      boundingBox
+    },
+    // TODO
+    schema: undefined!,
+    topology: 'triangle-list',
+    mode: 4, // TRIANGLES
+    indices: {value: triangleIndices, size: 1},
+    attributes
+  };
+}
 
 function getMeshAttributes(vertexData, header, bounds) {
   const {minHeight, maxHeight} = header;
@@ -36,63 +99,4 @@ function getMeshAttributes(vertexData, header, bounds) {
     // TODO: Parse normals if they exist in the file
     // NORMAL: {}, - optional, but creates the high poly look with lighting
   };
-}
-
-function getTileMesh(arrayBuffer, options) {
-  if (!arrayBuffer) {
-    return null;
-  }
-  const {bounds} = options;
-  // Don't parse edge indices or format extensions
-  const {
-    header,
-    vertexData,
-    triangleIndices: originalTriangleIndices,
-    westIndices,
-    northIndices,
-    eastIndices,
-    southIndices
-  } = decode(arrayBuffer, DECODING_STEPS.triangleIndices);
-  let triangleIndices = originalTriangleIndices;
-  let attributes = getMeshAttributes(vertexData, header, bounds);
-
-  // Compute bounding box before adding skirt so that z values are not skewed
-  // TODO: Find bounding box from header, instead of doing extra pass over
-  // vertices.
-  const boundingBox = getMeshBoundingBox(attributes);
-
-  if (options.skirtHeight) {
-    const {attributes: newAttributes, triangles: newTriangles} = addSkirt(
-      attributes,
-      triangleIndices,
-      options.skirtHeight,
-      {
-        westIndices,
-        northIndices,
-        eastIndices,
-        southIndices
-      }
-    );
-    attributes = newAttributes;
-    triangleIndices = newTriangles;
-  }
-
-  return {
-    // Data return by this loader implementation
-    loaderData: {
-      header: {}
-    },
-    header: {
-      // @ts-ignore
-      vertexCount: triangleIndices.length,
-      boundingBox
-    },
-    mode: 4, // TRIANGLES
-    indices: {value: triangleIndices, size: 1},
-    attributes
-  };
-}
-
-export default function loadQuantizedMesh(arrayBuffer, options) {
-  return getTileMesh(arrayBuffer, options['quantized-mesh']);
 }

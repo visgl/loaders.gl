@@ -3,8 +3,8 @@ import type {
   FlatFeature,
   Feature,
   GeojsonGeometryInfo,
-  BinaryFeatures,
-  GeoJSONRowTable
+  BinaryFeatureCollection,
+  GeoJSONTable
 } from '@loaders.gl/schema';
 import Protobuf from 'pbf';
 
@@ -25,29 +25,31 @@ import VectorTileFeatureMapBox from './mapbox-vector-tile/vector-tile-feature';
 export default function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
   const mvtOptions = normalizeOptions(options);
 
-  const shape = options?.gis?.format || options?.mvt?.shape;
+  const shape: string | undefined =
+    options?.gis?.format || options?.mvt?.shape || (options?.shape as string);
   switch (shape) {
     case 'columnar-table': // binary + some JS arrays
       return {shape: 'columnar-table', data: parseToBinary(arrayBuffer, mvtOptions)};
-    case 'geojson-row-table': {
-      const table: GeoJSONRowTable = {
-        shape: 'geojson-row-table',
-        data: parseToGeojson(arrayBuffer, mvtOptions)
+    case 'geojson-table': {
+      const table: GeoJSONTable = {
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        features: parseToGeojsonFeatures(arrayBuffer, mvtOptions)
       };
       return table;
     }
     case 'geojson':
-      return parseToGeojson(arrayBuffer, mvtOptions);
+      return parseToGeojsonFeatures(arrayBuffer, mvtOptions);
     case 'binary-geometry':
       return parseToBinary(arrayBuffer, mvtOptions);
     case 'binary':
       return parseToBinary(arrayBuffer, mvtOptions);
     default:
-      throw new Error(shape);
+      throw new Error(shape || 'undefined shape');
   }
 }
 
-function parseToBinary(arrayBuffer: ArrayBuffer, options: MVTOptions): BinaryFeatures {
+function parseToBinary(arrayBuffer: ArrayBuffer, options: MVTOptions): BinaryFeatureCollection {
   const [flatGeoJsonFeatures, geometryInfo] = parseToFlatGeoJson(arrayBuffer, options);
 
   const binaryData = flatGeojsonToBinary(flatGeoJsonFeatures, geometryInfo);
@@ -101,7 +103,7 @@ function parseToFlatGeoJson(
   return [features, geometryInfo];
 }
 
-function parseToGeojson(arrayBuffer: ArrayBuffer, options: MVTOptions): Feature[] {
+function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): Feature[] {
   if (arrayBuffer.byteLength <= 0) {
     return [];
   }
@@ -159,6 +161,7 @@ function getDecodedFeature(
   layerName: string
 ): MVTMapboxCoordinates {
   const decodedFeature = feature.toGeoJSON(
+    // @ts-expect-error What is going on here?
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinates
   );
 
@@ -181,6 +184,7 @@ function getDecodedFeatureBinary(
   layerName: string
 ): FlatFeature {
   const decodedFeature = feature.toBinaryCoordinates(
+    // @ts-expect-error What is going on here?
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinatesBinary
   );
 

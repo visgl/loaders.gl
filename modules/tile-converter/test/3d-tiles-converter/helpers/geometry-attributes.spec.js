@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {generateAttributes} from '../../../src/i3s-converter/helpers/geometry-attributes';
 
-test('tile-converter - geometry-attributes#should return the same attributes with faceRange from 0 to triangleCount - 1 and 0 feature id', async (t) => {
+test('tile-converter(3d-tiles)#geometry-attributes - should return the same attributes with faceRange from 0 to triangleCount - 1 and 0 feature id', async (t) => {
   if (!isBrowser) {
     const oldAttributes = {
       positions: new Float32Array(90),
@@ -33,7 +33,7 @@ test('tile-converter - geometry-attributes#should return the same attributes wit
   }
 });
 
-test('tile-converter - geometry-attributes#should return the same attributes if we have only one triangle and featureIndices with the same indices', async (t) => {
+test('tile-converter(3d-tiles)#geometry-attributes - should return the same attributes if we have only one triangle and featureIndices with the same indices', async (t) => {
   if (!isBrowser) {
     const oldAttributes = {
       positions: new Float32Array([-1, -2, -3, -4, -5, -6, -7, -8, -9]),
@@ -64,7 +64,7 @@ test('tile-converter - geometry-attributes#should return the same attributes if 
   }
 });
 
-test('tile-converter - geometry-attributes#should return reordered attributes', async (t) => {
+test('tile-converter(3d-tiles)#geometry-attributes - should return reordered attributes', async (t) => {
   if (!isBrowser) {
     const oldAttributes = {
       // prettier-ignore
@@ -94,6 +94,55 @@ test('tile-converter - geometry-attributes#should return reordered attributes', 
       // prettier-ignore
       colors: new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]),
       uvRegions: new Uint16Array(0)
+    };
+
+    const attributes = generateAttributes(oldAttributes);
+    t.ok(attributes);
+    t.deepEqual(attributes, resultAttributes);
+    t.end();
+  }
+});
+
+test('tile-converter(3d-tiles)#geometry-attributes - should support uvRegions', async (t) => {
+  if (!isBrowser) {
+    const oldAttributes = {
+      // prettier-ignore
+      positions: new Float32Array([-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18,-19,-20,-21,-22,-23,-34,-25,-26,-27]),
+      // prettier-ignore
+      normals: new Float32Array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,34,25,26,27]),
+      // prettier-ignore
+      texCoords: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]),
+      // prettier-ignore
+      colors: new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+      ]),
+      // prettier-ignore
+      uvRegions: new Uint16Array([ 
+        0,     65535, 32767, 65535, 0,     65535, 32767, 65535, 0,     65535, 32767, 65535,  
+        32767, 65535, 65535, 65535, 32767, 65535, 65535, 65535, 32767, 65535, 65535, 65535,
+        0,     65535, 32767, 65535, 0,     65535, 32767, 65535, 0,     65535, 32767, 65535
+      ]),
+      featureIndices: [0, 0, 0, 1, 1, 1, 0, 0, 0],
+      boundingVolumes: null,
+      mergedMaterials: []
+    };
+
+    const resultAttributes = {
+      featureIds: [0, 1],
+      faceRange: new Uint32Array([0, 1, 2, 2]),
+      featureCount: 2,
+      // prettier-ignore
+      positions: new Float32Array([-1,-2,-3,-4,-5,-6,-7,-8,-9,-19,-20,-21,-22,-23,-34,-25,-26,-27,-10,-11,-12,-13,-14,-15,-16,-17,-18]),
+      // prettier-ignore
+      normals: new Float32Array([1,2,3,4,5,6,7,8,9,19,20,21,22,23,34,25,26,27,10,11,12,13,14,15,16,17,18]),
+      texCoords: new Float32Array([1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 17, 18, 7, 8, 9, 10, 11, 12]),
+      // prettier-ignore
+      colors: new Uint8Array([255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255]),
+      // prettier-ignore
+      uvRegions: new Uint16Array([ 
+        0,     65535, 32767, 65535, 0,     65535, 32767, 65535, 0,     65535, 32767, 65535,  
+        0,     65535, 32767, 65535, 0,     65535, 32767, 65535, 0,     65535, 32767, 65535,
+        32767, 65535, 65535, 65535, 32767, 65535, 65535, 65535, 32767, 65535, 65535, 65535
+      ])
     };
 
     const attributes = generateAttributes(oldAttributes);

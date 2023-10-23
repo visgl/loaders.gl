@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "name": "geospatial-loaders-example",
+  "description": "Minimal example of using loaders.gl with vite.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@deck.gl/geo-layers": "^8.9.28",
+    "@deck.gl/mesh-layers": "^8.9.28",
+    "@deck.gl/extensions": "8.9.28",
+    "@deck.gl/react": "^8.9.28",
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@monaco-editor/react": "^4.5.0",
+    "mapbox-gl": "npm:empty-npm-package@^1.0.0",
+    "maplibre-gl": "^2.4.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-map-gl": "^7.0.0",
+    "styled-components": "^4.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.4",
+    "vite": "^4.4.9"
+  }
+}

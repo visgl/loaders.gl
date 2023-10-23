@@ -1,14 +1,20 @@
-import type {I3SAttributesData} from '../../3d-tiles-attributes-worker';
-
+import type {I3STileContent} from '@loaders.gl/i3s';
 import {encodeSync} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
+import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
+
+export type I3SAttributesData = {
+  tileContent: I3STileContent;
+  box: number[];
+  textureFormat: string;
+};
 
 /**
  * Converts content of an I3S node to *.b3dm's file content
@@ -27,7 +33,7 @@ export default class B3dmConverter {
     i3sAttributesData: I3SAttributesData,
     featureAttributes: any = null
   ): Promise<ArrayBuffer> {
-    const gltf = await this.buildGltf(i3sAttributesData, featureAttributes);
+    const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes);
     const b3dm = encodeSync(
       {
         gltfEncoded: new Uint8Array(gltf),
@@ -45,23 +51,16 @@ export default class B3dmConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded glb content
    */
-  async buildGltf(
+  async buildGLTF(
     i3sAttributesData: I3SAttributesData,
     featureAttributes: any
   ): Promise<ArrayBuffer> {
-    const {tileContent, textureFormat} = i3sAttributesData;
-    const {
-      material,
-      attributes,
-      indices: originalIndices,
-      cartesianOrigin,
-      cartographicOrigin,
-      modelMatrix
-    } = tileContent;
+    const {tileContent, textureFormat, box} = i3sAttributesData;
+    const {material, attributes, indices: originalIndices, modelMatrix} = tileContent;
     const gltfBuilder = new GLTFScenegraph();
 
-    const textureIndex = await this._addI3sTextureToGltf(tileContent, textureFormat, gltfBuilder);
-    const pbrMaterialInfo = this._convertI3sMaterialToGltfMaterial(material, textureIndex);
+    const textureIndex = await this._addI3sTextureToGLTF(tileContent, textureFormat, gltfBuilder);
+    const pbrMaterialInfo = this._convertI3sMaterialToGLTFMaterial(material, textureIndex);
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
 
     const positions = attributes.positions;
@@ -74,6 +73,12 @@ export default class B3dmConverter {
       );
     }
 
+    const cartesianOrigin = new Vector3(box);
+    const cartographicOrigin = Ellipsoid.WGS84.cartesianToCartographic(
+      cartesianOrigin,
+      new Vector3()
+    );
+
     attributes.positions.value = this._normalizePositions(
       positionsValue,
       cartesianOrigin,
@@ -85,7 +90,7 @@ export default class B3dmConverter {
       delete attributes.normals;
     }
     const indices =
-      originalIndices || this._generateSynteticIndices(positionsValue.length / positions.size);
+      originalIndices || generateSyntheticIndices(positionsValue.length / positions.size);
     const meshIndex = gltfBuilder.addMesh({
       attributes,
       indices,
@@ -110,7 +115,7 @@ export default class B3dmConverter {
    * @param {GLTFScenegraph} gltfBuilder - gltfScenegraph instance to construct GLTF
    * @returns {Promise<number | null>} - GLTF texture index
    */
-  async _addI3sTextureToGltf(tileContent, textureFormat, gltfBuilder) {
+  async _addI3sTextureToGLTF(tileContent, textureFormat, gltfBuilder) {
     const {texture, material, attributes} = tileContent;
     let textureIndex = null;
     let selectedTexture = texture;
@@ -192,21 +197,6 @@ export default class B3dmConverter {
   }
 
   /**
-   * luma.gl can not work without indices now:
-   * https://github.com/visgl/luma.gl/blob/d8cad75b9f8ca3e578cf078ed9d19e619c2ddbc9/modules/experimental/src/gltf/gltf-instantiator.js#L115
-   * This method generates syntetic indices array: [0, 1, 2, 3, .... , vertexCount-1]
-   * @param {number} vertexCount - vertex count in the geometry
-   * @returns {Uint32Array} indices array.
-   */
-  _generateSynteticIndices(vertexCount) {
-    const result = new Uint32Array(vertexCount);
-    for (let index = 0; index < vertexCount; index++) {
-      result.set([index], index);
-    }
-    return result;
-  }
-
-  /**
    * Deduce mime type by format from `textureSetDefinition.formats[0].format`
    * https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
    * @param {string} format - format name
@@ -232,7 +222,7 @@ export default class B3dmConverter {
    * @param {number | null} textureIndex - texture index in GLTF
    * @returns {object} GLTF material
    */
-  _convertI3sMaterialToGltfMaterial(material, textureIndex) {
+  _convertI3sMaterialToGLTFMaterial(material, textureIndex) {
     const isTextureIndexExists = textureIndex !== null;
 
     if (!material) {
@@ -258,7 +248,7 @@ export default class B3dmConverter {
     }
 
     if (textureIndex !== null) {
-      material = this._setGltfTexture(material, textureIndex);
+      material = this._setGLTFTexture(material, textureIndex);
     }
 
     return material;
@@ -270,7 +260,7 @@ export default class B3dmConverter {
    * @param {number} textureIndex - texture index in GLTF
    * @returns {void}
    */
-  _setGltfTexture(materialDefinition, textureIndex) {
+  _setGLTFTexture(materialDefinition, textureIndex) {
     const material = {
       ...materialDefinition,
       pbrMetallicRoughness: {...materialDefinition.pbrMetallicRoughness}

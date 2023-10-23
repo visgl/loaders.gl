@@ -1,24 +1,29 @@
 # BSONLoader
 
-This loader is part of the [`@loaders.gl/bson`](/docs/modules/bson) module.
+![bson-logo](../../../images/logos/bson-logo.png)
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
+</p>
+
+This loader is part of the [`@loaders.gl/bson`](/docs/modules/bson) module.
 
 Streaming loader for BSON encoded files.
 
 | Loader         | Characteristic                                          |
 | -------------- | ------------------------------------------------------- |
+| File Format    | [BSON](/docs/modules/bson/formats/bson)                 |
+| Data Format    | [Unstructured/JSON](/docs/specifications/category-json) |
 | File Extension | `.bson`                                                 |
 | Media Type     | `application/bson`                                      |
 | File Type      | Binary                                                  |
-| File Format    | [BSON](/docs/modules/bson/formats/bson)                 |
-| Data Format    | [Unstructured/JSON](/docs/specifications/category-json) |
 | Supported APIs | `load`, `parse`, `parseSync`                            |
 
 ## Usage
 
 For simple usage, you can load and parse a BSON file atomically:
 
-```js
+```typescript
 import {BSONLoader} from '@loaders.gl/bson';
 import {load} from '@loaders.gl/core';
 

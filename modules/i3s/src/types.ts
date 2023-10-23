@@ -1,29 +1,31 @@
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
-import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
-
-export enum DATA_TYPE {
-  UInt8 = 'UInt8',
-  UInt16 = 'UInt16',
-  UInt32 = 'UInt32',
-  UInt64 = 'UInt64',
-  Int16 = 'Int16',
-  Int32 = 'Int32',
-  Int64 = 'Int64',
-  Float32 = 'Float32',
-  Float64 = 'Float64'
-}
+import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import I3SNodePagesTiles from './lib/helpers/i3s-nodepages-tiles';
+import {LoaderWithParser} from '@loaders.gl/loader-utils';
 
 export type COLOR = [number, number, number, number];
 
 /**
- * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DSceneLayer.cmn.md
+ * Extension of SceneLayer3D JSON with postprocessed loader data
  */
-// TODO Replace "[key: string]: any" with actual defenition
 export interface I3STilesetHeader extends SceneLayer3D {
   /** Not in spec, but is necessary for woking */
   url?: string;
-  [key: string]: any;
+  /** Base path that non-absolute paths in tileset are relative to. */
+  basePath?: string;
+  /** root node metadata */
+  root: I3STileHeader;
+  /** instance of the NodePages to tiles loader */
+  nodePagesTile?: I3SNodePagesTiles;
+  /** Type of the tileset */
+  type: TILESET_TYPE.I3S;
+  /** LOD metric type per I3S spec*/
+  lodMetricType?: string;
+  /** LOD metric value */
+  lodMetricValue?: number;
+  /** Loader that has to be used to load content */
+  loader: LoaderWithParser;
 }
 /** https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md */
 export type NodePage = {
@@ -69,20 +71,62 @@ type meshAttribute = {
   resource: number;
 };
 
+/**
+ * Texture format
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
+ */
 export type I3STextureFormat = 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2';
 
-// TODO Replace "[key: string]: any" with actual defenition
-export type I3STileHeader = {
-  isDracoGeometry: boolean;
-  textureUrl?: string;
-  url?: string;
-  textureFormat?: I3STextureFormat;
-  textureLoaderOptions?: any;
-  materialDefinition?: I3SMaterialDefinition;
+/** Postprocessed I3S Node */
+export type I3STileHeader = I3SMinimalNodeData & {
+  /** MBS per I3S spec */
   mbs: Mbs;
-  obb?: Obb;
+  /** Material definition from the layer metadata per I3S spec */
+  materialDefinition?: I3SMaterialDefinition;
+  /** Bounding volume converted to 3DTiles format. It is generic for `tile` module */
+  boundingVolume: {box?: number[]; sphere?: number[]};
+  /** LOD metric selected for usage */
+  lodMetricType?: string;
+  /** LOD metric value */
+  lodMetricValue?: number;
+  /** Tile content type */
+  type: TILE_TYPE.MESH;
+  /** Tile refinement type. I3S supports only `REPLACE` */
+  refine: TILE_REFINEMENT.REPLACE;
+};
+
+/**
+ * Minimal I3S node data is needed for loading
+ * These data can come from 3DNodeIndexDocument (I3S spec) or from `I3SNodePagesTiles` instance
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md
+ */
+export type I3SMinimalNodeData = {
+  /** Node ID */
+  id: string;
+  /** Node base path */
+  url?: string;
+  /** LOD selection metrics  */
   lodSelection?: LodSelection[];
-  [key: string]: any;
+  // OBB per I3S spec
+  obb?: Obb;
+  /** MBS per I3S spec */
+  mbs?: Mbs;
+  /** Geometry content URL */
+  contentUrl?: string;
+  /** Texture image URL */
+  textureUrl?: string;
+  /** Feature attributes URLs */
+  attributeUrls?: string[];
+  /** Material definition from I3S layer metadata */
+  materialDefinition?: I3SMaterialDefinition;
+  /** Texture format per I3S spec */
+  textureFormat: I3STextureFormat;
+  /** Loader options for texture loader. The loader might be `CompressedTextureLoader` for `dds`, BasisLoader for `ktx2` or ImageLoader for `jpg`and `png` */
+  textureLoaderOptions?: {[key: string]: any};
+  /** Child Nodes references  */
+  children: NodeReference[];
+  /** Is the node has Draco compressed geometry */
+  isDracoGeometry: boolean;
 };
 
 export type I3SParseOptions = {
@@ -108,12 +152,20 @@ export type I3SParseOptions = {
    * Supported coordinate systems: METER_OFFSETS, LNGLAT_OFFSETS
    */
   coordinateSystem?: number;
+  /** Options to colorize 3DObjects by attribute value */
   colorsByAttribute?: {
+    /** Feature attribute name */
     attributeName: string;
+    /** Minimum attribute value */
     minValue: number;
+    /** Maximum attribute value */
     maxValue: number;
+    /** Minimum color. 3DObject will be colorized with gradient from `minColor to `maxColor` */
     minColor: COLOR;
+    /** Maximum color. 3DObject will be colorized with gradient from `minColor to `maxColor` */
     maxColor: COLOR;
+    /** Colorization mode. `replace` - replace vertex colors with a new colors, `multiply` - multiply vertex colors with new colors */
+    mode: 'multiply' | 'replace';
   };
 
   /** @deprecated */
@@ -168,12 +220,20 @@ export type BoundingVolumes = {
   obb: Obb;
 };
 
+/**
+ * Oriented bounding box per I3S spec
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/obb.cmn.md
+ */
 export type Obb = {
   center: number[] | Vector3;
   halfSize: number[] | Vector3;
   quaternion: number[] | Quaternion;
 };
 
+/**
+ * Minimum bounding sphere per I3S spec
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md#properties
+ */
 export type Mbs = [number, number, number, number];
 
 /** SceneLayer3D based on I3S specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/3DSceneLayer.cmn.md */
@@ -381,36 +441,32 @@ export type Node3DIndexDocument = {
 };
 
 /**
- * Minimal I3S node data is needed for loading
+ * LOD selection metrics per I3S spec
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md
  */
-export type I3SMinimalNodeData = {
-  id: string;
-  url?: string;
-  transform?: number[];
-  lodSelection?: LodSelection[];
-  obb?: Obb;
-  mbs?: Mbs;
-  contentUrl?: string;
-  textureUrl?: string;
-  attributeUrls?: string[];
-  materialDefinition?: I3SMaterialDefinition;
-  textureFormat?: I3STextureFormat;
-  textureLoaderOptions?: {[key: string]: any};
-  children?: NodeReference[];
-  isDracoGeometry: boolean;
-};
-
 export type LodSelection = {
+  /**  */
   metricType?: string;
   maxError: number;
 };
 
+/**
+ * Node reference per I3S spec
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/nodeReference.cmn.md
+ */
 export type NodeReference = {
+  /** Tree Key ID of the referenced node represented as string. */
   id: string;
+  /** Version (store update session ID) of the referenced node. */
   version?: string;
+  /** An array of four doubles, corresponding to x, y, z and radius of the minimum bounding sphere of a node. */
   mbs?: Mbs;
+  /** Describes oriented bounding box. */
   obb?: Obb;
+  /** Number of values per element. */
   href?: string;
+  /** Number of features in the referenced node and its descendants, down to the leaf nodes. */
+  featureCount?: number;
 };
 
 export type Resource = {
@@ -689,20 +745,24 @@ type Domain = {
  * spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/store.cmn.md
  */
 type Store = {
-  id: string | number;
+  id?: string | number;
   profile: string;
   version: number | string;
-  resourcePattern: string[];
-  rootNode: string;
-  extent: number[];
-  indexCRS: string;
-  vertexCRS: string;
-  normalReferenceFrame: string;
-  attributeEncoding: string;
-  textureEncoding: string[];
-  lodType: string;
-  lodModel: string;
+  resourcePattern?: string[];
+  rootNode?: string;
+  extent?: number[];
+  indexCRS?: string;
+  vertexCRS?: string;
+  normalReferenceFrame?: string;
+  lodType?: string;
+  lodModel?: string;
   defaultGeometrySchema: DefaultGeometrySchema;
+  nidEncoding?: string;
+  textureEncoding?: string[];
+  featureEncoding?: string;
+  geometryEncoding?: string;
+  attributeEncoding?: string;
+  indexingScheme?: string;
 };
 /**
  * Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/defaultGeometrySchema.cmn.md
@@ -725,15 +785,15 @@ type DefaultGeometrySchema = {
 export type HeaderAttribute = {
   property: HeaderAttributeProperty.vertexCount | HeaderAttributeProperty.featureCount | string;
   type:
-    | DATA_TYPE.UInt8
-    | DATA_TYPE.UInt16
-    | DATA_TYPE.UInt32
-    | DATA_TYPE.UInt64
-    | DATA_TYPE.Int16
-    | DATA_TYPE.Int32
-    | DATA_TYPE.Int64
-    | DATA_TYPE.Float32
-    | DATA_TYPE.Float64;
+    | 'UInt8'
+    | 'UInt16'
+    | 'UInt32'
+    | 'UInt64'
+    | 'Int16'
+    | 'Int32'
+    | 'Int64'
+    | 'Float32'
+    | 'Float64';
 };
 export enum HeaderAttributeProperty {
   vertexCount = 'vertexCount',
@@ -748,14 +808,7 @@ export type VertexAttribute = {
 };
 export type GeometryAttribute = {
   byteOffset?: number;
-  valueType:
-    | DATA_TYPE.UInt8
-    | DATA_TYPE.UInt16
-    | DATA_TYPE.Int16
-    | DATA_TYPE.Int32
-    | DATA_TYPE.Int64
-    | DATA_TYPE.Float32
-    | DATA_TYPE.Float64;
+  valueType: 'UInt8' | 'UInt16' | 'Int16' | 'Int32' | 'Int64' | 'Float32' | 'Float64';
   valuesPerElement: number;
 };
 export type I3SMeshAttributes = {
@@ -803,7 +856,7 @@ type TextureSetDefinition = {
 
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/geometryDefinition.cmn.md */
 type GeometryDefinition = {
-  topology: 'triangle' | string;
+  topology?: 'triangle';
   geometryBuffers: GeometryBuffer[];
 };
 /** Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/geometryBuffer.cmn.md */
@@ -819,7 +872,7 @@ type GeometryBuffer = {
   compressedAttributes?: {encoding: string; attributes: string[]};
 };
 
-type GeometryBufferItem = {type: string; component: number; encoding?: string; binding: string};
+type GeometryBufferItem = {type: string; component: number; encoding?: string; binding?: string};
 
 type AttributeValue = {valueType: string; encoding?: string; valuesPerElement?: number};
 
@@ -830,16 +883,16 @@ export type FieldInfo = {
   label: string;
 };
 
-export type ArcGisWebSceneData = {
-  header: ArcGisWebScene;
+export type ArcGISWebSceneData = {
+  header: ArcGISWebScene;
   layers: OperationalLayer[];
   unsupportedLayers: OperationalLayer[];
 };
 
 /**
- * ArcGis WebScene spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
+ * ArcGIS WebScene spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
  */
-export type ArcGisWebScene = {
+export type ArcGISWebScene = {
   /**
    * @todo add type.
    * Spec - https://developers.arcgis.com/web-scene-specification/objects/applicationProperties/
@@ -880,7 +933,7 @@ export type ArcGisWebScene = {
    * Spec - https://developers.arcgis.com/web-scene-specification/objects/presentation/
    * @todo Add presentation type.
    */
-  presentation: ArcGisPresentation;
+  presentation: ArcGISPresentation;
   /**
    * An object that provides information about the initial environment settings and viewpoint of the web scene.
    */
@@ -930,7 +983,7 @@ export type ArcGisWebScene = {
 /**
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-webscene-Presentation.html
  */
-type ArcGisPresentation = {
+type ArcGISPresentation = {
   slides: Slide[];
 };
 
@@ -953,26 +1006,26 @@ type Slide = {
   ground: {
     transparency: number;
   };
-  baseMap: ArcGisBaseMap;
-  visibleLayers: ArcGisVisibleLayer[];
-  viewpoint: ArcGisViewPoint;
+  baseMap: ArcGISBaseMap;
+  visibleLayers: ArcGISVisibleLayer[];
+  viewpoint: ArcGISViewPoint;
 };
 
 /**
  * The basemap of the scene. Only the base and reference layers of the basemap are stored in a slide.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-Basemap.html
  */
-type ArcGisBaseMap = {
+type ArcGISBaseMap = {
   id: string;
   title: string;
-  baseMapLayers: ArcGisBaseMapLayer[];
+  baseMapLayers: ArcGISBaseMapLayer[];
 };
 
 /**
  * The visible layers of the scene.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-webscene-Slide.html#visibleLayers
  */
-type ArcGisVisibleLayer = {
+type ArcGISVisibleLayer = {
   id: string;
   sublayerIds: number[];
 };
@@ -980,7 +1033,7 @@ type ArcGisVisibleLayer = {
  * The basemap of the scene.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-Basemap.html
  */
-type ArcGisBaseMapLayer = {
+type ArcGISBaseMapLayer = {
   id: string;
   title: string;
   url: string;
@@ -992,14 +1045,14 @@ type ArcGisBaseMapLayer = {
  * The viewpoint of the slide. This acts like a bookmark, saving a predefined location or point of view from which to view the scene.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-Viewpoint.html
  */
-type ArcGisViewPoint = {
+type ArcGISViewPoint = {
   scale: number;
   rotation?: number;
   /**
    * Spec - https://developers.arcgis.com/web-scene-specification/objects/viewpoint/
    */
   targetGeometry: any;
-  camera: ArcGisCamera;
+  camera: ArcGISCamera;
 };
 
 /**
@@ -1007,7 +1060,7 @@ type ArcGisViewPoint = {
  * It is not associated with device hardware. This class only applies to 3D SceneViews.
  * Spec - https://developers.arcgis.com/javascript/latest/api-reference/esri-Camera.html
  */
-export type ArcGisCamera = {
+export type ArcGISCamera = {
   position: {
     x: number;
     y: number;

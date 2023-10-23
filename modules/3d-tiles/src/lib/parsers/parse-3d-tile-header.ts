@@ -1,19 +1,57 @@
+import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/loader-utils';
 import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
-import {Tileset3D, LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D} from '@loaders.gl/tiles';
-import {ImplicitTilingExtension, Subtree} from '../../types';
+import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
+import {
+  ImplicitTilingExensionData,
+  Subtree,
+  Tile3DBoundingVolume,
+  Tiles3DTileContentJSON,
+  Tiles3DTileJSON,
+  Tiles3DTileJSONPostprocessed,
+  Tiles3DTilesetJSON
+} from '../../types';
 import type {S2VolumeBox} from './helpers/parse-3d-implicit-tiles';
 import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-implicit-tiles';
 import type {S2VolumeInfo} from '../utils/obb/s2-corners-to-obb';
 import {convertS2BoundingVolumetoOBB} from '../utils/obb/s2-corners-to-obb';
 
-function getTileType(tile) {
-  if (!tile.contentUrl) {
+/** Options for recursive loading implicit subtrees */
+export type ImplicitOptions = {
+  /** Template of the full url of the content template */
+  contentUrlTemplate: string;
+  /** Template of the full url of the subtree  */
+  subtreesUriTemplate: string;
+  /** Implicit subdivision scheme */
+  subdivisionScheme: 'QUADTREE' | 'OCTREE' | string;
+  /** Levels per subtree */
+  subtreeLevels: number;
+  /** Maximum implicit level through all subtrees */
+  maximumLevel?: number;
+  /** 3DTiles refine method (add/replace) */
+  refine?: string;
+  /** Tileset base path */
+  basePath: string;
+  /** 3DTiles LOD metric type */
+  lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR;
+  /** Root metric value of the root tile of the implicit subtrees */
+  rootLodMetricValue: number;
+  /** Bounding volume of the root tile of the implicit subtrees */
+  rootBoundingVolume: Tile3DBoundingVolume;
+  /** Function that detects TILE_TYPE by tile metadata and content URL */
+  getTileType: (tile: Tiles3DTileJSON, tileContentUrl?: string) => TILE_TYPE | string;
+  /** Function that converts string refine method to enum value */
+  getRefine: (refine?: string) => TILE_REFINEMENT | string | undefined;
+};
+
+function getTileType(tile: Tiles3DTileJSON, tileContentUrl: string = ''): TILE_TYPE | string {
+  if (!tileContentUrl) {
     return TILE_TYPE.EMPTY;
   }
 
-  const contentUrl = tile.contentUrl.split('?')[0]; // Discard query string
+  const contentUrl = tileContentUrl.split('?')[0]; // Discard query string
   const fileExtension = contentUrl.split('.').pop();
   switch (fileExtension) {
     case 'pnts':
@@ -24,11 +62,11 @@ function getTileType(tile) {
     case 'gltf':
       return TILE_TYPE.SCENEGRAPH;
     default:
-      return fileExtension;
+      return fileExtension || TILE_TYPE.EMPTY;
   }
 }
 
-function getRefine(refine) {
+function getRefine(refine?: string): TILE_REFINEMENT | string | undefined {
   switch (refine) {
     case 'REPLACE':
     case 'replace':
@@ -41,7 +79,7 @@ function getRefine(refine) {
   }
 }
 
-function resolveUri(uri, basePath) {
+function resolveUri(uri: string = '', basePath: string): string {
   // url scheme per RFC3986
   const urlSchemeRegex = /^[a-z][0-9a-z+.-]*:/i;
 
@@ -52,45 +90,54 @@ function resolveUri(uri, basePath) {
     return uri;
   }
 
-  return `${basePath}/${uri}`;
+  return path.resolve(basePath, uri);
 }
 
-export function normalizeTileData(tile, options) {
+export function normalizeTileData(
+  tile: Tiles3DTileJSON | null,
+  basePath: string
+): Tiles3DTileJSONPostprocessed | null {
   if (!tile) {
     return null;
   }
+  let tileContentUrl: string | undefined;
   if (tile.content) {
-    const contentUri = tile.content.uri || tile.content.url;
-    tile.contentUrl = resolveUri(contentUri, options.basePath);
+    const contentUri = tile.content.uri || tile.content?.url;
+    tileContentUrl = resolveUri(contentUri, basePath);
   }
-  tile.id = tile.contentUrl;
-  tile.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
-  tile.lodMetricValue = tile.geometricError;
-  tile.transformMatrix = tile.transform;
-  tile.type = getTileType(tile);
-  tile.refine = getRefine(tile.refine);
+  const tilePostprocessed: Tiles3DTileJSONPostprocessed = {
+    ...tile,
+    id: tileContentUrl,
+    contentUrl: tileContentUrl,
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    lodMetricValue: tile.geometricError,
+    transformMatrix: tile.transform,
+    type: getTileType(tile, tileContentUrl),
+    refine: getRefine(tile.refine)
+  };
 
-  return tile;
+  return tilePostprocessed;
 }
 
 // normalize tile headers
 export async function normalizeTileHeaders(
-  tileset: Tileset3D,
+  tileset: Tiles3DTilesetJSON,
+  basePath: string,
   options: LoaderOptions
-): Promise<Tileset3D> {
-  const basePath = tileset.basePath;
-  let root: Tileset3D;
+): Promise<Tiles3DTileJSONPostprocessed | null> {
+  let root: Tiles3DTileJSONPostprocessed | null = null;
 
-  const rootImplicitTilingExtension = getImplicitTilingExtensionData(tileset?.root);
+  const rootImplicitTilingExtension = getImplicitTilingExtensionData(tileset.root);
   if (rootImplicitTilingExtension && tileset.root) {
     root = await normalizeImplicitTileHeaders(
       tileset.root,
       tileset,
+      basePath,
       rootImplicitTilingExtension,
       options
     );
   } else {
-    root = normalizeTileData(tileset.root, tileset);
+    root = normalizeTileData(tileset.root, basePath);
   }
 
   const stack: any[] = [];
@@ -99,21 +146,28 @@ export async function normalizeTileHeaders(
   while (stack.length > 0) {
     const tile = stack.pop() || {};
     const children = tile.children || [];
-    for (let childHeader of children) {
+    const childrenPostprocessed: Tiles3DTileJSONPostprocessed[] = [];
+    for (const childHeader of children) {
       const childImplicitTilingExtension = getImplicitTilingExtensionData(childHeader);
+      let childHeaderPostprocessed: Tiles3DTileJSONPostprocessed | null;
       if (childImplicitTilingExtension) {
-        childHeader = await normalizeImplicitTileHeaders(
+        childHeaderPostprocessed = await normalizeImplicitTileHeaders(
           childHeader,
           tileset,
+          basePath,
           childImplicitTilingExtension,
           options
         );
       } else {
-        normalizeTileData(childHeader, {basePath});
+        childHeaderPostprocessed = normalizeTileData(childHeader, basePath);
       }
 
-      stack.push(childHeader);
+      if (childHeaderPostprocessed) {
+        childrenPostprocessed.push(childHeaderPostprocessed);
+        stack.push(childHeaderPostprocessed);
+      }
     }
+    tile.children = childrenPostprocessed;
   }
 
   return root;
@@ -125,22 +179,23 @@ export async function normalizeTileHeaders(
  * @param tileset
  */
 export async function normalizeImplicitTileHeaders(
-  tile: Tile3D,
-  tileset: Tileset3D,
-  implicitTilingExtension: ImplicitTilingExtension,
-  options: LoaderOptions
-) {
-  const basePath = tileset.basePath;
+  tile: Tiles3DTileJSON,
+  tileset: Tiles3DTilesetJSON,
+  basePath: string,
+  implicitTilingExtension: ImplicitTilingExensionData,
+  options: Tiles3DLoaderOptions
+): Promise<Tiles3DTileJSONPostprocessed | null> {
   const {
     subdivisionScheme,
     maximumLevel,
+    availableLevels,
     subtreeLevels,
     subtrees: {uri: subtreesUriTemplate}
   } = implicitTilingExtension;
   const replacedUrlTemplate = replaceContentUrlTemplate(subtreesUriTemplate, 0, 0, 0, 0);
   const subtreeUrl = resolveUri(replacedUrlTemplate, basePath);
   const subtree = await load(subtreeUrl, Tile3DSubtreeLoader, options);
-  const contentUrlTemplate = resolveUri(tile.content.uri, basePath);
+  const contentUrlTemplate = resolveUri(tile.content?.uri, basePath);
   const refine = tileset?.root?.refine;
   // @ts-ignore
   const rootLodMetricValue = tile.geometricError;
@@ -155,12 +210,12 @@ export async function normalizeImplicitTileHeaders(
 
   const rootBoundingVolume = tile.boundingVolume;
 
-  const implicitOptions = {
+  const implicitOptions: ImplicitOptions = {
     contentUrlTemplate,
     subtreesUriTemplate,
     subdivisionScheme,
     subtreeLevels,
-    maximumLevel,
+    maximumLevel: Number.isFinite(availableLevels) ? availableLevels - 1 : maximumLevel,
     refine,
     basePath,
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
@@ -170,7 +225,7 @@ export async function normalizeImplicitTileHeaders(
     getRefine
   };
 
-  return await normalizeImplicitTileData(tile, subtree, implicitOptions);
+  return await normalizeImplicitTileData(tile, basePath, subtree, implicitOptions, options);
 }
 
 /**
@@ -180,32 +235,43 @@ export async function normalizeImplicitTileHeaders(
  * @param options
  * @returns
  */
-export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, options: any) {
+export async function normalizeImplicitTileData(
+  tile: Tiles3DTileJSON,
+  basePath: string,
+  rootSubtree: Subtree,
+  implicitOptions: ImplicitOptions,
+  loaderOptions: Tiles3DLoaderOptions
+): Promise<Tiles3DTileJSONPostprocessed | null> {
   if (!tile) {
     return null;
   }
 
-  tile.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
-  tile.lodMetricValue = tile.geometricError;
-  tile.transformMatrix = tile.transform;
-
   const {children, contentUrl} = await parseImplicitTiles({
     subtree: rootSubtree,
-    options,
-    s2VolumeBox: tile
+    implicitOptions,
+    loaderOptions
   });
 
+  let tileContentUrl: string | undefined;
+  let tileContent: Tiles3DTileContentJSON | null = null;
   if (contentUrl) {
-    tile.contentUrl = contentUrl;
-    tile.content = {uri: contentUrl.replace(`${options.basePath}/`, '')};
+    tileContentUrl = contentUrl;
+    tileContent = {uri: contentUrl.replace(`${basePath}/`, '')};
   }
+  const tilePostprocessed: Tiles3DTileJSONPostprocessed = {
+    ...tile,
+    id: tileContentUrl,
+    contentUrl: tileContentUrl,
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    lodMetricValue: tile.geometricError,
+    transformMatrix: tile.transform,
+    type: getTileType(tile, tileContentUrl),
+    refine: getRefine(tile.refine),
+    content: tileContent || tile.content,
+    children
+  };
 
-  tile.refine = getRefine(tile.refine);
-  tile.type = getTileType(tile);
-  tile.children = children;
-  tile.id = tile.contentUrl;
-
-  return tile;
+  return tilePostprocessed;
 }
 
 /**
@@ -215,6 +281,6 @@ export async function normalizeImplicitTileData(tile, rootSubtree: Subtree, opti
  * @param tile
  * @returns
  */
-function getImplicitTilingExtensionData(tile: Tile3D | null): ImplicitTilingExtension {
+function getImplicitTilingExtensionData(tile: Tiles3DTileJSON | null): ImplicitTilingExensionData {
   return tile?.extensions?.['3DTILES_implicit_tiling'] || tile?.implicitTiling;
 }

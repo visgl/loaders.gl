@@ -8,7 +8,7 @@ import DeckGL from '@deck.gl/react/typed';
 import {MapController} from '@deck.gl/core/typed';
 import {_WMSLayer as WMSLayer} from '@deck.gl/geo-layers/typed';
 
-import type {ImageSourceMetadata} from '@loaders.gl/wms';
+import {WMSService, type ImageSourceMetadata} from '@loaders.gl/wms';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -67,6 +67,7 @@ export default class App extends PureComponent {
     loading: true;
     metadata: string | '';
     error: string | '';
+    featureInfo: any;
   } = {
     // CURRENT VIEW POINT / CAMERA POSITIO
     viewState: INITIAL_VIEW_STATE,
@@ -130,7 +131,7 @@ export default class App extends PureComponent {
 
     return [
       new WMSLayer({
-        data: service,
+        data: service, // new WMSService({url: service, wmsParameters: {transparent: true}}),
         serviceType,
         layers,
 
@@ -174,7 +175,7 @@ export default class App extends PureComponent {
           onError={(error: Error) => this.setState({error: error.message})}
           controller={{type: MapController, maxPitch: 85}}
           getTooltip={({object}) =>
-            this.state.featureInfo && {
+            this.state?.featureInfo && {
               html: `<h2>Feature Info</h2><div>${this.state.featureInfo}</div>`,
               style: {
                 color: '#EEE',

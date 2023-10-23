@@ -1,9 +1,9 @@
-import type {MeshAttributes} from '@loaders.gl/schema';
+import type {Mesh, MeshAttributes} from '@loaders.gl/schema';
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import {parseOBJMeshes} from './parse-obj-meshes';
 import {getOBJSchema} from './get-obj-schema';
 
-export function parseOBJ(text, options) {
+export function parseOBJ(text, options): Mesh {
   const {meshes} = parseOBJMeshes(text);
 
   // @ts-expect-error
@@ -32,13 +32,14 @@ export function parseOBJ(text, options) {
     schema,
     header,
     mode: 4, // TRIANGLES
+    topology: 'point-list',
 
     attributes
   };
 }
 
 // eslint-disable-next-line max-statements
-function mergeAttributes(meshes, vertexCount) {
+function mergeAttributes(meshes, vertexCount): MeshAttributes {
   const positions = new Float32Array(vertexCount * 3);
   let normals;
   let colors;

@@ -4,11 +4,15 @@ This function "atomically" parses data (i.e. parses the entire data set in one o
 
 In contrast to `load`, `parse` does not accept URLs (it treats strings as data to be parsed) however it does read data from `Response` objects (which can involve loading data from a source). `Response` objects are returned by `fetch` but can also be manually created to wrap other data types, which makes `parse` quite flexible.
 
+:::caution
+When calling parse from a loader to invoke a sub-loader, do not use this function. Use the `parseWithContext` counterparts in `@loaders.gl/loader-utils``
+:::
+
 ## Usage
 
 The return value from `fetch` or `fetchFile` is a `Promise` that resolves to the fetch `Response` object and can be passed directly to the non-sync parser functions:
 
-```js
+```typescript
 import {fetchFile, parse} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 
@@ -19,7 +23,7 @@ data = await parse(fetchFile(url), OBJLoader);
 
 Batched (streaming) parsing is supported by some loaders
 
-```js
+```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/obj';
 
@@ -31,7 +35,7 @@ for await (const batch of batchIterator) {
 
 Handling errors
 
-```js
+```typescript
 try {
   const response = await fetch(url); // fetch can throw in case of network errors
   const data = await parse(response); // parse will throw if server reports an error

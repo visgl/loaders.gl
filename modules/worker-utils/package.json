@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "3.4.0-alpha.4",
+  "version": "4.0.0-beta.6",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -16,8 +17,15 @@
     "thread"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -26,25 +34,20 @@
   ],
   "browser": {
     "child_process": false,
+    "module": false,
+    "path": false,
     "fs": false,
     "./src/lib/node/worker_threads.ts": "./src/lib/node/worker_threads-browser.ts",
     "./dist/lib/node/worker_threads.js": "./dist/lib/node/worker_threads-browser.js",
-    "./dist/es5/lib/node/worker_threads.js": "./dist/es5/lib/node/worker_threads-browser.js",
-    "./dist/esm/lib/node/worker_threads.js": "./dist/esm/lib/node/worker_threads-browser.js",
     "./src/lib/node/require-utils.node.ts": false,
     "./dist/lib/node/require-utils.node.js": false,
-    "./dist/es5/lib/node/require-utils.node.js": false,
-    "./dist/esm/lib/node/require-utils.node.js": false,
     "./src/lib/process-utils/child-process-proxy.ts": false,
-    "./dist/lib/process-utils/child-process-proxy.js": false,
-    "./dist/es5/lib/process-utils/child-process-proxy.js": false,
     "./dist/esm/lib/process-utils/child-process-proxy.js": false
   },
   "scripts": {
-    "pre-build": "npm run build-workers",
-    "pre-build-disabled": "npm run build-bundle && npm run build-workers",
-    "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js",
-    "build-workers": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "pre-build": "npm run build-worker && npm run build-worker-node",
+    "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1"

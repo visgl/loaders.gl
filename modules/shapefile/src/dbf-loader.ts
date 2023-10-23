@@ -29,5 +29,7 @@ export const DBFLoader: LoaderWithParser = {
   ...DBFWorkerLoader,
   parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
   parseSync: parseDBF,
-  parseInBatches: parseDBFInBatches
+  parseInBatches(arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>, options) {
+    return parseDBFInBatches(arrayBufferIterator, options);
+  }
 };

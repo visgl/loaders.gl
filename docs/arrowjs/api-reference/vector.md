@@ -1,11 +1,12 @@
 # Vector
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
 Also referred to as `BaseVector`. An abstract base class for vector types.
 
 * Can support a null map
 * ...
 * TBD
-
 
 ## Inheritance
 

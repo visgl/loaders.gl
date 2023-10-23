@@ -1,8 +1,11 @@
-# WFS Overview
+# WFS - Web Feature Service
 
-[WFS](https://en.wikipedia.org/wiki/Web_Feature_Service) (Web Feature Service) is a standardized protocol for serving geographical *features** over the internet.
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-WFS was standardized in 1999 as a way to .
+- *[`@loaders.gl/wms`](/docs/modules/wms)*
+- *[Wikipedia article](https://en.wikipedia.org/wiki/Web_Feature_Service)*
+
+WFS (Web Feature Service) is a standardized protocol for serving geographical features (points, lines and polygons) over the internet.
 
 ## Characteristics
 

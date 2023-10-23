@@ -1,14 +1,15 @@
 # WMSCapabilitiesLoader
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
+  &nbsp;
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
 The `WMSCapabilitiesLoader` parses the XML-formatted response from the 
-the [OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/wms) (Web Map Service) standard `GetCapabilities` request into a typed JavaScript data structure.
-
-> Note that the WMS standard is rather verbose and the XML responses can contain many rarely used metadata fields, not all of which are extracted by this loader. If this is a problem, it is possible to use the `XMLLoader` directly though the result will be untyped and not normalized.
+the [OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/wms) (Web Map Service) standard `GetCapabilities` request into a strongly typed JavaScript data structure.
 
 | Loader                | Characteristic                                       |
 | --------------------- | ---------------------------------------------------- |
@@ -22,7 +23,7 @@ the [OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/w
 
 ## Usage
 
-```js
+```typescript
 import {WMSCapabilitiesLoader} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 
@@ -90,9 +91,10 @@ export type WMSLayer = {
   /** Bounding boxes in specific CRS:es */
   boundingBoxes?: WMSBoundingBox[];
 
+  dimensions?: WMSDimension[]; // ?? 7.2.4.6.10
+
   // minScale: number;
   // maxScale: number;
-  // dimensions: ?? 7.2.4.6.10
   // MetadataURL
   // Attribution
   // Identifier and AuthorityURL
@@ -163,3 +165,7 @@ export type parseWMSCapabilitiesOptions = {
 | `wms.inheritedLayerProps?` | `boolean` | `false` | Adds inherited layer information from parent layers to sub layers                           |
 | `wms.includeRawData?`      | `boolean` | `false` | Include the "raw" JSON (parsed but untyped, unprocessed XML). May contain additional fields |
 | `wms.includeXMLText?`      | `boolean` | `false` | Include the original XML document text. May contain additional information.                 |
+
+## Limitations
+
+Note that the WMS standard is rather verbose and the XML responses contain some rarely used metadata fields and possibly some vendor specific fields, not all of which are extracted by this loader. If this is a problem, it is possible to inspect the output of the `XMLLoader`, by setting the `raw` option.

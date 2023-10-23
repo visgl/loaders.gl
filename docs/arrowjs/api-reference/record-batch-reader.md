@@ -1,5 +1,8 @@
 # RecordBatchReader
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
+
 The RecordBatchReader is the IPC reader for reading chunks from a stream or file
 
 ## Usage
@@ -8,7 +11,7 @@ The JavaScript API supports streaming multiple arrow tables over a single socket
 
 To read all batches from all tables in a data source:
 
-```js
+```typescript
 const readers = RecordBatchReader.readAll(fetch(path, {credentials: 'omit'}));
 for await (const reader of readers) {
     for await (const batch of reader) {
@@ -19,7 +22,7 @@ for await (const reader of readers) {
 
 If you only have one table (the normal case), then there'll only be one RecordBatchReader/the outer loop will only execute once. You can also create just one reader via
 
-```js
+```typescript
 const reader = await RecordBatchReader.from(fetch(path, {credentials: 'omit'}));
 ```
 

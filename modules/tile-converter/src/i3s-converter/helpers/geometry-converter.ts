@@ -1,13 +1,17 @@
-import type {B3DMContent, FeatureTableJson} from '@loaders.gl/3d-tiles';
+import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {
-  GLTF_EXT_feature_metadata,
   GLTFAccessorPostprocessed,
   GLTFMaterialPostprocessed,
   GLTFNodePostprocessed,
-  GLTFImagePostprocessed,
   GLTFMeshPrimitivePostprocessed,
   GLTFMeshPostprocessed,
-  GLTFTexturePostprocessed
+  GLTFTexturePostprocessed,
+  GLTF_EXT_feature_metadata_GLTF,
+  GLTF_EXT_feature_metadata_FeatureTable,
+  GLTF_EXT_feature_metadata_FeatureTexture,
+  GLTF_EXT_structural_metadata_GLTF,
+  GLTF_EXT_structural_metadata_PropertyTable,
+  GLTF_EXT_structural_metadata_PropertyTexture
 } from '@loaders.gl/gltf';
 
 import {Vector3, Matrix4, Vector4} from '@math.gl/core';
@@ -33,14 +37,11 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/i3s';
-import {TypedArray} from '@loaders.gl/schema';
+import {NumberArray, TypedArray} from '@loaders.gl/loader-utils';
 import {Geoid} from '@math.gl/geoid';
-/** Usage of worker here brings more overhead than advantage */
-import {B3DMAttributesData /*, transformI3SAttributesOnWorker*/} from '../../i3s-attributes-worker';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
-import {handleBatchIdsExtensions} from './batch-ids-extensions';
+import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';
 import {checkPropertiesLength, flattenPropertyTableByFeatureIds} from './feature-attributes';
-import {MeshPrimitive} from 'modules/gltf/src/lib/types/gltf-postprocessed-schema';
 import {GL} from '@loaders.gl/math';
 
 /*
@@ -48,7 +49,11 @@ import {GL} from '@loaders.gl/math';
   So the following import is replaced with the local import
   import type {TypedArrayConstructor} from '@math.gl/types'; 
 */
-import type {TypedArrayConstructor} from '../types';
+import type {GLTFAttributesData, TextureImageProperties, TypedArrayConstructor} from '../types';
+import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
+import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
+
+import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 
 // Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.7/pbrMetallicRoughness.cmn.md
 const DEFAULT_ROUGHNESS_FACTOR = 1;
@@ -69,15 +74,15 @@ const OBJECT_ID_TYPE = 'Oid32';
  */
 const BATCHED_ID_POSSIBLE_ATTRIBUTE_NAMES = ['CUSTOM_ATTRIBUTE_2', '_BATCHID', 'BATCHID'];
 
-const EXT_FEATURE_METADATA = 'EXT_feature_metadata';
-const EXT_MESH_FEATURES = 'EXT_mesh_features';
-
 let scratchVector = new Vector3();
 
 /**
  * Convert binary data from b3dm file to i3s resources
  *
  * @param tileContent - 3d tile content
+ * @param tileTransform - transformation matrix of the tile, calculated recursively multiplying
+ *                        transform of all parent tiles and transform of the current tile
+ * @param tileBoundingVolume - initialized bounding volume of the source tile
  * @param addNodeToNodePage - function to add new node to node pages
  * @param propertyTable - batch table (corresponding to feature attributes data)
  * @param featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
@@ -86,11 +91,14 @@ let scratchVector = new Vector3();
  * @param generateBoundingVolumes - is converter should create accurate bounding voulmes from geometry attributes
  * @param shouldMergeMaterials - Try to merge similar materials to be able to merge meshes into one node
  * @param geoidHeightModel - model to convert elevation from elipsoidal to geoid
- * @param workerSource - source code of used workers
+ * @param libraries - dynamicaly loaded 3rd-party libraries
+ * @param metadataClass `- user selected feature metadata class name`
  * @returns Array of node resources to create one or more i3s nodes
  */
 export default async function convertB3dmToI3sGeometry(
-  tileContent: B3DMContent,
+  tileContent: Tiles3DTileContent,
+  tileTransform: Matrix4,
+  tileBoundingVolume: OrientedBoundingBox | BoundingSphere,
   addNodeToNodePage: () => Promise<number>,
   propertyTable: FeatureTableJson | null,
   featuresHashArray: string[],
@@ -99,7 +107,8 @@ export default async function convertB3dmToI3sGeometry(
   generateBoundingVolumes: boolean,
   shouldMergeMaterials: boolean,
   geoidHeightModel: Geoid,
-  workerSource: {[key: string]: string}
+  libraries: Record<string, string>,
+  metadataClass?: string
 ): Promise<I3SConvertedResources[] | null> {
   const useCartesianPositions = generateBoundingVolumes;
   const materialAndTextureList: I3SMaterialWithTexture[] = await convertMaterials(
@@ -107,11 +116,17 @@ export default async function convertB3dmToI3sGeometry(
     shouldMergeMaterials
   );
 
-  const dataForAttributesConversion = prepareDataForAttributesConversion(tileContent);
+  const dataForAttributesConversion = prepareDataForAttributesConversion(
+    tileContent,
+    tileTransform,
+    tileBoundingVolume
+  );
+  const featureTexture = getTextureByMetadataClass(tileContent, metadataClass);
   const convertedAttributesMap: Map<string, ConvertedAttributes> = await convertAttributes(
     dataForAttributesConversion,
     materialAndTextureList,
-    useCartesianPositions
+    useCartesianPositions,
+    featureTexture
   );
   /** Usage of worker here brings more overhead than advantage */
   // const convertedAttributesMap: Map<string, ConvertedAttributes> =
@@ -149,7 +164,7 @@ export default async function convertB3dmToI3sGeometry(
         propertyTable,
         attributeStorageInfo,
         draco,
-        workerSource
+        libraries
       })
     );
   }
@@ -195,13 +210,13 @@ function _generateBoundingVolumesFromGeometry(
  * @param params.convertedAttributes - Converted geometry attributes
  * @param params.material - I3S PBR-like material definition
  * @param params.texture - texture content
- * @param params.tileContent - B3DM decoded content
+ * @param params.tileContent - 3DTiles decoded content
  * @param params.nodeId - new node ID
  * @param params.featuresHashArray - hash array of features that is needed to not to mix up same features in parent and child nodes
  * @param params.propertyTable - batch table (corresponding to feature attributes data)
  * @param params.attributeStorageInfo - attributes metadata from 3DSceneLayer json
  * @param params.draco - is converter should create draco compressed geometry
- * @param params.workerSource - source code of used workers
+ * @param libraries - dynamicaly loaded 3rd-party libraries
  * @returns Array of I3S node resources
  */
 async function _makeNodeResources({
@@ -214,30 +229,36 @@ async function _makeNodeResources({
   propertyTable,
   attributeStorageInfo,
   draco,
-  workerSource
+  libraries
 }: {
   convertedAttributes: ConvertedAttributes;
   material: I3SMaterialDefinition;
   texture?: {};
-  tileContent: B3DMContent;
+  tileContent: Tiles3DTileContent;
   nodeId: number;
   featuresHashArray: string[];
   propertyTable: FeatureTableJson | null;
   attributeStorageInfo?: AttributeStorageInfo[];
   draco: boolean;
-  workerSource: {[key: string]: string};
+  libraries: Record<string, string>;
 }): Promise<I3SConvertedResources> {
   const boundingVolumes = convertedAttributes.boundingVolumes;
   const vertexCount = convertedAttributes.positions.length / VALUES_PER_VERTEX;
   const {faceRange, featureIds, positions, normals, colors, uvRegions, texCoords, featureCount} =
     generateAttributes(convertedAttributes);
 
-  if (tileContent.batchTableJson) {
-    makeFeatureIdsUnique(
+  let featureIdsMap: Record<string, number> = {};
+  if (propertyTable) {
+    /**
+     * 3DTiles has featureIndices unique only for one tile.
+     * In I3S featureIds are unique layer-wide. We create featureIds from all feature properties.
+     * If 3DTiles features has equal set of properties they are considered as same feature in I3S.
+     */
+    featureIdsMap = makeFeatureIdsUnique(
       featureIds,
       convertedAttributes.featureIndices,
       featuresHashArray,
-      tileContent.batchTableJson
+      propertyTable
     );
   }
 
@@ -270,7 +291,7 @@ async function _makeNodeResources({
           featureIds,
           faceRange
         },
-        workerSource.draco
+        libraries
       )
     : null;
 
@@ -279,6 +300,7 @@ async function _makeNodeResources({
   if (attributeStorageInfo && propertyTable) {
     attributes = convertPropertyTableToAttributeBuffers(
       featureIds,
+      featureIdsMap,
       propertyTable,
       attributeStorageInfo
     );
@@ -305,12 +327,14 @@ async function _makeNodeResources({
  * @param materialAndTextureList - array of data about materials and textures of the content
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
+ * @param featureTexture - feature texture key
  * @returns map of converted geometry attributes
  */
 export async function convertAttributes(
-  attributesData: B3DMAttributesData,
+  attributesData: GLTFAttributesData,
   materialAndTextureList: I3SMaterialWithTexture[],
-  useCartesianPositions: boolean
+  useCartesianPositions: boolean,
+  featureTexture: string | null
 ): Promise<Map<string, ConvertedAttributes>> {
   const {nodes, images, cartographicOrigin, cartesianModelMatrix} = attributesData;
   const attributesMap = new Map<string, ConvertedAttributes>();
@@ -338,7 +362,9 @@ export async function convertAttributes(
     cartographicOrigin,
     cartesianModelMatrix,
     attributesMap,
-    useCartesianPositions
+    useCartesianPositions,
+    undefined,
+    featureTexture
   );
 
   for (const attrKey of attributesMap.keys()) {
@@ -362,7 +388,7 @@ export async function convertAttributes(
 }
 
 /**
- * Gltf has hierarchical structure of nodes. This function converts nodes starting from those which are in gltf scene object.
+ * glTF has hierarchical structure of nodes. This function converts nodes starting from those which are in gltf scene object.
  *   The goal is applying tranformation matrix for all children. Functions "convertNodes" and "convertNode" work together recursively.
  * @param nodes - gltf nodes array
  * @param images - gltf images array
@@ -372,16 +398,18 @@ export async function convertAttributes(
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param featureTexture - feature texture key
  * @returns {void}
  */
 function convertNodes(
   nodes: GLTFNodePostprocessed[],
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions: boolean,
-  matrix: Matrix4 = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  matrix: Matrix4 = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+  featureTexture: string | null
 ) {
   if (nodes) {
     for (const node of nodes) {
@@ -392,7 +420,8 @@ function convertNodes(
         cartesianModelMatrix,
         attributesMap,
         useCartesianPositions,
-        matrix
+        matrix,
+        featureTexture
       );
     }
   }
@@ -434,20 +463,22 @@ function getCompositeTransformationMatrix(node: GLTFNodePostprocessed, matrix: M
  * @param images - gltf images array
  * @param cartographicOrigin - cartographic origin of bounding volume
  * @param cartesianModelMatrix - cartesian model matrix to convert coordinates to cartographic
- * @param {Map} attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
+ * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
  * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
- * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param featureTexture - feature texture key
  */
 function convertNode(
   node: GLTFNodePostprocessed,
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions,
-  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+  featureTexture: string | null
 ) {
   const transformationMatrix = getCompositeTransformationMatrix(node, matrix);
 
@@ -461,7 +492,8 @@ function convertNode(
       cartesianModelMatrix,
       attributesMap,
       useCartesianPositions,
-      transformationMatrix
+      transformationMatrix,
+      featureTexture
     );
   }
 
@@ -472,7 +504,8 @@ function convertNode(
     cartesianModelMatrix,
     attributesMap,
     useCartesianPositions,
-    transformationMatrix
+    transformationMatrix,
+    featureTexture
   );
 }
 
@@ -484,40 +517,49 @@ function convertNode(
  * @param cartesianModelMatrix - cartesian model matrix to convert coordinates to cartographic
  * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
- * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets. 
+ * @param useCartesianPositions - convert positions to absolute cartesian coordinates instead of cartographic offsets.
  * Cartesian coordinates will be required for creating bounding voulmest from geometry positions
  * @param attributesMap Map<{positions: Float32Array, normals: Float32Array, texCoords: Float32Array, colors: Uint8Array, featureIndices: Array}> - for recursive concatenation of
  *   attributes
- 
- * @param {Matrix4} matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
+ * @param featureTexture - feature texture key
  */
 function convertMesh(
   mesh: GLTFMeshPostprocessed,
-  images: GLTFImagePostprocessed[],
+  images: (TextureImageProperties | null)[],
   cartographicOrigin: Vector3,
   cartesianModelMatrix: Matrix4,
   attributesMap: Map<string, ConvertedAttributes>,
   useCartesianPositions = false,
-  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+  featureTexture: string | null
 ) {
   for (const primitive of mesh.primitives) {
     let outputAttributes: ConvertedAttributes | null | undefined = null;
     let materialUvRegion: Uint16Array | undefined;
     if (primitive.material) {
-      outputAttributes = attributesMap.get(primitive.material.uniqueId);
+      outputAttributes = attributesMap.get(primitive.material.id);
       materialUvRegion = outputAttributes?.mergedMaterials.find(
-        ({originalMaterialId}) => originalMaterialId === primitive.material?.uniqueId
+        ({originalMaterialId}) => originalMaterialId === primitive.material?.id
       )?.uvRegion;
     } else if (attributesMap.has('default')) {
       outputAttributes = attributesMap.get('default');
     }
     assert(outputAttributes !== null, 'Primitive - material mapping failed');
+    // Per the spec https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
+    // GL.TRIANGLES is default. So in case `mode` is `undefined`, it is 'TRIANGLES'
+    assert(
+      primitive.mode === undefined ||
+        primitive.mode === GL.TRIANGLES ||
+        primitive.mode === GL.TRIANGLE_STRIP,
+      `Primitive - unsupported mode ${primitive.mode}`
+    );
     const attributes = primitive.attributes;
     if (!outputAttributes) {
       continue;
     }
 
-    const indices = getIndices(primitive);
+    const indices = normalizeIndices(primitive);
     outputAttributes.positions = concatenateTypedArrays(
       outputAttributes.positions,
       transformVertexArray({
@@ -561,17 +603,22 @@ function convertMesh(
 
     outputAttributes.featureIndicesGroups = outputAttributes.featureIndicesGroups || [];
     outputAttributes.featureIndicesGroups.push(
-      flattenBatchIds(getBatchIds(attributes, primitive, images), indices)
+      flattenBatchIds(getBatchIds(attributes, primitive, images, featureTexture), indices)
     );
   }
 }
 /**
  * Converts TRIANGLE-STRIPS to independent TRIANGLES
- * @param {MeshPrimitive} primitive - the primitive to get the indices from
+ * @param primitive - the primitive to get the indices from
  * @returns indices of vertices of the independent triangles
  */
-function getIndices(primitive: MeshPrimitive): TypedArray {
-  let indices: TypedArray = primitive.indices?.value;
+function normalizeIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray {
+  let indices: TypedArray | undefined = primitive.indices?.value;
+  if (!indices) {
+    const positions = primitive.attributes.POSITION.value;
+    return generateSyntheticIndices(positions.length / VALUES_PER_VERTEX);
+  }
+
   if (indices && primitive.mode === GL.TRIANGLE_STRIP) {
     /*
     TRIANGLE_STRIP geometry contains n+2 vertices for n triangles;
@@ -600,7 +647,7 @@ function getIndices(primitive: MeshPrimitive): TypedArray {
     }
     indices = newIndices;
   }
-  return indices;
+  return indices as TypedArray;
 }
 
 /**
@@ -613,17 +660,17 @@ function getIndices(primitive: MeshPrimitive): TypedArray {
  * @param args.indices - gltf primitive indices
  * @param args.attributeSpecificTransformation - function to do attribute - specific transformations
  * @param args.useCartesianPositions - use coordinates as it is.
- * @returns {Float32Array}
+ * @returns
  */
 function transformVertexArray(args: {
-  vertices: Float32Array;
+  vertices: TypedArray;
   cartographicOrigin: number[];
   cartesianModelMatrix: number[];
   nodeMatrix: Matrix4;
   indices: TypedArray;
   attributeSpecificTransformation: Function;
   useCartesianPositions: boolean;
-}) {
+}): Float32Array {
   const {vertices, indices, attributeSpecificTransformation} = args;
   const newVertices = new Float32Array(indices.length * VALUES_PER_VERTEX);
   if (!vertices) {
@@ -699,7 +746,7 @@ function transformVertexNormals(vertexVector, calleeArgs): number[] {
  * @param indices - gltf primitive indices
  * @returns flattened texture coordinates
  */
-function flattenTexCoords(texCoords: Float32Array, indices: TypedArray): Float32Array {
+function flattenTexCoords(texCoords: TypedArray, indices: TypedArray): Float32Array {
   const newTexCoords = new Float32Array(indices.length * VALUES_PER_TEX_COORD);
   if (!texCoords) {
     // We need dummy UV0s because it is required in 1.6
@@ -766,7 +813,7 @@ function createUvRegion(materialUvRegion: Uint16Array, indices: TypedArray): Uin
  * @param indices - gltf primitive indices
  * @returns flattened batch ids
  */
-function flattenBatchIds(batchedIds: number[], indices: TypedArray): number[] {
+function flattenBatchIds(batchedIds: NumberArray, indices: TypedArray): number[] {
   if (!batchedIds.length || !indices.length) {
     return [];
   }
@@ -783,15 +830,23 @@ function flattenBatchIds(batchedIds: number[], indices: TypedArray): number[] {
  * @param attributes - gltf accessors
  * @param primitive - gltf primitive data
  * @param images - gltf texture images
+ * @param featureTexture - feature texture key
+ * @return batch IDs
  */
 function getBatchIds(
   attributes: {
     [key: string]: GLTFAccessorPostprocessed;
   },
   primitive: GLTFMeshPrimitivePostprocessed,
-  images: GLTFImagePostprocessed[]
-): number[] {
-  const batchIds: number[] = handleBatchIdsExtensions(attributes, primitive, images);
+  images: (TextureImageProperties | null)[],
+  featureTexture: string | null
+): NumberArray {
+  const batchIds: NumberArray = handleBatchIdsExtensions(
+    attributes,
+    primitive,
+    images,
+    featureTexture
+  );
 
   if (batchIds.length) {
     return batchIds;
@@ -979,9 +1034,8 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
     };
   }
 
-  const uniqueId = uuidv4();
-  sourceMaterial.uniqueId = uniqueId;
-  let mergedMaterials: MergedMaterial[] = [{originalMaterialId: uniqueId}];
+  sourceMaterial.id = Number.isFinite(sourceMaterial.id) ? sourceMaterial.id : uuidv4();
+  let mergedMaterials: MergedMaterial[] = [{originalMaterialId: sourceMaterial.id}];
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
@@ -1002,7 +1056,7 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
 
 /**
  * Converts from `alphaMode` material property from GLTF to I3S format
- * @param gltfAlphaMode Gltf material `alphaMode` property
+ * @param gltfAlphaMode glTF material `alphaMode` property
  * @returns I3SMaterialDefinition.alphaMode property
  */
 function convertAlphaMode(
@@ -1167,7 +1221,7 @@ function extractSharedResourcesTextureInfo(
         // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/image.cmn.md
         id: generateImageId(texture, nodeId),
         size: texture.source?.image.width,
-        length: [texture.source?.image.data.length]
+        length: texture.source?.image.data.length ? [texture.source?.image.data.length] : undefined
       }
     ]
   };
@@ -1181,7 +1235,10 @@ function extractSharedResourcesTextureInfo(
  * @returns calculate image ID according to the spec
  */
 function generateImageId(texture: GLTFTexturePostprocessed, nodeId: number) {
-  const {width, height} = texture.source?.image;
+  const {width, height} = texture.source?.image || {};
+  if (!width || !height) {
+    return '';
+  }
   const levelCountOfTexture = 1;
   const indexOfLevel = 0;
   const indexOfTextureInStore = nodeId + 1;
@@ -1205,28 +1262,33 @@ function generateImageId(texture: GLTFTexturePostprocessed, nodeId: number) {
  * @param featureIndices
  * @param featuresHashArray
  * @param batchTable
- * @returns {void}
+ * @returns propertyTable indices to map featureIds
  */
 function makeFeatureIdsUnique(
   featureIds: number[],
   featureIndices: number[],
   featuresHashArray: string[],
   batchTable: {[key: string]: any}
-) {
+): Record<string, number> {
   const replaceMap = getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray);
   replaceIndicesByUnique(featureIndices, replaceMap);
   replaceIndicesByUnique(featureIds, replaceMap);
+  return replaceMap;
 }
 
 /**
  * Generate replace map to make featureIds unique.
- * @param {Array} featureIds
- * @param {Object} batchTable
- * @param {Array} featuresHashArray
- * @returns {Object}
+ * @param featureIds
+ * @param batchTable
+ * @param featuresHashArray
+ * @returns
  */
-function getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray) {
-  const featureMap = {};
+function getFeaturesReplaceMap(
+  featureIds: any[],
+  batchTable: object,
+  featuresHashArray: any[]
+): Record<string, number> {
+  const featureMap: Record<string, number> = {};
 
   for (let index = 0; index < featureIds.length; index++) {
     const oldFeatureId = featureIds[index];
@@ -1239,11 +1301,11 @@ function getFeaturesReplaceMap(featureIds, batchTable, featuresHashArray) {
 
 /**
  * Generates string for unique batch id creation.
- * @param {Object} batchTable
- * @param {Number} index
- * @returns {String}
+ * @param batchTable
+ * @param index
+ * @returns
  */
-function generateStringFromBatchTableByIndex(batchTable, index) {
+function generateStringFromBatchTableByIndex(batchTable: object, index: number): string {
   let str = '';
   for (const key in batchTable) {
     str += batchTable[key][index];
@@ -1253,12 +1315,16 @@ function generateStringFromBatchTableByIndex(batchTable, index) {
 
 /**
  * Return already exited featureId or creates and returns new to support unique feature ids throw nodes.
- * @param {Number} index
- * @param {Object} batchTable
- * @param {Array} featuresHashArray
- * @returns {Number}
+ * @param index
+ * @param batchTable
+ * @param featuresHashArray
+ * @returns
  */
-function getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray) {
+function getOrCreateUniqueFeatureId(
+  index: number,
+  batchTable: object,
+  featuresHashArray: any[]
+): number {
   const batchTableStr = generateStringFromBatchTableByIndex(batchTable, index);
   const hash = md5(batchTableStr);
 
@@ -1270,11 +1336,11 @@ function getOrCreateUniqueFeatureId(index, batchTable, featuresHashArray) {
 
 /**
  * Do replacement of indices for making them unique through all nodes.
- * @param {Array} indicesArray
- * @param {Object} featureMap
- * @returns {void}
+ * @param indicesArray
+ * @param featureMap
+ * @returns
  */
-function replaceIndicesByUnique(indicesArray, featureMap) {
+function replaceIndicesByUnique(indicesArray: number[], featureMap: Record<string, number>) {
   for (let index = 0; index < indicesArray.length; index++) {
     indicesArray[index] = featureMap[indicesArray[index]];
   }
@@ -1282,21 +1348,22 @@ function replaceIndicesByUnique(indicesArray, featureMap) {
 
 /**
  * Convert property table data to attribute buffers.
- * @param {Array} featureIds
- * @param {Object} propertyTable - table with metadata for particular feature.
- * @param {Array} attributeStorageInfo
- * @returns {Array} - Array of file buffers.
+ * @param featureIds
+ * @param propertyTable - table with metadata for particular feature.
+ * @param attributeStorageInfo
+ * @returns - Array of file buffers.
  */
 function convertPropertyTableToAttributeBuffers(
   featureIds: number[],
+  featureIdsMap: Record<string, number>,
   propertyTable: FeatureTableJson,
   attributeStorageInfo: AttributeStorageInfo[]
-) {
+): any[] {
   const attributeBuffers: ArrayBuffer[] = [];
 
   const needFlattenPropertyTable = checkPropertiesLength(featureIds, propertyTable);
   const properties = needFlattenPropertyTable
-    ? flattenPropertyTableByFeatureIds(featureIds, propertyTable)
+    ? flattenPropertyTableByFeatureIds(featureIdsMap, propertyTable)
     : propertyTable;
 
   const propertyTableWithObjectIds = {
@@ -1306,10 +1373,12 @@ function convertPropertyTableToAttributeBuffers(
 
   for (const propertyName in propertyTableWithObjectIds) {
     const type = getAttributeType(propertyName, attributeStorageInfo);
-    const value = propertyTableWithObjectIds[propertyName];
-    const attributeBuffer = generateAttributeBuffer(type, value);
+    if (type) {
+      const value = propertyTableWithObjectIds[propertyName];
+      const attributeBuffer = generateAttributeBuffer(type, value);
 
-    attributeBuffers.push(attributeBuffer);
+      attributeBuffers.push(attributeBuffer);
+    }
   }
 
   return attributeBuffers;
@@ -1343,21 +1412,35 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 
 /**
  * Return attribute type.
- * @param {String} key
- * @param {Array} attributeStorageInfo
- * @returns {String} attribute type.
+ * @param key
+ * @param attributeStorageInfo
+ * @returns attribute type.
  */
-function getAttributeType(key, attributeStorageInfo) {
+function getAttributeType(key: string, attributeStorageInfo: any[]): string {
   const attribute = attributeStorageInfo.find((attr) => attr.name === key);
+  if (!attribute) {
+    console.error(
+      `attribute is null, key=${key}, attributeStorageInfo=${JSON.stringify(
+        attributeStorageInfo,
+        null,
+        2
+      )}`
+    );
+    return '';
+  }
+  if (!attribute.attributeValues) {
+    console.error(`attributeValues is null, attribute=${attribute}`);
+    return '';
+  }
   return attribute.attributeValues.valueType;
 }
 
 /**
  * Convert short integer to attribute arrayBuffer.
- * @param {Array} featureIds
- * @returns {ArrayBuffer} - Buffer with objectId data.
+ * @param featureIds
+ * @returns - Buffer with objectId data.
  */
-function generateShortIntegerAttributeBuffer(featureIds): ArrayBuffer {
+function generateShortIntegerAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const valuesArray = new Uint32Array(featureIds);
   return concatenateArrayBuffers(count.buffer, valuesArray.buffer);
@@ -1365,10 +1448,10 @@ function generateShortIntegerAttributeBuffer(featureIds): ArrayBuffer {
 
 /**
  * Convert double to attribute arrayBuffer.
- * @param {Array} featureIds
- * @returns {ArrayBuffer} - Buffer with objectId data.
+ * @param featureIds
+ * @returns - Buffer with objectId data.
  */
-function generateDoubleAttributeBuffer(featureIds): ArrayBuffer {
+function generateDoubleAttributeBuffer(featureIds: any[]): ArrayBuffer {
   const count = new Uint32Array([featureIds.length]);
   const padding = new Uint8Array(4);
   const valuesArray = new Float64Array(featureIds);
@@ -1378,10 +1461,10 @@ function generateDoubleAttributeBuffer(featureIds): ArrayBuffer {
 
 /**
  * Convert batch table attributes to array buffer with batch table data.
- * @param {Array} batchAttributes
- * @returns {ArrayBuffer} - Buffer with batch table data.
+ * @param batchAttributes
+ * @returns - Buffer with batch table data.
  */
-function generateStringAttributeBuffer(batchAttributes): ArrayBuffer {
+function generateStringAttributeBuffer(batchAttributes: any[]): ArrayBuffer {
   const stringCountArray = new Uint32Array([batchAttributes.length]);
   let totalNumberOfBytes = 0;
   const stringSizesArray = new Uint32Array(batchAttributes.length);
@@ -1408,10 +1491,10 @@ function generateStringAttributeBuffer(batchAttributes): ArrayBuffer {
 
 /**
  * Convert featureIds to BigUint64Array.
- * @param {Array} featureIds
- * @returns {BigUint64Array} - Array of feature ids in BigUint64 format.
+ * @param featureIds
+ * @returns - Array of feature ids in BigUint64 format.
  */
-function generateBigUint64Array(featureIds) {
+function generateBigUint64Array(featureIds: any[]): BigUint64Array {
   const typedFeatureIds = new BigUint64Array(featureIds.length);
   for (let index = 0; index < featureIds.length; index++) {
     typedFeatureIds[index] = BigInt(featureIds[index]);
@@ -1421,18 +1504,18 @@ function generateBigUint64Array(featureIds) {
 
 /**
  * Generates draco compressed geometry
- * @param {Number} vertexCount
- * @param {Object} convertedAttributes - get rid of this argument here
- * @param {Object} attributes - geometry attributes to compress
- * @param {string} dracoWorkerSoure - draco worker source code
- * @returns {Promise<object>} - COmpressed geometry.
+ * @param vertexCount
+ * @param convertedAttributes - get rid of this argument here
+ * @param attributes - geometry attributes to compress
+ * @param libraries - dynamicaly loaded 3rd-party libraries
+ * @returns - Compressed geometry.
  */
 async function generateCompressedGeometry(
-  vertexCount,
-  convertedAttributes,
-  attributes,
-  dracoWorkerSoure
-) {
+  vertexCount: number,
+  convertedAttributes: Record<string, any>,
+  attributes: Record<string, any>,
+  libraries: Record<string, string>
+): Promise<ArrayBuffer> {
   const {positions, normals, texCoords, colors, uvRegions, featureIds, faceRange} = attributes;
   const indices = new Uint32Array(vertexCount);
 
@@ -1480,23 +1563,31 @@ async function generateCompressedGeometry(
 
   return encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
     ...DracoWriterWorker.options,
-    source: dracoWorkerSoure,
     reuseWorkers: true,
     _nodeWorkers: true,
+    modules: libraries,
+    useLocalLibraries: true,
     draco: {
       method: 'MESH_SEQUENTIAL_ENCODING',
       attributesMetadata
+    },
+    ['draco-writer']: {
+      // We need to load local fs workers because nodejs can't load workers from the Internet
+      workerUrl: './modules/draco/dist/draco-writer-worker-node.js'
     }
   });
 }
 
 /**
  * Generates ordered feature indices based on face range
- * @param {Uint32Array} featureIndex
- * @param {Uint32Array} faceRange
- * @returns {Uint32Array}
+ * @param featureIndex
+ * @param faceRange
+ * @returns
  */
-function generateFeatureIndexAttribute(featureIndex, faceRange) {
+function generateFeatureIndexAttribute(
+  featureIndex: Uint32Array,
+  faceRange: Uint32Array
+): Uint32Array {
   const orderedFeatureIndices = new Uint32Array(featureIndex.length);
   let fillIndex = 0;
   let startIndex = 0;
@@ -1516,11 +1607,19 @@ function generateFeatureIndexAttribute(featureIndex, faceRange) {
 /**
  * Find property table in tile
  * For example it can be batchTable for b3dm files or property table in gLTF extension.
- * @param sourceTile
- * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA
+ * @param tileContent - 3DTiles tile content
+ * @param metadataClass - user selected feature metadata class name
+ * @return batch table from b3dm / feature properties from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA.
  */
-export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | null {
-  const batchTableJson = tileContent?.batchTableJson;
+export function getPropertyTable(
+  tileContent: Tiles3DTileContent | null,
+  metadataClass?: string
+): FeatureTableJson | null {
+  if (!tileContent) {
+    return null;
+  }
+  let propertyTable: FeatureTableJson | null;
+  const batchTableJson = tileContent.batchTableJson;
 
   if (batchTableJson) {
     return batchTableJson;
@@ -1529,12 +1628,19 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
   const {extensionName, extension} = getPropertyTableExtension(tileContent);
 
   switch (extensionName) {
-    case EXT_MESH_FEATURES: {
-      console.warn('The I3S converter does not yet support the EXT_mesh_features extension');
-      return null;
+    case EXT_STRUCTURAL_METADATA: {
+      propertyTable = getPropertyTableFromExtStructuralMetadata(
+        extension as GLTF_EXT_structural_metadata_GLTF,
+        metadataClass
+      );
+      return propertyTable;
     }
     case EXT_FEATURE_METADATA: {
-      return getPropertyTableFromExtFeatureMetadata(extension);
+      propertyTable = getPropertyTableFromExtFeatureMetadata(
+        extension as GLTF_EXT_feature_metadata_GLTF,
+        metadataClass
+      );
+      return propertyTable;
     }
     default:
       return null;
@@ -1542,11 +1648,107 @@ export function getPropertyTable(tileContent: B3DMContent): FeatureTableJson | n
 }
 
 /**
- * Check extensions which can be with property table inside.
- * @param sourceTile
+ * Handles EXT_structural_metadata to get property table.
+ * @param extension - Global level of EXT_STRUCTURAL_METADATA extension.
+ * @param metadataClass - User selected feature metadata class name.
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
  */
-function getPropertyTableExtension(tileContent: B3DMContent) {
-  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_MESH_FEATURES];
+function getPropertyTableFromExtStructuralMetadata(
+  extension: GLTF_EXT_structural_metadata_GLTF,
+  metadataClass?: string
+): FeatureTableJson | null {
+  /**
+   * Note, 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+   * In I3S we should decide which featureIds attribute will be passed to geometry data.
+   * So, we take only the feature table / feature texture to generate attributes storage info object.
+   * If the user has selected the metadataClass, the table with the corresponding class will be used,
+   * or just the first one otherwise.
+   */
+  if (extension.propertyTables) {
+    for (const propertyTable of extension.propertyTables) {
+      if (propertyTable.class === metadataClass || !metadataClass) {
+        return getPropertyData(propertyTable);
+      }
+    }
+  }
+
+  if (extension.propertyTextures) {
+    for (const propertyTexture of extension.propertyTextures) {
+      if (propertyTexture.class === metadataClass || !metadataClass) {
+        return getPropertyData(propertyTexture);
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Handles EXT_feature_metadata to get property table.
+ * @param extension - Global level of EXT_FEATURE_METADATA extension.
+ * @param metadataClass - User selected feature metadata class name.
+ * @returns {FeatureTableJson | null} Property table or null if the extension can't be handled properly.
+ */
+function getPropertyTableFromExtFeatureMetadata(
+  extension: GLTF_EXT_feature_metadata_GLTF,
+  metadataClass?: string
+): FeatureTableJson | null {
+  /**
+   * Note, 3dTiles is able to have multiple featureId attributes and multiple feature tables.
+   * In I3S we should decide which featureIds attribute will be passed to geometry data.
+   * So, we take only the feature table / feature texture to generate attributes storage info object.
+   * If the user has selected the metadataClass, the table with the corresponding class will be used,
+   * or just the first one otherwise.
+   */
+  if (extension.featureTables) {
+    for (const featureTableName in extension.featureTables) {
+      const featureTable = extension.featureTables[featureTableName];
+      if (featureTable.class === metadataClass || !metadataClass) {
+        return getPropertyData(featureTable);
+      }
+    }
+  }
+
+  if (extension.featureTextures) {
+    for (const featureTextureName in extension.featureTextures) {
+      const featureTexture = extension.featureTextures[featureTextureName];
+      if (featureTexture.class === metadataClass || !metadataClass) {
+        return getPropertyData(featureTexture);
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Gets data from Property Table or Property Texture
+ * @param featureObject - property table or texture from the extension
+ * @returns Table containing property data
+ */
+function getPropertyData<
+  Type extends
+    | GLTF_EXT_structural_metadata_PropertyTable
+    | GLTF_EXT_structural_metadata_PropertyTexture
+    | GLTF_EXT_feature_metadata_FeatureTable
+    | GLTF_EXT_feature_metadata_FeatureTexture
+>(featureObject: Type) {
+  const propertyTableWithData = {};
+  for (const propertyName in featureObject.properties) {
+    propertyTableWithData[propertyName] = featureObject.properties[propertyName].data;
+  }
+  return propertyTableWithData;
+}
+
+/**
+ * Check extensions which can be with property table inside.
+ * @param tileContent - 3DTiles tile content
+ */
+function getPropertyTableExtension(tileContent: Tiles3DTileContent): {
+  extensionName: null | string;
+  extension: string | GLTF_EXT_feature_metadata_GLTF | GLTF_EXT_structural_metadata_GLTF | null;
+} {
+  const extensionsWithPropertyTables = [EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA];
   const extensionsUsed = tileContent?.gltf?.extensionsUsed;
 
   if (!extensionsUsed) {
@@ -1554,55 +1756,27 @@ function getPropertyTableExtension(tileContent: B3DMContent) {
   }
 
   let extensionName: string = '';
-
   for (const extensionItem of tileContent?.gltf?.extensionsUsed || []) {
     if (extensionsWithPropertyTables.includes(extensionItem)) {
       extensionName = extensionItem;
+      /*
+        It returns the first extension containing the property table.
+        We assume that there can be only one extension containing the property table:
+        either EXT_FEATURE_METADATA, which is a depricated extension,
+        or EXT_STRUCTURAL_METADATA.
+      */
       break;
     }
   }
 
-  const extension = tileContent?.gltf?.extensions?.[extensionName];
+  if (!extensionName) {
+    return {extensionName: null, extension: null};
+  }
+
+  const extension = tileContent?.gltf?.extensions?.[extensionName] as
+    | string // EXT_mesh_features doesn't have global metadata
+    | GLTF_EXT_feature_metadata_GLTF
+    | GLTF_EXT_structural_metadata_GLTF;
 
   return {extensionName, extension};
-}
-
-/**
- * Handle EXT_feature_metadata to get property table
- * @param extension
- * TODO add EXT_feature_metadata feature textures support.
- */
-function getPropertyTableFromExtFeatureMetadata(
-  extension: GLTF_EXT_feature_metadata
-): FeatureTableJson | null {
-  if (extension?.featureTextures) {
-    console.warn(
-      'The I3S converter does not yet support the EXT_feature_metadata feature textures'
-    );
-    return null;
-  }
-
-  if (extension?.featureTables) {
-    /**
-     * Take only first feature table to generate attributes storage info object.
-     * TODO: Think about getting data from all feature tables?
-     * It can be tricky just because 3dTiles is able to have multiple featureId attributes and multiple feature tables.
-     * In I3S we should decide which featureIds attribute will be passed to geometry data.
-     */
-    const firstFeatureTableName = Object.keys(extension.featureTables)?.[0];
-
-    if (firstFeatureTableName) {
-      const featureTable = extension?.featureTables[firstFeatureTableName];
-      const propertyTable = {};
-
-      for (const propertyName in featureTable.properties) {
-        propertyTable[propertyName] = featureTable.properties[propertyName].data;
-      }
-
-      return propertyTable;
-    }
-  }
-
-  console.warn("The I3S converter couldn't handle EXT_feature_metadata extension");
-  return null;
 }

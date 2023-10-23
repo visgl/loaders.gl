@@ -1,5 +1,6 @@
 {
   "name": "bundle-with-webpack-5",
+  "version": "1.0.0",
   "type": "module",
   "description": "Minimal example of using loaders.gl with webpack 5.",
   "private": true,
@@ -8,8 +9,8 @@
     "build": "webpack build"
   },
   "dependencies": {
-    "@loaders.gl/core": "^3.3.1",
-    "@loaders.gl/obj": "^3.3.1"
+    "@loaders.gl/core": "4.0.0-beta.3",
+    "@loaders.gl/obj": "4.0.0-beta.3"
   },
   "devDependencies": {
     "html-webpack-plugin": "^5.5.0",

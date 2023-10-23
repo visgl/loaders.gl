@@ -1,10 +1,18 @@
-import type {Loader} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {TextureLevel} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
+
+export type CrunchLoaderOptions = LoaderOptions & {
+  crunch?: {
+    libraryPath?: string;
+  };
+};
 
 /**
  * Worker loader for the Crunch compressed texture container format
+ * @note We avoid bundling crunch - it is a rare format and large lib, so we only offer worker loader
  */
-export const CrunchLoader = {
+export const CrunchLoader: Loader<TextureLevel[], never, CrunchLoaderOptions> = {
   id: 'crunch',
   name: 'Crunch',
   module: 'textures',
@@ -19,8 +27,3 @@ export const CrunchLoader = {
     }
   }
 };
-
-// We avoid bundling crunch - rare format, only offer worker loader
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCrunchLoader: Loader = CrunchLoader;

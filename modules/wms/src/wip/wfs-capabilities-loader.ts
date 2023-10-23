@@ -17,7 +17,7 @@ export type WFSLoaderOptions = LoaderOptions & {
 /**
  * Loader for the response to the WFS GetCapability request
  */
-export const WFSCapabilitiesLoader = {
+export const WFSCapabilitiesLoader: LoaderWithParser<WFSCapabilities, never, WFSLoaderOptions> = {
   id: 'wfs-capabilities',
   name: 'WFS Capabilities',
 
@@ -28,7 +28,7 @@ export const WFSCapabilitiesLoader = {
   mimeTypes: ['application/vnd.ogc.wfs_xml', 'application/xml', 'text/xml'],
   testText: testXMLFile,
   options: {
-    wms: {}
+    wfs: {}
   },
   parse: async (arrayBuffer: ArrayBuffer, options?: WFSLoaderOptions) =>
     parseWFSCapabilities(new TextDecoder().decode(arrayBuffer), options),

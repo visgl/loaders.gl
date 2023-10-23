@@ -15,11 +15,7 @@ export type BSONLoaderOptions = LoaderOptions & {
   bson?: ParseBSONOptions;
 };
 
-const DEFAULT_BSON_LOADER_OPTIONS = {
-  bson: {}
-};
-
-export const BSONLoader: LoaderWithParser = {
+export const BSONLoader: LoaderWithParser<Record<string, unknown>, never, BSONLoaderOptions> = {
   name: 'BSON',
   id: 'bson',
   module: 'bson',
@@ -30,15 +26,17 @@ export const BSONLoader: LoaderWithParser = {
   binary: true,
   parse,
   parseSync,
-  options: DEFAULT_BSON_LOADER_OPTIONS
+  options: {
+    bson: {}
+  }
 };
 
 async function parse(arrayBuffer: ArrayBuffer, options?: BSONLoaderOptions) {
-  const bsonOptions = {...DEFAULT_BSON_LOADER_OPTIONS.bson, ...options?.bson};
+  const bsonOptions = {...BSONLoader.options.bson, ...options?.bson};
   return parseBSONSync(arrayBuffer, bsonOptions);
 }
 
 function parseSync(arrayBuffer: ArrayBuffer, options?: BSONLoaderOptions) {
-  const bsonOptions = {...DEFAULT_BSON_LOADER_OPTIONS.bson, ...options?.bson};
+  const bsonOptions = {...BSONLoader.options.bson, ...options?.bson};
   return parseBSONSync(arrayBuffer, bsonOptions);
 }

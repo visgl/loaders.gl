@@ -1,7 +1,8 @@
 # Table
 
-Logical table as sequence of chunked arrays
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
 
+Logical table as sequence of chunked arrays
 
 ## Overview
 
@@ -16,7 +17,7 @@ A Table’s columns are instances of `Column`, which is a container for one or m
 
 `Table.new()` accepts an `Object` of `Columns` or `Vectors`, where the keys will be used as the field names for the `Schema`:
 
-```js
+```typescript
 const i32s = Int32Vector.from([1, 2, 3]);
 const f32s = Float32Vector.from([.1, .2, .3]);
 const table = Table.new({ i32: i32s, f32: f32s });

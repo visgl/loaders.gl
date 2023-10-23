@@ -1,5 +1,5 @@
 import type {Feature} from '@loaders.gl/schema';
-import type {BinaryFeatures} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection} from '@loaders.gl/schema';
 
 import {extractGeometryInfo} from './extract-geometry-info';
 import {geojsonToFlatGeojson} from './geojson-to-flat-geojson';
@@ -12,6 +12,7 @@ export type GeojsonToBinaryOptions = {
   fixRingWinding: boolean;
   numericPropKeys?: string[];
   PositionDataType?: Float32ArrayConstructor | Float64ArrayConstructor;
+  triangulate?: boolean;
 };
 
 /**
@@ -23,14 +24,15 @@ export type GeojsonToBinaryOptions = {
  */
 export function geojsonToBinary(
   features: Feature[],
-  options: GeojsonToBinaryOptions = {fixRingWinding: true}
-): BinaryFeatures {
+  options: GeojsonToBinaryOptions = {fixRingWinding: true, triangulate: true}
+): BinaryFeatureCollection {
   const geometryInfo = extractGeometryInfo(features);
   const coordLength = geometryInfo.coordLength;
   const {fixRingWinding} = options;
   const flatFeatures = geojsonToFlatGeojson(features, {coordLength, fixRingWinding});
   return flatGeojsonToBinary(flatFeatures, geometryInfo, {
     numericPropKeys: options.numericPropKeys,
-    PositionDataType: options.PositionDataType || Float32Array
+    PositionDataType: options.PositionDataType || Float32Array,
+    triangulate: options.triangulate
   });
 }

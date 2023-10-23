@@ -1,4 +1,4 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {SHP_MAGIC_NUMBER} from './shp-loader';
 import {parseShapefile, parseShapefileInBatches} from './lib/parsers/parse-shapefile';
 
@@ -10,7 +10,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * Shapefile loader
  * @note Shapefile is multifile format and requires providing additional files
  */
-export const ShapefileLoader = {
+export const ShapefileLoader: LoaderWithParser<any, any, LoaderOptions> = {
   name: 'Shapefile',
   id: 'shapefile',
   module: 'shapefile',
@@ -28,5 +28,3 @@ export const ShapefileLoader = {
   parse: parseShapefile,
   parseInBatches: parseShapefileInBatches
 };
-
-export const _typecheckShapefileLoader: LoaderWithParser = ShapefileLoader;

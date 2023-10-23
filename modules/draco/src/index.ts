@@ -1,3 +1,4 @@
+// loaders.gl, MIT license
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {DracoMesh, DracoLoaderData} from './lib/draco-types';
 import type {DracoLoaderOptions} from './draco-loader';
@@ -5,7 +6,9 @@ import {DracoLoader as DracoWorkerLoader} from './draco-loader';
 import DracoParser from './lib/draco-parser';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
-import {isBrowser} from '@loaders.gl/worker-utils';
+
+// Module constants
+export {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from './lib/draco-module-loader';
 
 // Draco data types
 
@@ -21,7 +24,7 @@ export {DracoWriter} from './draco-writer';
  * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
  */
 export const DracoWriterWorker = {
-  id: isBrowser ? 'draco-writer' : 'draco-writer-nodejs',
+  id: 'draco-writer',
   name: 'Draco compressed geometry writer',
   module: 'draco',
   version: VERSION,
@@ -40,7 +43,7 @@ export {DracoWorkerLoader};
 /**
  * Loader for Draco3D compressed geometries
  */
-export const DracoLoader = {
+export const DracoLoader: LoaderWithParser<DracoMesh, never, DracoLoaderOptions> = {
   ...DracoWorkerLoader,
   parse
 };
@@ -54,6 +57,3 @@ async function parse(arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions): Pr
     dracoParser.destroy();
   }
 }
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckDracoLoader: LoaderWithParser = DracoLoader;

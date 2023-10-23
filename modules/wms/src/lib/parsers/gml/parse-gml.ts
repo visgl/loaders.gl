@@ -29,6 +29,8 @@ function noTransform(...coords) {
   return coords;
 }
 
+export type {Geometry};
+
 export type ParseGMLOptions = {
   transformCoords?: Function;
   stride?: 2 | 3 | 4;
@@ -45,7 +47,7 @@ export type ParseGMLContext = {
  */
 export function parseGML(text: string, options) {
   // GeoJSON | null {
-  const parsedXML = XMLLoader.parseTextSync(text, options);
+  const parsedXML = XMLLoader.parseTextSync?.(text, options);
 
   options = {transformCoords: noTransform, stride: 2, ...options};
   const context = createChildContext(parsedXML, options, {});

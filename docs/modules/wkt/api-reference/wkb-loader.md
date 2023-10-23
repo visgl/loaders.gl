@@ -1,5 +1,7 @@
 # WKBLoader
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" />
 </p>
@@ -18,9 +20,16 @@ Loader for the [Well-known binary][wkb] format for representation of geometry.
 | Decoder Type          | Synchronous                                   |
 | Worker Thread Support | Yes                                           |
 
+## Installation
+
+```bash
+npm install @loaders.gl/wkt
+npm install @loaders.gl/core
+```
+
 ## Usage
 
-```js
+```typescript
 import {WKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 
@@ -34,7 +43,7 @@ const data = parseSync(buffer, WKBLoader);
 // => { positions: { value: Float64Array(2) [ 1, 2 ], size: 2 } }
 ```
 
-```js
+```typescript
 import {WKBLoader} from '@loaders.gl/wkt';
 import {load} from '@loaders.gl/core';
 

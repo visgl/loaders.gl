@@ -19,33 +19,33 @@ export const TILE_CONTENT_STATE = {
 
 export type TileRefinement = 'add' | 'replace';
 
-export const TILE_REFINEMENT = {
-  ADD: 1, // Render tile and, if screen space error exceeded, also refine to its children.
-  REPLACE: 2 // Render tile or, if screen space error exceeded, refine to its descendants instead.
-};
+export enum TILE_REFINEMENT {
+  ADD = 1, // Render tile and, if screen space error exceeded, also refine to its children.
+  REPLACE = 2 // Render tile or, if screen space error exceeded, refine to its descendants instead.
+}
 
 export type TileType = 'empty' | 'scenegraph' | 'pointcloud' | 'mesh';
 
-export const TILE_TYPE = {
-  EMPTY: 'empty',
-  SCENEGRAPH: 'scenegraph',
-  POINTCLOUD: 'pointcloud',
-  MESH: 'mesh'
-};
+export enum TILE_TYPE {
+  EMPTY = 'empty',
+  SCENEGRAPH = 'scenegraph',
+  POINTCLOUD = 'pointcloud',
+  MESH = 'mesh'
+}
 
 export type TilesetType = 'I3S' | 'TILES3D';
 
-export const TILESET_TYPE = {
-  I3S: 'I3S',
-  TILES3D: 'TILES3D'
-};
+export enum TILESET_TYPE {
+  I3S = 'I3S',
+  TILES3D = 'TILES3D'
+}
 
 export type LODMetricType = 'geometricError' | 'maxScreenThreshold';
 
-export const LOD_METRIC_TYPE = {
-  GEOMETRIC_ERROR: 'geometricError',
-  MAX_SCREEN_THRESHOLD: 'maxScreenThreshold'
-};
+export enum LOD_METRIC_TYPE {
+  GEOMETRIC_ERROR = 'geometricError',
+  MAX_SCREEN_THRESHOLD = 'maxScreenThreshold'
+}
 
 // Cesium 3D Tiles Specific
 export type Tile3DOptimizationHint = 'NOT_COMPUTED' | 'USE_OPTIMIZATION' | 'SKIP_OPTIMIZATION';

@@ -1,3 +1,13 @@
+export type TypedArrayConstructor =
+  | Int8ArrayConstructor
+  | Uint8ArrayConstructor
+  | Int16ArrayConstructor
+  | Uint16ArrayConstructor
+  | Int32ArrayConstructor
+  | Uint32ArrayConstructor
+  | Float32ArrayConstructor
+  | Float64ArrayConstructor;
+
 export {GL} from './geometry/constants';
 
 // GL support
@@ -36,3 +46,5 @@ export {
   decompressTextureCoordinates,
   zigZagDeltaDecode
 } from './geometry/compression/attribute-compression';
+
+export {emod} from './geometry/utils/coordinates';

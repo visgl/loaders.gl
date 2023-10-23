@@ -1,7 +1,8 @@
 # HTMLLoader
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
+  <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
+  &nbsp;
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
@@ -27,7 +28,7 @@ The `HTMLLoader` parses HTML-encoded data.
 
 ## Usage
 
-```js
+```typescript
 import {HTMLLoader} from '@loaders.gl/xml';
 import {load} from '@loaders.gl/core';
 

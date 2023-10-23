@@ -1,7 +1,10 @@
 # CSWService
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />
+  &nbsp;
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
@@ -48,38 +51,43 @@ standard loaders.gl `loadOptions` argument, which is forwarded to all load and p
 
 ## Methods
   
-### constructor(props: CSWServiceProps)
+### constructor()
 
 Creates a `CSWService` instance
 
 ```typescript
 export type CSWServiceProps = {
   url: string; // Base URL to the service
-  loadOptions?: LoaderOptions; // Any load options to the loaders.gl Loaders used by the CSWService methods
+  loadOptions?: LoaderOptions; // Passed to loaders used by CSWService methods
 };
+
+constructor(props: CSWServiceProps)
 ```
 
-### `getCapabilities()`
+### getCapabilities()
 
 Get Capabilities
 
 ```typescript
-  async getCapabilities(
-    cswParameters?: CSWGetCapabilitiesParameters,
-    vendorParameters?: Record<string, unknown>
-  ): Promise<CSWCapabilities>
+async getCapabilities(
+  cswParameters?: CSWGetCapabilitiesParameters,
+  vendorParameters?: Record<string, unknown>
+): Promise<CSWCapabilities>
 ```
 
-### `getServiceDirectory()`
+### getServiceDirectory()
 
-Get a list of all service
+Get a list of all service exposed by this catalog server.
 
 ```typescript
-  async getServiceDirectory(options: CSWGetMapParameters, vendorParameters?: Record<string, unknown>): Promise<ImageType>
+async getServiceDirectory(
+  options: CSWGetMapParameters, 
+  vendorParameters?: Record<string, unknown>
+): Promise<Service[]>
 ```
 
 ```typescript
 export type CSWGetMapParameters = {
-  includeUnknown: boolean; // Include services and resources that loaders.gl cannot handle in the returned list
+  includeUnknown: boolean; // Include services and resources that loaders.gl cannot handle
 };
 ```

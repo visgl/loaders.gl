@@ -4,7 +4,7 @@ import {
   WorkerMessagePayload,
   isBrowser
 } from '@loaders.gl/worker-utils';
-import type {Loader, LoaderOptions, LoaderContext} from '../../types';
+import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
 import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
 
 /**
@@ -34,7 +34,7 @@ export async function parseWithWorker(
   data: any,
   options?: LoaderOptions,
   context?: LoaderContext,
-  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<void>
+  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<unknown>
 ) {
   const name = loader.id; // TODO
   const url = getWorkerURL(loader, options);

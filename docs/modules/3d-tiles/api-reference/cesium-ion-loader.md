@@ -9,7 +9,7 @@ Parse [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles) fetched from 
 
 Load a tileset file from Cesium ion server.
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 import {WebMercatorViewport} from '@deck.gl/core';

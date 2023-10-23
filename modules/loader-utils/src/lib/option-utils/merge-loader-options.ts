@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import {LoaderOptions} from '../../types';
+import {LoaderOptions} from '../../loader-types';
 
 /**
  *
@@ -12,14 +12,24 @@ export function mergeLoaderOptions<Options extends LoaderOptions>(
   baseOptions: Options | undefined,
   newOptions: Options
 ): Options {
+  return mergeOptionsRecursively(baseOptions || {}, newOptions) as Options;
+}
+
+function mergeOptionsRecursively(
+  baseOptions: Record<string, unknown>,
+  newOptions: Record<string, unknown>
+): Record<string, unknown> {
   const options = {...baseOptions};
   for (const [key, newValue] of Object.entries(newOptions)) {
-    if (newValue && typeof newValue === 'object') {
-      options[key] = options[key] || {};
-      Object.assign(options[key] as object, newOptions[key]);
+    if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
+      options[key] = mergeOptionsRecursively(
+        (options[key] as Record<string, unknown>) || {},
+        newOptions[key] as Record<string, unknown>
+      );
+      // Object.assign(options[key] as object, newOptions[key]);
     } else {
       options[key] = newOptions[key];
     }
   }
-  return options as Options;
+  return options as Record<string, unknown>;
 }

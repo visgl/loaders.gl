@@ -1,7 +1,8 @@
-# FlatGeobufLoader
+# FlatGeobufLoader 🚧
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
+  &nbsp;
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
@@ -17,7 +18,7 @@ Loader for the [FlatGeobuf](http://flatgeobuf.org/) format, a binary FlatBuffers
 
 ## Usage
 
-```js
+```typescript
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {load} from '@loaders.gl/core';
 

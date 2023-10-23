@@ -2,7 +2,8 @@ import test from 'tape-promise/tape';
 import {
   toArrayBuffer,
   concatenateArrayBuffers,
-  concatenateTypedArrays
+  concatenateTypedArrays,
+  isBrowser
 } from '@loaders.gl/loader-utils';
 
 test('toArrayBuffer', (t) => {
@@ -14,8 +15,10 @@ test('toArrayBuffer', (t) => {
   buffer = toArrayBuffer(typedArray.buffer);
   t.ok(buffer instanceof ArrayBuffer, 'returns ArrayBuffer from ArrayBuffer');
 
-  buffer = toArrayBuffer(Buffer.from(typedArray.buffer));
-  t.ok(buffer instanceof ArrayBuffer, 'returns ArrayBuffer from Buffer');
+  if (!isBrowser) {
+    buffer = toArrayBuffer(Buffer.from(typedArray.buffer));
+    t.ok(buffer instanceof ArrayBuffer, 'returns ArrayBuffer from Buffer');
+  }
 
   buffer = toArrayBuffer('0123');
   t.ok(buffer instanceof ArrayBuffer, 'returns ArrayBuffer from string');

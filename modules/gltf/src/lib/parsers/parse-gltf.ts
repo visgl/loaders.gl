@@ -1,34 +1,35 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
 import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
-import type {GLB} from '../types/glb-types';
 import type {GLTFWithBuffers} from '../types/gltf-types';
+import type {GLB} from '../types/glb-types';
+import type {ParseGLBOptions} from './parse-glb';
 
+import type {ImageType, TextureLevel} from '@loaders.gl/schema';
+import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
-import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
+import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
+
 import {assert} from '../utils/assert';
+import {isGLB, parseGLBSync} from './parse-glb';
 import {resolveUrl} from '../gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
 import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
-import {postProcessGLTF} from '../api/post-process-gltf';
-import parseGLBSync, {isGLB} from './parse-glb';
 
-export type GLTFParseOptions = {
+/**  */
+export type ParseGLTFOptions = ParseGLBOptions & {
   normalize?: boolean;
   loadImages?: boolean;
   loadBuffers?: boolean;
   decompressMeshes?: boolean;
-  postProcess?: boolean;
   excludeExtensions?: string[];
+  /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
+  postProcess?: never;
 };
 
-// export type GLTFOptions = {
-//   gltf?: GLTFParseOptions;
-// };
-
-export function isGLTF(arrayBuffer, options?): boolean {
+/** Check if an array buffer appears to contain GLTF data */
+export function isGLTF(arrayBuffer: ArrayBuffer, options?: ParseGLTFOptions): boolean {
   const byteOffset = 0;
   return isGLB(arrayBuffer, byteOffset, options);
 }
@@ -39,36 +40,36 @@ export async function parseGLTF(
   byteOffset = 0,
   options: GLTFLoaderOptions,
   context: LoaderContext
-) {
+): Promise<GLTFWithBuffers> {
   parseGLTFContainerSync(gltf, arrayBufferOrString, byteOffset, options);
 
   normalizeGLTFV1(gltf, {normalize: options?.gltf?.normalize});
 
   preprocessExtensions(gltf, options, context);
 
-  const promises: Promise<any>[] = [];
-
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options?.gltf?.loadBuffers && gltf.json.buffers) {
     await loadBuffers(gltf, options, context);
   }
 
+  // loadImages and decodeExtensions should not be running in parallel, because
+  // decodeExtensions uses data from images taken during the loadImages call.
   if (options?.gltf?.loadImages) {
-    const promise = loadImages(gltf, options, context);
-    promises.push(promise);
+    await loadImages(gltf, options, context);
   }
 
-  const promise = decodeExtensions(gltf, options, context);
-  promises.push(promise);
+  await decodeExtensions(gltf, options, context);
 
-  // Parallelize image loading and buffer loading/extension decoding
-  await Promise.all(promises);
-
-  // Post processing resolves indices to objects, buffers
-  return options?.gltf?.postProcess ? postProcessGLTF(gltf, options) : gltf;
+  return gltf;
 }
 
-// `data` - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)
+/**
+ *
+ * @param gltf
+ * @param data - can be ArrayBuffer (GLB), ArrayBuffer (Binary JSON), String (JSON), or Object (parsed JSON)
+ * @param byteOffset
+ * @param options
+ */
 function parseGLTFContainerSync(gltf, data, byteOffset, options) {
   // Initialize gltf container
   if (options.uri) {
@@ -197,13 +198,14 @@ async function loadImage(
   options,
   context: LoaderContext
 ) {
-  const {fetch, parse} = context;
-
   let arrayBuffer;
 
   if (image.uri && !image.hasOwnProperty('bufferView')) {
     const uri = resolveUrl(image.uri, options);
+
+    const {fetch} = context;
     const response = await fetch(uri);
+
     arrayBuffer = await response.arrayBuffer();
     image.bufferView = {
       data: arrayBuffer
@@ -218,16 +220,21 @@ async function loadImage(
   assert(arrayBuffer, 'glTF image has no data');
 
   // Call `parse`
-  let parsedImage = await parse(
+  let parsedImage = (await parseFromContext(
     arrayBuffer,
     [ImageLoader, BasisLoader],
-    {mimeType: image.mimeType, basis: options.basis || {format: selectSupportedBasisFormat()}},
+    {
+      ...options,
+      mimeType: image.mimeType,
+      basis: options.basis || {format: selectSupportedBasisFormat()}
+    },
     context
-  );
+  )) as ImageType | TextureLevel[][];
 
   if (parsedImage && parsedImage[0]) {
     parsedImage = {
       compressed: true,
+      // @ts-expect-error
       mipmaps: false,
       width: parsedImage[0].width,
       height: parsedImage[0].height,
@@ -239,5 +246,6 @@ async function loadImage(
 
   // Store the loaded image
   gltf.images = gltf.images || [];
+  // @ts-expect-error TODO - sort out image typing asap
   gltf.images[index] = parsedImage;
 }

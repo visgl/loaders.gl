@@ -3,7 +3,7 @@ import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {convertBoundingVolumeToI3SFullExtent} from '../../../src/i3s-converter/helpers/coordinate-converter';
 import {Ellipsoid} from '@math.gl/geospatial';
 
-test('#tile-converter#i3s-converter#coordinate-converter#convertBoundingVolumeToI3SFullExtent', async (t) => {
+test('tile-converter(i3s)#convertBoundingVolumeToI3SFullExtent', async (t) => {
   const sanFrancisco = [-122.43147634230891, 37.762614422522873, 104.40637177880853];
   const cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(sanFrancisco);
   const mbs = new BoundingSphere([...cartesianCenter, 9669.8994140625], 9669.8994140625);
@@ -29,6 +29,6 @@ test('#tile-converter#i3s-converter#coordinate-converter#convertBoundingVolumeTo
     ymin: 37.61647458074144,
     ymax: 37.908958954561705,
     zmin: -4625.401184284537,
-    zmax: 4877.104767145071
+    zmax: 4877.1047671450715
   });
 });

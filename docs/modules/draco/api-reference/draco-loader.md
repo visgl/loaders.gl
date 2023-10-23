@@ -1,5 +1,7 @@
 # DracoLoader
 
+![logo](../images/draco-small.png)
+
 The `DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression.
 
 | Loader         | Characteristic                               |
@@ -21,7 +23,7 @@ Features:
 
 ## Usage
 
-```js
+```typescript
 import {DracoLoader} from '@loaders.gl/draco';
 import {load} from '@loaders.gl/core';
 

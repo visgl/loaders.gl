@@ -16,7 +16,7 @@ A loader for Basis Universal "supercompressed" GPU textures. Extracts supercompr
 
 ## Usage
 
-```js
+```typescript
 import {BasisLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 

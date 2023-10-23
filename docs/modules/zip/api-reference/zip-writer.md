@@ -2,19 +2,19 @@
 
 Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Zip Archive and can be written to file.
 
-| Loader         | Characteristic                                                   |
-| -------------- | ---------------------------------------------------------------- |
-| File Extension | `.zip`                                                           |
-| File Type      | Binary                                                           |
-| Data Format    | "File Map"                                                       |
-| File Format    | [ZIP Archive](<https://en.wikipedia.org/wiki/Zip_(file_format)>) |
-| Encoder Type   | Asynchronous                                                     |
-| Worker Thread  | No                                                               |
-| Streaming      | No                                                               |
+| Loader         | Characteristic                               |
+| -------------- | -------------------------------------------- |
+| File Format    | [ZIP Archive](/docs/modules/zip/formats/zip) |
+| Data Format    | "File Map"                                   |
+| File Extension | `.zip`                                       |
+| File Type      | Binary                                       |
+| Encoder Type   | Asynchronous                                 |
+| Worker Thread  | No                                           |
+| Streaming      | No                                           |
 
 ## Usage
 
-```js
+```typescript
 import {encode, writeFile} from '@loaders.gl/core';
 import {ZipWriter} from '@loaders.gl/zip';
 

@@ -3,9 +3,9 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {_ArcGISImageServer as ArcGISImageServer} from '@loaders.gl/wms';
+import {_ArcGISImageService as ArcGISImageService} from '@loaders.gl/wms';
 
 test('ArcGISImageService#test cases', async (t) => {
-  t.ok(ArcGISImageServer);
+  t.ok(ArcGISImageService);
   t.end();
 });

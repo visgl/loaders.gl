@@ -1,7 +1,10 @@
 # GMLLoader
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
+  &nbsp;
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
@@ -22,7 +25,7 @@ the [OGC](https://www.opengeospatial.org/)-standardized [GML](https://www.ogc.or
 
 ## Usage
 
-```js
+```typescript
 import {GMLLoader} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 

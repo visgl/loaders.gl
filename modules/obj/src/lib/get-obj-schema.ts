@@ -1,39 +1,43 @@
-import {Schema, Field, FixedSizeList, getArrowTypeFromTypedArray} from '@loaders.gl/schema';
+// loaders.gl, MIT license
 
-export function getOBJSchema(attributes, metadata = {}) {
-  let metadataMap;
+import type {Schema, SchemaMetadata, Field, MeshAttribute} from '@loaders.gl/schema';
+import {getDataTypeFromArray} from '@loaders.gl/schema';
+
+/** Get Mesh Schema */
+export function getOBJSchema(
+  attributes: Record<string, MeshAttribute>,
+  metadata: Record<string, unknown> = {}
+): Schema {
+  const stringMetadata: SchemaMetadata = {};
   for (const key in metadata) {
-    metadataMap = metadataMap || new Map();
     if (key !== 'value') {
-      metadataMap.set(key, JSON.stringify(metadata[key]));
+      stringMetadata[key] = JSON.stringify(metadata[key]);
     }
   }
 
   const fields: Field[] = [];
   for (const attributeName in attributes) {
     const attribute = attributes[attributeName];
-    const field = getArrowFieldFromAttribute(attributeName, attribute);
+    const field = getFieldFromAttribute(attributeName, attribute);
     fields.push(field);
   }
-  return new Schema(fields, metadataMap);
+
+  return {fields, metadata: stringMetadata};
 }
 
-function getArrowFieldFromAttribute(attributeName, attribute) {
-  const metadataMap = new Map();
+/** Get a Field describing the column from an OBJ attribute */
+function getFieldFromAttribute(name: string, attribute: MeshAttribute): Field {
+  const metadata: Record<string, string> = {};
   for (const key in attribute) {
     if (key !== 'value') {
-      metadataMap.set(key, JSON.stringify(attribute[key]));
+      metadata[key] = JSON.stringify(attribute[key]);
     }
   }
 
-  const type = getArrowTypeFromTypedArray(attribute.value);
-  const isSingleValue = !('size' in attribute) || attribute.size === 1;
-  return isSingleValue
-    ? new Field(attributeName, type, false, metadataMap)
-    : new Field(
-      attributeName,
-      new FixedSizeList(attribute.size, new Field('value', type)),
-      false,
-      metadataMap
-    );
+  let {type} = getDataTypeFromArray(attribute.value);
+  const isSingleValue = attribute.size === 1 || attribute.size === undefined;
+  if (!isSingleValue) {
+    type = {type: 'fixed-size-list', listSize: attribute.size, children: [{name: 'values', type}]};
+  }
+  return {name, type, nullable: false, metadata};
 }

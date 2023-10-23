@@ -6,7 +6,7 @@ Decodes a Zip Archive into a file map.
 | -------------- | ---------------------------------------------------------------- |
 | File Extension | `.zip`                                                           |
 | File Type      | Binary                                                           |
-| File Format    | [ZIP Archive](<https://en.wikipedia.org/wiki/Zip_(file_format)>) |
+| File Format    | [ZIP Archive](/docs/modules/zip/formats/zip) |
 | Data Format    | "File Map"                                                       |
 | Decoder Type   | Asynchronous                                                     |
 | Worker Thread  | No                                                               |
@@ -14,7 +14,7 @@ Decodes a Zip Archive into a file map.
 
 ## Usage
 
-```js
+```typescript
 import {parse} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 

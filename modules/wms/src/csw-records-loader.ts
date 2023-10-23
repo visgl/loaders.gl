@@ -18,10 +18,9 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
 /**
  * Loader for the response to the CSW GetCapability request
  */
-export const CSWRecordsLoader: LoaderWithParser = {
+export const CSWRecordsLoader: LoaderWithParser<CSWRecords, never, CSWLoaderOptions> = {
   id: 'csw-records',
-  name: 'CSW Domain',
-
+  name: 'CSW Records',
   module: 'wms',
   version: VERSION,
   worker: false,

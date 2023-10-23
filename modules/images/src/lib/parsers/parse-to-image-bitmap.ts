@@ -1,6 +1,6 @@
 import type {ImageLoaderOptions} from '../../image-loader';
 import {isSVG, getBlob} from './svg-utils';
-import parseToImage from './parse-to-image';
+import {parseToImage} from './parse-to-image';
 
 const EMPTY_OBJECT = {};
 
@@ -13,7 +13,7 @@ let imagebitmapOptionsSupported = true;
  *
  * TODO - createImageBitmap supports source rect (5 param overload), pass through?
  */
-export default async function parseToImageBitmap(
+export async function parseToImageBitmap(
   arrayBuffer: ArrayBuffer,
   options: ImageLoaderOptions,
   url?: string

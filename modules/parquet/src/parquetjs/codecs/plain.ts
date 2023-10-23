@@ -200,6 +200,7 @@ function decodeValues_BYTE_ARRAY(cursor: CursorBuffer, count: number): Buffer[] 
   for (let i = 0; i < count; i++) {
     const len = cursor.buffer.readUInt32LE(cursor.offset);
     cursor.offset += 4;
+    // values.push(cursor.buffer.buffer.slice(cursor.offset, cursor.offset + len));
     values.push(cursor.buffer.slice(cursor.offset, cursor.offset + len));
     cursor.offset += len;
   }

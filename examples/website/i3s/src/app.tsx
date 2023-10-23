@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
-import {lumaStats} from '@luma.gl/core';
+
 import DeckGL from '@deck.gl/react';
 import {
   MapController,
@@ -17,13 +17,16 @@ import {TerrainLayer, Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
+import {lumaStats} from '@luma.gl/core';
+import {load, fetchFile} from '@loaders.gl/core';
+
+
 import ControlPanel from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
 import {parseTilesetUrlFromUrl, parseTilesetUrlParams} from './utils/url-utils';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {Color, Flex, Font} from './components/styles';
-import {load} from '@loaders.gl/core';
 import {buildSublayersTree} from './helpers/sublayers';
 import {initStats, sumTilesetsStats} from './helpers/stats';
 import {getElevationByCentralTile} from './helpers/terrain-elevation';
@@ -195,7 +198,7 @@ class App extends PureComponent {
     const params = parseTilesetUrlParams(tileset.url, tileset);
     const {tilesetUrl, token, name, metadataUrl} = params;
     this.setState({tilesetUrl, name, token, sublayers: []});
-    const metadata = await fetch(metadataUrl).then((resp) => resp.json());
+    const metadata = await fetchFile(metadataUrl).then((resp) => resp.json());
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});
     this._loadedTilesets = [];
@@ -291,7 +294,7 @@ class App extends PureComponent {
         this.setState({
           tileset,
           viewState: {
-            ...viewState,
+            ...HERO_EXAMPLE_VIEW_STATE,
             onTransitionEnd: this._rotateCamera()
           }
         });

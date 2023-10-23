@@ -1,5 +1,5 @@
 import {WorkerBody, WorkerMessagePayload} from '@loaders.gl/worker-utils';
-import {KTX2BasisWriter} from '../ktx2-basis-writer';
+import {KTX2BasisWriter, KTX2BasisWriterOptions} from '../ktx2-basis-writer';
 
 (() => {
   // Check that we are actually in a worker thread
@@ -12,7 +12,7 @@ import {KTX2BasisWriter} from '../ktx2-basis-writer';
       case 'process':
         try {
           const {input, options} = payload;
-          const result = await KTX2BasisWriter.encode(input, options);
+          const result = await KTX2BasisWriter.encode?.(input, options as KTX2BasisWriterOptions);
           WorkerBody.postMessage('done', {result});
         } catch (error) {
           const message = error instanceof Error ? error.message : '';

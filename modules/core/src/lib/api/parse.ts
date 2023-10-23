@@ -1,13 +1,51 @@
-import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
+// loaders.gl, MIT license
+
+import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {DataType, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
 import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
+import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {isResponse} from '../../javascript-utils/is-type';
 import {normalizeOptions} from '../loader-utils/option-utils';
+import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
+
+// type LoaderArrayType<T> = T extends (infer Loader)[] ? LoaderOptionsType<Loader> : T
+
+/**
+ * Parses `data` asynchronously using the supplied loader
+ */
+export async function parse<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
+  data: DataType | Promise<DataType>,
+  loader: LoaderT,
+  options?: OptionsT,
+  context?: LoaderContext
+): Promise<LoaderReturnType<LoaderT>>;
+
+/**
+ * Parses `data` asynchronously by matching one of the supplied loader
+ */
+export async function parse(
+  data: DataType | Promise<DataType>,
+  loaders: Loader[],
+  options?: LoaderOptions,
+  context?: LoaderContext
+): Promise<unknown>;
+
+/**
+ * Parses data asynchronously by matching a pre-registered loader
+ */
+export async function parse(
+  data: DataType | Promise<DataType>,
+  options?: LoaderOptions
+): Promise<unknown>;
 
 /**
  * Parses `data` using a specified loader
@@ -16,14 +54,13 @@ import {selectLoader} from './select-loader';
  * @param options
  * @param context
  */
+// implementation signature
 export async function parse(
   data: DataType | Promise<DataType>,
   loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<any> {
-  assert(!context || typeof context === 'object'); // parse no longer accepts final url
-
+): Promise<unknown> {
   // Signature: parse(data, options, context | url)
   // Uses registered loaders
   if (loaders && !Array.isArray(loaders) && !isLoaderObject(loaders)) {
@@ -33,7 +70,7 @@ export async function parse(
   }
 
   data = await data; // Resolve any promise
-  options = options || {};
+  options = options || ({} as LoaderOptions); // Could be invalid...
 
   // Extract a url for auto detection
   const url = getResourceUrl(data);
@@ -50,33 +87,48 @@ export async function parse(
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, candidateLoaders, url);
+  // @ts-expect-error
+  options = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
 
   // Get a context (if already present, will be unchanged)
-  context = getLoaderContext({url, parse, loaders: candidateLoaders}, options, context || null);
+  context = getLoaderContext(
+    // @ts-expect-error
+    {url, _parse: parse, loaders: candidateLoaders},
+    options,
+    context || null
+  );
 
   return await parseWithLoader(loader, data, options, context);
 }
 
 // TODO: support progress and abort
 // TODO - should accept loader.parseAsyncIterator and concatenate.
-async function parseWithLoader(loader, data, options, context) {
+async function parseWithLoader(
+  loader: Loader,
+  data,
+  options: LoaderOptions,
+  context: LoaderContext
+): Promise<unknown> {
   validateWorkerVersion(loader);
+
+  options = mergeLoaderOptions(loader.options, options);
 
   if (isResponse(data)) {
     // Serialize to support passing the response to web worker
     const response = data as Response;
     const {ok, redirected, status, statusText, type, url} = response;
     const headers = Object.fromEntries(response.headers.entries());
+    // @ts-expect-error TODO - fix this
     context.response = {headers, ok, redirected, status, statusText, type, url};
   }
 
   data = await getArrayBufferOrStringFromData(data, loader, options);
 
+  const loaderWithParser = loader as LoaderWithParser;
+
   // First check for synchronous text parser, wrap results in promises
-  if (loader.parseTextSync && typeof data === 'string') {
-    options.dataType = 'text';
-    return loader.parseTextSync(data, options, context, loader);
+  if (loaderWithParser.parseTextSync && typeof data === 'string') {
+    return loaderWithParser.parseTextSync(data, options, context);
   }
 
   // If we have a workerUrl and the loader can parse the given options efficiently in a worker
@@ -85,16 +137,16 @@ async function parseWithLoader(loader, data, options, context) {
   }
 
   // Check for asynchronous parser
-  if (loader.parseText && typeof data === 'string') {
-    return await loader.parseText(data, options, context, loader);
+  if (loaderWithParser.parseText && typeof data === 'string') {
+    return await loaderWithParser.parseText(data, options, context);
   }
 
-  if (loader.parse) {
-    return await loader.parse(data, options, context, loader);
+  if (loaderWithParser.parse) {
+    return await loaderWithParser.parse(data, options, context);
   }
 
   // This should not happen, all sync loaders should also offer `parse` function
-  assert(!loader.parseSync);
+  assert(!loaderWithParser.parseSync);
 
   // TBD - If asynchronous parser not available, return null
   throw new Error(`${loader.id} loader - no parser found and worker is disabled`);

@@ -1,5 +1,6 @@
+import {Tiles3DTileJSONPostprocessed} from '@loaders.gl/3d-tiles';
 import {BoundingVolumes} from '@loaders.gl/i3s';
-import {Tile3D} from '@loaders.gl/tiles';
+import {I3STileHeader} from '@loaders.gl/i3s/src/types';
 
 // https://cesium.com/docs/cesiumjs-ref-doc/Cesium3DTileset.html
 const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;
@@ -16,7 +17,7 @@ const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;
  * To avoid infinity values when we do calculations of maxError we shold replace 0 with value which allows us
  * to make child maxError bigger than his parent maxError.
  * 
- * @param tile - 3d-tiles tile Object
+ * @param tile - 3d-tiles tile JSON
  * @param coordinates - node converted coordinates
  * @returns An array of LOD metrics in format compatible with i3s 3DNodeIndexDocument.lodSelection
  * @example 
@@ -31,7 +32,10 @@ const DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR = 16;
         }
     ]
  */
-export function convertGeometricErrorToScreenThreshold(tile: Tile3D, coordinates: BoundingVolumes) {
+export function convertGeometricErrorToScreenThreshold(
+  tile: Tiles3DTileJSONPostprocessed,
+  coordinates: BoundingVolumes
+) {
   const lodSelection: {metricType: string; maxError: number}[] = [];
   const boundingVolume = tile.boundingVolume;
   const lodMetricValue = tile.lodMetricValue || 0.1;
@@ -60,11 +64,15 @@ export function convertGeometricErrorToScreenThreshold(tile: Tile3D, coordinates
  * @param node - i3s node data
  * @returns lod metric in 3d-tiles format
  */
-export function convertScreenThresholdToGeometricError(node: Tile3D): number {
-  const metricData = node.header.lodSelection.maxScreenThreshold || {};
-  let maxError = metricData.maxError;
+export function convertScreenThresholdToGeometricError(node: I3STileHeader): number {
+  const metricData = node.lodSelection?.find(
+    (metric) => metric.metricType === 'maxScreenThreshold'
+  );
+  let maxError = metricData?.maxError;
   if (!maxError) {
-    const sqMetricData = node.header.lodSelection.maxScreenThresholdSQ;
+    const sqMetricData = node.lodSelection?.find(
+      (metric) => metric.metricType === 'maxScreenThresholdSQ'
+    );
     if (sqMetricData) {
       maxError = Math.sqrt(sqMetricData.maxError / (Math.PI * 0.25));
     }
@@ -74,5 +82,5 @@ export function convertScreenThresholdToGeometricError(node: Tile3D): number {
     maxError = DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR;
   }
 
-  return (node.header.mbs[3] * 2 * DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR) / maxError;
+  return (node.mbs[3] * 2 * DEFAULT_MAXIMUM_SCREEN_SPACE_ERROR) / maxError;
 }

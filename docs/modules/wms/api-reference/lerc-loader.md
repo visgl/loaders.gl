@@ -2,6 +2,7 @@
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
+  &nbsp;
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
@@ -23,7 +24,7 @@ There are two major versions, known as "Lerc1" and "Lerc2".
 
 ## Usage
 
-```js
+```typescript
 import {LERCLoader} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 

@@ -12,10 +12,14 @@ test('GPXLoader#loader conformance', (t) => {
 });
 
 test('GPXLoader#parse', async (t) => {
-  const data = await load(`${GPX_URL}.gpx`, GPXLoader, {gis: {format: 'geojson'}});
+  const data = await load(`${GPX_URL}.gpx`, GPXLoader, {gpx: {shape: 'geojson-table'}});
   const resp = await fetchFile(`${GPX_URL}.geojson`);
   const geojson = await resp.json();
 
-  t.deepEqual(data, geojson, 'Data matches GeoJSON');
+  t.deepEqual(
+    data.shape === 'geojson-table' && data.features,
+    geojson.features,
+    'Data matches GeoJSON'
+  );
   t.end();
 });

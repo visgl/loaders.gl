@@ -1,5 +1,5 @@
 import type {FeatureTableJson} from '@loaders.gl/3d-tiles';
-import {
+import type {
   Attribute,
   AttributeStorageInfo,
   ESRIField,
@@ -7,28 +7,37 @@ import {
   FieldInfo,
   PopupInfo
 } from '@loaders.gl/i3s';
+import type {
+  GLTFPostprocessed,
+  GLTF_EXT_feature_metadata_GLTF,
+  GLTF_EXT_feature_metadata_ClassProperty,
+  GLTF_EXT_structural_metadata_GLTF,
+  GLTF_EXT_structural_metadata_ClassProperty
+} from '@loaders.gl/gltf';
+
+import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 
 /**
- * Takes attributes from property table based on featureIds.
+ * Takes attributes from property table based on featureIdsMap.
  * If there is no property value for particular featureId (index) the property will be null.
  * Example:
  * Initial data:
- *   OBJECTID: [0, 1, 5]
+ *   OBJECTID: {0: 0, 3: 33, 4: 333}
  *   component: ['Windows', 'Frames', 'Wall', 'Roof', 'Skylight']
  * Result:
- *   OBJECTID: [0, 1, 5]
- *   component: ['Windows', 'Frames', 'null']
- * @param featureIds
+ *   OBJECTID: [0, 33, 333]
+ *   component: ['Windows', 'Roof', 'Skylight']
+ * @param featureIdsMap
  * @param propertyTable
  */
 export function flattenPropertyTableByFeatureIds(
-  featureIds: number[],
+  featureIdsMap: Record<string, number>,
   propertyTable: FeatureTableJson
 ): FeatureTableJson {
   const resultPropertyTable: FeatureTableJson = {};
   for (const propertyName in propertyTable) {
     const properties = propertyTable[propertyName];
-    resultPropertyTable[propertyName] = getPropertiesByFeatureIds(properties, featureIds);
+    resultPropertyTable[propertyName] = getPropertiesByFeatureIds(properties, featureIdsMap);
   }
 
   return resultPropertyTable;
@@ -37,14 +46,19 @@ export function flattenPropertyTableByFeatureIds(
 /**
  * Getting properties by featureId index
  * @param properties
- * @param featureIds
+ * @param featureIdsMap
  */
-function getPropertiesByFeatureIds(properties: any[], featureIds: number[]): any[] {
-  const resultProperties: any = [];
+function getPropertiesByFeatureIds(
+  properties: unknown[],
+  featureIdsMap: Record<string, number>
+): unknown[] {
+  const resultProperties: unknown[] = [];
 
-  for (const featureId of featureIds) {
-    const property = properties[featureId] || null;
-    resultProperties.push(property);
+  if (properties) {
+    for (const featureIdKey in featureIdsMap) {
+      const property = properties[featureIdKey] || null;
+      resultProperties.push(property);
+    }
   }
 
   return resultProperties;
@@ -64,7 +78,7 @@ export function checkPropertiesLength(
   let needFlatten = false;
 
   for (const attribute of Object.values(propertyTable)) {
-    if (featureIds.length !== attribute.length) {
+    if (!featureIds || !attribute || featureIds.length !== attribute.length) {
       needFlatten = true;
     }
   }
@@ -82,14 +96,10 @@ const DOUBLE_TYPE = 'double';
 const OBJECT_ID_TYPE = 'OBJECTID';
 /**
  * Get the attribute type for attributeStorageInfo https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
- * @param key - attribute's key
- * @param attribute - attribute's type in propertyTable
+ * @param attribute - attribute taken from propertyTable
  */
-export function getAttributeType(key: string, attribute: string): string {
-  if (key === OBJECT_ID_TYPE) {
-    return OBJECT_ID_TYPE;
-  }
-  if (typeof attribute === STRING_TYPE) {
+export function getAttributeType(attribute: unknown): string {
+  if (typeof attribute === STRING_TYPE || typeof attribute === 'bigint') {
     return STRING_TYPE;
   } else if (typeof attribute === 'number') {
     return Number.isInteger(attribute) ? SHORT_INT_TYPE : DOUBLE_TYPE;
@@ -170,10 +180,10 @@ export function createFieldAttribute(key: string, fieldAttributeType: ESRIField)
 
 /**
  * Generate popup info to show metadata on the map.
- * @param propertyTable - table data with OBJECTID.
+ * @param propertyNames - array of property names including OBJECTID.
  * @return data for correct rendering of popup.
  */
-export function createPopupInfo(propertyTable: FeatureTableJson): PopupInfo {
+export function createPopupInfo(propertyNames: string[]): PopupInfo {
   const title = '{OBJECTID}';
   const mediaInfos = [];
   const fieldInfos: FieldInfo[] = [];
@@ -183,12 +193,12 @@ export function createPopupInfo(propertyTable: FeatureTableJson): PopupInfo {
   }[] = [];
   const expressionInfos = [];
 
-  for (const key in propertyTable) {
+  for (const propertyName of propertyNames) {
     fieldInfos.push({
-      fieldName: key,
+      fieldName: propertyName,
       visible: true,
       isEditable: false,
-      label: key
+      label: propertyName
     });
   }
   popupElements.push({
@@ -245,3 +255,151 @@ function setupDoubleAttribute(storageAttribute: AttributeStorageInfo): void {
     valuesPerElement: 1
   };
 }
+
+/**
+ * Gets attribute's types based on the property table records.
+ * @param propertyTable - Table with layer meta data.
+ * @returns set of attribute types
+ * @example of returned object:
+ * {
+ *   "opt_uint8":  "Int32",
+ *   "opt_uint64": "string"
+ * }
+ */
+export function getAttributeTypesFromPropertyTable(
+  propertyTable: FeatureTableJson
+): Record<string, Attribute> {
+  const attributeTypesMap: Record<string, Attribute> = {};
+  for (const key in propertyTable) {
+    // Get attribute type based on the first element of each property.
+    const firstAttribute = propertyTable[key][0];
+    const attributeType = getAttributeType(firstAttribute);
+    attributeTypesMap[key] = attributeType;
+  }
+  return attributeTypesMap;
+}
+
+/**
+ * Gets attribute's types from the extension schema selected by the class name 'metadataClass'.
+ * @param gltfJson - JSON part of GLB content
+ * @param metadataClass - name of the schema class
+ * @returns set of attribute's types
+ * @example of returned object:
+ * {
+ *   "opt_uint8":  "Int32",
+ *   "opt_uint64": "string"
+ * }
+ */
+export const getAttributeTypesFromSchema = (
+  gltfJson: GLTFPostprocessed,
+  metadataClass: string
+): Record<string, Attribute> | null => {
+  const attributeTypesMap: Record<string, Attribute> = {};
+  const extFeatureMetadataSchemaClass = (
+    gltfJson.extensions?.[EXT_FEATURE_METADATA] as GLTF_EXT_feature_metadata_GLTF
+  )?.schema?.classes?.[metadataClass];
+  if (extFeatureMetadataSchemaClass) {
+    for (let propertyName in extFeatureMetadataSchemaClass.properties) {
+      const property = extFeatureMetadataSchemaClass.properties[propertyName];
+      const attributeProperty = getAttributeTypeFromExtFeatureMetadata(property);
+      attributeTypesMap[propertyName] = attributeProperty;
+    }
+    return attributeTypesMap;
+  }
+
+  const extStructuralMetadataSchemaClass = (
+    gltfJson.extensions?.[EXT_STRUCTURAL_METADATA] as GLTF_EXT_structural_metadata_GLTF
+  )?.schema?.classes?.[metadataClass];
+  if (extStructuralMetadataSchemaClass) {
+    for (let propertyName in extStructuralMetadataSchemaClass.properties) {
+      const property = extStructuralMetadataSchemaClass.properties[propertyName];
+      const attributeProperty = getAttributeTypeFromExtStructuralMetadata(property);
+      attributeTypesMap[propertyName] = attributeProperty;
+    }
+    return attributeTypesMap;
+  }
+
+  return null;
+};
+
+/**
+ * Gets the attribute type according to the Ext_feature_metadata extension class schema
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
+ * @param property - schema of the class property for Ext_feature_metadata
+ * @returns attribute's type
+ */
+const getAttributeTypeFromExtFeatureMetadata = (
+  property: GLTF_EXT_feature_metadata_ClassProperty
+): Attribute => {
+  let attributeType: Attribute;
+  switch (property.type) {
+    case 'INT8':
+    case 'UINT8':
+    case 'INT16':
+    case 'UINT16':
+    case 'INT32':
+    case 'UINT32':
+      attributeType = SHORT_INT_TYPE;
+      break;
+
+    case 'FLOAT32':
+    case 'FLOAT64':
+      attributeType = DOUBLE_TYPE;
+      break;
+
+    case 'INT64':
+    case 'UINT64':
+    case 'BOOLEAN':
+    case 'ENUM':
+    case 'STRING':
+    case 'ARRAY':
+      attributeType = STRING_TYPE;
+      break;
+
+    default:
+      attributeType = STRING_TYPE;
+      break;
+  }
+  return attributeType;
+};
+
+/**
+ * Gets the attribute type according to the Ext_structural_metadata extension class schema
+ * @see https://github.com/Esri/i3s-spec/blob/master/docs/1.7/attributeStorageInfo.cmn.md
+ * @param property - schema of the class property for Ext_structural_metadata
+ * @returns attribute's type
+ */
+const getAttributeTypeFromExtStructuralMetadata = (
+  property: GLTF_EXT_structural_metadata_ClassProperty
+): Attribute => {
+  let attributeType: Attribute;
+  if (property.array) {
+    attributeType = STRING_TYPE;
+  } else {
+    switch (property.componentType) {
+      case 'INT8':
+      case 'UINT8':
+      case 'INT16':
+      case 'UINT16':
+      case 'INT32':
+      case 'UINT32':
+        attributeType = SHORT_INT_TYPE;
+        break;
+
+      case 'FLOAT32':
+      case 'FLOAT64':
+        attributeType = DOUBLE_TYPE;
+        break;
+
+      case 'INT64':
+      case 'UINT64':
+        attributeType = STRING_TYPE;
+        break;
+
+      default:
+        attributeType = STRING_TYPE;
+        break;
+    }
+  }
+  return attributeType;
+};

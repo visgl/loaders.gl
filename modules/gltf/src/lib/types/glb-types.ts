@@ -16,6 +16,6 @@ export type GLB = {
   };
 
   // Per spec we must iterate over chunks, ignoring all except JSON and BIN
-  json: {};
+  json: Record<string, any>;
   binChunks: GLBBinChunk[];
 };

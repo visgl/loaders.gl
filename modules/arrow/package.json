@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "3.4.0-alpha.4",
+  "version": "4.0.0-beta.6",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -19,8 +20,15 @@
     "PLY"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -31,14 +39,16 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
-    "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle -- --env=dev",
+    "build-bundle": "ocular-bundle ./src/index.ts",
+    "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "pre-build2": "cp fixed-package.json ../../node_modules/apache-arrow/package.json && npm run build-bundle && npm run build-worker",
+    "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.4.0-alpha.4",
-    "@loaders.gl/schema": "3.4.0-alpha.4",
-    "apache-arrow": "^4.0.0"
+    "@loaders.gl/loader-utils": "4.0.0-beta.6",
+    "@loaders.gl/schema": "4.0.0-beta.6",
+    "apache-arrow": "^13.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

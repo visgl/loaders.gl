@@ -21,7 +21,7 @@ The `NPYLoader` parses an array from the [NPY format][npy-spec], a lightweight e
 
 ## Usage
 
-```js
+```typescript
 import {_NPYLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 

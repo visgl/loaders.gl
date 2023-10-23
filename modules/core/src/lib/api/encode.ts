@@ -1,8 +1,7 @@
 import {Writer, WriterOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers, resolvePath, NodeFile} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
-import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
-import {writeFile} from '../fetch/write-file';
 import {fetchFile} from '../fetch/fetch-file';
 import {getLoaderOptions} from './loader-options';
 
@@ -10,7 +9,7 @@ import {getLoaderOptions} from './loader-options';
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
 export async function encode(
-  data: any,
+  data: unknown,
   writer: Writer,
   options?: WriterOptions
 ): Promise<ArrayBuffer> {
@@ -40,7 +39,7 @@ export async function encode(
     const batches = encodeInBatches(data, writer, options);
 
     // Concatenate the output
-    const chunks: any[] = [];
+    const chunks: unknown[] = [];
     for await (const batch of batches) {
       chunks.push(batch);
     }
@@ -51,7 +50,8 @@ export async function encode(
   if (!isBrowser && writer.encodeURLtoURL) {
     // TODO - how to generate filenames with correct extensions?
     const tmpInputFilename = getTemporaryFilename('input');
-    await writeFile(tmpInputFilename, data);
+    const file = new NodeFile(tmpInputFilename, 'w');
+    await file.write(data as ArrayBuffer);
 
     const tmpOutputFilename = getTemporaryFilename('output');
 
@@ -72,7 +72,7 @@ export async function encode(
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSync(data: any, writer: Writer, options?: WriterOptions): ArrayBuffer {
+export function encodeSync(data: unknown, writer: Writer, options?: WriterOptions): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
   }
@@ -86,7 +86,7 @@ export function encodeSync(data: any, writer: Writer, options?: WriterOptions): 
  * @throws if the writer does not generate text output
  */
 export async function encodeText(
-  data: any,
+  data: unknown,
   writer: Writer,
   options?: WriterOptions
 ): Promise<string> {
@@ -99,19 +99,39 @@ export async function encodeText(
     return new TextDecoder().decode(arrayBuffer);
   }
 
-  throw new Error('Writer could not encode data as text');
+  throw new Error(`Writer ${writer.name} could not encode data as text`);
+}
+
+/**
+ * Encode loaded data to text using the specified Writer
+ * @note This is a convenience function not intended for production use on large input data.
+ * It is not optimized for performance. Data maybe converted from text to binary and back.
+ * @throws if the writer does not generate text output
+ */
+export function encodeTextSync(data: unknown, writer: Writer, options?: WriterOptions): string {
+  if (writer.text && writer.encodeTextSync) {
+    return writer.encodeTextSync(data, options);
+  }
+
+  if (writer.text && writer.encodeSync) {
+    const arrayBuffer = encodeSync(data, writer, options);
+    return new TextDecoder().decode(arrayBuffer);
+  }
+
+  throw new Error(`Writer ${writer.name} could not encode data as text`);
 }
 
 /**
  * Encode loaded data into a sequence (iterator) of binary ArrayBuffers using the specified Writer.
  */
 export function encodeInBatches(
-  data: any,
+  data: unknown,
   writer: Writer,
   options?: WriterOptions
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);
+    // @ts-expect-error
     return writer.encodeInBatches(dataIterator, options);
   }
   // TODO -fall back to atomic encode?
@@ -123,10 +143,10 @@ export function encodeInBatches(
  * @note Node.js only. This function enables using command-line converters as "writers".
  */
 export async function encodeURLtoURL(
-  inputUrl,
-  outputUrl,
+  inputUrl: string,
+  outputUrl: string,
   writer: Writer,
-  options
+  options?: WriterOptions
 ): Promise<string> {
   inputUrl = resolvePath(inputUrl);
   outputUrl = resolvePath(outputUrl);
@@ -140,8 +160,8 @@ export async function encodeURLtoURL(
 /**
  * @todo TODO - this is an unacceptable hack!!!
  */
-function getIterator(data) {
-  const dataIterator = [{table: data, start: 0, end: data.length}];
+function getIterator(data: any): Iterable<{table: any; start: number; end: number}> {
+  const dataIterator = [{...data, start: 0, end: data.length}];
   return dataIterator;
 }
 

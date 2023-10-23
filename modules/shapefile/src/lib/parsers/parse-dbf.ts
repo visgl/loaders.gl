@@ -1,13 +1,5 @@
-import {
-  Schema,
-  Field,
-  Bool,
-  Utf8,
-  Float64,
-  TimestampMillisecond,
-  ObjectRowTable
-} from '@loaders.gl/schema';
-import BinaryChunkReader from '../streaming/binary-chunk-reader';
+import {Field, ObjectRowTable} from '@loaders.gl/schema';
+import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {
   DBFLoaderOptions,
   DBFResult,
@@ -81,7 +73,7 @@ export function parseDBF(
   dbfParser.end();
 
   const {data, schema} = dbfParser.result;
-  const shape = options?.tables?.format || options?.dbf?.shape;
+  const shape = options?.dbf?.shape;
   switch (shape) {
     case 'object-row-table': {
       const table: ObjectRowTable = {
@@ -177,7 +169,10 @@ function parseState(
           }
 
           result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
-          result.schema = new Schema(result.dbfFields.map((dbfField) => makeField(dbfField)));
+          result.schema = {
+            fields: result.dbfFields.map((dbfField) => makeField(dbfField)),
+            metadata: {}
+          };
 
           state = STATE.FIELD_PROPERTIES;
 
@@ -380,19 +375,19 @@ function parseCharacter(text: string): string | null {
 function makeField({name, dataType, fieldLength, decimal}: DBFField): Field {
   switch (dataType) {
     case 'B':
-      return new Field(name, new Float64(), true);
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'C':
-      return new Field(name, new Utf8(), true);
+      return {name, type: 'utf8', nullable: true, metadata: {}};
     case 'F':
-      return new Field(name, new Float64(), true);
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'N':
-      return new Field(name, new Float64(), true);
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'O':
-      return new Field(name, new Float64(), true);
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'D':
-      return new Field(name, new TimestampMillisecond(), true);
+      return {name, type: 'timestamp-millisecond', nullable: true, metadata: {}};
     case 'L':
-      return new Field(name, new Bool(), true);
+      return {name, type: 'bool', nullable: true, metadata: {}};
     default:
       throw new Error('Unsupported data type');
   }

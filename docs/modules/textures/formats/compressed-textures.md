@@ -1,4 +1,4 @@
-# About Compressed Textures
+# Compressed Textures
 
 **Compressed textures** are different from compressed images in that they do not have to be decompressed, they can be used directly by a supporting GPU. However, a compressed texture typically consists of a collection of compressed subimages, representing mipmaps etc. These compressed subimages are stored as an array of "binary blobs" in a container file. Only the container file is parsed, extracting metadata and the binary buffers representing subimages. The binary subimages can then be passed directly to a GPU that understands how to read pixels directly from them without decompressing them first.
 
@@ -100,7 +100,7 @@ Data returned by any loaders.gl "image" category loader (including texture loade
 
 To use compressed textures in WebGL
 
-```js
+```typescript
 const texture = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -143,7 +143,7 @@ Support for compressed textures is a work in progress in the [WebGPU standard](h
 
 At the time of writing, only S3 texture compression has been specified:
 
-```js
+```typescript
     // BC compressed formats usable if "texture-compression-bc" is both
     // supported by the device/user agent and enabled in requestDevice.
     "bc1-rgba-unorm",

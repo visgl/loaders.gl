@@ -4,7 +4,7 @@ import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl
 import {fetchFile, loadInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 import {CryptoHash} from '@loaders.gl/crypto';
-import * as CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js';
 
 const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 /** Externally computed hash: `openssl md5 -binary sample-very-long.json | openssl base64` */
@@ -14,7 +14,10 @@ test('CryptoHash#hash(CSV, against external hash)', async (t) => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
-  const hash = await new CryptoHash({modules: {CryptoJS}, crypto: {algorithm: 'MD5'}}).hash(data);
+  const hash = await new CryptoHash({modules: {CryptoJS}, crypto: {algorithm: 'MD5'}}).hash(
+    data,
+    'base64'
+  );
   t.equal(hash, CSV_MD5, 'repeated data MD5 hash is correct');
 
   t.end();
@@ -41,7 +44,7 @@ test('CryptoHash#iterator(CSV stream, against external hash)', async (t) => {
   for await (const batch of csvIterator) {
     csv = batch;
   }
-  t.ok(Array.isArray(csv.data), 'parsing from wrapped iterator works');
+  t.ok(Array.isArray(csv?.data), 'parsing from wrapped iterator works');
 
   t.equal(hash, CSV_MD5, 'streaming MD5 hash is correct');
 
@@ -56,11 +59,11 @@ test('CryptoHash#hash(MD5 = default)', async (t) => {
     crypto: {algorithm: 'MD5'}
   });
 
-  let hash = await cryptoHash.hash(binaryData);
+  let hash = await cryptoHash.hash(binaryData, 'base64');
 
   t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'binary data MD5 hash is correct');
 
-  hash = await cryptoHash.hash(repeatedData);
+  hash = await cryptoHash.hash(repeatedData, 'base64');
   t.equal(
     hash,
     // '2d4uZUoLXXO/XWJGnrVl5Q==',

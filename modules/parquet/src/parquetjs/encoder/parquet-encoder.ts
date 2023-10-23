@@ -4,11 +4,12 @@ import {stream} from '@loaders.gl/loader-utils';
 import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs';
 import * as Compression from '../compression';
 import {
-  ParquetBuffer,
+  ParquetRowGroup,
   ParquetCodec,
-  ParquetData,
+  ParquetColumnChunk,
   ParquetField,
-  PrimitiveType
+  PrimitiveType,
+  ParquetRow
 } from '../schema/declare';
 import {ParquetSchema} from '../schema/schema';
 import * as Shred from '../schema/shred';
@@ -105,7 +106,7 @@ export class ParquetEncoder<T> {
 
   public schema: ParquetSchema;
   public envelopeWriter: ParquetEnvelopeWriter;
-  public rowBuffer: ParquetBuffer;
+  public rowBuffer: ParquetRowGroup;
   public rowGroupSize: number;
   public closed: boolean;
   public userMetadata: Record<string, string>;
@@ -144,7 +145,7 @@ export class ParquetEncoder<T> {
    * Append a single row to the parquet file. Rows are buffered in memory until
    * rowGroupSize rows are in the buffer or close() is called
    */
-  async appendRow<T>(row: T): Promise<void> {
+  async appendRow<T extends ParquetRow>(row: T): Promise<void> {
     if (this.closed) {
       throw new Error('writer was closed');
     }
@@ -271,7 +272,7 @@ export class ParquetEnvelopeWriter {
    * Encode a parquet row group. The records object should be created using the
    * shredRecord method
    */
-  async writeRowGroup(records: ParquetBuffer): Promise<void> {
+  async writeRowGroup(records: ParquetRowGroup): Promise<void> {
     const rgroup = await encodeRowGroup(this.schema, records, {
       baseOffset: this.offset,
       pageSize: this.pageSize,
@@ -363,7 +364,7 @@ function encodeValues(
  */
 async function encodeDataPage(
   column: ParquetField,
-  data: ParquetData
+  data: ParquetColumnChunk
 ): Promise<{
   header: PageHeader;
   headerSize: number;
@@ -422,7 +423,7 @@ async function encodeDataPage(
  */
 async function encodeDataPageV2(
   column: ParquetField,
-  data: ParquetData,
+  data: ParquetColumnChunk,
   rowCount: number
 ): Promise<{
   header: PageHeader;
@@ -482,7 +483,7 @@ async function encodeDataPageV2(
  */
 async function encodeColumnChunk(
   column: ParquetField,
-  buffer: ParquetBuffer,
+  buffer: ParquetRowGroup,
   offset: number,
   opts: ParquetEncoderOptions
 ): Promise<{
@@ -539,7 +540,7 @@ async function encodeColumnChunk(
  */
 async function encodeRowGroup(
   schema: ParquetSchema,
-  data: ParquetBuffer,
+  data: ParquetRowGroup,
   opts: ParquetEncoderOptions
 ): Promise<{
   body: Buffer;
@@ -631,6 +632,7 @@ function encodeFooter(
 
   const metadataEncoded = serializeThrift(metadata);
   const footerEncoded = Buffer.alloc(metadataEncoded.length + 8);
+
   metadataEncoded.copy(footerEncoded);
   footerEncoded.writeUInt32LE(metadataEncoded.length, metadataEncoded.length);
   footerEncoded.write(PARQUET_MAGIC, metadataEncoded.length + 4);

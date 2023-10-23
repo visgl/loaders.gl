@@ -19,7 +19,7 @@ export type WMSLoaderOptions = LoaderOptions & {
 /**
  * Loader for the response to the WMS GetCapability request
  */
-export const WMSErrorLoader = {
+export const WMSErrorLoader: LoaderWithParser<string, never, WMSLoaderOptions> = {
   id: 'wms-error',
   name: 'WMS Error',
 
@@ -55,5 +55,3 @@ function parseTextSync(text: string, options?: WMSLoaderOptions): string {
   }
   return message;
 }
-
-export const _typecheckWMSErrorLoader: LoaderWithParser = WMSErrorLoader;

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+
+import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {
   GLTF,
   GLTFScene,
@@ -10,42 +13,48 @@ import type {
   GLTFTexture,
   GLTFImage,
   GLTFBuffer,
-  GLTFBufferView,
-  GLTFWithBuffers
-} from '../types/gltf-types';
+  GLTFBufferView
+} from '../types/gltf-json-schema';
 
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
-import {
-  getAccessorArrayTypeAndLength,
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray
-} from '../gltf-utils/gltf-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
 
-const DEFAULT_GLTF_JSON: GLTF = {
-  asset: {
-    version: '2.0',
-    generator: 'loaders.gl'
-  },
-  buffers: []
-};
+import {getTypedArrayForAccessor as _getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
 
 type Extension = {[key: string]: any};
+
+function makeDefaultGLTFJson(): GLTF {
+  return {
+    asset: {
+      version: '2.0',
+      generator: 'loaders.gl'
+    },
+    buffers: [],
+    extensions: {},
+    extensionsRequired: [],
+    extensionsUsed: []
+  };
+}
+
 /**
  * Class for structured access to GLTF data
  */
-export default class GLTFScenegraph {
+export class GLTFScenegraph {
   // internal
   gltf: GLTFWithBuffers;
   sourceBuffers: any[];
   byteLength: number;
 
-  constructor(gltf?: {json: GLTF; buffers?: any[]}) {
-    // @ts-ignore
-    this.gltf = gltf || {
-      json: {...DEFAULT_GLTF_JSON},
-      buffers: []
+  // TODO - why is this not GLTFWithBuffers - what happens to images?
+  constructor(gltf?: {json: GLTF; buffers?: any[]; images?: any[]}) {
+    // Declare locally so
+
+    this.gltf = {
+      json: gltf?.json || makeDefaultGLTFJson(),
+      buffers: gltf?.buffers || [],
+      images: gltf?.images || []
     };
     this.sourceBuffers = [];
     this.byteLength = 0;
@@ -69,16 +78,22 @@ export default class GLTFScenegraph {
     return data;
   }
 
-  getExtraData(key: string): {[key: string]: unknown} {
+  getExtraData(key: string): unknown {
     // TODO - Data is already unpacked by GLBParser
-    const extras = this.json.extras || {};
+    const extras = (this.json.extras || {}) as Record<string, unknown>;
     return extras[key];
+  }
+
+  hasExtension(extensionName: string): boolean {
+    const isUsedExtension = this.getUsedExtensions().find((name) => name === extensionName);
+    const isRequiredExtension = this.getRequiredExtensions().find((name) => name === extensionName);
+    return typeof isUsedExtension === 'string' || typeof isRequiredExtension === 'string';
   }
 
   getExtension<T = Extension>(extensionName: string): T | null {
     const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
     const extensions = this.json.extensions || {};
-    return isExtension ? extensions[extensionName] || true : null;
+    return isExtension ? (extensions[extensionName] as T) : null;
   }
 
   getRequiredExtension<T = Extension>(extensionName: string): T | null {
@@ -151,16 +166,16 @@ export default class GLTFScenegraph {
     return this.getObject('buffers', index) as GLTFBuffer;
   }
 
-  getObject(array: string, index: number | object): object {
+  getObject(array: string, index: number | object): Record<string, unknown> {
     // check if already resolved
     if (typeof index === 'object') {
-      return index;
+      return index as Record<string, unknown>;
     }
     const object = this.json[array] && (this.json[array] as {}[])[index];
     if (!object) {
       throw new Error(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
     }
-    return object;
+    return object as Record<string, unknown>;
   }
 
   /**
@@ -188,18 +203,8 @@ export default class GLTFScenegraph {
    */
   getTypedArrayForAccessor(accessor: number | object): any {
     // @ts-ignore
-    accessor = this.getAccessor(accessor);
-    // @ts-ignore
-    const bufferView = this.getBufferView(accessor.bufferView);
-    const buffer = this.getBuffer(bufferView.buffer);
-    // @ts-ignore
-    const arrayBuffer = buffer.data;
-
-    // Create a new typed array as a view into the combined buffer
-    const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
-    // @ts-ignore
-    const byteOffset = bufferView.byteOffset + accessor.byteOffset;
-    return new ArrayType(arrayBuffer, byteOffset, length);
+    const gltfAccessor = this.getAccessor(accessor);
+    return _getTypedArrayForAccessor(this.gltf.json, this.gltf.buffers, gltfAccessor);
   }
 
   /** accepts accessor index or accessor object
@@ -247,19 +252,24 @@ export default class GLTFScenegraph {
     return this;
   }
 
-  setObjectExtension(object: object, extensionName: string, data: object): void {
-    // @ts-ignore
+  setObjectExtension(object: any, extensionName: string, data: object): void {
     const extensions = object.extensions || {};
     extensions[extensionName] = data;
     // TODO - add to usedExtensions...
   }
 
-  removeObjectExtension(object: object, extensionName: string): object {
-    // @ts-ignore
-    const extensions = object.extensions || {};
-    const extension = extensions[extensionName];
+  removeObjectExtension(object: any, extensionName: string): void {
+    const extensions = object?.extensions || {};
+
+    if (extensions[extensionName]) {
+      this.json.extensionsRemoved = this.json.extensionsRemoved || [];
+      const extensionsRemoved = this.json.extensionsRemoved as string[];
+      if (!extensionsRemoved.includes(extensionName)) {
+        extensionsRemoved.push(extensionName);
+      }
+    }
+
     delete extensions[extensionName];
-    return extension;
   }
 
   /**
@@ -268,7 +278,7 @@ export default class GLTFScenegraph {
   addExtension(extensionName: string, extensionData: object = {}): object {
     assert(extensionData);
     this.json.extensions = this.json.extensions || {};
-    (this.json.extensions as Record<string, unknown>)[extensionName] = extensionData;
+    this.json.extensions[extensionName] = extensionData;
     this.registerUsedExtension(extensionName);
     return extensionData;
   }
@@ -308,24 +318,21 @@ export default class GLTFScenegraph {
    * Removes an extension from the top-level list
    */
   removeExtension(extensionName: string): void {
-    if (!this.getExtension(extensionName)) {
-      return;
+    if (this.json.extensions?.[extensionName]) {
+      this.json.extensionsRemoved = this.json.extensionsRemoved || [];
+      const extensionsRemoved = this.json.extensionsRemoved as string[];
+      if (!extensionsRemoved.includes(extensionName)) {
+        extensionsRemoved.push(extensionName);
+      }
+    }
+    if (this.json.extensions) {
+      delete this.json.extensions[extensionName];
     }
     if (this.json.extensionsRequired) {
       this._removeStringFromArray(this.json.extensionsRequired, extensionName);
     }
     if (this.json.extensionsUsed) {
       this._removeStringFromArray(this.json.extensionsUsed, extensionName);
-    }
-    if (this.json.extensions) {
-      delete this.json.extensions[extensionName];
-    }
-    if (!Array.isArray(this.json.extensionsRemoved)) {
-      this.json.extensionsRemoved = [];
-    }
-    const extensionsRemoved = this.json.extensionsRemoved as string[];
-    if (!extensionsRemoved.includes(extensionName)) {
-      extensionsRemoved.push(extensionName);
     }
   }
 
@@ -443,7 +450,7 @@ export default class GLTFScenegraph {
    * Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
    * @param buffer
    */
-  addBufferView(buffer: any): number {
+  addBufferView(buffer: any, bufferIndex = 0, byteOffset = this.byteLength): number {
     const byteLength = buffer.byteLength;
     assert(Number.isFinite(byteLength));
 
@@ -452,9 +459,9 @@ export default class GLTFScenegraph {
     this.sourceBuffers.push(buffer);
 
     const glTFBufferView = {
-      buffer: 0,
+      buffer: bufferIndex,
       // Write offset from the start of the binary body
-      byteOffset: this.byteLength,
+      byteOffset,
       byteLength
     };
 

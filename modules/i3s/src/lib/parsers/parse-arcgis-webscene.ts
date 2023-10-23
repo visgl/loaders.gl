@@ -1,5 +1,5 @@
 import {JSONLoader, load} from '@loaders.gl/core';
-import type {ArcGisWebSceneData, OperationalLayer} from '../../types';
+import type {ArcGISWebSceneData, OperationalLayer} from '../../types';
 
 /**
  * WKID, or Well-Known ID, of the CRS. Specify either WKID or WKT of the CRS.
@@ -30,7 +30,7 @@ const NOT_SUPPORTED_CRS_ERROR = 'NOT_SUPPORTED_CRS_ERROR';
  * Parses ArcGIS WebScene
  * @param data
  */
-export async function parseWebscene(data: ArrayBuffer): Promise<ArcGisWebSceneData> {
+export async function parseWebscene(data: ArrayBuffer): Promise<ArcGISWebSceneData> {
   const layer0 = JSON.parse(new TextDecoder().decode(data));
   const {operationalLayers} = layer0;
   const {layers, unsupportedLayers} = await parseOperationalLayers(operationalLayers, true);
@@ -90,6 +90,7 @@ async function parseOperationalLayers(
 async function checkSupportedIndexCRS(layer: OperationalLayer) {
   try {
     const layerJson = await load(layer.url, JSONLoader);
+    // @ts-expect-error
     const wkid = layerJson?.spatialReference?.wkid;
 
     if (wkid !== SUPPORTED_WKID) {

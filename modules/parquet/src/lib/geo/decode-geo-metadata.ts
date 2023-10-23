@@ -3,7 +3,28 @@ import {Schema, Field} from '@loaders.gl/schema';
 
 /* eslint-disable camelcase */
 
-/** A geoarrow / geoparquet geo metadata object (stored in stringified form in the top level metadata 'geo' key) */
+type GeometryType =
+  | 'Point'
+  | 'LineString'
+  | 'Polygon'
+  | 'MultiPoint'
+  | 'MultiLineString'
+  | 'MultiPolygon'
+  | 'GeometryCollection'
+  | 'Point Z'
+  | 'LineString Z'
+  | 'Polygon Z'
+  | 'MultiPoint Z'
+  | 'MultiLineString Z'
+  | 'MultiPolygon Z'
+  | 'GeometryCollection Z';
+
+/**
+ * A geoarrow / geoparquet geo metadata object
+ * (stored in stringified form in the top level metadata 'geo' key)
+ * @see https://github.com/opengeospatial/geoparquet/blob/main/format-specs/geoparquet.md
+ * @see https://github.com/geoarrow/geoarrow/blob/main/metadata.md
+ * */
 export type GeoMetadata = {
   version?: string;
   primary_column?: string;
@@ -13,30 +34,53 @@ export type GeoMetadata = {
 
 /** A geoarrow / geoparquet geo metadata for one geometry column  */
 export type GeoColumnMetadata = {
-  bounding_box?:
-    | [number, number, number, number]
-    | [number, number, number, number, number, number];
-  crs?: string;
-  geometry_type?: string[];
-  edges?: string;
+  encoding: 'wkb' | 'wkt';
+  geometry_types: GeometryType[];
+  crs?: object | null;
+  orientation?: 'counterclockwise';
+  bbox?: [number, number, number, number] | [number, number, number, number, number, number];
+  edges?: 'planar' | 'spherical';
+  epoch?: number;
   [key: string]: unknown;
 };
+
+/** Parse a key with stringified arrow metadata */
+export function parseJSONStringMetadata(
+  schema: Schema,
+  metadataKey: string
+): Record<string, unknown> | null {
+  const stringifiedMetadata = schema.metadata[metadataKey];
+  if (!stringifiedMetadata) {
+    return null;
+  }
+
+  try {
+    const metadata = JSON.parse(stringifiedMetadata);
+    if (!metadata || typeof metadata !== 'object') {
+      return null;
+    }
+    return metadata;
+  } catch {
+    return null;
+  }
+}
+
+export function unpackJSONStringMetadata(schema: Schema, metadataKey: string): void {
+  const json = parseJSONStringMetadata(schema, metadataKey);
+  for (const [key, value] of Object.entries(json || {})) {
+    schema.metadata[`${metadataKey}.${key}`] =
+      typeof value === 'string' ? value : JSON.stringify(value);
+  }
+}
+
+// GEO METADATA
 
 /**
  * Reads the GeoMetadata object from the metadata
  * @note geoarrow / parquet schema is stringified into a single key-value pair in the parquet metadata */
 export function getGeoMetadata(schema: Schema): GeoMetadata | null {
-  const stringifiedGeoMetadata = schema.metadata.get('geo');
-  if (!stringifiedGeoMetadata) {
-    return null;
-  }
-
-  try {
-    const geoMetadata = JSON.parse(stringifiedGeoMetadata) as GeoMetadata;
-    return geoMetadata;
-  } catch {
-    return null;
-  }
+  const geoMetadata = parseJSONStringMetadata(schema, 'geo') as GeoMetadata;
+  return geoMetadata;
 }
 
 /**
@@ -45,7 +89,7 @@ export function getGeoMetadata(schema: Schema): GeoMetadata | null {
  */
 export function setGeoMetadata(schema: Schema, geoMetadata: GeoMetadata): void {
   const stringifiedGeoMetadata = JSON.stringify(geoMetadata);
-  schema.metadata.set('geo', stringifiedGeoMetadata);
+  schema.metadata.geo = stringifiedGeoMetadata;
 }
 
 /**
@@ -62,38 +106,71 @@ export function unpackGeoMetadata(schema: Schema): void {
 
   const {version, primary_column, columns} = geoMetadata;
   if (version) {
-    schema.metadata.set('geo.version', version);
+    schema.metadata['geo.version'] = version;
   }
 
   if (primary_column) {
-    schema.metadata.set('geo.primary_column', primary_column);
+    schema.metadata['geo.primary_column'] = primary_column;
   }
 
   // store column names as comma separated list
-  schema.metadata.set('geo.columns', Object.keys(columns || {}).join(''));
+  schema.metadata['geo.columns'] = Object.keys(columns || {}).join('');
 
   for (const [columnName, columnMetadata] of Object.entries(columns || {})) {
     const field = schema.fields.find((field) => field.name === columnName);
     if (field) {
       if (field.name === primary_column) {
-        field.metadata.set('geo.primary_field', 'true');
+        setFieldMetadata(field, 'geo.primary_field', 'true');
       }
       unpackGeoFieldMetadata(field, columnMetadata);
     }
   }
 }
 
+// eslint-disable-next-line complexity
 function unpackGeoFieldMetadata(field: Field, columnMetadata): void {
   for (const [key, value] of Object.entries(columnMetadata || {})) {
     switch (key) {
       case 'geometry_type':
-        field.metadata.set(`geo.${key}`, (value as string[]).join(','));
+        setFieldMetadata(field, `geo.${key}`, (value as string[]).join(','));
         break;
       case 'bbox':
+        setFieldMetadata(field, `geo.crs.${key}`, JSON.stringify(value));
+        break;
       case 'crs':
+        // @ts-ignore
+        for (const [crsKey, crsValue] of Object.entries(value || {})) {
+          switch (crsKey) {
+            case 'id':
+              const crsId =
+                typeof crsValue === 'object'
+                  ? // @ts-ignore
+                    `${crsValue?.authority}:${crsValue?.code}`
+                  : JSON.stringify(crsValue);
+              setFieldMetadata(field, `geo.crs.${crsKey}`, crsId);
+              break;
+            default:
+              setFieldMetadata(
+                field,
+                `geo.crs.${crsKey}`,
+                typeof crsValue === 'string' ? crsValue : JSON.stringify(crsValue)
+              );
+              break;
+          }
+        }
+        break;
       case 'edges':
       default:
-        field.metadata.set(`geo.${key}`, typeof value === 'string' ? value : JSON.stringify(value));
+        setFieldMetadata(
+          field,
+          `geo.${key}`,
+          typeof value === 'string' ? value : JSON.stringify(value)
+        );
     }
   }
+}
+
+function setFieldMetadata(field: Field, key: string, value: string): void {
+  field.metadata = field.metadata || {};
+  field.metadata[key] = value;
 }

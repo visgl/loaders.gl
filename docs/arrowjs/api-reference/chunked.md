@@ -1,5 +1,8 @@
 # Chunked
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
+
 Holds a "chunked array" that allows a number of array fragments (represented by `Vector` instances) to be treated logically as a single vector. `Vector` instances can be concatenated into a `Chunked` without any memory being copied.
 
 
@@ -7,7 +10,7 @@ Holds a "chunked array" that allows a number of array fragments (represented by 
 
 Create a new contiguous typed array from a `Chunked` instance (note that this creates a new typed array unless only one chunk)
 
-```js
+```typescript
 const typedArray = chunked.toArray();
 ```
 

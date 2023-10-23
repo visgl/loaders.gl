@@ -15,7 +15,7 @@ Loader selection heuristics are based on:
 - Initial bytes - for certain inputs, the initial bytes in the supplied data can be compared against known "magic bytes" for various file formats.
 
 **loader registry** - `selectLoader()` and `selectLoaderSync()` are also aware of the
-[loader registry](docs/api-reference/core/register-loaders).
+[loader registry](/docs/modules/core/api-reference/register-loaders).
 The list of pre-registered loaders will be included in the search for a compatible loader,
 unless `options.ignoreRegisteredLoaders` is `true`.
 
@@ -23,7 +23,7 @@ unless `options.ignoreRegisteredLoaders` is `true`.
 
 Select a loader from a list of provided loaders:
 
-```js
+```typescript
 import {selectLoaderSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
@@ -33,7 +33,7 @@ selectLoaderSync('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 
 Select a loader from pre-registered loaders in the loader registry:
 
-```js
+```typescript
 import {registerLoaders, selectLoader} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
@@ -45,7 +45,7 @@ await selectLoader('filename.csv'); // => CSVLoader
 
 Select a loader by specifying MIME type (using unregistered MIME types, see below)
 
-```js
+```typescript
 const data = new Blob([string], {type: 'application/x.csv'});
 await selectLoader(blob); // => CSVLoader
 ```
@@ -53,7 +53,7 @@ await selectLoader(blob); // => CSVLoader
 The async `selectLoader` function can identify loaders without extension and mimeType
 by content sniffing `Blob` and `File` objects (useful when user drags and drops files into your application).
 
-```js
+```typescript
 const data = new Blob(['DRACO...'] /* Binary Draco files start with these characters */]);
 await selectLoader(blob, DracoLoader); // => DracoLoader
 ```

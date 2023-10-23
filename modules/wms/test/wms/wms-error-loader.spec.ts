@@ -34,7 +34,7 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
 
 test('WMSErrorLoader#test cases', async (t) => {
   for (const tc of ERROR_TEST_CASES) {
-    const error = (await parse(tc.xml, WMSErrorLoader, {wms: {minimalErrors: true}})) as string;
+    const error = (await parse(tc.xml, WMSErrorLoader, {wms: {minimalErrors: true}}));
     t.equal(error, tc.parsed, `Error message: "${error}"`);
   }
   t.end();

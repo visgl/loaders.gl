@@ -1,11 +1,13 @@
 # Data
 
+> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+
+
 Untyped storage backing for `Vector`.
 
 Can be thought of as array of `ArrayBuffer` instances.
 
 Also contains slice offset (including null bitmaps).
-
 
 ## Fields
 
