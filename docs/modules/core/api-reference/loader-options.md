@@ -36,7 +36,7 @@ Top level options are interpreted by the core API and apply to all loaders.
 | `options.reuseWorkers`           | `boolean`            | `true`     | By default, worker threads are kept in memory and reused. But if `reuseWorkers` is `false` workers will be automatically terminated after job completion and reloaded for each job.                               |
 | `options.<loader-id>.workerUrl`  | `string`             | per-loader | If the corresponding loader can parse on a worker, the url to the worker script can be controller with this option.                                                                                               |
 | `options.modules`                | `object`             | -          | Supply bundled modules (like draco3d) instead of loading from CDN.                                                                                                                                                |
-| `options.CDN` (experimental)     | `string`             | -          | Controls certain script loading from CDN. `true` loads from `unpkg.com/@loaders.gl`. `false` load from local urls. `string` alternate CDN url.                                                                    |
+| `options.CDN` (🚧 experimental)     | `string`             | -          | Controls certain script loading from CDN. `true` loads from `unpkg.com/@loaders.gl`. `false` load from local urls. `string` alternate CDN url.                                                                    |
 
 ## Batched parsing options
 

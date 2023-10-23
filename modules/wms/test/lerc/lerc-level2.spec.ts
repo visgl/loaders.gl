@@ -8,7 +8,7 @@ import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
 // import {LERCLoader, LERCData} from '@loaders.gl/wms';
-import type {LERCData} from '../../src/lib/lerc/lerc-types';
+import type {LERCData} from '../../src/lib/parsers/lerc/lerc-types';
 import {LERCLoader} from '../../src/lerc-loader';
 import {load, isBrowser} from '@loaders.gl/core';
 
@@ -24,7 +24,7 @@ test('LERCLoader#level2', async (t) => {
     return;
   }
   for (const lercFileName of LERC_FILES) {
-    const result = (await load(lercFileName, LERCLoader)) as LERCData;
+    const result = await load(lercFileName, LERCLoader);
 
     const actual = formatPixelBlock(result);
 
