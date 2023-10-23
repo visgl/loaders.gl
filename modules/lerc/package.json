@@ -1,7 +1,7 @@
 {
-  "name": "@loaders.gl/wms",
+  "name": "@loaders.gl/lerc",
   "version": "4.0.0-beta.6",
-  "description": "Framework-independent loaders for the WMS (Web Map Service) standard",
+  "description": "Framework-independent loader for LERC (Limited Error Raster Compression) files",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -12,18 +12,10 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "WMS",
-    "web map service",
-    "WFS",
-    "web feature service",
-    "WMTS",
-    "web map tile service",
-    "GML",
-    "geographic markup language",
-    "gis",
+    "webgl",
     "loader",
-    "geospatial",
-    "OGC"
+    "parser",
+    "LERC"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",
@@ -42,21 +34,14 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
-    "build-bundle": "# ocular-bundle ./src/index.ts --external:{util,fs,path}"
-  },
-  "browser": {
-    "fs": false,
-    "path": false
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker",
+    "build-bundle": "# ocular-bundle ./src/index.ts",
+    "build-worker": "# esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
-    "@loaders.gl/images": "4.0.0-beta.6",
     "@loaders.gl/loader-utils": "4.0.0-beta.6",
     "@loaders.gl/schema": "4.0.0-beta.6",
-    "@loaders.gl/xml": "4.0.0-beta.6",
-    "@turf/rewind": "^5.1.5",
-    "deep-strict-equal": "^0.2.0"
+    "lerc": "^4.0.1"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
