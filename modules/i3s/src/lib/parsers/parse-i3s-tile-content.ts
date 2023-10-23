@@ -65,8 +65,8 @@ export async function parseI3STileContent(
     // @ts-expect-error options is not properly typed
     const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
     const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-    const fetch = context?.fetch!; // Options already resolved?
-    const response = await fetch(url); // options?.fetch
+    const fetchFunc = context?.fetch || fetch;
+    const response = await fetchFunc(url); // options?.fetch
     const arrayBuffer = await response.arrayBuffer();
 
     // @ts-expect-error options is not properly typed
