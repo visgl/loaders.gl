@@ -1,11 +1,26 @@
 import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
-import type {AttributeStorageInfo, COLOR, Field, I3STileContent} from '../../types';
+import type {AttributeStorageInfo, COLOR, Field} from '../../types';
 
 import {load} from '@loaders.gl/core';
 import {getAttributeValueType, I3SAttributeLoader} from '../../i3s-attribute-loader';
 import {I3SLoaderOptions} from '../../i3s-loader';
 import {getUrlWithToken} from './url-utils';
 import {I3STileAttributes} from '../parsers/parse-i3s-attribute';
+
+type ColorsByAttribute = {
+  /** Feature attribute name */
+  attributeName: string;
+  /** Minimum attribute value */
+  minValue: number;
+  /** Maximum attribute value */
+  maxValue: number;
+  /** Minimum color. 3DObject will be colorized with gradient from `minColor to `maxColor` */
+  minColor: [number, number, number, number];
+  /** Maximum color. 3DObject will be colorized with gradient from `minColor to `maxColor` */
+  maxColor: [number, number, number, number];
+  /** Colorization mode. `replace` - replace vertex colors with a new colors, `multiply` - multiply vertex colors with new colors */
+  mode: string;
+};
 
 /**
  * Modify vertex colors array to visualize 3D objects in a attribute driven way
@@ -16,41 +31,26 @@ import {I3STileAttributes} from '../parsers/parse-i3s-attribute';
  * @param options - loader options
  * @returns midified colors attribute
  */
+// eslint-disable-next-line max-params
 export async function customizeColors(
   colors: MeshAttribute,
   featureIds: TypedArray,
   attributeUrls: string[],
   fields: Field[],
   attributeStorageInfo: AttributeStorageInfo[],
-  content: I3STileContent,
-  inlineColoring: boolean,
+  colorsByAttribute: ColorsByAttribute | null,
   options?: I3SLoaderOptions
 ): Promise<MeshAttribute> {
-  if (!options?.i3s?.colorsByAttribute) {
+  if (!colorsByAttribute) {
     return colors;
   }
 
-  const resultColors = inlineColoring
-    ? colors
-    : {
-        ...colors,
-        value: colors.value.slice()
-      };
+  const resultColors = {
+    ...colors,
+    value: new Uint8Array(colors.value)
+  };
 
-  if (!content.originalColorsAttributes) {
-    content.originalColorsAttributes = {
-      ...colors,
-      value: colors.value.slice()
-    };
-  } else if (options.i3s.colorsByAttribute.mode === 'multiply') {
-    resultColors.value = content.originalColorsAttributes.value.slice();
-  }
-
-  content.customColors = options.i3s.colorsByAttribute;
-
-  const colorizeAttributeField = fields.find(
-    ({name}) => name === options?.i3s?.colorsByAttribute?.attributeName
-  );
+  const colorizeAttributeField = fields.find(({name}) => name === colorsByAttribute?.attributeName);
   if (
     !colorizeAttributeField ||
     !['esriFieldTypeDouble', 'esriFieldTypeInteger', 'esriFieldTypeSmallInteger'].includes(
@@ -92,6 +92,7 @@ export async function customizeColors(
     attributeValuesMap[objectIdAttributeData[objectIdField.name][i]] = calculateColorForAttribute(
       // @ts-expect-error
       colorizeAttributeData[colorizeAttributeField.name][i] as number,
+      colorsByAttribute,
       options
     );
   }
@@ -103,8 +104,8 @@ export async function customizeColors(
     }
 
     /* eslint max-statements: ["error", 30] */
-    /* eslint complexity: ["error", 14] */
-    if (options.i3s.colorsByAttribute.mode === 'multiply') {
+    /* eslint complexity: ["error", 12] */
+    if (colorsByAttribute.mode === 'multiply') {
       // multiplying original mesh and calculated for attribute rgba colors in range 0-255
       color.forEach((colorItem, index) => {
         resultColors.value[i * 4 + index] = (resultColors.value[i * 4 + index] * colorItem) / 255;
@@ -123,11 +124,15 @@ export async function customizeColors(
  * @param options - loader options
  * @returns - color array for a specific attribute value
  */
-function calculateColorForAttribute(attributeValue: number, options?: I3SLoaderOptions): COLOR {
-  if (!options?.i3s?.colorsByAttribute) {
+function calculateColorForAttribute(
+  attributeValue: number,
+  colorsByAttribute,
+  options?: I3SLoaderOptions
+): COLOR {
+  if (!colorsByAttribute) {
     return [255, 255, 255, 255];
   }
-  const {minValue, maxValue, minColor, maxColor} = options.i3s.colorsByAttribute;
+  const {minValue, maxValue, minColor, maxColor} = colorsByAttribute;
   const rate = (attributeValue - minValue) / (maxValue - minValue);
   const color: COLOR = [255, 255, 255, 255];
   for (let i = 0; i < minColor.length; i++) {

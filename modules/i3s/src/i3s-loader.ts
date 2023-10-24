@@ -6,7 +6,6 @@ import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {COORDINATE_SYSTEM} from './lib/parsers/constants';
 import {I3SParseOptions} from './types';
 import {getUrlWithoutParams} from './lib/utils/url-utils';
-import {customizeColors} from './lib/utils/customize-сolors';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -44,9 +43,7 @@ export const I3SLoader: LoaderWithParser<I3STilesetHeader, never, LoaderOptions>
       useDracoGeometry: true,
       useCompressedTextures: true,
       decodeTextures: true,
-      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-      colorsByAttribute: null,
-      customizeColors
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
     }
   }
 };
