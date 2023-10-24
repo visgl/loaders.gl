@@ -40,6 +40,7 @@ test('CryptoHash#iterator(CSV stream, against external hash)', async (t) => {
   });
 
   const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
+    // @ts-ignore this method is bound, eslint just doesn't know it.
     transforms: [cryptoHash.hashBatches]
   });
 
