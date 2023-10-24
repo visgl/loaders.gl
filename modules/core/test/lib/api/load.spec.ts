@@ -129,4 +129,3 @@ test('load#stream', async (t) => {
   t.equals(typeof data, 'object', 'load(stream) returned data');
   t.end();
 });
-

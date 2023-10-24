@@ -5,7 +5,7 @@ import {Loader} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getGlobalLoaderState} from '../loader-utils/option-utils';
 
-/** 
+/**
  * Store global registered loaders on the global object to increase chances of cross loaders-version interoperability
  * This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
  */
