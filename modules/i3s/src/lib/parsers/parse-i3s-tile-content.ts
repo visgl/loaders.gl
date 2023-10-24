@@ -23,7 +23,6 @@ import {getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 import {I3SLoaderOptions} from '../../i3s-loader';
-import {customizeColors} from '../utils/customize-сolors';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -206,14 +205,6 @@ async function parseI3SNodeGeometry(
     content.modelMatrix = getModelMatrix(attributes.position);
     content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
   }
-
-  attributes.color = await customizeColors(
-    attributes.color,
-    attributes.id,
-    tileOptions,
-    tilesetOptions,
-    options
-  );
 
   content.attributes = {
     positions: attributes.position,
