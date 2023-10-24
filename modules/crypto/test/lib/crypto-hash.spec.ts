@@ -42,7 +42,7 @@ test('CryptoHash#iterator(CSV stream, against external hash)', async (t) => {
   });
 
   const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
-    transforms: [cryptoHash.hashBatches]
+    transforms: [cryptoHash.hashBatches.bind(cryptoHash)]
   });
 
   let csv;
