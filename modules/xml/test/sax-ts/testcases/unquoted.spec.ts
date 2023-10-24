@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Forked from sax-ts & sax under ISC license
 
 // unquoted attributes should be ok in non-strict mode

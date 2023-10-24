@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export {Buffer} from './buffer-polyfill/install-buffer-polyfill';
 

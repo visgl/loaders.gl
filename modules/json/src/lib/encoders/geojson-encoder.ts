@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
 import type {TableBatch} from '@loaders.gl/schema';

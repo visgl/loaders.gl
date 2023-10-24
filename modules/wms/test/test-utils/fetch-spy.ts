@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /** Stores a reference to the intercepted requestInit object under the url */
 export const requestInits: Record<string, RequestInit | undefined> = {};

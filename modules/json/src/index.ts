@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export type {JSONLoaderOptions} from './json-loader';
 export {JSONLoader} from './json-loader';

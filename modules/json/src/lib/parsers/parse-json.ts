@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import type {RowTable} from '@loaders.gl/schema';
 import {makeTableFromData} from '@loaders.gl/schema';
 import type {JSONLoaderOptions} from '../../json-loader';

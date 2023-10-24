@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /**
  * Get the first characters from a binary file (interpret the first bytes as an ASCII string)

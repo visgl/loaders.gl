@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Schema, SchemaMetadata, Field, MeshAttribute} from '@loaders.gl/schema';
 import {getDataTypeFromArray} from '@loaders.gl/schema';

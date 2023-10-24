@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {ImageSource, Service} from '@loaders.gl/loader-utils';
 import {ImageServiceProps} from './image-service';

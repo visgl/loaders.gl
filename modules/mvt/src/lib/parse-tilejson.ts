@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /** Parsed and typed TileJSON, merges Tilestats information if present */
 export type TileJSON = {

@@ -26,6 +26,7 @@ function makeAliases() {
     '@loaders.gl/json/test': resolve('./modules/json/test'),
     '@loaders.gl/kml/test': resolve('./modules/kml/test'),
     '@loaders.gl/las/test': resolve('./modules/las/test'),
+    '@loaders.gl/lerc/test': resolve('./modules/lerc/test'),
     '@loaders.gl/mvt/test': resolve('./modules/mvt/test'),
     '@loaders.gl/netcdf/test': resolve('./modules/netcdf/test'),
     '@loaders.gl/obj/test': resolve('./modules/obj/test'),

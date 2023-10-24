@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Copyright Foursquare, Inc 20222
 
 import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';

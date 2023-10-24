@@ -6,6 +6,21 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-beta.7
+
+- fix(i3s): Remove luma.gl dependency (#2727)
+- feat(flatgeobuf): Upgrade to latest flatgeobuf (#2684)
+- feat(lerc): Break out LERCLoader into its own module (size and bundling issues) (#2724)
+- chore(polyfills): Bump deps (#2723)
+- feat(polyfills): Add installFilePolyfills on Node.js (#2722)
+- fix(i3s): I3SContentLoader regression (#2713)
+
+### v4.0.0-beta.6
+
+- fix(polyfills): Add CJS export for node.js (#2720)
+- feat(wms): Restore LERCLoader (#2715)
+- chore: Remove deprecated APIs and update docs (#2714)
+
 ### v4.0.0-beta.5
 
 - Path fix (#2709)
@@ -23,7 +38,7 @@
 - chore(polyfills): Consolidate node code (#2701)
 - fix(i3s): handle search params in I3SLoader (#2692)
 
-### v4.0.0-beta.3
+### v4.0.0-beta.6
 
 - feat(tile-converter): --analyze-only option (#2694)
 - fix(tiles): cartographicToCartesan syntax (#2690)

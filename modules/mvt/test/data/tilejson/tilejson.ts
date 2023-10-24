@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export const TILEJSONS = [
   // {url: '@loaders.gl/mvt/test/data/tilejson/bad.tilejson', bad: true},

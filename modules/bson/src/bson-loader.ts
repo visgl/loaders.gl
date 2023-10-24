@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ParseBSONOptions} from './lib/parsers/parse-bson';
 import {parseBSONSync} from './lib/parsers/parse-bson';

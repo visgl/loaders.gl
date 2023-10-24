@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import './streaming/binary-chunk-reader.spec';
 import './streaming/zip-batch-iterators.spec';

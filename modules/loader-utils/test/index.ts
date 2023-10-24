@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import './lib/binary-utils/array-buffer-utils.spec';
 import './lib/binary-utils/binary-copy-utils.spec';

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import {BinaryGeometry, Geometry} from '@loaders.gl/schema';
 
 export type GeometryTestCase = {

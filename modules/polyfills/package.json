@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/polyfills",
-  "version": "4.0.0-beta.5",
+  "version": "4.0.0-beta.7",
   "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
   "type": "module",
@@ -40,20 +40,21 @@
     "./dist/index.js": "./dist/index.browser.js"
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
-    "build-bundle": "ocular-bundle ./src/index.ts"
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-node-bundle",
+    "build-bundle": "ocular-bundle ./src/index.ts",
+    "build-node-bundle": "esbuild src/index.ts --outfile=dist/index.cjs --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/crypto": "4.0.0-beta.5",
-    "@loaders.gl/loader-utils": "4.0.0-beta.5",
+    "@loaders.gl/crypto": "4.0.0-beta.7",
+    "@loaders.gl/loader-utils": "4.0.0-beta.7",
     "buffer": "^6.0.3",
-    "get-pixels": "^3.3.2",
-    "ndarray": "^1.0.18",
-    "save-pixels": "^2.3.2",
-    "stream-to-async-iterator": "^0.2.0",
+    "get-pixels": "^3.3.3",
+    "ndarray": "^1.0.19",
+    "save-pixels": "^2.3.6",
+    "stream-to-async-iterator": "^1.0.0",
     "through": "^2.3.8",
-    "web-streams-polyfill": "^3.0.0"
+    "web-streams-polyfill": "^3.2.1"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

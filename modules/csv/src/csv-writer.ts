@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /* global TextEncoder */
 import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';

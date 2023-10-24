@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {DracoMesh, DracoLoaderData} from './lib/draco-types';
 import type {DracoLoaderOptions} from './draco-loader';

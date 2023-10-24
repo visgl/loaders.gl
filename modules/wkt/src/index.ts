@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export {WKTCRSLoader} from './wkt-crs-loader';
 export {WKTCRSWriter} from './wkt-crs-writer';

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {TileJSON} from '@loaders.gl/mvt';
 import {TileJSONLoader} from '@loaders.gl/mvt';

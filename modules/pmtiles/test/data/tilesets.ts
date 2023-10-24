@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export const PMTILESETS = [
   'test_fixture_1.pmtiles',

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LERCData} from './lib/parsers/lerc/lerc-types';

@@ -1,35 +1,57 @@
-import type {MeshAttribute} from '@loaders.gl/schema';
-import type {COLOR, I3STileOptions, I3STilesetOptions} from '../../types';
+import type {MeshAttribute, TypedArray} from '@loaders.gl/schema';
+import type {AttributeStorageInfo, COLOR, Field} from '../../types';
 
 import {load} from '@loaders.gl/core';
 import {getAttributeValueType, I3SAttributeLoader} from '../../i3s-attribute-loader';
-import {I3SLoaderOptions} from '../../i3s-loader';
 import {getUrlWithToken} from './url-utils';
 import {I3STileAttributes} from '../parsers/parse-i3s-attribute';
 
+type ColorsByAttribute = {
+  /** Feature attribute name */
+  attributeName: string;
+  /** Minimum attribute value */
+  minValue: number;
+  /** Maximum attribute value */
+  maxValue: number;
+  /** Minimum color. 3DObject will be colorized with gradient from `minColor to `maxColor` */
+  minColor: [number, number, number, number];
+  /** Maximum color. 3DObject will be colorized with gradient from `minColor to `maxColor` */
+  maxColor: [number, number, number, number];
+  /** Colorization mode. `replace` - replace vertex colors with a new colors, `multiply` - multiply vertex colors with new colors */
+  mode: string;
+};
+
 /**
- * Modify vertex colors array to visualize 3D objects in a attribute driven way
+ * Calculate new vertex colors array to visualize 3D objects in a attribute driven way
  * @param colors - vertex colors attribute
  * @param featureIds - feature Ids attribute
- * @param tileOptions - tile - related options
- * @param tilesetOptions - tileset-related options
- * @param options - loader options
- * @returns midified colors attribute
+ * @param attributeUrls - array of attribute's urls
+ * @param fields - array of attribute's fileds
+ * @param attributeStorageInfo - array of attributeStorageInfo
+ * @param colorsByAttribute - attribute color options
+ * @param token - access token
+ * @returns new colors attribute
  */
+// eslint-disable-next-line max-params
 export async function customizeColors(
   colors: MeshAttribute,
-  featureIds: MeshAttribute,
-  tileOptions: I3STileOptions,
-  tilesetOptions: I3STilesetOptions,
-  options?: I3SLoaderOptions
+  featureIds: number[] | TypedArray,
+  attributeUrls: string[],
+  fields: Field[],
+  attributeStorageInfo: AttributeStorageInfo[],
+  colorsByAttribute: ColorsByAttribute | null,
+  token?: string
 ): Promise<MeshAttribute> {
-  if (!options?.i3s?.colorsByAttribute) {
+  if (!colorsByAttribute) {
     return colors;
   }
 
-  const colorizeAttributeField = tilesetOptions.fields.find(
-    ({name}) => name === options?.i3s?.colorsByAttribute?.attributeName
-  );
+  const resultColors = {
+    ...colors,
+    value: new Uint8Array(colors.value)
+  };
+
+  const colorizeAttributeField = fields.find(({name}) => name === colorsByAttribute?.attributeName);
   if (
     !colorizeAttributeField ||
     !['esriFieldTypeDouble', 'esriFieldTypeInteger', 'esriFieldTypeSmallInteger'].includes(
@@ -41,24 +63,24 @@ export async function customizeColors(
 
   const colorizeAttributeData = await loadFeatureAttributeData(
     colorizeAttributeField.name,
-    tileOptions,
-    tilesetOptions,
-    options
+    attributeUrls,
+    attributeStorageInfo,
+    token
   );
   if (!colorizeAttributeData) {
     return colors;
   }
 
-  const objectIdField = tilesetOptions.fields.find(({type}) => type === 'esriFieldTypeOID');
+  const objectIdField = fields.find(({type}) => type === 'esriFieldTypeOID');
   if (!objectIdField) {
     return colors;
   }
 
   const objectIdAttributeData = await loadFeatureAttributeData(
     objectIdField.name,
-    tileOptions,
-    tilesetOptions,
-    options
+    attributeUrls,
+    attributeStorageInfo,
+    token
   );
   if (!objectIdAttributeData) {
     return colors;
@@ -71,42 +93,45 @@ export async function customizeColors(
     attributeValuesMap[objectIdAttributeData[objectIdField.name][i]] = calculateColorForAttribute(
       // @ts-expect-error
       colorizeAttributeData[colorizeAttributeField.name][i] as number,
-      options
+      colorsByAttribute
     );
   }
 
-  for (let i = 0; i < featureIds.value.length; i++) {
-    const color = attributeValuesMap[featureIds.value[i]];
+  for (let i = 0; i < featureIds.length; i++) {
+    const color = attributeValuesMap[featureIds[i]];
     if (!color) {
       continue; // eslint-disable-line no-continue
     }
 
     /* eslint max-statements: ["error", 30] */
     /* eslint complexity: ["error", 12] */
-    if (options.i3s.colorsByAttribute.mode === 'multiply') {
+    if (colorsByAttribute.mode === 'multiply') {
       // multiplying original mesh and calculated for attribute rgba colors in range 0-255
       color.forEach((colorItem, index) => {
-        colors.value[i * 4 + index] = (colors.value[i * 4 + index] * colorItem) / 255;
+        resultColors.value[i * 4 + index] = (resultColors.value[i * 4 + index] * colorItem) / 255;
       });
     } else {
-      colors.value.set(color, i * 4);
+      resultColors.value.set(color, i * 4);
     }
   }
 
-  return colors;
+  return resultColors;
 }
 
 /**
  * Calculate rgba color from the attribute value
  * @param attributeValue - value of the attribute
- * @param options - loader options
+ * @param colorsByAttribute - attribute color options
  * @returns - color array for a specific attribute value
  */
-function calculateColorForAttribute(attributeValue: number, options?: I3SLoaderOptions): COLOR {
-  if (!options?.i3s?.colorsByAttribute) {
+function calculateColorForAttribute(
+  attributeValue: number,
+  colorsByAttribute: ColorsByAttribute
+): COLOR {
+  if (!colorsByAttribute) {
     return [255, 255, 255, 255];
   }
-  const {minValue, maxValue, minColor, maxColor} = options.i3s.colorsByAttribute;
+  const {minValue, maxValue, minColor, maxColor} = colorsByAttribute;
   const rate = (attributeValue - minValue) / (maxValue - minValue);
   const color: COLOR = [255, 255, 255, 255];
   for (let i = 0; i < minColor.length; i++) {
@@ -118,22 +143,22 @@ function calculateColorForAttribute(attributeValue: number, options?: I3SLoaderO
 /**
  * Load feature attribute data from the ArcGIS rest service
  * @param attributeName - attribute name
- * @param tileOptions - tile-related options
- * @param tilesetOptions - tileset-related options
- * @param options - loader options
+ * @param attributeUrls - array of attribute's urls
+ * @param attributeStorageInfo - array of attributeStorageInfo
+ * @param token - access token
  * @returns - Array-like list of the attribute values
  */
 async function loadFeatureAttributeData(
   attributeName: string,
-  {attributeUrls}: I3STileOptions,
-  {attributeStorageInfo}: I3STilesetOptions,
-  options?: I3SLoaderOptions
+  attributeUrls: string[],
+  attributeStorageInfo: AttributeStorageInfo[],
+  token?: string
 ): Promise<I3STileAttributes | null> {
   const attributeIndex = attributeStorageInfo.findIndex(({name}) => attributeName === name);
   if (attributeIndex === -1) {
     return null;
   }
-  const objectIdAttributeUrl = getUrlWithToken(attributeUrls[attributeIndex], options?.i3s?.token);
+  const objectIdAttributeUrl = getUrlWithToken(attributeUrls[attributeIndex], token);
   const attributeType = getAttributeValueType(attributeStorageInfo[attributeIndex]);
   const objectIdAttributeData = await load(objectIdAttributeUrl, I3SAttributeLoader, {
     attributeName,

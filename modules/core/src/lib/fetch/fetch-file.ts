@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';

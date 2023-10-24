@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export {ZipLoader} from './zip-loader';
 export {ZipWriter} from './zip-writer';

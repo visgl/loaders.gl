@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // parse-wkt-crs was forked from https://github.com/DanielJDufour/wkt-crs under Creative Commons CC0 1.0 license.
 
 /* eslint-disable no-console */ // TODO switch to options.log

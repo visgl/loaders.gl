@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';

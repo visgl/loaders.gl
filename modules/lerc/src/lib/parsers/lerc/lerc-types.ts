@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /** Data returned by LERC loader */
 export type LERCData = {

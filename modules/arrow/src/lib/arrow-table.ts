@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Batch, Schema} from '@loaders.gl/schema';
 import type {Table as ApacheArrowTable} from 'apache-arrow';

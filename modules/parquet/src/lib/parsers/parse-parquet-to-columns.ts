@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
 import {BlobFile} from '@loaders.gl/loader-utils';

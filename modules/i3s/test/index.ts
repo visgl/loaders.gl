@@ -1,5 +1,6 @@
 import './helpers/i3s-nodepages-tiles.spec';
 import './lib/parsers/url-utils.spec';
+import './lib/utils/customize-colors.spec';
 
 import './i3s-loader.spec';
 import './parse-slpk.spec';

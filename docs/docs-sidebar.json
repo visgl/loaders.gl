@@ -92,7 +92,7 @@
       "modules/wms/formats/wmts",
       "modules/wms/formats/wfs",
       "modules/wms/formats/gml",
-      "modules/wms/formats/lerc",
+      "modules/lerc/formats/lerc",
       "modules/wkt/formats/wkt",
       "modules/wkt/formats/wkb",
       "modules/wkt/formats/wkt-crs",
@@ -309,6 +309,11 @@
         "type": "category",
         "label": "@loaders.gl/las",
         "items": ["modules/las/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/lerc",
+        "items": ["modules/lerc/README"]
       },
       {
         "type": "category",

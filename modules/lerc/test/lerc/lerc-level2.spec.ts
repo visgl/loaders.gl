@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // Forked from https://github.com/Esri/lerc/blob/master/OtherLanguages/js/tests/
 // under Apache 2 license
@@ -13,9 +14,9 @@ import {LERCLoader} from '../../src/lerc-loader';
 import {load, isBrowser} from '@loaders.gl/core';
 
 const LERC_FILES = [
-  '@loaders.gl/wms/test/data/lerc/bluemarble_256_256_3_byte.lerc2',
-  '@loaders.gl/wms/test/data/lerc/california_400_400_1_float.lerc2',
-  '@loaders.gl/wms/test/data/lerc/world.lerc1'
+  '@loaders.gl/lerc/test/data/lerc/bluemarble_256_256_3_byte.lerc2',
+  '@loaders.gl/lerc/test/data/lerc/california_400_400_1_float.lerc2',
+  '@loaders.gl/lerc/test/data/lerc/world.lerc1'
 ];
 
 test('LERCLoader#level2', async (t) => {

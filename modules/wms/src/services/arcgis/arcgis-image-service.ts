@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {ImageType} from '@loaders.gl/images';
 import type {Service, ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';

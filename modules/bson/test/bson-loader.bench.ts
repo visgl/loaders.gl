@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {BSONLoader} from '@loaders.gl/bson';
 import {load} from '@loaders.gl/core';

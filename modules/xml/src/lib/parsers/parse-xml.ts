@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {SAXParserOptions} from '../../sax-ts/sax';
 import {StreamingXMLParser} from './streaming-xml-parser';
