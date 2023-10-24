@@ -1,21 +1,72 @@
-import {GeometryType} from 'flatgeobuf/lib/cjs/header_generated';
+// loaders.gl, MIT license
+
+import {Geometry as FGBGeometry, Feature as FGBFeature} from 'flatgeobuf';
+// import {GeometryType} from 'flatgeobuf/generic';
+// Copy geometry type as it is hard to access the export
+export declare enum GeometryType {
+  Unknown = 0,
+  Point = 1,
+  LineString = 2,
+  Polygon = 3,
+  MultiPoint = 4,
+  MultiLineString = 5,
+  MultiPolygon = 6,
+  GeometryCollection = 7,
+  CircularString = 8,
+  CompoundCurve = 9,
+  CurvePolygon = 10,
+  MultiCurve = 11,
+  MultiSurface = 12,
+  Curve = 13,
+  Surface = 14,
+  PolyhedralSurface = 15,
+  TIN = 16,
+  Triangle = 17
+}
+
+export function fgbToBinaryFeature(geometry: FGBFeature | null, type: GeometryType) {
+  const fgbGeometry: FGBGeometry | null = geometry?.geometry() || null;
+  return fgbToBinaryGeometry(fgbGeometry, type);
+}
+
+export function fgbToBinaryGeometry(geometry: FGBGeometry | null, type: GeometryType) {
+  if (geometry === null) {
+    return null;
+  }
+  switch (type) {
+    case GeometryType.Point:
+    case GeometryType.MultiPoint:
+      return parsePoint(geometry);
+    case GeometryType.LineString:
+    case GeometryType.MultiLineString:
+      return parseLines(geometry);
+    case GeometryType.Polygon:
+      return parsePolygons(geometry);
+    case GeometryType.MultiPolygon:
+      return parseMultiPolygons(geometry);
+    default:
+      throw new Error(`Unimplemented geometry type: ${type}`);
+  }
+}
 
 // Parse Point to flat array
-function parsePoint(geometry) {
+function parsePoint(geometry: FGBGeometry) {
   const xy = geometry.xyArray();
   const z = geometry.zArray();
+  // @ts-expect-error TODO handle null geometries
   const positions = blitArrays(xy, z);
   return {positions};
 }
 
-function parseLines(geometry) {
+function parseLines(geometry: FGBGeometry) {
   const xy = geometry.xyArray();
   const z = geometry.zArray();
-  const positions = blitArrays(xy, z);
+  const positions = blitArrays(xy!, z!);
 
   // If endsArray is null, a single LineString. Otherwise, contains the end
   // indices of each part of the MultiLineString. geometry.endsArray() omits the
   // initial 0 that we have in our internal format.
+  // @ts-expect-error TODO handle null geometries
   const ends = (geometry.endsArray() && Array.from(geometry.endsArray())) || [xy.length / 2];
   ends.unshift(0);
 
@@ -27,19 +78,21 @@ function parseLines(geometry) {
   };
 }
 
-function parsePolygons(geometry) {
+function parsePolygons(geometry: FGBGeometry) {
   const xy = geometry.xyArray();
   const z = geometry.zArray();
+  // @ts-expect-error TODO handle null geometries
   const positions = blitArrays(xy, z);
 
   // If endsArray is null, a simple Polygon with no inner rings. Otherwise,
   // contains the end indices of each ring of the Polygon. geometry.endsArray()
   // omits the initial 0 that we have in our internal format.
+  // @ts-expect-error TODO handle null geometries
   const ends = (geometry.endsArray() && Array.from(geometry.endsArray())) || [xy.length / 2];
   ends.unshift(0);
 
   const primitivePolygonIndices = {value: new Uint16Array(ends), size: 1};
-  const polygonIndices = {value: new Uint16Array([0, xy.length / 2]), size: 1};
+  const polygonIndices = {value: new Uint16Array([0, xy!.length / 2]), size: 1};
 
   return {
     positions,
@@ -49,7 +102,7 @@ function parsePolygons(geometry) {
 }
 
 // eslint-disable-next-line max-statements
-function parseMultiPolygons(geometry) {
+function parseMultiPolygons(geometry: FGBGeometry) {
   // Create arrays for each geometry part, then concatenate
   const parsedParts: any[] = [];
   let nPositions = 0;
@@ -58,6 +111,7 @@ function parseMultiPolygons(geometry) {
 
   for (let i = 0; i < geometry.partsLength(); i++) {
     const part = geometry.parts(i);
+    // @ts-expect-error TODO handle null geometries
     const polygon = parsePolygons(part);
 
     nPositions += polygon.positions.value.length;
@@ -107,7 +161,7 @@ function parseMultiPolygons(geometry) {
 }
 
 // Combine xy and z arrays
-function blitArrays(xy, z) {
+function blitArrays(xy: Float64Array, z: Float64Array): {value: Float64Array; size: number} {
   if (!z) {
     return {value: xy, size: 2};
   }
@@ -124,21 +178,4 @@ function blitArrays(xy, z) {
     xyz[i * 3 + 2] = z[i];
   }
   return {value: xyz, size: 3};
-}
-
-export function fromGeometry(geometry, type) {
-  switch (type) {
-    case GeometryType.Point:
-    case GeometryType.MultiPoint:
-      return parsePoint(geometry);
-    case GeometryType.LineString:
-    case GeometryType.MultiLineString:
-      return parseLines(geometry);
-    case GeometryType.Polygon:
-      return parsePolygons(geometry);
-    case GeometryType.MultiPolygon:
-      return parseMultiPolygons(geometry);
-    default:
-      throw new Error(`Unimplemented geometry type: ${type}`);
-  }
 }
