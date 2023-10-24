@@ -7,7 +7,9 @@ import type {FlatGeobufLoaderOptions} from '../flatgeobuf-loader';
 import type {GeoJSONTable, Feature, Table} from '@loaders.gl/schema';
 import {fgbToBinaryGeometry} from './binary-geometries';
 
-import {geojson, generic, Feature as FBGFeature, HeaderMeta as FGBHeader} from 'flatgeobuf';
+import {Feature as FBGFeature, HeaderMeta as FGBHeader} from 'flatgeobuf';
+import * as geojson from 'flatgeobuf/lib/mjs/geojson.js';
+import * as generic from 'flatgeobuf/lib/mjs/generic.js';
 import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/mjs/generic/feature';
 const deserializeGeoJson = geojson.deserialize;
 const deserializeGeneric = generic.deserialize;

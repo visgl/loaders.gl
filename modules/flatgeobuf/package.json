@@ -36,8 +36,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle -- --env=dev",
-    "build-bundle": "ocular-bundle ./src/index.ts",
-    "build-worker": "esbuild src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-bundle": "# ocular-bundle ./src/index.ts",
+    "build-worker": "# esbuild src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/gis": "4.0.0-beta.6",
