@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
 import {ConsoleLog} from './loggers';

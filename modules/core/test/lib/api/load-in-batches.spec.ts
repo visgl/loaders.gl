@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {loadInBatches, fetchFile, isBrowser} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';

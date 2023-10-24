@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {generateRandomArrayBuffer} from '@loaders.gl/compression/test/utils/test-utils';
 
 export {

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {encodeNumber, encodeHex, encodeBase64} from '@loaders.gl/crypto';
 import TEST_CASES from '../crc32c-test-cases.json' assert {type: 'json'};

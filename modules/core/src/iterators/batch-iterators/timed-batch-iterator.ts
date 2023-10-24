@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /**
  * "Debounces" batches and returns them in groups
  */

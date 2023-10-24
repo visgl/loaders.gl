@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {parseFromContext} from '@loaders.gl/loader-utils';
 import {isBrowser, load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
@@ -127,21 +130,3 @@ test('load#stream', async (t) => {
   t.end();
 });
 
-// TODO v4.0 restore these tests - we can't import Node function in the new tests..
-/*
-test.skip('load#Node stream - NODE ONLY', async (t) => {
-  if (isBrowser) {
-    t.comment('Skipping load(Node stream) tests in Node.js');
-    t.end();
-    return;
-  }
-
-  const fs = require('fs');
-  const stream = fs.createReadStream(resolvePath(JSON_URL));
-  // @ts-ignore TODO remove this ts-ignore
-  const data = await load(stream, JSONLoader);
-  t.equals(typeof data, 'object', 'load(Node stream) returned data');
-
-  t.end();
-});
-*/

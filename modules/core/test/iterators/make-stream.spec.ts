@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable no-invalid-this, import/no-extraneous-dependencies */
 import test from 'tape-promise/tape';
 import {isBrowser, makeStream, makeIterator} from '@loaders.gl/core';

@@ -1,4 +1,6 @@
-/* eslint-disable max-len */
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';

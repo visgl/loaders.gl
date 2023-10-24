@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
+
 import {log} from './utils/log';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

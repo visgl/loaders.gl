@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import './javascript-utils/is-type.spec';
 import './javascript-utils/text-encoder.spec';
 

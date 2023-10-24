@@ -1,4 +1,6 @@
-// luma.gl, MIT license
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {Readable} from 'stream';
 
 /** A DOM or Node readable stream */

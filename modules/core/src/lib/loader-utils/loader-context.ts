@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {Loader, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {getFetchFunction} from './get-fetch-function';
 import {extractQueryString, stripQueryString} from '../utils/url-utils';

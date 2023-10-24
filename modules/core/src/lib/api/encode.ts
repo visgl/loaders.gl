@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {Writer, WriterOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffers, resolvePath, NodeFile} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';

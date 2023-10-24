@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 export type MakeStreamOptions = {
   /** Stream allocates an arrayBuffer. Enables use of a default reader. */
   autoAllocateChunkSize?: number;

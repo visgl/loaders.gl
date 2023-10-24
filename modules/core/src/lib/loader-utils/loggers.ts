@@ -1,4 +1,8 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // probe.gl Log compatible loggers
+
 import {Log} from '@probe.gl/log';
 
 export const probeLog = new Log({id: 'loaders.gl'});
