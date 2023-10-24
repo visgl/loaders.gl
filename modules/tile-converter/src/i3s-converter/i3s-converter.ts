@@ -1,6 +1,6 @@
 // loaders.gl, MIT license
 
-import AttributeMetadataInfo from './attribute-metadata-info';
+import {AttributeMetadataInfo} from './helpers/attribute-metadata-info';
 
 import type {
   FeatureTableJson,

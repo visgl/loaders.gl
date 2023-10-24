@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import AttributeMetadataInfo from '../../src/i3s-converter/attribute-metadata-info';
+import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
 
 test('tile-converter(i3s)#createPopupInfo - Should create popup info', async (t) => {
   const attributeNames = ['OBJECTID', 'color', 'name', 'opt_uint8'];

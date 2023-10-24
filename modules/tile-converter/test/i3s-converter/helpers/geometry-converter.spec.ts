@@ -7,7 +7,7 @@ import convertB3dmToI3sGeometry, {
 } from '../../../src/i3s-converter/helpers/geometry-converter';
 import {PGMLoader} from '../../../src/pgm-loader';
 import {getAttributeTypesMapFromPropertyTable} from '../../../src/i3s-converter/helpers/feature-attributes';
-import AttributeMetadataInfo from '../../../src/i3s-converter/attribute-metadata-info';
+import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
 
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Matrix4} from '@math.gl/core';

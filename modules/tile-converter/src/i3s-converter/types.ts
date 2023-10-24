@@ -225,3 +225,19 @@ export type GLTFAttributesData = {
   /** Model matrix to convert coordinate system of POSITION and NORMAL attributes from METER_OFFSETS to CARTESIAN  */
   cartesianModelMatrix: Matrix4;
 };
+
+/**
+ * I3S' types difine the following:
+ *   type Attribute = 'OBJECTID' | 'string' | 'double' | 'Int32' | string;
+ * The AttributeType contains the string values of the Attribute type.
+ */
+export const AttributeType = {
+  /** Type of attribute that is linked with feature ids */
+  OBJECT_ID_TYPE: 'OBJECTID',
+  /** String data type name for feature attributes */
+  STRING_TYPE: 'string',
+  /** Double data type name for feature attributes */
+  DOUBLE_TYPE: 'double',
+  /** Integer data type name for feature attributes */
+  SHORT_INT_TYPE: 'Int32'
+} as const;

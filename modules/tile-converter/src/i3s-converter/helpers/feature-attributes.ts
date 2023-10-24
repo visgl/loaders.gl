@@ -8,7 +8,7 @@ import type {
   GLTF_EXT_structural_metadata_ClassProperty
 } from '@loaders.gl/gltf';
 
-import {AttributeType} from '@loaders.gl/i3s';
+import {AttributeType} from '../types';
 
 import {EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA} from '@loaders.gl/gltf';
 

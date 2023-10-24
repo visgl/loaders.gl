@@ -7,9 +7,9 @@ import type {
   PopupInfo
 } from '@loaders.gl/i3s';
 
-import {AttributeType} from '@loaders.gl/i3s';
+import {AttributeType} from '../types';
 
-export default class AttributeMetadataInfo {
+export class AttributeMetadataInfo {
   private _attributeStorageInfo: AttributeStorageInfo[];
   private _fields: Field[];
   private _popupInfo: PopupInfo | undefined;

@@ -590,23 +590,7 @@ type TextureImage = {
   length?: number[];
 };
 
-export enum AttributeType {
-  /** Type of attribute that is linked with feature ids */
-  OBJECT_ID_TYPE = 'OBJECTID',
-  /** String data type name for feature attributes */
-  STRING_TYPE = 'string',
-  /** Double data type name for feature attributes */
-  DOUBLE_TYPE = 'double',
-  /** Integer data type name for feature attributes */
-  SHORT_INT_TYPE = 'Int32'
-}
-
-type StringValues<T> = {
-  [K in keyof T]: T[K] extends string ? T[K] : never;
-}[keyof T];
-type EnumAsUnion<T> = `${StringValues<T>}`;
-
-export type Attribute = EnumAsUnion<typeof AttributeType> | string;
+export type Attribute = 'OBJECTID' | 'string' | 'double' | 'Int32' | string;
 
 export type Extent = [number, number, number, number];
 
