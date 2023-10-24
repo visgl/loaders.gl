@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {isBrowser} from '../env-utils/globals';
 import {ReadableFile, WritableFile, Stat} from './file';

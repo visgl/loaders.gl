@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {FileProvider} from './file-provider';
 import {NodeFileFacade as NodeFile} from '../files/node-file-facade';

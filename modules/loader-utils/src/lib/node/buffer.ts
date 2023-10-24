@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // Isolates Buffer references to ensure they are only bundled under Node.js (avoids big webpack polyfill)
 // this file is selected by the package.json "browser" field).

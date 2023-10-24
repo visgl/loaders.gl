@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import {Schema, Field} from '@loaders.gl/schema';
 
 /* eslint-disable camelcase */

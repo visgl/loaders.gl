@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /* eslint-disable no-restricted-globals */
 export const isBrowser: boolean =

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {DataType, LoaderWithParser} from '@loaders.gl/loader-utils';

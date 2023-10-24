@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import zlib from 'zlib';
 import {Readable} from 'stream';

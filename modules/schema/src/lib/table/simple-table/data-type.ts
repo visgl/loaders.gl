@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {DataType} from '../../../types/schema';
 import {TypedArray, TypedArrayConstructor, ArrayType} from '../../../types/types';

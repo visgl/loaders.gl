@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {isResponse, isBlob} from '../../javascript-utils/is-type';
 import {parseMIMEType, parseMIMETypeFromURL} from './mime-type-utils';

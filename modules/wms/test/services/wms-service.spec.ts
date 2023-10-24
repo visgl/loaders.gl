@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
 import {withFetchMock, mockResults, requestInits} from '../test-utils/fetch-spy';

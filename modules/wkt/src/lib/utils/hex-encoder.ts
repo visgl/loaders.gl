@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /**
  * Simple helper to decode and encode "hex encoded" binary buffers

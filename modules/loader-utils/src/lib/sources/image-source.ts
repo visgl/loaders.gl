@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {DataSourceProps} from './data-source';
 import {DataSource} from './data-source';
