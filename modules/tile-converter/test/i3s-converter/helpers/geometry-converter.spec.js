@@ -590,6 +590,84 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
   t.end();
 });
 
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async (t) => {
+  if (isBrowser) {
+    t.end();
+    return;
+  }
+
+  const propertyTable = {
+    color: [11n, 22n, 33n, 44n, 55n, 66n, 77n, 88n, 99n, 111n, 222n, 333n],
+    component: [
+      'Windows',
+      'Frames',
+      'Wall',
+      'Roof',
+      'Skylight',
+      'Air conditioner (white box)',
+      'Air conditioner (black box)',
+      'Air conditioner (tall black/white box)',
+      'Clock',
+      'Pillars',
+      'Street Light',
+      'Traffic Light'
+    ]
+  };
+  /*
+    'color' 64-bit values from propertyTable should be converted to strings hat are in attributeBufferExpected.
+  */
+  const attributeBufferExpected = [
+    3, 0, 0, 0, 12, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5, 0, 0, 0, 51, 51, 0, 50, 50, 50, 0, 110, 117,
+    108, 108, 0
+  ];
+
+  let nodeId = 1;
+  const addNodeToNodePage = async () => nodeId++;
+  const featuresHashArray = [];
+  const draco = true;
+  const generageBoundingVolumes = false;
+  const shouldMergeMaterials = false;
+  const tileContent = await load(FERRY_GLTF_FILE_PATH, Tiles3DLoader);
+  const tileTransform = new Matrix4([
+    0.8443837640659682, -0.5357387973460459, 0, 0, 0.32832660036003297, 0.5174791372742712,
+    0.7902005985709575, 0, -0.42334111834053034, -0.667232555788526, 0.6128482797708588, 0,
+    -2703514.4440963655, -4261038.614006309, 3887533.151398322, 1
+  ]);
+  const tileBoundingVolume = new BoundingSphere([
+    -2703528.7614193764, -4261014.993900511, 3887572.9889940596
+  ]);
+  const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
+  const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
+  try {
+    const convertedResources = await convertB3dmToI3sGeometry(
+      tileContent,
+      tileTransform,
+      tileBoundingVolume,
+      addNodeToNodePage,
+      propertyTable,
+      featuresHashArray,
+      attributeStorageInfo,
+      draco,
+      generageBoundingVolumes,
+      shouldMergeMaterials,
+      geoidHeightModel,
+      {}
+    );
+    if (!convertedResources?.[0].attributes?.[1]) {
+      return;
+    }
+    const attributes = new Uint8Array(convertedResources[0].attributes[1]);
+    const attributesExpected = new Uint8Array(attributeBufferExpected);
+    t.deepEquals(attributes, attributesExpected, '64-bit int values converted to strings');
+  } finally {
+    // Clean up worker pools
+    const workerFarm = WorkerFarm.getWorkerFarm({});
+    workerFarm.destroy();
+  }
+
+  t.end();
+});
+
 const OBJECT_ID_TYPE = 'OBJECTID';
 const STRING_TYPE = 'string';
 const SHORT_INT_TYPE = 'Int32';
