@@ -1,6 +1,8 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
+/** eslint-disable @typescript-eslint/unbound-method */
+
 import test from 'tape-promise/tape';
 import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
@@ -40,7 +42,6 @@ test('CryptoHash#iterator(CSV stream, against external hash)', async (t) => {
   });
 
   const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
-    // eslint-ignore-next-line this method is bound, eslint just doesn't know it.
     transforms: [cryptoHash.hashBatches]
   });
 
