@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {SerializeOptions} from 'bson';
 import {serialize} from 'bson';

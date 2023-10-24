@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
 import type {ImageType} from '@loaders.gl/images';

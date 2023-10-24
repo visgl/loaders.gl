@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {Geometry as FGBGeometry, Feature as FGBFeature} from 'flatgeobuf';
 // import {GeometryType} from 'flatgeobuf/generic';

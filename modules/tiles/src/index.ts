@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export type {Tileset3DProps} from './tileset/tileset-3d';
 export {Tileset3D} from './tileset/tileset-3d';

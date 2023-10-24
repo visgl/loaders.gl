@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // Forked from https://github.com/chrelad/openlayers/blob/master/tests/Format/WMSGetFeatureInfo.html
 // under OpenLayers license (only used for test cases)

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /**
  * Check reponse status, if not OK extract error message and throw error

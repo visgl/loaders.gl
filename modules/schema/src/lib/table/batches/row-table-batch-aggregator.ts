@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Schema} from '../../../types/schema';
 import type {TableBatch} from '../../../types/category-table';

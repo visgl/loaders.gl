@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import type {

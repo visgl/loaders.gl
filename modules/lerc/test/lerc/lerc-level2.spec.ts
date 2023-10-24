@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // Forked from https://github.com/Esri/lerc/blob/master/OtherLanguages/js/tests/
 // under Apache 2 license

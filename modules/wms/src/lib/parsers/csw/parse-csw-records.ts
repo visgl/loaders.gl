@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {XMLLoaderOptions, convertXMLFieldToArrayInPlace} from '@loaders.gl/xml';
 import {XMLLoader} from '@loaders.gl/xml';

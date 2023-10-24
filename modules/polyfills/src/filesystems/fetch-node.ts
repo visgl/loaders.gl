@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import fs from 'fs';
 import {Readable} from 'stream';

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {isBrowser} from '@loaders.gl/loader-utils';
 

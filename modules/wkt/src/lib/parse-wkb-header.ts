@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 const EWKB_FLAG_Z = 0x80000000;
 const EWKB_FLAG_M = 0x40000000;

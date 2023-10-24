@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {ObjectRowTableBatch, ArrayRowTableBatch} from '@loaders.gl/schema';
 

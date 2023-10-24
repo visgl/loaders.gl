@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {Stat, RandomAccessFileSystem} from '@loaders.gl/loader-utils';
 import fsPromise from 'fs/promises';

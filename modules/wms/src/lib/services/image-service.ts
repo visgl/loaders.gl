@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ImageType} from '@loaders.gl/images';

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {GeoJSON, GeoJSONTable, TableBatch} from '@loaders.gl/schema';

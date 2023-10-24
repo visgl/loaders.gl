@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Inspired by a sax-js example under ISC license
 
 import test from 'tape-promise/tape';

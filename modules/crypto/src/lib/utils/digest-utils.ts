@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {asciiToBase64, base64ToAscii} from './base64-utils';
 

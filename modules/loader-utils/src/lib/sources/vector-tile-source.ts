@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {TileSource, TileSourceMetadata} from './tile-source';
 import {GetTileParameters} from './tile-source';
