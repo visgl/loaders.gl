@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /**
  * `btoa()` polyfill as defined by the HTML and Infra specs, which mostly just references
  * RFC 4648.
