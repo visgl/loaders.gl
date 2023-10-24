@@ -3,7 +3,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile, loadInBatches, NullLoader, isBrowser} from '@loaders.gl/core';
-import {CRC32Hash, CRC32CHash, MD5Hash, SHA256Hash, CryptoHash as NodeHash} from '@loaders.gl/crypto';
+import {CRC32Hash, CRC32CHash, MD5Hash, SHA256Hash, NodeHash} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
 
 import CryptoJS from 'crypto-js';
@@ -96,7 +96,7 @@ test('crypto#streaming hashes', async (t) => {
 
 // EXTRA TESTS NOT COVERED BY TEST CASES
 
-test.only('NodeHash#hash', async (t) => {
+test('NodeHash#hash', async (t) => {
   if (!isBrowser) {
     const cryptoHash = new NodeHash({crypto: {algorithm: 'SHA256'}});
 

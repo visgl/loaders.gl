@@ -24,7 +24,7 @@ export class NodeHash extends Hash {
     if (!globalThis.loaders.NodeHash) {
       throw new Error('install @loaders.gl/crypto on Node.js to use NodeHash');
     }
-    return globalThis.loaders.NodeHash(options);
+    return new globalThis.loaders.NodeHash(options);
   }
 
   /**
