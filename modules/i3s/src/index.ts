@@ -49,4 +49,4 @@ export {ArcGISWebSceneLoader} from './arcgis-webscene-loader';
 
 export type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
 export {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
-export {customizeColors} from './lib/utils/customize-сolors';
+export {customizeColors} from './lib/utils/customize-colors';
