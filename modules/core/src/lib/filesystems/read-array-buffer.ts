@@ -1,4 +1,5 @@
-// Random-Access read
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /**
  * Read a slice of a Blob or File, without loading the entire file into memory

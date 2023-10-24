@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {IteratorOptions} from './make-iterator';
 
 const DEFAULT_CHUNK_SIZE = 256 * 1024;

@@ -1,3 +1,8 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+/** eslint-disable @typescript-eslint/unbound-method */
+
 import test from 'tape-promise/tape';
 import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
@@ -37,7 +42,7 @@ test('CryptoHash#iterator(CSV stream, against external hash)', async (t) => {
   });
 
   const csvIterator = await loadInBatches(CSV_URL, CSVLoader, {
-    transforms: [cryptoHash.hashBatches]
+    transforms: [cryptoHash.hashBatches.bind(cryptoHash)]
   });
 
   let csv;

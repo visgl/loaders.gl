@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // crypto module tests
 import './lib/utils/digest-utils.spec';
 

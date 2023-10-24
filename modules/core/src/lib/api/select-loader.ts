@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import {compareArrayBuffers, path} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';

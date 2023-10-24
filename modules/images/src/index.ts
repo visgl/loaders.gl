@@ -24,3 +24,9 @@ export {
 // EXPERIMENTAL
 export {getSupportedImageFormats} from './lib/category-api/image-format';
 export {isImageFormatSupported} from './lib/category-api/image-format';
+
+// REMOVED
+/** @deprecated Temporary placeholder to prevent builds from breaking */
+export function loadImage() {
+  throw new Error('loadImage has moved to @loaders.gl/textures');
+}

@@ -1,7 +1,7 @@
 import {Hash} from './hash';
 
 type CryptoHashOptions = {
-  modules: {[moduleName: string]: any};
+  modules?: {[moduleName: string]: any};
   crypto: {
     algorithm: string;
     onEnd?: (result: {hash: string}) => any;

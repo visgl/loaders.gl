@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {parseMIMEType, parseMIMETypeFromURL} from '@loaders.gl/core/lib/utils/mime-type-utils';
 

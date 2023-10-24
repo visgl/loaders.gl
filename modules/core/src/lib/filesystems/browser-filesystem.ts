@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {FileSystem, ReadableFile} from '@loaders.gl/loader-utils';
 import {BlobFile} from '@loaders.gl/loader-utils';
 

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 const LENGTH = 1e3;
 const ARRAY = new Array(LENGTH).fill(0);
 
