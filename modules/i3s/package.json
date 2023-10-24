@@ -49,7 +49,6 @@
     "@loaders.gl/schema": "4.0.0-beta.6",
     "@loaders.gl/textures": "4.0.0-beta.6",
     "@loaders.gl/tiles": "4.0.0-beta.6",
-    "@luma.gl/constants": "^8.5.4",
     "@math.gl/core": "^4.0.0",
     "@math.gl/culling": "^4.0.0",
     "@math.gl/geospatial": "^4.0.0"

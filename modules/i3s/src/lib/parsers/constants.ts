@@ -1,4 +1,6 @@
-import GL from '@luma.gl/constants';
+// loaders.gl, MIT license
+
+import {GL} from '@loaders.gl/math';
 
 export function getConstructorForDataFormat(dataType: string) {
   switch (dataType) {
