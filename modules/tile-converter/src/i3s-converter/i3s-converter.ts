@@ -450,6 +450,12 @@ export default class I3SConverter {
       this.options.maxDepth
     );
 
+    this.layers0!.attributeStorageInfo = this.attributeMetadataInfo.attributeStorageInfo;
+    this.layers0!.fields = this.attributeMetadataInfo.fields;
+    this.layers0!.popupInfo = this.attributeMetadataInfo.popupInfo;
+
+    this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+
     this.layers0!.materialDefinitions = this.materialDefinitions;
     // @ts-ignore
     this.layers0.geometryDefinitions = transform(
@@ -775,7 +781,7 @@ export default class I3SConverter {
       async () => (await this.nodePages.push({index: 0, obb: draftObb}, parentId)).index,
       propertyTable,
       this.featuresHashArray,
-      this.layers0?.attributeStorageInfo,
+      this.attributeMetadataInfo.attributeStorageInfo,
       this.options.draco,
       this.generateBoundingVolumes,
       this.options.mergeMaterials,
@@ -1081,14 +1087,14 @@ export default class I3SConverter {
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
-    if (attributes?.length && this.layers0?.attributeStorageInfo?.length) {
+    if (attributes?.length && this.attributeMetadataInfo.attributeStorageInfo.length) {
       const minimumLength =
-        attributes.length < this.layers0.attributeStorageInfo.length
+        attributes.length < this.attributeMetadataInfo.attributeStorageInfo.length
           ? attributes.length
-          : this.layers0.attributeStorageInfo.length;
+          : this.attributeMetadataInfo.attributeStorageInfo.length;
 
       for (let index = 0; index < minimumLength; index++) {
-        const folderName = this.layers0.attributeStorageInfo[index].key;
+        const folderName = this.attributeMetadataInfo.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
 
         if (this.options.slpk) {
@@ -1174,7 +1180,7 @@ export default class I3SConverter {
     */
     let attributeTypesMap: Record<string, Attribute> | null = null;
     if (this.options.metadataClass) {
-      if (!this.layers0!.attributeStorageInfo!.length && tileContent?.gltf) {
+      if (!this.attributeMetadataInfo.attributeStorageInfo.length && tileContent?.gltf) {
         attributeTypesMap = getAttributeTypesMapFromSchema(
           tileContent.gltf,
           this.options.metadataClass
@@ -1187,11 +1193,6 @@ export default class I3SConverter {
     if (attributeTypesMap) {
       // Add new storage attributes, fields and create popupInfo
       this.attributeMetadataInfo.addMetadataInfo(attributeTypesMap);
-      this.layers0!.attributeStorageInfo = this.attributeMetadataInfo.attributeStorageInfo;
-      this.layers0!.fields = this.attributeMetadataInfo.fields;
-      this.layers0!.popupInfo = this.attributeMetadataInfo.popupInfo;
-
-      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
     }
   }
 
