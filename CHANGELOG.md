@@ -6,6 +6,16 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-beta.8
+
+- Update gltf.md. (#2733)
+- fix(website): restore I3S examples (#2734)
+- fix: render test import (#2731)
+- chore(crypto): Restore crypto tests (#2730)
+- chore: Clean up license text (#2729)
+- chore(i3s): Export a function customizeColors from i3s lib utils (#2719)
+- added test for conversion 64-bit attributes to strings (#2728)
+
 ### v4.0.0-beta.7
 
 - fix(i3s): Remove luma.gl dependency (#2727)

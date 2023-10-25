@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "4.0.0-beta.7",
+  "version": "4.0.0-beta.8",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
   "type": "module",
@@ -40,9 +40,9 @@
     "build-bundle": "ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.0-beta.7",
-    "@loaders.gl/loader-utils": "4.0.0-beta.7",
-    "@loaders.gl/schema": "4.0.0-beta.7",
+    "@loaders.gl/gis": "4.0.0-beta.8",
+    "@loaders.gl/loader-utils": "4.0.0-beta.8",
+    "@loaders.gl/schema": "4.0.0-beta.8",
     "@tmcw/togeojson": "^4.5.0",
     "@xmldom/xmldom": "^0.7.13"
   },
