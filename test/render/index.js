@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
-// Copyright (c) vis.gl contributorsimport test from 'tape';
 
+import test from 'tape';
 import {SnapshotTestRunner} from '@luma.gl/test-utils';
 import {TEST_CASES} from './test-cases';
 
