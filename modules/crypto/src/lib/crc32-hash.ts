@@ -1,4 +1,6 @@
-// CRC32
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {Hash} from './hash';
 import CRC32 from './algorithms/crc32';
 import {encodeNumber} from './utils/digest-utils';

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /** A single element of an array is not represented as an array in XML */
 export function getXMLArray(xmlValue: any): any[] {

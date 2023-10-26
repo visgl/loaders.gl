@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {PLYMesh} from './lib/ply-types';

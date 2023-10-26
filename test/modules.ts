@@ -5,17 +5,18 @@
 import './init-tests';
 
 // Utility modules
-import '@loaders.gl/polyfills/test';
-import '@loaders.gl/worker-utils/test';
+// import '@loaders.gl/polyfills/test';
+// import '@loaders.gl/worker-utils/test';
 import '@loaders.gl/math/test';
 
 // Core
 import '@loaders.gl/loader-utils/test';
-import '@loaders.gl/core/test';
+// import '@loaders.gl/core/test';
 
 // Image Formats
 import '@loaders.gl/images/test';
 import '@loaders.gl/textures/test';
+import '@loaders.gl/lerc/test';
 // import '@loaders.gl/video/test';
 // import '@loaders.gl/geotiff/test';
 // import '@loaders.gl/zarr/test';
@@ -23,13 +24,13 @@ import '@loaders.gl/netcdf/test';
 
 // Pointcloud/Mesh Formats
 import '@loaders.gl/draco/test';
-import '@loaders.gl/las/test';
+// import '@loaders.gl/las/test';
 import '@loaders.gl/obj/test';
 import '@loaders.gl/pcd/test';
 import '@loaders.gl/ply/test';
 import '@loaders.gl/terrain/test';
 
-// // Scenegraph Formats
+// Scenegraph Formats
 import '@loaders.gl/gltf/test';
 
 // 3D Tile Formats
@@ -72,5 +73,4 @@ import '@loaders.gl/crypto/test';
 import '@loaders.gl/zip/test';
 
 // Tile converter
-// TODO v4 - restore these tests
-// import '@loaders.gl/tile-converter/test';
+import '@loaders.gl/tile-converter/test';

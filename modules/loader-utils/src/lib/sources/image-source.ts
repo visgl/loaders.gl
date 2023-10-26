@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {DataSourceProps} from './data-source';
 import {DataSource} from './data-source';
@@ -30,9 +31,6 @@ export type ImageSourceLayer = {
   geographicBoundingBox?: [min: [x: number, y: number], max: [x: number, y: number]];
   /** Sub layers of this layer */
   layers?: ImageSourceLayer[];
-
-  /** @deprecated from v3.4: non-vis.gl style bounding box. Use `.geographicBoundingBox` instead */
-  boundingBox?: [number, number, number, number];
 };
 
 /** Generic parameters for requesting an image from an image source */

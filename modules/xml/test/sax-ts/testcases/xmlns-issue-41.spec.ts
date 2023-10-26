@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Forked from sax-ts & sax under ISC license
 
 /* TODO - NOT PORTED TO LOADERS.GL

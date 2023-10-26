@@ -24,6 +24,7 @@ type MVTWgs84CoordinatesOptions = {
 };
 
 export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOptions) & {
+  shape?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
   /**
    * When non-`null`, the layer name of each feature is added to
    * `feature.properties[layerProperty]`. (A `feature.properties` object is created if the feature
@@ -36,7 +37,6 @@ export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOption
    * be included in the output. If `null`, features from all layers are returned.
    */
   layers?: string[];
-  shape?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
 };
 
 export type MVTMapboxGeometry = {

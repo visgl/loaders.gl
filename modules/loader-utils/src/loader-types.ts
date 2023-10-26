@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {
   FetchLike,
@@ -69,29 +70,29 @@ export type LoaderOptions = {
   dataType?: never;
   /** @deprecated `options.uri` no longer used */
   uri?: never;
-  /** @deprecated `options.method` removed. Use `options.fetch.method` */
+  /** @deprecated Use `options.fetch.method` */
   method?: never;
-  /** @deprecated `options.headers` removed. Use `options.fetch.headers` */
+  /** @deprecated Use `options.fetch.headers` */
   headers?: never;
-  /** @deprecated `options.body` removed. Use `options.fetch.body` */
+  /** @deprecated Use `options.fetch.body` */
   body?: never;
-  /** @deprecated `options.mode` removed. Use `options.fetch.mode` */
+  /** @deprecated Use `options.fetch.mode` */
   mode?: never;
-  /** @deprecated `options.credentials` removed. Use `options.fetch.credentials` */
+  /** @deprecated Use `options.fetch.credentials` */
   credentials?: never;
-  /** @deprecated `options.cache` removed. Use `options.fetch.cache` */
+  /** @deprecated Use `options.fetch.cache` */
   cache?: never;
-  /** @deprecated `options.redirect` removed. Use `options.fetch.redirect` */
+  /** @deprecated Use `options.fetch.redirect` */
   redirect?: never;
-  /** @deprecated `options.referrer` removed. Use `options.fetch.referrer` */
+  /** @deprecated Use `options.fetch.referrer` */
   referrer?: never;
-  /** @deprecated `options.referrerPolicy` removed. Use `options.fetch.referrerPolicy` */
+  /** @deprecated Use `options.fetch.referrerPolicy` */
   referrerPolicy?: never;
-  /** @deprecated `options.integrity` removed. Use `options.fetch.integrity` */
+  /** @deprecated Use `options.fetch.integrity` */
   integrity?: never;
-  /** @deprecated `options.keepalive` removed. Use `options.fetch.keepalive` */
+  /** @deprecated Use `options.fetch.keepalive` */
   keepalive?: never;
-  /** @deprecated `options.signal` removed. Use `options.fetch.signal` */
+  /** @deprecated Use `options.fetch.signal` */
   signal?: never;
 
   // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)

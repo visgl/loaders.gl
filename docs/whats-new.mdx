@@ -111,16 +111,19 @@ A major release that brings:
 
 **@loaders.gl/zip**
 
-- `ZipArchive` - now enables file-by-file reads from large zip archives without loading entire archive into memory (in Node.js).
+- `ZipArchive` - now enables file-by-file reads from large zip archives without loading the entire archive into memory (in Node.js).
+- Supports hash-info generation from Zip Central Directory Headers. Used in I3S Archive format (SLPK) and 3D Tiles Archive format (3TZ).
 
 **@loaders.gl/gltf**
 
-- Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions for 3D Tiles v1.1.
+- Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions for 3D Tiles v1.1. This completes 3D Tiles datasets attribute load support (adding to the current EXT_feature_metadata support). Attribute data can be used for "feature picking" capabilities of i3s viewers.
+
 
 **@loaders.gl/3d-tiles**
 
 - 3D Tiles v1.1 [Implicit Tiling](https://github.com/CesiumGS/3d-tiles/tree/main/specification/ImplicitTiling)
 - 3D Tiles v1.1 attributes (via the new [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions).
+- New 3tz loader to load [3D Tiles archive format](https://github.com/Maxar-Corp/3tz-specification/blob/main/Specification.md). With this, 3D Tiles archives data can be browsed as a file system (using random access into 3tz files) in any loaders.gl-based app
 
 **@loaders.gl/arrow**
 
@@ -129,6 +132,10 @@ A major release that brings:
 **@loaders.gl/draco**
 
 - Decoders upgraded to [draco3d `v1.5.6`](https://github.com/google/draco#version-156-release).
+
+**@loaders.gl/geopackage**
+
+- Now uses latest `sql.js` v1.8.0.
 
 ### Core Module Updates
 
@@ -144,6 +151,11 @@ A major release that brings:
 
 - All hashes now accept an encoding parameter allowing the app to choose between `'hex'` and `'base64'` encoding (rather than getting `'base64'` by default).
 
+**@loaders.gl/i3s**
+
+- New SLPK-loader allows the load of SLPK files into a web app using loaders.gl (like i3s explorer)
+- "Multiply" mode added to the existing "replace" mode for colourization by attribute for i3s datasets
+
 **@loaders.gl/loader-utils**
 
 - New functions that allow loaders to call sub-loaders with full type inference, without importing the core module.
@@ -151,6 +163,7 @@ A major release that brings:
 
 **loaders.gl/polyfills**
 
+- Polyfills now contains Node dependent code for other modules, minimizing the risk of Node.js-dependency related bundling complications when using other loaders.gl modules in the browser.
 - Polyfills no longer installs `fetch`/`Response`/`Headers` polyfills under Node.js, instead leveraging the built-in `fetch()` support in Node.js v18+.
 
 ### Tile Converter Updates
@@ -175,6 +188,7 @@ A major release that brings:
 - Pre-processing for conversion 3DTiles > I3S:
   - Detect topology type (for example TRIANGLE and TRIANGLE_STRIP will pass further for conversion, POINT or TRIANGLE_FAN will notify this mesh type is not supported for conversion)
   - Detect attributes classes for `EXT_feature_metadata` and for `EXT_mesh_features` extensions. Choose a class to convert in CLI with arrow keys.
+  - New tile-converter "--analyze" option for users to only run the analysis without running conversion afterwards
 
 ## v3.4
 

@@ -29,6 +29,6 @@ test('tile-converter(i3s)#convertBoundingVolumeToI3SFullExtent', async (t) => {
     ymin: 37.61647458074144,
     ymax: 37.908958954561705,
     zmin: -4625.401184284537,
-    zmax: 4877.104767145071
+    zmax: 4877.1047671450715
   });
 });

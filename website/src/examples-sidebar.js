@@ -19,7 +19,10 @@
       type: 'category',
       label: 'Geospatial Loaders',
       items: [
-        'geoparquet'
+        'geoparquet',
+        'geopackage',
+        'flatgeobuf',
+        'geojson'
       ],
     },
     {
@@ -34,9 +37,8 @@
       type: 'category',
       label: '3D Tile Loaders',
       items: [
-        // 'i3s',
-        // 'i3s-debug',
-        // 'i3s-arcgis',
+        'i3s',
+        'i3s-arcgis',
         '3d-tiles'
       ]
     },

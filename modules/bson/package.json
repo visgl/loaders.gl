@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/bson",
-  "version": "4.0.0-beta.4",
+  "version": "4.0.0-beta.8",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
   "type": "module",
@@ -42,9 +42,9 @@
     "build-bundle": "ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.0-beta.4",
-    "@loaders.gl/loader-utils": "4.0.0-beta.4",
-    "@loaders.gl/schema": "4.0.0-beta.4",
+    "@loaders.gl/gis": "4.0.0-beta.8",
+    "@loaders.gl/loader-utils": "4.0.0-beta.8",
+    "@loaders.gl/schema": "4.0.0-beta.8",
     "@types/bson": "4.2.0",
     "bson": "4.2.0"
   },

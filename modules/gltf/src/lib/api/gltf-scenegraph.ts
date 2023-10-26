@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {
@@ -78,9 +79,9 @@ export class GLTFScenegraph {
     return data;
   }
 
-  getExtraData(key: string): {[key: string]: unknown} {
+  getExtraData(key: string): unknown {
     // TODO - Data is already unpacked by GLBParser
-    const extras = this.json.extras || {};
+    const extras = (this.json.extras || {}) as Record<string, unknown>;
     return extras[key];
   }
 
@@ -166,16 +167,16 @@ export class GLTFScenegraph {
     return this.getObject('buffers', index) as GLTFBuffer;
   }
 
-  getObject(array: string, index: number | object): object {
+  getObject(array: string, index: number | object): Record<string, unknown> {
     // check if already resolved
     if (typeof index === 'object') {
-      return index;
+      return index as Record<string, unknown>;
     }
     const object = this.json[array] && (this.json[array] as {}[])[index];
     if (!object) {
       throw new Error(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
     }
-    return object;
+    return object as Record<string, unknown>;
   }
 
   /**

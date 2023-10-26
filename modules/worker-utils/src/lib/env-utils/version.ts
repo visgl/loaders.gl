@@ -14,7 +14,7 @@ function getVersion() {
     // __VERSION__ is injected by babel-plugin-version-inline
     if (typeof __VERSION__ === 'undefined') {
       // eslint-disable-next-line
-      console.error(
+      console.warn(
         'loaders.gl: The __VERSION__ variable is not injected using babel plugin. Latest unstable workers would be fetched from the CDN.'
       );
       globalThis._loadersgl_.version = NPM_TAG;

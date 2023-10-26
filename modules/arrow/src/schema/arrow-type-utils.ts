@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {TypedArray} from '@loaders.gl/schema';
 import {

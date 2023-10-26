@@ -1,6 +1,11 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import type {GeoJSONTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
+import type {
+  GeoJSONTable,
+  FeatureCollection,
+  ObjectRowTable,
+  BinaryFeatureCollection
+} from '@loaders.gl/schema';
 import {tcx} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
 
@@ -10,13 +15,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type TCXLoaderOptions = LoaderOptions & {
   tcx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
-    /** @deprecated. Use options.tcx.shape */
-    type?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
-  };
-  gis?: {
-    /** @deprecated. Use options.tcx.shape */
-    format?: 'object-row-table' | 'geojson-table' | 'geojson' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'binary' | 'raw';
   };
 };
 
@@ -27,7 +26,11 @@ const TCX_HEADER = `\
 /**
  * Loader for TCX (Training Center XML) - Garmin GPS track format
  */
-export const TCXLoader: LoaderWithParser<any, never, TCXLoaderOptions> = {
+export const TCXLoader: LoaderWithParser<
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
+  never,
+  TCXLoaderOptions
+> = {
   name: 'TCX (Training Center XML)',
   id: 'tcx',
   module: 'kml',
@@ -45,12 +48,15 @@ export const TCXLoader: LoaderWithParser<any, never, TCXLoaderOptions> = {
   }
 };
 
-function parseTextSync(text: string, options?: TCXLoaderOptions) {
+function parseTextSync(
+  text: string,
+  options?: TCXLoaderOptions
+): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = tcx(doc);
 
   // backwards compatibility
-  const shape = options?.gis?.format || options?.tcx?.type || options?.tcx?.shape;
+  const shape = options?.tcx?.shape;
 
   switch (shape) {
     case 'object-row-table': {
@@ -68,14 +74,10 @@ function parseTextSync(text: string, options?: TCXLoaderOptions) {
       };
       return table;
     }
-    case 'geojson':
-      return geojson;
     case 'binary':
       return geojsonToBinary(geojson.features);
-    case 'raw':
-      return doc;
+
     default:
-      // Default to geojson for backwards compatibility
-      return geojson;
+      throw new Error(shape);
   }
 }

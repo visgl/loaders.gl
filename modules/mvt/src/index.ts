@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export type {MVTLoaderOptions} from './lib/types';
 export {MVTLoader, MVTWorkerLoader} from './mvt-loader';

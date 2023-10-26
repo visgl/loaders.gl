@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {fetchFile, isBrowser} from '@loaders.gl/core';
 import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';

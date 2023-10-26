@@ -29,10 +29,10 @@ const TEST_TEXTURE_MATERIAL = {
 };
 
 const TEST_FULL_EXTENT = {
-  xmin: -75.61412212128346,
-  ymin: 40.04095693133301,
-  xmax: -75.6100663747417,
-  ymax: 40.04410425830655,
+  xmin: -75.61412210800641,
+  ymin: 40.040956941636935,
+  xmax: -75.61006638801986,
+  ymax: 40.04410424800317,
   zmin: 0,
   zmax: 20
 };
@@ -338,7 +338,9 @@ test('tile-converter(i3s)#layer json should contain fullExtent field', async (t)
     );
     const layer = JSON.parse(layerJson);
     t.ok(layer.fullExtent);
-    t.deepEqual(layer.fullExtent, TEST_FULL_EXTENT);
+    for (const key in layer.fullExtent) {
+      t.equal(layer.fullExtent[key], TEST_FULL_EXTENT[key]);
+    }
   }
   await cleanUpPath('data/BatchedTextured');
   t.end();

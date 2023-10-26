@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // TODO - build/integrate proper MIME type parsing
 // https://mimesniff.spec.whatwg.org/
 

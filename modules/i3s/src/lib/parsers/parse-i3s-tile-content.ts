@@ -23,7 +23,6 @@ import {getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 import {I3SLoaderOptions} from '../../i3s-loader';
-import {customizeColors} from '../utils/customize-сolors';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -65,8 +64,8 @@ export async function parseI3STileContent(
     // @ts-expect-error options is not properly typed
     const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
     const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-    const fetch = context?.fetch!; // Options already resolved?
-    const response = await fetch(url); // options?.fetch
+    const fetchFunc = context?.fetch || fetch;
+    const response = await fetchFunc(url); // options?.fetch
     const arrayBuffer = await response.arrayBuffer();
 
     // @ts-expect-error options is not properly typed
@@ -206,14 +205,6 @@ async function parseI3SNodeGeometry(
     content.modelMatrix = getModelMatrix(attributes.position);
     content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
   }
-
-  attributes.color = await customizeColors(
-    attributes.color,
-    attributes.id,
-    tileOptions,
-    tilesetOptions,
-    options
-  );
 
   content.attributes = {
     positions: attributes.position,

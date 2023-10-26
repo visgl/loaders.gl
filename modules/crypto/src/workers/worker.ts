@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {createWorker} from '@loaders.gl/worker-utils';
 import {CRC32Hash} from '../lib/crc32-hash';
 import {CRC32CHash} from '../lib/crc32c-hash';

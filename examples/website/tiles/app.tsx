@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';

@@ -168,7 +168,7 @@ function combineWorkerWithLibrary(worker, jsContent) {
 */
 
 async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
-  if (!node.readFileAsArrayBuffer || url.startsWith('http')) {
+  if (isBrowser || !node.readFileAsArrayBuffer || url.startsWith('http')) {
     const response = await fetch(url);
     return await response.arrayBuffer();
   }
@@ -181,7 +181,7 @@ async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
  * @returns
  */
 async function loadAsText(url: string): Promise<string> {
-  if (!node.readFileAsText || url.startsWith('http')) {
+  if (isBrowser || !node.readFileAsText || url.startsWith('http')) {
     const response = await fetch(url);
     return await response.text();
   }

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
@@ -335,9 +336,9 @@ export class Tileset3D {
   }
 
   /** @deprecated */
-  setOptions(options: Tileset3DProps): void {
-    this.options = {...this.options, ...options};
-  }
+  // setOptions(options: Tileset3DProps): void {
+  //   this.options = {...this.options, ...options};
+  // }
 
   /**
    * Return a loadable tile url for a specific tile subpath
@@ -935,6 +936,7 @@ export class Tileset3D {
   _initializeI3STileset() {
     // @ts-expect-error
     if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
+      // @ts-ignore
       this._queryParams.token = this.loadOptions.i3s.token as string;
     }
   }

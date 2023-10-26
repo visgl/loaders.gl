@@ -486,6 +486,7 @@ function makeAccessorObjects(
   coordLength: number
 ): BinaryFeatureCollection {
   const binaryFeatures: BinaryFeatureCollection = {
+    shape: 'binary-feature-collection',
     points: {
       ...points,
       positions: {value: points.positions, size: coordLength},

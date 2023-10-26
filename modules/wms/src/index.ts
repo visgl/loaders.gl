@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // CSW - Catalog Service for the Web
 
@@ -53,6 +54,9 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // EXPERIMENTAL: DATA SOURCES
 
+// TODO - restore once deck.gl has been udpated
+export {ImageSource} from '@loaders.gl/loader-utils';
+
 export type {ImageType} from '@loaders.gl/images';
 
 export type {CreateImageServiceProps} from './lib/services/create-image-service';
@@ -75,14 +79,3 @@ export {WMSSource, WMSService} from './services/ogc/wms-service';
 
 export {getArcGISServices as _getArcGISServices} from './services/arcgis/arcgis-server';
 export {ArcGISImageService as _ArcGISImageService} from './services/arcgis/arcgis-image-service';
-
-// LERC - Limited Error Raster Compression
-// TODO - restore once esbuild bundling issues have been resolved
-// export type {LERCData} from './lib/lerc/lerc-types';
-// export {LERCLoader} from './lerc-loader';
-
-/** @deprecated Use WMSCapabilitiesLoaderOptions */
-export type {WMSCapabilitiesLoaderOptions as WMSLoaderOptions} from './wms-capabilities-loader';
-
-// TODO - restore once deck.gl has been udpated
-export {ImageSource} from '@loaders.gl/loader-utils';

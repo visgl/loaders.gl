@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // Fork of https://github.com/briantbutton/md5-wasm under MIT license
 import {Hash} from './hash';
 import md5WASM from './algorithms/md5-wasm';

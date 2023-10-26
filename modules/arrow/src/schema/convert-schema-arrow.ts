@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {DataType, Field, Schema, SchemaMetadata} from '@loaders.gl/schema';
 import {

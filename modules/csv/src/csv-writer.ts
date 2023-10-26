@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /* global TextEncoder */
 import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
@@ -10,7 +11,7 @@ export type CSVWriterOptions = WriterOptions & {
     useDisplayNames?: boolean;
   };
   /** @deprecated */
-  useDisplayNames?: boolean;
+  useDisplayNames?: never;
 };
 
 export const CSVWriter: Writer<Table, TableBatch, CSVWriterOptions> = {
@@ -23,9 +24,7 @@ export const CSVWriter: Writer<Table, TableBatch, CSVWriterOptions> = {
   options: {
     csv: {
       useDisplayNames: false
-    },
-    /** @deprecated use csv.displayNames */
-    useDisplayNames: false
+    }
   },
   text: true,
   encode: async (table, options) =>

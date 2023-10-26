@@ -5,8 +5,8 @@
 // this file is not visible to webpack (it is excluded in the package.json "browser" field).
 
 import Module from 'module';
-import path from 'path';
-import fs from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Load a file from local file system
@@ -50,7 +50,7 @@ export async function requireFromFile(filename: string): Promise<any> {
   if (!filename.startsWith('/')) {
     filename = `${process.cwd()}/${filename}`;
   }
-  const code = await fs.readFileSync(filename, 'utf8');
+  const code = await fs.promises.readFile(filename, 'utf8');
   return requireFromString(code);
 }
 

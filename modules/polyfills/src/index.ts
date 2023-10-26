@@ -14,6 +14,8 @@ import {NodeFile} from './filesystems/node-file';
 import {NodeFileSystem} from './filesystems/node-filesystem';
 import {fetchNode} from './filesystems/fetch-node';
 
+import {NodeHash} from './crypto/node-hash';
+
 // NODE VERSION
 import {versions} from 'node:process';
 export const nodeVersion = parseInt(versions.node.split('.')[0]);
@@ -42,6 +44,9 @@ globalThis.loaders.makeNodeStream = makeNodeStream;
 globalThis.loaders.NodeFile = NodeFile;
 globalThis.loaders.NodeFileSystem = NodeFileSystem;
 globalThis.loaders.fetchNode = fetchNode;
+
+// CRYPTO POLYFILLS
+globalThis.loaders.NodeHash = NodeHash;
 
 // POLYFILLS: TextEncoder, TextDecoder
 // - Recent Node versions have these classes but virtually no encodings unless special build.
@@ -93,6 +98,8 @@ globalThis.loaders.readFileAsArrayBuffer = readFileAsArrayBuffer;
 globalThis.loaders.readFileAsText = readFileAsText;
 globalThis.loaders.requireFromFile = requireFromFile;
 globalThis.loaders.requireFromString = requireFromString;
+
+export {installFilePolyfills} from './file/install-file-polyfills';
 
 // DEPRECATED POLYFILL:
 // - Node v18+: No, not needed

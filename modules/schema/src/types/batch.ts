@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {Schema} from './schema';
 // import type {RecordBatch} from 'apache-arrow';

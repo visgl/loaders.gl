@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // FLAT GEOJSON FORMAT GEOMETRY
 import type {Feature, Geometry, Point, LineString, Polygon} from 'geojson';

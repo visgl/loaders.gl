@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
@@ -23,11 +24,9 @@ export type WMSCapabilitiesLoaderOptions = XMLLoaderOptions & {
     /** Add inherited layer information to sub layers */
     inheritedLayerProps?: boolean;
     /** Include the "raw" JSON (parsed but untyped, unprocessed XML). May contain additional fields */
-    includeRawData?: boolean;
+    includeRawJSON?: boolean;
     /** Include the original XML document text. May contain additional information. */
     includeXMLText?: boolean;
-    /** @deprecated Use options.includeRawData` */
-    raw?: boolean;
   };
 };
 

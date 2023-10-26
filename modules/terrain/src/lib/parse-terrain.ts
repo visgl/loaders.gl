@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import Martini from '@mapbox/martini';

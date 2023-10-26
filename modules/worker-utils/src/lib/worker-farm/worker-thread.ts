@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {NodeWorker, NodeWorkerType} from '../node/worker_threads';
 import {isBrowser} from '../env-utils/globals';

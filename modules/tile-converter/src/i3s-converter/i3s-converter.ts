@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {
   FeatureTableJson,
@@ -13,7 +14,7 @@ import type {
   BoundingVolumes,
   MaxScreenThresholdSQ,
   NodeInPage,
-  AttributeStorageInfo
+  Attribute
 } from '@loaders.gl/i3s';
 import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -61,11 +62,12 @@ import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
+  getAttributeTypesFromPropertyTable,
+  getAttributeTypesFromSchema,
   createdStorageAttribute,
+  getFieldAttributeType,
   createFieldAttribute,
-  createPopupInfo,
-  getAttributeType,
-  getFieldAttributeType
+  createPopupInfo
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
 import {
@@ -663,16 +665,7 @@ export default class I3SConverter {
     let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
     const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
-
-    if (propertyTable) {
-      /*
-        Call the convertion procedure even if the node attributes have been already created.
-        We will append new attributes only in case the property table is updated.
-        According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
-        "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer, which is the same for every node in the layer."
-      */
-      this._convertPropertyTableToNodeAttributes(propertyTable);
-    }
+    this.createAttributeStorageInfo(tileContent, propertyTable);
 
     const resourcesData = await this._convertResources(
       sourceTile,
@@ -1165,42 +1158,83 @@ export default class I3SConverter {
   }
 
   /**
-   * Do conversion of 3DTiles property table to I3s node attributes.
-   * @param propertyTable - Table with layer meta data.
+   * Creates attribute storage info based on either extension schema or property table.
+   * @param tileContent - content of the source tile
+   * @param propertyTable - feature properties from EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA
    */
-  private _convertPropertyTableToNodeAttributes(propertyTable: FeatureTableJson): void {
-    let attributeIndex = 0;
-    const propertyTableWithObjectId = {
-      OBJECTID: [0],
-      ...propertyTable
+  private createAttributeStorageInfo(
+    tileContent: Tiles3DTileContent | null,
+    propertyTable: FeatureTableJson | null
+  ): void {
+    /*
+    In case the tileset doesn't have either EXT_structural_metadata or EXT_feature_metadata
+    that can be a source of attribute information so metadataClass is not specified
+    we will collect attribute information for node attributes from the property table
+    taken from each tile.
+    */
+    let attributeTypesMap: Record<string, Attribute> | null = null;
+    if (this.options.metadataClass) {
+      if (!this.layers0!.attributeStorageInfo!.length && tileContent?.gltf) {
+        attributeTypesMap = getAttributeTypesFromSchema(
+          tileContent.gltf,
+          this.options.metadataClass
+        );
+      }
+    } else if (propertyTable) {
+      attributeTypesMap = getAttributeTypesFromPropertyTable(propertyTable);
+    }
+
+    if (attributeTypesMap) {
+      this.createStorageAttributes(attributeTypesMap);
+    }
+  }
+
+  /**
+   * Creates Attribute Storage Info objects based on attribute's types
+   * @param attributeTypesMap - set of attribute's types
+   */
+  private createStorageAttributes(attributeTypesMap: Record<string, Attribute>): void {
+    if (!Object.keys(attributeTypesMap).length) {
+      return;
+    }
+    const attributeTypes: Record<string, Attribute> = {
+      OBJECTID: 'OBJECTID',
+      ...attributeTypesMap
     };
 
-    for (const key in propertyTableWithObjectId) {
+    let isUpdated = false;
+    let attributeIndex = this.layers0!.attributeStorageInfo!.length;
+    for (const key in attributeTypes) {
       /*
-        We will append new attributes only in case the property table is updated.
-        According to ver 1.9 (see https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md):
-        "The attributeStorageInfo object describes the structure of the binary attribute data resource of a layer, which is the same for every node in the layer."
+      We will append a new attribute only in case it has not been added to the attribute storage info yet.
       */
-      const found = this.layers0!.attributeStorageInfo!.find((element) => element.name === key);
-      if (!found) {
-        const firstAttribute = propertyTableWithObjectId[key][0];
-        const attributeType = getAttributeType(key, firstAttribute);
+      const elementFound = this.layers0!.attributeStorageInfo!.find(
+        (element) => element.name === key
+      );
+      if (!elementFound) {
+        const attributeType = attributeTypes[key];
 
-        const storageAttribute: AttributeStorageInfo = createdStorageAttribute(
-          attributeIndex,
-          key,
-          attributeType
-        );
+        const storageAttribute = createdStorageAttribute(attributeIndex, key, attributeType);
         const fieldAttributeType = getFieldAttributeType(attributeType);
         const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
-        const popupInfo = createPopupInfo(propertyTableWithObjectId);
 
         this.layers0!.attributeStorageInfo!.push(storageAttribute);
         this.layers0!.fields!.push(fieldAttribute);
-        this.layers0!.popupInfo = popupInfo;
-        this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+        attributeIndex += 1;
+        isUpdated = true;
       }
-      attributeIndex += 1;
+    }
+    if (isUpdated) {
+      /*
+      The attributeStorageInfo is updated. So, popupInfo should be recreated.
+      Use attributeStorageInfo as a source of attribute names to create the popupInfo.
+    */
+      const attributeNames: string[] = [];
+      for (let info of this.layers0!.attributeStorageInfo!) {
+        attributeNames.push(info.name);
+      }
+      this.layers0!.popupInfo = createPopupInfo(attributeNames);
+      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
     }
   }
 

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 
 import {Geometry} from '@loaders.gl/schema';
@@ -178,6 +179,7 @@ function parseMultiLineString(state: ParseWKTState): Geometry | null {
   }
   white(state);
   return {
+    // @ts-ignore
     type: 'MultiLineString',
     // @ts-expect-error
     coordinates: c
@@ -194,6 +196,7 @@ function parsePolygon(state: ParseWKTState): Geometry | null {
     return null;
   }
   return {
+    // @ts-ignore
     type: 'Polygon',
     // @ts-expect-error
     coordinates: c

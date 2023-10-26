@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {TileLoadParameters, GetTileParameters} from '@loaders.gl/loader-utils';
 import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';

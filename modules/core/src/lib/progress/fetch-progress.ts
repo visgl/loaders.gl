@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // Forked from github AnthumChris/fetch-progress-indicators under MIT license
 
 /**

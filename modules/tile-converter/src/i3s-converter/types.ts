@@ -188,7 +188,7 @@ export type PreprocessData = {
   /** Mesh topology types used in gltf primitives of the tileset */
   meshTopologyTypes: Set<GLTFPrimitiveModeString>;
   /**
-   * Featrue metadata classes found in glTF extensions
+   * Feature metadata classes found in glTF extensions
    * The tileset might contain multiple metadata classes provided by EXT_feature_metadata and EXT_structural_metadata extensions.
    * Every class is a set of properties. But I3S can consume only one set of properties.
    * On the pre-process we collect all classes from the tileset in order to show the prompt to select one class for conversion to I3S.

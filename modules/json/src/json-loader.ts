@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';

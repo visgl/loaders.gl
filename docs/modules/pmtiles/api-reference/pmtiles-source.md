@@ -1,4 +1,4 @@
-# PMTilesSource
+# PMTilesSource 🆕
 
 The `PMTilesSource` reads individual tiles from a PMTiles archive file.
 

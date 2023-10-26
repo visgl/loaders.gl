@@ -6,6 +6,41 @@
 > The early pre-release track was abandoned due to build incompatibility problems.
 > release info (#2491))
 
+### v4.0.0-beta.8
+
+- Update gltf.md. (#2733)
+- fix(website): restore I3S examples (#2734)
+- fix: render test import (#2731)
+- chore(crypto): Restore crypto tests (#2730)
+- chore: Clean up license text (#2729)
+- chore(i3s): Export a function customizeColors from i3s lib utils (#2719)
+- added test for conversion 64-bit attributes to strings (#2728)
+
+### v4.0.0-beta.7
+
+- fix(i3s): Remove luma.gl dependency (#2727)
+- feat(flatgeobuf): Upgrade to latest flatgeobuf (#2684)
+- feat(lerc): Break out LERCLoader into its own module (size and bundling issues) (#2724)
+- chore(polyfills): Bump deps (#2723)
+- feat(polyfills): Add installFilePolyfills on Node.js (#2722)
+- fix(i3s): I3SContentLoader regression (#2713)
+
+### v4.0.0-beta.6
+
+- fix(polyfills): Add CJS export for node.js (#2720)
+- feat(wms): Restore LERCLoader (#2715)
+- chore: Remove deprecated APIs and update docs (#2714)
+
+### v4.0.0-beta.5
+
+- Path fix (#2709)
+- fix(gltf, tile-converter): attributeStorageInfo, use class name (#2673)
+- chore: Add CI for Node 20 (#2712)
+- fix(tile-converter): enable tests (#2708)
+- chore: Bump to Node 18 (#2711)
+- docs (whats-new): Update whats-new.mdx for 4.0 loaders.gl release (#2702)
+- feat(geopackage): Upgrade and modernize (#2704)
+
 ### v4.0.0-beta.4
 
 - fix(tile-converter): cli tools (#2707)
@@ -13,7 +48,7 @@
 - chore(polyfills): Consolidate node code (#2701)
 - fix(i3s): handle search params in I3SLoader (#2692)
 
-### v4.0.0-beta.3
+### v4.0.0-beta.6
 
 - feat(tile-converter): --analyze-only option (#2694)
 - fix(tiles): cartographicToCartesan syntax (#2690)

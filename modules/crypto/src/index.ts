@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -12,8 +13,7 @@ export {MD5Hash} from './lib/md5-hash';
 export {SHA256Hash} from './lib/sha256-hash';
 
 export {CryptoHash} from './lib/crypto-hash';
-// TODO - moved to polyfills
-// export {NodeHash} from './lib/node-hash';
+export {NodeHash} from './lib/node-hash';
 
 /**
  * Small, fast worker for CRC32, CRC32c and MD5 Hashes

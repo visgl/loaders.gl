@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export {ArrowLikeField as Field} from './arrow-like-field';
 export {ArrowLikeSchema as Schema} from './arrow-like-schema';

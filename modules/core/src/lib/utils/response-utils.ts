@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {isResponse} from '../../javascript-utils/is-type';
 import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
 

@@ -14,7 +14,14 @@ const getAliases = async (frameworkName, frameworkRootDir) => {
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  resolve: {alias: await getAliases('@loaders.gl', `${__dirname}/../../..`)},
+  resolve: {
+    alias: {
+      ...await getAliases('@loaders.gl', `${__dirname}/../../..`),
+      process: '@loaders.gl/polyfills',
+      path: '@loaders.gl/polyfills',
+      fs: '@loaders.gl/polyfills'
+    }
+  },
   server: {open: true}
 }))
 

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 export type MakeStreamOptions = {
   /** Stream allocates an arrayBuffer. Enables use of a default reader. */
   autoAllocateChunkSize?: number;
@@ -29,6 +32,7 @@ export function makeStream<ArrayBuffer>(
       // Create a byte stream (enables `Response(stream).arrayBuffer()`)
       // Only supported on Chrome
       // See: https://developer.mozilla.org/en-US/docs/Web/API/ReadableByteStreamController
+      // @ts-ignore
       type: 'bytes',
 
       async pull(controller) {
