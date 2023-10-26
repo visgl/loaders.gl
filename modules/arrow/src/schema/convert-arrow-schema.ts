@@ -44,7 +44,8 @@ import {
   Struct,
   TimeUnit,
   TimeMicrosecond,
-  TimeNanosecond
+  TimeNanosecond,
+  List
 } from 'apache-arrow';
 
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
@@ -208,6 +209,13 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
       return 'interval-daytime';
     case IntervalYearMonth:
       return 'interval-yearmonth';
+    case List:
+      const listType = arrowType as List;
+      const listField = listType.valueField;
+      return {
+        type: 'list',
+        children: [serializeArrowField(listField)]
+      };
     case FixedSizeList:
       return {
         type: 'fixed-size-list',
@@ -226,6 +234,9 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
 export function deserializeArrowType(dataType: DataType): ArrowDataType {
   if (typeof dataType === 'object') {
     switch (dataType.type) {
+      case 'list':
+        const field = deserializeArrowField(dataType.children[0]);
+        return new List(field);
       case 'fixed-size-list':
         const child = deserializeArrowField(dataType.children[0]);
         return new FixedSizeList(dataType.listSize, child);
