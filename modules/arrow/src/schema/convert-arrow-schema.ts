@@ -9,7 +9,7 @@ import {
   Null,
   Binary,
   Bool,
-  // Int,
+  Int,
   Int8,
   Int16,
   Int32,
@@ -18,10 +18,11 @@ import {
   Uint16,
   Uint32,
   Uint64,
-  // Float,
+  Float,
   Float16,
   Float32,
   Float64,
+  Precision,
   Utf8,
   // Date,
   DateDay,
@@ -71,7 +72,7 @@ export function deserializeArrowMetadata(metadata?: SchemaMetadata): Map<string,
 export function serializeArrowField(field: ArrowField): Field {
   return {
     name: field.name,
-    type: field.type.toString(),
+    type: serializeArrowType(field.type),
     nullable: field.nullable,
     metadata: serializeArrowMetadata(field.metadata)
   };
@@ -97,7 +98,8 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
       return 'binary';
     case Bool:
       return 'bool';
-    // case Int: return 'int';
+    case Int:
+      return  `${(arrowType as Int).isSigned ? 'u' : ''}int${(arrowType as Int).bitWidth}`;
     case Int8:
       return 'int8';
     case Int16:
@@ -114,7 +116,19 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
       return 'uint32';
     case Uint64:
       return 'uint64';
-    // case Float: return 'float';
+    case Float:
+      const precision = (arrowType as Float).precision;
+      // return `float(precision + 1) * 16`;
+      switch (precision) {
+        case Precision.HALF:
+          return 'float16';
+        case Precision.SINGLE:
+          return 'float32';
+        case Precision.DOUBLE:
+          return 'float64';
+        default:
+          return 'float16';
+      }
     case Float16:
       return 'float16';
     case Float32:
@@ -183,7 +197,6 @@ export function deserializeArrowType(dataType: DataType): ArrowDataType {
       return new Binary();
     case 'bool':
       return new Bool();
-    // case 'int': return new Int();
     case 'int8':
       return new Int8();
     case 'int16':
@@ -200,7 +213,6 @@ export function deserializeArrowType(dataType: DataType): ArrowDataType {
       return new Uint32();
     case 'uint64':
       return new Uint64();
-    // case 'float': return new Float();
     case 'float16':
       return new Float16();
     case 'float32':
