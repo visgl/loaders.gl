@@ -13,6 +13,7 @@ export type GeoArrowEncoding =
   | 'geoarrow.wkb'
   | 'geoarrow.wkt';
 
+/** Array containing all encodings */
 const GEOARROW_ENCODINGS = [
   'geoarrow.multipolygon',
   'geoarrow.polygon',
@@ -24,11 +25,11 @@ const GEOARROW_ENCODINGS = [
   'geoarrow.wkt'
 ];
 
-const GEOARROW_METADATA_COLUMN_ENCODING = 'ARROW:extension:name';
-const GEOARROW_METADATA_COLUMN_METADATA = 'ARROW:extension:metadata';
+const GEOARROW_COLUMN_METADATA_ENCODING = 'ARROW:extension:name';
+const GEOARROW_COLUMN_METADATA_METADATA = 'ARROW:extension:metadata';
 
-/** Column metadata extracted from Apache Arrow metadata */
-type GeoArrowMetadata = {
+/** Geospatial metadata for one column, extracted from Apache Arrow metadata */
+export type GeoArrowMetadata = {
   encoding?: GeoArrowEncoding;
   crs?: Record<string, unknown>;
   egdes?: 'spherical';
@@ -53,7 +54,7 @@ export function getGeometryMetadataForField(field: Field): GeoArrowMetadata | nu
   let metadata: GeoArrowMetadata | null = null;
 
   // Check for GeoArrow metadata
-  const columnMetadata = field.metadata?.[GEOARROW_METADATA_COLUMN_METADATA];
+  const columnMetadata = field.metadata?.[GEOARROW_COLUMN_METADATA_METADATA];
   if (columnMetadata) {
     try {
       metadata = JSON.parse(columnMetadata);
@@ -63,7 +64,7 @@ export function getGeometryMetadataForField(field: Field): GeoArrowMetadata | nu
   }
 
   // Check for GeoArrow column encoding
-  let geoEncoding = field.metadata?.[GEOARROW_METADATA_COLUMN_ENCODING];
+  let geoEncoding = field.metadata?.[GEOARROW_COLUMN_METADATA_ENCODING];
   if (geoEncoding) {
     geoEncoding = geoEncoding.toLowerCase();
     if (!GEOARROW_ENCODINGS.includes(geoEncoding)) {

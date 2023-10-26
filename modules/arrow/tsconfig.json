@@ -9,6 +9,7 @@
   },
   "references": [
     {"path": "../core"},
+    {"path": "../gis"},
     {"path": "../loader-utils"},
     {"path": "../schema"}
   ]

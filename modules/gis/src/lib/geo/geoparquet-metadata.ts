@@ -4,7 +4,8 @@ import {Schema, Field} from '@loaders.gl/schema';
 
 /* eslint-disable camelcase */
 
-type GeometryType =
+/** A GeoParquet metadata geometry type */
+type GeoParquetGeometryType =
   | 'Point'
   | 'LineString'
   | 'Polygon'
@@ -24,7 +25,7 @@ type GeometryType =
  * A geoarrow / geoparquet geo metadata object
  * (stored in stringified form in the top level metadata 'geo' key)
  * @see https://github.com/opengeospatial/geoparquet/blob/main/format-specs/geoparquet.md
- * @see https://github.com/geoarrow/geoarrow/blob/main/metadata.md
+ * @see https://github.com/geoarrow/geoarrow
  * */
 export type GeoMetadata = {
   version?: string;
@@ -36,7 +37,7 @@ export type GeoMetadata = {
 /** A geoarrow / geoparquet geo metadata for one geometry column  */
 export type GeoColumnMetadata = {
   encoding: 'wkb' | 'wkt';
-  geometry_types: GeometryType[];
+  geometry_types: GeoParquetGeometryType[];
   crs?: object | null;
   orientation?: 'counterclockwise';
   bbox?: [number, number, number, number] | [number, number, number, number, number, number];

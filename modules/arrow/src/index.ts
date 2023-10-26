@@ -1,4 +1,5 @@
-// loaders.gl, MIT
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowLoaderOptions} from './arrow-loader';
@@ -12,12 +13,25 @@ import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
 
 import {ArrowTableBatchAggregator} from './lib/arrow-table-batch';
 
-// SCHEMA
+// Make the ArrowBatch type available
+TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
+
+// TYPES
 
 export {getArrowType} from './schema/arrow-type-utils';
 
-// Make the ArrowBatch type available
-TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
+// SCHEMA
+
+export {
+  serializeArrowSchema,
+  deserializeArrowSchema,
+  serializeArrowMetadata,
+  deserializeArrowMetadata,
+  serializeArrowField,
+  deserializeArrowField,
+  serializeArrowType,
+  deserializeArrowType
+} from './schema/convert-arrow-schema';
 
 // Types
 export type {ArrowTable, ArrowTableBatch} from './lib/arrow-table';
@@ -44,3 +58,13 @@ export const ArrowLoader: LoaderWithParser<
   parseSync,
   parseInBatches: parseArrowInBatches
 };
+
+// Arrow Utils
+export type {GeoArrowEncoding} from '@loaders.gl/gis';
+// getGeometryColumnsFromArrowTable,
+// getGeoArrowEncoding
+
+export type {BinaryDataFromGeoArrow} from './geoarrow/convert-geoarrow-to-binary-geometry';
+export {getBinaryGeometriesFromArrow} from './geoarrow/convert-geoarrow-to-binary-geometry';
+
+export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';
