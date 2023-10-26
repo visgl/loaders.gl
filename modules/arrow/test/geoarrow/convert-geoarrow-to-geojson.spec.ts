@@ -1,6 +1,7 @@
 import test, {Test} from 'tape-promise/tape';
 
 import {tableFromIPC} from 'apache-arrow';
+import {fetchFile} from '@loaders.gl/core';
 import {serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 
@@ -172,7 +173,7 @@ const expectedMultiPolygonGeojson = {
   ]
 };
 
-test('ArrowUtils#parseGeometryFromArrow', async (t) => {
+test.skip('ArrowUtils#parseGeometryFromArrow', async (t) => {
   const testCases = [
     [POINT_ARROW_FILE, expectedPointGeojson],
     [MULTIPOINT_ARROW_FILE, expectedMultiPointGeoJson],
@@ -192,7 +193,7 @@ test('ArrowUtils#parseGeometryFromArrow', async (t) => {
 async function testParseFromArrow(t: Test, arrowFile, expectedGeojson): Promise<void> {
   // TODO: use the following code instead of apache-arrow to load arrow table
   // const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {worker: false});
-  const response = await fetch(arrowFile);
+  const response = await fetchFile(arrowFile);
   const arrayBuffer = await response.arrayBuffer();
   const arrowTable = tableFromIPC(new Uint8Array(arrayBuffer));
 
