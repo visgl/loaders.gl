@@ -2,12 +2,14 @@
 // import {ColumnarTableBatch} from '@loaders.gl/schema';
 import {BlobFile} from '@loaders.gl/loader-utils';
 import {GeoJSONTable, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {WKTLoader, WKBLoader} from '@loaders.gl/wkt';
+
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
 import {installBufferPolyfill} from '../../buffer-polyfill';
-import {convertWKBTableToGeoJSON} from '../geo/decode-geo-column';
 
 export async function parseParquet(
   arrayBuffer: ArrayBuffer,
@@ -45,7 +47,7 @@ export async function parseParquet(
 
     case 'geojson-table':
       try {
-        return convertWKBTableToGeoJSON(objectRowTable, schema);
+        return convertWKBTableToGeoJSON(objectRowTable, schema, [WKTLoader, WKBLoader]);
       } catch (error) {
         return objectRowTable;
       }

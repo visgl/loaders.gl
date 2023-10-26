@@ -23,6 +23,7 @@ import {
 } from 'apache-arrow';
 // import {AbstractVector} from 'apache-arrow/vector';
 
+/** Return an Apache Arrow Type instance that corresponds to the type of the elements in the supplied Typed Array */
 export function getArrowType(array: TypedArray): DataType {
   switch (array.constructor) {
     case Int8Array:
