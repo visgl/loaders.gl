@@ -173,7 +173,7 @@ const expectedMultiPolygonGeojson = {
   ]
 };
 
-test.skip('ArrowUtils#parseGeometryFromArrow', async (t) => {
+test('ArrowUtils#parseGeometryFromArrow', (t) => {
   const testCases = [
     [POINT_ARROW_FILE, expectedPointGeojson],
     [MULTIPOINT_ARROW_FILE, expectedMultiPointGeoJson],
@@ -183,8 +183,8 @@ test.skip('ArrowUtils#parseGeometryFromArrow', async (t) => {
     [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson]
   ];
 
-  testCases.forEach(async (testCase) => {
-    await testParseFromArrow(t, testCase[0], testCase[1]);
+  testCases.forEach((testCase) => {
+    testParseFromArrow(t, testCase[0], testCase[1]);
   });
 
   t.end();
@@ -243,4 +243,6 @@ async function testParseFromArrow(t: Test, arrowFile, expectedGeojson): Promise<
     expectedGeojson.features[0].geometry,
     'firstFeature.geometry is equal to expectedGeojson.features[0].geometry'
   );
+
+  return Promise.resolve();
 }

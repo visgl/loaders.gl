@@ -71,7 +71,7 @@ export function deserializeArrowMetadata(metadata?: SchemaMetadata): Map<string,
 export function serializeArrowField(field: ArrowField): Field {
   return {
     name: field.name,
-    type: serializeArrowType(field.type),
+    type: field.type.toString(),
     nullable: field.nullable,
     metadata: serializeArrowMetadata(field.metadata)
   };
