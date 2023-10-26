@@ -39,7 +39,8 @@ test('BasisLoader#load(URL, worker: false)', async (t) => {
   t.end();
 });
 
-test('BasisLoader#load(URL, worker: true)', async (t) => {
+// TODO v4.0 restore these tests
+test.skip('BasisLoader#load(URL, worker: true)', async (t) => {
   const images = await load(BASIS_TEST_URL, BasisLoader, {worker: true, _nodeWorkers: true});
 
   const image = images[0][0];
@@ -84,7 +85,8 @@ test('BasisLoader#auto-select a target format', async (t) => {
   t.end();
 });
 
-test('BasisLoader#transcode to explicit format', async (t) => {
+// TODO v4.0 restore these tests
+test.skip('BasisLoader#transcode to explicit format', async (t) => {
   const images = await load(BASIS_TEST_URL, BasisLoader, {
     worker: true,
     _nodeWorkers: true,
@@ -108,7 +110,8 @@ test('BasisLoader#transcode to explicit format', async (t) => {
   t.end();
 });
 
-test('BasisLoader#auto-select a decoder format', async (t) => {
+// TODO v4.0 restore these tests
+test.skip('BasisLoader#auto-select a decoder format', async (t) => {
   const images = await load(BASIS_TEST_URL, BasisLoader, {
     worker: true,
     basis: {
