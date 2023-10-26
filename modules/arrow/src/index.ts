@@ -44,3 +44,13 @@ export const ArrowLoader: LoaderWithParser<
   parseSync,
   parseInBatches: parseArrowInBatches
 };
+
+// Arrow Utils
+export {
+  GEOARROW_ENCODINGS,
+  parseGeometryFromArrow,
+  getGeometryColumnsFromArrowTable,
+  getBinaryGeometriesFromArrow,
+  BinaryDataFromGeoArrow,
+  getGeoArrowEncoding
+} from './schema/geoarrow-utils';
