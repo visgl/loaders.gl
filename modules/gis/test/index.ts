@@ -1,4 +1,4 @@
-import './binary-to-geojson.spec';
-import './geojson-to-flat-geojson.spec';
-import './geojson-to-binary.spec';
-import './transform.spec';
+import './binary-features/binary-to-geojson.spec';
+import './binary-features/geojson-to-flat-geojson.spec';
+import './binary-features/geojson-to-binary.spec';
+import './binary-features/transform.spec';

@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 import type {ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
 import type {Table as ApacheArrowTable} from 'apache-arrow';
-import type {ArrowTable} from './arrow-table';
+import type {ArrowTable} from '../lib/arrow-table';
 
 /**
  * Wrap an apache arrow table in a loaders.gl table wrapper.

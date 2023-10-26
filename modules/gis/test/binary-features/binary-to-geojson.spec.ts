@@ -4,10 +4,11 @@ import type {BinaryFeatureCollection, FeatureCollection} from '@loaders.gl/schem
 import {fetchFile} from '@loaders.gl/core';
 import {binaryToGeojson, binaryToGeometry} from '@loaders.gl/gis';
 
-import {GEOMETRY_TEST_CASES} from '@loaders.gl/gis/test/data/geometry-test-cases';
-import {EMPTY_BINARY_DATA} from '@loaders.gl/gis/test/data/empty_binary';
+import {GEOMETRY_TEST_CASES} from '@loaders.gl/gis/test/data/binary-features/geometry-test-cases';
+import {EMPTY_BINARY_DATA} from '@loaders.gl/gis/test/data/binary-features/empty_binary';
 
-const FEATURE_COLLECTION_TEST_CASES = '@loaders.gl/gis/test/data/featurecollection.json';
+const FEATURE_COLLECTION_TEST_CASES =
+  '@loaders.gl/gis/test/data/binary-features/featurecollection.json';
 
 type FeatureCollectionTestCase = {
   geoJSON: FeatureCollection;

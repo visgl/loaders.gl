@@ -86,13 +86,5 @@ export {
   convertParquetSchema as convertParquetToArrowSchema
 } from './lib/arrow/convert-schema-from-parquet';
 
-// Geo Metadata
-// import {default as GEOPARQUET_METADATA_SCHEMA} from './lib/geo/geoparquet-metadata-schema.json';
-// export {GEOPARQUET_METADATA_SCHEMA};
-export {GEOPARQUET_METADATA_JSON_SCHEMA} from './lib/geo/geoparquet-metadata-schema';
-
-export type {GeoMetadata} from './lib/geo/decode-geo-metadata';
-export {getGeoMetadata, setGeoMetadata, unpackGeoMetadata} from './lib/geo/decode-geo-metadata';
-
 // Experimental
 export {BufferPolyfill, installBufferPolyfill} from './buffer-polyfill';

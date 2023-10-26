@@ -41,6 +41,7 @@ import {
   Struct
 } from 'apache-arrow';
 
+/** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
 export function serializeArrowSchema(arrowSchema: ArrowSchema): Schema {
   return {
     fields: arrowSchema.fields.map((arrowField) => serializeArrowField(arrowField)),
@@ -48,6 +49,7 @@ export function serializeArrowSchema(arrowSchema: ArrowSchema): Schema {
   };
 }
 
+/** Convert a serialized Schema (plain data) to an Apache Arrow Schema (class instance) */
 export function deserializeArrowSchema(schema: Schema): ArrowSchema {
   return new ArrowSchema(
     schema.fields.map((field) => deserializeArrowField(field)),
@@ -55,14 +57,17 @@ export function deserializeArrowSchema(schema: Schema): ArrowSchema {
   );
 }
 
+/** Convert Apache Arrow Schema metadata (Map<string, string>) to serialized metadata (Record<string, string> */
 export function serializeArrowMetadata(arrowMetadata: Map<string, string>): SchemaMetadata {
   return Object.fromEntries(arrowMetadata);
 }
 
+/** Convert serialized metadata (Record<string, string> to Apache Arrow Schema metadata (Map<string, string>) to */
 export function deserializeArrowMetadata(metadata?: SchemaMetadata): Map<string, string> {
   return metadata ? new Map(Object.entries(metadata)) : new Map<string, string>();
 }
 
+/** Convert Apache Arrow Field (class instance) to serialized Field (plain data) */
 export function serializeArrowField(field: ArrowField): Field {
   return {
     name: field.name,
@@ -72,6 +77,7 @@ export function serializeArrowField(field: ArrowField): Field {
   };
 }
 
+/** Convert a serialized Field (plain data) to an Apache Arrow Field (class instance)*/
 export function deserializeArrowField(field: Field): ArrowField {
   return new ArrowField(
     field.name,

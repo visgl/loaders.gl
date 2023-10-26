@@ -3,7 +3,10 @@ import type {ArrowTable} from './arrow-table';
 import {convertTable} from '@loaders.gl/schema';
 import {tableFromIPC} from 'apache-arrow';
 import type {ArrowLoaderOptions} from '../arrow-loader';
-import {convertApacheArrowToArrowTable, convertArrowToColumnarTable} from './convert-table';
+import {
+  convertApacheArrowToArrowTable,
+  convertArrowToColumnarTable
+} from '../tables/convert-arrow-to-table';
 
 // Parses arrow to a columnar table
 export default function parseArrowSync(
