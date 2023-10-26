@@ -139,6 +139,9 @@ export default class I3SConverter {
     meshTopologyTypes: new Set(),
     metadataClasses: new Set()
   };
+  tileCountTotal: number = 0;
+  tileCountCurrentlyConverting: number = 0;
+  numberOfDigitsInPercentage: number = 0;
 
   constructor() {
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE, this);
@@ -301,6 +304,9 @@ export default class I3SConverter {
     );
     const {meshTopologyTypes, metadataClasses} = this.preprocessData;
 
+    this.numberOfDigitsInPercentage =
+      this.tileCountTotal > 100 ? Math.ceil(Math.log10(this.tileCountTotal)) - 2 : 0;
+
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
     console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
@@ -344,7 +350,8 @@ export default class I3SConverter {
       return null;
     }
     if (sourceTile.id) {
-      console.log(`[analyze]: ${sourceTile.id}`); // eslint-disable-line
+      this.tileCountTotal++;
+      console.log(`[analyze]:[${this.tileCountTotal}]: ${sourceTile.id}`); // eslint-disable-line
     }
 
     let tileContent: Tiles3DTileContent | null = null;
@@ -596,7 +603,14 @@ export default class I3SConverter {
       return traversalProps;
     }
     if (sourceTile.id) {
-      console.log(`[convert]: ${sourceTile.id}`); // eslint-disable-line
+      // Print the tile number that is currently being converted.
+      this.tileCountCurrentlyConverting++;
+      let percentString = '';
+      if (this.tileCountTotal) {
+        const percent = (this.tileCountCurrentlyConverting / this.tileCountTotal) * 100;
+        percentString = percent.toFixed(this.numberOfDigitsInPercentage);
+      }
+      console.log(`[convert]:[${percentString}%]: ${sourceTile.id}`); // eslint-disable-line
     }
 
     const {parentNodes, transform} = traversalProps;
