@@ -35,14 +35,18 @@ export function convertWKBTableToGeoJSON(
   return {shape: 'geojson-table', schema, type: 'FeatureCollection', features};
 }
 
-function parseGeometry(geometry: unknown, columnMetadata: GeoColumnMetadata, loaders: LoaderWithParser[]): Geometry | null {
+function parseGeometry(
+  geometry: unknown,
+  columnMetadata: GeoColumnMetadata,
+  loaders: LoaderWithParser[]
+): Geometry | null {
   switch (columnMetadata.encoding) {
     case 'wkt':
-      const wktLoader = loaders.find(loader => loader.id === 'wkt');
+      const wktLoader = loaders.find((loader) => loader.id === 'wkt');
       return wktLoader?.parseTextSync?.(geometry as string) || null;
     case 'wkb':
     default:
-      const wkbLoader = loaders.find(loader => loader.id === 'wktb');
+      const wkbLoader = loaders.find((loader) => loader.id === 'wktb');
       const arrayBuffer = ArrayBuffer.isView(geometry)
         ? geometry.buffer.slice(geometry.byteOffset, geometry.byteOffset + geometry.byteLength)
         : (geometry as ArrayBuffer);
