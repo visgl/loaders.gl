@@ -18,7 +18,8 @@ const FEATURES_3D = '@loaders.gl/gis/test/data/binary-features/3d_features.json'
 const FEATURES_MIXED = '@loaders.gl/gis/test/data/binary-features/mixed_features.json';
 
 // Example GeoJSON with no properties
-const GEOJSON_NO_PROPERTIES = '@loaders.gl/gis/test/data/binary-features/geojson_no_properties.json';
+const GEOJSON_NO_PROPERTIES =
+  '@loaders.gl/gis/test/data/binary-features/geojson_no_properties.json';
 
 test('gis#geojson-to-binary geometry info 2D features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_2D);
