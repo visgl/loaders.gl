@@ -14,7 +14,6 @@ export function convertWKBTableToGeoJSON(
   schema: Schema,
   loaders: LoaderWithParser[]
 ): GeoJSONTable {
-  debugger
   const geoMetadata = getGeoMetadata(schema);
   const primaryColumn = geoMetadata?.primary_column;
   if (!primaryColumn) {
