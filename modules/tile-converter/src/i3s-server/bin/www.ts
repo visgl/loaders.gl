@@ -5,7 +5,11 @@ import https from 'https';
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import {fileURLToPath} from 'url';
 import {formErrorHandler, formListeningHandler, normalizePort} from '../utils/server-utils';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /** Get port from environment and store in Express. */
 const httpPort = normalizePort(process.env.PORT || '80');
