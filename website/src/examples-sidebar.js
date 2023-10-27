@@ -20,14 +20,14 @@
       label: 'Geospatial Loaders',
       items: [
         'geoparquet',
-        // 'geopackage',
+        // 'geopackage', sql.js bundling issue...
         'flatgeobuf',
         'geojson'
       ],
     },
     {
       type: 'category',
-      label: 'Tile Loaders and Services',
+      label: 'Geospatial Tile Loaders',
       items: [
         'pmtiles',
         'wms'
@@ -38,7 +38,7 @@
       label: '3D Tile Loaders',
       items: [
         'i3s',
-        'i3s-arcgis',
+        // 'i3s-arcgis',
         '3d-tiles'
       ]
     },

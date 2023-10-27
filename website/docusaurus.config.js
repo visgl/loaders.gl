@@ -204,7 +204,7 @@ const config = {
           {
             type: 'html',
             position: 'right',
-            value: '<a href="https://openvisualization.org" target="_blank" style="content: \'\'; height: 48px; width: 72px; background-image: url(\'/images/openjs-foundation.svg\'); background-repeat: no-repeat;  background-size: 48px 72px; display: flex">'
+            value: '<a href="https://openvisualization.org" target="_blank" style="content: \'\'; height: 80px; width: 100px; margin-top: -30px; background-image: url(\'/images/openjs-foundation.svg\'); background-repeat: no-repeat;  background-size: 80px 110px; display: flex">'
           },
           {
             href: 'https://github.com/visgl/loaders.gl',
