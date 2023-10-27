@@ -454,7 +454,9 @@ export default class I3SConverter {
     this.layers0!.fields = this.attributeMetadataInfo.fields;
     this.layers0!.popupInfo = this.attributeMetadataInfo.popupInfo;
 
-    this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+    if (this.attributeMetadataInfo.attributeStorageInfo.length) {
+      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+    }
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
     // @ts-ignore
