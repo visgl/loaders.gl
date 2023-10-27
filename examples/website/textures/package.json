@@ -9,9 +9,9 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/core": "4.0.0-beta.6",
-    "@loaders.gl/images": "4.0.0-beta.6",
-    "@loaders.gl/textures": "4.0.0-beta.6",
+    "@loaders.gl/core": "4.0.0-beta.8",
+    "@loaders.gl/images": "4.0.0-beta.8",
+    "@loaders.gl/textures": "4.0.0-beta.8",
     "@luma.gl/core": "^8.5.21",
     "prop-types": "^15.7.2",
     "react": "^16.3.0",

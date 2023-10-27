@@ -4,23 +4,6 @@ import {Schema, Field} from '@loaders.gl/schema';
 
 /* eslint-disable camelcase */
 
-/** A GeoParquet metadata geometry type */
-type GeoParquetGeometryType =
-  | 'Point'
-  | 'LineString'
-  | 'Polygon'
-  | 'MultiPoint'
-  | 'MultiLineString'
-  | 'MultiPolygon'
-  | 'GeometryCollection'
-  | 'Point Z'
-  | 'LineString Z'
-  | 'Polygon Z'
-  | 'MultiPoint Z'
-  | 'MultiLineString Z'
-  | 'MultiPolygon Z'
-  | 'GeometryCollection Z';
-
 /**
  * A geoarrow / geoparquet geo metadata object
  * (stored in stringified form in the top level metadata 'geo' key)
@@ -46,43 +29,40 @@ export type GeoColumnMetadata = {
   [key: string]: unknown;
 };
 
-/** Parse a key with stringified arrow metadata */
-export function parseJSONStringMetadata(
-  schema: Schema,
-  metadataKey: string
-): Record<string, unknown> | null {
-  const stringifiedMetadata = schema.metadata[metadataKey];
-  if (!stringifiedMetadata) {
-    return null;
-  }
-
-  try {
-    const metadata = JSON.parse(stringifiedMetadata);
-    if (!metadata || typeof metadata !== 'object') {
-      return null;
-    }
-    return metadata;
-  } catch {
-    return null;
-  }
-}
-
-export function unpackJSONStringMetadata(schema: Schema, metadataKey: string): void {
-  const json = parseJSONStringMetadata(schema, metadataKey);
-  for (const [key, value] of Object.entries(json || {})) {
-    schema.metadata[`${metadataKey}.${key}`] =
-      typeof value === 'string' ? value : JSON.stringify(value);
-  }
-}
+/** A GeoParquet metadata geometry type */
+export type GeoParquetGeometryType =
+  | 'Point'
+  | 'LineString'
+  | 'Polygon'
+  | 'MultiPoint'
+  | 'MultiLineString'
+  | 'MultiPolygon'
+  | 'GeometryCollection'
+  | 'Point Z'
+  | 'LineString Z'
+  | 'Polygon Z'
+  | 'MultiPoint Z'
+  | 'MultiLineString Z'
+  | 'MultiPolygon Z'
+  | 'GeometryCollection Z';
 
 // GEO METADATA
 
 /**
  * Reads the GeoMetadata object from the metadata
- * @note geoarrow / parquet schema is stringified into a single key-value pair in the parquet metadata */
+ * @note geoarrow / parquet schema is stringified into a single key-value pair in the parquet metadata 
+ */
 export function getGeoMetadata(schema: Schema): GeoMetadata | null {
-  const geoMetadata = parseJSONStringMetadata(schema, 'geo') as GeoMetadata;
-  return geoMetadata;
+  const geoMetadata = parseJSONStringMetadata(schema, 'geo');
+  if (!geoMetadata) {
+    return null;
+  }
+  for (const column of Object.values(geoMetadata.columns || {})) {
+    if (column.encoding) {
+      column.encoding = column.encoding.toLowerCase();
+    }
+  }
+  return geoMetadata as GeoMetadata;
 }
 
 /**
@@ -133,7 +113,7 @@ export function unpackGeoMetadata(schema: Schema): void {
 function unpackGeoFieldMetadata(field: Field, columnMetadata): void {
   for (const [key, value] of Object.entries(columnMetadata || {})) {
     switch (key) {
-      case 'geometry_type':
+      case 'geometry_types':
         setFieldMetadata(field, `geo.${key}`, (value as string[]).join(','));
         break;
       case 'bbox':
@@ -175,4 +155,35 @@ function unpackGeoFieldMetadata(field: Field, columnMetadata): void {
 function setFieldMetadata(field: Field, key: string, value: string): void {
   field.metadata = field.metadata || {};
   field.metadata[key] = value;
+}
+
+// HELPERS
+
+/** Parse a key with stringified arrow metadata */
+export function parseJSONStringMetadata(
+  schema: Schema,
+  metadataKey: string
+): Record<string, unknown> | null {
+  const stringifiedMetadata = schema.metadata[metadataKey];
+  if (!stringifiedMetadata) {
+    return null;
+  }
+
+  try {
+    const metadata = JSON.parse(stringifiedMetadata);
+    if (!metadata || typeof metadata !== 'object') {
+      return null;
+    }
+    return metadata;
+  } catch {
+    return null;
+  }
+}
+
+export function unpackJSONStringMetadata(schema: Schema, metadataKey: string): void {
+  const json = parseJSONStringMetadata(schema, metadataKey);
+  for (const [key, value] of Object.entries(json || {})) {
+    schema.metadata[`${metadataKey}.${key}`] =
+      typeof value === 'string' ? value : JSON.stringify(value);
+  }
 }

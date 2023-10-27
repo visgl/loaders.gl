@@ -14,12 +14,12 @@ import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load, /* registerLoaders */} from '@loaders.gl/core';
 import {ParquetLoader} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
+// import {GeoPackageLoader} from '@loaders.gl/geopackage';
 
 const LOADERS: Loader[] = [
   ParquetLoader, 
   FlatGeobufLoader,
-  GeoPackageLoader
+  // GeoPackageLoader
 ];
 const LOADER_OPTIONS = {
   worker: false,
@@ -77,6 +77,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       examples = {[props.format]: EXAMPLES[props.format], ...EXAMPLES};
     }
 
+    debugger
     const selectedLoader = props.format || INITIAL_LOADER_NAME;
 
     let selectedExample = INITIAL_EXAMPLE_NAME;
@@ -93,8 +94,8 @@ export default class App extends PureComponent<AppProps, AppState> {
       viewState: INITIAL_VIEW_STATE,
 
       // EXAMPLE STATE
-      selectedExample: INITIAL_EXAMPLE_NAME,
-      selectedLoader: INITIAL_LOADER_NAME,
+      selectedExample,
+      selectedLoader,
       loadedTable: null
     };
 

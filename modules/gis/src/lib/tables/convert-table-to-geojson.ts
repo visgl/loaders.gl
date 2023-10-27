@@ -14,6 +14,7 @@ export function convertWKBTableToGeoJSON(
   schema: Schema,
   loaders: LoaderWithParser[]
 ): GeoJSONTable {
+  debugger
   const geoMetadata = getGeoMetadata(schema);
   const primaryColumn = geoMetadata?.primary_column;
   if (!primaryColumn) {
@@ -46,7 +47,7 @@ function parseGeometry(
       return wktLoader?.parseTextSync?.(geometry as string) || null;
     case 'wkb':
     default:
-      const wkbLoader = loaders.find((loader) => loader.id === 'wktb');
+      const wkbLoader = loaders.find((loader) => loader.id === 'wkb');
       const arrayBuffer = ArrayBuffer.isView(geometry)
         ? geometry.buffer.slice(geometry.byteOffset, geometry.byteOffset + geometry.byteLength)
         : (geometry as ArrayBuffer);

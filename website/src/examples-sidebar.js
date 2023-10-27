@@ -20,7 +20,7 @@
       label: 'Geospatial Loaders',
       items: [
         'geoparquet',
-        'geopackage',
+        // 'geopackage',
         'flatgeobuf',
         'geojson'
       ],
