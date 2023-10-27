@@ -9,7 +9,7 @@ import {
   Null,
   Binary,
   Bool,
-  // Int,
+  Int,
   Int8,
   Int16,
   Int32,
@@ -18,27 +18,34 @@ import {
   Uint16,
   Uint32,
   Uint64,
-  // Float,
+  Float,
   Float16,
   Float32,
   Float64,
+  Precision,
   Utf8,
-  // Date,
+  Date_,
+  DateUnit,
   DateDay,
   DateMillisecond,
-  // Time,
+  Time,
   TimeMillisecond,
   TimeSecond,
-  // Timestamp,
+  Timestamp,
   TimestampSecond,
   TimestampMillisecond,
   TimestampMicrosecond,
   TimestampNanosecond,
-  // Interval,
+  Interval,
+  IntervalUnit,
   IntervalDayTime,
   IntervalYearMonth,
   FixedSizeList,
-  Struct
+  Struct,
+  TimeUnit,
+  TimeMicrosecond,
+  TimeNanosecond,
+  List
 } from 'apache-arrow';
 
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
@@ -97,7 +104,9 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
       return 'binary';
     case Bool:
       return 'bool';
-    // case Int: return 'int';
+    case Int:
+      const intType = arrowType as Int;
+      return `${intType.isSigned ? 'u' : ''}int${intType.bitWidth}`;
     case Int8:
       return 'int8';
     case Int16:
@@ -114,7 +123,19 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
       return 'uint32';
     case Uint64:
       return 'uint64';
-    // case Float: return 'float';
+    case Float:
+      const precision = (arrowType as Float).precision;
+      // return `float(precision + 1) * 16`;
+      switch (precision) {
+        case Precision.HALF:
+          return 'float16';
+        case Precision.SINGLE:
+          return 'float32';
+        case Precision.DOUBLE:
+          return 'float64';
+        default:
+          return 'float16';
+      }
     case Float16:
       return 'float16';
     case Float32:
@@ -123,17 +144,49 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
       return 'float64';
     case Utf8:
       return 'utf8';
-    // case Date: return 'date';
+    case Date:
+      const dateUnit = (arrowType as Date_).unit;
+      return dateUnit === DateUnit.DAY ? 'date-day' : 'date-millisecond';
     case DateDay:
       return 'date-day';
     case DateMillisecond:
       return 'date-millisecond';
-    // case Time: return 'time';
+    case Time:
+      const timeUnit = (arrowType as Time).unit;
+      switch (timeUnit) {
+        case TimeUnit.SECOND:
+          return 'time-second';
+        case TimeUnit.MILLISECOND:
+          return 'time-millisecond';
+        case TimeUnit.MICROSECOND:
+          return 'time-microsecond';
+        case TimeUnit.NANOSECOND:
+          return 'time-nanosecond';
+        default:
+          return 'time-second';
+      }
     case TimeMillisecond:
       return 'time-millisecond';
     case TimeSecond:
       return 'time-second';
-    // case Timestamp: return 'timestamp';
+    case TimeMicrosecond:
+      return 'time-microsecond';
+    case TimeNanosecond:
+      return 'time-nanosecond';
+    case Timestamp:
+      const timeStampUnit = (arrowType as Timestamp).unit;
+      switch (timeStampUnit) {
+        case TimeUnit.SECOND:
+          return 'timestamp-second';
+        case TimeUnit.MILLISECOND:
+          return 'timestamp-millisecond';
+        case TimeUnit.MICROSECOND:
+          return 'timestamp-microsecond';
+        case TimeUnit.NANOSECOND:
+          return 'timestamp-nanosecond';
+        default:
+          return 'timestamp-second';
+      }
     case TimestampSecond:
       return 'timestamp-second';
     case TimestampMillisecond:
@@ -142,11 +195,27 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
       return 'timestamp-microsecond';
     case TimestampNanosecond:
       return 'timestamp-nanosecond';
-    // case Interval: return 'interval';
+    case Interval:
+      const intervalUnit = (arrowType as Interval).unit;
+      switch (intervalUnit) {
+        case IntervalUnit.DAY_TIME:
+          return 'interval-daytime';
+        case IntervalUnit.YEAR_MONTH:
+          return 'interval-yearmonth';
+        default:
+          return 'interval-daytime';
+      }
     case IntervalDayTime:
       return 'interval-daytime';
     case IntervalYearMonth:
       return 'interval-yearmonth';
+    case List:
+      const listType = arrowType as List;
+      const listField = listType.valueField;
+      return {
+        type: 'list',
+        children: [serializeArrowField(listField)]
+      };
     case FixedSizeList:
       return {
         type: 'fixed-size-list',
@@ -165,6 +234,9 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
 export function deserializeArrowType(dataType: DataType): ArrowDataType {
   if (typeof dataType === 'object') {
     switch (dataType.type) {
+      case 'list':
+        const field = deserializeArrowField(dataType.children[0]);
+        return new List(field);
       case 'fixed-size-list':
         const child = deserializeArrowField(dataType.children[0]);
         return new FixedSizeList(dataType.listSize, child);
@@ -183,7 +255,6 @@ export function deserializeArrowType(dataType: DataType): ArrowDataType {
       return new Binary();
     case 'bool':
       return new Bool();
-    // case 'int': return new Int();
     case 'int8':
       return new Int8();
     case 'int16':
@@ -200,7 +271,6 @@ export function deserializeArrowType(dataType: DataType): ArrowDataType {
       return new Uint32();
     case 'uint64':
       return new Uint64();
-    // case 'float': return new Float();
     case 'float16':
       return new Float16();
     case 'float32':
@@ -209,17 +279,18 @@ export function deserializeArrowType(dataType: DataType): ArrowDataType {
       return new Float64();
     case 'utf8':
       return new Utf8();
-    // case 'date': return new Date();
     case 'date-day':
       return new DateDay();
     case 'date-millisecond':
       return new DateMillisecond();
-    // case 'time': return new Time();
-    case 'time-millisecond':
-      return new TimeMillisecond();
     case 'time-second':
       return new TimeSecond();
-    // case 'timestamp': return new Timestamp();
+    case 'time-millisecond':
+      return new TimeMillisecond();
+    case 'time-microsecond':
+      return new TimeMicrosecond();
+    case 'time-nanosecond':
+      return new TimeNanosecond();
     case 'timestamp-second':
       return new TimestampSecond();
     case 'timestamp-millisecond':
@@ -228,7 +299,6 @@ export function deserializeArrowType(dataType: DataType): ArrowDataType {
       return new TimestampMicrosecond();
     case 'timestamp-nanosecond':
       return new TimestampNanosecond();
-    // case 'interval': return new Interval();
     case 'interval-daytime':
       return new IntervalDayTime();
     case 'interval-yearmonth':

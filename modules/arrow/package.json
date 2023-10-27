@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.0.0-beta.8",
+    "@loaders.gl/gis": "4.0.0-beta.8",
     "@loaders.gl/schema": "4.0.0-beta.8",
     "apache-arrow": "^13.0.0"
   },

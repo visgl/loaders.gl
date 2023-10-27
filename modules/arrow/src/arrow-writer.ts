@@ -1,4 +1,5 @@
 // import type {} from '@loaders.gl/loader-utils';
+
 import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
 import {ColumnarTable} from './lib/encode-arrow';
 import {encodeArrowSync} from './lib/encode-arrow';
