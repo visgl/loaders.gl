@@ -4,6 +4,9 @@
 import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+
 import DeckGL from '@deck.gl/react/typed';
 import {MapView} from '@deck.gl/core/typed';
 import {TileLayer} from '@deck.gl/geo-layers/typed';
@@ -40,20 +43,15 @@ const LINK_STYLE = {
 /* global window */
 const devicePixelRatio = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
 
-// export const rasterTileSource = new PMTilesSource({
-//   url:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles"
-//   // tileSize: [512,512]
-// });
-
-export const vectorTileSource = new PMTilesSource({
-  url: "https://r2-public.protomaps.com/protomaps-sample-datasets/nz-buildings-v3.pmtiles",
-  attributions: ["© Land Information New Zealand"],
-});
-
-const tileSource = vectorTileSource;
 
 export default function App({showBorder = false, onTilesLoad = null}) {
 
+  const example = EXAMPLES[INITIAL_CATEGORY_NAME][INITIAL_EXAMPLE_NAME];
+  const vectorTileSource = new PMTilesSource({
+    url: example.data,
+    attributions: example.attributions,
+  });    
+  const [tileSource, setTileSource] = useState<PMTilesSource>(vectorTileSource);
   const [metadata, setMetadata] = useState<PMTilesMetadata | null>(null);
 
   useEffect(() => {
@@ -68,7 +66,7 @@ export default function App({showBorder = false, onTilesLoad = null}) {
   }
 
   const initialViewState = INITIAL_VIEW_STATE;
-  initialViewState.zoom = metadata.centerZoom;
+  initialViewState.zoom = (metadata.maxZoom +  metadata.minZoom) / 2;
   if (metadata.center[0] !== 0 && metadata.center[1] !== 0) {
     initialViewState.longitude = metadata.center[0];
     initialViewState.latitude = metadata.center[1];
@@ -86,6 +84,7 @@ export default function App({showBorder = false, onTilesLoad = null}) {
     minZoom: metadata.minZoom,
     maxZoom: metadata.maxZoom,
     tileSize: 256,
+    // TOOD - why is this needed?
     zoomOffset: devicePixelRatio === 1 ? -1 : 0,
     renderSubLayers,
 
@@ -103,6 +102,8 @@ export default function App({showBorder = false, onTilesLoad = null}) {
         controller={true}
         getTooltip={getTooltip}
       >
+        <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
+
         <div style={COPYRIGHT_LICENSE_STYLE}>
           {metadata.attributions?.map(attribution => <div key={attribution}>{attribution}</div>)}
         </div>
@@ -116,12 +117,13 @@ function renderSubLayers(props) {
 
     switch (props.metadata.mimeType) {
       case 'application/vnd.mapbox-vector-tile':
-        // console.log(props.data)
         return new GeoJsonLayer({
           id: `${props.id}-geojson`,
           data: props.data,
           pickable: true,
           getFillColor: [0, 190, 80, 255],
+          lineWidthScale: 500,
+          lineWidthMinPixels: 0.5
         });
 
       default:
@@ -173,7 +175,6 @@ function renderControlPanel(props) {
 }
 
 function getTooltip(info) {
-  // console.log(info);
   if (info.tile) {
     const {x, y, z} = info.tile.index;
     return `tile: x: ${x}, y: ${y}, z: ${z}`;
