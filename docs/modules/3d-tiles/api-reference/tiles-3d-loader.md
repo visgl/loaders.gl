@@ -56,6 +56,7 @@ const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader, {'3d-tiles': {isTileset: true}});
 
 const tileset3d = new Tileset3D(tilesetJson, {
+  throttleRequests: false,
   onTileLoad: tile => console.log(tile)
 });
 
@@ -73,7 +74,7 @@ const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks
 
-// To fully load a tileset, repeatedly select tiles until the tileset is loaded
+// To fully load all tiles in a given view, repeatedly select tiles until the tileset is loaded
 while (!tileset3d.isLoaded()) {
   await tileset3d.selectTiles(viewport);
 }
