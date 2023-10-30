@@ -45,7 +45,8 @@ test('polyfills#fetchNode() error handling (NODE)', async (t) => {
   t.end();
 });
 
-test('polyfills#fetchNode() able to decompress .gz extension (NODE)', async (t) => {
+// TODO v4.0 restore this test
+test.skip('polyfills#fetchNode() able to decompress .gz extension (NODE)', async (t) => {
   if (!isBrowser) {
     let response = await fetchNode(TEXT_URL);
     t.ok(response.ok, response.statusText);

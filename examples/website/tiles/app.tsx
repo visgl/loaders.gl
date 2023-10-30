@@ -4,6 +4,11 @@
 import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
+<<<<<<< Updated upstream
+=======
+import {Map} from 'react-map-gl/maplibre';
+
+>>>>>>> Stashed changes
 import DeckGL from '@deck.gl/react/typed';
 import {MapView} from '@deck.gl/core/typed';
 import {TileLayer} from '@deck.gl/geo-layers/typed';

@@ -6,6 +6,7 @@ import {loadInBatches, fetchFile, isBrowser} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
+import {ObjectRowTableBatch} from '@loaders.gl/schema';
 
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
@@ -40,10 +41,10 @@ test.skip('loadInBatches#non-batched loader (mesh)', async (t) => {
 });
 
 test('loadInBatches#non-batched loader (gis)', async (t) => {
-  const batches = await loadInBatches(KML_URL, KMLLoader, {kml: {type: 'object-row-table'}});
+  const batches = await loadInBatches(KML_URL, KMLLoader, {kml: {shape: 'object-row-table'}}) as AsyncIterableIterator<ObjectRowTableBatch>;
   for await (const batch of batches) {
     // Just the one batch...
-    // @ts-ignore
+    // @ts-ignore TODO - check returned types
     t.equal(batch.data.data.length, 20, 'KML length of data features table is correct');
   }
   t.end();
