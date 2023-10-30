@@ -41,7 +41,9 @@ test.skip('loadInBatches#non-batched loader (mesh)', async (t) => {
 });
 
 test('loadInBatches#non-batched loader (gis)', async (t) => {
-  const batches = await loadInBatches(KML_URL, KMLLoader, {kml: {shape: 'object-row-table'}}) as AsyncIterableIterator<ObjectRowTableBatch>;
+  const batches = (await loadInBatches(KML_URL, KMLLoader, {
+    kml: {shape: 'object-row-table'}
+  })) as AsyncIterableIterator<ObjectRowTableBatch>;
   for await (const batch of batches) {
     // Just the one batch...
     // @ts-ignore TODO - check returned types
