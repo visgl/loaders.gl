@@ -18,7 +18,8 @@ The `PMTilesSource` reads individual tiles from a PMTiles archive file.
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, PMTilesSource, options);
+const source = new PMTilesSource({url});
+const tile = await source.getTile(...);
 ```
 
 ## Options

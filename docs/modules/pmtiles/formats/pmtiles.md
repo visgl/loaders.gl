@@ -2,7 +2,7 @@
 
 PMTiles is a single-file archive format for tiled data designed to enable individual tiles to be loaded via HTTP range request access. A PMTiles archive can be hosted on a commodity storage platform such as Amazon S3.
 
-- *[PMTiles][https://github.com/protomaps/PMTiles]*
+- *[PMTiles](https://github.com/protomaps/PMTiles)*
 
 ## Overview
 
