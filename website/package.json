@@ -24,6 +24,8 @@
     "@deck.gl/layers": "^8.9.28",
     "@deck.gl/mesh-layers": "^8.9.28",
     "@deck.gl/react": "^8.9.28",
+    "@docusaurus/core": "^3.0.0",
+    "@docusaurus/preset-classic": "^3.0.0",
     "@esri/react-arcgis": "^5.2.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
@@ -40,6 +42,7 @@
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@monaco-editor/react": "^4.5.0",
+    "@mdx-js/react": "^3.0.0",
     "@probe.gl/bench": "^4.0.2",
     "@probe.gl/react-bench": "^4.0.2",
     "@probe.gl/stats-widget": "^4.0.2",
@@ -47,27 +50,30 @@
     "d3-color": "^3.1.0",
     "d3-request": "^1.0.6",
     "d3-scale": "^3.2.1",
+<<<<<<< HEAD
+=======
+    "docusaurus-mdx-checker": "^3.0.0",
+>>>>>>> 1eb7e7871 (chore: Upgrade to docusaurus 3)
     "docusaurus-node-polyfills": "^1.0.0",
     "expr-eval": "^2.0.2",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "maplibre-gl": "^2.4.0",
     "marked": "^0.7.0",
-    "react": "^18.0.0",
+    "prism-react-renderer": "^2.1.0",
+    "react": "^18.2.0",
     "react-color": "^2.19.3",
-    "react-dom": "^18.0.0",
+    "react-dom": "^18.2.0",
     "react-map-gl": "^7.0.0",
     "sql.js": "1.8.0",
     "styled-components": "^5.3.3"
   },
   "devDependencies": {
     "@cmfcmf/docusaurus-search-local": "^1.0.0",
-    "@docusaurus/core": "^2.4.3",
-    "@docusaurus/plugin-client-redirects": "^2.4.3",
-    "@docusaurus/plugin-content-docs": "^2.4.3",
-    "@docusaurus/preset-classic": "^2.4.3",
-    "@mdx-js/react": "^1.6.22",
+    "@docusaurus/module-type-aliases": "3.0.0-beta.0",
+    "@docusaurus/plugin-client-redirects": "^3.0.0",
+    "@docusaurus/plugin-content-docs": "^3.0.0",
+    "@docusaurus/tsconfig": "^3.0.0-beta.0",
     "babel-plugin-styled-components": "^2.0.0",
-    "prism-react-renderer": "^1.2.1",
     "ts-node": "~10.9.1"
   },
   "browser": {
@@ -78,6 +84,9 @@
     ">0.2% and supports async-functions",
     "not dead"
   ],
+  "engines": {
+    "node": ">=18.0"
+  },
   "volta": {
     "node": "18.18.2",
     "yarn": "1.22.19"

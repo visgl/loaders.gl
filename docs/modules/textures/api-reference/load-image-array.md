@@ -46,7 +46,7 @@ the `getUrl` callback will be called for each image with the following parameter
 
 Note: In addition to these values, all `options` passed in to `loadImageArray` are also available in the `getUrl` method.
 
-### loadImageArray(count : Number | String, getUrl : ({index}) => String, options? : Object) : image[] | image[][]
+### loadImageArray(count : Number | String, getUrl : `({index}) => String`, options? : Object) : `image[] | image[][]`
 
 Parameters:
 

@@ -1,8 +1,8 @@
 # parseSync
 
-::caution
+:::caution
 Synchronous parsing is not supported by all loaders. Refer to the documentation for each loader.
-::
+:::
 
 :::caution
 When calling parse from a loader to invoke a sub-loader, do not use this function. Use `parseSyncWithContext` counterparts in `@loaders.gl/loader-utils``

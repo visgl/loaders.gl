@@ -68,17 +68,17 @@ Convenience methods for creating Data instances for each of the Arrow Vector typ
 
 ### `Data.Utf8<T extends Utf8>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, valueOffsets: ValueOffsetsBuffer, data: Uint8Array) : Data
 
-### `Data.List<T extends List>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, valueOffsets: ValueOffsetsBuffer, child: Data<T['valueType']> | Vector<T['valueType']>) : Data
+### `Data.List<T extends List>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, valueOffsets: ValueOffsetsBuffer, child: `Data<T['valueType']> | Vector<T['valueType']>`) : Data
 
 ### `Data.FixedSizeList<T extends FixedSizeList>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, child: Data | Vector) : Data
 
 ### `Data.Struct<T extends Struct>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, children: (Data | Vector)[]) : Data
 
-### `Data.Map<T extends Map_>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, children: (Data | Vector)[]) : Data
+### `Data.Map<T extends Map_>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, children: `(Data | Vector)[])` : Data
 
-### `Data.Union<T extends SparseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, children: (Data | Vector)[]) : Data
+### `Data.Union<T extends SparseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, children: `(Data | Vector)[])` : Data
 
-### `Data.Union<T extends DenseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, valueOffsets: ValueOffsetsBuffer, children: (Data | Vector)[]) : Data
+### `Data.Union<T extends DenseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, valueOffsets: ValueOffsetsBuffer, children: `(Data | Vector)[])` : Data
 }
 
 

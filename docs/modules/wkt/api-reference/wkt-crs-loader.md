@@ -82,7 +82,7 @@ using `data.PROJCS.GEOGCS.DATUM` instead of `data[0][2][2]`.
 
 Sometimes WKT will repeat some keywords for the same array.  For example, you might have multiple
 "PARAMETER[...]" as in the above example.  In this case, you will find an array of the multiple at
-"MULTIPLE_{KEYWORD}", as in "MULTIPLE_PARAMETER".
+`"MULTIPLE_{KEYWORD}"`, as in `"MULTIPLE_PARAMETER"`.
 
 ### raw mode
 
