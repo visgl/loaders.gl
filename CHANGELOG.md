@@ -1,6 +1,10 @@
 # CHANGELOG for loaders.gl
 
-## v4.0 Prerelease
+## v4.0
+
+### v4.0.0
+
+### v4.0 Prerelease
 
 > The official 4.0 alpha track starts with alpha.6
 > The early pre-release track was abandoned due to build incompatibility problems.
