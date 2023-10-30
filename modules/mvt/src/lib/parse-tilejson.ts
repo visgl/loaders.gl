@@ -1,21 +1,42 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
+export type TileJSONOptions = {
+  maxValues?: number | false;
+};
+
 /** Parsed and typed TileJSON, merges Tilestats information if present */
 export type TileJSON = {
   name?: string;
   description?: string;
   version?: string;
+
+  tileFormat?: string;
+  tilesetType?: string;
+
+  /** Generating application. Tippecanoe adds this. */
+  generator?: string;
+  /** Generating application options. Tippecanoe adds this. */
+  generatorOptions?: string;
+
+  /** Tile indexing scheme */
   scheme?: 'xyz' | 'tms';
+  /** Sharded URLs */
   tiles?: string[];
   /** `[[w, s], [e, n]]`, indicates the limits of the bounding box using the axis units and order of the specified CRS. */
   boundingBox?: [min: [w: number, s: number], max: [e: number, n: number]];
-  center: number[] | null;
-  maxZoom: number | null;
-  minZoom: number | null;
+  /** May be set to the maxZoom of the first layer */
+  maxZoom?: number | null;
+  /** May be set to the minZoom of the first layer */
+  minZoom?: number | null;
+  center?: number[] | null;
   htmlAttribution?: string;
   htmlLegend?: string;
+
+  // Combination of tilestats (if present) and tilejson layer information
   layers?: TileJSONLayer[];
+
+  /** Any nested JSON metadata */
   metaJson?: any | null;
 };
 
@@ -52,6 +73,8 @@ export type TileJSONField = {
   min?: number;
   /** max value (if there are *any* numbers in the values) */
   max?: number;
+  /** Number of unique values across the tileset */
+  uniqueValueCount?: number;
   /** An array of this attribute's first 100 unique values */
   values?: unknown[];
 };
@@ -93,49 +116,76 @@ type TilestatsLayerAttribute = {
   min?: number;
   /** max value (if there are *any* numbers in the values) */
   max?: number;
+  /** Number of unique values */
+  count?: number;
+  /** First 100 values */
+  values?: unknown[];
 };
 
 const isObject: (x: unknown) => boolean = (x) => x !== null && typeof x === 'object';
 
-export function parseTileJSON(jsonMetadata: any): TileJSON | null {
+export function parseTileJSON(jsonMetadata: any, options: TileJSONOptions): TileJSON | null {
   if (!jsonMetadata || !isObject(jsonMetadata)) {
     return null;
   }
 
-  const boundingBox = parseBounds(jsonMetadata.bounds);
-  const center = parseCenter(jsonMetadata.center);
-  const maxZoom = safeParseFloat(jsonMetadata.maxzoom);
-  const minZoom = safeParseFloat(jsonMetadata.minzoom);
-
   let tileJSON: TileJSON = {
     name: jsonMetadata.name || '',
-    description: jsonMetadata.description || '',
-    boundingBox,
-    center,
-    maxZoom,
-    minZoom,
-    layers: []
+    description: jsonMetadata.description || ''
   };
 
-  // try to parse json
+  // tippecanoe
+
+  if (typeof jsonMetadata.generator === 'string') {
+    tileJSON.generator = jsonMetadata.generator;
+  }
+  if (typeof jsonMetadata.generator_options === 'string') {
+    tileJSON.generatorOptions = jsonMetadata.generator_options;
+  }
+
+  // Tippecanoe emits `antimeridian_adjusted_bounds` instead of `bounds`
+  tileJSON.boundingBox =
+    parseBounds(jsonMetadata.bounds) || parseBounds(jsonMetadata.antimeridian_adjusted_bounds);
+
+  // TODO - can be undefined - we could set to center of bounds...
+  tileJSON.center = parseCenter(jsonMetadata.center);
+  // TODO - can be undefined, we could extract from layers...
+  tileJSON.maxZoom = safeParseFloat(jsonMetadata.maxzoom);
+  // TODO - can be undefined, we could extract from layers...
+  tileJSON.minZoom = safeParseFloat(jsonMetadata.minzoom);
+
+  // Look for nested metadata embedded in .json field
+  // TODO - document what source this applies to, when is this needed?
   if (typeof jsonMetadata?.json === 'string') {
+    // try to parse json
     try {
       tileJSON.metaJson = JSON.parse(jsonMetadata.json);
-    } catch (err) {
+    } catch (error) {
+      console.warn('Failed to parse tilejson.json field', error);
       // do nothing
     }
   }
 
-  let layers = parseTilestatsLayers(tileJSON.metaJson?.tilestats);
+  // Look for fields in tilestats
+
+  const tilestats = jsonMetadata.tilestats || tileJSON.metaJson?.tilestats;
+  const tileStatsLayers = parseTilestatsLayers(tilestats, options);
+  const tileJSONlayers = parseTileJSONLayers(jsonMetadata.vector_layers); // eslint-disable-line camelcase
   // TODO - merge in description from tilejson
-  if (layers.length === 0) {
-    layers = parseTileJSONLayers(jsonMetadata.vector_layers); // eslint-disable-line camelcase
-  }
+  const layers = mergeLayers(tileJSONlayers, tileStatsLayers);
 
   tileJSON = {
     ...tileJSON,
     layers
   };
+
+  if (tileJSON.maxZoom === null && layers.length > 0) {
+    tileJSON.maxZoom = layers[0].maxZoom || null;
+  }
+
+  if (tileJSON.minZoom === null && layers.length > 0) {
+    tileJSON.minZoom = layers[0].minZoom || null;
+  }
 
   return tileJSON;
 }
@@ -145,41 +195,52 @@ function parseTileJSONLayers(layers: any[]): TileJSONLayer[] {
   if (!Array.isArray(layers)) {
     return [];
   }
-  return layers.map((layer) => ({
-    name: layer.id || '',
-    fields: Object.entries(layer.fields || []).map(([key, datatype]) => ({
-      name: key,
-      ...attributeTypeToFieldType(String(datatype))
-    }))
+  return layers.map((layer) => parseTileJSONLayer(layer));
+}
+
+function parseTileJSONLayer(layer: any): TileJSONLayer {
+  const fields = Object.entries(layer.fields || []).map(([key, datatype]) => ({
+    name: key,
+    ...attributeTypeToFieldType(String(datatype))
   }));
+  const layer2 = {...layer};
+  delete layer2.fields;
+  return {
+    name: layer.id || '',
+    ...layer2,
+    fields
+  };
 }
 
 /** parse Layers array from tilestats */
-function parseTilestatsLayers(tilestats: any): TileJSONLayer[] {
+function parseTilestatsLayers(tilestats: any, options: TileJSONOptions): TileJSONLayer[] {
   if (isObject(tilestats) && Array.isArray(tilestats.layers)) {
     // we are in luck!
-    return tilestats.layers.map((layer) => parseTilestatsForLayer(layer));
+    return tilestats.layers.map((layer) => parseTilestatsForLayer(layer, options));
   }
   return [];
 }
 
-function parseTilestatsForLayer(layer: TilestatsLayer): TileJSONLayer {
+function parseTilestatsForLayer(layer: TilestatsLayer, options: TileJSONOptions): TileJSONLayer {
   const fields: TileJSONField[] = [];
   const indexedAttributes: {[key: string]: TilestatsLayerAttribute[]} = {};
 
   const attributes = layer.attributes || [];
-  for (const attr of attributes) {
-    const name = attr.attribute;
+  for (const attribute of attributes) {
+    const name = attribute.attribute;
     if (typeof name === 'string') {
+      // TODO - code copied from kepler.gl, need sample tilestats files to test
       if (name.split('|').length > 1) {
         // indexed field
         const fname = name.split('|')[0];
         indexedAttributes[fname] = indexedAttributes[fname] || [];
-        indexedAttributes[fname].push(attr);
+        indexedAttributes[fname].push(attribute);
+        // eslint-disable-next-line no-console
+        console.warn('ignoring tilestats indexed field', fname);
       } else if (!fields[name]) {
-        fields[name] = attributeToField(attr);
+        fields.push(attributeToField(attribute, options));
       } else {
-        // return (fields[name], attr);
+        // return (fields[name], attribute);
       }
     }
   }
@@ -188,6 +249,21 @@ function parseTilestatsForLayer(layer: TilestatsLayer): TileJSONLayer {
     dominantGeometry: layer.geometry,
     fields
   };
+}
+
+function mergeLayers(layers: TileJSONLayer[], tilestatsLayers: TileJSONLayer[]): TileJSONLayer[] {
+  return layers.map((layer) => {
+    const tilestatsLayer = tilestatsLayers.find((tsLayer) => tsLayer.name === layer.name);
+    // For aesthetics in JSON dumps, we preserve field order (make sure layers is last)
+    const fields = tilestatsLayer?.fields || [];
+    const layer2: Partial<TileJSONLayer> = {...layer};
+    delete layer2.fields;
+    return {
+      ...layer2,
+      ...tilestatsLayer,
+      fields
+    } as TileJSONLayer;
+  });
 }
 
 /**
@@ -289,19 +365,38 @@ const attrTypeMap = {
   }
 };
 
-function attributeToField(attribute: TilestatsLayerAttribute = {}): TileJSONField {
-  // attribute: "_season_peaks_color"
-  // count: 1000
-  // max: 0.95
-  // min: 0.24375
-  // type: "number"
+function attributeToField(
+  attribute: TilestatsLayerAttribute = {},
+  options: TileJSONOptions
+): TileJSONField {
   const fieldTypes = attributeTypeToFieldType(attribute.type!);
-  return {
+  const field: TileJSONField = {
     name: attribute.attribute as string,
     // what happens if attribute type is string...
     // filterProps: getFilterProps(fieldTypes.type, attribute),
     ...fieldTypes
   };
+
+  // attribute: "_season_peaks_color"
+  // count: 1000
+  // max: 0.95
+  // min: 0.24375
+  // type: "number"
+
+  if (typeof attribute.min === 'number') {
+    field.min = attribute.min;
+  }
+  if (typeof attribute.max === 'number') {
+    field.max = attribute.max;
+  }
+  if (typeof attribute.count === 'number') {
+    field.uniqueValueCount = attribute.count;
+  }
+  if (options.maxValues !== false && attribute.values) {
+    // Too much data? Add option?
+    field.values = attribute.values?.slice(0, options.maxValues);
+  }
+  return field;
 }
 
 function attributeTypeToFieldType(aType: string): {type: string} {

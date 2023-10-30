@@ -20,8 +20,11 @@ export type ArcGISImageServerProps = ImageServiceProps & {
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/image-service.htm
  */
 export class ArcGISImageSource extends ImageService<ArcGISImageServerProps> {
+  data: string;
+
   constructor(props: ArcGISImageServerProps) {
     super(props);
+    this.data = props.url;
   }
 
   // ImageSource (normalized endpoints)

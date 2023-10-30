@@ -21,7 +21,7 @@ export class TileSourceAdapter<MetadataT> implements TileSource<ImageSourceMetad
     const width = 512;
     const height = 512;
     const boundingBox = this.getTileBoundingBox(parameters);
-    return this.viewportSource.getImage({boundingBox, layers: [], width, height})
+    return this.viewportSource.getImage({boundingBox, layers: [], width, height});
   }
 
   /** deck.gl style parameters */
@@ -30,7 +30,9 @@ export class TileSourceAdapter<MetadataT> implements TileSource<ImageSourceMetad
   // }
 
   /** Bounding box of tiles in this tileset `[[w, s], [e, n]]`  */
-  protected getTileBoundingBox(parameters: GetTileParameters): [min: [x: number, y: number], max: [x: number, y: number]] {
+  protected getTileBoundingBox(
+    parameters: GetTileParameters
+  ): [min: [x: number, y: number], max: [x: number, y: number]] {
     if (parameters.crs && parameters.crs !== 'ESPG3758') {
       throw new Error('SRS not ESPG3758');
     }

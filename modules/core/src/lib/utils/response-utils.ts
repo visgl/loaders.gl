@@ -10,9 +10,9 @@ import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './r
  *
  * @param resource
  */
-export async function makeResponse(resource: any): Promise<Response> {
+export async function makeResponse(resource: unknown): Promise<Response> {
   if (isResponse(resource)) {
-    return resource;
+    return resource as Response;
   }
 
   // Add content-length header if possible
@@ -45,7 +45,7 @@ export async function makeResponse(resource: any): Promise<Response> {
   }
 
   // Attempt to create a Response from the resource, adding headers and setting url
-  const response = new Response(resource, {headers});
+  const response = new Response(resource as any, {headers});
   // We can't control `Response.url` via constructor, use a property override to record URL.
   Object.defineProperty(response, 'url', {value: url});
   return response;
@@ -76,12 +76,12 @@ export function checkResponseSync(response: Response): void {
 
 // HELPERS
 
-async function getResponseError(response): Promise<string> {
+async function getResponseError(response: Response): Promise<string> {
   let message = `Failed to fetch resource ${response.url} (${response.status}): `;
   try {
     const contentType = response.headers.get('Content-Type');
     let text = response.statusText;
-    if (contentType.includes('application/json')) {
+    if (contentType?.includes('application/json')) {
       text += ` ${await response.text()}`;
     }
     message += text;
@@ -92,7 +92,9 @@ async function getResponseError(response): Promise<string> {
   return message;
 }
 
-async function getInitialDataUrl(resource): Promise<string | null> {
+async function getInitialDataUrl(
+  resource: string | Blob | ArrayBuffer | unknown
+): Promise<string | null> {
   const INITIAL_DATA_LENGTH = 5;
   if (typeof resource === 'string') {
     return `data:,${resource.slice(0, INITIAL_DATA_LENGTH)}`;
@@ -114,7 +116,7 @@ async function getInitialDataUrl(resource): Promise<string | null> {
 }
 
 // https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
-function arrayBufferToBase64(buffer) {
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
   let binary = '';
   const bytes = new Uint8Array(buffer);
   for (let i = 0; i < bytes.byteLength; i++) {

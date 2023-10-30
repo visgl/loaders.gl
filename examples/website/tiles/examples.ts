@@ -3,6 +3,9 @@
 
 export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 
+// export const INITIAL_CATEGORY_NAME = 'MVT';
+// export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap Tiles';
+
 export const INITIAL_CATEGORY_NAME = 'PMTILES';
 export const INITIAL_EXAMPLE_NAME = 'FSQ Tiles';
 
@@ -18,11 +21,21 @@ const VIEW_STATE = {
   bearing: 0
 };
 
-export const EXAMPLES = {
-  TILES: {
+export type Example = {
+  format: string;
+  data: string;
+  attributions?: string[];
+  viewState?: Record<string, unknown>;
+  tileSize?: number[];
+}
+
+export const EXAMPLES: Record<string, Record<string, Example>> = {
+  MVT: {
     'OpenStreetMap Tiles': {
-      format: 'tile',
-      data: 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      format: 'mvt',
+      data: 'https://c.tile.openstreetmap.org',
+      // TODO deduce from templates
+      // data: 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
       viewState: {...VIEW_STATE, longitude: 40, latitude: 57, zoom: 5}
     }
   },
@@ -33,14 +46,15 @@ export const EXAMPLES = {
       attributions: ["© Foursquare"],
       viewState: {...VIEW_STATE}
     },
-    'Protomaps Tiles': {
+    'NZ Buildings': {
       format: 'pmtiles',
-      data: 'https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles',
+      data: 'https://r2-public.protomaps.com/protomaps-sample-datasets/nz-buildings-v3.pmtiles',
       attributions: ["© Land Information New Zealand"],
       viewState: {...VIEW_STATE}
     },
     'Terrarium': {
-      url:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles",
+      format: 'pmtiles',
+      data:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles",
       tileSize: [512,512]
     }
   }

@@ -4,10 +4,11 @@
 import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader, getBinaryImageMetadata} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoader, TileJSON} from '@loaders.gl/mvt';
 
 import {TileLoadParameters} from '@loaders.gl/loader-utils';
+import {get} from 'http';
 
 export type MVTSourceProps = DataSourceProps & {
   url: string;
@@ -21,13 +22,17 @@ export type MVTSourceProps = DataSourceProps & {
 export class MVTSource extends DataSource implements ImageTileSource, VectorTileSource {
   props: MVTSourceProps;
   url: string;
+  data: string;
   schema: 'tms' | 'xyz' = 'tms';
   metadata: Promise<TileJSON | null>;
+  extension = '.png';
+  mimeType: string | null = null;
 
   constructor(props: MVTSourceProps) {
     super(props);
     this.props = props;
     this.url = resolvePath(props.url);
+    this.data = this.url;
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();
   }
@@ -35,14 +40,29 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
   // @ts-ignore - Metadata type misalignment
   async getMetadata(): Promise<TileJSON | null> {
     const metadataUrl = this.getMetadataUrl();
-    const response = await this.fetch(metadataUrl);
+    let response: Response;
+    try {
+      // Annoyingly, fetch throws on CORS errors which is common when requesting an unavailable resource
+      response = await this.fetch(metadataUrl);
+    } catch(error: unknown) {
+      console.error((error as TypeError).message);
+      return null;
+    }
     if (!response.ok) {
+      console.error(response.statusText);
       return null;
     }
     const tileJSON = await response.text();
     const metadata = TileJSONLoader.parseTextSync?.(JSON.stringify(tileJSON)) || null;
     // metadata.attributions = [...this.props.attributions, ...(metadata.attributions || [])];
+    // if (metadata?.mimeType) {
+    //   this.mimeType = metadata?.tileMIMEType;
+    // } 
     return metadata;
+  }
+
+  getTileMIMEType(): string | null {
+    return this.mimeType;
   }
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
@@ -61,27 +81,43 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
 
   async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
     const {x, y, z} = tileParams.index;
-    const metadata = await this.metadata;
-    // @ts-expect-error
-    switch (metadata.mimeType || 'application/vnd.mapbox-vector-tile') {
-      case 'application/vnd.mapbox-vector-tile':
-        return await this.getVectorTile({x, y, zoom: z, layers: []});
-      default:
-        return await this.getImageTile({x, y, zoom: z, layers: []});
+    // const metadata = await this.metadata;
+    // mimeType = metadata?.tileMIMEType || 'application/vnd.mapbox-vector-tile';
+
+    const arrayBuffer = await this.getTile({x, y, zoom: z, layers: []});
+    if (arrayBuffer === null) {
+      return null;
     }
-  }
+
+    const imageMetadata = getBinaryImageMetadata(arrayBuffer);
+    this.mimeType = this.mimeType || imageMetadata?.mimeType || 'application/vnd.mapbox-vector-tile';
+    switch (this.mimeType) {
+      case 'application/vnd.mapbox-vector-tile':
+        return await this.parseVectorTile(arrayBuffer, {x, y, zoom: z, layers: []});
+      default:
+        return await this.parseImageTile(arrayBuffer);
+    }
+  }x
 
   // ImageTileSource interface implementation
 
   async getImageTile(tileParams: GetTileParameters): Promise<ImageType | null> {
     const arrayBuffer = await this.getTile(tileParams);
-    return arrayBuffer ? await ImageLoader.parse(arrayBuffer, this.loadOptions) : null;
+    return arrayBuffer ? this.parseImageTile(arrayBuffer) : null;
+  }
+
+  protected async parseImageTile(arrayBuffer: ArrayBuffer): Promise<ImageType> {
+      return await ImageLoader.parse(arrayBuffer, this.loadOptions);
   }
 
   // VectorTileSource interface implementation
 
   async getVectorTile(tileParams: GetTileParameters): Promise<unknown | null> {
     const arrayBuffer = await this.getTile(tileParams);
+    return arrayBuffer ? this.parseVectorTile(arrayBuffer, tileParams) : null;
+  }
+
+  protected async parseVectorTile(arrayBuffer: ArrayBuffer, tileParams: GetTileParameters): Promise<unknown | null> {
     const loadOptions: MVTLoaderOptions = {
       shape: 'geojson-table',
       mvt: {
@@ -92,7 +128,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
       ...this.loadOptions
     };
 
-    return arrayBuffer ? await MVTLoader.parse(arrayBuffer, loadOptions) : null;
+    return await MVTLoader.parse(arrayBuffer, loadOptions);
   }
 
   getMetadataUrl(): string {
@@ -102,10 +138,10 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
   getTileURL(x: number, y: number, z: number) {
     switch (this.schema) {
       case 'xyz':
-        return `${this.url}/${x}/${y}/${z}`;
+        return `${this.url}/${x}/${y}/${z}${this.extension}`;
       case 'tms':
       default:
-        return `${this.url}/${z}/${x}/${y}`;
+        return `${this.url}/${z}/${x}/${y}${this.extension}`;
     }
   }
 }
