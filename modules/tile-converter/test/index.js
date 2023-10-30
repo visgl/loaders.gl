@@ -12,6 +12,7 @@ import './i3s-converter/helpers/load-3d-tiles.spec';
 import './i3s-converter/helpers/tileset-traversal.spec';
 import './i3s-converter/helpers/preprocess-3d-tiles.spec';
 import './i3s-converter/helpers/geometry-attributes.spec';
+import './i3s-converter/helpers/attribute-metadata-info.spec.ts';
 
 // TODO v4.0 restore this test suite
 // import './i3s-converter/i3s-converter.spec';

@@ -6,7 +6,9 @@ import convertB3dmToI3sGeometry, {
   getPropertyTable
 } from '../../../src/i3s-converter/helpers/geometry-converter';
 import {PGMLoader} from '../../../src/pgm-loader';
-import {createdStorageAttribute} from '../../../src/i3s-converter/helpers/feature-attributes';
+import {getAttributeTypesMapFromPropertyTable} from '../../../src/i3s-converter/helpers/feature-attributes';
+import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
+
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Matrix4} from '@math.gl/core';
 
@@ -668,38 +670,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
   t.end();
 });
 
-const OBJECT_ID_TYPE = 'OBJECTID';
-const STRING_TYPE = 'string';
-const SHORT_INT_TYPE = 'Int32';
-const DOUBLE_TYPE = 'double';
-function getAttributeType(key, attribute) {
-  if (key === OBJECT_ID_TYPE) {
-    return OBJECT_ID_TYPE;
-  }
-  if (typeof attribute === STRING_TYPE) {
-    return STRING_TYPE;
-  } else if (typeof attribute === 'number') {
-    return Number.isInteger(attribute) ? SHORT_INT_TYPE : DOUBLE_TYPE;
-  }
-  return STRING_TYPE;
-}
-
 function getAttributeStorageInfo(propertyTable) {
-  let attributeIndex = 0;
-  const propertyTableWithObjectId = {
-    OBJECTID: [0],
-    ...propertyTable
-  };
-
-  const result = [];
-  for (const key in propertyTableWithObjectId) {
-    const firstAttribute = propertyTableWithObjectId[key][0];
-    const attributeType = getAttributeType(key, firstAttribute);
-    const storageAttribute = createdStorageAttribute(attributeIndex, key, attributeType);
-    result.push(storageAttribute);
-    attributeIndex += 1;
-  }
-  return result;
+  const attributeTypesMap = getAttributeTypesMapFromPropertyTable(propertyTable);
+  const attributeMetadataInfo: AttributeMetadataInfo = new AttributeMetadataInfo();
+  attributeMetadataInfo.addMetadataInfo(attributeTypesMap);
+  return attributeMetadataInfo.attributeStorageInfo;
 }
 
 async function checkNodeResources(resources, expectedValues, t) {
