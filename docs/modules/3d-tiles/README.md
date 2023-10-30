@@ -52,7 +52,7 @@ const tileset3d = new Tileset3D(tilesetJson, {
 tileset3d.update(viewport);
 
 // Viewport changes (pan zoom etc)
-tileset3d.update(viewport);
+tileset3d.selectTiles(viewport);
 
 // Visible tiles
 const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
