@@ -8,11 +8,12 @@ import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 
-import type {PMTilesMetadata} from './lib/parse-pmtiles';
-import {parsePMTilesHeader} from './lib/parse-pmtiles';
-
 import * as pmtiles from 'pmtiles';
 const {PMTiles} = pmtiles;
+
+import type {PMTilesMetadata} from './lib/parse-pmtiles';
+import {parsePMTilesHeader} from './lib/parse-pmtiles';
+import {BlobSource} from './lib/blob-source';
 
 const VERSION = '1.0.0';
 
@@ -50,42 +51,14 @@ export type PMTilesSourceProps = DataSourceProps & {
   attributions?: string[];
 };
 
-export class BlobSource implements pmtiles.Source {
-  blob: Blob;
-  key: string;
-
-  constructor(blob: Blob, key: string) {
-    this.blob = blob;
-    this.key = key;
-  }
-
-  // TODO - how is this used?
-  getKey() {
-    // @ts-expect-error url is only defined on File subclass
-    return this.blob.url || '';
-  }
-
-  async getBytes(
-    offset: number,
-    length: number,
-    signal?: AbortSignal
-  ): Promise<pmtiles.RangeResponse> {
-    const slice = this.blob.slice(offset, offset + length);
-    const data = await slice.arrayBuffer();
-    return {
-      data
-      // etag: response.headers.get('ETag') || undefined,
-      // cacheControl: response.headers.get('Cache-Control') || undefined,
-      // expires: response.headers.get('Expires') || undefined
-    };
-  }
-}
 /**
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
 export class PMTilesSource extends DataSource implements ImageTileSource, VectorTileSource {
+  data: string | Blob;
   props: PMTilesSourceProps;
+  mimeType: string | null = null;
   pmtiles: pmtiles.PMTiles;
   metadata: Promise<PMTilesMetadata>;
 
@@ -94,6 +67,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
     this.props = props;
     const url =
       typeof props.url === 'string' ? resolvePath(props.url) : new BlobSource(props.url, 'pmtiles');
+    this.data = props.url;
     this.pmtiles = new PMTiles(url);
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();
@@ -102,10 +76,15 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   async getMetadata(): Promise<PMTilesMetadata> {
     const pmtilesHeader = await this.pmtiles.getHeader();
     const pmtilesMetadata = await this.pmtiles.getMetadata();
-    const metadata = parsePMTilesHeader(pmtilesHeader, pmtilesMetadata);
+    const metadata: PMTilesMetadata = parsePMTilesHeader(pmtilesHeader, pmtilesMetadata);
+    // Add additional attribution if necessary
     if (this.props.attributions) {
       metadata.attributions = [...this.props.attributions, ...(metadata.attributions || [])];
     }
+    if (metadata?.tileMIMEType) {
+      this.mimeType = metadata?.tileMIMEType;
+    }
+    // TODO - do we need to allow tileSize to be overridden? Some PMTiles examples seem to suggest it.
     return metadata;
   }
 
@@ -126,7 +105,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
     const {x, y, z} = tileParams.index;
     const metadata = await this.metadata;
-    switch (metadata.mimeType) {
+    switch (metadata.tileMIMEType) {
       case 'application/vnd.mapbox-vector-tile':
         return await this.getVectorTile({x, y, zoom: z, layers: []});
       default:

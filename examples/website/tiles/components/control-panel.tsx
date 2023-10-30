@@ -1,7 +1,9 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import MonacoEditor from '@monaco-editor/react';
-import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from '../examples';
 
 const Container = styled.div`
   display: flex;
@@ -64,8 +66,7 @@ const defaultProps: ControlPanelProps = {
 export class ControlPanel extends PureComponent<ControlPanelProps> {
   static defaultProps = defaultProps;
 
-  props: any;
-  _autoSelected = false;
+  props: ControlPanelProps;
 
   constructor(props) {
     super(props);
@@ -77,20 +78,18 @@ export class ControlPanel extends PureComponent<ControlPanelProps> {
     let selectedCategory = this.props.selectedCategory;
     let selectedExample = this.props.selectedExample;
 
-    if ((!selectedCategory || !selectedExample) && !this._autoSelected) {
-      selectedCategory = INITIAL_CATEGORY_NAME;
-      selectedExample = examples[selectedCategory][INITIAL_EXAMPLE_NAME];
-      this._autoSelected = true;
+    if ((!selectedCategory || !selectedExample)) {
+      return;
     }
 
     if (selectedCategory && selectedExample) {
       const example = examples[selectedCategory][selectedExample];
-      onExampleChange({selectedCategory, selectedExample, example});
+      this.props.onExampleChange?.({selectedCategory, selectedExample, example});
     }
   }
 
   _renderDropDown() {
-    const {examples = {}, selectedCategory, selectedExample, onExampleChange} = this.props;
+    const {examples = {}, selectedCategory, selectedExample} = this.props;
 
     if (!selectedCategory || !selectedExample) {
       return false;
@@ -107,7 +106,7 @@ export class ControlPanel extends PureComponent<ControlPanelProps> {
           const loaderName = value[0];
           const exampleName = value[1];
           const example = examples[loaderName][exampleName];
-          onExampleChange({selectedCategory: loaderName, selectedExample: exampleName, example});
+          this.props.onExampleChange?.({selectedCategory: loaderName, selectedExample: exampleName, example});
         }}
       >
         {Object.keys(examples).map((loaderName, loaderIndex) => {
@@ -131,11 +130,10 @@ export class ControlPanel extends PureComponent<ControlPanelProps> {
 
   render() {
     const props = this.props;
-    console.log('Control panel metadata', props.metadata);
     return (
       <Container>
         {this._renderDropDown()}
-        {props.children}
+        {props.error && <pre>{props.error.message}</pre>}
         <pre className="loading-indicator" style={{opacity: props.loading ? 1 : 0}}>
           loading tile...
         </pre>

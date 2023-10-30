@@ -10,7 +10,9 @@ import {parseTileJSON} from './lib/parse-tilejson';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type TileJSONLoaderOptions = LoaderOptions & {
-  tilejson?: {};
+  tilejson?: {
+    maxValues?: number | false;
+  };
 };
 
 /**
@@ -26,15 +28,19 @@ export const TileJSONLoader: LoaderWithParser<TileJSON, never, TileJSONLoaderOpt
   mimeTypes: ['application/json'],
   text: true,
   options: {
-    tilejson: {}
+    tilejson: {
+      maxValues: 10
+    }
   },
-  parse: async (arrayBuffer, options) => {
+  parse: async (arrayBuffer, options?: TileJSONLoaderOptions) => {
     const jsonString = new TextDecoder().decode(arrayBuffer);
     const json = JSON.parse(jsonString);
-    return parseTileJSON(json) as TileJSON;
+    const tilejsonOptions = {...TileJSONLoader.options.tilejson, ...options?.tilejson};
+    return parseTileJSON(json, tilejsonOptions) as TileJSON;
   },
   parseTextSync: (text, options) => {
     const json = JSON.parse(text);
-    return parseTileJSON(json) as TileJSON;
+    const tilejsonOptions = {...TileJSONLoader.options.tilejson, ...options?.tilejson};
+    return parseTileJSON(json, tilejsonOptions) as TileJSON;
   }
 };

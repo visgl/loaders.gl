@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // import type {BinaryFeatureCollection} from '@loaders.gl/schema';
 import test from 'tape-promise/tape';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';

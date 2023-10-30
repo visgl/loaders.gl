@@ -5,13 +5,13 @@
 import './init-tests';
 
 // Utility modules
-// import '@loaders.gl/polyfills/test';
-// import '@loaders.gl/worker-utils/test';
+import '@loaders.gl/polyfills/test';
+import '@loaders.gl/worker-utils/test';
 import '@loaders.gl/math/test';
 
 // Core
 import '@loaders.gl/loader-utils/test';
-// import '@loaders.gl/core/test';
+import '@loaders.gl/core/test';
 
 // Image Formats
 import '@loaders.gl/images/test';
@@ -41,7 +41,7 @@ import '@loaders.gl/tiles/test';
 
 // Geospatial Formats
 // TODO restore once we have upgraded to ES modules
-// import '@loaders.gl/flatgeobuf/test';
+import '@loaders.gl/flatgeobuf/test';
 import '@loaders.gl/geopackage/test';
 import '@loaders.gl/gis/test';
 import '@loaders.gl/kml/test';

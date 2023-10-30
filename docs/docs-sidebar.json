@@ -40,6 +40,7 @@
         "type": "category",
         "label": "Concepts",
         "items": [
+          "developer-guide/concepts/javascript-apis",
           "developer-guide/concepts/binary-data",
           "developer-guide/concepts/streaming",
           "developer-guide/concepts/async-iterators",

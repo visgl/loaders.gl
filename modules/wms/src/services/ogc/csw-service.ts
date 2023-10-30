@@ -68,6 +68,8 @@ export class CSWService extends DataSource<CSWServiceProps> {
   static testURL = (url: string): boolean => url.toLowerCase().includes('csw');
 
   capabilities: CSWCapabilities | null = null;
+  data: string;
+  url: string;
 
   /** A list of loaders used by the CSWService methods */
   readonly loaders = [CSWErrorLoader, CSWCapabilitiesLoader];
@@ -75,6 +77,8 @@ export class CSWService extends DataSource<CSWServiceProps> {
   /** Create a CSWService */
   constructor(props: CSWServiceProps) {
     super(props);
+    this.url = props.url;
+    this.data = props.url;
   }
 
   async getMetadata(): Promise<CSWCapabilities> {

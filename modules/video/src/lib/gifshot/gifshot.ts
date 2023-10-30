@@ -1,6 +1,8 @@
 // @ts-nocheck
 /* eslint-disable */
 
+const document = globalThis.document || {};
+
 /* Copyrights for code authored by Yahoo Inc. is licensed under the following terms:
 MIT License
 Copyright  2017 Yahoo Inc.

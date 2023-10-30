@@ -17,7 +17,11 @@ test('Response', async (t) => {
 });
 
 test('makeResponse', async (t) => {
-  const response = await makeResponse('abc');
+  const responseInput = new Response('abc');
+  let response = await makeResponse(responseInput);
+  t.equal(response, responseInput, 'makeResponse() returns response argument');
+
+  response = await makeResponse('abc');
   t.equal(response.headers.get('content-length'), '3', 'content-length was set by makeResponse');
   const text = await response.text();
   t.equal(text, 'abc', 'could be read as text');
