@@ -1,7 +1,7 @@
 import express from 'express';
+import {getFileNameByUrl} from '../controllers/index-controller';
 
-const router = express.Router();
-const {getFileNameByUrl} = require('../controllers/index-controller');
+export const router = express.Router();
 
 /* GET home page. */
 router.get('*', async function (req, res, next) {
@@ -13,5 +13,3 @@ router.get('*', async function (req, res, next) {
     res.send('File not found');
   }
 });
-
-module.exports = router;
