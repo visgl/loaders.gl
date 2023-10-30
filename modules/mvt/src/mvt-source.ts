@@ -8,7 +8,6 @@ import {ImageLoader, getBinaryImageMetadata} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoader, TileJSON} from '@loaders.gl/mvt';
 
 import {TileLoadParameters} from '@loaders.gl/loader-utils';
-import {get} from 'http';
 
 export type MVTSourceProps = DataSourceProps & {
   url: string;
@@ -44,7 +43,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     try {
       // Annoyingly, fetch throws on CORS errors which is common when requesting an unavailable resource
       response = await this.fetch(metadataUrl);
-    } catch(error: unknown) {
+    } catch (error: unknown) {
       console.error((error as TypeError).message);
       return null;
     }
@@ -57,7 +56,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     // metadata.attributions = [...this.props.attributions, ...(metadata.attributions || [])];
     // if (metadata?.mimeType) {
     //   this.mimeType = metadata?.tileMIMEType;
-    // } 
+    // }
     return metadata;
   }
 
@@ -90,14 +89,16 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     }
 
     const imageMetadata = getBinaryImageMetadata(arrayBuffer);
-    this.mimeType = this.mimeType || imageMetadata?.mimeType || 'application/vnd.mapbox-vector-tile';
+    this.mimeType =
+      this.mimeType || imageMetadata?.mimeType || 'application/vnd.mapbox-vector-tile';
     switch (this.mimeType) {
       case 'application/vnd.mapbox-vector-tile':
         return await this.parseVectorTile(arrayBuffer, {x, y, zoom: z, layers: []});
       default:
         return await this.parseImageTile(arrayBuffer);
     }
-  }x
+  }
+  x;
 
   // ImageTileSource interface implementation
 
@@ -107,7 +108,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
   }
 
   protected async parseImageTile(arrayBuffer: ArrayBuffer): Promise<ImageType> {
-      return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+    return await ImageLoader.parse(arrayBuffer, this.loadOptions);
   }
 
   // VectorTileSource interface implementation
@@ -117,7 +118,10 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     return arrayBuffer ? this.parseVectorTile(arrayBuffer, tileParams) : null;
   }
 
-  protected async parseVectorTile(arrayBuffer: ArrayBuffer, tileParams: GetTileParameters): Promise<unknown | null> {
+  protected async parseVectorTile(
+    arrayBuffer: ArrayBuffer,
+    tileParams: GetTileParameters
+  ): Promise<unknown | null> {
     const loadOptions: MVTLoaderOptions = {
       shape: 'geojson-table',
       mvt: {

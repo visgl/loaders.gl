@@ -83,7 +83,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
     }
     if (metadata?.tileMIMEType) {
       this.mimeType = metadata?.tileMIMEType;
-    } 
+    }
     // TODO - do we need to allow tileSize to be overridden? Some PMTiles examples seem to suggest it.
     return metadata;
   }
