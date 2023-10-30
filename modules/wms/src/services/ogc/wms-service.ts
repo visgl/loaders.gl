@@ -65,7 +65,9 @@ export type WMSGetCapabilitiesParameters = {
 export type WMSGetMapParameters = {
   /** In case the endpoint supports multiple WMS versions */
   version?: '1.3.0' | '1.1.1';
-  /** bounding box of the requested map image */
+  /** bounding box of the requested map image `[[w, s], [e, n]]`  */
+  // boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
+  /** bounding box of the requested map image @deprecated Use .boundingBox */
   bbox: [number, number, number, number];
   /** pixel width of returned image */
   width: number;
@@ -87,17 +89,17 @@ export type WMSGetMapParameters = {
   elevation?: string;
 };
 
-/** GetMap parameters that are specific to the current view */
-export type WMSGetMapViewParameters = {
-  /** pixel width of returned image */
-  width: number;
-  /** pixels */
-  height: number;
-  /** bounding box of the requested map image */
-  bbox: [number, number, number, number];
-  /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
-  crs?: string;
-};
+// /** GetMap parameters that are specific to the current view */
+// export type WMSGetMapViewParameters = {
+//   /** pixel width of returned image */
+//   width: number;
+//   /** pixels */
+//   height: number;
+//   /** bounding box of the requested map image */
+//   bbox: [number, number, number, number];
+//   /** Coordinate Reference System for the image (not bounding box). can be provided in service constructor. */
+//   crs?: string;
+// };
 
 /**
  * Parameters for GetFeatureInfo
@@ -180,6 +182,7 @@ export type WMSSourceProps = ImageServiceProps & {
 export class WMSSource extends ImageSource<WMSSourceProps> {
   /** Base URL to the service */
   readonly url: string;
+  readonly data: string;
 
   /** In WMS 1.3.0, replaces references to EPSG:4326 with CRS:84. But not always supported. Default: false */
   substituteCRS84: boolean;
@@ -202,6 +205,7 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
     // const {baseUrl, parameters} = this._parseWMSUrl(props.url);
 
     this.url = props.url;
+    this.data = props.url;
 
     this.substituteCRS84 = props.substituteCRS84 ?? false;
     this.flipCRS = ['EPSG:4326'];
@@ -230,6 +234,7 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
   }
 
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
+    // @ts-expect-error
     return await this.getMap(parameters);
   }
 
@@ -490,6 +495,16 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
         // CRS was called SRS before WMS 1.3.0
         if (wmsParameters.version === '1.3.0') {
           key = 'crs';
+        }
+        break;
+
+      case 'boundingBox':
+        // Coordinate order is flipped for certain CRS in WMS 1.3.0
+        const boundingBox = value as [[number, number], [number, number]];
+        let bbox2: number[] | null = [...boundingBox[0], ...boundingBox[1]];
+        bbox2 = this._flipBoundingBox(boundingBox, wmsParameters);
+        if (bbox2) {
+          value = bbox2;
         }
         break;
 

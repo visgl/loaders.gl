@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {MVTLoader} from '@loaders.gl/mvt';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';

@@ -62,8 +62,8 @@ export type GetTileParameters = {
   x: number;
   /** tile y coordinate */
   y: number;
-  /** srs for the image (not the bounding box) */
-  srs?: string;
+  /** Coordinate reference system for the image (not the bounding box) */
+  crs?: string;
   /** requested format for the return image */
   format?: 'image/png';
 };
@@ -98,5 +98,5 @@ export interface TileSource<MetadataT extends TileSourceMetadata> {
   /** Flat parameters */
   getTile(parameters: GetTileParameters): Promise<unknown>;
   /** deck.gl style parameters */
-  getTileData(parameters: TileLoadParameters): Promise<unknown | null>;
+  getTileData?(parameters: TileLoadParameters): Promise<unknown | null>;
 }
