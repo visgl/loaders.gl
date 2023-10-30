@@ -25,7 +25,7 @@
 - feat(polyfills): Add installFilePolyfills on Node.js (#2722)
 - fix(i3s): I3SContentLoader regression (#2713)
 
-### v4.0.0-beta.8
+### v4.0.0-beta.6
 
 - fix(polyfills): Add CJS export for node.js (#2720)
 - feat(wms): Restore LERCLoader (#2715)
@@ -48,7 +48,7 @@
 - chore(polyfills): Consolidate node code (#2701)
 - fix(i3s): handle search params in I3SLoader (#2692)
 
-### v4.0.0-beta.8
+### v4.0.0-beta.6
 
 - feat(tile-converter): --analyze-only option (#2694)
 - fix(tiles): cartographicToCartesan syntax (#2690)
@@ -1025,7 +1025,7 @@
 - chore(core): node fs handling cleanup (#1601)
 - Fix draco parser (#1599)
 
-### v3.0.0-beta.8
+### v3.0.0-beta.6
 
 - fix(loader-utils): Fix normalization of text flag (#1597)
 - converter: fix yarn build-converter-bundle (#1595)
@@ -1901,7 +1901,7 @@
 - Improved Lod Selection criteria for I3S layers (#562)
 - loader-utils: Move resolvePath from core to loader-utils (#568)
 
-#### v2.0.0-beta.8
+#### v2.0.0-beta.6
 
 - json: New streaming `JSONLoader` (supports GeoJSON) (#383)
 - json: Add module placeholder with clarinet fork (#567)
