@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* global Cesium */
 import {loadTileset} from './tileset-loader';
 

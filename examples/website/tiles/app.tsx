@@ -4,8 +4,8 @@
 import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import {Map} from 'react-map-gl/maplibre';
-// import maplibregl from 'maplibre-gl';
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
 
 import DeckGL from '@deck.gl/react/typed';
 import {MapView} from '@deck.gl/core/typed';
@@ -109,7 +109,7 @@ export default function App({showBorder = false, onTilesLoad = null}) {
         controller={true}
         getTooltip={getTooltip}
       >
-        <Map mapStyle={INITIAL_MAP_STYLE} />
+        <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
         <div style={COPYRIGHT_LICENSE_STYLE}>
           {metadata?.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
         </div>

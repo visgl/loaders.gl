@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import React, {PureComponent} from 'react';
 import {render} from 'react-dom';
 

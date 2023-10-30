@@ -42,11 +42,17 @@ const config = {
 
   plugins: [
     [
+      'docusaurus-node-polyfills', 
+      { 
+        excludeAliases: ['console']
+      }
+    ],
+    [
       './ocular-docusaurus-plugin',
       {
         debug: true,
         resolve: {
-          fallback: {path: false, fs: false},
+          fallback: {path: false, fs: false, buffer: true},
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
             examples: resolve('../examples'),
