@@ -107,8 +107,20 @@ class DBFParser {
  * @param options
  * @returns DBFTable or rows
  */
+<<<<<<< Updated upstream
 export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFParserOptions = {}): ObjectRowTable {
+=======
+<<<<<<< Updated upstream
+export function parseDBF(
+  arrayBuffer: ArrayBuffer,
+  options: DBFLoaderOptions = {}
+): DBFRowsOutput | DBFTableOutput | ObjectRowTable {
+>>>>>>> Stashed changes
   const {encoding = 'latin1'} = options.dbf || {};
+=======
+export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFParserOptions = {}): ObjectRowTable {
+  const {encoding = 'latin1'} = options;
+>>>>>>> Stashed changes
 
   const dbfParser = new DBFParser({encoding});
   dbfParser.write(arrayBuffer);
@@ -118,11 +130,7 @@ export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFParserOptions = {
   const shape = options?.shape || 'object-row-table';
   switch (shape) {
     case 'object-row-table': {
-      const table: ObjectRowTable = {
-        shape: 'object-row-table',
-        schema,
-        data
-      };
+      const table: ObjectRowTable = {shape: 'object-row-table', schema, data};
       return table;
     }
     default:
@@ -142,9 +150,21 @@ export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFParserOptions = {
  */
 export async function* parseDBFInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+<<<<<<< Updated upstream
   options: DBFParserOptions = {}
 ): AsyncIterableIterator<ObjectRowTableBatch> {
   const {encoding = 'latin1'} = option;
+=======
+<<<<<<< Updated upstream
+  options: DBFLoaderOptions = {}
+): AsyncIterable<DBFHeader | DBFRowsOutput | DBFTableOutput> {
+  const {encoding = 'latin1'} = options.dbf || {};
+=======
+  options: DBFParserOptions = {}
+): AsyncIterableIterator<ObjectRowTableBatch> {
+  const {encoding = 'latin1'} = options;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
   const parser = new DBFParser({encoding});
   let headerReturned = false;

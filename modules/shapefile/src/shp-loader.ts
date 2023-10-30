@@ -41,10 +41,10 @@ export const SHPWorkerLoader: Loader<SHPResult, SHPResult, SHPLoaderOptions> = {
 /** SHP file loader */
 export const SHPLoader: LoaderWithParser<SHPResult, SHPResult, SHPLoaderOptions> = {
   ...SHPWorkerLoader,
-  parse: async (arrayBuffer, options?) => parseSHP(arrayBuffer, options),
-  parseSync: parseSHP,
+  parse: async (arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions) => parseSHP(arrayBuffer, options),
+  parseSync: (arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions) => parseSHP(arrayBuffer, options),
   parseInBatches: (
     arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-    options
+    options?: SHPLoaderOptions
   ) => parseSHPInBatches(arrayBufferIterator, options)
 };

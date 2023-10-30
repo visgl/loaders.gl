@@ -97,9 +97,20 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPParserOptions): 
  */
 export async function* parseSHPInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+<<<<<<< Updated upstream
   options?: SHPParserOptions
 ): AsyncGenerator<BinaryGeometry | object> | AsyncIterable<SHPResult> {
 
+=======
+<<<<<<< Updated upstream
+  options?: SHPLoaderOptions
+): AsyncGenerator<BinaryGeometry | object> {
+=======
+  options?: SHPParserOptions
+): AsyncIterableIterator<BinaryGeometry | object> | AsyncIterableIterator<SHPResult> {
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of asyncIterator) {

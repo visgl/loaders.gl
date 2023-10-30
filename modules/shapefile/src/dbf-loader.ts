@@ -43,16 +43,40 @@ export const DBFWorkerLoader: Loader<ObjectRowTable, ObjectRowTable, DBFLoaderOp
 /** DBF file loader */
 export const DBFLoader: LoaderWithParser<ObjectRowTable, ObjectRowTable, DBFLoaderOptions> = {
   ...DBFWorkerLoader,
+<<<<<<< Updated upstream
   parse: async (arrayBuffer: ArrayBuffer, options?: DBFLoaderOptions) => {
     const dbfOptions = {...DBFLoader.options, ...options?.dbf};
     return parseDBF(arrayBuffer, dbfOptions);
   }.
   parseSync: parseDBF,
+=======
+<<<<<<< Updated upstream
+  parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
+  parseSync: parseDBF,
+  parseInBatches(arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>, options) {
+    return parseDBFInBatches(arrayBufferIterator, options);
+=======
+
+  parse: async (arrayBuffer: ArrayBuffer, options?: DBFLoaderOptions) => {
+    const dbfOptions = {...DBFLoader.options, ...options?.dbf};
+    return parseDBF(arrayBuffer, dbfOptions);
+  },
+
+  parseSync: (arrayBuffer: ArrayBuffer, options?: DBFLoaderOptions) => {
+    const dbfOptions = {...DBFLoader.options, ...options?.dbf};
+    return parseDBF(arrayBuffer, dbfOptions);
+  },
+
+>>>>>>> Stashed changes
   parseInBatches(
     arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
     options?: DBFLoaderOptions
   ): AsyncIterableIterator<ObjectRowTable> {
     const dbfOptions = {...DBFLoader.options, ...options?.dbf};
     return parseDBFInBatches(arrayBufferIterator, dbfOptions);
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   }
 };
