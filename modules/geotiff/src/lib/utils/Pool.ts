@@ -11,7 +11,7 @@ const defaultPoolSize = globalThis?.navigator?.hardwareConcurrency ?? 4;
 
 /**
  * Pool for workers to decode chunks of the images.
- * This is a line-for-line copy of GeoTIFFs old implementation: https://github.com/geotiffjs/geotiff.js/blob/v1.0.0-beta.6/src/pool.js
+ * This is a line-for-line copy of GeoTIFFs old implementation: https://github.com/geotiffjs/geotiff.js/blob/v1.0.0-beta.8/src/pool.js
  */
 export default class Pool {
   workers: Worker[];

@@ -81,7 +81,7 @@
     "uuid": "^9.0.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.0.0-beta.6"
+    "@loaders.gl/core": "4.0.0-beta.8"
   },
   "quarantinedDependencies": {
     "join-images": "^1.1.3",

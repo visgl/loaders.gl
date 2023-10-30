@@ -59,6 +59,7 @@ export function getGeometryMetadataForField(field: Field): GeoArrowMetadata | nu
     try {
       metadata = JSON.parse(columnMetadata);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn('Failed to parse GeoArrow metadata', error);
     }
   }
@@ -68,6 +69,7 @@ export function getGeometryMetadataForField(field: Field): GeoArrowMetadata | nu
   if (geoEncoding) {
     geoEncoding = geoEncoding.toLowerCase();
     if (!GEOARROW_ENCODINGS.includes(geoEncoding)) {
+      // eslint-disable-next-line no-console
       console.warn(`Invalid GeoArrow encoding: ${geoEncoding}`);
     } else {
       metadata = metadata || ({} as GeoArrowMetadata);
