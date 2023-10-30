@@ -138,6 +138,15 @@ export default class I3SConverter {
     meshTopologyTypes: new Set(),
     metadataClasses: new Set()
   };
+  /** Total count of tiles in tileset */
+  tileCountTotal: number = 0;
+  /** Count of tiles already converted plus one (refers to the tile currently being converted) */
+  tileCountCurrentlyConverting: number = 0;
+  /**
+   * The number of digits to appear after decimal point in the string representation of the tile count.
+   * It's calculated based on the total count of tiles.
+   */
+  numberOfDigitsInPercentage: number = 0;
 
   constructor() {
     this.attributeMetadataInfo = new AttributeMetadataInfo();
@@ -301,8 +310,12 @@ export default class I3SConverter {
     );
     const {meshTopologyTypes, metadataClasses} = this.preprocessData;
 
+    this.numberOfDigitsInPercentage =
+      this.tileCountTotal > 100 ? Math.ceil(Math.log10(this.tileCountTotal)) - 2 : 0;
+
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
+    console.log(`Tile count: ${this.tileCountTotal}`);
     console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
 
     if (metadataClasses.size) {
@@ -344,6 +357,7 @@ export default class I3SConverter {
       return null;
     }
     if (sourceTile.id) {
+      this.tileCountTotal++;
       console.log(`[analyze]: ${sourceTile.id}`); // eslint-disable-line
     }
 
@@ -604,7 +618,14 @@ export default class I3SConverter {
       return traversalProps;
     }
     if (sourceTile.id) {
-      console.log(`[convert]: ${sourceTile.id}`); // eslint-disable-line
+      // Print the tile number that is currently being converted.
+      this.tileCountCurrentlyConverting++;
+      let percentString = '';
+      if (this.tileCountTotal) {
+        const percent = (this.tileCountCurrentlyConverting / this.tileCountTotal) * 100;
+        percentString = ' ' + percent.toFixed(this.numberOfDigitsInPercentage);
+      }
+      console.log(`[convert${percentString}%]: ${sourceTile.id}`); // eslint-disable-line
     }
 
     const {parentNodes, transform} = traversalProps;
