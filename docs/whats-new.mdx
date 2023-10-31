@@ -1,78 +1,15 @@
 # What's New
 
-<table style={{border: 0}} align="center">
-  <tbody>
-    <tr>
-      <td>
-        <img
-          style={{maxHeight: 200}}
-          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/mvt-layer.jpg"
-        />
-        <p>
-          <i>
-            MVTLoader +{' '}
-            <a
-              target="_blank"
-              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer"
-            >
-              MVTLayer
-            </a>
-          </i>{' '}
-          (v2.1)
-        </p>
-      </td>
-      <td>
-        <img
-          style={{maxHeight: 200}}
-          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/terrain.jpg"
-        />
-        <p>
-          <i>
-            TerrainLoader +{' '}
-            <a
-              target="_blank"
-              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer"
-            >
-              TerrainLayer
-            </a>
-          </i>{' '}
-          (v2.1)
-        </p>
-      </td>
-      <td>
-        <img
-          style={{maxHeight: 200}}
-          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif"
-        />
-        <p>
-          <i>
-            I3SLoader +{' '}
-            <a
-              target="_blank"
-              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer"
-            >
-              Tile3DLayer
-            </a>{' '}
-            + I3S
-          </i>{' '}
-          (v2.1)
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+## v4.0
 
-
-## v4.0 (In Development)
-
-Release Date: TBD, Target Oct 2023
+Release Date: Oct 30, 2023
 
 A major release that brings: 
 
 - **Typed loaders** - The **`load()`** and **`parse()`** APIs now infer types from the supplied loader.
-- **Writers** - More loader moduls now provide writers for formats such as CSV, GeoJSON etc.
+- **Writers** - More writers for formats such as CSV, GeoJSON etc.
 - **File format documentation** - articles describing the [file formats](/docs/formats?README) supported by loaders.gl.
-- **Node.js v18**
+- **Node.js v18 & v20** - Supports the current set of Node.js LTS releases.
 
 ### Loader Module Updates
 
@@ -117,7 +54,6 @@ A major release that brings:
 **@loaders.gl/gltf**
 
 - Support for [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) and [EXT_mesh_features](https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md) glTF extensions for 3D Tiles v1.1. This completes 3D Tiles datasets attribute load support (adding to the current EXT_feature_metadata support). Attribute data can be used for "feature picking" capabilities of i3s viewers.
-
 
 **@loaders.gl/3d-tiles**
 
@@ -631,6 +567,68 @@ The `GLTFLoader` now installs the `DracoLoader`. The application no longer needs
 Release Date: Mar 16, 2020
 
 This release adds a number of new geospatial format loaders. The new loaders enables rendering frameworks to visualize various geospatial datasets.
+
+<table style={{border: 0}} align="center">
+  <tbody>
+    <tr>
+      <td>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/mvt-layer.jpg"
+        />
+        <p>
+          <i>
+            MVTLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/mvt-layer"
+            >
+              MVTLayer
+            </a>
+          </i>{' '}
+          (v2.1)
+        </p>
+      </td>
+      <td>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/terrain.jpg"
+        />
+        <p>
+          <i>
+            TerrainLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/terrain-layer"
+            >
+              TerrainLayer
+            </a>
+          </i>{' '}
+          (v2.1)
+        </p>
+      </td>
+      <td>
+        <img
+          style={{maxHeight: 200}}
+          src="https://raw.github.com/visgl/deck.gl-data/master/images/whats-new/esri-i3s.gif"
+        />
+        <p>
+          <i>
+            I3SLoader +{' '}
+            <a
+              target="_blank"
+              href="https://deck.gl/#/documentation/deckgl-api-reference/layers/tile-3d-layer"
+            >
+              Tile3DLayer
+            </a>{' '}
+            + I3S
+          </i>{' '}
+          (v2.1)
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 **@loaders.gl/i3s** (new loader module)
 
