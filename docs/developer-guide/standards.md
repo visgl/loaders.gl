@@ -38,4 +38,4 @@ Developing standards
 | Format                                                                               |
 | ------------------------------------------------------------------------------------ | ----------------------- |
 | Shapefile                                                                            | `@loaders.gl/shapefile` |
-| [**LERC**](/docs/modules/wms/formats/lerc) (Limited Error Raster Compression) format | `@loaders.gl/wms`       | . |
+| [**LERC**](/docs/modules/lerc/formats/lerc) (Limited Error Raster Compression) format | `@loaders.gl/wms`       | . |

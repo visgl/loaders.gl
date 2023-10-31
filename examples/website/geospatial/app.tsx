@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Map} from 'react-map-gl';
@@ -12,9 +15,11 @@ import FileUploader from './components/file-uploader';
 
 import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load, /* registerLoaders */} from '@loaders.gl/core';
-import {ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetLoader, installBufferPolyfill} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 // import {GeoPackageLoader} from '@loaders.gl/geopackage';
+
+installBufferPolyfill();
 
 const LOADERS: Loader[] = [
   ParquetLoader, 

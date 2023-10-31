@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 export const INITIAL_LOADER_NAME = 'GeoParquet';
 export const INITIAL_EXAMPLE_NAME = 'Airports';
 // export const INITIAL_LOADER_NAME = 'GeoJSON';

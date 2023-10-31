@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {GLTFEnvironment} from '@luma.gl/experimental';
 import GL from '@luma.gl/constants';
 
