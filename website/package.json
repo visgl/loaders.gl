@@ -50,10 +50,7 @@
     "d3-color": "^3.1.0",
     "d3-request": "^1.0.6",
     "d3-scale": "^3.2.1",
-<<<<<<< HEAD
-=======
     "docusaurus-mdx-checker": "^3.0.0",
->>>>>>> 1eb7e7871 (chore: Upgrade to docusaurus 3)
     "docusaurus-node-polyfills": "^1.0.0",
     "expr-eval": "^2.0.2",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
