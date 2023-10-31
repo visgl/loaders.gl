@@ -1,5 +1,24 @@
 # CHANGELOG for loaders.gl
 
+## v4.0
+
+### v4.0.1
+
+- chore(textures): enable tests (#2741)
+- feat(gis): Consolidate geo metadata detection and table conversion (#2742)
+- fix(zip): cd header zip64 data reading fix (#2710)
+- feat(arrow): GeoArrow utilities (#2744)
+- Got rid of .toString() usage for ArrayBuffers (#2743)
+- chore: Add some javascript API guidelines (#2747)
+- Update 3D Tiles Docs (#2749)
+- feat(mvt): MVTileSource (#2750)
+- chore: improve test coverage (#2751)
+- docs: Clean up website links (#2748)
+- refactor(tile-converter): refactor creation of Attribute info (#2718)
+- feat(tile-converter): conversion progress (#2739)
+- chore(shapefile): Improve Shapefile format doc (#2752)
+- fix(tile-converter): i3s-server - esm compatibility (#2745)
+
 ## v4.0 Prerelease
 
 > The official 4.0 alpha track starts with alpha.6
