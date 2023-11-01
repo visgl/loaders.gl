@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {geojsonToBinary} from '@loaders.gl/gis';
 import type {
@@ -43,7 +46,7 @@ export const TCXLoader: LoaderWithParser<
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    tcx: {},
+    tcx: {shape: 'geojson-table'},
     gis: {}
   }
 };
@@ -55,10 +58,9 @@ function parseTextSync(
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = tcx(doc);
 
-  // backwards compatibility
-  const shape = options?.tcx?.shape;
+  const tcxOptions = {...TCXLoader.options.tcx, ...options?.tcx};
 
-  switch (shape) {
+  switch (tcxOptions.shape) {
     case 'object-row-table': {
       const table: ObjectRowTable = {
         shape: 'object-row-table',
@@ -78,6 +80,6 @@ function parseTextSync(
       return geojsonToBinary(geojson.features);
 
     default:
-      throw new Error(shape);
+      throw new Error(tcxOptions.shape);
   }
 }

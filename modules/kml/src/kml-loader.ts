@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {geojsonToBinary} from '@loaders.gl/gis';
 // import {GeoJSONTable} from '@loaders.gl/schema';
@@ -44,9 +47,9 @@ function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = kml(doc);
 
-  // backwards compatibility
-  const shape = options?.kml?.shape || KMLLoader.options.kml?.shape;
-  switch (shape) {
+  const kmlOptions = {...KMLLoader.options.kml, ...options?.kml};
+
+  switch (kmlOptions.shape) {
     case 'geojson-table': {
       const table: GeoJSONTable = {
         shape: 'geojson-table',
@@ -68,6 +71,6 @@ function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable
       };
       return table;
     default:
-      throw new Error(shape);
+      throw new Error(kmlOptions.shape);
   }
 }
