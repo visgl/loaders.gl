@@ -37,8 +37,8 @@
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker && npm run build-worker-node",
     "build-bundle": "ocular-bundle ./src/index.ts",
-    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker.js --target=esnext --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker-node.js --platform=node --target=esnext,node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/crypto-worker.ts --outfile=dist/crypto-worker.js --target=esnext --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/crypto-worker-node.ts --outfile=dist/crypto-worker-node.js --platform=node --target=esnext,node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

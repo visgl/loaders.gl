@@ -2,15 +2,24 @@ import type {WorkerMessageData, WorkerMessageType, WorkerMessagePayload} from '.
 import {getTransferList} from '../worker-utils/get-transfer-list';
 
 /** Vile hack to defeat over-zealous bundlers from stripping out the require */
-function getParentPort() {
+async function getParentPort() {
   // const isNode = globalThis.process;
   let parentPort;
   try {
     // prettier-ignore
     eval('globalThis.parentPort = require(\'worker_threads\').parentPort'); // eslint-disable-line no-eval
     parentPort = globalThis.parentPort;
-    // eslint-disable-next-line no-empty
-  } catch {}
+  } catch (e) {
+    if ((e as Error).message === 'require is not defined') {
+      try {
+        // prettier-ignore
+        eval('globalThis.workerThreadsPromise = import(\'worker_threads\')'); // eslint-disable-line no-eval
+        const workerThreads = await globalThis.workerThreadsPromise;
+        parentPort = workerThreads.parentPort;
+        // eslint-disable-next-line no-empty
+      } catch {}
+    }
+  }
   return parentPort;
 }
 
@@ -21,8 +30,8 @@ const onMessageWrapperMap = new Map();
  */
 export default class WorkerBody {
   /** Check that we are actually in a worker thread */
-  static inWorkerThread(): boolean {
-    return typeof self !== 'undefined' || Boolean(getParentPort());
+  static async inWorkerThread(): Promise<boolean> {
+    return typeof self !== 'undefined' || Boolean(await getParentPort());
   }
 
   /*
@@ -31,24 +40,26 @@ export default class WorkerBody {
   static set onmessage(onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any) {
     function handleMessage(message) {
       // Confusingly the message itself also has a 'type' field which is always set to 'message'
-      const parentPort = getParentPort();
-      const {type, payload} = parentPort ? message : message.data;
-      // if (!isKnownMessage(message)) {
-      //   return;
-      // }
-      onMessage(type, payload);
+      getParentPort().then((parentPort) => {
+        const {type, payload} = parentPort ? message : message.data;
+        // if (!isKnownMessage(message)) {
+        //   return;
+        // }
+        onMessage(type, payload);
+      });
     }
 
-    const parentPort = getParentPort();
-    if (parentPort) {
-      parentPort.on('message', handleMessage);
-      // if (message == 'exit') { parentPort.unref(); }
-      // eslint-disable-next-line
-      parentPort.on('exit', () => console.debug('Node worker closing'));
-    } else {
-      // eslint-disable-next-line no-restricted-globals
-      globalThis.onmessage = handleMessage;
-    }
+    getParentPort().then((parentPort) => {
+      if (parentPort) {
+        parentPort.on('message', handleMessage);
+        // if (message == 'exit') { parentPort.unref(); }
+        // eslint-disable-next-line
+        parentPort.on('exit', () => console.debug('Node worker closing'));
+      } else {
+        // eslint-disable-next-line no-restricted-globals
+        globalThis.onmessage = handleMessage;
+      }
+    });
   }
 
   static addEventListener(
@@ -62,19 +73,21 @@ export default class WorkerBody {
           return;
         }
 
-        // Confusingly in the browser, the message itself also has a 'type' field which is always set to 'message'
-        const parentPort = getParentPort();
-        const {type, payload} = parentPort ? message : message.data;
-        onMessage(type, payload);
+        getParentPort().then((parentPort) => {
+          // Confusingly in the browser, the message itself also has a 'type' field which is always set to 'message'
+          const {type, payload} = parentPort ? message : message.data;
+          onMessage(type, payload);
+        });
       };
     }
 
-    const parentPort = getParentPort();
-    if (parentPort) {
-      console.error('not implemented'); // eslint-disable-line
-    } else {
-      globalThis.addEventListener('message', onMessageWrapper);
-    }
+    getParentPort().then((parentPort) => {
+      if (parentPort) {
+        console.error('not implemented'); // eslint-disable-line
+      } else {
+        globalThis.addEventListener('message', onMessageWrapper);
+      }
+    });
   }
 
   static removeEventListener(
@@ -82,12 +95,13 @@ export default class WorkerBody {
   ) {
     const onMessageWrapper = onMessageWrapperMap.get(onMessage);
     onMessageWrapperMap.delete(onMessage);
-    const parentPort = getParentPort();
-    if (parentPort) {
-      console.error('not implemented'); // eslint-disable-line
-    } else {
-      globalThis.removeEventListener('message', onMessageWrapper);
-    }
+    getParentPort().then((parentPort) => {
+      if (parentPort) {
+        console.error('not implemented'); // eslint-disable-line
+      } else {
+        globalThis.removeEventListener('message', onMessageWrapper);
+      }
+    });
   }
 
   /**
@@ -100,14 +114,15 @@ export default class WorkerBody {
     // console.log('posting message', data);
     const transferList = getTransferList(payload);
 
-    const parentPort = getParentPort();
-    if (parentPort) {
-      parentPort.postMessage(data, transferList);
-      // console.log('posted message', data);
-    } else {
-      // @ts-ignore
-      globalThis.postMessage(data, transferList);
-    }
+    getParentPort().then((parentPort) => {
+      if (parentPort) {
+        parentPort.postMessage(data, transferList);
+        // console.log('posted message', data);
+      } else {
+        // @ts-ignore
+        globalThis.postMessage(data, transferList);
+      }
+    });
   }
 }
 

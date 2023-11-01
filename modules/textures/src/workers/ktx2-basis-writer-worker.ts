@@ -1,9 +1,9 @@
 import {WorkerBody, WorkerMessagePayload} from '@loaders.gl/worker-utils';
 import {KTX2BasisWriter, KTX2BasisWriterOptions} from '../ktx2-basis-writer';
 
-(() => {
+(async () => {
   // Check that we are actually in a worker thread
-  if (!WorkerBody.inWorkerThread()) {
+  if (!(await WorkerBody.inWorkerThread())) {
     return;
   }
 

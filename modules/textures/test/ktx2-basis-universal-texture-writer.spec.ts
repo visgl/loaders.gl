@@ -21,8 +21,7 @@ test('KTX2BasisUniversalTextureWriter#Should encode PNG', async (t) => {
   t.end();
 });
 
-// TODO v4.0 restore these tests
-test.skip('KTX2BasisUniversalTextureWriter # Worker # Should encode PNG', async (t) => {
+test('KTX2BasisUniversalTextureWriter # Worker # Should encode PNG', async (t) => {
   const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
   const encodedData = await processOnWorker(KTX2BasisWriterWorker, image, {
     _workerType: 'test'

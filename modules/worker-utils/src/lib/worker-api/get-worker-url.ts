@@ -41,7 +41,11 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
   // If URL is test, generate local loaders.gl url
   // @ts-ignore _workerType
   if (options._workerType === 'test') {
-    url = `modules/${worker.module}/dist/${workerFile}`;
+    if (isBrowser) {
+      url = `modules/${worker.module}/dist/${workerFile}`;
+    } else {
+      url = `modules/${worker.module}/src/workers/${worker.id}-worker-node.ts`;
+    }
   }
 
   // If url override is not provided, generate a URL to published version on npm CDN unpkg.com

@@ -23,8 +23,11 @@ export type ProcessOnMainThread = (
 /**
  * Set up a WebWorkerGlobalScope to talk with the main thread
  */
-export function createWorker(process: Process, processInBatches?: ProcessInBatches): void {
-  if (!WorkerBody.inWorkerThread()) {
+export async function createWorker(
+  process: Process,
+  processInBatches?: ProcessInBatches
+): Promise<void> {
+  if (!(await WorkerBody.inWorkerThread())) {
     return;
   }
 
