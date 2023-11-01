@@ -10,7 +10,7 @@ import {ObjectRowTableBatch} from '@loaders.gl/schema';
 
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
-const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
+const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 
 test('loadInBatches#FileList', async (t) => {
   if (isBrowser) {
