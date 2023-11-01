@@ -6,7 +6,7 @@ import {load} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
 
-const KML_URL = '@loaders.gl/kml/test/data/KML_Samples.kml';
+const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 
 const LOADERS = [OBJLoader, KMLLoader];
 
