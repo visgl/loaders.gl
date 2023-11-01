@@ -68,3 +68,5 @@ export type {BinaryDataFromGeoArrow} from './geoarrow/convert-geoarrow-to-binary
 export {getBinaryGeometriesFromArrow} from './geoarrow/convert-geoarrow-to-binary-geometry';
 
 export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';
+
+export {updateBoundsFromGeoArrowSamples} from './geoarrow/get-arrow-bounds';
