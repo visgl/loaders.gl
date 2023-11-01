@@ -16,7 +16,7 @@ const INVALID_KML = `\
   <Document>
   </Document>
 </kml>
-`; 
+`;
 
 test('KMLLoader#loader conformance', (t) => {
   validateLoader(t, KMLLoader, 'KMLLoader');

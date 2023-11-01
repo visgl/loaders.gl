@@ -16,16 +16,18 @@ test('TCXLoader#loader conformance', (t) => {
 });
 
 test.skip('TCXLoader#parse', async (t) => {
-  const table = await load(`${TCX_URL}.tcx`, TCXLoader, {gis: {format: 'geojson'}}) as GeoJSONTable;
-  const resp =  await fetchFile(`${TCX_URL}.geojson`);
+  const table = (await load(`${TCX_URL}.tcx`, TCXLoader, {
+    gis: {format: 'geojson'}
+  })) as GeoJSONTable;
+  const resp = await fetchFile(`${TCX_URL}.geojson`);
   const geojson = await resp.json();
   geojson.shape = 'geojson-table';
 
   // TODO - lots of nulls injected in the metrics- should they be copies?
   // console.error(JSON.stringify(table, null, 2));
-  
+
   // t.deepEqual(table, geojson, 'Data matches GeoJSON');
-  t.equal(table.features.length, 1, 'Data matches GeoJSON')
+  t.equal(table.features.length, 1, 'Data matches GeoJSON');
   t.end();
 });
 
