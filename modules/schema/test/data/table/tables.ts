@@ -173,7 +173,7 @@ export const BINARY_PLAIN_TABLE = () => {
   const result: {[key: string]: unknown}[] = [];
 
   for (let index = 0; index < 12; index++) {
-    result.push({foo: Buffer.from([index])});
+    result.push({foo: new Uint8Array([index])});
   }
 
   return result;
@@ -278,7 +278,7 @@ export const NESTED_MAPS_PLAIN_TABLE = [
     a: {
       key_value: [
         {
-          key: Buffer.from([97]),
+          key: new Uint8Array([97]),
           value: {
             key_value: [
               {key: '1', value: true},
@@ -295,7 +295,7 @@ export const NESTED_MAPS_PLAIN_TABLE = [
     a: {
       key_value: [
         {
-          key: Buffer.from([98]),
+          key: new Uint8Array([98]),
           value: {
             key_value: [{key: '1', value: true}]
           }
@@ -307,7 +307,7 @@ export const NESTED_MAPS_PLAIN_TABLE = [
   },
   {
     a: {
-      key_value: [{key: Buffer.from([99])}]
+      key_value: [{key: new Uint8Array([99])}]
     },
     b: '1',
     c: '1'
@@ -316,7 +316,7 @@ export const NESTED_MAPS_PLAIN_TABLE = [
     a: {
       key_value: [
         {
-          key: Buffer.from([100]),
+          key: new Uint8Array([100]),
           value: {}
         }
       ]
@@ -328,7 +328,7 @@ export const NESTED_MAPS_PLAIN_TABLE = [
     a: {
       key_value: [
         {
-          key: Buffer.from([101]),
+          key: new Uint8Array([101]),
           value: {
             key_value: [{key: '1', value: true}]
           }
@@ -342,7 +342,7 @@ export const NESTED_MAPS_PLAIN_TABLE = [
     a: {
       key_value: [
         {
-          key: Buffer.from([102]),
+          key: new Uint8Array([102]),
           value: {
             key_value: [
               {key: '3', value: true},
@@ -363,11 +363,11 @@ export const NO_NULLABLE_PLAIN_TABLE = [
     ID: 8,
     Int_Array: {list: [{element: -1}]},
     int_array_array: {list: [{element: {list: [{element: -1}, {element: -2}]}}, {element: {}}]},
-    Int_Map: {map: [{key: Buffer.from([107, 49]), value: -1}]},
+    Int_Map: {map: [{key: new Uint8Array([107, 49]), value: -1}]},
     int_map_array: {
       list: [
         {element: {}},
-        {element: {map: [{key: Buffer.from([107, 49]), value: 1}]}},
+        {element: {map: [{key: new Uint8Array([107, 49]), value: 1}]}},
         {element: {}},
         {element: {}}
       ]
@@ -384,7 +384,7 @@ export const NO_NULLABLE_PLAIN_TABLE = [
                   {
                     element: {
                       e: -1,
-                      f: Buffer.from([110, 111, 110, 110, 117, 108, 108, 97, 98, 108, 101])
+                      f: new Uint8Array([110, 111, 110, 110, 117, 108, 108, 97, 98, 108, 101])
                     }
                   }
                 ]
@@ -587,14 +587,14 @@ export const DECIMAL_PLAIN_TABLE = [
 ];
 
 export const LZ4_RAW_COMPRESSED_LARGER_FIRST_PLAIN_TABLE = {
-  a: Buffer.from([
+  a: new Uint8Array([
     99, 55, 99, 101, 54, 98, 101, 102, 45, 100, 53, 98, 48, 45, 52, 56, 54, 51, 45, 98, 49, 57, 57,
     45, 56, 101, 97, 56, 99, 55, 102, 98, 49, 49, 55, 98
   ])
 };
 
 export const LZ4_RAW_COMPRESSED_LARGER_LAST_PLAIN_TABLE = {
-  a: Buffer.from([
+  a: new Uint8Array([
     56, 53, 52, 52, 48, 55, 55, 56, 45, 52, 54, 48, 97, 45, 52, 49, 97, 99, 45, 97, 97, 50, 101, 45,
     97, 99, 51, 101, 101, 52, 49, 54, 57, 54, 98, 102
   ])
@@ -603,22 +603,22 @@ export const LZ4_RAW_COMPRESSED_LARGER_LAST_PLAIN_TABLE = {
 export const LZ4_RAW_COMPRESSED_PLAIN_TABLE = [
   {
     c0: 1593604800,
-    c1: Buffer.from([97, 98, 99]),
+    c1: new Uint8Array([97, 98, 99]),
     v11: 42
   },
   {
     c0: 1593604800,
-    c1: Buffer.from([100, 101, 102]),
+    c1: new Uint8Array([100, 101, 102]),
     v11: 7.7
   },
   {
     c0: 1593604801,
-    c1: Buffer.from([97, 98, 99]),
+    c1: new Uint8Array([97, 98, 99]),
     v11: 42.125
   },
   {
     c0: 1593604801,
-    c1: Buffer.from([100, 101, 102]),
+    c1: new Uint8Array([100, 101, 102]),
     v11: 7.7
   }
 ];

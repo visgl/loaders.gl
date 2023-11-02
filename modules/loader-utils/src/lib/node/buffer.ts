@@ -30,6 +30,7 @@ export function toBuffer(binaryData: ArrayBuffer | Buffer): Buffer {
     binaryData = binaryData.buffer;
   }
 
+  // TODO - move to loaders.gl/polyfills
   if (typeof Buffer !== 'undefined' && binaryData instanceof ArrayBuffer) {
     return Buffer.from(binaryData);
   }
