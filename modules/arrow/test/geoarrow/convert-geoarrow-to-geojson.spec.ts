@@ -5,12 +5,12 @@ import {fetchFile} from '@loaders.gl/core';
 import {serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 
-const POINT_ARROW_FILE = '@loaders.gl/arrow/test/data/point.arrow';
-const MULTIPOINT_ARROW_FILE = '@loaders.gl/arrow/test/data/multipoint.arrow';
-const LINE_ARROW_FILE = '@loaders.gl/arrow/test/data/line.arrow';
-const MULTILINE_ARROW_FILE = '@loaders.gl/arrow/test/data/multiline.arrow';
-const POLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/polygon.arrow';
-const MULTIPOLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/multipolygon.arrow';
+export const POINT_ARROW_FILE = '@loaders.gl/arrow/test/data/point.arrow';
+export const MULTIPOINT_ARROW_FILE = '@loaders.gl/arrow/test/data/multipoint.arrow';
+export const LINE_ARROW_FILE = '@loaders.gl/arrow/test/data/line.arrow';
+export const MULTILINE_ARROW_FILE = '@loaders.gl/arrow/test/data/multiline.arrow';
+export const POLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/polygon.arrow';
+export const MULTIPOLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/multipolygon.arrow';
 
 /** Array containing all encodings */
 const GEOARROW_ENCODINGS = [

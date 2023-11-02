@@ -4,6 +4,6 @@
 import './arrow-loader.spec';
 import './arrow-writer.spec';
 
-// import './convert-geoarrow-to-binary-geometry.spec';
+import './geoarrow/convert-geoarrow-to-binary-geometry.spec';
 import './geoarrow/convert-geoarrow-to-geojson.spec';
 import './geoarrow/get-arrow-bounds.spec';

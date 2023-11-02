@@ -24,7 +24,7 @@ type BinaryGeometryContent = {
 };
 
 // binary geometry template, see deck.gl BinaryGeometry
-const BINARY_GEOMETRY_TEMPLATE = {
+export const BINARY_GEOMETRY_TEMPLATE = {
   globalFeatureIds: {value: new Uint32Array(0), size: 1},
   positions: {value: new Float32Array(0), size: 2},
   properties: [],
@@ -54,10 +54,9 @@ export function getBinaryGeometriesFromArrow(
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
 
-  for (let c = 0; c < chunks.length; c++) {
-    const geometries = chunks[c];
+  chunks.forEach((chunk) => {
     const {featureIds, flatCoordinateArray, nDim, geomOffset} = getBinaryGeometriesFromChunk(
-      geometries,
+      chunk,
       geoEncoding
     );
 
@@ -74,14 +73,13 @@ export function getBinaryGeometriesFromArrow(
         size: nDim
       },
       featureIds: {value: featureIds, size: 1},
-      // eslint-disable-next-line no-loop-func
-      properties: [...Array(geometries.length).keys()].map((i) => ({
+      properties: [...Array(chunk.length).keys()].map((i) => ({
         index: i + globalFeatureIdOffset
       }))
     };
 
     // TODO: check if chunks are sequentially accessed
-    globalFeatureIdOffset += geometries.length;
+    globalFeatureIdOffset += chunk.length;
 
     // NOTE: deck.gl defines the BinaryFeatures structure must have points, lines, polygons even if they are empty
     binaryGeometries.push({
@@ -115,7 +113,7 @@ export function getBinaryGeometriesFromArrow(
     });
 
     bounds = updateBoundsFromGeoArrowSamples(flatCoordinateArray, nDim, bounds);
-  }
+  });
 
   return {binaryGeometries, bounds, featureTypes};
 }
