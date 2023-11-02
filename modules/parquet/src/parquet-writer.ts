@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Writer} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder} from '@loaders.gl/loader-utils';
 import {Table, TableBatch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -10,7 +10,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ParquetWriterOptions = {};
 
-export const ParquetWriter: Writer<Table, TableBatch, ParquetWriterOptions> = {
+export const ParquetWriter: WriterWithEncoder<Table, TableBatch, ParquetWriterOptions> = {
   name: 'Apache Parquet',
   id: 'parquet',
   module: 'parquet',

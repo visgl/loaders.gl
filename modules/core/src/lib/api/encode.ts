@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import {Writer, WriterOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
+import {WriterOptions, WriterWithEncoder, canEncodeWithWorker} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffers, resolvePath, NodeFile} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import {isBrowser} from '@loaders.gl/loader-utils';
@@ -13,7 +13,7 @@ import {getLoaderOptions} from './loader-options';
  */
 export async function encode(
   data: unknown,
-  writer: Writer,
+  writer: WriterWithEncoder,
   options?: WriterOptions
 ): Promise<ArrayBuffer> {
   const globalOptions = getLoaderOptions() as WriterOptions;
@@ -75,7 +75,11 @@ export async function encode(
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSync(data: unknown, writer: Writer, options?: WriterOptions): ArrayBuffer {
+export function encodeSync(
+  data: unknown,
+  writer: WriterWithEncoder,
+  options?: WriterOptions
+): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
   }
@@ -90,7 +94,7 @@ export function encodeSync(data: unknown, writer: Writer, options?: WriterOption
  */
 export async function encodeText(
   data: unknown,
-  writer: Writer,
+  writer: WriterWithEncoder,
   options?: WriterOptions
 ): Promise<string> {
   if (writer.text && writer.encodeText) {
@@ -111,7 +115,11 @@ export async function encodeText(
  * It is not optimized for performance. Data maybe converted from text to binary and back.
  * @throws if the writer does not generate text output
  */
-export function encodeTextSync(data: unknown, writer: Writer, options?: WriterOptions): string {
+export function encodeTextSync(
+  data: unknown,
+  writer: WriterWithEncoder,
+  options?: WriterOptions
+): string {
   if (writer.text && writer.encodeTextSync) {
     return writer.encodeTextSync(data, options);
   }
@@ -129,7 +137,7 @@ export function encodeTextSync(data: unknown, writer: Writer, options?: WriterOp
  */
 export function encodeInBatches(
   data: unknown,
-  writer: Writer,
+  writer: WriterWithEncoder,
   options?: WriterOptions
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
@@ -148,7 +156,7 @@ export function encodeInBatches(
 export async function encodeURLtoURL(
   inputUrl: string,
   outputUrl: string,
-  writer: Writer,
+  writer: WriterWithEncoder,
   options?: WriterOptions
 ): Promise<string> {
   inputUrl = resolvePath(inputUrl);

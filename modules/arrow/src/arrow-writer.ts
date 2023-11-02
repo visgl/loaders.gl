@@ -1,6 +1,6 @@
 // import type {} from '@loaders.gl/loader-utils';
 
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import {ColumnarTable} from './lib/encode-arrow';
 import {encodeArrowSync} from './lib/encode-arrow';
 
@@ -13,7 +13,7 @@ type ArrowWriterOptions = WriterOptions & {
 };
 
 /** Apache Arrow writer */
-export const ArrowWriter: Writer<ColumnarTable, never, ArrowWriterOptions> = {
+export const ArrowWriter: WriterWithEncoder<ColumnarTable, never, ArrowWriterOptions> = {
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',

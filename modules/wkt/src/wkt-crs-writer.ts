@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 
 import type {WKTCRS} from './lib/parse-wkt-crs';
@@ -17,7 +17,7 @@ export type WKTCRSWriterOptions = WriterOptions & {
  * @see OGC Standard: https://www.ogc.org/standards/wkt-crs
  * @see Wikipedia Page: https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems
  */
-export const WKTCRSWriter: Writer<WKTCRS, never, WKTCRSWriterOptions> = {
+export const WKTCRSWriter: WriterWithEncoder<WKTCRS, never, WKTCRSWriterOptions> = {
   name: 'WKT CRS (Well-Known Text Coordinate Reference System)',
   id: 'wkt-crs',
   module: 'wkt-crs',

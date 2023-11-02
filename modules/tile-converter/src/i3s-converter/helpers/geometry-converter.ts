@@ -1561,21 +1561,26 @@ async function generateCompressedGeometry(
     };
   }
 
-  return encode({attributes: compressedAttributes, indices}, DracoWriterWorker, {
-    ...DracoWriterWorker.options,
-    reuseWorkers: true,
-    _nodeWorkers: true,
-    modules: libraries,
-    useLocalLibraries: true,
-    draco: {
-      method: 'MESH_SEQUENTIAL_ENCODING',
-      attributesMetadata
-    },
-    ['draco-writer']: {
-      // We need to load local fs workers because nodejs can't load workers from the Internet
-      workerUrl: './modules/draco/dist/draco-writer-worker-node.js'
+  return encode(
+    {attributes: compressedAttributes, indices},
+    // @ts-expect-error if encoded supports worker writer, we should update its type signature
+    DracoWriterWorker,
+    {
+      ...DracoWriterWorker.options,
+      reuseWorkers: true,
+      _nodeWorkers: true,
+      modules: libraries,
+      useLocalLibraries: true,
+      draco: {
+        method: 'MESH_SEQUENTIAL_ENCODING',
+        attributesMetadata
+      },
+      ['draco-writer']: {
+        // We need to load local fs workers because nodejs can't load workers from the Internet
+        workerUrl: './modules/draco/dist/draco-writer-worker-node.js'
+      }
     }
-  });
+  );
 }
 
 /**

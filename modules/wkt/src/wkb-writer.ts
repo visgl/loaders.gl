@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeWKB} from './lib/encode-wkb';
 import type {Geometry, Feature} from '@loaders.gl/schema';
@@ -22,7 +22,7 @@ export type WKBWriterOptions = WriterOptions & {
 /**
  * WKB exporter
  */
-export const WKBWriter: Writer<Geometry | Feature, never, WriterOptions> = {
+export const WKBWriter: WriterWithEncoder<Geometry | Feature, never, WriterOptions> = {
   name: 'WKB (Well Known Binary)',
   id: 'wkb',
   module: 'wkt',

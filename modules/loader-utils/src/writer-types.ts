@@ -18,22 +18,47 @@ export type WriterOptions = {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type Writer<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOptions> = {
+  /** The result type of this loader  */
+  dataType?: DataT;
+  /** The batched result type of this loader  */
+  batchType?: BatchT;
+
+  /** Human readable name */
   name: string;
-
+  /** id should be the same as the field used in LoaderOptions */
   id: string;
+  /** module is used to generate worker threads, need to be the module directory name */
   module: string;
+  /** Version should be injected by build tools */
   version: string;
+  /** A boolean, or a URL */
   worker?: string | boolean;
+  // end Worker
 
-  // TODO - are these are needed?
-  extensions?: string[];
+  /** Which category does this loader belong to */
+  category?: string;
+  /** File extensions that are potential matches with this loader. */
+  extensions: string[];
+  /** MIMETypes that indicate a match with this loader. @note Some MIMETypes are generic and supported by many loaders */
   mimeTypes?: string[];
+
+  /** Is the input of this loader binary */
   binary?: boolean;
+  /** Is the input of this loader text */
   text?: boolean;
 
   options: WriterOptionsT;
   deprecatedOptions?: Record<string, string>;
+};
 
+/**
+ * A writer definition that can be used with `@loaders.gl/core` functions
+ */
+export type WriterWithEncoder<
+  DataT = unknown,
+  BatchT = unknown,
+  WriterOptionsT = WriterOptions
+> = Writer<DataT, BatchT, WriterOptionsT> & {
   encode?(data: DataT, options?: WriterOptionsT): Promise<ArrayBuffer>;
   encodeSync?(data: DataT, options?: WriterOptionsT): ArrayBuffer;
 
