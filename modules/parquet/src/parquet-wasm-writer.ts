@@ -3,14 +3,14 @@
 
 import type {Writer} from '@loaders.gl/loader-utils';
 import {encode, ParquetWriterOptions} from './lib/wasm/encode-parquet-wasm';
-import type {Table as ArrowTable} from 'apache-arrow';
+import type * as arrow from 'apache-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Parquet WASM writer */
-export const ParquetWasmWriter: Writer<ArrowTable, never, ParquetWriterOptions> = {
+export const ParquetWasmWriter: Writer<arrow.Table, never, ParquetWriterOptions> = {
   name: 'Apache Parquet',
   id: 'parquet-wasm',
   module: 'parquet',

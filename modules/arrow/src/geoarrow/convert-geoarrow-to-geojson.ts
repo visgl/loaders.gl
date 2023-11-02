@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import {Vector} from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 import {
   Feature,
   MultiPolygon,
@@ -71,7 +71,7 @@ export function parseGeometryFromArrow(rawData: RawArrowFeature): Feature | null
 /**
  * convert Arrow MultiPolygon to geojson Feature
  */
-function arrowMultiPolygonToFeature(arrowMultiPolygon: Vector): MultiPolygon {
+function arrowMultiPolygonToFeature(arrowMultiPolygon: arrow.Vector): MultiPolygon {
   const multiPolygon: Position[][][] = [];
   for (let m = 0; m < arrowMultiPolygon.length; m++) {
     const arrowPolygon = arrowMultiPolygon.get(m);
@@ -98,7 +98,7 @@ function arrowMultiPolygonToFeature(arrowMultiPolygon: Vector): MultiPolygon {
 /**
  * convert Arrow Polygon to geojson Feature
  */
-function arrowPolygonToFeature(arrowPolygon: Vector): Polygon {
+function arrowPolygonToFeature(arrowPolygon: arrow.Vector): Polygon {
   const polygon: Position[][] = [];
   for (let i = 0; arrowPolygon && i < arrowPolygon.length; i++) {
     const arrowRing = arrowPolygon.get(i);
@@ -120,7 +120,7 @@ function arrowPolygonToFeature(arrowPolygon: Vector): Polygon {
 /**
  * convert Arrow MultiPoint to geojson MultiPoint
  */
-function arrowMultiPointToFeature(arrowMultiPoint: Vector): MultiPoint {
+function arrowMultiPointToFeature(arrowMultiPoint: arrow.Vector): MultiPoint {
   const multiPoint: Position[] = [];
   for (let i = 0; arrowMultiPoint && i < arrowMultiPoint.length; i++) {
     const arrowPoint = arrowMultiPoint.get(i);
@@ -139,7 +139,7 @@ function arrowMultiPointToFeature(arrowMultiPoint: Vector): MultiPoint {
 /**
  * convert Arrow Point to geojson Point
  */
-function arrowPointToFeature(arrowPoint: Vector): Point {
+function arrowPointToFeature(arrowPoint: arrow.Vector): Point {
   const point: Position = Array.from(arrowPoint);
   const geometry: Point = {
     type: 'Point',
@@ -151,7 +151,7 @@ function arrowPointToFeature(arrowPoint: Vector): Point {
 /**
  * convert Arrow MultiLineString to geojson MultiLineString
  */
-function arrowMultiLineStringToFeature(arrowMultiLineString: Vector): MultiLineString {
+function arrowMultiLineStringToFeature(arrowMultiLineString: arrow.Vector): MultiLineString {
   const multiLineString: Position[][] = [];
   for (let i = 0; arrowMultiLineString && i < arrowMultiLineString.length; i++) {
     const arrowLineString = arrowMultiLineString.get(i);
@@ -175,7 +175,7 @@ function arrowMultiLineStringToFeature(arrowMultiLineString: Vector): MultiLineS
 /**
  * convert Arrow LineString to geojson LineString
  */
-function arrowLineStringToFeature(arrowLineString: Vector): LineString {
+function arrowLineStringToFeature(arrowLineString: arrow.Vector): LineString {
   const lineString: Position[] = [];
   for (let i = 0; arrowLineString && i < arrowLineString.length; i++) {
     const arrowCoord = arrowLineString.get(i);

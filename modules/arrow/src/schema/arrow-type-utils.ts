@@ -2,46 +2,27 @@
 // Copyright (c) vis.gl contributors
 
 import type {TypedArray} from '@loaders.gl/schema';
-import {
-  DataType,
-  Float32,
-  Float64,
-  Int16,
-  Int32,
-  Int8,
-  Uint16,
-  Uint32,
-  Uint8
-  // Int8Vector,
-  // Uint8Vector,
-  // Int16Vector,
-  // Uint16Vector,
-  // Int32Vector,
-  // Uint32Vector,
-  // Float32Vector,
-  // Float64Vector
-} from 'apache-arrow';
-// import {AbstractVector} from 'apache-arrow/vector';
+import * as arrow from 'apache-arrow';
 
 /** Return an Apache Arrow Type instance that corresponds to the type of the elements in the supplied Typed Array */
-export function getArrowType(array: TypedArray): DataType {
+export function getArrowType(array: TypedArray): arrow.DataType {
   switch (array.constructor) {
     case Int8Array:
-      return new Int8();
+      return new arrow.Int8();
     case Uint8Array:
-      return new Uint8();
+      return new arrow.Uint8();
     case Int16Array:
-      return new Int16();
+      return new arrow.Int16();
     case Uint16Array:
-      return new Uint16();
+      return new arrow.Uint16();
     case Int32Array:
-      return new Int32();
+      return new arrow.Int32();
     case Uint32Array:
-      return new Uint32();
+      return new arrow.Uint32();
     case Float32Array:
-      return new Float32();
+      return new arrow.Float32();
     case Float64Array:
-      return new Float64();
+      return new arrow.Float64();
     default:
       throw new Error('array type not supported');
   }

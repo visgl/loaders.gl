@@ -8,7 +8,7 @@ import {
 } from '@loaders.gl/parquet';
 import {load, encode, setLoaderOptions} from '@loaders.gl/core';
 import {getTableLength} from '@loaders.gl/schema';
-import {Table as ArrowTable, makeVector, vectorFromArray, Bool, Utf8} from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data/geoparquet';
 const GEOPARQUET_EXAMPLE = `${PARQUET_DIR}/example.parquet`;
@@ -67,13 +67,13 @@ test.skip('ParquetWriterLoader round trip', async (t) => {
   t.end();
 });
 
-function createArrowTable(): ArrowTable {
-  const utf8Vector = vectorFromArray<Utf8>(['a', 'b', 'c', 'd']);
-  const boolVector = makeVector({data: [1, 1, 0, 0], type: new Bool()});
-  const uint8Vector = makeVector(new Uint8Array([1, 2, 3, 4]));
-  const int32Vector = makeVector(new Int32Array([0, -2147483638, 2147483637, 1]));
+function createArrowTable(): arrow.Table {
+  const utf8Vector = arrow.vectorFromArray<arrow.Utf8>(['a', 'b', 'c', 'd']);
+  const boolVector = arrow.makeVector({data: [1, 1, 0, 0], type: new arrow.Bool()});
+  const uint8Vector = arrow.makeVector(new Uint8Array([1, 2, 3, 4]));
+  const int32Vector = arrow.makeVector(new Int32Array([0, -2147483638, 2147483637, 1]));
 
-  const table = new ArrowTable({
+  const table = new arrow.Table({
     str: utf8Vector,
     uint8: uint8Vector,
     int32: int32Vector,
