@@ -44,6 +44,7 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
     if (isBrowser) {
       url = `modules/${worker.module}/dist/${workerFile}`;
     } else {
+      // In the test environment the ts-node loader requires TypeScript code
       url = `modules/${worker.module}/src/workers/${worker.id}-worker-node.ts`;
     }
   }
