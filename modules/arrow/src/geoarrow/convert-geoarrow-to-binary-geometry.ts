@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import {Data, Vector} from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
@@ -40,7 +40,7 @@ const BINARY_GEOMETRY_TEMPLATE = {
  * @returns BinaryDataFromGeoArrow
  */
 export function getBinaryGeometriesFromArrow(
-  geoColumn: Vector,
+  geoColumn: arrow.Vector,
   geoEncoding: GeoArrowEncoding
 ): BinaryDataFromGeoArrow {
   const featureTypes = {
@@ -127,7 +127,7 @@ export function getBinaryGeometriesFromArrow(
  * @returns BinaryGeometryContent
  */
 function getBinaryGeometriesFromChunk(
-  chunk: Data,
+  chunk: arrow.Data,
   geoEncoding: GeoArrowEncoding
 ): BinaryGeometryContent {
   switch (geoEncoding) {
@@ -151,7 +151,7 @@ function getBinaryGeometriesFromChunk(
  * @param geoEncoding the geo encoding of the geoarrow polygon column
  * @returns BinaryGeometryContent
  */
-function getBinaryPolygonsFromChunk(chunk: Data, geoEncoding: string): BinaryGeometryContent {
+function getBinaryPolygonsFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
   const isMultiPolygon = geoEncoding === 'geoarrow.multipolygon';
 
   const polygonData = isMultiPolygon ? chunk.children[0] : chunk;
@@ -193,7 +193,7 @@ function getBinaryPolygonsFromChunk(chunk: Data, geoEncoding: string): BinaryGeo
  * @param geoEncoding the geo encoding of the geoarrow column
  * @returns BinaryGeometryContent
  */
-function getBinaryLinesFromChunk(chunk: Data, geoEncoding: string): BinaryGeometryContent {
+function getBinaryLinesFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
   const isMultiLineString = geoEncoding === 'geoarrow.multilinestring';
 
   const lineData = isMultiLineString ? chunk.children[0] : chunk;
@@ -232,7 +232,7 @@ function getBinaryLinesFromChunk(chunk: Data, geoEncoding: string): BinaryGeomet
  * @param geoEncoding  geo encoding of the geoarrow column
  * @returns BinaryGeometryContent
  */
-function getBinaryPointsFromChunk(chunk: Data, geoEncoding: string): BinaryGeometryContent {
+function getBinaryPointsFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
   const isMultiPoint = geoEncoding === 'geoarrow.multipoint';
 
   const pointData = isMultiPoint ? chunk.children[0] : chunk;

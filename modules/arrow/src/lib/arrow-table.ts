@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Batch, Schema} from '@loaders.gl/schema';
-import type {Table as ApacheArrowTable} from 'apache-arrow';
+import type * as arrow from 'apache-arrow';
 
 /**
  * A table organized as an Apache Arrow table
@@ -11,7 +11,7 @@ import type {Table as ApacheArrowTable} from 'apache-arrow';
 export type ArrowTable = {
   shape: 'arrow-table';
   schema?: Schema;
-  data: ApacheArrowTable;
+  data: arrow.Table;
 };
 
 /**
@@ -22,6 +22,6 @@ export type ArrowTableBatch = Batch & {
   shape: 'arrow-table';
   schemaType?: 'explicit' | 'deduced';
   schema?: Schema;
-  data: ApacheArrowTable; // ApacheRecordBatch;
+  data: arrow.Table; // ApacheRecordBatch;
   length: number;
 };

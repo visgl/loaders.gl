@@ -2,54 +2,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {DataType, Field, Schema, SchemaMetadata} from '@loaders.gl/schema';
-import {
-  Field as ArrowField,
-  Schema as ArrowSchema,
-  DataType as ArrowDataType,
-  Null,
-  Binary,
-  Bool,
-  Int,
-  Int8,
-  Int16,
-  Int32,
-  Int64,
-  Uint8,
-  Uint16,
-  Uint32,
-  Uint64,
-  Float,
-  Float16,
-  Float32,
-  Float64,
-  Precision,
-  Utf8,
-  Date_,
-  DateUnit,
-  DateDay,
-  DateMillisecond,
-  Time,
-  TimeMillisecond,
-  TimeSecond,
-  Timestamp,
-  TimestampSecond,
-  TimestampMillisecond,
-  TimestampMicrosecond,
-  TimestampNanosecond,
-  Interval,
-  IntervalUnit,
-  IntervalDayTime,
-  IntervalYearMonth,
-  FixedSizeList,
-  Struct,
-  TimeUnit,
-  TimeMicrosecond,
-  TimeNanosecond,
-  List
-} from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
-export function serializeArrowSchema(arrowSchema: ArrowSchema): Schema {
+export function serializeArrowSchema(arrowSchema: arrow.Schema): Schema {
   return {
     fields: arrowSchema.fields.map((arrowField) => serializeArrowField(arrowField)),
     metadata: serializeArrowMetadata(arrowSchema.metadata)
@@ -57,8 +13,8 @@ export function serializeArrowSchema(arrowSchema: ArrowSchema): Schema {
 }
 
 /** Convert a serialized Schema (plain data) to an Apache Arrow Schema (class instance) */
-export function deserializeArrowSchema(schema: Schema): ArrowSchema {
-  return new ArrowSchema(
+export function deserializeArrowSchema(schema: Schema): arrow.Schema {
+  return new arrow.Schema(
     schema.fields.map((field) => deserializeArrowField(field)),
     deserializeArrowMetadata(schema.metadata)
   );
@@ -75,7 +31,7 @@ export function deserializeArrowMetadata(metadata?: SchemaMetadata): Map<string,
 }
 
 /** Convert Apache Arrow Field (class instance) to serialized Field (plain data) */
-export function serializeArrowField(field: ArrowField): Field {
+export function serializeArrowField(field: arrow.Field): Field {
   return {
     name: field.name,
     type: serializeArrowType(field.type),
@@ -85,8 +41,8 @@ export function serializeArrowField(field: ArrowField): Field {
 }
 
 /** Convert a serialized Field (plain data) to an Apache Arrow Field (class instance)*/
-export function deserializeArrowField(field: Field): ArrowField {
-  return new ArrowField(
+export function deserializeArrowField(field: Field): arrow.Field {
+  return new arrow.Field(
     field.name,
     deserializeArrowType(field.type),
     field.nullable,
@@ -96,134 +52,134 @@ export function deserializeArrowField(field: Field): ArrowField {
 
 /** Converts a serializable loaders.gl data type to hydrated arrow data type */
 // eslint-disable-next-line complexity
-export function serializeArrowType(arrowType: ArrowDataType): DataType {
+export function serializeArrowType(arrowType: arrow.DataType): DataType {
   switch (arrowType.constructor) {
-    case Null:
+    case arrow.Null:
       return 'null';
-    case Binary:
+    case arrow.Binary:
       return 'binary';
-    case Bool:
+    case arrow.Bool:
       return 'bool';
-    case Int:
-      const intType = arrowType as Int;
+    case arrow.Int:
+      const intType = arrowType as arrow.Int;
       return `${intType.isSigned ? 'u' : ''}int${intType.bitWidth}`;
-    case Int8:
+    case arrow.Int8:
       return 'int8';
-    case Int16:
+    case arrow.Int16:
       return 'int16';
-    case Int32:
+    case arrow.Int32:
       return 'int32';
-    case Int64:
+    case arrow.Int64:
       return 'int64';
-    case Uint8:
+    case arrow.Uint8:
       return 'uint8';
-    case Uint16:
+    case arrow.Uint16:
       return 'uint16';
-    case Uint32:
+    case arrow.Uint32:
       return 'uint32';
-    case Uint64:
+    case arrow.Uint64:
       return 'uint64';
-    case Float:
-      const precision = (arrowType as Float).precision;
+    case arrow.Float:
+      const precision = (arrowType as arrow.Float).precision;
       // return `float(precision + 1) * 16`;
       switch (precision) {
-        case Precision.HALF:
+        case arrow.Precision.HALF:
           return 'float16';
-        case Precision.SINGLE:
+        case arrow.Precision.SINGLE:
           return 'float32';
-        case Precision.DOUBLE:
+        case arrow.Precision.DOUBLE:
           return 'float64';
         default:
           return 'float16';
       }
-    case Float16:
+    case arrow.Float16:
       return 'float16';
-    case Float32:
+    case arrow.Float32:
       return 'float32';
-    case Float64:
+    case arrow.Float64:
       return 'float64';
-    case Utf8:
+    case arrow.Utf8:
       return 'utf8';
     case Date:
-      const dateUnit = (arrowType as Date_).unit;
-      return dateUnit === DateUnit.DAY ? 'date-day' : 'date-millisecond';
-    case DateDay:
+      const dateUnit = (arrowType as arrow.Date_).unit;
+      return dateUnit === arrow.DateUnit.DAY ? 'date-day' : 'date-millisecond';
+    case arrow.DateDay:
       return 'date-day';
-    case DateMillisecond:
+    case arrow.DateMillisecond:
       return 'date-millisecond';
-    case Time:
-      const timeUnit = (arrowType as Time).unit;
+    case arrow.Time:
+      const timeUnit = (arrowType as arrow.Time).unit;
       switch (timeUnit) {
-        case TimeUnit.SECOND:
+        case arrow.TimeUnit.SECOND:
           return 'time-second';
-        case TimeUnit.MILLISECOND:
+        case arrow.TimeUnit.MILLISECOND:
           return 'time-millisecond';
-        case TimeUnit.MICROSECOND:
+        case arrow.TimeUnit.MICROSECOND:
           return 'time-microsecond';
-        case TimeUnit.NANOSECOND:
+        case arrow.TimeUnit.NANOSECOND:
           return 'time-nanosecond';
         default:
           return 'time-second';
       }
-    case TimeMillisecond:
+    case arrow.TimeMillisecond:
       return 'time-millisecond';
-    case TimeSecond:
+    case arrow.TimeSecond:
       return 'time-second';
-    case TimeMicrosecond:
+    case arrow.TimeMicrosecond:
       return 'time-microsecond';
-    case TimeNanosecond:
+    case arrow.TimeNanosecond:
       return 'time-nanosecond';
-    case Timestamp:
-      const timeStampUnit = (arrowType as Timestamp).unit;
+    case arrow.Timestamp:
+      const timeStampUnit = (arrowType as arrow.Timestamp).unit;
       switch (timeStampUnit) {
-        case TimeUnit.SECOND:
+        case arrow.TimeUnit.SECOND:
           return 'timestamp-second';
-        case TimeUnit.MILLISECOND:
+        case arrow.TimeUnit.MILLISECOND:
           return 'timestamp-millisecond';
-        case TimeUnit.MICROSECOND:
+        case arrow.TimeUnit.MICROSECOND:
           return 'timestamp-microsecond';
-        case TimeUnit.NANOSECOND:
+        case arrow.TimeUnit.NANOSECOND:
           return 'timestamp-nanosecond';
         default:
           return 'timestamp-second';
       }
-    case TimestampSecond:
+    case arrow.TimestampSecond:
       return 'timestamp-second';
-    case TimestampMillisecond:
+    case arrow.TimestampMillisecond:
       return 'timestamp-millisecond';
-    case TimestampMicrosecond:
+    case arrow.TimestampMicrosecond:
       return 'timestamp-microsecond';
-    case TimestampNanosecond:
+    case arrow.TimestampNanosecond:
       return 'timestamp-nanosecond';
-    case Interval:
-      const intervalUnit = (arrowType as Interval).unit;
+    case arrow.Interval:
+      const intervalUnit = (arrowType as arrow.Interval).unit;
       switch (intervalUnit) {
-        case IntervalUnit.DAY_TIME:
+        case arrow.IntervalUnit.DAY_TIME:
           return 'interval-daytime';
-        case IntervalUnit.YEAR_MONTH:
+        case arrow.IntervalUnit.YEAR_MONTH:
           return 'interval-yearmonth';
         default:
           return 'interval-daytime';
       }
-    case IntervalDayTime:
+    case arrow.IntervalDayTime:
       return 'interval-daytime';
-    case IntervalYearMonth:
+    case arrow.IntervalYearMonth:
       return 'interval-yearmonth';
-    case List:
-      const listType = arrowType as List;
+    case arrow.List:
+      const listType = arrowType as arrow.List;
       const listField = listType.valueField;
       return {
         type: 'list',
         children: [serializeArrowField(listField)]
       };
-    case FixedSizeList:
+    case arrow.FixedSizeList:
       return {
         type: 'fixed-size-list',
-        listSize: (arrowType as FixedSizeList).listSize,
-        children: [serializeArrowField((arrowType as FixedSizeList).children[0])]
+        listSize: (arrowType as arrow.FixedSizeList).listSize,
+        children: [serializeArrowField((arrowType as arrow.FixedSizeList).children[0])]
       };
-    // case Struct:
-    //   return {type: 'struct', children: (arrowType as Struct).children};
+    // case arrow.Struct:
+    //   return {type: 'struct', children: (arrowType as arrow.Struct).children};
     default:
       throw new Error('array type not supported');
   }
@@ -231,18 +187,18 @@ export function serializeArrowType(arrowType: ArrowDataType): DataType {
 
 /** Converts a serializable loaders.gl data type to hydrated arrow data type */
 // eslint-disable-next-line complexity
-export function deserializeArrowType(dataType: DataType): ArrowDataType {
+export function deserializeArrowType(dataType: DataType): arrow.DataType {
   if (typeof dataType === 'object') {
     switch (dataType.type) {
       case 'list':
         const field = deserializeArrowField(dataType.children[0]);
-        return new List(field);
+        return new arrow.List(field);
       case 'fixed-size-list':
         const child = deserializeArrowField(dataType.children[0]);
-        return new FixedSizeList(dataType.listSize, child);
+        return new arrow.FixedSizeList(dataType.listSize, child);
       case 'struct':
         const children = dataType.children.map((arrowField) => deserializeArrowField(arrowField));
-        return new Struct(children);
+        return new arrow.Struct(children);
       default:
         throw new Error('array type not supported');
     }
@@ -250,59 +206,59 @@ export function deserializeArrowType(dataType: DataType): ArrowDataType {
 
   switch (dataType) {
     case 'null':
-      return new Null();
+      return new arrow.Null();
     case 'binary':
-      return new Binary();
+      return new arrow.Binary();
     case 'bool':
-      return new Bool();
+      return new arrow.Bool();
     case 'int8':
-      return new Int8();
+      return new arrow.Int8();
     case 'int16':
-      return new Int16();
+      return new arrow.Int16();
     case 'int32':
-      return new Int32();
+      return new arrow.Int32();
     case 'int64':
-      return new Int64();
+      return new arrow.Int64();
     case 'uint8':
-      return new Uint8();
+      return new arrow.Uint8();
     case 'uint16':
-      return new Uint16();
+      return new arrow.Uint16();
     case 'uint32':
-      return new Uint32();
+      return new arrow.Uint32();
     case 'uint64':
-      return new Uint64();
+      return new arrow.Uint64();
     case 'float16':
-      return new Float16();
+      return new arrow.Float16();
     case 'float32':
-      return new Float32();
+      return new arrow.Float32();
     case 'float64':
-      return new Float64();
+      return new arrow.Float64();
     case 'utf8':
-      return new Utf8();
+      return new arrow.Utf8();
     case 'date-day':
-      return new DateDay();
+      return new arrow.DateDay();
     case 'date-millisecond':
-      return new DateMillisecond();
+      return new arrow.DateMillisecond();
     case 'time-second':
-      return new TimeSecond();
+      return new arrow.TimeSecond();
     case 'time-millisecond':
-      return new TimeMillisecond();
+      return new arrow.TimeMillisecond();
     case 'time-microsecond':
-      return new TimeMicrosecond();
+      return new arrow.TimeMicrosecond();
     case 'time-nanosecond':
-      return new TimeNanosecond();
+      return new arrow.TimeNanosecond();
     case 'timestamp-second':
-      return new TimestampSecond();
+      return new arrow.TimestampSecond();
     case 'timestamp-millisecond':
-      return new TimestampMillisecond();
+      return new arrow.TimestampMillisecond();
     case 'timestamp-microsecond':
-      return new TimestampMicrosecond();
+      return new arrow.TimestampMicrosecond();
     case 'timestamp-nanosecond':
-      return new TimestampNanosecond();
+      return new arrow.TimestampNanosecond();
     case 'interval-daytime':
-      return new IntervalDayTime();
+      return new arrow.IntervalDayTime();
     case 'interval-yearmonth':
-      return new IntervalYearMonth();
+      return new arrow.IntervalYearMonth();
     default:
       throw new Error('array type not supported');
   }

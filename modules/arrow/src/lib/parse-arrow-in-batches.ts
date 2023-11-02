@@ -1,6 +1,6 @@
 // TODO - this import defeats the sophisticated typescript checking in ArrowJS
 import type {ArrowTableBatch} from './arrow-table';
-import {RecordBatchReader, Table as ApacheArrowTable} from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 // import {isIterable} from '@loaders.gl/core';
 
 /**
@@ -8,7 +8,7 @@ import {RecordBatchReader, Table as ApacheArrowTable} from 'apache-arrow';
 export function parseArrowInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
 ): AsyncIterable<ArrowTableBatch> {
-  // Creates the appropriate RecordBatchReader subclasses from the input
+  // Creates the appropriate arrow.RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
 
   // As an optimization, return a non-async iterator
@@ -28,13 +28,13 @@ export function parseArrowInBatches(
 
   async function* makeArrowAsyncIterator(): AsyncIterator<ArrowTableBatch> {
     // @ts-ignore
-    const readers = RecordBatchReader.readAll(asyncIterator);
+    const readers = arrow.RecordBatchReader.readAll(asyncIterator);
     for await (const reader of readers) {
       for await (const recordBatch of reader) {
         const arrowTabledBatch: ArrowTableBatch = {
           shape: 'arrow-table',
           batchType: 'data',
-          data: new ApacheArrowTable([recordBatch]),
+          data: new arrow.Table([recordBatch]),
           length: recordBatch.data.length
         };
         // processBatch(recordBatch);

@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
-import type {Table as ApacheArrowTable} from 'apache-arrow';
+import type * as arrow from 'apache-arrow';
 import type {ArrowTable} from '../lib/arrow-table';
 
 /**
@@ -11,7 +11,7 @@ import type {ArrowTable} from '../lib/arrow-table';
  * @param arrowTable
  * @returns
  */
-export function convertApacheArrowToArrowTable(arrowTable: ApacheArrowTable): ArrowTable {
+export function convertApacheArrowToArrowTable(arrowTable: arrow.Table): ArrowTable {
   return {
     shape: 'arrow-table',
     data: arrowTable

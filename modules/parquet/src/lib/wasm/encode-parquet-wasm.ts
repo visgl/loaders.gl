@@ -1,7 +1,6 @@
-import type {Table} from 'apache-arrow';
 import type {WriterOptions} from '@loaders.gl/loader-utils';
 
-import {RecordBatchStreamWriter} from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 import {loadWasm} from './load-wasm';
 
 export type ParquetWriterOptions = WriterOptions & {
@@ -11,9 +10,12 @@ export type ParquetWriterOptions = WriterOptions & {
 };
 
 /**
- * Encode Arrow Table to Parquet buffer
+ * Encode Arrow arrow.Table to Parquet buffer
  */
-export async function encode(table: Table, options?: ParquetWriterOptions): Promise<ArrayBuffer> {
+export async function encode(
+  table: arrow.Table,
+  options?: ParquetWriterOptions
+): Promise<ArrayBuffer> {
   const wasmUrl = options?.parquet?.wasmUrl;
   const wasm = await loadWasm(wasmUrl);
 
@@ -28,13 +30,12 @@ export async function encode(table: Table, options?: ParquetWriterOptions): Prom
 }
 
 /**
- * Serialize a {@link Table} to the IPC format. This function is a convenience
- * wrapper for {@link RecordBatchStreamWriter} and {@link RecordBatchFileWriter}.
+ * Serialize a table to the IPC format. This function is a convenience
  * Opposite of {@link tableFromIPC}.
  *
- * @param table The Table to serialize.
- * @param type Whether to serialize the Table as a file or a stream.
+ * @param table The arrow.Table to serialize.
+ * @param type Whether to serialize the arrow.Table as a file or a stream.
  */
-export function tableToIPC(table: Table): Uint8Array {
-  return RecordBatchStreamWriter.writeAll(table).toUint8Array(true);
+export function tableToIPC(table: arrow.Table): Uint8Array {
+  return arrow.RecordBatchStreamWriter.writeAll(table).toUint8Array(true);
 }

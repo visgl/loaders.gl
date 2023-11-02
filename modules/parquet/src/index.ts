@@ -12,7 +12,7 @@ import type {
   GeoJSONTable,
   GeoJSONTableBatch
 } from '@loaders.gl/schema';
-// import type {Table as ApacheArrowTable} from 'apache-arrow';
+// import type * as arrow from 'apache-arrow';
 
 // ParquetLoader
 
@@ -59,7 +59,7 @@ export const ParquetColumnarLoader: LoaderWithParser<
 };
 
 // export const ParquetWasmLoader: LoaderWithParser<
-//   ApacheArrowTable,
+//   arrow.Table,
 //   never,
 //   ParquetWasmLoaderOptions
 // > = {
