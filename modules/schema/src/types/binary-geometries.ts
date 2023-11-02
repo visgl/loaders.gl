@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // GIS
 import type {TypedArray} from './types';
 

@@ -12,6 +12,7 @@ import '@loaders.gl/math/test';
 // Core
 import '@loaders.gl/loader-utils/test';
 import '@loaders.gl/core/test';
+import '@loaders.gl/schema/test';
 
 // Image Formats
 import '@loaders.gl/images/test';
@@ -55,7 +56,6 @@ import '@loaders.gl/mvt/test';
 import '@loaders.gl/pmtiles/test';
 
 // Table Formats
-import '@loaders.gl/schema/test';
 import '@loaders.gl/arrow/test';
 import '@loaders.gl/csv/test';
 import '@loaders.gl/json/test';

@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
+
 import {
   getTableCell,
   getTableLength,
@@ -50,7 +51,7 @@ export function convertTable(
  * @note this depends on the `@loaders.gl/arrow module being imported
  */
 export function makeArrowTable(table: Table): Table {
-  const _makeArrowTable = globalThis.__luma?._makeArrowTable;
+  const _makeArrowTable = globalThis.__loaders?._makeArrowTable;
   if (!_makeArrowTable) {
     throw new Error('');
   }

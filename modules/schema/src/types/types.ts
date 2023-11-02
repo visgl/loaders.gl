@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /** Any typed array */
 export type TypedArray =
   | Int8Array

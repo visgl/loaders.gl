@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* Problem with arrow dependency...
 import {
   Table,

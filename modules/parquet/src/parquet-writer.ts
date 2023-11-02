@@ -17,9 +17,10 @@ export const ParquetWriter: Writer<Table, TableBatch, ParquetWriterOptions> = {
   version: VERSION,
   extensions: ['parquet'],
   mimeTypes: ['application/octet-stream'],
-  encodeSync,
   binary: true,
-  options: {}
+  options: {},
+  encode: async (data, options) => encodeSync(data, options),
+  encodeSync
 };
 
 function encodeSync(data, options?: ParquetWriterOptions) {

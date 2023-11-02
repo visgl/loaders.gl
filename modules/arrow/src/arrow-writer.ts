@@ -24,9 +24,12 @@ export const ArrowWriter: Writer<ColumnarTable, never, ArrowWriterOptions> = {
     'application/vnd.apache.arrow.stream',
     'application/octet-stream'
   ],
-  encodeSync(data, options?) {
+  binary: true,
+  options: {},
+  encode: async function encodeArrow(data, options?): Promise<ArrayBuffer> {
     return encodeArrowSync(data);
   },
-  binary: true,
-  options: {}
+  encodeSync(data, options?) {
+    return encodeArrowSync(data);
+  }
 };
