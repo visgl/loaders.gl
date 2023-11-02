@@ -59,7 +59,10 @@ export {
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 
 export {makeTableFromData} from './lib/table/simple-table/make-table';
-export {makeTableFromBatches, makeBatchesFromTable} from './lib/table/simple-table/make-table-from-batches';
+export {
+  makeTableFromBatches,
+  makeBatchesFromTable
+} from './lib/table/simple-table/make-table-from-batches';
 export {convertTable} from './lib/table/simple-table/convert-table';
 export {deduceTableSchema} from './lib/table/simple-table/table-schema';
 export {convertToObjectRow, convertToArrayRow} from './lib/table/simple-table/row-utils';

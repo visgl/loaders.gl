@@ -24,7 +24,7 @@ export const GLTFWriter = {
   },
 
   encode: async (gltf, options: GLTFWriterOptions = {}) => encodeSync(gltf, options),
-  encodeSync,
+  encodeSync
 };
 
 function encodeSync(gltf, options: GLTFWriterOptions = {}) {

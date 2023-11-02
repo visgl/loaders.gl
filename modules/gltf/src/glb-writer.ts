@@ -29,7 +29,7 @@ export const GLBWriter: Writer<GLB, never, GLBWriterOptions> = {
   },
 
   encode: async (glb, options: GLBWriterOptions = {}) => encodeSync(glb, options),
-  encodeSync,
+  encodeSync
 };
 
 function encodeSync(glb, options) {

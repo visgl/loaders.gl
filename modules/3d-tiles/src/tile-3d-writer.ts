@@ -17,7 +17,7 @@ export const Tile3DWriter: Writer<unknown, never, WriterOptions> = {
     ['3d-tiles']: {}
   },
   encode: async (tile, options) => encodeSync(tile, options),
-  encodeSync,
+  encodeSync
 };
 
 function encodeSync(tile, options) {

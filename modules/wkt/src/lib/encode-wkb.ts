@@ -50,10 +50,7 @@ type WKBOptions = {
  * @param geojson A GeoJSON Feature or Geometry
  * @returns string
  */
-export function encodeWKB(
-  geometry: Geometry | Feature,
-  options: WKBOptions = {}
-): ArrayBuffer {
+export function encodeWKB(geometry: Geometry | Feature, options: WKBOptions = {}): ArrayBuffer {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
   }

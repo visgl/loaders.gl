@@ -15,7 +15,7 @@ import {getTableLength} from '@loaders.gl/schema';
  * Returns an async iterator that yields a single table as a sequence of batches.
  * @note Currently only a single batch is yielded.
  * @note All batches will have the same shape and schema as the original table.
- * @param batchIterator 
+ * @param batchIterator
  * @returns `null` if no batches are yielded by the async iterator
  */
 export function* makeBatchesFromTable(table: Table): IterableIterator<TableBatch> {
@@ -25,7 +25,7 @@ export function* makeBatchesFromTable(table: Table): IterableIterator<TableBatch
 /**
  * Assembles all batches from an async iterator into a single table.
  * @note All batches must have the same shape and schema
- * @param batchIterator 
+ * @param batchIterator
  * @returns `null` if no batches are yielded by the async iterator
  */
 export async function makeTableFromBatches(

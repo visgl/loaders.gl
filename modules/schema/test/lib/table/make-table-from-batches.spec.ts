@@ -2,7 +2,12 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {makeTableFromBatches, makeTableFromData, makeBatchesFromTable, getTableLength} from '@loaders.gl/schema';
+import {
+  makeTableFromBatches,
+  makeTableFromData,
+  makeBatchesFromTable,
+  getTableLength
+} from '@loaders.gl/schema';
 
 // import * from '../../data/table/tables';
 import {

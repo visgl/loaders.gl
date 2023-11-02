@@ -15,7 +15,7 @@ export type WKBWriterOptions = WriterOptions & {
     hasM?: boolean;
 
     /** Spatial reference for input GeoJSON */
-    srid?: any;    
+    srid?: any;
   };
 };
 
