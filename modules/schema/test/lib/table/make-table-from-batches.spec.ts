@@ -39,7 +39,7 @@ test.skip('makeTableFromBatches', async (t) => {
   t.end();
 });
 
-test.only('makeTableFromBatches', async (t) => {
+test('makeTableFromBatches', async (t) => {
   for (const tc of TABLES) {
     const tempTable = makeTableFromData(tc.table);
     const batches = makeBatchesFromTable(tempTable);

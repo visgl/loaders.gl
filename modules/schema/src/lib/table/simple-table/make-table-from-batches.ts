@@ -31,11 +31,6 @@ export function* makeBatchesFromTable(table: Table): IterableIterator<TableBatch
 export async function makeTableFromBatches(
   batchIterator: AsyncIterableIterator<TableBatch> | IterableIterator<TableBatch>
 ): Promise<Table | null> {
-  const batches: TableBatch[] = [];
-  for await (const batch of batchIterator) {
-    batches.push(batch);
-  }
-
   let arrayRows: ArrayRowTable['data'];
   let objectRows: ObjectRowTable['data'];
   let features: Feature[];
