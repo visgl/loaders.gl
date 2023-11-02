@@ -10,7 +10,7 @@ test('FileHandleFile#slice', async (t) => {
   if (!isBrowser) {
     const provider = new FileHandleFile(SLPKUrl);
     const slice = await provider.slice(0n, 4n);
-    t.equals(new Uint8Array(slice), signature);
+    t.deepEqual(new Uint8Array(slice), signature);
   }
   t.end();
 });

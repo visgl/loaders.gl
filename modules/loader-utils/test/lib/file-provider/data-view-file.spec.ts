@@ -10,7 +10,7 @@ if (!isBrowser) {
   test('DataViewFile#slice', async (t) => {
     const provider = new DataViewFile(new DataView(DATA_ARRAY.buffer));
     const slice = await provider.slice(0n, 4n);
-    t.equals(new Uint8Array(slice), getSignature());
+    t.deepEqual(new Uint8Array(slice), getSignature());
     t.end();
   });
 
