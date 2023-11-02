@@ -23,7 +23,7 @@ export function updateBoundsFromGeoArrowSamples(
   for (let i = 0; i < numberOfFeatures; i += sampleStep) {
     const lng = flatCoords[i * nDim];
     const lat = flatCoords[i * nDim + 1];
-    if (lng < bounds[0]) {
+    if (lng < newBounds[0]) {
       newBounds[0] = lng;
     }
     if (lat < newBounds[1]) {
@@ -36,6 +36,5 @@ export function updateBoundsFromGeoArrowSamples(
       newBounds[3] = lat;
     }
   }
-
   return newBounds;
 }

@@ -50,7 +50,7 @@ export function getBinaryGeometriesFromArrow(
   };
 
   const chunks = geoColumn.data;
-  const bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
+  let bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
 
@@ -114,7 +114,7 @@ export function getBinaryGeometriesFromArrow(
       }
     });
 
-    updateBoundsFromGeoArrowSamples(flatCoordinateArray, nDim, bounds);
+    bounds = updateBoundsFromGeoArrowSamples(flatCoordinateArray, nDim, bounds);
   }
 
   return {binaryGeometries, bounds, featureTypes};
