@@ -2,6 +2,7 @@ import test from 'tape-promise/tape';
 
 import {updateBoundsFromGeoArrowSamples} from '@loaders.gl/arrow';
 
+// fix a bug that map bounds are not updated correctly from arrow samples
 test('ArrowUtils#updateBoundsFromGeoArrowSamples', (t) => {
   const testCases = [
     {
