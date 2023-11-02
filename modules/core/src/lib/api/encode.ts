@@ -97,7 +97,7 @@ export async function encodeText(
     return await writer.encodeText(data, options);
   }
 
-  if (writer.text && (writer.encode || writer.encodeInBatches)) {
+  if (writer.text) {
     const arrayBuffer = await encode(data, writer, options);
     return new TextDecoder().decode(arrayBuffer);
   }

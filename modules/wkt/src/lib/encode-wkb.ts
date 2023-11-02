@@ -52,16 +52,10 @@ type WKBOptions = {
  */
 export function encodeWKB(
   geometry: Geometry | Feature,
-  options: WKBOptions | {wkb: WKBOptions} = {}
+  options: WKBOptions = {}
 ): ArrayBuffer {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
-  }
-
-  // Options should be wrapped in a `wkb` key, but we allow top-level options here for backwards
-  // compatibility
-  if ('wkb' in options) {
-    options = options.wkb;
   }
 
   switch (geometry.type) {

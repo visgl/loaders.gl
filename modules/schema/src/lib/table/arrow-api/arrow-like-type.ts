@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // This code is adapted from ArrowJS https://github.com/apache/arrow
 // under Apache license http://www.apache.org/licenses/LICENSE-2.0
 

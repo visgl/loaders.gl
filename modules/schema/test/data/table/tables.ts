@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
+
 // These tables are taken from parquet
 
 /* eslint-disable camelcase */

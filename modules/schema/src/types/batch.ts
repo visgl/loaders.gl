@@ -19,7 +19,7 @@ export type Batch = {
   /** Schema of the data in this batch */
   schema?: Schema;
   /** Data in this batch */
-  data: unknown;
+  data?: unknown;
   /**  If this is an arrow table. @deprecated Use `data` */
   recordBatch?: ApacheRecordBatch;
   /** Length of data in this batch */

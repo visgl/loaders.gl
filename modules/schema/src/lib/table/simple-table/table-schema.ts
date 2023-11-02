@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // Type deduction
 import {Schema, Field} from '../../../types/schema';
 import {ArrayType} from '../../../types/types';

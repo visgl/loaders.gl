@@ -12,11 +12,12 @@ export const Tile3DWriter: Writer<unknown, never, WriterOptions> = {
   version: VERSION,
   extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   mimeTypes: ['application/octet-stream'],
-  encodeSync,
   binary: true,
   options: {
     ['3d-tiles']: {}
-  }
+  },
+  encode: async (tile, options) => encodeSync(tile, options),
+  encodeSync,
 };
 
 function encodeSync(tile, options) {

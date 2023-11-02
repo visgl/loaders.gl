@@ -34,8 +34,6 @@ export type Writer<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOpt
   options: WriterOptionsT;
   deprecatedOptions?: Record<string, string>;
 
-  // encodeText?: EncodeText;
-  // encode?: Encode;
   encode?(data: DataT, options?: WriterOptionsT): Promise<ArrayBuffer>;
   encodeSync?(data: DataT, options?: WriterOptionsT): ArrayBuffer;
 

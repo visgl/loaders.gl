@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
+
 import {Table, ArrayRowTable, ObjectRowTable, ColumnarTable} from '../../../types/category-table';
 import {deduceTableSchema} from './table-schema';
 

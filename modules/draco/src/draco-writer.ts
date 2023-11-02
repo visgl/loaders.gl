@@ -35,10 +35,10 @@ export const DracoWriter: Writer<DracoMesh, unknown, DracoWriterOptions> = {
   module: 'draco',
   version: VERSION,
   extensions: ['drc'],
-  encode,
   options: {
     draco: DEFAULT_DRACO_WRITER_OPTIONS
-  }
+  },
+  encode
 };
 
 async function encode(data: DracoMesh, options: DracoWriterOptions = {}): Promise<ArrayBuffer> {

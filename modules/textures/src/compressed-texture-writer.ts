@@ -36,7 +36,8 @@ export const CompressedTextureWriter: Writer<unknown, unknown, CompressedTexture
     }
   },
 
-  encodeURLtoURL: encodeImageURLToCompressedTextureURL
+  encodeURLtoURL: encodeImageURLToCompressedTextureURL,
+  encode() { throw new Error('Not implemented'); }
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk

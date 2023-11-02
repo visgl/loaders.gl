@@ -24,12 +24,12 @@ export const GLBWriter: Writer<GLB, never, GLBWriterOptions> = {
   extensions: ['glb'],
   mimeTypes: ['model/gltf-binary'],
   binary: true,
-
-  encodeSync,
-
   options: {
     glb: {}
-  }
+  },
+
+  encode: async (glb, options: GLBWriterOptions = {}) => encodeSync(glb, options),
+  encodeSync,
 };
 
 function encodeSync(glb, options) {
