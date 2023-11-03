@@ -5,6 +5,27 @@
 
 import {Table, ArrayRowTable, ObjectRowTable} from '../../../types/category-table';
 
+export function isTable(table: any): table is Table {
+  const shape = typeof table === 'object' && table?.shape;
+  switch (shape) {
+    case 'array-row-table':
+    case 'object-row-table':
+      return Array.isArray(table.data);
+
+    case 'geojson-table':
+      return Array.isArray(table.features);
+
+    case 'columnar-table':
+      return table.data && typeof table.data === 'object';
+
+    case 'arrow-table':
+      return Boolean(table?.data?.numRows !== undefined);
+
+    default:
+      return false;
+  }
+}
+
 /**
  * Returns the length of the table (i.e. the number of rows)
  */

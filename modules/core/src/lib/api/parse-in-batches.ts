@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Batch} from '@loaders.gl/schema';
+import {isTable, makeBatchFromTable, type Batch} from '@loaders.gl/schema';
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LoaderContext, BatchableDataType} from '@loaders.gl/loader-utils';
 import type {LoaderBatchType, LoaderOptionsType} from '@loaders.gl/loader-utils';
@@ -153,30 +153,49 @@ async function parseToOutputIterator(
     return loader.parseInBatches(transformedIterator, options, context);
   }
 
-  // Fallback: load atomically using `parse` concatenating input iterator into single chunk
-  async function* parseChunkInBatches() {
-    const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);
-    // Call `parse` instead of `loader.parse` to ensure we can call workers etc.
-    const parsedData = await parse(
-      arrayBuffer,
-      loader,
-      // TODO - Hack: supply loaders MIME type to ensure we match it
-      {...options, mimeType: loader.mimeTypes[0]},
-      context
-    );
-    // yield a single batch, the output from loader.parse()
-    // TODO - run through batch builder to apply options etc...
-    const batch: Batch = {
-      mimeType: loader.mimeTypes[0],
-      shape: Array.isArray(parsedData) ? 'row-table' : 'unknown',
-      batchType: 'data',
-      data: parsedData,
-      length: Array.isArray(parsedData) ? parsedData.length : 1
-    };
-    yield batch;
-  }
+  return parseChunkInBatches(transformedIterator, loader, options, context);
+}
 
-  return parseChunkInBatches();
+// Fallback: load atomically using `parse` concatenating input iterator into single chunk
+async function* parseChunkInBatches(
+  transformedIterator: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
+  loader: Loader,
+  options: LoaderOptions,
+  context: LoaderContext
+): AsyncIterable<Batch> {
+  const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);
+  // Call `parse` instead of `loader.parse` to ensure we can call workers etc.
+  const parsedData = await parse(
+    arrayBuffer,
+    loader,
+    // TODO - Hack: supply loaders MIME type to ensure we match it
+    {...options, mimeType: loader.mimeTypes[0]},
+    context
+  );
+
+  // yield a single batch, the output from loader.parse() repackaged as a batch
+  const batch = convertDataToBatch(parsedData, loader);
+
+  yield batch;
+}
+
+/**
+ * Convert parsed data into a single batch
+ * @todo run through batch builder to apply options etc...
+ */
+function convertDataToBatch(parsedData: unknown, loader: Loader): Batch {
+  const batch: Batch = isTable(parsedData)
+    ? makeBatchFromTable(parsedData)
+    : {
+        shape: 'unknown',
+        batchType: 'data',
+        data: parsedData,
+        length: Array.isArray(parsedData) ? parsedData.length : 1
+      };
+
+  batch.mimeType = loader.mimeTypes[0];
+
+  return batch;
 }
 
 type TransformBatches = (

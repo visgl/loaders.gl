@@ -5,9 +5,9 @@ import test from 'tape-promise/tape';
 import {
   makeTableFromBatches,
   makeTableFromData,
-  makeBatchesFromTable,
+  makeBatchFromTable,
   getTableLength
-} from '@loaders.gl/schema';
+} from '../../../src'; // '@loaders.gl/schema'; why don't we get typings?
 
 // import * from '../../data/table/tables';
 import {
@@ -33,8 +33,8 @@ import {
 
 test.skip('makeTableFromBatches', async (t) => {
   const tempTable = makeTableFromData(ALL_TYPES_PLAIN_PLAIN_TABLE);
-  const batches = makeBatchesFromTable(tempTable);
-  const table = await makeTableFromBatches(batches);
+  const batch = makeBatchFromTable(tempTable);
+  const table = await makeTableFromBatches([batch]);
   t.equal(getTableLength(table!), 8);
   t.end();
 });
@@ -42,8 +42,8 @@ test.skip('makeTableFromBatches', async (t) => {
 test('makeTableFromBatches', async (t) => {
   for (const tc of TABLES) {
     const tempTable = makeTableFromData(tc.table);
-    const batches = makeBatchesFromTable(tempTable);
-    const table = await makeTableFromBatches(batches);
+    const batch = makeBatchFromTable(tempTable);
+    const table = await makeTableFromBatches([batch]);
     t.equal(getTableLength(table!), tc.length, tc.name);
   }
   t.end();
