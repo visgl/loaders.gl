@@ -5,6 +5,7 @@ import {
   FetchLike,
   TransformBatches /* , DataType, SyncDataType, BatchableDataType */
 } from './types';
+import {ReadableFile} from './lib/files/file';
 
 // LOADERS
 
@@ -161,14 +162,19 @@ export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderO
 > & {
   /** Perform actions before load. @deprecated Not officially supported. */
   preload?: Preload;
-  /** Parse atomically from an arraybuffer asynchronously */
+  /** Parse asynchronously and atomically from an arraybuffer */
   parse: (
     arrayBuffer: ArrayBuffer,
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => Promise<DataT>;
-  parseFile?: (file: Blob, options?: LoaderOptionsT, context?: LoaderContext) => Promise<DataT>;
-  /** Parse atomically from an arraybuffer synchronously */
+  /** Parse asynchronously and atomically from a random access "file like" input */
+  parseFile?: (
+    file: ReadableFile,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => Promise<DataT>;
+  /** Parse synchronously and atomically from an arraybuffer */
   parseSync?: (
     arrayBuffer: ArrayBuffer,
     options?: LoaderOptionsT,
@@ -178,15 +184,15 @@ export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderO
   parseText?: (text: string, options?: LoaderOptionsT, context?: LoaderContext) => Promise<DataT>;
   /** Parse atomically from a string synchronously */
   parseTextSync?: (text: string, options?: LoaderOptionsT, context?: LoaderContext) => DataT;
-  /** Parse batches of data from an iterator, return an iterator that yield parsed batches. */
+  /** Parse batches of data from an iterator (e.g. fetch stream), return an iterator that yield parsed batches. */
   parseInBatches?: (
     iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => AsyncIterable<BatchT>;
-  /** Like `parseInBatches` for loaders that don't integrate with fetch. @deprecated Not officially supported. */
+  /** For random access, file like sources, source that don't integrate with fetch. */
   parseFileInBatches?: (
-    file: Blob,
+    file: ReadableFile,
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => AsyncIterable<BatchT>;

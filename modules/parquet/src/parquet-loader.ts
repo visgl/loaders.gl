@@ -5,9 +5,7 @@ import type {
   ObjectRowTable,
   ObjectRowTableBatch,
   ColumnarTable,
-  ColumnarTableBatch,
-  GeoJSONTable,
-  GeoJSONTableBatch
+  ColumnarTableBatch
 } from '@loaders.gl/schema';
 
 export {Buffer} from './buffer-polyfill/install-buffer-polyfill';
@@ -34,11 +32,7 @@ export type ParquetLoaderOptions = LoaderOptions & {
 };
 
 /** ParquetJS table loader */
-export const ParquetLoader: Loader<
-  ObjectRowTable | GeoJSONTable,
-  ObjectRowTableBatch | GeoJSONTableBatch,
-  ParquetLoaderOptions
-> = {
+export const ParquetLoader: Loader<ObjectRowTable, ObjectRowTableBatch, ParquetLoaderOptions> = {
   name: 'Apache Parquet',
   id: 'parquet',
   module: 'parquet',
