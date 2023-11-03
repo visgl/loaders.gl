@@ -15,8 +15,9 @@ async function getParentPort() {
       eval('globalThis.workerThreadsPromise = import(\'worker_threads\')'); // eslint-disable-line no-eval
       const workerThreads = await globalThis.workerThreadsPromise;
       parentPort = workerThreads.parentPort;
-      // eslint-disable-next-line no-empty
-    } catch {}
+    } catch (error) {
+      console.error((error as Error).message); // eslint-disable-line no-console
+    }
   }
   return parentPort;
 }
