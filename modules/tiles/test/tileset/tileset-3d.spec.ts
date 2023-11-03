@@ -435,8 +435,7 @@ test('Tileset3D#loads tiles in tileset', async (t) => {
   t.end();
 });
 
-// TODO v4.0 restore these tests
-test.skip('Tileset3D#should detect ktx2 texture', async (t) => {
+test('Tileset3D#should detect ktx2 texture', async (t) => {
   const tilesetJson = await load(KTX2_TILESET_URL, Tiles3DLoader);
   const tileset = new Tileset3D(tilesetJson);
 

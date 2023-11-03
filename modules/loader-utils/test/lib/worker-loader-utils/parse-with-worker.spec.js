@@ -10,8 +10,7 @@ import {NullWorkerLoader} from '@loaders.gl/core';
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
 
-// TODO v4.0 restore these tests
-test.skip('parseWithWorker', async (t) => {
+test('parseWithWorker', async (t) => {
   if (!WorkerPool.isSupported()) {
     t.comment('Workers not supported, skipping tests');
     t.end();

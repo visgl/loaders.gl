@@ -42,8 +42,7 @@ test('GLTFScenegraph#addImage', (t) => {
   t.end();
 });
 
-// TODO v4.0 restore these tests
-test.skip('GLTFScenegraph#Should be able to write custom attribute', async (t) => {
+test('GLTFScenegraph#Should be able to write custom attribute', async (t) => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
 
@@ -60,8 +59,7 @@ test.skip('GLTFScenegraph#Should be able to write custom attribute', async (t) =
   t.end();
 });
 
-// TODO v4.0 restore these tests
-test.skip('GLTFScenegraph#Should calculate min and max arrays for accessor', async (t) => {
+test('GLTFScenegraph#Should calculate min and max arrays for accessor', async (t) => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
 
@@ -88,8 +86,7 @@ test.skip('GLTFScenegraph#Should calculate min and max arrays for accessor', asy
   t.end();
 });
 
-// TODO v4.0 restore these tests
-test.skip('GLTFScenegraph#Nodes should store `matrix` transformation data', async (t) => {
+test('GLTFScenegraph#Nodes should store `matrix` transformation data', async (t) => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
 

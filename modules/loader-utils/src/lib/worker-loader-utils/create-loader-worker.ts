@@ -9,9 +9,9 @@ let requestId = 0;
  * Set up a WebWorkerGlobalScope to talk with the main thread
  * @param loader
  */
-export function createLoaderWorker(loader: LoaderWithParser) {
+export async function createLoaderWorker(loader: LoaderWithParser) {
   // Check that we are actually in a worker thread
-  if (!WorkerBody.inWorkerThread()) {
+  if (!(await WorkerBody.inWorkerThread())) {
     return;
   }
 
