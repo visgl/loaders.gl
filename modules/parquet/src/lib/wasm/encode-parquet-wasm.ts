@@ -1,4 +1,5 @@
 import type {WriterOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable} from '@loaders.gl/arrow';
 
 import * as arrow from 'apache-arrow';
 import {loadWasm} from './load-wasm';
@@ -13,14 +14,16 @@ export type ParquetWriterOptions = WriterOptions & {
  * Encode Arrow arrow.Table to Parquet buffer
  */
 export async function encode(
-  table: arrow.Table,
+  table: ArrowTable,
   options?: ParquetWriterOptions
 ): Promise<ArrayBuffer> {
   const wasmUrl = options?.parquet?.wasmUrl;
   const wasm = await loadWasm(wasmUrl);
 
+  const arrowTable: arrow.Table = table.data;
+
   // Serialize a table to the IPC format.
-  const writer = arrow.RecordBatchStreamWriter.writeAll(table);
+  const writer = arrow.RecordBatchStreamWriter.writeAll(arrowTable);
   const arrowIPCBytes = writer.toUint8Array(true);
 
   // TODO: provide options for how to write table.

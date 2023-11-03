@@ -1,6 +1,6 @@
 // eslint-disable
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
-import {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from '@loaders.gl/arrow';
 import {serializeArrowSchema} from '@loaders.gl/arrow';
 import * as arrow from 'apache-arrow';
 import {loadWasm} from './load-wasm/load-wasm-node';

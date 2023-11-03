@@ -10,10 +10,13 @@ import type {
   ColumnarTable,
   ColumnarTableBatch,
   GeoJSONTable,
-  GeoJSONTableBatch,
+  GeoJSONTableBatch
+} from '@loaders.gl/schema';
+
+import {
   ArrowTable
   // ArrowTableBatch
-} from '@loaders.gl/schema';
+} from '@loaders.gl/arrow';
 
 // ParquetLoader
 
