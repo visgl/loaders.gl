@@ -16,14 +16,15 @@ import type {
 
 // ParquetLoader
 
+import {BlobFile} from '@loaders.gl/loader-utils';
 import {
   ParquetLoader as ParquetWorkerLoader,
-  ParquetLoader as ParquetColumnarWorkerLoader,
+  ParquetColumnarLoader as ParquetColumnarWorkerLoader,
   ParquetLoaderOptions
 } from './parquet-loader';
-import {parseParquet, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-rows';
+import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-rows';
 import {
-  parseParquetInColumns,
+  parseParquetFileInColumns,
   parseParquetFileInColumnarBatches
 } from './lib/parsers/parse-parquet-to-columns';
 
@@ -41,8 +42,10 @@ export const ParquetLoader: LoaderWithParser<
   ParquetLoaderOptions
 > = {
   ...ParquetWorkerLoader,
-  parse: parseParquet,
-  // @ts-expect-error
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+    return parseParquetFile(new BlobFile(arrayBuffer), options);
+  },
+  parseFile: parseParquetFile,
   parseFileInBatches: parseParquetFileInBatches
 };
 
@@ -53,8 +56,10 @@ export const ParquetColumnarLoader: LoaderWithParser<
   ParquetLoaderOptions
 > = {
   ...ParquetColumnarWorkerLoader,
-  parse: parseParquetInColumns,
-  // @ts-expect-error
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+    return parseParquetFileInColumns(new BlobFile(arrayBuffer), options);
+  },
+  parseFile: parseParquetFileInColumns,
   parseFileInBatches: parseParquetFileInColumnarBatches
 };
 
