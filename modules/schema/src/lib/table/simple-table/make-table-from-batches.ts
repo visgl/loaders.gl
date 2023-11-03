@@ -36,6 +36,7 @@ export function makeBatchFromTable(table: Table): TableBatch {
  * @param batchIterator
  * @returns `null` if no batches are yielded by the async iterator
  */
+// eslint-disable-next-line complexity
 export async function makeTableFromBatches(
   batchIterator: AsyncIterable<TableBatch> | Iterable<TableBatch>
 ): Promise<Table | null> {

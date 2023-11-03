@@ -41,13 +41,16 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     const metadataUrl = this.getMetadataUrl();
     let response: Response;
     try {
-      // Annoyingly, fetch throws on CORS errors which is common when requesting an unavailable resource
+      // Annoyingly, on CORS errors, fetch doesn't use the response status/ok mechanism but instead throws
+      // CORS errors are common when requesting an unavailable sub resource such as a metadata file or an unavailable tile)
       response = await this.fetch(metadataUrl);
     } catch (error: unknown) {
+      // eslint-disable-next-line no-console
       console.error((error as TypeError).message);
       return null;
     }
     if (!response.ok) {
+      // eslint-disable-next-line no-console
       console.error(response.statusText);
       return null;
     }
