@@ -47,7 +47,7 @@ test('loadInBatches#non-batched loader (gis)', async (t) => {
   for await (const batch of batches) {
     // Just the one batch...
     // @ts-ignore TODO - check returned types
-    t.equal(batch.data.data.length, 20, 'KML length of data features table is correct');
+    t.equal(batch.data.length, 20, 'KML length of data features table is correct');
   }
   t.end();
 });

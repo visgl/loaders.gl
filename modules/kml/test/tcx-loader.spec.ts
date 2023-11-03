@@ -43,7 +43,7 @@ test('TCXLoader#parseInBatches', async (t) => {
 
   console.error(JSON.stringify(data, null, 2));
 
-  t.equal(data.data.features.length, 1);
+  t.equal(data.features.length, 1);
   // t.deepEqual(data, geojson, 'Data matches GeoJSON');
   t.end();
 });
