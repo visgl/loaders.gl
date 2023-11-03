@@ -476,7 +476,7 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
     return newParameters;
   }
 
-  // eslint-disable-complexity
+  // eslint-disable-next-line complexity
   _getURLParameter(key: string, value: unknown, wmsParameters: WMSParameters): string {
     // Substitute by key
     switch (key) {
