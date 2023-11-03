@@ -26,12 +26,15 @@ test('ExcelLoader#load(ZIPCODES)', async (t) => {
 
 test('ExcelLoader#loadInBatches (on worker)', async (t) => {
   // This masquerades an atomic loader as batches
-  const batches = await loadInBatches(ZIPCODES_XLSX_PATH, ExcelLoader) as unknown as AsyncIterable<ObjectRowTableBatch>;
+  const batches = (await loadInBatches(
+    ZIPCODES_XLSX_PATH,
+    ExcelLoader
+  )) as unknown as AsyncIterable<ObjectRowTableBatch>;
   let firstBatch: ObjectRowTableBatch | null = null;
   for await (const batch of batches) {
     firstBatch = firstBatch || batch;
   }
   t.equal(firstBatch?.shape, 'object-row-table', 'XLSX: correct batch type received');
   t.equal(firstBatch?.data.length, 42049, 'XLSX: Correct batch row count received');
-t.end();
+  t.end();
 });

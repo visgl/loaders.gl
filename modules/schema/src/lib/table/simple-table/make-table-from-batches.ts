@@ -15,7 +15,7 @@ import {getTableLength} from '@loaders.gl/schema';
  * Returns an iterator that yields a single table as a sequence of batches.
  * @note Currently only a single batch is yielded.
  * @note All batches will have the same shape and schema as the original table.
- * @returns 
+ * @returns
  */
 export function* makeBatchesFromTable(table: Table): IterableIterator<TableBatch> {
   yield makeBatchFromTable(table);
