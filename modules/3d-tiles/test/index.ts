@@ -15,6 +15,6 @@ import './lib/parsers/helpers/normalize-3d-tile-colors.spec';
 // import './styles/tile-3d-style.spec';
 
 // TODO v4.0 restore these tests
-// import './tiles-3d-loader.spec';
+import './tiles-3d-loader.spec';
 import './tile-3d-subtree-loader.spec';
 import './tiles-3d-archive-loaders.spec';
