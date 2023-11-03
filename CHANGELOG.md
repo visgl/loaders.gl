@@ -2,6 +2,19 @@
 
 ## v4.0
 
+### v4.0.2
+
+- test: run workers from source code (#2762)
+- feat(schema): makeTableFromBatches (#2767)
+- chore: Remove Buffer in test cases (#2766)
+- chore(Arrow): add test cases for geoarrow to binary geometries (#2765)
+- chore: Adopt namespace style imports for apache-arrow (#2764)
+- fix get arrow bound function; add test case (#2763)
+- fix(kml): Fix TXCLoader default shape (#2761)
+- chore: Improve docs (#2758)
+- fix(website): Unbreak website build (#2756)
+- chore: fix 4.0 peer dependencies (#2755)
+
 ### v4.0.1
 
 - chore(textures): enable tests (#2741)
