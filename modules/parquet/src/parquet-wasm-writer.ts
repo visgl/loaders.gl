@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Writer} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder} from '@loaders.gl/loader-utils';
 import {encode, ParquetWriterOptions} from './lib/wasm/encode-parquet-wasm';
 import type * as arrow from 'apache-arrow';
 
@@ -10,18 +10,18 @@ import type * as arrow from 'apache-arrow';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Parquet WASM writer */
-export const ParquetWasmWriter: Writer<arrow.Table, never, ParquetWriterOptions> = {
+export const ParquetWasmWriter: WriterWithEncoder<arrow.Table, never, ParquetWriterOptions> = {
   name: 'Apache Parquet',
   id: 'parquet-wasm',
   module: 'parquet',
   version: VERSION,
   extensions: ['parquet'],
   mimeTypes: ['application/octet-stream'],
-  encode,
   binary: true,
   options: {
     parquet: {
       wasmUrl: 'https://unpkg.com/parquet-wasm@0.3.1/esm2/arrow1_bg.wasm'
     }
-  }
+  },
+  encode
 };

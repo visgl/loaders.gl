@@ -3,7 +3,7 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 /* global TextEncoder */
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import {encodeTableAsJSON} from './lib/encoders/json-encoder';
 
@@ -18,7 +18,7 @@ type RowArray = unknown[];
 type RowObject = {[key: string]: unknown};
 type TableJSON = RowArray[] | RowObject[];
 
-export const JSONWriter: Writer<Table, TableBatch, JSONWriterOptions> = {
+export const JSONWriter: WriterWithEncoder<Table, TableBatch, JSONWriterOptions> = {
   id: 'json',
   version: 'latest',
   module: 'json',

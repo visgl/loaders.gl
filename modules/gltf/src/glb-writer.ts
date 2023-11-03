@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
 import type {GLBEncodeOptions} from './lib/encoders/encode-glb';
 import {encodeGLBSync} from './lib/encoders/encode-glb';
@@ -15,7 +15,7 @@ export type GLBWriterOptions = WriterOptions & {
  * GLB exporter
  * GLB is the binary container format for GLTF
  */
-export const GLBWriter: Writer<GLB, never, GLBWriterOptions> = {
+export const GLBWriter: WriterWithEncoder<GLB, never, GLBWriterOptions> = {
   name: 'GLB',
   id: 'glb',
   module: 'gltf',
@@ -45,6 +45,3 @@ function encodeSync(glb, options) {
 
   return arrayBuffer;
 }
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckGLBLoader: Writer = GLBWriter;

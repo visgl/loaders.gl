@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 
 /* global TextEncoder */
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import {encodeTableAsCSV} from './lib/encoders/encode-csv';
 
@@ -14,7 +14,7 @@ export type CSVWriterOptions = WriterOptions & {
   useDisplayNames?: never;
 };
 
-export const CSVWriter: Writer<Table, TableBatch, CSVWriterOptions> = {
+export const CSVWriter: WriterWithEncoder<Table, TableBatch, CSVWriterOptions> = {
   id: 'csv',
   version: 'latest',
   module: 'csv',
