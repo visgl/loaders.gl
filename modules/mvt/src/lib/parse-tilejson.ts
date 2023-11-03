@@ -161,6 +161,7 @@ export function parseTileJSON(jsonMetadata: any, options: TileJSONOptions): Tile
     try {
       tileJSON.metaJson = JSON.parse(jsonMetadata.json);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn('Failed to parse tilejson.json field', error);
       // do nothing
     }

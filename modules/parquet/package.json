@@ -58,6 +58,7 @@
   ],
   "dependencies": {
     "@loaders.gl/bson": "4.0.2",
+    "@loaders.gl/arrow": "4.0.2",
     "@loaders.gl/compression": "4.0.2",
     "@loaders.gl/gis": "4.0.2",
     "@loaders.gl/loader-utils": "4.0.2",

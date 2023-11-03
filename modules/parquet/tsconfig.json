@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../arrow"},
     {"path": "../compression"},
     {"path": "../loader-utils"},
     {"path": "../schema"},

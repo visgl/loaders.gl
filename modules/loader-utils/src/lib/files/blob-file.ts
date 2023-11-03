@@ -3,6 +3,9 @@
 
 import {ReadableFile} from './file';
 
+/**
+ * BlobFile provides a "file like interface" to the data in a Blob or File object
+ */
 export class BlobFile implements ReadableFile {
   readonly handle: Blob;
   readonly size: number;
