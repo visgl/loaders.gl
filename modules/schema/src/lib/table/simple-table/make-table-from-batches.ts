@@ -12,14 +12,22 @@ import type {
 import {getTableLength} from '@loaders.gl/schema';
 
 /**
- * Returns an async iterator that yields a single table as a sequence of batches.
+ * Returns an iterator that yields a single table as a sequence of batches.
  * @note Currently only a single batch is yielded.
  * @note All batches will have the same shape and schema as the original table.
- * @param batchIterator
- * @returns `null` if no batches are yielded by the async iterator
+ * @returns
  */
 export function* makeBatchesFromTable(table: Table): IterableIterator<TableBatch> {
-  yield {...table, length: getTableLength(table), batchType: 'data'};
+  yield makeBatchFromTable(table);
+}
+
+/**
+ * Returns a table packaged as a single table batch
+ * @note The batch will have the same shape and schema as the original table.
+ * @returns `null` if no batches are yielded by the async iterator
+ */
+export function makeBatchFromTable(table: Table): TableBatch {
+  return {...table, length: getTableLength(table), batchType: 'data'};
 }
 
 /**
@@ -29,7 +37,7 @@ export function* makeBatchesFromTable(table: Table): IterableIterator<TableBatch
  * @returns `null` if no batches are yielded by the async iterator
  */
 export async function makeTableFromBatches(
-  batchIterator: AsyncIterableIterator<TableBatch> | IterableIterator<TableBatch>
+  batchIterator: AsyncIterable<TableBatch> | Iterable<TableBatch>
 ): Promise<Table | null> {
   let arrayRows: ArrayRowTable['data'];
   let objectRows: ObjectRowTable['data'];

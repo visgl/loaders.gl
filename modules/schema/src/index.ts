@@ -43,6 +43,7 @@ export {RowTableBatchAggregator} from './lib/table/batches/row-table-batch-aggre
 export {ColumnarTableBatchAggregator} from './lib/table/batches/columnar-table-batch-aggregator';
 
 export {
+  isTable,
   getTableLength,
   getTableNumCols,
   getTableCell,
@@ -61,7 +62,7 @@ export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 export {makeTableFromData} from './lib/table/simple-table/make-table';
 export {
   makeTableFromBatches,
-  makeBatchesFromTable
+  makeBatchFromTable
 } from './lib/table/simple-table/make-table-from-batches';
 export {convertTable} from './lib/table/simple-table/convert-table';
 export {deduceTableSchema} from './lib/table/simple-table/table-schema';
