@@ -79,6 +79,7 @@ import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
+import {Progress} from './helpers/progress';
 
 const ION_DEFAULT_TOKEN = process.env?.IonToken;
 const HARDCODED_NODES_PER_PAGE = 64;
@@ -87,6 +88,7 @@ const _3D_OBJECT_LAYER_TYPE = '3DObject';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
 const CESIUM_DATASET_PREFIX = 'https://';
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
+const PROGRESS_PHASE1_COUNT = 'phase1-count';
 
 /**
  * Converter from 3d-tiles tileset to i3s layer
@@ -138,15 +140,7 @@ export default class I3SConverter {
     meshTopologyTypes: new Set(),
     metadataClasses: new Set()
   };
-  /** Total count of tiles in tileset */
-  tileCountTotal: number = 0;
-  /** Count of tiles already converted plus one (refers to the tile currently being converted) */
-  tileCountCurrentlyConverting: number = 0;
-  /**
-   * The number of digits to appear after decimal point in the string representation of the tile count.
-   * It's calculated based on the total count of tiles.
-   */
-  numberOfDigitsInPercentage: number = 0;
+  progresses: Record<string, Progress> = {};
 
   constructor() {
     this.attributeMetadataInfo = new AttributeMetadataInfo();
@@ -244,6 +238,7 @@ export default class I3SConverter {
       inquirer,
       metadataClass
     };
+    this.progresses[PROGRESS_PHASE1_COUNT] = new Progress();
     this.compressList = (this.options.instantNodeWriting && []) || null;
     this.validate = Boolean(validate);
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
@@ -310,12 +305,9 @@ export default class I3SConverter {
     );
     const {meshTopologyTypes, metadataClasses} = this.preprocessData;
 
-    this.numberOfDigitsInPercentage =
-      this.tileCountTotal > 100 ? Math.ceil(Math.log10(this.tileCountTotal)) - 2 : 0;
-
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
-    console.log(`Tile count: ${this.tileCountTotal}`);
+    console.log(`Tile count: ${this.progresses[PROGRESS_PHASE1_COUNT].stepsTotal}`);
     console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
 
     if (metadataClasses.size) {
@@ -357,7 +349,7 @@ export default class I3SConverter {
       return null;
     }
     if (sourceTile.id) {
-      this.tileCountTotal++;
+      this.progresses[PROGRESS_PHASE1_COUNT].stepsTotal += 1;
       console.log(`[analyze]: ${sourceTile.id}`); // eslint-disable-line
     }
 
@@ -374,7 +366,6 @@ export default class I3SConverter {
     }
     const tilePreprocessData = await analyzeTileContent(tileContent);
     mergePreprocessData(this.preprocessData, tilePreprocessData);
-
     return null;
   }
 
@@ -451,7 +442,7 @@ export default class I3SConverter {
       obb: boundingVolumes.obb,
       children: []
     });
-
+    this.progresses[PROGRESS_PHASE1_COUNT].startMonitoring();
     const rootNode = await NodeIndexDocument.createRootNode(boundingVolumes, this);
     await traverseDatasetWith<TraversalConversionProps>(
       sourceRootTile,
@@ -463,6 +454,7 @@ export default class I3SConverter {
       this.finalizeTile.bind(this),
       this.options.maxDepth
     );
+    this.progresses[PROGRESS_PHASE1_COUNT].stopMonitoring();
 
     this.layers0!.attributeStorageInfo = this.attributeMetadataInfo.attributeStorageInfo;
     this.layers0!.fields = this.attributeMetadataInfo.fields;
@@ -617,17 +609,6 @@ export default class I3SConverter {
       }
       return traversalProps;
     }
-    if (sourceTile.id) {
-      // Print the tile number that is currently being converted.
-      this.tileCountCurrentlyConverting++;
-      let percentString = '';
-      if (this.tileCountTotal) {
-        const percent = (this.tileCountCurrentlyConverting / this.tileCountTotal) * 100;
-        percentString = ' ' + percent.toFixed(this.numberOfDigitsInPercentage);
-      }
-      console.log(`[convert${percentString}%]: ${sourceTile.id}`); // eslint-disable-line
-    }
-
     const {parentNodes, transform} = traversalProps;
     let transformationMatrix: Matrix4 = transform.clone();
     if (sourceTile.transform) {
@@ -641,6 +622,25 @@ export default class I3SConverter {
       transform: transformationMatrix,
       parentNodes: childNodes
     };
+
+    if (sourceTile.id) {
+      this.progresses[PROGRESS_PHASE1_COUNT].stepsDone += 1;
+
+      let timeRemainingString = 'Calculating...';
+      const timeRemainingObjectBasedOnCount =
+        this.progresses[PROGRESS_PHASE1_COUNT].getTimeRemaining();
+      if (timeRemainingObjectBasedOnCount !== null && timeRemainingObjectBasedOnCount.trust) {
+        timeRemainingString = `${timeRemainingObjectBasedOnCount.timeRemaining} seconds`;
+      }
+
+      let percentString = this.progresses[PROGRESS_PHASE1_COUNT].getPercentString();
+      if (percentString) {
+        percentString = ' ' + percentString;
+      }
+      console.log(
+        `[converted${percentString}%, time remaining = ${timeRemainingString}]: ${sourceTile.id}`
+      ); // eslint-disable-line
+    }
     return newTraversalProps;
   }
 
