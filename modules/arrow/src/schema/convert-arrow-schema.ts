@@ -101,8 +101,13 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
     case arrow.Utf8:
       return 'utf8';
     case arrow.Decimal:
-      const decimal = (arrowType as arrow.Decimal);;
-      return {type: 'decimal', bitWidth: decimal.bitWidth, precision: decimal.precision, scale: decimal.scale};
+      const decimal = arrowType as arrow.Decimal;
+      return {
+        type: 'decimal',
+        bitWidth: decimal.bitWidth,
+        precision: decimal.precision,
+        scale: decimal.scale
+      };
     case arrow.Date_:
       const dateUnit = (arrowType as arrow.Date_).unit;
       return dateUnit === arrow.DateUnit.DAY ? 'date-day' : 'date-millisecond';
@@ -191,7 +196,10 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       };
     case arrow.Struct:
       const structType = arrowType as arrow.Struct;
-      return {type: 'struct', children: structType.children.map((arrowField) => serializeArrowField(arrowField))};
+      return {
+        type: 'struct',
+        children: structType.children.map((arrowField) => serializeArrowField(arrowField))
+      };
     default:
       throw new Error(`arrow type not supported: ${arrowType.constructor.name}`);
   }
@@ -205,7 +213,7 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
       case 'decimal':
         return new arrow.Decimal(dataType.precision, dataType.scale, dataType.bitWidth);
       case 'map':
-        let children = dataType.children.map((arrowField) => deserializeArrowField(arrowField))
+        let children = dataType.children.map((arrowField) => deserializeArrowField(arrowField));
         return new arrow.Map_(children as any, dataType.keysSorted);
       case 'list':
         const field = deserializeArrowField(dataType.children[0]);
