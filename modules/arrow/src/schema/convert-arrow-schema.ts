@@ -100,7 +100,15 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       return 'float64';
     case arrow.Utf8:
       return 'utf8';
-    case Date:
+    case arrow.Decimal:
+      const decimal = arrowType as arrow.Decimal;
+      return {
+        type: 'decimal',
+        bitWidth: decimal.bitWidth,
+        precision: decimal.precision,
+        scale: decimal.scale
+      };
+    case arrow.Date_:
       const dateUnit = (arrowType as arrow.Date_).unit;
       return dateUnit === arrow.DateUnit.DAY ? 'date-day' : 'date-millisecond';
     case arrow.DateDay:
@@ -165,6 +173,13 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       return 'interval-daytime';
     case arrow.IntervalYearMonth:
       return 'interval-yearmonth';
+    case arrow.Map_:
+      const mapType = arrowType as arrow.Map_;
+      return {
+        type: 'map',
+        keysSorted: mapType.keysSorted,
+        children: mapType.children.map((arrowField) => serializeArrowField(arrowField))
+      };
     case arrow.List:
       const listType = arrowType as arrow.List;
       const listField = listType.valueField;
@@ -173,15 +188,20 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
         children: [serializeArrowField(listField)]
       };
     case arrow.FixedSizeList:
+      const fixedSizeList = arrowType as arrow.FixedSizeList;
       return {
         type: 'fixed-size-list',
-        listSize: (arrowType as arrow.FixedSizeList).listSize,
-        children: [serializeArrowField((arrowType as arrow.FixedSizeList).children[0])]
+        listSize: fixedSizeList.listSize,
+        children: [serializeArrowField(fixedSizeList.children[0])]
       };
-    // case arrow.Struct:
-    //   return {type: 'struct', children: (arrowType as arrow.Struct).children};
+    case arrow.Struct:
+      const structType = arrowType as arrow.Struct;
+      return {
+        type: 'struct',
+        children: structType.children.map((arrowField) => serializeArrowField(arrowField))
+      };
     default:
-      throw new Error('array type not supported');
+      throw new Error(`arrow type not supported: ${arrowType.constructor.name}`);
   }
 }
 
@@ -190,6 +210,11 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
 export function deserializeArrowType(dataType: DataType): arrow.DataType {
   if (typeof dataType === 'object') {
     switch (dataType.type) {
+      case 'decimal':
+        return new arrow.Decimal(dataType.precision, dataType.scale, dataType.bitWidth);
+      case 'map':
+        let children = dataType.children.map((arrowField) => deserializeArrowField(arrowField));
+        return new arrow.Map_(children as any, dataType.keysSorted);
       case 'list':
         const field = deserializeArrowField(dataType.children[0]);
         return new arrow.List(field);
@@ -197,7 +222,7 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
         const child = deserializeArrowField(dataType.children[0]);
         return new arrow.FixedSizeList(dataType.listSize, child);
       case 'struct':
-        const children = dataType.children.map((arrowField) => deserializeArrowField(arrowField));
+        children = dataType.children.map((arrowField) => deserializeArrowField(arrowField));
         return new arrow.Struct(children);
       default:
         throw new Error('array type not supported');

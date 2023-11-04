@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
+
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {
   ObjectRowTable,
@@ -8,7 +9,7 @@ import type {
   ColumnarTableBatch
 } from '@loaders.gl/schema';
 
-export {Buffer} from './buffer-polyfill/install-buffer-polyfill';
+export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

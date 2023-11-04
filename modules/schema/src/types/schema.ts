@@ -37,6 +37,7 @@ export type DataType =
   | 'interval-daytime'
   | 'interval-yearmonth'
   // Composite types
+  | {type: 'decimal'; bitWidth: number; precision: number; scale: number}
   | {type: 'list'; children: Field[]} // one child only
   | {type: 'struct'; children: Field[]}
   | {

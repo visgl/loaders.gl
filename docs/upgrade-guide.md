@@ -30,7 +30,7 @@ Since Apache Arrow JS does yet not come with upgrade notes, you can refer to the
 If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" lower-overhead loaders.gl schemas. You can recover Arrow schemas as follows
 
 ```typescript
-import {deserializeArrowSchema} from '@loaders.gl/schema-utils';
+import {deserializeArrowSchema} from '@loaders.gl/arrow';
 const table = load(url, ParquetLoader);
 const arrowSchema = deserializeArrowSchema(table.schema);
 ```

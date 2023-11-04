@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-export {Buffer} from './buffer-polyfill/install-buffer-polyfill';
+export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {
@@ -12,7 +12,11 @@ import type {
   GeoJSONTable,
   GeoJSONTableBatch
 } from '@loaders.gl/schema';
-// import type * as arrow from 'apache-arrow';
+
+import {
+  ArrowTable
+  // ArrowTableBatch
+} from '@loaders.gl/arrow';
 
 // ParquetLoader
 
@@ -28,12 +32,12 @@ import {
   parseParquetFileInColumnarBatches
 } from './lib/parsers/parse-parquet-to-columns';
 
-// import type {ParquetWasmLoaderOptions} from './lib/wasm/parse-parquet-wasm';
-// import {parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
-// import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
+import type {ParquetWasmLoaderOptions} from './lib/wasm/parse-parquet-wasm';
+import {parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
+import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
 
 export {ParquetWorkerLoader};
-// export {ParquetWasmWorkerLoader};
+export {ParquetWasmWorkerLoader};
 
 /** ParquetJS table loader */
 export const ParquetLoader: LoaderWithParser<
@@ -63,20 +67,15 @@ export const ParquetColumnarLoader: LoaderWithParser<
   parseFileInBatches: parseParquetFileInColumnarBatches
 };
 
-// export const ParquetWasmLoader: LoaderWithParser<
-//   arrow.Table,
-//   never,
-//   ParquetWasmLoaderOptions
-// > = {
-//   ...ParquetWasmWorkerLoader,
-//   // @ts-expect-error Getting strange errors in wasm
-//   parse: () => {} // parseParquetWasm
-// };
+export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
+  ...ParquetWasmWorkerLoader,
+  parse: parseParquetWasm
+};
 
 // ParquetWriter
 
 export {ParquetWriter as _ParquetWriter} from './parquet-writer';
-// export {ParquetWasmWriter} from './parquet-wasm-writer';
+export {ParquetWasmWriter} from './parquet-wasm-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 
@@ -92,4 +91,4 @@ export {
 } from './lib/arrow/convert-schema-from-parquet';
 
 // Experimental
-export {BufferPolyfill, installBufferPolyfill} from './buffer-polyfill';
+export {BufferPolyfill, installBufferPolyfill} from './polyfills/buffer';

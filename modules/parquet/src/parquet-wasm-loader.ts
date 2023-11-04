@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type * as arrow from 'apache-arrow';
+import type {ArrowTable} from '@loaders.gl/arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -17,7 +17,7 @@ export type ParquetWasmLoaderOptions = LoaderOptions & {
 };
 
 /** Parquet WASM table loader */
-export const ParquetWasmLoader: Loader<arrow.Table, never, ParquetWasmLoaderOptions> = {
+export const ParquetWasmLoader: Loader<ArrowTable, never, ParquetWasmLoaderOptions> = {
   name: 'Apache Parquet',
   id: 'parquet-wasm',
   module: 'parquet',

@@ -41,8 +41,6 @@ test('TCXLoader#parseInBatches', async (t) => {
   // const geojson = await resp.json();
   // geojson.shape = 'geojson-table';
 
-  console.error(JSON.stringify(data, null, 2));
-
   t.equal(data.features.length, 1);
   // t.deepEqual(data, geojson, 'Data matches GeoJSON');
   t.end();

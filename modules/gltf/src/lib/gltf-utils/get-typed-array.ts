@@ -42,7 +42,7 @@ export function getTypedArrayForAccessor(
 ): TypedArray {
   const gltfAccessor = typeof accessor === 'number' ? json.accessors?.[accessor] : accessor;
   if (!gltfAccessor) {
-    throw new Error(`No gltf accessor ${accessor}`);
+    throw new Error(`No gltf accessor ${JSON.stringify(accessor)}`);
   }
   const bufferView = json.bufferViews?.[gltfAccessor.bufferView || 0];
   if (!bufferView) {

@@ -1,7 +1,9 @@
 // eslint-disable
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable} from '@loaders.gl/arrow';
+import {serializeArrowSchema} from '@loaders.gl/arrow';
 import * as arrow from 'apache-arrow';
-import {loadWasm} from './load-wasm/load-wasm-node';
+import {loadWasm} from './load-wasm';
 
 export type ParquetWasmLoaderOptions = LoaderOptions & {
   parquet?: {
@@ -13,7 +15,7 @@ export type ParquetWasmLoaderOptions = LoaderOptions & {
 export async function parseParquetWasm(
   arrayBuffer: ArrayBuffer,
   options?: ParquetWasmLoaderOptions
-): Promise<arrow.Table> {
+): Promise<ArrowTable> {
   const wasmUrl = options?.parquet?.wasmUrl;
   const wasm = await loadWasm(wasmUrl);
 
@@ -23,19 +25,17 @@ export async function parseParquetWasm(
     arrowIPCUint8Arr.byteOffset,
     arrowIPCUint8Arr.byteLength + arrowIPCUint8Arr.byteOffset
   );
-  const arrowTable = tableFromIPC(arrowIPCBuffer);
-  return arrowTable;
-}
 
-/**
- * Deserialize the IPC format into a {@link Table}. This function is a
- * convenience wrapper for {@link RecordBatchReader}. Opposite of {@link tableToIPC}.
- */
-function tableFromIPC(input: ArrayBuffer): arrow.Table {
-  const reader = arrow.RecordBatchStreamReader.from(input);
+  const reader = arrow.RecordBatchStreamReader.from(arrowIPCBuffer);
   const recordBatches: arrow.RecordBatch[] = [];
   for (const recordBatch of reader) {
     recordBatches.push(recordBatch);
   }
-  return new arrow.Table(recordBatches);
+  const arrowTable = new arrow.Table(recordBatches);
+
+  return {
+    shape: 'arrow-table',
+    schema: serializeArrowSchema(arrowTable.schema),
+    data: arrowTable
+  };
 }

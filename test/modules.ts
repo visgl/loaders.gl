@@ -71,6 +71,3 @@ import '@loaders.gl/xml/test';
 import '@loaders.gl/compression/test';
 import '@loaders.gl/crypto/test';
 import '@loaders.gl/zip/test';
-
-// Tile converter
-import '@loaders.gl/tile-converter/test';

@@ -1,10 +1,10 @@
-/*
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {ParquetWasmLoader, ParquetWasmWriter} from '@loaders.gl/parquet';
 import {load, encode, setLoaderOptions} from '@loaders.gl/core';
-import {Table, vectorFromArray, Utf8, Bool, Uint8, Uint32} from 'apache-arrow';
+import {ArrowTable} from '@loaders.gl/arrow';
+import {ParquetWasmLoader, ParquetWasmWriter} from '@loaders.gl/parquet';
+import * as arrow from 'apache-arrow';
 import {WASM_SUPPORTED_FILES} from './data/files';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data';
@@ -23,58 +23,66 @@ test('ParquetLoader#loader objects', (t) => {
 
 test('Load Parquet file', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  const table: Table = await load(url, ParquetWasmLoader, {
+  const table = await load(url, ParquetWasmLoader, {
     parquet: {
       wasmUrl: WASM_URL
     }
   });
-
-  t.equal(table.numRows, 5);
-  t.deepEqual(table.schema.fields.map(f => f.name),
-    [ 'pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry' ]);
+  const arrowTable = table.data;
+  t.equal(arrowTable.numRows, 5);
+  t.deepEqual(table.schema?.fields.map((f) => f.name), [
+    'pop_est',
+    'continent',
+    'name',
+    'iso_a3',
+    'gdp_md_est',
+    'geometry'
+  ]);
   t.end();
-})
+});
 
 test('ParquetWasmLoader#load', async (t) => {
   t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
-    const data = await load(url, ParquetWasmLoader, {
+    const table = await load(url, ParquetWasmLoader, {
       parquet: {
         wasmUrl: WASM_URL
       }
     });
-    t.ok(data, `GOOD(${title})`);
+    const arrowTable = table.data;
+    t.ok(arrowTable, `GOOD(${title})`);
   }
 
   t.end();
-})
+});
 
-test('ParquetWasmWriterLoader round trip', async (t) => {
+test('ParquetWasmWriter#writer/loader round trip', async (t) => {
   const table = createArrowTable();
 
-  const parquetBuffer = await encode(table, ParquetWasmWriter, {worker: false,
+  const parquetBuffer = await encode(table, ParquetWasmWriter, {
+    worker: false,
     parquet: {
       wasmUrl: WASM_URL
     }
   });
-  const newTable = await load(parquetBuffer, ParquetWasmLoader, {worker: false,
+  const newTable = await load(parquetBuffer, ParquetWasmLoader, {
+    worker: false,
     parquet: {
       wasmUrl: WASM_URL
     }
   });
 
-  t.deepEqual(table.schema, newTable.schema);
+  t.deepEqual(table.data.schema, newTable.data.schema);
   t.end();
-})
+});
 
-function createArrowTable() {
-  const utf8Vector = vectorFromArray(['a', 'b', 'c', 'd'], new Utf8);
-  const boolVector = vectorFromArray([true, true, false, false], new Bool)
-  const uint8Vector = vectorFromArray([1, 2, 3, 4], new Uint8)
-  const int32Vector = vectorFromArray([0, -2147483638, 2147483637, 1], new Uint32)
+function createArrowTable(): ArrowTable {
+  const utf8Vector = arrow.vectorFromArray(['a', 'b', 'c', 'd'], new arrow.Utf8());
+  const boolVector = arrow.vectorFromArray([true, true, false, false], new arrow.Bool());
+  const uint8Vector = arrow.vectorFromArray([1, 2, 3, 4], new arrow.Uint8());
+  const int32Vector = arrow.vectorFromArray([0, -2147483638, 2147483637, 1], new arrow.Uint32());
 
-  const table = new Table({utf8Vector, uint8Vector, int32Vector, boolVector});
-  return table;
+  const table = new arrow.Table({utf8Vector, uint8Vector, int32Vector, boolVector});
+  return {shape: 'arrow-table', data: table};
 }
-*/

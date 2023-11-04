@@ -15,9 +15,7 @@ import './parquetjs/reader.spec';
 import './parquet-loader.spec';
 import './parquet-writer.spec';
 
-
-// import './parquet-wasm-loader.spec';
+import './geoparquet-loader.spec';
 
 import './parquet-columnar-loader.spec';
-
-import './geoparquet-loader.spec';
+import './parquet-wasm-loader.spec';
