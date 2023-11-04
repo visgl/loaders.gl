@@ -36,10 +36,9 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "echo npm run build-worker && npm run clean-wasm",
+    "pre-build": "echo npm run build-worker",
     "build-bundle": "ocular-bundle ./src/index.ts",
-    "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --bundle --minify --sourcemap --external:{util,fs,path,crypto,events} --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "clean-wasm": "sed -i '' 's/require(`util`)/globalThis/g' node_modules/parquet-wasm/node/arrow1.js"
+    "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --bundle --minify --sourcemap --external:{util,fs,path,crypto,events} --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "browser": {
     "child_process": false,
@@ -47,7 +46,7 @@
     "tls": false,
     "stream": false,
     "fs": false,
-    "util": "./dist/polyfills/util.js",
+    "util": false,
     "events": false,
     "./src/polyfills/buffer/buffer-polyfill.node.ts": "./src/polyfills/buffer/buffer-polyfill.browser.ts",
     "./dist/polyfills/buffer/buffer-polyfill.node.js": "./dist/polyfills/buffer/buffer-polyfill.browser.js",

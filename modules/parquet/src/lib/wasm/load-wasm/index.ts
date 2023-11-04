@@ -1,1 +1,1 @@
-export {loadWasm} from './load-wasm-node';
+export {loadWasm} from './load-wasm-browser';
