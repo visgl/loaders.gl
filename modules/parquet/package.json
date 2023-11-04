@@ -36,9 +36,10 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "echo npm run build-worker",
+    "pre-build": "echo npm run build-worker && yarn run copy-wasm",
     "build-bundle": "ocular-bundle ./src/index.ts",
-    "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --bundle --minify --sourcemap --external:{util,fs,path,crypto,events} --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --bundle --minify --sourcemap --external:{util,fs,path,crypto,events} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "copy-wasm": "cp ../../node_modules/parquet-wasm/esm2/arrow1_bg.wasm dist/arrow1_bg.wasm"
   },
   "browser": {
     "child_process": false,
@@ -50,8 +51,8 @@
     "events": false,
     "./src/polyfills/buffer/buffer-polyfill.node.ts": "./src/polyfills/buffer/buffer-polyfill.browser.ts",
     "./dist/polyfills/buffer/buffer-polyfill.node.js": "./dist/polyfills/buffer/buffer-polyfill.browser.js",
-    "./src/lib/wasm/load-wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm/load-wasm-browser.ts",
-    "./dist/lib/wasm/load-wasm/load-wasm-node.js": "./dist/lib/wasm/load-wasm/load-wasm-browser.js"
+    "./src/lib/wasm/load-wasm-node.ts": "./src/lib/wasm/load-wasm-browser.ts",
+    "./dist/lib/wasm/load-wasm-node.js": "./dist/lib/wasm/load-wasm-browser.js"
   },
   "comments": [
     "base64-js and ieee754 are used by buffer polyfill"
