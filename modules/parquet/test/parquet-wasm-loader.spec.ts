@@ -1,8 +1,9 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {ParquetWasmLoader, ParquetWasmWriter} from '@loaders.gl/parquet';
 import {load, encode, setLoaderOptions} from '@loaders.gl/core';
+import {ArrowTable} from '@loaders.gl/arrow';
+import {ParquetWasmLoader, ParquetWasmWriter} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
 import {WASM_SUPPORTED_FILES} from './data/files';
 
@@ -34,7 +35,7 @@ test('Load Parquet file', async (t) => {
   t.end();
 })
 
-test('ParquetWasmLoader#load', async (t) => {
+test.only('ParquetWasmLoader#load', async (t) => {
   t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
@@ -50,7 +51,7 @@ test('ParquetWasmLoader#load', async (t) => {
   t.end();
 })
 
-test('ParquetWasmWriterLoader round trip', async (t) => {
+test('ParquetWasmWriter#writer/loader round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWasmWriter, {worker: false,
@@ -68,12 +69,12 @@ test('ParquetWasmWriterLoader round trip', async (t) => {
   t.end();
 })
 
-function createArrowTable() {
+function createArrowTable(): ArrowTable {
   const utf8Vector = arrow.vectorFromArray(['a', 'b', 'c', 'd'], new arrow.Utf8);
   const boolVector = arrow.vectorFromArray([true, true, false, false], new arrow.Bool)
   const uint8Vector = arrow.vectorFromArray([1, 2, 3, 4], new arrow.Uint8)
   const int32Vector = arrow.vectorFromArray([0, -2147483638, 2147483637, 1], new arrow.Uint32)
 
   const table = new arrow.Table({utf8Vector, uint8Vector, int32Vector, boolVector});
-  return table;
+  return {shape: 'arrow-table', data: table};
 }

@@ -9,7 +9,7 @@ import {ParquetRowGroup} from '../../parquetjs/schema/declare';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumns} from '../../parquetjs/schema/shred';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
-import {installBufferPolyfill} from '../../buffer-polyfill';
+import {installBufferPolyfill} from '../../polyfills/buffer';
 
 export async function parseParquetFileInColumns(
   file: ReadableFile,

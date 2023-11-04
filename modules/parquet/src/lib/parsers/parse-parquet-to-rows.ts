@@ -14,7 +14,7 @@ import type {ParquetLoaderOptions} from '../../parquet-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
-import {installBufferPolyfill} from '../../buffer-polyfill';
+import {installBufferPolyfill} from '../../polyfills/buffer';
 
 export async function parseParquetFile(
   file: ReadableFile,

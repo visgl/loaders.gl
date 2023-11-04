@@ -1,7 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-export {Buffer} from './buffer-polyfill/install-buffer-polyfill';
+export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {
@@ -91,4 +91,4 @@ export {
 } from './lib/arrow/convert-schema-from-parquet';
 
 // Experimental
-export {BufferPolyfill, installBufferPolyfill} from './buffer-polyfill';
+export {BufferPolyfill, installBufferPolyfill} from './polyfills/buffer';
