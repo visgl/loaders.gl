@@ -7,6 +7,8 @@ Arrow supports a rich set of data types:
 * Nested types: list, struct, and union
 * Dictionary type: An encoded categorical type
 
+## Data Type Descriptor Objects
+
 
 ### Converting Dates
 
