@@ -82,7 +82,6 @@ export default class App extends PureComponent<AppProps, AppState> {
       examples = {[props.format]: EXAMPLES[props.format], ...EXAMPLES};
     }
 
-    debugger
     const selectedLoader = props.format || INITIAL_LOADER_NAME;
 
     let selectedExample = INITIAL_EXAMPLE_NAME;
