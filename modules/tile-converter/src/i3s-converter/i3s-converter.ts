@@ -630,7 +630,7 @@ export default class I3SConverter {
       const timeRemainingObjectBasedOnCount =
         this.progresses[PROGRESS_PHASE1_COUNT].getTimeRemaining();
       if (timeRemainingObjectBasedOnCount !== null && timeRemainingObjectBasedOnCount.trust) {
-        timeRemainingString = `${timeRemainingObjectBasedOnCount.timeRemaining} seconds`;
+        timeRemainingString = `${timeRemainingObjectBasedOnCount.timeRemaining.toFixed(0)} seconds`;
       }
 
       let percentString = this.progresses[PROGRESS_PHASE1_COUNT].getPercentString();

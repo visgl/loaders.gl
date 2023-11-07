@@ -12,11 +12,11 @@ export class Progress {
   /** Amount of work already done */
   private _stepsDone: number = 0;
   /** Time in nano-seconds when the process started */
-  private startTime: bigint = 0n;
+  private startTime: number = 0;
   /** Time in nano-seconds when the process stopped */
-  private stopTime: bigint = 0n;
+  private stopTime: number = 0;
   /** Time in nano-seconds spent for performing */
-  private nanoSecForOneItem: bigint = 0n;
+  private milliSecForOneItem: number = 0;
   /**
    * The number of digits to appear after decimal point in the string representation of the count of steps already done.
    * It's calculated based on the total count of steps.
@@ -49,15 +49,15 @@ export class Progress {
    * Saves the current time as we start monitoring the process.
    */
   startMonitoring() {
-    this.startTime = process.hrtime.bigint();
-    this.stopTime = 0n;
+    this.startTime = getCurrentTimeInMilliSec();
+    this.stopTime = 0;
   }
 
   /**
    * Saves the current time as we stop monitoring the process.
    */
   stopMonitoring() {
-    this.stopTime = process.hrtime.bigint();
+    this.stopTime = getCurrentTimeInMilliSec();
   }
 
   /**
@@ -86,10 +86,9 @@ export class Progress {
    * @returns Number of seconds elapsed
    */
   getTimeElapsed(): number {
-    const currentTime = this.stopTime ? this.stopTime : process.hrtime.bigint();
+    const currentTime = this.stopTime ? this.stopTime : getCurrentTimeInMilliSec();
     const diff = currentTime - this.startTime;
-    const nanoSecInSec = BigInt(1e9);
-    return Number(diff / nanoSecInSec);
+    return Number(diff / 1e3);
   }
 
   /**
@@ -100,31 +99,43 @@ export class Progress {
     if (!this._stepsDone || !this.startTime) {
       return null;
     }
-    const currentTime = this.stopTime ? this.stopTime : process.hrtime.bigint();
+    const currentTime = this.stopTime ? this.stopTime : getCurrentTimeInMilliSec();
     const diff = currentTime - this.startTime;
 
-    const nanoSecForOneItem = diff / BigInt(this._stepsDone);
+    const milliSecForOneItem = diff / this._stepsDone;
 
-    const trust = this.isVelocityTrust(nanoSecForOneItem, this.nanoSecForOneItem);
-    this.nanoSecForOneItem = nanoSecForOneItem;
+    const trust = this.isVelocityTrust(milliSecForOneItem, this.milliSecForOneItem);
+    this.milliSecForOneItem = milliSecForOneItem;
 
-    const nanoSecInSec = BigInt(1e9);
     const timeRemainingInSeconds =
-      (BigInt(this._stepsTotal - this._stepsDone) * nanoSecForOneItem) / nanoSecInSec;
+      ((this._stepsTotal - this._stepsDone) * milliSecForOneItem) / 1e3;
     return {timeRemaining: Number(timeRemainingInSeconds), trust: trust};
   }
 
   /**
    * Check if the computed velociy of the process can be considered trust.
+   * At the beginning of the process the number of samples collected ('time necessary to process one item' averaged) is too small,
+   * which results in huge deviation of the cumputed velocity of the process.
+   * It makes sense to perform the check before reporting the time remainig so the end user is not confused.
+   *
    * @param current - current value
    * @param previous - previous value
    * @returns true if the computed velociy can be considered trust, or false otherwise
    */
-  private isVelocityTrust(current: bigint, previous: bigint): boolean {
+  private isVelocityTrust(current: number, previous: number): boolean {
     if (previous) {
       const dev = Math.abs(Number((current - previous) / previous));
       return dev < THRESHOLD;
     }
     return false;
   }
+}
+
+/**
+ * Gets current time in milliseconds.
+ * @returns current time in milliseconds.
+ */
+function getCurrentTimeInMilliSec(): number {
+  // process.hrtime.bigint() returns the time in nanoseconds. We need the time in milliseconds.
+  return Number(process.hrtime.bigint() / BigInt(1e6));
 }
