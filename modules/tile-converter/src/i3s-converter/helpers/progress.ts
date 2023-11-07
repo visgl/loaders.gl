@@ -1,7 +1,7 @@
 import process from 'process';
 
 /** Defines a threshold that is used to check if the process velocity can be consifered trust. */
-const THRESHOLD = 1.2;
+const THRESHOLD = 0.2;
 
 /**
  * Implements methods to keep track on the progress of a long process.
@@ -11,12 +11,12 @@ export class Progress {
   private _stepsTotal: number = 0;
   /** Amount of work already done */
   private _stepsDone: number = 0;
-  /** Time in nano-seconds when the process started */
+  /** Time in milli-seconds when the process started */
   private startTime: number = 0;
-  /** Time in nano-seconds when the process stopped */
+  /** Time in milli-seconds when the process stopped */
   private stopTime: number = 0;
-  /** Time in nano-seconds spent for performing */
-  private milliSecForOneItem: number = 0;
+  /** Time in milli-seconds spent for performing one step*/
+  private milliSecForOneStep: number = 0;
   /**
    * The number of digits to appear after decimal point in the string representation of the count of steps already done.
    * It's calculated based on the total count of steps.
@@ -74,7 +74,7 @@ export class Progress {
 
   /**
    * Gets string representation of percentage of the work already done.
-   * @returns string representation of percentage
+   * @returns string representation of percentage or an empty string if the percetage value cannot be calculated.
    */
   getPercentString() {
     const percent = this.getPercent();
@@ -102,19 +102,46 @@ export class Progress {
     const currentTime = this.stopTime ? this.stopTime : getCurrentTimeInMilliSec();
     const diff = currentTime - this.startTime;
 
-    const milliSecForOneItem = diff / this._stepsDone;
+    const milliSecForOneStep = diff / this._stepsDone;
 
-    const trust = this.isVelocityTrust(milliSecForOneItem, this.milliSecForOneItem);
-    this.milliSecForOneItem = milliSecForOneItem;
+    const trust = this.isVelocityTrust(milliSecForOneStep, this.milliSecForOneStep);
+    this.milliSecForOneStep = milliSecForOneStep;
 
     const timeRemainingInSeconds =
-      ((this._stepsTotal - this._stepsDone) * milliSecForOneItem) / 1e3;
+      ((this._stepsTotal - this._stepsDone) * milliSecForOneStep) / 1e3;
     return {timeRemaining: Number(timeRemainingInSeconds), trust: trust};
   }
 
   /**
+   *
+   * @param timeRemaining
+   * @returns
+   */
+  static timeToString(timeInSeconds: number): string {
+    const hours = Math.floor(timeInSeconds / 3600);
+    timeInSeconds = timeInSeconds - hours * 3600;
+    const minutes = Math.floor(timeInSeconds / 60);
+    timeInSeconds = timeInSeconds - minutes * 60;
+    const seconds = Math.floor(timeInSeconds);
+    let result = '';
+
+    if (hours) {
+      result += `${hours}h `;
+    }
+
+    if (minutes) {
+      result += `${minutes}m `;
+    }
+
+    if (seconds) {
+      result += `${seconds}s`;
+    }
+    return result;
+  }
+
+  /**
    * Check if the computed velociy of the process can be considered trust.
-   * At the beginning of the process the number of samples collected ('time necessary to process one item' averaged) is too small,
+   * At the beginning of the process the number of samples collected ('time necessary to perform one step' averaged) is too small,
    * which results in huge deviation of the cumputed velocity of the process.
    * It makes sense to perform the check before reporting the time remainig so the end user is not confused.
    *
@@ -123,6 +150,7 @@ export class Progress {
    * @returns true if the computed velociy can be considered trust, or false otherwise
    */
   private isVelocityTrust(current: number, previous: number): boolean {
+    console.log(`${current}  ${previous}`);
     if (previous) {
       const dev = Math.abs(Number((current - previous) / previous));
       return dev < THRESHOLD;

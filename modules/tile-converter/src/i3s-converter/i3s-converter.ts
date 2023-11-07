@@ -609,6 +609,9 @@ export default class I3SConverter {
       }
       return traversalProps;
     }
+    if (sourceTile.id) {
+      console.log(`[convert]: ${sourceTile.id}`); // eslint-disable-line
+    }
     const {parentNodes, transform} = traversalProps;
     let transformationMatrix: Matrix4 = transform.clone();
     if (sourceTile.transform) {
@@ -626,20 +629,17 @@ export default class I3SConverter {
     if (sourceTile.id) {
       this.progresses[PROGRESS_PHASE1_COUNT].stepsDone += 1;
 
-      let timeRemainingString = 'Calculating...';
+      let timeRemainingString = 'Calculating time left...';
       const timeRemainingObjectBasedOnCount =
         this.progresses[PROGRESS_PHASE1_COUNT].getTimeRemaining();
       if (timeRemainingObjectBasedOnCount !== null && timeRemainingObjectBasedOnCount.trust) {
-        timeRemainingString = `${timeRemainingObjectBasedOnCount.timeRemaining.toFixed(0)} seconds`;
+        timeRemainingString = `${Progress.timeToString(
+          timeRemainingObjectBasedOnCount.timeRemaining
+        )} left`;
       }
 
       let percentString = this.progresses[PROGRESS_PHASE1_COUNT].getPercentString();
-      if (percentString) {
-        percentString = ' ' + percentString;
-      }
-      console.log(
-        `[converted${percentString}%, time remaining = ${timeRemainingString}]: ${sourceTile.id}`
-      ); // eslint-disable-line
+      console.log(`[converted ${percentString}%, ${timeRemainingString}]: ${sourceTile.id}`); // eslint-disable-line
     }
     return newTraversalProps;
   }
