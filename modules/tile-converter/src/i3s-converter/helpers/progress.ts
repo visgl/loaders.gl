@@ -69,7 +69,9 @@ export class Progress {
    */
   startMonitoring() {
     this.startTime = this.getCurrentTimeInMilliSeconds();
-    // this.timeOfUpdatingStepsDone = this.startTime;
+    this.milliSecForOneStep = 0;
+    this.trust = false;
+    this.timeOfUpdatingStepsDone = 0;
     this.stopTime = 0;
     this.stepsDone = 0;
   }
