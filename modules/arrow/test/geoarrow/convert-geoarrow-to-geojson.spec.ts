@@ -176,6 +176,7 @@ const expectedMultiPolygonGeojson: FeatureCollection = {
 };
 
 // a simple geojson contains one MultiPolygon with a whole in it
+/*
 const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
@@ -255,6 +256,7 @@ const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
     }
   ]
 };
+*/
 
 test('ArrowUtils#parseGeometryFromArrow', (t) => {
   const testCases: [string, FeatureCollection][] = [
