@@ -13,10 +13,7 @@ import type {
   GeoJSONTableBatch
 } from '@loaders.gl/schema';
 
-import {
-  ArrowTable
-  // ArrowTableBatch
-} from '@loaders.gl/arrow';
+// import {ArrowTable, ArrowTableBatch} from '@loaders.gl/arrow';
 
 // ParquetLoader
 
@@ -32,12 +29,12 @@ import {
   parseParquetFileInColumnarBatches
 } from './lib/parsers/parse-parquet-to-columns';
 
-import type {ParquetWasmLoaderOptions} from './lib/wasm/parse-parquet-wasm';
-import {parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
-import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
+// import type {ParquetWasmLoaderOptions} from './lib/wasm/parse-parquet-wasm';
+// import {parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
+// import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
 
 export {ParquetWorkerLoader};
-export {ParquetWasmWorkerLoader};
+// export {ParquetWasmWorkerLoader};
 
 /** ParquetJS table loader */
 export const ParquetLoader: LoaderWithParser<
@@ -67,15 +64,15 @@ export const ParquetColumnarLoader: LoaderWithParser<
   parseFileInBatches: parseParquetFileInColumnarBatches
 };
 
-export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
-  ...ParquetWasmWorkerLoader,
-  parse: parseParquetWasm
-};
+// export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
+//   ...ParquetWasmWorkerLoader,
+//   parse: parseParquetWasm
+// };
 
 // ParquetWriter
 
 export {ParquetWriter as _ParquetWriter} from './parquet-writer';
-export {ParquetWasmWriter} from './parquet-wasm-writer';
+// export {ParquetWasmWriter} from './parquet-wasm-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 
