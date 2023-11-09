@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/mvt",
   "description": "Loader for Mapbox Vector Tiles",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -40,10 +40,10 @@
     "build-worker": "esbuild src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.2",
-    "@loaders.gl/images": "4.0.2",
-    "@loaders.gl/loader-utils": "4.0.2",
-    "@loaders.gl/schema": "4.0.2",
+    "@loaders.gl/gis": "4.0.3",
+    "@loaders.gl/images": "4.0.3",
+    "@loaders.gl/loader-utils": "4.0.3",
+    "@loaders.gl/schema": "4.0.3",
     "@math.gl/polygon": "^4.0.0",
     "pbf": "^3.2.1"
   },

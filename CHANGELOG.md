@@ -2,6 +2,22 @@
 
 ## v4.0
 
+### v4.0.3
+
+- feat(tile-converter): estimation of time remaining (#2774)
+- fix: Revert parquet-wasm integration (#2781)
+- fix(Arrow): featureIds not correctly parsed from MultiPolygon w/ holes in arrow util (WIP) (#2777)
+- fix: Use "latest" version tag when loading from unpkg (#2779)
+- docs(arrowjs): Update Arrow docs and release notes (#2778)
+- fix(examples): run 'geospatial' locally (#2776)
+- chore: Update all dependencies to ^4.0.0 (#2775)
+- feat(parquet): Enable Parquet WASM loader (#2773)
+- fix(3d-tiles): Enable Tiles3DLoader tests (#2771)
+- chore: Dependencies (#2772)
+- chore: parseFile accepts `ReadableFile` (#2770)
+- chore(excel): Fix batched loader adapter from atomic parse (#2769)
+- chore(loader-utils): split Worker/WorkerWithEncoder types (#2768)
+
 ### v4.0.2
 
 - test: run workers from source code (#2762)

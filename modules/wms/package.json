@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/wms",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Framework-independent loaders for the WMS (Web Map Service) standard",
   "license": "MIT",
   "type": "module",
@@ -51,10 +51,10 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/images": "4.0.2",
-    "@loaders.gl/loader-utils": "4.0.2",
-    "@loaders.gl/schema": "4.0.2",
-    "@loaders.gl/xml": "4.0.2",
+    "@loaders.gl/images": "4.0.3",
+    "@loaders.gl/loader-utils": "4.0.3",
+    "@loaders.gl/schema": "4.0.3",
+    "@loaders.gl/xml": "4.0.3",
     "@turf/rewind": "^5.1.5",
     "deep-strict-equal": "^0.2.0"
   },
