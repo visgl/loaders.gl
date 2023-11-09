@@ -1,24 +1,28 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {WorkerMessageData, WorkerMessageType, WorkerMessagePayload} from '../../types';
 import {getTransferList} from '../worker-utils/get-transfer-list';
+import {TransferListItem, parentPort} from '../node/worker_threads';
 
 /** Vile hack to defeat over-zealous bundlers from stripping out the require */
 async function getParentPort() {
   // const isNode = globalThis.process;
-  let parentPort;
-  try {
-    // prettier-ignore
-    eval('globalThis.parentPort = require(\'worker_threads\').parentPort'); // eslint-disable-line no-eval
-    parentPort = globalThis.parentPort;
-  } catch {
-    try {
-      // prettier-ignore
-      eval('globalThis.workerThreadsPromise = import(\'worker_threads\')'); // eslint-disable-line no-eval
-      const workerThreads = await globalThis.workerThreadsPromise;
-      parentPort = workerThreads.parentPort;
-    } catch (error) {
-      console.error((error as Error).message); // eslint-disable-line no-console
-    }
-  }
+  // let parentPort;
+  // try {
+  //   // prettier-ignore
+  //   eval('globalThis.parentPort = require(\'worker_threads\').parentPort'); // eslint-disable-line no-eval
+  //   parentPort = globalThis.parentPort;
+  // } catch {
+  //   try {
+  //     // prettier-ignore
+  //     eval('globalThis.workerThreadsPromise = import(\'worker_threads\')'); // eslint-disable-line no-eval
+  //     const workerThreads = await globalThis.workerThreadsPromise;
+  //     parentPort = workerThreads.parentPort;
+  //   } catch (error) {
+  //     console.error((error as Error).message); // eslint-disable-line no-console
+  //   }
+  // }
   return parentPort;
 }
 
@@ -107,14 +111,16 @@ export default class WorkerBody {
   static async postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): Promise<void> {
     const data: WorkerMessageData = {source: 'loaders.gl', type, payload};
     // console.log('posting message', data);
-    const transferList = getTransferList(payload);
+
+    // Cast to Node compatible transfer list
+    const transferList = getTransferList(payload) as TransferListItem[];
 
     const parentPort = await getParentPort();
     if (parentPort) {
       parentPort.postMessage(data, transferList);
       // console.log('posted message', data);
     } else {
-      // @ts-ignore
+      // @ts-expect-error Outside of worker scopes this call has a third parameter
       globalThis.postMessage(data, transferList);
     }
   }
