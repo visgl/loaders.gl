@@ -2,6 +2,7 @@ import test, {Test} from 'tape-promise/tape';
 
 import {tableFromIPC} from 'apache-arrow';
 import {fetchFile} from '@loaders.gl/core';
+import {FeatureCollection} from '@loaders.gl/schema';
 import {serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 
@@ -11,6 +12,7 @@ export const LINE_ARROW_FILE = '@loaders.gl/arrow/test/data/line.arrow';
 export const MULTILINE_ARROW_FILE = '@loaders.gl/arrow/test/data/multiline.arrow';
 export const POLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/polygon.arrow';
 export const MULTIPOLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/multipolygon.arrow';
+export const MULTIPOLYGON_HOLE_ARROW_FILE = '@loaders.gl/arrow/test/data/multipolygon_hole.arrow';
 
 /** Array containing all encodings */
 const GEOARROW_ENCODINGS = [
@@ -25,7 +27,7 @@ const GEOARROW_ENCODINGS = [
 ];
 
 // a simple geojson contains one point
-const expectedPointGeojson = {
+const expectedPointGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
     {
@@ -43,7 +45,7 @@ const expectedPointGeojson = {
 };
 
 // a simple geojson contains one linestring
-const expectedLineStringGeoJson = {
+const expectedLineStringGeoJson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
     {
@@ -64,7 +66,7 @@ const expectedLineStringGeoJson = {
 };
 
 // a simple geojson contains one polygon
-const expectedPolygonGeojson = {
+const expectedPolygonGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
     {
@@ -89,7 +91,7 @@ const expectedPolygonGeojson = {
 };
 
 // a simple geojson contains one MultiPoint
-const expectedMultiPointGeoJson = {
+const expectedMultiPointGeoJson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
     {
@@ -110,7 +112,7 @@ const expectedMultiPointGeoJson = {
 };
 
 // a simple geojson contains one MultiLinestring
-const expectedMultiLineStringGeoJson = {
+const expectedMultiLineStringGeoJson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
     {
@@ -137,7 +139,7 @@ const expectedMultiLineStringGeoJson = {
 };
 
 // a simple geojson contains one MultiPolygon
-const expectedMultiPolygonGeojson = {
+const expectedMultiPolygonGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
     {
@@ -173,14 +175,98 @@ const expectedMultiPolygonGeojson = {
   ]
 };
 
+// a simple geojson contains one MultiPolygon with a whole in it
+/*
+const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        id: 1,
+        name: 'name1'
+      },
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [0, 0],
+              [0, 1],
+              [1, 1],
+              [1, 0],
+              [0, 0]
+            ],
+            [
+              [0.25, 0.25],
+              [0.25, 0.75],
+              [0.75, 0.75],
+              [0.75, 0.25],
+              [0.25, 0.25]
+            ]
+          ],
+          [
+            [
+              [2, 2],
+              [2, 3],
+              [3, 3],
+              [3, 2],
+              [2, 2]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 2,
+        name: 'name2'
+      },
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [10, 10],
+              [10, 11],
+              [11, 11],
+              [11, 10],
+              [10, 10]
+            ],
+            [
+              [10.25, 10.25],
+              [10.25, 10.75],
+              [10.75, 10.75],
+              [10.75, 10.25],
+              [10.25, 10.25]
+            ]
+          ],
+          [
+            [
+              [12, 12],
+              [12, 13],
+              [13, 13],
+              [13, 12],
+              [12, 12]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+};
+*/
+
 test('ArrowUtils#parseGeometryFromArrow', (t) => {
-  const testCases = [
+  const testCases: [string, FeatureCollection][] = [
     [POINT_ARROW_FILE, expectedPointGeojson],
     [MULTIPOINT_ARROW_FILE, expectedMultiPointGeoJson],
     [LINE_ARROW_FILE, expectedLineStringGeoJson],
     [MULTILINE_ARROW_FILE, expectedMultiLineStringGeoJson],
     [POLYGON_ARROW_FILE, expectedPolygonGeojson],
     [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson]
+    // [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson]
   ];
 
   testCases.forEach((testCase) => {
@@ -190,12 +276,18 @@ test('ArrowUtils#parseGeometryFromArrow', (t) => {
   t.end();
 });
 
-async function testParseFromArrow(t: Test, arrowFile, expectedGeojson): Promise<void> {
+async function testParseFromArrow(
+  t: Test,
+  arrowFile: string,
+  expectedGeojson: FeatureCollection
+): Promise<void> {
   // TODO: use the following code instead of apache-arrow to load arrow table
   // const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {worker: false});
   const response = await fetchFile(arrowFile);
   const arrayBuffer = await response.arrayBuffer();
   const arrowTable = tableFromIPC(new Uint8Array(arrayBuffer));
+
+  t.comment(arrowFile);
 
   // check if the arrow table is loaded correctly
   t.equal(
@@ -204,7 +296,7 @@ async function testParseFromArrow(t: Test, arrowFile, expectedGeojson): Promise<
     `arrow table has ${expectedGeojson.features.length} row`
   );
 
-  const colNames = [...Object.keys(expectedGeojson.features[0].properties), 'geometry'];
+  const colNames = [...Object.keys(expectedGeojson.features[0].properties || {}), 'geometry'];
   t.equal(arrowTable.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
 
   // check fields exist in arrow table schema
