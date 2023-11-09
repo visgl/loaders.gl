@@ -265,7 +265,7 @@ test('ArrowUtils#parseGeometryFromArrow', (t) => {
     [LINE_ARROW_FILE, expectedLineStringGeoJson],
     [MULTILINE_ARROW_FILE, expectedMultiLineStringGeoJson],
     [POLYGON_ARROW_FILE, expectedPolygonGeojson],
-    [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson],
+    [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson]
     // [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson]
   ];
 
@@ -276,7 +276,11 @@ test('ArrowUtils#parseGeometryFromArrow', (t) => {
   t.end();
 });
 
-async function testParseFromArrow(t: Test, arrowFile: string, expectedGeojson: FeatureCollection): Promise<void> {
+async function testParseFromArrow(
+  t: Test,
+  arrowFile: string,
+  expectedGeojson: FeatureCollection
+): Promise<void> {
   // TODO: use the following code instead of apache-arrow to load arrow table
   // const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {worker: false});
   const response = await fetchFile(arrowFile);
