@@ -11,6 +11,7 @@ export const LINE_ARROW_FILE = '@loaders.gl/arrow/test/data/line.arrow';
 export const MULTILINE_ARROW_FILE = '@loaders.gl/arrow/test/data/multiline.arrow';
 export const POLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/polygon.arrow';
 export const MULTIPOLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/multipolygon.arrow';
+export const MULTIPOLYGON_HOLE_ARROW_FILE = '@loaders.gl/arrow/test/data/multipolygon_hole.arrow';
 
 /** Array containing all encodings */
 const GEOARROW_ENCODINGS = [
@@ -173,6 +174,87 @@ const expectedMultiPolygonGeojson = {
   ]
 };
 
+// a simple geojson contains one MultiPolygon with a whole in it
+const expectedMultiPolygonWithHoleGeojson = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        id: 1,
+        name: 'name1'
+      },
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [0, 0],
+              [0, 1],
+              [1, 1],
+              [1, 0],
+              [0, 0]
+            ],
+            [
+              [0.25, 0.25],
+              [0.25, 0.75],
+              [0.75, 0.75],
+              [0.75, 0.25],
+              [0.25, 0.25]
+            ]
+          ],
+          [
+            [
+              [2, 2],
+              [2, 3],
+              [3, 3],
+              [3, 2],
+              [2, 2]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 2,
+        name: 'name2'
+      },
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [10, 10],
+              [10, 11],
+              [11, 11],
+              [11, 10],
+              [10, 10]
+            ],
+            [
+              [10.25, 10.25],
+              [10.25, 10.75],
+              [10.75, 10.75],
+              [10.75, 10.25],
+              [10.25, 10.25]
+            ]
+          ],
+          [
+            [
+              [12, 12],
+              [12, 13],
+              [13, 13],
+              [13, 12],
+              [12, 12]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+};
+
 test('ArrowUtils#parseGeometryFromArrow', (t) => {
   const testCases = [
     [POINT_ARROW_FILE, expectedPointGeojson],
@@ -180,7 +262,8 @@ test('ArrowUtils#parseGeometryFromArrow', (t) => {
     [LINE_ARROW_FILE, expectedLineStringGeoJson],
     [MULTILINE_ARROW_FILE, expectedMultiLineStringGeoJson],
     [POLYGON_ARROW_FILE, expectedPolygonGeojson],
-    [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson]
+    [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson],
+    [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson]
   ];
 
   testCases.forEach((testCase) => {
