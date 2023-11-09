@@ -4,7 +4,7 @@
  * TODO - unpkg.com doesn't seem to have a `latest` specifier for alpha releases...
  * 'beta' on beta branch, 'latest' on prod branch
  */
-export const NPM_TAG = 'beta'; // Change to `latest` on production branches
+export const NPM_TAG = 'latest';
 
 declare let __VERSION__: string;
 
