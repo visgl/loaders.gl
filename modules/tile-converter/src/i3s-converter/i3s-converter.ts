@@ -630,12 +630,10 @@ export default class I3SConverter {
       this.progresses[PROGRESS_PHASE1_COUNT].stepsDone += 1;
 
       let timeRemainingString = 'Calculating time left...';
-      const timeRemainingObjectBasedOnCount =
-        this.progresses[PROGRESS_PHASE1_COUNT].getTimeRemaining();
-      if (timeRemainingObjectBasedOnCount !== null && timeRemainingObjectBasedOnCount.trust) {
-        timeRemainingString = `${Progress.timeToString(
-          timeRemainingObjectBasedOnCount.timeRemaining
-        )} left`;
+      const timeRemainingStringBasedOnCount =
+        this.progresses[PROGRESS_PHASE1_COUNT].getTimeRemainingString();
+      if (timeRemainingStringBasedOnCount) {
+        timeRemainingString = `${timeRemainingStringBasedOnCount} left`;
       }
 
       let percentString = this.progresses[PROGRESS_PHASE1_COUNT].getPercentString();

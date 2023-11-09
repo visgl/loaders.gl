@@ -1,7 +1,8 @@
 import process from 'process';
+import {timeConverter} from '../../lib/utils/statistic-utills';
 
 /** Defines a threshold that is used to check if the process velocity can be consifered trust. */
-const THRESHOLD = 0.2;
+const THRESHOLD_DEFAULT = 0.2;
 
 /**
  * Implements methods to keep track on the progress of a long process.
@@ -15,15 +16,25 @@ export class Progress {
   private startTime: number = 0;
   /** Time in milli-seconds when the process stopped */
   private stopTime: number = 0;
+  /** Time in milli-seconds when stepsDone was updated */
+  private timeOfUpdatingStepsDone: number = 0;
   /** Time in milli-seconds spent for performing one step*/
   private milliSecForOneStep: number = 0;
+  private trust: boolean = false;
   /**
    * The number of digits to appear after decimal point in the string representation of the count of steps already done.
    * It's calculated based on the total count of steps.
    */
   private numberOfDigitsInPercentage: number = 0;
+  /** Defines a threshold that is used to check if the process velocity can be consifered trust. */
+  private threshold: number;
+  /** Function that is used to get the time stamp */
+  private getTime: () => bigint;
 
-  constructor() {}
+  constructor(options: {threshold?: number; getTime?: () => bigint} = {}) {
+    this.getTime = options.getTime || process.hrtime.bigint;
+    this.threshold = options.threshold || THRESHOLD_DEFAULT;
+  }
 
   /** Total amount of work, e.g. number of files to save or number of bytes to send */
   get stepsTotal() {
@@ -43,21 +54,31 @@ export class Progress {
 
   set stepsDone(stepsDone) {
     this._stepsDone = stepsDone;
+    this.timeOfUpdatingStepsDone = this.getCurrentTimeInMilliSeconds();
+    if (this._stepsDone) {
+      const diff = this.timeOfUpdatingStepsDone - this.startTime;
+      const milliSecForOneStep = diff / this._stepsDone;
+
+      this.trust = this.isVelocityTrust(milliSecForOneStep, this.milliSecForOneStep);
+      this.milliSecForOneStep = milliSecForOneStep;
+    }
   }
 
   /**
    * Saves the current time as we start monitoring the process.
    */
   startMonitoring() {
-    this.startTime = getCurrentTimeInMilliSec();
+    this.startTime = this.getCurrentTimeInMilliSeconds();
+    // this.timeOfUpdatingStepsDone = this.startTime;
     this.stopTime = 0;
+    this.stepsDone = 0;
   }
 
   /**
    * Saves the current time as we stop monitoring the process.
    */
   stopMonitoring() {
-    this.stopTime = getCurrentTimeInMilliSec();
+    this.stopTime = this.getCurrentTimeInMilliSeconds();
   }
 
   /**
@@ -83,60 +104,36 @@ export class Progress {
 
   /**
    * Gets the time elapsed since the monitoring started
-   * @returns Number of seconds elapsed
+   * @returns Number of milliseconds elapsed
    */
-  getTimeElapsed(): number {
-    const currentTime = this.stopTime ? this.stopTime : getCurrentTimeInMilliSec();
+  getTimeCurrentlyElapsed(): number {
+    const currentTime = this.stopTime ? this.stopTime : this.getCurrentTimeInMilliSeconds();
     const diff = currentTime - this.startTime;
-    return Number(diff / 1e3);
+    return diff;
   }
 
   /**
-   * Gets the time presumably remaining to complete the work
-   * @returns Number of seconds remaining
+   * Gets the time remaining (expected at the moment of updating 'stepsDone') to complete the work.
+   * @returns Number of milliseconds remaining
    */
   getTimeRemaining(): {timeRemaining: number; trust: boolean} | null {
     if (!this._stepsDone || !this.startTime) {
       return null;
     }
-    const currentTime = this.stopTime ? this.stopTime : getCurrentTimeInMilliSec();
-    const diff = currentTime - this.startTime;
 
-    const milliSecForOneStep = diff / this._stepsDone;
-
-    const trust = this.isVelocityTrust(milliSecForOneStep, this.milliSecForOneStep);
-    this.milliSecForOneStep = milliSecForOneStep;
-
-    const timeRemainingInSeconds =
-      ((this._stepsTotal - this._stepsDone) * milliSecForOneStep) / 1e3;
-    return {timeRemaining: Number(timeRemainingInSeconds), trust: trust};
+    const timeRemainingInMilliSeconds =
+      (this._stepsTotal - this._stepsDone) * this.milliSecForOneStep;
+    return {timeRemaining: timeRemainingInMilliSeconds, trust: this.trust};
   }
 
   /**
-   *
-   * @param timeRemaining
-   * @returns
+   * Gets the string representation of the time remaining (expected at the moment of updating 'stepsDone') to complete the work.
+   * @returns string representation of the time remaining.
+   * It's an empty string if the time cannot be pedicted or it's still being calculated.
    */
-  static timeToString(timeInSeconds: number): string {
-    const hours = Math.floor(timeInSeconds / 3600);
-    timeInSeconds = timeInSeconds - hours * 3600;
-    const minutes = Math.floor(timeInSeconds / 60);
-    timeInSeconds = timeInSeconds - minutes * 60;
-    const seconds = Math.floor(timeInSeconds);
-    let result = '';
-
-    if (hours) {
-      result += `${hours}h `;
-    }
-
-    if (minutes) {
-      result += `${minutes}m `;
-    }
-
-    if (seconds) {
-      result += `${seconds}s`;
-    }
-    return result;
+  getTimeRemainingString(): string {
+    const timeRemainingObject = this.getTimeRemaining();
+    return timeRemainingObject?.trust ? timeConverter(timeRemainingObject.timeRemaining) : '';
   }
 
   /**
@@ -144,26 +141,24 @@ export class Progress {
    * At the beginning of the process the number of samples collected ('time necessary to perform one step' averaged) is too small,
    * which results in huge deviation of the cumputed velocity of the process.
    * It makes sense to perform the check before reporting the time remainig so the end user is not confused.
-   *
    * @param current - current value
    * @param previous - previous value
    * @returns true if the computed velociy can be considered trust, or false otherwise
    */
   private isVelocityTrust(current: number, previous: number): boolean {
-    console.log(`${current}  ${previous}`);
     if (previous) {
-      const dev = Math.abs(Number((current - previous) / previous));
-      return dev < THRESHOLD;
+      const dev = Math.abs((current - previous) / previous);
+      return dev < this.threshold;
     }
     return false;
   }
-}
 
-/**
- * Gets current time in milliseconds.
- * @returns current time in milliseconds.
- */
-function getCurrentTimeInMilliSec(): number {
-  // process.hrtime.bigint() returns the time in nanoseconds. We need the time in milliseconds.
-  return Number(process.hrtime.bigint() / BigInt(1e6));
+  /**
+   * Gets current time in milliseconds.
+   * @returns current time in milliseconds.
+   */
+  private getCurrentTimeInMilliSeconds(): number {
+    // process.hrtime.bigint() returns the time in nanoseconds. We need the time in milliseconds.
+    return Number(this.getTime() / BigInt(1e6));
+  }
 }

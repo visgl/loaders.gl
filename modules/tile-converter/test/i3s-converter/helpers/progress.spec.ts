@@ -2,58 +2,68 @@ import test from 'tape-promise/tape';
 import {Progress} from '../../../src/i3s-converter/helpers/progress';
 
 test('tile-converter(i3s)#Progress methods', async (t) => {
-  const progress = new Progress();
+  let currentTimeMS: number = 0;
+  /*
+    Normally the Progress class takes the current time from the system and makes the necessary calculations based on it.
+    While testing we can't use the usual workflow, because it would take too long.
+    Instead we emulate getting the real time by using a special function to get time values specified in the test.
+  */
+  const getTime = () => {
+    return BigInt(currentTimeMS) * BigInt(1e6);
+  };
+  const progress = new Progress({getTime: getTime});
 
   // stepsTotal has not been set yet
-  t.deepEqual(progress.getPercentString(), '');
+  t.equal(progress.getPercentString(), '');
 
   progress.stepsTotal += 10;
-  t.deepEqual(progress.stepsTotal, 10);
+  t.equal(progress.stepsTotal, 10);
 
   progress.stepsDone += 1;
-  t.deepEqual(progress.stepsDone, 1);
+  t.equal(progress.stepsDone, 1);
 
-  t.deepEqual(progress.getPercent(), 10);
-  t.deepEqual(progress.getPercentString(), '10');
+  t.equal(progress.getPercent(), 10);
+  t.equal(progress.getPercentString(), '10');
 
-  // Calling a private method
-  // @ts-expect-error
-  progress.startTime = 1000; // 1sec
-  // @ts-expect-error
-  progress.stopTime = 3672000; // 1h 1m 12s
+  currentTimeMS = 1000;
+  progress.startMonitoring();
 
-  t.deepEqual(progress.getTimeElapsed(), 3671);
+  currentTimeMS = 3672000;
+  t.equal(progress.getTimeCurrentlyElapsed(), 3671000);
+  progress.stopMonitoring();
 
-  // @ts-expect-error
-  progress.startTime = 1000;
-  // @ts-expect-error
-  progress.stopTime = 11000; // 10s
+  currentTimeMS = 1000; // 10s
+  progress.startMonitoring();
+
+  currentTimeMS = 11000; // 10s
+  progress.stepsDone += 1;
   // 1 step completion took 10s
   let timeRemainingObject = progress.getTimeRemaining();
-  t.deepEqual(!!timeRemainingObject?.trust, false);
-  t.deepEqual(timeRemainingObject?.timeRemaining, 90);
-  t.deepEqual(Progress.timeToString(timeRemainingObject?.timeRemaining || 0), '1m 30s');
-  t.deepEqual(progress.getTimeElapsed(), 10);
+  let timeRemainingString = progress.getTimeRemainingString();
+  t.notOk(timeRemainingObject?.trust);
+  t.equal(timeRemainingObject?.timeRemaining, 90000);
+  t.equal(timeRemainingString, '');
+  t.equal(progress.getTimeCurrentlyElapsed(), 10000);
 
-  // @ts-expect-error
-  progress.stopTime = 12000; // 11s
+  currentTimeMS = 12000; // 11s
   progress.stepsDone += 1;
   // 2 steps completion took 11s, which is much faster
   timeRemainingObject = progress.getTimeRemaining();
-  t.deepEqual(!!timeRemainingObject?.trust, false);
-  t.deepEqual(timeRemainingObject?.timeRemaining, 44);
-  t.deepEqual(Progress.timeToString(timeRemainingObject?.timeRemaining || 0), '44s');
-  t.deepEqual(progress.getTimeElapsed(), 11);
+  timeRemainingString = progress.getTimeRemainingString();
+  t.notOk(timeRemainingObject?.trust);
+  t.equal(timeRemainingObject?.timeRemaining, 44000);
+  t.equal(timeRemainingString, '');
+  t.equal(progress.getTimeCurrentlyElapsed(), 11000);
 
-  // @ts-expect-error
-  progress.stopTime = 17500; // 16.5s
+  currentTimeMS = 17500; // 16.5s
   progress.stepsDone += 1;
-  // 2 steps completion took 11s, which is much faster
+  // 3 steps completion took 16.5s. The velocity of processing has been stabilized on the 3rd step.
   timeRemainingObject = progress.getTimeRemaining();
-  t.deepEqual(!!timeRemainingObject?.trust, true);
-  t.deepEqual(timeRemainingObject?.timeRemaining, 38.5);
-  t.deepEqual(Progress.timeToString(timeRemainingObject?.timeRemaining || 0), '38s');
-  t.deepEqual(progress.getTimeElapsed(), 16.5);
+  timeRemainingString = progress.getTimeRemainingString();
+  t.ok(timeRemainingObject?.trust);
+  t.equal(timeRemainingObject?.timeRemaining, 38500);
+  t.equal(timeRemainingString, '38s');
+  t.equal(progress.getTimeCurrentlyElapsed(), 16500);
 
   t.end();
 });
