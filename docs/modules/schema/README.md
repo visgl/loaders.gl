@@ -11,11 +11,11 @@
 
 The table API is modelled after a subset of the Apache Arrow API:
 
-| Class                                                              | Arrow Counterpart | Description  |
-| ------------------------------------------------------------------ | ----------------- | ------------ |
-| [`Table`](/docs/modules/schema/api-reference/table)              | Table             | Table        |
-| [`TableSchema`](/docs/modules/schema/api-reference/table-schema) | `Schema`          | Table schema |
-| [`TableBatch`](/docs/modules/schema/api-reference/table-batch)   | `RecordBatch`     | Table batch  |
+| Class                                                     | Arrow Counterpart | Description |
+| --------------------------------------------------------- | ----------------- | ----------- |
+| [`Table`](/docs/modules/schema/api-reference/table)       | `Table`           | Table       |
+| [`Schema`](/docs/modules/schema/api-reference/schema)     | `Schema`          | Schema      |
+| [`Batch`](/docs/modules/schema/api-reference/table-batch) | `RecordBatch`     | Batch       |
 
 
 ## Determining shape of loaded data
@@ -44,12 +44,12 @@ processTile(tile.data);
 
 ### Table Category
 
-| Shape | Category | Types / Description | 
-| --- | --- | --- |
-| `table` | `Table` |
-| `array-row-table` | `ArrayRowTable` |
+| Shape              | Category         | Types / Description |
+| ------------------ | ---------------- | ------------------- |
+| `table`            | `Table`          |
+| `array-row-table`  | `ArrayRowTable`  |
 | `object-row-table` | `ObjectRowTable` |
-| `columnar-table` | `ColumnarTable` |
+| `columnar-table`   | `ColumnarTable`  |
 
 - Tables can be 
 - row-oriented, i.e. organized as an array of rows
@@ -69,10 +69,10 @@ Rows can contain either
 ## GIS Category
 
 
-| Shape | Category | Types / Description | 
-| --- | --- | --- |
-| `geojson` | `GeoJSON` | GeoJSON is a `features` array wrapped at the top level  | 
-| `array-row-table` | `ArrayRowTable` |
+| Shape              | Category         | Types / Description                                              |
+| ------------------ | ---------------- | ---------------------------------------------------------------- |
+| `geojson`          | `GeoJSON`        | GeoJSON is a `features` array wrapped at the top level           |
+| `array-row-table`  | `ArrayRowTable`  |
 | `object-row-table` | `ObjectRowTable` |
-| `geojson-table` | `GeojsonTable` | GeoJSON table essentially contains the `features` array from the 
+| `geojson-table`    | `GeojsonTable`   | GeoJSON table essentially contains the `features` array from the |
 

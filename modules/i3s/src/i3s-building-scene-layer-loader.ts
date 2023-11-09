@@ -7,7 +7,7 @@ import {parseBuildingSceneLayer} from './lib/parsers/parse-i3s-building-scene-la
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /**
  * Loader for I3S - Building Scene Layer
  */

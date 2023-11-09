@@ -29,18 +29,51 @@ The biggest changes were made in Apache Arrow JS Version 9.0 (based on feedback 
 
 ## Upgrading to v9.0
 
-- Breaking API changes were made to make the Apache Arrow JS API tree-shakeable. 
-- This resolves the complaints from loaders.gl users where even the most simple usage of `ArrowLoader` would lead to ~250KB of Apache Arrow dependencies being bundled.
-- Unfortunately applications need to be upgraded and Apache Arrow does not have good release notes.
-
-- [Apache Arrow 9.0.0](https://arrow.apache.org/release/10.0.0.html)
 
 In case it is helpful, changes made to loaders.gl can be found in this [PR](https://github.com/visgl/loaders.gl/pull/2276/files)
 
-## Upgrading to v7.0
+## Upgrading to v7.0 / v8.0 / v9.0
 
-In case it is helpful, changes made to loaders.gl can be found in this [PR](https://github.com/visgl/loaders.gl/pull/1931/files)
+- [Apache Arrow 7.0.0](https://arrow.apache.org/release/7.0.0.html)
+- [Apache Arrow 8.0.0](https://arrow.apache.org/release/8.0.0.html)
+- [Apache Arrow 9.0.0](https://arrow.apache.org/release/9.0.0.html)
 
-## Upgrading to v5.0
+These releases made a series of breaking changes to Apache Arrow JS to transform it into a lean, tree-shakeable "core" library.
 
-In case it is helpful, changes made to loaders.gl can be found in this [PR](https://github.com/visgl/loaders.gl/pull/1753/files).
+The good news is that Apache Arrow v9.0 resolves a big concern around the size of the ArrowJS library. The size issue was creating resistance against full-scale Arrow JS adoption in some code bases. For instance, in loaders.gl, even trivial usage of the loaders.gl `ArrowLoader` would lead to ~250KB of Apache Arrow dependencies being bundled before v9.0.
+
+The downside is that upgrading through Arrow JS v7.0-v9.0 tends to require a big effort for most older applications. This is made more difficult since Apache Arrow does not have good release notes. The following are observations from upgrading applications:
+
+**Removed core classes**
+
+| Removed Feature | Alternative    | Comment                                                                           |
+| --------------- | -------------- | --------------------------------------------------------------------------------- |
+| `Column` class  | `Vector` class | The `Vector` class now supports chunking, removing the need for a `Column` class. |
+
+
+**Removed static constructors**
+
+| Removed Feature                 | Alternative             | Comment                                                                           |
+| ------------------------------- | ----------------------- | --------------------------------------------------------------------------------- |
+| `Data` static factory methods   | `makeData()` function   | Referencing the Data class doesn't automatically pull in static constructor code. |
+| `Column` static factory methods | `makeVector()` function |
+| `Table` static factory methods  | `makeTable()` function  |
+| `Schema` static factory methods | `makeSchema()` function |
+
+
+**DataFrame removal** - A number of pre-9.0 features didn’t really fit into Arrow core functionality. These features were really a library on top of Arrow, and in the trade-off of keeping the Arrow JS core lean, they were removed.
+
+| Removed Feature     | Alternative | Comment   |
+| ------------------- | ----------- | --------- |
+| `DataFrame`         | N/A         | See below |
+| `FilteredDataFrame` | N/A         | See below |
+| Predicates          | N/A         | See below |
+| `Table.filter`      | N/A         | See below |
+
+While there are no alternatives for the removed features inside Apache Arrow JS v9.0+, applications can implement similar logic on top of Arrow JS. There are also high-quality independent libraries such as [Arquero](https://github.com/uwdata/arquero) that provide support for filtering and processing of Arrow JS tables.
+
+Finally, in case it is helpful, changes made to loaders.gl can be found in this [PR](https://github.com/visgl/loaders.gl/pull/1931/files)
+
+## Upgrading to v6.0 and earlier
+
+Unfortunately we don't have any release notes for these releases.

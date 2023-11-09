@@ -29,9 +29,6 @@ for (const value of column) {
 
 ## Inheritance
 
-Column extends [`Chunked`](/docs/arrowjs/api-reference/chunked)
-
-
 ## Fields
 
 In addition to fields inherited from `Chunked`, Colum also defines
