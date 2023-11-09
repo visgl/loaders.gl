@@ -1,11 +1,10 @@
 # WKTCRSLoader 🆕 🚧
 
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
-
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
 </p>
+
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Parses WKT-CRS ([Well-known text representation of coordinate reference systems](../formats/wkt-crs)).
 
@@ -82,7 +81,7 @@ using `data.PROJCS.GEOGCS.DATUM` instead of `data[0][2][2]`.
 
 Sometimes WKT will repeat some keywords for the same array.  For example, you might have multiple
 "PARAMETER[...]" as in the above example.  In this case, you will find an array of the multiple at
-"MULTIPLE_{KEYWORD}", as in "MULTIPLE_PARAMETER".
+`"MULTIPLE_{KEYWORD}"`, as in `"MULTIPLE_PARAMETER"`.
 
 ### raw mode
 

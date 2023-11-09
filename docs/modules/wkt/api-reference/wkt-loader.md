@@ -1,10 +1,10 @@
 # WKTLoader
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
-
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
+
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Loader and writer for the [Well-known text][wkt] format for representation of geometry.
 

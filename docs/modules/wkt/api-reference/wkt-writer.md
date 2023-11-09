@@ -1,5 +1,9 @@
 # WKTWriter
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
+</p>
+
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Writer for the [Well-known text] format for representation of geometry.
