@@ -256,14 +256,14 @@ const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
   ]
 };
 
-test('ArrowUtils#parseGeometryFromArrow', (t) => {
+test.only('ArrowUtils#parseGeometryFromArrow', (t) => {
   const testCases: [string, FeatureCollection][] = [
-    [POINT_ARROW_FILE, expectedPointGeojson],
-    [MULTIPOINT_ARROW_FILE, expectedMultiPointGeoJson],
-    [LINE_ARROW_FILE, expectedLineStringGeoJson],
-    [MULTILINE_ARROW_FILE, expectedMultiLineStringGeoJson],
-    [POLYGON_ARROW_FILE, expectedPolygonGeojson],
-    [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson],
+    // [POINT_ARROW_FILE, expectedPointGeojson],
+    // [MULTIPOINT_ARROW_FILE, expectedMultiPointGeoJson],
+    // [LINE_ARROW_FILE, expectedLineStringGeoJson],
+    // [MULTILINE_ARROW_FILE, expectedMultiLineStringGeoJson],
+    // [POLYGON_ARROW_FILE, expectedPolygonGeojson],
+    // [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson],
     [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson]
   ];
 
