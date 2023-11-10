@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable indent */
 import type {TextureLevel} from '@loaders.gl/schema';
 import {loadBasisEncoderModule, loadBasisTranscoderModule} from './basis-module-loader';

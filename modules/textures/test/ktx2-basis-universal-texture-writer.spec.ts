@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {load, encode} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {WorkerObject} from './types';
 import {VERSION} from './lib/env-utils/version';
 

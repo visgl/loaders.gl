@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {FileProvider, compareArrayBuffers} from '@loaders.gl/loader-utils';
 import {ZipSignature} from './search-from-the-end';
 

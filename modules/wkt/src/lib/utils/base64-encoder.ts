@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* 
 const binary_to_b64_map = [
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',

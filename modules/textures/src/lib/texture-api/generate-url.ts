@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
+
 import {resolvePath} from '@loaders.gl/loader-utils';
 import type {GetUrl, UrlOptions} from './texture-api-types';
 

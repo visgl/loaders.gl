@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // A GIFBuilder based on the gifshot module
 // @ts-nocheck
 import {assert} from './lib/utils/assert';

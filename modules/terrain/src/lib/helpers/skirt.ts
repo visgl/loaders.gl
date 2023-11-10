@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {concatenateTypedArrays} from '@loaders.gl/loader-utils';
 
 export type EdgeIndices = {

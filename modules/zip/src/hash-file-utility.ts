@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {MD5Hash} from '@loaders.gl/crypto';
 import {FileProvider} from '@loaders.gl/loader-utils';
 import {makeZipCDHeaderIterator} from './parse-zip/cd-file-header';
