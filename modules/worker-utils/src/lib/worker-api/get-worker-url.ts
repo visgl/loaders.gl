@@ -1,6 +1,9 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {WorkerObject, WorkerOptions} from '../../types';
 import {assert} from '../env-utils/assert';
 import {isBrowser} from '../env-utils/globals';
