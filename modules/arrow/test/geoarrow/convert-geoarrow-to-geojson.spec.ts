@@ -175,8 +175,9 @@ const expectedMultiPolygonGeojson: FeatureCollection = {
   ]
 };
 
-// a simple geojson contains one MultiPolygon with a whole in it
-/*
+// a simple geojson contains two MultiPolygons with a whole in it
+// TODO: it seems using `valueOffsets` can not identify a whole within a multipolygon, like below 
+// first multipolygon with hole: [[extrior ring1], [interior ring1]], [exterior ring2]]
 const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
@@ -256,17 +257,16 @@ const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
     }
   ]
 };
-*/
 
 test('ArrowUtils#parseGeometryFromArrow', (t) => {
   const testCases: [string, FeatureCollection][] = [
+    [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson],
     [POINT_ARROW_FILE, expectedPointGeojson],
     [MULTIPOINT_ARROW_FILE, expectedMultiPointGeoJson],
     [LINE_ARROW_FILE, expectedLineStringGeoJson],
     [MULTILINE_ARROW_FILE, expectedMultiLineStringGeoJson],
     [POLYGON_ARROW_FILE, expectedPolygonGeojson],
     [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson]
-    // [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson]
   ];
 
   testCases.forEach((testCase) => {
@@ -320,7 +320,7 @@ async function testParseFromArrow(
   );
 
   // get first geometry from arrow geometry column
-  const firstArrowGeometry = arrowTable.getChild('geometry')?.get(0);
+  const firstArrowGeometry = arrowTable.getChild('geometry')?.getChildAt(0);
   const firstArrowGeometryObject = {
     encoding,
     data: firstArrowGeometry

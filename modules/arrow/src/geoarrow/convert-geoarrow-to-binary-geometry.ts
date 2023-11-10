@@ -99,8 +99,8 @@ export function getBinaryGeometriesFromArrow(
         ...BINARY_GEOMETRY_TEMPLATE,
         ...(featureTypes.polygon ? binaryContent : {}),
         polygonIndices: {
-          // TODO why deck.gl's tessellatePolygon performance is not good when using geometryIndicies
-          // even when there is no hole in any polygon
+          // NOTE: polygonIndices and primitivePolygonIndices are not used together to render polygon (binary) with holes
+          // in deck.gl currently, so we pass geomOffset as a work around. This issue needs to be fixed in deck.gl
           value: featureTypes.polygon ? geomOffset : new Uint16Array(0),
           size: 1
         },
