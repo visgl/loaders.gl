@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // Copyright (C) 2018-2019 HERE Europe B.V.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy

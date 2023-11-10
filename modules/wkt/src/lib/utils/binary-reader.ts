@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /** A DataView that tracks byte offset when reading. */
 export class BinaryReader {
   arrayBuffer: ArrayBuffer;

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
 export const BASIS_EXTERNAL_LIBRARIES = {

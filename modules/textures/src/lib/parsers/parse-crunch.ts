@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {TextureLevel} from '@loaders.gl/schema';
 import {loadCrunchModule} from './crunch-module-loader';
 import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable no-console */
 // Avoid using named imports for Node builtins to help with "empty" resolution
 // for bundlers targeting browser environments. Access imports & types

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {TextureLevel} from '@loaders.gl/schema';
 import {read} from 'ktx-parse';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {parsePVR} from '../../../src/lib/parsers/parse-pvr';
