@@ -1,4 +1,8 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {SHPResult} from './lib/parsers/parse-shp';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -7,10 +11,16 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 
+export type SHPLoaderOptions = LoaderOptions & {
+  shp?: {
+    _maxDimensions?: number;
+  };
+};
+
 /**
  * SHP file loader
  */
-export const SHPWorkerLoader: Loader = {
+export const SHPWorkerLoader: Loader<SHPResult, SHPResult, SHPLoaderOptions> = {
   name: 'SHP',
   id: 'shp',
   module: 'shapefile',
@@ -29,12 +39,12 @@ export const SHPWorkerLoader: Loader = {
 };
 
 /** SHP file loader */
-export const SHPLoader: LoaderWithParser = {
+export const SHPLoader: LoaderWithParser<SHPResult, SHPResult, SHPLoaderOptions> = {
   ...SHPWorkerLoader,
-  parse: async (arrayBuffer, options?) => parseSHP(arrayBuffer, options),
-  parseSync: parseSHP,
+  parse: async (arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions) => parseSHP(arrayBuffer, options),
+  parseSync: (arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions) => parseSHP(arrayBuffer, options),
   parseInBatches: (
     arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-    options
+    options?: SHPLoaderOptions
   ) => parseSHPInBatches(arrayBufferIterator, options)
 };

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 export interface SHPHeader {
   /** SHP Magic number */
   magic: number;

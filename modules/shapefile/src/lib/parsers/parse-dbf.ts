@@ -1,13 +1,53 @@
-import {Field, ObjectRowTable} from '@loaders.gl/schema';
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+import type {Field, ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
+import {Schema} from '@loaders.gl/schema';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
-import {
-  DBFLoaderOptions,
-  DBFResult,
-  DBFTableOutput,
-  DBFHeader,
-  DBFRowsOutput,
-  DBFField
-} from './types';
+
+type DBFParserOptions = {
+  shape?: 'object-row-table';
+  encoding?: string;
+};
+
+export type DBFResult = {
+  data: {[key: string]: unknown[]}[];
+  schema?: Schema;
+  error?: string;
+  dbfHeader?: DBFHeader;
+  dbfFields?: DBFField[];
+  progress: {
+    bytesUsed: number;
+    rowsTotal: number;
+    rows: number;
+  };
+};
+
+/** Binary header stored in DBF file */
+export type DBFHeader = {
+  /** Last updated date - year */
+  year: number;
+  /** Last updated date - month */
+  month: number;
+  /** Last updated date - day */
+  day: number;
+  /** Number of records in data file */
+  nRecords: number;
+  /** Length of header in bytes */
+  headerLength: number;
+  /** Length of each record */
+  recordLength: number;
+  /** Not clear if this is usually set */
+  languageDriver: number;
+};
+
+/** Field descriptor */
+export type DBFField = {
+  name: string;
+  dataType: string;
+  fieldLength: number;
+  decimal: number;
+};
 
 const LITTLE_ENDIAN = true;
 const DBF_HEADER_SIZE = 32;
@@ -25,7 +65,12 @@ class DBFParser {
   textDecoder: TextDecoder;
   state = STATE.START;
   result: DBFResult = {
-    data: []
+    data: [],
+    progress: {
+      bytesUsed: 0,
+      rowsTotal: 0,
+      rows: 0
+    }
   };
 
   constructor(options: {encoding: string}) {
@@ -62,43 +107,64 @@ class DBFParser {
  * @param options
  * @returns DBFTable or rows
  */
+<<<<<<< Updated upstream
+export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFParserOptions = {}): ObjectRowTable {
+=======
+<<<<<<< Updated upstream
 export function parseDBF(
   arrayBuffer: ArrayBuffer,
   options: DBFLoaderOptions = {}
 ): DBFRowsOutput | DBFTableOutput | ObjectRowTable {
+>>>>>>> Stashed changes
   const {encoding = 'latin1'} = options.dbf || {};
+=======
+export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFParserOptions = {}): ObjectRowTable {
+  const {encoding = 'latin1'} = options;
+>>>>>>> Stashed changes
 
   const dbfParser = new DBFParser({encoding});
   dbfParser.write(arrayBuffer);
   dbfParser.end();
 
   const {data, schema} = dbfParser.result;
-  const shape = options?.dbf?.shape;
+  const shape = options?.shape || 'object-row-table';
   switch (shape) {
     case 'object-row-table': {
-      const table: ObjectRowTable = {
-        shape: 'object-row-table',
-        schema,
-        data
-      };
+      const table: ObjectRowTable = {shape: 'object-row-table', schema, data};
       return table;
     }
-    case 'table':
-      return {schema, rows: data};
-    case 'rows':
     default:
-      return data;
+      throw new Error(shape);
   }
+  const table: ObjectRowTable = {
+    shape: 'object-row-table',
+    schema,
+    data
+  };
+  return table;
 }
+
 /**
  * @param asyncIterator
  * @param options
  */
 export async function* parseDBFInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+<<<<<<< Updated upstream
+  options: DBFParserOptions = {}
+): AsyncIterableIterator<ObjectRowTableBatch> {
+  const {encoding = 'latin1'} = option;
+=======
+<<<<<<< Updated upstream
   options: DBFLoaderOptions = {}
 ): AsyncIterable<DBFHeader | DBFRowsOutput | DBFTableOutput> {
   const {encoding = 'latin1'} = options.dbf || {};
+=======
+  options: DBFParserOptions = {}
+): AsyncIterableIterator<ObjectRowTableBatch> {
+  const {encoding = 'latin1'} = options;
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
   const parser = new DBFParser({encoding});
   let headerReturned = false;
@@ -106,26 +172,47 @@ export async function* parseDBFInBatches(
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.dbfHeader) {
       headerReturned = true;
-      yield parser.result.dbfHeader;
+      yield {
+        batchType: 'metadata',
+        shape: 'object-row-table',
+        data: [],
+        length: 0,
+        // Additional data
+        dbfHeader: parser.result.dbfHeader
+      };
     }
 
     if (parser.result.data.length > 0) {
-      yield parser.result.data;
+      const data = parser.result.data;
       parser.result.data = [];
+      yield {
+        batchType: 'data',
+        shape: 'object-row-table',
+        data,
+        length: data.length
+      };
     }
   }
   parser.end();
   if (parser.result.data.length > 0) {
-    yield parser.result.data;
+    const data = parser.result.data;
+    yield {
+      batchType: 'data',
+      shape: 'object-row-table',
+      data,
+      length: data.length
+    };
   }
 }
+
 /**
- * https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
+ * State machine for DBF parsing
  * @param state
  * @param result
  * @param binaryReader
  * @param textDecoder
  * @returns
+ * @see https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
  */
 /* eslint-disable complexity, max-depth */
 function parseState(
@@ -161,8 +248,7 @@ function parseState(
         case STATE.FIELD_DESCRIPTORS:
           // Parse DBF field descriptors (schema)
           const fieldDescriptorView = binaryReader.getDataView(
-            // @ts-ignore
-            result.dbfHeader.headerLength - DBF_HEADER_SIZE
+            result.dbfHeader!.headerLength - DBF_HEADER_SIZE
           );
           if (!fieldDescriptorView) {
             return state;
@@ -191,10 +277,8 @@ function parseState(
             // Note: Avoid actually reading the last byte, which may not be present
             binaryReader.skip(1);
 
-            // @ts-ignore
-            const row = parseRow(recordView, result.dbfFields, textDecoder);
+            const row = parseRow(recordView, result.dbfFields || [], textDecoder);
             result.data.push(row);
-            // @ts-ignore
             result.progress.rows = result.data.length;
           }
           state = STATE.END;
@@ -218,17 +302,12 @@ function parseState(
  */
 function parseDBFHeader(headerView: DataView): DBFHeader {
   return {
-    // Last updated date
     year: headerView.getUint8(1) + 1900,
     month: headerView.getUint8(2),
     day: headerView.getUint8(3),
-    // Number of records in data file
     nRecords: headerView.getUint32(4, LITTLE_ENDIAN),
-    // Length of header in bytes
     headerLength: headerView.getUint16(8, LITTLE_ENDIAN),
-    // Length of each record
     recordLength: headerView.getUint16(10, LITTLE_ENDIAN),
-    // Not sure if this is usually set
     languageDriver: headerView.getUint8(29)
   };
 }
@@ -266,7 +345,6 @@ function parseRows(binaryReader, fields, nRecords, recordLength, textDecoder) {
   for (let i = 0; i < nRecords; i++) {
     const recordView = binaryReader.getDataView(recordLength - 1);
     binaryReader.skip(1);
-    // @ts-ignore
     rows.push(parseRow(recordView, fields, textDecoder));
   }
   return rows;

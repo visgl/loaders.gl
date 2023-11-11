@@ -1,25 +1,31 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // import type {Feature} from '@loaders.gl/gis';
-import {LoaderContext, parseInBatchesFromContext, parseFromContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/loader-utils';
+import {parseInBatchesFromContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
-import type {BinaryGeometry, Geometry, ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {BinaryGeometry, GeoJsonProperties, Geometry, Feature} from '@loaders.gl/schema';
 import {Proj4Projection} from '@math.gl/proj4';
 
 import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
-import type {ShapefileLoaderOptions} from './types';
+import type {ShapefileLoaderOptions} from '../../shapefile-loader';
+
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
-type Feature = any;
-interface ShapefileOutput {
+export type ShapefileOutput = {
   encoding?: string;
   prj?: string;
   shx?: SHXOutput;
   header: SHPHeader;
-  data: object[];
-}
+  data: Feature[];
+};
+
 /**
  * Parsing of file in batches
  */
@@ -36,7 +42,7 @@ export async function* parseShapefileInBatches(
   const shapeIterable = await parseInBatchesFromContext(
     asyncIterator,
     SHPLoader,
-    options,
+    options || {},
     context!
   );
 
@@ -71,6 +77,7 @@ export async function* parseShapefileInBatches(
 
   let dbfHeader: {batchType?: string} = {};
   if (propertyIterator) {
+  // if (propertyIterable) {
     dbfHeader = (await propertyIterator.next()).value;
     if (dbfHeader && dbfHeader.batchType === 'metadata') {
       dbfHeader = (await propertyIterator.next()).value;
@@ -87,11 +94,18 @@ export async function* parseShapefileInBatches(
     }
   };
 
+  // let iterator: any;
+  // if (propertyIterable) {
+  //   iterator = zipBatchIterators(shapeIterator, propertyIterator);
+  // } else {
+  //   iterator = shapeIterable;
+  // }
+
   for await (const batch of zippedBatchIterable) {
-    let geometries: any;
-    let properties: any;
-    if (!propertyIterator) {
-      geometries = batch;
+    let geometries: BinaryGeometry[];
+    let properties: GeoJsonProperties[] = [];
+    if (!propertyIterable) {
+      geometries = item;
     } else {
       [geometries, properties] = batch.data;
     }
@@ -131,19 +145,21 @@ export async function parseShapefile(
   // parse geometries
   const {header, geometries} = await parseFromContext(arrayBuffer, SHPLoader, options, context!); // {shp: shx}
 
+  // @ts-expect-error
   const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
-  let properties = [];
+  let properties: any[] = [];
 
   const dbfResponse = await context?.fetch(replaceExtension(context?.url!, 'dbf'));
   if (dbfResponse?.ok) {
-    properties = await parseFromContext(
+    const dbf = await parseFromContext(
       dbfResponse as any,
       DBFLoader,
       {dbf: {encoding: cpg || 'latin1'}},
       context!
     );
+    properties = dbf.data;
   }
 
   let features = joinProperties(geojsonGeometries, properties);
@@ -155,7 +171,7 @@ export async function parseShapefile(
     encoding: cpg,
     prj,
     shx,
-    header,
+    header: header!,
     data: features
   };
 }
@@ -167,7 +183,7 @@ export async function parseShapefile(
  * @returns geometries as an array
  */
 function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
-  const geojsonGeometries: any[] = [];
+  const geojsonGeometries: Geometry[] = [];
   for (const geom of geometries) {
     geojsonGeometries.push(binaryToGeometry(geom));
   }
@@ -181,7 +197,7 @@ function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
  * @param  properties [description]
  * @return [description]
  */
-function joinProperties(geometries: Geometry[], properties: object[]): Feature[] {
+function joinProperties(geometries: Geometry[], properties: GeoJsonProperties[]): Feature[] {
   const features: Feature[] = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];

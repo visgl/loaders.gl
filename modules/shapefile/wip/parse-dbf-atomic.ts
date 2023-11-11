@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import BinaryReader from '../../streaming/binary-reader';
 
 const LITTLE_ENDIAN = true;

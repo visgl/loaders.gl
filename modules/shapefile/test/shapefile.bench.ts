@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {fetchFile, load} from '@loaders.gl/core';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 
@@ -12,7 +15,7 @@ export default async function shapefileLoaderBench(suite) {
   suite.group('ShapefileLoader');
 
   suite.addAsync(
-    `parse(ShapefileLoader without worker)`,
+    'parse(ShapefileLoader without worker)',
     {multiplier: 77, unit: 'MB'},
     async () => {
       await load(arrayBuffer.slice(0), ShapefileLoader, {worker: false});
