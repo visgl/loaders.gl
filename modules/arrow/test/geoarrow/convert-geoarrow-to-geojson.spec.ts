@@ -1,9 +1,9 @@
 import test, {Test} from 'tape-promise/tape';
 
-import {tableFromIPC} from 'apache-arrow';
-import {fetchFile} from '@loaders.gl/core';
+import * as arrow from 'apache-arrow';
+import {fetchFile, parse} from '@loaders.gl/core';
 import {FeatureCollection} from '@loaders.gl/schema';
-import {serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
+import {ArrowLoader, serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 
 export const POINT_ARROW_FILE = '@loaders.gl/arrow/test/data/point.arrow';
@@ -176,8 +176,6 @@ const expectedMultiPolygonGeojson: FeatureCollection = {
 };
 
 // a simple geojson contains two MultiPolygons with a whole in it
-// TODO: it seems using `valueOffsets` can not identify a whole within a multipolygon, like below 
-// first multipolygon with hole: [[extrior ring1], [interior ring1]], [exterior ring2]]
 const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
@@ -281,30 +279,30 @@ async function testParseFromArrow(
   arrowFile: string,
   expectedGeojson: FeatureCollection
 ): Promise<void> {
-  // TODO: use the following code instead of apache-arrow to load arrow table
-  // const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {worker: false});
-  const response = await fetchFile(arrowFile);
-  const arrayBuffer = await response.arrayBuffer();
-  const arrowTable = tableFromIPC(new Uint8Array(arrayBuffer));
+  const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {
+    worker: false,
+    arrow: {
+      shape: 'arrow-table'
+    }
+  });
 
-  t.comment(arrowFile);
-
+  const table = arrowTable.data as arrow.Table;
   // check if the arrow table is loaded correctly
   t.equal(
-    arrowTable.numRows,
+    table.numRows,
     expectedGeojson.features.length,
     `arrow table has ${expectedGeojson.features.length} row`
   );
 
   const colNames = [...Object.keys(expectedGeojson.features[0].properties || {}), 'geometry'];
-  t.equal(arrowTable.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
+  t.equal(table.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
 
   // check fields exist in arrow table schema
-  arrowTable.schema.fields.map((field) =>
+  table.schema.fields.map((field) =>
     t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
   );
 
-  const schema = serializeArrowSchema(arrowTable.schema);
+  const schema = serializeArrowSchema(table.schema);
   const geometryColumns = getGeometryColumnsFromSchema(schema);
 
   // check 'geometry' is in geometryColumns (geometryColumns is a Map object)
@@ -320,7 +318,7 @@ async function testParseFromArrow(
   );
 
   // get first geometry from arrow geometry column
-  const firstArrowGeometry = arrowTable.getChild('geometry')?.getChildAt(0);
+  const firstArrowGeometry = table.getChild('geometry')?.get(0);
   const firstArrowGeometryObject = {
     encoding,
     data: firstArrowGeometry
