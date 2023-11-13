@@ -122,6 +122,10 @@ export function getDynamicScreenSpaceError(tileset, distanceToCamera) {
   return 0;
 }
 
+function defined(x: unknown): boolean {
+  return x !== undefined && x !== null;
+}
+
 export function getTiles3DScreenSpaceError(tile, frameState, useParentLodMetric) {
   const tileset = tile.tileset;
   const parentLodMetricValue = (tile.parent && tile.parent.lodMetricValue) || tile.lodMetricValue;
@@ -140,8 +144,7 @@ export function getTiles3DScreenSpaceError(tile, frameState, useParentLodMetric)
   const {height, sseDenominator} = frameState;
   const {viewDistanceScale, rootViewDistanceScale} = tileset.options;
 
-  const isRoot = tile.parent === undefined;
-  const tileViewDistanceScale = isRoot
+  const tileViewDistanceScale = !defined(tile.parent)
     ? rootViewDistanceScale ?? viewDistanceScale
     : viewDistanceScale;
 
