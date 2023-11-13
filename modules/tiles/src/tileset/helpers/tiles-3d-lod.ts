@@ -138,8 +138,15 @@ export function getTiles3DScreenSpaceError(tile, frameState, useParentLodMetric)
   // Avoid divide by zero when viewer is inside the tile
   const distance = Math.max(tile._distanceToCamera, 1e-7);
   const {height, sseDenominator} = frameState;
-  const {viewDistanceScale} = tileset.options;
-  let error = (lodMetricValue * height * (viewDistanceScale || 1.0)) / (distance * sseDenominator);
+  const {viewDistanceScale, rootViewDistanceScale} = tileset.options;
+
+  const isRoot = tile.parent === undefined;
+  const tileViewDistanceScale = isRoot
+    ? rootViewDistanceScale ?? viewDistanceScale
+    : viewDistanceScale;
+
+  let error =
+    (lodMetricValue * height * (tileViewDistanceScale || 1.0)) / (distance * sseDenominator);
 
   error -= getDynamicScreenSpaceError(tileset, distance);
 
