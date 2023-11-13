@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {earcut} from '@math/polygon';
+import {earcut} from '@math.gl/polygon';
 import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
@@ -14,6 +14,7 @@ export type BinaryDataFromGeoArrow = {
   binaryGeometries: BinaryFeatures[];
   bounds: [number, number, number, number];
   featureTypes: {polygon: boolean; point: boolean; line: boolean};
+  meanCenters?: number[][];
 };
 
 type BinaryGeometryContent = {
@@ -23,6 +24,7 @@ type BinaryGeometryContent = {
   geomOffset: Int32Array;
   geometryIndicies: Uint16Array;
   triangles?: Uint32Array;
+  meanCenters?: Float64Array;
 };
 
 // binary geometry template, see deck.gl BinaryGeometry
@@ -61,6 +63,7 @@ export function getBinaryGeometriesFromArrow(
   let bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
+  const meanCenterArray: Float64Array[] = [];
 
   chunks.forEach((chunk) => {
     const {featureIds, flatCoordinateArray, nDim, geomOffset, triangles, meanCenters} =
@@ -118,9 +121,24 @@ export function getBinaryGeometriesFromArrow(
     });
 
     bounds = updateBoundsFromGeoArrowSamples(flatCoordinateArray, nDim, bounds);
+    if (meanCenters) meanCenterArray.push(meanCenters);
   });
 
-  return {binaryGeometries, bounds, featureTypes};
+  // get mean centers
+  const globalMeanCenters: number[][] = [];
+  if (options?.meanCenter) {
+    for (let i = 0; i < meanCenterArray.length; i++) {
+      for (let j = 0; j < meanCenterArray[i].length; j += 2) {
+        globalMeanCenters.push([meanCenterArray[i][j], meanCenterArray[i][j + 1]]);
+      }
+    }
+  }
+  return {
+    binaryGeometries,
+    bounds,
+    featureTypes,
+    ...(options?.meanCenter ? {meanCenters: globalMeanCenters} : {})
+  };
 }
 
 /**
