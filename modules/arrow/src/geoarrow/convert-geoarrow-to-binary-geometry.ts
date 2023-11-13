@@ -37,6 +37,9 @@ export const BINARY_GEOMETRY_TEMPLATE = {
 };
 
 export type BinaryGeometriesFromArrowOptions = {
+  // specify which chunk to get binary geometries from, for progressive rendering
+  chunkIndex?: number;
+  // option to get mean centers from geometries, for filtering
   meanCenter?: boolean;
 };
 
@@ -59,7 +62,7 @@ export function getBinaryGeometriesFromArrow(
     line: geoEncoding === 'geoarrow.multilinestring' || geoEncoding === 'geoarrow.linestring'
   };
 
-  const chunks = geoColumn.data;
+  const chunks = options?.chunkIndex ? [geoColumn.data[options?.chunkIndex]] : geoColumn.data;
   let bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
