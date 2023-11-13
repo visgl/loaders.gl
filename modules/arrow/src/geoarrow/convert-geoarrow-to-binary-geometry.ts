@@ -2,6 +2,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
+import {earcut} from '@math/polygon';
 import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
@@ -21,6 +22,7 @@ type BinaryGeometryContent = {
   nDim: number;
   geomOffset: Int32Array;
   geometryIndicies: Uint16Array;
+  triangles?: Uint32Array;
 };
 
 // binary geometry template, see deck.gl BinaryGeometry
@@ -55,10 +57,8 @@ export function getBinaryGeometriesFromArrow(
   const binaryGeometries: BinaryFeatures[] = [];
 
   chunks.forEach((chunk) => {
-    const {featureIds, flatCoordinateArray, nDim, geomOffset} = getBinaryGeometriesFromChunk(
-      chunk,
-      geoEncoding
-    );
+    const {featureIds, flatCoordinateArray, nDim, geomOffset, triangles} =
+      getBinaryGeometriesFromChunk(chunk, geoEncoding);
 
     const globalFeatureIds = new Uint32Array(featureIds.length);
     for (let i = 0; i < featureIds.length; i++) {
@@ -99,15 +99,15 @@ export function getBinaryGeometriesFromArrow(
         ...BINARY_GEOMETRY_TEMPLATE,
         ...(featureTypes.polygon ? binaryContent : {}),
         polygonIndices: {
-          // NOTE: polygonIndices and primitivePolygonIndices are not used together to render polygon (binary) with holes
-          // for GeoJsonLayer with binary geometries in deck.gl currently, so we pass geomOffset and triangles.
+          // use geomOffset as polygonIndices same as primitivePolygonIndices since we are using earcut to get triangule indices
           value: featureTypes.polygon ? geomOffset : new Uint16Array(0),
           size: 1
         },
         primitivePolygonIndices: {
           value: featureTypes.polygon ? geomOffset : new Uint16Array(0),
           size: 1
-        }
+        },
+        ...(triangles ? {triangles: {value: triangles, size: 1}} : {})
       }
     });
 
@@ -140,6 +140,49 @@ function getBinaryGeometriesFromChunk(
     default:
       throw Error('invalid geoarrow encoding');
   }
+}
+
+/**
+ * get triangle indices. Allows deck.gl to skip performing costly triangulation on main thread.
+ * @param polygonIndices Indices within positions of the start of each complex Polygon
+ * @param primitivePolygonIndices Indices within positions of the start of each primitive Polygon/ring
+ * @param flatCoordinateArray Array of x, y or x, y, z positions
+ * @param nDim - number of dimensions per position
+ * @returns
+ */
+function getTriangleIndices(
+  polygonIndices: Uint16Array,
+  primitivePolygonIndices: Int32Array,
+  flatCoordinateArray: Float64Array,
+  nDim: number
+): Uint32Array {
+  let k = 0;
+  const triangles: number[] = [];
+  // loop polygonIndices to get triangles
+  for (let i = 0; i < polygonIndices.length - 1; i++) {
+    const startIdx = polygonIndices[i];
+    const endIdx = polygonIndices[i + 1];
+    // get subarray of flatCoordinateArray
+    const slicedFlatCoords = flatCoordinateArray.subarray(startIdx * nDim, endIdx * nDim);
+    // get holeIndices for earcut
+    const holeIndices: number[] = [];
+    while (primitivePolygonIndices[k] < endIdx) {
+      if (primitivePolygonIndices[k] > startIdx) {
+        holeIndices.push(primitivePolygonIndices[k] - startIdx);
+      }
+      k++;
+    }
+    const triangleIndices = earcut(slicedFlatCoords, holeIndices, nDim);
+    for (let j = 0; j < triangleIndices.length; j++) {
+      triangles.push(triangleIndices[j] + startIdx);
+    }
+  }
+  // convert traingles to Uint32Array
+  const trianglesUint32 = new Uint32Array(triangles.length);
+  for (let i = 0; i < triangles.length; i++) {
+    trianglesUint32[i] = triangles[i];
+  }
+  return trianglesUint32;
 }
 
 /**
@@ -178,12 +221,15 @@ function getBinaryPolygonsFromChunk(chunk: arrow.Data, geoEncoding: string): Bin
     }
   }
 
+  const triangles = getTriangleIndices(geometryIndicies, geomOffset, flatCoordinateArray, nDim);
+
   return {
     featureIds,
     flatCoordinateArray,
     nDim,
     geomOffset,
-    geometryIndicies
+    geometryIndicies,
+    triangles
   };
 }
 
