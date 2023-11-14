@@ -64,7 +64,7 @@ const expectedLineStringGeoJson: FeatureCollection = {
   ]
 };
 
-// a simple geojson contains one polygon
+// a simple geojson contains two polygons
 const expectedPolygonGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
@@ -79,9 +79,29 @@ const expectedPolygonGeojson: FeatureCollection = {
         coordinates: [
           [
             [0, 0],
+            [0, 1],
             [1, 1],
-            [2, 2],
+            [1, 0],
             [0, 0]
+          ]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 2,
+        name: 'name2'
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [10, 10],
+            [10, 11],
+            [11, 11],
+            [11, 10],
+            [10, 10]
           ]
         ]
       }

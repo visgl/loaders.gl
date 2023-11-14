@@ -6,28 +6,45 @@ import {earcut} from '@math.gl/polygon';
 import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
+import {TypedArray} from '@loaders.gl/loader-utils';
 
 /**
  * Binary data from geoarrow column and can be used by e.g. deck.gl GeojsonLayer
  */
 export type BinaryDataFromGeoArrow = {
+  /** Binary format geometries, an array of BinaryFeatureCollection */
   binaryGeometries: BinaryFeatures[];
+  /** Boundary of the binary geometries */
   bounds: [number, number, number, number];
+  /** Feature types of the binary geometries */
   featureTypes: {polygon: boolean; point: boolean; line: boolean};
+  /** (Optional) mean centers of the binary geometries for e.g. polygon filtering */
   meanCenters?: number[][];
 };
 
+/**
+ * Binary geometry content returned from getBinaryGeometriesFromChunk
+ */
 type BinaryGeometryContent = {
+  // Array of Point feature indexes by vertex
   featureIds: Uint32Array;
+  /** Flat coordinate array of e.g. x, y or x,y,z */
   flatCoordinateArray: Float64Array;
+  /** Dimention of each position */
   nDim: number;
+  /** Array of geometry offsets: the start index of primitive geometry */
   geomOffset: Int32Array;
+  /** Array of geometry indicies: the start index of each geometry */
   geometryIndicies: Uint16Array;
+  /** (Optional) indices of triangels returned from polygon tessellation (Polygon only) */
   triangles?: Uint32Array;
+  /** (Optional) array of mean center of each geometry */
   meanCenters?: Float64Array;
 };
 
-// binary geometry template, see deck.gl BinaryGeometry
+/**
+ * binary geometry template, see deck.gl BinaryGeometry
+ */
 export const BINARY_GEOMETRY_TEMPLATE = {
   globalFeatureIds: {value: new Uint32Array(0), size: 1},
   positions: {value: new Float32Array(0), size: 2},
@@ -37,9 +54,9 @@ export const BINARY_GEOMETRY_TEMPLATE = {
 };
 
 export type BinaryGeometriesFromArrowOptions = {
-  // specify which chunk to get binary geometries from, for progressive rendering
+  /** option to specify which chunk to get binary geometries from, for progressive rendering */
   chunkIndex?: number;
-  // option to get mean centers from geometries, for filtering
+  /** option to get mean centers from geometries, for polygon filtering */
   meanCenter?: boolean;
 };
 
@@ -66,11 +83,10 @@ export function getBinaryGeometriesFromArrow(
   let bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
-  const meanCenterArray: Float64Array[] = [];
 
   chunks.forEach((chunk) => {
-    const {featureIds, flatCoordinateArray, nDim, geomOffset, triangles, meanCenters} =
-      getBinaryGeometriesFromChunk(chunk, geoEncoding, options);
+    const {featureIds, flatCoordinateArray, nDim, geomOffset, triangles} =
+      getBinaryGeometriesFromChunk(chunk, geoEncoding);
 
     const globalFeatureIds = new Uint32Array(featureIds.length);
     for (let i = 0; i < featureIds.length; i++) {
@@ -91,7 +107,6 @@ export function getBinaryGeometriesFromArrow(
 
     // TODO: check if chunks are sequentially accessed
     globalFeatureIdOffset += chunk.length;
-
     // NOTE: deck.gl defines the BinaryFeatures structure must have points, lines, polygons even if they are empty
     binaryGeometries.push({
       shape: 'binary-feature-collection',
@@ -124,37 +139,89 @@ export function getBinaryGeometriesFromArrow(
     });
 
     bounds = updateBoundsFromGeoArrowSamples(flatCoordinateArray, nDim, bounds);
-    if (meanCenters) meanCenterArray.push(meanCenters);
   });
 
-  // get mean centers
-  const globalMeanCenters: number[][] = [];
-  if (options?.meanCenter) {
-    for (let i = 0; i < meanCenterArray.length; i++) {
-      for (let j = 0; j < meanCenterArray[i].length; j += 2) {
-        globalMeanCenters.push([meanCenterArray[i][j], meanCenterArray[i][j + 1]]);
-      }
-    }
-  }
   return {
     binaryGeometries,
     bounds,
     featureTypes,
-    ...(options?.meanCenter ? {meanCenters: globalMeanCenters} : {})
+    ...(options?.meanCenter
+      ? {meanCenters: getMeanCentersFromBinaryGeometries(binaryGeometries)}
+      : {})
   };
+}
+
+/**
+ * Get mean centers from binary geometries
+ * @param binaryGeometries binary geometries from geoarrow column, an array of BinaryFeatureCollection
+ * @returns mean centers of the binary geometries
+ */
+function getMeanCentersFromBinaryGeometries(binaryGeometries: BinaryFeatures[]): number[][] {
+  const globalMeanCenters: number[][] = [];
+  binaryGeometries.forEach((binaryGeometry: BinaryFeatures) => {
+    const binaryGeometryType =
+      binaryGeometry.points && binaryGeometry.points.positions.value.length > 0
+        ? 'points'
+        : binaryGeometry.lines && binaryGeometry.lines.positions.value.length > 0
+        ? 'lines'
+        : binaryGeometry.polygons && binaryGeometry.polygons.positions.value.length > 0
+        ? 'polygons'
+        : null;
+
+    const binaryContent = binaryGeometryType ? binaryGeometry[binaryGeometryType] : null;
+    if (binaryContent) {
+      const featureIds = binaryContent.featureIds.value;
+      const flatCoordinateArray = binaryContent.positions.value;
+      const nDim = binaryContent.positions.size;
+
+      const meanCenters = getMeanCentersFromGeometry(featureIds, flatCoordinateArray, nDim);
+      globalMeanCenters.concat(meanCenters);
+    }
+  });
+  return globalMeanCenters;
+}
+
+/**
+ * Get mean centers from raw coordinates and feature ids
+ * @param featureIds Array of feature ids indexes by vertex
+ * @param flatCoordinateArray  Array of vertex, e.g. x, y or x, y, z, positions
+ * @param nDim number of dimensions per position
+ * @returns - mean centers of each polygon
+ */
+function getMeanCentersFromGeometry(
+  featureIds: TypedArray,
+  flatCoordinateArray: TypedArray,
+  nDim: number
+) {
+  const meanCenters: number[][] = [];
+  const vertexCount = flatCoordinateArray.length;
+  let vertexIndex = 0;
+  while (vertexIndex < vertexCount) {
+    const featureId = featureIds[vertexIndex];
+    const center = [0, 0];
+    let vertexCountInFeature = 0;
+    while (vertexIndex < vertexCount && featureIds[vertexIndex] === featureId) {
+      center[0] += flatCoordinateArray[vertexIndex];
+      center[1] += flatCoordinateArray[vertexIndex + 1];
+      vertexIndex += nDim;
+      vertexCountInFeature++;
+    }
+    center[0] /= vertexCountInFeature;
+    center[1] /= vertexCountInFeature;
+    meanCenters.push(center);
+  }
+  return meanCenters;
 }
 
 /**
  * get binary geometries from geoarrow column
  * @param chunk one chunk/batch of geoarrow column
  * @param geoEncoding geo encoding of the geoarrow column
- * @param options options for getting binary geometries {meanCenter: boolean}
  * @returns BinaryGeometryContent
  */
 function getBinaryGeometriesFromChunk(
   chunk: arrow.Data,
-  geoEncoding: GeoArrowEncoding,
-  options?: BinaryGeometriesFromArrowOptions
+  geoEncoding: GeoArrowEncoding
 ): BinaryGeometryContent {
   switch (geoEncoding) {
     case 'geoarrow.point':
@@ -165,7 +232,7 @@ function getBinaryGeometriesFromChunk(
       return getBinaryLinesFromChunk(chunk, geoEncoding);
     case 'geoarrow.polygon':
     case 'geoarrow.multipolygon':
-      return getBinaryPolygonsFromChunk(chunk, geoEncoding, options);
+      return getBinaryPolygonsFromChunk(chunk, geoEncoding);
     default:
       throw Error('invalid geoarrow encoding');
   }
@@ -179,13 +246,13 @@ function getBinaryGeometriesFromChunk(
  * @param nDim - number of dimensions per position
  * @returns
  */
-function getTriangleIndices(
+export function getTriangleIndices(
   polygonIndices: Uint16Array,
   primitivePolygonIndices: Int32Array,
   flatCoordinateArray: Float64Array,
   nDim: number
 ): Uint32Array {
-  let k = 0;
+  let primitiveIndex = 0;
   const triangles: number[] = [];
   // loop polygonIndices to get triangles
   for (let i = 0; i < polygonIndices.length - 1; i++) {
@@ -195,13 +262,17 @@ function getTriangleIndices(
     const slicedFlatCoords = flatCoordinateArray.subarray(startIdx * nDim, endIdx * nDim);
     // get holeIndices for earcut
     const holeIndices: number[] = [];
-    while (primitivePolygonIndices[k] < endIdx) {
-      if (primitivePolygonIndices[k] > startIdx) {
-        holeIndices.push(primitivePolygonIndices[k] - startIdx);
+    while (primitivePolygonIndices[primitiveIndex] < endIdx) {
+      if (primitivePolygonIndices[primitiveIndex] > startIdx) {
+        holeIndices.push(primitivePolygonIndices[primitiveIndex] - startIdx);
       }
-      k++;
+      primitiveIndex++;
     }
-    const triangleIndices = earcut(slicedFlatCoords, holeIndices, nDim);
+    const triangleIndices = earcut(
+      slicedFlatCoords,
+      holeIndices.length > 0 ? holeIndices : undefined,
+      nDim
+    );
     for (let j = 0; j < triangleIndices.length; j++) {
       triangles.push(triangleIndices[j] + startIdx);
     }
@@ -215,47 +286,12 @@ function getTriangleIndices(
 }
 
 /**
- * get mean centers from polygons
- * @param partOffset Indices within positions of the start of each Polygon/MultiPolygon
- * @param ringOffset Indices within positions of the start of each primitive ring
- * @param flatCoordinateArray  Array of x, y or x, y, z positions
- * @param nDim number of dimensions per position
- * @returns - mean centers of each polygon
- */
-function getMeanCentersFromPolygons(
-  partOffset: Int32Array,
-  ringOffset: Int32Array,
-  flatCoordinateArray: Float64Array,
-  nDim: number
-): Float64Array {
-  const centers = new Float64Array(partOffset.length * 2);
-  for (let i = 0; i < partOffset.length - 1; i++) {
-    const startIdx = ringOffset[partOffset[i]];
-    const endIdx = ringOffset[partOffset[i + 1]];
-    const center = [0, 0];
-    for (let j = startIdx; j < endIdx; j++) {
-      center[0] += flatCoordinateArray[j * nDim];
-      center[1] += flatCoordinateArray[j * nDim + 1];
-    }
-    center[0] /= endIdx - startIdx;
-    center[1] /= endIdx - startIdx;
-    centers[i * 2] = center[0];
-    centers[i * 2 + 1] = center[1];
-  }
-  return centers;
-}
-
-/**
  * get binary polygons from geoarrow polygon column
  * @param chunk one chunk of geoarrow polygon column
  * @param geoEncoding the geo encoding of the geoarrow polygon column
  * @returns BinaryGeometryContent
  */
-function getBinaryPolygonsFromChunk(
-  chunk: arrow.Data,
-  geoEncoding: string,
-  options?: BinaryGeometriesFromArrowOptions
-): BinaryGeometryContent {
+function getBinaryPolygonsFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
   const isMultiPolygon = geoEncoding === 'geoarrow.multipolygon';
 
   const polygonData = isMultiPolygon ? chunk.children[0] : chunk;
@@ -286,23 +322,15 @@ function getBinaryPolygonsFromChunk(
   }
 
   const triangles = getTriangleIndices(geometryIndicies, geomOffset, flatCoordinateArray, nDim);
-
   return {
     featureIds,
     flatCoordinateArray,
     nDim,
     geomOffset,
     geometryIndicies,
-    triangles,
-    ...(options?.meanCenter
-      ? {meanCenters: getMeanCentersFromPolygons(partData, geomOffset, flatCoordinateArray, nDim)}
-      : {})
+    triangles
   };
 }
-
-// function getMeanCentersFromLines(): Float64Array {
-//   return new Float64Array(0);
-// }
 
 /**
  * get binary lines from geoarrow line column
@@ -314,6 +342,9 @@ function getBinaryLinesFromChunk(chunk: arrow.Data, geoEncoding: string): Binary
   const isMultiLineString = geoEncoding === 'geoarrow.multilinestring';
 
   const lineData = isMultiLineString ? chunk.children[0] : chunk;
+  const partData = isMultiLineString
+    ? chunk.valueOffsets.map((i) => lineData.valueOffsets.at(i) || i)
+    : chunk.valueOffsets;
   const pointData = lineData.children[0];
   const coordData = pointData.children[0];
 
@@ -326,9 +357,9 @@ function getBinaryLinesFromChunk(chunk: arrow.Data, geoEncoding: string): Binary
 
   const numOfVertices = flatCoordinateArray.length / nDim;
   const featureIds = new Uint32Array(numOfVertices);
-  for (let i = 0; i < chunk.length; i++) {
-    const startIdx = geomOffset[i];
-    const endIdx = geomOffset[i + 1];
+  for (let i = 0; i < partData.length - 1; i++) {
+    const startIdx = geomOffset[partData[i]];
+    const endIdx = geomOffset[partData[i + 1]];
     for (let j = startIdx; j < endIdx; j++) {
       featureIds[j] = i;
     }
@@ -353,6 +384,7 @@ function getBinaryPointsFromChunk(chunk: arrow.Data, geoEncoding: string): Binar
   const isMultiPoint = geoEncoding === 'geoarrow.multipoint';
 
   const pointData = isMultiPoint ? chunk.children[0] : chunk;
+  const partData = isMultiPoint ? chunk.valueOffsets : chunk;
   const coordData = pointData.children[0];
 
   const nDim = pointData.stride;
@@ -365,8 +397,12 @@ function getBinaryPointsFromChunk(chunk: arrow.Data, geoEncoding: string): Binar
 
   const numOfVertices = flatCoordinateArray.length / nDim;
   const featureIds = new Uint32Array(numOfVertices);
-  for (let i = 0; i < chunk.length; i++) {
-    featureIds[i] = i;
+  for (let i = 0; i < partData.length - 1; i++) {
+    const startIdx = geomOffset[partData[i]];
+    const endIdx = geomOffset[partData[i + 1]];
+    for (let j = startIdx; j < endIdx; j++) {
+      featureIds[j] = i;
+    }
   }
 
   return {

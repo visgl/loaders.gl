@@ -153,21 +153,24 @@ const expectedPolygonBinaryGeometry = {
         ...BINARY_GEOMETRY_TEMPLATE,
         type: 'Polygon',
         globalFeatureIds: {
-          value: new Uint32Array([0, 0, 0, 0]),
+          value: new Uint32Array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1]),
           size: 1
         },
         positions: {
-          value: new Float64Array([0, 0, 1, 1, 2, 2, 0, 0]),
+          value: new Float64Array([
+            0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 10, 10, 10, 11, 11, 11, 11, 10, 10, 10
+          ]),
           size: 2
         },
-        properties: [{index: 0}],
-        featureIds: {value: new Uint32Array([0, 0, 0, 0]), size: 1},
-        polygonIndices: {value: new Int32Array([0, 4]), size: 1},
-        primitivePolygonIndices: {value: new Int32Array([0, 4]), size: 1}
+        properties: [{index: 0}, {index: 1}],
+        featureIds: {value: new Uint32Array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1]), size: 1},
+        polygonIndices: {value: new Int32Array([0, 5, 10]), size: 1},
+        primitivePolygonIndices: {value: new Int32Array([0, 5, 10]), size: 1},
+        triangles: {value: new Uint32Array([1, 4, 3, 3, 2, 1, 6, 9, 8, 8, 7, 6]), size: 1}
       }
     }
   ],
-  bounds: [0, 0, 2, 2],
+  bounds: [0, 0, 11, 11],
   featureTypes: {polygon: true, point: false, line: false}
 };
 
@@ -201,7 +204,8 @@ const expectedMultiPolygonBinaryGeometry = {
           size: 1
         },
         polygonIndices: {value: new Int32Array([0, 5, 10]), size: 1},
-        primitivePolygonIndices: {value: new Int32Array([0, 5, 10]), size: 1}
+        primitivePolygonIndices: {value: new Int32Array([0, 5, 10]), size: 1},
+        triangles: {value: new Uint32Array([1, 4, 3, 3, 2, 1, 6, 9, 8, 8, 7, 6]), size: 1}
       }
     }
   ],
