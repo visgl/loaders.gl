@@ -46,7 +46,11 @@ const expectedPointBinaryGeometry = {
     }
   ],
   bounds: [1, 1, 2, 2],
-  featureTypes: {polygon: false, point: true, line: false}
+  featureTypes: {polygon: false, point: true, line: false},
+  meanCenters: [
+    [1, 1],
+    [2, 2]
+  ]
 };
 
 const expectedMultiPointBinaryGeometry = {
@@ -75,7 +79,11 @@ const expectedMultiPointBinaryGeometry = {
     }
   ],
   bounds: [1, 1, 4, 4],
-  featureTypes: {polygon: false, point: true, line: false}
+  featureTypes: {polygon: false, point: true, line: false},
+  meanCenters: [
+    [1.5, 1.5],
+    [3.5, 3.5]
+  ]
 };
 
 const expectedLineBinaryGeometry = {
@@ -104,7 +112,11 @@ const expectedLineBinaryGeometry = {
     }
   ],
   bounds: [0, 0, 3, 3],
-  featureTypes: {polygon: false, point: false, line: true}
+  featureTypes: {polygon: false, point: false, line: true},
+  meanCenters: [
+    [0.5, 0.5],
+    [2.5, 2.5]
+  ]
 };
 
 const expectedMultiLineBinaryGeometry = {
@@ -136,7 +148,11 @@ const expectedMultiLineBinaryGeometry = {
     }
   ],
   bounds: [1, 1, 8, 8],
-  featureTypes: {polygon: false, point: false, line: true}
+  featureTypes: {polygon: false, point: false, line: true},
+  meanCenters: [
+    [2.5, 2.5],
+    [6.5, 6.5]
+  ]
 };
 
 const expectedPolygonBinaryGeometry = {
@@ -174,7 +190,11 @@ const expectedPolygonBinaryGeometry = {
     }
   ],
   bounds: [0, 0, 11, 11],
-  featureTypes: {polygon: true, point: false, line: false}
+  featureTypes: {polygon: true, point: false, line: false},
+  meanCenters: [
+    [0.5, 0.5],
+    [10.5, 10.5]
+  ]
 };
 
 const expectedMultiPolygonBinaryGeometry = {
@@ -213,7 +233,8 @@ const expectedMultiPolygonBinaryGeometry = {
     }
   ],
   bounds: [0, 0, 3, 3],
-  featureTypes: {polygon: true, point: false, line: false}
+  featureTypes: {polygon: true, point: false, line: false},
+  meanCenters: [[1.5, 1.5]]
 };
 
 const expectedMultiPolygonHolesBinaryGeometry = {
@@ -306,7 +327,8 @@ async function testGetBinaryGeometriesFromArrow(
 
   t.notEqual(encoding, undefined, 'encoding is not undefined');
   if (geoColumn && encoding) {
-    const binaryData = getBinaryGeometriesFromArrow(geoColumn, encoding);
+    const options = {meanCenter: true};
+    const binaryData = getBinaryGeometriesFromArrow(geoColumn, encoding, options);
     t.deepEqual(binaryData, expectedBinaryGeometries, 'binary geometries are correct');
   }
 

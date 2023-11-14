@@ -159,23 +159,32 @@ export function getBinaryGeometriesFromArrow(
 function getMeanCentersFromBinaryGeometries(binaryGeometries: BinaryFeatures[]): number[][] {
   const globalMeanCenters: number[][] = [];
   binaryGeometries.forEach((binaryGeometry: BinaryFeatures) => {
-    const binaryGeometryType =
-      binaryGeometry.points && binaryGeometry.points.positions.value.length > 0
-        ? 'points'
-        : binaryGeometry.lines && binaryGeometry.lines.positions.value.length > 0
-          ? 'lines'
-          : binaryGeometry.polygons && binaryGeometry.polygons.positions.value.length > 0
-            ? 'polygons'
-            : null;
+    let binaryGeometryType: string | null = null;
+    if (binaryGeometry.points && binaryGeometry.points.positions.value.length > 0) {
+      binaryGeometryType = 'points';
+    } else if (binaryGeometry.lines && binaryGeometry.lines.positions.value.length > 0) {
+      binaryGeometryType = 'lines';
+    } else if (binaryGeometry.polygons && binaryGeometry.polygons.positions.value.length > 0) {
+      binaryGeometryType = 'polygons';
+    }
 
     const binaryContent = binaryGeometryType ? binaryGeometry[binaryGeometryType] : null;
-    if (binaryContent) {
+    if (binaryContent && binaryGeometryType !== null) {
       const featureIds = binaryContent.featureIds.value;
       const flatCoordinateArray = binaryContent.positions.value;
       const nDim = binaryContent.positions.size;
+      const primitivePolygonIndices = binaryContent.primitivePolygonIndices?.value;
 
-      const meanCenters = getMeanCentersFromGeometry(featureIds, flatCoordinateArray, nDim);
-      globalMeanCenters.concat(meanCenters);
+      const meanCenters = getMeanCentersFromGeometry(
+        featureIds,
+        flatCoordinateArray,
+        nDim,
+        binaryGeometryType,
+        primitivePolygonIndices
+      );
+      meanCenters.forEach((center) => {
+        globalMeanCenters.push(center);
+      });
     }
   });
   return globalMeanCenters;
@@ -191,20 +200,31 @@ function getMeanCentersFromBinaryGeometries(binaryGeometries: BinaryFeatures[]):
 function getMeanCentersFromGeometry(
   featureIds: TypedArray,
   flatCoordinateArray: TypedArray,
-  nDim: number
+  nDim: number,
+  geometryType: string,
+  primitivePolygonIndices?: TypedArray
 ) {
   const meanCenters: number[][] = [];
   const vertexCount = flatCoordinateArray.length;
   let vertexIndex = 0;
   while (vertexIndex < vertexCount) {
-    const featureId = featureIds[vertexIndex];
+    const featureId = featureIds[vertexIndex / nDim];
     const center = [0, 0];
     let vertexCountInFeature = 0;
-    while (vertexIndex < vertexCount && featureIds[vertexIndex] === featureId) {
-      center[0] += flatCoordinateArray[vertexIndex];
-      center[1] += flatCoordinateArray[vertexIndex + 1];
-      vertexIndex += nDim;
-      vertexCountInFeature++;
+    while (vertexIndex < vertexCount && featureIds[vertexIndex / nDim] === featureId) {
+      if (
+        geometryType === 'polygons' &&
+        primitivePolygonIndices &&
+        primitivePolygonIndices.indexOf(vertexIndex / nDim) >= 0
+      ) {
+        // skip the first point since it is the same as the last point in each ring for polygons
+        vertexIndex += nDim;
+      } else {
+        center[0] += flatCoordinateArray[vertexIndex];
+        center[1] += flatCoordinateArray[vertexIndex + 1];
+        vertexIndex += nDim;
+        vertexCountInFeature++;
+      }
     }
     center[0] /= vertexCountInFeature;
     center[1] /= vertexCountInFeature;
