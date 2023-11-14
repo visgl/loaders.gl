@@ -163,10 +163,10 @@ function getMeanCentersFromBinaryGeometries(binaryGeometries: BinaryFeatures[]):
       binaryGeometry.points && binaryGeometry.points.positions.value.length > 0
         ? 'points'
         : binaryGeometry.lines && binaryGeometry.lines.positions.value.length > 0
-        ? 'lines'
-        : binaryGeometry.polygons && binaryGeometry.polygons.positions.value.length > 0
-        ? 'polygons'
-        : null;
+          ? 'lines'
+          : binaryGeometry.polygons && binaryGeometry.polygons.positions.value.length > 0
+            ? 'polygons'
+            : null;
 
     const binaryContent = binaryGeometryType ? binaryGeometry[binaryGeometryType] : null;
     if (binaryContent) {
@@ -342,9 +342,6 @@ function getBinaryLinesFromChunk(chunk: arrow.Data, geoEncoding: string): Binary
   const isMultiLineString = geoEncoding === 'geoarrow.multilinestring';
 
   const lineData = isMultiLineString ? chunk.children[0] : chunk;
-  const partData = isMultiLineString
-    ? chunk.valueOffsets.map((i) => lineData.valueOffsets.at(i) || i)
-    : chunk.valueOffsets;
   const pointData = lineData.children[0];
   const coordData = pointData.children[0];
 
@@ -357,11 +354,23 @@ function getBinaryLinesFromChunk(chunk: arrow.Data, geoEncoding: string): Binary
 
   const numOfVertices = flatCoordinateArray.length / nDim;
   const featureIds = new Uint32Array(numOfVertices);
-  for (let i = 0; i < partData.length - 1; i++) {
-    const startIdx = geomOffset[partData[i]];
-    const endIdx = geomOffset[partData[i + 1]];
-    for (let j = startIdx; j < endIdx; j++) {
-      featureIds[j] = i;
+
+  if (isMultiLineString) {
+    const partData = chunk.valueOffsets;
+    for (let i = 0; i < partData.length - 1; i++) {
+      const startIdx = geomOffset[partData[i]];
+      const endIdx = geomOffset[partData[i + 1]];
+      for (let j = startIdx; j < endIdx; j++) {
+        featureIds[j] = i;
+      }
+    }
+  } else {
+    for (let i = 0; i < chunk.length; i++) {
+      const startIdx = geomOffset[i];
+      const endIdx = geomOffset[i + 1];
+      for (let j = startIdx; j < endIdx; j++) {
+        featureIds[j] = i;
+      }
     }
   }
 
@@ -384,7 +393,6 @@ function getBinaryPointsFromChunk(chunk: arrow.Data, geoEncoding: string): Binar
   const isMultiPoint = geoEncoding === 'geoarrow.multipoint';
 
   const pointData = isMultiPoint ? chunk.children[0] : chunk;
-  const partData = isMultiPoint ? chunk.valueOffsets : chunk;
   const coordData = pointData.children[0];
 
   const nDim = pointData.stride;
@@ -397,11 +405,19 @@ function getBinaryPointsFromChunk(chunk: arrow.Data, geoEncoding: string): Binar
 
   const numOfVertices = flatCoordinateArray.length / nDim;
   const featureIds = new Uint32Array(numOfVertices);
-  for (let i = 0; i < partData.length - 1; i++) {
-    const startIdx = geomOffset[partData[i]];
-    const endIdx = geomOffset[partData[i + 1]];
-    for (let j = startIdx; j < endIdx; j++) {
-      featureIds[j] = i;
+
+  if (isMultiPoint) {
+    const partData = chunk.valueOffsets;
+    for (let i = 0; i < partData.length - 1; i++) {
+      const startIdx = partData[i];
+      const endIdx = partData[i + 1];
+      for (let j = startIdx; j < endIdx; j++) {
+        featureIds[j] = i;
+      }
+    }
+  } else {
+    for (let i = 0; i < chunk.length; i++) {
+      featureIds[i] = i;
     }
   }
 

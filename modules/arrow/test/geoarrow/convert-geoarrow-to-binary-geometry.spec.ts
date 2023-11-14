@@ -27,39 +27,10 @@ const expectedPointBinaryGeometry = {
       points: {
         ...BINARY_GEOMETRY_TEMPLATE,
         type: 'Point',
-        globalFeatureIds: {value: new Uint32Array([0]), size: 1},
-        positions: {value: new Float64Array([1, 1]), size: 2},
-        properties: [{index: 0}],
-        featureIds: {value: new Uint32Array([0]), size: 1}
-      },
-      lines: {
-        ...BINARY_GEOMETRY_TEMPLATE,
-        type: 'LineString',
-        pathIndices: {value: new Uint16Array(0), size: 1}
-      },
-      polygons: {
-        ...BINARY_GEOMETRY_TEMPLATE,
-        type: 'Polygon',
-        polygonIndices: {value: new Uint16Array(0), size: 1},
-        primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
-      }
-    }
-  ],
-  bounds: [1, 1, 1, 1],
-  featureTypes: {polygon: false, point: true, line: false}
-};
-
-const expectedMultiPointBinaryGeometry = {
-  binaryGeometries: [
-    {
-      shape: 'binary-feature-collection',
-      points: {
-        ...BINARY_GEOMETRY_TEMPLATE,
-        type: 'Point',
-        globalFeatureIds: {value: new Uint32Array([0, 0]), size: 1},
+        globalFeatureIds: {value: new Uint32Array([0, 1]), size: 1},
         positions: {value: new Float64Array([1, 1, 2, 2]), size: 2},
-        properties: [{index: 0}],
-        featureIds: {value: new Uint32Array([0, 0]), size: 1}
+        properties: [{index: 0}, {index: 1}],
+        featureIds: {value: new Uint32Array([0, 1]), size: 1}
       },
       lines: {
         ...BINARY_GEOMETRY_TEMPLATE,
@@ -78,6 +49,35 @@ const expectedMultiPointBinaryGeometry = {
   featureTypes: {polygon: false, point: true, line: false}
 };
 
+const expectedMultiPointBinaryGeometry = {
+  binaryGeometries: [
+    {
+      shape: 'binary-feature-collection',
+      points: {
+        ...BINARY_GEOMETRY_TEMPLATE,
+        type: 'Point',
+        globalFeatureIds: {value: new Uint32Array([0, 0, 1, 1]), size: 1},
+        positions: {value: new Float64Array([1, 1, 2, 2, 3, 3, 4, 4]), size: 2},
+        properties: [{index: 0}, {index: 1}],
+        featureIds: {value: new Uint32Array([0, 0, 1, 1]), size: 1}
+      },
+      lines: {
+        ...BINARY_GEOMETRY_TEMPLATE,
+        type: 'LineString',
+        pathIndices: {value: new Uint16Array(0), size: 1}
+      },
+      polygons: {
+        ...BINARY_GEOMETRY_TEMPLATE,
+        type: 'Polygon',
+        polygonIndices: {value: new Uint16Array(0), size: 1},
+        primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
+      }
+    }
+  ],
+  bounds: [1, 1, 4, 4],
+  featureTypes: {polygon: false, point: true, line: false}
+};
+
 const expectedLineBinaryGeometry = {
   binaryGeometries: [
     {
@@ -89,11 +89,11 @@ const expectedLineBinaryGeometry = {
       lines: {
         ...BINARY_GEOMETRY_TEMPLATE,
         type: 'LineString',
-        globalFeatureIds: {value: new Uint32Array([0, 0]), size: 1},
-        positions: {value: new Float64Array([0, 0, 1, 1]), size: 2},
-        properties: [{index: 0}],
-        featureIds: {value: new Uint32Array([0, 0]), size: 1},
-        pathIndices: {value: new Int32Array([0, 2]), size: 1}
+        globalFeatureIds: {value: new Uint32Array([0, 0, 1, 1]), size: 1},
+        positions: {value: new Float64Array([0, 0, 1, 1, 2, 2, 3, 3]), size: 2},
+        properties: [{index: 0}, {index: 1}],
+        featureIds: {value: new Uint32Array([0, 0, 1, 1]), size: 1},
+        pathIndices: {value: new Int32Array([0, 2, 4]), size: 1}
       },
       polygons: {
         ...BINARY_GEOMETRY_TEMPLATE,
@@ -103,7 +103,7 @@ const expectedLineBinaryGeometry = {
       }
     }
   ],
-  bounds: [0, 0, 1, 1],
+  bounds: [0, 0, 3, 3],
   featureTypes: {polygon: false, point: false, line: true}
 };
 
@@ -118,11 +118,14 @@ const expectedMultiLineBinaryGeometry = {
       lines: {
         ...BINARY_GEOMETRY_TEMPLATE,
         type: 'LineString',
-        globalFeatureIds: {value: new Uint32Array([0, 0, 0, 0]), size: 1},
-        positions: {value: new Float64Array([1, 1, 2, 2, 3, 3, 4, 4]), size: 2},
-        properties: [{index: 0}],
-        featureIds: {value: new Uint32Array([0, 0, 0, 0]), size: 1},
-        pathIndices: {value: new Int32Array([0, 2, 4]), size: 1}
+        globalFeatureIds: {value: new Uint32Array([0, 0, 0, 0, 1, 1, 1, 1]), size: 1},
+        positions: {
+          value: new Float64Array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8]),
+          size: 2
+        },
+        properties: [{index: 0}, {index: 1}],
+        featureIds: {value: new Uint32Array([0, 0, 0, 0, 1, 1, 1, 1]), size: 1},
+        pathIndices: {value: new Int32Array([0, 2, 4, 6, 8]), size: 1}
       },
       polygons: {
         ...BINARY_GEOMETRY_TEMPLATE,
@@ -132,7 +135,7 @@ const expectedMultiLineBinaryGeometry = {
       }
     }
   ],
-  bounds: [1, 1, 4, 4],
+  bounds: [1, 1, 8, 8],
   featureTypes: {polygon: false, point: false, line: true}
 };
 
