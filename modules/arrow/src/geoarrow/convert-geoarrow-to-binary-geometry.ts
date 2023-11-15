@@ -156,7 +156,7 @@ export function getBinaryGeometriesFromArrow(
  * @param binaryGeometries binary geometries from geoarrow column, an array of BinaryFeatureCollection
  * @returns mean centers of the binary geometries
  */
-function getMeanCentersFromBinaryGeometries(binaryGeometries: BinaryFeatures[]): number[][] {
+export function getMeanCentersFromBinaryGeometries(binaryGeometries: BinaryFeatures[]): number[][] {
   const globalMeanCenters: number[][] = [];
   binaryGeometries.forEach((binaryGeometry: BinaryFeatures) => {
     let binaryGeometryType: string | null = null;

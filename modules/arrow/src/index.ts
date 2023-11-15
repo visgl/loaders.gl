@@ -68,7 +68,9 @@ export type {BinaryDataFromGeoArrow} from './geoarrow/convert-geoarrow-to-binary
 export {
   BINARY_GEOMETRY_TEMPLATE,
   getBinaryGeometriesFromArrow,
-  BinaryGeometriesFromArrowOptions
+  BinaryGeometriesFromArrowOptions,
+  getTriangleIndices,
+  getMeanCentersFromBinaryGeometries
 } from './geoarrow/convert-geoarrow-to-binary-geometry';
 
 export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';
