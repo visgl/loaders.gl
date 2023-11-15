@@ -113,7 +113,7 @@ for (const file of files) {
   }
 }
 
-const _EXAMPLES: Record<string, Record<string, Example>> = {
+export const EXAMPLES: Record<string, Record<string, Example>> = {
   GeoParquet,
   GeoJSON: {
     Vancouver: {
@@ -171,5 +171,3 @@ const _EXAMPLES: Record<string, Record<string, Example>> = {
     }
   }
 };
-
-export const EXAMPLES = _EXAMPLES;
