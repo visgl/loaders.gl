@@ -67,7 +67,8 @@ export type {GeoArrowEncoding} from '@loaders.gl/gis';
 export type {BinaryDataFromGeoArrow} from './geoarrow/convert-geoarrow-to-binary-geometry';
 export {
   BINARY_GEOMETRY_TEMPLATE,
-  getBinaryGeometriesFromArrow
+  getBinaryGeometriesFromArrow,
+  BinaryGeometriesFromArrowOptions
 } from './geoarrow/convert-geoarrow-to-binary-geometry';
 
 export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';
