@@ -1,10 +1,11 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parse} from '@loaders.gl/core';
+import type {I3STilesetHeader} from './types';
 import {I3SContentLoader} from './i3s-content-loader';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {COORDINATE_SYSTEM} from './lib/parsers/constants';
 import {I3SParseOptions} from './types';
-import {LoaderOptions} from './../../loader-utils/src/types';
+import {getUrlWithoutParams} from './lib/utils/url-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -22,7 +23,7 @@ export type I3SLoaderOptions = LoaderOptions & {
 /**
  * Loader for I3S - Indexed 3D Scene Layer
  */
-export const I3SLoader: LoaderWithParser = {
+export const I3SLoader: LoaderWithParser<I3STilesetHeader, never, LoaderOptions> = {
   name: 'I3S (Indexed Scene Layers)',
   id: 'i3s',
   module: 'i3s',
@@ -42,13 +43,12 @@ export const I3SLoader: LoaderWithParser = {
       useDracoGeometry: true,
       useCompressedTextures: true,
       decodeTextures: true,
-      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
-      colorsByAttribute: null
+      coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
     }
   }
 };
 
-async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
+async function parseI3S(data, options: I3SLoaderOptions = {}, context): Promise<I3STilesetHeader> {
   const url = context.url;
   options.i3s = options.i3s || {};
   const magicNumber = getMagicNumber(data);
@@ -58,17 +58,19 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context) {
     throw new Error('Files with .slpk extention currently are not supported by I3SLoader');
   }
 
+  const urlWithoutParams = getUrlWithoutParams(url);
+
   // auto detect file type based on url
   let isTileset;
   if (options.i3s.isTileset === 'auto') {
-    isTileset = TILESET_REGEX.test(url);
+    isTileset = TILESET_REGEX.test(urlWithoutParams);
   } else {
     isTileset = options.i3s.isTileset;
   }
 
   let isTileHeader;
   if (options.isTileHeader === 'auto') {
-    isTileHeader = TILE_HEADER_REGEX.test(url);
+    isTileHeader = TILE_HEADER_REGEX.test(urlWithoutParams);
   } else {
     isTileHeader = options.i3s.isTileHeader;
   }
@@ -94,11 +96,9 @@ async function parseTileset(data, options: I3SLoaderOptions, context) {
   if (tilesetJson?.layerType === POINT_CLOUD) {
     throw new Error('Point Cloud layers currently are not supported by I3SLoader');
   }
-  // eslint-disable-next-line no-use-before-define
-  tilesetJson.loader = I3SLoader;
-  await normalizeTilesetData(tilesetJson, options, context);
 
-  return tilesetJson;
+  const tilesetPostprocessed = await normalizeTilesetData(tilesetJson, options, context);
+  return tilesetPostprocessed;
 }
 
 async function parseTile(data, context) {

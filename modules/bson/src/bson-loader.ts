@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ParseBSONOptions} from './lib/parsers/parse-bson';
 import {parseBSONSync} from './lib/parsers/parse-bson';
@@ -15,10 +16,6 @@ export type BSONLoaderOptions = LoaderOptions & {
   bson?: ParseBSONOptions;
 };
 
-const DEFAULT_BSON_LOADER_OPTIONS = {
-  bson: {}
-};
-
 export const BSONLoader: LoaderWithParser<Record<string, unknown>, never, BSONLoaderOptions> = {
   name: 'BSON',
   id: 'bson',
@@ -30,15 +27,17 @@ export const BSONLoader: LoaderWithParser<Record<string, unknown>, never, BSONLo
   binary: true,
   parse,
   parseSync,
-  options: DEFAULT_BSON_LOADER_OPTIONS
+  options: {
+    bson: {}
+  }
 };
 
 async function parse(arrayBuffer: ArrayBuffer, options?: BSONLoaderOptions) {
-  const bsonOptions = {...DEFAULT_BSON_LOADER_OPTIONS.bson, ...options?.bson};
+  const bsonOptions = {...BSONLoader.options.bson, ...options?.bson};
   return parseBSONSync(arrayBuffer, bsonOptions);
 }
 
 function parseSync(arrayBuffer: ArrayBuffer, options?: BSONLoaderOptions) {
-  const bsonOptions = {...DEFAULT_BSON_LOADER_OPTIONS.bson, ...options?.bson};
+  const bsonOptions = {...BSONLoader.options.bson, ...options?.bson};
   return parseBSONSync(arrayBuffer, bsonOptions);
 }

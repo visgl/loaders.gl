@@ -1,8 +1,30 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /* eslint-disable no-else-return */
 
 import {Table, ArrayRowTable, ObjectRowTable} from '../../../types/category-table';
+
+export function isTable(table: any): table is Table {
+  const shape = typeof table === 'object' && table?.shape;
+  switch (shape) {
+    case 'array-row-table':
+    case 'object-row-table':
+      return Array.isArray(table.data);
+
+    case 'geojson-table':
+      return Array.isArray(table.features);
+
+    case 'columnar-table':
+      return table.data && typeof table.data === 'object';
+
+    case 'arrow-table':
+      return Boolean(table?.data?.numRows !== undefined);
+
+    default:
+      return false;
+  }
+}
 
 /**
  * Returns the length of the table (i.e. the number of rows)
@@ -11,11 +33,14 @@ export function getTableLength(table: Table): number {
   switch (table.shape) {
     case 'array-row-table':
     case 'object-row-table':
-    case 'geojson-row-table':
       return table.data.length;
 
+    case 'geojson-table':
+      return table.features.length;
+
     case 'arrow-table':
-      return table.data.numRows;
+      const arrowTable = table.data as any;
+      return arrowTable.numRows;
 
     case 'columnar-table':
       for (const column of Object.values(table.data)) {
@@ -42,14 +67,14 @@ export function getTableNumCols(table: Table): number {
     case 'array-row-table':
       return table.data[0].length;
     case 'object-row-table':
-    case 'geojson-row-table':
       return Object.keys(table.data[0]).length;
-
+    case 'geojson-table':
+      return Object.keys(table.features[0]).length;
     case 'columnar-table':
       return Object.keys(table.data).length;
-
     case 'arrow-table':
-      return table.data.numCols;
+      const arrowTable = table.data as any;
+      return arrowTable.numCols;
     default:
       throw new Error('table');
   }
@@ -63,18 +88,21 @@ export function getTableCell(table: Table, rowIndex: number, columnName: string)
       return table.data[rowIndex][columnIndex];
 
     case 'object-row-table':
-    case 'geojson-row-table':
       return table.data[rowIndex][columnName];
+
+    case 'geojson-table':
+      return table.features[rowIndex][columnName];
 
     case 'columnar-table':
       const column = table.data[columnName];
       return column[rowIndex];
 
     case 'arrow-table':
-      const arrowColumnIndex = table.data.schema.fields.findIndex(
+      const arrowTable = table.data as any;
+      const arrowColumnIndex = arrowTable.schema.fields.findIndex(
         (field) => field.name === columnName
       );
-      return table.data.getChildAt(arrowColumnIndex)?.get(rowIndex);
+      return arrowTable.getChildAt(arrowColumnIndex)?.get(rowIndex);
 
     default:
       throw new Error('todo');
@@ -88,17 +116,21 @@ export function getTableCellAt(table: Table, rowIndex: number, columnIndex: numb
       return table.data[rowIndex][columnIndex];
 
     case 'object-row-table':
-    case 'geojson-row-table':
-      let columnName = getTableColumnName(table, columnIndex);
-      return table.data[rowIndex][columnName];
+      const columnName1 = getTableColumnName(table, columnIndex);
+      return table.data[rowIndex][columnName1];
+
+    case 'geojson-table':
+      const columnName2 = getTableColumnName(table, columnIndex);
+      return table.features[rowIndex][columnName2];
 
     case 'columnar-table':
-      columnName = getTableColumnName(table, columnIndex);
-      const column = table.data[columnName];
+      const columnName3 = getTableColumnName(table, columnIndex);
+      const column = table.data[columnName3];
       return column[rowIndex];
 
     case 'arrow-table':
-      return table.data.getChildAt(columnIndex)?.get(rowIndex);
+      const arrowTable = table.data as any;
+      return arrowTable.getChildAt(columnIndex)?.get(rowIndex);
 
     default:
       throw new Error('todo');
@@ -112,7 +144,8 @@ export function getTableRowShape(table: Table): 'array-row-table' | 'object-row-
     case 'object-row-table':
       return table.shape;
 
-    case 'geojson-row-table':
+    case 'geojson-table':
+      // TODO - this is not correct, geojson-table is not a row table
       return 'object-row-table';
 
     case 'columnar-table':
@@ -156,11 +189,21 @@ export function getTableRowAsObject(
       return copy ? Object.fromEntries(Object.entries(table.data[rowIndex])) : table.data[rowIndex];
 
     case 'array-row-table':
-    case 'geojson-row-table':
       if (table.schema) {
         const objectRow: {[columnName: string]: unknown} = target || {};
         for (let i = 0; i < table.schema.fields.length; i++) {
           objectRow[table.schema.fields[i].name] = table.data[rowIndex][i];
+        }
+        return objectRow;
+      }
+      throw new Error('no schema');
+
+    case 'geojson-table':
+      if (table.schema) {
+        const objectRow: {[columnName: string]: unknown} = target || {};
+        // TODO - should lift properties to top level
+        for (let i = 0; i < table.schema.fields.length; i++) {
+          objectRow[table.schema.fields[i].name] = table.features[rowIndex][i];
         }
         return objectRow;
       }
@@ -184,9 +227,10 @@ export function getTableRowAsObject(
       }
 
     case 'arrow-table':
+      const arrowTable = table.data as any;
       const objectRow: {[columnName: string]: unknown} = target || {};
-      const row = table.data.get(rowIndex);
-      const schema = table.data.schema;
+      const row = arrowTable.get(rowIndex);
+      const schema = arrowTable.schema;
       for (let i = 0; i < schema.fields.length; i++) {
         objectRow[schema.fields[i].name] = row?.[schema.fields[i].name];
       }
@@ -214,7 +258,6 @@ export function getTableRowAsArray(
       return copy ? Array.from(table.data[rowIndex]) : table.data[rowIndex];
 
     case 'object-row-table':
-    case 'geojson-row-table':
       if (table.schema) {
         const arrayRow: unknown[] = target || [];
         for (let i = 0; i < table.schema.fields.length; i++) {
@@ -224,6 +267,18 @@ export function getTableRowAsArray(
       }
       // Warning: just slap on the values, this risks mismatches between rows
       return Object.values(table.data[rowIndex]);
+
+    case 'geojson-table':
+      if (table.schema) {
+        const arrayRow: unknown[] = target || [];
+        // TODO - should lift properties to top level
+        for (let i = 0; i < table.schema.fields.length; i++) {
+          arrayRow[i] = table.features[rowIndex][table.schema.fields[i].name];
+        }
+        return arrayRow;
+      }
+      // Warning: just slap on the values, this risks mismatches between rows
+      return Object.values(table.features[rowIndex]);
 
     case 'columnar-table':
       if (table.schema) {
@@ -244,9 +299,10 @@ export function getTableRowAsArray(
       }
 
     case 'arrow-table':
+      const arrowTable = table.data as any;
       const arrayRow: unknown[] = target || [];
-      const row = table.data.get(rowIndex);
-      const schema = table.data.schema;
+      const row = arrowTable.get(rowIndex);
+      const schema = arrowTable.schema;
       for (let i = 0; i < schema.fields.length; i++) {
         arrayRow[i] = row?.[schema.fields[i].name];
       }

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Tile3D} from './tile-3d';
 import {ManagedArray} from '../utils/managed-array';
@@ -390,7 +391,7 @@ export class TilesetTraverser {
           }
           stack.push(child);
         }
-      } else if (!tile.contentAvailable) {
+      } else if (!tile.contentAvailable && !tile.hasEmptyContent) {
         allDescendantsLoaded = false;
       }
     }

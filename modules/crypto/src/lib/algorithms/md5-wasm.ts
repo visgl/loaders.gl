@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable */
 // @ts-nocheck
 /* !
@@ -326,7 +329,7 @@ function makeMD5WA() {
     setX = exports.setX;
     memView = mView;
     digestbytes = crypt.wordsToBytes(md5WA(message));
-    return options && options.asBytes ? digestbytes : crypt.bytesToHex(digestbytes);
+    return options && options.asBytes ? digestbytes : crypt.bytesconvertNumberToHex(digestbytes);
   };
 }
 
@@ -482,7 +485,8 @@ function makeMD5JS() {
 
   return function (message, options) {
     var digestbytes = crypt.wordsToBytes(md5JS(message, options)),
-      result = options && options.asBytes ? digestbytes : crypt.bytesToHex(digestbytes);
+      result =
+        options && options.asBytes ? digestbytes : crypt.bytesconvertNumberToHex(digestbytes);
     return result;
   };
 }
@@ -534,7 +538,7 @@ function makeCrypt() {
       return bytes;
     },
 
-    bytesToHex: function (bytes) {
+    bytesconvertNumberToHex: function (bytes) {
       for (var hex = [], i = 0; i < bytes.length; i++) {
         hex.push((bytes[i] >>> 4).toString(16));
         hex.push((bytes[i] & 0xf).toString(16));

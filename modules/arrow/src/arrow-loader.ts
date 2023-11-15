@@ -1,6 +1,8 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrowTable} from './lib/arrow-table';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -34,5 +36,3 @@ export const ArrowLoader: Loader<ArrowTable, never, ArrowLoaderOptions> = {
     }
   }
 };
-
-export const _typecheckArrowLoader: Loader = ArrowLoader;

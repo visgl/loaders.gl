@@ -1,13 +1,20 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // COMMON CATEGORY
 export type {
   TypedArray,
+  BigTypedArray,
   TypedArrayConstructor,
+  BigTypedArrayConstructor,
   NumberArray,
   ArrayType,
   AnyArray
 } from './types/types';
 
-export type {Schema, Field, DataType, Batch, SchemaMetadata, FieldMetadata} from './types/schema';
+export type {Schema, Field, DataType, SchemaMetadata, FieldMetadata} from './types/schema';
+
+export type {Batch} from './types/batch';
 
 // TABLE CATEGORY TYPES
 export type {
@@ -15,7 +22,7 @@ export type {
   RowTable,
   ArrayRowTable,
   ObjectRowTable,
-  GeoJSONRowTable,
+  GeoJSONTable,
   ColumnarTable,
   ArrowTable,
   Tables
@@ -24,7 +31,7 @@ export type {
   TableBatch,
   ArrayRowTableBatch,
   ObjectRowTableBatch,
-  GeoJSONRowTableBatch,
+  GeoJSONTableBatch,
   ColumnarTableBatch,
   ArrowTableBatch
 } from './types/category-table';
@@ -36,6 +43,7 @@ export {RowTableBatchAggregator} from './lib/table/batches/row-table-batch-aggre
 export {ColumnarTableBatchAggregator} from './lib/table/batches/columnar-table-batch-aggregator';
 
 export {
+  isTable,
   getTableLength,
   getTableNumCols,
   getTableCell,
@@ -52,6 +60,11 @@ export {
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 
 export {makeTableFromData} from './lib/table/simple-table/make-table';
+export {
+  makeTableFromBatches,
+  makeBatchFromTable
+} from './lib/table/simple-table/make-table-from-batches';
+export {convertTable} from './lib/table/simple-table/convert-table';
 export {deduceTableSchema} from './lib/table/simple-table/table-schema';
 export {convertToObjectRow, convertToArrayRow} from './lib/table/simple-table/row-utils';
 export {getDataTypeFromArray} from './lib/table/simple-table/data-type';
@@ -122,10 +135,11 @@ export type {
   BinaryAttribute
 } from './types/category-gis';
 export type {
-  BinaryFeatures,
-  BinaryPointFeatures,
-  BinaryLineFeatures,
-  BinaryPolygonFeatures
+  BinaryFeatureCollection,
+  BinaryFeature,
+  BinaryPointFeature,
+  BinaryLineFeature,
+  BinaryPolygonFeature
 } from './types/category-gis';
 
 // SCHEMA
@@ -172,6 +186,5 @@ export {
 
 // SCHEMA UTILS
 export {getTypeInfo} from './lib/table/arrow-api/get-type-info';
-export {getArrowType} from './lib/table/arrow/arrow-type-utils';
 
 export {default as AsyncQueue} from './lib/utils/async-queue';

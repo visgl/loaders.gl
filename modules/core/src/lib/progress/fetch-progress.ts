@@ -1,9 +1,12 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // Forked from github AnthumChris/fetch-progress-indicators under MIT license
 
 /**
  * Intercepts the Response stream and creates a new Response
  */
-export default async function fetchProgress(
+export async function fetchProgress(
   response: Response | Promise<Response>,
   onProgress: any, // TODO better callback types
   onDone = () => {},
@@ -43,7 +46,15 @@ export default async function fetchProgress(
 // Forward to original streams controller
 // TODO - this causes a crazy deep "async stack"... rewrite as async iterator?
 // eslint-disable-next-line max-params
-async function read(controller, reader, loadedBytes, totalBytes, onProgress, onDone, onError) {
+async function read(
+  controller: any,
+  reader: any,
+  loadedBytes: number,
+  totalBytes: number,
+  onProgress: Function,
+  onDone: Function,
+  onError: Function
+): Promise<void> {
   try {
     const {done, value} = await reader.read();
     if (done) {

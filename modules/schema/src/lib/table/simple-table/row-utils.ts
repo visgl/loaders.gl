@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /** Convert an object row to an array row */
 export function convertToObjectRow(
   arrayRow: any[],

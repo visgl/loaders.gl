@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import '@loaders.gl/polyfills';
 import {join} from 'path';
+import inquirer from 'inquirer';
 import {I3SConverter, Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {DepsInstaller} from './deps-installer/deps-installer';
 import {
@@ -49,6 +50,10 @@ type TileConversionOptions = {
   maxDepth?: number;
   /** 3DTiles->I3S only. Whether the converter generates *.slpk (Scene Layer Package) I3S output file */
   slpk: boolean;
+  /** Feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
+  metadataClass?: string;
+  /** With this options the tileset content will be analyzed without conversion */
+  analyze?: boolean;
 };
 
 /* During validation we check that particular options are defined so they can't be undefined */
@@ -132,8 +137,10 @@ function printHelp(): void {
   console.log(
     '--generate-textures [Enable KTX2 textures generation if only one of (JPG, PNG) texture is provided or generate JPG texture if only KTX2 is provided]'
   );
+  console.log('--generate-bounding-volumes [Generate obb and mbs bounding volumes from geometry]');
+  console.log('--analyze [Analyze the input tileset content without conversion, default: false]');
   console.log(
-    '--generate-bounding-volumes [Will generate obb and mbs bounding volumes from geometry]'
+    '--metadata-class [One of the list of feature metadata classes, detected by converter on "analyze" stage, default: not set]'
   );
   console.log('--validate [Enable validation]');
   process.exit(0); // eslint-disable-line
@@ -175,7 +182,10 @@ async function convert(options: ValidatedTileConversionOptions) {
         generateTextures: options.generateTextures,
         generateBoundingVolumes: options.generateBoundingVolumes,
         validate: options.validate,
-        instantNodeWriting: options.instantNodeWriting
+        instantNodeWriting: options.instantNodeWriting,
+        metadataClass: options.metadataClass,
+        analyze: options.analyze,
+        inquirer
       });
       break;
     default:
@@ -191,26 +201,35 @@ async function convert(options: ValidatedTileConversionOptions) {
  */
 function validateOptions(options: TileConversionOptions): ValidatedTileConversionOptions {
   const mandatoryOptionsWithExceptions: {
-    [key: string]: () => void;
+    [key: string]: {
+      getMessage: () => void;
+      condition?: (optionValue: any) => boolean;
+    };
   } = {
-    name: () => console.log('Missed: --name [Tileset name]'),
-    output: () => console.log('Missed: --output [Output path name]'),
-    sevenZipExe: () => console.log('Missed: --7zExe [7z archiver executable path]'),
-    egm: () => console.log('Missed: --egm [*.pgm earth gravity model file path]'),
-    tileset: () => console.log('Missed: --tileset [tileset.json file]'),
-    inputType: () =>
-      console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]')
+    name: {
+      getMessage: () => console.log('Missed: --name [Tileset name]'),
+      condition: (value: any) => Boolean(value) || Boolean(options.analyze)
+    },
+    output: {getMessage: () => console.log('Missed: --output [Output path name]')},
+    sevenZipExe: {getMessage: () => console.log('Missed: --7zExe [7z archiver executable path]')},
+    egm: {getMessage: () => console.log('Missed: --egm [*.pgm earth gravity model file path]')},
+    tileset: {getMessage: () => console.log('Missed: --tileset [tileset.json file]')},
+    inputType: {
+      getMessage: () =>
+        console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]'),
+      condition: (value) =>
+        Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase())
+    }
   };
   const exceptions: (() => void)[] = [];
   for (const mandatoryOption in mandatoryOptionsWithExceptions) {
     const optionValue = options[mandatoryOption];
-    const isWrongInputType =
-      Boolean(optionValue) &&
-      mandatoryOption === 'inputType' &&
-      !Object.values(TILESET_TYPE).includes(optionValue.toUpperCase());
 
-    if (!optionValue || isWrongInputType) {
-      exceptions.push(mandatoryOptionsWithExceptions[mandatoryOption]);
+    const conditionFunc = mandatoryOptionsWithExceptions[mandatoryOption].condition;
+    const testValue = conditionFunc ? conditionFunc(optionValue) : optionValue;
+
+    if (!testValue) {
+      exceptions.push(mandatoryOptionsWithExceptions[mandatoryOption].getMessage);
     }
   }
   if (exceptions.length) {
@@ -291,6 +310,12 @@ function parseOptions(args: string[]): TileConversionOptions {
           break;
         case '--generate-bounding-volumes':
           opts.generateBoundingVolumes = getBooleanValue(index, args);
+          break;
+        case '--analyze':
+          opts.analyze = getBooleanValue(index, args);
+          break;
+        case '--metadata-class':
+          opts.metadataClass = getStringValue(index, args);
           break;
         case '--help':
           printHelp();

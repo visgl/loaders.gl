@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
-import {LoaderOptions} from '../../types';
+import {LoaderOptions} from '../../loader-types';
 
 /**
  *
@@ -21,7 +22,7 @@ function mergeOptionsRecursively(
 ): Record<string, unknown> {
   const options = {...baseOptions};
   for (const [key, newValue] of Object.entries(newOptions)) {
-    if (newValue && typeof newValue === 'object') {
+    if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
       options[key] = mergeOptionsRecursively(
         (options[key] as Record<string, unknown>) || {},
         newOptions[key] as Record<string, unknown>

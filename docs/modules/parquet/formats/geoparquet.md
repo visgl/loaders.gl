@@ -7,9 +7,11 @@ Geoparquet is a set of conventions for storing geospatial data in Parquet files.
 
 Standardization is happening at [geoparquet.org](https://geoparquet.org).
 
-GeoParquet is similar to GeoArrow, as both a binary columnar formats with a high degree of similarity.
+GeoParquet file is a Parquet file that additionally follows these conventions:
 
-Essentially a GeoParquet file is a Parquet file that follows these conventions:
+- Geospatial metadata describing any geospatial columns is stored in the Parquet file's schema metadata (as stringified JSON).
+- Geometry columns are [WKB](/docs/modules/wkt/formats/wkb) encoded (additional encodings will likely be added)/
 
-- JSON encoded metadata stored in the Parquet file's schema metadata.
-- WKB encoded geometry columns
+## Alternatives
+
+GeoParquet can be compared to GeoArrow, as both are binary columnar formats with a high degree of similarity.

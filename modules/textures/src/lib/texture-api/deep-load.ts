@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import {asyncDeepMap} from './async-deep-map';
 
 export type LoadOptions = Record<string, any>;
@@ -9,7 +10,6 @@ export async function deepLoad(urlTree: unknown, load: Load, options: LoadOption
 }
 
 export async function shallowLoad(url: string, load: Load, options: LoadOptions): Promise<any> {
-  // console.error('loading', url);
   const response = await fetch(url, options.fetch);
   const arrayBuffer = await response.arrayBuffer();
   return await load(arrayBuffer, options);

@@ -1,25 +1,32 @@
-// @ts-nocheck
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {Proj4Projection} from '@math.gl/proj4';
 import {transformGeoJsonCoords} from '@loaders.gl/gis';
 
-import {deserialize as deserializeGeoJson} from 'flatgeobuf/lib/cjs/geojson';
-import {deserialize as deserializeGeneric} from 'flatgeobuf/lib/cjs/generic';
-import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/cjs/generic/feature';
+import type {FlatGeobufLoaderOptions} from '../flatgeobuf-loader';
+import type {GeoJSONTable, Feature, Table} from '@loaders.gl/schema';
+import {fgbToBinaryGeometry} from './binary-geometries';
 
-import {fromGeometry as binaryFromGeometry} from './binary-geometries';
-import {FlatGeobufLoaderOptions} from './types';
-import {GeoJSONRowTable, Feature} from '@loaders.gl/schema';
+import {Feature as FBGFeature, HeaderMeta as FGBHeader} from 'flatgeobuf';
+import * as geojson from 'flatgeobuf/lib/mjs/geojson.js';
+import * as generic from 'flatgeobuf/lib/mjs/generic.js';
+import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/mjs/generic/feature';
+const deserializeGeoJson = geojson.deserialize;
+const deserializeGeneric = generic.deserialize;
+// const parsePropertiesBinary = FlatgeobufFeature.parseProperties;
 
 // TODO: reproject binary features
-function binaryFromFeature(feature, header) {
+function binaryFromFeature(feature: FBGFeature, header: FGBHeader) {
   const geometry = feature.geometry();
 
   // FlatGeobuf files can only hold a single geometry type per file, otherwise
   // GeometryType is GeometryCollection
   // I believe geometry.type() is null (0) except when the geometry type isn't
   // known in the header?
-  const geometryType = header.geometryType || geometry.type();
-  const parsedGeometry = binaryFromGeometry(geometry, geometryType);
+  const geometryType = header.geometryType || geometry?.type();
+  const parsedGeometry = fgbToBinaryGeometry(geometry, geometryType!);
+  // @ts-expect-error this looks wrong
   parsedGeometry.properties = parsePropertiesBinary(feature, header.columns);
 
   // TODO: wrap binary data either in points, lines, or polygons key
@@ -32,39 +39,49 @@ function binaryFromFeature(feature, header) {
  * @param arrayBuffer  A FlatGeobuf arrayBuffer
  * @return A GeoJSON geometry object
  */
-export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options?: FlatGeobufLoaderOptions) {
-  const shape = options?.gis?.format || options?.flatgeobuf?.shape;
+export function parseFlatGeobuf(
+  arrayBuffer: ArrayBuffer,
+  options?: FlatGeobufLoaderOptions
+): Table {
+  const shape = options?.flatgeobuf?.shape;
 
   switch (shape) {
-    case 'geojson-row-table': {
-      const table: GeoJSONRowTable = {
-        shape: 'geojson-row-table',
-        data: parseFlatGeobufToGeoJSON(arrayBuffer, options)
+    case 'geojson-table': {
+      const features = parseFlatGeobufToGeoJSON(arrayBuffer, options);
+      const table: GeoJSONTable = {
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        features
       };
       return table;
     }
+
     case 'columnar-table': // binary + some JS arrays
-      return {shape: 'columnar-table', data: parseFlatGeobufToBinary(arrayBuffer, options)};
-    case 'geojson':
-      return parseFlatGeobufToGeoJSON(arrayBuffer, options);
+      const binary = parseFlatGeobufToBinary(arrayBuffer, options);
+      // @ts-expect-error
+      return {shape: 'columnar-table', data: binary};
+
     case 'binary':
+      // @ts-expect-error
       return parseFlatGeobufToBinary(arrayBuffer, options);
+
     default:
       throw new Error(shape);
   }
 }
 
-function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions) {
+function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions = {}) {
   // TODO: reproject binary features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
   const array = new Uint8Array(arrayBuffer);
-  return deserializeGeneric(array, binaryFromFeature);
+  // @ts-expect-error
+  return deserializeGeneric(array, fgbToBinaryGeometry);
 }
 
 function parseFlatGeobufToGeoJSON(
   arrayBuffer: ArrayBuffer,
-  options: FlatGeobufLoaderOptions
+  options: FlatGeobufLoaderOptions = {}
 ): Feature[] {
   if (arrayBuffer.byteLength === 0) {
     return [];
@@ -75,7 +92,8 @@ function parseFlatGeobufToGeoJSON(
   const arr = new Uint8Array(arrayBuffer);
 
   let headerMeta;
-  const {features} = deserializeGeoJson(arr, false, (header) => {
+  // @ts-expect-error this looks wrong
+  const {features} = deserializeGeoJson(arr, undefined, (header) => {
     headerMeta = header;
   });
 
@@ -105,17 +123,22 @@ function parseFlatGeobufToGeoJSON(
  */
 // eslint-disable-next-line complexity
 export function parseFlatGeobufInBatches(stream, options: FlatGeobufLoaderOptions) {
-  if (options && options.gis && options.gis.format === 'binary') {
-    return parseFlatGeobufInBatchesToBinary(stream, options);
+  const shape = options.flatgeobuf?.shape;
+  switch (shape) {
+    case 'binary':
+      return parseFlatGeobufInBatchesToBinary(stream, options);
+    case 'geojson-table':
+      return parseFlatGeobufInBatchesToGeoJSON(stream, options);
+    default:
+      throw new Error(shape);
   }
-
-  return parseFlatGeobufInBatchesToGeoJSON(stream, options);
 }
 
 function parseFlatGeobufInBatchesToBinary(stream, options: FlatGeobufLoaderOptions) {
   // TODO: reproject binary streaming features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
+  // @ts-expect-error
   const iterator = deserializeGeneric(stream, binaryFromFeature);
   return iterator;
 }
@@ -125,12 +148,13 @@ async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: FlatGeobufLoa
   const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
   let headerMeta;
-  const iterator = deserializeGeoJson(stream, false, (header) => {
+  const iterator = deserializeGeoJson(stream, undefined, (header) => {
     headerMeta = header;
   });
 
   let projection;
   let firstRecord = true;
+  // @ts-expect-error this looks wrong
   for await (const feature of iterator) {
     if (firstRecord) {
       const crs = headerMeta && headerMeta.crs;

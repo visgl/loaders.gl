@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {EncodeBSONOptions} from './lib/encoders/encode-bson';
 import {encodeBSONSync} from './lib/encoders/encode-bson';
 
@@ -12,7 +13,7 @@ export type BSONWriterOptions = WriterOptions & {
   bson?: EncodeBSONOptions
 }
 
-export const BSONWriter: Writer<Record<string, unknown>, never, BSONWriterOptions> = {
+export const BSONWriter: WriterWithEncoder<Record<string, unknown>, never, BSONWriterOptions> = {
   name: 'BSON',
   id: 'bson',
   module: 'bson',

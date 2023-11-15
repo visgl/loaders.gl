@@ -15,7 +15,9 @@ export default async function jsonLoaderBench(suite) {
     // const asyncIterator = await parseInBatches(STRING, JSONLoader);
     const data: unknown[] = [];
     for await (const batch of asyncIterator) {
-      data.push(...batch.data);
+      if (batch.shape === 'object-row-table') {
+        data.push(...batch.data);
+      }
     }
   });
 

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable max-statements */
 import React from 'react';
 import {render} from 'react-dom';

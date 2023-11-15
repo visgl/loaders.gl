@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {ObjectRowTable, ArrayRowTable, TableBatch} from '@loaders.gl/schema';

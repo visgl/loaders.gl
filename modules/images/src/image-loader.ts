@@ -2,7 +2,7 @@ import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ImageType} from './types';
 // import type { ImageType } from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
-import parseImage from './lib/parsers/parse-image';
+import {parseImage} from './lib/parsers/parse-image';
 import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg', 'avif'];

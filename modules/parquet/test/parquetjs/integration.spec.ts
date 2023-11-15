@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import test, {Test} from 'tape-promise/tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
-import {makeReadableFile} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/loader-utils';
 import {ParquetSchema, ParquetReader, ParquetEncoder} from '@loaders.gl/parquet';
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
@@ -115,7 +115,7 @@ async function writeTestFile(opts) {
 async function readTestFile(t: Test) {
   const response = await fetchFile(FRUITS_URL);
   const arrayBuffer = await response.arrayBuffer();
-  const reader = new ParquetReader(makeReadableFile(arrayBuffer));
+  const reader = new ParquetReader(new BlobFile(arrayBuffer));
   t.equal(reader.getRowCount(), TEST_NUM_ROWS * 4);
   t.deepEqual(reader.getSchemaMetadata(), {myuid: '420', fnord: 'dronf'});
 

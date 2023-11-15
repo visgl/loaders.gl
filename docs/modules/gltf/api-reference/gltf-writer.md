@@ -12,7 +12,7 @@ The `GLTFWriter` is a writer for glTF scenegraphs.
 
 ## Usage
 
-```js
+```typescript
 import {GLTFWriter} from '@loaders.gl/gltf';
 import {encodeSync} from '@loaders.gl/core';
 

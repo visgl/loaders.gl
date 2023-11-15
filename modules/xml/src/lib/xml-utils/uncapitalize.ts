@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 /**
  * Uncapitalize first letter of a string

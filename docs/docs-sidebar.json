@@ -22,7 +22,7 @@
           "developer-guide/loader-categories",
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",
-          "developer-guide/polyfills"
+          "developer-guide/node"
         ]
       },
       {
@@ -31,6 +31,7 @@
         "items": [
           "developer-guide/dependencies",
           "developer-guide/creating-loaders-and-writers",
+          "developer-guide/composite-loaders",
           "developer-guide/error-handling",
           "developer-guide/dev-env"
         ]
@@ -39,10 +40,25 @@
         "type": "category",
         "label": "Concepts",
         "items": [
+          "developer-guide/concepts/javascript-apis",
           "developer-guide/concepts/binary-data",
           "developer-guide/concepts/streaming",
           "developer-guide/concepts/async-iterators",
           "developer-guide/concepts/worker-threads"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Tutorials",
+    "items": [
+      {
+        "type": "category",
+        "label": "I3S",
+        "items": [
+          "modules/i3s/recipes/building-scene-layer",
+          "modules/i3s/recipes/attribute-driven-colorization"
         ]
       }
     ]
@@ -56,10 +72,20 @@
       "modules/csv/formats/csv",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
+      "modules/json/formats/geojson",
+      "modules/json/formats/geojson-geometry",
       "modules/gltf/formats/glb",
       "modules/gltf/formats/gltf",
+      "modules/geopackage/formats/geopackage",
+      "modules/kml/formats/kml",
+      "modules/kml/formats/gpx",
+      "modules/kml/formats/tcx",
+      "modules/las/formats/las",
+      "modules/mvt/formats/mvt",
+      "modules/mvt/formats/tilejson",
       "modules/parquet/formats/parquet",
       "modules/parquet/formats/geoparquet",
+      "modules/pmtiles/formats/pmtiles",
       "modules/shapefile/formats/shapefile",
       "modules/textures/formats/compressed-textures",
       "modules/wms/formats/csw",
@@ -67,7 +93,10 @@
       "modules/wms/formats/wmts",
       "modules/wms/formats/wfs",
       "modules/wms/formats/gml",
-      "modules/wms/formats/lerc",
+      "modules/lerc/formats/lerc",
+      "modules/wkt/formats/wkt",
+      "modules/wkt/formats/wkb",
+      "modules/wkt/formats/wkt-crs",
       "modules/xml/formats/xml",
       "modules/zip/formats/zip"
     ]
@@ -87,6 +116,13 @@
           "specifications/category-mesh",
           "specifications/category-scenegraph",
           "specifications/category-3d-tiles"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Sources and Services",
+        "items": [
+          "modules/pmtiles/api-reference/pmtiles-source"
         ]
       },
       "modules/3d-tiles/api-reference/tiles-3d-loader",
@@ -110,12 +146,14 @@
       "modules/json/api-reference/json-loader",
       "modules/json/api-reference/ndjson-loader",
       "modules/json/api-reference/geojson-loader",
+      "modules/json/api-reference/geojson-writer",
       "modules/json/api-reference/ndgeojson-loader",
       "modules/kml/api-reference/gpx-loader",
       "modules/kml/api-reference/kml-loader",
       "modules/kml/api-reference/tcx-loader",
       "modules/las/api-reference/las-loader",
       "modules/mvt/api-reference/mvt-loader",
+      "modules/mvt/api-reference/tilejson-loader",
       "modules/obj/api-reference/obj-loader",
       "modules/parquet/api-reference/parquet-loader",
       "modules/pcd/api-reference/pcd-loader",
@@ -130,10 +168,14 @@
       "modules/textures/api-reference/crunch-loader",
       "modules/textures/api-reference/npy-loader",
       "modules/video/api-reference/video-loader",
-      "modules/wkt/api-reference/wkb-loader",
-      "modules/wkt/api-reference/wkb-writer",
       "modules/wkt/api-reference/wkt-loader",
       "modules/wkt/api-reference/wkt-writer",
+      "modules/wkt/api-reference/wkb-loader",
+      "modules/wkt/api-reference/wkb-writer",
+      "modules/wkt/api-reference/twkb-loader",
+      "modules/wkt/api-reference/twkb-writer",
+      "modules/wkt/api-reference/wkt-crs-loader",
+      "modules/wkt/api-reference/wkt-crs-writer",
       "modules/wms/api-reference/wms-capabilities-loader",
       "modules/xml/api-reference/xml-loader",
       "modules/zip/api-reference/zip-loader",
@@ -165,9 +207,17 @@
           "modules/core/api-reference/set-path-prefix",
           "modules/core/api-reference/binary-utilities",
           "modules/core/api-reference/iterator-utilities",
-          "modules/loader-utils/api-reference/request-scheduler",
           "specifications/loader-object-format",
           "specifications/writer-object-format"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/loader-utils",
+        "items": [
+          "modules/loader-utils/README",
+          "modules/loader-utils/api-reference/request-scheduler",
+          "modules/loader-utils/api-reference/parse-with-context"
         ]
       },
       {
@@ -263,6 +313,11 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/lerc",
+        "items": ["modules/lerc/README"]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/mvt",
         "items": ["modules/mvt/README"]
       },
@@ -285,6 +340,11 @@
         "type": "category",
         "label": "@loaders.gl/ply",
         "items": ["modules/ply/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/pmtiles",
+        "items": ["modules/pmtiles/README"]
       },
       {
         "type": "category",
@@ -371,6 +431,8 @@
     "label": "Command-Line Reference",
     "items": [
       "modules/tile-converter/cli-reference/tile-converter",
+      "modules/tile-converter/cli-reference/i3s-server",
+      "modules/tile-converter/cli-reference/slpk-extractor",
       "modules/tile-converter/cli-reference/supported-features"
     ]
   }

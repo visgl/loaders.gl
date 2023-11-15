@@ -1,4 +1,4 @@
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
@@ -29,16 +29,16 @@ const DEFAULT_DRACO_WRITER_OPTIONS = {
 /**
  * Exporter for Draco3D compressed geometries
  */
-export const DracoWriter: Writer<DracoMesh, unknown, DracoWriterOptions> = {
+export const DracoWriter: WriterWithEncoder<DracoMesh, unknown, DracoWriterOptions> = {
   name: 'DRACO',
   id: 'draco',
   module: 'draco',
   version: VERSION,
   extensions: ['drc'],
-  encode,
   options: {
     draco: DEFAULT_DRACO_WRITER_OPTIONS
-  }
+  },
+  encode
 };
 
 async function encode(data: DracoMesh, options: DracoWriterOptions = {}): Promise<ArrayBuffer> {

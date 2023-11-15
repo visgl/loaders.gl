@@ -1,5 +1,6 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
-import {fs, stream} from '@loaders.gl/loader-utils';
+import {stream} from '@loaders.gl/loader-utils';
+import * as fs from 'fs';
 
 export function load(name: string): any {
   return (module || (global as any)).require(name);

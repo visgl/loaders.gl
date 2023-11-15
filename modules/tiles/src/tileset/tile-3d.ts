@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
@@ -102,7 +103,7 @@ export class Tile3D {
   private _expireDate: any = null;
   private _expiredContent: any = null;
 
-  private _boundingBox?: CartographicBounds;
+  private _boundingBox?: CartographicBounds = undefined;
 
   /** updated every frame for tree traversal and rendering optimizations: */
   public _distanceToCamera: number = 0;

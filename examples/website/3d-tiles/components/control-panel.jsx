@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import styled from 'styled-components';
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';

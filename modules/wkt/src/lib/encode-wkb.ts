@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz
 // Reference: https://www.ogc.org/standards/sfa
 
@@ -14,13 +15,13 @@ import type {
   GeometryCollection
 } from '@loaders.gl/schema';
 
-import BinaryWriter from './utils/binary-writer';
+import {BinaryWriter} from './utils/binary-writer';
 
 /**
  * Integer code for geometry type
  * Reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
  */
-enum WKB {
+export enum WKB {
   Point = 1,
   LineString = 2,
   Polygon = 3,
@@ -33,7 +34,7 @@ enum WKB {
 /**
  * Options for encodeWKB
  */
-interface WKBOptions {
+type WKBOptions = {
   /** Does the GeoJSON input have Z values? */
   hasZ?: boolean;
 
@@ -42,25 +43,16 @@ interface WKBOptions {
 
   /** Spatial reference for input GeoJSON */
   srid?: any;
-}
+};
 
 /**
  * Encodes a GeoJSON object into WKB
  * @param geojson A GeoJSON Feature or Geometry
  * @returns string
  */
-export default function encodeWKB(
-  geometry: Geometry | Feature,
-  options: WKBOptions | {wkb: WKBOptions} = {}
-): ArrayBuffer {
+export function encodeWKB(geometry: Geometry | Feature, options: WKBOptions = {}): ArrayBuffer {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
-  }
-
-  // Options should be wrapped in a `wkb` key, but we allow top-level options here for backwards
-  // compatibility
-  if ('wkb' in options) {
-    options = options.wkb;
   }
 
   switch (geometry.type) {

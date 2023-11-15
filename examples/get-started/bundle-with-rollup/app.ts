@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {parse} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {CompressedTextureLoader} from '@loaders.gl/textures';

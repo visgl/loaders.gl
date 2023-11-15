@@ -1,5 +1,7 @@
 # WKTLoader
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.1-blue.svg?style=flat-square" alt="From-v2.1" />
 </p>
@@ -18,9 +20,16 @@ Loader and writer for the [Well-known text][wkt] format for representation of ge
 | Decoder Type          | Synchronous                                                                                                  |
 | Worker Thread Support | Yes [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)](http://shields.io) |
 
+## Installation
+
+```bash
+npm install @loaders.gl/wkt
+npm install @loaders.gl/core
+```
+
 ## Usage
 
-```js
+```typescript
 import {WKTLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 
@@ -28,7 +37,7 @@ const data = parseSync('LINESTRING (30 10, 10 30, 40 40)', WKTLoader);
 // => {type: 'LineString', coordinates: [[30, 10], [10, 30], [40, 40]]}
 ```
 
-```js
+```typescript
 import {WKTLoader} from '@loaders.gl/wkt';
 import {load} from '@loaders.gl/core';
 

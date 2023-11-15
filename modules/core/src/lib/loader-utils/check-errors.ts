@@ -1,4 +1,11 @@
-export async function checkFetchResponseStatus(response) {
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+/**
+ * Check reponse status, if not OK extract error message and throw error
+ * @param response
+ */
+export async function checkFetchResponseStatus(response: Response): Promise<void> {
   if (!response.ok) {
     let errorMessage = `fetch failed ${response.status} ${response.statusText}`;
     try {
@@ -13,14 +20,25 @@ export async function checkFetchResponseStatus(response) {
   }
 }
 
-export function checkFetchResponseStatusSync(response) {
+/**
+ * Check response status synchronously, if not OK extract error message and throw error
+ * Not able to extract as good an error message as the async version
+ * @param response
+ */
+export function checkFetchResponseStatusSync(response: Response): void {
   if (!response.ok) {
     throw new Error(`fetch failed ${response.status}`);
   }
 }
 
-function getErrorText(text) {
+/**
+ * Ad-hoc error message extractor
+ * @todo Handle XML, JSON, etc
+ * @param text
+ * @returns
+ */
+function getErrorText(text: string): string {
   // Look for HTML error texts
-  const matches = text.match('<pre>(.*)</pre>');
+  const matches = /<pre>(.*)<\/pre>/.exec(text);
   return matches ? matches[1] : ` ${text.slice(0, 10)}...`;
 }

@@ -10,17 +10,10 @@ export type TextureLoaderOptions = {
   };
 };
 
-const DEFAULT_TEXTURE_LOADER_OPTIONS = {
-  'compressed-texture': {
-    libraryPath: 'libs/',
-    useBasis: false
-  }
-};
-
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
  */
-export const CompressedTextureWorkerLoader = {
+export const CompressedTextureWorkerLoader: Loader<any, never, TextureLoaderOptions> = {
   name: 'Texture Containers',
   id: 'compressed-texture',
   module: 'textures',
@@ -40,31 +33,35 @@ export const CompressedTextureWorkerLoader = {
     'application/octet-stream'
   ],
   binary: true,
-  options: DEFAULT_TEXTURE_LOADER_OPTIONS
+  options: {
+    'compressed-texture': {
+      libraryPath: 'libs/',
+      useBasis: false
+    }
+  }
 };
 
 /**
  * Loader for KTX, DDS, and PVR texture container formats
  */
-export const CompressedTextureLoader = {
+export const CompressedTextureLoader: LoaderWithParser<any, never, TextureLoaderOptions> = {
   ...CompressedTextureWorkerLoader,
-  parse: async (arrayBuffer, options) => {
-    if (options['compressed-texture'].useBasis) {
+  parse: async (arrayBuffer: ArrayBuffer, options?: TextureLoaderOptions) => {
+    if (options?.['compressed-texture']?.useBasis) {
+      // @ts-expect-error TODO not allowed to modify inputs
       options.basis = {
         format: {
           alpha: 'BC3',
           noAlpha: 'BC1'
         },
+        // @ts-expect-error TODO not allowed to modify inputs
         ...options.basis,
         containerFormat: 'ktx2',
         module: 'encoder'
       };
-      return (await parseBasis(arrayBuffer, options))[0];
+      const result = await parseBasis(arrayBuffer, options);
+      return result[0];
     }
     return parseCompressedTexture(arrayBuffer);
   }
 };
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCompressedTextureWorkerLoader: Loader = CompressedTextureWorkerLoader;
-export const _TypecheckCompressedTextureLoader: LoaderWithParser = CompressedTextureLoader;

@@ -11,6 +11,7 @@
     {"path": "../draco"},
     {"path": "../images"},
     {"path": "../loader-utils"},
-    {"path": "../textures"}
+    {"path": "../textures"},
+    {"path": "../math"}
   ]
 }

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export const ERROR_TEST_CASES: {xml: string; parsed: string}[] = [
   {

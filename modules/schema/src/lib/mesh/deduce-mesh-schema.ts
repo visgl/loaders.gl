@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {MeshAttribute, MeshAttributes} from '../../types/category-mesh';
 import {Schema, Field} from '../../types/schema';

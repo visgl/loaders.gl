@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // CSW - Catalog Service for the Web
 
@@ -25,11 +26,6 @@ import './wfs/wfs-capabilities-loader.spec';
 // GML - Geographic Markup Language
 
 import './gml/gml-loader.spec';
-
-// LERC - Limited Error Raster Compression
-
-// import './lerc/lerc-sanity.spec';
-// import './lerc/lerc-level2.spec';
 
 // Services
 

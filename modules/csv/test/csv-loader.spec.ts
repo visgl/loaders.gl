@@ -2,7 +2,8 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '../src/csv-loader';
+import {getTableLength} from '@loaders.gl/schema';
 
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
@@ -21,113 +22,136 @@ test('CSVLoader#loader conformance', (t) => {
 });
 
 test('CSVLoader#load(states.csv)', async (t) => {
-  const rows = await load(CSV_STATES_URL, [CSVLoader]);
-  t.equal(rows.length, 110);
+  const table = await load(CSV_STATES_URL, CSVLoader);
+  t.equal(getTableLength(table), 110);
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('CSVLoader#load', async (t) => {
-  const rows = await load(CSV_SAMPLE_URL, [CSVLoader], {csv: {shape: 'object-row-table'}});
-  t.is(rows.length, 2, 'Got correct table size, correctly inferred no header');
-  t.deepEqual(rows[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+  const table = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'object-row-table'}});
+  t.assert(table.shape === 'object-row-table', 'Got correct table shape');
+  if (table.shape === 'object-row-table') {
+    t.is(getTableLength(table), 2, 'Got correct table size, correctly inferred no header');
+    t.deepEqual(table.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+  }
 
-  const rows1 = await load(CSV_SAMPLE_URL, [CSVLoader], {
+  const table1 = await load(CSV_SAMPLE_URL, CSVLoader, {
     csv: {shape: 'object-row-table', header: true}
   });
-  t.is(rows1.length, 1, 'Got correct table size, forced first row as header');
-  t.deepEqual(rows1[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
 
-  const rows2 = await load(CSV_SAMPLE_URL, [CSVLoader], {csv: {shape: 'array-row-table'}});
-  t.is(rows2.length, 2, 'Got correct table size');
-  t.deepEqual(
-    rows2,
-    [
-      ['A', 'B', 1],
-      ['X', 'Y', 2]
-    ],
-    'Got correct array content'
-  );
+  t.assert(table1.shape === 'object-row-table', 'Got correct table shape');
+  if (table1.shape === 'object-row-table') {
+    t.is(getTableLength(table1), 1, 'Got correct table size, forced first row as header');
+    t.deepEqual(table1.data[0], {A: 'X', B: 'Y', 1: 2}, 'Got correct first row');
+  }
 
-  const rows3 = await load(CSV_SAMPLE_VERY_LONG_URL, [CSVLoader], {
+  const table2 = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'array-row-table'}});
+  t.assert(table2.shape === 'array-row-table', 'Got correct table shape');
+  if (table2.shape === 'array-row-table') {
+    t.is(getTableLength(table2), 2, 'Got correct table size');
+    t.deepEqual(
+      table2.data,
+      [
+        ['A', 'B', 1],
+        ['X', 'Y', 2]
+      ],
+      'Got correct array content'
+    );
+  }
+
+  const table3 = await load(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(rows3.length, 2000, 'Got correct table size');
-  t.deepEqual(
-    rows3[0],
-    {
-      TLD: 'ABC',
-      'meaning of life': 42,
-      placeholder: 'Lorem ipsum dolor sit'
-    },
-    'Got correct first row'
-  );
+  t.assert(table3.shape === 'object-row-table', 'Got correct table shape');
+  if (table3.shape === 'object-row-table') {
+    t.is(getTableLength(table3), 2000, 'Got correct table size');
+    t.deepEqual(
+      table3.data[0],
+      {
+        TLD: 'ABC',
+        'meaning of life': 42,
+        placeholder: 'Lorem ipsum dolor sit'
+      },
+      'Got correct first row'
+    );
+  }
 
-  const rows4 = await load(CSV_INCIDENTS_URL_QUOTES, [CSVLoader], {
+  const table4 = await load(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(rows4.length, 499, 'Got correct table size (csv with quotes)');
-  t.deepEqual(
-    rows4[0],
-    {
-      IncidntNum: 160919032,
-      Category: 'VANDALISM',
-      Descript: 'MALICIOUS MISCHIEF, VANDALISM OF VEHICLES',
-      DayOfWeek: 'Friday',
-      DateTime: '11/11/16 7:00',
-      PdDistrict: 'MISSION',
-      Address: '1400 Block of UTAH ST',
-      Resolution: 'NONE',
-      Longitude: -122.4052518,
-      Latitude: 37.75152496
-    },
-    'Got correct first row (csv with quotes)'
-  );
+  t.assert(table4.shape === 'object-row-table', 'Got correct table shape');
+  if (table4.shape === 'object-row-table') {
+    t.is(getTableLength(table4), 499, 'Got correct table size (csv with quotes)');
+    t.deepEqual(
+      table4.data[0],
+      {
+        IncidntNum: 160919032,
+        Category: 'VANDALISM',
+        Descript: 'MALICIOUS MISCHIEF, VANDALISM OF VEHICLES',
+        DayOfWeek: 'Friday',
+        DateTime: '11/11/16 7:00',
+        PdDistrict: 'MISSION',
+        Address: '1400 Block of UTAH ST',
+        Resolution: 'NONE',
+        Longitude: -122.4052518,
+        Latitude: 37.75152496
+      },
+      'Got correct first row (csv with quotes)'
+    );
+  }
   t.end();
 });
 
 test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
-  const rows = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, [CSVLoader], {
+  const table = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
-  t.is(rows.length, 3, 'Got correct table size');
-  t.deepEqual(
-    rows,
-    [
-      {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2},
-      {A: 'y', B: 29, 'A.1': 'z', 'A.1.1': 'y', 'A.2': 'w', 'B.1': 19},
-      {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2}
-    ],
-    'dataset should be parsed with the corrected duplicate headers'
-  );
+  t.assert(table.shape === 'object-row-table', 'Got correct table shape');
+  if (table.shape === 'object-row-table') {
+    t.is(getTableLength(table), 3, 'Got correct table size');
+    t.deepEqual(
+      table.data,
+      [
+        {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2},
+        {A: 'y', B: 29, 'A.1': 'z', 'A.1.1': 'y', 'A.2': 'w', 'B.1': 19},
+        {A: 'x', B: 1, 'A.1': 'y', 'A.1.1': 'z', 'A.2': 'w', 'B.1': 2}
+      ],
+      'dataset should be parsed with the corrected duplicate headers'
+    );
+  }
 
-  const rows2 = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, [CSVLoader], {
+  const table2 = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'array-row-table', header: false}
   });
-  t.is(rows2.length, 4, 'Got correct table size');
-  t.deepEqual(
-    rows2,
-    [
-      ['A', 'B', 'A', 'A.1', 'A', 'B'],
-      ['x', 1, 'y', 'z', 'w', 2],
-      ['y', 29, 'z', 'y', 'w', 19],
-      ['x', 1, 'y', 'z', 'w', 2]
-    ],
-    'dataset should be parsed correctly as the array rows'
-  );
+  t.assert(table2.shape === 'array-row-table', 'Got correct table shape');
+  if (table2.shape === 'array-row-table') {
+    t.is(getTableLength(table2), 4, 'Got correct table size');
+    t.deepEqual(
+      table2.data,
+      [
+        ['A', 'B', 'A', 'A.1', 'A', 'B'],
+        ['x', 1, 'y', 'z', 'w', 2],
+        ['y', 29, 'z', 'y', 'w', 19],
+        ['x', 1, 'y', 'z', 'w', 2]
+      ],
+      'dataset should be parsed correctly as the array rows'
+    );
+  }
 });
 
 // TSV
 
 test('CSVLoader#load(brazil.tsv)', async (t) => {
-  const rows = await load(TSV_BRAZIL, [CSVLoader]);
-  t.equal(rows.length, 10);
+  const table = await load(TSV_BRAZIL, CSVLoader);
+  t.equal(getTableLength(table), 10);
   t.end();
 });
 
 // loadInBatches
 
 test('CSVLoader#loadInBatches(sample.csv, columns)', async (t) => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL, [CSVLoader], {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {
       shape: 'columnar-table'
     }
@@ -136,12 +160,15 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, 2, 'Got correct batch size');
 
-    t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
-    t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
-    t.ok(validateColumn(batch.data.column3, batch.length, 'float'), 'column 2 valid');
+    t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
+    if (batch.shape === 'columnar-table') {
+      t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
+      t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
+      t.ok(validateColumn(batch.data.column3, batch.length, 'float'), 'column 2 valid');
+    }
 
     batchCount++;
   }
@@ -151,7 +178,7 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async (t) => {
 
 test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
   const batchSize = 25;
-  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, [CSVLoader], {
+  const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     csv: {
       shape: 'columnar-table'
     },
@@ -160,19 +187,21 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
     t.equal(batch.length, batchSize, 'Got correct batch size');
 
-    t.ok(validateColumn(batch.data.TLD, batch.length, 'string'), 'column TLD valid');
-    t.ok(
-      validateColumn(batch.data['meaning of life'], batch.length, 'float'),
-      'column meaning of life valid'
-    );
-    t.ok(
-      validateColumn(batch.data.placeholder, batch.length, 'string'),
-      'column placeholder valid'
-    );
-
+    t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
+    if (batch.shape === 'columnar-table') {
+      t.ok(validateColumn(batch.data.TLD, batch.length, 'string'), 'column TLD valid');
+      t.ok(
+        validateColumn(batch.data['meaning of life'], batch.length, 'float'),
+        'column meaning of life valid'
+      );
+      t.ok(
+        validateColumn(batch.data.placeholder, batch.length, 'string'),
+        'column placeholder valid'
+      );
+    }
     batchCount++;
     if (batchCount === 5) {
       break;
@@ -184,13 +213,16 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
 });
 
 test('CSVLoader#loadInBatches(sample.csv, array-rows)', async (t) => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL, [CSVLoader], {shape: 'array-row-table'});
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {shape: 'array-row-table'});
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, 2, 'Got correct batch size');
-    t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    t.equal(batch.shape, 'array-row-table', 'Got correct batch shape');
+    if (batch.shape === 'array-row-table') {
+      t.equal(batch.length, 2, 'Got correct batch size');
+      t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
+    }
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
@@ -199,15 +231,20 @@ test('CSVLoader#loadInBatches(sample.csv, array-rows)', async (t) => {
 });
 
 test('CSVLoader#loadInBatches(sample.csv, object-rows)', async (t) => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL, [CSVLoader], {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, 2, 'Got correct batch size');
-    t.deepEqual(batch.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+    t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
+    if (batch.shape === 'object-row-table') {
+      t.comment(
+        `BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`
+      );
+      t.equal(batch.length, 2, 'Got correct batch size');
+      t.deepEqual(batch.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+    }
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
@@ -216,7 +253,7 @@ test('CSVLoader#loadInBatches(sample.csv, object-rows)', async (t) => {
 });
 
 test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
-  let iterator = await loadInBatches(CSV_SAMPLE_URL, [CSVLoader], {
+  let iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {
       shape: 'array-row-table',
       header: false
@@ -225,22 +262,28 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, 2, 'Got correct batch size');
-    t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    t.equal(batch.shape, 'array-row-table', 'Got correct batch shape');
+    if (batch.shape === 'array-row-table') {
+      t.equal(batch.length, 2, 'Got correct batch size');
+      t.deepEqual(batch.data[0], ['A', 'B', 1], 'Got correct first row');
+    }
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
 
-  iterator = await loadInBatches(CSV_SAMPLE_URL, [CSVLoader], {
+  iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {header: false, shape: 'object-row-table'}
   });
 
   batchCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, 2, 'Got correct batch size');
-    t.deepEqual(batch.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
+    if (batch.shape === 'object-row-table') {
+      t.equal(batch.length, 2, 'Got correct batch size');
+      t.deepEqual(batch.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
+    }
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
@@ -250,7 +293,7 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
 
 test('CSVLoader#loadInBatches(no header, row format, prefix)', async (t) => {
   const batchSize = 25;
-  const iterator = await loadInBatches(CSV_NO_HEADER_URL, [CSVLoader], {
+  const iterator = await loadInBatches(CSV_NO_HEADER_URL, CSVLoader, {
     csv: {
       shape: 'object-row-table',
       columnPrefix: 'column_'
@@ -259,17 +302,20 @@ test('CSVLoader#loadInBatches(no header, row format, prefix)', async (t) => {
   });
 
   for await (const batch of iterator) {
-    t.comment(JSON.stringify(batch.data[0]));
-    t.ok(batch.data[0].column_1, 'first column has a value');
-    t.ok(batch.data[0].column_2, 'second column has a value value');
-    t.ok(batch.data[0].column_3, 'third column has a value');
+    t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
+    if (batch.shape === 'object-row-table') {
+      // t.comment(JSON.stringify(batch.data[0]));
+      t.ok(batch.data[0].column_1, 'first column has a value');
+      t.ok(batch.data[0].column_2, 'second column has a value value');
+      t.ok(batch.data[0].column_3, 'third column has a value');
+    }
   }
 
   t.end();
 });
 
 test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL, [CSVLoader], {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {
       shape: 'columnar-table',
       dynamicTyping: false,
@@ -281,15 +327,18 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
 
   let rowCount = 0;
   for await (const batch of iterator) {
-    t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    t.equal(batch.length, 2, 'Got correct batch size');
+    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
+    t.equal(batch.shape, 'columnar-table', 'Got correct batch shape');
+    if (batch.shape === 'columnar-table') {
+      t.equal(getTableLength(batch), 2, 'Got correct batch size');
 
-    t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
-    t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
-    t.ok(
-      validateColumn(batch.data.column3, batch.length, 'string'),
-      'column 2 is a string and is valid'
-    );
+      t.ok(validateColumn(batch.data.column1, batch.length, 'string'), 'column 0 valid');
+      t.ok(validateColumn(batch.data.column2, batch.length, 'string'), 'column 1 valid');
+      t.ok(
+        validateColumn(batch.data.column3, batch.length, 'string'),
+        'column 2 is a string and is valid'
+      );
+    }
 
     rowCount = rowCount + batch.length;
   }
@@ -298,14 +347,16 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
 });
 
 test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL_DUPLICATE_COLS, [CSVLoader], {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
 
   const rows: any[] = [];
 
   for await (const batch of iterator) {
-    rows.push(...batch.data);
+    if (batch.shape === 'object-row-table') {
+      rows.push(...batch.data);
+    }
   }
 
   t.is(rows.length, 3, 'Got correct table size');
@@ -319,14 +370,16 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
     'dataset should be parsed with the corrected duplicate headers'
   );
 
-  const iterator2 = await loadInBatches(CSV_SAMPLE_URL_DUPLICATE_COLS, [CSVLoader], {
+  const iterator2 = await loadInBatches(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'array-row-table'}
   });
 
   const rows2: any[] = [];
 
   for await (const batch of iterator2) {
-    rows2.push(...batch.data);
+    if (batch.shape === 'array-row-table') {
+      rows2.push(...batch.data);
+    }
   }
 
   t.is(rows2.length, 3, 'Got correct table size');
@@ -342,14 +395,17 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
 });
 
 test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
-  const iterator = await loadInBatches(CSV_SAMPLE_URL_EMPTY_LINES, [CSVLoader], {
+  const iterator = await loadInBatches(CSV_SAMPLE_URL_EMPTY_LINES, CSVLoader, {
     csv: {shape: 'object-row-table', skipEmptyLines: true}
   });
 
-  const rows: any[] = [];
+  const rows: unknown[] = [];
 
   for await (const batch of iterator) {
-    rows.push(...batch.data);
+    t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
+    if (batch.shape === 'object-row-table') {
+      rows.push(...batch.data);
+    }
   }
 
   t.is(rows.length, 2, 'Got correct table size');
@@ -365,13 +421,16 @@ test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
 });
 
 test('CSVLoader#loadInBatches(csv with quotes)', async (t) => {
-  const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, [CSVLoader], {
+  const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
 
-  const rows: any[] = [];
+  const rows: unknown[] = [];
   for await (const batch of iterator) {
-    rows.push(...batch.data);
+    t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
+    if (batch.shape === 'object-row-table') {
+      rows.push(...batch.data);
+    }
   }
   t.is(rows.length, 499, 'Got the correct table size');
   t.deepEqual(

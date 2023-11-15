@@ -28,7 +28,7 @@ The `HTMLLoader` parses HTML-encoded data.
 
 ## Usage
 
-```js
+```typescript
 import {HTMLLoader} from '@loaders.gl/xml';
 import {load} from '@loaders.gl/core';
 

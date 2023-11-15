@@ -2,6 +2,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {DracoLoader} from '@loaders.gl/draco';
+import {LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {GL} from '@loaders.gl/math';
 import {Vector3} from '@math.gl/core';
 
@@ -13,7 +14,6 @@ import {normalize3DTileColorAttribute} from './helpers/normalize-3d-tile-colors'
 import {normalize3DTileNormalAttribute} from './helpers/normalize-3d-tile-normals';
 import {normalize3DTilePositionAttribute} from './helpers/normalize-3d-tile-positions';
 import {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
-import {LoaderContext} from '@loaders.gl/loader-utils';
 import {Tiles3DTileContent} from '../../types';
 
 export async function parsePointCloud3DTile(
@@ -262,7 +262,6 @@ export async function loadDraco(
   if (!context) {
     return;
   }
-  const {parse} = context;
   const dracoOptions = {
     ...options,
     draco: {
@@ -274,17 +273,20 @@ export async function loadDraco(
   // The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
 
-  const data = await parse(dracoData.buffer, DracoLoader, dracoOptions);
+  const data = await parseFromContext(dracoData.buffer, DracoLoader, dracoOptions, context);
 
   const decodedPositions = data.attributes.POSITION && data.attributes.POSITION.value;
   const decodedColors = data.attributes.COLOR_0 && data.attributes.COLOR_0.value;
   const decodedNormals = data.attributes.NORMAL && data.attributes.NORMAL.value;
   const decodedBatchIds = data.attributes.BATCH_ID && data.attributes.BATCH_ID.value;
+  // @ts-expect-error
   const isQuantizedDraco = decodedPositions && data.attributes.POSITION.value.quantization;
+  // @ts-expect-error
   const isOctEncodedDraco = decodedNormals && data.attributes.NORMAL.value.quantization;
   if (isQuantizedDraco) {
     // Draco quantization range == quantized volume scale - size in meters of the quantized volume
     // Internal quantized range is the range of values of the quantized data, e.g. 255 for 8-bit, 1023 for 10-bit, etc
+    // @ts-expect-error This doesn't look right
     const quantization = data.POSITION.data.quantization;
     const range = quantization.range;
     tile.quantizedVolumeScale = new Vector3(range, range, range);
@@ -293,6 +295,7 @@ export async function loadDraco(
     tile.isQuantizedDraco = true;
   }
   if (isOctEncodedDraco) {
+    // @ts-expect-error This doesn't look right
     tile.octEncodedRange = (1 << data.NORMAL.data.quantization.quantizationBits) - 1.0;
     tile.isOctEncodedDraco = true;
   }
@@ -308,9 +311,13 @@ export async function loadDraco(
   }
 
   tile.attributes = {
+    // @ts-expect-error
     positions: decodedPositions,
+    // @ts-expect-error
     colors: normalize3DTileColorAttribute(tile, decodedColors, undefined),
+    // @ts-expect-error
     normals: decodedNormals,
+    // @ts-expect-error
     batchIds: decodedBatchIds,
     ...batchTableAttributes
   };

@@ -11,5 +11,5 @@ export {LZ4Compression} from './lib/lz4-compression';
 export {ZstdCompression} from './lib/zstd-compression';
 export {LZOCompression} from './lib/lzo-compression';
 
-export type {CompressionWorkerOptions} from './compression-worker';
-export {CompressionWorker, compressOnWorker} from './compression-worker';
+export type {CompressionWorkerOptions} from './compress-on-worker';
+export {CompressionWorker, compressOnWorker} from './compress-on-worker';

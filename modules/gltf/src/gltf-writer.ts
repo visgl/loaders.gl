@@ -19,12 +19,12 @@ export const GLTFWriter = {
   extensions: ['glb'], // We only support encoding to binary GLB, not to JSON GLTF
   mimeTypes: ['model/gltf-binary'], // 'model/gltf+json',
   binary: true,
-
-  encodeSync,
-
   options: {
     gltf: {}
-  }
+  },
+
+  encode: async (gltf, options: GLTFWriterOptions = {}) => encodeSync(gltf, options),
+  encodeSync
 };
 
 function encodeSync(gltf, options: GLTFWriterOptions = {}) {

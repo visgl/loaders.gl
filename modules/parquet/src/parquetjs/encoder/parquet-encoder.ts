@@ -632,6 +632,7 @@ function encodeFooter(
 
   const metadataEncoded = serializeThrift(metadata);
   const footerEncoded = Buffer.alloc(metadataEncoded.length + 8);
+
   metadataEncoded.copy(footerEncoded);
   footerEncoded.writeUInt32LE(metadataEncoded.length, metadataEncoded.length);
   footerEncoded.write(PARQUET_MAGIC, metadataEncoded.length + 4);

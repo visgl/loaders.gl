@@ -29,7 +29,7 @@ const FrameWrap = styled.div`
   }
 `;
 
-const ArcGisContainer = styled.div`
+const ArcGISContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,7 +85,7 @@ export default class MapInfoPanel extends PureComponent {
           style={IFRAME_STYLES(showFullInfo)}
           src={url}
         ></iframe>
-        <ArcGisContainer>
+        <ArcGISContainer>
           <a
             target="_blank"
             rel="noopener noreferrer"
@@ -93,7 +93,7 @@ export default class MapInfoPanel extends PureComponent {
           >
             Go to ArcGiS
           </a>
-        </ArcGisContainer>
+        </ArcGISContainer>
       </FrameWrap>
     );
   }

@@ -1,4 +1,21 @@
-import {Node3DIndexDocument} from '../../types';
+import {Node3DIndexDocument, SceneLayer3D} from '../../types';
+
+/**
+ * Return URL seperated from search params
+ * @param url - URL that might have search params
+ * @returns url without search params
+ */
+export function getUrlWithoutParams(url: string): string {
+  let urlWithoutParams;
+
+  try {
+    const urlObj = new URL(url);
+    urlWithoutParams = `${urlObj.origin}${urlObj.pathname}`;
+  } catch (e) {
+    // do nothing
+  }
+  return urlWithoutParams || url;
+}
 
 /**
  * Generates url with token if it is exists.
@@ -29,13 +46,14 @@ export function generateTileAttributeUrls(url: string, tile: Node3DIndexDocument
 
 /**
  * Generates attribute urls for tileset based on tileset and resource
- * @param {Object} tileset
- * @param {number} resource
+ * @param tileset - tileset metadata
+ * @param url - tileset base url
+ * @param resource - resource id per I3S spec
  * @returns {Array}
  */
-export function generateTilesetAttributeUrls(tileset, resource) {
+export function generateTilesetAttributeUrls(tileset: SceneLayer3D, url: string, resource: number) {
   const attributeUrls: string[] = [];
-  const {attributeStorageInfo, url} = tileset;
+  const {attributeStorageInfo = []} = tileset;
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
     const fileName = attributeStorageInfo[index].key;

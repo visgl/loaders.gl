@@ -1,6 +1,5 @@
 // loaders.gl, MIT license
-
-import type {RecordBatch} from 'apache-arrow';
+// Copyright (c) vis.gl contributors
 
 /** For dictionary type */
 export type KeyType = 'int8' | 'int16' | 'int32' | 'uint8' | 'uint16' | 'uint32';
@@ -38,6 +37,7 @@ export type DataType =
   | 'interval-daytime'
   | 'interval-yearmonth'
   // Composite types
+  | {type: 'decimal'; bitWidth: number; precision: number; scale: number}
   | {type: 'list'; children: Field[]} // one child only
   | {type: 'struct'; children: Field[]}
   | {
@@ -79,19 +79,4 @@ export type Field = {
 export type Schema = {
   fields: Field[];
   metadata: SchemaMetadata;
-};
-
-export type Batch = {
-  batchType: 'data' | 'metadata' | 'partial-result' | 'final-result';
-  batch?: number;
-  mimeType?: string;
-  shape: string;
-  data: any;
-  recordBatch?: RecordBatch;
-  length: number;
-  schema?: Schema;
-  bytesUsed?: number;
-  count?: number;
-  cursor?: number;
-  [key: string]: any;
 };

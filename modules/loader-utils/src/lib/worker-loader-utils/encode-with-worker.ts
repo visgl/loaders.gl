@@ -1,5 +1,5 @@
 import {WorkerFarm} from '@loaders.gl/worker-utils';
-import {Writer, WriterOptions} from '../../types';
+import {Writer, WriterOptions} from '../../writer-types';
 import {isBrowser} from '../env-utils/globals';
 
 /**

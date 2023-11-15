@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import './testcases/attribute-name.spec';
 import './testcases/attribute-no-space.spec';

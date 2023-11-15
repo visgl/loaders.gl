@@ -1,4 +1,6 @@
-// Zip loader
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import JSZip from 'jszip';
 
@@ -64,5 +66,3 @@ async function loadZipEntry(jsZip: any, subFilename: string, options: any = {}) 
     return error;
   }
 }
-
-export const _typecheckZipLoader: LoaderWithParser = ZipLoader;

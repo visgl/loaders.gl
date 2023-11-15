@@ -1,12 +1,16 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+export type POTreeLoaderOptions = LoaderOptions & {
+  potree?: {};
+};
+
 /** Potree loader */
 // @ts-ignore
-export const PotreeLoader: LoaderWithParser = {
+export const PotreeLoader: LoaderWithParser<any, never, POTreeLoaderOptions> = {
   name: 'potree',
   id: 'potree',
   module: 'potree',

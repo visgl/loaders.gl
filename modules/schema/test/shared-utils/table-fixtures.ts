@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
-// Attribution: Copyright 2023 Foursquare Labs, Inc.
+// Copyright (c) vis.gl contributors
+// Copyright 2023 Foursquare Labs, Inc.
 
 import {makeTestTable, makeTestTableFromSchemaAndColumns} from './table-utils';
 

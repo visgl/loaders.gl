@@ -14,7 +14,7 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 
 ## Usage
 
-```js
+```typescript
 import {encode, writeFile} from '@loaders.gl/core';
 import {ZipWriter} from '@loaders.gl/zip';
 

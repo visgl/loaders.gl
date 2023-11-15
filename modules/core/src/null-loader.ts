@@ -1,13 +1,21 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-import {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import {LoaderContext} from '@loaders.gl/loader-utils';
+
+export type NullLoaderOptions = LoaderOptions & {
+  null?: {};
+};
 
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullWorkerLoader: Loader = {
+export const NullWorkerLoader: Loader<null, never, NullLoaderOptions> = {
   name: 'Null loader',
   id: 'null',
   module: 'core',
@@ -22,26 +30,17 @@ export const NullWorkerLoader: Loader = {
 };
 
 /**
- * Returns arguments passed to the parse API in a format that can be transfered to a
- * web worker. The `context` parameter is stripped using JSON.stringify & parse.
- */
-function parseSync(arrayBuffer, options, context) {
-  if (!options.null.echoParameters) return null;
-  context = context && JSON.parse(JSON.stringify(context));
-  return {arrayBuffer, options, context};
-}
-
-/**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullLoader: LoaderWithParser = {
+export const NullLoader: LoaderWithParser<null, null, NullLoaderOptions> = {
   name: 'Null loader',
   id: 'null',
   module: 'core',
   version: VERSION,
   mimeTypes: ['application/x.empty'],
   extensions: ['null'],
-  parse: async (arrayBuffer, options, context) => parseSync(arrayBuffer, options, context),
+  parse: async (arrayBuffer: ArrayBuffer, options?: NullLoaderOptions, context?: LoaderContext) =>
+    parseSync(arrayBuffer, options || {}, context),
   parseSync,
   parseInBatches: async function* generator(asyncIterator, options, context) {
     for await (const batch of asyncIterator) {
@@ -50,8 +49,18 @@ export const NullLoader: LoaderWithParser = {
   },
   tests: [() => false],
   options: {
-    null: {
-      echoParameters: false
-    }
+    null: {}
   }
 };
+
+/**
+ * Returns arguments passed to the parse API in a format that can be transferred to a
+ * web worker. The `context` parameter is stripped using JSON.stringify & parse.
+ */
+function parseSync(
+  arrayBuffer: ArrayBuffer,
+  options?: NullLoaderOptions,
+  context?: LoaderContext
+): null {
+  return null;
+}

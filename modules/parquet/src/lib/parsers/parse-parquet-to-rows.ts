@@ -1,45 +1,99 @@
 // import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {ColumnarTableBatch} from '@loaders.gl/schema';
-import {makeReadableFile} from '@loaders.gl/loader-utils';
-import {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {
+  GeoJSONTable,
+  GeoJSONTableBatch,
+  ObjectRowTable,
+  ObjectRowTableBatch
+} from '@loaders.gl/schema';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {WKTLoader, WKBLoader} from '@loaders.gl/wkt';
+
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
+import {getSchemaFromParquetReader} from './get-parquet-schema';
+import {installBufferPolyfill} from '../../polyfills/buffer';
 
-export async function parseParquet(
-  arrayBuffer: ArrayBuffer,
+export async function parseParquetFile(
+  file: ReadableFile,
   options?: ParquetLoaderOptions
-): Promise<ObjectRowTable> {
-  const blob = new Blob([arrayBuffer]);
+): Promise<ObjectRowTable | GeoJSONTable> {
+  installBufferPolyfill();
+
+  const reader = new ParquetReader(file, {
+    preserveBinary: options?.parquet?.preserveBinary
+  });
+
+  const schema = await getSchemaFromParquetReader(reader);
 
   const rows: ParquetRow[] = [];
-  for await (const batch of parseParquetFileInBatches(blob, options)) {
+
+  const rowBatches = reader.rowBatchIterator(options?.parquet);
+  for await (const rowBatch of rowBatches) {
     // we have only one input batch so return
-    for (const row of batch.data) {
+    for (const row of rowBatch) {
       rows.push(row);
     }
   }
-
-  return {
+  const objectRowTable: ObjectRowTable = {
     shape: 'object-row-table',
-    // TODO - spread can fail for very large number of batches
+    schema,
     data: rows
   };
+
+  const shape = options?.parquet?.shape;
+  return convertTable(objectRowTable, shape);
 }
 
 export async function* parseParquetFileInBatches(
-  blob: Blob,
+  file: ReadableFile,
   options?: ParquetLoaderOptions
-): AsyncIterable<ObjectRowTableBatch> {
-  const file = makeReadableFile(blob);
-  const reader = new ParquetReader(file);
+): AsyncIterable<ObjectRowTableBatch | GeoJSONTableBatch> {
+  const reader = new ParquetReader(file, {
+    preserveBinary: options?.parquet?.preserveBinary
+  });
+
+  const schema = await getSchemaFromParquetReader(reader);
   const rowBatches = reader.rowBatchIterator(options?.parquet);
   for await (const rows of rowBatches) {
-    yield {
+    const objectRowTable: ObjectRowTable = {
       shape: 'object-row-table',
-      data: rows,
+      schema,
+      data: rows
+    };
+    const shape = options?.parquet?.shape;
+    const table = convertTable(objectRowTable, shape);
+
+    yield {
       batchType: 'data',
+      schema,
+      ...table,
       length: rows.length
     };
+  }
+}
+
+function convertTable(
+  objectRowTable: ObjectRowTable,
+  shape?: 'object-row-table' | 'geojson-table'
+): ObjectRowTable | GeoJSONTable {
+  switch (shape) {
+    case 'object-row-table':
+      return objectRowTable;
+
+    case 'geojson-table':
+      try {
+        return convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema!, [
+          WKTLoader,
+          WKBLoader
+        ]);
+      } catch (error) {
+        return objectRowTable;
+      }
+
+    default:
+      throw new Error(shape);
   }
 }

@@ -96,6 +96,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 /**
  * Cannot import draco_encoder module:
  * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
+ * [Error: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' failed to load.
  */
 test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
   if (!isBrowser) {

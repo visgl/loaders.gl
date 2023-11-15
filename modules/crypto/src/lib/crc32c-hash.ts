@@ -1,7 +1,9 @@
-// CRC32c
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {Hash} from './hash';
 import CRC32C from './algorithms/crc32c';
-import {toHex, hexToBase64} from './utils/digest-utils';
+import {encodeNumber} from './utils/digest-utils';
 
 /**
  * A transform that calculates CRC32c Hash
@@ -26,30 +28,28 @@ export class CRC32CHash extends Hash {
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  async hash(input: ArrayBuffer): Promise<string> {
-    return this.hashSync(input);
+  async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
+    return this.hashSync(input, encoding);
   }
 
-  hashSync(input: ArrayBuffer): string {
+  hashSync(input: ArrayBuffer, encoding: 'hex' | 'base64'): string {
     this._hash.update(input);
-    const hashValue = this._hash.finalize();
-    const hex = toHex(hashValue);
-    const hash = hexToBase64(hex);
-    return hash;
+    const digest = this._hash.finalize();
+    return encodeNumber(digest, encoding);
   }
 
   // runInBatches inherited
 
   async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     for await (const chunk of asyncIterator) {
       this._hash.update(chunk);
       yield chunk;
     }
-    const hashValue = this._hash.finalize();
-    const hex = toHex(hashValue);
-    const hash = hexToBase64(hex);
+    const digest = this._hash.finalize();
+    const hash = encodeNumber(digest, encoding);
     this.options.crypto?.onEnd?.({hash});
   }
 }

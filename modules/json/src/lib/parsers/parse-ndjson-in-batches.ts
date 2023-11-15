@@ -1,4 +1,4 @@
-import type {Batch} from '@loaders.gl/schema';
+import type {TableBatch} from '@loaders.gl/schema';
 import {TableBatchBuilder} from '@loaders.gl/schema';
 import {
   LoaderOptions,
@@ -10,7 +10,7 @@ import {
 export async function* parseNDJSONInBatches(
   binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: LoaderOptions
-): AsyncIterable<Batch> {
+): AsyncIterable<TableBatch> {
   const textIterator = makeTextDecoderIterator(binaryAsyncIterator);
   const lineIterator = makeLineIterator(textIterator);
   const numberedLineIterator = makeNumberedLineIterator(lineIterator);

@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 
-import {GLTFScenegraph} from '@loaders.gl/gltf';
-import {GLTFLoader} from '@loaders.gl/gltf';
+import {GLTFScenegraph, GLTFLoader, GLTFAccessor} from '@loaders.gl/gltf';
 import {load} from '@loaders.gl/core';
+import type {TypedArray} from '@loaders.gl/schema';
 
 // Extracted from Cesium 3D Tiles
 const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
@@ -77,5 +77,57 @@ test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
     'second bufferView offset correct'
   );
 
+  t.end();
+});
+
+test('GLTFScenegraph#Typed Arrays should be taken by Accessor', async (t) => {
+  const GLB_ACCESSOR_URL = '@loaders.gl/gltf/test/data/glb/DamagedHelmet.glb';
+  const testDataSet = [
+    {
+      accessorIndex: 0,
+      accessorCountExpected: 46356,
+      arrayExpected: [0, 1, 2, 2, 3, 0, 3, 2]
+    },
+    {
+      accessorIndex: 1,
+      accessorCountExpected: 14556,
+      arrayExpected: [
+        -0.6119945645332336, -0.03094087541103363, 0.48309004306793213, -0.5795046091079712,
+        0.05627411603927612, 0.5217580199241638, -0.5735836029052734, 0.06353411078453064
+      ]
+    }
+  ];
+  const gltfWithBuffers = await load(GLB_ACCESSOR_URL, GLTFLoader);
+  const gltfScenegraph = new GLTFScenegraph(gltfWithBuffers);
+
+  for (const testData of testDataSet) {
+    let typedArray: TypedArray = gltfScenegraph.getTypedArrayForAccessor(testData.accessorIndex);
+    t.deepEquals(
+      typedArray.slice(0, 8),
+      testData.arrayExpected,
+      'typed array taken by accessor as a number'
+    );
+
+    const accessor: GLTFAccessor = gltfScenegraph.getAccessor(testData.accessorIndex);
+    t.equals(accessor.count, testData.accessorCountExpected, 'first accessor taken');
+
+    typedArray = gltfScenegraph.getTypedArrayForAccessor(accessor);
+    t.deepEquals(
+      typedArray.slice(0, 8),
+      testData.arrayExpected,
+      'typed array taken by accessor as an object'
+    );
+
+    if (accessor.bufferView === 0) {
+      accessor.bufferView = undefined;
+      // default bufferView should be 0
+      typedArray = gltfScenegraph.getTypedArrayForAccessor(accessor);
+      t.deepEquals(
+        typedArray.slice(0, 8),
+        testData.arrayExpected,
+        'typed array taken by accessor as object with the bufferView set to undefined'
+      );
+    }
+  }
   t.end();
 });

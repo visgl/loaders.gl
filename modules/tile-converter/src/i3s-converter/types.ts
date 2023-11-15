@@ -1,10 +1,11 @@
-import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
+import {GLTFImagePostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
 import {
   BoundingVolumes,
   I3SMaterialDefinition,
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/i3s';
+import {Matrix4, Vector3} from '@math.gl/core';
 
 /** Converted resources for specific node */
 export type I3SConvertedResources = {
@@ -105,10 +106,8 @@ export type GeometryAttributes = {
   featureCount: number;
 };
 
-/** Geometry attributes specific for the particular feature */
-export type GroupedByFeatureIdAttributes = {
-  /** Feature Id */
-  featureId: number;
+/** Geometry attributes applicable for reordering by featureId */
+export type GroupedAttributes = {
   /** POSITION attribute value */
   positions: Float32Array;
   /** NORMAL attribute value */
@@ -119,6 +118,12 @@ export type GroupedByFeatureIdAttributes = {
   uvRegions: Uint16Array;
   /** TEXCOORD_0 attribute value */
   texCoords: Float32Array;
+};
+
+/** Geometry attributes specific for the particular feature */
+export type GroupedByFeatureIdAttributes = GroupedAttributes & {
+  /** Feature Id */
+  featureId: number;
 };
 
 /** Shared resources made from GLTF material */
@@ -168,7 +173,7 @@ export type TypedArrayConstructor =
  * glTF primitive modes (mesh topology types)
  * @see https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
  */
-export enum GltfPrimitiveModeString {
+export enum GLTFPrimitiveModeString {
   POINTS = 'POINTS',
   LINES = 'LINES',
   LINE_LOOP = 'LINE_LOOP',
@@ -181,5 +186,58 @@ export enum GltfPrimitiveModeString {
 /** Preprocessed data gathered from child tiles binary content */
 export type PreprocessData = {
   /** Mesh topology types used in gltf primitives of the tileset */
-  meshTopologyTypes: Set<GltfPrimitiveModeString>;
+  meshTopologyTypes: Set<GLTFPrimitiveModeString>;
+  /**
+   * Feature metadata classes found in glTF extensions
+   * The tileset might contain multiple metadata classes provided by EXT_feature_metadata and EXT_structural_metadata extensions.
+   * Every class is a set of properties. But I3S can consume only one set of properties.
+   * On the pre-process we collect all classes from the tileset in order to show the prompt to select one class for conversion to I3S.
+   */
+  metadataClasses: Set<string>;
 };
+
+/** Texture image properties required for conversion */
+export type TextureImageProperties = {
+  /** Array with image data */
+  data: Uint8Array;
+  /** Is the texture compressed */
+  compressed?: boolean;
+  /** Height of the texture's image */
+  height?: number;
+  /** Width of the texture's image */
+  width?: number;
+  /** Number of components (3 for RGB, 4 for RGBA) */
+  components?: number;
+  /** Mime type of the texture's image */
+  mimeType?: string;
+};
+
+/** glTF attributes data, prepared for conversion */
+export type GLTFAttributesData = {
+  /** glTF PBR materials (only id is required) */
+  gltfMaterials?: {id: string}[];
+  /** glTF geometry nodes */
+  nodes: GLTFNodePostprocessed[];
+  /** glTF texture images (set to null for compressed textures) */
+  images: (null | TextureImageProperties)[];
+  /** Source tile origin coordinates in cartographic coordinate system */
+  cartographicOrigin: Vector3;
+  /** Model matrix to convert coordinate system of POSITION and NORMAL attributes from METER_OFFSETS to CARTESIAN  */
+  cartesianModelMatrix: Matrix4;
+};
+
+/**
+ * I3S' types difine the following:
+ *   type Attribute = 'OBJECTID' | 'string' | 'double' | 'Int32' | string;
+ * The AttributeType contains the string values of the Attribute type.
+ */
+export const AttributeType = {
+  /** Type of attribute that is linked with feature ids */
+  OBJECT_ID_TYPE: 'OBJECTID',
+  /** String data type name for feature attributes */
+  STRING_TYPE: 'string',
+  /** Double data type name for feature attributes */
+  DOUBLE_TYPE: 'double',
+  /** Integer data type name for feature attributes */
+  SHORT_INT_TYPE: 'Int32'
+} as const;

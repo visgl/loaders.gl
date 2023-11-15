@@ -1,4 +1,4 @@
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeImageURLToCompressedTextureURL} from './lib/encoders/encode-texture';
 
@@ -17,7 +17,11 @@ export type CompressedTextureWriterOptions = WriterOptions & {
 /**
  * DDS Texture Container Exporter
  */
-export const CompressedTextureWriter: Writer<unknown, unknown, CompressedTextureWriterOptions> = {
+export const CompressedTextureWriter: WriterWithEncoder<
+  unknown,
+  unknown,
+  CompressedTextureWriterOptions
+> = {
   name: 'DDS Texture Container',
   id: 'dds',
   module: 'textures',
@@ -36,7 +40,10 @@ export const CompressedTextureWriter: Writer<unknown, unknown, CompressedTexture
     }
   },
 
-  encodeURLtoURL: encodeImageURLToCompressedTextureURL
+  encodeURLtoURL: encodeImageURLToCompressedTextureURL,
+  encode() {
+    throw new Error('Not implemented');
+  }
 };
 
 // TYPE TESTS - TODO find a better way than exporting junk

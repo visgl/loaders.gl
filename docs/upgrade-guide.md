@@ -1,38 +1,90 @@
 # Upgrade Guide
 
-## Upgrading to v4.0
+## Upgrading to loaders.gl v4.0
+
+**Node.js v18+**
+
+When using loaders.gl on Node.js your application should import the `@loaders.gl/polyfills` module
+before calling any loaders.gl functions.
 
 **Typed Loaders**
 
-Loaders now return typed data. While this sudden injection of types into previously untyped code can generated type errors in applications that have been making the wrong assumptions about what was returned from loaders, those errors will likely be valid and should just be fixed in the application.
+Loaders now return typed data. This addition of types into previously untyped code can generated type errors in existing applications. These type errors can just be a result of the typescript compiler making sure your application knows what it is doing, but they can also mean that you have been making wrong or unsafe assumptions about what is being returned from the loader in question. We recommend you review the errors rather than just defeat them with comments as some may be valid and should be fixed in the application.
 
-In the interest of offering the most rigorous typing of returned data, some loaders now offer fewer options for the returned data type, and the trend in loaders.gl 3.x of offering a growing selection of return formats (or `shapes`) from each loader has now been reversed, in favor of offering a single core return data type, accompanied by optional conversion functions.
+**Shape of Returned Data**
 
-- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
-
-**GLTF**
-
-- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
+Some loaders can return multiple formats, often controlled with the loader options `shape` parameter. Note that many returned data types now also include a `shape` field which contain a string value the specifies the shape of the data. This goal is that this should result in a "discriminated union". Switching on the `returnedData.shape` field will then allow typescript to correctly determine which type of data was returned.
 
 **Apache Arrow JS** 
 
-loaders.gl now uses `apache-arrow` v9. Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_. 
+loaders.gl now imports `apache-arrow` v13 which is a major upgrade but Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_). 
 
 If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes. 
 
 On the upside, the new Apache Arrow API is more modular and "tree shakeable" (meaning that only the Apache Arrow functionality your application is actually using is included in your application bundle). 
 
-Unfortunately, Apache Arrow JS does yet not come with great release or upgrade notes, however the changes are fairly superficial and relatively easy to work through.
+Since Apache Arrow JS does yet not come with upgrade notes, you can refer to the [loaders.gl Arrow documentation](/docs/arrowjs/upgrade-guide).
 
 **Table Schemas** 
 
-If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" loaders.gl schemas. You can recover an Arrow schema as follows
+If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" lower-overhead loaders.gl schemas. You can recover Arrow schemas as follows
 
 ```typescript
-import {deserializeArrowSchema} from '@loaders.gl/schema-utils`;
+import {deserializeArrowSchema} from '@loaders.gl/arrow';
 const table = load(url, ParquetLoader);
 const arrowSchema = deserializeArrowSchema(table.schema);
 ```
+
+**Polyfills**
+
+If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` 
+function under Node.js that supported fetching from local files.
+loaders.gl v4 uses the built-in fetch in Node.js v18+ (which doesn't support fetching from local files), so fetch from local files, you now need to use `fetchFile()` instead.
+
+```typescript
+import {fetchFile} from '@loaders.gl/core';
+const response = await fetchFile('/path/to/local/file');
+...
+```
+
+Note that `fetchFile` is called by all core `load()` functions unless the fetch function is overridden through
+loader options.
+
+Details: The expectation is that loaders.gl v4.0+ will be used with Node.js version 18 and higher,
+which now provide a built-in browser-compatible `fetch()` function by default.
+This new built-in Node.js `fetch` function does not support reading from the file system,
+and loaders.gl v4.0 aligns with this practice.
+
+---
+
+Loader module changes, in order of estimated impact to applications:
+
+**@loaders.gl/images**
+
+- `loadImage()` has moved to `loaders.gl/textures`.
+
+**@loaders.gl/gltf**
+
+- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
+
+**@loaders.gl/crypto**
+
+- All hashes now require an encoding parameter. To get previous behavior, just specify `.hash...(..., 'base64')`.
+
+**@loaders.gl/arrow**
+
+- Batches now contain a Table with a single `RecordBatch` (instead of just a `RecordBatch`).
+
+**@loaders.gl/geopackage**
+
+- `options.geopackage.shape` replaces all other format specification optiojs, such as `options.gis.format`
+- `options.geopackage.shape: 'tables'`, The default data format returned is now `tables` which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
+
+**@loaders.gl/klm**
+
+- `options.kml.shape` replaces all other mechanisms for specifying format of returned data (`.format` etc), and aligns with the `geojson-table` table shape as this is compatible with a GeoJSON `FeatureCollection`.
+- `options.gpx.shape` same changes as `options.shape.kml`
+- `options.tcx.shape` same changes as `options.shape.kml`
 
 ## Upgrading to v3.4
 

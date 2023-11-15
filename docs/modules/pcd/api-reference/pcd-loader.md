@@ -16,7 +16,7 @@ Note: Currently supports `ascii`, `binary` and compressed binary files.
 
 ## Usage
 
-```js
+```typescript
 import {PCDLoader} from '@loaders.gl/pcd';
 import {load} from '@loaders.gl/core';
 

@@ -1,4 +1,7 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+import {AttributeMetadataInfo} from './helpers/attribute-metadata-info';
 
 import type {
   FeatureTableJson,
@@ -12,9 +15,10 @@ import type {
   SceneLayer3D,
   BoundingVolumes,
   MaxScreenThresholdSQ,
-  NodeInPage
+  NodeInPage,
+  Attribute
 } from '@loaders.gl/i3s';
-import {load, encode, fetchFile, getLoaderOptions, isBrowser} from '@loaders.gl/core';
+import {load, encode, isBrowser} from '@loaders.gl/core';
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Geoid} from '@math.gl/geoid';
 import {join} from 'path';
@@ -51,45 +55,46 @@ import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
 import {
-  GltfPrimitiveModeString,
+  GLTFPrimitiveModeString,
   I3SConvertedResources,
   PreprocessData,
   SharedResourcesArrays
 } from './types';
-import {getWorkerURL, WorkerFarm} from '@loaders.gl/worker-utils';
-import {DracoWriterWorker} from '@loaders.gl/draco';
+import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
-import {I3SAttributesWorker} from '../i3s-attributes-worker';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
-  createdStorageAttribute,
-  createFieldAttribute,
-  createPopupInfo,
-  getAttributeType,
-  getFieldAttributeType
+  getAttributeTypesMapFromPropertyTable,
+  getAttributeTypesMapFromSchema
 } from './helpers/feature-attributes';
 import {NodeIndexDocument} from './helpers/node-index-document';
-import {loadNestedTileset, loadTile3DContent} from './helpers/load-3d-tiles';
+import {
+  isNestedTileset,
+  loadNestedTileset,
+  loadTile3DContent,
+  loadFromArchive
+} from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {createBoundingVolume} from '@loaders.gl/tiles';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
+import {Progress} from './helpers/progress';
 
-const ION_DEFAULT_TOKEN =
-  process.env?.IonToken || // eslint-disable-line
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'; // eslint-disable-line
+const ION_DEFAULT_TOKEN = process.env?.IonToken;
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';
 const _3D_OBJECT_LAYER_TYPE = '3DObject';
 const REFRESH_TOKEN_TIMEOUT = 1800; // 30 minutes in seconds
 const CESIUM_DATASET_PREFIX = 'https://';
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
+const PROGRESS_PHASE1_COUNT = 'phase1-count';
 
 /**
  * Converter from 3d-tiles tileset to i3s layer
  */
 export default class I3SConverter {
+  attributeMetadataInfo: AttributeMetadataInfo;
   nodePages: NodePages;
   options: any;
   layers0Path: string;
@@ -112,6 +117,7 @@ export default class I3SConverter {
   loadOptions: Tiles3DLoaderOptions = {
     _nodeWorkers: true,
     reuseWorkers: true,
+    useLocalLibraries: true,
     basis: {
       format: 'rgba32',
       // We need to load local fs workers because nodejs can't load workers from the Internet
@@ -119,7 +125,8 @@ export default class I3SConverter {
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
-    fetch: {}
+    fetch: {},
+    modules: {}
   };
   geoidHeightModel: Geoid | null = null;
   Loader: LoaderWithParser = Tiles3DLoader;
@@ -130,10 +137,13 @@ export default class I3SConverter {
   writeQueue: WriteQueue<WriteQueueItem> = new WriteQueue();
   compressList: string[] | null = null;
   preprocessData: PreprocessData = {
-    meshTopologyTypes: new Set()
+    meshTopologyTypes: new Set(),
+    metadataClasses: new Set()
   };
+  progresses: Record<string, Progress> = {};
 
   constructor() {
+    this.attributeMetadataInfo = new AttributeMetadataInfo();
     this.nodePages = new NodePages(writeFile, HARDCODED_NODES_PER_PAGE, this);
     this.options = {};
     this.layers0Path = '';
@@ -187,6 +197,9 @@ export default class I3SConverter {
     generateTextures?: boolean;
     generateBoundingVolumes?: boolean;
     instantNodeWriting?: boolean;
+    inquirer?: Promise<unknown>;
+    metadataClass?: string;
+    analyze?: boolean;
   }): Promise<string> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE);
@@ -207,7 +220,10 @@ export default class I3SConverter {
       generateTextures,
       generateBoundingVolumes,
       instantNodeWriting = false,
-      mergeMaterials = true
+      mergeMaterials = true,
+      inquirer,
+      metadataClass,
+      analyze = false
     } = options;
     this.options = {
       maxDepth,
@@ -218,8 +234,11 @@ export default class I3SConverter {
       token,
       inputUrl,
       instantNodeWriting,
-      mergeMaterials
+      mergeMaterials,
+      inquirer,
+      metadataClass
     };
+    this.progresses[PROGRESS_PHASE1_COUNT] = new Progress();
     this.compressList = (this.options.instantNodeWriting && []) || null;
     this.validate = Boolean(validate);
     this.Loader = inputUrl.indexOf(CESIUM_DATASET_PREFIX) !== -1 ? CesiumIonLoader : Tiles3DLoader;
@@ -237,20 +256,26 @@ export default class I3SConverter {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
 
-    await this.loadWorkers();
-
     try {
       const preloadOptions = await this._fetchPreloadOptions();
+      let tilesetUrl = inputUrl;
+      if (preloadOptions.url) {
+        tilesetUrl = preloadOptions.url;
+      }
       if (preloadOptions.headers) {
         this.loadOptions.fetch = {headers: preloadOptions.headers};
       }
-      this.sourceTileset = await load(inputUrl, this.Loader, this.loadOptions);
+      this.sourceTileset = await loadFromArchive(tilesetUrl, this.Loader, this.loadOptions);
 
-      const preprocessResult = await this.preprocessConversion();
+      const preprocessResult =
+        this.Loader === Tiles3DLoader || analyze ? await this.preprocessConversion() : true;
 
-      if (preprocessResult) {
-        await this._createAndSaveTileset(outputPath, tilesetName);
-        await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+      if (preprocessResult && !analyze) {
+        const selectMetadataClassResult = await this.selectMetadataClass();
+        if (selectMetadataClassResult) {
+          await this._createAndSaveTileset(outputPath, tilesetName);
+          await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+        }
       }
     } catch (error) {
       throw error;
@@ -278,14 +303,25 @@ export default class I3SConverter {
       undefined,
       this.options.maxDepth
     );
-    const {meshTopologyTypes} = this.preprocessData;
+    const {meshTopologyTypes, metadataClasses} = this.preprocessData;
+
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
+    console.log(`Tile count: ${this.progresses[PROGRESS_PHASE1_COUNT].stepsTotal}`);
     console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
+
+    if (metadataClasses.size) {
+      console.log(
+        `Feature metadata classes have been found: ${Array.from(metadataClasses).join(', ')}`
+      );
+    } else {
+      console.log('Feature metadata classes have not been found');
+    }
+
     console.log(`------------------------------------------------`);
     if (
-      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLES) &&
-      !meshTopologyTypes.has(GltfPrimitiveModeString.TRIANGLE_STRIP)
+      !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLES) &&
+      !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLE_STRIP)
     ) {
       console.log(
         'The tileset is of unsupported mesh topology types. The conversion will be interrupted.'
@@ -293,6 +329,7 @@ export default class I3SConverter {
       console.log(`------------------------------------------------`);
       return false;
     }
+
     return true;
   }
 
@@ -306,11 +343,13 @@ export default class I3SConverter {
     sourceTile: Tiles3DTileJSONPostprocessed,
     traversalProps: null
   ): Promise<null> {
-    if (sourceTile.type === 'json') {
+    const isTileset = isNestedTileset(sourceTile);
+    if (isTileset) {
       await loadNestedTileset(this.sourceTileset, sourceTile, this.loadOptions);
       return null;
     }
     if (sourceTile.id) {
+      this.progresses[PROGRESS_PHASE1_COUNT].stepsTotal += 1;
       console.log(`[analyze]: ${sourceTile.id}`); // eslint-disable-line
     }
 
@@ -327,8 +366,40 @@ export default class I3SConverter {
     }
     const tilePreprocessData = await analyzeTileContent(tileContent);
     mergePreprocessData(this.preprocessData, tilePreprocessData);
-
     return null;
+  }
+
+  /**
+   * Select metadata class associated with the set of feature attributes
+   * @returns true if the metadata class has been successfully selected
+   */
+  private async selectMetadataClass() {
+    const {metadataClasses} = this.preprocessData;
+    if (metadataClasses.size > 1) {
+      if (this.options.metadataClass?.length) {
+        console.log(`${this.options.metadataClass} has been selected`);
+      } else if (this.options.inquirer) {
+        const result = await this.options.inquirer.prompt([
+          {
+            name: 'metadataClass',
+            type: 'list',
+            message: 'Select feature metadata data class to convert...',
+            choices: Array.from(metadataClasses)
+          }
+        ]);
+        this.options.metadataClass = result.metadataClass;
+        console.log(`${result.metadataClass} has been selected`);
+      } else {
+        console.log(
+          `A feature metadata class has not been selected. Start the converter with option "--metadata-class". For example, "npx tile-converter ... --metadata-class ${
+            Array.from(metadataClasses)[0]
+          }"`
+        );
+        console.log(`------------------------------------------------`);
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -371,7 +442,7 @@ export default class I3SConverter {
       obb: boundingVolumes.obb,
       children: []
     });
-
+    this.progresses[PROGRESS_PHASE1_COUNT].startMonitoring();
     const rootNode = await NodeIndexDocument.createRootNode(boundingVolumes, this);
     await traverseDatasetWith<TraversalConversionProps>(
       sourceRootTile,
@@ -383,6 +454,15 @@ export default class I3SConverter {
       this.finalizeTile.bind(this),
       this.options.maxDepth
     );
+    this.progresses[PROGRESS_PHASE1_COUNT].stopMonitoring();
+
+    this.layers0!.attributeStorageInfo = this.attributeMetadataInfo.attributeStorageInfo;
+    this.layers0!.fields = this.attributeMetadataInfo.fields;
+    this.layers0!.popupInfo = this.attributeMetadataInfo.popupInfo;
+
+    if (this.attributeMetadataInfo.attributeStorageInfo.length) {
+      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+    }
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
     // @ts-ignore
@@ -519,8 +599,9 @@ export default class I3SConverter {
     sourceTile: Tiles3DTileJSONPostprocessed,
     traversalProps: TraversalConversionProps
   ): Promise<TraversalConversionProps> {
-    if (sourceTile.type === 'json' || sourceTile.type === 'empty') {
-      if (sourceTile.type === 'json') {
+    const isTileset = isNestedTileset(sourceTile);
+    if (isTileset || sourceTile.type === 'empty') {
+      if (isTileset) {
         if (sourceTile.id) {
           console.log(`[load]: ${sourceTile.id}`); // eslint-disable-line
         }
@@ -531,7 +612,6 @@ export default class I3SConverter {
     if (sourceTile.id) {
       console.log(`[convert]: ${sourceTile.id}`); // eslint-disable-line
     }
-
     const {parentNodes, transform} = traversalProps;
     let transformationMatrix: Matrix4 = transform.clone();
     if (sourceTile.transform) {
@@ -545,6 +625,20 @@ export default class I3SConverter {
       transform: transformationMatrix,
       parentNodes: childNodes
     };
+
+    if (sourceTile.id) {
+      this.progresses[PROGRESS_PHASE1_COUNT].stepsDone += 1;
+
+      let timeRemainingString = 'Calculating time left...';
+      const timeRemainingStringBasedOnCount =
+        this.progresses[PROGRESS_PHASE1_COUNT].getTimeRemainingString();
+      if (timeRemainingStringBasedOnCount) {
+        timeRemainingString = `${timeRemainingStringBasedOnCount} left`;
+      }
+
+      let percentString = this.progresses[PROGRESS_PHASE1_COUNT].getPercentString();
+      console.log(`[converted ${percentString}%, ${timeRemainingString}]: ${sourceTile.id}`); // eslint-disable-line
+    }
     return newTraversalProps;
   }
 
@@ -597,11 +691,8 @@ export default class I3SConverter {
     );
     let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
-    const propertyTable = getPropertyTable(tileContent);
-
-    if (propertyTable && !this.layers0?.attributeStorageInfo?.length) {
-      this._convertPropertyTableToNodeAttributes(propertyTable);
-    }
+    const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
+    this.createAttributeStorageInfo(tileContent, propertyTable);
 
     const resourcesData = await this._convertResources(
       sourceTile,
@@ -685,7 +776,7 @@ export default class I3SConverter {
    * @param boundingVolume - initialized bounding volume of the source tile
    * @param tileContent - content of the source tile
    * @param parentId - id of parent node in node pages
-   * @param propertyTable - batch table from b3dm / feature properties from EXT_FEATURE_METADATA
+   * @param propertyTable - batch table from b3dm / feature properties from EXT_FEATURE_METADATA, EXT_MESH_FEATURES or EXT_STRUCTURAL_METADATA
    * @returns - converted node resources
    */
   private async _convertResources(
@@ -711,12 +802,13 @@ export default class I3SConverter {
       async () => (await this.nodePages.push({index: 0, obb: draftObb}, parentId)).index,
       propertyTable,
       this.featuresHashArray,
-      this.layers0?.attributeStorageInfo,
+      this.attributeMetadataInfo.attributeStorageInfo,
       this.options.draco,
       this.generateBoundingVolumes,
       this.options.mergeMaterials,
       this.geoidHeightModel!,
-      this.workerSource
+      this.loadOptions.modules as Record<string, string>,
+      this.options.metadataClass
     );
     return resourcesData;
   }
@@ -932,9 +1024,13 @@ export default class I3SConverter {
               KTX2BasisWriterWorker,
               {
                 ...KTX2BasisWriterWorker.options,
-                source: this.workerSource.ktx2,
+                ['ktx2-basis-writer']: {
+                  // We need to load local fs workers because nodejs can't load workers from the Internet
+                  workerUrl: './modules/textures/dist/ktx2-basis-writer-worker-node.js'
+                },
                 reuseWorkers: true,
-                _nodeWorkers: true
+                _nodeWorkers: true,
+                useLocalLibraries: true
               }
             );
 
@@ -1012,9 +1108,14 @@ export default class I3SConverter {
     childPath: string,
     slpkChildPath: string
   ): Promise<void> {
-    if (attributes?.length && this.layers0?.attributeStorageInfo?.length) {
-      for (let index = 0; index < attributes.length; index++) {
-        const folderName = this.layers0.attributeStorageInfo[index].key;
+    if (attributes?.length && this.attributeMetadataInfo.attributeStorageInfo.length) {
+      const minimumLength =
+        attributes.length < this.attributeMetadataInfo.attributeStorageInfo.length
+          ? attributes.length
+          : this.attributeMetadataInfo.attributeStorageInfo.length;
+
+      for (let index = 0; index < minimumLength; index++) {
+        const folderName = this.attributeMetadataInfo.attributeStorageInfo[index].key;
         const fileBuffer = new Uint8Array(attributes[index]);
 
         if (this.options.slpk) {
@@ -1084,31 +1185,35 @@ export default class I3SConverter {
   }
 
   /**
-   * Do conversion of 3DTiles property table to I3s node attributes.
-   * @param propertyTable - Table with layer meta data.
+   * Creates attribute storage info based on either extension schema or property table.
+   * @param tileContent - content of the source tile
+   * @param propertyTable - feature properties from EXT_FEATURE_METADATA, EXT_STRUCTURAL_METADATA
    */
-  private _convertPropertyTableToNodeAttributes(propertyTable: FeatureTableJson): void {
-    let attributeIndex = 0;
-    const propertyTableWithObjectId = {
-      OBJECTID: [0],
-      ...propertyTable
-    };
+  private createAttributeStorageInfo(
+    tileContent: Tiles3DTileContent | null,
+    propertyTable: FeatureTableJson | null
+  ): void {
+    /*
+    In case the tileset doesn't have either EXT_structural_metadata or EXT_feature_metadata
+    that can be a source of attribute information so metadataClass is not specified
+    we will collect attribute information for node attributes from the property table
+    taken from each tile.
+    */
+    let attributeTypesMap: Record<string, Attribute> | null = null;
+    if (this.options.metadataClass) {
+      if (!this.attributeMetadataInfo.attributeStorageInfo.length && tileContent?.gltf) {
+        attributeTypesMap = getAttributeTypesMapFromSchema(
+          tileContent.gltf,
+          this.options.metadataClass
+        );
+      }
+    } else if (propertyTable) {
+      attributeTypesMap = getAttributeTypesMapFromPropertyTable(propertyTable);
+    }
 
-    for (const key in propertyTableWithObjectId) {
-      const firstAttribute = propertyTableWithObjectId[key][0];
-      const attributeType = getAttributeType(key, firstAttribute);
-
-      const storageAttribute = createdStorageAttribute(attributeIndex, key, attributeType);
-      const fieldAttributeType = getFieldAttributeType(attributeType);
-      const fieldAttribute = createFieldAttribute(key, fieldAttributeType);
-      const popupInfo = createPopupInfo(propertyTableWithObjectId);
-
-      this.layers0!.attributeStorageInfo!.push(storageAttribute);
-      this.layers0!.fields!.push(fieldAttribute);
-      this.layers0!.popupInfo = popupInfo;
-      this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
-
-      attributeIndex += 1;
+    if (attributeTypesMap) {
+      // Add new storage attributes, fields and create popupInfo
+      this.attributeMetadataInfo.addMetadataInfo(attributeTypesMap);
     }
   }
 
@@ -1193,28 +1298,5 @@ export default class I3SConverter {
    */
   private isContentSupported(sourceTile: Tiles3DTileJSONPostprocessed): boolean {
     return ['b3dm', 'glTF', 'scenegraph'].includes(sourceTile.type || '');
-  }
-
-  private async loadWorkers(): Promise<void> {
-    console.log(`Loading workers source...`); // eslint-disable-line no-undef, no-console
-    if (this.options.draco) {
-      const url = getWorkerURL(DracoWriterWorker, {...getLoaderOptions()});
-      const sourceResponse = await fetchFile(url);
-      const source = await sourceResponse.text();
-      this.workerSource.draco = source;
-    }
-
-    if (this.generateTextures) {
-      const url = getWorkerURL(KTX2BasisWriterWorker, {...getLoaderOptions()});
-      const sourceResponse = await fetchFile(url);
-      const source = await sourceResponse.text();
-      this.workerSource.ktx2 = source;
-    }
-
-    const i3sAttributesWorkerUrl = getWorkerURL(I3SAttributesWorker, {...getLoaderOptions()});
-    const sourceResponse = await fetchFile(i3sAttributesWorkerUrl);
-    const source = await sourceResponse.text();
-    this.workerSource.I3SAttributes = source;
-    console.log(`Loading workers source completed!`); // eslint-disable-line no-undef, no-console
   }
 }

@@ -34,7 +34,8 @@ test('TerrainLoader#parse mapbox martini', async (t) => {
       meshMaxError: 5.0,
       bounds: [83, 329.5, 83.125, 329.625], // note: not the real tile bounds
       tesselator: 'martini'
-    }
+    },
+    worker: false
   });
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 

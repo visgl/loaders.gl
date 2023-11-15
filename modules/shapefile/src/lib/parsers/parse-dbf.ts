@@ -1,5 +1,5 @@
 import {Field, ObjectRowTable} from '@loaders.gl/schema';
-import BinaryChunkReader from '../streaming/binary-chunk-reader';
+import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {
   DBFLoaderOptions,
   DBFResult,
@@ -73,7 +73,7 @@ export function parseDBF(
   dbfParser.end();
 
   const {data, schema} = dbfParser.result;
-  const shape = options?.tables?.format || options?.dbf?.shape;
+  const shape = options?.dbf?.shape;
   switch (shape) {
     case 'object-row-table': {
       const table: ObjectRowTable = {

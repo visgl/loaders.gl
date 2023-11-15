@@ -1,5 +1,4 @@
-import {Model, Geometry} from '@luma.gl/core';
-import * as mat4 from 'gl-matrix/mat4';
+import {Model, Geometry, mat4} from '@luma.gl/core';
 
 import {normalizeAttributes} from './normalize-attributes';
 

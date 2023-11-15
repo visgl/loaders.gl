@@ -25,7 +25,7 @@ As a tileset contains multiple file formats, `Tiles3DLoader` is needed to be exp
 
 Load a tileset file.
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
@@ -34,7 +34,7 @@ const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 
 To decompress tiles containing Draco compressed glTF models or Draco compressed point clouds:
 
-```js
+```typescript
 import {load, registerLoaders} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 const tileUrl = 'https://assets.ion.cesium.com/43978/1.pnts';
@@ -43,7 +43,7 @@ const tile = await load(tileUrl, Tiles3DLoader, {decompress: true});
 
 Load a tileset and dynamically load/unload tiles based on viewport with helper class `Tileset3D` (`@loaders.gl/tiles`)
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -56,16 +56,28 @@ const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader, {'3d-tiles': {isTileset: true}});
 
 const tileset3d = new Tileset3D(tilesetJson, {
+  throttleRequests: false,
   onTileLoad: tile => console.log(tile)
 });
 
-const viewport = new WebMercatorViewport({latitude, longitude, zoom, ...});
-tileset3d.update(viewport);
+const viewport = new WebMercatorViewport({
+  width: 600,
+  height: 400,
+  latitude: 40.7067584, 
+  longitude: -74.0115413, 
+  zoom: 17
+});
+tileset3d.selectTiles(viewport);
 
 // visible tiles
 const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks
+
+// To fully load all tiles in a given view, repeatedly select tiles until the tileset is loaded
+while (!tileset3d.isLoaded()) {
+  await tileset3d.selectTiles(viewport);
+}
 ```
 
 ## Options

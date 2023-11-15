@@ -1,9 +1,9 @@
 import type {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {GLTFAccessorPostprocessed, GLTFNodePostprocessed} from '@loaders.gl/gltf';
-import type {B3DMAttributesData} from '../../i3s-attributes-worker';
 import {Matrix4, TypedArray, Vector3} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';
+import {GLTFAttributesData} from '../types';
 
 /**
  * Prepare attributes for conversion to avoid binary data breaking in worker thread.
@@ -17,7 +17,7 @@ export function prepareDataForAttributesConversion(
   tileContent: Tiles3DTileContent,
   tileTransform: Matrix4,
   boundingVolume: OrientedBoundingBox | BoundingSphere
-): B3DMAttributesData {
+): GLTFAttributesData {
   let nodes =
     tileContent.gltf?.scene?.nodes ||
     tileContent.gltf?.scenes?.[0]?.nodes ||

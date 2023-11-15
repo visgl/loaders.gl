@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {MTLMaterial, ParseMTLOptions} from './lib/parse-mtl';
 
@@ -27,5 +28,3 @@ export const MTLLoader: Loader<MTLMaterial[], never, LoaderOptions> = {
     mtl: {}
   }
 };
-
-export const _typecheckMTLLoader: Loader = MTLLoader;

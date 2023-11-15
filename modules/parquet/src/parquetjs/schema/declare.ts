@@ -99,7 +99,7 @@ export interface ParquetField {
 }
 
 /** @todo better name, this is an internal type? */
-export interface ParquetOptions {
+export interface ParquetReaderContext {
   type: ParquetType;
   rLevelMax: number;
   dLevelMax: number;
@@ -107,6 +107,8 @@ export interface ParquetOptions {
   column: ParquetField;
   numValues?: Int64;
   dictionary?: ParquetDictionary;
+  /** If true, binary values are not converted to strings */
+  preserveBinary?: boolean;
 }
 
 export interface ParquetPageData {

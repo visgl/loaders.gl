@@ -14,6 +14,10 @@
 
 loaders.gl is extensively documented on the [loaders.gl](https://loaders.gl) website.
 
+## Contributing 
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 loaders.gl is licensed under a permissive open source license, using an MIT umbrella license.

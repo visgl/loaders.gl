@@ -1,8 +1,9 @@
-// This dependency is too big, application must provide it
-import {Hash} from './hash';
-import {createHash} from 'crypto'; // Node.js builtin
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
-type CryptoHashOptions = {
+import {Hash} from './hash';
+
+type NodeHashOptions = {
   crypto: {
     algorithm: string;
     onEnd?: (result: {hash: string}) => any;
@@ -10,48 +11,27 @@ type CryptoHashOptions = {
 };
 
 /**
- * Calculates Cryptographic Hash using Node.js crypto library
- * @deprecated Warning, experimental class
+ * A transform that calculates Cryptographic Hash using Node's Crypto library
+ * @deprecated Only available in Node.js
  */
 export class NodeHash extends Hash {
-  readonly name = 'crypto-node';
+  readonly name;
+  readonly options: NodeHashOptions;
 
-  options: CryptoHashOptions;
-  // @ts-ignore
-  private _algorithm;
-  // @ts-ignore
-  private _hash;
-
-  constructor(options: CryptoHashOptions) {
+  constructor(options: NodeHashOptions) {
     super();
     this.options = options;
-    if (!this.options?.crypto?.algorithm) {
-      throw new Error(this.name);
+    if (!globalThis.loaders.NodeHash) {
+      throw new Error('install @loaders.gl/crypto on Node.js to use NodeHash');
     }
+    return new globalThis.loaders.NodeHash(options);
   }
 
   /**
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  async hash(input: ArrayBuffer): Promise<string> {
-    await this.preload();
-    const hash = createHash(this.options?.crypto?.algorithm?.toLowerCase());
-    const inputArray = new Uint8Array(input);
-    return hash.update(inputArray).digest('base64');
-  }
-
-  async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-  ): AsyncIterable<ArrayBuffer> {
-    await this.preload();
-    const hash = createHash(this.options?.crypto?.algorithm?.toLowerCase());
-    for await (const chunk of asyncIterator) {
-      // https://stackoverflow.com/questions/25567468/how-to-decrypt-an-arraybuffer
-      const inputArray = new Uint8Array(chunk);
-      hash.update(inputArray);
-      yield chunk;
-    }
-    this.options?.crypto?.onEnd?.({hash: hash.digest('base64')});
+  async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
+    throw new Error('Not implemented');
   }
 }

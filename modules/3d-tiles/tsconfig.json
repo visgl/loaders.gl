@@ -9,10 +9,12 @@
   },
   "references": [
     {"path": "../core"},
+    {"path": "../compression"},
     {"path": "../draco"},
     {"path": "../gltf"},
     {"path": "../loader-utils"},
     {"path": "../math"},
-    {"path": "../tiles"}
+    {"path": "../tiles"},
+    {"path": "../zip"}
   ]
 }

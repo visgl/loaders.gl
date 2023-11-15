@@ -1,18 +1,11 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
-import stream from 'stream';
+import * as stream from 'stream';
 
 export type {Writable} from 'stream';
 
-export let Transform;
+/** Wrapper for Node.js stream method */
+export const Transform = stream.Transform;
 
 export const isSupported = Boolean(stream);
-
-// paths
-
-try {
-  /** Wrapper for Node.js fs method */
-  Transform = stream.Transform;
-} catch {
-  // ignore
-}

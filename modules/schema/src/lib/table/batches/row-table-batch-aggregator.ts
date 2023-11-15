@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Schema} from '../../../types/schema';
 import type {TableBatch} from '../../../types/category-table';
@@ -13,8 +14,8 @@ export class RowTableBatchAggregator implements TableBatchAggregator {
   options: TableBatchOptions;
 
   length: number = 0;
-  objectRows: {[columnName: string]: any} | null = null;
-  arrayRows: any[] | null = null;
+  objectRows: {[columnName: string]: unknown}[] | null = null;
+  arrayRows: unknown[][] | null = null;
   cursor: number = 0;
   private _headers: string[] = [];
 

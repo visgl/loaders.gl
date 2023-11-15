@@ -7,6 +7,11 @@ node_modules/
 .cache
 public
 
+modules/core/src/iterators/make-stream/make-node-stream.ts
+
+modules/loader-utils/src/lib/files/node-file-facade.ts
+modules/loader-utils/src/lib/filesystems/node-filesystem-facade.ts
+
 modules/3d-tiles/test/lib/classes/tile-3d-batch-table-hierarchy.spec.ts
 
 modules/bson/src/bson-writer.ts
@@ -15,6 +20,7 @@ modules/bson/src/lib/encoders/encode-bson.ts
 modules/bson/src/lib/parsers/parse-bson.ts
 modules/bson/test/data/js-bson/corrupt.ts
 
+modules/parquet/src/polyfills/buffer/buffer.ts
 modules/parquet/test
 
 examples/experimental/gltf-with-raw-webgl/
@@ -34,6 +40,8 @@ modules/obj/src/lib/get-obj-schema.ts
 modules/mvt/src/lib/geojson-tiler/tile.ts
 
 modules/parquet/test
+
+modules/textures/test/basis-loader.spec.ts
 
 modules/xml/test/sax-ts/testcases/attribute-name.spec.ts
 modules/xml/test/sax-ts/testcases/opentagstart.spec.ts

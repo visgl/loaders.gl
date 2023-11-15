@@ -1,18 +1,12 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
 import {Table, makeArrayRowIterator, getTableNumCols} from '@loaders.gl/schema';
 import {csvFormatRows} from 'd3-dsv';
+import type {CSVWriterOptions} from '../../csv-writer';
 
 type EncodableData = string | null;
-
-export type CSVWriterOptions = {
-  csv?: {
-    useDisplayNames?: boolean;
-  };
-  /** @deprecated */
-  useDisplayNames?: boolean;
-};
 
 /**
  * Encode a Table object as CSV

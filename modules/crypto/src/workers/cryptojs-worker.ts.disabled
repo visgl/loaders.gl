@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {CryptoHashOptions} from '../lib/crypto-hash';
 import {createWorker} from '@loaders.gl/worker-utils';
 import {CryptoHash} from '../lib/crypto-hash';

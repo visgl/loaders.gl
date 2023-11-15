@@ -1,7 +1,13 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {Loader, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import {getFetchFunction} from './get-fetch-function';
 import {extractQueryString, stripQueryString} from '../utils/url-utils';
 import {path} from '@loaders.gl/loader-utils';
+
+/** Properties for creating an updated context */
+type LoaderContextProps = Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>;
 
 /**
  * "sub" loaders invoked by other loaders get a "context" injected on `this`
@@ -13,7 +19,7 @@ import {path} from '@loaders.gl/loader-utils';
  * @param previousContext
  */
 export function getLoaderContext(
-  context: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>,
+  context: LoaderContextProps,
   options: LoaderOptions,
   parentContext: LoaderContext | null
 ): LoaderContext {
@@ -49,9 +55,9 @@ export function getLoaderContext(
 export function getLoadersFromContext(
   loaders: Loader[] | Loader | undefined,
   context?: LoaderContext
-) {
-  // A single non-array loader is force selected, but only on top-level (context === null)
-  if (!context && loaders && !Array.isArray(loaders)) {
+): Loader | Loader[] | undefined {
+  // A single loader (non-array) indicates no selection desired. Force select.
+  if (loaders && !Array.isArray(loaders)) {
     return loaders;
   }
 
@@ -65,5 +71,5 @@ export function getLoadersFromContext(
     candidateLoaders = candidateLoaders ? [...candidateLoaders, ...contextLoaders] : contextLoaders;
   }
   // If no loaders, return null to look in globally registered loaders
-  return candidateLoaders && candidateLoaders.length ? candidateLoaders : null;
+  return candidateLoaders && candidateLoaders.length ? candidateLoaders : undefined;
 }

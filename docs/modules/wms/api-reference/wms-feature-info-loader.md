@@ -25,7 +25,7 @@ the [OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/w
 
 ## Usage
 
-```js
+```typescript
 import {WMSFeatureInfoLoader} from '@loaders.gl/wms';
 import {load} from '@loaders.gl/core';
 

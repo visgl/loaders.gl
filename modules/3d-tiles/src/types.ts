@@ -1,11 +1,9 @@
-import type {GLTFPostprocessed} from '@loaders.gl/gltf';
+import type {GLTFPostprocessed, FeatureTableJson} from '@loaders.gl/gltf';
+export type {FeatureTableJson};
+
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {TILESET_TYPE, LOD_METRIC_TYPE, TILE_TYPE, TILE_REFINEMENT} from '@loaders.gl/tiles';
-
-export type FeatureTableJson = {
-  [key: string]: any[];
-};
 
 export type B3DMContent = {
   batchTableJson?: FeatureTableJson;
@@ -42,6 +40,7 @@ export type GLTFHeader = {
  * https://github.com/CesiumGS/3d-tiles/tree/main/specification#property-reference
  */
 export type Tiles3DTilesetJSON = {
+  shape: 'tileset3d';
   /** Metadata about the entire tileset.
    * https://github.com/CesiumGS/3d-tiles/tree/main/specification#asset
    */
@@ -75,10 +74,7 @@ export type Tiles3DTilesetJSON = {
 
 /** TilesetJSON postprocessed by Tiles3DLoader */
 export type Tiles3DTilesetJSONPostprocessed = Omit<Tiles3DTilesetJSON, 'root'> & {
-  /**
-   * Loader used
-   * @deprecated
-   */
+  /** @deprecated Loader used */
   loader: LoaderWithParser;
   /** URL used to load a tileset resource */
   url: string;
@@ -202,6 +198,8 @@ export type TilesetProperty = {
 };
 
 export type Tiles3DTileContent = {
+  shape: 'tile3d';
+
   /** Common properties */
   byteOffset?: number;
   type?: string;
@@ -300,9 +298,9 @@ export type Tiles3DTileContent = {
  */
 export type Subtree = {
   /** An array of buffers. */
-  buffers: Buffer[];
+  buffers: GLTFStyleBuffer[];
   /** An array of buffer views. */
-  bufferViews: BufferView[];
+  bufferViews: GLTFStyleBufferView[];
   /** The availability of tiles in the subtree. The availability bitstream is a 1D boolean array where tiles are ordered by their level in the subtree and Morton index
    * within that level. A tile's availability is determined by a single bit, 1 meaning a tile exists at that spatial index, and 0 meaning it does not.
    * The number of elements in the array is `(N^subtreeLevels - 1)/(N - 1)` where N is 4 for subdivision scheme `QUADTREE` and 8 for `OCTREE`.
@@ -355,14 +353,14 @@ export type ExplicitBitstream = Uint8Array;
  */
 export type SubdivisionScheme = 'QUADTREE' | 'OCTREE';
 
-type Buffer = {
+type GLTFStyleBuffer = {
   name: string;
   uri?: string;
   byteLength: number;
 };
 
 /** Subtree buffer view */
-export type BufferView = {
+export type GLTFStyleBufferView = {
   buffer: number;
   byteOffset: number;
   byteLength: number;
@@ -372,6 +370,10 @@ export type BufferView = {
  * Spec - https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_implicit_tiling
  */
 export type ImplicitTilingExensionData = ImplicitTilingData & {
+  /** This property is not part of the schema
+   * https://github.com/CesiumGS/3d-tiles/blob/main/extensions/3DTILES_implicit_tiling/schema/tile.3DTILES_implicit_tiling.schema.json
+   * But it can be seen in some test datasets. It is handled as substitute of `availableLevels`
+   */
   maximumLevel?: number;
 };
 

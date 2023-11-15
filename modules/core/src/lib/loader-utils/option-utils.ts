@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
@@ -6,7 +7,7 @@ import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 
 /**
- * Global state for loaders.gl. Stored on `global.loaders._state`
+ * Global state for loaders.gl. Stored on `globalThis.loaders._state`
  */
 type GlobalLoaderState = {
   loaderRegistry: Loader[];
@@ -33,12 +34,12 @@ export function getGlobalLoaderState(): GlobalLoaderState {
  * NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
  * @returns global loader options merged with default loader options
  */
-export const getGlobalLoaderOptions = (): LoaderOptions => {
+export function getGlobalLoaderOptions(): LoaderOptions {
   const state = getGlobalLoaderState();
   // Ensure all default loader options from this library are mentioned
   state.globalOptions = state.globalOptions || {...DEFAULT_LOADER_OPTIONS};
   return state.globalOptions;
-};
+}
 
 /**
  * Set global loader options
@@ -47,6 +48,7 @@ export const getGlobalLoaderOptions = (): LoaderOptions => {
 export function setGlobalOptions(options: LoaderOptions): void {
   const state = getGlobalLoaderState();
   const globalOptions = getGlobalLoaderOptions();
+  // @ts-expect-error First param looks incorrect
   state.globalOptions = normalizeOptionsInternal(globalOptions, options);
 }
 
@@ -77,12 +79,15 @@ export function normalizeOptions(
  * @param options
  * @param loaders
  */
-function validateOptions(options: LoaderOptions, loaders: Loader[]) {
+function validateOptions(options: LoaderOptions, loaders: Loader[]): void {
   // Check top level options
   validateOptionsObject(options, null, DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS, loaders);
   for (const loader of loaders) {
     // Get the scoped, loader specific options from the user supplied options
-    const idOptions = (options && options[loader.id]) || {};
+    const idOptions: Record<string, unknown> = ((options && options[loader.id]) || {}) as Record<
+      string,
+      unknown
+    >;
 
     // Get scoped, loader specific default and deprecated options from the selected loader
     const loaderOptions = (loader.options && loader.options[loader.id]) || {};
@@ -90,18 +95,19 @@ function validateOptions(options: LoaderOptions, loaders: Loader[]) {
       (loader.deprecatedOptions && loader.deprecatedOptions[loader.id]) || {};
 
     // Validate loader specific options
+    // @ts-ignore
     validateOptionsObject(idOptions, loader.id, loaderOptions, deprecatedOptions, loaders);
   }
 }
 
 // eslint-disable-next-line max-params, complexity
 function validateOptionsObject(
-  options,
+  options: LoaderOptions,
   id: string | null,
-  defaultOptions,
-  deprecatedOptions,
+  defaultOptions: Record<string, unknown>,
+  deprecatedOptions: Record<string, unknown>,
   loaders: Loader[]
-) {
+): void {
   const loaderName = id || 'Top level';
   const prefix = id ? `${id}.` : '';
 
@@ -127,7 +133,7 @@ function validateOptionsObject(
   }
 }
 
-function findSimilarOption(optionKey, loaders) {
+function findSimilarOption(optionKey: string, loaders: Loader[]): string {
   const lowerCaseOptionKey = optionKey.toLowerCase();
   let bestSuggestion = '';
   for (const loader of loaders) {
@@ -146,7 +152,11 @@ function findSimilarOption(optionKey, loaders) {
   return bestSuggestion;
 }
 
-function normalizeOptionsInternal(loader, options, url?: string) {
+function normalizeOptionsInternal(
+  loader: Loader,
+  options: LoaderOptions,
+  url?: string
+): LoaderOptions {
   const loaderDefaultOptions = loader.options || {};
 
   const mergedOptions = {...loaderDefaultOptions};
@@ -165,7 +175,7 @@ function normalizeOptionsInternal(loader, options, url?: string) {
 }
 
 // Merge nested options objects
-function mergeNestedFields(mergedOptions, options) {
+function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions): void {
   for (const key in options) {
     // Check for nested options
     // object in options => either no key in defaultOptions or object in defaultOptions
@@ -173,8 +183,8 @@ function mergeNestedFields(mergedOptions, options) {
       const value = options[key];
       if (isPureObject(value) && isPureObject(mergedOptions[key])) {
         mergedOptions[key] = {
-          ...mergedOptions[key],
-          ...options[key]
+          ...(mergedOptions[key] as object),
+          ...(options[key] as object)
         };
       } else {
         mergedOptions[key] = options[key];
@@ -192,7 +202,7 @@ function mergeNestedFields(mergedOptions, options) {
  * TODO - extract query parameters?
  * TODO - should these be injected on context instead of options?
  */
-function addUrlOptions(options, url?: string) {
+function addUrlOptions(options: LoaderOptions, url?: string): void {
   if (url && !('baseUri' in options)) {
     options.baseUri = url;
   }

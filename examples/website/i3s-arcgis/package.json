@@ -1,4 +1,7 @@
 {
+  "private": true,
+  "name": "i3s-arcgis-loaders-example",
+  "version": "1.0.0",
   "license": "MIT",
   "scripts": {
     "start": "vite",
@@ -7,20 +10,20 @@
   },
   "dependencies": {
     "@arcgis/core": "^4.25.0",
-    "@deck.gl/arcgis": "^8.9.7",
-    "@deck.gl/core": "^8.9.7",
-    "@deck.gl/extensions": "^8.9.7",
-    "@deck.gl/geo-layers": "^8.9.7",
-    "@deck.gl/layers": "^8.9.7",
-    "@deck.gl/mesh-layers": "^8.9.7",
+    "@deck.gl/arcgis": "^8.9.28",
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/extensions": "^8.9.28",
+    "@deck.gl/geo-layers": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@deck.gl/mesh-layers": "^8.9.28",
     "@esri/react-arcgis": "^5.2.0",
-    "@loaders.gl/core": "^4.0.0-alpha.8",
-    "@loaders.gl/i3s": "^4.0.0-alpha.8",
+    "@loaders.gl/core": "^4.0.0",
+    "@loaders.gl/i3s": "^4.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.4",
-    "vite": "^2.7.1"
+    "vite": "^4.4.9"
   }
 }
