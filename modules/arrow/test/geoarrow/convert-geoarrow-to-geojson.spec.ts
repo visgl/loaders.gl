@@ -1,6 +1,5 @@
 import test, {Test} from 'tape-promise/tape';
 
-import * as arrow from 'apache-arrow';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {FeatureCollection} from '@loaders.gl/schema';
 import {ArrowLoader, serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
@@ -286,53 +285,57 @@ async function testParseFromArrow(
     }
   });
 
-  const table = arrowTable.data as arrow.Table;
-  // check if the arrow table is loaded correctly
-  t.equal(
-    table.numRows,
-    expectedGeojson.features.length,
-    `arrow table has ${expectedGeojson.features.length} row`
-  );
+  t.equal(arrowTable.shape, 'arrow-table');
 
-  const colNames = [...Object.keys(expectedGeojson.features[0].properties || {}), 'geometry'];
-  t.equal(table.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
+  if (arrowTable.shape === 'arrow-table') {
+    const table = arrowTable.data;
+    // check if the arrow table is loaded correctly
+    t.equal(
+      table.numRows,
+      expectedGeojson.features.length,
+      `arrow table has ${expectedGeojson.features.length} row`
+    );
 
-  // check fields exist in arrow table schema
-  table.schema.fields.map((field) =>
-    t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
-  );
+    const colNames = [...Object.keys(expectedGeojson.features[0].properties || {}), 'geometry'];
+    t.equal(table.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
 
-  const schema = serializeArrowSchema(table.schema);
-  const geometryColumns = getGeometryColumnsFromSchema(schema);
+    // check fields exist in arrow table schema
+    table.schema.fields.map((field) =>
+      t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
+    );
 
-  // check 'geometry' is in geometryColumns (geometryColumns is a Map object)
-  t.equal(Boolean(geometryColumns.geometry), true, 'geometryColumns has geometry column');
+    const schema = serializeArrowSchema(table.schema);
+    const geometryColumns = getGeometryColumnsFromSchema(schema);
 
-  // get encoding from geometryColumns['geometry']
-  const encoding = geometryColumns.geometry.encoding;
+    // check 'geometry' is in geometryColumns (geometryColumns is a Map object)
+    t.equal(Boolean(geometryColumns.geometry), true, 'geometryColumns has geometry column');
 
-  // check encoding is one of GEOARROW_ENCODINGS
-  t.ok(
-    Object.values(GEOARROW_ENCODINGS).includes(encoding!),
-    'encoding is one of GEOARROW_ENCODINGS'
-  );
+    // get encoding from geometryColumns['geometry']
+    const encoding = geometryColumns.geometry.encoding;
 
-  // get first geometry from arrow geometry column
-  const firstArrowGeometry = table.getChild('geometry')?.get(0);
-  const firstArrowGeometryObject = {
-    encoding,
-    data: firstArrowGeometry
-  };
+    // check encoding is one of GEOARROW_ENCODINGS
+    t.ok(
+      Object.values(GEOARROW_ENCODINGS).includes(encoding!),
+      'encoding is one of GEOARROW_ENCODINGS'
+    );
 
-  // parse arrow geometry to geojson feature
-  const firstFeature = parseGeometryFromArrow(firstArrowGeometryObject);
+    // get first geometry from arrow geometry column
+    const firstArrowGeometry = table.getChild('geometry')?.get(0);
+    const firstArrowGeometryObject = {
+      encoding,
+      data: firstArrowGeometry
+    };
 
-  // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
-  t.deepEqual(
-    firstFeature?.geometry,
-    expectedGeojson.features[0].geometry,
-    'firstFeature.geometry is equal to expectedGeojson.features[0].geometry'
-  );
+    // parse arrow geometry to geojson feature
+    const firstFeature = parseGeometryFromArrow(firstArrowGeometryObject);
+
+    // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
+    t.deepEqual(
+      firstFeature?.geometry,
+      expectedGeojson.features[0].geometry,
+      'firstFeature.geometry is equal to expectedGeojson.features[0].geometry'
+    );
+  }
 
   return Promise.resolve();
 }

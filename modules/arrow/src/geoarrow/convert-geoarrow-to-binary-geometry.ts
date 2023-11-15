@@ -100,7 +100,7 @@ export function getBinaryGeometriesFromArrow(
         ...(featureTypes.polygon ? binaryContent : {}),
         polygonIndices: {
           // NOTE: polygonIndices and primitivePolygonIndices are not used together to render polygon (binary) with holes
-          // in deck.gl currently, so we pass geomOffset as a work around. This issue needs to be fixed in deck.gl
+          // for GeoJsonLayer with binary geometries in deck.gl currently, so we pass geomOffset and triangles.
           value: featureTypes.polygon ? geomOffset : new Uint16Array(0),
           size: 1
         },
