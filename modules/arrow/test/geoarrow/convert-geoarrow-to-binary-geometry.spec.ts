@@ -1,6 +1,5 @@
 import test, {Test} from 'tape-promise/tape';
 
-import {Table as ApacheArrowTable} from 'apache-arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 import {fetchFile, parse} from '@loaders.gl/core';
 import {
@@ -277,12 +276,24 @@ const expectedMultiPolygonHolesBinaryGeometry = {
         },
         // NOTE: should polygonIndices be [0, 15, 30] or [0, 10, 15, 25, 30]?
         polygonIndices: {value: new Int32Array([0, 5, 10, 15, 20, 25, 30]), size: 1},
-        primitivePolygonIndices: {value: new Int32Array([0, 5, 10, 15, 20, 25, 30]), size: 1}
+        primitivePolygonIndices: {value: new Int32Array([0, 5, 10, 15, 20, 25, 30]), size: 1},
+        triangles: {
+          value: new Uint32Array([
+            4, 5, 6, 8, 5, 4, 1, 4, 6, 8, 4, 3, 2, 1, 6, 7, 8, 3, 2, 6, 7, 7, 3, 2, 11, 14, 13, 13,
+            12, 11, 19, 20, 21, 23, 20, 19, 16, 19, 21, 23, 19, 18, 17, 16, 21, 22, 23, 18, 17, 21,
+            22, 22, 18, 17, 26, 29, 28, 28, 27, 26
+          ]),
+          size: 1
+        }
       }
     }
   ],
   bounds: [0, 0, 13, 13],
-  featureTypes: {polygon: true, point: false, line: false}
+  featureTypes: {polygon: true, point: false, line: false},
+  meanCenters: [
+    [1.1666666666666667, 1.1666666666666667],
+    [11.166666666666666, 11.166666666666666]
+  ]
 };
 
 test('ArrowUtils#getBinaryGeometriesFromArrow', (t) => {
@@ -317,19 +328,21 @@ async function testGetBinaryGeometriesFromArrow(
 
   t.equal(arrowTable.shape, 'arrow-table');
 
-  const table = arrowTable.data as ApacheArrowTable;
-  const geoColumn = table.getChild('geometry');
-  t.notEqual(geoColumn, null, 'geoColumn is not null');
+  if (arrowTable.shape === 'arrow-table') {
+    const table = arrowTable.data;
+    const geoColumn = table.getChild('geometry');
+    t.notEqual(geoColumn, null, 'geoColumn is not null');
 
-  const schema = serializeArrowSchema(table.schema);
-  const geometryColumns = getGeometryColumnsFromSchema(schema);
-  const encoding = geometryColumns.geometry.encoding;
+    const schema = serializeArrowSchema(table.schema);
+    const geometryColumns = getGeometryColumnsFromSchema(schema);
+    const encoding = geometryColumns.geometry.encoding;
 
-  t.notEqual(encoding, undefined, 'encoding is not undefined');
-  if (geoColumn && encoding) {
-    const options = {meanCenter: true};
-    const binaryData = getBinaryGeometriesFromArrow(geoColumn, encoding, options);
-    t.deepEqual(binaryData, expectedBinaryGeometries, 'binary geometries are correct');
+    t.notEqual(encoding, undefined, 'encoding is not undefined');
+    if (geoColumn && encoding) {
+      const options = {meanCenter: true};
+      const binaryData = getBinaryGeometriesFromArrow(geoColumn, encoding, options);
+      t.deepEqual(binaryData, expectedBinaryGeometries, 'binary geometries are correct');
+    }
   }
 
   return Promise.resolve();
