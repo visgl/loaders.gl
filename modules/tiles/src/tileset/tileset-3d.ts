@@ -68,6 +68,7 @@ export type Tileset3DProps = {
   viewportTraversersMap?: any;
   updateTransforms?: boolean;
   viewDistanceScale?: number;
+  rootViewDistanceScale?: number;
 
   // Callbacks
   onTileLoad?: (tile: Tile3D) => any;
@@ -109,6 +110,14 @@ type Props = {
   updateTransforms: boolean;
   /** View distance scale modifier */
   viewDistanceScale: number;
+  /**
+   * Almost always this should NOT be set.
+   * It becomes useful if the root tile of the tileset has a geometric error calculated differently to the rest of the tiles.
+   * E.g. the root GE is simply the diagonal of the tiles bounds but the rest of the tiles have a more involved calculation.
+   * In such a case the root may require a different scale factor to the rest of the tiles.
+   * If this property is undefined, then the `viewDistanceScale` is used. If both are undefined the default of 1.0 is used.
+   */
+  rootViewDistanceScale?: number;
   basePath: string;
   /** Optional async tile content loader */
   contentLoader?: (tile: Tile3D) => Promise<void>;
