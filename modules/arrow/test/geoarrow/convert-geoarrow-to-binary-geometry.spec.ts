@@ -16,7 +16,8 @@ import {
   LINE_ARROW_FILE,
   MULTILINE_ARROW_FILE,
   POLYGON_ARROW_FILE,
-  MULTIPOLYGON_ARROW_FILE
+  MULTIPOLYGON_ARROW_FILE,
+  MULTIPOLYGON_HOLE_ARROW_FILE
 } from './convert-geoarrow-to-geojson.spec';
 
 const expectedPointBinaryGeometry = {
@@ -208,6 +209,54 @@ const expectedMultiPolygonBinaryGeometry = {
   featureTypes: {polygon: true, point: false, line: false}
 };
 
+const expectedMultiPolygonHolesBinaryGeometry = {
+  binaryGeometries: [
+    {
+      shape: 'binary-feature-collection',
+      points: {
+        ...BINARY_GEOMETRY_TEMPLATE,
+        type: 'Point'
+      },
+      lines: {
+        ...BINARY_GEOMETRY_TEMPLATE,
+        type: 'LineString',
+        pathIndices: {value: new Uint16Array(0), size: 1}
+      },
+      polygons: {
+        ...BINARY_GEOMETRY_TEMPLATE,
+        type: 'Polygon',
+        globalFeatureIds: {
+          value: new Uint32Array([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+          ]),
+          size: 1
+        },
+        positions: {
+          value: new Float64Array([
+            0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0.25, 0.25, 0.25, 0.75, 0.75, 0.75, 0.75, 0.25, 0.25,
+            0.25, 2, 2, 2, 3, 3, 3, 3, 2, 2, 2, 10, 10, 10, 11, 11, 11, 11, 10, 10, 10, 10.25,
+            10.25, 10.25, 10.75, 10.75, 10.75, 10.75, 10.25, 10.25, 10.25, 12, 12, 12, 13, 13, 13,
+            13, 12, 12, 12
+          ]),
+          size: 2
+        },
+        properties: [{index: 0}, {index: 1}],
+        featureIds: {
+          value: new Uint32Array([
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+          ]),
+          size: 1
+        },
+        // NOTE: should polygonIndices be [0, 15, 30] or [0, 10, 15, 25, 30]?
+        polygonIndices: {value: new Int32Array([0, 5, 10, 15, 20, 25, 30]), size: 1},
+        primitivePolygonIndices: {value: new Int32Array([0, 5, 10, 15, 20, 25, 30]), size: 1}
+      }
+    }
+  ],
+  bounds: [0, 0, 13, 13],
+  featureTypes: {polygon: true, point: false, line: false}
+};
+
 test('ArrowUtils#getBinaryGeometriesFromArrow', (t) => {
   const testCases = [
     [POINT_ARROW_FILE, expectedPointBinaryGeometry],
@@ -215,7 +264,8 @@ test('ArrowUtils#getBinaryGeometriesFromArrow', (t) => {
     [LINE_ARROW_FILE, expectedLineBinaryGeometry],
     [MULTILINE_ARROW_FILE, expectedMultiLineBinaryGeometry],
     [POLYGON_ARROW_FILE, expectedPolygonBinaryGeometry],
-    [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonBinaryGeometry]
+    [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonBinaryGeometry],
+    [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonHolesBinaryGeometry]
   ];
 
   testCases.forEach((testCase) => {

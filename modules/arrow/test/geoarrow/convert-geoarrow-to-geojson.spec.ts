@@ -1,9 +1,8 @@
 import test, {Test} from 'tape-promise/tape';
 
-import {tableFromIPC} from 'apache-arrow';
-import {fetchFile} from '@loaders.gl/core';
+import {fetchFile, parse} from '@loaders.gl/core';
 import {FeatureCollection} from '@loaders.gl/schema';
-import {serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
+import {ArrowLoader, serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 
 export const POINT_ARROW_FILE = '@loaders.gl/arrow/test/data/point.arrow';
@@ -175,8 +174,7 @@ const expectedMultiPolygonGeojson: FeatureCollection = {
   ]
 };
 
-// a simple geojson contains one MultiPolygon with a whole in it
-/*
+// a simple geojson contains two MultiPolygons with a whole in it
 const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
@@ -256,17 +254,16 @@ const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
     }
   ]
 };
-*/
 
 test('ArrowUtils#parseGeometryFromArrow', (t) => {
   const testCases: [string, FeatureCollection][] = [
+    [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson],
     [POINT_ARROW_FILE, expectedPointGeojson],
     [MULTIPOINT_ARROW_FILE, expectedMultiPointGeoJson],
     [LINE_ARROW_FILE, expectedLineStringGeoJson],
     [MULTILINE_ARROW_FILE, expectedMultiLineStringGeoJson],
     [POLYGON_ARROW_FILE, expectedPolygonGeojson],
     [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson]
-    // [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson]
   ];
 
   testCases.forEach((testCase) => {
@@ -281,60 +278,64 @@ async function testParseFromArrow(
   arrowFile: string,
   expectedGeojson: FeatureCollection
 ): Promise<void> {
-  // TODO: use the following code instead of apache-arrow to load arrow table
-  // const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {worker: false});
-  const response = await fetchFile(arrowFile);
-  const arrayBuffer = await response.arrayBuffer();
-  const arrowTable = tableFromIPC(new Uint8Array(arrayBuffer));
+  const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {
+    worker: false,
+    arrow: {
+      shape: 'arrow-table'
+    }
+  });
 
-  t.comment(arrowFile);
+  t.equal(arrowTable.shape, 'arrow-table');
 
-  // check if the arrow table is loaded correctly
-  t.equal(
-    arrowTable.numRows,
-    expectedGeojson.features.length,
-    `arrow table has ${expectedGeojson.features.length} row`
-  );
+  if (arrowTable.shape === 'arrow-table') {
+    const table = arrowTable.data;
+    // check if the arrow table is loaded correctly
+    t.equal(
+      table.numRows,
+      expectedGeojson.features.length,
+      `arrow table has ${expectedGeojson.features.length} row`
+    );
 
-  const colNames = [...Object.keys(expectedGeojson.features[0].properties || {}), 'geometry'];
-  t.equal(arrowTable.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
+    const colNames = [...Object.keys(expectedGeojson.features[0].properties || {}), 'geometry'];
+    t.equal(table.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
 
-  // check fields exist in arrow table schema
-  arrowTable.schema.fields.map((field) =>
-    t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
-  );
+    // check fields exist in arrow table schema
+    table.schema.fields.map((field) =>
+      t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
+    );
 
-  const schema = serializeArrowSchema(arrowTable.schema);
-  const geometryColumns = getGeometryColumnsFromSchema(schema);
+    const schema = serializeArrowSchema(table.schema);
+    const geometryColumns = getGeometryColumnsFromSchema(schema);
 
-  // check 'geometry' is in geometryColumns (geometryColumns is a Map object)
-  t.equal(Boolean(geometryColumns.geometry), true, 'geometryColumns has geometry column');
+    // check 'geometry' is in geometryColumns (geometryColumns is a Map object)
+    t.equal(Boolean(geometryColumns.geometry), true, 'geometryColumns has geometry column');
 
-  // get encoding from geometryColumns['geometry']
-  const encoding = geometryColumns.geometry.encoding;
+    // get encoding from geometryColumns['geometry']
+    const encoding = geometryColumns.geometry.encoding;
 
-  // check encoding is one of GEOARROW_ENCODINGS
-  t.ok(
-    Object.values(GEOARROW_ENCODINGS).includes(encoding!),
-    'encoding is one of GEOARROW_ENCODINGS'
-  );
+    // check encoding is one of GEOARROW_ENCODINGS
+    t.ok(
+      Object.values(GEOARROW_ENCODINGS).includes(encoding!),
+      'encoding is one of GEOARROW_ENCODINGS'
+    );
 
-  // get first geometry from arrow geometry column
-  const firstArrowGeometry = arrowTable.getChild('geometry')?.get(0);
-  const firstArrowGeometryObject = {
-    encoding,
-    data: firstArrowGeometry
-  };
+    // get first geometry from arrow geometry column
+    const firstArrowGeometry = table.getChild('geometry')?.get(0);
+    const firstArrowGeometryObject = {
+      encoding,
+      data: firstArrowGeometry
+    };
 
-  // parse arrow geometry to geojson feature
-  const firstFeature = parseGeometryFromArrow(firstArrowGeometryObject);
+    // parse arrow geometry to geojson feature
+    const firstFeature = parseGeometryFromArrow(firstArrowGeometryObject);
 
-  // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
-  t.deepEqual(
-    firstFeature?.geometry,
-    expectedGeojson.features[0].geometry,
-    'firstFeature.geometry is equal to expectedGeojson.features[0].geometry'
-  );
+    // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
+    t.deepEqual(
+      firstFeature?.geometry,
+      expectedGeojson.features[0].geometry,
+      'firstFeature.geometry is equal to expectedGeojson.features[0].geometry'
+    );
+  }
 
   return Promise.resolve();
 }
