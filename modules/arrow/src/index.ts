@@ -64,10 +64,15 @@ export type {GeoArrowEncoding} from '@loaders.gl/gis';
 // getGeometryColumnsFromArrowTable,
 // getGeoArrowEncoding
 
-export type {BinaryDataFromGeoArrow} from './geoarrow/convert-geoarrow-to-binary-geometry';
+export type {
+  BinaryDataFromGeoArrow,
+  BinaryGeometriesFromArrowOptions
+} from './geoarrow/convert-geoarrow-to-binary-geometry';
 export {
   BINARY_GEOMETRY_TEMPLATE,
-  getBinaryGeometriesFromArrow
+  getBinaryGeometriesFromArrow,
+  getTriangleIndices,
+  getMeanCentersFromBinaryGeometries
 } from './geoarrow/convert-geoarrow-to-binary-geometry';
 
 export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';

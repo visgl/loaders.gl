@@ -25,10 +25,21 @@ const GEOARROW_ENCODINGS = [
   'geoarrow.wkt'
 ];
 
-// a simple geojson contains one point
+// a simple geojson contains two points
 const expectedPointGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
+    {
+      type: 'Feature',
+      properties: {
+        id: 1,
+        name: 'name1'
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [1, 1]
+      }
+    },
     {
       type: 'Feature',
       properties: {
@@ -37,13 +48,13 @@ const expectedPointGeojson: FeatureCollection = {
       },
       geometry: {
         type: 'Point',
-        coordinates: [1, 1]
+        coordinates: [2, 2]
       }
     }
   ]
 };
 
-// a simple geojson contains one linestring
+// a simple geojson contains two linestrings
 const expectedLineStringGeoJson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
@@ -60,11 +71,25 @@ const expectedLineStringGeoJson: FeatureCollection = {
           [1, 1]
         ]
       }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 2,
+        name: 'name2'
+      },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [2, 2],
+          [3, 3]
+        ]
+      }
     }
   ]
 };
 
-// a simple geojson contains one polygon
+// a simple geojson contains two polygons
 const expectedPolygonGeojson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
@@ -79,9 +104,29 @@ const expectedPolygonGeojson: FeatureCollection = {
         coordinates: [
           [
             [0, 0],
+            [0, 1],
             [1, 1],
-            [2, 2],
+            [1, 0],
             [0, 0]
+          ]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 2,
+        name: 'name2'
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [10, 10],
+            [10, 11],
+            [11, 11],
+            [11, 10],
+            [10, 10]
           ]
         ]
       }
@@ -89,10 +134,24 @@ const expectedPolygonGeojson: FeatureCollection = {
   ]
 };
 
-// a simple geojson contains one MultiPoint
+// a simple geojson contains two MultiPoints
 const expectedMultiPointGeoJson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
+    {
+      type: 'Feature',
+      properties: {
+        id: 1,
+        name: 'name1'
+      },
+      geometry: {
+        type: 'MultiPoint',
+        coordinates: [
+          [1, 1],
+          [2, 2]
+        ]
+      }
+    },
     {
       type: 'Feature',
       properties: {
@@ -102,23 +161,23 @@ const expectedMultiPointGeoJson: FeatureCollection = {
       geometry: {
         type: 'MultiPoint',
         coordinates: [
-          [1, 1],
-          [2, 2]
+          [3, 3],
+          [4, 4]
         ]
       }
     }
   ]
 };
 
-// a simple geojson contains one MultiLinestring
+// a simple geojson contains two MultiLinestrings
 const expectedMultiLineStringGeoJson: FeatureCollection = {
   type: 'FeatureCollection',
   features: [
     {
       type: 'Feature',
       properties: {
-        id: 2,
-        name: 'name2'
+        id: 1,
+        name: 'name1'
       },
       geometry: {
         type: 'MultiLineString',
@@ -130,6 +189,26 @@ const expectedMultiLineStringGeoJson: FeatureCollection = {
           [
             [3, 3],
             [4, 4]
+          ]
+        ]
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 2,
+        name: 'name2'
+      },
+      geometry: {
+        type: 'MultiLineString',
+        coordinates: [
+          [
+            [5, 5],
+            [6, 6]
+          ],
+          [
+            [7, 7],
+            [8, 8]
           ]
         ]
       }
