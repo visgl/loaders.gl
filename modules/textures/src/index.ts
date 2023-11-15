@@ -10,6 +10,10 @@ export {CompressedTextureLoader, CompressedTextureWorkerLoader} from './compress
 export {CrunchLoader} from './crunch-loader';
 export {NPYLoader, NPYWorkerLoader} from './npy-loader';
 
+// Module constants
+export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';
+export {CRUNCH_EXTERNAL_LIBRARIES} from './lib/parsers/crunch-module-loader';
+
 // Writers
 export {CompressedTextureWriter} from './compressed-texture-writer';
 export {KTX2BasisWriter} from './ktx2-basis-writer';

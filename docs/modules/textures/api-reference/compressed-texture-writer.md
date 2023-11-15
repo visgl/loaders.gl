@@ -1,4 +1,4 @@
-# CompressedTextureWriter
+# CompressedTextureWriter 🚧
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
@@ -19,7 +19,7 @@
 
 ## Usage
 
-```js
+```typescript
 import '@loaders.gl/polyfill'; // only if using under Node
 import {encodeURLtoURL} from '@loaders.gl/core';
 import {CompressedTextureWriter} from '@loaders.gl/textures';

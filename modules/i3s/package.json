@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "4.0.0-alpha.13",
+  "version": "4.0.3",
   "description": "i3s .",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
@@ -19,8 +20,15 @@
     "mesh"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -28,27 +36,26 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker && npm run build-worker-node",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker && npm run build-worker-node",
+    "build-bundle": "ocular-bundle ./src/index.ts",
     "build-worker": "esbuild src/workers/i3s-content-worker.ts --outfile=dist/i3s-content-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node": "esbuild src/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/compression": "4.0.0-alpha.13",
-    "@loaders.gl/draco": "4.0.0-alpha.13",
-    "@loaders.gl/images": "4.0.0-alpha.13",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.13",
-    "@loaders.gl/schema": "4.0.0-alpha.13",
-    "@loaders.gl/textures": "4.0.0-alpha.13",
-    "@loaders.gl/tiles": "4.0.0-alpha.13",
-    "@luma.gl/constants": "^8.5.4",
-    "@math.gl/core": "^3.5.1",
-    "@math.gl/culling": "^3.5.1",
-    "@math.gl/geospatial": "^3.5.1",
-    "md5": "^2.3.0"
+    "@loaders.gl/compression": "4.0.3",
+    "@loaders.gl/crypto": "4.0.3",
+    "@loaders.gl/draco": "4.0.3",
+    "@loaders.gl/images": "4.0.3",
+    "@loaders.gl/loader-utils": "4.0.3",
+    "@loaders.gl/schema": "4.0.3",
+    "@loaders.gl/textures": "4.0.3",
+    "@loaders.gl/tiles": "4.0.3",
+    "@math.gl/core": "^4.0.0",
+    "@math.gl/culling": "^4.0.0",
+    "@math.gl/geospatial": "^4.0.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0-alpha.8"
+    "@loaders.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

@@ -34,6 +34,3 @@ export const MTLLoader: LoaderWithParser<MTLMaterial[], never, MTLLoaderOptions>
     parseMTL(new TextDecoder().decode(arrayBuffer), options?.mtl),
   parseTextSync: (text: string, options?: MTLLoaderOptions) => parseMTL(text, options?.mtl)
 };
-
-export const _typecheckOBJLoader: LoaderWithParser = OBJLoader;
-export const _typecheckMTLLoader: LoaderWithParser = MTLLoader;

@@ -7,14 +7,13 @@ Parquet is a binary columnar format optimized for compact storage on disk.
 
 The GitHUB specification of [Apache Parquet](https://github.com/apache/parquet-format/blob/master/README.md).
 
-## Column encodings
+## Pages
 
-Some encodings are intended to improve successive column compression by organizing data so that it is less random.
+columns can be divided into pages (similar to Apache Arrow record batches) so that partial columns covering a range of rows can be read without reading the entire file.
 
-## Compared to similar formats
+## Alternatives
 
 In contrast to Arrow which is designed to minimize serialization and deserialization, Parquet is optimized for storage on disk.
-
 
 ## Compression
 
@@ -24,28 +23,30 @@ A wide range of compression codecs are supported. Internal parquet compression f
 
 | Type           | Read | Write |
 | -------------- | ---- | ----- |
-| `UNCOMPRESSED` | YES  | YES   |
-| `GZIP`         | YES  | YES   |
-| `SNAPPY`       | YES  | YES   |  |
-| `BROTLI`       | YES  | No    |  |
-| `LZO`          | NO   | NO    | There is currently no readily available browser-based LZO module for JS |
-| `LZ4`          | YES  | YES   | 
-| `LZ4_RAW`      | YES  | YES   |
-| `ZSTD`         | YES  | YES   |  |
+| `UNCOMPRESSED` | ✅    | ✅     |
+| `GZIP`         | ✅    | ✅     |
+| `SNAPPY`       | ✅    | ✅     |                                                                         |
+| `BROTLI`       | ✅    | No    |                                                                         |
+| `LZO`          | ❌    | ❌     | There is currently no readily available browser-based LZO module for JS |
+| `LZ4`          | ✅    | ✅     |
+| `LZ4_RAW`      | ✅    | ✅     |
+| `ZSTD`         | ✅    | ✅     |                                                                         |
 
 
 ## Encoding
+
+Some encodings are intended to improve successive column compression by organizing data so that it is less random.
 
 The following Parquet encodings are supported:
 
 | Encoding                  | Read | Write | Types                                                                                                                                                                    |
 | ------------------------- | ---- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PLAIN`                   | YES  | YES   | All                                                                                                                                                                      |
-| `PLAIN_DICTIONARY`        | YES  | YES   | All                                                                                                                                                                      |
-| `RLE_DICTIONARY`          | YES  | NO    | All                                                                                                                                                                      |
-| `DELTA_BINARY_PACKED`     | NO   | NO    | `INT32`, `INT64`, `INT_8`, `INT_16`, `INT_32`, `INT_64`, `UINT_8`, `UINT_16`, `UINT_32`, `UINT_64`, `TIME_MILLIS`, `TIME_MICROS`, `TIMESTAMP_MILLIS`, `TIMESTAMP_MICROS` |
-| `DELTA_BYTE_ARRAY`        | NO   | NO    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
-| `DELTA_LENGTH_BYTE_ARRAY` | NO   | NO    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
+| `PLAIN`                   | ✅    | ✅     | All                                                                                                                                                                      |
+| `PLAIN_DICTIONARY`        | ✅    | ✅     | All                                                                                                                                                                      |
+| `RLE_DICTIONARY`          | ✅    | ❌     | All                                                                                                                                                                      |
+| `DELTA_BINARY_PACKED`     | ❌    | ❌     | `INT32`, `INT64`, `INT_8`, `INT_16`, `INT_32`, `INT_64`, `UINT_8`, `UINT_16`, `UINT_32`, `UINT_64`, `TIME_MILLIS`, `TIME_MICROS`, `TIMESTAMP_MILLIS`, `TIMESTAMP_MICROS` |
+| `DELTA_BYTE_ARRAY`        | ❌    | ❌     | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
+| `DELTA_LENGTH_BYTE_ARRAY` | ❌    | ❌     | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
 
 ## Repetition
 
@@ -53,9 +54,9 @@ There are three repetition types in Parquet:
 
 | Repetition | Supported |
 | ---------- | --------- |
-| `REQUIRED` | YES       |
-| `OPTIONAL` | YES       |
-| `REPEATED` | YES       |
+| `REQUIRED` | ✅         |
+| `OPTIONAL` | ✅         |
+| `REPEATED` | ✅         |
 
 
 ### Record Shredding

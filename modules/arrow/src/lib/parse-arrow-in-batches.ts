@@ -1,13 +1,14 @@
 // TODO - this import defeats the sophisticated typescript checking in ArrowJS
-import {RecordBatchReader} from 'apache-arrow';
+import type {ArrowTableBatch} from './arrow-table';
+import * as arrow from 'apache-arrow';
 // import {isIterable} from '@loaders.gl/core';
 
 /**
  */
 export function parseArrowInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-): AsyncIterable<any> {
-  // Creates the appropriate RecordBatchReader subclasses from the input
+): AsyncIterable<ArrowTableBatch> {
+  // Creates the appropriate arrow.RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
 
   // As an optimization, return a non-async iterator
@@ -25,25 +26,32 @@ export function parseArrowInBatches(
   }
   */
 
-  async function* makeArrowAsyncIterator() {
-    const readers = RecordBatchReader.readAll(asyncIterator);
+  async function* makeArrowAsyncIterator(): AsyncIterator<ArrowTableBatch> {
+    // @ts-ignore
+    const readers = arrow.RecordBatchReader.readAll(asyncIterator);
     for await (const reader of readers) {
-      for await (const batch of reader) {
-        yield processBatch(batch);
+      for await (const recordBatch of reader) {
+        const arrowTabledBatch: ArrowTableBatch = {
+          shape: 'arrow-table',
+          batchType: 'data',
+          data: new arrow.Table([recordBatch]),
+          length: recordBatch.data.length
+        };
+        // processBatch(recordBatch);
+        yield arrowTabledBatch;
       }
       break; // only processing one stream of batches
     }
   }
-  return makeArrowAsyncIterator();
+
+  return makeArrowAsyncIterator() as any; // as AsyncIterator<ArrowTableBatch>;
 }
 
-function processBatch(batch) {
-  const values = {
-    metadata: batch.schema.metadata,
-    length: batch.length
-  };
-  batch.schema.fields.forEach(({name}, index) => {
-    values[name] = batch.getChildAt(index).toArray();
-  });
-  return values;
-}
+// function processBatch(batch: RecordBatch): ArrowTableBatch {
+//   const values = {};
+//   batch.schema.fields.forEach(({name}, index) => {
+//     values[name] = batch.getChildAt(index)?.toArray();
+//   });
+//   return {
+//   };
+// }

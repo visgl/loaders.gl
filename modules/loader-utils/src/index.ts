@@ -1,31 +1,41 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // TYPES
+
 export type {
-  // loaders
-  Loader,
-  LoaderWithParser,
-  LoaderContext,
-  LoaderOptions,
-  LoaderOptionsType,
-  LoaderReturnType,
-  LoaderBatchType,
-  // writers
-  Writer,
-  WriterOptions,
-  WriterOptionsType,
   // misc
   DataType,
   SyncDataType,
   BatchableDataType,
-  IFileSystem,
-  IRandomAccessReadFileSystem,
   // numeric array types
   TypedArray,
   BigTypedArray,
   TypedArrayConstructor,
   BigTypedArrayConstructor,
   NumberArray,
-  NumericArray
+  NumericArray,
+  // fetch
+  FetchLike
 } from './types';
+
+// loaders
+
+export type {
+  Loader,
+  LoaderWithParser,
+  LoaderContext,
+  LoaderOptions,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderBatchType
+} from './loader-types';
+
+export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';
+
+// writers
+
+export type {Writer, WriterWithEncoder, WriterOptions, WriterOptionsType} from './writer-types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
@@ -101,19 +111,45 @@ export {promisify1, promisify2} from './lib/node/promisify';
 import * as path from './lib/path-utils/path';
 export {path};
 
-// Use instead of importing 'fs' to avoid node dependencies`
-import * as fs from './lib/node/fs';
-export {fs};
-
 // Use instead of importing 'stream' to avoid node dependencies`
 import * as stream from './lib/node/stream';
 export {stream};
 
-// EXPERIMENTAL
-export type {ReadableFile} from './lib/filesystems/readable-file';
-export {makeReadableFile} from './lib/filesystems/readable-file';
+// EXPERIMENTAL: FILE SYSTEMS
 
-export type {WritableFile} from './lib/filesystems/writable-file';
-export {makeWritableFile} from './lib/filesystems/writable-file';
+export type {ReadableFile, WritableFile, Stat} from './lib/files/file';
+export {BlobFile} from './lib/files/blob-file';
+export {HttpFile} from './lib/files/http-file';
+export {NodeFileFacade as NodeFile} from './lib/files/node-file-facade';
 
-export {default as _NodeFileSystem} from './lib/filesystems/node-filesystem';
+export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesystem';
+export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-filesystem-facade';
+
+// TODO - replace with ReadableFile
+export type {FileProvider} from './lib/file-provider/file-provider';
+export {isFileProvider} from './lib/file-provider/file-provider';
+export {FileHandleFile} from './lib/file-provider/file-handle-file';
+export {DataViewFile} from './lib/file-provider/data-view-file';
+
+// EXPERIMENTAL: DATA SOURCES
+export type {Service} from './service-types';
+
+export type {DataSourceProps} from './lib/sources/data-source';
+export {DataSource} from './lib/sources/data-source';
+
+export type {ImageType} from './lib/sources/utils/image-type';
+export type {ImageSourceProps, ImageSourceMetadata} from './lib/sources/image-source';
+export type {GetImageParameters} from './lib/sources/image-source';
+export {ImageSource} from './lib/sources/image-source';
+
+export type {
+  TileSourceProps,
+  TileSourceMetadata,
+  GetTileParameters,
+  TileLoadParameters
+} from './lib/sources/tile-source';
+export type {TileSource} from './lib/sources/tile-source';
+
+export type {ImageTileSource} from './lib/sources/image-tile-source';
+
+export type {VectorTileSource} from './lib/sources/vector-tile-source';

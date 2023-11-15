@@ -21,7 +21,7 @@ test('getWorkerURL', (t) => {
     getWorkerURL(NullWorker, {_workerType: 'test'}),
     isBrowser
       ? 'modules/worker-utils/dist/null-worker.js'
-      : 'modules/worker-utils/dist/null-worker-node.js',
+      : 'modules/worker-utils/src/workers/null-worker-node.ts',
     'worker url with _useLocalWorkers options'
   );
 

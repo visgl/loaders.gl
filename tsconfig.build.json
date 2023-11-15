@@ -33,6 +33,7 @@
     {"path": "modules/parquet"},
     {"path": "modules/pcd"},
     {"path": "modules/ply"},
+    {"path": "modules/pmtiles"},
     {"path": "modules/polyfills"},
     {"path": "modules/potree"},
     {"path": "modules/schema"},

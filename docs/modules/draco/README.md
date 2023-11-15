@@ -28,7 +28,7 @@ Draco support requires the Draco libraries, which are quite big (see table below
 
 Bundling the entire `draco3d` library:
 
-```js
+```typescript
 import draco from 'draco3d';
 import {setLoaderOptions} from '@loaders.gl/core';
 setLoaderOptions({
@@ -40,7 +40,7 @@ setLoaderOptions({
 
 Bundling only the WebAssembly decoder
 
-```js
+```typescript
 import {setLoaderOptions} from '@loaders.gl/core';
 setLoaderOptions({
   modules: {

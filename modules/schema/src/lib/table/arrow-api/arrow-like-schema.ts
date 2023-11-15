@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {SchemaMetadata, Field} from '../../../types/schema';
 import {ArrowLikeField} from './arrow-like-field';

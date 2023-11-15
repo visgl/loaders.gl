@@ -3,9 +3,9 @@ import '@loaders.gl/polyfills';
 import {WorkerBody, WorkerMessagePayload} from '@loaders.gl/worker-utils';
 import {DracoWriter} from '../draco-writer';
 
-(() => {
+(async () => {
   // Check that we are actually in a worker thread
-  if (!WorkerBody.inWorkerThread()) {
+  if (!(await WorkerBody.inWorkerThread())) {
     return;
   }
 

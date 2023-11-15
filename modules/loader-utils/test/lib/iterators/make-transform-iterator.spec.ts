@@ -80,7 +80,7 @@ test('byteLengthTransform#non-streaming', async (t) => {
 
   const response = await fetchFile(SHAPEFILE_URL);
   let iterator = makeIterator(response);
-  iterator = crc32.hashBatches(iterator);
+  iterator = crc32.hashBatches(iterator, 'base64');
 
   const batchIterator = await parseInBatches(iterator, ShapefileLoader);
   for await (const batch of batchIterator) {

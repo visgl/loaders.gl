@@ -1,8 +1,11 @@
-type BinaryChunkReaderOptions = {
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+export type BinaryChunkReaderOptions = {
   maxRewindBytes: number;
 };
 
-export default class BinaryChunkReader {
+export class BinaryChunkReader {
   offset: number;
   arrayBuffers: ArrayBuffer[];
   ended: boolean;
@@ -110,7 +113,6 @@ export default class BinaryChunkReader {
     }
 
     if (!bufferOffsets) {
-      // @ts-ignore
       return null;
     }
 

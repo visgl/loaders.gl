@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // This code is adapted from ArrowJS https://github.com/apache/arrow
 // under Apache license http://www.apache.org/licenses/LICENSE-2.0
 
@@ -12,8 +15,6 @@ export type TypedIntArray =
   | Uint8Array
   | Int16Array
   | Uint16Array
-  | Int32Array
-  | Uint32Array
   | Int32Array
   | Uint32Array
   | Uint8ClampedArray;

@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/terrain",
-  "version": "4.0.0-alpha.13",
+  "version": "4.0.3",
   "description": "Framework-independent loader for terrain raster formats",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
@@ -20,8 +21,15 @@
     "OBJ"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -29,16 +37,16 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
+    "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle && npm run build-bundle -- --env=dev",
+    "build-bundle": "ocular-bundle ./src/index.ts",
     "build-worker": "esbuild src/workers/terrain-worker.ts --bundle --outfile=dist/terrain-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker2": "esbuild src/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/images": "4.0.0-alpha.13",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.13",
-    "@loaders.gl/schema": "4.0.0-alpha.13",
+    "@loaders.gl/images": "4.0.3",
+    "@loaders.gl/loader-utils": "4.0.3",
+    "@loaders.gl/schema": "4.0.3",
     "@mapbox/martini": "^0.2.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"

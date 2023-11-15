@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 import type {Mesh} from '@loaders.gl/schema';
 
 /** A parsed PLY mesh */

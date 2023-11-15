@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
@@ -18,7 +19,7 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
 /**
  * Loader for the response to the CSW GetCapability request
  */
-export const CSWDomainLoader = {
+export const CSWDomainLoader: LoaderWithParser<CSWDomain, never, CSWLoaderOptions> = {
   id: 'csw-domain',
   name: 'CSW Domain',
 
@@ -40,5 +41,3 @@ function testXMLFile(text: string): boolean {
   // TODO - There could be space first.
   return text.startsWith('<?xml');
 }
-
-export const _typecheckCSWDomainLoader: LoaderWithParser = CSWDomainLoader;

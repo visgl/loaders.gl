@@ -19,7 +19,7 @@ import {
 import {LineLayer, ScatterplotLayer} from '@deck.gl/layers';
 import {TerrainLayer, Tile3DLayer} from '@deck.gl/geo-layers';
 
-import {load} from '@loaders.gl/core';
+import {load, fetchFile} from '@loaders.gl/core';
 import {I3SLoader, I3SBuildingSceneLayerLoader} from '@loaders.gl/i3s';
 import {ImageLoader} from '@loaders.gl/images';
 import {StatsWidget} from '@probe.gl/stats-widget';
@@ -308,7 +308,7 @@ export default class App extends PureComponent {
     const {tilesetUrl, token, name, metadataUrl} = params;
     this.setState({tilesetUrl, name, token, sublayers: []});
     this.handleClearWarnings();
-    const metadata = await fetch(metadataUrl).then((resp) => resp.json());
+    const metadata = await fetchFile(metadataUrl).then((resp) => resp.json());
     const flattenedSublayers = await this.getFlattenedSublayers(tilesetUrl);
     this.setState({metadata, tileInfo: null, normalsDebugData: [], flattenedSublayers});
     this._loadedTilesets = [];

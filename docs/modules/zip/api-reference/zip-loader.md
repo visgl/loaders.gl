@@ -14,7 +14,7 @@ Decodes a Zip Archive into a file map.
 
 ## Usage
 
-```js
+```typescript
 import {parse} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 

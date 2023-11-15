@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {Vector3} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
@@ -71,14 +72,14 @@ export function getZoomFromFullExtent(
   cartorgraphicCenter: Vector3,
   cartesianCenter: Vector3
 ) {
-  const extentVertex = Ellipsoid.WGS84.cartographicToCartesian(
+  Ellipsoid.WGS84.cartographicToCartesian(
     [fullExtent.xmax, fullExtent.ymax, fullExtent.zmax],
-    new Vector3()
+    scratchVector
   );
   const extentSize = Math.sqrt(
-    Math.pow(extentVertex[0] - cartesianCenter[0], 2) +
-      Math.pow(extentVertex[1] - cartesianCenter[1], 2) +
-      Math.pow(extentVertex[2] - cartesianCenter[2], 2)
+    Math.pow(scratchVector[0] - cartesianCenter[0], 2) +
+      Math.pow(scratchVector[1] - cartesianCenter[1], 2) +
+      Math.pow(scratchVector[2] - cartesianCenter[2], 2)
   );
   return Math.log2(WGS84_RADIUS_Z / (extentSize + cartorgraphicCenter[2]));
 }

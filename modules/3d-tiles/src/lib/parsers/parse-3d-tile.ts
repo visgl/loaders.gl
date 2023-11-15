@@ -19,8 +19,8 @@ export async function parse3DTile(
   byteOffset = 0,
   options: Tiles3DLoaderOptions | undefined,
   context: LoaderContext | undefined,
-  tile: Tiles3DTileContent = {}
-) {
+  tile: Tiles3DTileContent = {shape: 'tile3d'}
+): Promise<number> {
   tile.byteOffset = byteOffset;
   tile.type = getMagicString(arrayBuffer, byteOffset);
 

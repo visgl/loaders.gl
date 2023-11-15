@@ -2,15 +2,23 @@ import type {WorkerMessageData, WorkerMessageType, WorkerMessagePayload} from '.
 import {getTransferList} from '../worker-utils/get-transfer-list';
 
 /** Vile hack to defeat over-zealous bundlers from stripping out the require */
-function getParentPort() {
+async function getParentPort() {
   // const isNode = globalThis.process;
   let parentPort;
   try {
     // prettier-ignore
     eval('globalThis.parentPort = require(\'worker_threads\').parentPort'); // eslint-disable-line no-eval
     parentPort = globalThis.parentPort;
-    // eslint-disable-next-line no-empty
-  } catch {}
+  } catch {
+    try {
+      // prettier-ignore
+      eval('globalThis.workerThreadsPromise = import(\'worker_threads\')'); // eslint-disable-line no-eval
+      const workerThreads = await globalThis.workerThreadsPromise;
+      parentPort = workerThreads.parentPort;
+    } catch (error) {
+      console.error((error as Error).message); // eslint-disable-line no-console
+    }
+  }
   return parentPort;
 }
 
@@ -21,17 +29,17 @@ const onMessageWrapperMap = new Map();
  */
 export default class WorkerBody {
   /** Check that we are actually in a worker thread */
-  static inWorkerThread(): boolean {
-    return typeof self !== 'undefined' || Boolean(getParentPort());
+  static async inWorkerThread(): Promise<boolean> {
+    return typeof self !== 'undefined' || Boolean(await getParentPort());
   }
 
   /*
    * (type: WorkerMessageType, payload: WorkerMessagePayload) => any
    */
   static set onmessage(onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any) {
-    function handleMessage(message) {
+    async function handleMessage(message) {
+      const parentPort = await getParentPort();
       // Confusingly the message itself also has a 'type' field which is always set to 'message'
-      const parentPort = getParentPort();
       const {type, payload} = parentPort ? message : message.data;
       // if (!isKnownMessage(message)) {
       //   return;
@@ -39,37 +47,38 @@ export default class WorkerBody {
       onMessage(type, payload);
     }
 
-    const parentPort = getParentPort();
-    if (parentPort) {
-      parentPort.on('message', handleMessage);
-      // if (message == 'exit') { parentPort.unref(); }
-      // eslint-disable-next-line
-      parentPort.on('exit', () => console.debug('Node worker closing'));
-    } else {
-      // eslint-disable-next-line no-restricted-globals
-      globalThis.onmessage = handleMessage;
-    }
+    getParentPort().then((parentPort) => {
+      if (parentPort) {
+        parentPort.on('message', handleMessage);
+        // if (message == 'exit') { parentPort.unref(); }
+        // eslint-disable-next-line
+        parentPort.on('exit', () => console.debug('Node worker closing'));
+      } else {
+        // eslint-disable-next-line no-restricted-globals
+        globalThis.onmessage = handleMessage;
+      }
+    });
   }
 
-  static addEventListener(
+  static async addEventListener(
     onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any
   ) {
     let onMessageWrapper = onMessageWrapperMap.get(onMessage);
 
     if (!onMessageWrapper) {
-      onMessageWrapper = (message: MessageEvent<any>) => {
+      onMessageWrapper = async (message: MessageEvent<any>) => {
         if (!isKnownMessage(message)) {
           return;
         }
 
+        const parentPort = await getParentPort();
         // Confusingly in the browser, the message itself also has a 'type' field which is always set to 'message'
-        const parentPort = getParentPort();
         const {type, payload} = parentPort ? message : message.data;
         onMessage(type, payload);
       };
     }
 
-    const parentPort = getParentPort();
+    const parentPort = await getParentPort();
     if (parentPort) {
       console.error('not implemented'); // eslint-disable-line
     } else {
@@ -77,12 +86,12 @@ export default class WorkerBody {
     }
   }
 
-  static removeEventListener(
+  static async removeEventListener(
     onMessage: (type: WorkerMessageType, payload: WorkerMessagePayload) => any
   ) {
     const onMessageWrapper = onMessageWrapperMap.get(onMessage);
     onMessageWrapperMap.delete(onMessage);
-    const parentPort = getParentPort();
+    const parentPort = await getParentPort();
     if (parentPort) {
       console.error('not implemented'); // eslint-disable-line
     } else {
@@ -95,12 +104,12 @@ export default class WorkerBody {
    * @param type
    * @param payload
    */
-  static postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): void {
+  static async postMessage(type: WorkerMessageType, payload: WorkerMessagePayload): Promise<void> {
     const data: WorkerMessageData = {source: 'loaders.gl', type, payload};
     // console.log('posting message', data);
     const transferList = getTransferList(payload);
 
-    const parentPort = getParentPort();
+    const parentPort = await getParentPort();
     if (parentPort) {
       parentPort.postMessage(data, transferList);
       // console.log('posted message', data);

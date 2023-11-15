@@ -19,7 +19,7 @@ Writer for BSON files.
 
 ## Usage
 
-```js
+```typescript
 import {BSONWriter} from '@loaders.gl/json';
 import {encode} from '@loaders.gl/core';
 

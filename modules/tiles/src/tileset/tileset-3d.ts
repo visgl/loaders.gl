@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
@@ -350,9 +351,9 @@ export class Tileset3D {
   }
 
   /** @deprecated */
-  setOptions(options: Tileset3DProps): void {
-    this.options = {...this.options, ...options};
-  }
+  // setOptions(options: Tileset3DProps): void {
+  //   this.options = {...this.options, ...options};
+  // }
 
   /**
    * Return a loadable tile url for a specific tile subpath
@@ -363,7 +364,12 @@ export class Tileset3D {
     if (isDataUrl) {
       return tilePath;
     }
-    return `${tilePath}${tilePath.includes('?') ? '&' : '?'}${this.queryParams}`;
+
+    let tileUrl = tilePath;
+    if (this.queryParams.length) {
+      tileUrl = `${tilePath}${tilePath.includes('?') ? '&' : '?'}${this.queryParams}`;
+    }
+    return tileUrl;
   }
 
   // TODO CESIUM specific
@@ -606,10 +612,8 @@ export class Tileset3D {
         ymin + (ymax - ymin) / 2,
         zmin + (zmax - zmin) / 2
       );
-      this.cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(
-        this.cartographicCenter,
-        new Vector3()
-      );
+      this.cartesianCenter = new Vector3();
+      Ellipsoid.WGS84.cartographicToCartesian(this.cartographicCenter, this.cartesianCenter);
       this.zoom = getZoomFromFullExtent(fullExtent, this.cartographicCenter, this.cartesianCenter);
       return;
     }
@@ -618,10 +622,8 @@ export class Tileset3D {
     if (extent) {
       const [xmin, ymin, xmax, ymax] = extent;
       this.cartographicCenter = new Vector3(xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2, 0);
-      this.cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(
-        this.cartographicCenter,
-        new Vector3()
-      );
+      this.cartesianCenter = new Vector3();
+      Ellipsoid.WGS84.cartographicToCartesian(this.cartographicCenter, this.cartesianCenter);
       this.zoom = getZoomFromExtent(extent, this.cartographicCenter, this.cartesianCenter);
       return;
     }
@@ -652,7 +654,8 @@ export class Tileset3D {
 
     // cartographic coordinates are undefined at the center of the ellipsoid
     if (center[0] !== 0 || center[1] !== 0 || center[2] !== 0) {
-      this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+      this.cartographicCenter = new Vector3();
+      Ellipsoid.WGS84.cartesianToCartographic(center, this.cartographicCenter);
     } else {
       this.cartographicCenter = new Vector3(0, 0, -Ellipsoid.WGS84.radii[0]);
     }
@@ -704,6 +707,7 @@ export class Tileset3D {
           if (childTile.contentUrl?.includes('?session=')) {
             const url = new URL(childTile.contentUrl);
             const session = url.searchParams.get('session');
+            // eslint-disable-next-line max-depth
             if (session) {
               this._queryParams.session = session;
             }
@@ -939,6 +943,7 @@ export class Tileset3D {
   _initializeI3STileset() {
     // @ts-expect-error
     if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
+      // @ts-ignore
       this._queryParams.token = this.loadOptions.i3s.token as string;
     }
   }

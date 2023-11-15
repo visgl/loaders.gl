@@ -1,4 +1,4 @@
-# KTX2BasisWriter
+# KTX2BasisWriter 🚧
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
@@ -19,7 +19,7 @@
 
 ## Usage
 
-```js
+```typescript
 import '@loaders.gl/polyfill'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';

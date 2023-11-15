@@ -15,7 +15,7 @@ Streaming loader for JSON encoded files.
 
 For simple usage, you can load and parse a JSON file atomically:
 
-```js
+```typescript
 import {JSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 
@@ -25,7 +25,7 @@ const data = await load(url, JSONLoader, {json: options});
 For larger files, JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
 To parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` to stream the `features` array.
 
-```js
+```typescript
 import {JSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 
@@ -48,7 +48,7 @@ When batch parsing an embedded JSON array as a table, it is possible to get acce
 
 The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result` respectively.
 
-```js
+```typescript
 import {JSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 

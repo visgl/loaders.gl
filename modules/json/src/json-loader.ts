@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
@@ -10,7 +11,7 @@ import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 type ParseJSONOptions = {
-  shape?: 'row-table';
+  shape: 'object-row-table'; // TODO - 'auto'?
   table?: boolean;
   jsonpaths?: string[];
 };
@@ -25,7 +26,7 @@ export type JSONLoaderOptions = LoaderOptions & {
 
 const DEFAULT_JSON_LOADER_OPTIONS: {json: Required<ParseJSONOptions>} = {
   json: {
-    shape: 'row-table',
+    shape: 'object-row-table',
     table: false,
     jsonpaths: []
     // batchSize: 'auto'

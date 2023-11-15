@@ -13,7 +13,7 @@ References
 
 Loading a tileset and instantiating a `Tileset3D` instance.
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -27,7 +27,7 @@ const tileset3d = new Tileset3D(tilesetJson, {
 
 Loading a tileset and dynamically load/unload with viewport.
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {I3SLoader} from '@loaders.gl/i3s';
@@ -46,7 +46,7 @@ tileset3d.update(viewport);
 
 Since `Tileset3D's update` is a synchronized call, which selects the tiles qualified for rendering based on current viewport and available tiles, user can trigger another `update` when new tiles are loaded.
 
-```js
+```typescript
 import {Tileset3D} from '@loaders.gl/tiles';
 
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
@@ -58,7 +58,7 @@ const tileset3d = new Tileset3D(tilesetJson, {
 
 ## Constructor
 
-```js
+```typescript
 new Tileset3D(tilesetJson, {
   onTileLoad: (tile) => console.log(tile)
 });
@@ -169,13 +169,13 @@ See the [properties schema reference](https://github.com/AnalyticalGraphicsInc/3
 
 ### maximumScreenSpaceError : Number
 
-The maximum screen space error used to drive level of detail refinement. This value helps determine when a tile refines to its descendants, and therefore plays a major role in balancing performance with visual quality.
+Threshold that controls the level of detail of loaded tiles. A higher value means tile traversal stops early, displaying lower quality tiles (but much faster load times & less bandwidth used), because we're using a high "error tolerance". A lower value means lower tolerance for error, so traversal goes deeper in the tree and displays higher quality tiles. 
 
 A tile's screen space error is roughly equivalent to the number of pixels wide that would be drawn if a sphere with a
 radius equal to the tile's <b>geometric error</b> were rendered at the tile's position. If this value exceeds
 `maximumScreenSpaceError` the tile refines to its descendants.
 
-Depending on the tileset, `maximumScreenSpaceError` may need to be tweaked to achieve the right balance. Higher values provide better performance but lower visual quality. \*
+Depending on the tileset, `maximumScreenSpaceError` may need to be tweaked to achieve the right balance between performance with visual quality. \*
 
 ### maximumMemoryUsage : Number
 
@@ -209,7 +209,7 @@ The root tile header.
 
 The tileset's bounding sphere.
 
-```js
+```typescript
 var tileset = viewer.scene.primitives.add(
   new Tileset3D({
     url: 'http://localhost:8002/tilesets/Seattle/tileset.json'

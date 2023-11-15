@@ -2,15 +2,33 @@ import {join} from 'path';
 import {promises as fs} from 'fs';
 import {getAbsoluteFilePath} from './file-utils';
 
-export function timeConverter(time) {
-  const nanoSecondsInMillisecond = 1e6;
-  let timeInSeconds = time[0];
+/**
+ * Converts time value to string.
+ * @param time - high-resolution real time in a [seconds, nanoseconds] tuple Array, or a value on milliseconds.
+ * @returns string representation of the time
+ */
+export function timeConverter(time: number | [number, number]): string {
+  if (typeof time === 'number') {
+    // time - real time in milli-seconds
+    const milliSecondsInSecond = 1e3;
+    const timeInSeconds = Math.floor(time / milliSecondsInSecond);
+    const milliseconds = time - timeInSeconds * milliSecondsInSecond;
+    return timeConverterFromSecondsAndMilliseconds(timeInSeconds, milliseconds);
+  } else {
+    // time - high-resolution real time in a [seconds, nanoseconds] tuple Array
+    const nanoSecondsInMillisecond = 1e6;
+    const timeInSeconds = time[0];
+    const milliseconds = time[1] / nanoSecondsInMillisecond;
+    return timeConverterFromSecondsAndMilliseconds(timeInSeconds, milliseconds);
+  }
+}
+
+function timeConverterFromSecondsAndMilliseconds(timeInSeconds: number, milliseconds: number) {
   const hours = Math.floor(timeInSeconds / 3600);
   timeInSeconds = timeInSeconds - hours * 3600;
   const minutes = Math.floor(timeInSeconds / 60);
   timeInSeconds = timeInSeconds - minutes * 60;
   const seconds = Math.floor(timeInSeconds);
-  const milliseconds = time[1] / nanoSecondsInMillisecond;
   let result = '';
 
   if (hours) {

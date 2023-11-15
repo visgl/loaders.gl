@@ -1,5 +1,7 @@
 # WKBWriter
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v3.1" />
 </p>
@@ -18,9 +20,16 @@ Writer for the [Well-known binary][wkb] format for representation of geometry.
 | Encoder Type          | Synchronous                                   |
 | Worker Thread Support | Yes                                           |
 
+## Installation
+
+```bash
+npm install @loaders.gl/wkt
+npm install @loaders.gl/core
+```
+
 ## Usage
 
-```js
+```typescript
 import {WKBWriter} from '@loaders.gl/wkt';
 import {encodeSync} from '@loaders.gl/core';
 

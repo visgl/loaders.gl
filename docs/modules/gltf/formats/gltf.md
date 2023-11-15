@@ -24,7 +24,7 @@ A glTF file uses one of two possible file extensions: .gltf (JSON/ASCII) or .glb
 
 ## glTF Extensions
 
-glTF extensions can be present in glTF files, and will be present in the parsed JSON. glTF extensions can supported by applications by inspecting the `extensions` fields inside glTF objects, and it is up to each application to handle or ignore them.
+glTF extensions can be present in glTF files, and will be present in the parsed JSON. glTF extensions can be supported by applications by inspecting the `extensions` fields inside glTF objects, and it is up to each application to handle or ignore them.
 
 loaders.gl aims to provide support for glTF extensions that can be handled completely or partially during loading, and article describes glTF extensions that are fully or partially processed by the `@loaders.gl/gltf` classes.
 
@@ -37,7 +37,8 @@ Note that many glTF extensions affect aspects that are firmly outside of the sco
 | [KHR_texture_basisu](#khr_texture_basisu)                 | Y            | Adds the ability to specify textures using KTX v2                                           |
 | [KHR_texture_transform](#khr_texture_transform)           | Y            | Adds transformation properties (translation, rotation, scale) for TEXCOORD\_ mesh attribute |
 | KHR_texture_webp                                          | Y            |
-| [EXT_mesh_features](#ext_mesh_features)                   | N            | (In progress) 3D tiles extension                                                            |
+| [EXT_mesh_features](#ext_mesh_features)                   | Y            | 3D tiles extension                                                                          |
+| [EXT_structural_metadata](#ext_structural_metadata)       | Y            | 3D tiles extension                                                                          |
 | [KHR_lights_punctual](#khr_lights_punctual)               | Y\*          | Deprecated                                                                                  |
 | [KHR_materials_unlit](#khr_materials_unlit)               | Y\*          | Deprecated                                                                                  |
 | [EXT_feature_metadata](#ext_feature_metadata)             | Y\*          | Deprecated. 3D tiles extension                                                              |
@@ -120,3 +121,9 @@ The `GLTFLoader` by default fully decompresses meshopt compressed geometries, re
 3D tiles extension by Cesium. This extension defines a means of assigning identifiers to geometry and subcomponents of geometry within a glTF 2.0 asset.
 
 [EXT_mesh_features](https://github.com/CesiumGS/glTF/tree/c38f7f37e894004353c15cd0481bc5b7381ce841/extensions/2.0/Vendor/EXT_mesh_features)
+
+### EXT_structural_metadata
+
+3D tiles extension by Cesium. This extension defines a means of storing structured metadata within a glTF 2.0 asset.
+
+[EXT_structural_metadata](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata)

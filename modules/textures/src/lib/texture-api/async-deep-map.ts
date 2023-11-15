@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 /*
 Asynchronously maps a deep structure of values (e.g. objects and arrays of urls).
 

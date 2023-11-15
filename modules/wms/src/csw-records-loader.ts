@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
@@ -18,10 +19,9 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
 /**
  * Loader for the response to the CSW GetCapability request
  */
-export const CSWRecordsLoader: LoaderWithParser = {
+export const CSWRecordsLoader: LoaderWithParser<CSWRecords, never, CSWLoaderOptions> = {
   id: 'csw-records',
-  name: 'CSW Domain',
-
+  name: 'CSW Records',
   module: 'wms',
   version: VERSION,
   worker: false,

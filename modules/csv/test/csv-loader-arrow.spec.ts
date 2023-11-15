@@ -1,8 +1,7 @@
 import test from 'tape-promise/tape';
 import {loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
-import {RecordBatch} from 'apache-arrow';
-// import {Schema, Field, RecordBatch, Float32Vector} from 'apache-arrow';
+import {CSVLoader} from '../src/csv-loader'; // from '@loaders.gl/csv';
+import * as arrow from 'apache-arrow';
 
 // Small CSV Sample Files
 const CSV_NUMBERS_100_URL = '@loaders.gl/csv/test/data/numbers-100.csv';
@@ -20,8 +19,8 @@ test('CSVLoader#loadInBatches(numbers-100.csv, arrow)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.ok(batch.data instanceof RecordBatch, 'returns arrow RecordBatch');
-    t.comment(`BATCH: ${batch.length}`);
+    t.ok(batch.data instanceof arrow.Table, 'returns arrow RecordBatch');
+    // t.comment(`BATCH: ${batch.length}`);
     batchCount++;
   }
   t.equal(batchCount, 3, 'Correct number of batches received');
@@ -40,8 +39,8 @@ test('CSVLoader#loadInBatches(numbers-10000.csv, arrow)', async (t) => {
 
   let batchCount = 0;
   for await (const batch of iterator) {
-    t.ok(batch.data instanceof RecordBatch, 'returns arrow RecordBatch');
-    t.comment(`BATCH: ${batch.length}`);
+    t.ok(batch.data instanceof arrow.Table, 'returns arrow RecordBatch');
+    // t.comment(`BATCH: ${batch.length}`);
     batchCount++;
   }
   t.equal(batchCount, 5, 'Correct number of batches received');

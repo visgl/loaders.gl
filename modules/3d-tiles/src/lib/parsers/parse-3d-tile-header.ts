@@ -1,11 +1,13 @@
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/loader-utils';
 import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
 import {
   ImplicitTilingExensionData,
   Subtree,
+  Tile3DBoundingVolume,
   Tiles3DTileContentJSON,
   Tiles3DTileJSON,
   Tiles3DTileJSONPostprocessed,
@@ -15,6 +17,34 @@ import type {S2VolumeBox} from './helpers/parse-3d-implicit-tiles';
 import {parseImplicitTiles, replaceContentUrlTemplate} from './helpers/parse-3d-implicit-tiles';
 import type {S2VolumeInfo} from '../utils/obb/s2-corners-to-obb';
 import {convertS2BoundingVolumetoOBB} from '../utils/obb/s2-corners-to-obb';
+
+/** Options for recursive loading implicit subtrees */
+export type ImplicitOptions = {
+  /** Template of the full url of the content template */
+  contentUrlTemplate: string;
+  /** Template of the full url of the subtree  */
+  subtreesUriTemplate: string;
+  /** Implicit subdivision scheme */
+  subdivisionScheme: 'QUADTREE' | 'OCTREE' | string;
+  /** Levels per subtree */
+  subtreeLevels: number;
+  /** Maximum implicit level through all subtrees */
+  maximumLevel?: number;
+  /** 3DTiles refine method (add/replace) */
+  refine?: string;
+  /** Tileset base path */
+  basePath: string;
+  /** 3DTiles LOD metric type */
+  lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR;
+  /** Root metric value of the root tile of the implicit subtrees */
+  rootLodMetricValue: number;
+  /** Bounding volume of the root tile of the implicit subtrees */
+  rootBoundingVolume: Tile3DBoundingVolume;
+  /** Function that detects TILE_TYPE by tile metadata and content URL */
+  getTileType: (tile: Tiles3DTileJSON, tileContentUrl?: string) => TILE_TYPE | string;
+  /** Function that converts string refine method to enum value */
+  getRefine: (refine?: string) => TILE_REFINEMENT | string | undefined;
+};
 
 function getTileType(tile: Tiles3DTileJSON, tileContentUrl: string = ''): TILE_TYPE | string {
   if (!tileContentUrl) {
@@ -60,7 +90,7 @@ function resolveUri(uri: string = '', basePath: string): string {
     return uri;
   }
 
-  return `${basePath}/${uri}`;
+  return path.resolve(basePath, uri);
 }
 
 export function normalizeTileData(
@@ -158,6 +188,7 @@ export async function normalizeImplicitTileHeaders(
   const {
     subdivisionScheme,
     maximumLevel,
+    availableLevels,
     subtreeLevels,
     subtrees: {uri: subtreesUriTemplate}
   } = implicitTilingExtension;
@@ -179,12 +210,12 @@ export async function normalizeImplicitTileHeaders(
 
   const rootBoundingVolume = tile.boundingVolume;
 
-  const implicitOptions = {
+  const implicitOptions: ImplicitOptions = {
     contentUrlTemplate,
     subtreesUriTemplate,
     subdivisionScheme,
     subtreeLevels,
-    maximumLevel,
+    maximumLevel: Number.isFinite(availableLevels) ? availableLevels - 1 : maximumLevel,
     refine,
     basePath,
     lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
@@ -194,7 +225,7 @@ export async function normalizeImplicitTileHeaders(
     getRefine
   };
 
-  return await normalizeImplicitTileData(tile, basePath, subtree, implicitOptions);
+  return await normalizeImplicitTileData(tile, basePath, subtree, implicitOptions, options);
 }
 
 /**
@@ -208,7 +239,8 @@ export async function normalizeImplicitTileData(
   tile: Tiles3DTileJSON,
   basePath: string,
   rootSubtree: Subtree,
-  options: any
+  implicitOptions: ImplicitOptions,
+  loaderOptions: Tiles3DLoaderOptions
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   if (!tile) {
     return null;
@@ -216,7 +248,8 @@ export async function normalizeImplicitTileData(
 
   const {children, contentUrl} = await parseImplicitTiles({
     subtree: rootSubtree,
-    options
+    implicitOptions,
+    loaderOptions
   });
 
   let tileContentUrl: string | undefined;

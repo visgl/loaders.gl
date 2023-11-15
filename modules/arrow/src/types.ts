@@ -1,12 +1,7 @@
-type TypedIntArray =
-  | Int8Array
-  | Uint8Array
-  | Int16Array
-  | Uint16Array
-  | Int32Array
-  | Uint32Array
-  | Int32Array
-  | Uint32Array;
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+type TypedIntArray = Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array;
 
 type TypedFloatArray = Float32Array | Float64Array;
 

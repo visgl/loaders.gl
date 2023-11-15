@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // Isolates Buffer references to ensure they are only bundled under Node.js (avoids big webpack polyfill)
 // this file is selected by the package.json "browser" field).
@@ -20,7 +21,7 @@ export function toArrayBuffer(buffer) {
 /**
  * Convert (copy) ArrayBuffer to Buffer
  */
-export function toBuffer(binaryData: ArrayBuffer | ArrayBuffer | Buffer): Buffer {
+export function toBuffer(binaryData: ArrayBuffer | Buffer): Buffer {
   if (Buffer.isBuffer(binaryData)) {
     return binaryData;
   }
@@ -29,6 +30,7 @@ export function toBuffer(binaryData: ArrayBuffer | ArrayBuffer | Buffer): Buffer
     binaryData = binaryData.buffer;
   }
 
+  // TODO - move to loaders.gl/polyfills
   if (typeof Buffer !== 'undefined' && binaryData instanceof ArrayBuffer) {
     return Buffer.from(binaryData);
   }

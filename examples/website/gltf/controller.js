@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {Matrix4} from '@math.gl/core';
 
 // Simple controller that keeps updating translation and rotation

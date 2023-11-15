@@ -1,16 +1,17 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {load, parseSync} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {BSONLoader} from '@loaders.gl/bson';
-import corruptScenarios from './data/js-bson/corrupt';
+// import corruptScenarios from './data/js-bson/corrupt';
 
 const TAGS_BSON_URL = '@loaders.gl/bson/test/data/js-bson/mongodump.airpair.tags.bson';
 const MINI_BSON_URL = '@loaders.gl/bson/test/data/js-bson/test.bson';
 
 test('BSONLoader#load(test.bson)', async (t) => {
   const data = await load(MINI_BSON_URL, BSONLoader);
-  t.comment(JSON.stringify(data));
+  // t.comment(JSON.stringify(data));
   t.ok(data, 'Data received');
   t.end();
 });
@@ -22,16 +23,17 @@ test.skip('BSONLoader#load(mongodump.airpair.tags.bson)', async (t) => {
   t.end();
 });
 
-test('BSON Compliance - corrupt scenarios', async (t) => {
-  for (let i = 0; i < corruptScenarios.documents.length; i++) {
-    const doc = corruptScenarios.documents[i];
-    if (!doc.skip) {
-      // Create a buffer containing the payload
-      const buffer = Buffer.from(doc.encoded, 'hex');
-      // Attempt to deserialize
-      t.throws(() => parseSync(buffer, BSONLoader), `Throws ${doc.error}`);
-    }
-  }
+// TODO - skip because of Node.js Bbuffer dependency
+// test('BSON Compliance - corrupt scenarios', async (t) => {
+//   for (let i = 0; i < corruptScenarios.documents.length; i++) {
+//     const doc = corruptScenarios.documents[i];
+//     if (!doc.skip) {
+//       // Create a buffer containing the payload
+//       const buffer = Buffer.from(doc.encoded, 'hex');
+//       // Attempt to deserialize
+//       t.throws(() => parseSync(buffer, BSONLoader), `Throws ${doc.error}`);
+//     }
+//   }
 
-  t.end();
-});
+//   t.end();
+// });

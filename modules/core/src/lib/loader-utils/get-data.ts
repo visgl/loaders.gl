@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {
   DataType,
   SyncDataType,
@@ -127,7 +130,7 @@ export async function getAsyncIterableFromData(
   }
 
   if (isAsyncIterable(data)) {
-    return data[Symbol.asyncIterator]();
+    return data as AsyncIterable<ArrayBuffer>;
   }
 
   return getIterableFromData(data);

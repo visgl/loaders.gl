@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/schema';
@@ -39,5 +40,3 @@ export const ExcelLoader: Loader<ObjectRowTable, never, ExcelLoaderOptions> = {
   binary: true,
   options: DEFAULT_EXCEL_LOADER_OPTIONS
 };
-
-export const _typecheckLoader: Loader = ExcelLoader;

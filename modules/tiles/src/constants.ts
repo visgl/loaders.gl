@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 export type TileContentState =
   | 'unloaded' // Has never been requested

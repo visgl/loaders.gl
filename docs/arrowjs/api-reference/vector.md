@@ -1,6 +1,14 @@
-# Vector
+# Vectors
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+A `Vector` is an Array-like data structure. Use `makeVector` and `vectorFromArray` to create vectors.
+
+### makeVector
+
+
+### vectorFromArray 
+
+
+### Vector
 
 Also referred to as `BaseVector`. An abstract base class for vector types.
 
@@ -8,36 +16,34 @@ Also referred to as `BaseVector`. An abstract base class for vector types.
 * ...
 * TBD
 
-## Inheritance
-
-
 ## Fields
 
-### data: `Data<T>` (readonly)
+### `type: DataType`
+
+The Arrow `DataType` that describes the elements in this Vector.
+
+### `data: Data<T> (readonly)`
 
 The underlying Data instance for this Vector.
 
-### numChildren: number (readonly)
+### `numChildren: number (readonly)`
 
 The number of logical Vector children. Only applicable if the DataType of the Vector is one of the nested types (List, FixedSizeList, Struct, or Map).
 
-### type : T
 
-The DataType that describes the elements in the Vector
-
-### typeId : T['typeId']
+### `typeId: T['typeId']`
 
 The `typeId` enum value of the `type` instance
 
-### length : number
+### `length: number`
 
 Number of elements in the `Vector`
 
-### offset : number
+### `offset: number`
 
 Offset to the first element in the underlying data.
 
-### stride : number
+### `stride: number`
 
 Stride between successive elements in the the underlying data.
 
@@ -49,59 +55,68 @@ The number of elements in the underlying data buffer that constitute a single lo
 - For `FixedSizeList` types, the stride is the `listSize` property of the `FixedSizeList` instance.
 - For `FixedSizeBinary` types, the stride is the `byteWidth` property of the `FixedSizeBinary` instance.
 
-### nullCount : Number
+### `nullCount: number`
 
 Number of `null` values in this `Vector` instance (`null` values require a null map to be present).
 
-### VectorName : String
+### `VectorName: string`
 
 Returns the name of the Vector
 
-### ArrayType : TypedArrayConstructor | ArrayConstructor
+### `ArrayType: TypedArrayConstructor | ArrayConstructor`
 
 Returns the constructor of the underlying typed array for the values buffer as determined by this Vector's DataType.
 
-### values : T['TArray']
+### `values: T['TArray']`
 
 Returns the underlying data buffer of the Vector, if applicable.
 
-### typeIds : Int8Array | null
+### `typeIds: Int8Array | null`
 
 Returns the underlying typeIds buffer, if the Vector DataType is Union.
 
-### nullBitmap : Uint8Array | null
+### `nullBitmap: Uint8Array | null`
 
 Returns the underlying validity bitmap buffer, if applicable.
 
 Note: Since the validity bitmap is a Uint8Array of bits, it is _not_ sliced when you call `vector.slice()`. Instead, the `vector.offset` property is updated on the returned Vector. Therefore, you must factor `vector.offset` into the bit position if you wish to slice or read the null positions manually. See the implementation of `BaseVector.isValid()` for an example of how this is done.
 
-### valueOffsets : Int32Array | null
+### `valueOffsets: Int32Array | null`
 
 Returns the underlying valueOffsets buffer, if applicable. Only the List, Utf8, Binary, and DenseUnion DataTypes will have valueOffsets.
 
 ## Methods
 
-### clone(data: `Data<R>`, children): `Vector<R>`
+### `clone(data: Data<R>, children): Vector<R>`
 
 Returns a clone of the current Vector, using the supplied Data and optional children for the new clone. Does not copy any underlying buffers.
 
-### concat(...others: `Vector<T>[]`)
+### `concat(...others: Vector<T>[])`
 
 Returns a `Chunked` vector that concatenates this Vector with the supplied other Vectors. Other Vectors must be the same type as this Vector.
 
 
-### slice(begin?: number, end?: number)
+### `slice(begin?: number, end?: number)`
 
 Returns a zero-copy slice of this Vector. The begin and end arguments are handled the same way as JS' `Array.prototype.slice`; they are clamped between 0 and `vector.length` and wrap around when negative, e.g. `slice(-1, 5)` or `slice(5, -1)`
 
-### isValid(index: number): boolean
+### `isValid()`
 
-Returns whether the supplied index is valid in the underlying validity bitmap.
+```ts
+vector.isValid(index: number): boolean
+```
 
-### getChildAt`<R extends DataType = any>`(index: number): `Vector<R>` | null
+Returns `true` the supplied index is valid in the underlying validity bitmap.
 
-Returns the inner Vector child if the DataType is one of the nested types (Map or Struct).
 
-### toJSON(): any
+### `getChildAt()`
+
+```ts
+vector.getChildAt<R extends DataType = any>(index: number): Vector<R> | null
+```
+
+Returns the inner Vector child if the DataType is one of the nested types such as Map or Struct.
+
+### `toJSON()`
 
 Returns a dense JS Array of the Vector values, with null sentinels in-place.

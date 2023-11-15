@@ -8,6 +8,7 @@
       "items": [
         "arrowjs/README",
         "arrowjs/whats-new",
+        "arrowjs/upgrade-guide",
         "arrowjs/contributing"
       ]
     },
@@ -23,16 +24,15 @@
       "type": "category",
       "label": "Developer Guide",
       "items": [
-        "arrowjs/developer-guide/big-ints",
-        "arrowjs/developer-guide/converting-data",
-        "arrowjs/developer-guide/data-frame-operations",
-        "arrowjs/developer-guide/data-sources",
         "arrowjs/developer-guide/data-types",
-        "arrowjs/developer-guide/memory-management",
-        "arrowjs/developer-guide/predicates",
-        "arrowjs/developer-guide/reading-and-writing",
+        "arrowjs/developer-guide/schemas",
         "arrowjs/developer-guide/tables",
-        "arrowjs/developer-guide/typescript"
+        "arrowjs/developer-guide/builders",
+        "arrowjs/developer-guide/converting-data",
+        "arrowjs/developer-guide/memory-management",
+        "arrowjs/developer-guide/big-ints",
+        "arrowjs/developer-guide/data-sources",
+        "arrowjs/developer-guide/reading-and-writing"
       ]
     },
     {
@@ -40,13 +40,9 @@
       "label": "API Reference",
       "items": [
         "arrowjs/api-reference/README",
-        "arrowjs/api-reference/chunked",
-        "arrowjs/api-reference/column",
-        "arrowjs/api-reference/data-frame",
         "arrowjs/api-reference/data",
         "arrowjs/api-reference/dictionary",
         "arrowjs/api-reference/field",
-        "arrowjs/api-reference/predicates",
         "arrowjs/api-reference/record-batch-reader",
         "arrowjs/api-reference/record-batch-writer",
         "arrowjs/api-reference/record-batch",

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
@@ -34,7 +35,7 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
 
 test('WMSErrorLoader#test cases', async (t) => {
   for (const tc of ERROR_TEST_CASES) {
-    const error = (await parse(tc.xml, WMSErrorLoader, {wms: {minimalErrors: true}})) as string;
+    const error = (await parse(tc.xml, WMSErrorLoader, {wms: {minimalErrors: true}}));
     t.equal(error, tc.parsed, `Error message: "${error}"`);
   }
   t.end();

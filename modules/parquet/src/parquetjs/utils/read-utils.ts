@@ -1,4 +1,4 @@
-import {TBufferedTransport, TCompactProtocol, TFramedTransport} from 'thrift';
+import {TBufferedTransport, TCompactProtocol, TFramedTransport} from '../parquet-thrift';
 import {FileMetaData, PageHeader} from '../parquet-thrift';
 
 class UFramedTransport extends TFramedTransport {
@@ -12,7 +12,7 @@ export function serializeThrift(obj: any): Buffer {
   const output: Buffer[] = [];
 
   const transport = new TBufferedTransport(undefined, (buf) => {
-    output.push(buf as Buffer);
+    output.push(buf as unknown as Buffer);
   });
 
   const protocol = new TCompactProtocol(transport);

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /** Any typed array */
 export type TypedArray =
   | Int8Array
@@ -17,8 +20,6 @@ export type TypedArrayConstructor =
   | Uint8ArrayConstructor
   | Int16ArrayConstructor
   | Uint16ArrayConstructor
-  | Int32ArrayConstructor
-  | Uint32ArrayConstructor
   | Int32ArrayConstructor
   | Uint32ArrayConstructor
   | Float32ArrayConstructor

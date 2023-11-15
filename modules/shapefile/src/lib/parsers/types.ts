@@ -12,23 +12,16 @@ export type DBFLoaderOptions = LoaderOptions & {
     encoding?: string;
     shape?: 'rows' | 'table' | 'object-row-table';
   };
-  /** @deprecated */
-  tables?: {
-    /** @deprecated */
-    format?: 'rows' | 'table' | 'object-row-table';
-  };
 };
 
 export type ShapefileLoaderOptions = LoaderOptions &
   SHPLoaderOptions & {
     shapefile?: {
-      shape?: 'geojson';
+      shape?: 'geojson-table';
     };
     gis?: {
       reproject?: boolean;
       _targetCrs?: string;
-      /** @deprecated. Use options.shapefile.shape */
-      format?: 'geojson';
     };
   };
 

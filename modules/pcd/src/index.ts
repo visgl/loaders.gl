@@ -13,5 +13,3 @@ export const PCDLoader: LoaderWithParser<PCDMesh, never, LoaderOptions> = {
   parse: async (arrayBuffer) => parsePCDSync(arrayBuffer),
   parseSync: parsePCDSync
 };
-
-export const _typecheckPCDLoader: LoaderWithParser = PCDLoader;

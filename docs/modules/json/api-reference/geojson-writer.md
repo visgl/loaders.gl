@@ -1,6 +1,10 @@
 # GeoJSONWriter
 
-Streaming loader for GeoJSON encoded files.
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
+</p>
+
+Streaming writer for GeoJSON encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
@@ -17,22 +21,22 @@ Streaming loader for GeoJSON encoded files.
 
 For simple usage, you can encode a table into a JSON "file" atomically:
 
-```js
-import {GeoJSONLoader} from '@loaders.gl/json';
+```typescript
+import {GeoJSONWriter} from '@loaders.gl/json';
 import {encode} from '@loaders.gl/core';
 
-const data = await encode(url, GeoJSONLoader, {json: options});
+const data = await encode(url, GeoJSONWriter, {json: options});
 ```
 
 ### Streaming and JSON paths
 
-For larger files, GeoJSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
+For larger files, GeoJSONWriter supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
 
-```js
-import {GeoJSONLoader} from '@loaders.gl/json';
+```typescript
+import {GeoJSONWriter} from '@loaders.gl/json';
 import {encodeInBatches} from '@loaders.gl/core';
 
-const batches = await encodeInBatches('geojson.json', GeoJSONLoader, {json: {jsonpaths: ['$.features']}});
+const batches = await encodeInBatches('geojson.json', GeoJSONWriter, {json: {jsonpaths: ['$.features']}});
 
 for await (const batch of batches) {
   // batch.data will contain a number of rows

@@ -95,8 +95,8 @@ function objEquiv(a: unknown, b: unknown, strict) {
     b = pSlice.call(b);
     return deepStrictEqual(a, b, strict);
   }
-  const ka = Object.keys(a);
-  const kb = Object.keys(b);
+  const ka = Object.keys(a as object);
+  const kb = Object.keys(b as object);
   let key;
   let i;
   // having the same number of owned properties (keys incorporates
@@ -113,6 +113,7 @@ function objEquiv(a: unknown, b: unknown, strict) {
   // ~~~possibly expensive deep test
   for (i = ka.length - 1; i >= 0; i--) {
     key = ka[i];
+    // @ts-ignore
     if (!deepStrictEqual(a[key], b[key], strict)) return false;
   }
   return true;

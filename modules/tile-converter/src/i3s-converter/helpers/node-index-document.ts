@@ -323,7 +323,11 @@ export class NodeIndexDocument {
         parentNode.converter.layers0?.attributeStorageInfo?.length
       ) {
         node.attributeData = [];
-        for (let index = 0; index < attributes.length; index++) {
+        const minimumLength =
+          attributes.length < parentNode.converter.layers0.attributeStorageInfo.length
+            ? attributes.length
+            : parentNode.converter.layers0.attributeStorageInfo.length;
+        for (let index = 0; index < minimumLength; index++) {
           const folderName = parentNode.converter.layers0.attributeStorageInfo[index].key;
           node.attributeData.push({href: `./attributes/${folderName}/0`});
         }

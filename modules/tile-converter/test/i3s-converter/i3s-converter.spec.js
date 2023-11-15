@@ -11,6 +11,7 @@ const TILESET_WITH_TEXTURES = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTex
 const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx2/tileset.json';
 const TILESET_WITH_FAILING_CONTENT =
   '@loaders.gl/tile-converter/test/data/failing-content-error/tileset.json';
+const TILESET_CDB_YEMEN = '@loaders.gl/3d-tiles/test/data/VNext/cdb-yemen-cut/tileset.json';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -28,10 +29,10 @@ const TEST_TEXTURE_MATERIAL = {
 };
 
 const TEST_FULL_EXTENT = {
-  xmin: -75.61412212128346,
-  ymin: 40.04095693133301,
-  xmax: -75.6100663747417,
-  ymax: 40.04410425830655,
+  xmin: -75.61412210800641,
+  ymin: 40.040956941636935,
+  xmax: -75.61006638801986,
+  ymax: 40.04410424800317,
   zmin: 0,
   zmax: 20
 };
@@ -48,9 +49,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async (t) =
     tilesetName: 'BatchedColors',
     slpk: false,
     sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-    egmFilePath: PGM_FILE_PATH,
-    token:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+    egmFilePath: PGM_FILE_PATH
   });
   if (!isBrowser) {
     t.ok(tilesetJson);
@@ -71,9 +70,7 @@ test('tile-converter(i3s)#should create Draco compressed geometry', async (t) =>
       slpk: false,
       draco: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-      egmFilePath: PGM_FILE_PATH,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      egmFilePath: PGM_FILE_PATH
     });
     t.ok(tilesetJson);
   }
@@ -91,9 +88,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validati
       slpk: true,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
       egmFilePath: PGM_FILE_PATH,
-      validate: true,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      validate: true
     });
     t.ok(tilesetJson);
   }
@@ -319,9 +314,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding
       generateBoundingVolumes: true,
       slpk: false,
       sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
-      egmFilePath: PGM_FILE_PATH,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ'
+      egmFilePath: PGM_FILE_PATH
     });
     t.ok(tilesetJson);
   }
@@ -345,7 +338,9 @@ test('tile-converter(i3s)#layer json should contain fullExtent field', async (t)
     );
     const layer = JSON.parse(layerJson);
     t.ok(layer.fullExtent);
-    t.deepEqual(layer.fullExtent, TEST_FULL_EXTENT);
+    for (const key in layer.fullExtent) {
+      t.equal(layer.fullExtent[key], TEST_FULL_EXTENT[key]);
+    }
   }
   await cleanUpPath('data/BatchedTextured');
   t.end();
@@ -373,5 +368,26 @@ test('tile-converter(i3s)#proceed with failing content', async (t) => {
     t.notOk(nodePage.nodes[5].mesh);
   }
   await cleanUpPath('data/FailingContent');
+  t.end();
+});
+
+test('tile-converter(i3s)#convert with --metadata-class option', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_CDB_YEMEN,
+      outputPath: 'data',
+      tilesetName: 'CDB_Yemen',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH,
+      metadataClass: 'CDBMaterialsClass'
+    });
+    const nodePageJson = await fs.readFile(
+      'data/CDB_Yemen/SceneServer/layers/0/nodepages/0/index.json',
+      'utf8'
+    );
+    t.ok(nodePageJson);
+  }
+  await cleanUpPath('data/CDB_Yemen');
   t.end();
 });

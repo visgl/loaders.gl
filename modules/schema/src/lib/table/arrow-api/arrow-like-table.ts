@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {Table} from '../../../types/category-table';
 
@@ -34,7 +35,8 @@ class ArrowLikeVector {
   toArray(): ArrayLike<unknown> {
     switch (this.table.shape) {
       case 'arrow-table':
-        return this.table.data.getChild(this.columnName)?.toArray();
+        const arrowTable = this.table.data as any;
+        return arrowTable.getChild(this.columnName)?.toArray();
       case 'columnar-table':
         return this.table.data[this.columnName];
       default:
@@ -62,7 +64,7 @@ export class ArrowLikeTable {
   // }
 
   get data() {
-    return this.table.data;
+    return this.table.shape === 'geojson-table' ? this.table.features : this.table.data;
   }
 
   get numCols(): number {

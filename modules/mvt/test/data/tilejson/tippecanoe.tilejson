@@ -1,0 +1,294 @@
+{
+  "name": "output.pmtiles",
+  "format": "pbf",
+  "type": "overlay",
+  "description": "output.pmtiles",
+  "version": "2",
+  "generator": "tippecanoe v2.35.0",
+  "generator_options": "tippecanoe -zg -o output.pmtiles --drop-densest-as-needed input.geojson",
+  "antimeridian_adjusted_bounds": "-150.112222,-51.895278,179.357778,69.604375",
+  "vector_layers": [
+    {
+      "id": "input",
+      "description": "",
+      "minzoom": 0,
+      "maxzoom": 6,
+      "fields": {
+        "add": "Number",
+        "category": "Number",
+        "continent": "String",
+        "disp_scale": "String",
+        "electric": "Number",
+        "featurecla": "String",
+        "mult_track": "Number",
+        "natlscale": "Number",
+        "other_code": "Number",
+        "part": "String",
+        "rwdb_rr_id": "Number",
+        "scalerank": "Number"
+      }
+    }
+  ],
+  "tilestats": {
+    "layerCount": 1,
+    "layers": [
+      {
+        "layer": "input",
+        "count": 25413,
+        "geometry": "LineString",
+        "attributeCount": 12,
+        "attributes": [
+          {
+            "attribute": "add",
+            "count": 2,
+            "type": "number",
+            "values": [
+              -1,
+              0
+            ],
+            "min": -1,
+            "max": 0
+          },
+          {
+            "attribute": "category",
+            "count": 7,
+            "type": "number",
+            "values": [
+              0,
+              1,
+              2,
+              3,
+              6,
+              7,
+              9
+            ],
+            "min": 0,
+            "max": 9
+          },
+          {
+            "attribute": "continent",
+            "count": 6,
+            "type": "string",
+            "values": [
+              "Africa",
+              "Asia",
+              "Europe",
+              "North America",
+              "Oceania",
+              "South America"
+            ]
+          },
+          {
+            "attribute": "disp_scale",
+            "count": 6,
+            "type": "string",
+            "values": [
+              "1:10m",
+              "1:20m",
+              "1:3m",
+              "1:40m",
+              "1:5m",
+              "1:80m"
+            ]
+          },
+          {
+            "attribute": "electric",
+            "count": 3,
+            "type": "number",
+            "values": [
+              0,
+              1,
+              2
+            ],
+            "min": 0,
+            "max": 2
+          },
+          {
+            "attribute": "featurecla",
+            "count": 2,
+            "type": "string",
+            "values": [
+              "Railroad",
+              "Railroad ferry"
+            ]
+          },
+          {
+            "attribute": "mult_track",
+            "count": 3,
+            "type": "number",
+            "values": [
+              0,
+              1,
+              2
+            ],
+            "min": 0,
+            "max": 2
+          },
+          {
+            "attribute": "natlscale",
+            "count": 7,
+            "type": "number",
+            "values": [
+              1,
+              10,
+              150,
+              20,
+              40,
+              5,
+              75
+            ],
+            "min": 1,
+            "max": 150
+          },
+          {
+            "attribute": "other_code",
+            "count": 4,
+            "type": "number",
+            "values": [
+              0,
+              1,
+              6,
+              7
+            ],
+            "min": 0,
+            "max": 7
+          },
+          {
+            "attribute": "part",
+            "count": 2,
+            "type": "string",
+            "values": [
+              "ne_1d4_north_america_dup",
+              "ne_global_not_north_america"
+            ]
+          },
+          {
+            "attribute": "rwdb_rr_id",
+            "count": 1000,
+            "type": "number",
+            "values": [
+              0,
+              1,
+              10,
+              100,
+              1000,
+              10000,
+              10001,
+              10002,
+              10003,
+              10004,
+              10005,
+              10006,
+              10007,
+              10008,
+              10009,
+              1001,
+              10010,
+              10011,
+              10012,
+              10013,
+              10014,
+              10015,
+              10016,
+              10017,
+              10018,
+              10019,
+              1002,
+              10020,
+              10021,
+              10022,
+              10023,
+              10024,
+              10025,
+              10026,
+              10027,
+              10028,
+              10029,
+              1003,
+              10030,
+              10031,
+              10032,
+              10033,
+              10034,
+              10035,
+              10036,
+              10037,
+              10038,
+              10039,
+              1004,
+              10040,
+              10041,
+              10042,
+              10043,
+              10044,
+              10045,
+              10046,
+              10047,
+              10048,
+              10049,
+              1005,
+              10050,
+              10051,
+              10052,
+              10053,
+              10054,
+              10055,
+              10056,
+              10057,
+              10058,
+              10059,
+              1006,
+              10060,
+              10061,
+              10062,
+              10063,
+              10064,
+              10065,
+              10066,
+              10067,
+              10068,
+              10069,
+              1007,
+              10070,
+              10071,
+              10072,
+              10073,
+              10074,
+              10075,
+              10076,
+              10077,
+              10078,
+              10079,
+              1008,
+              10080,
+              10081,
+              10082,
+              10083,
+              10084,
+              10085,
+              10086
+            ],
+            "min": 0,
+            "max": 25407
+          },
+          {
+            "attribute": "scalerank",
+            "count": 7,
+            "type": "number",
+            "values": [
+              10,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "min": 4,
+            "max": 10
+          }
+        ]
+      }
+    ]
+  }
+}

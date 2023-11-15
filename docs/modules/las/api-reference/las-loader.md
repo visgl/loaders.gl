@@ -14,7 +14,7 @@ The `LASLoader` parses a point cloud in the LASER file format.
 
 ## Usage
 
-```js
+```typescript
 import {LASLoader} from '@loaders.gl/las';
 import {load} from '@loaders.gl/core';
 

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 // Forked from https://github.com/chrelad/openlayers/blob/master/tests/Format/
 // under OpenLayers license (only used for test cases)
@@ -7,7 +8,7 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {CSWRecordsLoader, CSWRecords} from '@loaders.gl/wms';
+import {CSWRecordsLoader} from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
 // const CSW_REQUEST_2_0_2 =
@@ -53,7 +54,7 @@ const CSW_RESPONSE_2_0_2 =
   '</csw:SearchResults>' +
   '</csw:GetRecordsResponse>';
 test('CSWGetRecordsLoader', async (t) => {
-  const cswRecords = (await parse(CSW_RESPONSE_2_0_2, CSWRecordsLoader)) as CSWRecords;
+  const cswRecords = await parse(CSW_RESPONSE_2_0_2, CSWRecordsLoader);
   t.comment(JSON.stringify(cswRecords));
 
   const searchStatus = cswRecords.searchStatus;

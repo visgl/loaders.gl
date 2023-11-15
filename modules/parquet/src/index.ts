@@ -1,64 +1,78 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {
   ObjectRowTable,
   ObjectRowTableBatch,
   ColumnarTable,
-  ColumnarTableBatch
+  ColumnarTableBatch,
+  GeoJSONTable,
+  GeoJSONTableBatch
 } from '@loaders.gl/schema';
-import type {Table as ArrowTable} from 'apache-arrow';
+
+// import {ArrowTable, ArrowTableBatch} from '@loaders.gl/arrow';
 
 // ParquetLoader
 
+import {BlobFile} from '@loaders.gl/loader-utils';
 import {
   ParquetLoader as ParquetWorkerLoader,
-  ParquetLoader as ParquetColumnarWorkerLoader,
+  ParquetColumnarLoader as ParquetColumnarWorkerLoader,
   ParquetLoaderOptions
 } from './parquet-loader';
-import {parseParquet, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-rows';
+import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-rows';
 import {
-  parseParquetInColumns,
+  parseParquetFileInColumns,
   parseParquetFileInColumnarBatches
 } from './lib/parsers/parse-parquet-to-columns';
 
-import {parseParquetWasm, ParquetWasmLoaderOptions} from './lib/wasm/parse-parquet-wasm';
-import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
+// import type {ParquetWasmLoaderOptions} from './lib/wasm/parse-parquet-wasm';
+// import {parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
+// import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
 
-export {ParquetWorkerLoader, ParquetWasmWorkerLoader};
+export {ParquetWorkerLoader};
+// export {ParquetWasmWorkerLoader};
 
 /** ParquetJS table loader */
 export const ParquetLoader: LoaderWithParser<
-  ObjectRowTable,
-  ObjectRowTableBatch,
+  ObjectRowTable | GeoJSONTable,
+  ObjectRowTableBatch | GeoJSONTableBatch,
   ParquetLoaderOptions
 > = {
   ...ParquetWorkerLoader,
-  parse: parseParquet,
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+    return parseParquetFile(new BlobFile(arrayBuffer), options);
+  },
+  parseFile: parseParquetFile,
   parseFileInBatches: parseParquetFileInBatches
 };
 
 /** ParquetJS table loader */
-// @ts-expect-error
 export const ParquetColumnarLoader: LoaderWithParser<
   ColumnarTable,
   ColumnarTableBatch,
   ParquetLoaderOptions
 > = {
   ...ParquetColumnarWorkerLoader,
-  parse: parseParquetInColumns,
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+    return parseParquetFileInColumns(new BlobFile(arrayBuffer), options);
+  },
+  parseFile: parseParquetFileInColumns,
   parseFileInBatches: parseParquetFileInColumnarBatches
 };
 
-export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
-  ...ParquetWasmWorkerLoader,
-  parse: parseParquetWasm
-};
+// export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
+//   ...ParquetWasmWorkerLoader,
+//   parse: parseParquetWasm
+// };
 
 // ParquetWriter
 
 export {ParquetWriter as _ParquetWriter} from './parquet-writer';
-export {ParquetWasmWriter} from './parquet-wasm-writer';
+// export {ParquetWasmWriter} from './parquet-wasm-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 
@@ -73,11 +87,5 @@ export {
   convertParquetSchema as convertParquetToArrowSchema
 } from './lib/arrow/convert-schema-from-parquet';
 
-// TESTS
-export const _typecheckParquetLoader: LoaderWithParser = ParquetLoader;
-
-// Geo Metadata
-export {default as geoJSONSchema} from './lib/geo/geoparquet-schema';
-
-export type {GeoMetadata} from './lib/geo/decode-geo-metadata';
-export {getGeoMetadata, setGeoMetadata, unpackGeoMetadata} from './lib/geo/decode-geo-metadata';
+// Experimental
+export {BufferPolyfill, installBufferPolyfill} from './polyfills/buffer';

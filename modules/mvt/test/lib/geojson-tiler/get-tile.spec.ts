@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 /* eslint-disable no-console */
@@ -28,7 +29,6 @@ const square = [
 
 test('GeoJSONVT#getTile#us-states.json', async (t) => {
   const log = console.log;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   console.log = function () {};
 
   const geojson = await getJSON('us-states.json');

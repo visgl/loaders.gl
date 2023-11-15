@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {Mesh} from '../../types/category-mesh';
 import type {ColumnarTable, ArrowTable} from '../../types/category-table';

@@ -1,7 +1,13 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /**
  * "Debounces" batches and returns them in groups
  */
-export async function* timedBatchIterator<Batch>(batchIterator: AsyncIterable<Batch>, timeout) {
+export async function* timedBatchIterator<Batch>(
+  batchIterator: AsyncIterable<Batch>,
+  timeout: number
+): AsyncIterable<Batch[]> {
   let start = Date.now();
   let batches: Batch[] = [];
   for await (const batch of batchIterator) {

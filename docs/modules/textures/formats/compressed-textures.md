@@ -100,7 +100,7 @@ Data returned by any loaders.gl "image" category loader (including texture loade
 
 To use compressed textures in WebGL
 
-```js
+```typescript
 const texture = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -143,7 +143,7 @@ Support for compressed textures is a work in progress in the [WebGPU standard](h
 
 At the time of writing, only S3 texture compression has been specified:
 
-```js
+```typescript
     // BC compressed formats usable if "texture-compression-bc" is both
     // supported by the device/user agent and enabled in requestDevice.
     "bc1-rgba-unorm",

@@ -17,36 +17,36 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 
 ## I3S Layer type support
 
-| Layer Type           | Supported    | I3S Spec Link                                                                  |
-| -------------------- | ------------ | ------------------------------------------------------------------------------ |
-| 3DObject             | yes          | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3Dobject_ReadMe.md       |
-| Integrated Mesh      | yes          | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/IntegratedMesh_ReadMe.md |
-| Points               | no           | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/Point_ReadMe.md          |
-| PointClouds          | no           | https://github.com/Esri/i3s-spec/blob/master/docs/2.0/pcsl_ReadMe.md           |
-| Building Scene Layer | experimental | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md            |
+| Layer Type           | Supported      | I3S Spec Link                                                                  |
+| -------------------- | -------------- | ------------------------------------------------------------------------------ |
+| 3DObject             | ✅              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3Dobject_ReadMe.md       |
+| Integrated Mesh      | ✅              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/IntegratedMesh_ReadMe.md |
+| Points               | ❌              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/Point_ReadMe.md          |
+| PointClouds          | ❌              | https://github.com/Esri/i3s-spec/blob/master/docs/2.0/pcsl_ReadMe.md           |
+| Building Scene Layer | 🚧 experimental | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/BSL_ReadMe.md            |
 
 ## I3S Aspects support
 
 | Aspect                | Supported | I3S Spec Link                                                                                |
 | --------------------- | --------- | -------------------------------------------------------------------------------------------- |
-| Node pages            | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md                        |
-| Compressed attributes | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/compressedAttributes.cmn.md            |
-| PBR materials         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md            |
-| Feature attributes    | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/attributeStorageInfo.cmn.md            |
-| Texture Atlas         | yes       | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md#atlas-usage-and-regions |
+| Node pages            | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md                        |
+| Compressed attributes | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/compressedAttributes.cmn.md            |
+| PBR materials         | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md            |
+| Feature attributes    | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/attributeStorageInfo.cmn.md            |
+| Texture Atlas         | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md#atlas-usage-and-regions |
 
 ## Texture formats
 
 I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md
 
-| Texture                                        | Supported  |
-| ---------------------------------------------- | ---------- |
-| JPEG                                           | yes        |
-| PNG                                            | yes        |
-| .dds with DXT1 (no alpha)                      | yes        |
-| .dds with DXT5 (alpha channel)                 | yes        |
-| ktx-etc2                                       | not tested |
-| Basis Universal Texture format in Khronos KTX2 | yes        |
+| Texture                                        | Supported    |
+| ---------------------------------------------- | ------------ |
+| JPEG                                           | ✅            |
+| PNG                                            | ✅            |
+| .dds with DXT1 (no alpha)                      | ✅            |
+| .dds with DXT5 (alpha channel)                 | ✅            |
+| ktx-etc2                                       | 🚧 not tested |
+| Basis Universal Texture format in Khronos KTX2 | ✅            |
 
 ## Terms
 
@@ -72,7 +72,7 @@ A simple react app uses [`I3SLoader`](https://github.com/visgl/loaders.gl/blob/m
 
 [Example Codepen](https://codepen.io/belom88/pen/JjamLvx)
 
-```js
+```typescript
 import React, {Component} from 'react';
 
 import {StaticMap} from 'react-map-gl';
@@ -157,7 +157,7 @@ A more complex example can be found [here](https://github.com/visgl/loaders.gl/t
 
 Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
@@ -178,7 +178,7 @@ const viewport = new WebMercatorViewport({latitude, longitude, zoom, ...})
 tileset3d.update(viewport);
 
 // Viewport changes (pan zoom etc)
-tileset3d.update(viewport);
+tileset3d.selectTiles(viewport);
 
 // Visible tiles
 const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
@@ -237,15 +237,15 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 After content is loaded, the following fields are guaranteed. But different tiles may have different extra content fields.
 
-| Field                | Type         | Contents                                                                                                                                |
-| -------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                              |
-| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
-| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                           |
-| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                           |
+| Field                | Type         | Contents                                                                                                                              |
+| -------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `cartesianOrigin`    | `Number[3]`  | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                            |
+| `cartographicOrigin` | `Number[3]`  | "Origin" in lng/lat (center of tile's bounding volume)                                                                                |
+| `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                         |
+| `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                         |
 | `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/README.md) properties |
-| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                               |
-| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                               |
+| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                             |
+| `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                             |
 
 `attributes` contains following fields
 

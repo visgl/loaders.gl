@@ -1,4 +1,6 @@
-//
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {CryptoHash} from './crypto-hash';
 
 type CryptoHashOptions = {

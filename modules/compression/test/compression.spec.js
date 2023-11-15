@@ -158,7 +158,6 @@ test('compression#batched', async (t) => {
 });
 
 // WORKER TESTS
-
 test('gzip#worker', async (t) => {
   const {binaryData} = getData();
 

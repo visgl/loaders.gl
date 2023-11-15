@@ -1,12 +1,10 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import type {WorkerObject, WorkerOptions} from '../../types';
 import {assert} from '../env-utils/assert';
 import {isBrowser} from '../env-utils/globals';
-import {VERSION as __VERSION__} from '../env-utils/version';
-
-const NPM_TAG = 'beta'; // 'beta', or 'latest' on release-branch
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : NPM_TAG;
+import {VERSION, NPM_TAG} from '../env-utils/version';
 
 /**
  * Gets worker object's name (for debugging in Chrome thread inspector window)
@@ -43,7 +41,12 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
   // If URL is test, generate local loaders.gl url
   // @ts-ignore _workerType
   if (options._workerType === 'test') {
-    url = `modules/${worker.module}/dist/${workerFile}`;
+    if (isBrowser) {
+      url = `modules/${worker.module}/dist/${workerFile}`;
+    } else {
+      // In the test environment the ts-node loader requires TypeScript code
+      url = `modules/${worker.module}/src/workers/${worker.id}-worker-node.ts`;
+    }
   }
 
   // If url override is not provided, generate a URL to published version on npm CDN unpkg.com

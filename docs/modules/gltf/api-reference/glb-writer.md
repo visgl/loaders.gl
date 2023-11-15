@@ -14,7 +14,7 @@ Note: applications that want to encode GLB-formatted glTF files should normally 
 
 ## Usage
 
-```js
+```typescript
 import {GLBWriter} from '@loaders.gl/gltf';
 import {encodeSync} from '@loaders.gl/core';
 

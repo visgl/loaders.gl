@@ -1,19 +1,19 @@
 {
+  "private": true,
   "name": "wms-loaders-example",
   "description": "WMS loaders.",
   "version": "0.0.0",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.9.7",
-    "@deck.gl/geo-layers": "^8.9.7",
-    "@loaders.gl/core": "^4.0.0-alpha.8",
-    "@loaders.gl/wms": "^4.0.0-alpha.8",
+    "@deck.gl/core": "^8.9.28",
+    "@deck.gl/geo-layers": "^8.9.28",
+    "@loaders.gl/core": "^4.0.0",
+    "@loaders.gl/wms": "^4.0.0",
     "@monaco-editor/react": "^4.5.0",
     "deck.gl": "^8.9.0",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",

@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {isBrowser} from '@loaders.gl/loader-utils';
 
@@ -59,11 +60,10 @@ export function isImageFormatSupported(mimeType: string): boolean {
  * @todo Ideally polyfills should declare what formats they support, instead of storing that data here.
  */
 function checkNodeImageFormatSupport(mimeType: string): boolean {
-  /** @deprecated Remove these in 4.0 and rely on polyfills to inject them */
   const NODE_FORMAT_SUPPORT = ['image/png', 'image/jpeg', 'image/gif'];
-  // @ts-ignore
-  const {_parseImageNode, _imageFormatsNode = NODE_FORMAT_SUPPORT} = globalThis;
-  return Boolean(_parseImageNode) && _imageFormatsNode.includes(mimeType);
+  const imageFormatsNode = globalThis.loaders?.imageFormatsNode || NODE_FORMAT_SUPPORT;
+  const parseImageNode = globalThis.loaders?.parseImageNode;
+  return Boolean(parseImageNode) && imageFormatsNode.includes(mimeType);
 }
 
 /** Checks image format support synchronously.

@@ -1,7 +1,8 @@
 {
-  "name": "loaders.gl-benchmark-example",
-  "license": "MIT",
   "private": true,
+  "name": "loaders.gl-benchmark-example",
+  "version": "1.0.0",
+  "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
     "start-local": "webpack-dev-server --env.local --progress --hot --open"
@@ -13,7 +14,7 @@
     "@probe.gl/react-bench": "^4.0.2"
   },
   "devDependencies": {
-    "@loaders.gl/core": "^4.0.0-alpha.8",
+    "@loaders.gl/core": "^4.0.0",
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.4.0",
     "@babel/preset-react": "^7.0.0",

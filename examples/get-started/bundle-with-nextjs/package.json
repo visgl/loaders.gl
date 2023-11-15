@@ -5,16 +5,16 @@
   "private": true,
   "license": "MIT",
   "dependencies": {
-    "@deck.gl/geo-layers": "^8.9.7",
-    "@deck.gl/layers": "^8.9.7",
-    "@deck.gl/react": "^8.9.7",
-    "@loaders.gl/core": "^4.0.0-alpha.8",
-    "@loaders.gl/worker-utils": "^4.0.0-alpha.8",
+    "@deck.gl/geo-layers": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@deck.gl/react": "^8.9.28",
+    "@loaders.gl/core": "^4.0.0",
+    "@loaders.gl/worker-utils": "^4.0.0",
     "@next/font": "13.1.6",
     "@types/node": "18.11.18",
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",
-    "deck.gl": "^8.8.23",
+    "deck.gl": "^8.8.23"
   }, 
   "devDependencies": {
     "eslint": "8.33.0",

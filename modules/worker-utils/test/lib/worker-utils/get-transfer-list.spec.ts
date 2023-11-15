@@ -124,7 +124,7 @@ test('getTransferListForWriter - Should handle hested options.', async (t) => {
       }
     },
     four: {
-      five: function test1() {}
+      five: () => {}
     },
     six: {
       deep: {

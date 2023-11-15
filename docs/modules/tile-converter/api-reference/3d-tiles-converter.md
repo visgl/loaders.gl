@@ -8,7 +8,7 @@ The `Tiles3DConverter` class converts an I3S layer. It converts between the OGC 
 
 ## Usage
 
-```js
+```typescript
 import {Tiles3DConverter} from '@loaders.gl/tile-converter';
 
 const TILESET_URL =

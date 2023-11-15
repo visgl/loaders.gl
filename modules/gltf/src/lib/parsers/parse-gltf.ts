@@ -5,7 +5,8 @@ import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLB} from '../types/glb-types';
 import type {ParseGLBOptions} from './parse-glb';
 
-import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
+import type {ImageType, TextureLevel} from '@loaders.gl/schema';
+import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 
@@ -23,9 +24,8 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   loadBuffers?: boolean;
   decompressMeshes?: boolean;
   excludeExtensions?: string[];
-
   /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
-  postProcess?: false;
+  postProcess?: never;
 };
 
 /** Check if an array buffer appears to contain GLTF data */
@@ -198,13 +198,14 @@ async function loadImage(
   options,
   context: LoaderContext
 ) {
-  const {fetch, parse} = context;
-
   let arrayBuffer;
 
   if (image.uri && !image.hasOwnProperty('bufferView')) {
     const uri = resolveUrl(image.uri, options);
+
+    const {fetch} = context;
     const response = await fetch(uri);
+
     arrayBuffer = await response.arrayBuffer();
     image.bufferView = {
       data: arrayBuffer
@@ -219,16 +220,21 @@ async function loadImage(
   assert(arrayBuffer, 'glTF image has no data');
 
   // Call `parse`
-  let parsedImage = await parse(
+  let parsedImage = (await parseFromContext(
     arrayBuffer,
     [ImageLoader, BasisLoader],
-    {mimeType: image.mimeType, basis: options.basis || {format: selectSupportedBasisFormat()}},
+    {
+      ...options,
+      mimeType: image.mimeType,
+      basis: options.basis || {format: selectSupportedBasisFormat()}
+    },
     context
-  );
+  )) as ImageType | TextureLevel[][];
 
   if (parsedImage && parsedImage[0]) {
     parsedImage = {
       compressed: true,
+      // @ts-expect-error
       mipmaps: false,
       width: parsedImage[0].width,
       height: parsedImage[0].height,
@@ -240,5 +246,6 @@ async function loadImage(
 
   // Store the loaded image
   gltf.images = gltf.images || [];
+  // @ts-expect-error TODO - sort out image typing asap
   gltf.images[index] = parsedImage;
 }

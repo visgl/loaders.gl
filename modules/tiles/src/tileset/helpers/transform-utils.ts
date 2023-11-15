@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Matrix4, Vector3} from '@math.gl/core';

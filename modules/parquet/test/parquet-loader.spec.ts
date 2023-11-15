@@ -41,8 +41,11 @@ test('ParquetLoader#load alltypes_dictionary file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 2);
-  t.deepEqual(table.data, ALL_TYPES_DICTIONARY_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 2);
+    t.deepEqual(table.data, ALL_TYPES_DICTIONARY_EXPECTED);
+  }
   t.end();
 });
 
@@ -50,8 +53,11 @@ test('ParquetLoader#load alltypes_plain file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 8);
-  t.deepEqual(table.data, ALL_TYPES_PLAIN_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 8);
+    t.deepEqual(table.data, ALL_TYPES_PLAIN_EXPECTED);
+  }
   t.end();
 });
 
@@ -59,8 +65,11 @@ test('ParquetLoader#load alltypes_plain_snappy file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.snappy.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 2);
-  t.deepEqual(table.data, ALL_TYPES_PLAIN_SNAPPY_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 2);
+    t.deepEqual(table.data, ALL_TYPES_PLAIN_SNAPPY_EXPECTED);
+  }
   t.end();
 });
 
@@ -68,8 +77,11 @@ test('ParquetLoader#load binary file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/binary.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 12);
-  t.deepEqual(table.data, BINARY_EXPECTED());
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 12);
+    t.deepEqual(table.data, BINARY_EXPECTED());
+  }
   t.end();
 });
 
@@ -77,8 +89,11 @@ test('ParquetLoader#load binary file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/binary.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 12);
-  t.deepEqual(table.data, BINARY_EXPECTED());
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 12);
+    t.deepEqual(table.data, BINARY_EXPECTED());
+  }
   t.end();
 });
 
@@ -86,8 +101,11 @@ test('ParquetLoader#load dict file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/dict-page-offset-zero.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 39);
-  t.deepEqual(table.data, DICT_EXPECTED());
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 39);
+    t.deepEqual(table.data, DICT_EXPECTED());
+  }
   t.end();
 });
 
@@ -95,8 +113,11 @@ test('ParquetLoader#load list_columns file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/list_columns.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 3);
-  t.deepEqual(table.data, LIST_COLUMNS_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 3);
+    t.deepEqual(table.data, LIST_COLUMNS_EXPECTED);
+  }
   t.end();
 });
 
@@ -106,7 +127,10 @@ test('ParquetLoader#load nation file', async (t) => {
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
   t.ok(table);
-  t.equal(table.data.length, 25);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 25);
+  }
   t.end();
 });
 
@@ -114,8 +138,11 @@ test('ParquetLoader#load nested_lists file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nested_lists.snappy.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 3);
-  t.deepEqual(table.data, NESTED_LIST_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 3);
+    t.deepEqual(table.data, NESTED_LIST_EXPECTED);
+  }
   t.end();
 });
 
@@ -123,8 +150,11 @@ test('ParquetLoader#load nested_maps file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nested_maps.snappy.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 6);
-  t.deepEqual(table.data, NESTED_MAPS_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 6);
+    t.deepEqual(table.data, NESTED_MAPS_EXPECTED);
+  }
   t.end();
 });
 
@@ -132,8 +162,11 @@ test('ParquetLoader#load nonnullable file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nonnullable.impala.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 1);
-  t.deepEqual(table.data, NO_NULLABLE_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 1);
+    t.deepEqual(table.data, NO_NULLABLE_EXPECTED);
+  }
   t.end();
 });
 
@@ -141,8 +174,11 @@ test('ParquetLoader#load nullable file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nullable.impala.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 7);
-  t.deepEqual(table.data, NULLABLE_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 7);
+    t.deepEqual(table.data, NULLABLE_EXPECTED);
+  }
   t.end();
 });
 
@@ -150,8 +186,11 @@ test('ParquetLoader#load nulls file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nulls.snappy.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 8);
-  t.deepEqual(table.data, NULLS_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 8);
+    t.deepEqual(table.data, NULLS_EXPECTED);
+  }
   t.end();
 });
 
@@ -165,9 +204,12 @@ test('ParquetLoader#decimal files', async (t) => {
   ];
   for (const url of urls) {
     const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
-    t.deepEqual(table.data, DECIMAL_EXPECTED);
+    t.equal(table.shape, 'object-row-table');
+    if (table.shape === 'object-row-table') {
+      t.deepEqual(table.data, DECIMAL_EXPECTED);
+    }
   }
-  
+
   t.end();
 });
 
@@ -175,18 +217,22 @@ test('ParquetLoader#load repeated_no_annotation file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/repeated_no_annotation.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 6);
-  t.deepEqual(table.data, REPEATED_NO_ANNOTATION_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 6);
+    t.deepEqual(table.data, REPEATED_NO_ANNOTATION_EXPECTED);
+  }
   t.end();
 });
 
 test('ParquetLoader#load lz4_raw_compressed file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/lz4_raw_compressed.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
-  
-
-  t.equal(table.data.length, 4);
-  t.deepEqual(table.data, LZ4_RAW_COMPRESSED_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 4);
+    t.deepEqual(table.data, LZ4_RAW_COMPRESSED_EXPECTED);
+  }
   t.end();
 });
 
@@ -194,10 +240,13 @@ test('ParquetLoader#load lz4_raw_compressed_larger file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/lz4_raw_compressed_larger.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 10000);
-  // Compare only first and last items in data because file is huge.
-  t.deepEqual(table.data[0], LZ4_RAW_COMPRESSED_LARGER_FIRST_EXPECTED);
-  t.deepEqual(table.data[9999], LZ4_RAW_COMPRESSED_LARGER_LAST_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 10000);
+    // Compare only first and last items in data because file is huge.
+    t.deepEqual(table.data[0], LZ4_RAW_COMPRESSED_LARGER_FIRST_EXPECTED);
+    t.deepEqual(table.data[9999], LZ4_RAW_COMPRESSED_LARGER_LAST_EXPECTED);
+  }
   t.end();
 });
 
@@ -205,13 +254,15 @@ test('ParquetLoader#load non_hadoop_lz4_compressed file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/non_hadoop_lz4_compressed.parquet';
   const table = await load(url, ParquetLoader, {parquet: {url}, worker: false});
 
-  t.equal(table.data.length, 4);
-  t.deepEqual(table.data, NON_HADOOP_LZ4_COMPRESSED_EXPECTED);
+  t.equal(table.shape, 'object-row-table');
+  if (table.shape === 'object-row-table') {
+    t.equal(table.data.length, 4);
+    t.deepEqual(table.data, NON_HADOOP_LZ4_COMPRESSED_EXPECTED);
+  }
   t.end();
 });
 
 test('ParquetLoader#load', async (t) => {
-
   // Buffer is not defined issue in worker thread of browser.
   if (!isBrowser) {
     t.comment('SUPPORTED FILES with worker');

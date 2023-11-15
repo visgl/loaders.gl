@@ -2,6 +2,9 @@
 export {Tiles3DLoader} from './tiles-3d-loader';
 export {CesiumIonLoader} from './cesium-ion-loader';
 export {Tile3DSubtreeLoader} from './tile-3d-subtree-loader';
+export type {Tiles3DArchiveFileLoaderOptions} from './3d-tiles-archive-loader';
+export {Tiles3DArchiveFileLoader} from './3d-tiles-archive-loader';
+export {Tiles3DArchiveFileSystem} from './lib/filesystems/tiles-3d-archive-file-system';
 
 // WRITERS
 export {Tile3DWriter} from './tile-3d-writer';

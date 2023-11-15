@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -67,6 +68,7 @@ export default class App extends PureComponent {
     loading: true;
     metadata: string | '';
     error: string | '';
+    featureInfo: any;
   } = {
     // CURRENT VIEW POINT / CAMERA POSITIO
     viewState: INITIAL_VIEW_STATE,
@@ -174,7 +176,7 @@ export default class App extends PureComponent {
           onError={(error: Error) => this.setState({error: error.message})}
           controller={{type: MapController, maxPitch: 85}}
           getTooltip={({object}) =>
-            this.state.featureInfo && {
+            this.state?.featureInfo && {
               html: `<h2>Feature Info</h2><div>${this.state.featureInfo}</div>`,
               style: {
                 color: '#EEE',

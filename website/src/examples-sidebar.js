@@ -17,25 +17,40 @@
     },
     {
       type: 'category',
-      label: 'Loaders',
+      label: 'Geospatial Loaders',
       items: [
-        'textures',
-        // 'gltf',
-        'geospatial',
-        'wms',
-        'pointcloud'
+        'geoparquet',
+        // 'geopackage', sql.js bundling issue...
+        'flatgeobuf',
+        'geojson'
       ],
     },
     {
       type: 'category',
-      label: 'Tiled Loaders',
+      label: 'Geospatial Tile Loaders',
+      items: [
+        'pmtiles',
+        'wms'
+      ]
+    },
+    {
+      type: 'category',
+      label: '3D Tile Loaders',
       items: [
         'i3s',
-        'i3s-debug',
-        'i3s-arcgis',
+        // 'i3s-arcgis',
         '3d-tiles'
       ]
     },
+    {
+      type: 'category',
+      label: 'General Loaders',
+      items: [
+        'textures',
+        // 'gltf',
+        'pointcloud'
+      ],
+    }
     // {
     //   type: 'category',
     //   label: 'Benchmarks',

@@ -63,7 +63,8 @@ export default function getModule() {
     if (ENVIRONMENT_IS_WORKER) {
       scriptDirectory = require('path').dirname(scriptDirectory) + '/';
     } else {
-      scriptDirectory = __dirname + '/';
+      const dirname = typeof __dirname !== 'undefined' ? __dirname : '';
+      scriptDirectory = dirname + '/';
     }
     read_ = function shell_read(filename, binary) {
       var ret = tryParseAsDataURI(filename);

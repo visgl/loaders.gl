@@ -1,4 +1,5 @@
 // loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
 import {Schema} from '@loaders.gl/schema';
 import {ParquetRowGroup} from '@loaders.gl/parquet/parquetjs/schema/declare';

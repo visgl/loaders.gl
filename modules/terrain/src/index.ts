@@ -1,4 +1,5 @@
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {parseFromContext} from '@loaders.gl/loader-utils';
 import {parseQuantizedMesh} from './lib/parse-quantized-mesh';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
 
@@ -27,9 +28,10 @@ export async function parseTerrain(
     mimeType: 'application/x.image',
     image: {...options?.image, type: 'data'}
   };
-  const image = await context?.parse(arrayBuffer, loadImageOptions);
+  const image = await parseFromContext(arrayBuffer, [], loadImageOptions, context!);
   // Extend function to support additional mesh generation options (square grid or delatin)
   const terrainOptions = {...TerrainLoader.options.terrain, ...options?.terrain} as TerrainOptions;
+  // @ts-expect-error sort out image typing asap
   return makeTerrainMeshFromImage(image, terrainOptions);
 }
 

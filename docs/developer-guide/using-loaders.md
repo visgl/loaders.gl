@@ -19,7 +19,7 @@ data = await load(url, CSVLoader);
 ...
 ```
 
-## Specifying and Registering Loaders
+## Specifying Loaders
 
 As seen above can be specified directly in a call to `load` or any of the `parse` functions:
 
@@ -34,7 +34,49 @@ const pointCloud = await load(url, [PCDLoader, LASLoader]);
 ...
 ```
 
-Loaders can also be registered globally. To register a loader, use `registerLoaders`:
+### Loaders and TypeScript
+
+Since v4.0, all loaders are typed, meaning that loaders.gl can infer types for returned data and loader options from the supplied loader
+
+
+Note that type inference only works when single loader is provided:
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {PCDLoader} from '@loaders.gl/pcd';
+import {LASLoader} from '@loaders.gl/las';
+
+// Single loader infers type
+const pcdPointCloud = await load(url, PCDLoader); // => type PCDMesh
+const lasPointCloud = await load(url, LASLoader); // => type LASMesh
+
+const pointCloud = await load(url, [PCDLoader, LASLoader]); // => type unknown
+```
+
+Note that you can use selectLoader and a switch statement to remain typed
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {PCDLoader} from '@loaders.gl/pcd';
+import {LASLoader} from '@loaders.gl/las';
+
+const loader = await selectLoader(url, [PCDLoader, LASLoader]);
+switch (loader.id) {
+  case: 'pcd':
+    const pcdPointCloud = await load(url, PCDLoader); // => type PCDMesh
+    break;
+  case 'las':
+    const lasPointCloud = await load(url, LASLoader); // => type LASMesh
+    break;
+}
+```
+
+### Registering Loaders
+
+Loaders can also be registered globally. To register a loader, use `registerLoaders()`. 
+Registered loaders will be included in loader selection if you call any form of 
+`parse()` or `load()` that does not specify a single loader.
+
 
 ```typescript
 import {registerLoaders, load} from '@loaders.gl/core';
@@ -44,6 +86,15 @@ registerLoaders([CSVLoader]);
 
 data = await load('url.csv'); // => CSVLoader selected from pre-registered loaders
 ```
+
+Note that in this case the loader type is not known and the return type will be unknown.
+
+:::caution
+Relying on global state (such as set by `registerLoaders()`) is not a
+recommended application development practice.
+It sometimes causes problems later, as it tends to create unexpected dependencies between distant parts of the code.
+The mechanism is provided but the choice to use it is yours.
+:::
 
 ## Selecting Loaders
 

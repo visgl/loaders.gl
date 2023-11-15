@@ -12,6 +12,11 @@ const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/Tileset/tileset.jso
 
 test('Tileset3D#traverser base class', async (t) => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  if (tilesetJson.shape !== 'tileset3d') {
+    t.fail('tileset');
+    t.end();
+    return;
+  }
 
   // Create Tileset3D to have initialized Tile3Ds tree
   const tileset = new Tileset3D(tilesetJson);

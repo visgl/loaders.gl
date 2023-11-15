@@ -13,7 +13,7 @@ export type GLTFWithBuffers = {
   images?: GLTFExternalImage[];
 };
 
-type GLTFExternalBuffer = {
+export type GLTFExternalBuffer = {
   arrayBuffer: ArrayBuffer;
   byteOffset: number;
   byteLength: number;
@@ -28,6 +28,10 @@ type GLTFExternalImage =
       height: number;
       data: Uint8Array;
     };
+
+export type FeatureTableJson = {
+  [key: string]: any[];
+};
 
 export type {
   GLTF,

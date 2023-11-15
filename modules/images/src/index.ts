@@ -25,5 +25,8 @@ export {
 export {getSupportedImageFormats} from './lib/category-api/image-format';
 export {isImageFormatSupported} from './lib/category-api/image-format';
 
-// DEPRECATED - Remove in V4 (fix dependency in luma.gl)
-export {loadImage} from './lib/texture-api/load-image';
+// REMOVED
+/** @deprecated Temporary placeholder to prevent builds from breaking */
+export function loadImage() {
+  throw new Error('loadImage has moved to @loaders.gl/textures');
+}

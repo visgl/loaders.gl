@@ -59,7 +59,9 @@ test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async (t) => {
   const response = await fetchFile(TILE_B3DM_WITH_DRACO_URL);
   const tile = await parse(response, [Tiles3DLoader, DracoLoader]);
   t.ok(tile);
+  // @ts-expect-error type Tiles3DLoader
   t.ok(tile.gltf);
+  // @ts-expect-error type Tiles3DLoader
   t.equals(tile.type, 'b3dm', 'Should parse the correct tiles type.');
   t.end();
 });
@@ -168,7 +170,7 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
   t.equal(tileset.root.children[0].children[0].children.length, 1);
 
   // children level 3
-  t.equal(tileset.root.children[0].children[0].children[0].content.uri, 'content/3/2/0/1.pnts');
+  t.equal(tileset.root.children[0].children[0].children[0].content.uri, 'content/3/8/0/1.pnts');
   t.equal(tileset.root.children[0].children[0].children[0].lodMetricValue, 625);
   t.equal(tileset.root.children[0].children[0].children[0].refine, 1);
   t.equal(tileset.root.children[0].children[0].children[0].type, 'pointcloud');

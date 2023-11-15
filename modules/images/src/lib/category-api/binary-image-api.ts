@@ -1,11 +1,6 @@
 // Attributions
 // * Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
-// TODO: make these functions work for Node.js buffers?
-// Quarantine references to Buffer to prevent bundler from adding big polyfills
-// import {bufferToArrayBuffer} from '../node/buffer-to-array-buffer';
-// TODO - this should be handled in @loaders.gl/polyfills
-
 import {getISOBMFFMediaType} from './parse-isobmff-binary';
 
 /** MIME type, width and height extracted from binary compressed image data */

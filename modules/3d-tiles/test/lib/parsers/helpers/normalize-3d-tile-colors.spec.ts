@@ -2,17 +2,18 @@
 import test from 'tape-promise/tape';
 import {GL} from '@loaders.gl/math';
 import {normalize3DTileColorAttribute} from '../../../../src/lib/parsers/helpers/normalize-3d-tile-colors';
+import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 
-const TEST_CASES = [
+const TEST_CASES: {tile: Tiles3DTileContent; colors; batchTable; expected; message: string}[] = [
   {
-    tile: {},
+    tile: {shape: 'tile3d'},
     colors: null,
     batchTable: null,
     expected: null,
     message: 'Should return null when no tile / colors'
   },
   {
-    tile: {pointCount: 1},
+    tile: {shape: 'tile3d', pointCount: 1},
     colors: new Uint8ClampedArray([250, 150, 50]),
     batchTable: null,
     expected: {
@@ -24,7 +25,7 @@ const TEST_CASES = [
     message: 'Size should be 3 for RGB format'
   },
   {
-    tile: {pointCount: 1},
+    tile: {shape: 'tile3d', pointCount: 1},
     colors: new Uint8ClampedArray([250, 150, 50, 255]),
     batchTable: null,
     expected: {
