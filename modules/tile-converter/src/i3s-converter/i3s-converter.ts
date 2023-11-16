@@ -455,6 +455,7 @@ export default class I3SConverter {
       this.options.maxDepth
     );
     this.progresses[PROGRESS_PHASE1_COUNT].stopMonitoring();
+    console.log(`[finalizing conversion]`); // eslint-disable-line
 
     this.layers0!.attributeStorageInfo = this.attributeMetadataInfo.attributeStorageInfo;
     this.layers0!.fields = this.attributeMetadataInfo.fields;
