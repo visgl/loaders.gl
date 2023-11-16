@@ -13,7 +13,7 @@ export type TessellationWorkerOptions = {
  * Worker for tessellating geometries
  */
 export const TessellationWorker = {
-  id: 'tesselation',
+  id: 'tessellation',
   name: 'Tesselate',
   module: 'arrow',
   version: VERSION,
