@@ -5,17 +5,17 @@ import {processOnWorker} from '@loaders.gl/worker-utils';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type TesselationWorkerOptions = {
-  operation: 'tesselate';
+export type TessellationWorkerOptions = {
+  operation: 'tessellate';
 };
 
 /**
- * Worker for Zlib real-time compression and decompression
+ * Worker for tessellating geometries
  */
-export const TesselationWorker = {
+export const TessellationWorker = {
   id: 'tesselation',
-  name: 'tesselation',
-  module: 'tesselation',
+  name: 'Tesselate',
+  module: 'arrow',
   version: VERSION,
   options: {}
 };
@@ -23,9 +23,9 @@ export const TesselationWorker = {
 /**
  * Provide type safety
  */
-export function compressOnWorker(
+export function tessellateOnWorker(
   data: ArrayBuffer,
-  options: TesselationWorkerOptions
+  options: TessellationWorkerOptions
 ): Promise<ArrayBuffer> {
-  return processOnWorker(TesselationWorker, data, options);
+  return processOnWorker(TessellationWorker, data, options);
 }

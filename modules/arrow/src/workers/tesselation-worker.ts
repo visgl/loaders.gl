@@ -7,28 +7,28 @@ createWorker(async (data, options = {}) => {
 
   // @ts-ignore
   switch (operation) {
-    case 'tesselate':
-      return await tesselateBatch(data);
+    case 'tessellate':
+      return await tessellateBatch(data);
     default:
       throw new Error('invalid option');
   }
 });
 
-function getOperation(operation: string): 'tesselate' {
+function getOperation(operation: string): 'tessellate' {
   switch (operation) {
-    case 'tesselate':
-      return 'tesselate';
+    case 'tessellate':
+      return 'tessellate';
     default:
       throw new Error(
-        `@loaders.gl/compression: Unsupported operation ${operation}. Expected 'compress' or 'decompress'`
+        `TesselationWorker: Unsupported operation ${operation}. Expected 'tessellate'`
       );
   }
 }
 
-function tesselateBatch(data?) {
+function tessellateBatch(data?) {
   // Parse any WKT/WKB geometries
-
   // Build binary geometries
-
-  // Call earcut and tesselate
+  // Call earcut and tessellate
+  console.error('TessellationWorker: tessellating batch', data);
+  return {};
 }

@@ -1,1 +1,1 @@
-import './compression-worker';
+import './tesselation-worker';
