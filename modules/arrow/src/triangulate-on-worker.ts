@@ -8,12 +8,16 @@ import {processOnWorker} from '@loaders.gl/worker-utils';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type TriangulationWorkerInput = TriangulateInput | {operation: 'test'; data: any};
-export type TriangulationWorkerOutput = TriangulateResult | {operation: 'test'; data: any};
+export type TriangulationWorkerInput =
+  | ({operation: 'triangulate'} & TriangulateInput)
+  | {operation: 'test'; data: any};
+
+export type TriangulationWorkerOutput =
+  | ({operation: 'triangulate'} & TriangulateResult)
+  | {operation: 'test'; data: any};
 
 /** Input data for operation: 'triangulate' */
 export type TriangulateInput = {
-  operation: 'triangulate';
   polygonIndices: Uint16Array;
   primitivePolygonIndices: Int32Array;
   flatCoordinateArray: Float64Array;
@@ -40,8 +44,8 @@ export const TriangulationWorker = {
  * Provide type safety
  */
 export function triangulateOnWorker(
-  data: TriangulationWorkerInput,
+  data: TriangulateInput,
   options: WorkerOptions = {}
-): Promise<TriangulationWorkerOutput> {
-  return processOnWorker(TriangulationWorker, data, options);
+): Promise<TriangulateResult> {
+  return processOnWorker(TriangulationWorker, {...data, operation: 'triangulate'}, options);
 }

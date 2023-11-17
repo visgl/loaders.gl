@@ -278,6 +278,47 @@ async function getBinaryGeometriesFromChunk(
 }
 
 /**
+ * get binary polygons from geoarrow polygon column
+ * @param chunk one chunk of geoarrow polygon column
+ * @param geoEncoding the geo encoding of the geoarrow polygon column
+ * @returns BinaryGeometryContent
+ */
+function getBinaryPolygonsFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
+  const binaryGeometry = getUntriangulatedBinaryPolygonsFromChunk(chunk, geoEncoding);
+  const {geometryIndicies, geomOffset, flatCoordinateArray, nDim} = binaryGeometry;
+  const triangles = getTriangleIndices(geometryIndicies, geomOffset, flatCoordinateArray, nDim);
+  return {
+    ...binaryGeometry,
+    triangles
+  };
+}
+
+/**
+ * get binary polygons from geoarrow polygon column
+ * @param chunk one chunk of geoarrow polygon column
+ * @param geoEncoding the geo encoding of the geoarrow polygon column
+ * @returns BinaryGeometryContent
+ */
+export async function getBinaryPolygonsFromChunkAsync(
+  chunk: arrow.Data,
+  geoEncoding: string
+): Promise<BinaryGeometryContent> {
+  const binaryGeometry = getUntriangulatedBinaryPolygonsFromChunk(chunk, geoEncoding);
+  const {geometryIndicies, geomOffset, flatCoordinateArray, nDim} = binaryGeometry;
+  const triangulationOutput = await triangulateOnWorker({
+    polygonIndices: geometryIndicies,
+    primitivePolygonIndices: geomOffset,
+    flatCoordinateArray,
+    nDim
+  });
+
+  return {
+    ...binaryGeometry,
+    triangles: triangulationOutput.triangleIndices
+  };
+}
+
+/**
  * get triangle indices. Allows deck.gl to skip performing costly triangulation on main thread.
  * @param polygonIndices Indices within positions of the start of each simple Polygon
  * @param primitivePolygonIndices Indices within positions of the start of each primitive Polygon/ring
@@ -381,8 +422,9 @@ function getBinaryPolygonsFromChunk(
 
   return {
     featureIds,
-    flatCoordinateArray,
     nDim,
+    flatCoordinateArray,
+
     geomOffset,
     geometryIndicies,
     ...(options?.triangulate && triangles ? {triangles} : {})
