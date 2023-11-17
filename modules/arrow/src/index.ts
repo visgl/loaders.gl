@@ -78,3 +78,7 @@ export {
 export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';
 
 export {updateBoundsFromGeoArrowSamples} from './geoarrow/get-arrow-bounds';
+
+// EXPERIMENTAL
+
+export {TriangulationWorker, triangulateOnWorker} from './triangulate-on-worker';

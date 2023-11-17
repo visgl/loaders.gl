@@ -39,10 +39,11 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle -- --env=dev",
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-triangulation-worker",
     "build-bundle": "ocular-bundle ./src/index.ts",
-    "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-triangulation-worker": "esbuild src/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "pre-build2": "cp fixed-package.json ../../node_modules/apache-arrow/package.json && npm run build-bundle && npm run build-worker",
+    "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
