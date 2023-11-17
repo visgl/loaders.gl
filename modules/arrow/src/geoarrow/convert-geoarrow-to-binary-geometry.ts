@@ -7,6 +7,7 @@ import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 import {TypedArray} from '@loaders.gl/loader-utils';
+import {triangulateOnWorker} from '../triangulate-on-worker';
 
 /**
  * Binary geometry type
@@ -45,7 +46,7 @@ type BinaryGeometryContent = {
   geomOffset: Int32Array;
   /** Array of geometry indicies: the start index of each geometry */
   geometryIndicies: Uint16Array;
-  /** (Optional) indices of triangels returned from polygon tessellation (Polygon only) */
+  /** (Optional) indices of triangels returned from polygon triangulation (Polygon only) */
   triangles?: Uint32Array;
   /** (Optional) array of mean center of each geometry */
   meanCenters?: Float64Array;
@@ -79,11 +80,11 @@ export type BinaryGeometriesFromArrowOptions = {
  * @param options options for getting binary geometries {meanCenter: boolean}
  * @returns BinaryDataFromGeoArrow
  */
-export function getBinaryGeometriesFromArrow(
+export async function getBinaryGeometriesFromArrow(
   geoColumn: arrow.Vector,
   geoEncoding: GeoArrowEncoding,
   options?: BinaryGeometriesFromArrowOptions
-): BinaryDataFromGeoArrow {
+): Promise<BinaryDataFromGeoArrow> {
   const featureTypes = {
     polygon: geoEncoding === 'geoarrow.multipolygon' || geoEncoding === 'geoarrow.polygon',
     point: geoEncoding === 'geoarrow.multipoint' || geoEncoding === 'geoarrow.point',
@@ -95,7 +96,7 @@ export function getBinaryGeometriesFromArrow(
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
 
-  chunks.forEach((chunk) => {
+  for (const chunk of chunks) {
     const {featureIds, flatCoordinateArray, nDim, geomOffset, triangles} =
       getBinaryGeometriesFromChunk(chunk, geoEncoding, options);
 
@@ -111,6 +112,7 @@ export function getBinaryGeometriesFromArrow(
         size: nDim
       },
       featureIds: {value: featureIds, size: 1},
+      // eslint-disable-next-line no-loop-func
       properties: [...Array(chunk.length).keys()].map((i) => ({
         index: i + globalFeatureIdOffset
       }))
@@ -150,7 +152,7 @@ export function getBinaryGeometriesFromArrow(
     });
 
     bounds = updateBoundsFromGeoArrowSamples(flatCoordinateArray, nDim, bounds);
-  });
+  }
 
   return {
     binaryGeometries,
@@ -255,7 +257,7 @@ function getMeanCentersFromGeometry(
  * @param options options for getting binary geometries
  * @returns BinaryGeometryContent
  */
-function getBinaryGeometriesFromChunk(
+async function getBinaryGeometriesFromChunk(
   chunk: arrow.Data,
   geoEncoding: GeoArrowEncoding,
   options?: BinaryGeometriesFromArrowOptions
