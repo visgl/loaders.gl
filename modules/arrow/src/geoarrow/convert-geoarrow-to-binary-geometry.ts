@@ -7,7 +7,7 @@ import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 import {TypedArray} from '@loaders.gl/loader-utils';
-import {tessellateOnWorker} from '../tessellate-on-worker';
+import {triangulateOnWorker} from '../triangulate-on-worker';
 
 /**
  * Binary data from geoarrow column and can be used by e.g. deck.gl GeojsonLayer
@@ -37,7 +37,7 @@ type BinaryGeometryContent = {
   geomOffset: Int32Array;
   /** Array of geometry indicies: the start index of each geometry */
   geometryIndicies: Uint16Array;
-  /** (Optional) indices of triangels returned from polygon tessellation (Polygon only) */
+  /** (Optional) indices of triangels returned from polygon triangulation (Polygon only) */
   triangles?: Uint32Array;
   /** (Optional) array of mean center of each geometry */
   meanCenters?: Float64Array;
@@ -354,8 +354,8 @@ async function getBinaryPolygonsFromChunk(
       flatCoordinateArray,
       nDim
     };
-    const triangulationOutput = await tessellateOnWorker(triangulationInput, {
-      operation: 'tessellate'
+    const triangulationOutput = await triangulateOnWorker(triangulationInput, {
+      operation: 'triangulate'
     });
     return {
       featureIds,

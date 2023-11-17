@@ -5,26 +5,26 @@ import {processOnWorker} from '@loaders.gl/worker-utils';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type TessellationWorkerOptions = {
-  operation: 'tessellate';
+export type TriangulationWorkerOptions = {
+  operation: 'triangulate';
 };
 
-export type TessellationWorkerInput = {
+export type TriangulationWorkerInput = {
   polygonIndices: Uint16Array;
   primitivePolygonIndices: Int32Array;
   flatCoordinateArray: Float64Array;
   nDim: number;
 };
 
-export type TessellationWorkerOutput = TessellationWorkerInput & {
+export type TriangulationWorkerOutput = TriangulationWorkerInput & {
   triangleIndices: Uint32Array;
 };
 
 /**
  * Worker for tessellating geometries. Normally called through tesselateOnWorker
  */
-export const TessellationWorker = {
-  id: 'tessellation',
+export const TriangulationWorker = {
+  id: 'triangulation',
   name: 'Tesselate',
   module: 'arrow',
   version: VERSION,
@@ -34,9 +34,9 @@ export const TessellationWorker = {
 /**
  * Provide type safety
  */
-export function tessellateOnWorker(
-  data: TessellationWorkerInput,
-  options: TessellationWorkerOptions
-): Promise<TessellationWorkerOutput> {
-  return processOnWorker(TessellationWorker, data, options);
+export function triangulateOnWorker(
+  data: TriangulationWorkerInput,
+  options: TriangulationWorkerOptions
+): Promise<TriangulationWorkerOutput> {
+  return processOnWorker(TriangulationWorker, data, options);
 }

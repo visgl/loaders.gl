@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {/* tessellateOnWorker, */ TessellationWorker} from '@loaders.gl/arrow';
+import {/* triangulateOnWorker, */ TriangulationWorker} from '@loaders.gl/arrow';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 // import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 // import {getData, compareArrayBuffers} from './utils/test-utils';
@@ -9,15 +9,15 @@ import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 // const TEST_DATA = getData();
 
 // WORKER TESTS
-test('tessellateOnWorker#worker', async (t) => {
+test('triangulateOnWorker#worker', async (t) => {
   const sourceData = new ArrayBuffer(100);
 
-  const tessellatedData = await processOnWorker(TessellationWorker, sourceData, {
+  const triangulatedData = await processOnWorker(TriangulationWorker, sourceData, {
     operation: 'test',
     _workerType: 'test'
   });
 
-  t.ok(tessellatedData, 'Tesselation worker echoed input data');
+  t.ok(triangulatedData, 'Tesselation worker echoed input data');
 
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});

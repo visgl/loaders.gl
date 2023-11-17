@@ -81,4 +81,4 @@ export {updateBoundsFromGeoArrowSamples} from './geoarrow/get-arrow-bounds';
 
 // EXPERIMENTAL
 
-export {TessellationWorker, tessellateOnWorker} from './tessellate-on-worker';
+export {TriangulationWorker, triangulateOnWorker} from './triangulate-on-worker';

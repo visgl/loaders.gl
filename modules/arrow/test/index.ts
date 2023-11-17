@@ -8,4 +8,4 @@ import './geoarrow/convert-geoarrow-to-binary-geometry.spec';
 import './geoarrow/convert-geoarrow-to-geojson.spec';
 import './geoarrow/get-arrow-bounds.spec';
 
-import './tessellate-on-worker.spec';
+import './triangulate-on-worker.spec';

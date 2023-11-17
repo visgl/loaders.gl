@@ -1,0 +1,1 @@
+import './triangulation-worker';
