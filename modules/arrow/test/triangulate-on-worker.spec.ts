@@ -20,9 +20,13 @@ test('TriangulationWorker#plumbing', async (t) => {
 
   t.rejects(
     () =>
-      processOnWorker(TriangulationWorker, {operation: 'error'}, {
-        _workerType: 'test'
-      }),
+      processOnWorker(
+        TriangulationWorker,
+        {operation: 'error'},
+        {
+          _workerType: 'test'
+        }
+      ),
     'Tesselation worker throws on incorrect operation'
   );
 
