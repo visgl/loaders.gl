@@ -47,7 +47,7 @@
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/compression-worker.ts --outfile=dist/compression-worker.js --target=esnext --bundle --minify --sourcemap --external:{fs,path,crypto} --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/compression-worker-node.ts --outfile=dist/compression-worker-node.js --platform=node --target=node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/compression-worker-node.ts --outfile=dist/compression-worker-node.js --platform=node --format=esm --target=node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.2.0-alpha.5",

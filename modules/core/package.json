@@ -52,7 +52,7 @@
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --format=esm --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.2.0-alpha.5",

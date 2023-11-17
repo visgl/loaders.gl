@@ -46,7 +46,7 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-workers": "npm run build-basis-worker && npm run build-basis-worker-node && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-worker-node",
     "build-basis-worker": "esbuild src/workers/basis-worker.ts --outfile=dist/basis-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-basis-worker-node": "esbuild src/workers/basis-worker-node.ts --outfile=dist/basis-worker-node.js --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-basis-worker-node": "esbuild src/workers/basis-worker-node.ts --outfile=dist/basis-worker-node.js --format=esm --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-ktx2-basis-writer-worker": "esbuild src/workers/ktx2-basis-writer-worker.ts --outfile=dist/ktx2-basis-writer-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-ktx2-basis-writer-worker-node": "esbuild src/workers/ktx2-basis-writer-worker-node.ts --outfile=dist/ktx2-basis-writer-worker-node.js --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-npy-worker": "esbuild src/workers/npy-worker.ts --outfile=dist/npy-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
