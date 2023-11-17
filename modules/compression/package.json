@@ -43,7 +43,7 @@
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker && npm run build-worker-node",
     "build-bundle": "ocular-bundle ./src/index.ts",
     "build-worker": "esbuild src/workers/compression-worker.ts --outfile=dist/compression-worker.js --target=esnext --bundle --minify --sourcemap --external:{fs,path,crypto} --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/compression-worker-node.ts --outfile=dist/compression-worker-node.js --platform=node --target=node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/compression-worker-node.ts --outfile=dist/compression-worker-node.cjs --platform=node --target=node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",

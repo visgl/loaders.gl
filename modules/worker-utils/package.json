@@ -47,7 +47,7 @@
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker-node",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.cjs --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1"
