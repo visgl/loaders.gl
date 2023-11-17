@@ -1577,7 +1577,7 @@ async function generateCompressedGeometry(
       },
       ['draco-writer']: {
         // We need to load local fs workers because nodejs can't load workers from the Internet
-        workerUrl: './modules/draco/dist/draco-writer-worker-node.js'
+        workerUrl: './modules/draco/dist/draco-writer-worker-node.cjs'
       }
     }
   );

@@ -27,7 +27,7 @@ export function getWorkerName(worker: WorkerObject): string {
 export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
   const workerOptions = options[worker.id] || {};
 
-  const workerFile = isBrowser ? `${worker.id}-worker.js` : `${worker.id}-worker-node.js`;
+  const workerFile = isBrowser ? `${worker.id}-worker.js` : `${worker.id}-worker-node.cjs`;
 
   let url = workerOptions.workerUrl;
 

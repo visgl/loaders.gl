@@ -37,19 +37,19 @@ export class DepsInstaller {
     await writeFile(depsPath, new Uint8Array(fileMap['geoids/egm2008-5.pgm']), 'egm2008-5.pgm');
 
     console.log('Installing "I3S Content Loader" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('i3s', 'i3s-content-worker-node.js');
+    await this.installFromNpm('i3s', 'i3s-content-worker-node.cjs');
 
     console.log('Installing "Draco Loader" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('draco', 'draco-worker-node.js');
+    await this.installFromNpm('draco', 'draco-worker-node.cjs');
 
     console.log('Installing "Draco Writer" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('draco', 'draco-writer-worker-node.js');
+    await this.installFromNpm('draco', 'draco-writer-worker-node.cjs');
 
     console.log('Installing "Basis Loader" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', 'basis-worker-node.js');
+    await this.installFromNpm('textures', 'basis-worker-node.cjs');
 
     console.log('Installing "KTX2 Basis Writer" worker'); // eslint-disable-line no-console
-    await this.installFromNpm('textures', 'ktx2-basis-writer-worker-node.js');
+    await this.installFromNpm('textures', 'ktx2-basis-writer-worker-node.cjs');
 
     console.log('Installing "Draco decoder" library'); // eslint-disable-line no-console
     await this.installFromUrl(

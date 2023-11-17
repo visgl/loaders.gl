@@ -45,9 +45,9 @@
     "build-bundle": "ocular-bundle ./src/index.ts",
     "build-workers": "npm run build-basis-worker && npm run build-basis-worker-node && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-worker-node",
     "build-basis-worker": "esbuild src/workers/basis-worker.ts --outfile=dist/basis-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-basis-worker-node": "esbuild src/workers/basis-worker-node.ts --outfile=dist/basis-worker-node.js --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-basis-worker-node": "esbuild src/workers/basis-worker-node.ts --outfile=dist/basis-worker-node.cjs --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-ktx2-basis-writer-worker": "esbuild src/workers/ktx2-basis-writer-worker.ts --outfile=dist/ktx2-basis-writer-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-ktx2-basis-writer-worker-node": "esbuild src/workers/ktx2-basis-writer-worker-node.ts --outfile=dist/ktx2-basis-writer-worker-node.js --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-ktx2-basis-writer-worker-node": "esbuild src/workers/ktx2-basis-writer-worker-node.ts --outfile=dist/ktx2-basis-writer-worker-node.cjs --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-npy-worker": "esbuild src/workers/npy-worker.ts --outfile=dist/npy-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-compressed-texture-worker": "esbuild src/workers/compressed-texture-worker.ts --target=esnext --bundle --outfile=dist/compressed-texture-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-crunch-worker": "esbuild src/workers/crunch-worker.ts --outfile=dist/crunch-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\""
