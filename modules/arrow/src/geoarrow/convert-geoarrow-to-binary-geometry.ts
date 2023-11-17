@@ -7,7 +7,7 @@ import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 import {TypedArray} from '@loaders.gl/loader-utils';
-import {TriangulateResult, triangulateOnWorker} from '../triangulate-on-worker';
+import {triangulateOnWorker} from '../triangulate-on-worker';
 
 /**
  * Binary geometry type
