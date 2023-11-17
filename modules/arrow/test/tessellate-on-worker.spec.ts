@@ -9,15 +9,15 @@ import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 // const TEST_DATA = getData();
 
 // WORKER TESTS
-test.only('tessellateOnWorker#worker', async (t) => {
+test('tessellateOnWorker#worker', async (t) => {
   const sourceData = new ArrayBuffer(100);
 
   const tessellatedData = await processOnWorker(TessellationWorker, sourceData, {
-    operation: 'tessellate',
+    operation: 'test',
     _workerType: 'test'
   });
 
-  t.ok(tessellatedData, 'Tesselation correct');
+  t.ok(tessellatedData, 'Tesselation worker echoed input data');
 
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});

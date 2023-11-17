@@ -9,8 +9,19 @@ export type TessellationWorkerOptions = {
   operation: 'tessellate';
 };
 
+export type TessellationWorkerInput = {
+  polygonIndices: Uint16Array;
+  primitivePolygonIndices: Int32Array;
+  flatCoordinateArray: Float64Array;
+  nDim: number;
+};
+
+export type TessellationWorkerOutput = TessellationWorkerInput & {
+  triangleIndices: Uint32Array;
+};
+
 /**
- * Worker for tessellating geometries
+ * Worker for tessellating geometries. Normally called through tesselateOnWorker
  */
 export const TessellationWorker = {
   id: 'tessellation',
@@ -24,8 +35,8 @@ export const TessellationWorker = {
  * Provide type safety
  */
 export function tessellateOnWorker(
-  data: ArrayBuffer,
+  data: TessellationWorkerInput,
   options: TessellationWorkerOptions
-): Promise<ArrayBuffer> {
+): Promise<TessellationWorkerOutput> {
   return processOnWorker(TessellationWorker, data, options);
 }

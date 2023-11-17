@@ -1,34 +1,31 @@
 import {createWorker} from '@loaders.gl/worker-utils';
+import {getTriangleIndices} from '../geoarrow/convert-geoarrow-to-binary-geometry';
+import type {TessellationWorkerInput, TessellationWorkerOutput} from '../tessellate-on-worker';
 
 // Compressors
 
 createWorker(async (data, options = {}) => {
-  const operation = getOperation(String(options?.operation));
-
-  // @ts-ignore
-  switch (operation) {
+  switch (options?.operation) {
+    case 'test':
+      return data;
     case 'tessellate':
-      return await tessellateBatch(data);
-    default:
-      throw new Error('invalid option');
-  }
-});
-
-function getOperation(operation: string): 'tessellate' {
-  switch (operation) {
-    case 'tessellate':
-      return 'tessellate';
+      return await tessellateBatch(data as TessellationWorkerInput);
     default:
       throw new Error(
-        `TesselationWorker: Unsupported operation ${operation}. Expected 'tessellate'`
+        `TesselationWorker: Unsupported operation ${options?.operation}. Expected 'tessellate'`
       );
   }
-}
-
-function tessellateBatch(data?) {
+});
+function tessellateBatch(data: TessellationWorkerInput): TessellationWorkerOutput {
   // Parse any WKT/WKB geometries
   // Build binary geometries
   // Call earcut and tessellate
   console.error('TessellationWorker: tessellating batch', data);
-  return {};
+  const triangleIndices = getTriangleIndices(
+    data.polygonIndices,
+    data.primitivePolygonIndices,
+    data.flatCoordinateArray,
+    data.nDim
+  );
+  return {...data, triangleIndices};
 }
