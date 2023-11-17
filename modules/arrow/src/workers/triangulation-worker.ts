@@ -1,22 +1,30 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {createWorker} from '@loaders.gl/worker-utils';
 import {getTriangleIndices} from '../geoarrow/convert-geoarrow-to-binary-geometry';
-import type {TriangulationWorkerInput, TriangulationWorkerOutput} from '../triangulate-on-worker';
-
-// Compressors
+import type {
+  TriangulationWorkerInput,
+  TriangulateInput,
+  TriangulateResult
+} from '../triangulate-on-worker';
 
 createWorker(async (data, options = {}) => {
-  switch (options?.operation) {
+  const input = data as TriangulationWorkerInput;
+  const operation = input?.operation;
+  switch (operation) {
     case 'test':
-      return data;
+      return input;
     case 'triangulate':
-      return await triangulateBatch(data as TriangulationWorkerInput);
+      return triangulateBatch(data);
     default:
       throw new Error(
-        `TesselationWorker: Unsupported operation ${options?.operation}. Expected 'triangulate'`
+        `TesselationWorker: Unsupported operation ${operation}. Expected 'triangulate'`
       );
   }
 });
-function triangulateBatch(data: TriangulationWorkerInput): TriangulationWorkerOutput {
+
+function triangulateBatch(data: TriangulateInput): TriangulateResult {
   // Parse any WKT/WKB geometries
   // Build binary geometries
   // Call earcut and triangulate

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test, {Test} from 'tape-promise/tape';
 
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';

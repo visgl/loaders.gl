@@ -1,22 +1,27 @@
-// import type {WorkerObject} from '@loaders.gl/worker-utils';
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+import type {WorkerOptions} from '@loaders.gl/worker-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type TriangulationWorkerOptions = {
-  operation: 'triangulate';
-};
+export type TriangulationWorkerInput = TriangulateInput | {operation: 'test'; data: any};
+export type TriangulationWorkerOutput = TriangulateResult | {operation: 'test'; data: any};
 
-export type TriangulationWorkerInput = {
+/** Input data for operation: 'triangulate' */
+export type TriangulateInput = {
+  operation: 'triangulate';
   polygonIndices: Uint16Array;
   primitivePolygonIndices: Int32Array;
   flatCoordinateArray: Float64Array;
   nDim: number;
 };
 
-export type TriangulationWorkerOutput = TriangulationWorkerInput & {
+/** Result type for operation: 'triangulate' */
+export type TriangulateResult = TriangulateInput & {
   triangleIndices: Uint32Array;
 };
 
@@ -25,7 +30,7 @@ export type TriangulationWorkerOutput = TriangulationWorkerInput & {
  */
 export const TriangulationWorker = {
   id: 'triangulation',
-  name: 'Tesselate',
+  name: 'Triangulate',
   module: 'arrow',
   version: VERSION,
   options: {}
@@ -36,7 +41,7 @@ export const TriangulationWorker = {
  */
 export function triangulateOnWorker(
   data: TriangulationWorkerInput,
-  options: TriangulationWorkerOptions
+  options: WorkerOptions = {}
 ): Promise<TriangulationWorkerOutput> {
   return processOnWorker(TriangulationWorker, data, options);
 }

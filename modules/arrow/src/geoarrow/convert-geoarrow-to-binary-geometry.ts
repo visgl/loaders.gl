@@ -7,7 +7,6 @@ import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 import {TypedArray} from '@loaders.gl/loader-utils';
-import {triangulateOnWorker} from '../triangulate-on-worker';
 
 /**
  * Binary data from geoarrow column and can be used by e.g. deck.gl GeojsonLayer
@@ -37,7 +36,7 @@ type BinaryGeometryContent = {
   geomOffset: Int32Array;
   /** Array of geometry indicies: the start index of each geometry */
   geometryIndicies: Uint16Array;
-  /** (Optional) indices of triangels returned from polygon triangulation (Polygon only) */
+  /** (Optional) indices of triangels returned from polygon tessellation (Polygon only) */
   triangles?: Uint32Array;
   /** (Optional) array of mean center of each geometry */
   meanCenters?: Float64Array;
@@ -69,11 +68,11 @@ export type BinaryGeometriesFromArrowOptions = {
  * @param options options for getting binary geometries {meanCenter: boolean}
  * @returns BinaryDataFromGeoArrow
  */
-export async function getBinaryGeometriesFromArrow(
+export function getBinaryGeometriesFromArrow(
   geoColumn: arrow.Vector,
   geoEncoding: GeoArrowEncoding,
   options?: BinaryGeometriesFromArrowOptions
-): Promise<BinaryDataFromGeoArrow> {
+): BinaryDataFromGeoArrow {
   const featureTypes = {
     polygon: geoEncoding === 'geoarrow.multipolygon' || geoEncoding === 'geoarrow.polygon',
     point: geoEncoding === 'geoarrow.multipoint' || geoEncoding === 'geoarrow.point',
@@ -85,9 +84,9 @@ export async function getBinaryGeometriesFromArrow(
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
 
-  for (const chunk of chunks) {
+  chunks.forEach((chunk) => {
     const {featureIds, flatCoordinateArray, nDim, geomOffset, triangles} =
-      await getBinaryGeometriesFromChunk(chunk, geoEncoding);
+      getBinaryGeometriesFromChunk(chunk, geoEncoding);
 
     const globalFeatureIds = new Uint32Array(featureIds.length);
     for (let i = 0; i < featureIds.length; i++) {
@@ -101,7 +100,6 @@ export async function getBinaryGeometriesFromArrow(
         size: nDim
       },
       featureIds: {value: featureIds, size: 1},
-      // eslint-disable-next-line no-loop-func
       properties: [...Array(chunk.length).keys()].map((i) => ({
         index: i + globalFeatureIdOffset
       }))
@@ -141,7 +139,7 @@ export async function getBinaryGeometriesFromArrow(
     });
 
     bounds = updateBoundsFromGeoArrowSamples(flatCoordinateArray, nDim, bounds);
-  }
+  });
 
   return {
     binaryGeometries,
@@ -241,10 +239,10 @@ function getMeanCentersFromGeometry(
  * @param geoEncoding geo encoding of the geoarrow column
  * @returns BinaryGeometryContent
  */
-async function getBinaryGeometriesFromChunk(
+function getBinaryGeometriesFromChunk(
   chunk: arrow.Data,
   geoEncoding: GeoArrowEncoding
-): Promise<BinaryGeometryContent> {
+): BinaryGeometryContent {
   switch (geoEncoding) {
     case 'geoarrow.point':
     case 'geoarrow.multipoint':
@@ -254,7 +252,7 @@ async function getBinaryGeometriesFromChunk(
       return getBinaryLinesFromChunk(chunk, geoEncoding);
     case 'geoarrow.polygon':
     case 'geoarrow.multipolygon':
-      return await getBinaryPolygonsFromChunk(chunk, geoEncoding);
+      return getBinaryPolygonsFromChunk(chunk, geoEncoding);
     default:
       throw Error('invalid geoarrow encoding');
   }
@@ -313,10 +311,7 @@ export function getTriangleIndices(
  * @param geoEncoding the geo encoding of the geoarrow polygon column
  * @returns BinaryGeometryContent
  */
-async function getBinaryPolygonsFromChunk(
-  chunk: arrow.Data,
-  geoEncoding: string
-): Promise<BinaryGeometryContent> {
+function getBinaryPolygonsFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
   const isMultiPolygon = geoEncoding === 'geoarrow.multipolygon';
 
   const polygonData = isMultiPolygon ? chunk.children[0] : chunk;
@@ -344,28 +339,6 @@ async function getBinaryPolygonsFromChunk(
     for (let j = startIdx; j < endIdx; j++) {
       featureIds[j] = i;
     }
-  }
-
-  const worker = false;
-  if (worker) {
-    const triangulationInput = {
-      polygonIndices: geometryIndicies,
-      primitivePolygonIndices: geomOffset,
-      flatCoordinateArray,
-      nDim
-    };
-    const triangulationOutput = await triangulateOnWorker(triangulationInput, {
-      operation: 'triangulate'
-    });
-    return {
-      featureIds,
-      nDim,
-      flatCoordinateArray: triangulationOutput.flatCoordinateArray,
-
-      geomOffset: triangulationOutput.primitivePolygonIndices,
-      geometryIndicies: triangulationOutput.polygonIndices,
-      triangles: triangulationOutput.triangleIndices
-    };
   }
 
   const triangles = getTriangleIndices(geometryIndicies, geomOffset, flatCoordinateArray, nDim);
