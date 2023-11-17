@@ -19,7 +19,7 @@ createWorker(async (data, options = {}) => {
       return triangulateBatch(data);
     default:
       throw new Error(
-        `TesselationWorker: Unsupported operation ${operation}. Expected 'triangulate'`
+        `TriangulationWorker: Unsupported operation ${operation}. Expected 'triangulate'`
       );
   }
 });

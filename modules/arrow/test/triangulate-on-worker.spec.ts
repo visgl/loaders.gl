@@ -16,7 +16,7 @@ test('TriangulationWorker#plumbing', async (t) => {
     _workerType: 'test'
   });
 
-  t.ok(triangulatedData, 'Tesselation worker echoed input data');
+  t.ok(triangulatedData, 'Triangulation worker echoed input data');
 
   t.rejects(
     () =>
@@ -27,7 +27,7 @@ test('TriangulationWorker#plumbing', async (t) => {
           _workerType: 'test'
         }
       ),
-    'Tesselation worker throws on incorrect operation'
+    'Triangulation worker throws on incorrect operation'
   );
 
   if (!isBrowser) {
@@ -49,15 +49,15 @@ test('triangulateOnWorker#plumbing', async (t) => {
     }
   );
 
-  t.equal(triangulatedData.operation, 'test', 'Tesselation worker got correct return type');
+  t.equal(triangulatedData.operation, 'test', 'Triangulation worker got correct return type');
   if (triangulatedData.operation === 'test') {
-    t.equal(triangulatedData.data?.byteLength, 100, 'Tesselation worker echoed input data');
+    t.equal(triangulatedData.data?.byteLength, 100, 'Triangulation worker echoed input data');
   }
 
   // t.rejec(() => await processOnWorker(TriangulationWorker, sourceData, {
   //   operation: 'error',
   //   _workerType: 'test'
-  // }), 'Tesselation worker throws on incorrect operation');
+  // }), 'Triangulation worker throws on incorrect operation');
 
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});

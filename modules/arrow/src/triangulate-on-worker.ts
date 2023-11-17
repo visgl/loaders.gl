@@ -26,7 +26,7 @@ export type TriangulateResult = TriangulateInput & {
 };
 
 /**
- * Worker for tessellating geometries. Normally called through tesselateOnWorker
+ * Worker for tessellating geometries. Normally called through triangulateOnWorker
  */
 export const TriangulationWorker = {
   id: 'triangulation',
