@@ -42,6 +42,9 @@ const LOADER_OPTIONS = {
     shape: 'geojson-table',
     preserveBinary: true
   },
+  arrow: {
+    shape: 'geojson-table'
+  },
   geopackage: {
     shape: 'geojson-table'
     // table: 'FEATURESriversds'
