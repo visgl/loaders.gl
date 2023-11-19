@@ -98,6 +98,12 @@ export default function App(props: AppProps) {
     if (props.format) {
       // Move the preferred format examples to the "top"
       examples = {[props.format]: EXAMPLES[props.format], ...EXAMPLES};
+      // Remove any keys
+      for (const key of Object.keys(examples)) {
+        if (key.endsWith('Test')) {
+          delete examples[key];
+        }
+      }
     }
 
     const selectedLoader = props.format || INITIAL_LOADER_NAME;
