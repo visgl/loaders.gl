@@ -20,7 +20,7 @@ import {
   POLYGON_ARROW_FILE,
   MULTIPOLYGON_ARROW_FILE,
   MULTIPOLYGON_HOLE_ARROW_FILE
-} from './convert-geoarrow-to-geojson.spec';
+} from '../data/geoarrow/test-cases';
 
 const expectedPointBinaryGeometry = {
   binaryGeometries: [

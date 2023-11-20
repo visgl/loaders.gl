@@ -3,7 +3,12 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowLoaderOptions} from './arrow-loader';
-import type {ArrowTableBatch, ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {
+  ArrowTableBatch,
+  ColumnarTable,
+  ObjectRowTable,
+  GeoJSONTable
+} from '@loaders.gl/schema';
 import type {ArrowTable} from './lib/arrow-table';
 
 import {TableBatchBuilder} from '@loaders.gl/schema';
@@ -48,7 +53,7 @@ export {ArrowWorkerLoader};
 
 /** ArrowJS table loader */
 export const ArrowLoader: LoaderWithParser<
-  ArrowTable | ColumnarTable | ObjectRowTable,
+  ArrowTable | ColumnarTable | ObjectRowTable | GeoJSONTable,
   ArrowTableBatch,
   ArrowLoaderOptions
 > = {
@@ -58,6 +63,8 @@ export const ArrowLoader: LoaderWithParser<
   parseSync,
   parseInBatches: parseArrowInBatches
 };
+
+// EXPERIMENTAL
 
 // Arrow Utils
 export type {GeoArrowEncoding} from '@loaders.gl/gis';
@@ -75,10 +82,12 @@ export {
   getMeanCentersFromBinaryGeometries
 } from './geoarrow/convert-geoarrow-to-binary-geometry';
 
-export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';
-
 export {updateBoundsFromGeoArrowSamples} from './geoarrow/get-arrow-bounds';
 
-// EXPERIMENTAL
+export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';
+
+export {convertArrowToGeoJSONTable} from './tables/convert-arrow-to-geojson-table';
+
+// EXPERIMENTAL WORKER
 
 export {TriangulationWorker, triangulateOnWorker} from './triangulate-on-worker';
