@@ -19,6 +19,7 @@
       type: 'category',
       label: 'Geospatial Loaders',
       items: [
+        'geoarrow',
         'geoparquet',
         // 'geopackage', sql.js bundling issue...
         'flatgeobuf',

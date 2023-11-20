@@ -30,7 +30,7 @@ export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/m
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const PARQUET_PATH = '/formats/geoparquet';
 
-const GEOARROW_TEST_DATA = `${LOADERS_URL}/modules/arrow/test/data`; // geoarrow
+const GEOARROW_TEST_DATA = `${LOADERS_URL}/modules/arrow/test/data/geoarrow`;
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   GeoParquet: {

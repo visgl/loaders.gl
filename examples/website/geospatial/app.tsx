@@ -5,7 +5,7 @@ import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import maplibregl, {Properties} from 'maplibre-gl';
 
 import {DeckGL} from '@deck.gl/react/typed';
 import {MapController} from '@deck.gl/core/typed';
@@ -22,12 +22,12 @@ import {Loader, load /* registerLoaders */} from '@loaders.gl/core';
 import {ParquetLoader, installBufferPolyfill} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 // import {GeoPackageLoader} from '@loaders.gl/geopackage';
-import {ArrowLoader} from '@loaders.gl/arrow';
+import {GeoArrowLoader} from '@loaders.gl/arrow';
 
 installBufferPolyfill();
 
 const LOADERS: Loader[] = [
-  ArrowLoader,
+  GeoArrowLoader,
   ParquetLoader,
   FlatGeobufLoader
   // GeoPackageLoader
@@ -79,7 +79,6 @@ type AppState = {
  *
  */
 export default function App(props: AppProps) {
-
   const [state, setState] = useState<AppState>({
     // EXAMPLE STATE
     examples: EXAMPLES,
@@ -120,22 +119,20 @@ export default function App(props: AppProps) {
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      
       <ControlPanel
         examples={state.examples}
         selectedExample={state.selectedExample}
         selectedLoader={state.selectedLoader}
-        onExampleChange={(props) =>onExampleChange({...props, state, setState})}
+        onExampleChange={(props) => onExampleChange({...props, state, setState})}
       >
         {state.error ? <div style={{color: 'red'}}>{state.error}</div> : ''}
         <div style={{textAlign: 'center'}}>
           center long/lat: {state.viewState.longitude.toFixed(3)},
-          {state.viewState.latitude.toFixed(3)}, 
-          zoom: {state.viewState.zoom.toFixed(2)}
+          {state.viewState.latitude.toFixed(3)}, zoom: {state.viewState.zoom.toFixed(2)}
         </div>
-        <FileUploader 
-           onFileRemoved={() => setState({...state, loadedTable: null})} 
-           onFileSelected={async (uploadedFile: File) => {
+        <FileUploader
+          onFileRemoved={() => setState({...state, loadedTable: null})}
+          onFileSelected={async (uploadedFile: File) => {
             // TODO - error handling
             const data = (await load(uploadedFile, LOADERS, LOADER_OPTIONS)) as Table;
             setState({
@@ -143,7 +140,7 @@ export default function App(props: AppProps) {
               selectedExample: uploadedFile.name,
               loadedTable: data
             });
-          }} 
+          }}
         />
       </ControlPanel>
 
@@ -152,18 +149,20 @@ export default function App(props: AppProps) {
         viewState={state.viewState}
         onViewStateChange={({viewState}) => setState({...state, viewState})}
         controller={{type: MapController, maxPitch: 85}}
-        getTooltip={({object}) =>
-          object && {
+        getTooltip={({object}) => {
+          const {name, ...properties} = object?.properties || {};
+          const props = Object.entries(properties).map(([key, value]) => `<div>${key}: ${value}</div>`).join('\n');
+          return object && {
             html: `\
-<h2>${object.properties?.name}</h2>
-<div>${object.geometry?.coordinates?.[0]}</div>
-<div>${object.geometry?.coordinates?.[1]}</div>`,
+<h2>${name}</h2>
+${props}
+<div>Coords: ${object.geometry?.coordinates?.[0]};${object.geometry?.coordinates?.[1]}</div>`,
             style: {
               backgroundColor: '#ddd',
               fontSize: '0.8em'
             }
-          }
-        }
+          };
+        }}
       >
         <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
       </DeckGL>
@@ -194,7 +193,6 @@ async function onExampleChange(args: {
 }
 
 function renderLayer({selectedExample, selectedLoader, loadedTable}) {
-  
   const geojson = loadedTable as GeoJSON;
   console.warn('Rendering layer with', geojson);
   return [
