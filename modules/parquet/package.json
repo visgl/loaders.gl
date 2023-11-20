@@ -12,12 +12,14 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
     "loader",
     "parser",
     "table",
-    "Parquet",
-    "Apache Parquet"
+    "parquet",
+    "streaming",
+    "geoparquet",
+    "Apache Parquet",
+    "apache-parquet"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

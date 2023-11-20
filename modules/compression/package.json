@@ -12,11 +12,14 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "3d",
-    "mesh",
-    "point cloud"
+    "compression",
+    "decompression",
+    "zip",
+    "gzip",
+    "deflate",
+    "lz4",
+    "zstd",
+    "brotli"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

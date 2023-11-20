@@ -12,14 +12,11 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "parser",
+    "BSON",
+    "Binary JSON",
     "table",
-    "JSON",
-    "Streaming JSON",
-    "JSON stream",
-    "JSON async iterator"
+    "loader",
+    "parser"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

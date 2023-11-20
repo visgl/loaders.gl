@@ -12,12 +12,13 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
+    "geoarrow",
+    "apache-arrow",
+    "arrow",
+    "binary columnar",
     "loader",
-    "3d",
-    "mesh",
-    "point cloud",
-    "PLY"
+    "webgl",
+    "webgpu"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

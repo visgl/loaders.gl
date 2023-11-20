@@ -12,11 +12,15 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "3d",
-    "mesh",
-    "point cloud"
+    "crypto",
+    "hash",
+    "digest",
+    "encrypt",
+    "decrypt",
+    "crc32",
+    "crc32c",
+    "md5",
+    "sha256"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

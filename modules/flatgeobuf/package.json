@@ -15,8 +15,11 @@
     "geometry",
     "loader",
     "parser",
-    "MVT",
-    "Mapbox Vector Tiles"
+    "FGB",
+    "flatgeobuf",
+    "cloud optimized",
+    "geospatial",
+    "table"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",
