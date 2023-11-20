@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test, {Test} from 'tape-promise/tape';
 
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
@@ -17,7 +20,7 @@ import {
   POLYGON_ARROW_FILE,
   MULTIPOLYGON_ARROW_FILE,
   MULTIPOLYGON_HOLE_ARROW_FILE
-} from './convert-geoarrow-to-geojson.spec';
+} from '../data/geoarrow/test-cases';
 
 const expectedPointBinaryGeometry = {
   binaryGeometries: [

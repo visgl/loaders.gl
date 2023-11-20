@@ -18,7 +18,7 @@ type FileLoaderState = {
   error: string | null;
 };
 
-export default class FileLoader extends PureComponent<FileLoaderPropTypes, FileLoaderState> {
+export class ParsedFile extends PureComponent<FileLoaderPropTypes, FileLoaderState> {
   static defaultProps = {
     file: null
   };

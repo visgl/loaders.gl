@@ -13,7 +13,8 @@ import WorkerFarm from '../worker-farm/worker-farm';
 import {getWorkerURL, getWorkerName} from './get-worker-url';
 import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
 
-type ProcessOnWorkerOptions = WorkerOptions & {
+/** Options for worker processing */
+export type ProcessOnWorkerOptions = WorkerOptions & {
   jobName?: string;
   [key: string]: any;
 };

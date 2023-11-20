@@ -2,6 +2,20 @@
 
 ## v4.0
 
+### v4.0.4
+- feat(arrow): GeoArrowLoader (#2796)
+- fix(draco): revert --format=esm for the worker (#2795)
+- feat(arrow): Support GeoJSON output from Geo ArrowLoader (#2794)
+- chore: refactor geospatial exmaple to use hooks (#2793)
+- chore(arrow): triangulateOnWorker plumbing (#2788)
+- feat(website): add GeoParquet datasets (#2786)
+- fix(tile-converter): 'finalizing conversion' added (#2787)
+- feat(GeoArrow): getBinaryGeometriesFromArrow enhancement (#2785)
+- chore(Arrow): add test cases for multipolygon with holes (#2782)
+- chore(worker-utils): worker simplification
+- chore: Add license headers (#2784)
+- chore: Upgrade to docusaurus 3 (#2757)
+
 ### v4.0.3
 
 - feat(tile-converter): estimation of time remaining (#2774)

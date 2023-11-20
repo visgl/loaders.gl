@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import * as arrow from 'apache-arrow';
 import {AnyArrayType, VECTOR_TYPES} from '../types';
 
