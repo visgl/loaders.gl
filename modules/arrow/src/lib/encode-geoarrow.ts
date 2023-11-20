@@ -17,7 +17,7 @@ export type ColumnarTable = {
  * @param options - the writer options
  * @returns - encoded ArrayBuffer
  */
-export function encodeArrowSync(data: ColumnarTable): ArrayBuffer {
+export function encodeGeoArrowSync(data: ColumnarTable): ArrayBuffer {
   const vectors: Record<string, arrow.Vector> = {};
   for (const arrayData of data) {
     const arrayVector = createVector(arrayData.array, arrayData.type);

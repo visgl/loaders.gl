@@ -1,5 +1,7 @@
-// TODO - this import defeats the sophisticated typescript checking in ArrowJS
-import type {ArrowTableBatch} from './arrow-table';
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
+import type {ArrowTableBatch} from '../lib/arrow-table';
 import * as arrow from 'apache-arrow';
 // import {isIterable} from '@loaders.gl/core';
 
