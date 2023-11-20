@@ -1,6 +1,8 @@
+import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+
 export const signature = new Uint8Array([0x01, 0x00]);
 
-/** info that can be placed into zip64 field */
+/** info that can be placed into zip64 field, doc: https://en.wikipedia.org/wiki/ZIP_(file_format)#ZIP64 */
 type Zip64Options = {
   /** Original uncompressed file size and Size of compressed data */
   size?: number;
@@ -13,38 +15,26 @@ type Zip64Options = {
  * @param options info that can be placed into zip64 field
  * @returns buffer with field
  */
-export const createZip64Info = (options: Zip64Options): ArrayBuffer => {
+export function createZip64Info(options: Zip64Options): ArrayBuffer {
   const optionsToUse = {
     ...options,
     zip64Length: (options.offset ? 1 : 0) * 8 + (options.size ? 1 : 0) * 16
   };
 
-  let result = new ArrayBuffer(0);
+  const arraysToConcat: ArrayBuffer[] = [];
 
-  zip64Fields.forEach((field) => {
+  for (const field of ZIP64_FIELDS) {
     if (!optionsToUse[field.name ?? ''] && !field.default) {
-      return;
+      continue;
     }
     const newValue = new DataView(new ArrayBuffer(field.size));
-    setNumbers[field.size](newValue, 0, optionsToUse[field.name ?? ''] ?? field.default);
-    result = concatArrays(result, newValue.buffer);
-  });
+    NUMBER_SETTERS[field.size](newValue, 0, optionsToUse[field.name ?? ''] ?? field.default);
+    arraysToConcat.push(newValue.buffer);
+  }
 
-  return result;
-};
+  return concatenateArrayBuffers(...arraysToConcat);
+}
 
-/**
- * concats two ArrayBuffers
- * @param arr1 first array to concat
- * @param arr2 second array to concat
- * @returns concated array
- */
-export const concatArrays = (arr1: ArrayBuffer, arr2: ArrayBuffer): ArrayBuffer => {
-  const resHeader = new Uint8Array(arr1.byteLength + arr2.byteLength);
-  resHeader.set(new Uint8Array(arr1));
-  resHeader.set(new Uint8Array(arr2), arr1.byteLength);
-  return resHeader.buffer;
-};
 /**
  * Function to write values into buffer
  * @param header buffer where to write a value
@@ -54,7 +44,7 @@ export const concatArrays = (arr1: ArrayBuffer, arr2: ArrayBuffer): ArrayBuffer 
 type NumberSetter = (header: DataView, offset: number, value: number) => void;
 
 /** functions to write values into buffer according to the bytes amount */
-export const setNumbers: {[key: number]: NumberSetter} = {
+export const NUMBER_SETTERS: {[key: number]: NumberSetter} = {
   2: (header, offset, value) => {
     header.setUint16(offset, value, true);
   },
@@ -66,8 +56,8 @@ export const setNumbers: {[key: number]: NumberSetter} = {
   }
 };
 
-/** Fields map */
-const zip64Fields = [
+/** zip64 info fields description, we need it as a pattern to build a zip64 info */
+const ZIP64_FIELDS = [
   {
     size: 2,
     description: 'Header ID 0x0001',

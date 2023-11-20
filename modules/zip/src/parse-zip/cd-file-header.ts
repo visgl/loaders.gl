@@ -1,10 +1,10 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import {FileProvider, compareArrayBuffers} from '@loaders.gl/loader-utils';
+import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {parseEoCDRecord} from './end-of-central-directory';
 import {ZipSignature} from './search-from-the-end';
-import {concatArrays, createZip64Info, setNumbers} from './zip64-info-generation';
+import {createZip64Info, NUMBER_SETTERS} from './zip64-info-generation';
 
 /**
  * zip central directory file header info
@@ -191,7 +191,7 @@ const findExpectedData = (zip64data: Zip64Data): {length: number; name: string}[
 };
 
 /** info that can be placed into cd header */
-type CDGenOptions = {
+type GenerateCDOptions = {
   /** CRC-32 of uncompressed data */
   crc32: number;
   /** File name */
@@ -207,7 +207,7 @@ type CDGenOptions = {
  * @param options info that can be placed into cd header
  * @returns buffer with header
  */
-export const generateCdHeader = (options: CDGenOptions): ArrayBuffer => {
+export function generateCDHeader(options: GenerateCDOptions): ArrayBuffer {
   const optionsToUse = {
     ...options,
     fnlength: options.fileName.length,
@@ -232,23 +232,23 @@ export const generateCdHeader = (options: CDGenOptions): ArrayBuffer => {
   }
   const header = new DataView(new ArrayBuffer(46));
 
-  fields.forEach((field) =>
-    setNumbers[field.size](
+  for (const field of ZIP_HEADER_FIELDS) {
+    NUMBER_SETTERS[field.size](
       header,
       field.offset,
       optionsToUse[field.name ?? ''] ?? field.default ?? 0
-    )
-  );
+    );
+  }
 
   const encodedName = new TextEncoder().encode(optionsToUse.fileName);
 
-  const resHeader = concatArrays(concatArrays(header.buffer, encodedName), zip64header);
+  const resHeader = concatenateArrayBuffers(header.buffer, encodedName, zip64header);
 
   return resHeader;
-};
+}
 
 /** Fields map */
-const fields = [
+const ZIP_HEADER_FIELDS = [
   {
     offset: 0,
     size: 4,
