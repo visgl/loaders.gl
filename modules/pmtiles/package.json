@@ -12,12 +12,17 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
     "loader",
-    "3d",
-    "mesh",
-    "point cloud",
-    "PCD"
+    "tile",
+    "mvt",
+    "image tile",
+    "tilejson",
+    "range request",
+    "cloud native",
+    "PM Tiles",
+    "pmtiles",
+    "webgl",
+    "webgpu"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

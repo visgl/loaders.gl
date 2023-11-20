@@ -12,11 +12,15 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
+    "loader",
+    "parser",
+    "writer",
+    "encoder",
     "geoarrow",
     "apache-arrow",
     "arrow",
     "binary columnar",
-    "loader",
+    "cloud native",
     "webgl",
     "webgpu"
   ],
