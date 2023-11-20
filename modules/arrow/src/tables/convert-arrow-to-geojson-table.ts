@@ -36,11 +36,12 @@ export function convertArrowToGeoJSONTable(table: ArrowTable): GeoJSONTable {
 
   for (let row = 0; row < arrowTable.numRows; row++) {
     // get first geometry from arrow geometry column
+    // TODO - this getting of in individual rows must be very expensive???
+    // Can we make a version of parseGeometryFromArrow that takes a whole column?
     const arrowGeometry = arrowTable.getChild('geometry')?.get(row);
-    const arrowGeometryObject = {encoding, data: arrowGeometry};
 
     // parse arrow geometry to geojson feature
-    const feature = parseGeometryFromArrow(arrowGeometryObject);
+    const feature = parseGeometryFromArrow(arrowGeometry, encoding);
     if (feature) {
       features.push(feature);
     }

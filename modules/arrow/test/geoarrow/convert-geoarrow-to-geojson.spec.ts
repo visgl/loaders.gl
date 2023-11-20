@@ -54,23 +54,19 @@ async function testParseFromArrow(
     t.equal(Boolean(geometryColumns.geometry), true, 'geometryColumns has geometry column');
 
     // get encoding from geometryColumns['geometry']
-    const encoding = geometryColumns.geometry.encoding;
+    const encoding = geometryColumns.geometry.encoding!;
 
     // check encoding is one of GEOARROW_ENCODINGS
     t.ok(
-      Object.values(GEOARROW_ENCODINGS).includes(encoding!),
+      Object.values(GEOARROW_ENCODINGS).includes(encoding),
       'encoding is one of GEOARROW_ENCODINGS'
     );
 
     // get first geometry from arrow geometry column
     const firstArrowGeometry = table.getChild('geometry')?.get(0);
-    const firstArrowGeometryObject = {
-      encoding,
-      data: firstArrowGeometry
-    };
 
     // parse arrow geometry to geojson feature
-    const firstFeature = parseGeometryFromArrow(firstArrowGeometryObject);
+    const firstFeature = parseGeometryFromArrow(firstArrowGeometry, encoding);
 
     // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
     t.deepEqual(

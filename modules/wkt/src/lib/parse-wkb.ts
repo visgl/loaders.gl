@@ -23,7 +23,10 @@ export function parseWKB(
   switch (shape) {
     case 'binary-geometry':
       return binaryGeometry;
+    case 'geojson-geometry':
+      return binaryToGeometry(binaryGeometry);
     case 'geometry':
+      console.error('WKBLoader: "geometry" shape is deprecated, use "binary-geometry" instead');
       return binaryToGeometry(binaryGeometry);
     default:
       throw new Error(shape);

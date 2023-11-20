@@ -10,13 +10,14 @@ import {isWKT, WKT_MAGIC_STRINGS} from './lib/parse-wkt';
 export type WKTLoaderOptions = LoaderOptions & {
   /** Options for the WKT parser */
   wkt?: {
-    /** Whether to add any CRS, if found, as undocumented CRS property on the return geometry */
+    shape?: 'geojson-geometry'; // 'binary-geometry'
+    /** Whether to add any CRS, if found, as undocumented CRS property on the returned geometry */
     crs?: boolean;
   };
 };
 
 /**
- * Well-Known text loader
+ * Well-Known text worker loader
  */
 export const WKTWorkerLoader: Loader<Geometry, never, WKTLoaderOptions> = {
   name: 'WKT (Well-Known Text)',
@@ -32,6 +33,7 @@ export const WKTWorkerLoader: Loader<Geometry, never, WKTLoaderOptions> = {
   testText: isWKT,
   options: {
     wkt: {
+      shape: 'geojson-geometry',
       crs: true
     }
   }

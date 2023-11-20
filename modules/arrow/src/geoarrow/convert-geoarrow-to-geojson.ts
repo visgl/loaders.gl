@@ -10,62 +10,60 @@ import {
   MultiPoint,
   Point,
   MultiLineString,
-  LineString
+  LineString,
+  Geometry
 } from '@loaders.gl/schema';
 import type {GeoArrowEncoding} from '@loaders.gl/gis';
 import {WKBLoader, WKTLoader} from '@loaders.gl/wkt';
 
-type RawArrowFeature = {
-  data: arrow.Vector;
-  encoding?: GeoArrowEncoding;
-};
-
 /**
  * parse geometry from arrow data that is returned from processArrowData()
- * NOTE: this function could be duplicated with the binaryToFeature() in deck.gl,
- * it is currently only used for picking because currently deck.gl returns only the index of the feature
- * So the following functions could be deprecated once deck.gl returns the feature directly for binary geojson layer
+ * NOTE: this function could be deduplicated with the binaryToFeature() in deck.gl,
+ * it is currently used for deck.gl picking because currently deck.gl returns only the index of the feature
  *
- * @param rawData the raw geometry data returned from processArrowData, which is an object with two properties: encoding and data
- * @see processArrowData
+ * @param data an arrow vector representing a geometry column
+ * @param encoding the geoarrow encoding of the geometry column
  * @returns Feature or null
  */
-export function parseGeometryFromArrow(rawData: RawArrowFeature): Feature | null {
-  const encoding = rawData.encoding?.toLowerCase() as typeof rawData.encoding;
-  const data = rawData.data;
-  if (!encoding || !data) {
+export function parseGeometryFromArrow(arrowVector: arrow.Vector, encoding?: GeoArrowEncoding): Feature | null {
+  // sanity
+  encoding = encoding?.toLowerCase() as GeoArrowEncoding;
+  if (!encoding || !arrowVector) {
     return null;
   }
 
-  let geometry;
+  let geometry: Geometry;
 
   switch (encoding) {
     case 'geoarrow.multipolygon':
-      geometry = arrowMultiPolygonToFeature(data);
+      geometry = arrowMultiPolygonToFeature(arrowVector);
       break;
     case 'geoarrow.polygon':
-      geometry = arrowPolygonToFeature(data);
+      geometry = arrowPolygonToFeature(arrowVector);
       break;
     case 'geoarrow.multipoint':
-      geometry = arrowMultiPointToFeature(data);
+      geometry = arrowMultiPointToFeature(arrowVector);
       break;
     case 'geoarrow.point':
-      geometry = arrowPointToFeature(data);
+      geometry = arrowPointToFeature(arrowVector);
       break;
     case 'geoarrow.multilinestring':
-      geometry = arrowMultiLineStringToFeature(data);
+      geometry = arrowMultiLineStringToFeature(arrowVector);
       break;
     case 'geoarrow.linestring':
-      geometry = arrowLineStringToFeature(data);
+      geometry = arrowLineStringToFeature(arrowVector);
       break;
     case 'geoarrow.wkb':
-      throw Error(`GeoArrow encoding not supported ${encoding}`);
+      geometry = WKBLoader.parseSync?.(arrowVector)! as Geometry;
+      break;
     case 'geoarrow.wkt':
-      throw Error(`GeoArrow encoding not supported ${encoding}`);
+      geometry = WKTLoader.parseSync?.(arrowVector)!;
+      break;
     default: {
       throw Error(`GeoArrow encoding not supported ${encoding}`);
     }
   }
+
   return {
     type: 'Feature',
     geometry,
@@ -134,11 +132,10 @@ function arrowMultiPointToFeature(arrowMultiPoint: arrow.Vector): MultiPoint {
       multiPoint.push(coord);
     }
   }
-  const geometry: MultiPoint = {
+  return {
     type: 'MultiPoint',
     coordinates: multiPoint
   };
-  return geometry;
 }
 
 /**
@@ -146,11 +143,10 @@ function arrowMultiPointToFeature(arrowMultiPoint: arrow.Vector): MultiPoint {
  */
 function arrowPointToFeature(arrowPoint: arrow.Vector): Point {
   const point: Position = Array.from(arrowPoint);
-  const geometry: Point = {
+  return {
     type: 'Point',
     coordinates: point
   };
-  return geometry;
 }
 
 /**
@@ -170,11 +166,10 @@ function arrowMultiLineStringToFeature(arrowMultiLineString: arrow.Vector): Mult
     }
     multiLineString.push(lineString);
   }
-  const geometry: MultiLineString = {
+  return {
     type: 'MultiLineString',
     coordinates: multiLineString
   };
-  return geometry;
 }
 
 /**
@@ -189,9 +184,8 @@ function arrowLineStringToFeature(arrowLineString: arrow.Vector): LineString {
       lineString.push(coords);
     }
   }
-  const geometry: LineString = {
+  return {
     type: 'LineString',
     coordinates: lineString
   };
-  return geometry;
 }
