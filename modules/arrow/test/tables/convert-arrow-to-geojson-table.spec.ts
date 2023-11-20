@@ -6,7 +6,7 @@ import {GEOARROW_TEST_CASES} from '../data/geoarrow/test-cases';
 
 import {fetchFile, parse} from '@loaders.gl/core';
 import {FeatureCollection} from '@loaders.gl/schema';
-import {ArrowLoader} from '@loaders.gl/arrow';
+import {GeoArrowLoader} from '@loaders.gl/arrow';
 
 test('ArrowLoader#geojson-table', (t) => {
   for (const testCase of GEOARROW_TEST_CASES) {
@@ -20,7 +20,7 @@ async function testConversion(
   arrowFile: string,
   expectedGeojson: FeatureCollection
 ): Promise<void> {
-  const table = await parse(fetchFile(arrowFile), ArrowLoader, {
+  const table = await parse(fetchFile(arrowFile), GeoArrowLoader, {
     worker: false,
     arrow: {
       shape: 'geojson-table'

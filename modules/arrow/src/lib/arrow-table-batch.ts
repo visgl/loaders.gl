@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {ColumnarTableBatchAggregator} from '@loaders.gl/schema';
 import type {ArrowTableBatch} from './arrow-table';
 import * as arrow from 'apache-arrow';
