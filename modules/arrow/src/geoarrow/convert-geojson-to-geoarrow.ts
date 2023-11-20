@@ -16,8 +16,8 @@ import type {GeoArrowEncoding} from '@loaders.gl/gis';
 import {WKBLoader, WKTLoader} from '@loaders.gl/wkt';
 
 type RawArrowFeature = {
-  data: arrow.Vector;
   encoding?: GeoArrowEncoding;
+  data: any;
 };
 
 /**
@@ -31,7 +31,7 @@ type RawArrowFeature = {
  * @returns Feature or null
  */
 export function parseGeometryFromArrow(rawData: RawArrowFeature): Feature | null {
-  const encoding = rawData.encoding?.toLowerCase() as typeof rawData.encoding;
+  const encoding = rawData.encoding?.toLowerCase();
   const data = rawData.data;
   if (!encoding || !data) {
     return null;
@@ -58,10 +58,6 @@ export function parseGeometryFromArrow(rawData: RawArrowFeature): Feature | null
     case 'geoarrow.linestring':
       geometry = arrowLineStringToFeature(data);
       break;
-    case 'geoarrow.wkb':
-      throw Error(`GeoArrow encoding not supported ${encoding}`);
-    case 'geoarrow.wkt':
-      throw Error(`GeoArrow encoding not supported ${encoding}`);
     default: {
       throw Error(`GeoArrow encoding not supported ${encoding}`);
     }

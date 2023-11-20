@@ -50,6 +50,7 @@
     "@loaders.gl/gis": "4.0.3",
     "@loaders.gl/loader-utils": "4.0.3",
     "@loaders.gl/schema": "4.0.3",
+    "@loaders.gl/wkt": "4.0.3",
     "@math.gl/polygon": "4.0.0",
     "apache-arrow": "^13.0.0"
   },
