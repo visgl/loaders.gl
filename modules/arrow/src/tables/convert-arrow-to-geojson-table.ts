@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
-import type * as arrow from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 import type {ArrowTable} from '../lib/arrow-table';
 import {serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
@@ -34,16 +34,24 @@ export function convertArrowToGeoJSONTable(table: ArrowTable): GeoJSONTable {
 
   const features: Feature[] = [];
 
-  for (let row = 0; row < arrowTable.numRows; row++) {
-    // get first geometry from arrow geometry column
-    // TODO - this getting of in individual rows must be very expensive???
-    // Can we make a version of parseGeometryFromArrow that takes a whole column?
-    const arrowGeometry = arrowTable.getChild('geometry')?.get(row);
+  // Remove geometry columns
+  const propertyColumnNames = arrowTable.schema.fields
+    .map((field) => field.name)
+    // TODO - this deletes all geometry columns
+    .filter((name) => !(name in geometryColumns));
+  const propertiesTable = arrowTable.select(propertyColumnNames);
 
+  const arrowGeometryColumn = arrowTable.getChild('geometry');
+
+  for (let row = 0; row < arrowTable.numRows; row++) {
+    // get the geometry value from arrow geometry column
+    // Note that type can vary
+    const arrowGeometry = arrowGeometryColumn?.get(row);
     // parse arrow geometry to geojson feature
     const feature = parseGeometryFromArrow(arrowGeometry, encoding);
     if (feature) {
-      features.push(feature);
+      const properties = propertiesTable.get(row)?.toJSON() || {};
+      features.push({type: 'Feature', geometry: feature, properties});
     }
   }
 

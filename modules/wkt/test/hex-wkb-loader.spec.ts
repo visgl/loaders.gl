@@ -17,12 +17,18 @@ test('HexWKBLoader#2D', async (t) => {
   for (const testCase of Object.values(TEST_CASES)) {
     // Little endian
     if (testCase.wkbHex && testCase.binary) {
-      t.deepEqual(parseSync(testCase.wkbHex, HexWKBLoader, {wkb: {shape: 'binary-geometry'}}), testCase.binary);
+      t.deepEqual(
+        parseSync(testCase.wkbHex, HexWKBLoader, {wkb: {shape: 'binary-geometry'}}),
+        testCase.binary
+      );
     }
 
     // Big endian
     if (testCase.wkbHexXdr && testCase.binary) {
-      t.deepEqual(parseSync(testCase.wkbHexXdr, HexWKBLoader, {wkb: {shape: 'binary-geometry'}}), testCase.binary);
+      t.deepEqual(
+        parseSync(testCase.wkbHexXdr, HexWKBLoader, {wkb: {shape: 'binary-geometry'}}),
+        testCase.binary
+      );
     }
   }
 

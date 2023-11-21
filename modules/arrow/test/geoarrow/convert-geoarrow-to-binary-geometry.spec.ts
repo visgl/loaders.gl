@@ -4,7 +4,7 @@
 import test, {Test} from 'tape-promise/tape';
 
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
-import {fetchFile, parse} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {
   BINARY_GEOMETRY_TEMPLATE,
   ArrowLoader,
@@ -13,13 +13,13 @@ import {
 } from '@loaders.gl/arrow';
 
 import {
-  POINT_ARROW_FILE,
-  MULTIPOINT_ARROW_FILE,
-  LINE_ARROW_FILE,
-  MULTILINE_ARROW_FILE,
-  POLYGON_ARROW_FILE,
-  MULTIPOLYGON_ARROW_FILE,
-  MULTIPOLYGON_HOLE_ARROW_FILE
+  GEOARROW_POINT_FILE,
+  GEOARROW_MULTIPOINT_FILE,
+  GEOARROW_LINE_FILE,
+  GEOARROW_MULTILINE_FILE,
+  GEOARROW_POLYGON_FILE,
+  GEOARROW_MULTIPOLYGON_FILE,
+  GEOARROW_MULTIPOLYGON_HOLE_FILE
 } from '../data/geoarrow/test-cases';
 
 const expectedPointBinaryGeometry = {
@@ -299,20 +299,20 @@ const expectedMultiPolygonHolesBinaryGeometry = {
   ]
 };
 
-test('ArrowUtils#getBinaryGeometriesFromArrow', (t) => {
+test('ArrowUtils#getBinaryGeometriesFromArrow', async (t) => {
   const testCases = [
-    [POINT_ARROW_FILE, expectedPointBinaryGeometry],
-    [MULTIPOINT_ARROW_FILE, expectedMultiPointBinaryGeometry],
-    [LINE_ARROW_FILE, expectedLineBinaryGeometry],
-    [MULTILINE_ARROW_FILE, expectedMultiLineBinaryGeometry],
-    [POLYGON_ARROW_FILE, expectedPolygonBinaryGeometry],
-    [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonBinaryGeometry],
-    [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonHolesBinaryGeometry]
+    [GEOARROW_POINT_FILE, expectedPointBinaryGeometry],
+    [GEOARROW_MULTIPOINT_FILE, expectedMultiPointBinaryGeometry],
+    [GEOARROW_LINE_FILE, expectedLineBinaryGeometry],
+    [GEOARROW_MULTILINE_FILE, expectedMultiLineBinaryGeometry],
+    [GEOARROW_POLYGON_FILE, expectedPolygonBinaryGeometry],
+    [GEOARROW_MULTIPOLYGON_FILE, expectedMultiPolygonBinaryGeometry],
+    [GEOARROW_MULTIPOLYGON_HOLE_FILE, expectedMultiPolygonHolesBinaryGeometry]
   ];
 
-  testCases.forEach((testCase) => {
-    testGetBinaryGeometriesFromArrow(t, testCase[0], testCase[1]);
-  });
+  for (const testCase of testCases) {
+    await testGetBinaryGeometriesFromArrow(t, testCase[0], testCase[1]);
+  }
 
   t.end();
 });
@@ -322,7 +322,7 @@ async function testGetBinaryGeometriesFromArrow(
   arrowFile,
   expectedBinaryGeometries
 ): Promise<void> {
-  const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {
+  const arrowTable = await load(arrowFile, ArrowLoader, {
     worker: false,
     arrow: {
       shape: 'arrow-table'

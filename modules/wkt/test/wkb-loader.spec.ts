@@ -18,13 +18,19 @@ test('WKBLoader#2D', async (t) => {
     // Little endian
     if (testCase.wkb && testCase.binary) {
       t.ok(isWKB(testCase.wkb), 'isWKB(2D)');
-      t.deepEqual(parseSync(testCase.wkb, WKBLoader, {wkb: {shape: 'binary-geometry'}}), testCase.binary);
+      t.deepEqual(
+        parseSync(testCase.wkb, WKBLoader, {wkb: {shape: 'binary-geometry'}}),
+        testCase.binary
+      );
     }
 
     // Big endian
     if (testCase.wkbXdr && testCase.binary) {
       t.ok(isWKB(testCase.wkbXdr), 'isWKB(2D)');
-      t.deepEqual(parseSync(testCase.wkbXdr, WKBLoader, {wkb: {shape: 'binary-geometry'}}), testCase.binary);
+      t.deepEqual(
+        parseSync(testCase.wkbXdr, WKBLoader, {wkb: {shape: 'binary-geometry'}}),
+        testCase.binary
+      );
     }
   }
 
