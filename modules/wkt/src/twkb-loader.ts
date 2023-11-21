@@ -8,7 +8,7 @@ import {parseTWKBGeometry, isTWKB} from './lib/parse-twkb';
 
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
-    shape: 'binary-geometry' | 'geometry';
+    shape: 'geojson-geometry' | 'binary-geometry';
   };
 };
 
@@ -28,7 +28,7 @@ export const TWKBWorkerLoader: Loader<Geometry, never, WKBLoaderOptions> = {
   tests: [isTWKB],
   options: {
     wkb: {
-      shape: 'binary-geometry'
+      shape: 'binary-geometry' // 'geojson-geometry'
     }
   }
 };

@@ -1,13 +1,33 @@
 import {FeatureCollection} from '@loaders.gl/schema';
 
-export const POINT_ARROW_FILE = '@loaders.gl/arrow/test/data/geoarrow/point.arrow';
-export const MULTIPOINT_ARROW_FILE = '@loaders.gl/arrow/test/data/geoarrow/multipoint.arrow';
-export const LINE_ARROW_FILE = '@loaders.gl/arrow/test/data/geoarrow/line.arrow';
-export const MULTILINE_ARROW_FILE = '@loaders.gl/arrow/test/data/geoarrow/multiline.arrow';
-export const POLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/geoarrow/polygon.arrow';
-export const MULTIPOLYGON_ARROW_FILE = '@loaders.gl/arrow/test/data/geoarrow/multipolygon.arrow';
-export const MULTIPOLYGON_HOLE_ARROW_FILE =
+export const GEOARROW_POINT_FILE = '@loaders.gl/arrow/test/data/geoarrow/point.arrow';
+export const GEOARROW_MULTIPOINT_FILE = '@loaders.gl/arrow/test/data/geoarrow/multipoint.arrow';
+export const GEOARROW_LINE_FILE = '@loaders.gl/arrow/test/data/geoarrow/line.arrow';
+export const GEOARROW_MULTILINE_FILE = '@loaders.gl/arrow/test/data/geoarrow/multiline.arrow';
+export const GEOARROW_POLYGON_FILE = '@loaders.gl/arrow/test/data/geoarrow/polygon.arrow';
+export const GEOARROW_MULTIPOLYGON_FILE = '@loaders.gl/arrow/test/data/geoarrow/multipolygon.arrow';
+export const GEOARROW_MULTIPOLYGON_HOLE_FILE =
   '@loaders.gl/arrow/test/data/geoarrow/multipolygon_hole.arrow';
+
+export const GEOARROW_POINT_WKB_FILE = '@loaders.gl/arrow/test/data/geoarrow/point_wkb.arrow';
+// export const GEOARROW_MULTIPOINT_FILE = '@loaders.gl/arrow/test/data/geoarrow/multipoint_wkb.arrow';
+export const GEOARROW_LINE_WKB_FILE = '@loaders.gl/arrow/test/data/geoarrow/line_wkb.arrow';
+// export const GEOARROW_MULTILINE_FILE = '@loaders.gl/arrow/test/data/geoarrow/multiline_wkb.arrow';
+export const GEOARROW_POLYGON_WKB_FILE = '@loaders.gl/arrow/test/data/geoarrow/polygon_wkb.arrow';
+export const GEOARROW_MULTIPOLYGON_WKB_FILE =
+  '@loaders.gl/arrow/test/data/geoarrow/multipolygon_wkb.arrow';
+export const GEOARROW_MULTIPOLYGON_HOLE_WKB_FILE =
+  '@loaders.gl/arrow/test/data/geoarrow/multipolygon_hole_wkb.arrow';
+
+export const GEOARROW_POINT_WKT_FILE = '@loaders.gl/arrow/test/data/geoarrow/point_wkt.arrow';
+// export const GEOARROW_MULTIPOINT_FILE = '@loaders.gl/arrow/test/data/geoarrow/multipoint_wkt.arrow';
+export const GEOARROW_LINE_WKT_FILE = '@loaders.gl/arrow/test/data/geoarrow/line_wkt.arrow';
+// export const GEOARROW_MULTILINE_FILE = '@loaders.gl/arrow/test/data/geoarrow/multiline_wkt.arrow';
+export const GEOARROW_POLYGON_WKT_FILE = '@loaders.gl/arrow/test/data/geoarrow/polygon_wkt.arrow';
+export const GEOARROW_MULTIPOLYGON_WKT_FILE =
+  '@loaders.gl/arrow/test/data/geoarrow/multipolygon_wkt.arrow';
+export const GEOARROW_MULTIPOLYGON_HOLE_WKT_FILE =
+  '@loaders.gl/arrow/test/data/geoarrow/multipolygon_hole_wkt.arrow';
 
 /** Array containing all encodings */
 export const GEOARROW_ENCODINGS = [
@@ -331,11 +351,27 @@ export const expectedMultiPolygonWithHoleGeojson: FeatureCollection = {
 };
 
 export const GEOARROW_TEST_CASES: [string, FeatureCollection][] = [
-  [MULTIPOLYGON_HOLE_ARROW_FILE, expectedMultiPolygonWithHoleGeojson],
-  [POINT_ARROW_FILE, expectedPointGeojson],
-  [MULTIPOINT_ARROW_FILE, expectedMultiPointGeoJson],
-  [LINE_ARROW_FILE, expectedLineStringGeoJson],
-  [MULTILINE_ARROW_FILE, expectedMultiLineStringGeoJson],
-  [POLYGON_ARROW_FILE, expectedPolygonGeojson],
-  [MULTIPOLYGON_ARROW_FILE, expectedMultiPolygonGeojson]
+  [GEOARROW_POINT_FILE, expectedPointGeojson],
+  [GEOARROW_MULTIPOINT_FILE, expectedMultiPointGeoJson],
+  [GEOARROW_LINE_FILE, expectedLineStringGeoJson],
+  [GEOARROW_MULTILINE_FILE, expectedMultiLineStringGeoJson],
+  [GEOARROW_POLYGON_FILE, expectedPolygonGeojson],
+  [GEOARROW_MULTIPOLYGON_FILE, expectedMultiPolygonGeojson],
+  [GEOARROW_MULTIPOLYGON_HOLE_FILE, expectedMultiPolygonWithHoleGeojson],
+
+  [GEOARROW_POINT_WKT_FILE, expectedPointGeojson],
+  // [GEOARROW_MULTIPOINT_WKT_FILE, expectedMultiPointGeoJson],
+  [GEOARROW_LINE_WKT_FILE, expectedLineStringGeoJson],
+  // [GEOARROW_MULTILINE_WKT_FILE, expectedMultiLineStringGeoJson],
+  [GEOARROW_POLYGON_WKT_FILE, expectedPolygonGeojson],
+  [GEOARROW_MULTIPOLYGON_WKT_FILE, expectedMultiPolygonGeojson],
+  [GEOARROW_MULTIPOLYGON_HOLE_WKT_FILE, expectedMultiPolygonWithHoleGeojson],
+
+  [GEOARROW_POINT_WKB_FILE, expectedPointGeojson],
+  // [GEOARROW_MULTIPOINT_WKB_FILE, expectedMultiPointGeoJson],
+  [GEOARROW_LINE_WKB_FILE, expectedLineStringGeoJson],
+  // [GEOARROW_MULTILINE_WKB_FILE, expectedMultiLineStringGeoJson],
+  [GEOARROW_POLYGON_WKB_FILE, expectedPolygonGeojson],
+  [GEOARROW_MULTIPOLYGON_WKB_FILE, expectedMultiPolygonGeojson],
+  [GEOARROW_MULTIPOLYGON_HOLE_WKB_FILE, expectedMultiPolygonWithHoleGeojson]
 ];

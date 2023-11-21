@@ -1,6 +1,13 @@
 # Upgrade Guide
 
-## Upgrading to loaders.gl v4.0
+## Upgrading to v4.1
+
+**@loaders.gl/wkt**
+
+- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
+- The `geometry` shape is deprecated, and now called `geojson-geometry`.
+
+## Upgrading to v4.0
 
 **Node.js v18+**
 

@@ -8,10 +8,6 @@ import type {ArrowTable, ArrowTableBatch} from './lib/arrow-table';
 import {parseGeoArrowSync} from './parsers/parse-geoarrow-sync';
 import {parseGeoArrowInBatches} from './parsers/parse-geoarrow-in-batches';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
 export type GeoArrowLoaderOptions = LoaderOptions & {
   arrow?: {
     shape: 'arrow-table' | 'binary-geometry';
