@@ -234,8 +234,12 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
   }
 
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
-    // @ts-expect-error
-    return await this.getMap(parameters);
+    const {boundingBox, ...rest} = parameters;
+    const wmsParameters: WMSGetMapParameters = {
+      bbox: [...boundingBox[0], ...boundingBox[1]],
+      ...rest
+    };
+    return await this.getMap(wmsParameters);
   }
 
   normalizeMetadata(capabilities: WMSCapabilities): ImageSourceMetadata {
@@ -495,16 +499,6 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
         // CRS was called SRS before WMS 1.3.0
         if (wmsParameters.version === '1.3.0') {
           key = 'crs';
-        }
-        break;
-
-      case 'boundingBox':
-        // Coordinate order is flipped for certain CRS in WMS 1.3.0
-        const boundingBox = value as [[number, number], [number, number]];
-        let bbox2: number[] | null = [...boundingBox[0], ...boundingBox[1]];
-        bbox2 = this._flipBoundingBox(boundingBox, wmsParameters);
-        if (bbox2) {
-          value = bbox2;
         }
         break;
 
