@@ -28,8 +28,8 @@ const GEOARROW_ENCODINGS = [
 const GEOARROW_COLUMN_METADATA_ENCODING = 'ARROW:extension:name';
 const GEOARROW_COLUMN_METADATA_METADATA = 'ARROW:extension:metadata';
 
-/** 
- * Geospatial metadata for one column, extracted from Apache Arrow metadata 
+/**
+ * Geospatial metadata for one column, extracted from Apache Arrow metadata
  * @see https://github.com/geoarrow/geoarrow/blob/main/extension-types.md
  */
 export type GeoArrowMetadata = {
@@ -57,8 +57,8 @@ export function getGeometryColumnsFromSchema(schema: Schema): Record<string, Geo
 }
 /**
  * Extracts GeoArrow metadata from a field
- * @param field 
- * @returns 
+ * @param field
+ * @returns
  * @see https://github.com/geoarrow/geoarrow/blob/d2f56704414d9ae71e8a5170a8671343ed15eefe/extension-types.md
  */
 export function getGeometryMetadataForField(field: Field): GeoArrowMetadata | null {

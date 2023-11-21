@@ -28,7 +28,7 @@ export const TWKBWorkerLoader: Loader<Geometry, never, WKBLoaderOptions> = {
   tests: [isTWKB],
   options: {
     wkb: {
-      shape: 'binary-geometry', // 'geojson-geometry'
+      shape: 'binary-geometry' // 'geojson-geometry'
     }
   }
 };

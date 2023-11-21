@@ -16,9 +16,9 @@ export function makeNodeStream<ArrayBuffer>(
   // @ts-ignore AsyncGenerator
   const iterator = source[Symbol.asyncIterator]
     ? // @ts-ignore AsyncGenerator
-    source[Symbol.asyncIterator]()
+      source[Symbol.asyncIterator]()
     : // @ts-ignore AsyncGenerator
-    source[Symbol.iterator]();
+      source[Symbol.iterator]();
   return new AsyncIterableReadable(iterator, options);
 }
 
