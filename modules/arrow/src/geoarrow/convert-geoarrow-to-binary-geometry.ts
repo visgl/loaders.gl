@@ -7,7 +7,6 @@ import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 import {TypedArray} from '@loaders.gl/loader-utils';
-import {triangulateOnWorker} from '../triangulate-on-worker';
 
 /**
  * Binary geometry type
@@ -80,11 +79,11 @@ export type BinaryGeometriesFromArrowOptions = {
  * @param options options for getting binary geometries {meanCenter: boolean}
  * @returns BinaryDataFromGeoArrow
  */
-export async function getBinaryGeometriesFromArrow(
+export function getBinaryGeometriesFromArrow(
   geoColumn: arrow.Vector,
   geoEncoding: GeoArrowEncoding,
   options?: BinaryGeometriesFromArrowOptions
-): Promise<BinaryDataFromGeoArrow> {
+): BinaryDataFromGeoArrow {
   const featureTypes = {
     polygon: geoEncoding === 'geoarrow.multipolygon' || geoEncoding === 'geoarrow.polygon',
     point: geoEncoding === 'geoarrow.multipoint' || geoEncoding === 'geoarrow.point',
@@ -96,7 +95,7 @@ export async function getBinaryGeometriesFromArrow(
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
 
-  for (const chunk of chunks) {
+  chunks.forEach((chunk) => {
     const {featureIds, flatCoordinateArray, nDim, geomOffset, triangles} =
       getBinaryGeometriesFromChunk(chunk, geoEncoding, options);
 
@@ -152,7 +151,7 @@ export async function getBinaryGeometriesFromArrow(
     });
 
     bounds = updateBoundsFromGeoArrowSamples(flatCoordinateArray, nDim, bounds);
-  }
+  });
 
   return {
     binaryGeometries,
@@ -257,7 +256,7 @@ function getMeanCentersFromGeometry(
  * @param options options for getting binary geometries
  * @returns BinaryGeometryContent
  */
-async function getBinaryGeometriesFromChunk(
+function getBinaryGeometriesFromChunk(
   chunk: arrow.Data,
   geoEncoding: GeoArrowEncoding,
   options?: BinaryGeometriesFromArrowOptions
@@ -278,53 +277,12 @@ async function getBinaryGeometriesFromChunk(
 }
 
 /**
- * get binary polygons from geoarrow polygon column
- * @param chunk one chunk of geoarrow polygon column
- * @param geoEncoding the geo encoding of the geoarrow polygon column
- * @returns BinaryGeometryContent
- */
-function getBinaryPolygonsFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
-  const binaryGeometry = getUntriangulatedBinaryPolygonsFromChunk(chunk, geoEncoding);
-  const {geometryIndicies, geomOffset, flatCoordinateArray, nDim} = binaryGeometry;
-  const triangles = getTriangleIndices(geometryIndicies, geomOffset, flatCoordinateArray, nDim);
-  return {
-    ...binaryGeometry,
-    triangles
-  };
-}
-
-/**
- * get binary polygons from geoarrow polygon column
- * @param chunk one chunk of geoarrow polygon column
- * @param geoEncoding the geo encoding of the geoarrow polygon column
- * @returns BinaryGeometryContent
- */
-export async function getBinaryPolygonsFromChunkAsync(
-  chunk: arrow.Data,
-  geoEncoding: string
-): Promise<BinaryGeometryContent> {
-  const binaryGeometry = getUntriangulatedBinaryPolygonsFromChunk(chunk, geoEncoding);
-  const {geometryIndicies, geomOffset, flatCoordinateArray, nDim} = binaryGeometry;
-  const triangulationOutput = await triangulateOnWorker({
-    polygonIndices: geometryIndicies,
-    primitivePolygonIndices: geomOffset,
-    flatCoordinateArray,
-    nDim
-  });
-
-  return {
-    ...binaryGeometry,
-    triangles: triangulationOutput.triangleIndices
-  };
-}
-
-/**
  * get triangle indices. Allows deck.gl to skip performing costly triangulation on main thread.
  * @param polygonIndices Indices within positions of the start of each simple Polygon
  * @param primitivePolygonIndices Indices within positions of the start of each primitive Polygon/ring
  * @param flatCoordinateArray Array of x, y or x, y, z positions
  * @param nDim - number of dimensions per position
- * @returns
+ * @returns triangle indices or null if invalid polygon and earcut fails
  */
 export function getTriangleIndices(
   polygonIndices: Uint16Array,
@@ -355,7 +313,7 @@ export function getTriangleIndices(
         nDim
       );
       if (triangleIndices.length === 0) {
-        throw Error('can not tesselate invalid polygon');
+        throw Error('earcut failed e.g. invalid polygon');
       }
       for (let j = 0; j < triangleIndices.length; j++) {
         triangles.push(triangleIndices[j] + startIdx);
@@ -368,9 +326,7 @@ export function getTriangleIndices(
     }
     return trianglesUint32;
   } catch (error) {
-    // TODO - add logging
-    // there is an expection when tesselating invalid polygon, e.g. polygon with self-intersection
-    // return null to skip tesselating
+    // if earcut fails, return null
     return null;
   }
 }
@@ -379,14 +335,9 @@ export function getTriangleIndices(
  * get binary polygons from geoarrow polygon column
  * @param chunk one chunk of geoarrow polygon column
  * @param geoEncoding the geo encoding of the geoarrow polygon column
- * @param options options for getting binary geometries
  * @returns BinaryGeometryContent
  */
-function getBinaryPolygonsFromChunk(
-  chunk: arrow.Data,
-  geoEncoding: string,
-  options?: BinaryGeometriesFromArrowOptions
-): BinaryGeometryContent {
+function getBinaryPolygonsFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
   const isMultiPolygon = geoEncoding === 'geoarrow.multipolygon';
 
   const polygonData = isMultiPolygon ? chunk.children[0] : chunk;
@@ -424,7 +375,6 @@ function getBinaryPolygonsFromChunk(
     featureIds,
     nDim,
     flatCoordinateArray,
-
     geomOffset,
     geometryIndicies,
     ...(options?.triangulate && triangles ? {triangles} : {})
