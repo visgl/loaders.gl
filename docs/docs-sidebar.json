@@ -131,6 +131,7 @@
       "modules/3d-tiles/api-reference/cesium-ion-loader",
       "modules/arrow/api-reference/arrow-loader",
       "modules/arrow/api-reference/arrow-writer",
+      "modules/arrow/api-reference/geoarrow-loader",
       "modules/bson/api-reference/bson-loader",
       "modules/bson/api-reference/bson-writer",
       "modules/csv/api-reference/csv-loader",

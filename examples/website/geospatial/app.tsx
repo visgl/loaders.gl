@@ -82,8 +82,8 @@ export default function App(props: AppProps) {
   const [state, setState] = useState<AppState>({
     // EXAMPLE STATE
     examples: EXAMPLES,
-    selectedExample: INITIAL_EXAMPLE_NAME,
-    selectedLoader: INITIAL_LOADER_NAME,
+    selectedExample: null,
+    selectedLoader: null,
 
     // CURRENT VIEW POINT / CAMERA POSITION
     viewState: INITIAL_VIEW_STATE,
@@ -96,7 +96,8 @@ export default function App(props: AppProps) {
     let examples: Record<string, Record<string, Example>> = {...EXAMPLES};
     if (props.format) {
       // Move the preferred format examples to the "top"
-      examples = {[props.format]: EXAMPLES[props.format], ...EXAMPLES};
+      examples = {[props.format]: EXAMPLES[props.format]};
+      Object.assign(examples, EXAMPLES);
       // Remove any keys
       for (const key of Object.keys(examples)) {
         if (key.endsWith('Test')) {
@@ -106,14 +107,10 @@ export default function App(props: AppProps) {
     }
 
     const selectedLoader = props.format || INITIAL_LOADER_NAME;
+    let selectedExample = props.format
+      ? Object.keys(examples[selectedLoader])[0]
+      : INITIAL_EXAMPLE_NAME;
 
-    let selectedExample = INITIAL_EXAMPLE_NAME;
-    if (props.format) {
-      for (const exampleName of Object.keys(examples[selectedLoader])) {
-        selectedExample = exampleName;
-        break;
-      }
-    }
     setState({...state, examples, selectedExample, selectedLoader});
   }, [props.format]);
 
@@ -151,17 +148,21 @@ export default function App(props: AppProps) {
         controller={{type: MapController, maxPitch: 85}}
         getTooltip={({object}) => {
           const {name, ...properties} = object?.properties || {};
-          const props = Object.entries(properties).map(([key, value]) => `<div>${key}: ${value}</div>`).join('\n');
-          return object && {
-            html: `\
+          const props = Object.entries(properties)
+            .map(([key, value]) => `<div>${key}: ${value}</div>`)
+            .join('\n');
+          return (
+            object && {
+              html: `\
 <h2>${name}</h2>
 ${props}
 <div>Coords: ${object.geometry?.coordinates?.[0]};${object.geometry?.coordinates?.[1]}</div>`,
-            style: {
-              backgroundColor: '#ddd',
-              fontSize: '0.8em'
+              style: {
+                backgroundColor: '#ddd',
+                fontSize: '0.8em'
+              }
             }
-          };
+          );
         }}
       >
         <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
@@ -178,6 +179,8 @@ async function onExampleChange(args: {
   setState: Function;
 }) {
   const {selectedLoader, selectedExample, example, state, setState} = args;
+
+  console.log(selectedLoader, selectedExample, example);
 
   const url = example.data;
   console.log('Loading', url);

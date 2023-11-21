@@ -46,26 +46,19 @@ export class ControlPanel extends PureComponent<PropTypes> {
     onExampleChange: () => {}
   };
 
-  _autoSelected: boolean;
+  firstSelection: boolean;
 
   constructor(props) {
     super(props);
-    this._autoSelected = false;
+    this.firstSelection = false;
   }
 
-  componentDidMount() {
-    const {examples = {}, onExampleChange} = this.props;
+  componentDidUpdate() {
+    const {examples = {}, selectedLoader, selectedExample, onExampleChange} = this.props;
 
-    let selectedLoader = this.props.selectedLoader;
-    let selectedExample = this.props.selectedExample;
-
-    if ((!selectedLoader || !selectedExample) && !this._autoSelected) {
-      selectedLoader = INITIAL_LOADER_NAME;
-      selectedExample = examples[selectedLoader][INITIAL_EXAMPLE_NAME];
-      this._autoSelected = true;
-    }
-
-    if (selectedLoader && selectedExample) {
+    // Fire of a change event on initialization
+    if (selectedLoader && selectedExample && !this.firstSelection) {
+      this.firstSelection = true;
       const example = examples[selectedLoader][selectedExample];
       onExampleChange({selectedLoader, selectedExample, example});
     }
