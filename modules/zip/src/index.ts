@@ -8,7 +8,8 @@ export {TarBuilder} from './tar-builder';
 export {
   parseZipCDFileHeader,
   makeZipCDHeaderIterator,
-  signature as cdSignature
+  signature as cdSignature,
+  generateCDHeader
 } from './parse-zip/cd-file-header';
 export {
   parseZipLocalFileHeader,
