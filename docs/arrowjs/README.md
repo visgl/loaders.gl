@@ -2,17 +2,17 @@
 
 ## Why does loaders.gl provide an Arrow JS API Reference?
 
-> Perhaps this documentation could at some point be contributed back to the Apache Arrow project, but so far this has not happened.
+> The idea is that this documentation should at some point be contributed back to the Apache Arrow project/repository, but so far this has not happened.
 
 loaders.gl is designed to output parsed tables and meshes in binary columnar format (whenever the parsed data structure allows). Binary columnar tables are a compact and efficient representation that is easy to work with analytically in JavaScript and to seamlessly upload to GPUs (via e.g. WebGL or WebGPU) for ultra-performance rendering and computation.
 
 While loaders.gl can load data into binary columnar tables, it only provides limited support for working with binary tables. The intention is that the application should be able to use complementary libraries like Apache Arrow JS.
 
-While the Apache Arrow JS library itself is excellent, the [reference documentation for the Apache Arrow JavaScript bindings](https://arrow.apache.org/docs/js/) is unfortunately rather thin. It can therefore be challenging to get up to speed on the Arrow JS API, which is why this documentation is provided in loaders.gl.
+While the Apache Arrow JS library itself is excellent, the [reference documentation for the JavaScript bindings](https://arrow.apache.org/docs/js/) is unfortunately rather thin. It can therefore be challenging to get up to speed on the Arrow JS API, which is why this documentation is provided in loaders.gl.
 
 ## About Apache Arrow JS
 
-The Apache Arrow JavaScript API is designed to help applications tap into the full power of working with binary columnar data in the Apache Arrow format. Arrow JS has a rich set of classes that supports use cases such as batched loading and writing, as well performing data frame operations on Arrow encoded data, including applying filters, iterating over tables, etc.
+The Apache Arrow JavaScript API is designed to help applications work with binary columnar data in the Apache Arrow format. Arrow JS offers a core set of classes that supports use cases such as batched loading and writing, column and row access, schemas etc.
 
 ## Getting Started
 
