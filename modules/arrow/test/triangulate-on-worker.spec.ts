@@ -7,7 +7,7 @@ import {fetchFile} from '@loaders.gl/core';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {POINT_ARROW_FILE} from './geoarrow/convert-geoarrow-to-geojson.spec';
 
-test.only('TriangulationWorker#plumbing', async (t) => {
+test('TriangulationWorker#plumbing', async (t) => {
   const arrowFile = await fetchFile(POINT_ARROW_FILE);
   const arrowContent = await arrowFile.arrayBuffer();
 
