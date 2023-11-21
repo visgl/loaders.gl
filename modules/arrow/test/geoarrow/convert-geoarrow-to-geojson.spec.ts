@@ -28,7 +28,6 @@ async function testParseFromArrow(
     }
   });
 
-  debugger
   t.equal(arrowTable.shape, 'arrow-table');
 
   if (arrowTable.shape === 'arrow-table') {

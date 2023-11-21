@@ -82,7 +82,7 @@ test('crypto#streaming hashes', async (t) => {
         });
 
         // @ts-ignore
-        // eslint-disable-next-line no-unused-vars, no-empty, max-depth
+        // eslint-disable-next-line no-unused-vars, no-empty, max-depth, @typescript-eslint/no-unused-vars
         for await (const batch of nullIterator) {
         }
 
