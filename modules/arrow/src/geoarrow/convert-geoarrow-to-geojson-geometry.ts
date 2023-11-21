@@ -10,9 +10,10 @@ import {
   Point,
   MultiLineString,
   LineString,
-  Geometry
+  Geometry,
+  BinaryGeometry
 } from '@loaders.gl/schema';
-import type {GeoArrowEncoding} from '@loaders.gl/gis';
+import {binaryToGeometry, type GeoArrowEncoding} from '@loaders.gl/gis';
 import {WKBLoader, WKTLoader} from '@loaders.gl/wkt';
 
 /**
@@ -70,8 +71,14 @@ export function parseGeometryFromArrow(
 }
 
 function arrowWKBToFeature(arrowCellValue: any) {
-  const arrayBuffer: ArrayBuffer = arrowCellValue.buffer;
-  return WKBLoader.parseSync?.(arrayBuffer)! as Geometry;
+  // The actual WKB array buffer starts from byteOffset and ends at byteOffset + byteLength
+  const arrayBuffer: ArrayBuffer = arrowCellValue.buffer.slice(
+    arrowCellValue.byteOffset,
+    arrowCellValue.byteOffset + arrowCellValue.byteLength
+  );
+  const binaryGeometry = WKBLoader.parseSync?.(arrayBuffer)! as BinaryGeometry;
+  const geometry = binaryToGeometry(binaryGeometry);
+  return geometry;
 }
 
 function arrowWKTToFeature(arrowCellValue: any) {

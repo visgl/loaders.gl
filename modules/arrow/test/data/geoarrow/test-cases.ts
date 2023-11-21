@@ -365,9 +365,8 @@ export const GEOARROW_TEST_CASES: [string, FeatureCollection][] = [
   // [GEOARROW_MULTILINE_WKT_FILE, expectedMultiLineStringGeoJson],
   [GEOARROW_POLYGON_WKT_FILE, expectedPolygonGeojson],
   [GEOARROW_MULTIPOLYGON_WKT_FILE, expectedMultiPolygonGeojson],
-  [GEOARROW_MULTIPOLYGON_HOLE_WKT_FILE, expectedMultiPolygonWithHoleGeojson]
+  [GEOARROW_MULTIPOLYGON_HOLE_WKT_FILE, expectedMultiPolygonWithHoleGeojson],
 
-  /*
   [GEOARROW_POINT_WKB_FILE, expectedPointGeojson],
   // [GEOARROW_MULTIPOINT_WKB_FILE, expectedMultiPointGeoJson],
   [GEOARROW_LINE_WKB_FILE, expectedLineStringGeoJson],
@@ -375,5 +374,4 @@ export const GEOARROW_TEST_CASES: [string, FeatureCollection][] = [
   [GEOARROW_POLYGON_WKB_FILE, expectedPolygonGeojson],
   [GEOARROW_MULTIPOLYGON_WKB_FILE, expectedMultiPolygonGeojson],
   [GEOARROW_MULTIPOLYGON_HOLE_WKB_FILE, expectedMultiPolygonWithHoleGeojson],  
-  */
 ];
