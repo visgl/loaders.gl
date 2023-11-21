@@ -8,7 +8,7 @@ export class NodeFile implements ReadableFile, WritableFile {
   bigsize: bigint;
   url: string;
 
-  constructor(path: string, flags: 'r' | 'w' | 'wx', mode?: number) {
+  constructor(path: string, flags: 'r' | 'w' | 'wx' | 'a+', mode?: number) {
     path = resolvePath(path);
     this.handle = fs.openSync(path, flags, mode);
     const stats = fs.fstatSync(this.handle, {bigint: true});
@@ -20,6 +20,18 @@ export class NodeFile implements ReadableFile, WritableFile {
   async close(): Promise<void> {
     return new Promise((resolve, reject) => {
       fs.close(this.handle, (err) => (err ? reject(err) : resolve()));
+    });
+  }
+
+  async truncate(length: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      fs.ftruncate(this.handle, length, (err) => (err ? reject(err) : resolve()));
+    });
+  }
+
+  async append(data: Uint8Array): Promise<void> {
+    return new Promise((resolve, reject) => {
+      fs.appendFile(this.handle, data, (err) => (err ? reject(err) : resolve()));
     });
   }
 

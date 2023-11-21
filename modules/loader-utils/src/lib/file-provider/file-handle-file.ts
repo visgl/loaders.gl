@@ -16,9 +16,27 @@ export class FileHandleFile implements FileProvider {
   private size: bigint;
 
   /** Create a new FileHandleFile */
-  constructor(path: string) {
-    this.file = new NodeFile(path, 'r');
+  constructor(path: string, append: boolean = false) {
+    this.file = new NodeFile(path, append ? 'a+' : 'r');
     this.size = this.file.bigsize;
+  }
+
+  /**
+   * Truncates the file descriptor.
+   * @param length desired file lenght
+   */
+  async truncate(length: number): Promise<void> {
+    await this.file.truncate(length);
+    this.size = (await this.file.stat()).bigsize;
+  }
+
+  /**
+   * Append data to a file.
+   * @param buffer data to append
+   */
+  async append(buffer: Uint8Array): Promise<void> {
+    await this.file.append(buffer);
+    this.size = (await this.file.stat()).bigsize;
   }
 
   /** Close file */

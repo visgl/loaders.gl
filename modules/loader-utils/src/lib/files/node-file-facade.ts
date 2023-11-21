@@ -13,7 +13,7 @@ export class NodeFileFacade implements ReadableFile, WritableFile {
   bigsize: bigint = 0n;
   url: string = '';
 
-  constructor(url: string, flags?: 'r' | 'w' | 'wx', mode?: number) {
+  constructor(url: string, flags?: 'r' | 'w' | 'wx' | 'a+', mode?: number) {
     // Return the actual implementation instance
     if (globalThis.loaders?.NodeFile) {
       return new globalThis.loaders.NodeFile(url, flags, mode);
@@ -33,6 +33,16 @@ export class NodeFileFacade implements ReadableFile, WritableFile {
   }
   /** Get information about file */
   async stat(): Promise<Stat> {
+    throw NOT_IMPLEMENTED;
+  }
+
+  /** Truncates the file descriptor. */
+  async truncate(length: number): Promise<void> {
+    throw NOT_IMPLEMENTED;
+  }
+
+  /** Append data to a file. */
+  async append(data: Uint8Array): Promise<void> {
     throw NOT_IMPLEMENTED;
   }
   /** Close the file */
