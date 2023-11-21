@@ -30,7 +30,7 @@ export const WKBWorkerLoader: Loader<Geometry | BinaryGeometry, never, WKBLoader
   tests: [isWKB],
   options: {
     wkb: {
-      shape: 'geojson-geometry'
+      shape: 'binary-geometry' // 'geojson-geometry'
     }
   }
 };
