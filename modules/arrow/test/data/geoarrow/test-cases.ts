@@ -373,5 +373,5 @@ export const GEOARROW_TEST_CASES: [string, FeatureCollection][] = [
   // [GEOARROW_MULTILINE_WKB_FILE, expectedMultiLineStringGeoJson],
   [GEOARROW_POLYGON_WKB_FILE, expectedPolygonGeojson],
   [GEOARROW_MULTIPOLYGON_WKB_FILE, expectedMultiPolygonGeojson],
-  [GEOARROW_MULTIPOLYGON_HOLE_WKB_FILE, expectedMultiPolygonWithHoleGeojson],  
+  [GEOARROW_MULTIPOLYGON_HOLE_WKB_FILE, expectedMultiPolygonWithHoleGeojson]
 ];
