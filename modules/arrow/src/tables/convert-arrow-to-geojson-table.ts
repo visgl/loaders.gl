@@ -16,6 +16,7 @@ import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 export function convertApacheArrowToArrowTable(arrowTable: arrow.Table): ArrowTable {
   return {
     shape: 'arrow-table',
+    schema: serializeArrowSchema(arrowTable.schema),
     data: arrowTable
   };
 }
@@ -58,6 +59,7 @@ export function convertArrowToGeoJSONTable(table: ArrowTable): GeoJSONTable {
   return {
     shape: 'geojson-table',
     type: 'FeatureCollection',
+    schema: table.schema,
     features
   };
 }

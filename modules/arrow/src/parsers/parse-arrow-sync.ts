@@ -6,6 +6,7 @@ import type {ArrowTable} from '../lib/arrow-table';
 import {convertTable} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 import {convertArrowToColumnarTable} from '../tables/convert-arrow-to-columnar-table';
+import {serializeArrowSchema} from '../schema/convert-arrow-schema';
 
 // Parses arrow to a columnar table
 export function parseArrowSync(
@@ -13,7 +14,11 @@ export function parseArrowSync(
   options?: {shape?: 'arrow-table' | 'columnar-table' | 'object-row-table' | 'array-row-table'}
 ): ArrowTable | ColumnarTable | ObjectRowTable | ArrayRowTable {
   const apacheArrowTable = arrow.tableFromIPC([new Uint8Array(arrayBuffer)]);
-  const arrowTable: ArrowTable = {shape: 'arrow-table', data: apacheArrowTable};
+  const arrowTable: ArrowTable = {
+    shape: 'arrow-table',
+    schema: serializeArrowSchema(apacheArrowTable.schema),
+    data: apacheArrowTable
+  };
 
   const shape = options?.shape || 'arrow-table';
   switch (shape) {

@@ -12,7 +12,7 @@ import {MapController} from '@deck.gl/core/typed';
 import {GeoJsonLayer} from '@deck.gl/layers/typed';
 
 import {ControlPanel} from './components/control-panel';
-import {FileUploader} from './components/file-uploader';
+// import {FileUploader} from './components/file-uploader';
 
 import type {Example} from './examples';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
@@ -76,7 +76,7 @@ type AppState = {
 };
 
 /**
- *
+ * A Geospatial table map viewer
  */
 export default function App(props: AppProps) {
   const [state, setState] = useState<AppState>({
@@ -96,9 +96,8 @@ export default function App(props: AppProps) {
     let examples: Record<string, Record<string, Example>> = {...EXAMPLES};
     if (props.format) {
       // Move the preferred format examples to the "top"
-      examples = {[props.format]: EXAMPLES[props.format]};
-      Object.assign(examples, EXAMPLES);
-      // Remove any keys
+      examples = {[props.format]: EXAMPLES[props.format] ,...EXAMPLES};
+      // Remove any unwanted keys
       for (const key of Object.keys(examples)) {
         if (key.endsWith('Test')) {
           delete examples[key];
@@ -111,12 +110,16 @@ export default function App(props: AppProps) {
       ? Object.keys(examples[selectedLoader])[0]
       : INITIAL_EXAMPLE_NAME;
 
-    setState({...state, examples, selectedExample, selectedLoader});
+    onExampleChange({selectedLoader, selectedExample, example: examples[selectedLoader][selectedExample], state, setState});
+    setState(state => ({...state, examples, selectedExample, selectedLoader}));
   }, [props.format]);
+
+  let schema = state.loadedTable?.schema ? {metadata: state.loadedTable?.schema.metadata, ... state.loadedTable?.schema} : null;
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <ControlPanel
+        schema={schema && JSON.stringify(schema, null, 2)}
         examples={state.examples}
         selectedExample={state.selectedExample}
         selectedLoader={state.selectedLoader}
@@ -127,24 +130,27 @@ export default function App(props: AppProps) {
           center long/lat: {state.viewState.longitude.toFixed(3)},
           {state.viewState.latitude.toFixed(3)}, zoom: {state.viewState.zoom.toFixed(2)}
         </div>
+        {
+          /* TODO -restore drag and drop
         <FileUploader
-          onFileRemoved={() => setState({...state, loadedTable: null})}
+          onFileRemoved={() => setState(state => ({...state, loadedTable: null}))}
           onFileSelected={async (uploadedFile: File) => {
             // TODO - error handling
             const data = (await load(uploadedFile, LOADERS, LOADER_OPTIONS)) as Table;
-            setState({
+            setState(state => ({
               ...state,
               selectedExample: uploadedFile.name,
               loadedTable: data
-            });
+            }));
           }}
         />
+        */}
       </ControlPanel>
 
       <DeckGL
         layers={renderLayer(state)}
         viewState={state.viewState}
-        onViewStateChange={({viewState}) => setState({...state, viewState})}
+        onViewStateChange={({viewState}) => setState(state => ({...state, viewState}))}
         controller={{type: MapController, maxPitch: 85}}
         getTooltip={({object}) => {
           const {name, ...properties} = object?.properties || {};
@@ -180,24 +186,20 @@ async function onExampleChange(args: {
 }) {
   const {selectedLoader, selectedExample, example, state, setState} = args;
 
-  console.log(selectedLoader, selectedExample, example);
-
   const url = example.data;
-  console.log('Loading', url);
   try {
     const data = (await load(url, LOADERS, LOADER_OPTIONS)) as Table;
-    console.log('Loaded data', data);
+    console.log('Loaded data',url, data);
     const viewState = {...state.viewState, ...example.viewState};
-    setState({...state, selectedLoader, selectedExample, viewState, loadedTable: data});
+    setState(state => ({...state, selectedLoader, selectedExample, viewState, loadedTable: data}));
   } catch (error) {
-    console.log('Failed to load data', url, error);
-    setState({...state, error: `Could not load ${selectedExample}: ${error.message}`});
+    console.error('Failed to load data', url, error);
+    setState(state => ({...state, error: `Could not load ${selectedExample}: ${error.message}`}));
   }
 }
 
 function renderLayer({selectedExample, selectedLoader, loadedTable}) {
   const geojson = loadedTable as GeoJSON;
-  console.warn('Rendering layer with', geojson);
   return [
     new GeoJsonLayer({
       id: `geojson-${selectedExample}(${selectedLoader})`,
