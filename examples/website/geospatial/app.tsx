@@ -95,14 +95,8 @@ export default function App(props: AppProps) {
   useEffect(() => {
     let examples: Record<string, Record<string, Example>> = {...EXAMPLES};
     if (props.format) {
-      // Move the preferred format examples to the "top"
-      examples = {[props.format]: EXAMPLES[props.format] ,...EXAMPLES};
-      // Remove any unwanted keys
-      for (const key of Object.keys(examples)) {
-        if (key.endsWith('Test')) {
-          delete examples[key];
-        }
-      }
+      // Keep only the preferred format examples
+      examples = {[props.format]: EXAMPLES[props.format]};
     }
 
     const selectedLoader = props.format || INITIAL_LOADER_NAME;
