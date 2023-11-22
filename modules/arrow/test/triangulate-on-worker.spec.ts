@@ -5,7 +5,8 @@ import test from 'tape-promise/tape';
 import {triangulateOnWorker, parseGeoArrowOnWorker, TriangulationWorker} from '@loaders.gl/arrow';
 import {fetchFile} from '@loaders.gl/core';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
-import {POINT_ARROW_FILE} from './geoarrow/convert-geoarrow-to-geojson.spec';
+
+export const POINT_ARROW_FILE = '@loaders.gl/arrow/test/data/point.arrow';
 
 // WORKER TESTS
 test('TriangulationWorker#plumbing', async (t) => {
