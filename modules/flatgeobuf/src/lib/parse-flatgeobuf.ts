@@ -145,8 +145,8 @@ function parseFlatGeobufInBatchesToBinary(stream, options: FlatGeobufLoaderOptio
 
 /**
  * @todo this does not return proper GeoJSONTable batches
- * @param stream 
- * @param options 
+ * @param stream
+ * @param options
  */
 // eslint-disable-next-line complexity
 async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: FlatGeobufLoaderOptions) {
