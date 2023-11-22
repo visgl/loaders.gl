@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {FlatGeobufLoaderOptions} from './flatgeobuf-loader';
 import {FlatGeobufLoader as FlatGeobufWorkerLoader} from './flatgeobuf-loader';
