@@ -57,21 +57,38 @@ function triangulateBatch(data: TriangulateInput): TriangulateResult {
  * @returns
  */
 function parseGeoArrowBatch(data: ParseGeoArrowInput): ParseGeoArrowResult {
-  let binaryGeometries: BinaryDataFromGeoArrow | null = null;
-  const {arrowData, chunkIndex, geometryColumnName, geometryEncoding, meanCenter, triangle} = data;
-  const arrowTable = arrow.tableFromIPC(arrowData);
-  const geometryColumn = arrowTable.getChild(geometryColumnName);
+  let binaryDataFromGeoArrow: BinaryDataFromGeoArrow | null = null;
+  const {arrowData, chunkIndex, geometryEncoding, meanCenter, triangle} = data;
+  // const batches = arrow.RecordBatchReader.from(arrowData);
+  console.log(arrowData, typeof arrowData);
+  const newdata = new arrow.Data(
+    arrowData.type,
+    arrowData.offset,
+    arrowData.length,
+    arrowData.nullCount,
+    arrowData.buffers,
+    arrowData.children,
+    arrowData.dictionary
+  );
+  const geometryColumn = arrow.makeVector(newdata);
+  console.log('geometryColumn', geometryColumn.data);
+  // const arrowTable = new arrow.Table([arrowData.batches]);
+  // const geometryColumn = arrowTable.getChild(geometryColumnName);
   if (geometryColumn) {
     const options = {meanCenter, triangle, chunkIndex};
-    binaryGeometries = getBinaryGeometriesFromArrow(geometryColumn, geometryEncoding, options);
+    binaryDataFromGeoArrow = getBinaryGeometriesFromArrow(
+      geometryColumn,
+      geometryEncoding,
+      options
+    );
     // NOTE: here binaryGeometry will be copied to main thread
     return {
-      binaryGeometries,
+      binaryDataFromGeoArrow,
       chunkIndex: data.chunkIndex
     };
   }
   return {
-    binaryGeometries,
+    binaryDataFromGeoArrow,
     chunkIndex: data.chunkIndex
   };
 }

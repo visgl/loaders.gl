@@ -21,7 +21,7 @@ export type TriangulationWorkerOutput =
 
 export type ParseGeoArrowInput = {
   operation: 'parse-geoarrow';
-  arrowData: ArrayBuffer;
+  arrowData: any;
   chunkIndex: number;
   geometryColumnName: string;
   geometryEncoding: GeoArrowEncoding;
@@ -31,7 +31,7 @@ export type ParseGeoArrowInput = {
 
 export type ParseGeoArrowResult = {
   chunkIndex: number;
-  binaryGeometries: BinaryDataFromGeoArrow | null;
+  binaryDataFromGeoArrow: BinaryDataFromGeoArrow | null;
 };
 
 /** Input data for operation: 'triangulate' */
