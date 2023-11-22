@@ -66,4 +66,8 @@ export {convertArrowToGeoJSONTable} from './tables/convert-arrow-to-geojson-tabl
 
 // EXPERIMENTAL WORKER
 
-export {TriangulationWorker, triangulateOnWorker} from './triangulate-on-worker';
+export {
+  TriangulationWorker,
+  triangulateOnWorker,
+  parseGeoArrowOnWorker
+} from './triangulate-on-worker';

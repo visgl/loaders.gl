@@ -24,7 +24,7 @@ createWorker(async (data, options = {}) => {
       return input;
     case 'triangulate':
       return triangulateBatch(data);
-    case 'parseGeoArrow':
+    case 'parse-geoarrow':
       return parseGeoArrowBatch(data);
     default:
       throw new Error(

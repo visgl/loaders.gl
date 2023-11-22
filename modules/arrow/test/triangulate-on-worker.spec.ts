@@ -2,35 +2,10 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {triangulateOnWorker, TriangulationWorker} from '@loaders.gl/arrow';
+import {triangulateOnWorker, parseGeoArrowOnWorker, TriangulationWorker} from '@loaders.gl/arrow';
 import {fetchFile} from '@loaders.gl/core';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {POINT_ARROW_FILE} from './geoarrow/convert-geoarrow-to-geojson.spec';
-
-test('TriangulationWorker#plumbing', async (t) => {
-  const arrowFile = await fetchFile(POINT_ARROW_FILE);
-  const arrowContent = await arrowFile.arrayBuffer();
-
-  // simulate parsing 1st batch/chunk of the arrow data in web worker from e.g. kepler
-  const sourceData = {
-    operation: 'parseGeoArrow',
-    arrowData: arrowContent,
-    chunkIndex: 0,
-    geometryColumnName: 'geometry',
-    geometryEncoding: 'geoarrow.point',
-    meanCenter: true,
-    triangle: false
-  };
-  const parsedGeoArrowData = await processOnWorker(TriangulationWorker, sourceData, {
-    _workerType: 'test'
-  });
-
-  // kepler should await for the result from web worker and render the binary geometries
-  console.log(parsedGeoArrowData);
-
-  t.ok(parsedGeoArrowData, 'ParseGeoArrow worker echoed input data');
-  t.end();
-});
 
 // WORKER TESTS
 test('TriangulationWorker#plumbing', async (t) => {
@@ -65,12 +40,11 @@ test('TriangulationWorker#plumbing', async (t) => {
   t.end();
 });
 
-test.skip('triangulateOnWorker#plumbing', async (t) => {
-  t.ok(triangulateOnWorker, 'triangulateOnWorker defined');
+test.skip('triangulateOnWorker', async (t) => {
+  t.ok(triangulateOnWorker, 'triangulateOnWorker imported ok');
   /*
   const triangulatedData = await triangulateOnWorker(
     {
-      operation: 'test',
       data: new ArrayBuffer(100)
     },
     {
@@ -87,12 +61,40 @@ test.skip('triangulateOnWorker#plumbing', async (t) => {
   //   operation: 'error',
   //   _workerType: 'test'
   // }), 'Triangulation worker throws on incorrect operation');
-  */
 
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
+  */
+  t.end();
+});
 
+test('parseGeoArrowOnWorker', async (t) => {
+  const arrowFile = await fetchFile(POINT_ARROW_FILE);
+  const arrowContent = await arrowFile.arrayBuffer();
+
+  // simulate parsing 1st batch/chunk of the arrow data in web worker from e.g. kepler
+  const parsedGeoArrowData = await parseGeoArrowOnWorker(
+    {
+      operation: 'parse-geoarrow',
+      arrowData: arrowContent,
+      chunkIndex: 0,
+      geometryColumnName: 'geometry',
+      geometryEncoding: 'geoarrow.point',
+      meanCenter: true,
+      triangle: false
+    },
+    {
+      _workerType: 'test'
+    }
+  );
+
+  // kepler should await for the result from web worker and render the binary geometries
+  const {binaryGeometries, bounds, featureTypes, meanCenters} = parsedGeoArrowData.binaryGeometries!;
+  t.ok(binaryGeometries, 'ParseGeoArrow worker returned binaryGeometries');
+  t.ok(bounds, 'ParseGeoArrow worker returned binaryGeometries');
+  t.ok(featureTypes, 'ParseGeoArrow worker returned featureTypes');
+  t.ok(meanCenters, 'ParseGeoArrow worker returned meanCenters');
   t.end();
 });

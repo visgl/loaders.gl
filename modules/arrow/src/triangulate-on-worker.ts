@@ -16,11 +16,11 @@ export type TriangulationWorkerInput =
 
 export type TriangulationWorkerOutput =
   | ({operation: 'triangulate'} & TriangulateResult)
-  | ({operation: 'parseGeoArrow'} & ParseGeoArrowResult)
+  | ({operation: 'parse-geoarrow'} & ParseGeoArrowResult)
   | {operation: 'test'; data: any};
 
 export type ParseGeoArrowInput = {
-  operation: 'parseGeoArrow';
+  operation: 'parse-geoarrow';
   arrowData: ArrayBuffer;
   chunkIndex: number;
   geometryColumnName: string;
@@ -59,11 +59,21 @@ export const TriangulationWorker = {
 };
 
 /**
- * Provide type safety
+ * Triangulate a set of polygons on worker, type safe API
  */
 export function triangulateOnWorker(
   data: TriangulateInput,
   options: WorkerOptions = {}
 ): Promise<TriangulateResult> {
   return processOnWorker(TriangulationWorker, {...data, operation: 'triangulate'}, options);
+}
+
+/**
+ * Parse GeoArrow geometry colum on worker, type safe API
+ */
+export function parseGeoArrowOnWorker(
+  data: ParseGeoArrowInput,
+  options: WorkerOptions = {}
+): Promise<ParseGeoArrowResult> {
+  return processOnWorker(TriangulationWorker, {...data, operation: 'parse-geoarrow'}, options);
 }
