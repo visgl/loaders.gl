@@ -2,6 +2,10 @@
 
 ![arrow-logo](../images/apache-arrow-small.png)
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square" alt="From-v4.1" />
+</p>
+
 The `GeoArrowLoader` parses Apache Arrow columnar table format files, and looks for `GeoArrow` type extensions to parse geometries from the table.
 
 | Loader                | Characteristic                                                            |

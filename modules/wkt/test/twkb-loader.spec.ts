@@ -51,7 +51,7 @@ test('TWKBLoader#2D', async (t) => {
 //     }
 
 //     if (testCase.wkbXdr && testCase.binary && testCase.geoJSON) {
-//       t.deepEqual(parseSync(testCase.twkbXdr, TWKBLoader, {wkb: {shape: 'geometry'}}), testCase.geoJSON);
+//       t.deepEqual(parseSync(testCase.twkbXdr, TWKBLoader, {wkb: {shape: 'geojson-geometry'}}), testCase.geoJSON);
 //     }
 //   }
 

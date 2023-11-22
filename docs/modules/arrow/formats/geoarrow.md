@@ -22,22 +22,22 @@ Geospatial tabular data where one or more columns contains feature geometries an
 Note that GeoArrow is not a separate format from Apache Arrow rather, the GeoArrow specification simply describes additional conventions for metadata and layout of geospatial data. This means that a valid GeoArrow file is always a valid Arrow file. This is done through [Arrow extension type](https://arrow.apache.org/docs/format/Columnar.html#extension-types) definitions that ensure type-level metadata (e.g., CRS) is propagated when used in Arrow implementations.
 
 
+## Geometry Types
+
+| Geometry type              | Read | Write | Description          |
+| -------------------------- | ---- | ----- | -------------------- |
+| `geoarrow.point`           | ✅    | ❌     |                      |
+| `geoarrow.multipoint`      | ✅    | ❌     |                      |
+| `geoarrow.linestring`      | ✅    | ❌     |                      |
+| `geoarrow.multilinestring` | ✅    | ❌     |                      |
+| `geoarrow.polygon`         | ✅    | ❌     |                      |
+| `geoarrow.multipolygon`    | ✅    | ❌     |                      |
+| `geoarrow.wkb`             | ✅    | ❌     | `WKB` also supported |
+| `geoarrow.wkt`             | ✅    | ❌     | `WKT` also supported |
+
 ## Relationship with GeoParquet
 
-The [GeoParquet specification](https://github.com/opengeospatial/geoparquet) is closely related to GeoArrow. Notable differences:
+The [GeoParquet](/docs/modules/parquet/formats/geoparquet) [specification](https://github.com/opengeospatial/geoparquet) is closely related to GeoArrow. Notable differences:
   
 - GeoParquet is a file-level metadata specification
 - GeoArrow is a field-level metadata and memory layout specification
-
-## Geometry Types
-
-| Geometry type              | Read | Write | Description |
-| -------------------------- | ---- | ----- | ----------- |
-| `geoarrow.multipolygon`    | ✅    | ❌     |             |
-| `geoarrow.polygon`         | ✅    | ❌     |             |
-| `geoarrow.multipoint`      | ✅    | ❌     |             |
-| `geoarrow.point`           | ✅    | ❌     |             |
-| `geoarrow.multilinestring` | ✅    | ❌     |             |
-| `geoarrow.linestring`      | ✅    | ❌     |             |
-| `geoarrow.wkb`             | ❌    | ❌     |             |
-| `geoarrow.wkt`             | ❌    | ❌     |             |

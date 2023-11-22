@@ -3,6 +3,7 @@
 
 export const INITIAL_LOADER_NAME = 'GeoParquet';
 export const INITIAL_EXAMPLE_NAME = 'Airports';
+
 // export const INITIAL_LOADER_NAME = 'GeoJSON';
 // export const INITIAL_EXAMPLE_NAME = 'Vancouver';
 
@@ -30,9 +31,16 @@ export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/m
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const PARQUET_PATH = '/formats/geoparquet';
 
-const GEOARROW_TEST_DATA = `${LOADERS_URL}/modules/arrow/test/data`; // geoarrow
+const GEOARROW_TEST_DATA = `${LOADERS_URL}/modules/arrow/test/data/geoarrow`;
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
+  GeoArrow: {
+    multipolygon_hole: {
+      format: 'geoarrow',
+      data: `${GEOARROW_TEST_DATA}/multipolygon_hole.arrow`,
+      viewState: {...VIEW_STATE, longitude: 0, latitude: 0, zoom: 4}
+    }
+  },
   GeoParquet: {
     Airports: {
       format: 'geoparquet',
