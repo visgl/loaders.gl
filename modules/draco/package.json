@@ -12,13 +12,19 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
     "loader",
+    "parser",
+    "writer",
+    "encoder",
     "3d",
     "mesh",
     "point cloud",
     "draco3d",
-    "draco"
+    "draco",
+    "geometry",
+    "geometry compression",
+    "webgl",
+    "webgpu"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",
