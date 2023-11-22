@@ -234,6 +234,7 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
   }
 
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
+    // Replace the GetImage `boundingBox` parameter with the WMS flat `bbox` parameter.
     const {boundingBox, ...rest} = parameters;
     const wmsParameters: WMSGetMapParameters = {
       bbox: [...boundingBox[0], ...boundingBox[1]],
