@@ -151,3 +151,35 @@ test('WMSSource#fetch override', async (t) => {
     t.end();
   });
 });
+
+test('WMSSource#getImage', async (t) => {
+  const wmsService = new WMSSource({url: WMS_SERVICE_URL});
+  let getMapParameters;
+
+  // @ts-ignore
+  wmsService.getMap = (parameters) => {
+    getMapParameters = parameters;
+  };
+
+  await wmsService.getImage({
+    width: 800,
+    height: 600,
+    boundingBox: [
+      [30, 70],
+      [35, 75]
+    ],
+    layers: ['oms']
+  });
+
+  t.deepEqual(
+    getMapParameters,
+    {
+      width: 800,
+      height: 600,
+      bbox: [30, 70, 35, 75],
+      layers: ['oms']
+    },
+    'boundingBox transformed to bbox'
+  );
+  t.end();
+});
