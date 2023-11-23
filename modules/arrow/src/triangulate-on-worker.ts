@@ -1,6 +1,7 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
+import * as arrow from 'apache-arrow';
 import type {WorkerOptions} from '@loaders.gl/worker-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import {BinaryDataFromGeoArrow, GeoArrowEncoding} from '@loaders.gl/arrow';
@@ -21,9 +22,16 @@ export type TriangulationWorkerOutput =
 
 export type ParseGeoArrowInput = {
   operation: 'parse-geoarrow';
-  arrowData: any;
+  chunkData: {
+    type: arrow.DataType;
+    offset: number;
+    length: number;
+    nullCount: number;
+    buffers: any;
+    children: arrow.Data[];
+    dictionary?: arrow.Vector;
+  };
   chunkIndex: number;
-  geometryColumnName: string;
   geometryEncoding: GeoArrowEncoding;
   meanCenter: boolean;
   triangle: boolean;

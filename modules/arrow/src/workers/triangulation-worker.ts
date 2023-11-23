@@ -50,7 +50,7 @@ function triangulateBatch(data: TriangulateInput): TriangulateResult {
 /**
  * Reading the arrow file into memory is very fast. Parsing the geoarrow column is slow, and blocking the main thread.
  * To address this issue, we can move the parsing job from main thread to parallel web workers.
- * Each web worker will parse the geoarrow column using one chunk/batch of arrow data, and return binary geometries to main thread.
+ * Each web worker will parse one chunk/batch of geoarrow column, and return binary geometries to main thread.
  * The app on the main thread will render the binary geometries and the parsing will not block the main thread.
  *
  * @param data
@@ -58,22 +58,19 @@ function triangulateBatch(data: TriangulateInput): TriangulateResult {
  */
 function parseGeoArrowBatch(data: ParseGeoArrowInput): ParseGeoArrowResult {
   let binaryDataFromGeoArrow: BinaryDataFromGeoArrow | null = null;
-  const {arrowData, chunkIndex, geometryEncoding, meanCenter, triangle} = data;
-  // const batches = arrow.RecordBatchReader.from(arrowData);
-  console.log(arrowData, typeof arrowData);
-  const newdata = new arrow.Data(
-    arrowData.type,
-    arrowData.offset,
-    arrowData.length,
-    arrowData.nullCount,
-    arrowData.buffers,
-    arrowData.children,
-    arrowData.dictionary
+  const {chunkData, chunkIndex, geometryEncoding, meanCenter, triangle} = data;
+  // rebuild chunkData
+  const arrowData = new arrow.Data(
+    chunkData.type,
+    chunkData.offset,
+    chunkData.length,
+    chunkData.nullCount,
+    chunkData.buffers,
+    chunkData.children,
+    chunkData.dictionary
   );
-  const geometryColumn = arrow.makeVector(newdata);
-  console.log('geometryColumn', geometryColumn.data);
-  // const arrowTable = new arrow.Table([arrowData.batches]);
-  // const geometryColumn = arrowTable.getChild(geometryColumnName);
+  // rebuild geometry column with chunkData
+  const geometryColumn = arrow.makeVector(arrowData);
   if (geometryColumn) {
     const options = {meanCenter, triangle, chunkIndex};
     binaryDataFromGeoArrow = getBinaryGeometriesFromArrow(

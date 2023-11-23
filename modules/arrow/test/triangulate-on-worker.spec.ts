@@ -6,44 +6,7 @@ import test from 'tape-promise/tape';
 import {triangulateOnWorker, parseGeoArrowOnWorker, TriangulationWorker} from '@loaders.gl/arrow';
 import {fetchFile} from '@loaders.gl/core';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
-
-export const POINT_ARROW_FILE = '@loaders.gl/arrow/test/data/point.arrow';
-test.only('TriangulationWorker#plumbing', async (t) => {
-  const arrowFile = await fetchFile(POINT_ARROW_FILE);
-  const arrowContent = await arrowFile.arrayBuffer();
-  const arrowTable = arrow.tableFromIPC(arrowContent);
-  const geometryColumn = arrowTable.getChild('geometry');
-  const geometryChunk = geometryColumn?.data[0];
-  console.log('geometryChunk', geometryChunk?.type);
-
-  // simulate parsing 1st batch/chunk of the arrow data in web worker from e.g. kepler
-  const sourceData = {
-    operation: 'parseGeoArrow',
-    arrowData: {
-      type: {typeId: geometryChunk?.typeId, listSize: geometryChunk?.type?.listSize},
-      offset: geometryChunk?.offset,
-      length: geometryChunk?.length,
-      nullCount: geometryChunk?.nullCount,
-      buffers: geometryChunk?.buffers,
-      children: geometryChunk?.children,
-      dictionary: geometryChunk?.dictionary
-    },
-    chunkIndex: 0,
-    geometryColumnName: 'geometry',
-    geometryEncoding: 'geoarrow.point',
-    meanCenter: true,
-    triangle: false
-  };
-  const parsedGeoArrowData = await processOnWorker(TriangulationWorker, sourceData, {
-    _workerType: 'test'
-  });
-
-  // kepler should await for the result from web worker and render the binary geometries
-  console.log(parsedGeoArrowData);
-
-  t.ok(parsedGeoArrowData, 'ParseGeoArrow worker echoed input data');
-  t.end();
-});
+import {GEOARROW_POINT_FILE} from './data/geoarrow/test-cases';
 
 // WORKER TESTS
 test('TriangulationWorker#plumbing', async (t) => {
@@ -109,30 +72,50 @@ test.skip('triangulateOnWorker', async (t) => {
 });
 
 test('parseGeoArrowOnWorker', async (t) => {
-  const arrowFile = await fetchFile(POINT_ARROW_FILE);
+  const arrowFile = await fetchFile(GEOARROW_POINT_FILE);
   const arrowContent = await arrowFile.arrayBuffer();
+  const arrowTable = arrow.tableFromIPC(arrowContent);
 
   // simulate parsing 1st batch/chunk of the arrow data in web worker from e.g. kepler
-  const parsedGeoArrowData = await parseGeoArrowOnWorker(
-    {
-      operation: 'parse-geoarrow',
-      arrowData: arrowContent,
-      chunkIndex: 0,
-      geometryColumnName: 'geometry',
-      geometryEncoding: 'geoarrow.point',
-      meanCenter: true,
-      triangle: false
-    },
-    {
-      _workerType: 'test'
-    }
-  );
+  const geometryColumn = arrowTable.getChild('geometry');
+  const geometryChunk = geometryColumn?.data[0];
 
-  // kepler should await for the result from web worker and render the binary geometries
-  const {binaryGeometries, bounds, featureTypes, meanCenters} = parsedGeoArrowData.binaryGeometries!;
-  t.ok(binaryGeometries, 'ParseGeoArrow worker returned binaryGeometries');
-  t.ok(bounds, 'ParseGeoArrow worker returned binaryGeometries');
-  t.ok(featureTypes, 'ParseGeoArrow worker returned featureTypes');
-  t.ok(meanCenters, 'ParseGeoArrow worker returned meanCenters');
+  if (geometryChunk) {
+    const chunkData = {
+      type: {
+        ...geometryChunk?.type,
+        typeId: geometryChunk?.typeId,
+        listSize: geometryChunk?.type?.listSize
+      },
+      offset: geometryChunk.offset,
+      length: geometryChunk.length,
+      nullCount: geometryChunk.nullCount,
+      buffers: geometryChunk.buffers,
+      children: geometryChunk.children,
+      dictionary: geometryChunk.dictionary
+    };
+
+    const parsedGeoArrowData = await parseGeoArrowOnWorker(
+      {
+        operation: 'parse-geoarrow',
+        chunkData,
+        chunkIndex: 0,
+        geometryEncoding: 'geoarrow.point',
+        meanCenter: true,
+        triangle: false
+      },
+      {
+        _workerType: 'test'
+      }
+    );
+
+    // kepler should await for the result from web worker and render the binary geometries
+    const {binaryGeometries, bounds, featureTypes, meanCenters} =
+      parsedGeoArrowData.binaryDataFromGeoArrow!;
+    t.ok(binaryGeometries, 'ParseGeoArrow worker returned binaryGeometries');
+    t.ok(bounds, 'ParseGeoArrow worker returned binaryGeometries');
+    t.ok(featureTypes, 'ParseGeoArrow worker returned featureTypes');
+    t.ok(meanCenters, 'ParseGeoArrow worker returned meanCenters');
+  }
   t.end();
 });
