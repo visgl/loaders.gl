@@ -1,32 +1,23 @@
-
 {
-  "asset": {
-    "version": "1.0"
+  "asset" : {
+    "version" : "1.1"
   },
-  "geometricError": 10000,
-  "extensionsUsed": [
-    "3DTILES_implicit_tiling"
-  ],
-  "extensionsRequired": [
-    "3DTILES_implicit_tiling"
-  ],
-  "root": {
-    "boundingVolume": {
-      "region": [-1.318, 0.697, -1.319, 0.698, 0, 20]
+  "geometricError" : 1024.0,
+  "root" : {
+    "boundingVolume" : {
+      "box" : [ 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5 ]
     },
-    "refine": "ADD",
-    "geometricError": 5000,
-    "content": {
-      "uri": "content/{level}/{x}/{y}/{z}.pnts"
+    "geometricError" : 32.0,
+    "refine" : "ADD",
+    "content" : {
+      "uri" : "content/{level}/{x}/{y}/{z}.glb"
     },
-    "extensions": {
-      "3DTILES_implicit_tiling": {
-        "subdivisionScheme": "OCTREE",
-        "subtreeLevels": 2,
-        "maximumLevel": 5,
-        "subtrees": {
-          "uri": "subtrees/{level}/{x}/{y}/{z}.subtree"
-        }
+    "implicitTiling" : {
+      "subdivisionScheme" : "OCTREE",
+      "subtreeLevels" : 3,
+      "availableLevels" : 6,
+      "subtrees" : {
+        "uri" : "subtrees/{level}/{x}/{y}/{z}.subtree"
       }
     }
   }
