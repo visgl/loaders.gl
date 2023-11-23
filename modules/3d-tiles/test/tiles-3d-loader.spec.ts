@@ -22,6 +22,14 @@ const IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/FullQuadtree/tileset.json';
 const IMPLICIT_QUADTREE_TILESET_URL = '@loaders.gl/3d-tiles/test/data/BasicExample/tileset.json';
 
+function checkRegionBoundingBox(t, tile) {
+  if (tile.children.length) {
+    return tile.children.forEach((childTile) => checkRegionBoundingBox(t, childTile));
+  }
+
+  return t.ok(tile.boundingVolume.box) && t.equal(tile.boundingVolume.box.length, 12);
+}
+
 function checkRegionBoundingVolumes(t, tile) {
   if (tile.children.length) {
     return tile.children.forEach((childTile) => checkRegionBoundingVolumes(t, childTile));
@@ -156,8 +164,8 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
   t.equal(tileset.root.children.length, 5);
 
   // first children tree
+  t.equal(tileset.root.children[0].type, 'scenegraph');
   t.equal(tileset.root.children[0].content.uri, 'content/1/0/0/0.glb');
-  t.equal(tileset.root.children[0].content.type, 'scenegraph');
   t.equal(tileset.root.children[0].children.length, 0);
 
   // second children tree
@@ -169,7 +177,7 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
   t.equal(tileset.root.children[2].content.uri, '');
   t.equal(tileset.root.children[2].children[0].content.uri, '');
   t.equal(tileset.root.children[2].children[0].children[0].content.uri, 'content/3/0/4/0.glb');
-  t.equal(tileset.root.children[2].children[0].children[1].content.uri, 'content/3/0/4/0.glb');
+  t.equal(tileset.root.children[2].children[0].children[1].content.uri, 'content/3/1/5/1.glb');
 
   // fourth children tree
   t.equal(tileset.root.children[3].content.uri, '');
@@ -198,7 +206,7 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
     'content/5/17/17/17.glb'
   );
 
-  checkRegionBoundingVolumes(t, tileset.root);
+  checkRegionBoundingBox(t, tileset.root);
 
   t.end();
 });
