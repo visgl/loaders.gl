@@ -22,6 +22,14 @@ const IMPLICIT_FULL_AVAILABLE_QUADTREE_TILESET_URL =
   '@loaders.gl/3d-tiles/test/data/FullQuadtree/tileset.json';
 const IMPLICIT_QUADTREE_TILESET_URL = '@loaders.gl/3d-tiles/test/data/BasicExample/tileset.json';
 
+function checkRegionBoundingBox(t, tile) {
+  if (tile.children.length) {
+    return tile.children.forEach((childTile) => checkRegionBoundingBox(t, childTile));
+  }
+
+  return t.ok(tile.boundingVolume.box) && t.equal(tile.boundingVolume.box.length, 12);
+}
+
 function checkRegionBoundingVolumes(t, tile) {
   if (tile.children.length) {
     return tile.children.forEach((childTile) => checkRegionBoundingVolumes(t, childTile));
@@ -131,13 +139,11 @@ test('Tiles3DLoader#Tile GLTF content extension', async (t) => {
 
 // eslint-disable-next-line max-statements
 test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subtrees', async (t) => {
-  const ROOT_EXTENSION_EXPECTED = {
-    '3DTILES_implicit_tiling': {
-      subdivisionScheme: 'OCTREE',
-      subtreeLevels: 2,
-      maximumLevel: 5,
-      subtrees: {uri: 'subtrees/{level}/{x}/{y}/{z}.subtree'}
-    }
+  const IMPLICIT_TILING_EXPECTED = {
+    subdivisionScheme: 'OCTREE',
+    subtreeLevels: 3,
+    availableLevels: 6,
+    subtrees: {uri: 'subtrees/{level}/{x}/{y}/{z}.subtree'}
   };
 
   const response = await fetchFile(IMPLICIT_OCTREE_TILESET_URL);
@@ -145,38 +151,62 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
 
   // root
   t.ok(tileset);
-  t.equal(tileset.extensionsRequired[0], '3DTILES_implicit_tiling');
-  t.equal(tileset.extensionsUsed[0], '3DTILES_implicit_tiling');
   t.ok(tileset.root);
-  t.equal(tileset.root.content.uri, 'content/0/0/0/0.pnts');
-  t.equal(tileset.root.lodMetricValue, 5000);
-  t.equal(tileset.root.type, 'pointcloud');
+  t.deepEqual(tileset.root.implicitTiling, IMPLICIT_TILING_EXPECTED);
+  t.equal(tileset.root.implicitTiling.subdivisionScheme, 'OCTREE');
+  t.equal(tileset.root.implicitTiling.subtreeLevels, 3);
+  t.equal(tileset.root.implicitTiling.availableLevels, 6);
+
+  t.equal(tileset.root.content.uri, 'content/{level}/{x}/{y}/{z}.glb');
+  t.equal(tileset.root.lodMetricValue, 32);
+  t.equal(tileset.root.type, 'empty');
   t.equal(tileset.root.refine, 1);
-  t.equal(tileset.root.children.length, 1);
-  t.deepEqual(tileset.root.extensions, ROOT_EXTENSION_EXPECTED);
+  t.equal(tileset.root.children.length, 5);
 
-  // children level 1
-  t.equal(tileset.root.children[0].content.uri, 'content/1/0/0/0.pnts');
-  t.equal(tileset.root.children[0].lodMetricValue, 2500);
-  t.equal(tileset.root.children[0].refine, 1);
-  t.equal(tileset.root.children[0].type, 'pointcloud');
-  t.equal(tileset.root.children[0].children.length, 1);
+  // first children tree
+  t.equal(tileset.root.children[0].type, 'scenegraph');
+  t.equal(tileset.root.children[0].content.uri, 'content/1/0/0/0.glb');
+  t.equal(tileset.root.children[0].children.length, 0);
 
-  // children level 2
-  t.equal(tileset.root.children[0].children[0].content.uri, 'content/2/1/0/0.pnts');
-  t.equal(tileset.root.children[0].children[0].lodMetricValue, 1250);
-  t.equal(tileset.root.children[0].children[0].refine, 1);
-  t.equal(tileset.root.children[0].children[0].type, 'pointcloud');
-  t.equal(tileset.root.children[0].children[0].children.length, 1);
+  // second children tree
+  t.equal(tileset.root.children[1].content.uri, '');
+  t.equal(tileset.root.children[1].children[0].content.uri, 'content/2/2/0/0.glb');
+  t.equal(tileset.root.children[1].children[1].content.uri, 'content/2/3/1/1.glb');
 
-  // children level 3
-  t.equal(tileset.root.children[0].children[0].children[0].content.uri, 'content/3/8/0/1.pnts');
-  t.equal(tileset.root.children[0].children[0].children[0].lodMetricValue, 625);
-  t.equal(tileset.root.children[0].children[0].children[0].refine, 1);
-  t.equal(tileset.root.children[0].children[0].children[0].type, 'pointcloud');
-  t.equal(tileset.root.children[0].children[0].children[0].children.length, 0);
+  // third children tree
+  t.equal(tileset.root.children[2].content.uri, '');
+  t.equal(tileset.root.children[2].children[0].content.uri, '');
+  t.equal(tileset.root.children[2].children[0].children[0].content.uri, 'content/3/0/4/0.glb');
+  t.equal(tileset.root.children[2].children[0].children[1].content.uri, 'content/3/1/5/1.glb');
 
-  checkRegionBoundingVolumes(t, tileset.root);
+  // fourth children tree
+  t.equal(tileset.root.children[3].content.uri, '');
+  t.equal(tileset.root.children[3].children[0].content.uri, '');
+  t.equal(tileset.root.children[3].children[0].children[0].content.uri, '');
+  t.equal(
+    tileset.root.children[3].children[0].children[0].children[0].content.uri,
+    'content/4/8/8/0.glb'
+  );
+  t.equal(
+    tileset.root.children[3].children[0].children[0].children[1].content.uri,
+    'content/4/9/9/1.glb'
+  );
+
+  // fifth children tree
+  t.equal(tileset.root.children[4].content.uri, '');
+  t.equal(tileset.root.children[4].children[0].content.uri, '');
+  t.equal(tileset.root.children[4].children[0].children[0].content.uri, '');
+  t.equal(tileset.root.children[4].children[0].children[0].children[0].content.uri, '');
+  t.equal(
+    tileset.root.children[4].children[0].children[0].children[0].children[0].content.uri,
+    'content/5/16/16/16.glb'
+  );
+  t.equal(
+    tileset.root.children[4].children[0].children[0].children[0].children[1].content.uri,
+    'content/5/17/17/17.glb'
+  );
+
+  checkRegionBoundingBox(t, tileset.root);
 
   t.end();
 });
