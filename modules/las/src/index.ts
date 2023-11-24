@@ -11,6 +11,7 @@ export {LASWorkerLoader};
 
 /**
  * Loader for the LAS (LASer) point cloud format
+ * @note Does not support LAS v1.4
  */
 export const LASLoader: LoaderWithParser<LASMesh, never, LASLoaderOptions> = {
   ...LASWorkerLoader,

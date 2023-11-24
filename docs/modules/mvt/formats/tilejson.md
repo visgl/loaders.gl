@@ -1,5 +1,6 @@
 # TileJSON / Tilestats
 
+- *[`@loaders.gl/mvt`](/docs/modules/mvt)*
 - *[TileJSON specification](https://github.com/mapbox/tilejson-spec/blob/master/3.0.0/README.md)*
 - *[Tilestats information](https://github.com/mapbox/mapbox-geostats)
 - *[Tilestats generation](https://github.com/mapbox/mapbox-geostats#output-the-stats)

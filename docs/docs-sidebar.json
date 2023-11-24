@@ -11,100 +11,6 @@
   },
   {
     "type": "category",
-    "label": "Developer Guide",
-    "items": [
-      {
-        "type": "category",
-        "label": "Basics",
-        "items": [
-          "developer-guide/using-loaders",
-          "developer-guide/using-writers",
-          "developer-guide/loader-categories",
-          "developer-guide/using-worker-loaders",
-          "developer-guide/using-streaming-loaders",
-          "developer-guide/node"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "Advanced Topics",
-        "items": [
-          "developer-guide/dependencies",
-          "developer-guide/creating-loaders-and-writers",
-          "developer-guide/composite-loaders",
-          "developer-guide/error-handling",
-          "developer-guide/dev-env"
-        ]
-      },
-      {
-        "type": "category",
-        "label": "Concepts",
-        "items": [
-          "developer-guide/concepts/javascript-apis",
-          "developer-guide/concepts/binary-data",
-          "developer-guide/concepts/streaming",
-          "developer-guide/concepts/async-iterators",
-          "developer-guide/concepts/worker-threads"
-        ]
-      }
-    ]
-  },
-  {
-    "type": "category",
-    "label": "Tutorials",
-    "items": [
-      {
-        "type": "category",
-        "label": "I3S",
-        "items": [
-          "modules/i3s/recipes/building-scene-layer",
-          "modules/i3s/recipes/attribute-driven-colorization"
-        ]
-      }
-    ]
-  },
-  {
-    "type": "category",
-    "label": "Formats",
-    "items": [
-      "formats/README",
-      "modules/arrow/formats/arrow",
-      "modules/arrow/formats/geoarrow",
-      "modules/bson/formats/bson",
-      "modules/csv/formats/csv",
-      "modules/pcd/formats/pcd",
-      "modules/ply/formats/ply",
-      "modules/json/formats/geojson",
-      "modules/json/formats/geojson-geometry",
-      "modules/gltf/formats/glb",
-      "modules/gltf/formats/gltf",
-      "modules/geopackage/formats/geopackage",
-      "modules/kml/formats/kml",
-      "modules/kml/formats/gpx",
-      "modules/kml/formats/tcx",
-      "modules/las/formats/las",
-      "modules/mvt/formats/mvt",
-      "modules/mvt/formats/tilejson",
-      "modules/parquet/formats/parquet",
-      "modules/parquet/formats/geoparquet",
-      "modules/pmtiles/formats/pmtiles",
-      "modules/shapefile/formats/shapefile",
-      "modules/textures/formats/compressed-textures",
-      "modules/wms/formats/csw",
-      "modules/wms/formats/wms",
-      "modules/wms/formats/wmts",
-      "modules/wms/formats/wfs",
-      "modules/wms/formats/gml",
-      "modules/lerc/formats/lerc",
-      "modules/wkt/formats/wkt",
-      "modules/wkt/formats/wkb",
-      "modules/wkt/formats/wkt-crs",
-      "modules/xml/formats/xml",
-      "modules/zip/formats/zip"
-    ]
-  },
-  {
-    "type": "category",
     "label": "Loader Catalog",
     "items": [
       {
@@ -183,6 +89,100 @@
       "modules/xml/api-reference/xml-loader",
       "modules/zip/api-reference/zip-loader",
       "modules/zip/api-reference/zip-writer"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Formats",
+    "items": [
+      "formats/README",
+      "modules/arrow/formats/arrow",
+      "modules/arrow/formats/geoarrow",
+      "modules/bson/formats/bson",
+      "modules/csv/formats/csv",
+      "modules/pcd/formats/pcd",
+      "modules/ply/formats/ply",
+      "modules/json/formats/geojson",
+      "modules/json/formats/geojson-geometry",
+      "modules/gltf/formats/glb",
+      "modules/gltf/formats/gltf",
+      "modules/geopackage/formats/geopackage",
+      "modules/kml/formats/kml",
+      "modules/kml/formats/gpx",
+      "modules/kml/formats/tcx",
+      "modules/las/formats/las",
+      "modules/mvt/formats/mvt",
+      "modules/mvt/formats/tilejson",
+      "modules/parquet/formats/parquet",
+      "modules/parquet/formats/geoparquet",
+      "modules/pmtiles/formats/pmtiles",
+      "modules/shapefile/formats/shapefile",
+      "modules/textures/formats/compressed-textures",
+      "modules/wms/formats/csw",
+      "modules/wms/formats/wms",
+      "modules/wms/formats/wmts",
+      "modules/wms/formats/wfs",
+      "modules/wms/formats/gml",
+      "modules/lerc/formats/lerc",
+      "modules/wkt/formats/wkt",
+      "modules/wkt/formats/wkb",
+      "modules/wkt/formats/wkt-crs",
+      "modules/xml/formats/xml",
+      "modules/zip/formats/zip"
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Developer Guide",
+    "items": [
+      {
+        "type": "category",
+        "label": "Basics",
+        "items": [
+          "developer-guide/using-loaders",
+          "developer-guide/using-writers",
+          "developer-guide/loader-categories",
+          "developer-guide/using-worker-loaders",
+          "developer-guide/using-streaming-loaders",
+          "developer-guide/node"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Advanced Topics",
+        "items": [
+          "developer-guide/dependencies",
+          "developer-guide/creating-loaders-and-writers",
+          "developer-guide/composite-loaders",
+          "developer-guide/error-handling",
+          "developer-guide/dev-env"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Concepts",
+        "items": [
+          "developer-guide/concepts/javascript-apis",
+          "developer-guide/concepts/binary-data",
+          "developer-guide/concepts/streaming",
+          "developer-guide/concepts/async-iterators",
+          "developer-guide/concepts/worker-threads"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "category",
+    "label": "Tutorials",
+    "items": [
+      {
+        "type": "category",
+        "label": "I3S",
+        "items": [
+          "modules/i3s/recipes/building-scene-layer",
+          "modules/i3s/recipes/attribute-driven-colorization"
+        ]
+      }
     ]
   },
   {
