@@ -45,12 +45,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     Airports: {
       format: 'geoparquet',
       data: `${LOADERS_URL}/modules/parquet/test/data/geoparquet/airports.parquet`,
-      viewState: {
-        ...VIEW_STATE,
-        longitude: -4.65,
-        latitude: -29.76,
-        zoom: 1.76
-      }
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     },
     NZBuildingFootprints: {
       format: 'geoparquet',
@@ -69,47 +64,65 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     Vancouver: {
       format: 'geojson',
       data: `${DECKGL_DATA_URL}/examples/geojson/vancouver-blocks.json`,
-      viewState: {
-        ...VIEW_STATE,
-        latitude: 49.254,
-        longitude: -123.13
-      }
+      viewState: {...VIEW_STATE, latitude: 49.254, longitude: -123.13}
     },
     Countries: {
       format: 'geojson',
       data: `${LOADERS_URL}/modules/geojson/test/data/countries.json`,
-      viewState: {
-        ...VIEW_STATE,
-        longitude: -4.65,
-        latitude: -29.76,
-        zoom: 1.76
-      }
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   },
   GeoPackage: {
     Rivers: {
       format: 'geopackage',
       data: 'https://raw.githubusercontent.com/ngageoint/geopackage-js/master/test/fixtures/rivers.gpkg',
-      viewState: {
-        ...VIEW_STATE,
-        longitude: -4.65,
-        latitude: 0,
-        zoom: 1.76
-      }
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: 0, zoom: 1.76}
     }
   },
   FlatGeobuf: {
     Countries: {
       format: 'flatgeobuf',
       data: `${LOADERS_URL}/modules/flatgeobuf/test/data/countries.fgb`,
-      viewState: {
-        ...VIEW_STATE,
-        longitude: -4.65,
-        latitude: -29.76,
-        zoom: 1.76
-      }
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   },
+  Shapefile: {
+    'SF Topography': {
+      format: 'shapefile',
+      data: `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`,
+      viewState: {...VIEW_STATE, latitude: 37.75, longitude: -122.4, zoom: 11}
+    },
+    'Countries and Graticules': {
+      format: 'shapefile',
+      data: `${LOADERS_URL}/modules/shapefile/test/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
+    }
+  },
+
+  KML: {
+    'KML Sample': {
+      format: 'kml',
+      data: `${LOADERS_URL}/modules/kml/test/data/kml/KML_Samples.kml`,
+      viewState: {...VIEW_STATE, latitude: 37.65, longitude: -121.7, zoom: 11}
+    },
+  },
+
+  TCX: {
+    'TXC Sample': {
+      format: 'tcx',                            
+      data: `${LOADERS_URL}/modules/kml/test/data/tcx/tcx_sample.tcx`,
+      viewState: {...VIEW_STATE, latitude: 37.89544935, longitude: -122.4883889, zoom: 16}
+    },
+  },
+
+  GPX: {
+    'Trek': {
+      format: 'gpx',
+      data: `${LOADERS_URL}/modules/kml/test/data/gpx/trek.gpx`,
+      viewState: {...VIEW_STATE, latitude: 44.907783722, longitude: 6.05487864642, zoom: 13}
+    },
+  },
+
   GeoArrowTest: {
     line: {format: 'geoarrow', data: `${GEOARROW_TEST_DATA}/line.arrow`},
     multiline: {format: 'geoarrow', data: `${GEOARROW_TEST_DATA}/multiline.arrow`},

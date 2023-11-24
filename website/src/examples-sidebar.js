@@ -21,9 +21,13 @@
       items: [
         'geoarrow',
         'geoparquet',
-        // 'geopackage', sql.js bundling issue...
+        'geopackage',
         'flatgeobuf',
-        'geojson'
+        'geojson',
+        'geospatial/shapefile',
+        'geospatial/kml',
+        'geospatial/gpx',
+        'geospatial/tcx'
       ],
     },
     {
