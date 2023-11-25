@@ -3,8 +3,8 @@
 The `@loaders.gl/las` module supports the [LASER file format](/docs/modules/las/formats/las) (LAS) and its compressed version (LAZ).
 
 :::caution
-The `@loaders.gl/las` only supports LAS/lAZ files up to LAS v1.3. The `LAZLoader` does not support LAS v1.4 files. 
-There is a discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
+The `@loaders.gl/las` module only supports LAS/lAZ files up to LAS v1.3. It does not support LAS v1.4 files. 
+For more detail, see the discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
 :::
 
 ## Installation

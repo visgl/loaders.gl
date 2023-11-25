@@ -1,10 +1,14 @@
-# GeoPackageLoader 🚧
+# GeoPackageLoader
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
+
+:::caution
+The `GeoPackageLoader` depends on the [`sql.js`](https://github.com/sql-js/sql.js) npm module which has caused issues with certain JavaScript bundlers. It is recommended that you do your own tests before using the `GeoPackageLoader` in your project.
+:::
 
 GeoPackage loader
 

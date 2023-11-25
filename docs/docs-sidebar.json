@@ -102,6 +102,7 @@
       "modules/csv/formats/csv",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
+      "modules/flatgeobuf/formats/flatgeobuf",
       "modules/json/formats/geojson",
       "modules/json/formats/geojson-geometry",
       "modules/gltf/formats/glb",
