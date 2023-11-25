@@ -16,17 +16,9 @@ export type LASLoaderOptions = LoaderOptions & {
   onProgress?: Function;
 };
 
-const DEFAULT_LAS_OPTIONS: LASLoaderOptions = {
-  las: {
-    shape: 'mesh',
-    fp64: false,
-    skip: 1,
-    colorDepth: 8
-  }
-};
-
 /**
  * Loader for the LAS (LASer) point cloud format
+ * @note Does not support LAS v1.4
  */
 export const LASLoader: Loader<LASMesh, never, LASLoaderOptions> = {
   name: 'LAS',
@@ -39,5 +31,12 @@ export const LASLoader: Loader<LASMesh, never, LASLoaderOptions> = {
   text: true,
   binary: true,
   tests: ['LAS'],
-  options: DEFAULT_LAS_OPTIONS
+  options: {
+    las: {
+      shape: 'mesh',
+      fp64: false,
+      skip: 1,
+      colorDepth: 8
+    }
+  }
 };

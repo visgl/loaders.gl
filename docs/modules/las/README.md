@@ -1,6 +1,11 @@
 # Overview
 
-The `@loaders.gl/las` module handles the [LASER file format](https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities) (LAS) or its compressed version (LAZ), a public format for the interchange of 3-dimensional point cloud data data, developed for LIDAR mapping purposes.
+The `@loaders.gl/las` module supports the [LASER file format](/docs/modules/las/formats/las) (LAS) and its compressed version (LAZ).
+
+:::caution
+The `@loaders.gl/las` only supports LAS/lAZ files up to LAS v1.3. The `LAZLoader` does not support LAS v1.4 files. 
+There is a discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
+:::
 
 ## Installation
 

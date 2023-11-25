@@ -1,7 +1,7 @@
 # Mapbox Vector Tile
 
+- *[`@loaders.gl/mvt`](/docs/modules/mvt)*
 - *[Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec)*
-
 
 A specification for encoding tiled vector data.
 
