@@ -1,8 +1,8 @@
 # LASLoader
 
 :::caution
-The `@loaders.gl/las` only supports LAS/lAZ files up to LAS v1.3. The `LAZLoader` does not support LAS v1.4 files. 
-There is a discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
+The `@loaders.gl/las` module only supports LAS/lAZ files up to LAS v1.3. It does not support LAS v1.4 files. 
+For more detail, see the discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
 :::
 
 The `LASLoader` parses a point cloud in the LASER file format.
