@@ -225,8 +225,9 @@ async function onExampleChange(args: {
   }
 }
 
-function renderLayer({selectedExample, selectedLoader, loadedTable}) {
+function renderLayer({selectedExample, selectedLoader, examples, loadedTable}) {
   const geojson = loadedTable as GeoJSON;
+  const layerProps = examples[selectedLoader]?.[selectedExample]?.layerProps || {};
   return [
     new GeoJsonLayer({
       id: `geojson-${selectedExample}(${selectedLoader})`,
@@ -250,8 +251,9 @@ function renderLayer({selectedExample, selectedLoader, loadedTable}) {
       // point fills
       getFillColor: [255, 0, 0],
       getPointRadius: 100,
-      pointRadiusScale: 500
+      pointRadiusScale: 500,
       // pointRadiusUnits: 'pixels',
+      ...layerProps
     })
   ];
 }

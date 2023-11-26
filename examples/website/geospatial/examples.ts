@@ -25,6 +25,7 @@ export type Example = {
   format: string;
   data: string;
   viewState?: Record<string, number>;
+  layerProps?: Record<string, any>;
 };
 
 export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
@@ -38,7 +39,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     multipolygon_hole: {
       format: 'geoarrow',
       data: `${GEOARROW_TEST_DATA}/multipolygon_hole.arrow`,
-      viewState: {...VIEW_STATE, longitude: 0, latitude: 0, zoom: 4}
+      viewState: {...VIEW_STATE, longitude: 10.388, latitude:   1.447, zoom: 4}
     }
   },
   GeoParquet: {
@@ -83,44 +84,46 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     Countries: {
       format: 'flatgeobuf',
       data: `${LOADERS_URL}/modules/flatgeobuf/test/data/countries.fgb`,
-      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76},
+      layerProps: {getFillColor: (_, {index}) => [index % 255, 0, 0]}
     }
   },
   Shapefile: {
-    'SF Topography': {
-      format: 'shapefile',
-      data: `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`,
-      viewState: {...VIEW_STATE, latitude: 37.75, longitude: -122.4, zoom: 11}
-    },
     'Countries and Graticules': {
       format: 'shapefile',
       data: `${LOADERS_URL}/modules/shapefile/test/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
       viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
+    },
+    'SF Topography': {
+      format: 'shapefile',
+      data: `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`,
+      viewState: {...VIEW_STATE, latitude: 37.75, longitude: -122.4, zoom: 11}
     }
   },
 
   KML: {
-    'KML Sample': {
+    'Congressional Districts': {
       format: 'kml',
-      data: `${LOADERS_URL}/modules/kml/test/data/kml/KML_Samples.kml`,
-      viewState: {...VIEW_STATE, latitude: 37.65, longitude: -121.7, zoom: 11}
-    },
+      data: `${DECKGL_DATA_URL}/formats/kml/congressional-districts/cb_2022_us_cd118_20m.kml`,
+      viewState: {...VIEW_STATE, latitude: 14.5, longitude: -78.13, zoom: 2.6},
+      layerProps: {getFillColor: (_, {index}) => [index % 255, 0, 0]}
+    }
   },
 
   TCX: {
     'TXC Sample': {
-      format: 'tcx',                            
+      format: 'tcx',
       data: `${LOADERS_URL}/modules/kml/test/data/tcx/tcx_sample.tcx`,
       viewState: {...VIEW_STATE, latitude: 37.89544935, longitude: -122.4883889, zoom: 16}
-    },
+    }
   },
 
   GPX: {
-    'Trek': {
+    Trek: {
       format: 'gpx',
       data: `${LOADERS_URL}/modules/kml/test/data/gpx/trek.gpx`,
-      viewState: {...VIEW_STATE, latitude: 44.907783722, longitude: 6.05487864642, zoom: 13}
-    },
+      viewState: {...VIEW_STATE, latitude: 44.907783722, longitude: 6.08, zoom: 13}
+    }
   },
 
   GeoArrowTest: {
@@ -138,7 +141,17 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     point: {format: 'geoarrow', data: `${GEOARROW_TEST_DATA}/point.arrow`},
     polygon: {format: 'geoarrow', data: `${GEOARROW_TEST_DATA}/polygon.arrow`}
   },
-  GeoParquetTest: getGeoParquetTestExamples()
+
+  GeoParquetTest: getGeoParquetTestExamples(),
+
+  KMLTests: {
+    // TODO - size of features is excessive.
+    'KML Sample': {
+      format: 'kml',
+      data: `${LOADERS_URL}/modules/kml/test/data/kml/KML_Samples.kml`,
+      viewState: {...VIEW_STATE, latitude: 37.65, longitude: -121.7, zoom: 11}
+    }
+  }
 };
 
 // Add Geoparquet datasets
