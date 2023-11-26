@@ -17,7 +17,7 @@
     },
     {
       type: 'category',
-      label: 'Geospatial Loaders',
+      label: 'Geospatial Table Loaders',
       items: [
         'geoarrow',
         'geoparquet',
@@ -35,15 +35,8 @@
       label: 'Geospatial Tile Loaders',
       items: [
         'pmtiles',
-        'wms'
-      ]
-    },
-    {
-      type: 'category',
-      label: '3D Tile Loaders',
-      items: [
+        'wms',
         'i3s',
-        // 'i3s-arcgis',
         '3d-tiles'
       ]
     },
