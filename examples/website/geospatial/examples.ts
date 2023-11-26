@@ -92,7 +92,8 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     'Countries and Graticules': {
       format: 'shapefile',
       data: `${LOADERS_URL}/modules/shapefile/test/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
-      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76},
+      layerProps: {getFillColor: (_, {index}) => [0, index % 255, 0]}
     },
     'SF Topography': {
       format: 'shapefile',
