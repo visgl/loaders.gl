@@ -1,7 +1,12 @@
 // import type {Feature} from '@loaders.gl/gis';
 import {LoaderContext, parseInBatchesFromContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
-import type {BinaryGeometry, Geometry, ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {
+  BinaryGeometry,
+  Geometry,
+  ObjectRowTable,
+  ObjectRowTableBatch
+} from '@loaders.gl/schema';
 import {Proj4Projection} from '@math.gl/proj4';
 
 import type {SHXOutput} from './parse-shx';
@@ -134,30 +139,45 @@ export async function parseShapefile(
   const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
-  let properties = [];
+  let propertyTable: ObjectRowTable | undefined;
 
   const dbfResponse = await context?.fetch(replaceExtension(context?.url!, 'dbf'));
   if (dbfResponse?.ok) {
-    properties = await parseFromContext(
+    propertyTable = await parseFromContext(
       dbfResponse as any,
       DBFLoader,
-      {dbf: {encoding: cpg || 'latin1'}},
+      {dbf: {shape: 'object-row-table', encoding: cpg || 'latin1'}},
       context!
     );
   }
 
-  let features = joinProperties(geojsonGeometries, properties);
+  let features = joinProperties(geojsonGeometries, propertyTable?.data || []);
   if (reproject) {
     features = reprojectFeatures(features, prj, _targetCrs);
   }
 
-  return {
-    encoding: cpg,
-    prj,
-    shx,
-    header,
-    data: features
-  };
+  switch (options?.shapefile?.shape) {
+    case 'geojson-table':
+      return {
+        // @ts-expect-error
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        encoding: cpg,
+        schema: propertyTable?.schema || {metadata: {}, fields: []},
+        prj,
+        shx,
+        header,
+        features
+      };
+    default:
+      return {
+        encoding: cpg,
+        prj,
+        shx,
+        header,
+        data: features
+      };
+  }
 }
 
 /**

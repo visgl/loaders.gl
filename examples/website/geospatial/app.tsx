@@ -19,18 +19,26 @@ import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} 
 
 import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load /* registerLoaders */} from '@loaders.gl/core';
+import {GeoArrowLoader} from '@loaders.gl/arrow';
 import {ParquetLoader, installBufferPolyfill} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
+import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
+
+// GeoPackage depends on sql.js which has bundling issues in docusuarus.
 // import {GeoPackageLoader} from '@loaders.gl/geopackage';
-import {GeoArrowLoader} from '@loaders.gl/arrow';
 
 installBufferPolyfill();
 
 const LOADERS: Loader[] = [
   GeoArrowLoader,
   ParquetLoader,
-  FlatGeobufLoader
+  FlatGeobufLoader,
   // GeoPackageLoader
+  ShapefileLoader,
+  KMLLoader,
+  GPXLoader,
+  TCXLoader
 ];
 const LOADER_OPTIONS = {
   worker: false,
@@ -48,6 +56,18 @@ const LOADER_OPTIONS = {
   geopackage: {
     shape: 'geojson-table'
     // table: 'FEATURESriversds'
+  },
+  shapefile: {
+    shape: 'geojson-table'
+  },
+  kml: {
+    shape: 'geojson-table'
+  },
+  gpx: {
+    shape: 'geojson-table'
+  },
+  tcx: {
+    shape: 'geojson-table'
   }
 };
 
@@ -104,11 +124,19 @@ export default function App(props: AppProps) {
       ? Object.keys(examples[selectedLoader])[0]
       : INITIAL_EXAMPLE_NAME;
 
-    onExampleChange({selectedLoader, selectedExample, example: examples[selectedLoader][selectedExample], state, setState});
-    setState(state => ({...state, examples, selectedExample, selectedLoader}));
+    onExampleChange({
+      selectedLoader,
+      selectedExample,
+      example: examples[selectedLoader][selectedExample],
+      state,
+      setState
+    });
+    setState((state) => ({...state, examples, selectedExample, selectedLoader}));
   }, [props.format]);
 
-  let schema = state.loadedTable?.schema ? {metadata: state.loadedTable?.schema.metadata, ... state.loadedTable?.schema} : null;
+  let schema = state.loadedTable?.schema
+    ? {metadata: state.loadedTable?.schema.metadata, ...state.loadedTable?.schema}
+    : null;
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
@@ -124,8 +152,7 @@ export default function App(props: AppProps) {
           center long/lat: {state.viewState.longitude.toFixed(3)},
           {state.viewState.latitude.toFixed(3)}, zoom: {state.viewState.zoom.toFixed(2)}
         </div>
-        {
-          /* TODO -restore drag and drop
+        {/* TODO -restore drag and drop
         <FileUploader
           onFileRemoved={() => setState(state => ({...state, loadedTable: null}))}
           onFileSelected={async (uploadedFile: File) => {
@@ -144,7 +171,7 @@ export default function App(props: AppProps) {
       <DeckGL
         layers={renderLayer(state)}
         viewState={state.viewState}
-        onViewStateChange={({viewState}) => setState(state => ({...state, viewState}))}
+        onViewStateChange={({viewState}) => setState((state) => ({...state, viewState}))}
         controller={{type: MapController, maxPitch: 85}}
         getTooltip={({object}) => {
           const {name, ...properties} = object?.properties || {};
@@ -183,17 +210,24 @@ async function onExampleChange(args: {
   const url = example.data;
   try {
     const data = (await load(url, LOADERS, LOADER_OPTIONS)) as Table;
-    console.log('Loaded data',url, data);
+    console.log('Loaded data', url, data);
     const viewState = {...state.viewState, ...example.viewState};
-    setState(state => ({...state, selectedLoader, selectedExample, viewState, loadedTable: data}));
+    setState((state) => ({
+      ...state,
+      selectedLoader,
+      selectedExample,
+      viewState,
+      loadedTable: data
+    }));
   } catch (error) {
     console.error('Failed to load data', url, error);
-    setState(state => ({...state, error: `Could not load ${selectedExample}: ${error.message}`}));
+    setState((state) => ({...state, error: `Could not load ${selectedExample}: ${error.message}`}));
   }
 }
 
-function renderLayer({selectedExample, selectedLoader, loadedTable}) {
+function renderLayer({selectedExample, selectedLoader, examples, loadedTable}) {
   const geojson = loadedTable as GeoJSON;
+  const layerProps = examples[selectedLoader]?.[selectedExample]?.layerProps || {};
   return [
     new GeoJsonLayer({
       id: `geojson-${selectedExample}(${selectedLoader})`,
@@ -217,8 +251,9 @@ function renderLayer({selectedExample, selectedLoader, loadedTable}) {
       // point fills
       getFillColor: [255, 0, 0],
       getPointRadius: 100,
-      pointRadiusScale: 500
+      pointRadiusScale: 500,
       // pointRadiusUnits: 'pixels',
+      ...layerProps
     })
   ];
 }
