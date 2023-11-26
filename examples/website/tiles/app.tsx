@@ -10,7 +10,7 @@ import maplibregl from 'maplibre-gl';
 import DeckGL from '@deck.gl/react/typed';
 import {MapView} from '@deck.gl/core/typed';
 
-import {TileSourceLayer} from './components/tile-source-layer';
+import {TileSourceLayer} from './layers/tile-source-layer';
 
 import type {TileSource} from '@loaders.gl/loader-utils';
 import {PMTilesSource, PMTilesMetadata} from '@loaders.gl/pmtiles';
@@ -140,12 +140,29 @@ function renderControlPanel(props) {
   );
 }
 
-function getTooltip(info) {
-  if (info.tile) {
-    const {x, y, z} = info.tile.index;
-    return `tile: x: ${x}, y: ${y}, z: ${z}`;
+function getTooltip({tile, object}) {
+  let tooltip = '';
+
+  if (tile) {
+    const {x, y, z} = tile.index;
+    tooltip += `tile: x: ${x}, y: ${y}, z: ${z}\n`;
   }
-  return null;
+
+  if (object) {
+    const {...properties} = object?.properties || {};
+    tooltip += Object.entries(properties)
+      .map(([key, value]) => `<div>${key}: ${value}</div>`)
+      .join('\n');  
+  }
+  return tooltip ? {
+      html: `\
+${tooltip}
+<div>Coords: ${object.geometry?.coordinates?.[0]};${object.geometry?.coordinates?.[1]}</div>`,
+      style: {
+        backgroundColor: '#ddd',
+        fontSize: '0.8em'
+      }
+    } : null;
 }
 
 export function renderToDOM(container) {

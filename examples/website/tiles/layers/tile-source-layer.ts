@@ -97,7 +97,7 @@ function renderSubLayers(props: TileSourceLayerProps & {tile: {index, bbox: {wes
           data: props.data,
           pickable: true,
           getFillColor: [0, 190, 80, 255],
-          lineWidthScale: 500,
+          lineWidthScale: 1, // 500,
           lineWidthMinPixels: 0.5
         })
       );

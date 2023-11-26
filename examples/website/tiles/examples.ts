@@ -7,7 +7,7 @@ export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/m
 // export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap Tiles';
 
 export const INITIAL_CATEGORY_NAME = 'PMTILES';
-export const INITIAL_EXAMPLE_NAME = 'FSQ Tiles';
+export const INITIAL_EXAMPLE_NAME = 'Railroads';
 
 export const INITIAL_MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 
@@ -40,10 +40,16 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     }
   },
   PMTILES: {
-    'FSQ Tiles': {
+    'Microsoft Building Footprints (Source Coop)': {
+      format: 'pmtiles',
+      data: 'https://data.source.coop/vida/google-microsoft-open-buildings/pmtiles/go_ms_building_footprints.pmtiles',
+      // attributions: ["© Microsoft"],
+      viewState: {...VIEW_STATE}
+    },
+    'Railroads': {
       format: 'pmtiles',
       data: 'https://4sq-studio-public.s3.us-west-2.amazonaws.com/pmtiles-test/161727fe-7952-4e57-aa05-850b3086b0b2.pmtiles',
-      attributions: ["© Foursquare"],
+      // attributions: ["© Foursquare"],
       viewState: {...VIEW_STATE}
     },
     'NZ Buildings': {
