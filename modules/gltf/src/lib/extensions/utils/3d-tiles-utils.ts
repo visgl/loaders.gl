@@ -14,7 +14,10 @@ import type {ImageType} from '@loaders.gl/images';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
-import {emod} from '@loaders.gl/math';
+
+function emod(n: number): number {
+  return ((n % 1) + 1) % 1;
+}
 
 export type NumericComponentType =
   | 'INT8'
