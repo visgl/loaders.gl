@@ -3,73 +3,20 @@
 
 export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {
-  ObjectRowTable,
-  ObjectRowTableBatch,
-  ColumnarTable,
-  ColumnarTableBatch,
-  GeoJSONTable,
-  GeoJSONTableBatch
-} from '@loaders.gl/schema';
-
 // import {ArrowTable, ArrowTableBatch} from '@loaders.gl/arrow';
 
-// ParquetLoader
-
-import {BlobFile} from '@loaders.gl/loader-utils';
-import {
-  ParquetLoader as ParquetWorkerLoader,
-  ParquetColumnarLoader as ParquetColumnarWorkerLoader,
-  ParquetLoaderOptions
+export {
+  ParquetWorkerLoader,
+  ParquetLoader,
+  GeoParquetWorkerLoader,
+  GeoParquetLoader,
+  ParquetColumnarWorkerLoader,
+  ParquetColumnarLoader
 } from './parquet-loader';
-import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-rows';
-import {
-  parseParquetFileInColumns,
-  parseParquetFileInColumnarBatches
-} from './lib/parsers/parse-parquet-to-columns';
 
 // import type {ParquetWasmLoaderOptions} from './lib/wasm/parse-parquet-wasm';
 // import {parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
 // import {ParquetWasmLoader as ParquetWasmWorkerLoader} from './parquet-wasm-loader';
-
-export {ParquetWorkerLoader};
-// export {ParquetWasmWorkerLoader};
-
-/** ParquetJS table loader */
-export const ParquetLoader: LoaderWithParser<
-  ObjectRowTable | GeoJSONTable,
-  ObjectRowTableBatch | GeoJSONTableBatch,
-  ParquetLoaderOptions
-> = {
-  ...ParquetWorkerLoader,
-  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return parseParquetFile(new BlobFile(arrayBuffer), options);
-  },
-  parseFile: parseParquetFile,
-  parseFileInBatches: parseParquetFileInBatches
-};
-
-/** ParquetJS table loader */
-export const ParquetColumnarLoader: LoaderWithParser<
-  ColumnarTable,
-  ColumnarTableBatch,
-  ParquetLoaderOptions
-> = {
-  ...ParquetColumnarWorkerLoader,
-  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return parseParquetFileInColumns(new BlobFile(arrayBuffer), options);
-  },
-  parseFile: parseParquetFileInColumns,
-  parseFileInBatches: parseParquetFileInColumnarBatches
-};
-
-// export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
-//   ...ParquetWasmWorkerLoader,
-//   parse: parseParquetWasm
-// };
-
-// ParquetWriter
 
 export {ParquetWriter as _ParquetWriter} from './parquet-writer';
 // export {ParquetWasmWriter} from './parquet-wasm-writer';

@@ -11,6 +11,9 @@ import {materializeColumns} from '../../parquetjs/schema/shred';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
 import {installBufferPolyfill} from '../../polyfills/buffer';
 
+/**
+ * @deprecated
+ */
 export async function parseParquetFileInColumns(
   file: ReadableFile,
   options?: ParquetLoaderOptions
@@ -26,6 +29,9 @@ export async function parseParquetFileInColumns(
   throw new Error('empty table');
 }
 
+/**
+ * @deprecated
+ */
 export async function* parseParquetFileInColumnarBatches(
   file: ReadableFile,
   options?: ParquetLoaderOptions
