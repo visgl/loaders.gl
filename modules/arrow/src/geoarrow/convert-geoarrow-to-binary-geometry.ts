@@ -9,6 +9,15 @@ import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 import {TypedArray} from '@loaders.gl/loader-utils';
 
 /**
+ * Binary geometry type
+ */
+enum BinaryGeometryType {
+  points = 'points',
+  lines = 'lines',
+  polygons = 'polygons'
+}
+
+/**
  * Binary data from geoarrow column and can be used by e.g. deck.gl GeojsonLayer
  */
 export type BinaryDataFromGeoArrow = {
@@ -57,7 +66,7 @@ export type BinaryGeometriesFromArrowOptions = {
   /** option to specify which chunk to get binary geometries from, for progressive rendering */
   chunkIndex?: number;
   /** option to get mean centers from geometries, for polygon filtering */
-  meanCenter?: boolean;
+  calculateMeanCenters?: boolean;
   /** option to compute the triangle indices by tesselating polygons */
   triangulate?: boolean;
 };
@@ -147,7 +156,7 @@ export function getBinaryGeometriesFromArrow(
     binaryGeometries,
     bounds,
     featureTypes,
-    ...(options?.meanCenter
+    ...(options?.calculateMeanCenters
       ? {meanCenters: getMeanCentersFromBinaryGeometries(binaryGeometries)}
       : {})
   };
@@ -161,13 +170,13 @@ export function getBinaryGeometriesFromArrow(
 export function getMeanCentersFromBinaryGeometries(binaryGeometries: BinaryFeatures[]): number[][] {
   const globalMeanCenters: number[][] = [];
   binaryGeometries.forEach((binaryGeometry: BinaryFeatures) => {
-    let binaryGeometryType: string | null = null;
+    let binaryGeometryType: keyof typeof BinaryGeometryType | null = null;
     if (binaryGeometry.points && binaryGeometry.points.positions.value.length > 0) {
-      binaryGeometryType = 'points';
+      binaryGeometryType = BinaryGeometryType.points;
     } else if (binaryGeometry.lines && binaryGeometry.lines.positions.value.length > 0) {
-      binaryGeometryType = 'lines';
+      binaryGeometryType = BinaryGeometryType.lines;
     } else if (binaryGeometry.polygons && binaryGeometry.polygons.positions.value.length > 0) {
-      binaryGeometryType = 'polygons';
+      binaryGeometryType = BinaryGeometryType.polygons;
     }
 
     const binaryContent = binaryGeometryType ? binaryGeometry[binaryGeometryType] : null;
@@ -175,7 +184,8 @@ export function getMeanCentersFromBinaryGeometries(binaryGeometries: BinaryFeatu
       const featureIds = binaryContent.featureIds.value;
       const flatCoordinateArray = binaryContent.positions.value;
       const nDim = binaryContent.positions.size;
-      const primitivePolygonIndices = binaryContent.primitivePolygonIndices?.value;
+      const primitivePolygonIndices =
+        binaryContent.type === 'Polygon' ? binaryContent.primitivePolygonIndices?.value : undefined;
 
       const meanCenters = getMeanCentersFromGeometry(
         featureIds,
@@ -203,7 +213,7 @@ function getMeanCentersFromGeometry(
   featureIds: TypedArray,
   flatCoordinateArray: TypedArray,
   nDim: number,
-  geometryType: string,
+  geometryType: keyof typeof BinaryGeometryType,
   primitivePolygonIndices?: TypedArray
 ) {
   const meanCenters: number[][] = [];
@@ -216,7 +226,10 @@ function getMeanCentersFromGeometry(
     const center = [0, 0];
     let vertexCountInFeature = 0;
     while (vertexIndex < vertexCount && featureIds[coordIdx] === featureId) {
-      if (geometryType === 'polygons' && primitivePolygonIndices?.[primitiveIdx] === coordIdx) {
+      if (
+        geometryType === BinaryGeometryType.polygons &&
+        primitivePolygonIndices?.[primitiveIdx] === coordIdx
+      ) {
         // skip the first point since it is the same as the last point in each ring for polygons
         vertexIndex += nDim;
         primitiveIdx++;
@@ -312,6 +325,7 @@ export function getTriangleIndices(
     }
     return trianglesUint32;
   } catch (error) {
+    // TODO - add logging
     // there is an expection when tesselating invalid polygon, e.g. polygon with self-intersection
     // return null to skip tesselating
     return null;
@@ -369,7 +383,7 @@ function getBinaryPolygonsFromChunk(
     nDim,
     geomOffset,
     geometryIndicies,
-    ...(options?.triangulate && triangels ? {triangles: triangels} : {})
+    ...(options?.triangulate && triangles ? {triangles} : {})
   };
 }
 

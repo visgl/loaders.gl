@@ -35,5 +35,5 @@ function triangulateBatch(data: TriangulateInput): TriangulateResult {
     data.flatCoordinateArray,
     data.nDim
   );
-  return {...data, triangleIndices};
+  return {...data, ...(triangleIndices ? {triangleIndices} : {})};
 }
