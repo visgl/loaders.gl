@@ -47,18 +47,6 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       format: 'geoparquet',
       data: `${LOADERS_URL}/modules/parquet/test/data/geoparquet/airports.parquet`,
       viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
-    },
-    NZBuildingFootprints: {
-      format: 'geoparquet',
-      data: 'https://storage.googleapis.com/open-geodata/linz-examples/nz-building-outlines.parquet',
-      viewState: {
-        latitude: 47.65,
-        longitude: 7,
-        zoom: 4.5,
-        maxZoom: 20,
-        maxPitch: 89,
-        bearing: 0
-      }
     }
   },
   GeoJSON: {
@@ -217,6 +205,19 @@ function getGeoParquetTestExamples() {
           ...viewState
         }
       };
+    }
+  }
+
+  GeoParquet.NZBuildingFootprints = {
+    format: 'geoparquet',
+    data: 'https://storage.googleapis.com/open-geodata/linz-examples/nz-building-outlines.parquet',
+    viewState: {
+      latitude: 47.65,
+      longitude: 7,
+      zoom: 4.5,
+      maxZoom: 20,
+      maxPitch: 89,
+      bearing: 0
     }
   }
 
