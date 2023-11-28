@@ -37,7 +37,6 @@ export function parseArrowInBatches(
           shape: 'arrow-table',
           batchType: 'data',
           data: new arrow.Table([recordBatch]),
-          rawArrayBuffer: asyncIterator,
           length: recordBatch.data.length
         };
         // processBatch(recordBatch);

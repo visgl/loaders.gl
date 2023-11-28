@@ -335,9 +335,14 @@ export function getTriangleIndices(
  * get binary polygons from geoarrow polygon column
  * @param chunk one chunk of geoarrow polygon column
  * @param geoEncoding the geo encoding of the geoarrow polygon column
+ * @param options options for getting binary geometries
  * @returns BinaryGeometryContent
  */
-function getBinaryPolygonsFromChunk(chunk: arrow.Data, geoEncoding: string): BinaryGeometryContent {
+function getBinaryPolygonsFromChunk(
+  chunk: arrow.Data,
+  geoEncoding: string,
+  options?: BinaryGeometriesFromArrowOptions
+): BinaryGeometryContent {
   const isMultiPolygon = geoEncoding === 'geoarrow.multipolygon';
 
   const polygonData = isMultiPolygon ? chunk.children[0] : chunk;
