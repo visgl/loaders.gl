@@ -359,7 +359,7 @@ function getBinaryPolygonsFromChunk(
     }
   }
 
-  const triangels = options?.triangulate
+  const triangles = options?.triangulate
     ? getTriangleIndices(geometryIndicies, geomOffset, flatCoordinateArray, nDim)
     : null;
 

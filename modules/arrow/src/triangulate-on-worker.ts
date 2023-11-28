@@ -22,7 +22,7 @@ export type TriangulateInput = {
 
 /** Result type for operation: 'triangulate' */
 export type TriangulateResult = TriangulateInput & {
-  triangleIndices: Uint32Array | null;
+  triangleIndices?: Uint32Array;
 };
 
 /**
