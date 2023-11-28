@@ -342,7 +342,7 @@ async function testGetBinaryGeometriesFromArrow(
 
     t.notEqual(encoding, undefined, 'encoding is not undefined');
     if (geoColumn && encoding) {
-      const options = {meanCenter: true};
+      const options = {calculateMeanCenters: true, triangulate: true};
       const binaryData = getBinaryGeometriesFromArrow(geoColumn, encoding, options);
       t.deepEqual(binaryData, expectedBinaryGeometries, 'binary geometries are correct');
     }
