@@ -58,7 +58,7 @@ test('FlatGeobufLoader#load', async (t) => {
   t.end();
 });
 
-test.only('FlatGeobufLoader#loadInBatches', async (t) => {
+test('FlatGeobufLoader#loadInBatches', async (t) => {
   const iterator = await loadInBatches(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     worker: false
   });
