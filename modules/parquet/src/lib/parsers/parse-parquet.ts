@@ -88,6 +88,10 @@ function convertTable(
     case 'object-row-table':
       return objectRowTable;
 
+    // Hack until geoparquet fixes up forwarded shape
+    case 'geojson-table':
+      return objectRowTable;
+  
     default:
       throw new Error(shape);
   }
