@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {GeoTIFF} from 'geotiff';
 import type Pool from './Pool';
 

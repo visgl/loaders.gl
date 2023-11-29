@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {GeoTIFFImage, GeoTIFF, ImageFileDirectory} from 'geotiff';
 import type {OMEXML} from '../ome/omexml';
 

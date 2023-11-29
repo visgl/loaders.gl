@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {XMLParser} from 'fast-xml-parser';
 import {ensureArray, intToRgba} from '../utils/tiff-utils';
 
