@@ -120,7 +120,7 @@ export const GeoParquetLoader: LoaderWithParser<
 > = {
   ...GeoParquetWorkerLoader,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return parseParquetFile(new BlobFile(arrayBuffer), options);
+    return parseGeoParquetFile(new BlobFile(arrayBuffer), options);
   },
   parseFile: parseGeoParquetFile,
   parseFileInBatches: parseGeoParquetFileInBatches

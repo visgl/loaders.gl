@@ -20,7 +20,7 @@ import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} 
 import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load /* registerLoaders */} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
-import {ParquetLoader, installBufferPolyfill} from '@loaders.gl/parquet';
+import {GeoParquetLoader, installBufferPolyfill} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
@@ -32,7 +32,7 @@ installBufferPolyfill();
 
 const LOADERS: Loader[] = [
   GeoArrowLoader,
-  ParquetLoader,
+  GeoParquetLoader,
   FlatGeobufLoader,
   // GeoPackageLoader
   ShapefileLoader,
