@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {GeoTIFF, GeoTIFFImage} from 'geotiff';
 
 import TiffPixelSource from '../tiff-pixel-source';

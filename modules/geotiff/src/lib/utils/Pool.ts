@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /** eslint-disable */
 import type {FileDirectory} from 'geotiff';
 

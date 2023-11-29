@@ -1,5 +1,9 @@
-declare type TypedArray = import('../types').TypedArray;
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
 
+import type {TypedArray} from '../types';
+
+// @ts-ignore typescript 5.3 error
 declare module 'geotiff' {
   function fromUrl(url: string, headers?: Record<string, unknown>): Promise<GeoTIFF>;
   function fromBlob(blob: Blob): Promise<GeoTIFF>;
