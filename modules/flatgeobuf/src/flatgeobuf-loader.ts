@@ -1,7 +1,8 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import {parseFlatGeobuf, parseFlatGeobufInBatches} from './lib/parse-flatgeobuf';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -20,7 +21,7 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
   };
 };
 
-export const FlatGeobufLoader: Loader<any, any, FlatGeobufLoaderOptions> = {
+export const FlatGeobufWorkerLoader: Loader<any, any, FlatGeobufLoaderOptions> = {
   id: 'flatgeobuf',
   name: 'FlatGeobuf',
   module: 'flatgeobuf',
@@ -38,4 +39,13 @@ export const FlatGeobufLoader: Loader<any, any, FlatGeobufLoaderOptions> = {
       reproject: false
     }
   }
+};
+
+export const FlatGeobufLoader: LoaderWithParser<any, any, FlatGeobufLoaderOptions> = {
+  ...FlatGeobufWorkerLoader,
+  parse: async (arrayBuffer, options) => parseFlatGeobuf(arrayBuffer, options),
+  parseSync: parseFlatGeobuf,
+  // @ts-expect-error this is a stream parser not an async iterator parser
+  parseInBatchesFromStream: parseFlatGeobufInBatches,
+  binary: true
 };
