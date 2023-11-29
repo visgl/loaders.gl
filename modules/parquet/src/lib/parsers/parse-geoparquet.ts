@@ -19,7 +19,6 @@ export async function parseGeoParquetFile(
   file: ReadableFile,
   options?: ParquetLoaderOptions
 ): Promise<ObjectRowTable | GeoJSONTable> {
-
   const table = await parseParquetFile(file, {...options, shape: 'object-row-table'});
   const shape = options?.parquet?.shape;
   return convertTable(table, shape);
