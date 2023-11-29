@@ -5,22 +5,22 @@
 
 ## TileJSON
 
-A TileJSON file contains JSON-encoded metadata about a vector tileset including which layers and fields (columns) can be found in the tiles.
+A TileJSON file contains JSON-encoded metadata about a vector tileset. It provides information about which layers and fields can be found in the tiles.
 
 The information in the TileJSON enables clients (such as web viewers) to understand the structure of data in the tileset up front, instead of piecing it together as tiles are loaded.
-
 
 While not all vector tilesets have a TileJSON file, when it is present there is normally a single TileJSON file per tileset, and this file is typically found at the root in TMS or XYZ based URL schemas, so that applications can make a speculative attempt to fetch it from a known place.
 
 ## tilestats
 
-`tilestats`` is an inofficial "extension" to TileJSON. It provides column statistics, notably:
-- the data type of each column
-- min/max values for numeric columns (enabling e.g. global color scale calculations).
+"Tilestats" is an inofficial extension to TileJSON. The tilestats field, if present, provides more detailed column information, notably:
+- the data type of each column (field)
+- The min/max values for numeric columns 
 - a sample of values for each column
 
 tilestats provide "global" information about the data in the tileset that can allows for e.g.
-the creation of correct color maps that do not depend on the view (which requires knowing a priori the min and max values of each field / column).
+the creation of correct global color maps that do not depend on the view 
+(this requires knowing a priori the min and max values of each field / column).
 
 Note that tilestats are not always available for a given tileset, so applications must be prepared to work in their absence.
 However, tilestats are output by major tilers such as [tippecanoe](https://github.com/mapbox/mapbox-geostats#output-the-stats).
