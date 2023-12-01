@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {getDims, getLabels} from './utils';
 import type {OMEXML, UnitsLength} from './omexml';
 

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {GeoTIFFImage, RasterOptions} from 'geotiff';
 import {getImageSize, isInterleaved, SIGNAL_ABORTED} from './utils/tiff-utils';
 

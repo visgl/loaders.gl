@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {PixelSource} from '../../types';
 
 export function ensureArray<T>(x: T | T[]) {

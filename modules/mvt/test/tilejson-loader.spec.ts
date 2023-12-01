@@ -31,7 +31,6 @@ test('TileJSONLoader#load', async (t) => {
 test.skip('TileJSONLoader#tippecanoe', async (t) => {
   const metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
   const expected = await load(TIPPECANOE_EXPECTED, JSONLoader);
-  console.error(metadata, expected);
   t.deepEqual(metadata, expected, 'Tippecanoe TileJSON loaded correctly');
   t.end();
 });

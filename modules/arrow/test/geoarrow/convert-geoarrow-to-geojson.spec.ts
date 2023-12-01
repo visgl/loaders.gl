@@ -4,14 +4,14 @@
 import test, {Test} from 'tape-promise/tape';
 import {GEOARROW_TEST_CASES, GEOARROW_ENCODINGS} from '../data/geoarrow/test-cases';
 
-import {fetchFile, parse} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {FeatureCollection} from '@loaders.gl/schema';
 import {ArrowLoader, serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 
-test('ArrowUtils#parseGeometryFromArrow', (t) => {
+test('ArrowUtils#parseGeometryFromArrow', async (t) => {
   for (const testCase of GEOARROW_TEST_CASES) {
-    testParseFromArrow(t, testCase[0], testCase[1]);
+    await testParseFromArrow(t, testCase[0], testCase[1]);
   }
   t.end();
 });
@@ -21,7 +21,7 @@ async function testParseFromArrow(
   arrowFile: string,
   expectedGeojson: FeatureCollection
 ): Promise<void> {
-  const arrowTable = await parse(fetchFile(arrowFile), ArrowLoader, {
+  const arrowTable = await load(arrowFile, ArrowLoader, {
     worker: false,
     arrow: {
       shape: 'arrow-table'
@@ -54,27 +54,20 @@ async function testParseFromArrow(
     t.equal(Boolean(geometryColumns.geometry), true, 'geometryColumns has geometry column');
 
     // get encoding from geometryColumns['geometry']
-    const encoding = geometryColumns.geometry.encoding;
+    const encoding = geometryColumns.geometry.encoding!;
 
     // check encoding is one of GEOARROW_ENCODINGS
-    t.ok(
-      Object.values(GEOARROW_ENCODINGS).includes(encoding!),
-      'encoding is one of GEOARROW_ENCODINGS'
-    );
+    t.ok(Object.values(GEOARROW_ENCODINGS).includes(encoding), 'valid GeoArrow encoding');
 
     // get first geometry from arrow geometry column
     const firstArrowGeometry = table.getChild('geometry')?.get(0);
-    const firstArrowGeometryObject = {
-      encoding,
-      data: firstArrowGeometry
-    };
 
     // parse arrow geometry to geojson feature
-    const firstFeature = parseGeometryFromArrow(firstArrowGeometryObject);
+    const firstGeometry = parseGeometryFromArrow(firstArrowGeometry, encoding);
 
     // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
     t.deepEqual(
-      firstFeature?.geometry,
+      firstGeometry,
       expectedGeojson.features[0].geometry,
       'firstFeature.geometry is equal to expectedGeojson.features[0].geometry'
     );

@@ -95,6 +95,7 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async (t) => {
   const projection = new Proj4Projection({from: 'WGS84', to: 'EPSG:3857'});
 
   for (let i = 0; i < json.features.length; i++) {
+    // @ts-ignore
     const shpFeature = data.data[i];
     const jsonFeature = json.features[i];
     const jsonPointGeom = projection.project(jsonFeature.geometry.coordinates);

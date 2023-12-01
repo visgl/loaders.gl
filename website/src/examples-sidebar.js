@@ -17,12 +17,17 @@
     },
     {
       type: 'category',
-      label: 'Geospatial Loaders',
+      label: 'Geospatial Table Loaders',
       items: [
+        'geoarrow',
         'geoparquet',
-        // 'geopackage', sql.js bundling issue...
+        'geopackage',
         'flatgeobuf',
-        'geojson'
+        'geojson',
+        'geospatial/shapefile',
+        'geospatial/kml',
+        'geospatial/gpx',
+        'geospatial/tcx'
       ],
     },
     {
@@ -30,15 +35,8 @@
       label: 'Geospatial Tile Loaders',
       items: [
         'pmtiles',
-        'wms'
-      ]
-    },
-    {
-      type: 'category',
-      label: '3D Tile Loaders',
-      items: [
+        'wms',
         'i3s',
-        // 'i3s-arcgis',
         '3d-tiles'
       ]
     },

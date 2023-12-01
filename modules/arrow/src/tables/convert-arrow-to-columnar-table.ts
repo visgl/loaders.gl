@@ -24,6 +24,7 @@ export function convertArrowToColumnarTable(table: ArrowTable): ColumnarTable {
 
   return {
     shape: 'columnar-table',
+    schema: table.schema,
     data: columnarTable
   };
 }

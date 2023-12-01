@@ -18,6 +18,7 @@ npm install @loaders.gl/core @loaders.gl/arrow
 | -------------------------------------------------------------------- |
 | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader)       |
 | [`ArrowWorkerLoader`](/docs/modules/arrow/api-reference/arrow-loader) |
+| [`GeoArrowLoader`](/docs/modules/arrow/api-reference/geoarrow-loader)       |
 
 | Writer                                                         |
 | -------------------------------------------------------------- |

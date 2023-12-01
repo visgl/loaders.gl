@@ -1,5 +1,6 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
+
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
@@ -13,15 +14,6 @@ export type DracoLoaderOptions = LoaderOptions & {
     attributeNameEntry?: string;
     workerUrl?: string;
   };
-};
-
-const DEFAULT_DRACO_OPTIONS: DracoLoaderOptions = {
-  draco: {
-    decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
-    libraryPath: 'libs/',
-    extraAttributes: {},
-    attributeNameEntry: undefined
-  }
 };
 
 /**
@@ -38,5 +30,12 @@ export const DracoLoader: Loader<DracoMesh, never, DracoLoaderOptions> = {
   mimeTypes: ['application/octet-stream'],
   binary: true,
   tests: ['DRACO'],
-  options: DEFAULT_DRACO_OPTIONS
+  options: {
+    draco: {
+      decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
+      libraryPath: 'libs/',
+      extraAttributes: {},
+      attributeNameEntry: undefined
+    }
+  }
 };

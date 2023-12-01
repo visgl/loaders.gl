@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // loaders.gl
 import {Schema} from '@loaders.gl/schema';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';

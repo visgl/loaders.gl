@@ -1,13 +1,23 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {
   ObjectRowTable,
   ObjectRowTableBatch,
+  GeoJSONTable,
+  GeoJSONTableBatch,
   ColumnarTable,
   ColumnarTableBatch
 } from '@loaders.gl/schema';
+import {BlobFile} from '@loaders.gl/loader-utils';
+
+import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet';
+import {parseGeoParquetFile, parseGeoParquetFileInBatches} from './lib/parsers/parse-geoparquet';
+import {
+  parseParquetFileInColumns,
+  parseParquetFileInColumnarBatches
+} from './lib/parsers/parse-parquet-to-columns';
 
 export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
 
@@ -32,8 +42,14 @@ export type ParquetLoaderOptions = LoaderOptions & {
   };
 };
 
-/** ParquetJS table loader */
-export const ParquetLoader: Loader<ObjectRowTable, ObjectRowTableBatch, ParquetLoaderOptions> = {
+/**
+ * ParquetJS table loader
+ */
+export const ParquetWorkerLoader: Loader<
+  ObjectRowTable,
+  ObjectRowTableBatch,
+  ParquetLoaderOptions
+> = {
   name: 'Apache Parquet',
   id: 'parquet',
   module: 'parquet',
@@ -55,7 +71,63 @@ export const ParquetLoader: Loader<ObjectRowTable, ObjectRowTableBatch, ParquetL
   }
 };
 
-export const ParquetColumnarLoader: Loader<
+/** ParquetJS table loader */
+export const ParquetLoader: LoaderWithParser<
+  ObjectRowTable | GeoJSONTable,
+  ObjectRowTableBatch | GeoJSONTableBatch,
+  ParquetLoaderOptions
+> = {
+  ...ParquetWorkerLoader,
+  parse: (arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) =>
+    parseParquetFile(new BlobFile(arrayBuffer), options),
+
+  parseFile: parseParquetFile,
+  parseFileInBatches: parseParquetFileInBatches
+};
+
+// Defeat tree shaking
+// @ts-ignore
+ParquetLoader.Buffer = Buffer;
+
+export const GeoParquetWorkerLoader: Loader<GeoJSONTable, GeoJSONTableBatch, ParquetLoaderOptions> =
+  {
+    name: 'Apache Parquet',
+    id: 'parquet',
+    module: 'parquet',
+    version: VERSION,
+    worker: true,
+    category: 'table',
+    extensions: ['parquet'],
+    mimeTypes: ['application/octet-stream'],
+    binary: true,
+    tests: ['PAR1', 'PARE'],
+    options: {
+      parquet: {
+        shape: 'geojson-table',
+        columnList: [],
+        geoparquet: true,
+        url: undefined,
+        preserveBinary: false
+      }
+    }
+  };
+
+/** ParquetJS table loader */
+export const GeoParquetLoader: LoaderWithParser<
+  ObjectRowTable | GeoJSONTable,
+  ObjectRowTableBatch | GeoJSONTableBatch,
+  ParquetLoaderOptions
+> = {
+  ...GeoParquetWorkerLoader,
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+    return parseGeoParquetFile(new BlobFile(arrayBuffer), options);
+  },
+  parseFile: parseGeoParquetFile,
+  parseFileInBatches: parseGeoParquetFileInBatches
+};
+
+/** @deprecated Test to see if we can improve perf of parquetjs loader */
+export const ParquetColumnarWorkerLoader: Loader<
   ColumnarTable,
   ColumnarTableBatch,
   ParquetLoaderOptions
@@ -73,8 +145,16 @@ export const ParquetColumnarLoader: Loader<
   options: ParquetLoader.options
 };
 
-// Defeat tree shaking
-// @ts-ignore
-ParquetLoader.Buffer = Buffer;
-// @ts-ignore
-ParquetColumnarLoader.Buffer = Buffer;
+/** @deprecated Test to see if we can improve perf of parquetjs loader */
+export const ParquetColumnarLoader: LoaderWithParser<
+  ColumnarTable,
+  ColumnarTableBatch,
+  ParquetLoaderOptions
+> = {
+  ...ParquetColumnarWorkerLoader,
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+    return parseParquetFileInColumns(new BlobFile(arrayBuffer), options);
+  },
+  parseFile: parseParquetFileInColumns,
+  parseFileInBatches: parseParquetFileInColumnarBatches
+};

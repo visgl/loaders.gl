@@ -19,7 +19,7 @@ sceneServerRouter.get('*', async function (req, res, next) {
 
 export const router = express.Router();
 router.get('*', async function (req, res, next) {
-  const file = await getFileByUrl(req.path);
+  const file = await getFileByUrl(req.path.replace(/\/+$/, ''));
   if (file) {
     res.send(Buffer.from(file));
   } else {

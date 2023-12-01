@@ -1,7 +1,7 @@
 import styled from 'styled-components';
-import React, {PureComponent} from 'react';
-import PropTypes from 'prop-types';
-import {Example, INITIAL_EXAMPLE_NAME, INITIAL_LOADER_NAME} from '../examples';
+import React, {useState, useEffect} from 'react';
+import MonacoEditor from '@monaco-editor/react';
+import type {Example} from '../examples';
 
 const Container = styled.div`
   display: flex;
@@ -19,6 +19,19 @@ const Container = styled.div`
   line-height: 2;
   outline: none;
   z-index: 100;
+  height: calc(100vh - 105px);
+  width: 500px;
+
+  .loading-indicator {
+    margin: 0;
+    text-align: center;
+    transition: opacity 300ms ease-out;
+  }
+
+  > .monaco-editor {
+    height: calc(100vh - 200px) !important;
+    width: 700px !important;
+  }
 `;
 
 const DropDown = styled.select`
@@ -37,102 +50,94 @@ type PropTypes = React.PropsWithChildren<{
   }) => void;
 }>;
 
-export class ControlPanel extends PureComponent<PropTypes> {
-  static defaultProps: PropTypes = {
+/**
+ * Shows the example selection dropdown and some additional information
+ */
+export const ControlPanel: React.FC<PropTypes> = (props: PropTypes) => {
+  props = {
     examples: {},
     droppedFile: null,
     selectedExample: null,
     selectedLoader: null,
-    onExampleChange: () => {}
+    onExampleChange: () => {},
+    ...props
   };
 
-  _autoSelected: boolean;
+  return (
+    <Container>
+      <ExampleHeader {...props} />
+      <ExampleDropDown {...props} />
+      {props.children}
+      <h2>Table Schema</h2>
+      <MonacoEditor
+        language="json"
+        options={{readOnly: true}}
+        theme="vs-dark"
+        value={props.schema || 'Table has no schema'}
+      />
+    </Container>
+  );
+};
 
-  constructor(props) {
-    super(props);
-    this._autoSelected = false;
+/**
+ * Shows the selected example in bold font
+ */
+const ExampleHeader: React.FC = ({selectedLoader, selectedExample}) => {
+  if (!selectedLoader || !selectedExample) {
+    return null;
   }
 
-  componentDidMount() {
-    const {examples = {}, onExampleChange} = this.props;
+  return (
+    <div>
+      <h3>
+        {selectedExample} <b>{selectedLoader}</b>{' '}
+      </h3>
+    </div>
+  );
+};
 
-    let selectedLoader = this.props.selectedLoader;
-    let selectedExample = this.props.selectedExample;
-
-    if ((!selectedLoader || !selectedExample) && !this._autoSelected) {
-      selectedLoader = INITIAL_LOADER_NAME;
-      selectedExample = examples[selectedLoader][INITIAL_EXAMPLE_NAME];
-      this._autoSelected = true;
-    }
-
-    if (selectedLoader && selectedExample) {
-      const example = examples[selectedLoader][selectedExample];
-      onExampleChange({selectedLoader, selectedExample, example});
-    }
+/**
+ * Dropdown that lets user select a new example
+ */
+const ExampleDropDown: React.FC = ({
+  examples = {},
+  selectedLoader,
+  selectedExample,
+  onExampleChange
+}) => {
+  if (!selectedLoader || !selectedExample) {
+    return false;
   }
 
-  _renderDropDown() {
-    const {examples = {}, selectedLoader, selectedExample, onExampleChange} = this.props;
+  const selectedValue = `${selectedLoader}.${selectedExample}`;
 
-    if (!selectedLoader || !selectedExample) {
-      return false;
-    }
-
-    const selectedValue = `${selectedLoader}.${selectedExample}`;
-
-    return (
-      <DropDown
-        value={selectedValue}
-        onChange={(evt) => {
-          const loaderExample = evt.target.value as string;
-          const value = loaderExample.split('.');
-          const loaderName = value[0];
-          const exampleName = value[1];
-          const example = examples[loaderName][exampleName];
-          onExampleChange({selectedLoader: loaderName, selectedExample: exampleName, example});
-        }}
-      >
-        {Object.keys(examples).map((loaderName, loaderIndex) => {
-          const loaderExamples = examples[loaderName];
-          return (
-            <optgroup key={loaderIndex} label={loaderName}>
-              {Object.keys(loaderExamples).map((exampleName, exampleIndex) => {
-                const value = `${loaderName}.${exampleName}`;
-                return (
-                  <option key={exampleIndex} value={value}>
-                    {`${exampleName} (${loaderName})`}
-                  </option>
-                );
-              })}
-            </optgroup>
-          );
-        })}
-      </DropDown>
-    );
-  }
-
-  _renderHeader() {
-    const {selectedLoader, selectedExample} = this.props;
-    if (!selectedLoader || !selectedExample) {
-      return null;
-    }
-
-    return (
-      <div>
-        <h3>
-          {selectedExample} <b>{selectedLoader}</b>{' '}
-        </h3>
-      </div>
-    );
-  }
-
-  render() {
-    return (
-      <Container>
-        {this._renderHeader()}
-        {this._renderDropDown()}
-        {this.props.children}
-      </Container>
-    );
-  }
-}
+  return (
+    <DropDown
+      value={selectedValue}
+      onChange={(evt) => {
+        const loaderExample = evt.target.value as string;
+        const value = loaderExample.split('.');
+        const loaderName = value[0];
+        const exampleName = value[1];
+        const example = examples[loaderName][exampleName];
+        onExampleChange({selectedLoader: loaderName, selectedExample: exampleName, example});
+      }}
+    >
+      {Object.keys(examples).map((loaderName, loaderIndex) => {
+        const loaderExamples = examples[loaderName];
+        return (
+          <optgroup key={loaderIndex} label={loaderName}>
+            {Object.keys(loaderExamples).map((exampleName, exampleIndex) => {
+              const value = `${loaderName}.${exampleName}`;
+              return (
+                <option key={exampleIndex} value={value}>
+                  {`${exampleName} (${loaderName})`}
+                </option>
+              );
+            })}
+          </optgroup>
+        );
+      })}
+    </DropDown>
+  );
+};

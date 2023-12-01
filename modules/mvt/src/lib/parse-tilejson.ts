@@ -124,6 +124,13 @@ type TilestatsLayerAttribute = {
 
 const isObject: (x: unknown) => boolean = (x) => x !== null && typeof x === 'object';
 
+/**
+ * Parse TileJSON from metadata
+ * @param jsonMetadata - metadata object
+ * @param options - options
+ * @returns - parsed TileJSON
+ */
+// eslint-disable-next-line complexity
 export function parseTileJSON(jsonMetadata: any, options: TileJSONOptions): TileJSON | null {
   if (!jsonMetadata || !isObject(jsonMetadata)) {
     return null;
