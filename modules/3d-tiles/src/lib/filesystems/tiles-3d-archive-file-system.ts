@@ -1,7 +1,7 @@
 import {FileProvider} from '@loaders.gl/loader-utils';
 import {
   ZipFileSystem,
-  cdSignature as cdHeaderSignature,
+  CD_HEADER_SIGNATURE,
   searchFromTheEnd,
   parseZipCDFileHeader,
   parseHashTable,
@@ -66,7 +66,7 @@ export class Tiles3DArchiveFileSystem extends ZipFileSystem {
       throw new Error('No data detected in the zip archive');
     }
 
-    const hashCDOffset = await searchFromTheEnd(fileProvider, cdHeaderSignature);
+    const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);
 
     const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 

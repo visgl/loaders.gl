@@ -1,6 +1,6 @@
 import {FileProvider} from '@loaders.gl/loader-utils';
 import {
-  cdSignature as cdHeaderSignature,
+  CD_HEADER_SIGNATURE,
   makeHashTableFromZipHeaders,
   parseHashTable,
   parseZipCDFileHeader,
@@ -19,7 +19,7 @@ export const parse3DTilesArchive = async (
   fileProvider: FileProvider,
   cb?: (msg: string) => void
 ): Promise<Tiles3DArchive> => {
-  const hashCDOffset = await searchFromTheEnd(fileProvider, cdHeaderSignature);
+  const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 

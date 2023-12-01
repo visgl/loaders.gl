@@ -249,107 +249,123 @@ export function generateCDHeader(options: GenerateCDOptions): ArrayBuffer {
 
 /** Fields map */
 const ZIP_HEADER_FIELDS = [
+  // Central directory file header signature = 0x02014b50
   {
     offset: 0,
     size: 4,
-    description: 'Central directory file header signature = 0x02014b50',
     default: new DataView(signature.buffer).getUint32(0, true)
   },
+
+  // Version made by
   {
     offset: 4,
     size: 2,
-    description: 'Version made by',
     default: 45
   },
+
+  // Version needed to extract (minimum)
   {
     offset: 6,
     size: 2,
-    description: 'Version needed to extract (minimum)',
     default: 45
   },
+
+  // General purpose bit flag
   {
     offset: 8,
     size: 2,
-    description: 'General purpose bit flag',
     default: 0
   },
+
+  // Compression method
   {
     offset: 10,
     size: 2,
-    description: 'Compression method',
     default: 0
   },
+
+  // File last modification time
   {
     offset: 12,
     size: 2,
-    description: 'File last modification time',
     default: 0
   },
+
+  // File last modification date
   {
     offset: 14,
     size: 2,
-    description: 'File last modification date',
     default: 0
   },
+
+  // CRC-32 of uncompressed data
   {
     offset: 16,
     size: 4,
-    description: 'CRC-32 of uncompressed data',
     name: 'crc32'
   },
+
+  // Compressed size (or 0xffffffff for ZIP64)
   {
     offset: 20,
     size: 4,
-    description: 'Compressed size (or 0xffffffff for ZIP64)',
     name: 'length'
   },
+
+  // Uncompressed size (or 0xffffffff for ZIP64)
   {
     offset: 24,
     size: 4,
-    description: 'Uncompressed size (or 0xffffffff for ZIP64)',
     name: 'length'
   },
+
+  // File name length (n)
   {
     offset: 28,
     size: 2,
-    description: 'File name length (n)',
     name: 'fnlength'
   },
+
+  // Extra field length (m)
   {
     offset: 30,
     size: 2,
-    description: 'Extra field length (m)',
     default: 0,
     name: 'extraLength'
   },
+
+  // File comment length (k)
   {
     offset: 32,
     size: 2,
-    description: 'File comment length (k)',
     default: 0
   },
+
+  // Disk number where file starts (or 0xffff for ZIP64)
   {
     offset: 34,
     size: 2,
-    description: 'Disk number where file starts (or 0xffff for ZIP64)',
     default: 0
   },
+
+  // Internal file attributes
   {
     offset: 36,
     size: 2,
-    description: 'Internal file attributes',
     default: 0
   },
+
+  // External file attributes
   {
     offset: 38,
     size: 4,
-    description: 'External file attributes',
     default: 0
   },
+
+  // Relative offset of local file header
   {
     offset: 42,
     size: 4,
-    description: 'Relative offset of local file header ',
     name: 'offset'
   }
 ];
