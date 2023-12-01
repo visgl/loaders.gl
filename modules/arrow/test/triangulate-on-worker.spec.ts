@@ -3,7 +3,12 @@
 
 import * as arrow from 'apache-arrow';
 import test from 'tape-promise/tape';
-import {triangulateOnWorker, parseGeoArrowOnWorker, TriangulationWorker} from '@loaders.gl/arrow';
+import {
+  triangulateOnWorker,
+  parseGeoArrowOnWorker,
+  TriangulationWorker,
+  hardClone
+} from '@loaders.gl/arrow';
 import {fetchFile} from '@loaders.gl/core';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {GEOARROW_POINT_FILE} from './data/geoarrow/test-cases';
@@ -81,18 +86,19 @@ test('parseGeoArrowOnWorker', async (t) => {
   const geometryChunk = geometryColumn?.data[0];
 
   if (geometryChunk) {
+    const chunkCopy = hardClone(geometryChunk, true);
     const chunkData = {
       type: {
-        ...geometryChunk?.type,
-        typeId: geometryChunk?.typeId,
-        listSize: geometryChunk?.type?.listSize
+        ...chunkCopy?.type,
+        typeId: chunkCopy?.typeId,
+        listSize: chunkCopy?.type?.listSize
       },
-      offset: geometryChunk.offset,
-      length: geometryChunk.length,
-      nullCount: geometryChunk.nullCount,
-      buffers: geometryChunk.buffers,
-      children: geometryChunk.children,
-      dictionary: geometryChunk.dictionary
+      offset: chunkCopy.offset,
+      length: chunkCopy.length,
+      nullCount: chunkCopy.nullCount,
+      buffers: chunkCopy.buffers,
+      children: chunkCopy.children,
+      dictionary: chunkCopy.dictionary
     };
 
     const parsedGeoArrowData = await parseGeoArrowOnWorker(
@@ -101,7 +107,7 @@ test('parseGeoArrowOnWorker', async (t) => {
         chunkData,
         chunkIndex: 0,
         geometryEncoding: 'geoarrow.point',
-        meanCenter: true,
+        calculateMeanCenters: true,
         triangle: false
       },
       {

@@ -58,7 +58,7 @@ function triangulateBatch(data: TriangulateInput): TriangulateResult {
  */
 function parseGeoArrowBatch(data: ParseGeoArrowInput): ParseGeoArrowResult {
   let binaryDataFromGeoArrow: BinaryDataFromGeoArrow | null = null;
-  const {chunkData, chunkIndex, geometryEncoding, meanCenter, triangle} = data;
+  const {chunkData, chunkIndex, geometryEncoding, calculateMeanCenters, triangle} = data;
   // rebuild chunkData
   const arrowData = new arrow.Data(
     chunkData.type,
@@ -72,7 +72,7 @@ function parseGeoArrowBatch(data: ParseGeoArrowInput): ParseGeoArrowResult {
   // rebuild geometry column with chunkData
   const geometryColumn = arrow.makeVector(arrowData);
   if (geometryColumn) {
-    const options = {meanCenter, triangle, chunkIndex};
+    const options = {calculateMeanCenters, triangle, chunkIndex};
     binaryDataFromGeoArrow = getBinaryGeometriesFromArrow(
       geometryColumn,
       geometryEncoding,

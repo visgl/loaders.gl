@@ -20,20 +20,22 @@ export type TriangulationWorkerOutput =
   | ({operation: 'parse-geoarrow'} & ParseGeoArrowResult)
   | {operation: 'test'; data: any};
 
+type GeoArrowChunkData = {
+  type: arrow.DataType;
+  offset: number;
+  length: number;
+  nullCount: number;
+  buffers: any;
+  children: arrow.Data[];
+  dictionary?: arrow.Vector;
+};
+
 export type ParseGeoArrowInput = {
   operation: 'parse-geoarrow';
-  chunkData: {
-    type: arrow.DataType;
-    offset: number;
-    length: number;
-    nullCount: number;
-    buffers: any;
-    children: arrow.Data[];
-    dictionary?: arrow.Vector;
-  };
+  chunkData: GeoArrowChunkData;
   chunkIndex: number;
   geometryEncoding: GeoArrowEncoding;
-  meanCenter: boolean;
+  calculateMeanCenters: boolean;
   triangle: boolean;
 };
 

@@ -65,6 +65,7 @@ export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson-geo
 export {convertArrowToGeoJSONTable} from './tables/convert-arrow-to-geojson-table';
 
 // EXPERIMENTAL WORKER
+export {hardClone} from './workers/hard-clone';
 
 export {
   TriangulationWorker,

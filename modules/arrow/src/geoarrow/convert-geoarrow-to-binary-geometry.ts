@@ -90,7 +90,10 @@ export function getBinaryGeometriesFromArrow(
     line: geoEncoding === 'geoarrow.multilinestring' || geoEncoding === 'geoarrow.linestring'
   };
 
-  const chunks = options?.chunkIndex ? [geoColumn.data[options?.chunkIndex]] : geoColumn.data;
+  const chunks =
+    options?.chunkIndex !== undefined && options?.chunkIndex >= 0
+      ? [geoColumn.data[options?.chunkIndex]]
+      : geoColumn.data;
   let bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
   let globalFeatureIdOffset = 0;
   const binaryGeometries: BinaryFeatures[] = [];
@@ -307,6 +310,7 @@ export function getTriangleIndices(
         }
         primitiveIndex++;
       }
+      // TODO check if each ring is closed
       const triangleIndices = earcut(
         slicedFlatCoords,
         holeIndices.length > 0 ? holeIndices : undefined,
