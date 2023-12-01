@@ -58,29 +58,33 @@ export const NUMBER_SETTERS: {[key: number]: NumberSetter} = {
 
 /** zip64 info fields description, we need it as a pattern to build a zip64 info */
 const ZIP64_FIELDS = [
+  // Header ID 0x0001
   {
     size: 2,
-    description: 'Header ID 0x0001',
     default: new DataView(signature.buffer).getUint16(0, true)
   },
+
+  // Size of the extra field chunk (8, 16, 24 or 28)
   {
     size: 2,
-    description: 'Size of the extra field chunk (8, 16, 24 or 28)',
     name: 'zip64Length'
   },
+
+  // Original uncompressed file size
   {
     size: 8,
-    description: 'Original uncompressed file size',
     name: 'size'
   },
+
+  // Size of compressed data
   {
     size: 8,
-    description: 'Size of compressed data',
     name: 'size'
   },
+
+  // Offset of local header record
   {
     size: 8,
-    description: 'Offset of local header record',
     name: 'offset'
   }
 ];

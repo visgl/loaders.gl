@@ -51,7 +51,7 @@ function parseGeometry(
         ? geometry.buffer.slice(geometry.byteOffset, geometry.byteOffset + geometry.byteLength)
         : (geometry as ArrayBuffer);
       const geojson = wkbLoader?.parseSync?.(arrayBuffer, {
-        wkb: {shape: 'geometry'}
+        wkb: {shape: 'geojson-geometry'}
       }) as unknown as Geometry;
       return geojson; // binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
     // const binaryGeometry = WKBLoader.parseSync?.(geometry);

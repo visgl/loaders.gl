@@ -41,6 +41,8 @@ export type GetImageParameters = {
   styles?: unknown;
   /** bounding box of the requested map image */
   boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
+  /** @deprecated use boundingBox */
+  bbox?: [number, number, number, number];
   /** pixel width of returned image */
   width: number;
   /** pixels */

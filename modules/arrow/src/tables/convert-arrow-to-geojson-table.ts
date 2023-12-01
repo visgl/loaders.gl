@@ -2,7 +2,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
-import type * as arrow from 'apache-arrow';
+import * as arrow from 'apache-arrow';
 import type {ArrowTable} from '../lib/arrow-table';
 import {serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
@@ -16,6 +16,7 @@ import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 export function convertApacheArrowToArrowTable(arrowTable: arrow.Table): ArrowTable {
   return {
     shape: 'arrow-table',
+    schema: serializeArrowSchema(arrowTable.schema),
     data: arrowTable
   };
 }
@@ -34,21 +35,31 @@ export function convertArrowToGeoJSONTable(table: ArrowTable): GeoJSONTable {
 
   const features: Feature[] = [];
 
-  for (let row = 0; row < arrowTable.numRows; row++) {
-    // get first geometry from arrow geometry column
-    const arrowGeometry = arrowTable.getChild('geometry')?.get(row);
-    const arrowGeometryObject = {encoding, data: arrowGeometry};
+  // Remove geometry columns
+  const propertyColumnNames = arrowTable.schema.fields
+    .map((field) => field.name)
+    // TODO - this deletes all geometry columns
+    .filter((name) => !(name in geometryColumns));
+  const propertiesTable = arrowTable.select(propertyColumnNames);
 
+  const arrowGeometryColumn = arrowTable.getChild('geometry');
+
+  for (let row = 0; row < arrowTable.numRows; row++) {
+    // get the geometry value from arrow geometry column
+    // Note that type can vary
+    const arrowGeometry = arrowGeometryColumn?.get(row);
     // parse arrow geometry to geojson feature
-    const feature = parseGeometryFromArrow(arrowGeometryObject);
+    const feature = parseGeometryFromArrow(arrowGeometry, encoding);
     if (feature) {
-      features.push(feature);
+      const properties = propertiesTable.get(row)?.toJSON() || {};
+      features.push({type: 'Feature', geometry: feature, properties});
     }
   }
 
   return {
     shape: 'geojson-table',
     type: 'FeatureCollection',
+    schema: table.schema,
     features
   };
 }

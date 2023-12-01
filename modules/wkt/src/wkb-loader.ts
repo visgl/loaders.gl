@@ -9,14 +9,15 @@ import {isWKB} from './lib/parse-wkb-header';
 
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
-    shape: 'binary-geometry' | 'geometry';
+    /** 'geometry' is deprecated use 'geojson-geometry' */
+    shape: 'geojson-geometry' | 'binary-geometry' | 'geometry';
   };
 };
 
 /**
  * Worker loader for WKB (Well-Known Binary)
  */
-export const WKBWorkerLoader: Loader<BinaryGeometry | Geometry, never, WKBLoaderOptions> = {
+export const WKBWorkerLoader: Loader<Geometry | BinaryGeometry, never, WKBLoaderOptions> = {
   name: 'WKB',
   id: 'wkb',
   module: 'wkt',
@@ -29,7 +30,7 @@ export const WKBWorkerLoader: Loader<BinaryGeometry | Geometry, never, WKBLoader
   tests: [isWKB],
   options: {
     wkb: {
-      shape: 'binary-geometry'
+      shape: 'binary-geometry' // 'geojson-geometry'
     }
   }
 };

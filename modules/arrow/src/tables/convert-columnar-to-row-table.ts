@@ -24,6 +24,7 @@ export function convertColumnarToRowFormatTable(columnarTable: ColumnarTable): O
 
   return {
     shape: 'object-row-table',
+    schema: columnarTable.schema,
     data: rowFormatTable
   };
 }

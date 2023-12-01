@@ -60,7 +60,7 @@ export {
 
 export {updateBoundsFromGeoArrowSamples} from './geoarrow/get-arrow-bounds';
 
-export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson';
+export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson-geometry';
 
 export {convertArrowToGeoJSONTable} from './tables/convert-arrow-to-geojson-table';
 

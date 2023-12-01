@@ -1,7 +1,7 @@
 import {FileProvider} from '@loaders.gl/loader-utils';
 import {
   parseZipCDFileHeader,
-  cdSignature as cdHeaderSignature,
+  CD_HEADER_SIGNATURE,
   parseZipLocalFileHeader,
   searchFromTheEnd,
   parseHashTable,
@@ -19,7 +19,7 @@ export async function parseSLPKArchive(
   fileProvider: FileProvider,
   cb?: (msg: string) => void
 ): Promise<SLPKArchive> {
-  const hashCDOffset = await searchFromTheEnd(fileProvider, cdHeaderSignature);
+  const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);
 
   const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
 

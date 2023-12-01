@@ -18,8 +18,8 @@
     "table",
     "Excel",
     "Sheets",
-    "Worksheets",
-    "Spreadsheets"
+    "Worksheet",
+    "Spreadsheet"
   ],
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",

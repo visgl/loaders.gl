@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // eslint-disable
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/arrow';

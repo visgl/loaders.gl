@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {DTYPE_LOOKUP} from './lib/ome/ome-utils';
 
 export type Dtype = (typeof DTYPE_LOOKUP)[keyof typeof DTYPE_LOOKUP];
