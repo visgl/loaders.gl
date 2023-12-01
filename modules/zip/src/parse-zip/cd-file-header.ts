@@ -1,9 +1,10 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import {FileProvider, compareArrayBuffers} from '@loaders.gl/loader-utils';
+import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {parseEoCDRecord} from './end-of-central-directory';
 import {ZipSignature} from './search-from-the-end';
+import {createZip64Info, NUMBER_SETTERS} from './zip64-info-generation';
 
 /**
  * zip central directory file header info
@@ -188,3 +189,183 @@ const findExpectedData = (zip64data: Zip64Data): {length: number; name: string}[
 
   return zip64dataList;
 };
+
+/** info that can be placed into cd header */
+type GenerateCDOptions = {
+  /** CRC-32 of uncompressed data */
+  crc32: number;
+  /** File name */
+  fileName: string;
+  /** File size */
+  length: number;
+  /** Relative offset of local file header */
+  offset: number;
+};
+
+/**
+ * generates cd header for the file
+ * @param options info that can be placed into cd header
+ * @returns buffer with header
+ */
+export function generateCDHeader(options: GenerateCDOptions): ArrayBuffer {
+  const optionsToUse = {
+    ...options,
+    fnlength: options.fileName.length,
+    extraLength: 0
+  };
+
+  let zip64header: ArrayBuffer = new ArrayBuffer(0);
+
+  const optionsToZip64: any = {};
+  if (optionsToUse.offset >= 0xffffffff) {
+    optionsToZip64.offset = optionsToUse.offset;
+    optionsToUse.offset = 0xffffffff;
+  }
+  if (optionsToUse.length >= 0xffffffff) {
+    optionsToZip64.size = optionsToUse.length;
+    optionsToUse.length = 0xffffffff;
+  }
+
+  if (Object.keys(optionsToZip64).length) {
+    zip64header = createZip64Info(optionsToZip64);
+    optionsToUse.extraLength = zip64header.byteLength;
+  }
+  const header = new DataView(new ArrayBuffer(46));
+
+  for (const field of ZIP_HEADER_FIELDS) {
+    NUMBER_SETTERS[field.size](
+      header,
+      field.offset,
+      optionsToUse[field.name ?? ''] ?? field.default ?? 0
+    );
+  }
+
+  const encodedName = new TextEncoder().encode(optionsToUse.fileName);
+
+  const resHeader = concatenateArrayBuffers(header.buffer, encodedName, zip64header);
+
+  return resHeader;
+}
+
+/** Fields map */
+const ZIP_HEADER_FIELDS = [
+  // Central directory file header signature = 0x02014b50
+  {
+    offset: 0,
+    size: 4,
+    default: new DataView(signature.buffer).getUint32(0, true)
+  },
+
+  // Version made by
+  {
+    offset: 4,
+    size: 2,
+    default: 45
+  },
+
+  // Version needed to extract (minimum)
+  {
+    offset: 6,
+    size: 2,
+    default: 45
+  },
+
+  // General purpose bit flag
+  {
+    offset: 8,
+    size: 2,
+    default: 0
+  },
+
+  // Compression method
+  {
+    offset: 10,
+    size: 2,
+    default: 0
+  },
+
+  // File last modification time
+  {
+    offset: 12,
+    size: 2,
+    default: 0
+  },
+
+  // File last modification date
+  {
+    offset: 14,
+    size: 2,
+    default: 0
+  },
+
+  // CRC-32 of uncompressed data
+  {
+    offset: 16,
+    size: 4,
+    name: 'crc32'
+  },
+
+  // Compressed size (or 0xffffffff for ZIP64)
+  {
+    offset: 20,
+    size: 4,
+    name: 'length'
+  },
+
+  // Uncompressed size (or 0xffffffff for ZIP64)
+  {
+    offset: 24,
+    size: 4,
+    name: 'length'
+  },
+
+  // File name length (n)
+  {
+    offset: 28,
+    size: 2,
+    name: 'fnlength'
+  },
+
+  // Extra field length (m)
+  {
+    offset: 30,
+    size: 2,
+    default: 0,
+    name: 'extraLength'
+  },
+
+  // File comment length (k)
+  {
+    offset: 32,
+    size: 2,
+    default: 0
+  },
+
+  // Disk number where file starts (or 0xffff for ZIP64)
+  {
+    offset: 34,
+    size: 2,
+    default: 0
+  },
+
+  // Internal file attributes
+  {
+    offset: 36,
+    size: 2,
+    default: 0
+  },
+
+  // External file attributes
+  {
+    offset: 38,
+    size: 4,
+    default: 0
+  },
+
+  // Relative offset of local file header
+  {
+    offset: 42,
+    size: 4,
+    name: 'offset'
+  }
+];
