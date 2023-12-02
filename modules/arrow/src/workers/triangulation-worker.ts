@@ -72,7 +72,8 @@ function parseGeoArrowBatch(data: ParseGeoArrowInput): ParseGeoArrowResult {
   // rebuild geometry column with chunkData
   const geometryColumn = arrow.makeVector(arrowData);
   if (geometryColumn) {
-    const options = {calculateMeanCenters, triangle, chunkIndex};
+    // NOTE: for a rebuild arrow.Vector, there is only one chunk, so chunkIndex is always 0
+    const options = {calculateMeanCenters, triangle, chunkIndex: 0};
     binaryDataFromGeoArrow = getBinaryGeometriesFromArrow(
       geometryColumn,
       geometryEncoding,
@@ -81,11 +82,11 @@ function parseGeoArrowBatch(data: ParseGeoArrowInput): ParseGeoArrowResult {
     // NOTE: here binaryGeometry will be copied to main thread
     return {
       binaryDataFromGeoArrow,
-      chunkIndex: data.chunkIndex
+      chunkIndex
     };
   }
   return {
     binaryDataFromGeoArrow,
-    chunkIndex: data.chunkIndex
+    chunkIndex
   };
 }

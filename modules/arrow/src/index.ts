@@ -52,7 +52,7 @@ export type {
   BinaryGeometriesFromArrowOptions
 } from './geoarrow/convert-geoarrow-to-binary-geometry';
 export {
-  BINARY_GEOMETRY_TEMPLATE,
+  getBinaryGeometryTemplate,
   getBinaryGeometriesFromArrow,
   getTriangleIndices,
   getMeanCentersFromBinaryGeometries
@@ -67,6 +67,7 @@ export {convertArrowToGeoJSONTable} from './tables/convert-arrow-to-geojson-tabl
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';
 
+export type {ParseGeoArrowResult} from './triangulate-on-worker';
 export {
   TriangulationWorker,
   triangulateOnWorker,

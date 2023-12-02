@@ -54,13 +54,15 @@ type BinaryGeometryContent = {
 /**
  * binary geometry template, see deck.gl BinaryGeometry
  */
-export const BINARY_GEOMETRY_TEMPLATE = {
-  globalFeatureIds: {value: new Uint32Array(0), size: 1},
-  positions: {value: new Float32Array(0), size: 2},
-  properties: [],
-  numericProps: {},
-  featureIds: {value: new Uint32Array(0), size: 1}
-};
+export function getBinaryGeometryTemplate() {
+  return {
+    globalFeatureIds: {value: new Uint32Array(0), size: 1},
+    positions: {value: new Float32Array(0), size: 2},
+    properties: [],
+    numericProps: {},
+    featureIds: {value: new Uint32Array(0), size: 1}
+  };
+}
 
 export type BinaryGeometriesFromArrowOptions = {
   /** option to specify which chunk to get binary geometries from, for progressive rendering */
@@ -127,18 +129,18 @@ export function getBinaryGeometriesFromArrow(
       shape: 'binary-feature-collection',
       points: {
         type: 'Point',
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         ...(featureTypes.point ? binaryContent : {})
       },
       lines: {
         type: 'LineString',
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         ...(featureTypes.line ? binaryContent : {}),
         pathIndices: {value: featureTypes.line ? geomOffset : new Uint16Array(0), size: 1}
       },
       polygons: {
         type: 'Polygon',
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         ...(featureTypes.polygon ? binaryContent : {}),
         polygonIndices: {
           // use geomOffset as polygonIndices same as primitivePolygonIndices since we are using earcut to get triangule indices
