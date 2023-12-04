@@ -24,7 +24,7 @@ export default class CRC32 {
   }
 
   finalize() {
-    this.crc = Math.abs(this.crc ^ -1);
+    this.crc = (this.crc ^ -1) >>> 0;
     return this.crc;
   }
 }
