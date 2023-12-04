@@ -7,7 +7,8 @@ import {
   triangulateOnWorker,
   parseGeoArrowOnWorker,
   TriangulationWorker,
-  hardClone
+  hardClone,
+  ParseGeoArrowInput
 } from '@loaders.gl/arrow';
 import {fetchFile} from '@loaders.gl/core';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
@@ -101,19 +102,19 @@ test('parseGeoArrowOnWorker', async (t) => {
       dictionary: chunkCopy.dictionary
     };
 
-    const parsedGeoArrowData = await parseGeoArrowOnWorker(
-      {
-        operation: 'parse-geoarrow',
-        chunkData,
-        chunkIndex: 0,
-        geometryEncoding: 'geoarrow.point',
-        calculateMeanCenters: true,
-        triangle: false
-      },
-      {
-        _workerType: 'test'
-      }
-    );
+    const parseGeoArrowInput: ParseGeoArrowInput = {
+      operation: 'parse-geoarrow',
+      chunkData,
+      chunkIndex: 0,
+      chunkOffset: 0,
+      geometryEncoding: 'geoarrow.point',
+      calculateMeanCenters: true,
+      triangle: false
+    };
+
+    const parsedGeoArrowData = await parseGeoArrowOnWorker(parseGeoArrowInput, {
+      _workerType: 'test'
+    });
 
     // kepler should await for the result from web worker and render the binary geometries
     const {binaryGeometries, bounds, featureTypes, meanCenters} =

@@ -67,7 +67,7 @@ export {convertArrowToGeoJSONTable} from './tables/convert-arrow-to-geojson-tabl
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';
 
-export type {ParseGeoArrowResult} from './triangulate-on-worker';
+export type {ParseGeoArrowInput, ParseGeoArrowResult} from './triangulate-on-worker';
 export {
   TriangulationWorker,
   triangulateOnWorker,

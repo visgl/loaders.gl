@@ -34,6 +34,7 @@ export type ParseGeoArrowInput = {
   operation: 'parse-geoarrow';
   chunkData: GeoArrowChunkData;
   chunkIndex: number;
+  chunkOffset: number;
   geometryEncoding: GeoArrowEncoding;
   calculateMeanCenters: boolean;
   triangle: boolean;

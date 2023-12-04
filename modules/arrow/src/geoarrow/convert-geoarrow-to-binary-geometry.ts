@@ -67,6 +67,8 @@ export function getBinaryGeometryTemplate() {
 export type BinaryGeometriesFromArrowOptions = {
   /** option to specify which chunk to get binary geometries from, for progressive rendering */
   chunkIndex?: number;
+  /** The offset (beginning index of rows) of input chunk. Used for reconstructing globalFeatureIds in web workers */
+  chunkOffset?: number;
   /** option to get mean centers from geometries, for polygon filtering */
   calculateMeanCenters?: boolean;
   /** option to compute the triangle indices by tesselating polygons */
@@ -97,7 +99,7 @@ export function getBinaryGeometriesFromArrow(
       ? [geoColumn.data[options?.chunkIndex]]
       : geoColumn.data;
   let bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
-  let globalFeatureIdOffset = 0;
+  let globalFeatureIdOffset = options?.chunkOffset || 0;
   const binaryGeometries: BinaryFeatures[] = [];
 
   chunks.forEach((chunk) => {
