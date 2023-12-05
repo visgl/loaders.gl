@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "4.0.4",
+  "version": "4.1.0-alpha.1",
   "description": "i3s .",
   "license": "MIT",
   "type": "module",
@@ -41,14 +41,14 @@
     "build-worker-node": "esbuild src/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/compression": "4.0.4",
-    "@loaders.gl/crypto": "4.0.4",
-    "@loaders.gl/draco": "4.0.4",
-    "@loaders.gl/images": "4.0.4",
-    "@loaders.gl/loader-utils": "4.0.4",
-    "@loaders.gl/schema": "4.0.4",
-    "@loaders.gl/textures": "4.0.4",
-    "@loaders.gl/tiles": "4.0.4",
+    "@loaders.gl/compression": "4.1.0-alpha.1",
+    "@loaders.gl/crypto": "4.1.0-alpha.1",
+    "@loaders.gl/draco": "4.1.0-alpha.1",
+    "@loaders.gl/images": "4.1.0-alpha.1",
+    "@loaders.gl/loader-utils": "4.1.0-alpha.1",
+    "@loaders.gl/schema": "4.1.0-alpha.1",
+    "@loaders.gl/textures": "4.1.0-alpha.1",
+    "@loaders.gl/tiles": "4.1.0-alpha.1",
     "@math.gl/core": "^4.0.0",
     "@math.gl/culling": "^4.0.0",
     "@math.gl/geospatial": "^4.0.0"
