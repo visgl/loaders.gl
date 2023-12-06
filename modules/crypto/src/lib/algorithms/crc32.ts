@@ -2,7 +2,8 @@
 // Copyright (c) vis.gl contributors
 
 // Inspired by https://gist.github.com/wqli78/1330293/6d85cc967f32cccfcbad94ae7d088a3dcfc14bd9
-
+// Full crc32 docs: https://www.kernel.org/doc/Documentation/crc32.txt
+// Better JS implementation: https://stackoverflow.com/a/18639999
 /**
  * Calculates the CRC32 checksum of a string.
  */
@@ -24,6 +25,7 @@ export default class CRC32 {
   }
 
   finalize() {
+    // performing final division and making crc unsigned.
     this.crc = (this.crc ^ -1) >>> 0;
     return this.crc;
   }

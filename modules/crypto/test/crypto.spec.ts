@@ -24,6 +24,13 @@ const TEST_CASES = [
     }
   },
   {
+    title: 'binary data, crc32 negative result case',
+    data: new Uint8Array(100),
+    digests: {
+      crc32: 'mYjGyg=='
+    }
+  },
+  {
     title: 'binary data',
     data: binaryData,
     digests: {
@@ -34,13 +41,17 @@ const TEST_CASES = [
     title: 'binary data (repeated)',
     data: repeatedData,
     digests: {
-      sha256: 'SnGMX2AgkPh21d2sxow8phQa8lh8rjf2Vc7GFCIwj2g='
-      // 'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s=',
+      sha256: 'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s='
     }
   }
 ];
 
-const HASHES = [new CRC32Hash(), new CRC32CHash(), new MD5Hash(), new SHA256Hash({modules})];
+const HASHES = {
+  crc32: () => new CRC32Hash(),
+  crc32c: () => new CRC32CHash(),
+  md5: () => new MD5Hash(),
+  sha256: () => new SHA256Hash({modules})
+};
 
 test('crypto#atomic hashes', async (t) => {
   await loadTestCaseData();
@@ -68,7 +79,6 @@ test('crypto#streaming hashes', async (t) => {
         const Hash = cryptoHash1.constructor;
 
         let hash;
-        // @ts-expect-error
         const cryptoHash = new Hash({
           crypto: {
             onEnd: (result) => {
@@ -120,8 +130,8 @@ test('NodeHash#hash', async (t) => {
 
 // HELPERS
 
-function getHash(algorithm) {
-  const hash = HASHES.find((hash_) => hash_.name === algorithm);
+function getHash(algorithm: string) {
+  const hash = HASHES[algorithm]?.();
   if (!hash) {
     throw new Error(algorithm);
   }
